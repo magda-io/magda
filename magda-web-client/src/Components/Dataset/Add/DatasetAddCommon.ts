@@ -436,19 +436,18 @@ function populateDcatDatasetStringAspect(data: RawDataset, state: State) {
         state.dataset.defaultLicense = datasetDcatString?.defaultLicense;
     }
 
-    if (data.aspects?.["dataset-access-control"]?.ownerId) {
-        state.dataset.ownerId =
-            data.aspects?.["dataset-access-control"]?.ownerId;
+    if (data.aspects?.["access-control"]?.ownerId) {
+        state.dataset.ownerId = data.aspects?.["access-control"]?.ownerId;
     }
 
-    if (data.aspects?.["dataset-access-control"]?.orgUnitOwnerId) {
+    if (data.aspects?.["access-control"]?.orgUnitOwnerId) {
         state.dataset.owningOrgUnitId =
-            data.aspects?.["dataset-access-control"]?.orgUnitOwnerId;
+            data.aspects?.["access-control"]?.orgUnitOwnerId;
     }
 
-    if (data.aspects?.["dataset-access-control"]?.custodianOrgUnitId) {
+    if (data.aspects?.["access-control"]?.custodianOrgUnitId) {
         state.dataset.custodianOrgUnitId =
-            data.aspects?.["dataset-access-control"]?.custodianOrgUnitId;
+            data.aspects?.["access-control"]?.custodianOrgUnitId;
     }
 }
 
@@ -933,7 +932,7 @@ export async function saveStateToRegistry(state: State, id: string) {
                 authnReadPolicyId: DEFAULT_POLICY_ID,
                 aspects: {
                     publishing: getPublishingAspectData(state),
-                    "dataset-access-control": getAccessControlAspectData(state),
+                    "access-control": getAccessControlAspectData(state),
                     source: getInternalDatasetSourceAspectData()
                 }
             },
@@ -1005,7 +1004,7 @@ async function ensureBlankDatasetIsSavedToRegistry(
                 authnReadPolicyId: DEFAULT_POLICY_ID,
                 aspects: {
                     publishing: getPublishingAspectData(state),
-                    "dataset-access-control": getAccessControlAspectData(state),
+                    "access-control": getAccessControlAspectData(state),
                     source: getInternalDatasetSourceAspectData()
                 }
             },
@@ -1183,7 +1182,7 @@ async function convertStateToDatasetRecord(
             },
             access: datasetAccess,
             "information-security": informationSecurity,
-            "dataset-access-control": getAccessControlAspectData(state),
+            "access-control": getAccessControlAspectData(state),
             currency: {
                 ...currency,
                 supersededBy:

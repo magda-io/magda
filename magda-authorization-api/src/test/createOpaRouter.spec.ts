@@ -1,4 +1,6 @@
 import {} from "mocha";
+import path from "path";
+import fse from "fs-extra";
 import request from "supertest";
 import urijs from "urijs";
 import nock from "nock";
@@ -28,10 +30,14 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
         onRequest:
             | ((queryParams: { [key: string]: any }, jsonData: any) => void)
             | null = null,
-        response: { [key: string]: any } | null = null
+        response: { [key: string]: any } | null = null,
+        fullEvaluationEndpoint: boolean = false
     ) {
+        const apiEndpoint = fullEvaluationEndpoint
+            ? "/v1/data/entrypoint/allow"
+            : "/v1/compile";
         const scope = nock(opaBaseUrl)
-            .post("/v1/compile")
+            .post(apiEndpoint)
             .query(true)
             .once()
             .reply(function (uri, requestBody) {
@@ -41,6 +47,10 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 }
                 const resData = response
                     ? response
+                    : fullEvaluationEndpoint
+                    ? {
+                          result: false
+                      }
                     : {
                           result: {}
                       };
@@ -126,10 +136,10 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             );
             await req.then((res) => {
                 expect(res.body.hasResidualRules).to.be.equal(false);
-                expect(res.body.value).to.be.equal(false);
+                expect(res.body.result).to.be.equal(false);
             });
             expect(scope.isDone()).to.be.equal(true);
-            expect(data.unknowns).to.have.members(["input.object.any-object"]);
+            expect(data.unknowns).to.have.members(["input.object"]);
             expect(data.query).to.be.equal("data.entrypoint.allow");
             expect(data.input.user.roles).to.have.members([
                 ANONYMOUS_USERS_ROLE_ID
@@ -144,12 +154,19 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             );
         });
 
-        it("Can supply extra input (extra data) via POST request", async () => {
+        it("will not auto-generate `unknowns` (full evaluation) when proper extra input (extra data) via POST request is supplied", async () => {
             let data: any;
 
-            const scope = createOpaNockScope((queryParams, requestData) => {
-                data = requestData;
-            });
+            const scope = createOpaNockScope(
+                (queryParams, requestData) => {
+                    data = requestData;
+                },
+                null,
+                // as input data is supplied at `input.object`, `unknowns` will not be auto set.
+                // API will not call compile (partial evaluation endpoint)
+                // instead, call full evaluation endpoint for result.
+                true
+            );
 
             mockUserDataStore.reset();
 
@@ -169,6 +186,52 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             await req.then((res) => {
                 expect(res.body.hasResidualRules).to.be.equal(false);
                 expect(res.body.value).to.be.equal(false);
+            });
+            expect(scope.isDone()).to.be.equal(true);
+
+            expect(data.unknowns).to.be.undefined;
+            expect(data.input.user.roles).to.have.members([
+                ANONYMOUS_USERS_ROLE_ID
+            ]);
+            expect(data.input.operationUri).to.equal(
+                "object/any-object/any-operation"
+            );
+            expect(data.input.object.dataset.testNum).to.equal(testNum);
+            expect(data.input.resourceUri).to.equal("object/any-object");
+            expect(data.input.timestamp).to.be.within(
+                Date.now() - 20000,
+                Date.now() + 20000
+            );
+        });
+
+        it("Can supply extra input (extra data) via POST request (with `unknowns` supplied)", async () => {
+            let data: any;
+
+            const scope = createOpaNockScope((queryParams, requestData) => {
+                data = requestData;
+            });
+
+            mockUserDataStore.reset();
+
+            const testNum = Math.random();
+            const req = request(app)
+                .post(`/decision/object/any-object/any-operation`)
+                .send({
+                    input: {
+                        object: {
+                            dataset: {
+                                testNum
+                            }
+                        }
+                    },
+                    // As input data is supplied at `input.object`, `unknowns` will not be auto set.
+                    // However, we manually set `unknowns` here to make sure the request is still sent to compile (partial evaluation endpoint)
+                    unknowns: ["input.object.any-object"]
+                });
+
+            await req.then((res) => {
+                expect(res.body.hasResidualRules).to.be.equal(false);
+                expect(res.body.result).to.be.equal(false);
             });
             expect(scope.isDone()).to.be.equal(true);
 
@@ -253,6 +316,78 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             );
         });
 
+        it("Can force stop the endpoint from auto-generating unknowns by passing an empty string via the query parameter `unknowns`", async () => {
+            let data: any;
+
+            const scope = createOpaNockScope(
+                (queryParams, requestData) => {
+                    data = requestData;
+                },
+                null,
+                // as `unknowns` is not set, request will be evaluated by full evaluation endpoint
+                true
+            );
+
+            mockUserDataStore.reset();
+
+            // set unknowns to an empty string should stop endpoint from auto-generating unknowns
+            await request(app).get(
+                `/decision/object/any-object/any-operation?unknowns=`
+            );
+
+            expect(scope.isDone()).to.be.equal(true);
+
+            expect(data.unknowns).to.be.undefined;
+            expect(data.query).to.be.undefined;
+            expect(data.input.user.roles).to.have.members([
+                ANONYMOUS_USERS_ROLE_ID
+            ]);
+            expect(data.input.operationUri).to.equal(
+                "object/any-object/any-operation"
+            );
+            expect(data.input.timestamp).to.be.within(
+                Date.now() - 20000,
+                Date.now() + 20000
+            );
+        });
+
+        it("Can force stop the endpoint from auto-generating unknowns by passing an empty string via the post body parameter `unknowns`", async () => {
+            let data: any;
+
+            const scope = createOpaNockScope(
+                (queryParams, requestData) => {
+                    data = requestData;
+                },
+                null,
+                // as `unknowns` is not set, request will be evaluated by full evaluation endpoint
+                true
+            );
+
+            mockUserDataStore.reset();
+
+            await request(app)
+                .post(`/decision/object/any-object/any-operation`)
+                .send({
+                    // set unknowns to an empty string should stop endpoint from auto-generating unknowns
+                    unknowns: ""
+                });
+
+            expect(scope.isDone()).to.be.equal(true);
+
+            expect(data.unknowns).to.be.undefined;
+            expect(data.query).to.be.undefined;
+            expect(data.input.user.roles).to.have.members([
+                ANONYMOUS_USERS_ROLE_ID
+            ]);
+            expect(data.input.operationUri).to.equal(
+                "object/any-object/any-operation"
+            );
+            expect(data.input.timestamp).to.be.within(
+                Date.now() - 20000,
+                Date.now() + 20000
+            );
+        });
+
         it("passing `rawAst` query parameter will output raw opa ast", async () => {
             const scope = createOpaNockScope(null, testDataSimple);
 
@@ -288,10 +423,14 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 const exp = res.body.residualRules[0].expressions[0];
                 expect(exp).to.not.have.property("terms");
                 expect(exp.operator).to.be.equal("=");
-                expect(exp.operands[0]).to.be.equal("input.object.content.id");
-                expect(exp.operands[1]).to.be.equal(
-                    "header/navigation/datasets"
-                );
+                expect(exp.operands[0]).to.be.deep.equal({
+                    isRef: true,
+                    value: "input.object.content.id"
+                });
+                expect(exp.operands[1]).to.be.deep.equal({
+                    isRef: false,
+                    value: "header/navigation/datasets"
+                });
             });
             expect(scope.isDone()).to.be.equal(true);
         });
@@ -348,5 +487,50 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             expect(query.pretty).to.be.equal("true");
             expect(scope.isDone()).to.be.equal(true);
         });
+    });
+
+    describe("Test `/decision` endpoint decision evlautation & encoding: ", () => {
+        const testSampleRoot = path.resolve(
+            require.resolve("@magda/typescript-common/package.json"),
+            "../src/test/"
+        );
+
+        const opaSampleRoot = path.resolve(
+            testSampleRoot,
+            "./sampleOpaResponses"
+        );
+        const decisionSampleRoot = path.resolve(
+            testSampleRoot,
+            "./sampleAuthDecisions"
+        );
+
+        const items = fse.readdirSync(opaSampleRoot);
+
+        for (let i = 0; i < items.length; i++) {
+            const file = items[i];
+            if (path.extname(file).toLowerCase() !== ".json") {
+                return;
+            }
+
+            it(`should parse & evalute OPA repsonse "${file}"`, async () => {
+                const sampleOpaResponse = fse.readJSONSync(
+                    path.resolve(opaSampleRoot, file)
+                );
+                const sampleDecision = fse.readJSONSync(
+                    path.resolve(decisionSampleRoot, file)
+                );
+
+                const scope = createOpaNockScope(null, sampleOpaResponse);
+
+                const req = request(app).get(
+                    `/decision/object/someObject/someOperation`
+                );
+
+                await req.then((res) => {
+                    expect(res.body).to.be.deep.equal(sampleDecision);
+                });
+                expect(scope.isDone()).to.be.equal(true);
+            });
+        }
     });
 });

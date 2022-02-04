@@ -11,9 +11,10 @@ import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry.Directives._
 import au.csiro.data61.magda.client.AuthOperations
+import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
 import io.swagger.annotations._
-import javax.ws.rs.Path
 
+import javax.ws.rs.Path
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scalikejdbc.DB
@@ -156,31 +157,24 @@ class RecordHistoryService(
           'limit.as[Int].?,
           'dereference.as[Boolean].?
         ) { (aspects, pageToken, start, limit, dereference) =>
-          checkUserCanAccessRecordEvents(
-            recordPersistence,
+          requireRecordEventReadPermission(
             authApiClient,
-            id,
-            tenantId,
-            EventsPage(false, None, Nil)
-          )(
-            config,
-            system,
-            materializer,
-            ec
-          ) { opaQuery =>
+            id
+          ) {
             complete(
               DB readOnly { implicit session =>
                 val aspectIdSet = aspects.toSet
 
                 if (dereference.getOrElse(false)) {
                   eventPersistence.getEventsWithDereference(
+                    tenantId = tenantId,
+                    // we have checked the permission so passing `UnconditionalTrueDecision` here
+                    authDecision = UnconditionalTrueDecision,
                     recordId = id,
                     pageToken = pageToken,
                     start = start,
                     limit = limit,
-                    aspectIds = aspectIdSet,
-                    tenantId = tenantId,
-                    opaRecordQueries = opaQuery
+                    aspectIds = aspectIdSet
                   )
                 } else {
                   eventPersistence.getEvents(
@@ -195,7 +189,6 @@ class RecordHistoryService(
 
               }
             )
-
           }
         }
       }
@@ -276,27 +269,14 @@ class RecordHistoryService(
   )
   def version = get {
     path(Segment / "history" / Segment) { (id, version) =>
-      requiresTenantId { tenantId =>
-        parameters('aspect.*, 'optionalAspect.*) {
-          (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
-            checkUserCanAccessRecordEvents(
-              recordPersistence,
-              authApiClient,
-              id,
-              tenantId,
-              (
-                StatusCodes.NotFound,
-                ApiError(
-                  "No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."
-                )
-              )
-            )(
-              config,
-              system,
-              materializer,
-              ec
-            ) { opaQuery =>
-              DB readOnly { session =>
+      requireRecordEventReadPermission(
+        authApiClient,
+        id
+      ) {
+        requiresTenantId { tenantId =>
+          parameters('aspect.*, 'optionalAspect.*) {
+            (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
+              DB readOnly { implicit session =>
                 val events = eventPersistence.streamEventsUpTo(
                   version.toLong,
                   recordId = Some(id),
@@ -322,7 +302,7 @@ class RecordHistoryService(
                     )
                 }
               }
-            }
+          }
         }
       }
     }

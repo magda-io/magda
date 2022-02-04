@@ -8,7 +8,7 @@ test_allow_correct_orgunit {
         "object": {
             "registry": {
                 "record": {
-                    "dataset-access-control": {
+                    "access-control": {
                         "orgUnitOwnerId": "3"
                     }
                 }
@@ -25,7 +25,7 @@ test_deny_wrong_orgunit {
         "object": {
             "registry": {
                 "record": {
-                    "dataset-access-control": {
+                    "access-control": {
                         "orgUnitOwnerId": "5"
                     }
                 }
@@ -56,7 +56,7 @@ test_deny_empty_managing_orgunit_ids {
         "object": {
             "registry": {
                 "record": {
-                    "dataset-access-control": {
+                    "access-control": {
                         "orgUnitOwnerId": "5"
                     }
                 }

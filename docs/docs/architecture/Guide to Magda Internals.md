@@ -1,68 +1,68 @@
 # Table of Contents
 
--   [Guide to Magda Internals](#guide-to-magda-internals)
--   [Architecture Diagram](#architecture-diagram)
--   [Components](#components)
-    -   [Authorization API](#authorization-api)
-    -   [Connectors](#connectors)
-    -   [Content API](#content-api)
-    -   [Correspondence API](#correspondence-api)
-    -   [Gateway](#gateway)
-    -   [Minions](#minions)
-    -   [Registry](#registry)
-        -   [Records](#records)
-        -   [Aspects](#aspects)
-        -   [Record-Aspects](#record-aspects)
-        -   [Events](#events)
-        -   [Webhooks](#webhooks)
-    -   [Search API](#search-api)
-    -   [Search Indexer](#search-indexer)
-    -   [Storage API](#storage-api)
-    -   [Web Server](#web-server)
--   [Authentication (authn)](#authentication--authn-)
-    -   [Internal Requests](#internal-requests)
-    -   [External Requests](#external-requests)
-        -   [Session Cookie](#session-cookie)
-        -   [API Key](#api-key)
--   [Authorization (authz)](#authorization--authz-)
-    -   [Legacy System](#legacy-system)
-    -   [Future System](#future-system)
-        -   [Simple Queries](#simple-queries)
-        -   [Partial Evaluation](#partial-evaluation)
-        -   [How Authorization Works in the Registry API](#how-authorization-works-in-the-registry-api)
--   [Structure](#structure)
-    -   [Core Components](#core-components)
-    -   [Non-Core Components](#non-core-components)
-    -   [Serverless Functions](#serverless-functions)
--   [Practices](#practices)
-    -   [Formatting](#formatting)
-    -   [Testing](#testing)
-        -   [Property-Based Testing](#property-based-testing)
-    -   [Review](#review)
--   [Build / Continuous Integration](#build---continuous-integration)
-    -   [Previews](#previews)
--   [Release](#release)
-    -   [Helm](#helm)
-    -   [Docker](#docker)
-    -   [NPM](#npm)
--   [Deployment](#deployment)
-    -   [Kubernetes](#kubernetes)
-    -   [Helm](#helm-1)
-    -   [Terraform](#terraform)
--   [Architectural Decisions](#architectural-decisions)
-    -   [Macro](#macro)
-        -   [Why Microservices?](#why-microservices-)
-        -   [Why Kubernetes?](#why-kubernetes-)
-        -   [Why Scala (and subsequently why not)?](#why-scala--and-subsequently-why-not--)
-        -   [Why Node.js?](#why-nodejs-)
-        -   [Why ElasticSearch?](#why-elasticsearch-)
-        -   [Why Gitlab CI?](#why-gitlab-ci-)
-    -   [Front-end](#front-end)
-        -   [Why a Single Page Application (SPA), and why Create React App?](#why-a-single-page-application--spa---and-why-create-react-app-)
-    -   [Authn/z](#authn-z)
-        -   [Why not just store the user id in a JWT and get rid of the session db entirely?](#why-not-just-store-the-user-id-in-a-jwt-and-get-rid-of-the-session-db-entirely-)
-        -   [Why only pass the user id in the JWT, why not all details about the user?](#why-only-pass-the-user-id-in-the-jwt--why-not-all-details-about-the-user-)
-        -   [Why not conventional RBAC/ABAC?](#why-not-conventional-rbac-abac-)
+- [Guide to Magda Internals](#guide-to-magda-internals)
+- [Architecture Diagram](#architecture-diagram)
+- [Components](#components)
+  - [Authorization API](#authorization-api)
+  - [Connectors](#connectors)
+  - [Content API](#content-api)
+  - [Correspondence API](#correspondence-api)
+  - [Gateway](#gateway)
+  - [Minions](#minions)
+  - [Registry](#registry)
+    - [Records](#records)
+    - [Aspects](#aspects)
+    - [Record-Aspects](#record-aspects)
+    - [Events](#events)
+    - [Webhooks](#webhooks)
+  - [Search API](#search-api)
+  - [Search Indexer](#search-indexer)
+  - [Storage API](#storage-api)
+  - [Web Server](#web-server)
+- [Authentication (authn)](#authentication--authn-)
+  - [Internal Requests](#internal-requests)
+  - [External Requests](#external-requests)
+    - [Session Cookie](#session-cookie)
+    - [API Key](#api-key)
+- [Authorization (authz)](#authorization--authz-)
+  - [Legacy System](#legacy-system)
+  - [Future System](#future-system)
+    - [Simple Queries](#simple-queries)
+    - [Partial Evaluation](#partial-evaluation)
+    - [How Authorization Works in the Registry API](#how-authorization-works-in-the-registry-api)
+- [Structure](#structure)
+  - [Core Components](#core-components)
+  - [Non-Core Components](#non-core-components)
+  - [Serverless Functions](#serverless-functions)
+- [Practices](#practices)
+  - [Formatting](#formatting)
+  - [Testing](#testing)
+    - [Property-Based Testing](#property-based-testing)
+  - [Review](#review)
+- [Build / Continuous Integration](#build---continuous-integration)
+  - [Previews](#previews)
+- [Release](#release)
+  - [Helm](#helm)
+  - [Docker](#docker)
+  - [NPM](#npm)
+- [Deployment](#deployment)
+  - [Kubernetes](#kubernetes)
+  - [Helm](#helm-1)
+  - [Terraform](#terraform)
+- [Architectural Decisions](#architectural-decisions)
+  - [Macro](#macro)
+    - [Why Microservices?](#why-microservices-)
+    - [Why Kubernetes?](#why-kubernetes-)
+    - [Why Scala (and subsequently why not)?](#why-scala--and-subsequently-why-not--)
+    - [Why Node.js?](#why-nodejs-)
+    - [Why ElasticSearch?](#why-elasticsearch-)
+    - [Why Gitlab CI?](#why-gitlab-ci-)
+  - [Front-end](#front-end)
+    - [Why a Single Page Application (SPA), and why Create React App?](#why-a-single-page-application--spa---and-why-create-react-app-)
+  - [Authn/z](#authn-z)
+    - [Why not just store the user id in a JWT and get rid of the session db entirely?](#why-not-just-store-the-user-id-in-a-jwt-and-get-rid-of-the-session-db-entirely-)
+    - [Why only pass the user id in the JWT, why not all details about the user?](#why-only-pass-the-user-id-in-the-jwt--why-not-all-details-about-the-user-)
+    - [Why not conventional RBAC/ABAC?](#why-not-conventional-rbac-abac-)
 
 # Architecture Diagram
 
@@ -76,9 +76,9 @@ As a microservices-based system, Magda consists of a number of individual parts.
 
 The Authorization API has a few responsibilities that also touch on authentication as well (possibly this deserves a refactoring!). It is responsible for:
 
--   Storing what we know about users
--   Determining what a user is allowed to do
--   Storing the details of Magda's non-federated authentication - e.g. internal Magda passwords and API keys
+- Storing what we know about users
+- Determining what a user is allowed to do
+- Storing the details of Magda's non-federated authentication - e.g. internal Magda passwords and API keys
 
 To make this happen, the Auth API has both its own database and a connection to [Open Policy Agent (OPA)](https://www.openpolicyagent.org/). It wraps an API around OPA that allows it to be called with just a JWT identifying the current user, and automatically passes in the user's details in the format expected by the OPA policies. See [Authorization](#authorization-authz) for more details about how Magda's authn system works.
 
@@ -106,10 +106,10 @@ Email templates are stored in the Content API. The Correspondence API gets the i
 
 The Gateway is responsible for:
 
--   Proxying requests from outside Magda to the correct service
--   Authenticating users when they sign in
--   Authenticating (not authorising) requests, according to the supplied auth cookie or API key
--   Maintaining sessions
+- Proxying requests from outside Magda to the correct service
+- Authenticating users when they sign in
+- Authenticating (not authorising) requests, according to the supplied auth cookie or API key
+- Maintaining sessions
 
 See [Authentication](#authentication-authn) for more details around how it handles authn.
 
@@ -123,8 +123,8 @@ Other aspects exist that are written to by many minions - for instance, we have 
 
 The Registry is responsible for:
 
--   Storing and being the source of truth for the metadata managed by Magda
--   Letting other services know about changes to this metadata
+- Storing and being the source of truth for the metadata managed by Magda
+- Letting other services know about changes to this metadata
 
 ### Records
 
@@ -148,9 +148,9 @@ A record is stored as a set of aspects attached to that record. For instance, a 
 
 An event is generated any time something changes in the Registry - generally when a record, aspect or record-aspect is:
 
--   Created
--   Deleted
--   Modified
+- Created
+- Deleted
+- Modified
 
 Events that record a modification generally record a JSON patch that details what changed inside that entity. Events can be used to track the history of an entity over time, or to reconstruct that entity at a certain time and see what it used to be.
 
@@ -170,9 +170,9 @@ It's implemented as a wrapper around ElasticSearch, and allows for searching of 
 
 The responsibility of the Search Indexer is to:
 
--   Set up the ElasticSearch index definitions
--   Put relevant information (datasets, publishers etc) into the ElasticSearch index, so that the [Search API](#search-api) can get it out later.
--   Make other changes to the ElasticSearch index that enable search - e.g. putting regions in so that they can be used for spatial search, loading in the Wordnet synonyms dataset etc.
+- Set up the ElasticSearch index definitions
+- Put relevant information (datasets, publishers etc) into the ElasticSearch index, so that the [Search API](#search-api) can get it out later.
+- Make other changes to the ElasticSearch index that enable search - e.g. putting regions in so that they can be used for spatial search, loading in the Wordnet synonyms dataset etc.
 
 The Search Indexer is always trying to make sure that the datasets stored in the search index matches what's in the Registry's database - this means both responding to Webhook events and doing an initial load of all the datasets in the registry both the first time Magda is run, and whenever the index definition is changed.
 
@@ -252,9 +252,9 @@ E.g. Alyce wants to look at a collection of 1,000,000 rows in a database table. 
 
 In order to make this work we could either:
 
--   Retrieve all 1,000,000 records and send them one-by-one to OPA to see whether Alyce is allowed to see them or not. This will almost certainly be slow.
--   Hard-code the authorisation logic so that if we see a certain logic, we can do a pre-written query along the lines of `SELECT * FROM records WHERE owner = 'alyce'` - but then the policy can't be changed without also changing the code, and we've lost any benefit from policy-based auth.
--   _OR_ combining the two, we could send OPA a request with what we do know (Alyce's details), what we don't know (the `owner` column), and get it to figure out what we should be asking the database.
+- Retrieve all 1,000,000 records and send them one-by-one to OPA to see whether Alyce is allowed to see them or not. This will almost certainly be slow.
+- Hard-code the authorisation logic so that if we see a certain logic, we can do a pre-written query along the lines of `SELECT * FROM records WHERE owner = 'alyce'` - but then the policy can't be changed without also changing the code, and we've lost any benefit from policy-based auth.
+- _OR_ combining the two, we could send OPA a request with what we do know (Alyce's details), what we don't know (the `owner` column), and get it to figure out what we should be asking the database.
 
 This last option is called _partial compilation_, and is a great feature in OPA, although the documentation for it is a bit lacking. When queried correctly, OPA will respond with a JSON-based Abstract Syntax Tree (AST), which with a bit of code can be translated into SQL, an ElasticSearch query or whatever else we need.
 
@@ -266,8 +266,8 @@ There are more details on how to turn partial evaluation into SQL evaluation [he
 
 In the registry, we want to ensure that:
 
--   Different records can have different policies
--   Policies are able to depend on the values inside the record's aspects
+- Different records can have different policies
+- Policies are able to depend on the values inside the record's aspects
 
 In order to make this work, each record in the registry has a policy for read (and eventually for write), which is stored in a column alongside the record. Policies are free to make reference to a value in any aspect.
 
@@ -287,7 +287,7 @@ input.object.registry.record["information-security"].classification <= input.use
 and the `ownerOnly` policy might have the rule:
 
 ```rego
-input.object.registry.record["dataset-access-control"].ownerId = input.user.id
+input.object.registry.record["access-control"].ownerId = input.user.id
 ```
 
 As you can see, these reference different aspects attached to the record, and compare them to the details of the user making the call. So when the call comes in at `/api/v0/registry/records`, the Registry API will first make an API call to get all the possible policies, and the result will be something like `clearance, ownerOnly`.
@@ -303,16 +303,16 @@ data.partial.object.registry.record["information-security"].classification <= 2;
 `ownerOnly`:
 
 ```javascript
-data.partial.object.registry.record["dataset-access-control"].ownerId ===
-    "09c10fd6-ad27-4a48-9b3a-0c0807cfe257"; // the requesting user's id
+data.partial.object.registry.record["access-control"].ownerId ===
+  "09c10fd6-ad27-4a48-9b3a-0c0807cfe257"; // the requesting user's id
 ```
 
 ... assuming that the user looks something like:
 
 ```json
 {
-    "securityClearance": 2,
-    "userId": "09c10fd6-ad27-4a48-9b3a-0c0807cfe257"
+  "securityClearance": 2,
+  "userId": "09c10fd6-ad27-4a48-9b3a-0c0807cfe257"
 }
 ```
 
@@ -332,7 +332,7 @@ WHERE
 	OR
 	(policyId = 'ownerOnly' AND EXISTS (
 		SELECT 1 FROM RecordAspects
-		WHERE aspectId = 'dataset-access-control'
+		WHERE aspectId = 'access-control'
 			AND RecordAspects.recordId = Records.recordId
 			AND data->'ownerId' = '09c10fd6-ad27-4a48-9b3a-0c0807cfe257'
 	))
@@ -354,11 +354,11 @@ Most of the core repo's components are written in Typescript, but there are a fe
 
 The core repo also contains a `scripts` directory, containing a number of javascript-based scripts that perform various utility tasks for Magda, including:
 
--   Building docker images
--   Generating API documentation
--   Running typescript-based node.js services through nodemon
--   Creating user passwords
--   Creating API keys
+- Building docker images
+- Generating API documentation
+- Running typescript-based node.js services through nodemon
+- Creating user passwords
+- Creating API keys
 
 ## Non-Core Components
 
@@ -370,9 +370,9 @@ In general, the idea is that these are built into separate docker images and hel
 
 Recently Magda has introduced serverless functions through [OpenFAAS](https://www.openfaas.com/). These are generally generated from [this template](https://github.com/magda-io/magda-function-template). They're deployed very simililarly to normal non-core components in that you ship a Docker image and a Helm chart, with a few differences:
 
--   Rather than deploy a stand-alone docker image, you deploy an image that's based on [OpenFAAS' of-watchdog image](https://github.com/openfaas/of-watchdog).
--   Rather than the helm chart being based around a Kubernetes Deployment or some other kind of core Kubernetes object, it will deploy a `Function` object from the `openfaas.com/v1` namespace.
--   Rather than being directly managed by Kubernetes, the function will be managed by an existing installation of OpenFAAS.
+- Rather than deploy a stand-alone docker image, you deploy an image that's based on [OpenFAAS' of-watchdog image](https://github.com/openfaas/of-watchdog).
+- Rather than the helm chart being based around a Kubernetes Deployment or some other kind of core Kubernetes object, it will deploy a `Function` object from the `openfaas.com/v1` namespace.
+- Rather than being directly managed by Kubernetes, the function will be managed by an existing installation of OpenFAAS.
 
 In general, it's advantageous to use a serverless function when the workload is likely to be inconsistent - i.e. if a service will have no load a lot of the time, but a lot of load at other times. This is because OpenFAAS functions are capable of scaling to zero - that is, they can be unloaded when not in use, taking up no resources, and then re-loaded and scaled up when they're called later on.
 
@@ -408,8 +408,8 @@ Magda is also built in a CI pipeline on Gitlab CI. You can see recent builds [he
 
 The CI pipeline consists of a large number of individual jobs, so that:
 
--   Jobs can be run in parallel for quicker builds
--   More intensive jobs (particularly anything involving Scala!) can be split off and run on a specific, powerful test runner
+- Jobs can be run in parallel for quicker builds
+- More intensive jobs (particularly anything involving Scala!) can be split off and run on a specific, powerful test runner
 
 Gitlab CI does its builds based on Docker images, so in general the build process looks like:
 
@@ -424,18 +424,18 @@ Gitlab CI does its builds based on Docker images, so in general the build proces
 
 One of the cooler things that Magda's CI setup does is allow for complete previews to be deployed into their own namespace on the dev cluster from a branch. If you're logged into Gitlab with the right permissions, and the build is finished, then you can click the "Play" button on one of the preview jobs. There are a few options:
 
--   Full Preview: This creates a new namespace with a full Magda deployment, then pulls in the most up to date database backup from the dev server. This used to be useful, but as the dev database has grown it's got to the point where it takes days to deploy. Hopefully eventually we'll develop a way to reduce the number of events in the database, and this will become viable again.
--   Full Preview (no data): This creates a new namespace with a full Magda deployment, but sets up the data from scratch rather than pulling in a backup. This is much much quicker (~15 minutes usually), but means that you've got to do the work to create your own test data. Subsequent deployments will _not_ erase the data, so feel free to click it again if you push another commit
--   UI Only Preview: This deploys only the Magda web server, which will use the Magda dev server for an API to back it. Use this if you've made a change that only affects the UI and doesn't change anything in the backend.
--   Stop Preview: Make sure you click this once the branch has been merged, it pulls down whatever preview has been created to free up resources.
+- Full Preview: This creates a new namespace with a full Magda deployment, then pulls in the most up to date database backup from the dev server. This used to be useful, but as the dev database has grown it's got to the point where it takes days to deploy. Hopefully eventually we'll develop a way to reduce the number of events in the database, and this will become viable again.
+- Full Preview (no data): This creates a new namespace with a full Magda deployment, but sets up the data from scratch rather than pulling in a backup. This is much much quicker (~15 minutes usually), but means that you've got to do the work to create your own test data. Subsequent deployments will _not_ erase the data, so feel free to click it again if you push another commit
+- UI Only Preview: This deploys only the Magda web server, which will use the Magda dev server for an API to back it. Use this if you've made a change that only affects the UI and doesn't change anything in the backend.
+- Stop Preview: Make sure you click this once the branch has been merged, it pulls down whatever preview has been created to free up resources.
 
 # Release
 
 As an application that consists of a number of microservices, databases etc, Magda can't be distributed just as code. As such, there are three main channels of distribution:
 
--   A Helm chart, which contains Kubernetes configuration that explains: - What docker images to download - How they should communicate - How they should scale - What resources they should take - How to start them up - etc.
--   Docker images, which contain the actual code and runtime for the services
--   NPM packages, which distribute common libraries that can be used by third-party code
+- A Helm chart, which contains Kubernetes configuration that explains: - What docker images to download - How they should communicate - How they should scale - What resources they should take - How to start them up - etc.
+- Docker images, which contain the actual code and runtime for the services
+- NPM packages, which distribute common libraries that can be used by third-party code
 
 A release process is documented [here](https://github.com/magda-io/magda/wiki/Release-Process).
 
@@ -443,9 +443,9 @@ A release process is documented [here](https://github.com/magda-io/magda/wiki/Re
 
 Magda's Kubernetes configuration is fairly complex - it's distributed as a number of Helm charts:
 
--   `magda-core`, which contains the core Magda services (see [components](#components))
--   `magda`, which depends on `magda-core` and also includes non-core components like minions and connectors
--   Various charts for connectors, minions, functions etc that are maintained by the Magda team
+- `magda-core`, which contains the core Magda services (see [components](#components))
+- `magda`, which depends on `magda-core` and also includes non-core components like minions and connectors
+- Various charts for connectors, minions, functions etc that are maintained by the Magda team
 
 The charts maintained by the Magda team are automatically pushed to an S3 bucket by the build process, and that S3 bucket is accessible publically at https://charts.magda.io. Maintaining the structure of files etc in that bucket is automatically done by the `helm` tool that runs as part fo the build job. Helm releases run whenever a tag is pushed with the pattern `v*.*.*`.
 
@@ -523,10 +523,10 @@ The other big problem with Scala is that it compiles _slowly_. This is something
 
 Seriously though, the main reasons are:
 
--   It's resource requirements when it's idle or has little traffic are quite modest, which suits Magda because for most installations the services don't actually do much a lot of the time
--   Everyone on the team already knew Javascript
--   It has a very vibrant ecosystem of libraries (maybe too vibrant!)
--   Typescript allows us to have a lot of the strong-typing advantages that Scala had, with a fraction of the compilation overhead
+- It's resource requirements when it's idle or has little traffic are quite modest, which suits Magda because for most installations the services don't actually do much a lot of the time
+- Everyone on the team already knew Javascript
+- It has a very vibrant ecosystem of libraries (maybe too vibrant!)
+- Typescript allows us to have a lot of the strong-typing advantages that Scala had, with a fraction of the compilation overhead
 
 Something like Go has similar advantages in terms of being able to run without a lot of resources and compile quickly, but we didn't have any Go experience on the team, and Typescript offers a much more powerful type system (although this can be good or bad depending on who you ask).
 
@@ -536,23 +536,23 @@ Magda was originally concieved pretty much purely as a search engine, and hence 
 
 In particular, ElasticSearch offers:
 
--   Very powerful text search, even with no tuning at all: using tfldf etc
--   Word stemming (being able to match plurals with non-plurals, present tense with past tense etc)
--   Spatial/temporal search (possibly Postgres could do this too)
--   Synonyms
--   The ability to horizontally scale (we don't actually make use of this very much, but we could)
+- Very powerful text search, even with no tuning at all: using tfldf etc
+- Word stemming (being able to match plurals with non-plurals, present tense with past tense etc)
+- Spatial/temporal search (possibly Postgres could do this too)
+- Synonyms
+- The ability to horizontally scale (we don't actually make use of this very much, but we could)
 
 ### Why Gitlab CI?
 
 The main reason we continue to use Github CI is because it for open source projects, it offers _a lot_ for free. In particular:
 
--   We can split the build into loads of concurrent jobs to make everything go faster
--   We can use their runners for smaller jobs, and they're quite generous with this
--   It integrates with Github PRs
--   They have their own free docker registry, which makes building one image per branch really easy
--   We can pretty easily provide our own runners on our own physical hardware
--   We can start or stop preview deployments really easily from the Gitlab UI
--   The new directed acyclic graph feature makes the build a lot quicker.
+- We can split the build into loads of concurrent jobs to make everything go faster
+- We can use their runners for smaller jobs, and they're quite generous with this
+- It integrates with Github PRs
+- They have their own free docker registry, which makes building one image per branch really easy
+- We can pretty easily provide our own runners on our own physical hardware
+- We can start or stop preview deployments really easily from the Gitlab UI
+- The new directed acyclic graph feature makes the build a lot quicker.
 
 The main factor is definitely the amount we get for free as an open source project. We've considered Github's new competing feature, but it has some pretty constricting limits on it.
 
@@ -574,8 +574,8 @@ That would work too, but this way we can invalidate sessions whenever we want - 
 
 This was done because:
 
--   It's simpler, which made it quicker to implement in the first place, and because it's simple it's less error-prone, which is always nice where security is concerned
--   We never got to the point where just passing the id and having the recipient service look up the user was a performance problem
+- It's simpler, which made it quicker to implement in the first place, and because it's simple it's less error-prone, which is always nice where security is concerned
+- We never got to the point where just passing the id and having the recipient service look up the user was a performance problem
 
 If performance problems did come up, it would certainly be possible to include more details about the user in the JWT, although attention would have to be paid to ensuring that this could be extended by third-party implementers of Magda.
 

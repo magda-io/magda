@@ -2,7 +2,7 @@
     "aspects": {
         "information-security": {},
         "spatial-coverage": {},
-        "dataset-access-control": {
+        "access-control": {
             "custodianOrgUnitId": "b16cd237-7ce6-4352-a59c-9e05dc65ba78",
             "orgUnitOwnerId": "b16cd237-7ce6-4352-a59c-9e05dc65ba78"
         },

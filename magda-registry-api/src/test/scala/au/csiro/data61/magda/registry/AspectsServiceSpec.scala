@@ -7,6 +7,9 @@ import gnieh.diffson.sprayJson._
 import scalikejdbc._
 import spray.json._
 
+/**
+  * Auth has been turned off in ApiSpec (authorization.skipOpaQuery) for all test cases in this suit as we want to focus on functionality test.
+  */
 class AspectsServiceSpec extends ApiSpec {
 
   describe("with role Full") {
@@ -54,7 +57,7 @@ class AspectsServiceSpec extends ApiSpec {
       it("can add a new aspect definition") { param =>
         val aspectDefinition =
           AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -74,7 +77,7 @@ class AspectsServiceSpec extends ApiSpec {
 
       it("supports invalid URL characters in ID") { param =>
         val aspectDefinition = AspectDefinition("in valid", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -92,13 +95,13 @@ class AspectsServiceSpec extends ApiSpec {
       it("returns 400 if an aspect definition with the given ID already exists") {
         param =>
           val aspectDefinition = AspectDefinition("testId", "testName", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[AspectDefinition] shouldEqual aspectDefinition
 
-            param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+            Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(role).routes ~> check {
               status shouldEqual StatusCodes.BadRequest
@@ -106,17 +109,12 @@ class AspectsServiceSpec extends ApiSpec {
             }
           }
       }
-
-      checkMustBeAdmin(role) {
-        val aspectDefinition = AspectDefinition("testId", "testName", None)
-        Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(TENANT_1)
-      }
     }
 
     describe("PUT") {
       it("can add a new aspect definition") { param =>
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Put("/v0/aspects/testId", aspectDefinition)) ~> addTenantIdHeader(
+        Put("/v0/aspects/testId", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -136,11 +134,11 @@ class AspectsServiceSpec extends ApiSpec {
 
       it("can update an existing aspect definition") { param =>
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val newDefinition = aspectDefinition.copy(name = "newName")
-          param.asAdmin(Put("/v0/aspects/testId", newDefinition)) ~> addTenantIdHeader(
+          Put("/v0/aspects/testId", newDefinition) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -151,7 +149,8 @@ class AspectsServiceSpec extends ApiSpec {
 
       it("cannot change the ID of an existing aspect definition") { param =>
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Put("/v0/aspects/testId", aspectDefinition)) ~> addTenantIdHeader(
+        // first PUT will attempt to create, thus require create permission
+        Put("/v0/aspects/testId", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -162,7 +161,7 @@ class AspectsServiceSpec extends ApiSpec {
           )
 
           val updated = aspectDefinition.copy(id = "foo")
-          param.asAdmin(Put("/v0/aspects/testId", updated)) ~> addTenantIdHeader(
+          Put("/v0/aspects/testId", updated) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
@@ -173,7 +172,7 @@ class AspectsServiceSpec extends ApiSpec {
 
       it("supports invalid URL characters in ID") { param =>
         val aspectDefinition = AspectDefinition("in valid", "testName", None)
-        param.asAdmin(Put("/v0/aspects/in%20valid", aspectDefinition)) ~> addTenantIdHeader(
+        Put("/v0/aspects/in%20valid", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -190,11 +189,11 @@ class AspectsServiceSpec extends ApiSpec {
 
       it("can add a schema") { param =>
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val updated = aspectDefinition.copy(jsonSchema = Some(JsObject()))
-          param.asAdmin(Put("/v0/aspects/testId", updated)) ~> addTenantIdHeader(
+          Put("/v0/aspects/testId", updated) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -209,13 +208,13 @@ class AspectsServiceSpec extends ApiSpec {
           "testName",
           Some(JsObject("foo" -> JsString("bar")))
         )
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val updated = aspectDefinition.copy(
             jsonSchema = Some(JsObject("foo" -> JsString("baz")))
           )
-          param.asAdmin(Put("/v0/aspects/testId", updated)) ~> addTenantIdHeader(
+          Put("/v0/aspects/testId", updated) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -223,33 +222,29 @@ class AspectsServiceSpec extends ApiSpec {
           }
         }
       }
-
-      checkMustBeAdmin(role) {
-        val aspectDefinition = AspectDefinition("testId", "testName", None)
-        Put("/v0/aspects/testId", aspectDefinition)
-      }
     }
 
     describe("PATCH") {
       it("returns an error when the aspect definition does not exist") {
         param =>
           val patch = JsonPatch()
-          param.asAdmin(Patch("/v0/aspects/doesnotexist", patch)) ~> addTenantIdHeader(
+          Patch("/v0/aspects/doesnotexist", patch) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
-            responseAs[ApiError].message should include("exists")
-            responseAs[ApiError].message should include("ID")
+            responseAs[String] should include(
+              "Cannot locate aspect record by id:"
+            )
           }
       }
 
       it("can modify an aspect's name") { param =>
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
-          param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(
+          Patch("/v0/aspects/testId", patch) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -264,11 +259,11 @@ class AspectsServiceSpec extends ApiSpec {
 
       it("cannot modify an aspect's ID") { param =>
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val patch = JsonPatch(Replace(Pointer.root / "id", JsString("foo")))
-          param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(
+          Patch("/v0/aspects/testId", patch) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
@@ -279,11 +274,11 @@ class AspectsServiceSpec extends ApiSpec {
 
       it("can add a schema") { param =>
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val patch = JsonPatch(Add(Pointer.root / "jsonSchema", JsObject()))
-          param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(
+          Patch("/v0/aspects/testId", patch) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -302,13 +297,13 @@ class AspectsServiceSpec extends ApiSpec {
           "testName",
           Some(JsObject("foo" -> JsString("bar")))
         )
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val patch = JsonPatch(
             Replace(Pointer.root / "jsonSchema" / "foo", JsString("baz"))
           )
-          param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(
+          Patch("/v0/aspects/testId", patch) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -339,7 +334,7 @@ class AspectsServiceSpec extends ApiSpec {
           "testName",
           Some(JsObject("foo" -> JsString("bar")))
         )
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           DB readOnly { implicit session =>
@@ -351,7 +346,7 @@ class AspectsServiceSpec extends ApiSpec {
                 Replace(Pointer.root / "jsonSchema" / "foo", JsString("baz")),
                 Replace(Pointer.root / "jsonSchema" / "foo", JsString("bar"))
               )
-            param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(
+            Patch("/v0/aspects/testId", patch) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(role).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -366,11 +361,6 @@ class AspectsServiceSpec extends ApiSpec {
             }
           }
         }
-      }
-
-      checkMustBeAdmin(role) {
-        val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
-        Patch("/v0/aspects/testId", patch) ~> addTenantIdHeader(TENANT_1)
       }
     }
   }

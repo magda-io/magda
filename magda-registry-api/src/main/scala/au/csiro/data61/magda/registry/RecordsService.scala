@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.registry
 
 import java.util.concurrent.TimeoutException
-
 import akka.actor.{ActorRef, ActorSystem}
 import akka.event.Logging
 import akka.http.scaladsl.model.StatusCodes
@@ -9,19 +8,29 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.client.AuthApiClient
-import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.{
-  requiresSpecifiedTenantId,
-  requiresTenantId
+import au.csiro.data61.magda.client.{AuthDecisionReqConfig}
+import au.csiro.data61.magda.registry.Directives.{
+  requireRecordPermission,
+  requireRecordUpdateOrCreateWhenNonExistPermission
 }
+import au.csiro.data61.magda.directives.AuthDirectives.{
+  requirePermission,
+  requireUnconditionalAuthDecision,
+  requireUserId
+}
+import au.csiro.data61.magda.directives.TenantDirectives.{
+  requiresSpecifiedTenantId
+}
+import au.csiro.data61.magda.model.Auth.recordToContextData
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
+
 import javax.ws.rs.Path
 import scalikejdbc.DB
 import org.everit.json.schema.ValidationException
+import spray.json.JsObject
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -112,25 +121,42 @@ class RecordsService(
   )
   def deleteById: Route = delete {
     path(Segment) { recordId: String =>
-      requireIsAdmin(authClient)(system, config) { user =>
-        requiresSpecifiedTenantId { tenantId =>
-          val theResult = DB localTx { implicit session =>
-            recordPersistence.deleteRecord(tenantId, recordId, user.id) match {
-              case Success(result) =>
-                complete(
-                  StatusCodes.OK,
-                  List(RawHeader("x-magda-event-id", result._2.toString)),
-                  DeleteResult(result._1)
-                )
-              case Failure(exception) =>
-                complete(
-                  StatusCodes.BadRequest,
-                  ApiError(exception.getMessage)
-                )
+      requireUserId { userId =>
+        requireRecordPermission(
+          authClient,
+          "object/record/delete",
+          recordId,
+          // when the record doesn't not exist (or not accessible within current tenant)
+          // we will check "unconditional" `delete` permission. i.e.
+          // users with "unconditional" `delete` permission will get 200 status code with "record is deleted" response (this is for matching existing behaviour).
+          // users without this permission will not be able to know that the record has been removed.
+          onRecordNotFound = Some(
+            () =>
+              requireUnconditionalAuthDecision(
+                authClient,
+                AuthDecisionReqConfig("object/record/delete")
+              ) & pass
+          )
+        ) {
+          requiresSpecifiedTenantId { tenantId =>
+            val theResult = DB localTx { implicit session =>
+              recordPersistence.deleteRecord(tenantId, recordId, userId) match {
+                case Success(result) =>
+                  complete(
+                    StatusCodes.OK,
+                    List(RawHeader("x-magda-event-id", result._2.toString)),
+                    DeleteResult(result._1)
+                  )
+                case Failure(exception) =>
+                  complete(
+                    StatusCodes.BadRequest,
+                    ApiError(exception.getMessage)
+                  )
+              }
             }
+            webHookActor ! WebHookActor.Process()
+            theResult
           }
-          webHookActor ! WebHookActor.Process()
-          theResult
         }
       }
     }
@@ -213,54 +239,64 @@ class RecordsService(
   )
   def trimBySourceTag: Route = delete {
     pathEnd {
-      requireIsAdmin(authClient)(system, config) { user =>
-        requiresSpecifiedTenantId { tenantId =>
-          parameters('sourceTagToPreserve, 'sourceId) {
-            (sourceTagToPreserve, sourceId) =>
-              val deleteFuture = Future {
-                // --- DB session needs to be created within the `Future`
-                // --- as the `Future` will keep running after timeout and require active DB session
-                DB localTx { implicit session =>
-                  recordPersistence.trimRecordsBySource(
-                    tenantId,
-                    sourceTagToPreserve,
-                    sourceId,
-                    user.id,
-                    Some(logger)
-                  )
-                }
-              } map { result =>
-                webHookActor ! WebHookActor.Process()
-                result
-              }
-
-              val deleteResult = try {
-                Await.result(
-                  deleteFuture,
-                  config.getLong("trimBySourceTagTimeoutThreshold") milliseconds
-                )
-              } catch {
-                case e: Throwable => Failure(e)
-              }
-
-              deleteResult match {
-                case Success(result) => complete(MultipleDeleteResult(result))
-                case Failure(_: TimeoutException) =>
-                  complete(StatusCodes.Accepted)
-                case Failure(exception) =>
-                  logger.error(
-                    exception,
-                    "An error occurred while trimming with sourceTagToPreserve $1 sourceId $2",
-                    sourceTagToPreserve,
-                    sourceId
-                  )
-                  complete(
-                    StatusCodes.BadRequest,
-                    ApiError(
-                      "An error occurred while processing your request."
+      // as trimBySourceTag is an `atomic` operation,
+      // i.e. we don't want it to be partially done because the user only has delete permission to some records
+      // we will ask "unconditional" permission here.
+      // i.e. user has delete permission regardless any records' attributes
+      requireUnconditionalAuthDecision(
+        authClient,
+        AuthDecisionReqConfig("object/record/delete")
+      ) {
+        requireUserId { userId =>
+          requiresSpecifiedTenantId { tenantId =>
+            parameters('sourceTagToPreserve, 'sourceId) {
+              (sourceTagToPreserve, sourceId) =>
+                val deleteFuture = Future {
+                  // --- DB session needs to be created within the `Future`
+                  // --- as the `Future` will keep running after timeout and require active DB session
+                  DB localTx { implicit session =>
+                    recordPersistence.trimRecordsBySource(
+                      tenantId,
+                      sourceTagToPreserve,
+                      sourceId,
+                      userId,
+                      Some(logger)
                     )
+                  }
+                } map { result =>
+                  webHookActor ! WebHookActor.Process()
+                  result
+                }
+
+                val deleteResult = try {
+                  Await.result(
+                    deleteFuture,
+                    config
+                      .getLong("trimBySourceTagTimeoutThreshold") milliseconds
                   )
-              }
+                } catch {
+                  case e: Throwable => Failure(e)
+                }
+
+                deleteResult match {
+                  case Success(result) => complete(MultipleDeleteResult(result))
+                  case Failure(_: TimeoutException) =>
+                    complete(StatusCodes.Accepted)
+                  case Failure(exception) =>
+                    logger.error(
+                      exception,
+                      "An error occurred while trimming with sourceTagToPreserve $1 sourceId $2",
+                      sourceTagToPreserve,
+                      sourceId
+                    )
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(
+                        "An error occurred while processing your request."
+                      )
+                    )
+                }
+            }
           }
         }
       }
@@ -343,16 +379,20 @@ class RecordsService(
   )
   def putById: Route = put {
     path(Segment) { id: String =>
-      requireIsAdmin(authClient)(system, config) { user =>
-        {
-          requiresSpecifiedTenantId { tenantId =>
-            entity(as[Record]) { recordIn =>
+      requireUserId { userId =>
+        requiresSpecifiedTenantId { tenantId =>
+          entity(as[Record]) { recordIn =>
+            requireRecordUpdateOrCreateWhenNonExistPermission(
+              authClient,
+              recordIn.id,
+              Left(recordIn)
+            ) {
               val result = DB localTx { implicit session =>
                 recordPersistence.putRecordById(
                   tenantId,
                   id,
                   recordIn,
-                  user.id
+                  userId
                 ) match {
                   case Success(result) =>
                     complete(
@@ -365,7 +405,9 @@ class RecordsService(
                   case Failure(exception: ValidationException) =>
                     complete(
                       StatusCodes.BadRequest,
-                      ApiError("Encountered an error - " + exception.getMessage)
+                      ApiError(
+                        "Encountered an error - " + exception.getMessage
+                      )
                     )
                   case Failure(exception) =>
                     logger.error(
@@ -464,40 +506,47 @@ class RecordsService(
   )
   def patchById: Route = patch {
     path(Segment) { id: String =>
-      requireIsAdmin(authClient)(system, config) { user =>
+      requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[JsonPatch]) { recordPatch =>
-            val theResult = DB localTx { implicit session =>
-              recordPersistence.patchRecordById(
-                tenantId,
-                id,
-                recordPatch,
-                user.id
-              ) match {
-                case Success(result) =>
-                  complete(
-                    StatusCodes.OK,
-                    List(RawHeader("x-magda-event-id", result._2.toString)),
-                    result._1
-                  )
-                case Failure(exception) =>
-                  logger.error(
-                    exception,
-                    "Exception encountered while PATCHing record {} with {}",
-                    id,
-                    recordPatch.toJson.prettyPrint
-                  )
-                  complete(
-                    StatusCodes.BadRequest,
-                    ApiError(exception.getMessage)
-                  )
+            requireRecordUpdateOrCreateWhenNonExistPermission(
+              authClient,
+              id,
+              Right(recordPatch)
+            ) {
+              val theResult = DB localTx { implicit session =>
+                recordPersistence.patchRecordById(
+                  tenantId,
+                  id,
+                  recordPatch,
+                  userId
+                ) match {
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(RawHeader("x-magda-event-id", result._2.toString)),
+                      result._1
+                    )
+                  case Failure(exception) =>
+                    logger.error(
+                      exception,
+                      "Exception encountered while PATCHing record {} with {}",
+                      id,
+                      recordPatch.toJson.prettyPrint
+                    )
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(exception.getMessage)
+                    )
+                }
               }
+              webHookActor ! WebHookActor
+                .Process(ignoreWaitingForResponse = false, Some(List(id)))
+              theResult
             }
-            webHookActor ! WebHookActor
-              .Process(ignoreWaitingForResponse = false, Some(List(id)))
-            theResult
           }
         }
+
       }
     }
   }
@@ -577,31 +626,43 @@ class RecordsService(
     )
   )
   def create: Route = post {
-    requireIsAdmin(authClient)(system, config) { user =>
+    requireUserId { userId =>
       requiresSpecifiedTenantId { tenantId =>
         pathEnd {
           entity(as[Record]) { record =>
-            val result = DB localTx { implicit session =>
-              recordPersistence
-                .createRecord(tenantId, record, user.id) match {
-                case Success(theResult) =>
-                  complete(
-                    StatusCodes.OK,
-                    List(RawHeader("x-magda-event-id", theResult._2.toString)),
-                    theResult._1
-                  )
-                case Failure(exception) =>
-                  complete(
-                    StatusCodes.BadRequest,
-                    ApiError(exception.getMessage)
-                  )
+            requirePermission(
+              authClient,
+              "object/record/create",
+              input = Some(
+                JsObject(
+                  "object" -> JsObject("record" -> recordToContextData(record))
+                )
+              )
+            ) {
+              val result = DB localTx { implicit session =>
+                recordPersistence
+                  .createRecord(tenantId, record, userId) match {
+                  case Success(theResult) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(
+                        RawHeader("x-magda-event-id", theResult._2.toString)
+                      ),
+                      theResult._1
+                    )
+                  case Failure(exception) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(exception.getMessage)
+                    )
+                }
               }
+              webHookActor ! WebHookActor.Process(
+                ignoreWaitingForResponse = false,
+                Some(record.aspects.keys.toList)
+              )
+              result
             }
-            webHookActor ! WebHookActor.Process(
-              ignoreWaitingForResponse = false,
-              Some(record.aspects.keys.toList)
-            )
-            result
           }
         }
       }

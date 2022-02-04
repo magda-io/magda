@@ -30,7 +30,7 @@ class RegistryAuthApiClient(
     this(
       HttpFetcher(
         new URL(config.getString("authApi.baseUrl"))
-      )
+      )(system, materializer, executor)
     )(
       config,
       system,

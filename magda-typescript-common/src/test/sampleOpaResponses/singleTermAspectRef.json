@@ -1,0 +1,233 @@
+{
+    "result": {
+        "queries": [
+            [
+                {
+                    "terms": {
+                        "type": "ref",
+                        "value": [
+                            {
+                                "type": "var",
+                                "value": "data"
+                            },
+                            {
+                                "type": "string",
+                                "value": "partial"
+                            },
+                            {
+                                "type": "string",
+                                "value": "entrypoint"
+                            },
+                            {
+                                "type": "string",
+                                "value": "allow"
+                            }
+                        ]
+                    },
+                    "index": 0
+                }
+            ]
+        ],
+        "support": [
+            {
+                "package": {
+                    "path": [
+                        {
+                            "type": "var",
+                            "value": "data"
+                        },
+                        {
+                            "type": "string",
+                            "value": "partial"
+                        },
+                        {
+                            "type": "string",
+                            "value": "object"
+                        },
+                        {
+                            "type": "string",
+                            "value": "record"
+                        }
+                    ]
+                },
+                "rules": [
+                    {
+                        "default": true,
+                        "head": {
+                            "name": "allow",
+                            "value": {
+                                "type": "boolean",
+                                "value": false
+                            }
+                        },
+                        "body": [
+                            {
+                                "terms": {
+                                    "type": "boolean",
+                                    "value": true
+                                },
+                                "index": 0
+                            }
+                        ]
+                    },
+                    {
+                        "head": {
+                            "name": "allow",
+                            "value": {
+                                "type": "boolean",
+                                "value": true
+                            }
+                        },
+                        "body": [
+                            {
+                                "terms": {
+                                    "type": "ref",
+                                    "value": [
+                                        {
+                                            "type": "var",
+                                            "value": "input"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "value": "object"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "value": "record"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "value": "dcat-dataset-strings"
+                                        }
+                                    ]
+                                },
+                                "index": 0
+                            },
+                            {
+                                "terms": [
+                                    {
+                                        "type": "ref",
+                                        "value": [
+                                            {
+                                                "type": "var",
+                                                "value": "eq"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "ref",
+                                        "value": [
+                                            {
+                                                "type": "var",
+                                                "value": "input"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "value": "object"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "value": "record"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "value": "publishing"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "value": "state"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "string",
+                                        "value": "published"
+                                    }
+                                ],
+                                "index": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "package": {
+                    "path": [
+                        {
+                            "type": "var",
+                            "value": "data"
+                        },
+                        {
+                            "type": "string",
+                            "value": "partial"
+                        },
+                        {
+                            "type": "string",
+                            "value": "entrypoint"
+                        }
+                    ]
+                },
+                "rules": [
+                    {
+                        "default": true,
+                        "head": {
+                            "name": "allow",
+                            "value": {
+                                "type": "boolean",
+                                "value": false
+                            }
+                        },
+                        "body": [
+                            {
+                                "terms": {
+                                    "type": "boolean",
+                                    "value": true
+                                },
+                                "index": 0
+                            }
+                        ]
+                    },
+                    {
+                        "head": {
+                            "name": "allow",
+                            "value": {
+                                "type": "boolean",
+                                "value": true
+                            }
+                        },
+                        "body": [
+                            {
+                                "terms": {
+                                    "type": "ref",
+                                    "value": [
+                                        {
+                                            "type": "var",
+                                            "value": "data"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "value": "partial"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "value": "object"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "value": "record"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "value": "allow"
+                                        }
+                                    ]
+                                },
+                                "index": 0
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

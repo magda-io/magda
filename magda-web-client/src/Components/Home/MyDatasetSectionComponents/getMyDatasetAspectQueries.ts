@@ -22,7 +22,7 @@ export default function getMyDatasetAspectQueries(
                 true
             ),
             new AspectQuery(
-                "dataset-access-control.ownerId",
+                "access-control.ownerId",
                 AspectQueryOperators["="],
                 userId,
                 true
@@ -37,7 +37,7 @@ export default function getMyDatasetAspectQueries(
                 true
             ),
             new AspectQuery(
-                "dataset-access-control.ownerId",
+                "access-control.ownerId",
                 AspectQueryOperators["="],
                 userId,
                 true

@@ -14,6 +14,15 @@ import au.csiro.data61.magda.opa.OpaTypes.{
 }
 import scalikejdbc._
 import au.csiro.data61.magda.client.AuthOperations
+import au.csiro.data61.magda.model.{
+  AspectQuery,
+  AspectQueryValueInArray,
+  AspectQueryBigDecimalValue,
+  AspectQueryBooleanValue,
+  AspectQueryExists,
+  AspectQueryStringValue,
+  AspectQueryWithValue
+}
 
 object SqlHelper {
 
@@ -107,7 +116,7 @@ object SqlHelper {
       query: AspectQuery
   ): SQLSyntax = {
     query match {
-      case AspectQueryExists(aspectId, path) =>
+      case AspectQueryExists(aspectId, path, _) =>
         sqls"""
              aspectid = $aspectId AND (data #> string_to_array(${path.mkString(
           ","
@@ -117,24 +126,27 @@ object SqlHelper {
           aspectId,
           path,
           value,
-          sqlComparator
+          operator,
+          _,
+          placeReferenceFirst
           ) =>
-        sqls"""
+        if (placeReferenceFirst) {
+          sqls"""
              aspectid = $aspectId AND (data #>> string_to_array(${path
-          .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}::${value.postgresType}
-        """
-      case AspectQueryNotEqualValue(aspectId, path, value) =>
-        // --- In order to cover the situation that json path doesn't exist,
-        // --- we set SQL operator as `=` and put the generated SQL in NOT EXISTS clause instead
-        // --- data #>> string_to_array(xx,",") IS NULL won't work as, when json path doesn't exist, the higher level `EXIST` clause will always evaluate to false
-        sqls"""
-             aspectid = $aspectId AND (data #>> string_to_array(${path
-          .mkString(",")}, ','))::${value.postgresType} = ${value.value}::${value.postgresType}
-        """
-      case AspectQueryAnyInArray(
+            .mkString(",")}, ','))::${value.postgresType} $operator ${value.value}::${value.postgresType}
+          """
+        } else {
+          sqls"""
+             aspectid = $aspectId AND (${value.value}::${value.postgresType} $operator data #>> string_to_array(${path
+            .mkString(",")}, ','))::${value.postgresType}
+          """
+        }
+
+      case AspectQueryValueInArray(
           aspectId,
           path,
-          value
+          value,
+          _
           ) =>
         sqls"""
              aspectid = $aspectId AND jsonb_exists((data #>> string_to_array(${path
@@ -144,8 +156,8 @@ object SqlHelper {
     }
   }
 
-  private val SQL_TRUE = sqls"true"
-  private val SQL_FALSE = sqls"false"
+  private val SQL_TRUE = SQLSyntax.createUnsafely("TRUE")
+  private val SQL_FALSE = SQLSyntax.createUnsafely("FALSE")
   private val SQL_EQ = SQLSyntax.createUnsafely("=")
 
   private def convertToSql(operation: OpaOp): SQLSyntax = {
@@ -217,7 +229,7 @@ object SqlHelper {
             Eq,
             aValue
             ) if (restOfKeys.last) == OpaRefAnyInArray =>
-          AspectQueryAnyInArray(
+          AspectQueryValueInArray(
             aspectId = accessAspectId,
             path = restOfKeys.flatMap {
               case OpaRefObjectKey(key) => Some(key)
@@ -246,7 +258,7 @@ object SqlHelper {
                 throw new Exception("Could not understand " + e)
             },
             value = opaValueToAspectQueryValue(aValue),
-            sqlComparator = convertToSql(operation)
+            operator = convertToSql(operation)
           )
         case e => throw new Exception(s"Could not understand $e")
       })
@@ -256,9 +268,9 @@ object SqlHelper {
 
   private def opaValueToAspectQueryValue(value: OpaValue) = {
     value match {
-      case OpaValueString(string)   => AspectQueryString(string)
-      case OpaValueBoolean(boolean) => AspectQueryBoolean(boolean)
-      case OpaValueNumber(bigDec)   => AspectQueryBigDecimal(bigDec)
+      case OpaValueString(string)   => AspectQueryStringValue(string)
+      case OpaValueBoolean(boolean) => AspectQueryBooleanValue(boolean)
+      case OpaValueNumber(bigDec)   => AspectQueryBigDecimalValue(bigDec)
     }
   }
 }

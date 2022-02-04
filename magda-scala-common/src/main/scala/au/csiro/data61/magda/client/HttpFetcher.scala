@@ -39,6 +39,10 @@ trait HttpFetcher {
   ): Future[HttpResponse]
 }
 
+trait MockHttpFetcher extends HttpFetcher {
+  def callCount: Unit
+}
+
 class HttpFetcherImpl(baseUrl: URL)(
     implicit val system: ActorSystem,
     val materializer: Materializer,

@@ -138,7 +138,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             contentType &&
             contentType.toLowerCase() === "application/json"
         ) {
-            reqData = req.body;
+            reqData = { ...req.body };
         }
 
         try {
@@ -230,7 +230,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      *
      * will be used to construct the context data object `input` that will be used to assist OPA's auth decision making.
      *
-     * Regardless the `operation uri` supplied, this endpoint will always ask OPA to make decision using entrypoint policy `entrypoint/allow.rego` at policy directory root.
+     * Regardless the `operation uri` supplied, this endpoint will always ask OPA to make decision using entrypoint policy `entrypoint/allow.rego`.
      * The `entrypoint/allow.rego` should be responsible for delegating the designated policy to make the actual auth decision for a particular type of resource.
      *
      * e.g. The default policy `entrypoint/allow.rego` will delegate polciy `object/dataset/allow.rego` to make decision for operation uri: `object/dataset/draft/read`.
@@ -244,14 +244,27 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      *  Depends on policy logic, URI pattern (e.g. `object/dataset/*&#47;read`) might be supported.
      *  > If you request the decision for a non-exist resource type, the default policy will evaluate to `false` (denied).
      *
-     * @apiQuery (Query String Parameters) {String} [operationUri] Use to supply / overwrite the operation uri.
+     * @apiParam (Query String Parameters) {String} [operationUri] Use to supply / overwrite the operation uri.
      *  Any parameters supplied via `Query String Parameters` have higher priority. Thus, can overwrite the same parameter supplied via `Request Body JSON`.
      *  However, `operationUri` supplied via `Query String Parameters` can't overwrite the `operationUri` supplied via `Request URL Path`.
      *
      * @apiParam (Query String Parameters) {String} [resourceUri] Use to supply / overwrite the resource uri.
+     * Please note: Magda's built-in policies don't utilise `resourceUri` as we can figure it out from `operationUri` instead.
+     * This interface is provided to facilite users' own customised implementation only.
      *
      * @apiParam (Query String Parameters) {String[]} [unknowns] Use to supply A list of references that should be considered as "unknown" during the policy evaluation.
-     * More details please see `unknowns` parameter in `Request Body JSON` section below.
+     * If a conclusive/unconditional auth decision can't be made without knowing "unknown" data, the residual rules of the "partial evaluation" result will be responded in [rego](https://www.openpolicyagent.org/docs/latest/policy-language/) AST JSON format.
+     * e.g. When `unknowns=["input.object.dataset"]`, any rules related to dataset's attributes will be kept and output as residual rules, unless existing context info is sufficient to make a conclusive/unconditional auth decision (e.g. admin can access all datasets the values of regardless dataset attributes).
+     * > Please note: When `unknowns` is NOT supplied, this endpoint will auto-generate a JSON path that is made up of string "input" and the first segment of `operationUri` as the unknown reference.
+     * > e.g. When `operationUri` = `object/dataset/draft/read` and `unknowns` parameter is not supplied, by default, this endpoint will set `unknowns` parameter's value to array ["input.object"].
+     *
+     * > However, when extra context data is supplied as part request data at JSON path `input.object`, the `unknowns` will not be auto-set.
+     *
+     * > If you want to force stop the endpoint from auto-generating `unknowns`, you can supply `unknowns` parameter as an empty string.
+     * > Please note: When `unknowns` is set to an empty string, the request will be send to ["full evaluation endpoint"](https://www.openpolicyagent.org/docs/latest/rest-api/#get-a-document-with-input),
+     * > instead of ["partial evaluation endpoint"](https://www.openpolicyagent.org/docs/latest/rest-api/#compile-api).
+     * > You will always get definite answer from "full evaluation endpoint".
+     *
      * > Please note: you can supply an array by a query string like `unknowns=ref1&unknowns=ref2`
      *
      * @apiParam (Query String Parameters) {string="true"} [rawAst] Output RAW AST response from OPA instead parsed & processed result.
@@ -271,13 +284,12 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * This option will not work when `rawAst` is on.
      * You can set `concise`=`false` to output a format more similar to original OPA AST (with more details).
      *
-     * @apiParam (Request Body JSON) {String[]} [unknowns] A list of references that should be considered as "unknown" during the policy evaluation.
-     * If a conclusive/unconditional auth decision can't be made without knowing "unknown" data, the residual rules of the "partial evaluation" result will be responded in [rego](https://www.openpolicyagent.org/docs/latest/policy-language/) AST JSON format.
-     * e.g. When `unknowns=["input.object.dataset"]`, any rules related to dataset's attributes will be kept and output as residual rules, unless existing context info is sufficient to make a conclusive/unconditional auth decision (e.g. admin can access all datasets the values of regardless dataset attributes).
-     * > Please note: When `unknowns` is NOT supplied, this endpoint will auto-generate a JSON path that is made up of string "input" and first 2 segments of `operationUri` as the unknown reference.
-     * > e.g. When `operationUri` = `object/dataset/draft/read` and `unknowns` parameter is not supplied, by default, this endpoint will set `unknowns` parameter's value to array ["input.object.dataset"].
-     * > However, when extra context data is supplied as part request data at field `input.object.dataset`, the `unknowns` will not be set.
-     * > If you prevent the endpoint from auto-generating `unknowns`, you can supply `unknowns` parameter as an empty string.
+     * @apiParam (Request Body JSON) {String} [operationUri] Same as `operationUri` in query parameter. Users can also opt to supply `operationUri` via request body instead.
+     *
+     * @apiParam (Request Body JSON) {String} [resourceUri] Same as `resourceUri` in query parameter.
+     * Users can also opt to supply `resourceUri` via request body instead.
+     *
+     * @apiParam (Request Body JSON) {String[]} [unknowns] Same as `unknowns` in query parameter. Users can also opt to supply `unknowns` via request body instead.
      *
      * @apiParam (Request Body JSON) {Object} [input] OPA "`input` data". Use to provide extra context data to support the auth decison making.
      * e.g. When you need to make decision on one particular dataset (rather than a group of dataset), you can supply the `input` data object as the following:
@@ -305,6 +317,9 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      *  The result field contains the policy evaluation result value. `true` means th eoperation is allowed and `false` means otherwise.
      *  By default, it should be in `bool` type. However, you can opt to overwite the policy to return other type of data.
      *
+     * @apiSuccess (Success JSON Response Body) {string[]} [unknowns] Will include any `unknowns` references set (either explicitly set or auto-set by this API)
+     *  when request an auth decision from the policy engine.
+     *
      * @apiSuccess (Success JSON Response Body) {object[]} [residualRules] Only presents when `hasResidualRules`=`true`.
      * A list of residual rules as the result of the partial evaluation of policy due to `unknowns`.
      * The residual rules can be used to generate storage engine DSL (e.g. SQL or Elasticsearch DSL) for policy enforcement.
@@ -315,21 +330,32 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * @apiSuccess (Success JSON Response Body) {string[]} [warns] Any warning messages that are produced during OPA AST parsing.
      *  Only available when `hasWarns`=`true`.
      *
-     * @apiSuccessExample {json} Successful Response Example: a conclusive/unconditional auth decision is made
+     * @apiSuccessExample {json} Unconditional Result Example
      *    {
      *       "hasResidualRules" : false,
+     *       "unknowns": [],
      *       "result": true // -- the evaluation value of the policy. By default, `true` means operation should be `allowed`.
      *    }
      *
-     * @apiSuccessExample {json} Successful Response Example: Partial Evaluation Result
+     * @apiSuccessExample {json} Partial Evaluation Result Example (Default Concise Format)
+     *
+     * {
+     *    "hasResidualRules":true,
+     *    "residualRules": [{"default":false,"value":true,"fullName":"data.partial.object.record.allow","name":"allow","expressions":[{"negated":false,"operator":null,"operands":[{"isRef":true,"value":"input.object.dataset.dcat-dataset-strings"}]},{"negated":false,"operator":"=","operands":[{"isRef":true,"value":"input.object.record.publishing.state"},{"isRef":false,"value":"published"}]}]}],
+     *    "unknowns": ["input.object.dataset"],
+     *    "hasWarns":false
+     *  }
+     *
+     * @apiSuccessExample {json} Partial Evaluation Result Example (Raw AST)
      *
      * {
      *    "hasResidualRules": true,
+     *    "unknowns": ["input.object.dataset"],
      *    "residualRules": [{"default":true,"head":{"name":"allow","value":{"type":"boolean","value":false}},"body":[{"terms":{"type":"boolean","value":true},"index":0}]},{"head":{"name":"allow","value":{"type":"boolean","value":true}},"body":[{"terms":[{"type":"ref","value":[{"type":"var","value":"eq"}]},{"type":"ref","value":[{"type":"var","value":"input"},{"type":"string","value":"object"},{"type":"string","value":"dataset"},{"type":"string","value":"publishingState"}]},{"type":"string","value":"published"}],"index":0}]}]
      * }
      *
      *
-     * @apiErrorExample {string} Status Code: 500/400
+     * @apiErrorExample {string} Error Response Example / Status Code: 500/400
      *    Failed to get auth decision: xxxxxxxxx
      */
     async function getAuthDecision(
@@ -391,13 +417,28 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             }
 
             const reqOpts = await appendUserInfoToInput(req);
+
+            // only forward 4 OPA supported qs parameters
+            if (reqOpts.qs) {
+                reqOpts.qs = _.pick(reqOpts.qs, [
+                    "pretty",
+                    "explain",
+                    "metrics",
+                    "instrument"
+                ]);
+            }
+
             reqOpts.json.input.operationUri = operationUri;
             reqOpts.json.input.resourceUri = resourceUri;
+            if (reqOpts?.json?.unknowns === "") {
+                delete reqOpts.json.unknowns;
+            }
 
             /**
              * By default, we will auto-generate `unknowns` reference list.
-             * The auto-generated `unknowns` reference list will contains a JSON path that is made up of string "input" and first 2 segments of `operationUri`.
-             * e.g. if `operationUri` is `object/dataset/draft/read`, the `unknowns`=["input.object.dataset"]
+             * The auto-generated `unknowns` reference list will contains a JSON path that is made up of string "input" and the first segment of `operationUri`.
+             * e.g. if `operationUri` is `object/dataset/draft/read`, the `unknowns`=["input.object"]
+             * We can't set `input.object.dataset` as `unknown` as OPA currently can't correctly recognise reference as input.object[objectType] while objectType="dataset"
              *
              *
              * We will not auto-generate `unknowns`, when:
@@ -405,34 +446,31 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
              * - OR non-empty `unknowns` is supplied either via query string or request body.
              * - OR context data has been supplied via request body for the auto-generated unknown reference.
              *   - e.g. When `operationUri` is `object/dataset/draft/read` and the user supplies `dataset` object at `input.object`,
-             *     there is no point to set ["input.object.dataset"] as `unknowns`, because it's supplied by the user.
+             *     there is no point to set ["input.object"] as `unknowns`, because it's supplied by the user.
              */
             const autoGenerateUnknowns =
                 req?.query?.unknowns === "" ||
                 req?.body?.unknowns === "" ||
                 reqOpts?.json?.unknowns ||
                 // test whether the context data match the auto-generated unknown json path has been supplied
-                objectPath.has(
-                    reqOpts.json.input,
-                    opUriParts.length > 2 ? opUriParts.slice(0, 2) : opUriParts
-                )
+                objectPath.has(reqOpts.json.input, [opUriParts[0]])
                     ? false
                     : true;
 
             if (autoGenerateUnknowns) {
-                const unknownRef = [
-                    "input",
-                    ...(opUriParts.length > 2
-                        ? opUriParts.slice(0, 2)
-                        : opUriParts)
-                ].join(".");
+                const unknownRef = ["input", [opUriParts[0]]].join(".");
                 reqOpts.json.unknowns = [unknownRef];
             }
 
-            reqOpts.json.query = "data.entrypoint.allow";
+            if (reqOpts.json.unknowns) {
+                reqOpts.json.query = "data.entrypoint.allow";
+            }
 
             // -- request's pipe api doesn't work well with opa's chunked response
-            const fullResponse = await request(`${opaUrl}v1/compile`, reqOpts);
+            const apiEndpoint = reqOpts.json.unknowns
+                ? `${opaUrl}v1/compile`
+                : `${opaUrl}v1/data/entrypoint/allow`;
+            const fullResponse = await request(apiEndpoint, reqOpts);
 
             if (
                 fullResponse.statusCode >= 200 &&
@@ -441,6 +479,27 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 if (typeof req?.query?.rawAst !== "undefined") {
                     res.status(200).send(fullResponse.body);
                 } else {
+                    if (!reqOpts.json.unknowns) {
+                        // result here is from policy full evaluation endpoint
+                        // response is in shape of: { result: any }
+                        if (
+                            !fullResponse?.body ||
+                            typeof fullResponse.body !== "object" ||
+                            !fullResponse.body.hasOwnProperty("result")
+                        ) {
+                            throw new Error(
+                                "Invalid response from policy query endpoint: " +
+                                    JSON.stringify(fullResponse?.body)
+                            );
+                        }
+                        const resData = {
+                            hasResidualRules: false,
+                            value: fullResponse.body.result,
+                            unknowns: [] as string[]
+                        };
+                        res.status(200).send(resData);
+                        return;
+                    }
                     const outputInConciseFormat =
                         req?.query?.concise === "false" ? false : true;
                     const parser = new OpaCompileResponseParser();
@@ -452,11 +511,12 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                     } else {
                         const result = parser.evaluate();
                         const resData = {
-                            hasResidualRules: !result.isCompleteEvaluated
+                            hasResidualRules: !result.isCompleteEvaluated,
+                            unknowns: reqOpts.json.unknowns
                         } as any;
 
                         if (result.isCompleteEvaluated) {
-                            resData.value =
+                            resData.result =
                                 // output unconditional "no rule matched" (value as `undefined`) as `false`
                                 typeof result.value === "undefined"
                                     ? false

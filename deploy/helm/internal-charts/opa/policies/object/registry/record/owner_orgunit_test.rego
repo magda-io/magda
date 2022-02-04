@@ -27,7 +27,7 @@ test_allow_read_if_owner_and_permission_are_correct {
         "object": {
             "registry": {
                 "record": {
-                    "dataset-access-control": {
+                    "access-control": {
                         "ownerId": "personA",
                         "orgUnitOwnerId": "3"
                     }
@@ -57,7 +57,7 @@ test_allow_read_if_orgunit_and_permission_are_correct {
         "object": {
             "registry": {
                 "record": {
-                    "dataset-access-control": {
+                    "access-control": {
                     "ownerId": "personB",
                         "orgUnitOwnerId": "3"
                     }
@@ -87,7 +87,7 @@ test_deny_read_if_both_owner_and_orgunit_are_incorrect {
         "object": {
             "registry": {
                 "record": {
-                    "dataset-access-control": {
+                    "access-control": {
                         "ownerId": "personB",
                         "orgUnitOwnerId": "3"
                     }
@@ -117,7 +117,7 @@ test_deny_read_if_permission_is_incorrect {
         "object": {
             "registry": {
                 "record": {
-                    "dataset-access-control": {
+                    "access-control": {
                         "ownerId": "personA",
                         "orgUnitOwnerId": "3"
                     }

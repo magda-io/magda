@@ -6,16 +6,19 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.client.AuthApiClient
-import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
+import au.csiro.data61.magda.directives.AuthDirectives.{requireUserId}
 import au.csiro.data61.magda.directives.TenantDirectives.{
-  requiresSpecifiedTenantId,
-  requiresTenantId
+  requiresSpecifiedTenantId
 }
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.registry.Directives.{
+  requireRecordAspectUpdatePermission,
+  requireDeleteRecordAspectPermission
+}
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
+
 import javax.ws.rs.Path
 import scalikejdbc.DB
 import spray.json.JsObject
@@ -46,6 +49,7 @@ class RecordAspectsService(
     * @apiGroup Registry Record Aspects
     * @api {put} /v0/registry/records/{recordId}/aspects/{aspectId} Modify a record aspect by ID
     * @apiDescription Modifies a record aspect. If the aspect does not yet exist on this record, it is created.
+    *   Please note: when the record (specified by recordId ) doesn't exist, this API will respond 400 error.
     * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
     * @apiParam (path) {string} aspectId ID of the aspect to update
     * @apiParam (body) {json} aspect The record aspect to save
@@ -130,33 +134,43 @@ class RecordAspectsService(
   def putById: Route = put {
     path(Segment / "aspects" / Segment) {
       (recordId: String, aspectId: String) =>
-        requireIsAdmin(authClient)(system, config) { user =>
+        requireUserId { userId =>
           requiresSpecifiedTenantId { tenantId =>
             entity(as[JsObject]) { aspect =>
-              val theResult = DB localTx { session =>
-                recordPersistence.putRecordAspectById(
-                  tenantId,
-                  recordId,
-                  aspectId,
-                  aspect,
-                  user.id
-                )(session) match {
-                  case Success(result) =>
-                    complete(
-                      StatusCodes.OK,
-                      List(RawHeader("x-magda-event-id", result._2.toString)),
-                      result._1
-                    )
-                  case Failure(exception) =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(exception.getMessage)
-                    )
+              requireRecordAspectUpdatePermission(
+                authClient,
+                recordId,
+                aspectId,
+                Left(aspect)
+              ) {
+                val theResult = DB localTx { session =>
+                  recordPersistence.putRecordAspectById(
+                    tenantId,
+                    recordId,
+                    aspectId,
+                    aspect,
+                    userId
+                  )(session) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        List(RawHeader("x-magda-event-id", result._2.toString)),
+                        result._1
+                      )
+                    case Failure(exception) =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(exception.getMessage)
+                      )
+                  }
                 }
+                webHookActor ! WebHookActor
+                  .Process(
+                    ignoreWaitingForResponse = false,
+                    Some(List(aspectId))
+                  )
+                theResult
               }
-              webHookActor ! WebHookActor
-                .Process(ignoreWaitingForResponse = false, Some(List(aspectId)))
-              theResult
             }
           }
         }
@@ -226,30 +240,34 @@ class RecordAspectsService(
   def deleteById: Route = delete {
     path(Segment / "aspects" / Segment) {
       (recordId: String, aspectId: String) =>
-        requireIsAdmin(authClient)(system, config) { user =>
-          requiresSpecifiedTenantId { tenantId =>
-            val theResult = DB localTx { session =>
-              recordPersistence.deleteRecordAspect(
-                tenantId,
-                recordId,
-                aspectId,
-                user.id
-              )(session) match {
-                case Success(result) =>
-                  complete(
-                    StatusCodes.OK,
-                    List(RawHeader("x-magda-event-id", result._2.toString)),
-                    DeleteResult(result._1)
-                  )
-                case Failure(exception) =>
-                  complete(
-                    StatusCodes.BadRequest,
-                    ApiError(exception.getMessage)
-                  )
+        requireUserId { userId =>
+          // delete a record aspect should be considered as update operation for the record
+          // we will not implement aspect level auth for now
+          requireDeleteRecordAspectPermission(authClient, recordId, aspectId) {
+            requiresSpecifiedTenantId { tenantId =>
+              val theResult = DB localTx { session =>
+                recordPersistence.deleteRecordAspect(
+                  tenantId,
+                  recordId,
+                  aspectId,
+                  userId
+                )(session) match {
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(RawHeader("x-magda-event-id", result._2.toString)),
+                      DeleteResult(result._1)
+                    )
+                  case Failure(exception) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(exception.getMessage)
+                    )
+                }
               }
+              webHookActor ! WebHookActor.Process()
+              theResult
             }
-            webHookActor ! WebHookActor.Process()
-            theResult
           }
         }
     }
@@ -339,32 +357,39 @@ class RecordAspectsService(
   def patchById: Route = patch {
     path(Segment / "aspects" / Segment) {
       (recordId: String, aspectId: String) =>
-        requireIsAdmin(authClient)(system, config) { user =>
+        requireUserId { userId =>
           requiresSpecifiedTenantId { tenantId =>
             entity(as[JsonPatch]) { aspectPatch =>
-              val theResult = DB localTx { session =>
-                recordPersistence.patchRecordAspectById(
-                  tenantId,
-                  recordId,
-                  aspectId,
-                  aspectPatch,
-                  user.id
-                )(session) match {
-                  case Success(result) =>
-                    complete(
-                      StatusCodes.OK,
-                      List(RawHeader("x-magda-event-id", result._2.toString)),
-                      result._1
-                    )
-                  case Failure(exception) =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(exception.getMessage)
-                    )
+              requireRecordAspectUpdatePermission(
+                authClient,
+                recordId,
+                aspectId,
+                Right(aspectPatch)
+              ) {
+                val theResult = DB localTx { session =>
+                  recordPersistence.patchRecordAspectById(
+                    tenantId,
+                    recordId,
+                    aspectId,
+                    aspectPatch,
+                    userId
+                  )(session) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        List(RawHeader("x-magda-event-id", result._2.toString)),
+                        result._1
+                      )
+                    case Failure(exception) =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(exception.getMessage)
+                      )
+                  }
                 }
+                webHookActor ! WebHookActor.Process()
+                theResult
               }
-              webHookActor ! WebHookActor.Process()
-              theResult
             }
           }
         }

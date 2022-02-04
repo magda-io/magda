@@ -7,7 +7,8 @@ import spray.json._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
 import akka.NotUsed
-import au.csiro.data61.magda.opa.OpaTypes.OpaQuery
+import au.csiro.data61.magda.model.Auth.AuthDecision
+import au.csiro.data61.magda.util.SQLUtils
 
 trait EventPersistence {
 
@@ -40,23 +41,23 @@ trait EventPersistence {
 
   def getRecordReferencedIds(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       recordId: String,
-      aspectIds: Seq[String] = Seq(),
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
+      aspectIds: Seq[String] = Seq()
   )(implicit session: DBSession): Seq[String]
 
   def getEventsWithDereference(
       // without specify recordId, we don't need to `dereference` as we would be searching all records event anyway
       // thus, recordId is compulsory here
+      tenantId: TenantId,
+      authDecision: AuthDecision,
       recordId: String,
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
       lastEventId: Option[Long] = None,
       aspectIds: Set[String] = Set(),
-      eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId,
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
+      eventTypes: Set[EventType] = Set()
   )(implicit session: DBSession): EventsPage
 }
 
@@ -181,7 +182,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       recordId.map(v => sqls"data->>'recordId' = $v")
     ) ++ recordSelector
 
-    val tenantFilter = Some(SQLUtil.tenantIdToWhereClause(tenantId))
+    val tenantFilter = SQLUtils.tenantIdToWhereClause(tenantId, "tenantid")
     val theFilters = (filters ++ List(tenantFilter)).filter(_.isDefined)
 
     val eventTypesFilter =
@@ -286,11 +287,13 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     */
   def getRecordReferencedIds(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       recordId: String,
-      aspectIds: Seq[String] = Seq(),
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
+      aspectIds: Seq[String] = Seq()
   )(implicit session: DBSession): Seq[String] = {
-    val tenantFilter = SQLUtil.tenantIdToWhereClause(tenantId)
+    val tenantFilter = SQLUtils
+      .tenantIdToWhereClause(tenantId, "tenantid")
+      .getOrElse(SQLSyntax.empty)
 
     // --- pick all aspects of the specified record mentioned in the events till now
     val mentionedAspects = if (aspectIds.size == 0) {
@@ -375,7 +378,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
         // as there is no need to check as user should have access to all records (likely an admin)
         recordPersistence.getValidRecordIds(
           tenantId,
-          opaRecordQueries,
+          authDecision,
           linkedRecordIds
         )
       }
@@ -400,23 +403,23 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     * @return
     */
   def getEventsWithDereference(
+      tenantId: TenantId,
+      authDecision: AuthDecision,
       recordId: String,
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
       lastEventId: Option[Long] = None,
       aspectIds: Set[String] = Set(),
-      eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId,
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
+      eventTypes: Set[EventType] = Set()
   )(implicit session: DBSession): EventsPage = {
 
     val recordIds =
       getRecordReferencedIds(
         tenantId,
+        authDecision,
         recordId,
-        aspectIds.toSeq,
-        opaRecordQueries
+        aspectIds.toSeq
       ) :+ recordId
 
     val aspectIdSql =

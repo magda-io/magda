@@ -1,8 +1,5 @@
 package entrypoint
 
-import data.object.dataset.allow as dataset_allow
-import data.object.content.allowRead as content_allowRead
-
 # When no rule match, the decision will be `denied` 
 default allow = false
 
@@ -12,17 +9,93 @@ allow {
 }
 
 allow {
-     ## delegate dataset related decision to dataset_allow
-    startswith(input.operationUri, "object/dataset/")
-    dataset_allow
+    ## delegate generic record related decision to record_allow
+    startswith(input.operationUri, "object/record/")
+    data.object.record.allow
 }
 
 allow {
-     ## delegate content related decision to content_allowRead
+    ## delegate dataset related decision to dataset_allow
+    startswith(input.operationUri, "object/dataset/")
+    data.object.dataset.allow
+}
+
+allow {
+    ## delegate organization related decision to organization_allow
+    startswith(input.operationUri, "object/organization/")
+    data.object.organization.allow
+}
+
+allow {
+    ## delegate distribution related decision to organization_allow
+    startswith(input.operationUri, "object/distribution/")
+    data.object.distribution.allow
+}
+
+allow {
+    ## delegate aspect related decision to aspect_allow
+    startswith(input.operationUri, "object/aspect/")
+    data.object.aspect.allow
+}
+
+allow {
+    ## delegate webhook related decision to webhook rules
+    startswith(input.operationUri, "object/webhook/")
+    data.object.webhook.allow
+}
+
+allow {
+    ## delegate event related decision to event rules
+    startswith(input.operationUri, "object/event/")
+    data.object.event.allow
+}
+
+allow {
+    ## delegate content related decision to content_allowRead
     startswith(input.operationUri, "object/content/")
     
     ## Operation type must be read
     endswith(input.operationUri, "/read")
 
-    content_allowRead
+    data.object.content.allowRead
+}
+
+allow {
+    startswith(input.operationUri, "authObject/apiKey/")
+    data.authObject.apiKey.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/credential/")
+    data.authObject.credential.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/operation/")
+    data.authObject.operation.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/orgUnit/")
+    data.authObject.orgUnit.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/permission/")
+    data.authObject.permission.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/resource/")
+    data.authObject.resource.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/role/")
+    data.authObject.role.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/user/")
+    data.authObject.user.allow
 }

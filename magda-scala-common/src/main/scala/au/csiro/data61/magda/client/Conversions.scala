@@ -67,7 +67,7 @@ object Conversions {
         None
     }
 
-    val accessControl = hit.aspects.get("dataset-access-control") match {
+    val accessControl = hit.aspects.get("access-control") match {
       case Some(JsObject(accessControlData)) =>
         Some(
           AccessControl(

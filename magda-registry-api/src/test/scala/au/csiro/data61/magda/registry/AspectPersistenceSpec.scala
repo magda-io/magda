@@ -9,6 +9,7 @@ import scalikejdbc.DB
 import spray.json.JsObject
 import au.csiro.data61.magda.model.TenantId.SpecifiedTenantId
 import au.csiro.data61.magda.model.TenantId.AllTenantsId
+import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
 
 class AspectPersistenceSpec extends ApiSpec {
   val userId = "2296943e-69d5-410a-8a86-88216984249c";
@@ -37,7 +38,8 @@ class AspectPersistenceSpec extends ApiSpec {
     val tenant1Results = DB readOnly { implicit session =>
       AspectPersistence.getByIds(
         aspectIds,
-        SpecifiedTenantId(TENANT_1)
+        SpecifiedTenantId(TENANT_1),
+        UnconditionalTrueDecision
       )
     }
     tenant1Results shouldEqual aspects
@@ -45,7 +47,8 @@ class AspectPersistenceSpec extends ApiSpec {
     val allTenantsResults = DB readOnly { implicit session =>
       AspectPersistence.getByIds(
         aspectIds,
-        AllTenantsId
+        AllTenantsId,
+        UnconditionalTrueDecision
       )
     }
     allTenantsResults shouldEqual aspects
@@ -53,7 +56,11 @@ class AspectPersistenceSpec extends ApiSpec {
     List(TENANT_2, MAGDA_ADMIN_PORTAL_ID).foreach(tenantId => {
       val result = DB readOnly { implicit session =>
         AspectPersistence
-          .getByIds(aspectIds, SpecifiedTenantId(tenantId))
+          .getByIds(
+            aspectIds,
+            SpecifiedTenantId(tenantId),
+            UnconditionalTrueDecision
+          )
       }
       result shouldEqual Nil
     })

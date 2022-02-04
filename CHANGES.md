@@ -3,11 +3,12 @@
 ## Next
 
 - #3231 Upgraded to Open Policy Agent v0.33.x
-- #3251 Fixed akka HTTP client POST request racing conditions
 - #3253 Add New /auth/opa/decision Endpoint
 - move pre-defined role ids into a single contants file in magda-typescript-common
-- Rewrote the OPA AST parser for better evaluation & reference handling
-- Added common policy entry point: entrypoint/allow.rego
+- related #3250: Rewrote the OPA AST parser for better evaluation & reference handling
+- related #3250: Added common policy entry point: entrypoint/allow.rego
+- #3303 rename `dataset-access-control` aspect to `access-control` aspect
+- #3304 Implement authorisation enforcement for all registry API services according to the more generic auth model defined in #3256
 
 ## 1.2.0
 

@@ -17,7 +17,7 @@ import informationSecurityAspect from "@magda/registry-aspects/information-secur
 import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
 import currencyAspect from "@magda/registry-aspects/currency.schema.json";
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
-import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
+import accessControlAspect from "@magda/registry-aspects/access-control.schema.json";
 import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
 import sourceAspect from "@magda/registry-aspects/source.schema.json";
 import datasetDraftAspect from "@magda/registry-aspects/dataset-draft.schema.json";
@@ -36,7 +36,7 @@ export const aspectSchemas = {
     access: accessAspect,
     provenance: provenanceAspect,
     "information-security": informationSecurityAspect,
-    "dataset-access-control": datasetAccessControlAspect,
+    "access-control": accessControlAspect,
     "dataset-publisher": datasetPublisherAspect,
     "organization-details": organizationDetailsAspect,
     currency: currencyAspect,
@@ -240,7 +240,7 @@ export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
     "dataset-quality-rating",
     "spatial-coverage",
     "publishing",
-    "dataset-access-control",
+    "access-control",
     "provenance",
     "information-security",
     "currency",

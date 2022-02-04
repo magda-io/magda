@@ -6,11 +6,13 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.directives.AuthDirectives.withAuthDecision
 import com.typesafe.config.Config
 import io.swagger.annotations._
+
 import javax.ws.rs.Path
 import scalikejdbc._
 
@@ -64,12 +66,15 @@ class AspectsServiceRO(
   )
   def getAll: Route = get {
     pathEnd {
-      requiresTenantId { tenantId =>
-        complete {
-          DB readOnly { session =>
-            AspectPersistence.getAll(tenantId)(session)
+      withAuthDecision(authClient, AuthDecisionReqConfig("object/aspect/read")) {
+        authDecision =>
+          requiresTenantId { tenantId =>
+            complete {
+              DB readOnly { session =>
+                AspectPersistence.getAll(tenantId, authDecision)(session)
+              }
+            }
           }
-        }
       }
     }
   }
@@ -121,17 +126,21 @@ class AspectsServiceRO(
   )
   def getById: Route = get {
     path(Segment) { id: String =>
-      requiresTenantId { tenantId =>
-        DB readOnly { session =>
-          AspectPersistence.getById(id, tenantId)(session) match {
-            case Some(aspect) => complete(aspect)
-            case None =>
-              complete(
-                StatusCodes.NotFound,
-                ApiError("No aspect exists with that ID.")
-              )
+      withAuthDecision(authClient, AuthDecisionReqConfig("object/aspect/read")) {
+        authDecision =>
+          requiresTenantId { tenantId =>
+            DB readOnly { session =>
+              AspectPersistence
+                .getById(id, tenantId, authDecision)(session) match {
+                case Some(aspect) => complete(aspect)
+                case None =>
+                  complete(
+                    StatusCodes.NotFound,
+                    ApiError("No aspect exists with that ID.")
+                  )
+              }
+            }
           }
-        }
       }
     }
   }
