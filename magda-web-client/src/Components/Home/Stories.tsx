@@ -42,8 +42,8 @@ class Stories extends Component<PropsType, StateType> {
             return null;
         }
         const rows: StoryDataType[][] = [];
-        for (let x = 0; x < stories.length; x += 4) {
-            rows.push(stories.slice(x, x + 4));
+        for (let x = 0; x < stories.length; x += 2) {
+            rows.push(stories.slice(x, x + 2));
         }
         return (
             <div className="homepage-stories">
@@ -98,92 +98,27 @@ class Stories extends Component<PropsType, StateType> {
                         >
                             <div>
                                 {rows.map((row, r) => {
-                                    switch (row.length) {
-                                        case 1:
-                                            return (
+                                    return (
+                                        <div
+                                            className="stories-container"
+                                            key={r}
+                                        >
+                                            {row.map((story, i) => (
                                                 <div
-                                                    className="row"
-                                                    key="stories-boxes"
+                                                    className={`col-2`}
+                                                    key={i}
                                                 >
-                                                    <div className="col-md-4">
-                                                        <StoryBox
-                                                            idx={r * 4}
-                                                            story={row[0]}
-                                                            className={`stories medium-screen-layout story-box-${
-                                                                r * 4
-                                                            }`}
-                                                        />
-                                                    </div>
+                                                    <StoryBox
+                                                        idx={r * 2 + i}
+                                                        story={story}
+                                                        className={`stories medium-screen-layout story-box-${
+                                                            r * 4 + i
+                                                        }`}
+                                                    />
                                                 </div>
-                                            );
-                                        case 2:
-                                        case 3:
-                                            return (
-                                                <div
-                                                    className="stories-container"
-                                                    key={r}
-                                                >
-                                                    {row.map((story, i) => (
-                                                        <div
-                                                            className={`col-${row.length}`}
-                                                            key={i}
-                                                        >
-                                                            <StoryBox
-                                                                idx={r * 4 + i}
-                                                                story={story}
-                                                                className={`stories medium-screen-layout story-box-${
-                                                                    r * 4 + i
-                                                                }`}
-                                                            />
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            );
-                                        default:
-                                            return (
-                                                <div
-                                                    className="stories-container"
-                                                    key={r}
-                                                >
-                                                    <div className="col-3">
-                                                        <StoryBox
-                                                            idx={r * 4 + 0}
-                                                            story={row[0]}
-                                                            className={`stories medium-screen-layout story-box-${
-                                                                r * 4 + 0
-                                                            }`}
-                                                        />
-                                                    </div>
-                                                    <div className="col-3">
-                                                        <div className="row-2">
-                                                            <StoryBox
-                                                                idx={r * 4 + 1}
-                                                                story={row[1]}
-                                                                className={`stories medium-screen-layout story-box-${
-                                                                    r * 4 + 1
-                                                                }`}
-                                                            />
-                                                            <StoryBox
-                                                                idx={r * 4 + 2}
-                                                                story={row[2]}
-                                                                className={`stories medium-screen-layout story-box-${
-                                                                    r * 4 + 2
-                                                                }`}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-3">
-                                                        <StoryBox
-                                                            idx={r * 4 + 3}
-                                                            story={row[3]}
-                                                            className={`stories medium-screen-layout story-box-${
-                                                                r * 4 + 3
-                                                            }`}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            );
-                                    }
+                                            ))}
+                                        </div>
+                                    );
                                 })}
                             </div>
                         </CSSTransition>
