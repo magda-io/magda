@@ -19,6 +19,7 @@
 - Crawler will now wait for 3 seconds (used to be 1 second) before perform trim action to avoid timeout issue
 - Refactor Indexer code to remove the redundant index queue
 - Allow overiding publisher / format indice version number for search API
+- #3301 Overide "LIQ NUM" & "REG AUD NUM" to category column type in Chart Preview
 
 ## 1.1.0
 
