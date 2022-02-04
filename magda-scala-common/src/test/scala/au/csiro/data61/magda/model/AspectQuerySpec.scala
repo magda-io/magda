@@ -63,6 +63,66 @@ class AspectQuerySpec extends FunSpec with Matchers {
 
   }
 
+  describe("AspectQueryExists in Generic table query context") {
+    it(
+      "should produce correct sql query with or without `genericQueryTableRef` set"
+    ) {
+      val aq = AspectQueryExists("testAspect", List("fieldA", "fieldB"))
+      var sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """("testaspect" #> string_to_array(?, ',')) IS NOT NULL""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("fieldA,fieldB")
+
+      sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true,
+          genericQueryTableRef = "webhooks"
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """("webhooks"."testaspect" #> string_to_array(?, ',')) IS NOT NULL""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("fieldA,fieldB")
+    }
+
+    it("should produce correct sql query when negated = true") {
+      val aq = AspectQueryExists("testAspect", List("fieldA", "fieldB"), true)
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """NOT (
+                                                               |           ("testaspect" #> string_to_array(?, ',')) IS NOT NULL
+                                                               |        )""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("fieldA,fieldB")
+    }
+
+    /**
+      * The SQL generated tests the existence of `recordaspect` record actually for this case
+      */
+    it("should produce correct sql query when path is Nil") {
+      val aq = AspectQueryExists("testAspect", Nil)
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe "\"testaspect\" is not null".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List()
+    }
+
+  }
+
   describe("AspectQueryWithValue with non-Nil path") {
     it(
       "should produce correct sql query with string value and default `=` operator"
@@ -178,6 +238,142 @@ class AspectQuerySpec extends FunSpec with Matchers {
 
   }
 
+  describe(
+    "AspectQueryWithValue with non-Nil path (in Generic table query context)"
+  ) {
+    it(
+      "should produce correct sql query with string value and default `=` operator"
+    ) {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        value = AspectQueryStringValue("xxsdweewe2")
+      )
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """COALESCE(("testaspect" #>> string_to_array(?, ','))::TEXT = ?::TEXT, false)""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List(
+        "fieldA,fieldB",
+        "xxsdweewe2"
+      )
+    }
+
+    it(
+      "should produce correct sql query with string value and `NOT LIKE` operator"
+    ) {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        operator = SQLSyntax.createUnsafely("NOT LIKE"),
+        value = AspectQueryStringValue("xxsdweewe2")
+      )
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """COALESCE(("testaspect" #>> string_to_array(?, ','))::TEXT NOT LIKE ?::TEXT, false)""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List(
+        "fieldA,fieldB",
+        "xxsdweewe2"
+      )
+    }
+
+    it(
+      "should produce correct sql query with bool value and default `=` operator"
+    ) {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        value = AspectQueryStringValue("test string"),
+        negated = true
+      )
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """NOT (
+                                                               |             COALESCE(("testaspect" #>> string_to_array(?, ','))::TEXT = ?::TEXT, false)
+                                                               |          )""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List(
+        "fieldA,fieldB",
+        "test string"
+      )
+    }
+
+    it(
+      "should produce correct sql query with bool value and default `=` operator & negated = true"
+    ) {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        value = AspectQueryBooleanValue(true),
+        negated = true
+      )
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """NOT (
+                                                               |             COALESCE(("testaspect" #>> string_to_array(?, ','))::BOOL = ?::BOOL, false)
+                                                               |          )""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("fieldA,fieldB", true)
+    }
+
+    it("should produce correct sql query with numeric value and `>` operator") {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        operator = SQLSyntax.createUnsafely(">"),
+        value = AspectQueryBigDecimalValue(1.57)
+      )
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """COALESCE(("testaspect" #>> string_to_array(?, ','))::NUMERIC > ?::NUMERIC, false)""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("fieldA,fieldB", 1.57)
+    }
+
+    it(
+      "should produce correct sql query with numeric value, `<=` operator and `placeReferenceFirst` = false"
+    ) {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        operator = SQLSyntax.createUnsafely("<="),
+        value = AspectQueryBigDecimalValue(1.57),
+        placeReferenceFirst = false
+      )
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """COALESCE(?::NUMERIC <= ("testaspect" #>> string_to_array(?, ','))::NUMERIC, false)""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List(1.57, "fieldA,fieldB")
+    }
+
+  }
+
   /**
     * When path is nil, we assume the aspectId is one of the record property in order to support query like object.record.id="xxxxx"
     * We only support a pre-selected list of record properties (record table column) -- see implementation for details.
@@ -284,6 +480,49 @@ class AspectQuerySpec extends FunSpec with Matchers {
 
   }
 
+  describe(
+    "AspectQueryWithValue with Nil path (in Generic table query context)"
+  ) {
+    it(
+      "should generate table column query correctly"
+    ) {
+      val aq = AspectQueryWithValue(
+        "ownerId",
+        Nil,
+        value = AspectQueryStringValue("d5fc82f8-0f60-4b35-9293-da021e85bc40")
+      )
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe "COALESCE(\"ownerid\"::TEXT = ?::TEXT, false)".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.parameters shouldBe List("d5fc82f8-0f60-4b35-9293-da021e85bc40")
+    }
+
+    it(
+      "should generate table column query correctly with genericQueryTableRef set"
+    ) {
+      val aq = AspectQueryWithValue(
+        "ownerId",
+        Nil,
+        value = AspectQueryStringValue("d5fc82f8-0f60-4b35-9293-da021e85bc40")
+      )
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true,
+          genericQueryTableRef = "webhooks"
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe "COALESCE(\"webhooks\".\"ownerid\"::TEXT = ?::TEXT, false)".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.parameters shouldBe List("d5fc82f8-0f60-4b35-9293-da021e85bc40")
+    }
+  }
+
   describe("AspectQueryArrayNotEmpty") {
     it("should produce correct sql query") {
       val aq = AspectQueryArrayNotEmpty("testAspect", List("fieldA", "fieldB"))
@@ -311,6 +550,51 @@ class AspectQuerySpec extends FunSpec with Matchers {
       val aq = AspectQueryArrayNotEmpty("testAspect", Nil)
       val thrown = the[Error] thrownBy aq.toSql()
       thrown.getMessage shouldBe ("Invalid AspectQueryArrayNotEmpty for aspectId `testAspect` path cannot be empty.")
+    }
+
+  }
+
+  // this queryType assumes the table column is a JSON column contains array data
+  describe("AspectQueryArrayNotEmpty (in Generic table query context)") {
+    it("should produce correct sql query") {
+      val aq = AspectQueryArrayNotEmpty("testAspect", List("fieldA", "fieldB"))
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """("testaspect" #> string_to_array(?,',')) is not null""".stripMargin.stripLineEndingWhitespaces
+      // we attempt to retrieve the first element and test whether it is NULL
+      sql.get.parameters shouldBe List("fieldA,fieldB,0")
+    }
+
+    it("should produce correct sql query when negated = true") {
+      val aq =
+        AspectQueryArrayNotEmpty("testAspect", List("fieldA", "fieldB"), true)
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """NOT ( ("testaspect" #> string_to_array(?,',')) is not null)""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("fieldA,fieldB,0")
+    }
+
+    it("should produce correct sql query when path is Nil") {
+      val aq = AspectQueryArrayNotEmpty("testAspect", Nil)
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """("testaspect" #> string_to_array('0',',')) is not null""".stripMargin.stripLineEndingWhitespaces
+      // we attempt to retrieve the first element and test whether it is NULL
+      sql.get.parameters shouldBe List()
     }
 
   }
@@ -367,6 +651,80 @@ class AspectQuerySpec extends FunSpec with Matchers {
       )
       val thrown = the[Error] thrownBy aq.toSql()
       thrown.getMessage shouldBe ("Invalid AspectQueryValueInArray for aspectId `testAspect` path cannot be empty.")
+    }
+
+  }
+
+  describe("AspectQueryValueInArray (in Generic table query context)") {
+    it("should produce correct sql query") {
+      val aq = AspectQueryValueInArray(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        value = AspectQueryBigDecimalValue(1.56)
+      )
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """COALESCE(
+                                                               |        (
+                                                               |          ("testaspect"::JSONB #> string_to_array(?, ','))::JSONB
+                                                               |        ) @> to_json(?)::JSONB,
+                                                               |        FALSE
+                                                               |      )""".stripMargin.stripLineEndingWhitespaces
+      // we attempt to retrieve the first element and test whether it is NULL
+      sql.get.parameters shouldBe List("fieldA,fieldB", 1.56)
+    }
+
+    it("should produce correct sql query when negated = true") {
+      val aq =
+        AspectQueryValueInArray(
+          "testAspect",
+          List("fieldA", "fieldB"),
+          value = AspectQueryBooleanValue(true),
+          true
+        )
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """NOT (COALESCE(
+                                                               |        (
+                                                               |          ("testaspect"::JSONB #> string_to_array(?, ','))::JSONB
+                                                               |        ) @> to_json(?)::JSONB,
+                                                               |        FALSE
+                                                               |      ))""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("fieldA,fieldB", true)
+    }
+
+    // -- i.e. a json column contains an array
+    it("should produce query correctly when path is Nil") {
+      val aq = AspectQueryValueInArray(
+        "testAspect",
+        Nil,
+        AspectQueryStringValue("sdsdds")
+      )
+      val sql = aq.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.webhook"),
+          genericQuery = true
+        )
+      )
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe """COALESCE(
+                                                               |        (
+                                                               |          ("testaspect"::JSONB #> string_to_array('0',','))::JSONB
+                                                               |        ) @> to_json(?)::JSONB,
+                                                               |        FALSE
+                                                               |      )""".stripMargin.stripLineEndingWhitespaces
+      // we attempt to retrieve the first element and test whether it has the value
+      sql.get.parameters shouldBe List("sdsdds")
     }
 
   }
