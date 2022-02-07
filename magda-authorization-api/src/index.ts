@@ -5,6 +5,7 @@ import createApiRouter from "./createApiRouter";
 import createOpaRouter from "./createOpaRouter";
 import Database from "./Database";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -56,6 +57,12 @@ const database = new Database({
     dbPort: argv.dbPort
 });
 
+const authDecisionClient = new AuthDecisionQueryClient(
+    argv.listenPort == 80
+        ? "http://localhost/"
+        : `http://localhost:${argv.listenPort}/`
+);
+
 app.use(
     "/v0",
     createApiRouter({
@@ -63,7 +70,8 @@ app.use(
         registryApiUrl: argv.registryApiUrl,
         opaUrl: argv.opaUrl,
         database,
-        tenantId: argv.tenantId
+        tenantId: argv.tenantId,
+        authDecisionClient: authDecisionClient
     })
 );
 
