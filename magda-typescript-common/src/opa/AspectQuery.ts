@@ -1,4 +1,4 @@
-import SQLSyntax, { sqls } from "sql-syntax/src/SQLSyntax";
+import SQLSyntax, { sqls } from "sql-syntax";
 import { getTableColumnName } from "../SQLUtils";
 
 export class AspectQueryValue {

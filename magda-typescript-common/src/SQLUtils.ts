@@ -1,4 +1,4 @@
-import SQLSyntax from "sql-syntax/src/SQLSyntax";
+import SQLSyntax from "sql-syntax";
 
 /**
  * Escape SQL identifier string
