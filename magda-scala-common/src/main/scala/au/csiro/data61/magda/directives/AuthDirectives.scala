@@ -154,7 +154,7 @@ object AuthDirectives {
 
   /**
     * get current user ID from JWT token
-    * If can't locate userId, response 400 error
+    * If can't locate userId, response 403 error
     * @return
     */
   def requireUserId: Directive1[String] = getUserId.flatMap {

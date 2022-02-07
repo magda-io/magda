@@ -1,0 +1,449 @@
+import express from "express";
+import Database from "../Database";
+import respondWithError from "../respondWithError";
+import handleMaybePromise from "../handleMaybePromise";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
+
+export interface ApiRouterOptions {
+    database: Database;
+    authDecisionClient: AuthDecisionQueryClient;
+}
+
+export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
+    const database = options.database;
+    const orgQueryer = database.getOrgQueryer();
+    const authDecisionClient = options.authDecisionClient;
+
+    const router: express.Router = express.Router();
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/orgunits/bylevel/:orgLevel List OrgUnits at certain org tree level
+     * @apiDescription
+     * List all OrgUnits at certain org tree level
+     * Optionally provide a test Org Unit Id that will be used to
+     * test the relationship with each of returned orgUnit item.
+     * Possible Value: 'ancestor', 'descendant', 'equal', 'unrelated'
+     *
+     * @apiParam (Path) {string} orgLevel The level number (starts from 1) where org Units of the tree are taken horizontally.
+     * @apiParam (Query) {string} relationshipOrgUnitId Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
+     *
+     * @apiSuccessExample {string} 200
+     *     [{
+     *       "id": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7",
+     *       "name": "node 1",
+     *       "description": "xxxxxxxx",
+     *       "relationship": "unrelated"
+     *     },{
+     *       "id": "e5f0ed5f-bb00-4e49-89a6-3f044aecc3f7",
+     *       "name": "node 2",
+     *       "description": "xxxxxxxx",
+     *       "relationship": "ancestor"
+     *     }]
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/bylevel/:orgLevel",
+        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        async (req, res) => {
+            try {
+                const orgLevel = req.params.orgLevel;
+                const relationshipOrgUnitId = req.query
+                    .relationshipOrgUnitId as string;
+
+                const levelNumber = parseInt(orgLevel);
+
+                if (levelNumber < 1 || isNaN(levelNumber))
+                    throw new Error(`Invalid level number: ${orgLevel}.`);
+
+                const nodes = await orgQueryer.getAllNodesAtLevel(levelNumber);
+
+                if (relationshipOrgUnitId && nodes.length) {
+                    for (let i = 0; i < nodes.length; i++) {
+                        const r = await orgQueryer.compareNodes(
+                            nodes[i]["id"],
+                            relationshipOrgUnitId
+                        );
+                        nodes[i]["relationship"] = r;
+                    }
+                }
+
+                res.status(200).json(nodes);
+            } catch (e) {
+                respondWithError(
+                    "GET /public/orgunits/bylevel/:orgLevel",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/orgunits Get orgunits by name
+     * @apiDescription
+     * Gets org units matching a name
+     * Optionally provide a test Org Unit Id that will be used to
+     * test the relationship with each of returned orgUnit item.
+     * Possible Value: 'ancestor', 'descendant', 'equal', 'unrelated'
+     *
+     * @apiParam (query) {string} nodeName the name of the org unit to look up
+     * @apiParam (query) {boolean} leafNodesOnly Whether only leaf nodes should be returned
+     * @apiParam (Query) {string} relationshipOrgUnitId Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *      "id": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7",
+     *      "name": "other-team",
+     *      "description": "The other teams",
+     *      "relationship": "unrelated"
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/orgunits",
+        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        async (req, res) => {
+            try {
+                const nodeName: string = req.query.nodeName as string;
+                const leafNodesOnly: string = req.query.leafNodesOnly as string;
+                const relationshipOrgUnitId = req.query
+                    .relationshipOrgUnitId as string;
+
+                const nodes = await orgQueryer.getNodes({
+                    name: nodeName,
+                    leafNodesOnly: leafNodesOnly === "true"
+                });
+
+                if (relationshipOrgUnitId && nodes.length) {
+                    for (let i = 0; i < nodes.length; i++) {
+                        const r = await orgQueryer.compareNodes(
+                            nodes[i]["id"],
+                            relationshipOrgUnitId
+                        );
+                        nodes[i]["relationship"] = r;
+                    }
+                }
+
+                res.status(200).json(nodes);
+            } catch (e) {
+                respondWithError("/public/orgunits", res, e);
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/orgunits/root Get root organisation
+     * @apiDescription Gets the root organisation unit (top of the tree).
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *      name: "other-team"
+     *      description: "The other teams"
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/orgunits/root",
+        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        async (req, res) => {
+            handleMaybePromise(
+                res,
+                orgQueryer.getRootNode(),
+                "GET /public/orgunits/root",
+                "Cannot locate the root tree node."
+            );
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {post} /v0/auth/orgunits/root Create root organisation
+     * @apiDescription Creates the root organisation unit (top of the tree).
+     *
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *       name: "other-team"
+     *       description: "The other teams"
+     *     }
+     *
+     * @apiSuccessExample {string} 200
+     *     {
+     *       "nodeId": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *     }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post(
+        "/root",
+        requirePermission(authDecisionClient, "authObject/orgUnit/create"),
+        async (req, res) => {
+            try {
+                const nodeId = await orgQueryer.createRootNode(req.body);
+                res.status(200).json({ nodeId: nodeId });
+            } catch (e) {
+                respondWithError("POST /public/orgunits/root", res, e);
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/orgunits/:nodeId Get details for a node
+     * @apiDescription Gets the details of the node with this id.
+     *
+     * @apiParam {string} nodeId id of the node to query
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *      name: "other-team"
+     *      description: "The other teams"
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:nodeId",
+        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        async (req, res) => {
+            const nodeId = req.params.nodeId;
+            handleMaybePromise(
+                res,
+                orgQueryer.getNodeById(nodeId),
+                "GET /public/orgunits/:nodeId",
+                `Could not find org unit with id ${nodeId}`
+            );
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {put} /v0/auth/orgunits/:nodeId Set details for a node
+     * @apiDescription Creates/updates a node at the specified id
+     *
+     * @apiParam (Path) {string} nodeId id of the node to query
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *       name: "other-team"
+     *       description: "The other teams"
+     *     }
+     *
+     * @apiSuccessExample {string} 200
+     *     {
+     *       "nodeId": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *     }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.put(
+        "/:nodeId",
+        requirePermission(authDecisionClient, "authObject/orgUnit/update"),
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+
+                const existingNodeMaybe = await orgQueryer.getNodeById(nodeId);
+
+                existingNodeMaybe.caseOf({
+                    just: async () => {
+                        await orgQueryer.updateNode(nodeId, req.body);
+                        res.status(200).json({ nodeId: nodeId });
+                    },
+                    nothing: async () => {
+                        const newNodeId = await orgQueryer.insertNode(
+                            nodeId,
+                            req.body
+                        );
+                        res.status(200).json({ nodeId: newNodeId });
+                    }
+                });
+            } catch (e) {
+                respondWithError("PUT /public/orgunits/:nodeId", res, e);
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/orgunits/:nodeId/children/immediate Get immediate children for a node
+     * @apiDescription Gets all the children immediately below the requested node. If the node doesn't exist, returns an empty list.
+     *
+     * @apiParam {string} nodeId id of the node to query
+     *
+     * @apiSuccessExample {json} 200
+     *     [{
+     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *      name: "other-team"
+     *      description: "The other teams"
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:nodeId/children/immediate",
+        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                const nodes = await orgQueryer.getImmediateChildren(nodeId);
+                res.status(200).json(nodes);
+            } catch (e) {
+                respondWithError(
+                    "/public/orgunits/:nodeId/children/immediate",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/orgunits/:nodeId/children/all Get all children for a node
+     * @apiDescription Gets all the children below the requested node recursively. If node doesn't exist, returns an empty list.
+     *
+     * @apiParam {string} nodeId id of the node to query
+     *
+     * @apiSuccessExample {json} 200
+     *     [{
+     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *      name: "other-team"
+     *      description: "The other teams"
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:nodeId/children/all",
+        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                const nodes = await orgQueryer.getAllChildren(nodeId);
+                res.status(200).json(nodes);
+            } catch (e) {
+                respondWithError(
+                    "/public/orgunits/:nodeId/children/all",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {delete} /v0/auth/orgunits/:nodeId/subtree Delete subtree
+     * @apiDescription Deletes a node and all its children. Will delete the root node if that is the one specified in nodeId.
+     *
+     * @apiParam {string} nodeId id of the node to delete
+     *
+     * @apiSuccessExample {json} 200
+     *     {
+     *       "result": "SUCCESS"
+     *     }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.delete(
+        "/:nodeId/subtree",
+        requirePermission(authDecisionClient, "authObject/orgUnit/delete"),
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                await orgQueryer.deleteSubTree(nodeId, true);
+                res.status(200).json({
+                    result: "SUCCESS"
+                });
+            } catch (e) {
+                respondWithError("/public/orgunits/:nodeId/subtree", res, e);
+            }
+        }
+    );
+
+    router.delete(
+        "/:nodeId",
+        requirePermission(authDecisionClient, "authObject/orgUnit/delete"),
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                await orgQueryer.deleteNode(nodeId);
+                res.status(200).json(true);
+            } catch (e) {
+                respondWithError("DELETE /public/orgunits/:nodeId", res, e);
+            }
+        }
+    );
+
+    router.put(
+        "/:nodeId/move/:newParentId",
+        requirePermission(authDecisionClient, "authObject/orgUnit/update"),
+        async (req, res) => {
+            try {
+                const nodeId = req.params.nodeId;
+                const newParentId = req.params.newParentId;
+                await orgQueryer.moveSubTreeTo(nodeId, newParentId);
+                res.status(200).json(true);
+            } catch (e) {
+                res.status(500).send(`Error: ${e}`);
+            }
+        }
+    );
+
+    return router;
+}
