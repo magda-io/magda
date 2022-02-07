@@ -109,14 +109,7 @@ class AuthDecisionQueryClient {
 
         const data = await res.json();
 
-        return new AuthDecision(
-            data?.hasResidualRules,
-            data?.residualRules,
-            data?.result,
-            data?.hasWarns,
-            data?.warns,
-            data?.unknowns
-        );
+        return AuthDecision.fromJson(data);
     }
 }
 

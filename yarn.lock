@@ -18843,6 +18843,10 @@ sprintf-js@~1.0.2:
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=
 
+sql-syntax@t83714/SQLSyntax:
+  version "1.0.0"
+  resolved "https://codeload.github.com/t83714/SQLSyntax/tar.gz/32f2cc488b6701e50de83e3db796782ffdd7da91"
+
 ssf@~0.10.2, ssf@~0.10.3:
   version "0.10.3"
   resolved "https://registry.yarnpkg.com/ssf/-/ssf-0.10.3.tgz#8eae1fc29c90a552e7921208f81892d6f77acb2b"
