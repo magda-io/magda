@@ -43,7 +43,7 @@ export function escapeIdentifier(id: string): SQLSyntax {
 export function getTableColumnName(
     columnName: String,
     tableRef: String = "",
-    useLowerCaseColumnName: Boolean = true
+    useLowerCaseColumnName: Boolean = false
 ): SQLSyntax {
     const id = [
         tableRef,
