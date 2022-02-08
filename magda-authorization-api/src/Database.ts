@@ -18,6 +18,10 @@ import {
 import { getUserId } from "magda-typescript-common/src/session/GetUserId";
 import NestedSetModelQueryer from "./NestedSetModelQueryer";
 import isUuid from "magda-typescript-common/src/util/isUuid";
+import AuthDecision, {
+    UnconditionalTrueDecision
+} from "magda-typescript-common/src/opa/AuthDecision";
+import SQLSyntax, { sqls } from "sql-syntax";
 
 export interface DatabaseOptions {
     dbHost: string;
@@ -70,23 +74,42 @@ export default class Database {
         return this.orgQueryer;
     }
 
-    getUser(id: string): Promise<Maybe<User>> {
+    getUser(
+        id: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<Maybe<User>> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.user"]
+        });
+        const whereSql = SQLSyntax.where(
+            SQLSyntax.joinWithAnd([authConditions, sqls`"id" = ${id}`])
+        );
+
+        const query = sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users ${whereSql}`;
+
         return this.pool
-            .query(
-                'SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE "id" = $1',
-                [id]
-            )
+            .query(...query.toQuery())
             .then((res) => arrayToMaybe(res.rows));
     }
 
-    async getUserRoles(id: string): Promise<Role[]> {
+    async getUserRoles(
+        id: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<Role[]> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.user"],
+            tableRef: "u"
+        });
         const result = await this.pool.query(
-            `SELECT r.id, r.name, rp.permission_id
+            ...sqls`SELECT r.id, r.name, rp.permission_id
                 FROM user_roles AS ur
+                LEFT JOIN user u ON u.id = ur.user_id
                 LEFT JOIN roles r ON r.id = ur.role_id
                 LEFT JOIN role_permissions rp ON rp.role_id = ur.role_id
-                WHERE ur.user_id = $1`,
-            [id]
+                WHERE ${SQLSyntax.joinWithAnd([
+                    sqls`ur.user_id = ${id}`,
+                    authConditions
+                ])}`.toQuery()
         );
         const list: any = {};
         result.rows.forEach((item) => {
@@ -108,9 +131,16 @@ export default class Database {
         return Object.values(list);
     }
 
-    async getUserPermissions(id: string): Promise<Permission[]> {
+    async getUserPermissions(
+        id: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<Permission[]> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.user"],
+            tableRef: "u"
+        });
         const result = await this.pool.query(
-            `SELECT DISTINCT ON (p.id, op.id)
+            ...sqls`SELECT DISTINCT ON (p.id, op.id)
                 p.id, p.name, p.resource_id, res.uri AS resource_uri,
                 p.user_ownership_constraint,
                 p.org_unit_ownership_constraint,
@@ -119,13 +149,16 @@ export default class Database {
                 op.uri AS operation_uri,
                 op.name AS operation_name
                 FROM role_permissions rp
+                LEFT JOIN user u ON u.id = ur.user_id
                 LEFT JOIN user_roles ur ON ur.role_id = rp.role_id
                 LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
                 LEFT JOIN operations op ON op.id = po.operation_id
                 LEFT JOIN permissions p ON p.id = rp.permission_id
                 LEFT JOIN resources res ON res.id = p.resource_id
-                WHERE ur.user_id = $1`,
-            [id]
+                WHERE ${SQLSyntax.joinWithAnd([
+                    sqls`ur.user_id = ${id}`,
+                    authConditions
+                ])}`.toQuery()
         );
         return this.convertPermissionOperationRowsToPermissions(result);
     }
@@ -162,9 +195,16 @@ export default class Database {
         return Object.values(list);
     }
 
-    async getRolePermissions(id: string): Promise<Permission[]> {
+    async getRolePermissions(
+        id: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<Permission[]> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.role"],
+            tableRef: "r"
+        });
         const result = await this.pool.query(
-            `SELECT  DISTINCT ON (p.id, op.id)
+            ...sqls`SELECT  DISTINCT ON (p.id, op.id)
             p.id, p.name, p.resource_id, res.uri AS resource_uri,
             p.user_ownership_constraint,
             p.org_unit_ownership_constraint,
@@ -173,20 +213,36 @@ export default class Database {
             op.uri AS operation_uri,
             op.name AS operation_name
             FROM role_permissions rp 
+            LEFT JOIN roles r ON r.id = rp.role_id
             LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
             LEFT JOIN operations op ON op.id = po.operation_id
             LEFT JOIN permissions p ON p.id = rp.permission_id
             LEFT JOIN resources res ON res.id = p.resource_id
-            WHERE rp.role_id = $1`,
-            [id]
+            WHERE ${SQLSyntax.joinWithAnd([
+                sqls`rp.role_id = ${id}`,
+                authConditions
+            ])}`.toQuery()
         );
         return this.convertPermissionOperationRowsToPermissions(result);
     }
 
-    getUsers(): Promise<User[]> {
+    getUsers(
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<User[]> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.user"]
+        });
         return this.pool
             .query(
-                `SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE id <> '00000000-0000-4000-8000-000000000000'`
+                ...sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" 
+                FROM users 
+                ${SQLSyntax.where(
+                    SQLSyntax.joinWithAnd([
+                        // do not show the default admin account
+                        sqls`id <> '00000000-0000-4000-8000-000000000000'`,
+                        authConditions
+                    ])
+                )}`.toQuery()
             )
             .then((res) => res.rows);
     }
@@ -255,14 +311,31 @@ export default class Database {
         );
     }
 
+    /**
+     * This function is mainly used by internal service for user lookup
+     *
+     * @param {string} source
+     * @param {string} sourceId
+     * @return {*}  {Promise<Maybe<User>>}
+     * @memberof Database
+     */
     getUserByExternalDetails(
         source: string,
-        sourceId: string
+        sourceId: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<Maybe<User>> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.user"]
+        });
         return this.pool
             .query(
-                'SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE "sourceId" = $1 AND source = $2',
-                [sourceId, source]
+                ...sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" 
+                FROM users 
+                WHERE ${SQLSyntax.joinWithAnd([
+                    sqls`"sourceId" = ${sourceId}`,
+                    sqls`"source" = ${source}`,
+                    authConditions
+                ])}`.toQuery()
             )
             .then((res) => arrayToMaybe(res.rows));
     }
@@ -374,10 +447,18 @@ export default class Database {
         return user;
     }
 
-    async getUserApiKeyById(apiKeyId: string): Promise<APIKeyRecord> {
+    async getUserApiKeyById(
+        apiKeyId: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<APIKeyRecord> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.apiKey"]
+        });
         const result = await this.pool.query(
-            "SELECT * FROM api_keys WHERE id=$1 LIMIT 1",
-            [apiKeyId]
+            ...sqls`SELECT * FROM api_keys WHERE ${SQLSyntax.joinWithAnd([
+                sqls`id = ${apiKeyId}`,
+                authConditions
+            ])} LIMIT 1`.toQuery()
         );
         if (!result?.rows?.length) {
             throw new Error(`cannot find API with ID ${apiKeyId}`);
