@@ -26,7 +26,7 @@ export default class HighlightsAdminPage extends React.Component<any, any> {
 
     refresh() {
         listContent("home/highlights/*", "home/highlight-images/*").then(
-            highlights => {
+            (highlights) => {
                 let items = {};
                 for (const item of highlights) {
                     if (item.id.indexOf("home/highlight-images/") === 0) {
@@ -40,7 +40,7 @@ export default class HighlightsAdminPage extends React.Component<any, any> {
                         Object.assign(items[id], item.content);
                     }
                 }
-                items = Object.entries(items).map(params => {
+                items = Object.entries(items).map((params) => {
                     let [id, body] = params;
                     return Object.assign(body, { id });
                 });
@@ -88,8 +88,8 @@ export default class HighlightsAdminPage extends React.Component<any, any> {
     }
 
     renderItem(item) {
-        const save = field => {
-            return async value => {
+        const save = (field) => {
+            return async (value) => {
                 const { text, url } = item;
                 const toSave = {
                     text: text || undefined,
@@ -210,9 +210,9 @@ export default class HighlightsAdminPage extends React.Component<any, any> {
                 [1440, 1440, 902],
                 [2160, 2160, 1353]
             ]) {
-                const [dim, width, height] = w;
+                const [dim, width] = w;
                 if (image.width >= width) {
-                    images[`${dim}w`] = resizeImage(image, width, height);
+                    images[`${dim}w`] = resizeImage(image, width, image.height);
                 }
             }
 
