@@ -62,6 +62,7 @@ const getBgImg = (backgroundImageUrls) => {
                     }
                 >
                     <img
+                        alt="background"
                         src={imageMap[size]}
                         className="homepage-background-img"
                     />
