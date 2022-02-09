@@ -156,8 +156,8 @@ export class AspectQueryWithValue extends AspectQuery {
                   ","
               )}, ','))::${this.value.postgresType}`;
         return this.placeReferenceFirst
-            ? sqls`COALESCE(${tableDataRef} ${this.operator} ${this.value}::${this.value.postgresType}, false)`
-            : sqls`COALESCE(${this.value}::${this.value.postgresType} ${this.operator} ${tableDataRef}, false)`;
+            ? sqls`COALESCE(${tableDataRef} ${this.operator} ${this.value.value}::${this.value.postgresType}, false)`
+            : sqls`COALESCE(${this.value.value}::${this.value.postgresType} ${this.operator} ${tableDataRef}, false)`;
     }
 }
 
@@ -200,7 +200,7 @@ export class AspectQueryValueInArray extends AspectQuery {
             ? sqls`COALESCE(
                 (
                   (${fieldRef}::JSONB #> string_to_array('0',','))::JSONB
-                ) @> to_json(${this.value})::JSONB,
+                ) @> to_json(${this.value.value})::JSONB,
                 FALSE
               )`
             : sqls`COALESCE(
@@ -208,7 +208,7 @@ export class AspectQueryValueInArray extends AspectQuery {
                   (${fieldRef}::JSONB #> string_to_array(${this.path.join(
                   ","
               )}, ','))::JSONB
-                ) @> to_json(${this.value})::JSONB,
+                ) @> to_json(${this.value.value})::JSONB,
                 FALSE
               )`;
         return tableDataRef;

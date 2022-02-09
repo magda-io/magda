@@ -16,23 +16,20 @@ export type AuthDecisionReqConfig = {
     };
 };
 
-let skipQuery: boolean = false;
-
-export const setSkipQuery = (v: boolean) => (skipQuery = v);
-export const getSkipQuery = () => skipQuery;
-
 class AuthDecisionQueryClient {
-    private authApiBaseUrl: string = "";
+    private readonly authApiBaseUrl: string = "";
+    public readonly skipQuery: boolean;
 
-    constructor(authApiBaseUrl: string) {
+    constructor(authApiBaseUrl: string, skipQuery: boolean = false) {
         this.authApiBaseUrl = authApiBaseUrl;
+        this.skipQuery = skipQuery;
     }
 
     async getAuthDecision(
         jwtToken: string | undefined,
         config: AuthDecisionReqConfig
     ): Promise<AuthDecision> {
-        if (skipQuery) {
+        if (this.skipQuery) {
             console.warn(
                 "WARNING: Skip OPA (policy engine) querying option is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
             );

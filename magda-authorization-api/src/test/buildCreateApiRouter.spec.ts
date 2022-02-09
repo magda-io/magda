@@ -19,6 +19,7 @@ import {
 } from "magda-typescript-common/src/test/arbitraries";
 import { Request } from "supertest";
 import mockApiKeyStore from "./mockApiKeyStore";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 
 describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
@@ -58,7 +59,11 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             registryApiUrl: process.env["REGISTRY_API_URL"]
                 ? process.env["REGISTRY_API_URL"]
                 : "http://localhost:6101/v0",
-            tenantId: MAGDA_ADMIN_PORTAL_ID
+            tenantId: MAGDA_ADMIN_PORTAL_ID,
+            authDecisionClient: new AuthDecisionQueryClient(
+                "http://localhost",
+                true
+            )
         });
 
         const app = express();
