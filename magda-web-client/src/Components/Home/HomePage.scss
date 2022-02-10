@@ -1,10 +1,14 @@
 @import "variables";
 @import "./pancake/sass/core.scss";
 
-.homepage-app-container {
-    position: relative;
-    overflow-y: hidden;
+@media (min-width: 992px) {
+    .homepage-app-container {
+        position: relative;
+        overflow-y: hidden;
+    }
+}
 
+.homepage-app-container {
     .app-container {
         position: relative;
     }
