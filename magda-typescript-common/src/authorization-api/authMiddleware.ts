@@ -138,27 +138,27 @@ export function requireUnconditionalAuthDecision(
  * @export
  * @param {AuthDecisionQueryClient} authDecisionClient
  * @param {string} operationUri
- * @param {{ [key: string]: any }} [input]
+ * @param {(req: Request, res: Response) => { [key: string]: any }} [inputDataFunc]
  * @return {*}
  */
 export function requirePermission(
     authDecisionClient: AuthDecisionQueryClient,
     operationUri: string,
-    input?: { [key: string]: any }
+    inputDataFunc?: (req: Request, res: Response) => { [key: string]: any }
 ) {
     return (req: Request, res: Response, next: () => void) => {
         const config = {
             operationUri,
             unknowns: []
         } as AuthDecisionReqConfig;
-        if (input) {
-            config.input = input;
+        if (inputDataFunc) {
+            config.input = inputDataFunc(req, res);
         }
         withAuthDecision(authDecisionClient, config)(req, res, () => {
             const authDecision = res.locals.authDecision as AuthDecision;
             if (authDecision?.hasResidualRules) {
                 console.warn(`Failed to make unconditional auth decision for operation '${operationUri}'. 
-                "Input: ${input}. `);
+                "Input: ${config?.input}. `);
                 res.status(403).send(
                     `you are not permitted to perform '${operationUri}': no unconditional decision can be made.`
                 );

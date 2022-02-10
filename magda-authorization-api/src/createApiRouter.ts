@@ -13,6 +13,7 @@ import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisio
 import createOrgUnitApiRouter from "./apiRouters/createOrgUnitApiRouter";
 import createUserApiRouter from "./apiRouters/createUserApiRouter";
 import createRoleApiRouter from "./apiRouters/createRoleApiRouter";
+import createResourceApiRouter from "./apiRouters/createResourceApiRouter";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -190,6 +191,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
     router.use(
         "/public/roles",
         createRoleApiRouter({
+            database,
+            authDecisionClient: options.authDecisionClient
+        })
+    );
+
+    router.use(
+        "/public/resources",
+        createResourceApiRouter({
             database,
             authDecisionClient: options.authDecisionClient
         })

@@ -27,7 +27,7 @@ function getTableRefFromObjectType(objectType: PossibleObjectType): SQLSyntax {
  * @param {AuthDecisionQueryClient} authDecisionClient
  * @param {Database} db
  * @param {string} operationUri
- * @param {string} objectId
+ * @param {(req: Request, res: Response) => string} objectIdFunc
  * @param {PossibleObjectType} objectType
  * @param {(req: Request, res: Response, next: () => void) => {}} [onRecordNotFound]
  * @param {string} [objectKind="authObject"]
@@ -37,7 +37,7 @@ export function requireObjectPermission(
     authDecisionClient: AuthDecisionQueryClient,
     db: Database,
     operationUri: string,
-    objectId: string,
+    objectIdFunc: (req: Request, res: Response) => string,
     objectType: PossibleObjectType,
     onRecordNotFound?: (req: Request, res: Response, next: () => void) => {},
     objectKind: string = "authObject"
@@ -46,6 +46,7 @@ export function requireObjectPermission(
         try {
             const pool = db.getPool();
             const targetTableRef = getTableRefFromObjectType(objectType);
+            const objectId = objectIdFunc(req, res);
             const result = await pool.query(
                 ...sqls`SELECT * FROM ${targetTableRef} WHERE id = ${objectId} LIMIT 1`.toQuery()
             );
@@ -60,11 +61,11 @@ export function requireObjectPermission(
                 return;
             }
             const objectData = result.rows[0];
-            requirePermission(authDecisionClient, operationUri, {
+            requirePermission(authDecisionClient, operationUri, (req, res) => ({
                 [objectKind]: {
                     [objectType]: objectData
                 }
-            })(req, res, next);
+            }))(req, res, next);
         } catch (e) {
             res.status(500).send(
                 `An error occurred while creating record context data for auth decision: ${operationUri}`
@@ -80,7 +81,7 @@ export function requireObjectPermission(
  * @param {AuthDecisionQueryClient} authDecisionClient
  * @param {Database} db
  * @param {string} operationUri
- * @param {string} objectId
+ * @param {(req: Request, res: Response) => string} objectIdFunc
  * @param {PossibleObjectType} objectType
  * @param {*} newObjectData
  * @param {(req: Request, res: Response, next: () => void) => {}} [onRecordNotFound]
@@ -91,9 +92,10 @@ export function requireObjectUpdatePermission(
     authDecisionClient: AuthDecisionQueryClient,
     db: Database,
     operationUri: string,
-    objectId: string,
+    objectIdFunc: (req: Request, res: Response) => string,
     objectType: PossibleObjectType,
-    newObjectData: any,
+    newObjectDataFunc: (req: Request, res: Response) => any = (req, res) =>
+        req.body,
     onRecordNotFound?: (req: Request, res: Response, next: () => void) => {},
     objectKind: string = "authObject"
 ) {
@@ -101,6 +103,7 @@ export function requireObjectUpdatePermission(
         try {
             const pool = db.getPool();
             const targetTableRef = getTableRefFromObjectType(objectType);
+            const objectId = objectIdFunc(req, res);
             const result = await pool.query(
                 ...sqls`SELECT * FROM ${targetTableRef} WHERE id = ${objectId} LIMIT 1`.toQuery()
             );
@@ -115,6 +118,7 @@ export function requireObjectUpdatePermission(
                 return;
             }
 
+            const newObjectData = newObjectDataFunc(req, res);
             const originalObjectData = result.rows[0];
             const updatedObjectData = {
                 ...originalObjectData,
@@ -125,16 +129,20 @@ export function requireObjectUpdatePermission(
             inputData[objectKind] = {};
             inputData[objectKind][objectType] = result.rows[0];
             // make sure user has permission to both before & after update object data
-            requirePermission(authDecisionClient, operationUri, {
+            requirePermission(authDecisionClient, operationUri, (req, res) => ({
                 [objectKind]: {
                     [objectType]: originalObjectData
                 }
-            })(req, res, () => {
-                requirePermission(authDecisionClient, operationUri, {
-                    [objectKind]: {
-                        [objectType]: updatedObjectData
-                    }
-                })(req, res, next);
+            }))(req, res, () => {
+                requirePermission(
+                    authDecisionClient,
+                    operationUri,
+                    (req, res) => ({
+                        [objectKind]: {
+                            [objectType]: updatedObjectData
+                        }
+                    })
+                )(req, res, next);
             });
         } catch (e) {
             res.status(500).send(
