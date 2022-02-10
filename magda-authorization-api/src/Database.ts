@@ -22,6 +22,10 @@ import AuthDecision, {
     UnconditionalTrueDecision
 } from "magda-typescript-common/src/opa/AuthDecision";
 import SQLSyntax, { sqls } from "sql-syntax";
+import {
+    parseIntParam,
+    MAX_PAGE_RECORD_NUMBER
+} from "magda-typescript-common/src/SQLUtils";
 
 export interface DatabaseOptions {
     dbHost: string;
@@ -197,12 +201,29 @@ export default class Database {
 
     async getRolePermissions(
         id: string,
-        authDecision: AuthDecision = UnconditionalTrueDecision
+        authDecision: AuthDecision = UnconditionalTrueDecision,
+        queryConfig: {
+            offset?: string | number;
+            limit?: string | number;
+            conditions?: SQLSyntax[];
+        } = {
+            offset: 0,
+            limit: 0,
+            conditions: []
+        }
     ): Promise<Permission[]> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.role"],
             tableRef: "r"
         });
+        const limit = parseIntParam(queryConfig?.limit);
+        let offset = parseIntParam(queryConfig?.offset);
+        if (!offset || offset > MAX_PAGE_RECORD_NUMBER) {
+            offset = MAX_PAGE_RECORD_NUMBER;
+        }
+        const conditions = queryConfig?.conditions?.length
+            ? queryConfig.conditions
+            : [];
         const result = await this.pool.query(
             ...sqls`SELECT  DISTINCT ON (p.id, op.id)
             p.id, p.name, p.resource_id, res.uri AS resource_uri,
@@ -219,9 +240,13 @@ export default class Database {
             LEFT JOIN permissions p ON p.id = rp.permission_id
             LEFT JOIN resources res ON res.id = p.resource_id
             WHERE ${SQLSyntax.joinWithAnd([
+                ...(conditions?.length ? conditions : []),
                 sqls`rp.role_id = ${id}`,
                 authConditions
-            ])}`.toQuery()
+            ])}
+            ${offset ? sqls`OFFSET ${offset}` : SQLSyntax.empty}
+            ${limit ? sqls`LIMIT ${limit}` : SQLSyntax.empty}
+            `.toQuery()
         );
         return this.convertPermissionOperationRowsToPermissions(result);
     }

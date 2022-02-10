@@ -2,12 +2,22 @@ import express from "express";
 import Database from "../Database";
 import respondWithError from "../respondWithError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import { requireObjectPermission } from "../recordAuthMiddlewares";
+import { withAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
+import {
+    searchTableRecord,
+    countTableRecord
+} from "magda-typescript-common/src/SQLUtils";
+import { UnconditionalTrueDecision } from "magda-typescript-common/src/opa/AuthDecision";
 
 export interface ApiRouterOptions {
     database: Database;
     authDecisionClient: AuthDecisionQueryClient;
 }
+
+const roleKeywordSearchFields = ["name", "description"];
+const permissionKeywordSearchFields = ["name", "description"];
 
 export default function createRoleApiRouter(options: ApiRouterOptions) {
     const database = options.database;
@@ -49,11 +59,51 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:roleId/permissions",
-        requirePermission(authDecisionClient, "authObject/role/read"),
+        // users have permission to a role will have access to read all permissions it contains
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/role/read",
+            (req, res) => req.params.roleId,
+            "role"
+        ),
         async function (req, res) {
             try {
                 const roleId = req.params.roleId;
-                const permissions = await database.getRolePermissions(roleId);
+                const conditions: SQLSyntax[] = [];
+                if (req.query?.keyword) {
+                    const keyword = "%" + req.query?.keyword + "%";
+                    conditions.push(
+                        SQLSyntax.joinWithOr(
+                            permissionKeywordSearchFields.map(
+                                (field) =>
+                                    sqls`${escapeIdentifier(
+                                        "p." + field
+                                    )} ILIKE ${keyword}`
+                            )
+                        ).roundBracket()
+                    );
+                }
+                if (req.query?.id) {
+                    conditions.push(sqls`"id" = ${req.query.id}`);
+                }
+                if (req.query?.owner_id) {
+                    conditions.push(sqls`"owner_id" = ${req.query.owner_id}`);
+                }
+                if (req.query?.create_by) {
+                    conditions.push(sqls`"create_by" = ${req.query.create_by}`);
+                }
+                if (req.query?.edit_by) {
+                    conditions.push(sqls`"edit_by" = ${req.query.edit_by}`);
+                }
+                const permissions = await database.getRolePermissions(
+                    roleId,
+                    UnconditionalTrueDecision,
+                    {
+                        offset: req?.query?.offset as string,
+                        limit: req?.query?.limit as string
+                    }
+                );
                 res.json(permissions);
             } catch (e) {
                 respondWithError(
@@ -61,6 +111,104 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     res,
                     e
                 );
+            }
+        }
+    );
+
+    // get role records meet selection criteria
+    router.get(
+        "/",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/role/read"
+        }),
+        async function (req, res) {
+            try {
+                const conditions: SQLSyntax[] = [];
+                if (req.query?.keyword) {
+                    const keyword = "%" + req.query?.keyword + "%";
+                    conditions.push(
+                        SQLSyntax.joinWithOr(
+                            roleKeywordSearchFields.map(
+                                (field) =>
+                                    sqls`${escapeIdentifier(
+                                        field
+                                    )} ILIKE ${keyword}`
+                            )
+                        ).roundBracket()
+                    );
+                }
+                if (req.query?.id) {
+                    conditions.push(sqls`"id" = ${req.query.id}`);
+                }
+                if (req.query?.owner_id) {
+                    conditions.push(sqls`"owner_id" = ${req.query.owner_id}`);
+                }
+                if (req.query?.create_by) {
+                    conditions.push(sqls`"create_by" = ${req.query.create_by}`);
+                }
+                if (req.query?.edit_by) {
+                    conditions.push(sqls`"edit_by" = ${req.query.edit_by}`);
+                }
+                const records = await searchTableRecord(
+                    database.getPool(),
+                    "roles",
+                    conditions,
+                    {
+                        authDecision: res.locals.authDecision,
+                        offset: req?.query?.offset as string,
+                        limit: req?.query?.limit as string
+                    }
+                );
+                res.json(records);
+            } catch (e) {
+                respondWithError("GET roles", res, e);
+            }
+        }
+    );
+
+    // get records count
+    router.get(
+        "/count",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
+        async function (req, res) {
+            try {
+                const conditions: SQLSyntax[] = [];
+                if (req.query?.keyword) {
+                    const keyword = "%" + req.query?.keyword + "%";
+                    conditions.push(
+                        SQLSyntax.joinWithOr(
+                            roleKeywordSearchFields.map(
+                                (field) =>
+                                    sqls`${escapeIdentifier(
+                                        field
+                                    )} ILIKE ${keyword}`
+                            )
+                        ).roundBracket()
+                    );
+                }
+                if (req.query?.id) {
+                    conditions.push(sqls`"id" = ${req.query.id}`);
+                }
+                if (req.query?.owner_id) {
+                    conditions.push(sqls`"owner_id" = ${req.query.owner_id}`);
+                }
+                if (req.query?.create_by) {
+                    conditions.push(sqls`"create_by" = ${req.query.create_by}`);
+                }
+                if (req.query?.edit_by) {
+                    conditions.push(sqls`"edit_by" = ${req.query.edit_by}`);
+                }
+                const number = await countTableRecord(
+                    database.getPool(),
+                    "users",
+                    conditions,
+                    res.locals.authDecision
+                );
+                res.json({ count: number });
+            } catch (e) {
+                respondWithError("GET users count", res, e);
             }
         }
     );

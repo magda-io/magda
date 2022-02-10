@@ -4,17 +4,12 @@ import respondWithError from "../respondWithError";
 import handleMaybePromise from "../handleMaybePromise";
 import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import { NO_CACHE } from "../utilityMiddlewares";
 import { PublicUser } from "magda-typescript-common/src/authorization-api/model";
 import { requireObjectPermission } from "../recordAuthMiddlewares";
 import { withAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import {
-    getTableRecord,
-    createTableRecord,
-    updateTableRecord,
-    deleteTableRecord,
     searchTableRecord,
     countTableRecord
 } from "magda-typescript-common/src/SQLUtils";

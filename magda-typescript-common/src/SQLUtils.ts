@@ -148,7 +148,7 @@ export async function deleteTableRecord(
     );
 }
 
-function parseIntParam(p: number | string | undefined) {
+export function parseIntParam(p: number | string | undefined) {
     if (!p) {
         return 0;
     }
@@ -159,7 +159,7 @@ function parseIntParam(p: number | string | undefined) {
     return result;
 }
 
-const MAX_PAGE_RECORD_NUMBER = 500;
+export const MAX_PAGE_RECORD_NUMBER = 500;
 
 export async function searchTableRecord<T = any>(
     poolOrClient: pg.Client | pg.Pool,
