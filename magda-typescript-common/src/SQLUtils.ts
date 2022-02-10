@@ -172,6 +172,8 @@ export async function searchTableRecord<T = any>(
         objectKind?: PossibleObjectKind;
         toSqlConfig?: AspectQueryToSqlConfig;
         selectedFields?: SQLSyntax[];
+        joinTable?: string;
+        joinCondition?: SQLSyntax;
     }
 ): Promise<T[]> {
     if (!table.trim()) {
@@ -206,7 +208,16 @@ export async function searchTableRecord<T = any>(
             queryConfig?.selectedFields
                 ? SQLSyntax.csv(...queryConfig.selectedFields)
                 : sqls`*`
-        } FROM ${escapeIdentifier(table)} ${where}
+        } 
+        FROM ${escapeIdentifier(table)}
+        ${
+            queryConfig?.joinTable && queryConfig?.joinCondition
+                ? sqls`LEFT JOIN ${escapeIdentifier(
+                      queryConfig.joinTable
+                  )} ON ${queryConfig.joinCondition}`
+                : SQLSyntax.empty
+        }
+        ${where}
         ${offset ? sqls`OFFSET ${offset}` : SQLSyntax.empty}
         ${limit ? sqls`LIMIT ${limit}` : SQLSyntax.empty}
         `.toQuery()

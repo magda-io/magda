@@ -9,7 +9,6 @@ import {
     searchTableRecord,
     countTableRecord
 } from "magda-typescript-common/src/SQLUtils";
-import { UnconditionalTrueDecision } from "magda-typescript-common/src/opa/AuthDecision";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -70,7 +69,9 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         async function (req, res) {
             try {
                 const roleId = req.params.roleId;
-                const conditions: SQLSyntax[] = [];
+                const conditions: SQLSyntax[] = [
+                    sqls`role_permissions.role_id = ${roleId}`
+                ];
                 if (req.query?.keyword) {
                     const keyword = "%" + req.query?.keyword + "%";
                     conditions.push(
@@ -78,36 +79,118 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                             permissionKeywordSearchFields.map(
                                 (field) =>
                                     sqls`${escapeIdentifier(
-                                        "p." + field
+                                        "permissions." + field
                                     )} ILIKE ${keyword}`
                             )
                         ).roundBracket()
                     );
                 }
                 if (req.query?.id) {
-                    conditions.push(sqls`"id" = ${req.query.id}`);
+                    conditions.push(sqls`"permissions.id" = ${req.query.id}`);
                 }
                 if (req.query?.owner_id) {
-                    conditions.push(sqls`"owner_id" = ${req.query.owner_id}`);
+                    conditions.push(
+                        sqls`"permissions.owner_id" = ${req.query.owner_id}`
+                    );
                 }
                 if (req.query?.create_by) {
-                    conditions.push(sqls`"create_by" = ${req.query.create_by}`);
+                    conditions.push(
+                        sqls`"permissions.create_by" = ${req.query.create_by}`
+                    );
                 }
                 if (req.query?.edit_by) {
-                    conditions.push(sqls`"edit_by" = ${req.query.edit_by}`);
+                    conditions.push(
+                        sqls`"permissions.edit_by" = ${req.query.edit_by}`
+                    );
                 }
-                const permissions = await database.getRolePermissions(
-                    roleId,
-                    UnconditionalTrueDecision,
+                const records = await searchTableRecord(
+                    database.getPool(),
+                    "role_permissions",
+                    conditions,
                     {
+                        joinTable: "permissions",
+                        joinCondition: sqls`permissions.id = role_permissions.permission_id`,
+                        selectedFields: [sqls`permissions.*`],
                         offset: req?.query?.offset as string,
                         limit: req?.query?.limit as string
                     }
                 );
-                res.json(permissions);
+                res.json(records);
             } catch (e) {
                 respondWithError(
                     "GET /public/role/:roleId/permissions",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    // get role permissions count
+    router.get(
+        "/:roleId/permissions/count",
+        // users have permission to a role will have access to read all permissions it contains
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/role/read",
+            (req, res) => req.params.roleId,
+            "role"
+        ),
+        async function (req, res) {
+            try {
+                const roleId = req.params.roleId;
+                const conditions: SQLSyntax[] = [
+                    sqls`role_permissions.role_id = ${roleId}`
+                ];
+                if (req.query?.keyword) {
+                    const keyword = "%" + req.query?.keyword + "%";
+                    conditions.push(
+                        SQLSyntax.joinWithOr(
+                            permissionKeywordSearchFields.map(
+                                (field) =>
+                                    sqls`${escapeIdentifier(
+                                        "permissions." + field
+                                    )} ILIKE ${keyword}`
+                            )
+                        ).roundBracket()
+                    );
+                }
+                if (req.query?.id) {
+                    conditions.push(sqls`"permissions.id" = ${req.query.id}`);
+                }
+                if (req.query?.owner_id) {
+                    conditions.push(
+                        sqls`"permissions.owner_id" = ${req.query.owner_id}`
+                    );
+                }
+                if (req.query?.create_by) {
+                    conditions.push(
+                        sqls`"permissions.create_by" = ${req.query.create_by}`
+                    );
+                }
+                if (req.query?.edit_by) {
+                    conditions.push(
+                        sqls`"permissions.edit_by" = ${req.query.edit_by}`
+                    );
+                }
+                const result = await searchTableRecord(
+                    database.getPool(),
+                    "role_permissions",
+                    conditions,
+                    {
+                        joinTable: "permissions",
+                        joinCondition: sqls`permissions.id = role_permissions.permission_id`,
+                        selectedFields: [sqls`count(*) as total`],
+                        offset: req?.query?.offset as string,
+                        limit: req?.query?.limit as string
+                    }
+                );
+                const count = result[0]["total"] ? result[0]["total"] : 0;
+                res.json({ count });
+            } catch (e) {
+                respondWithError(
+                    "GET /public/role/:roleId/permissions/count",
                     res,
                     e
                 );
