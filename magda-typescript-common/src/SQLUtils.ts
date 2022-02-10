@@ -148,20 +148,50 @@ export async function deleteTableRecord(
     );
 }
 
+function parseIntParam(p: number | string | undefined) {
+    if (!p) {
+        return 0;
+    }
+    const result = parseInt(p?.toString());
+    if (isNaN(result)) {
+        return 0;
+    }
+    return result;
+}
+
+const MAX_PAGE_RECORD_NUMBER = 500;
+
 export async function searchTableRecord<T = any>(
     poolOrClient: pg.Client | pg.Pool,
     table: string,
     contiditions: SQLSyntax[] = [],
-    authDecision: AuthDecision = UnconditionalTrueDecision,
-    objectKind: PossibleObjectKind = "authObject",
-    toSqlConfig?: AspectQueryToSqlConfig,
-    selectedFields?: SQLSyntax[]
+    queryConfig?: {
+        offset?: number | string;
+        limit?: number | string;
+        authDecision?: AuthDecision;
+        objectKind?: PossibleObjectKind;
+        toSqlConfig?: AspectQueryToSqlConfig;
+        selectedFields?: SQLSyntax[];
+    }
 ): Promise<T[]> {
     if (!table.trim()) {
         throw new Error("invalid empty table name is supplied.");
     }
-    const config: AspectQueryToSqlConfig = toSqlConfig
-        ? toSqlConfig
+    const objectKind = queryConfig?.objectKind
+        ? queryConfig.objectKind
+        : "authObject";
+    const authDecision = queryConfig?.authDecision
+        ? queryConfig.authDecision
+        : UnconditionalTrueDecision;
+
+    const limit = parseIntParam(queryConfig?.limit);
+    let offset = parseIntParam(queryConfig?.offset);
+    if (!offset || offset > MAX_PAGE_RECORD_NUMBER) {
+        offset = MAX_PAGE_RECORD_NUMBER;
+    }
+
+    const config: AspectQueryToSqlConfig = queryConfig?.toSqlConfig
+        ? queryConfig.toSqlConfig
         : {
               prefixes: [
                   `input.${objectKind}.${camelCase(table.replace(/s$/, ""))}`
@@ -173,8 +203,13 @@ export async function searchTableRecord<T = any>(
     );
     const result = await poolOrClient.query(
         ...sqls`SELECT ${
-            selectedFields ? SQLSyntax.csv(...selectedFields) : sqls`*`
-        } FROM ${escapeIdentifier(table)} ${where}`.toQuery()
+            queryConfig?.selectedFields
+                ? SQLSyntax.csv(...queryConfig.selectedFields)
+                : sqls`*`
+        } FROM ${escapeIdentifier(table)} ${where}
+        ${offset ? sqls`OFFSET ${offset}` : SQLSyntax.empty}
+        ${limit ? sqls`LIMIT ${limit}` : SQLSyntax.empty}
+        `.toQuery()
     );
     if (!result?.rows?.length) {
         return [];
@@ -195,9 +230,11 @@ export async function getTableRecord<T = any>(
         poolOrClient,
         table,
         [sqls`id = ${id}`],
-        authDecision,
-        objectKind,
-        toSqlConfig
+        {
+            authDecision,
+            objectKind,
+            toSqlConfig
+        }
     );
     if (!records.length) {
         return null;
@@ -210,18 +247,20 @@ export async function countTableRecord(
     poolOrClient: pg.Client | pg.Pool,
     table: string,
     contiditions: SQLSyntax[] = [],
-    authDecision: AuthDecision = UnconditionalTrueDecision,
-    objectKind: PossibleObjectKind = "authObject",
+    authDecision?: AuthDecision,
+    objectKind?: PossibleObjectKind,
     toSqlConfig?: AspectQueryToSqlConfig
 ): Promise<number> {
     const records = await searchTableRecord<{ total: number }>(
         poolOrClient,
         table,
         contiditions,
-        authDecision,
-        objectKind,
-        toSqlConfig,
-        [sqls`COUNT(*) AS total`]
+        {
+            authDecision,
+            objectKind,
+            toSqlConfig,
+            selectedFields: [sqls`COUNT(*) AS total`]
+        }
     );
     if (!records.length) {
         return 0;

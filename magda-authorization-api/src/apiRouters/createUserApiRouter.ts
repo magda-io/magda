@@ -9,12 +9,23 @@ import { NO_CACHE } from "../utilityMiddlewares";
 import { PublicUser } from "magda-typescript-common/src/authorization-api/model";
 import { requireObjectPermission } from "../recordAuthMiddlewares";
 import { withAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
+import {
+    getTableRecord,
+    createTableRecord,
+    updateTableRecord,
+    deleteTableRecord,
+    searchTableRecord,
+    countTableRecord
+} from "magda-typescript-common/src/SQLUtils";
 
 export interface ApiRouterOptions {
     database: Database;
     jwtSecret: string;
     authDecisionClient: AuthDecisionQueryClient;
 }
+
+const userKeywordSearchFields = ["displayName", "email", "source"];
 
 export default function createUserApiRouter(options: ApiRouterOptions) {
     const database = options.database;
@@ -381,6 +392,104 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                 });
             } catch (e) {
                 respondWithError("/public/users/:userId", res, e);
+            }
+        }
+    );
+
+    // get user records meet selection criteria
+    router.get(
+        "/",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
+        async function (req, res) {
+            try {
+                const conditions: SQLSyntax[] = [];
+                if (req.query?.keyword) {
+                    const keyword = "%" + req.query?.keyword + "%";
+                    conditions.push(
+                        SQLSyntax.joinWithOr(
+                            userKeywordSearchFields.map(
+                                (field) =>
+                                    sqls`${escapeIdentifier(
+                                        field
+                                    )} ILIKE ${keyword}`
+                            )
+                        ).roundBracket()
+                    );
+                }
+                if (req.query?.id) {
+                    conditions.push(sqls`"id" = ${req.query.id}`);
+                }
+                if (req.query?.source) {
+                    conditions.push(sqls`"source" = ${req.query.source}`);
+                }
+                if (req.query?.orgUnitId) {
+                    conditions.push(sqls`"orgUnitId" = ${req.query.orgUnitId}`);
+                }
+                if (req.query?.sourceId) {
+                    conditions.push(sqls`"sourceId" = ${req.query.sourceId}`);
+                }
+                const records = await searchTableRecord(
+                    database.getPool(),
+                    "users",
+                    conditions,
+                    {
+                        authDecision: res.locals.authDecision,
+                        offset: req?.query?.offset as string,
+                        limit: req?.query?.limit as string
+                    }
+                );
+                res.json(records);
+            } catch (e) {
+                respondWithError("GET users", res, e);
+            }
+        }
+    );
+
+    // get records count
+    router.get(
+        "/count",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
+        async function (req, res) {
+            try {
+                const conditions: SQLSyntax[] = [];
+                if (req.query?.keyword) {
+                    const keyword = "%" + req.query?.keyword + "%";
+                    conditions.push(
+                        SQLSyntax.joinWithOr(
+                            userKeywordSearchFields.map(
+                                (field) =>
+                                    sqls`${escapeIdentifier(
+                                        field
+                                    )} ILIKE ${keyword}`
+                            )
+                        ).roundBracket()
+                    );
+                }
+                if (req.query?.id) {
+                    conditions.push(sqls`"id" = ${req.query.id}`);
+                }
+                if (req.query?.source) {
+                    conditions.push(sqls`"source" = ${req.query.source}`);
+                }
+                if (req.query?.orgUnitId) {
+                    conditions.push(sqls`"orgUnitId" = ${req.query.orgUnitId}`);
+                }
+                if (req.query?.sourceId) {
+                    conditions.push(sqls`"sourceId" = ${req.query.sourceId}`);
+                }
+                const number = await countTableRecord(
+                    database.getPool(),
+                    "users",
+                    conditions,
+                    res.locals.authDecision
+                );
+                res.json({ count: number });
+            } catch (e) {
+                respondWithError("GET users count", res, e);
             }
         }
     );

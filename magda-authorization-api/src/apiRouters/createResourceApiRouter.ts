@@ -90,7 +90,11 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                     database.getPool(),
                     "resources",
                     conditions,
-                    res.locals.authDecision
+                    {
+                        authDecision: res.locals.authDecision,
+                        offset: req?.query?.offset as string,
+                        limit: req?.query?.limit as string
+                    }
                 );
                 res.json(records);
             } catch (e) {
@@ -124,13 +128,13 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                 if (req.query?.uri) {
                     conditions.push(sqls`"uri" = ${req.query.uri}`);
                 }
-                const records = await countTableRecord(
+                const number = await countTableRecord(
                     database.getPool(),
                     "resources",
                     conditions,
                     res.locals.authDecision
                 );
-                res.json(records);
+                res.json({ count: number });
             } catch (e) {
                 respondWithError("GET resources", res, e);
             }
@@ -285,7 +289,11 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                 const records = await searchTableRecord(
                     database.getPool(),
                     "operations",
-                    conditions
+                    conditions,
+                    {
+                        offset: req?.query?.offset as string,
+                        limit: req?.query?.limit as string
+                    }
                 );
                 res.json(records);
             } catch (e) {
@@ -337,7 +345,7 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                     "operations",
                     conditions
                 );
-                res.json(number);
+                res.json({ count: number });
             } catch (e) {
                 respondWithError(
                     "GET operations count of resource: " + req.params.resId,
