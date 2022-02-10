@@ -158,7 +158,8 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                 const record = await createTableRecord(
                     database.getPool(),
                     "resources",
-                    req.body
+                    req.body,
+                    ["uri", "name", "description"]
                 );
                 res.json(record);
             } catch (e) {
@@ -183,7 +184,8 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                     database.getPool(),
                     "resources",
                     req.params.id,
-                    req.body
+                    req.body,
+                    ["uri", "name", "description"]
                 );
                 res.json(record);
             } catch (e) {
@@ -237,7 +239,11 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                 const record = await createTableRecord(
                     database.getPool(),
                     "operation",
-                    { ...req.body, resource_id: req.params.resId }
+                    {
+                        ...req.body,
+                        resource_id: req.params.resId
+                    },
+                    ["uri", "name", "description", "resource_id"]
                 );
                 res.json(record);
             } catch (e) {

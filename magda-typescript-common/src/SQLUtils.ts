@@ -1,8 +1,8 @@
-import SQLSyntax, { sqls, Value } from "sql-syntax";
+import SQLSyntax, { sqls, Value, RawValue } from "sql-syntax";
 import pg from "pg";
 import AuthDecision, { UnconditionalTrueDecision } from "./opa/AuthDecision";
 import { AspectQueryToSqlConfig } from "./opa/AspectQuery";
-import { camelCase } from "lodash";
+import { camelCase, difference } from "lodash";
 
 type PossibleObjectKind = "object" | "authObject";
 
@@ -74,11 +74,29 @@ export function getTableColumnName(
 export async function createTableRecord(
     poolOrClient: pg.Client | pg.Pool,
     table: string,
-    data: { [key: string]: Value }
+    data: { [key: string]: RawValue },
+    allowFieldList?: string[],
+    autoGenerateUuid: boolean = true
 ) {
     if (!table.trim()) {
         throw new Error("invalid empty table name is supplied.");
     }
+    if (autoGenerateUuid) {
+        data["id"] = sqls`uuid_generate_v4()`;
+    }
+
+    if (allowFieldList?.length) {
+        const keys = Object.keys(data);
+        const diff = difference(keys, allowFieldList);
+        if (diff?.length) {
+            throw new Error(
+                `Failed to create record, the following fields are not allowed: ${diff.join(
+                    ","
+                )}`
+            );
+        }
+    }
+
     const [fieldList, valueList] = Object.keys(data).reduce(
         (result, currentKey) => {
             const currentValue = data[currentKey];
@@ -104,13 +122,25 @@ export async function updateTableRecord(
     poolOrClient: pg.Client | pg.Pool,
     table: string,
     id: string,
-    data: { [key: string]: Value }
+    data: { [key: string]: Value },
+    allowFieldList?: string[]
 ) {
     if (!id.trim()) {
         throw new Error("Failed to delete the record: empty id was provided.");
     }
     if (!table.trim()) {
         throw new Error("invalid empty table name is supplied.");
+    }
+    if (allowFieldList?.length) {
+        const keys = Object.keys(data);
+        const diff = difference(keys, allowFieldList);
+        if (diff?.length) {
+            throw new Error(
+                `Failed to update record, the following fields are not allowed: ${diff.join(
+                    ","
+                )}`
+            );
+        }
     }
     const updates = Object.keys(data).reduce((result, currentKey) => {
         const currentValue = data[currentKey];
