@@ -249,9 +249,16 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
     // get operations of a resource
     router.get(
         "/:resId/operations",
-        withAuthDecision(authDecisionClient, {
-            operationUri: "authObject/operation/read"
-        }),
+        // when user has the permission to access the resource
+        // we should let him to access all operations of the resources
+        // thus, we only request read permission to the resource only
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/resource/read",
+            (req, res) => req.params.id,
+            "resource"
+        ),
         async function (req, res) {
             try {
                 const conditions: SQLSyntax[] = [
@@ -273,11 +280,12 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                 if (req.query?.uri) {
                     conditions.push(sqls`"uri" = ${req.query.uri}`);
                 }
+                // when user has the permission to access the resource
+                // we should let him to access all operations of the resources
                 const records = await searchTableRecord(
                     database.getPool(),
                     "operations",
-                    conditions,
-                    res.locals.authDecision
+                    conditions
                 );
                 res.json(records);
             } catch (e) {
@@ -293,9 +301,16 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
     // get operation count of a resource
     router.get(
         "/:resId/operations/count",
-        withAuthDecision(authDecisionClient, {
-            operationUri: "authObject/operation/read"
-        }),
+        // when user has the permission to access the resource
+        // we should let him to access all operations of the resources
+        // thus, we only request read permission to the resource only
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/resource/read",
+            (req, res) => req.params.id,
+            "resource"
+        ),
         async function (req, res) {
             try {
                 const conditions: SQLSyntax[] = [
@@ -320,8 +335,7 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                 const number = await countTableRecord(
                     database.getPool(),
                     "operations",
-                    conditions,
-                    res.locals.authDecision
+                    conditions
                 );
                 res.json(number);
             } catch (e) {

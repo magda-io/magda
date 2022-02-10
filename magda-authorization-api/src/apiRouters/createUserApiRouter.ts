@@ -7,6 +7,8 @@ import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisio
 import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import { NO_CACHE } from "../utilityMiddlewares";
 import { PublicUser } from "magda-typescript-common/src/authorization-api/model";
+import { requireObjectPermission } from "../recordAuthMiddlewares";
+import { withAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -38,7 +40,13 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.post(
         "/:userId/roles",
-        requirePermission(authDecisionClient, "authObject/user/update"),
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/update",
+            (req, res) => req.params.userId,
+            "user"
+        ),
         async function (req, res) {
             try {
                 const userId = req.params.userId;
@@ -70,7 +78,13 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.delete(
         "/:userId/roles",
-        requirePermission(authDecisionClient, "authObject/user/update"),
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/update",
+            (req, res) => req.params.userId,
+            "user"
+        ),
         async function (req, res) {
             try {
                 const userId = req.params.userId;
@@ -105,7 +119,13 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:userId/roles",
-        requirePermission(authDecisionClient, "authObject/user/read"),
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/read",
+            (req, res) => req.params.userId,
+            "user"
+        ),
         async function (req, res) {
             try {
                 const userId = req.params.userId;
@@ -151,7 +171,13 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:userId/permissions",
-        requirePermission(authDecisionClient, "authObject/user/read"),
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/read",
+            (req, res) => req.params.userId,
+            "user"
+        ),
         async function (req, res) {
             try {
                 const userId = req.params.userId;
@@ -236,10 +262,12 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/all",
-        requirePermission(authDecisionClient, "authObject/user/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
         async (req, res) => {
             try {
-                const users = await database.getUsers();
+                const users = await database.getUsers(res.locals.authDecision);
                 if (!users?.length) {
                     res.json([]);
                     return;
@@ -283,21 +311,25 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     router.get(
         "/:userId",
         NO_CACHE,
-        requirePermission(authDecisionClient, "authObject/user/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
         (req, res) => {
             const userId = req.params.userId;
-            const getPublicUser = database.getUser(userId).then((userMaybe) =>
-                userMaybe.map((user) => {
-                    const publicUser: PublicUser = {
-                        id: user.id,
-                        photoURL: user.photoURL,
-                        displayName: user.displayName,
-                        isAdmin: user.isAdmin
-                    };
+            const getPublicUser = database
+                .getUser(userId, res.locals.authDecision)
+                .then((userMaybe) =>
+                    userMaybe.map((user) => {
+                        const publicUser: PublicUser = {
+                            id: user.id,
+                            photoURL: user.photoURL,
+                            displayName: user.displayName,
+                            isAdmin: user.isAdmin
+                        };
 
-                    return publicUser;
-                })
-            );
+                        return publicUser;
+                    })
+                );
 
             handleMaybePromise(res, getPublicUser, "/public/users/:userId");
         }
@@ -330,7 +362,13 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:userId",
-        requirePermission(authDecisionClient, "authObject/user/update"),
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/update",
+            (req, res) => req.params.userId,
+            "user"
+        ),
         async (req, res) => {
             const userId = req.params.userId;
             const update = req.body;
