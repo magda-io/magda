@@ -24,6 +24,8 @@ class Stories extends Component<PropsType, StateType> {
 
     componentDidMount() {
         window.addEventListener("scroll", this.showStories);
+        // we made all stories are shown on initial page load to avoid a long background image cut off issue.
+        this.showStories();
     }
 
     showStories() {
