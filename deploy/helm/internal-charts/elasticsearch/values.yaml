@@ -9,7 +9,7 @@ initContainerImage:
 kibanaImage:
   name: kibana-oss
   repository: docker.elastic.co/kibana
-  tag: "6.5.4"
+  tag: "6.8.22"
   pullPolicy: IfNotPresent
   pullSecrets: false
 

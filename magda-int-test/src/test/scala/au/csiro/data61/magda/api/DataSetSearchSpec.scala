@@ -3,17 +3,15 @@ package au.csiro.data61.magda.api
 import java.time.OffsetDateTime
 import java.time.temporal.{ChronoField, TemporalField}
 import java.util.{Calendar, GregorianCalendar}
-
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
-
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.search.SearchStrategy.MatchAll
-import au.csiro.data61.magda.spatial.RegionSource
+import au.csiro.data61.magda.spatial.{GeometryUtils, RegionSource}
 import au.csiro.data61.magda.test.util.ApiGenerators.{queryGen, _}
 import au.csiro.data61.magda.test.util.Generators.{
   coordGen,
@@ -1220,7 +1218,18 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
                 withClue(
                   s"responseBoundingBox $responseBoundingBox vs indexedBoundingBox $indexedBoundingBox with $geometry"
                 ) {
-                  responseBoundingBox should equal(indexedBoundingBox)
+                  responseBoundingBox.north should be(
+                    indexedBoundingBox.north +- GeometryUtils.minEnvelopeMargin
+                  )
+                  responseBoundingBox.south should be(
+                    indexedBoundingBox.south +- GeometryUtils.minEnvelopeMargin
+                  )
+                  responseBoundingBox.west should be(
+                    indexedBoundingBox.west +- GeometryUtils.minEnvelopeMargin
+                  )
+                  responseBoundingBox.east should be(
+                    indexedBoundingBox.east +- GeometryUtils.minEnvelopeMargin
+                  )
                 }
             }
           }

@@ -1,0 +1,474 @@
+{
+    "aspects": {
+        "source": {
+            "id": "wa",
+            "name": "Western Australia Government",
+            "type": "ckan-dataset",
+            "url": "https://catalogue.data.wa.gov.au/api/3/action/package_show?id=d2a2f5b0-5819-48c8-acc5-410e54e84596"
+        },
+        "dcat-dataset-strings": {
+            "description": "Prohibition on Fishing (West Coast Demersal Gillnet and Demersal Longline Interim Managed Fishery) Order 2018\r\n\r\nAustralian sea lions (ASL) are protected by the Environment Protection and Biodiversity Conservation Act 1999. The Australian sea lion Gillnet Exclusion Zones (Zones) are the latest changes in WA to address concerns about ASLs.\r\n\r\nWaters within the Zones will be closed to gillnet fishing by commercial demersal gillnet and demersal longline operators, however fishers will still be able to use gillnets outside these Zones.\r\n\r\nThe Zones have been established to reduce the risk of ASLs interacting with demersal gillnets when foraging around their breeding colonies and to maintain a viable commercial fishery.\r\n",
+            "issued": "2018-06-28T07:51:49Z",
+            "keywords": [
+                "boundaries",
+                "demersal",
+                "fisheries",
+                "gillnet",
+                "legislation",
+                "prohibition",
+                "prohibition on fishing",
+                "sea lion",
+                "seal"
+            ],
+            "landingPage": "https://catalogue.data.wa.gov.au/dataset/d2a2f5b0-5819-48c8-acc5-410e54e84596",
+            "languages": [],
+            "modified": "2021-09-29T21:17:47Z",
+            "publisher": "Department of Primary Industries and Regional Development",
+            "spatial": "{\"type\": \"Polygon\", \"coordinates\": [[[113.58154999990352, -30.81596666648388], [115.19059913517697, -30.81596666648388], [115.19059913517697, -28.451649998896013], [113.58154999990352, -28.451649998896013]]]}",
+            "temporal": {},
+            "themes": ["DPIRD Fisheries Guide"],
+            "title": "Prohibition on Fishing (West Coast Demersal Gillnet and Demersal Longline Interim Managed Fishery) Order 2018 (DPIRD-088)"
+        },
+        "dataset-publisher": {
+            "publisher": {
+                "aspects": {
+                    "organization-details": {
+                        "description": "The amalgamation of the former Departments of Agriculture and Food; Fisheries and Regional Development will enable us to provide a strong and unified service for Western Australia’s vital primary industries and regions.",
+                        "imageUrl": "https://catalogue.data.wa.gov.au/uploads/group/2020-10-07-084842.405113DPIRD-datawa.svg",
+                        "name": "department-of-primary-industries-and-regional-development",
+                        "title": "Department of Primary Industries and Regional Development"
+                    },
+                    "source": {
+                        "id": "wa",
+                        "name": "Western Australia Government",
+                        "type": "ckan-organization",
+                        "url": "https://catalogue.data.wa.gov.au/api/3/action/organization_show?id=f9047e3b-8381-463f-9ae3-50c70d85e822"
+                    }
+                },
+                "id": "org-wa-f9047e3b-8381-463f-9ae3-50c70d85e822",
+                "name": "Department of Primary Industries and Regional Development"
+            }
+        },
+        "dataset-distributions": {
+            "distributions": [
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "access_level": "open",
+                            "created": "2018-06-28T07:52:24.035804",
+                            "datastore_active": false,
+                            "datastore_contains_all_records_of_source_file": false,
+                            "description": "GPX file of coordinates and boundaries",
+                            "format": "gpx",
+                            "hash": "",
+                            "id": "6789015f-fa4e-43c8-b57d-72b4de050acb",
+                            "last_modified": "2018-10-17T04:36:32.588108",
+                            "metadata_modified": "2021-09-15T19:38:18.848588",
+                            "name": "GPX Prohibition on Fishing (WCDGDLIMF) Order 2018",
+                            "package_id": "d2a2f5b0-5819-48c8-acc5-410e54e84596",
+                            "position": 0,
+                            "state": "active",
+                            "url": "https://catalogue.data.wa.gov.au/dataset/d2a2f5b0-5819-48c8-acc5-410e54e84596/resource/6789015f-fa4e-43c8-b57d-72b4de050acb/download/prohibitiononfishingwcdgdlmforder2018.gpx",
+                            "url_type": "upload"
+                        },
+                        "dataset-format": {
+                            "confidenceLevel": 90,
+                            "format": "GPX+XML"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "GPX file of coordinates and boundaries",
+                            "downloadURL": "https://catalogue.data.wa.gov.au/dataset/d2a2f5b0-5819-48c8-acc5-410e54e84596/resource/6789015f-fa4e-43c8-b57d-72b4de050acb/download/prohibitiononfishingwcdgdlmforder2018.gpx",
+                            "format": "gpx",
+                            "issued": "2018-06-28T07:52:24Z",
+                            "license": "Creative Commons Attribution 4.0",
+                            "modified": "2018-10-17T04:36:32Z",
+                            "title": "GPX Prohibition on Fishing (WCDGDLIMF) Order 2018"
+                        },
+                        "source": {
+                            "id": "wa",
+                            "name": "Western Australia Government",
+                            "type": "ckan-resource",
+                            "url": "https://catalogue.data.wa.gov.au/api/3/action/resource_show?id=6789015f-fa4e-43c8-b57d-72b4de050acb"
+                        },
+                        "source-link-status": {
+                            "httpStatusCode": 206,
+                            "status": "active"
+                        }
+                    },
+                    "id": "dist-wa-6789015f-fa4e-43c8-b57d-72b4de050acb",
+                    "name": "GPX Prohibition on Fishing (WCDGDLIMF) Order 2018"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "access_level": "open",
+                            "created": "2018-06-28T07:52:57.112565",
+                            "datastore_active": false,
+                            "datastore_contains_all_records_of_source_file": false,
+                            "description": "MapInfo file of coordinates and boundaries",
+                            "format": ".zip shapefile, file geodatabase, mapinfo mid/mif",
+                            "hash": "",
+                            "id": "75f0d5d9-68f9-49a7-ac28-33208b1334b9",
+                            "last_modified": "2018-10-17T04:36:49.195787",
+                            "metadata_modified": "2021-09-15T19:38:18.848715",
+                            "name": "MapInfo (CPlot) Prohibition on Fishing (WCDGDLIMF) Order 2018",
+                            "package_id": "d2a2f5b0-5819-48c8-acc5-410e54e84596",
+                            "position": 1,
+                            "section": "web_services_and_apis",
+                            "state": "active",
+                            "url": "https://catalogue.data.wa.gov.au/dataset/d2a2f5b0-5819-48c8-acc5-410e54e84596/resource/75f0d5d9-68f9-49a7-ac28-33208b1334b9/download/prohibitiononfishingwcdgdlmforder2018coordinates.zip",
+                            "url_type": "upload"
+                        },
+                        "dataset-format": {
+                            "confidenceLevel": 90,
+                            "format": "ZIP"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "MapInfo file of coordinates and boundaries",
+                            "downloadURL": "https://catalogue.data.wa.gov.au/dataset/d2a2f5b0-5819-48c8-acc5-410e54e84596/resource/75f0d5d9-68f9-49a7-ac28-33208b1334b9/download/prohibitiononfishingwcdgdlmforder2018coordinates.zip",
+                            "format": ".zip shapefile, file geodatabase, mapinfo mid/mif",
+                            "issued": "2018-06-28T07:52:57Z",
+                            "license": "Creative Commons Attribution 4.0",
+                            "modified": "2018-10-17T04:36:49Z",
+                            "title": "MapInfo (CPlot) Prohibition on Fishing (WCDGDLIMF) Order 2018"
+                        },
+                        "source": {
+                            "id": "wa",
+                            "name": "Western Australia Government",
+                            "type": "ckan-resource",
+                            "url": "https://catalogue.data.wa.gov.au/api/3/action/resource_show?id=75f0d5d9-68f9-49a7-ac28-33208b1334b9"
+                        },
+                        "source-link-status": {
+                            "httpStatusCode": 206,
+                            "status": "active"
+                        }
+                    },
+                    "id": "dist-wa-75f0d5d9-68f9-49a7-ac28-33208b1334b9",
+                    "name": "MapInfo (CPlot) Prohibition on Fishing (WCDGDLIMF) Order 2018"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "access_level": "open",
+                            "created": "2021-09-15T20:58:13.281620",
+                            "datastore_active": false,
+                            "datastore_contains_all_records_of_source_file": false,
+                            "description": "Web Feature Service (WFS) provides an interface that allows requests for geographical features across the web using platform independent calls.\n\nWFS allows a user to download and spatially analyse the features within a datset.\n\nThis service is aimed at advanced geographical information users, and will require access to geographical information system (GIS) software such as QGIS and ArcGIS.",
+                            "format": "WFS",
+                            "harvesting_source": "https://services.slip.wa.gov.au/public/services/SLIP_Public_Services/DPIRD_Fisheries_Guide_WFS/MapServer/WFSServer",
+                            "hash": "",
+                            "id": "13835293-a12b-4474-b875-f795a21cfeca",
+                            "last_modified": "2021-09-13T00:00:00",
+                            "metadata_modified": "2021-09-16T21:01:42.755139",
+                            "name": "Web Feature Service",
+                            "package_id": "d2a2f5b0-5819-48c8-acc5-410e54e84596",
+                            "position": 2,
+                            "section": "web_services_and_apis",
+                            "state": "active",
+                            "url": "https://services.slip.wa.gov.au/public/services/SLIP_Public_Services/DPIRD_Fisheries_Guide_WFS/MapServer/WFSServer",
+                            "wfs_layer": "SLIP_Public_Services_DPIRD_Fisheries_Guide_WFS:Prohibition_on_Fishing__WCDGDLIMF__Order_2018__DPIRD-088_"
+                        },
+                        "dataset-format": {
+                            "confidenceLevel": 33,
+                            "format": "WFS"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "Web Feature Service (WFS) provides an interface that allows requests for geographical features across the web using platform independent calls.\n\nWFS allows a user to download and spatially analyse the features within a datset.\n\nThis service is aimed at advanced geographical information users, and will require access to geographical information system (GIS) software such as QGIS and ArcGIS.",
+                            "downloadURL": "https://services.slip.wa.gov.au/public/services/SLIP_Public_Services/DPIRD_Fisheries_Guide_WFS/MapServer/WFSServer",
+                            "format": "WFS",
+                            "issued": "2021-09-15T20:58:13Z",
+                            "license": "Creative Commons Attribution 4.0",
+                            "modified": "2021-09-13T00:00:00Z",
+                            "title": "Web Feature Service"
+                        },
+                        "source": {
+                            "id": "wa",
+                            "name": "Western Australia Government",
+                            "type": "ckan-resource",
+                            "url": "https://catalogue.data.wa.gov.au/api/3/action/resource_show?id=13835293-a12b-4474-b875-f795a21cfeca"
+                        }
+                    },
+                    "id": "dist-wa-13835293-a12b-4474-b875-f795a21cfeca",
+                    "name": "Web Feature Service"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "access_level": "open",
+                            "created": "2021-09-15T20:58:23.056497",
+                            "datastore_active": false,
+                            "datastore_contains_all_records_of_source_file": false,
+                            "description": "An ArcGIS Server Map Service offers access to a geographic dataset - such as a map or imagery - by providing a set of tiled images for use in web-based maps.\n\nDepending on the capabilities enabled, this web service may also allow a client to dynamically draw, search, and query its features.\n\nThis service is aimed at advanced geographical information users, and will require access to geographical information system (GIS) software such as ArcGIS and QGIS.",
+                            "format": "API ArcGIS Server Map Service",
+                            "harvesting_source": "https://services.slip.wa.gov.au/public/rest/services/SLIP_Public_Services/DPIRD_Fisheries_Guide/MapServer/97",
+                            "hash": "",
+                            "id": "c0a24b13-e087-45a2-97b2-7bf33241d992",
+                            "last_modified": "2021-09-13T00:00:00",
+                            "metadata_modified": "2021-09-16T21:01:52.711979",
+                            "name": "ArcGIS Server Map Service",
+                            "package_id": "d2a2f5b0-5819-48c8-acc5-410e54e84596",
+                            "position": 3,
+                            "section": "web_services_and_apis",
+                            "state": "active",
+                            "url": "https://services.slip.wa.gov.au/public/rest/services/SLIP_Public_Services/DPIRD_Fisheries_Guide/MapServer/97",
+                            "wms_layer": "97"
+                        },
+                        "dataset-format": {
+                            "confidenceLevel": 70,
+                            "format": "ESRI MAPSERVER"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "An ArcGIS Server Map Service offers access to a geographic dataset - such as a map or imagery - by providing a set of tiled images for use in web-based maps.\n\nDepending on the capabilities enabled, this web service may also allow a client to dynamically draw, search, and query its features.\n\nThis service is aimed at advanced geographical information users, and will require access to geographical information system (GIS) software such as ArcGIS and QGIS.",
+                            "downloadURL": "https://services.slip.wa.gov.au/public/rest/services/SLIP_Public_Services/DPIRD_Fisheries_Guide/MapServer/97",
+                            "format": "API ArcGIS Server Map Service",
+                            "issued": "2021-09-15T20:58:23Z",
+                            "license": "Creative Commons Attribution 4.0",
+                            "modified": "2021-09-13T00:00:00Z",
+                            "title": "ArcGIS Server Map Service"
+                        },
+                        "source": {
+                            "id": "wa",
+                            "name": "Western Australia Government",
+                            "type": "ckan-resource",
+                            "url": "https://catalogue.data.wa.gov.au/api/3/action/resource_show?id=c0a24b13-e087-45a2-97b2-7bf33241d992"
+                        }
+                    },
+                    "id": "dist-wa-c0a24b13-e087-45a2-97b2-7bf33241d992",
+                    "name": "ArcGIS Server Map Service"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "access_level": "open",
+                            "created": "2021-09-15T20:58:23.975869",
+                            "datastore_active": false,
+                            "datastore_contains_all_records_of_source_file": false,
+                            "description": "Web Map Service (WMS) is a standard protocol for serving georeferenced map images over the internet that are generated by a map server using data from a GIS database.\n\nWMS allows a user to spatially visualise the dataset, and query individual features, but does not allow downloading the raw data.\n\nThis service is aimed at advanced geographical information users, and will require access to geographical information system (GIS) software such as QGIS and ArcGIS.",
+                            "format": "WMS",
+                            "harvesting_source": "https://services.slip.wa.gov.au/public/services/SLIP_Public_Services/DPIRD_Fisheries_Guide/MapServer/WMSServer",
+                            "hash": "",
+                            "id": "fbcdda68-57b4-45df-aa42-6f9719e99c46",
+                            "last_modified": "2021-09-13T00:00:00",
+                            "metadata_modified": "2021-09-16T21:01:53.403796",
+                            "name": "Web Mapping Service",
+                            "package_id": "d2a2f5b0-5819-48c8-acc5-410e54e84596",
+                            "position": 4,
+                            "preview_data": "true",
+                            "section": "web_services_and_apis",
+                            "state": "active",
+                            "url": "https://services.slip.wa.gov.au/public/services/SLIP_Public_Services/DPIRD_Fisheries_Guide/MapServer/WMSServer",
+                            "wms_layer": "0"
+                        },
+                        "dataset-format": {
+                            "confidenceLevel": 33,
+                            "format": "WMS"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "Web Map Service (WMS) is a standard protocol for serving georeferenced map images over the internet that are generated by a map server using data from a GIS database.\n\nWMS allows a user to spatially visualise the dataset, and query individual features, but does not allow downloading the raw data.\n\nThis service is aimed at advanced geographical information users, and will require access to geographical information system (GIS) software such as QGIS and ArcGIS.",
+                            "downloadURL": "https://services.slip.wa.gov.au/public/services/SLIP_Public_Services/DPIRD_Fisheries_Guide/MapServer/WMSServer",
+                            "format": "WMS",
+                            "issued": "2021-09-15T20:58:23Z",
+                            "license": "Creative Commons Attribution 4.0",
+                            "modified": "2021-09-13T00:00:00Z",
+                            "title": "Web Mapping Service"
+                        },
+                        "source": {
+                            "id": "wa",
+                            "name": "Western Australia Government",
+                            "type": "ckan-resource",
+                            "url": "https://catalogue.data.wa.gov.au/api/3/action/resource_show?id=fbcdda68-57b4-45df-aa42-6f9719e99c46"
+                        }
+                    },
+                    "id": "dist-wa-fbcdda68-57b4-45df-aa42-6f9719e99c46",
+                    "name": "Web Mapping Service"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "access_level": "open_login",
+                            "created": "2021-09-13T11:59:25",
+                            "datastore_active": false,
+                            "datastore_contains_all_records_of_source_file": false,
+                            "description": "This resource provides the latest snapshot of the dataset as a shapefile. Shapefiles can be opened in many spatial and non-spatial software packages. Note: When accessing this resource you will be prompted to signup for a free SLIP account.",
+                            "format": "SHP",
+                            "harvesting_source": "https://data-downloads.slip.wa.gov.au/DPIRD-088/Shapefile",
+                            "hash": "",
+                            "id": "dc38b0a1-2ce7-4079-87e6-a00166f23c10",
+                            "last_modified": "2021-09-13T11:59:25",
+                            "metadata_modified": "2021-09-15T21:18:11.800576",
+                            "name": "Shapefile",
+                            "package_id": "d2a2f5b0-5819-48c8-acc5-410e54e84596",
+                            "position": 5,
+                            "section": "data_downloads",
+                            "state": "active",
+                            "url": "https://data-downloads.slip.wa.gov.au/DPIRD-088/Shapefile"
+                        },
+                        "dataset-format": {
+                            "confidenceLevel": 33,
+                            "format": "SHP"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "This resource provides the latest snapshot of the dataset as a shapefile. Shapefiles can be opened in many spatial and non-spatial software packages. Note: When accessing this resource you will be prompted to signup for a free SLIP account.",
+                            "downloadURL": "https://data-downloads.slip.wa.gov.au/DPIRD-088/Shapefile",
+                            "format": "SHP",
+                            "issued": "2021-09-13T11:59:25Z",
+                            "license": "Creative Commons Attribution 4.0",
+                            "modified": "2021-09-13T11:59:25Z",
+                            "title": "Shapefile"
+                        },
+                        "source": {
+                            "id": "wa",
+                            "name": "Western Australia Government",
+                            "type": "ckan-resource",
+                            "url": "https://catalogue.data.wa.gov.au/api/3/action/resource_show?id=dc38b0a1-2ce7-4079-87e6-a00166f23c10"
+                        }
+                    },
+                    "id": "dist-wa-dc38b0a1-2ce7-4079-87e6-a00166f23c10",
+                    "name": "Shapefile"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "access_level": "open_login",
+                            "created": "2021-09-13T11:59:28",
+                            "datastore_active": false,
+                            "datastore_contains_all_records_of_source_file": false,
+                            "description": "This resource provides the latest snapshot of the dataset as a GeoPackage. Note: When accessing this resource you will be prompted to signup for a free account.",
+                            "format": "GeoPackage",
+                            "harvesting_source": "https://data-downloads.slip.wa.gov.au/DPIRD-088/Geopackage",
+                            "hash": "",
+                            "id": "10d5c227-4051-414d-8ff8-1c4017ade405",
+                            "last_modified": "2021-09-13T11:59:23",
+                            "metadata_modified": "2021-09-29T21:17:47.662812",
+                            "name": "Geopackage",
+                            "package_id": "d2a2f5b0-5819-48c8-acc5-410e54e84596",
+                            "position": 6,
+                            "section": "data_downloads",
+                            "state": "active",
+                            "url": "https://data-downloads.slip.wa.gov.au/DPIRD-088/Geopackage"
+                        },
+                        "dataset-format": {
+                            "confidenceLevel": 33,
+                            "format": "GEOPACKAGE"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "This resource provides the latest snapshot of the dataset as a GeoPackage. Note: When accessing this resource you will be prompted to signup for a free account.",
+                            "downloadURL": "https://data-downloads.slip.wa.gov.au/DPIRD-088/Geopackage",
+                            "format": "GeoPackage",
+                            "issued": "2021-09-13T11:59:28Z",
+                            "license": "Creative Commons Attribution 4.0",
+                            "modified": "2021-09-13T11:59:23Z",
+                            "title": "Geopackage"
+                        },
+                        "source": {
+                            "id": "wa",
+                            "name": "Western Australia Government",
+                            "type": "ckan-resource",
+                            "url": "https://catalogue.data.wa.gov.au/api/3/action/resource_show?id=10d5c227-4051-414d-8ff8-1c4017ade405"
+                        }
+                    },
+                    "id": "dist-wa-10d5c227-4051-414d-8ff8-1c4017ade405",
+                    "name": "Geopackage"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "access_level": "open_login",
+                            "created": "2021-09-13T11:36:26",
+                            "datastore_active": false,
+                            "datastore_contains_all_records_of_source_file": false,
+                            "description": "This resource provides the latest snapshot of the dataset as a File Geodatabase. Note: When accessing this resource you will be prompted to signup for a free account.",
+                            "format": "FGDB",
+                            "harvesting_source": "https://data-downloads.slip.wa.gov.au/DPIRD-088/File Geodatabase",
+                            "hash": "",
+                            "id": "53e5298a-06c2-40e5-b94f-2c9134198397",
+                            "last_modified": "2021-09-13T11:36:26",
+                            "metadata_modified": "2021-09-15T21:18:24.529528",
+                            "name": "File Geodatabase",
+                            "package_id": "d2a2f5b0-5819-48c8-acc5-410e54e84596",
+                            "position": 7,
+                            "section": "data_downloads",
+                            "state": "active",
+                            "url": "https://data-downloads.slip.wa.gov.au/DPIRD-088/File Geodatabase"
+                        },
+                        "dataset-format": {
+                            "confidenceLevel": 33,
+                            "format": "FGDB"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "This resource provides the latest snapshot of the dataset as a File Geodatabase. Note: When accessing this resource you will be prompted to signup for a free account.",
+                            "downloadURL": "https://data-downloads.slip.wa.gov.au/DPIRD-088/File Geodatabase",
+                            "format": "FGDB",
+                            "issued": "2021-09-13T11:36:26Z",
+                            "license": "Creative Commons Attribution 4.0",
+                            "modified": "2021-09-13T11:36:26Z",
+                            "title": "File Geodatabase"
+                        },
+                        "source": {
+                            "id": "wa",
+                            "name": "Western Australia Government",
+                            "type": "ckan-resource",
+                            "url": "https://catalogue.data.wa.gov.au/api/3/action/resource_show?id=53e5298a-06c2-40e5-b94f-2c9134198397"
+                        }
+                    },
+                    "id": "dist-wa-53e5298a-06c2-40e5-b94f-2c9134198397",
+                    "name": "File Geodatabase"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "access_level": "open_login",
+                            "created": "2021-09-13T11:59:21",
+                            "datastore_active": false,
+                            "datastore_contains_all_records_of_source_file": false,
+                            "description": "This resource provides the latest snapshot of the dataset as GeoJSON. GeoJSON can be opened in many spatial and non-spatial software packages. Note: When accessing this resource you will be prompted to signup for a free account.",
+                            "format": "GeoJSON",
+                            "harvesting_source": "https://data-downloads.slip.wa.gov.au/DPIRD-088/GeoJSON",
+                            "hash": "",
+                            "id": "63553223-48a8-403e-98c6-9b8d73444a79",
+                            "last_modified": "2021-09-13T11:59:21",
+                            "metadata_modified": "2021-09-16T19:37:38.235548",
+                            "name": "GeoJSON",
+                            "package_id": "d2a2f5b0-5819-48c8-acc5-410e54e84596",
+                            "position": 8,
+                            "section": "data_downloads",
+                            "state": "active",
+                            "url": "https://data-downloads.slip.wa.gov.au/DPIRD-088/GeoJSON"
+                        },
+                        "dataset-format": {
+                            "confidenceLevel": 33,
+                            "format": "GEOJSON"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "This resource provides the latest snapshot of the dataset as GeoJSON. GeoJSON can be opened in many spatial and non-spatial software packages. Note: When accessing this resource you will be prompted to signup for a free account.",
+                            "downloadURL": "https://data-downloads.slip.wa.gov.au/DPIRD-088/GeoJSON",
+                            "format": "GeoJSON",
+                            "issued": "2021-09-13T11:59:21Z",
+                            "license": "Creative Commons Attribution 4.0",
+                            "modified": "2021-09-13T11:59:21Z",
+                            "title": "GeoJSON"
+                        },
+                        "source": {
+                            "id": "wa",
+                            "name": "Western Australia Government",
+                            "type": "ckan-resource",
+                            "url": "https://catalogue.data.wa.gov.au/api/3/action/resource_show?id=63553223-48a8-403e-98c6-9b8d73444a79"
+                        }
+                    },
+                    "id": "dist-wa-63553223-48a8-403e-98c6-9b8d73444a79",
+                    "name": "GeoJSON"
+                }
+            ]
+        },
+        "dataset-quality-rating": {
+            "dataset-linked-data-rating": {
+                "score": 0.6,
+                "weighting": 1
+            }
+        }
+    },
+    "id": "ds-wa-d2a2f5b0-5819-48c8-acc5-410e54e84596",
+    "name": "Prohibition on Fishing (West Coast Demersal Gillnet and Demersal Longline Interim Managed Fishery) Order 2018 (DPIRD-088)",
+    "sourceTag": "12853da9-8a0c-4dac-86b1-e7e834863e54",
+    "tenantId": 0
+}
