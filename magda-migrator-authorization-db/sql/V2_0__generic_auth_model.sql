@@ -32,19 +32,6 @@ VALUES
 ('object/record/update', 'Update Record', '', (SELECT id FROM resources WHERE uri = 'object/record')),
 ('object/record/delete', 'Delete Record', '', (SELECT id FROM resources WHERE uri = 'object/record'));
 
--- Add resource, operation for access `aspect` record
-INSERT INTO "public"."resources" 
-    ("uri", "name", "description")
-VALUES 
-('object/aspect', 'Aspects', 'Aspect definition record.');
-
-INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
-VALUES 
-('object/aspect/create','Create Record', '', (SELECT id FROM resources WHERE uri = 'object/aspect')),
-('object/aspect/read', 'Read Record', '', (SELECT id FROM resources WHERE uri = 'object/aspect')),
-('object/aspect/update', 'Update Record', '', (SELECT id FROM resources WHERE uri = 'object/aspect')),
-('object/aspect/delete', 'Delete Record', '', (SELECT id FROM resources WHERE uri = 'object/aspect'));
-
 -- Add resource, operation for access `aspect` definition
 INSERT INTO "public"."resources" 
     ("uri", "name", "description")
@@ -97,19 +84,6 @@ VALUES
 ('object/webhook/update', 'Update Webhook Record', '', (SELECT id FROM resources WHERE uri = 'object/webhook')),
 ('object/webhook/delete', 'Delete Webhook Record', '', (SELECT id FROM resources WHERE uri = 'object/webhook')),
 ('object/webhook/ack', 'Acknowledge a previously-deferred webhook notification processing', '', (SELECT id FROM resources WHERE uri = 'object/webhook'));
-
--- Add resource, operation for access `events` 
-INSERT INTO "public"."resources" 
-    ("uri", "name", "description")
-VALUES 
-('object/event', 'Event', 'Registry record events');
-
-INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
-VALUES 
-('object/event/create','Create Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event')),
-('object/event/read', 'Read Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event')),
-('object/event/update', 'Update Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event')),
-('object/event/delete', 'Delete Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event'));
 
 -- Add resource, operation for access `events` 
 INSERT INTO "public"."resources" 
