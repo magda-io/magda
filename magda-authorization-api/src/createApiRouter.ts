@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import isUUID from "is-uuid";
 import bcrypt from "bcrypt";
 
@@ -42,7 +42,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     installStatusRouter(router, status, "/private");
     installStatusRouter(router, status, "/public");
 
-    const MUST_BE_ADMIN = function (req: any, res: any, next: any) {
+    const MUST_BE_ADMIN = function (req: Request, res: Response, next: any) {
         //--- private API requires admin level access
         getUserIdHandling(
             req,
@@ -58,10 +58,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     );
                     if (!user.isAdmin)
                         throw new AuthError(
-                            "Only admin users are authorised to access this API",
+                            "Only admin users are authorised to access this API: " +
+                                req.url,
                             403
                         );
-                    req.user = {
+                    (req as any).user = {
                         // the default session data type is UserToken
                         // But any auth plugin provider could choose to customise the session by adding more fields
                         // avoid losing customise session data here
