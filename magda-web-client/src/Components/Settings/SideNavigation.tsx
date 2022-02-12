@@ -69,8 +69,9 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
     return (
         <div className="side-navigation">
             <div className="sidenav">
-                {menuItems.map((item) => (
+                {menuItems.map((item, idx) => (
                     <Link
+                        key={idx}
                         to={item.path}
                         className={item?.active ? "active" : ""}
                     >

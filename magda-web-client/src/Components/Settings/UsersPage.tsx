@@ -1,22 +1,19 @@
 import React, { FunctionComponent } from "react";
-import { withRouter } from "react-router-dom";
-import { Location } from "history";
 import "./main.scss";
 import SideNavigation from "./SideNavigation";
+import Breadcrumb from "./Breadcrumb";
 
-type PropsType = {
-    location: Location;
-};
-
-const Index: FunctionComponent<PropsType> = (props) => {
+const UsersPage: FunctionComponent = () => {
     return (
         <div className="flex-main-container setting-page-main-container">
             <SideNavigation />
             <div className="main-content-container">
-                {props.location.pathname}
+                <Breadcrumb
+                    items={[{ to: "/settings/users", title: "Users" }]}
+                />
             </div>
         </div>
     );
 };
 
-export default withRouter(Index);
+export default UsersPage;

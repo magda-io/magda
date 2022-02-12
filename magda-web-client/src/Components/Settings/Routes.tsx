@@ -1,6 +1,7 @@
 import React from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
 import withHeader from "Components/Header/withHeader";
+import UsersPage from "./UsersPage";
 import Index from "./Index";
 //import withHeader from "Components/Header/withHeader";
 ///import DatasetAddPage from "Components/Dataset/Add/DatasetAddPage";
@@ -14,7 +15,7 @@ const Routes = () => {
             <Route
                 exact
                 path="/settings/users"
-                component={withHeader(Index, { noContainerClass: true })}
+                component={withHeader(UsersPage, { noContainerClass: true })}
             />
             <Route
                 exact
