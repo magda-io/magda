@@ -107,7 +107,7 @@ export default class Database {
         const result = await this.pool.query(
             ...sqls`SELECT r.id, r.name, rp.permission_id
                 FROM user_roles AS ur
-                LEFT JOIN user u ON u.id = ur.user_id
+                LEFT JOIN users u ON u.id = ur.user_id
                 LEFT JOIN roles r ON r.id = ur.role_id
                 LEFT JOIN role_permissions rp ON rp.role_id = ur.role_id
                 WHERE ${SQLSyntax.joinWithAnd([
@@ -153,8 +153,8 @@ export default class Database {
                 op.uri AS operation_uri,
                 op.name AS operation_name
                 FROM role_permissions rp
-                LEFT JOIN user u ON u.id = ur.user_id
                 LEFT JOIN user_roles ur ON ur.role_id = rp.role_id
+                LEFT JOIN users u ON u.id = ur.user_id
                 LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
                 LEFT JOIN operations op ON op.id = po.operation_id
                 LEFT JOIN permissions p ON p.id = rp.permission_id
