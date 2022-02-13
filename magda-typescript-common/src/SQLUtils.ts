@@ -216,10 +216,10 @@ export async function searchTableRecord<T = any>(
         ? queryConfig.authDecision
         : UnconditionalTrueDecision;
 
-    const limit = parseIntParam(queryConfig?.limit);
-    let offset = parseIntParam(queryConfig?.offset);
-    if (!offset || offset > MAX_PAGE_RECORD_NUMBER) {
-        offset = MAX_PAGE_RECORD_NUMBER;
+    let limit = parseIntParam(queryConfig?.limit);
+    const offset = parseIntParam(queryConfig?.offset);
+    if (!limit || limit > MAX_PAGE_RECORD_NUMBER) {
+        limit = MAX_PAGE_RECORD_NUMBER;
     }
 
     const config: AspectQueryToSqlConfig = queryConfig?.toSqlConfig
