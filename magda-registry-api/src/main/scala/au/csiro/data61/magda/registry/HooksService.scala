@@ -30,6 +30,7 @@ import au.csiro.data61.magda.registry.Directives.{
   requireWebhookPermission,
   requireWebhookUpdateOrCreateWhenNonExistPermission
 }
+import org.postgresql.util.PSQLException
 import spray.json.JsObject
 
 import scala.concurrent.duration._
@@ -368,6 +369,11 @@ class HooksService(
             val result = DB localTx { implicit session =>
               HookPersistence.create(hook, Some(userId)) match {
                 case Success(theResult) => complete(theResult)
+                case Failure(e: PSQLException) if e.getSQLState == "23505" =>
+                  complete(
+                    StatusCodes.BadRequest,
+                    ApiError(s"Duplicated webhook id supplied: ${hook.id}")
+                  )
                 case Failure(exception) =>
                   complete(
                     StatusCodes.BadRequest,

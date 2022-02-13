@@ -120,14 +120,15 @@ object HookPersistence extends Protocols with DiffsonProtocol {
   def create(hook: WebHook, userId: Option[String])(
       implicit session: DBSession
   ): Try[WebHook] = {
-    val theHookId = hook.id match {
-      case None     => UUID.randomUUID().toString()
-      case Some(id) => id
-    }
+    Try {
+      val theHookId = hook.id match {
+        case None     => UUID.randomUUID().toString()
+        case Some(id) => id
+      }
 
-    val userIdSql = userId.map(id => sqls"${id}::UUID").getOrElse(sqls"NULL")
+      val userIdSql = userId.map(id => sqls"${id}::UUID").getOrElse(sqls"NULL")
 
-    sql"""insert into WebHooks (webHookId, name, active, lastEvent, url, config, enabled, ownerId, creatorId, editorId)
+      sql"""insert into WebHooks (webHookId, name, active, lastEvent, url, config, enabled, ownerId, creatorId, editorId)
           values (
             $theHookId,
             ${hook.name},
@@ -140,19 +141,18 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             ${userIdSql},
             ${userIdSql}
            )""".update
-      .apply()
+        .apply()
 
-    val batchParameters = hook.eventTypes
-      .map(
-        eventType =>
-          Seq('webhookId -> theHookId, 'eventTypeId -> eventType.value)
-      )
-      .toSeq
-    sql"""insert into WebHookEvents (webhookId, eventTypeId) values ({webhookId}, {eventTypeId})"""
-      .batchByName(batchParameters: _*)
-      .apply()
+      val batchParameters = hook.eventTypes
+        .map(
+          eventType =>
+            Seq('webhookId -> theHookId, 'eventTypeId -> eventType.value)
+        )
+        .toSeq
+      sql"""insert into WebHookEvents (webhookId, eventTypeId) values ({webhookId}, {eventTypeId})"""
+        .batchByName(batchParameters: _*)
+        .apply()
 
-    Success(
       WebHook(
         id = Some(theHookId),
         name = hook.name,
@@ -169,7 +169,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
         createTime = Some(OffsetDateTime.now()),
         editTime = Some(OffsetDateTime.now())
       )
-    )
+    }
   }
 
   def delete(hookId: String)(implicit session: DBSession): Try[Boolean] = {
