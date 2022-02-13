@@ -76,7 +76,7 @@ class AuthApiClientSpec
         AuthDecisionReqConfig("object/record/read")
       )
       resFuture.map { decision =>
-        decision.hasWarns shouldBe false
+        decision.hasWarns.get shouldBe false
         decision.hasResidualRules shouldBe false
         decision.result shouldBe Some(JsTrue)
         decision.residualRules shouldBe None
@@ -181,7 +181,7 @@ class AuthApiClientSpec
         AuthDecisionReqConfig("object/someObject/someOperation")
       )
       resFuture.map { decision =>
-        decision.hasWarns shouldBe false
+        decision.hasWarns.get shouldBe false
         decision.hasResidualRules shouldBe false
         decision.result shouldBe Some(JsTrue)
         decision.residualRules shouldBe None
@@ -263,7 +263,7 @@ class AuthApiClientSpec
       )
 
       resFuture.map { decision =>
-        decision.hasWarns shouldBe false
+        decision.hasWarns.get shouldBe false
         decision.hasResidualRules shouldBe false
         decision.result shouldBe Some(JsTrue)
         decision.residualRules shouldBe None
@@ -361,7 +361,7 @@ class AuthApiClientSpec
       )
 
       resFuture.map { decision =>
-        decision.hasWarns shouldBe false
+        decision.hasWarns.get shouldBe false
         decision.hasResidualRules shouldBe false
         decision.result shouldBe Some(JsTrue)
         decision.residualRules shouldBe None
@@ -438,7 +438,7 @@ class AuthApiClientSpec
       )
 
       resFuture.map { decision =>
-        decision.hasWarns shouldBe false
+        decision.hasWarns.get shouldBe false
         decision.hasResidualRules shouldBe false
         decision.result shouldBe Some(JsTrue)
         decision.residualRules shouldBe None
@@ -496,7 +496,7 @@ class AuthApiClientSpec
     testSampleResponse(
       "simple.json",
       decision => {
-        decision.hasWarns shouldBe false
+        decision.hasWarns.get shouldBe false
         decision.warns shouldBe None
         decision.hasResidualRules shouldBe true
         decision.result shouldBe None
@@ -520,7 +520,7 @@ class AuthApiClientSpec
     testSampleResponse(
       "singleTermAspectRef.json",
       decision => {
-        decision.hasWarns shouldBe false
+        decision.hasWarns.get shouldBe false
         decision.warns shouldBe None
         decision.hasResidualRules shouldBe true
         decision.result shouldBe None
@@ -573,7 +573,7 @@ class AuthApiClientSpec
     testSampleResponse(
       "unconditionalTrue.json",
       decision => {
-        decision.hasWarns shouldBe false
+        decision.hasWarns.get shouldBe false
         decision.warns shouldBe None
         decision.hasResidualRules shouldBe false
         decision.result shouldBe Some(JsTrue)
@@ -584,7 +584,7 @@ class AuthApiClientSpec
     testSampleResponse(
       "unconditionalFalseSimple.json",
       decision => {
-        decision.hasWarns shouldBe false
+        decision.hasWarns.get shouldBe false
         decision.warns shouldBe None
         decision.hasResidualRules shouldBe false
         decision.result shouldBe Some(JsFalse)
