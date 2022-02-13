@@ -141,9 +141,9 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             expect(scope.isDone()).to.be.equal(true);
             expect(data.unknowns).to.have.members(["input.object"]);
             expect(data.query).to.be.equal("data.entrypoint.allow");
-            expect(data.input.user.roles).to.have.members([
-                ANONYMOUS_USERS_ROLE_ID
-            ]);
+            expect(
+                data.input.user.roles?.map((item: any) => item.id)
+            ).to.have.members([ANONYMOUS_USERS_ROLE_ID]);
             expect(data.input.operationUri).to.equal(
                 "object/any-object/any-operation"
             );
@@ -185,14 +185,14 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
             await req.then((res) => {
                 expect(res.body.hasResidualRules).to.be.equal(false);
-                expect(res.body.value).to.be.equal(false);
+                expect(res.body.result).to.be.equal(false);
             });
             expect(scope.isDone()).to.be.equal(true);
 
             expect(data.unknowns).to.be.undefined;
-            expect(data.input.user.roles).to.have.members([
-                ANONYMOUS_USERS_ROLE_ID
-            ]);
+            expect(
+                data.input.user.roles?.map((item: any) => item.id)
+            ).to.have.members([ANONYMOUS_USERS_ROLE_ID]);
             expect(data.input.operationUri).to.equal(
                 "object/any-object/any-operation"
             );
@@ -237,9 +237,9 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
             expect(data.unknowns).to.have.members(["input.object.any-object"]);
             expect(data.query).to.be.equal("data.entrypoint.allow");
-            expect(data.input.user.roles).to.have.members([
-                ANONYMOUS_USERS_ROLE_ID
-            ]);
+            expect(
+                data.input.user.roles?.map((item: any) => item.id)
+            ).to.have.members([ANONYMOUS_USERS_ROLE_ID]);
             expect(data.input.operationUri).to.equal(
                 "object/any-object/any-operation"
             );
@@ -270,9 +270,9 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             expect(data.unknowns).to.have.members(["input.x", "input.y"]);
             expect(data.input.resourceUri).to.equal("x/y");
             expect(data.query).to.be.equal("data.entrypoint.allow");
-            expect(data.input.user.roles).to.have.members([
-                ANONYMOUS_USERS_ROLE_ID
-            ]);
+            expect(
+                data.input.user.roles?.map((item: any) => item.id)
+            ).to.have.members([ANONYMOUS_USERS_ROLE_ID]);
             expect(data.input.operationUri).to.equal(
                 "object/any-object/any-operation"
             );
@@ -304,9 +304,9 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             expect(data.unknowns).to.have.members(["input.x", "input.y"]);
             expect(data.input.resourceUri).to.equal("x/y");
             expect(data.query).to.be.equal("data.entrypoint.allow");
-            expect(data.input.user.roles).to.have.members([
-                ANONYMOUS_USERS_ROLE_ID
-            ]);
+            expect(
+                data.input.user.roles?.map((item: any) => item.id)
+            ).to.have.members([ANONYMOUS_USERS_ROLE_ID]);
             expect(data.input.operationUri).to.equal(
                 "object/any-object/any-operation"
             );
@@ -339,9 +339,9 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
             expect(data.unknowns).to.be.undefined;
             expect(data.query).to.be.undefined;
-            expect(data.input.user.roles).to.have.members([
-                ANONYMOUS_USERS_ROLE_ID
-            ]);
+            expect(
+                data.input.user.roles?.map((item: any) => item.id)
+            ).to.have.members([ANONYMOUS_USERS_ROLE_ID]);
             expect(data.input.operationUri).to.equal(
                 "object/any-object/any-operation"
             );
@@ -376,9 +376,9 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
             expect(data.unknowns).to.be.undefined;
             expect(data.query).to.be.undefined;
-            expect(data.input.user.roles).to.have.members([
-                ANONYMOUS_USERS_ROLE_ID
-            ]);
+            expect(
+                data.input.user.roles?.map((item: any) => item.id)
+            ).to.have.members([ANONYMOUS_USERS_ROLE_ID]);
             expect(data.input.operationUri).to.equal(
                 "object/any-object/any-operation"
             );
