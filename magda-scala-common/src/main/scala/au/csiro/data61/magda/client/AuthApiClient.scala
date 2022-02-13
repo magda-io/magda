@@ -169,13 +169,12 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
       } else {
         Unmarshal(res).to[Auth.AuthDecision].recover {
           case e: Throwable =>
-            logger.error(
-              "Failed to Unmarshal auth decision response: {}",
-              res.entity.httpEntity
-                .asInstanceOf[HttpEntity.Strict]
-                .data
-                .utf8String
-            )
+            res.entity.dataBytes.runFold(ByteString(""))(_ ++ _).map { body =>
+              logger.error(
+                "Failed to Unmarshal auth decision response: {}",
+                body.utf8String
+              )
+            }
             throw e
         }
       }

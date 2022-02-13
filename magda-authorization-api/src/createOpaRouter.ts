@@ -155,7 +155,6 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         normaliseInputField(reqData);
 
         reqData.input.user = userInfo;
-        reqData.input.user.roles = userInfo.roles.map((role) => role.id);
 
         const sessionClaim = getUserSession(req, jwtSecret).valueOr({});
 
@@ -494,7 +493,8 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                         }
                         const resData = {
                             hasResidualRules: false,
-                            value: fullResponse.body.result,
+                            result: fullResponse.body.result,
+                            hasWarns: false,
                             unknowns: [] as string[]
                         };
                         res.status(200).send(resData);
