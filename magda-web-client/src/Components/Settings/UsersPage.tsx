@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState } from "react";
 import "./main.scss";
+import "./UsersPage.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
 import { useAsync } from "react-async-hook";
@@ -8,6 +9,8 @@ import Table from "rsuite/Table";
 import Pagination from "rsuite/Pagination";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
+import { Input, InputGroup } from "rsuite";
+import { MdSearch } from "react-icons/md";
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
@@ -18,13 +21,17 @@ const Cell = Table.Cell;
 const UsersPage: FunctionComponent = () => {
     const [keyword, setKeyword] = useState<string>("");
     const [page, setPage] = useState<number>(0);
-    const [limit, setLimit] = React.useState(DEFAULT_MAX_PAGE_RECORD_NUMBER);
+
+    const [limit, setLimit] = useState(DEFAULT_MAX_PAGE_RECORD_NUMBER);
     const offset = page * limit;
+
+    const [searchInputText, setSearchInputText] = useState<string>("");
+
     const { result: users, loading: isLoading } = useAsync(
         async (keyword: string, offset: number, limit: number) => {
             try {
                 return await queryUsers({
-                    keyword,
+                    keyword: keyword.trim() ? keyword : undefined,
                     offset,
                     limit
                 });
@@ -45,16 +52,34 @@ const UsersPage: FunctionComponent = () => {
         [keyword, offset, limit]
     );
 
-    console.log(setKeyword);
-    console.log(users);
-
     return (
-        <div className="flex-main-container setting-page-main-container">
+        <div className="flex-main-container setting-page-main-container users-page">
             <SideNavigation />
             <div className="main-content-container">
                 <Breadcrumb
                     items={[{ to: "/settings/users", title: "Users" }]}
                 />
+                <div className="search-button-container">
+                    <div className="search-button-inner-wrapper">
+                        <InputGroup size="md" inside>
+                            <Input
+                                placeholder="Enter keyword to search..."
+                                value={searchInputText}
+                                onChange={setSearchInputText}
+                                onKeyDown={(e) => {
+                                    if (e.keyCode === 13) {
+                                        setKeyword(searchInputText);
+                                    }
+                                }}
+                            />
+                            <InputGroup.Button
+                                onClick={() => setKeyword(searchInputText)}
+                            >
+                                <MdSearch />
+                            </InputGroup.Button>
+                        </InputGroup>
+                    </div>
+                </div>
 
                 <div>
                     <Table

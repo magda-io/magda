@@ -201,11 +201,15 @@ export type UserRecord = {
 export async function queryUsers(
     params?: QueryUsersParams
 ): Promise<UserRecord[]> {
-    if (params?.noCache === true) {
-        return await getRequestNoCache<UserRecord[]>(
-            `${config.authApiUrl}users`
-        );
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryUsersParams);
+    const endpointUrl = urijs(`${config.authApiUrl}users`)
+        .search(queryParams as { [key: string]: any })
+        .toString();
+    if (noCache === true) {
+        return await getRequestNoCache<UserRecord[]>(endpointUrl);
     } else {
-        return await request<UserRecord[]>("GET", `${config.authApiUrl}users`);
+        return await request<UserRecord[]>("GET", endpointUrl);
     }
 }
