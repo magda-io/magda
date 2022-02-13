@@ -8,6 +8,7 @@ import AuthDecisionQueryClient, {
     AuthDecisionReqConfig
 } from "../opa/AuthDecisionQueryClient";
 import AuthDecision, { isTrueEquivalent } from "../opa/AuthDecision";
+import { DEFAULT_ADMIN_USER_ID } from "./constants";
 
 export const mustBeLoggedIn = (jwtSecret: string) =>
     function (this: any, req: Request, res: Response, next: () => void) {
@@ -20,14 +21,18 @@ export const mustBeLoggedIn = (jwtSecret: string) =>
 /**
  * Find the user making the request. Assign it to req passport style.
  */
-export const getUser = (baseAuthUrl: string, jwtSecret: string) => (
-    req: Request,
-    res: Response,
-    next: () => void
-) => {
+export const getUser = (
+    baseAuthUrl: string,
+    jwtSecret: string,
+    actionUserId?: string
+) => (req: Request, res: Response, next: () => void) => {
     getUserIdFromReq(req, jwtSecret).caseOf({
         just: (userId) => {
-            const apiClient = new ApiClient(baseAuthUrl, jwtSecret, userId);
+            const apiClient = new ApiClient(
+                baseAuthUrl,
+                jwtSecret,
+                actionUserId ? actionUserId : DEFAULT_ADMIN_USER_ID
+            );
             apiClient
                 .getUser(userId)
                 .then((maybeUser) => {
