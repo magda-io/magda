@@ -3,9 +3,11 @@ package au.csiro.data61.magda.client
 import akka.stream.Materializer
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
+
 import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.model.Auth.AuthProtocols
 import au.csiro.data61.magda.model.Auth.User
+
 import java.net.URL
 import scala.concurrent.Future
 import akka.http.scaladsl.unmarshalling.Unmarshal
@@ -16,9 +18,10 @@ import au.csiro.data61.magda.opa.OpaTypes.OpaQuery
 import akka.http.scaladsl.model._
 import spray.json._
 import akka.util.ByteString
+
 import scala.concurrent.duration._
 import scala.collection.mutable.ListBuffer
-import io.lemonlabs.uri.{Url, QueryString, UrlPath}
+import io.lemonlabs.uri.{QueryString, Url, UrlPath}
 import au.csiro.data61.magda.model.Auth
 
 class AuthApiClient(authHttpFetcher: HttpFetcher)(
@@ -164,7 +167,17 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
           )
         }
       } else {
-        Unmarshal(res).to[Auth.AuthDecision]
+        Unmarshal(res).to[Auth.AuthDecision].recover {
+          case e: Throwable =>
+            logger.error(
+              "Failed to Unmarshal auth decision response: {}",
+              res.entity.httpEntity
+                .asInstanceOf[HttpEntity.Strict]
+                .data
+                .utf8String
+            )
+            throw e
+        }
       }
     }
 
