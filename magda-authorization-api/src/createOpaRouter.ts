@@ -15,6 +15,7 @@ export interface OpaRouterOptions {
     opaUrl: string;
     database: Database;
     jwtSecret: string;
+    debug?: boolean;
 }
 
 const opaRoutes = [
@@ -474,6 +475,12 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 : `${opaUrl}v1/data/entrypoint/allow`;
             const fullResponse = await request(apiEndpoint, reqOpts);
 
+            if (options?.debug === true) {
+                console.log("Auth debug info:");
+                console.log(`Auth request to: ${apiEndpoint}`);
+                console.log(`Auth request options: ${JSON.stringify(reqOpts)}`);
+            }
+
             if (
                 fullResponse.statusCode >= 200 &&
                 fullResponse.statusCode < 300
@@ -500,6 +507,11 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                             hasWarns: false,
                             unknowns: [] as string[]
                         };
+                        if (options?.debug === true) {
+                            console.log(
+                                `Auth decision: ${JSON.stringify(resData)}`
+                            );
+                        }
                         res.status(200).send(resData);
                         return;
                     }
@@ -537,7 +549,11 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                         if (parser.hasWarns) {
                             resData.warns = parser.warns;
                         }
-
+                        if (options?.debug === true) {
+                            console.log(
+                                `Auth decision: ${JSON.stringify(resData)}`
+                            );
+                        }
                         res.status(200).send(resData);
                     }
                 }
