@@ -429,6 +429,9 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
             reqOpts.json.input.operationUri = operationUri;
             reqOpts.json.input.resourceUri = resourceUri;
+            delete reqOpts.json.operationUri;
+            delete reqOpts.json.resourceUri;
+
             if (reqOpts?.json?.unknowns === "") {
                 delete reqOpts.json.unknowns;
             }
