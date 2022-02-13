@@ -176,3 +176,36 @@ export async function setAdmin(userId: string, isAdmin: boolean) {
         }
     }
 }
+
+export type QueryUsersParams = {
+    keyword?: string;
+    id?: string;
+    source?: string;
+    orgUnitId?: string;
+    sourceId?: string;
+    offset?: number;
+    limit?: number;
+    noCache?: boolean;
+};
+
+export type UserRecord = {
+    id: string;
+    displayName: string;
+    email: string;
+    photoURL: string;
+    source: string;
+    sourceId: string;
+    orgUnitId: string;
+};
+
+export async function queryUsers(
+    params?: QueryUsersParams
+): Promise<UserRecord[]> {
+    if (params?.noCache === true) {
+        return await getRequestNoCache<UserRecord[]>(
+            `${config.authApiUrl}users`
+        );
+    } else {
+        return await request<UserRecord[]>("GET", `${config.authApiUrl}users`);
+    }
+}

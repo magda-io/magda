@@ -1,6 +1,7 @@
 import React from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
 import withHeader from "Components/Header/withHeader";
+import "rsuite/dist/rsuite.min.css";
 import UsersPage from "./UsersPage";
 import Index from "./Index";
 //import withHeader from "Components/Header/withHeader";

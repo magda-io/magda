@@ -41,6 +41,11 @@ const argv = addJwtSecretFromEnvVar(
             describe: "The shared secret for intra-network communication",
             type: "string"
         })
+        .option("debug", {
+            describe: "When set to true, print verbose auth debug info to log.",
+            type: "boolean",
+            default: process.env.DEBUG == "true" ? true : false
+        })
         .option("tenantId", {
             describe: "The tenant id for intra-network communication",
             type: "number",
@@ -80,7 +85,8 @@ app.use(
     createOpaRouter({
         opaUrl: argv.opaUrl,
         jwtSecret: argv.jwtSecret,
-        database
+        database,
+        debug: argv.debug
     })
 );
 
