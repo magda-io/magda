@@ -11,6 +11,7 @@ import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
 import { Input, InputGroup } from "rsuite";
 import { MdSearch } from "react-icons/md";
+import AccessVerification from "./AccessVerification";
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
@@ -59,11 +60,12 @@ const UsersPage: FunctionComponent = () => {
                 <Breadcrumb
                     items={[{ to: "/settings/users", title: "Users" }]}
                 />
+                <AccessVerification operationUri="authObject/user/read" />
                 <div className="search-button-container">
                     <div className="search-button-inner-wrapper">
                         <InputGroup size="md" inside>
                             <Input
-                                placeholder="Enter keyword to search..."
+                                placeholder="Enter a keyword to search..."
                                 value={searchInputText}
                                 onChange={setSearchInputText}
                                 onKeyDown={(e) => {
@@ -87,39 +89,59 @@ const UsersPage: FunctionComponent = () => {
                         data={(users?.length ? users : []) as any}
                         loading={isLoading}
                     >
-                        <Column width={50} align="center" fixed>
+                        <Column width={100} align="center" resizable>
                             <HeaderCell>Id</HeaderCell>
                             <Cell dataKey="id" />
                         </Column>
 
-                        <Column width={100} flexGrow={1}>
+                        <Column width={150} resizable>
                             <HeaderCell>Display Name</HeaderCell>
                             <Cell dataKey="displayName" />
                         </Column>
 
-                        <Column width={100}>
+                        <Column width={100} resizable>
                             <HeaderCell>Email</HeaderCell>
                             <Cell dataKey="email" />
                         </Column>
 
-                        <Column width={200}>
+                        <Column width={100} resizable>
                             <HeaderCell>Photo URL</HeaderCell>
                             <Cell dataKey="photoURL" />
                         </Column>
-                        <Column width={200}>
+                        <Column width={100} resizable>
                             <HeaderCell>Source</HeaderCell>
                             <Cell dataKey="source" />
                         </Column>
-                        <Column width={100}>
+                        <Column width={100} resizable>
                             <HeaderCell>Source ID</HeaderCell>
                             <Cell dataKey="sourceId" />
                         </Column>
-                        <Column width={100}>
+                        <Column width={100} resizable>
                             <HeaderCell>Orgnasitional Unit ID</HeaderCell>
                             <Cell dataKey="sourceId" />
                         </Column>
+                        <Column width={120} fixed="right">
+                            <HeaderCell>Action</HeaderCell>
+                            <Cell>
+                                {(rowData) => {
+                                    function handleAction() {
+                                        alert(`id:${(rowData as any).id}`);
+                                    }
+                                    return (
+                                        <span>
+                                            <a onClick={handleAction}> Edit </a>{" "}
+                                            |{" "}
+                                            <a onClick={handleAction}>
+                                                {" "}
+                                                Remove{" "}
+                                            </a>
+                                        </span>
+                                    );
+                                }}
+                            </Cell>
+                        </Column>
                     </Table>
-                    <div style={{ padding: 20 }}>
+                    <div className="pagination-container">
                         <Pagination
                             prev
                             next
