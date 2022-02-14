@@ -10,6 +10,7 @@
 - Refactor Indexer code to remove the redundant index queue
 - Allow overiding publisher / format indice version number for search API
 - #3301 Overide "LIQ NUM" & "REG AUD NUM" to category column type in Chart Preview
+- General home tiles & background visual improvements.
 
 ## 1.1.0
 
