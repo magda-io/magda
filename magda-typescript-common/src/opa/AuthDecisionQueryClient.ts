@@ -20,6 +20,9 @@ class AuthDecisionQueryClient {
     private readonly authApiBaseUrl: string = "";
     public readonly skipQuery: boolean;
 
+    public static fetchOptions: RequestInit = {};
+    public fetchOptions: RequestInit = {};
+
     constructor(authApiBaseUrl: string, skipQuery: boolean = false) {
         this.authApiBaseUrl = authApiBaseUrl;
         this.skipQuery = skipQuery;
@@ -69,6 +72,8 @@ class AuthDecisionQueryClient {
         const reqUri = baseUri.segmentCoded(urlSegments).search(queryParams);
 
         const fetchConfig: RequestInit = {
+            ...AuthDecisionQueryClient.fetchOptions,
+            ...this.fetchOptions,
             method: usePost ? "POST" : "GET"
         };
 
