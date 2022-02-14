@@ -26,8 +26,8 @@ class AuthDecisionQueryClient {
     }
 
     async getAuthDecision(
-        jwtToken: string | undefined,
-        config: AuthDecisionReqConfig
+        config: AuthDecisionReqConfig,
+        jwtToken?: string
     ): Promise<AuthDecision> {
         if (this.skipQuery) {
             console.warn(

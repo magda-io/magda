@@ -88,8 +88,8 @@ export function withAuthDecision(
         try {
             const jwtToken = req.get("X-Magda-Session");
             const authDecision = await authDecisionClient.getAuthDecision(
-                jwtToken,
-                config
+                config,
+                jwtToken
             );
             res.locals.authDecision = authDecision;
             next();
