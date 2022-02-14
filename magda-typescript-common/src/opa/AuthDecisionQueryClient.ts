@@ -63,7 +63,7 @@ class AuthDecisionQueryClient {
         const baseUri = urijs(this.authApiBaseUrl);
         const urlSegments = baseUri
             .segmentCoded()
-            .concat(["v0", "opa", "decision"])
+            .concat(["opa", "decision"])
             .concat(urijs(config.operationUri).segmentCoded());
 
         const reqUri = baseUri.segmentCoded(urlSegments).search(queryParams);

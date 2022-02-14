@@ -64,8 +64,8 @@ const database = new Database({
 
 const authDecisionClient = new AuthDecisionQueryClient(
     argv.listenPort == 80
-        ? "http://localhost/"
-        : `http://localhost:${argv.listenPort}/`
+        ? "http://localhost/v0"
+        : `http://localhost:${argv.listenPort}/v0`
 );
 
 app.use(
@@ -80,15 +80,19 @@ app.use(
     })
 );
 
-app.use(
-    "/v0/opa",
-    createOpaRouter({
-        opaUrl: argv.opaUrl,
-        jwtSecret: argv.jwtSecret,
-        database,
-        debug: argv.debug
-    })
-);
+const opaRouter = createOpaRouter({
+    opaUrl: argv.opaUrl,
+    jwtSecret: argv.jwtSecret,
+    database,
+    debug: argv.debug
+});
+
+// make sure OPA is accessible in a consistent way within cluster or outside cluster.
+// i.e. authApiBaseUrl/opa
+// here `authApiBaseUrl` can be a within cluster access url: e.g. http://authorization-api/v0/
+// or an outside cluster url:  e.g. https://my-magda-domain/api/v0/auth/
+app.use("/v0/public/opa", opaRouter);
+app.use("/v0/opa", opaRouter);
 
 app.listen(argv.listenPort);
 console.log("Auth API started on port " + argv.listenPort);
