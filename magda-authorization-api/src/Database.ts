@@ -461,7 +461,12 @@ export default class Database {
             user.orgUnit = null;
         } else {
             user.orgUnit = (
-                await this.orgQueryer.getNodeById(user.orgUnitId)
+                await this.orgQueryer.getNodeById(user.orgUnitId, [
+                    "id",
+                    "name",
+                    "left",
+                    "right"
+                ])
             ).valueOr(null);
             user.managingOrgUnitIds = (
                 await this.orgQueryer.getAllChildren(user.orgUnitId, true, [
