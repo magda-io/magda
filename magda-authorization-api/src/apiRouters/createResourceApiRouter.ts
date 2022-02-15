@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import Database from "../Database";
 import respondWithError from "../respondWithError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
@@ -61,13 +61,11 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // get records meet selection criteria
-    router.get(
-        "/",
-        withAuthDecision(authDecisionClient, {
-            operationUri: "authObject/resource/read"
-        }),
-        async function (req, res) {
+    function createFetchResourcesHandler(
+        returnCount: boolean,
+        apiName: string
+    ) {
+        return async function fetchResources(req: Request, res: Response) {
             try {
                 const conditions: SQLSyntax[] = [];
                 if (req.query?.keyword) {
@@ -82,6 +80,9 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                             )
                         ).roundBracket()
                     );
+                }
+                if (req.query?.id) {
+                    conditions.push(sqls`"id" = ${req.query.id}`);
                 }
                 if (req.query?.uri) {
                     conditions.push(sqls`"uri" = ${req.query.uri}`);
@@ -92,15 +93,31 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                     conditions,
                     {
                         authDecision: res.locals.authDecision,
+                        selectedFields: [
+                            returnCount ? sqls`COUNT(*) as count` : sqls`*`
+                        ],
                         offset: req?.query?.offset as string,
                         limit: req?.query?.limit as string
                     }
                 );
-                res.json(records);
+                if (returnCount) {
+                    res.json(records[0]);
+                } else {
+                    res.json(records);
+                }
             } catch (e) {
-                respondWithError("GET resources", res, e);
+                respondWithError(apiName, res, e);
             }
-        }
+        };
+    }
+
+    // get records meet selection criteria
+    router.get(
+        "/",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/resource/read"
+        }),
+        createFetchResourcesHandler(false, "Get resources")
     );
 
     // get records count
@@ -109,36 +126,7 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         withAuthDecision(authDecisionClient, {
             operationUri: "authObject/resource/read"
         }),
-        async function (req, res) {
-            try {
-                const conditions: SQLSyntax[] = [];
-                if (req.query?.keyword) {
-                    const keyword = "%" + req.query?.keyword + "%";
-                    conditions.push(
-                        SQLSyntax.joinWithOr(
-                            resourceKeywordSearchFields.map(
-                                (field) =>
-                                    sqls`${escapeIdentifier(
-                                        field
-                                    )} ILIKE ${keyword}`
-                            )
-                        ).roundBracket()
-                    );
-                }
-                if (req.query?.uri) {
-                    conditions.push(sqls`"uri" = ${req.query.uri}`);
-                }
-                const number = await countTableRecord(
-                    database.getPool(),
-                    "resources",
-                    conditions,
-                    res.locals.authDecision
-                );
-                res.json({ count: number });
-            } catch (e) {
-                respondWithError("GET resources", res, e);
-            }
-        }
+        createFetchResourcesHandler(true, "Get resources count")
     );
 
     // create record
