@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useRef } from "react";
 import { withRouter, match } from "react-router";
 import { Location, History } from "history";
 import "./main.scss";
@@ -29,6 +29,9 @@ import {
     MdDeleteForever,
     MdEditNote
 } from "react-icons/md";
+import ViewOrgUnitPopUp, {
+    RefType as ViewOrgUnitPopUpRefType
+} from "./ViewOrgUnitPopUp";
 
 interface ItemType extends ItemDataType {
     rawData: OrgUnit;
@@ -40,34 +43,41 @@ type PropsType = {
     match: match<{ userId: string }>;
 };
 
-function createNodeLabel(node: OrgUnit, isRoot?: boolean) {
-    return (
-        <Dropdown
-            title={<span className="node-title">{node.name}</span>}
-            icon={isRoot ? <MdFolderSpecial /> : <MdFolder />}
-        >
-            <Dropdown.Item icon={<MdCreateNewFolder />}>
-                <span className="node-dropdown-menu-item-text">New</span>
-            </Dropdown.Item>
-            <Dropdown.Item icon={<MdEditNote />}>
-                <span className="node-dropdown-menu-item-text">Edit</span>
-            </Dropdown.Item>
-            <Dropdown.Item icon={<MdOutlinePageview />}>
-                <span className="node-dropdown-menu-item-text">
-                    View Details
-                </span>
-            </Dropdown.Item>
-            {isRoot ? null : (
-                <Dropdown.Item icon={<MdDeleteForever />}>
-                    <span className="node-dropdown-menu-item-text">Delete</span>
-                </Dropdown.Item>
-            )}
-        </Dropdown>
-    );
-}
-
 const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
     const [data, setData] = useState<ItemType[]>([]);
+    const viewDetailPopUpRef = useRef<ViewOrgUnitPopUpRefType>(null);
+
+    function createNodeLabel(node: OrgUnit, isRoot?: boolean) {
+        return (
+            <Dropdown
+                title={<span className="node-title">{node.name}</span>}
+                icon={isRoot ? <MdFolderSpecial /> : <MdFolder />}
+            >
+                <Dropdown.Item icon={<MdCreateNewFolder />}>
+                    <span className="node-dropdown-menu-item-text">New</span>
+                </Dropdown.Item>
+                <Dropdown.Item icon={<MdEditNote />}>
+                    <span className="node-dropdown-menu-item-text">Edit</span>
+                </Dropdown.Item>
+                <Dropdown.Item
+                    icon={<MdOutlinePageview />}
+                    onClick={() => viewDetailPopUpRef?.current?.open(node.id)}
+                >
+                    <span className="node-dropdown-menu-item-text">
+                        View Details
+                    </span>
+                </Dropdown.Item>
+                {isRoot ? null : (
+                    <Dropdown.Item icon={<MdDeleteForever />}>
+                        <span className="node-dropdown-menu-item-text">
+                            Delete
+                        </span>
+                    </Dropdown.Item>
+                )}
+            </Dropdown>
+        );
+    }
+
     const {
         result: userRootNode,
         loading: isUserRootNodeLoading
@@ -110,6 +120,7 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
             <div className="main-content-container">
                 <Breadcrumb items={[{ title: "Org Units" }]} />
                 <AccessVerification operationUri="authObject/orgUnit/read" />
+                <ViewOrgUnitPopUp ref={viewDetailPopUpRef} />
                 {isUserRootNodeLoading ? (
                     <Loader content="Loading..." />
                 ) : !userRootNode ? (
