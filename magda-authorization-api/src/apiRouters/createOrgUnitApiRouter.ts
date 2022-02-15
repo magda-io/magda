@@ -115,7 +115,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.get(
-        "/orgunits",
+        "/",
         requirePermission(authDecisionClient, "authObject/orgUnit/read"),
         async (req, res) => {
             try {
@@ -166,7 +166,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.get(
-        "/orgunits/root",
+        "/root",
         requirePermission(authDecisionClient, "authObject/orgUnit/read"),
         async (req, res) => {
             handleMaybePromise(

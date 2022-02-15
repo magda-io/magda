@@ -63,6 +63,8 @@ export default class Database {
             "id",
             "name",
             "description",
+            "left",
+            "right",
             "create_by",
             "create_time",
             "edit_by",
@@ -464,8 +466,13 @@ export default class Database {
                 await this.orgQueryer.getNodeById(user.orgUnitId, [
                     "id",
                     "name",
+                    "description",
                     "left",
-                    "right"
+                    "right",
+                    "create_by",
+                    "create_time",
+                    "edit_by",
+                    "edit_time"
                 ])
             ).valueOr(null);
             user.managingOrgUnitIds = (
