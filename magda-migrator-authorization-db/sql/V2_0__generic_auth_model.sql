@@ -1,3 +1,10 @@
+-- Add default org unit root node if not exists
+INSERT INTO "public"."org_units" ("name", "left", "right")
+SELECT 'Default Root', 1, 2
+WHERE NOT EXISTS (
+	SELECT 1 FROM "public"."org_units" WHERE "left" = 1
+);
+
 -- mark resource `registry/record` as depreciated
 UPDATE public.resources
 SET "name" = CONCAT('(depreciated) ',"name"), "description" = 'this resource is depreciated and will be removed in future versions'
