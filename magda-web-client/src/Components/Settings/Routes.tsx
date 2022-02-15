@@ -3,9 +3,9 @@ import { Route, Switch, Redirect } from "react-router-dom";
 import withHeader from "Components/Header/withHeader";
 import "rsuite/dist/rsuite.min.css";
 import UsersPage from "./UsersPage";
+import RolesPage from "./RolesPage";
+import UserRolesPage from "./UserRolesPage";
 import Index from "./Index";
-//import withHeader from "Components/Header/withHeader";
-///import DatasetAddPage from "Components/Dataset/Add/DatasetAddPage";
 
 const Routes = () => {
     return (
@@ -20,8 +20,15 @@ const Routes = () => {
             />
             <Route
                 exact
+                path="/settings/users/:userId/roles"
+                component={withHeader(UserRolesPage, {
+                    noContainerClass: true
+                })}
+            />
+            <Route
+                exact
                 path="/settings/roles"
-                component={withHeader(Index, { noContainerClass: true })}
+                component={withHeader(RolesPage, { noContainerClass: true })}
             />
             <Route
                 exact

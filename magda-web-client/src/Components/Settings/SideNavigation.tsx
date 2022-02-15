@@ -58,7 +58,7 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
         ? props.menuItems
         : defaultMenuItems
     ).map((item) => {
-        if (item.path === props.location.pathname) {
+        if (props.location.pathname.indexOf(item.path) === 0) {
             item.active = true;
         } else {
             item.active = false;

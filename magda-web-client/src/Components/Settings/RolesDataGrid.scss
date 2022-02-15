@@ -1,0 +1,18 @@
+.roles-data-grid {
+    .search-button-container {
+        position: relative;
+        height: 42px;
+        .search-button-inner-wrapper {
+            position: absolute;
+            right: 5px;
+            width: 250px;
+            svg {
+                width: 24px;
+                height: 24px;
+            }
+        }
+    }
+    .pagination-container {
+        padding: 20px;
+    }
+}

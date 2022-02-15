@@ -1,4 +1,6 @@
 import React, { FunctionComponent, useState } from "react";
+import { withRouter } from "react-router-dom";
+import { Location, History } from "history";
 import "./main.scss";
 import "./UsersPage.scss";
 import SideNavigation from "./SideNavigation";
@@ -10,8 +12,10 @@ import Pagination from "rsuite/Pagination";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
 import { Input, InputGroup } from "rsuite";
-import { MdSearch } from "react-icons/md";
+import { MdSearch, MdMode, MdSwitchAccount } from "react-icons/md";
 import AccessVerification from "./AccessVerification";
+import IconButton from "rsuite/IconButton";
+import ButtonGroup from "rsuite/ButtonGroup";
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
@@ -19,7 +23,12 @@ const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
 const Cell = Table.Cell;
 
-const UsersPage: FunctionComponent = () => {
+type PropsType = {
+    location: Location;
+    history: History;
+};
+
+const UsersPage: FunctionComponent<PropsType> = (props) => {
     const [keyword, setKeyword] = useState<string>("");
     const [page, setPage] = useState<number>(0);
 
@@ -89,7 +98,7 @@ const UsersPage: FunctionComponent = () => {
                         data={(users?.length ? users : []) as any}
                         loading={isLoading}
                     >
-                        <Column width={100} align="center" resizable>
+                        <Column width={150} align="center" resizable>
                             <HeaderCell>Id</HeaderCell>
                             <Cell dataKey="id" />
                         </Column>
@@ -122,20 +131,34 @@ const UsersPage: FunctionComponent = () => {
                         </Column>
                         <Column width={120} fixed="right">
                             <HeaderCell>Action</HeaderCell>
-                            <Cell>
+                            <Cell
+                                verticalAlign="middle"
+                                style={{ padding: "0px" }}
+                            >
                                 {(rowData) => {
                                     function handleAction() {
                                         alert(`id:${(rowData as any).id}`);
                                     }
                                     return (
-                                        <span>
-                                            <a onClick={handleAction}> Edit </a>{" "}
-                                            |{" "}
-                                            <a onClick={handleAction}>
-                                                {" "}
-                                                Remove{" "}
-                                            </a>
-                                        </span>
+                                        <ButtonGroup>
+                                            <IconButton
+                                                size="md"
+                                                ria-label="Edit User"
+                                                icon={<MdMode />}
+                                            />
+                                            <IconButton
+                                                size="md"
+                                                aria-label="View User Roles"
+                                                icon={<MdSwitchAccount />}
+                                                onClick={() => {
+                                                    props.history.push(
+                                                        `/settings/users/${
+                                                            (rowData as any)?.id
+                                                        }/roles`
+                                                    );
+                                                }}
+                                            />
+                                        </ButtonGroup>
                                     );
                                 }}
                             </Cell>
@@ -173,4 +196,4 @@ const UsersPage: FunctionComponent = () => {
     );
 };
 
-export default UsersPage;
+export default withRouter(UsersPage);
