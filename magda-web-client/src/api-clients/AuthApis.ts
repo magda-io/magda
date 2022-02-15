@@ -213,3 +213,43 @@ export async function queryUsers(
         return await request<UserRecord[]>("GET", endpointUrl);
     }
 }
+
+export type QueryRolesParams = {
+    keyword?: string;
+    id?: string;
+    user_id?: string;
+    owner_id?: string;
+    create_by?: string;
+    edit_by?: string;
+    offset?: number;
+    limit?: number;
+    noCache?: boolean;
+};
+
+export type RoleRecord = {
+    id: string;
+    name: string;
+    description: string;
+    owner_id: string;
+    is_adhoc: boolean;
+    create_by: string;
+    create_time: Date;
+    edit_by: string;
+    edit_time: Date;
+};
+
+export async function queryRoles(
+    params?: QueryRolesParams
+): Promise<RoleRecord[]> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryRolesParams);
+    const endpointUrl = urijs(`${config.authApiUrl}roles`)
+        .search(queryParams as { [key: string]: any })
+        .toString();
+    if (noCache === true) {
+        return await getRequestNoCache<RoleRecord[]>(endpointUrl);
+    } else {
+        return await request<RoleRecord[]>("GET", endpointUrl);
+    }
+}

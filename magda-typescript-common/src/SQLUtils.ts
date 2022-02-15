@@ -202,8 +202,10 @@ export async function searchTableRecord<T = any>(
         objectKind?: PossibleObjectKind;
         toSqlConfig?: AspectQueryToSqlConfig;
         selectedFields?: SQLSyntax[];
-        joinTable?: string;
-        joinCondition?: SQLSyntax;
+        leftJoins?: {
+            table: string;
+            joinCondition: SQLSyntax;
+        }[];
     }
 ): Promise<T[]> {
     if (!table.trim()) {
@@ -241,10 +243,16 @@ export async function searchTableRecord<T = any>(
         } 
         FROM ${escapeIdentifier(table)}
         ${
-            queryConfig?.joinTable && queryConfig?.joinCondition
-                ? sqls`LEFT JOIN ${escapeIdentifier(
-                      queryConfig.joinTable
-                  )} ON ${queryConfig.joinCondition}`
+            queryConfig?.leftJoins?.length
+                ? SQLSyntax.join(
+                      queryConfig.leftJoins.map(
+                          (joinItem) =>
+                              sqls`LEFT JOIN ${escapeIdentifier(
+                                  joinItem.table
+                              )} ON ${joinItem.joinCondition}`
+                      ),
+                      sqls`\n`
+                  )
                 : SQLSyntax.empty
         }
         ${where}

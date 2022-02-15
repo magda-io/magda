@@ -72,8 +72,12 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     "role_permissions",
                     conditions,
                     {
-                        joinTable: "permissions",
-                        joinCondition: sqls`permissions.id = role_permissions.permission_id`,
+                        leftJoins: [
+                            {
+                                table: "permissions",
+                                joinCondition: sqls`permissions.id = role_permissions.permission_id`
+                            }
+                        ],
                         selectedFields: [
                             returnCount
                                 ? sqls`COUNT(*) as count`
@@ -354,29 +358,46 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                             roleKeywordSearchFields.map(
                                 (field) =>
                                     sqls`${escapeIdentifier(
-                                        field
+                                        `roles.${field}`
                                     )} ILIKE ${keyword}`
                             )
                         ).roundBracket()
                     );
                 }
                 if (req.query?.id) {
-                    conditions.push(sqls`"id" = ${req.query.id}`);
+                    conditions.push(sqls`"role.id" = ${req.query.id}`);
                 }
                 if (req.query?.owner_id) {
-                    conditions.push(sqls`"owner_id" = ${req.query.owner_id}`);
+                    conditions.push(
+                        sqls`"role.owner_id" = ${req.query.owner_id}`
+                    );
                 }
                 if (req.query?.create_by) {
-                    conditions.push(sqls`"create_by" = ${req.query.create_by}`);
+                    conditions.push(
+                        sqls`"role.create_by" = ${req.query.create_by}`
+                    );
                 }
                 if (req.query?.edit_by) {
-                    conditions.push(sqls`"edit_by" = ${req.query.edit_by}`);
+                    conditions.push(
+                        sqls`"role.edit_by" = ${req.query.edit_by}`
+                    );
+                }
+                if (req.query?.used_id) {
+                    conditions.push(
+                        sqls`"user_roles.user_id" = ${req.query.used_id}`
+                    );
                 }
                 const records = await searchTableRecord(
                     database.getPool(),
                     "roles",
                     conditions,
                     {
+                        leftJoins: [
+                            {
+                                table: "user_roles",
+                                joinCondition: sqls`user_roles.role_id = roles.id`
+                            }
+                        ],
                         selectedFields: returnCount
                             ? [sqls`COUNT(*) as count`]
                             : [sqls`*`],
