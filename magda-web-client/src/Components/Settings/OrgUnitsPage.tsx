@@ -26,7 +26,8 @@ import {
     MdCreateNewFolder,
     MdOutlinePageview,
     MdFolderSpecial,
-    MdDeleteForever
+    MdDeleteForever,
+    MdEditNote
 } from "react-icons/md";
 
 interface ItemType extends ItemDataType {
@@ -48,14 +49,19 @@ function createNodeLabel(node: OrgUnit, isRoot?: boolean) {
             <Dropdown.Item icon={<MdCreateNewFolder />}>
                 <span className="node-dropdown-menu-item-text">New</span>
             </Dropdown.Item>
+            <Dropdown.Item icon={<MdEditNote />}>
+                <span className="node-dropdown-menu-item-text">Edit</span>
+            </Dropdown.Item>
             <Dropdown.Item icon={<MdOutlinePageview />}>
                 <span className="node-dropdown-menu-item-text">
                     View Details
                 </span>
             </Dropdown.Item>
-            <Dropdown.Item icon={<MdDeleteForever />}>
-                <span className="node-dropdown-menu-item-text">Delete</span>
-            </Dropdown.Item>
+            {isRoot ? null : (
+                <Dropdown.Item icon={<MdDeleteForever />}>
+                    <span className="node-dropdown-menu-item-text">Delete</span>
+                </Dropdown.Item>
+            )}
         </Dropdown>
     );
 }
