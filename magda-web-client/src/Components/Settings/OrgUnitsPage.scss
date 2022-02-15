@@ -1,0 +1,28 @@
+.setting-page-main-container.org-units-page {
+    .rs-tree-node-label-content {
+        padding: 0px;
+        background: none;
+    }
+    .rs-dropdown-toggle-icon {
+        width: 16px;
+        height: 16px;
+        vertical-align: middle;
+    }
+    .node-title {
+        vertical-align: middle;
+    }
+
+    .rs-dropdown-menu:focus {
+        outline: none;
+    }
+
+    .rs-dropdown-item-menu-icon {
+        width: 16px;
+        height: 16px;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+    .node-dropdown-menu-item-text {
+        vertical-align: middle;
+    }
+}

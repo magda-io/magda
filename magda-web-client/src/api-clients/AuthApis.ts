@@ -253,3 +253,7 @@ export async function queryRoles(
         return await request<RoleRecord[]>("GET", endpointUrl);
     }
 }
+
+export async function whoami() {
+    return await request<User>("GET", `${config.authApiUrl}users/whoami`);
+}

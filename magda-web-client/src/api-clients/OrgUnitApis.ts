@@ -1,12 +1,12 @@
 import fetch from "isomorphic-fetch";
 import { config } from "config";
 import urijs from "urijs";
+import { OrgUnit as OrgUnitType } from "reducers/userManagementReducer";
+import request from "helpers/request";
+import getRequestNoCache from "helpers/getRequestNoCache";
+import { v4 as isUuid } from "is-uuid";
 
-export type OrgUnit = {
-    id: string;
-    name: string;
-    description: string;
-};
+export type OrgUnit = OrgUnitType;
 
 type ListOrgUnitParams = {
     orgUnitsOnly?: boolean;
@@ -86,4 +86,50 @@ export async function getOrgUnitById(id: string): Promise<OrgUnit> {
     } else {
         return await res.json();
     }
+}
+
+export async function getRootNode(noCache = false) {
+    if (noCache) {
+        return getRequestNoCache(`${config.authApiUrl}orgunits/root`);
+    } else {
+        return request<OrgUnit>("GET", `${config.authApiUrl}orgunits/root`);
+    }
+}
+
+/**
+ * Get immediate children of a selected node.
+ * If none found, return empty array.
+ *
+ * @export
+ * @param {string} nodeId
+ * @return {OrgUnit[]}
+ */
+export async function getImmediateChildren(nodeId: string, noCache = false) {
+    if (!isUuid(nodeId)) {
+        throw new Error(
+            "Failed to get immediate child nodes: specify id is not a valid UUID"
+        );
+    }
+    if (noCache) {
+        return getRequestNoCache<OrgUnit[]>(
+            `${config.authApiUrl}orgunits/${nodeId}/children/immediate`
+        );
+    } else {
+        return request<OrgUnit[]>(
+            "GET",
+            `${config.authApiUrl}orgunits/${nodeId}/children/immediate`
+        );
+    }
+}
+
+export async function moveSubTree(nodeId: string, parentNodeId: string) {
+    if (!isUuid(nodeId) || !isUuid(parentNodeId)) {
+        throw new Error(
+            "Failed to move a sub tree: specify id is not a valid UUID"
+        );
+    }
+    await request<OrgUnit[]>(
+        "PUT",
+        `${config.authApiUrl}orgunits/${nodeId}/move/${parentNodeId}`
+    );
 }
