@@ -46,6 +46,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "boolean",
             default: process.env.DEBUG == "true" ? true : false
         })
+        .option("skipAuth", {
+            describe:
+                "When set to true, API will not query policy engine for auth decision but assume it's always permitted. It's for debugging only.",
+            type: "boolean",
+            default: process.env.SKIP_AUTH == "true" ? true : false
+        })
         .option("tenantId", {
             describe: "The tenant id for intra-network communication",
             type: "number",
@@ -62,11 +68,20 @@ const database = new Database({
     dbPort: argv.dbPort
 });
 
-const authDecisionClient = new AuthDecisionQueryClient(
+const authDecisionQueryEndpoint =
     argv.listenPort == 80
         ? "http://localhost/v0"
-        : `http://localhost:${argv.listenPort}/v0`
+        : `http://localhost:${argv.listenPort}/v0`;
+const skipAuth = argv.skipAuth === true ? true : false;
+
+const authDecisionClient = new AuthDecisionQueryClient(
+    authDecisionQueryEndpoint,
+    skipAuth
 );
+
+console.log("Created Auth Decision Query Client: ");
+console.log(`Endpint: ${authDecisionQueryEndpoint}`);
+console.log(`SkipAuth: ${skipAuth}`);
 
 app.use(
     "/v0",

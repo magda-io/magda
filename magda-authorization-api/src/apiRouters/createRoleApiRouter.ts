@@ -34,7 +34,8 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
             try {
                 const roleId = req.params.roleId;
                 const conditions: SQLSyntax[] = [
-                    sqls`role_permissions.role_id = ${roleId}`
+                    sqls`role_permissions.role_id = ${roleId}`,
+                    sqls`permissions.id IS NOT NULL`
                 ];
                 if (req.query?.keyword) {
                     const keyword = "%" + req.query?.keyword + "%";
@@ -350,7 +351,9 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     function createFetchRolesHandler(returnCount: boolean, apiName: string) {
         return async function (req: Request, res: Response) {
             try {
-                const conditions: SQLSyntax[] = [];
+                const conditions: SQLSyntax[] = [
+                    sqls`user_roles.id IS NOT NULL`
+                ];
                 if (req.query?.keyword) {
                     const keyword = "%" + req.query?.keyword + "%";
                     conditions.push(
@@ -400,7 +403,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                         ],
                         selectedFields: returnCount
                             ? [sqls`COUNT(*) as count`]
-                            : [sqls`*`],
+                            : [sqls`roles.*`],
                         authDecision: res.locals.authDecision,
                         offset: req?.query?.offset as string,
                         limit: req?.query?.limit as string
