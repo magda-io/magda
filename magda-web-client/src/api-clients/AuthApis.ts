@@ -257,3 +257,35 @@ export async function queryRoles(
 export async function whoami() {
     return await request<User>("GET", `${config.authApiUrl}users/whoami`);
 }
+
+export type QueryResourcesParams = {
+    keyword?: string;
+    id?: string;
+    uri?: string;
+    offset?: number;
+    limit?: number;
+    noCache?: boolean;
+};
+
+export type ResourcesRecord = {
+    id: string;
+    uri: string;
+    name: string;
+    description: string;
+};
+
+export async function queryResources(
+    params?: QueryResourcesParams
+): Promise<ResourcesRecord[]> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryRolesParams);
+    const endpointUrl = urijs(`${config.authApiUrl}resources`)
+        .search(queryParams as { [key: string]: any })
+        .toString();
+    if (noCache === true) {
+        return await getRequestNoCache<ResourcesRecord[]>(endpointUrl);
+    } else {
+        return await request<ResourcesRecord[]>("GET", endpointUrl);
+    }
+}

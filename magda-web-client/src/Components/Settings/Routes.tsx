@@ -6,6 +6,7 @@ import UsersPage from "./UsersPage";
 import RolesPage from "./RolesPage";
 import UserRolesPage from "./UserRolesPage";
 import OrgUnitsPage from "./OrgUnitsPage";
+import ResourcesPage from "./ResourcesPage";
 import Index from "./Index";
 
 const Routes = () => {
@@ -34,7 +35,9 @@ const Routes = () => {
             <Route
                 exact
                 path="/settings/resources"
-                component={withHeader(Index, { noContainerClass: true })}
+                component={withHeader(ResourcesPage, {
+                    noContainerClass: true
+                })}
             />
             <Route
                 exact
