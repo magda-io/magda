@@ -416,6 +416,23 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
         }
     );
 
+    /**
+     * @apiGroup Auth
+     * @api {delete} /v0/auth/orgunits/:nodeId Delete an org unit node
+     * @apiDescription Delete an org unit node. You can't delete a root node with this API.
+     *
+     * @apiParam (Path) {string} nodeId The id of the node to be deleted.
+     *
+     * @apiSuccessExample {string} 200
+     *     true
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 403, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.delete(
         "/:nodeId",
         requirePermission(authDecisionClient, "authObject/orgUnit/delete"),
@@ -430,6 +447,24 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
         }
     );
 
+    /**
+     * @apiGroup Auth
+     * @api {put} /v0/auth/orgunits/:nodeId/move/:newParentId Move a sub tree to a new parennt
+     * @apiDescription Move a sub tree to a new parennt.
+     *
+     * @apiParam (Path) {string} nodeId The id of the root node of the sub tree to be moved.
+     * @apiParam (Path) {string} newParentId The new parent node id that the sub tree wil be attached to.
+     *
+     * @apiSuccessExample {string} 200
+     *     true
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 403, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.put(
         "/:nodeId/move/:newParentId",
         requirePermission(authDecisionClient, "authObject/orgUnit/update"),

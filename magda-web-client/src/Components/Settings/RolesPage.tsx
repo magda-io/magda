@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from "react";
 import "./main.scss";
-import "./RolesPage.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
 import AccessVerification from "./AccessVerification";

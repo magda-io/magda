@@ -16,6 +16,7 @@ import { MdSearch, MdMode, MdSwitchAccount } from "react-icons/md";
 import AccessVerification from "./AccessVerification";
 import IconButton from "rsuite/IconButton";
 import ButtonGroup from "rsuite/ButtonGroup";
+import OrgUnitNameLabel from "../OrgUnitNameLabel";
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
@@ -108,7 +109,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                             <Cell dataKey="displayName" />
                         </Column>
 
-                        <Column width={100} resizable>
+                        <Column width={200} resizable>
                             <HeaderCell>Email</HeaderCell>
                             <Cell dataKey="email" />
                         </Column>
@@ -125,9 +126,13 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                             <HeaderCell>Source ID</HeaderCell>
                             <Cell dataKey="sourceId" />
                         </Column>
-                        <Column width={100} resizable>
-                            <HeaderCell>Orgnasitional Unit ID</HeaderCell>
-                            <Cell dataKey="sourceId" />
+                        <Column width={150} resizable>
+                            <HeaderCell>Orgnasitional Unit</HeaderCell>
+                            <Cell>
+                                {(rowData: any) => (
+                                    <OrgUnitNameLabel id={rowData?.orgUnitId} />
+                                )}
+                            </Cell>
                         </Column>
                         <Column width={120} fixed="right">
                             <HeaderCell>Action</HeaderCell>

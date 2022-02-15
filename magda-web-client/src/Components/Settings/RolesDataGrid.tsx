@@ -6,6 +6,7 @@ import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
 import { Input, InputGroup } from "rsuite";
 import { MdSearch } from "react-icons/md";
+import UserNameLabel from "../UserNameLabel";
 import { queryRoles, QueryRolesParams } from "../../api-clients/AuthApis";
 import "./RolesDataGrid.scss";
 
@@ -107,11 +108,19 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
 
                     <Column width={100} resizable>
                         <HeaderCell>Owner Id</HeaderCell>
-                        <Cell dataKey="owner_id" />
+                        <Cell>
+                            {(rowData: any) => (
+                                <UserNameLabel userId={rowData?.owner_id} />
+                            )}
+                        </Cell>
                     </Column>
                     <Column width={100} resizable>
                         <HeaderCell>Create By</HeaderCell>
-                        <Cell dataKey="create_by" />
+                        <Cell>
+                            {(rowData: any) => (
+                                <UserNameLabel userId={rowData?.create_by} />
+                            )}
+                        </Cell>
                     </Column>
                     <Column width={100} resizable>
                         <HeaderCell>Create Time</HeaderCell>
@@ -119,7 +128,11 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                     </Column>
                     <Column width={100} resizable>
                         <HeaderCell>Edit By</HeaderCell>
-                        <Cell dataKey="edit_by" />
+                        <Cell>
+                            {(rowData: any) => (
+                                <UserNameLabel userId={rowData?.edit_by} />
+                            )}
+                        </Cell>
                     </Column>
                     <Column width={100} resizable>
                         <HeaderCell>Edit Time</HeaderCell>
