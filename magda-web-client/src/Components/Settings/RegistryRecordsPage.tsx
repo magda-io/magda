@@ -20,6 +20,7 @@ import { Location, History } from "history";
 import RecordFormPopUp, {
     RefType as RecordFormPopUpRefType
 } from "./RecordFormPopUp";
+import RegistryRecordInfoPanel from "./RegistryRecordInfoPanel";
 
 const Paragraph = Placeholder.Paragraph;
 
@@ -128,7 +129,11 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
                         <Loader center content="loading" />
                         <Paragraph rows={16}></Paragraph>
                     </>
-                ) : record?.id ? null : (
+                ) : record?.id ? (
+                    <>
+                        <RegistryRecordInfoPanel record={record} />
+                    </>
+                ) : (
                     <Panel className="open-record-panel" bordered>
                         <Form fluid>
                             <Form.Group controlId="record-id">
