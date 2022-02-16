@@ -109,6 +109,23 @@ trait RecordPersistence {
       aspectId: String
   )(implicit session: DBSession): Option[JsObject]
 
+  def getRecordAspects(
+      tenantId: TenantId,
+      authDecision: AuthDecision,
+      recordId: String,
+      keyword: Option[String] = None,
+      aspectIdOnly: Option[Boolean] = None,
+      start: Option[Int] = None,
+      limit: Option[Int] = None
+  )(implicit session: DBSession): List[JsValue]
+
+  def getRecordAspectsCount(
+      tenantId: TenantId,
+      authDecision: AuthDecision,
+      recordId: String,
+      keyword: Option[String] = None
+  )(implicit session: DBSession): Long
+
   def getPageTokens(
       tenantId: TenantId,
       authDecision: AuthDecision,
@@ -502,6 +519,88 @@ class DefaultRecordPersistence(config: Config)
       .map(rowToAspect)
       .single
       .apply()
+  }
+
+  def getRecordAspects(
+      tenantId: TenantId,
+      authDecision: AuthDecision,
+      recordId: String,
+      keyword: Option[String] = None,
+      aspectIdOnly: Option[Boolean] = None,
+      start: Option[Int] = None,
+      limit: Option[Int] = None
+  )(implicit session: DBSession): List[JsValue] = {
+    val config = AspectQueryToSqlConfig(
+      recordIdSqlRef = "recordid",
+      tenantIdSqlRef = "tenantid"
+    )
+    val authDecisionWhereClause = authDecision.toSql(config)
+    val selectFields =
+      if (aspectIdOnly.getOrElse(false)) sqls"aspectid"
+      else sqls"aspectid, data"
+
+    sql"""SELECT ${selectFields}
+         FROM RecordAspects
+         ${SQLSyntax.where(
+      SQLSyntax.toAndConditionOpt(
+        Some(
+          sqls"recordId = $recordId"
+        ),
+        keyword.map { item =>
+          sqls"(aspectid ILIKE ${s"%${item}%"} OR data ILIKE ${s"%${item}%"})"
+        },
+        SQLUtils.tenantIdToWhereClause(tenantId, "tenantid"),
+        authDecisionWhereClause
+      )
+    )}
+    ${limit.map(v => sqls"LIMIT ${v}").getOrElse(SQLSyntax.empty)}
+    ${start.map(v => sqls"OFFSET ${v}").getOrElse(SQLSyntax.empty)}
+    """
+      .map(rs => {
+        if (aspectIdOnly.getOrElse(false)) {
+          JsString(rs.string("aspectid"))
+        } else {
+          JsObject(
+            "id" -> JsString(rs.string("aspectid")),
+            "data" -> Try(JsonParser(rs.string("data")).asJsObject)
+              .getOrElse(JsObject())
+          )
+        }
+      })
+      .list()
+      .apply()
+  }
+
+  def getRecordAspectsCount(
+      tenantId: TenantId,
+      authDecision: AuthDecision,
+      recordId: String,
+      keyword: Option[String] = None
+  )(implicit session: DBSession): Long = {
+    val config = AspectQueryToSqlConfig(
+      recordIdSqlRef = "recordid",
+      tenantIdSqlRef = "tenantid"
+    )
+    val authDecisionWhereClause = authDecision.toSql(config)
+
+    sql"""SELECT COUNT(*) as count
+         FROM RecordAspects
+         ${SQLSyntax.where(
+      SQLSyntax.toAndConditionOpt(
+        Some(
+          sqls"recordId = $recordId"
+        ),
+        keyword.map { item =>
+          sqls"(aspectid ILIKE ${s"%${item}%"} OR data ILIKE ${s"%${item}%"})"
+        },
+        SQLUtils.tenantIdToWhereClause(tenantId, "tenantid"),
+        authDecisionWhereClause
+      )
+    )}"""
+      .map(_.long("count"))
+      .single()
+      .apply()
+      .getOrElse(0)
   }
 
   def getPageTokens(
