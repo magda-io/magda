@@ -1,6 +1,7 @@
 import { config, ADMIN_ROLE_ID } from "config";
 import request from "helpers/request";
-import getRequestNoCache from "helpers/getRequestNoCache";
+import getRequest from "helpers/getRequest";
+import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
 import { AuthPluginConfig } from "@magda/gateway/src/createAuthPluginRouter";
 import urijs from "urijs";
 import { User, Role } from "reducers/userManagementReducer";
@@ -26,7 +27,10 @@ export type QrCodePollResponse = {
 };
 
 export async function getAuthProviders(): Promise<string[]> {
-    const providers = await request("GET", `${config.baseUrl}auth/providers`);
+    const providers = await request(
+        "GET",
+        getAbsoluteUrl(`auth/providers`, config.baseUrl)
+    );
     if (providers) {
         return providers;
     } else {
@@ -35,7 +39,10 @@ export async function getAuthProviders(): Promise<string[]> {
 }
 
 export async function getAuthPlugins(): Promise<AuthPluginConfig[]> {
-    const plugins = await request("GET", `${config.baseUrl}auth/plugins`);
+    const plugins = await request(
+        "GET",
+        getAbsoluteUrl(`auth/plugins`, config.baseUrl)
+    );
     if (plugins) {
         return plugins;
     } else {
@@ -72,7 +79,10 @@ export function convertAuthPluginApiUrl(
 }
 
 export async function getUsers(): Promise<User[]> {
-    return await getRequestNoCache<User[]>(config.authApiUrl + "users/all");
+    return await getRequest<User[]>(
+        getAbsoluteUrl("users/all", config.authApiUrl),
+        true
+    );
 }
 
 /**
@@ -87,15 +97,22 @@ export async function updateUser(
 ) {
     return await request<{ result: "SUCCESS" }>(
         "PUT",
-        config.authApiUrl + "users/" + userId,
+        getAbsoluteUrl(
+            "users/" + encodeURIComponent(userId),
+            config.authApiUrl
+        ),
         updates,
         "application/json"
     );
 }
 
 export async function getUserRoles(userId: string): Promise<Role[]> {
-    return await getRequestNoCache<Role[]>(
-        `${config.authApiUrl}user/${userId}/roles`
+    return await getRequest<Role[]>(
+        getAbsoluteUrl(
+            `user/${encodeURIComponent(userId)}/roles`,
+            config.authApiUrl
+        ),
+        true
     );
 }
 
@@ -111,7 +128,10 @@ export async function addUserRoles(
     }
     return await request<string[]>(
         "post",
-        `${config.authApiUrl}user/${userId}/roles`,
+        getAbsoluteUrl(
+            `user/${encodeURIComponent(userId)}/roles`,
+            config.authApiUrl
+        ),
         roleIds,
         "application/json"
     );
@@ -129,7 +149,10 @@ export async function deleteUserRoles(
     }
     return await request<string[]>(
         "delete",
-        `${config.authApiUrl}user/${userId}/roles`,
+        getAbsoluteUrl(
+            `user/${encodeURIComponent(userId)}/roles`,
+            config.authApiUrl
+        ),
         roleIds,
         "application/json"
     );
@@ -145,8 +168,12 @@ export async function deleteUserRoles(
  */
 export async function setAdmin(userId: string, isAdmin: boolean) {
     // this API won't return role info. Only basic user info
-    const user = await getRequestNoCache<User>(
-        `${config.authApiUrl}users/${userId}`
+    const user = await getRequest<User>(
+        getAbsoluteUrl(
+            `users/${encodeURIComponent(userId)}`,
+            config.authApiUrl
+        ),
+        true
     );
 
     const roles = await getUserRoles(userId);
@@ -204,14 +231,11 @@ export async function queryUsers(
     const { noCache, ...queryParams } = params
         ? params
         : ({} as QueryUsersParams);
-    const endpointUrl = urijs(`${config.authApiUrl}users`)
-        .search(queryParams as { [key: string]: any })
-        .toString();
-    if (noCache === true) {
-        return await getRequestNoCache<UserRecord[]>(endpointUrl);
-    } else {
-        return await request<UserRecord[]>("GET", endpointUrl);
-    }
+
+    return await getRequest<UserRecord[]>(
+        getAbsoluteUrl(`users`, config.authApiUrl, queryParams),
+        noCache
+    );
 }
 
 export type QueryRolesParams = {
@@ -244,18 +268,18 @@ export async function queryRoles(
     const { noCache, ...queryParams } = params
         ? params
         : ({} as QueryRolesParams);
-    const endpointUrl = urijs(`${config.authApiUrl}roles`)
-        .search(queryParams as { [key: string]: any })
-        .toString();
-    if (noCache === true) {
-        return await getRequestNoCache<RoleRecord[]>(endpointUrl);
-    } else {
-        return await request<RoleRecord[]>("GET", endpointUrl);
-    }
+
+    return await getRequest<RoleRecord[]>(
+        getAbsoluteUrl(`roles`, config.authApiUrl, queryParams),
+        noCache
+    );
 }
 
 export async function whoami() {
-    return await request<User>("GET", `${config.authApiUrl}users/whoami`);
+    return await request<User>(
+        "GET",
+        getAbsoluteUrl(`users/whoami`, config.authApiUrl)
+    );
 }
 
 export type QueryResourcesParams = {
@@ -280,12 +304,8 @@ export async function queryResources(
     const { noCache, ...queryParams } = params
         ? params
         : ({} as QueryRolesParams);
-    const endpointUrl = urijs(`${config.authApiUrl}resources`)
-        .search(queryParams as { [key: string]: any })
-        .toString();
-    if (noCache === true) {
-        return await getRequestNoCache<ResourcesRecord[]>(endpointUrl);
-    } else {
-        return await request<ResourcesRecord[]>("GET", endpointUrl);
-    }
+    return await getRequest<ResourcesRecord[]>(
+        getAbsoluteUrl(`resources`, config.authApiUrl, queryParams),
+        noCache
+    );
 }

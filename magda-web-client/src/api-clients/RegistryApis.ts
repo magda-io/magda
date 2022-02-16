@@ -1,5 +1,7 @@
 import { config } from "config";
 import request from "helpers/request";
+import getRequest from "helpers/getRequest";
+import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
 import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
 import ServerError from "./ServerError";
@@ -750,4 +752,14 @@ export async function tagRecordVersionEventId(record: Record, eventId: number) {
     versionData.versions[versionData.currentVersionNumber].eventId = eventId;
 
     return await updateRecordAspect(record.id, "version", versionData);
+}
+
+export async function fetchRecordById(recordId: string, noCache = false) {
+    return await getRequest(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(recordId)}`,
+            config.registryReadOnlyApiUrl
+        ),
+        noCache
+    );
 }

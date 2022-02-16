@@ -66,6 +66,7 @@
     "@types/xlsx": "^0.0.36",
     "@typescript-eslint/eslint-plugin": "2.34.0",
     "@typescript-eslint/parser": "2.34.0",
+    "@types/is-uuid": "^1.0.0",
     "babel-eslint": "9.0.0",
     "babel-loader": "8.0.5",
     "browser-detect": "^0.2.22",
@@ -163,7 +164,8 @@
     "weighted-mean": "^1.0.2",
     "worker-loader": "^2.0.0",
     "xlsx": "^0.14.0",
-    "yaml-front-matter": "^4.0.0"
+    "yaml-front-matter": "^4.0.0",
+    "is-uuid": "^1.0.2"
   },
   "browserslist": [
     "last 2 versions",
