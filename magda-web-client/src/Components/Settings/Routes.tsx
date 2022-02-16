@@ -7,7 +7,8 @@ import RolesPage from "./RolesPage";
 import UserRolesPage from "./UserRolesPage";
 import OrgUnitsPage from "./OrgUnitsPage";
 import ResourcesPage from "./ResourcesPage";
-import Index from "./Index";
+import RegistryRecordsPage from "./RegistryRecordsPage";
+//import Index from "./Index";
 
 const Routes = () => {
     return (
@@ -47,7 +48,16 @@ const Routes = () => {
             <Route
                 exact
                 path="/settings/records"
-                component={withHeader(Index, { noContainerClass: true })}
+                component={withHeader(RegistryRecordsPage, {
+                    noContainerClass: true
+                })}
+            />
+            <Route
+                exact
+                path="/settings/records/:recordId"
+                component={withHeader(RegistryRecordsPage, {
+                    noContainerClass: true
+                })}
             />
         </Switch>
     );

@@ -755,7 +755,7 @@ export async function tagRecordVersionEventId(record: Record, eventId: number) {
 }
 
 export async function fetchRecordById(recordId: string, noCache = false) {
-    return await getRequest(
+    return await getRequest<Record>(
         getAbsoluteUrl(
             `records/${encodeURIComponent(recordId)}`,
             config.registryReadOnlyApiUrl

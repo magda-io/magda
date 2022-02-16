@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from "react";
-import { withRouter } from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
 import { Location, History } from "history";
 import "./main.scss";
 import "./UsersPage.scss";
@@ -15,7 +15,6 @@ import { Input, InputGroup } from "rsuite";
 import { MdSearch, MdMode, MdSwitchAccount } from "react-icons/md";
 import AccessVerification from "./AccessVerification";
 import IconButton from "rsuite/IconButton";
-import ButtonGroup from "rsuite/ButtonGroup";
 import OrgUnitNameLabel from "../OrgUnitNameLabel";
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
@@ -145,25 +144,24 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                         alert(`id:${(rowData as any).id}`);
                                     }
                                     return (
-                                        <ButtonGroup>
+                                        <div>
                                             <IconButton
                                                 size="md"
                                                 ria-label="Edit User"
                                                 icon={<MdMode />}
-                                            />
-                                            <IconButton
-                                                size="md"
-                                                aria-label="View User Roles"
-                                                icon={<MdSwitchAccount />}
-                                                onClick={() => {
-                                                    props.history.push(
-                                                        `/settings/users/${
-                                                            (rowData as any)?.id
-                                                        }/roles`
-                                                    );
-                                                }}
-                                            />
-                                        </ButtonGroup>
+                                            />{" "}
+                                            <Link
+                                                to={`/settings/users/${
+                                                    (rowData as any)?.id
+                                                }/roles`}
+                                            >
+                                                <IconButton
+                                                    size="md"
+                                                    aria-label="View User Roles"
+                                                    icon={<MdSwitchAccount />}
+                                                />
+                                            </Link>
+                                        </div>
                                     );
                                 }}
                             </Cell>
