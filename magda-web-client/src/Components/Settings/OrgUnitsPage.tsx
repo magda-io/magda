@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState, useRef } from "react";
-import { withRouter, match } from "react-router";
+import { withRouter, match } from "react-router-dom";
 import { Location, History } from "history";
 import "./main.scss";
 import "./OrgUnitsPage.scss";

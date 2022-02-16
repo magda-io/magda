@@ -1,6 +1,6 @@
 import React, { FunctionComponent, ReactElement } from "react";
-import { Link, withRouter } from "react-router-dom";
-import { Location } from "history";
+import { Link, withRouter, match } from "react-router-dom";
+import { Location, History } from "history";
 import urijs from "urijs";
 import "./Breadcrumb.scss";
 
@@ -10,6 +10,8 @@ type PropsType = {
     items: BreadcrumbItem[];
     leadingItem?: BreadcrumbItem;
     location: Location;
+    history: History;
+    match: match;
 };
 
 function isCurrentPage(location: Location, item: BreadcrumbItem) {

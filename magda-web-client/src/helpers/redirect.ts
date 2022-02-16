@@ -3,25 +3,22 @@ import urijs from "urijs";
 import { config } from "../config";
 const { uiBaseUrl } = config;
 
-function redirect(history: History, url: string) {
+function getCompleteUrl(url: string) {
     const uri = urijs(url);
     if (uri.hostname()) {
-        // --- absolute url, redirect directly
-        history.push(url);
-        return;
+        // --- absolute url, should be the final url
+        return url;
     }
     if (url.indexOf("/") !== 0) {
         // not starts with "/", it will be considered as relative url
         // redirect directly
-        history.push(url);
-        return;
+        return url;
     }
 
     const uiBaseUrlStr = typeof uiBaseUrl !== "string" ? "" : uiBaseUrl.trim();
 
     if (!uiBaseUrlStr || uiBaseUrlStr === "/") {
-        history.push(url);
-        return;
+        return url;
     }
 
     const completeUrl =
@@ -30,10 +27,28 @@ function redirect(history: History, url: string) {
             : uiBaseUrlStr) + url;
 
     if (completeUrl.indexOf("/") !== 0) {
-        history.push("/" + completeUrl);
+        return "/" + completeUrl;
     } else {
-        history.push(completeUrl);
+        return completeUrl;
     }
+}
+
+function redirect(
+    history: History,
+    url: string,
+    queryParams?: { [key: string]: any }
+) {
+    const completeUrl = getCompleteUrl(url);
+    if (!queryParams || typeof queryParams !== "object") {
+        history.push(completeUrl);
+        return;
+    }
+    const completeUri = urijs(completeUrl);
+    history.push(
+        completeUri
+            .search({ ...completeUri.search(true), ...queryParams })
+            .toString()
+    );
 }
 
 export default redirect;

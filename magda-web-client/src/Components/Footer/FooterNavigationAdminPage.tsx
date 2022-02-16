@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 
 import ContentAdminPage from "Components/Admin/ContentAdminPage";
-import { withRouter } from "react-router";
+import { withRouter } from "react-router-dom";
 import CommonLink from "Components/Common/CommonLink";
 
 class FooterNavigationAdminPage extends Component<any, any> {

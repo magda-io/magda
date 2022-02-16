@@ -14,6 +14,7 @@ import "./SearchSuggestionBox.scss";
 import recentSearchIcon from "assets/updated.svg";
 import closeIcon from "assets/mobile-menu-close.svg";
 import isEqual from "lodash/isEqual";
+import redirect from "helpers/redirect";
 
 type SearchDataType = {
     name?: string;
@@ -77,7 +78,7 @@ class SearchSuggestionBox extends Component<Props & any, any> {
     }
 
     cacheImgs() {
-        const cacheImg = img => {
+        const cacheImg = (img) => {
             const imgLoader = new Image();
             imgLoader.src = img;
             this.cacheImages.push(imgLoader);
@@ -186,8 +187,7 @@ class SearchSuggestionBox extends Component<Props & any, any> {
     executeSearchItem(item: SearchDataType) {
         const searchData = { ...item.data };
         if (searchData.publisher) delete searchData.publisher;
-        const qStr = queryString.stringify(searchData);
-        this.props.history.push(`/search?${qStr}`);
+        redirect(this.props.history, `/search`, searchData);
         this.setState({
             isMouseOver: false,
             selectedItemIdx: null
@@ -236,7 +236,7 @@ class SearchSuggestionBox extends Component<Props & any, any> {
         if (!inputText)
             return recentSearches.slice(0, maxDefaultListItemNumber);
 
-        const filteredRecentSearches = recentSearches.filter(item => {
+        const filteredRecentSearches = recentSearches.filter((item) => {
             if (
                 item.data.q &&
                 item.data.q.toLowerCase().indexOf(inputText) !== -1
@@ -373,7 +373,7 @@ class SearchSuggestionBox extends Component<Props & any, any> {
         return (
             <div
                 className="search-suggestion-box"
-                ref={el => (this.containerRef = el)}
+                ref={(el) => (this.containerRef = el)}
                 id="search-suggestion-box"
             >
                 <div className="search-suggestion-box-position-adjust" />
@@ -415,7 +415,7 @@ class SearchSuggestionBox extends Component<Props & any, any> {
                                     }
                                     id={this.buildOptionId(idx)}
                                     className="au-btn au-btn--tertiary search-item-main-button"
-                                    onClick={e =>
+                                    onClick={(e) =>
                                         this.onSearchItemClick(e, item)
                                     }
                                     tabIndex={-1}
@@ -452,7 +452,7 @@ class SearchSuggestionBox extends Component<Props & any, any> {
                                             ? "search-item-delete-button--selected"
                                             : ""
                                     }`}
-                                    onClick={e =>
+                                    onClick={(e) =>
                                         this.onDeleteItemClick(e, idx)
                                     }
                                     tabIndex={-1}
@@ -473,11 +473,11 @@ class SearchSuggestionBox extends Component<Props & any, any> {
     }
 }
 
-const SearchSuggestionBoxWithRouter = withRouter(props => (
+const SearchSuggestionBoxWithRouter = withRouter((props) => (
     <SearchSuggestionBox {...props} />
 ));
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         datasetSearch: state.datasetSearch
     };

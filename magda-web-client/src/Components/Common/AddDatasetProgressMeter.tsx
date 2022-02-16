@@ -3,7 +3,7 @@ import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import { createNewDatasetReset } from "actions/recordActions";
 import { Link } from "react-router-dom";
-import { withRouter, match } from "react-router";
+import { withRouter, match } from "react-router-dom";
 import "./AddDatasetProgressMeter.scss";
 import iconTick from "assets/tick.svg";
 import { History, Location } from "history";
