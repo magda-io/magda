@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useRef, useState } from "react";
-import { withRouter, History, Location, match } from "react-router-dom";
+import { withRouter, match } from "react-router-dom";
 import redirect from "../../helpers/redirect";
 import "./main.scss";
 import "./RegistryRecordsPage.scss";
@@ -16,6 +16,7 @@ import Form from "rsuite/Form";
 import Button from "rsuite/Button";
 import ButtonToolbar from "rsuite/ButtonToolbar";
 import Panel from "rsuite/Panel";
+import { Location, History } from "history";
 import RecordFormPopUp, {
     RefType as RecordFormPopUpRefType
 } from "./RecordFormPopUp";
@@ -23,9 +24,9 @@ import RecordFormPopUp, {
 const Paragraph = Placeholder.Paragraph;
 
 type PropsType = {
-    location?: Location;
-    history?: History;
-    match?: match<{
+    location: Location;
+    history: History;
+    match: match<{
         recordId?: string;
     }>;
 };
@@ -34,9 +35,15 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
     const recordId = props?.match?.params?.recordId;
     const [inputRecordId, setInputRecordId] = useState<string>();
     const recordFormRef = useRef<RecordFormPopUpRefType>(null);
-    (window as any).testHistory = props.history;
+
+    //change this value to force the record data to be reloaded
+    const [recordReloadToken, setRecordReloadToken] = useState<string>("");
+
     const { result: record, loading: recordLoading } = useAsync(
-        async (recordId) => {
+        async (recordId, recordReloadToken) => {
+            // we don't directly use recordReloadToken for fetch record logic
+            // But adding it to params list will give us a trigger that can be used
+            // to refresh data even when record id is not changed (e.g. after update)
             try {
                 if (!recordId) {
                     return undefined;
@@ -56,8 +63,45 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
                 throw e;
             }
         },
-        [recordId]
+        [recordId, recordReloadToken]
     );
+
+    const createRecordHandler = () => {
+        recordFormRef.current?.open(undefined, (submittedRecordId) => {
+            if (recordId === inputRecordId) {
+                setRecordReloadToken(`${Math.random()}`);
+            } else {
+                redirect(
+                    props.history as History,
+                    "/settings/records/" + encodeURIComponent(submittedRecordId)
+                );
+            }
+        });
+    };
+
+    const openRecordHandler = () => {
+        if (typeof inputRecordId !== "string" || !inputRecordId.trim()) {
+            toaster.push(
+                <Notification
+                    type={"error"}
+                    closable={true}
+                    header="Error"
+                >{`Please input record ID to open the record.`}</Notification>,
+                {
+                    placement: "topEnd"
+                }
+            );
+            return;
+        }
+        if (recordId === inputRecordId) {
+            setRecordReloadToken(`${Math.random()}`);
+        } else {
+            redirect(
+                props.history as History,
+                "/settings/records/" + encodeURIComponent(inputRecordId)
+            );
+        }
+    };
 
     return (
         <div className="flex-main-container setting-page-main-container registry-records-page">
@@ -96,46 +140,24 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
                                     placeholder="To open a record, please input the record ID..."
                                     value={inputRecordId}
                                     onChange={setInputRecordId}
+                                    onKeyDown={(event) => {
+                                        if (event.keyCode === 13) {
+                                            openRecordHandler();
+                                        }
+                                    }}
                                 />
                             </Form.Group>
                             <Form.Group>
                                 <ButtonToolbar>
                                     <Button
                                         appearance="primary"
-                                        onClick={() => {
-                                            if (
-                                                typeof inputRecordId !==
-                                                    "string" ||
-                                                !inputRecordId.trim()
-                                            ) {
-                                                toaster.push(
-                                                    <Notification
-                                                        type={"error"}
-                                                        closable={true}
-                                                        header="Error"
-                                                    >{`Please input record ID to open the record.`}</Notification>,
-                                                    {
-                                                        placement: "topEnd"
-                                                    }
-                                                );
-                                                return;
-                                            }
-                                            redirect(
-                                                props.history as History,
-                                                "/settings/records/" +
-                                                    encodeURIComponent(
-                                                        inputRecordId
-                                                    )
-                                            );
-                                        }}
+                                        onClick={openRecordHandler}
                                     >
                                         Open Record
                                     </Button>
                                     <Button
                                         appearance="primary"
-                                        onClick={() =>
-                                            recordFormRef.current?.open()
-                                        }
+                                        onClick={createRecordHandler}
                                     >
                                         Create Record
                                     </Button>

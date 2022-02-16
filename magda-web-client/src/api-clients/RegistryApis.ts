@@ -551,7 +551,9 @@ export type Record = {
     aspects: { [aspectId: string]: any };
 };
 
-async function createRecord(inputRecord: Record): Promise<[Record, number]> {
+export async function createRecord(
+    inputRecord: Record
+): Promise<[Record, number]> {
     const [res, headers] = await request<Record>(
         "POST",
         `${config.registryFullApiUrl}records`,
