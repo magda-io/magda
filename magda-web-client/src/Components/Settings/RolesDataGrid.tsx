@@ -7,7 +7,12 @@ import { toaster } from "rsuite";
 import { Input, InputGroup } from "rsuite";
 import { MdSearch } from "react-icons/md";
 import UserNameLabel from "../UserNameLabel";
-import { queryRoles, QueryRolesParams } from "../../api-clients/AuthApis";
+import {
+    queryRoles,
+    QueryRolesParams,
+    queryRolesCount,
+    RoleRecord
+} from "../../api-clients/AuthApis";
 import "./RolesDataGrid.scss";
 
 const Column = Table.Column;
@@ -30,7 +35,7 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
 
     const [searchInputText, setSearchInputText] = useState<string>("");
 
-    const { result: roles, loading: isLoading } = useAsync(
+    const { result, loading: isLoading } = useAsync(
         async (
             keyword: string,
             offset: number,
@@ -38,12 +43,17 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
             user_id?: string
         ) => {
             try {
-                return await queryRoles({
+                const roles = await queryRoles({
                     keyword: keyword.trim() ? keyword : undefined,
                     offset,
                     limit,
                     user_id
                 });
+                const count = await queryRolesCount({
+                    keyword: keyword.trim() ? keyword : undefined,
+                    user_id
+                });
+                return [roles, count] as [RoleRecord[], number];
             } catch (e) {
                 toaster.push(
                     <Notification
@@ -55,11 +65,13 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                         placement: "topEnd"
                     }
                 );
-                return [];
+                throw e;
             }
         },
         [keyword, offset, limit, queryParams?.user_id]
     );
+
+    const [roles, totalCount] = result ? result : [[], 0];
 
     return (
         <div className="roles-data-grid">
@@ -166,7 +178,7 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                         maxButtons={5}
                         size="xs"
                         layout={["total", "-", "limit", "|", "pager", "skip"]}
-                        total={roles?.length ? roles.length : 0}
+                        total={totalCount}
                         limitOptions={[DEFAULT_MAX_PAGE_RECORD_NUMBER, 20]}
                         limit={limit}
                         activePage={page}

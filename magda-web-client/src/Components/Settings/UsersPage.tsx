@@ -6,7 +6,11 @@ import "./UsersPage.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
 import { useAsync } from "react-async-hook";
-import { queryUsers } from "../../api-clients/AuthApis";
+import {
+    queryUsers,
+    queryUsersCount,
+    UserRecord
+} from "../../api-clients/AuthApis";
 import Table from "rsuite/Table";
 import Pagination from "rsuite/Pagination";
 import Notification from "rsuite/Notification";
@@ -37,14 +41,18 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
 
     const [searchInputText, setSearchInputText] = useState<string>("");
 
-    const { result: users, loading: isLoading } = useAsync(
+    const { result, loading: isLoading } = useAsync(
         async (keyword: string, offset: number, limit: number) => {
             try {
-                return await queryUsers({
+                const users = await queryUsers({
                     keyword: keyword.trim() ? keyword : undefined,
                     offset,
                     limit
                 });
+                const count = queryUsersCount({
+                    keyword: keyword.trim() ? keyword : undefined
+                });
+                return [users, count] as [UserRecord[], number];
             } catch (e) {
                 toaster.push(
                     <Notification
@@ -61,6 +69,8 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
         },
         [keyword, offset, limit]
     );
+
+    const [users, totalCount] = result ? result : [[], 0];
 
     return (
         <div className="flex-main-container setting-page-main-container users-page">
@@ -185,7 +195,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                 "pager",
                                 "skip"
                             ]}
-                            total={users?.length ? users.length : 0}
+                            total={totalCount}
                             limitOptions={[DEFAULT_MAX_PAGE_RECORD_NUMBER, 20]}
                             limit={limit}
                             activePage={page}

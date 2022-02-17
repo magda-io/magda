@@ -8,7 +8,9 @@ import { Input, InputGroup } from "rsuite";
 import { MdSearch } from "react-icons/md";
 import {
     queryResources,
-    QueryResourcesParams
+    QueryResourcesParams,
+    queryResourcesCount,
+    ResourcesRecord
 } from "../../api-clients/AuthApis";
 import "./ResourcesDataGrid.scss";
 
@@ -32,15 +34,20 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = (props) => {
 
     const [searchInputText, setSearchInputText] = useState<string>("");
 
-    const { result: data, loading: isLoading } = useAsync(
+    const { result, loading: isLoading } = useAsync(
         async (keyword: string, offset: number, limit: number, id?: string) => {
             try {
-                return await queryResources({
+                const data = await queryResources({
                     keyword: keyword.trim() ? keyword : undefined,
                     offset,
                     limit,
                     id
                 });
+                const count = await queryResourcesCount({
+                    keyword: keyword.trim() ? keyword : undefined,
+                    id
+                });
+                return [data, count] as [ResourcesRecord[], number];
             } catch (e) {
                 toaster.push(
                     <Notification
@@ -57,6 +64,8 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = (props) => {
         },
         [keyword, offset, limit, queryParams?.id]
     );
+
+    const [data, totalCount] = result ? result : [[], 0];
 
     return (
         <div className="resources-data-grid">
@@ -139,7 +148,7 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = (props) => {
                         maxButtons={5}
                         size="xs"
                         layout={["total", "-", "limit", "|", "pager", "skip"]}
-                        total={data?.length ? data.length : 0}
+                        total={totalCount}
                         limitOptions={[DEFAULT_MAX_PAGE_RECORD_NUMBER, 20]}
                         limit={limit}
                         activePage={page}
