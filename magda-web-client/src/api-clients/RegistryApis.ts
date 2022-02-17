@@ -765,3 +765,61 @@ export async function fetchRecordById(recordId: string, noCache = false) {
         noCache
     );
 }
+
+export type QueryRecordAspectsParams = {
+    recordId: string;
+    keyword?: string;
+    aspectIdOnly?: boolean;
+    offset?: number;
+    limit?: number;
+    noCache?: boolean;
+};
+
+export type RecordAspectRecord = {
+    id: string;
+    data?: any;
+};
+
+export async function queryRecordAspects(
+    params: QueryRecordAspectsParams
+): Promise<RecordAspectRecord[]> {
+    const { noCache, recordId, ...queryParams } = params
+        ? params
+        : ({} as QueryRecordAspectsParams);
+    if (!recordId?.trim()) {
+        throw new Error(
+            "Failed to request record aspects: record ID cannot be empty!"
+        );
+    }
+    return await getRequest<RecordAspectRecord[]>(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(recordId)}/aspects`,
+            config.registryReadOnlyApiUrl,
+            queryParams
+        ),
+        noCache
+    );
+}
+
+export type QueryRecordAspectsCountParams = Omit<
+    QueryRecordAspectsParams,
+    "aspectIdOnly" | "offset" | "limit"
+>;
+
+export async function queryRecordAspectsCount(
+    params?: QueryRecordAspectsCountParams
+): Promise<number> {
+    const { noCache, recordId, ...queryParams } = params
+        ? params
+        : ({} as QueryRecordAspectsCountParams);
+    const res = await getRequest<{ count: number }>(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(recordId)}/aspects/count`,
+            config.registryReadOnlyApiUrl,
+            queryParams
+        ),
+        noCache
+    );
+
+    return res?.count ? res.count : 0;
+}

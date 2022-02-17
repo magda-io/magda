@@ -275,6 +275,22 @@ export async function queryRoles(
     );
 }
 
+export type QueryRolesCountParams = Omit<QueryRolesParams, "offset" | "limit">;
+
+export async function queryRolesCount(
+    params?: QueryRolesCountParams
+): Promise<number> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryRolesCountParams);
+
+    const res = await getRequest<{ count: number }>(
+        getAbsoluteUrl(`roles/count`, config.authApiUrl, queryParams),
+        noCache
+    );
+    return res?.count ? res.count : 0;
+}
+
 export async function whoami() {
     return await request<User>(
         "GET",
@@ -308,4 +324,22 @@ export async function queryResources(
         getAbsoluteUrl(`resources`, config.authApiUrl, queryParams),
         noCache
     );
+}
+
+export type QueryResourcesCountParams = Omit<
+    QueryResourcesParams,
+    "offset" | "limit"
+>;
+
+export async function queryResourcesCount(
+    params?: QueryResourcesCountParams
+): Promise<number> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryResourcesCountParams);
+    const res = await getRequest<{ count: number }>(
+        getAbsoluteUrl(`resources/count`, config.authApiUrl, queryParams),
+        noCache
+    );
+    return res?.count ? res.count : 0;
 }
