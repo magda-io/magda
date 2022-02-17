@@ -238,6 +238,22 @@ export async function queryUsers(
     );
 }
 
+export type QueryUsersCountParams = Omit<QueryUsersParams, "offset" | "limit">;
+
+export async function queryUsersCount(
+    params?: QueryUsersCountParams
+): Promise<number> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryUsersCountParams);
+
+    const res = await getRequest<{ count: number }>(
+        getAbsoluteUrl(`users/count`, config.authApiUrl, queryParams),
+        noCache
+    );
+    return res?.count ? res.count : 0;
+}
+
 export type QueryRolesParams = {
     keyword?: string;
     id?: string;

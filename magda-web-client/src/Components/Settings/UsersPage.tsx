@@ -49,7 +49,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                     offset,
                     limit
                 });
-                const count = queryUsersCount({
+                const count = await queryUsersCount({
                     keyword: keyword.trim() ? keyword : undefined
                 });
                 return [users, count] as [UserRecord[], number];
