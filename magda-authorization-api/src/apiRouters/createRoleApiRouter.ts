@@ -89,7 +89,8 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     }
                 );
                 if (returnCount) {
-                    res.json({ count: records[0] });
+                    // response will be {count: number}
+                    res.json(records[0]);
                 } else {
                     res.json(records);
                 }
@@ -410,7 +411,8 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     }
                 );
                 if (returnCount) {
-                    res.json({ count: records[0] });
+                    // response will be {count: number}
+                    res.json(records[0]);
                 } else {
                     res.json(records);
                 }

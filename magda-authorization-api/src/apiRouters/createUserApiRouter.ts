@@ -291,55 +291,6 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/users/:userId Get User By Id
-     * @apiDescription Returns user by id
-     *
-     * @apiParam {string} userId id of user
-     *
-     * @apiSuccessExample {json} 200
-     *    {
-     *        "id":"...",
-     *        "displayName":"Fred Nerk",
-     *        "photoURL":"...",
-     *        "isAdmin": true
-     *    }
-     *
-     * @apiErrorExample {json} 401/404/500
-     *    {
-     *      "isError": true,
-     *      "errorCode": 401, //--- or 404, 500 depends on error type
-     *      "errorMessage": "Not authorized"
-     *    }
-     */
-    router.get(
-        "/:userId",
-        NO_CACHE,
-        withAuthDecision(authDecisionClient, {
-            operationUri: "authObject/user/read"
-        }),
-        (req, res) => {
-            const userId = req.params.userId;
-            const getPublicUser = database
-                .getUser(userId, res.locals.authDecision)
-                .then((userMaybe) =>
-                    userMaybe.map((user) => {
-                        const publicUser: PublicUser = {
-                            id: user.id,
-                            photoURL: user.photoURL,
-                            displayName: user.displayName,
-                            isAdmin: user.isAdmin
-                        };
-
-                        return publicUser;
-                    })
-                );
-
-            handleMaybePromise(res, getPublicUser, "/public/users/:userId");
-        }
-    );
-
-    /**
-     * @apiGroup Auth
      * @api {put} /v0/auth/users/:userId Update User By Id
      * @apiDescription Updates a user's info by Id. 
      * Supply a JSON object that contains fields to be udpated in body.
@@ -431,7 +382,8 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                     }
                 );
                 if (returnCount) {
-                    res.json({ count: records[0] });
+                    // response will be {count: number}
+                    res.json(records[0]);
                 } else {
                     res.json(records);
                 }
@@ -457,6 +409,55 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
             operationUri: "authObject/user/read"
         }),
         createFetchUsersHandler(true, "Get Users Count")
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/users/:userId Get User By Id
+     * @apiDescription Returns user by id
+     *
+     * @apiParam {string} userId id of user
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "id":"...",
+     *        "displayName":"Fred Nerk",
+     *        "photoURL":"...",
+     *        "isAdmin": true
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:userId",
+        NO_CACHE,
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
+        (req, res) => {
+            const userId = req.params.userId;
+            const getPublicUser = database
+                .getUser(userId, res.locals.authDecision)
+                .then((userMaybe) =>
+                    userMaybe.map((user) => {
+                        const publicUser: PublicUser = {
+                            id: user.id,
+                            photoURL: user.photoURL,
+                            displayName: user.displayName,
+                            isAdmin: user.isAdmin
+                        };
+
+                        return publicUser;
+                    })
+                );
+
+            handleMaybePromise(res, getPublicUser, "/public/users/:userId");
+        }
     );
 
     return router;
