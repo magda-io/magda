@@ -355,7 +355,7 @@ class RecordAspectsServiceRO(
   }
 
   def route =
-    getById ~
-      getAspects ~
-      getAspectsCount
+    getAspects ~
+      getAspectsCount ~
+      getById
 }
