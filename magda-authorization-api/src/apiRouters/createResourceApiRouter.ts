@@ -15,8 +15,7 @@ import {
     createTableRecord,
     updateTableRecord,
     deleteTableRecord,
-    searchTableRecord,
-    countTableRecord
+    searchTableRecord
 } from "magda-typescript-common/src/SQLUtils";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 
@@ -101,7 +100,7 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                     }
                 );
                 if (returnCount) {
-                    res.json(records[0]);
+                    res.json({ count: records[0] });
                 } else {
                     res.json(records);
                 }
@@ -244,20 +243,11 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // get operations of a resource
-    router.get(
-        "/:resId/operations",
-        // when user has the permission to access the resource
-        // we should let him to access all operations of the resources
-        // thus, we only request read permission to the resource only
-        requireObjectPermission(
-            authDecisionClient,
-            database,
-            "authObject/resource/read",
-            (req, res) => req.params.id,
-            "resource"
-        ),
-        async function (req, res) {
+    function createFetchResourceOperationsHandler(
+        returnCount: boolean,
+        apiName: string
+    ) {
+        return async function (req: Request, res: Response) {
             try {
                 const conditions: SQLSyntax[] = [
                     sqls`resource_id = ${req.params.resId}`
@@ -285,19 +275,41 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                     "operations",
                     conditions,
                     {
+                        selectedFields: [
+                            returnCount ? sqls`COUNT(*) as count` : sqls`*`
+                        ],
                         offset: req?.query?.offset as string,
                         limit: req?.query?.limit as string
                     }
                 );
-                res.json(records);
+                if (returnCount) {
+                    res.json({ count: records[0] });
+                } else {
+                    res.json(records);
+                }
             } catch (e) {
-                respondWithError(
-                    "GET operations of resource: " + req.params.resId,
-                    res,
-                    e
-                );
+                respondWithError(apiName + req.params.resId, res, e);
             }
-        }
+        };
+    }
+
+    // get operations of a resource
+    router.get(
+        "/:resId/operations",
+        // when user has the permission to access the resource
+        // we should let him to access all operations of the resources
+        // thus, we only request read permission to the resource only
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/resource/read",
+            (req, res) => req.params.id,
+            "resource"
+        ),
+        createFetchResourceOperationsHandler(
+            false,
+            "Get operations of the resource"
+        )
     );
 
     // get operation count of a resource
@@ -313,41 +325,10 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
             (req, res) => req.params.id,
             "resource"
         ),
-        async function (req, res) {
-            try {
-                const conditions: SQLSyntax[] = [
-                    sqls`resource_id = ${req.params.resId}`
-                ];
-                if (req.query?.keyword) {
-                    const keyword = "%" + req.query?.keyword + "%";
-                    conditions.push(
-                        SQLSyntax.joinWithOr(
-                            operationKeywordSearchFields.map(
-                                (field) =>
-                                    sqls`${escapeIdentifier(
-                                        field
-                                    )} ILIKE ${keyword}`
-                            )
-                        ).roundBracket()
-                    );
-                }
-                if (req.query?.uri) {
-                    conditions.push(sqls`"uri" = ${req.query.uri}`);
-                }
-                const number = await countTableRecord(
-                    database.getPool(),
-                    "operations",
-                    conditions
-                );
-                res.json({ count: number });
-            } catch (e) {
-                respondWithError(
-                    "GET operations count of resource: " + req.params.resId,
-                    res,
-                    e
-                );
-            }
-        }
+        createFetchResourceOperationsHandler(
+            true,
+            "Get operations count of the resource"
+        )
     );
 
     return router;

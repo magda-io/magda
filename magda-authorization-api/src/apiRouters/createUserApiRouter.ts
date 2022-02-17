@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import Database from "../Database";
 import respondWithError from "../respondWithError";
 import handleMaybePromise from "../handleMaybePromise";
@@ -9,10 +9,7 @@ import { PublicUser } from "magda-typescript-common/src/authorization-api/model"
 import { requireObjectPermission } from "../recordAuthMiddlewares";
 import { withAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
-import {
-    searchTableRecord,
-    countTableRecord
-} from "magda-typescript-common/src/SQLUtils";
+import { searchTableRecord } from "magda-typescript-common/src/SQLUtils";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -391,13 +388,8 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // get user records meet selection criteria
-    router.get(
-        "/",
-        withAuthDecision(authDecisionClient, {
-            operationUri: "authObject/user/read"
-        }),
-        async function (req, res) {
+    function createFetchUsersHandler(returnCount: boolean, apiName: string) {
+        return async function (req: Request, res: Response) {
             try {
                 const conditions: SQLSyntax[] = [];
                 if (req.query?.keyword) {
@@ -430,16 +422,32 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                     "users",
                     conditions,
                     {
+                        selectedFields: [
+                            returnCount ? sqls`COUNT(*) as count` : sqls`*`
+                        ],
                         authDecision: res.locals.authDecision,
                         offset: req?.query?.offset as string,
                         limit: req?.query?.limit as string
                     }
                 );
-                res.json(records);
+                if (returnCount) {
+                    res.json({ count: records[0] });
+                } else {
+                    res.json(records);
+                }
             } catch (e) {
-                respondWithError("GET users", res, e);
+                respondWithError(apiName, res, e);
             }
-        }
+        };
+    }
+
+    // get user records meet selection criteria
+    router.get(
+        "/",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
+        createFetchUsersHandler(false, "Get Users")
     );
 
     // get records count
@@ -448,45 +456,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
         withAuthDecision(authDecisionClient, {
             operationUri: "authObject/user/read"
         }),
-        async function (req, res) {
-            try {
-                const conditions: SQLSyntax[] = [];
-                if (req.query?.keyword) {
-                    const keyword = "%" + req.query?.keyword + "%";
-                    conditions.push(
-                        SQLSyntax.joinWithOr(
-                            userKeywordSearchFields.map(
-                                (field) =>
-                                    sqls`${escapeIdentifier(
-                                        field
-                                    )} ILIKE ${keyword}`
-                            )
-                        ).roundBracket()
-                    );
-                }
-                if (req.query?.id) {
-                    conditions.push(sqls`"id" = ${req.query.id}`);
-                }
-                if (req.query?.source) {
-                    conditions.push(sqls`"source" = ${req.query.source}`);
-                }
-                if (req.query?.orgUnitId) {
-                    conditions.push(sqls`"orgUnitId" = ${req.query.orgUnitId}`);
-                }
-                if (req.query?.sourceId) {
-                    conditions.push(sqls`"sourceId" = ${req.query.sourceId}`);
-                }
-                const number = await countTableRecord(
-                    database.getPool(),
-                    "users",
-                    conditions,
-                    res.locals.authDecision
-                );
-                res.json({ count: number });
-            } catch (e) {
-                respondWithError("GET users count", res, e);
-            }
-        }
+        createFetchUsersHandler(true, "Get Users Count")
     );
 
     return router;
