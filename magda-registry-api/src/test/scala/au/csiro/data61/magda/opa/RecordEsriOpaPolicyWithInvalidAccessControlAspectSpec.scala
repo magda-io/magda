@@ -47,18 +47,20 @@ abstract class RecordEsriOpaPolicyWithInvalidAccessControlAspectSpec
               ) ~> addJwtToken(userId) ~> param
                 .api(Full)
                 .routes ~> check {
-                val theResponse = responseAs[Option[JsObject]]
-                if (expectedRecordIndexes.contains(recordIndex)) {
-                  status shouldBe StatusCodes.OK
-                  foundRecordsCounter = foundRecordsCounter + 1
-                  theResponse.get.fields("name") shouldBe JsString(
-                    recordOrgNames(recordIndex)
-                  )
-                } else {
-                  status shouldBe StatusCodes.NotFound
-                  theResponse.get.fields("message") shouldBe JsString(
-                    "No record or aspect exists with the given IDs."
-                  )
+                withClue(responseAs[String]) {
+                  val theResponse = responseAs[Option[JsObject]]
+                  if (expectedRecordIndexes.contains(recordIndex)) {
+                    status shouldBe StatusCodes.OK
+                    foundRecordsCounter = foundRecordsCounter + 1
+                    theResponse.get.fields("name") shouldBe JsString(
+                      recordOrgNames(recordIndex)
+                    )
+                  } else {
+                    status shouldBe StatusCodes.NotFound
+                    theResponse.get.fields("message") shouldBe JsString(
+                      "No record or aspect exists with the given IDs."
+                    )
+                  }
                 }
               }
           }

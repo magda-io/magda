@@ -1,5 +1,6 @@
 import express from "express";
 import yargs from "yargs";
+import "@magda/typescript-common/dist/pgTypes";
 
 import createApiRouter from "./createApiRouter";
 import createOpaRouter from "./createOpaRouter";

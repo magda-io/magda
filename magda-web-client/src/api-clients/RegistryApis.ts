@@ -780,9 +780,19 @@ export type RecordAspectRecord = {
     data?: any;
 };
 
-export async function queryRecordAspects(
+export type QueryRecordAspectsReturnValueType = RecordAspectRecord[] | string[];
+
+/**
+ * Get all aspects of a record. When params.aspectIdOnly == `true`, it will response a list of aspect id.
+ *
+ * @export
+ * @template QueryRecordAspectsReturnValueType
+ * @param {QueryRecordAspectsParams} params
+ * @return {*}  {Promise<QueryRecordAspectsReturnValueType>}
+ */
+export async function queryRecordAspects<T = QueryRecordAspectsReturnValueType>(
     params: QueryRecordAspectsParams
-): Promise<RecordAspectRecord[]> {
+): Promise<T> {
     const { noCache, recordId, ...queryParams } = params
         ? params
         : ({} as QueryRecordAspectsParams);
@@ -791,7 +801,7 @@ export async function queryRecordAspects(
             "Failed to request record aspects: record ID cannot be empty!"
         );
     }
-    return await getRequest<RecordAspectRecord[]>(
+    return await getRequest<T>(
         getAbsoluteUrl(
             `records/${encodeURIComponent(recordId)}/aspects`,
             config.registryReadOnlyApiUrl,
@@ -822,4 +832,30 @@ export async function queryRecordAspectsCount(
     );
 
     return res?.count ? res.count : 0;
+}
+
+export async function getRecordAspect<T = any>(
+    recordId: string,
+    aspectId: string,
+    noCache: boolean = false
+): Promise<T> {
+    if (!recordId?.trim()) {
+        throw new Error(
+            "Failed to get record aspect: record ID cannot be empty!"
+        );
+    }
+    if (!aspectId?.trim()) {
+        throw new Error(
+            "Failed to get record aspect: aspect ID cannot be empty!"
+        );
+    }
+    return await getRequest<T>(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(
+                recordId
+            )}/aspects/${encodeURIComponent(aspectId)}`,
+            config.registryReadOnlyApiUrl
+        ),
+        noCache
+    );
 }
