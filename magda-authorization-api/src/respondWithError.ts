@@ -26,7 +26,7 @@ export default function respondWithError(
         res.status(500).json({
             isError: true,
             errorCode: 500,
-            errorMessage: "Internal server error"
+            errorMessage: `Internal server error: ${e}`
         });
     }
 }
