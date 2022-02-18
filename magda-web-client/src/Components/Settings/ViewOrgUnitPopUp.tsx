@@ -87,7 +87,7 @@ const ViewOrgUnitPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             if (!orgUnitId) {
                 return undefined;
             }
-            return await getOrgUnitById(orgUnitId as string);
+            return await getOrgUnitById(orgUnitId as string, true);
         },
         [orgUnitId]
     );

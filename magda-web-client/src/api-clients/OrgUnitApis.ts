@@ -5,6 +5,8 @@ import { OrgUnit as OrgUnitType } from "reducers/userManagementReducer";
 import request from "helpers/request";
 import getRequestNoCache from "helpers/getRequestNoCache";
 import { v4 as isUuid } from "is-uuid";
+import getRequest from "helpers/getRequest";
+import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
 
 export type OrgUnit = OrgUnitType;
 
@@ -75,17 +77,14 @@ export async function listOrgUnitsAtLevel(
  * @param {string} id
  * @returns {Promise<OrgUnit>}
  */
-export async function getOrgUnitById(id: string): Promise<OrgUnit> {
-    const res = await fetch(
-        `${config.authApiUrl}orgunits/${id}`,
-        config.credentialsFetchOptions
+export async function getOrgUnitById(
+    id: string,
+    noCache: boolean = false
+): Promise<OrgUnit> {
+    return await getRequest(
+        getAbsoluteUrl(`orgunits/${encodeURIComponent(id)}`, config.authApiUrl),
+        noCache
     );
-
-    if (!res.ok) {
-        throw new Error("Rejected with " + res.statusText);
-    } else {
-        return await res.json();
-    }
 }
 
 export async function getRootNode(noCache = false) {
