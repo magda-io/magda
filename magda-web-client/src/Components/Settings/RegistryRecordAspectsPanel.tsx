@@ -6,6 +6,7 @@ import { toaster } from "rsuite";
 import { Input, InputGroup } from "rsuite";
 import { MdSearch } from "react-icons/md";
 import PanelGroup from "rsuite/PanelGroup";
+import Panel from "rsuite/Panel";
 import Loader from "rsuite/Loader";
 import Placeholder from "rsuite/Placeholder";
 import {
@@ -110,8 +111,14 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
 
                     <div>
                         <PanelGroup accordion bordered>
-                            {aspectIds.map((aspectId) => (
+                            {!aspectIds?.length ? (
+                                <Panel defaultExpanded>
+                                    No aspect data found for this record.
+                                </Panel>
+                            ) : null}
+                            {aspectIds.map((aspectId, idx) => (
                                 <RegistryRecordAspectItem
+                                    key={idx}
                                     recordId={recordId}
                                     aspectId={aspectId}
                                 />

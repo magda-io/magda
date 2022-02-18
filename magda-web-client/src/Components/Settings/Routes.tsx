@@ -1,14 +1,28 @@
 import React from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
+import { makeAsync } from "Components/AsyncComponent";
 import withHeader from "Components/Header/withHeader";
 import "rsuite/dist/rsuite.min.css";
-import UsersPage from "./UsersPage";
-import RolesPage from "./RolesPage";
-import UserRolesPage from "./UserRolesPage";
-import OrgUnitsPage from "./OrgUnitsPage";
-import ResourcesPage from "./ResourcesPage";
-import RegistryRecordsPage from "./RegistryRecordsPage";
 //import Index from "./Index";
+
+const UsersPage = makeAsync(() =>
+    import("./UsersPage").then((module) => module.default)
+);
+const RolesPage = makeAsync(() =>
+    import("./RolesPage").then((module) => module.default)
+);
+const UserRolesPage = makeAsync(() =>
+    import("./UserRolesPage").then((module) => module.default)
+);
+const OrgUnitsPage = makeAsync(() =>
+    import("./OrgUnitsPage").then((module) => module.default)
+);
+const ResourcesPage = makeAsync(() =>
+    import("./ResourcesPage").then((module) => module.default)
+);
+const RegistryRecordsPage = makeAsync(() =>
+    import("./RegistryRecordsPage").then((module) => module.default)
+);
 
 const Routes = () => {
     return (

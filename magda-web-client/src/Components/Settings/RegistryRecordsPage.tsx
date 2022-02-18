@@ -21,6 +21,7 @@ import RecordFormPopUp, {
     RefType as RecordFormPopUpRefType
 } from "./RecordFormPopUp";
 import RegistryRecordInfoPanel from "./RegistryRecordInfoPanel";
+import RegistryRecordAspectsPanel from "./RegistryRecordAspectsPanel";
 
 const Paragraph = Placeholder.Paragraph;
 
@@ -132,6 +133,7 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
                 ) : record?.id ? (
                     <>
                         <RegistryRecordInfoPanel record={record} />
+                        <RegistryRecordAspectsPanel recordId={record.id} />
                     </>
                 ) : (
                     <Panel className="open-record-panel" bordered>

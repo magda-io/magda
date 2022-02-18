@@ -102,6 +102,7 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
             <div>
                 <Table
                     height={420}
+                    autoHeight={true}
                     data={(roles?.length ? roles : []) as any}
                     loading={isLoading}
                 >

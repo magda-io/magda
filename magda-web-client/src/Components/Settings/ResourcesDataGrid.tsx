@@ -96,6 +96,7 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = (props) => {
             <div>
                 <Table
                     height={420}
+                    autoHeight={true}
                     data={(data?.length ? data : []) as any}
                     loading={isLoading}
                 >

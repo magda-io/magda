@@ -107,6 +107,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                 <div>
                     <Table
                         height={420}
+                        autoHeight={true}
                         data={(users?.length ? users : []) as any}
                         loading={isLoading}
                     >
