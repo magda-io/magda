@@ -1,9 +1,9 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useRef } from "react";
 import { useAsync } from "react-async-hook";
 import Pagination from "rsuite/Pagination";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
-import { Input, InputGroup } from "rsuite";
+import { Input, InputGroup, Button } from "rsuite";
 import { MdSearch } from "react-icons/md";
 import PanelGroup from "rsuite/PanelGroup";
 import Panel from "rsuite/Panel";
@@ -15,6 +15,9 @@ import {
 } from "../../api-clients/RegistryApis";
 import "./RegistryRecordAspectsPanel.scss";
 import RegistryRecordAspectItem from "./RegistryRecordAspectItem";
+import RecordAspectFormPopUp, {
+    RefType as RecordAspectFormPopUpRefType
+} from "./RecordAspectFormPopUp";
 
 const Paragraph = Placeholder.Paragraph;
 
@@ -29,6 +32,11 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
     const [keyword, setKeyword] = useState<string>("");
     const [page, setPage] = useState<number>(0);
 
+    const recordAspectFormRef = useRef<RecordAspectFormPopUpRefType>(null);
+
+    //change this value to force the record aspect data to be reloaded
+    const [aspectReloadToken, setAspectReloadToken] = useState<string>("");
+
     const [limit, setLimit] = useState(DEFAULT_MAX_PAGE_RECORD_NUMBER);
     const offset = page * limit;
 
@@ -39,7 +47,10 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
             recordId: string,
             keyword: string,
             offset: number,
-            limit: number
+            limit: number,
+            // we don't use this parameter in anyway
+            // nbut keep here to make sure the fetch action is re-triggered when it changes
+            aspectReloadToken: string
         ) => {
             try {
                 const aspectIds = await queryRecordAspects<string[]>({
@@ -72,12 +83,16 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
                 throw e;
             }
         },
-        [recordId, keyword, offset, limit]
+        [recordId, keyword, offset, limit, aspectReloadToken]
     );
 
     const [aspectIds, totalCount] = result ? result : [[], 0];
 
-    console.log(aspectIds);
+    const createAspectHandler = () => {
+        recordAspectFormRef.current?.open(undefined, () => {
+            setAspectReloadToken(`${Math.random()}`);
+        });
+    };
 
     return (
         <>
@@ -87,7 +102,19 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
                 </Paragraph>
             ) : (
                 <div className="record-aspects-list">
+                    <RecordAspectFormPopUp
+                        recordId={recordId}
+                        ref={recordAspectFormRef}
+                    />
                     <div className="search-button-container">
+                        <div className="create-record-aspect-button-container">
+                            <Button
+                                appearance="primary"
+                                onClick={createAspectHandler}
+                            >
+                                Create Record Aspect
+                            </Button>
+                        </div>
                         <div className="search-button-inner-wrapper">
                             <InputGroup size="md" inside>
                                 <Input
@@ -119,6 +146,7 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
                             {aspectIds.map((aspectId, idx) => (
                                 <RegistryRecordAspectItem
                                     key={idx}
+                                    defaultExpanded
                                     recordId={recordId}
                                     aspectId={aspectId}
                                 />

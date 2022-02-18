@@ -13,10 +13,11 @@ const Paragraph = Placeholder.Paragraph;
 type PropsType = {
     recordId: string;
     aspectId: string;
+    defaultExpanded?: boolean;
 };
 
 const RegistryRecordAspectItem: FunctionComponent<PropsType> = (props) => {
-    const { recordId, aspectId } = props;
+    const { recordId, aspectId, defaultExpanded } = props;
 
     const { result: aspectData, loading: isLoading } = useAsync(
         async (recordId: string, aspectId: string) => {
@@ -40,7 +41,7 @@ const RegistryRecordAspectItem: FunctionComponent<PropsType> = (props) => {
     );
 
     return (
-        <Panel header={aspectId}>
+        <Panel header={aspectId} defaultExpanded={defaultExpanded}>
             {isLoading ? (
                 <Paragraph rows={5}>
                     <Loader center content="loading" />

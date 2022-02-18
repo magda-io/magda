@@ -51,11 +51,14 @@ const RecordFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             onComplete?: SubmitCompleteHandlerType
         ) => {
             onCompleteRef.current = onComplete;
-            selectRecordId =
-                typeof recordId === "string" ? recordId.trim() : recordId;
-            setRecordId(selectRecordId);
-            if (selectRecordId === recordId) {
-                setRecordReloadToken(`${Math.random()}`);
+            if (typeof selectRecordId === "string") {
+                selectRecordId = selectRecordId.trim();
+                if (selectRecordId) {
+                    setRecordId(selectRecordId);
+                }
+                if (selectRecordId === recordId) {
+                    setRecordReloadToken(`${Math.random()}`);
+                }
             }
             setIsOpen(true);
         },

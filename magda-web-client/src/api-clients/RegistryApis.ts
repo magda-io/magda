@@ -683,9 +683,12 @@ export async function updateDataset(
 export async function updateRecordAspect<T = any>(
     recordId: string,
     aspectId: string,
-    aspectData: T
+    aspectData: T,
+    skipEnsureAspectExists: boolean = false
 ): Promise<[T, number]> {
-    await ensureAspectExists(aspectId);
+    if (skipEnsureAspectExists) {
+        await ensureAspectExists(aspectId);
+    }
 
     const [json, headers] = await request<T>(
         "PUT",
@@ -863,6 +866,21 @@ export async function getRecordAspect<T = any>(
             )}/aspects/${encodeURIComponent(aspectId)}`,
             config.registryReadOnlyApiUrl
         ),
+        noCache
+    );
+}
+
+export type AspectDefRecord = {
+    id: string;
+    name: string;
+    jsonSchema: {
+        [key: string]: any;
+    };
+};
+
+export async function getAspectDefs(noCache = false) {
+    return await getRequest<AspectDefRecord[]>(
+        getAbsoluteUrl("aspects", config.registryReadOnlyApiUrl),
         noCache
     );
 }
