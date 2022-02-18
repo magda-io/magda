@@ -822,16 +822,23 @@ export async function queryRecordAspectsCount(
     const { noCache, recordId, ...queryParams } = params
         ? params
         : ({} as QueryRecordAspectsCountParams);
-    const res = await getRequest<{ count: number }>(
-        getAbsoluteUrl(
-            `records/${encodeURIComponent(recordId)}/aspects/count`,
-            config.registryReadOnlyApiUrl,
-            queryParams
-        ),
-        noCache
-    );
 
-    return res?.count ? res.count : 0;
+    try {
+        const res = await getRequest<{ count: number }>(
+            getAbsoluteUrl(
+                `records/${encodeURIComponent(recordId)}/aspects/count`,
+                config.registryReadOnlyApiUrl,
+                queryParams
+            ),
+            noCache
+        );
+        return res?.count ? res.count : 0;
+    } catch (e) {
+        if (e instanceof ServerError && e.statusCode === 404) {
+            return 0;
+        }
+        throw e;
+    }
 }
 
 export async function getRecordAspect<T = any>(
