@@ -435,9 +435,9 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     router.get(
         "/count",
         withAuthDecision(authDecisionClient, {
-            operationUri: "authObject/user/read"
+            operationUri: "authObject/role/read"
         }),
-        createFetchRolesHandler(false, "GET role records count")
+        createFetchRolesHandler(true, "GET role records count")
     );
 
     return router;
