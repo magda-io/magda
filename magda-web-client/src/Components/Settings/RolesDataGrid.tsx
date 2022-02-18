@@ -28,10 +28,10 @@ const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
     const { queryParams } = props;
     const [keyword, setKeyword] = useState<string>("");
-    const [page, setPage] = useState<number>(0);
+    const [page, setPage] = useState<number>(1);
 
     const [limit, setLimit] = useState(DEFAULT_MAX_PAGE_RECORD_NUMBER);
-    const offset = page * limit;
+    const offset = (page - 1) * limit;
 
     const [searchInputText, setSearchInputText] = useState<string>("");
 
