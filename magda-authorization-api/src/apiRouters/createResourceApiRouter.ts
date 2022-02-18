@@ -33,33 +33,6 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
 
     const router: express.Router = express.Router();
 
-    // get record by id
-    router.get(
-        "/:id",
-        withAuthDecision(authDecisionClient, {
-            operationUri: "authObject/resource/read"
-        }),
-        async function (req, res) {
-            try {
-                const record = await getTableRecord(
-                    database.getPool(),
-                    "resources",
-                    req.params.id,
-                    res.locals.authDecision
-                );
-                if (!record) {
-                    res.status(404).send(
-                        `Cannot locate record by id: ${req.params.id}`
-                    );
-                } else {
-                    res.json(record);
-                }
-            } catch (e) {
-                respondWithError("GET resource by ID", res, e);
-            }
-        }
-    );
-
     function createFetchResourcesHandler(
         returnCount: boolean,
         apiName: string
@@ -331,6 +304,33 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
             true,
             "Get operations count of the resource"
         )
+    );
+
+    // get record by id
+    router.get(
+        "/:id",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/resource/read"
+        }),
+        async function (req, res) {
+            try {
+                const record = await getTableRecord(
+                    database.getPool(),
+                    "resources",
+                    req.params.id,
+                    res.locals.authDecision
+                );
+                if (!record) {
+                    res.status(404).send(
+                        `Cannot locate record by id: ${req.params.id}`
+                    );
+                } else {
+                    res.json(record);
+                }
+            } catch (e) {
+                respondWithError("GET resource by ID", res, e);
+            }
+        }
     );
 
     return router;
