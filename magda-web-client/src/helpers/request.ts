@@ -1,6 +1,6 @@
 import { config } from "config";
 import fetch from "isomorphic-fetch";
-import ServerError from "../Components/Dataset/Add/Errors/ServerError";
+import ServerError from "../api-clients/ServerError";
 
 type RequestContentTypeJson = "application/json";
 type RequestContentTypePlainText = "text/plain";
