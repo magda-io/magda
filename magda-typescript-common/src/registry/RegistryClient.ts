@@ -11,6 +11,8 @@ import URI from "urijs";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
 import createServiceError from "../createServiceError";
+import { Response } from "request";
+import ServerError from "../ServerError";
 
 export interface RegistryOptions {
     baseUrl: string;
@@ -67,6 +69,14 @@ export default class RegistryClient {
         this.recordHistoryApi = new RecordHistoryApi(registryApiUrl);
     }
 
+    toServerError(error: { body: any; response: Response }) {
+        if (error?.response) {
+            return new ServerError(error.body, error.response.statusCode);
+        } else {
+            return error;
+        }
+    }
+
     getRecordUrl(id: string): string {
         return this.baseUri.clone().segment("records").segment(id).toString();
     }
@@ -89,6 +99,18 @@ export default class RegistryClient {
         )
             .then((result) => result.body)
             .catch(createServiceError);
+    }
+
+    async getAspectDefinition(aspectId: string): Promise<AspectDefinition> {
+        try {
+            const res = await this.aspectDefinitionsApi.getById(
+                this.tenantId,
+                aspectId
+            );
+            return res.body;
+        } catch (e) {
+            throw this.toServerError(e);
+        }
     }
 
     getRecord(

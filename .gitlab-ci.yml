@@ -325,6 +325,8 @@ buildtest:typescript-apis-stateless:
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run test --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useCommonLib=true -- run build
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useMinionLib=true -- run build
+    - yarn run in-submodules -- -f language=typescript -f categories.dockerizedTool=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f language=typescript -f categories.dockerizedTool=true -- run test --include-filtered-dependencies
   artifacts:
     paths:
       - "*/dist"
@@ -573,7 +575,7 @@ dockerize:ui:
     - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.ui=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
 
-dockerize:typescript-apis:
+dockerize:typescript:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
@@ -591,6 +593,7 @@ dockerize:typescript-apis:
   script:
     - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
+    - yarn run in-submodules -- -f categories.dockerizedTool=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
 
 dockerize:migrators:
   stage: buildtest
