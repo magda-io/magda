@@ -813,7 +813,7 @@ Deploy Master To Dev:
     - buildtest:helm-charts
     - dockerize:scala
     - dockerize:ui
-    - dockerize:typescript-apis
+    - dockerize:typescript
     - dockerize:migrators
     - dockerize:dockerExtensions
   image:
@@ -861,7 +861,7 @@ Release-to-Docker-Hub:
     - buildtest:helm-docs-check
     - dockerize:scala
     - dockerize:ui
-    - dockerize:typescript-apis
+    - dockerize:typescript
     - dockerize:migrators
     - dockerize:dockerExtensions
   cache: {}
@@ -885,7 +885,7 @@ Release-Master-Tag-to-Docker-Hub:
     - buildtest:helm-docs-check
     - dockerize:scala
     - dockerize:ui
-    - dockerize:typescript-apis
+    - dockerize:typescript
     - dockerize:migrators
     - dockerize:dockerExtensions
   cache: {}
@@ -914,7 +914,7 @@ Release-Latest-Tag-to-Docker-Hub:
     - buildtest:helm-docs-check
     - dockerize:scala
     - dockerize:ui
-    - dockerize:typescript-apis
+    - dockerize:typescript
     - dockerize:migrators
     - dockerize:dockerExtensions
     - Release-to-Docker-Hub
@@ -943,7 +943,7 @@ Publish NPM Packages:
     - buildtest:typescript-apis-with-pg
     - dockerize:scala
     - dockerize:ui
-    - dockerize:typescript-apis
+    - dockerize:typescript
     - dockerize:migrators
     - dockerize:dockerExtensions
   image:
@@ -970,7 +970,7 @@ Publish Helm Chart:
     - buildtest:helm-docs-check
     - dockerize:scala
     - dockerize:ui
-    - dockerize:typescript-apis
+    - dockerize:typescript
     - dockerize:migrators
     - dockerize:dockerExtensions
   image:
