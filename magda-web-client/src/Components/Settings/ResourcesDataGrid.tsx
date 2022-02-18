@@ -39,12 +39,14 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = (props) => {
             try {
                 const data = await queryResources({
                     keyword: keyword.trim() ? keyword : undefined,
+                    noCache: true,
                     offset,
                     limit,
                     id
                 });
                 const count = await queryResourcesCount({
                     keyword: keyword.trim() ? keyword : undefined,
+                    noCache: true,
                     id
                 });
                 return [data, count] as [ResourcesRecord[], number];

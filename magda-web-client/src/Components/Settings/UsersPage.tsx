@@ -46,11 +46,13 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
             try {
                 const users = await queryUsers({
                     keyword: keyword.trim() ? keyword : undefined,
+                    noCache: true,
                     offset,
                     limit
                 });
                 const count = await queryUsersCount({
-                    keyword: keyword.trim() ? keyword : undefined
+                    keyword: keyword.trim() ? keyword : undefined,
+                    noCache: true
                 });
                 return [users, count] as [UserRecord[], number];
             } catch (e) {

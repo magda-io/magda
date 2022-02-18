@@ -47,11 +47,13 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                     keyword: keyword.trim() ? keyword : undefined,
                     offset,
                     limit,
-                    user_id
+                    user_id,
+                    noCache: true
                 });
                 const count = await queryRolesCount({
                     keyword: keyword.trim() ? keyword : undefined,
-                    user_id
+                    user_id,
+                    noCache: true
                 });
                 return [roles, count] as [RoleRecord[], number];
             } catch (e) {
