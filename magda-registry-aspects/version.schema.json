@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "dataset / distribution version",
+    "title": "Record Version Aspect",
     "description": "Provides version information of a dataset or distribution record. Verison should be bumped up when key event (e.g. current distribution is replaced by an new one or other key milestone) happens.",
     "type": "object",
     "properties": {

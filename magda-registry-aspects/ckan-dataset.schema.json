@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "Aspect capturing a complete representation of a dataset according to CKAN",
+    "title": "CKAN Dataset Aspect",
+    "description": "Aspect capturing a complete representation of a dataset according to CKAN",
     "type": "object"
 }

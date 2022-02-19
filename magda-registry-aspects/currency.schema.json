@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/hyper-schema#",
-    "title": "Currency",
+    "title": "Currency Aspect",
     "description": "Describes how up-to-date the dataset is",
     "type": "object",
     "properties": {

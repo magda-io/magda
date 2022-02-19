@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/hyper-schema#",
-    "title": "The distributions of a dataset",
+    "title": "Dataset Distributions Aspect",
     "description": "Specifies the list of distributions of a dataset.",
     "type": "object",
     "properties": {

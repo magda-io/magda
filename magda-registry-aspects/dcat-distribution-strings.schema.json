@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "DCAT Distribution properties as strings",
+    "title": "Distribution DCAT Properties Aspect",
     "description": "The [DCAT Distribution](https://www.w3.org/TR/vocab-dcat/#class-distribution) properties represented as strings.  This aspect is intended to be quite permissive of arbitrary property values, even those that may be difficult or impossible to interpret.",
     "type": "object",
     "properties": {

@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "Aspect capturing a underlyig spreadsheet row extracted from input spreadsheet.",
+    "title": "CSV Dataset Aspect",
+    "description": "Aspect capturing a underlyig spreadsheet row extracted from input spreadsheet.",
     "type": "object",
     "properties": {
         "json": {
