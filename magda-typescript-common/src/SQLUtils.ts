@@ -16,6 +16,12 @@ export function setDebugMode(debugMode: boolean) {
     isDebugMode = debugMode;
 }
 
+export function printDebugInfo(sql: SQLSyntax) {
+    const [query, params] = sql.toQuery();
+    console.log("SQL Query: ", query);
+    console.log("SQL Query params: ", params);
+}
+
 /**
  * Escape SQL identifier string
  * Although postgreSQL does allow non-ASCII characters in identifiers, to make it simple, we will remove any non-ASCII characters.
@@ -124,7 +130,7 @@ export async function createTableRecord(
         RETURNING *`;
 
     if (isDebugMode) {
-        console.log(sqlSyntax.toQuery());
+        printDebugInfo(sqlSyntax);
     }
 
     const result = await poolOrClient.query(...sqlSyntax.toQuery());
@@ -170,7 +176,7 @@ export async function updateTableRecord(
         RETURNING *`;
 
     if (isDebugMode) {
-        console.log(sqlSyntax.toQuery());
+        printDebugInfo(sqlSyntax);
     }
 
     const result = await poolOrClient.query(...sqlSyntax.toQuery());
@@ -194,7 +200,7 @@ export async function deleteTableRecord(
     )} WHERE id = ${id}`;
 
     if (isDebugMode) {
-        console.log(sqlSyntax.toQuery());
+        printDebugInfo(sqlSyntax);
     }
 
     await poolOrClient.query(...sqlSyntax.toQuery());
@@ -228,6 +234,7 @@ export async function searchTableRecord<T = any>(
             table: string;
             joinCondition: SQLSyntax;
         }[];
+        groupBy?: SQLSyntax | SQLSyntax[];
     }
 ): Promise<T[]> {
     if (!table.trim()) {
@@ -278,12 +285,23 @@ export async function searchTableRecord<T = any>(
                 : SQLSyntax.empty
         }
         ${where}
+        ${
+            queryConfig?.groupBy
+                ? sqls`GROUP BY ${
+                      typeof (queryConfig.groupBy as any)?.length === "number"
+                          ? SQLSyntax.csv(
+                                ...(queryConfig.groupBy as SQLSyntax[])
+                            )
+                          : (queryConfig.groupBy as SQLSyntax)
+                  }`
+                : SQLSyntax.empty
+        }
         ${offset ? sqls`OFFSET ${offset}` : SQLSyntax.empty}
         ${limit ? sqls`LIMIT ${limit}` : SQLSyntax.empty}
         `;
 
     if (isDebugMode) {
-        console.log(sqlSyntax.toQuery());
+        printDebugInfo(sqlSyntax);
     }
 
     const result = await poolOrClient.query(...sqlSyntax.toQuery());

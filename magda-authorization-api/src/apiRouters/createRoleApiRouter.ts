@@ -34,8 +34,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
             try {
                 const roleId = req.params.roleId;
                 const conditions: SQLSyntax[] = [
-                    sqls`role_permissions.role_id = ${roleId}`,
-                    sqls`permissions.id IS NOT NULL`
+                    sqls`role_permissions.role_id = ${roleId}`
                 ];
                 if (req.query?.keyword) {
                     const keyword = "%" + req.query?.keyword + "%";
@@ -51,21 +50,21 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     );
                 }
                 if (req.query?.id) {
-                    conditions.push(sqls`"permissions.id" = ${req.query.id}`);
+                    conditions.push(sqls`permissions.id = ${req.query.id}`);
                 }
                 if (req.query?.owner_id) {
                     conditions.push(
-                        sqls`"permissions.owner_id" = ${req.query.owner_id}`
+                        sqls`permissions.owner_id = ${req.query.owner_id}`
                     );
                 }
                 if (req.query?.create_by) {
                     conditions.push(
-                        sqls`"permissions.create_by" = ${req.query.create_by}`
+                        sqls`permissions.create_by = ${req.query.create_by}`
                     );
                 }
                 if (req.query?.edit_by) {
                     conditions.push(
-                        sqls`"permissions.edit_by" = ${req.query.edit_by}`
+                        sqls`permissions.edit_by = ${req.query.edit_by}`
                     );
                 }
                 const records = await searchTableRecord(
@@ -81,11 +80,16 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                         ],
                         selectedFields: [
                             returnCount
-                                ? sqls`COUNT(*) as count`
+                                ? sqls`COUNT(DISTINCT permissions.id) as count`
                                 : sqls`permissions.*`
                         ],
-                        offset: req?.query?.offset as string,
-                        limit: req?.query?.limit as string
+                        groupBy: returnCount ? undefined : sqls`permissions.id`,
+                        offset: returnCount
+                            ? undefined
+                            : (req?.query?.offset as string),
+                        limit: returnCount
+                            ? undefined
+                            : (req?.query?.limit as string)
                     }
                 );
                 if (returnCount) {
@@ -352,9 +356,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     function createFetchRolesHandler(returnCount: boolean, apiName: string) {
         return async function (req: Request, res: Response) {
             try {
-                const conditions: SQLSyntax[] = [
-                    sqls`user_roles.id IS NOT NULL`
-                ];
+                const conditions: SQLSyntax[] = [];
                 if (req.query?.keyword) {
                     const keyword = "%" + req.query?.keyword + "%";
                     conditions.push(
@@ -369,26 +371,24 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     );
                 }
                 if (req.query?.id) {
-                    conditions.push(sqls`"role.id" = ${req.query.id}`);
+                    conditions.push(sqls`roles.role.id = ${req.query.id}`);
                 }
                 if (req.query?.owner_id) {
                     conditions.push(
-                        sqls`"role.owner_id" = ${req.query.owner_id}`
+                        sqls`roles.owner_id = ${req.query.owner_id}`
                     );
                 }
                 if (req.query?.create_by) {
                     conditions.push(
-                        sqls`"role.create_by" = ${req.query.create_by}`
+                        sqls`roles.create_by = ${req.query.create_by}`
                     );
                 }
                 if (req.query?.edit_by) {
-                    conditions.push(
-                        sqls`"role.edit_by" = ${req.query.edit_by}`
-                    );
+                    conditions.push(sqls`roles.edit_by = ${req.query.edit_by}`);
                 }
-                if (req.query?.used_id) {
+                if (req.query?.user_id) {
                     conditions.push(
-                        sqls`"user_roles.user_id" = ${req.query.used_id}`
+                        sqls`user_roles.user_id = ${req.query.user_id}`
                     );
                 }
                 const records = await searchTableRecord(
@@ -403,11 +403,16 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                             }
                         ],
                         selectedFields: returnCount
-                            ? [sqls`COUNT(*) as count`]
+                            ? [sqls`COUNT(DISTINCT roles.id) as count`]
                             : [sqls`roles.*`],
                         authDecision: res.locals.authDecision,
-                        offset: req?.query?.offset as string,
-                        limit: req?.query?.limit as string
+                        groupBy: returnCount ? undefined : sqls`roles.id`,
+                        offset: returnCount
+                            ? undefined
+                            : (req?.query?.offset as string),
+                        limit: returnCount
+                            ? undefined
+                            : (req?.query?.limit as string)
                     }
                 );
                 if (returnCount) {

@@ -377,8 +377,12 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                             returnCount ? sqls`COUNT(*) as count` : sqls`*`
                         ],
                         authDecision: res.locals.authDecision,
-                        offset: req?.query?.offset as string,
-                        limit: req?.query?.limit as string
+                        offset: returnCount
+                            ? undefined
+                            : (req?.query?.offset as string),
+                        limit: returnCount
+                            ? undefined
+                            : (req?.query?.limit as string)
                     }
                 );
                 if (returnCount) {

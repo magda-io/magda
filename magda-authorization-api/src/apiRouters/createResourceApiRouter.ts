@@ -68,8 +68,12 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                         selectedFields: [
                             returnCount ? sqls`COUNT(*) as count` : sqls`*`
                         ],
-                        offset: req?.query?.offset as string,
-                        limit: req?.query?.limit as string
+                        offset: returnCount
+                            ? undefined
+                            : (req?.query?.offset as string),
+                        limit: returnCount
+                            ? undefined
+                            : (req?.query?.limit as string)
                     }
                 );
                 if (returnCount) {
@@ -252,8 +256,12 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                         selectedFields: [
                             returnCount ? sqls`COUNT(*) as count` : sqls`*`
                         ],
-                        offset: req?.query?.offset as string,
-                        limit: req?.query?.limit as string
+                        offset: returnCount
+                            ? undefined
+                            : (req?.query?.offset as string),
+                        limit: returnCount
+                            ? undefined
+                            : (req?.query?.limit as string)
                     }
                 );
                 if (returnCount) {
