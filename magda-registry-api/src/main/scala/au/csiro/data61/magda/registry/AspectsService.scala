@@ -109,6 +109,11 @@ class AspectsService(
                       StatusCodes.BadRequest,
                       ApiError(s"Duplicated aspect id supplied: ${aspect.id}")
                     )
+                  case Failure(e: RuntimeException) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(e.getMessage)
+                    )
                   case Failure(e: PSQLException) if e.getSQLState == "22001" =>
                     complete(
                       StatusCodes.BadRequest,
@@ -230,6 +235,11 @@ class AspectsService(
                           s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
                         )
                       )
+                    case Failure(e: RuntimeException) =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(e.getMessage)
+                      )
                     case Failure(exception) =>
                       complete(
                         StatusCodes.InternalServerError,
@@ -335,6 +345,11 @@ class AspectsService(
                       ApiError(
                         s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
                       )
+                    )
+                  case Failure(e: RuntimeException) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(e.getMessage)
                     )
                   case Failure(exception) =>
                     complete(
