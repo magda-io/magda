@@ -6,6 +6,16 @@ import { camelCase, difference } from "lodash";
 
 type PossibleObjectKind = "object" | "authObject";
 
+let isDebugMode = false;
+
+export function getDebugMode() {
+    return isDebugMode;
+}
+
+export function setDebugMode(debugMode: boolean) {
+    isDebugMode = debugMode;
+}
+
 /**
  * Escape SQL identifier string
  * Although postgreSQL does allow non-ASCII characters in identifiers, to make it simple, we will remove any non-ASCII characters.
@@ -107,13 +117,17 @@ export async function createTableRecord(
         [[], []] as [SQLSyntax[], SQLSyntax[]]
     );
 
-    const result = await poolOrClient.query(
-        ...sqls`INSERT INTO ${escapeIdentifier(table)} 
+    const sqlSyntax = sqls`INSERT INTO ${escapeIdentifier(table)} 
         (${SQLSyntax.csv(...fieldList)})
         VALUES
         (${SQLSyntax.csv(...valueList)})
-        RETURNING *`.toQuery()
-    );
+        RETURNING *`;
+
+    if (isDebugMode) {
+        console.log(sqlSyntax.toQuery());
+    }
+
+    const result = await poolOrClient.query(...sqlSyntax.toQuery());
 
     return result.rows[0];
 }
@@ -150,12 +164,16 @@ export async function updateTableRecord(
         return result;
     }, [] as SQLSyntax[]);
 
-    const result = await poolOrClient.query(
-        ...sqls`UPDATE ${escapeIdentifier(table)} 
+    const sqlSyntax = sqls`UPDATE ${escapeIdentifier(table)} 
         SET ${SQLSyntax.csv(...updates)}
         WHERE id = ${id}
-        RETURNING *`.toQuery()
-    );
+        RETURNING *`;
+
+    if (isDebugMode) {
+        console.log(sqlSyntax.toQuery());
+    }
+
+    const result = await poolOrClient.query(...sqlSyntax.toQuery());
 
     return result.rows[0];
 }
@@ -171,11 +189,15 @@ export async function deleteTableRecord(
     if (!table.trim()) {
         throw new Error("invalid empty table name is supplied.");
     }
-    await poolOrClient.query(
-        ...sqls`DELETE FROM ${escapeIdentifier(
-            table
-        )} WHERE id = ${id}`.toQuery()
-    );
+    const sqlSyntax = sqls`DELETE FROM ${escapeIdentifier(
+        table
+    )} WHERE id = ${id}`;
+
+    if (isDebugMode) {
+        console.log(sqlSyntax.toQuery());
+    }
+
+    await poolOrClient.query(...sqlSyntax.toQuery());
 }
 
 export function parseIntParam(p: number | string | undefined) {
@@ -235,12 +257,12 @@ export async function searchTableRecord<T = any>(
     const where = SQLSyntax.where(
         SQLSyntax.joinWithAnd([...contiditions, authConditions])
     );
-    const result = await poolOrClient.query(
-        ...sqls`SELECT ${
-            queryConfig?.selectedFields
-                ? SQLSyntax.csv(...queryConfig.selectedFields)
-                : sqls`*`
-        } 
+
+    const sqlSyntax = sqls`SELECT ${
+        queryConfig?.selectedFields
+            ? SQLSyntax.csv(...queryConfig.selectedFields)
+            : sqls`*`
+    } 
         FROM ${escapeIdentifier(table)}
         ${
             queryConfig?.leftJoins?.length
@@ -258,8 +280,13 @@ export async function searchTableRecord<T = any>(
         ${where}
         ${offset ? sqls`OFFSET ${offset}` : SQLSyntax.empty}
         ${limit ? sqls`LIMIT ${limit}` : SQLSyntax.empty}
-        `.toQuery()
-    );
+        `;
+
+    if (isDebugMode) {
+        console.log(sqlSyntax.toQuery());
+    }
+
+    const result = await poolOrClient.query(...sqlSyntax.toQuery());
     if (!result?.rows?.length) {
         return [];
     } else {

@@ -7,6 +7,7 @@ import createOpaRouter from "./createOpaRouter";
 import Database from "./Database";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import { setDebugMode } from "magda-typescript-common/src/SQLUtils";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -83,6 +84,11 @@ const authDecisionClient = new AuthDecisionQueryClient(
 console.log("Created Auth Decision Query Client: ");
 console.log(`Endpint: ${authDecisionQueryEndpoint}`);
 console.log(`SkipAuth: ${skipAuth}`);
+
+if (argv.debug === true) {
+    setDebugMode(true);
+    console.log("Debug mode has been turned on.");
+}
 
 app.use(
     "/v0",
