@@ -553,9 +553,9 @@ class DefaultRecordPersistence(config: Config)
         authDecisionWhereClause
       )
     )}
+    ORDER BY aspectid ASC, lastupdate DESC
     ${limit.map(v => sqls"LIMIT ${v}").getOrElse(SQLSyntax.empty)}
     ${start.map(v => sqls"OFFSET ${v}").getOrElse(SQLSyntax.empty)}
-    ORDER BY aspectid ASC, lastupdate DESC
     """
       .map(rs => {
         if (aspectIdOnly.getOrElse(false)) {
