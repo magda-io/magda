@@ -23,8 +23,9 @@ import {
 import Form from "rsuite/Form";
 import reportError from "./reportError";
 import { ItemDataType } from "rsuite/esm/@types/common";
+import "jsoneditor-react/es/editor.min.css";
 
-interface AspectDefDropdownItemType extends ItemDataType {
+interface AspectDefDropdownItemType extends ItemDataType<string> {
     rawData: AspectDefRecord;
 }
 
@@ -52,6 +53,38 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     const isCreateForm = aspectId ? false : true;
     const onCompleteRef = useRef<SubmitCompleteHandlerType>();
     const [aspectReloadToken, setAspectReloadToken] = useState<string>("");
+
+    const {
+        result: JsonEditor,
+        loading: loadingJsonEditor
+    } = useAsync(async () => {
+        try {
+            const [{ JsonEditor }, ace] = await Promise.all([
+                import(/* webpackChunkName:'jsoneditor' */ "jsoneditor-react"),
+                import(/* webpackChunkName:'jsoneditor' */ "brace"),
+                import(/* webpackChunkName:'jsoneditor' */ "brace/mode/json"),
+                import(/* webpackChunkName:'jsoneditor' */ "brace/theme/github")
+            ]);
+            return function EditorHoc(props) {
+                console.log(Object.values(JsonEditor.modes));
+                return (
+                    <div className="json-editor-container">
+                        <JsonEditor
+                            name="jsonSchema"
+                            ace={ace}
+                            mode={"code"}
+                            allowedModes={["code", "tree", "form"]}
+                            theme="ace/theme/github"
+                            {...props}
+                        />
+                    </div>
+                );
+            };
+        } catch (e) {
+            reportError(`Failed to load JSON editor: ${e}`);
+            throw e;
+        }
+    }, []);
 
     useImperativeHandle(ref, () => ({
         open: (
@@ -152,6 +185,7 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     return (
         <Modal
             className="record-aspect-form-popup"
+            overflow={true}
             size="lg"
             backdrop={"static"}
             keyboard={false}
@@ -191,19 +225,25 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                 <Form.ControlLabel>Aspect ID</Form.ControlLabel>
                                 {isCreateForm ? (
                                     <SelectPicker
+                                        virtualized
                                         block
                                         data={
                                             aspectDefDropdownData
                                                 ? aspectDefDropdownData
                                                 : []
                                         }
+                                        onChange={(aspectId) =>
+                                            setAspect((v) => ({
+                                                ...v,
+                                                id: aspectId
+                                            }))
+                                        }
                                     />
                                 ) : (
                                     <Form.Control
                                         name="id"
-                                        disabled={
-                                            !isCreateForm || submitData.loading
-                                        }
+                                        disabled={true}
+                                        value={aspect?.id ? aspect.id : ""}
                                     />
                                 )}
 
@@ -211,15 +251,30 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                     <Form.HelpText>Required</Form.HelpText>
                                 ) : null}
                             </Form.Group>
-                            <Form.Group controlId="record-name">
+                            <Form.Group controlId="aspect-data">
                                 <Form.ControlLabel>
-                                    Record Name
+                                    Aspect data:
                                 </Form.ControlLabel>
-                                <Form.Control
-                                    name="name"
-                                    disabled={submitData.loading}
-                                />
-                                <Form.HelpText>Required</Form.HelpText>
+                                {loadingJsonEditor ? (
+                                    <Paragraph rows={6}>
+                                        <Loader
+                                            center
+                                            content="loading editor..."
+                                        />
+                                    </Paragraph>
+                                ) : JsonEditor ? (
+                                    <JsonEditor
+                                        value={aspect?.data ? aspect.data : {}}
+                                        onChange={(jsonData) =>
+                                            setAspect((v) => ({
+                                                ...v,
+                                                data: jsonData
+                                            }))
+                                        }
+                                    />
+                                ) : (
+                                    "Error: cannot load JsonEditor."
+                                )}
                             </Form.Group>
                         </Form>
                     </>
