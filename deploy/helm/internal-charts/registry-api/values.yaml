@@ -66,6 +66,7 @@ aspectDefinitionMigrator:
   backoffLimit: 6
   image: 
     name: magda-migrator-registry-aspects
-    repository: docker.io/data61
-    pullPolicy: IfNotPresent
-    pullSecrets: false
+    # repository: 
+    # tag: 
+    # pullPolicy: 
+    # pullSecrets: 

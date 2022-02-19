@@ -15,12 +15,15 @@ spec:
     metadata:
       name: "registry-aspect-definition-migrator"
     spec:
+      {{- $imageEnv := omit . "Values" }}
+      {{- $_ := set $imageEnv "Values" (omit .Values "image") }}
+      {{- $_ := set $imageEnv.Values "image" .Values.aspectDefinitionMigrator.image }}
       restartPolicy: OnFailure
-      {{- include "magda.imagePullSecrets" (dict "image" .Values.aspectDefinitionMigrator.image) | indent 6 }}
+      {{- include "magda.imagePullSecrets" $imageEnv | indent 6 }}
       containers:
       - name: registry-aspect-definition-migrator
-        image: {{ include "magda.image" (dict "image" .Values.aspectDefinitionMigrator.image) | quote }}
-        imagePullPolicy: {{ include "magda.imagePullPolicy" (dict "image" .Values.aspectDefinitionMigrator.image) | quote }}
+        image: {{ include "magda.image" $imageEnv | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" $imageEnv | quote }}
         command: 
           - "node"
           - "/usr/src/app/component/dist/index.js"
