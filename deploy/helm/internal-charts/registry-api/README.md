@@ -15,9 +15,6 @@ Kubernetes: `>= 1.14.0-0`
 | aspectDefinitionMigrator.backoffLimit | int | `6` |  |
 | aspectDefinitionMigrator.enabled | bool | `true` |  |
 | aspectDefinitionMigrator.image.name | string | `"magda-migrator-registry-aspects"` |  |
-| aspectDefinitionMigrator.image.pullPolicy | string | `"IfNotPresent"` |  |
-| aspectDefinitionMigrator.image.pullSecrets | bool | `false` |  |
-| aspectDefinitionMigrator.image.repository | string | `"docker.io/data61"` |  |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |
