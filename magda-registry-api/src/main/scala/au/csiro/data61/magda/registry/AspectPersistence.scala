@@ -209,21 +209,14 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
         .apply()
 
     // Create the actual Aspect
-    try {
+    Try {
       val jsonString = aspect.jsonSchema match {
         case Some(jsonSchema) => jsonSchema.compactPrint
         case None             => null
       }
       sql"insert into Aspects (aspectId, tenantId, name, lastUpdate, jsonSchema) values (${aspect.id}, ${tenantId.tenantId}, ${aspect.name}, $eventId, $jsonString::json)".update
         .apply()
-      Success(aspect)
-    } catch {
-      case e: SQLException =>
-        Failure(
-          new RuntimeException(
-            "An aspect with the specified ID already exists."
-          )
-        )
+      aspect
     }
   }
 
