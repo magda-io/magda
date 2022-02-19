@@ -80,6 +80,12 @@ function getAllBuiltInAspectDefs(): AspectDefItem[] {
     }
     for (let i = 0; i < aspectDefs.length; i++) {
         try {
+            if (aspectDefs[i]?.id?.length > 100) {
+                console.log(
+                    `Aspect '${aspectDefs[i]?.id}' has a ID over 100 characters. Skipped processing this aspect definition.`
+                );
+                continue;
+            }
             const aspectDef = await registryClient.getAspectDefinition(
                 aspectDefs[i].id
             );
@@ -92,7 +98,14 @@ function getAllBuiltInAspectDefs(): AspectDefItem[] {
                 console.log(
                     `Creating aspect definition for '${aspectDefs[i].id}'...`
                 );
-                await registryClient.putAspectDefinition(aspectDefs[i]);
+                const aspectDef = { ...aspectDefs[i] };
+                if (aspectDef?.name?.length > 100) {
+                    console.log(
+                        `Aspect '${aspectDef.id}' has a name over 100 characters. Use aspect ID as name instead.`
+                    );
+                    aspectDef.name = aspectDef.id;
+                }
+                await registryClient.putAspectDefinition(aspectDef);
                 console.log(
                     `Created aspect definition for '${aspectDefs[i].id}'.`
                 );
