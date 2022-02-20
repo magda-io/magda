@@ -15,6 +15,8 @@ import {
 } from "../../api-clients/AuthApis";
 import "./RolesDataGrid.scss";
 import reportError from "./reportError";
+import AssignUserRoleButton from "./AssignUserRoleButton";
+import { useParams } from "react-router-dom";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -27,6 +29,7 @@ type PropsType = {
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
 const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
+    const { userId } = useParams<{ userId: string }>();
     const { queryParams } = props;
     const [keyword, setKeyword] = useState<string>("");
     const [page, setPage] = useState<number>(1);
@@ -36,11 +39,15 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
 
     const [searchInputText, setSearchInputText] = useState<string>("");
 
+    //change this value to force the role data to be reloaded
+    const [dataReloadToken, setDataReloadToken] = useState<string>("");
+
     const { result, loading: isLoading } = useAsync(
         async (
             keyword: string,
             offset: number,
             limit: number,
+            dataReloadToken: string,
             user_id?: string
         ) => {
             try {
@@ -71,7 +78,7 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                 throw e;
             }
         },
-        [keyword, offset, limit, queryParams?.user_id]
+        [keyword, offset, limit, dataReloadToken, queryParams?.user_id]
     );
 
     const [roles, totalCount] = result ? result : [[], 0];
@@ -79,6 +86,16 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
     return (
         <div className="roles-data-grid">
             <div className="search-button-container">
+                <div className="left-button-area-container">
+                    {userId ? (
+                        <AssignUserRoleButton
+                            userId={userId}
+                            onAssignedRole={() =>
+                                setDataReloadToken(`${Math.random()}`)
+                            }
+                        />
+                    ) : null}
+                </div>
                 <div className="search-button-inner-wrapper">
                     <InputGroup size="md" inside>
                         <Input

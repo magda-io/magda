@@ -19483,10 +19483,10 @@ sprintf-js@~1.0.2:
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=
 
-sql-syntax@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/sql-syntax/-/sql-syntax-1.1.1.tgz#1cb4d16800f49fcd1ac1b783eee2fe2f2852f4cd"
-  integrity sha512-Mziqi7W/KQvPMm7VHji19DgXir1H5BCOVAiTFtaPFczJo5jO4ZMfUUU02b3zdIORcLal43CfoibPxcXy9luGZA==
+sql-syntax@^1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/sql-syntax/-/sql-syntax-1.1.3.tgz#10a9ead67f04fc11e15de14f5cec8f43f07c03f0"
+  integrity sha512-AHHtxbvJDzMo6fJIgULVsCJVHHEuxcwYPtk+rIN9OHgjdelrAZTK7wBbEJb9Oj/w078LC+bqyTRKsELUQMCgZQ==
 
 ssf@~0.10.2, ssf@~0.10.3:
   version "0.10.3"

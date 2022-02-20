@@ -50,7 +50,7 @@ export function requireObjectPermission(
             const result = await pool.query(
                 ...sqls`SELECT * FROM ${targetTableRef} WHERE id = ${objectId} LIMIT 1`.toQuery()
             );
-            if (result?.rows?.length) {
+            if (!result?.rows?.length) {
                 if (onRecordNotFound) {
                     onRecordNotFound(req, res, next);
                 } else {
@@ -107,7 +107,7 @@ export function requireObjectUpdatePermission(
             const result = await pool.query(
                 ...sqls`SELECT * FROM ${targetTableRef} WHERE id = ${objectId} LIMIT 1`.toQuery()
             );
-            if (result?.rows?.length) {
+            if (!result?.rows?.length) {
                 if (onRecordNotFound) {
                     onRecordNotFound(req, res, next);
                 } else {

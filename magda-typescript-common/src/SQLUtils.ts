@@ -6,22 +6,6 @@ import { camelCase, difference } from "lodash";
 
 type PossibleObjectKind = "object" | "authObject";
 
-let isDebugMode = false;
-
-export function getDebugMode() {
-    return isDebugMode;
-}
-
-export function setDebugMode(debugMode: boolean) {
-    isDebugMode = debugMode;
-}
-
-export function printDebugInfo(sql: SQLSyntax) {
-    const [query, params] = sql.toQuery();
-    console.log("SQL Query: ", query);
-    console.log("SQL Query params: ", params);
-}
-
 /**
  * Escape SQL identifier string
  * Although postgreSQL does allow non-ASCII characters in identifiers, to make it simple, we will remove any non-ASCII characters.
@@ -129,10 +113,6 @@ export async function createTableRecord(
         (${SQLSyntax.csv(...valueList)})
         RETURNING *`;
 
-    if (isDebugMode) {
-        printDebugInfo(sqlSyntax);
-    }
-
     const result = await poolOrClient.query(...sqlSyntax.toQuery());
 
     return result.rows[0];
@@ -175,10 +155,6 @@ export async function updateTableRecord(
         WHERE id = ${id}
         RETURNING *`;
 
-    if (isDebugMode) {
-        printDebugInfo(sqlSyntax);
-    }
-
     const result = await poolOrClient.query(...sqlSyntax.toQuery());
 
     return result.rows[0];
@@ -198,10 +174,6 @@ export async function deleteTableRecord(
     const sqlSyntax = sqls`DELETE FROM ${escapeIdentifier(
         table
     )} WHERE id = ${id}`;
-
-    if (isDebugMode) {
-        printDebugInfo(sqlSyntax);
-    }
 
     await poolOrClient.query(...sqlSyntax.toQuery());
 }
@@ -299,10 +271,6 @@ export async function searchTableRecord<T = any>(
         ${offset ? sqls`OFFSET ${offset}` : SQLSyntax.empty}
         ${limit ? sqls`LIMIT ${limit}` : SQLSyntax.empty}
         `;
-
-    if (isDebugMode) {
-        printDebugInfo(sqlSyntax);
-    }
 
     const result = await poolOrClient.query(...sqlSyntax.toQuery());
     if (!result?.rows?.length) {

@@ -320,6 +320,56 @@ export async function queryRolesCount(
     return res?.count ? res.count : 0;
 }
 
+/**
+ * Assign a list of roles to the user
+ *
+ * @export
+ * @param {string} userId the user ID
+ * @param {string[]} roleIds a list of roles' ID
+ * @return {*}  {Promise<string[]>} return a list of role IDs
+ */
+export async function assignRoles(
+    userId: string,
+    roleIds: string[]
+): Promise<string[]> {
+    if (!roleIds?.length) {
+        throw new Error(
+            "Failed to assign roles to the user: roleIds should be a non-empty ID array."
+        );
+    }
+    return await request<string[]>(
+        "POST",
+        getAbsoluteUrl(
+            `users/${encodeURIComponent(userId)}/roles`,
+            config.authApiUrl
+        ),
+        roleIds
+    );
+}
+
+/**
+ * Remove a list of roles from the user
+ *
+ * @export
+ * @param {string} userId
+ * @param {string[]} roleIds
+ */
+export async function removeRoles(userId: string, roleIds: string[]) {
+    if (!roleIds?.length) {
+        throw new Error(
+            "Failed to remove roles from the user: roleIds should be a non-empty ID array."
+        );
+    }
+    await request<string[]>(
+        "DELETE",
+        getAbsoluteUrl(
+            `users/${encodeURIComponent(userId)}/roles`,
+            config.authApiUrl
+        ),
+        roleIds
+    );
+}
+
 export async function whoami() {
     return await request<User>(
         "GET",
