@@ -10,7 +10,7 @@ import "./RegistryRecordAspectItem.scss";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import highlighterSyntaxJson from "react-syntax-highlighter/dist/esm/languages/hljs/json";
-import highlighterStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
+import highlighterStyle from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
 
 SyntaxHighlighter.registerLanguage("json", highlighterSyntaxJson);
 
