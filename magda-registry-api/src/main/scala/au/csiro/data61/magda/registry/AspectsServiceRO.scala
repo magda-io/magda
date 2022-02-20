@@ -19,6 +19,7 @@ import scalikejdbc._
 /**
   * @apiGroup Registry Aspects
   * @api {get} /v0/registry/aspects Get a list of all aspects
+  * @apiHeader {string} X-Magda-Session Magda internal session id
   * @apiSuccess (Success 200) {json} Response The aspect definitions.
   * @apiSuccessExample {json} Response:
   *
@@ -61,6 +62,13 @@ class AspectsServiceRO(
         dataType = "number",
         paramType = "header",
         value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
       )
     )
   )
@@ -121,6 +129,13 @@ class AspectsServiceRO(
         dataType = "string",
         paramType = "path",
         value = "ID of the aspect to be fetched."
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
       )
     )
   )

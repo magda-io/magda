@@ -71,7 +71,6 @@ function getAllBuiltInAspectDefs(): AspectDefItem[] {
 }
 
 (async () => {
-    console.log(argv);
     const aspectDefs = getAllBuiltInAspectDefs();
     if (!aspectDefs?.length) {
         throw new Error(

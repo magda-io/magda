@@ -20,6 +20,9 @@ const OrgUnitsPage = makeAsync(() =>
 const ResourcesPage = makeAsync(() =>
     import("./ResourcesPage").then((module) => module.default)
 );
+const ResourceOperationsPage = makeAsync(() =>
+    import("./OperationsPage").then((module) => module.default)
+);
 const RegistryRecordsPage = makeAsync(() =>
     import("./RegistryRecordsPage").then((module) => module.default)
 );
@@ -51,6 +54,13 @@ const Routes = () => {
                 exact
                 path="/settings/resources"
                 component={withHeader(ResourcesPage, {
+                    noContainerClass: true
+                })}
+            />
+            <Route
+                exact
+                path="/settings/resources/:resourceId/operations"
+                component={withHeader(ResourceOperationsPage, {
                     noContainerClass: true
                 })}
             />

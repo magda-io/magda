@@ -54,6 +54,10 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             : buildJwt(options.jwtSecret, options.userId);
     }
 
+    async getAspectDefinition(aspectId: string): Promise<AspectDefinition> {
+        return await super.getAspectDefinition(aspectId, this.jwt);
+    }
+
     putAspectDefinition(
         aspectDefinition: AspectDefinition,
         tenantId: number = this.tenantId

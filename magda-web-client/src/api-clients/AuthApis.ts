@@ -359,3 +359,59 @@ export async function queryResourcesCount(
     );
     return res?.count ? res.count : 0;
 }
+
+export type QueryOperationsParams = {
+    keyword?: string;
+    uri?: string;
+    offset?: number;
+    limit?: number;
+    noCache?: boolean;
+};
+
+export type OperationRecord = {
+    id: string;
+    uri: string;
+    name: string;
+    description: string;
+    resource_id: string;
+};
+
+export async function queryResOperations(
+    resId: string,
+    params?: QueryOperationsParams
+): Promise<OperationRecord[]> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryOperationsParams);
+    return await getRequest<OperationRecord[]>(
+        getAbsoluteUrl(
+            `resources/${encodeURIComponent(resId)}/operations`,
+            config.authApiUrl,
+            queryParams
+        ),
+        noCache
+    );
+}
+
+export type QueryOperationsCountParams = Omit<
+    QueryOperationsParams,
+    "offset" | "limit"
+>;
+
+export async function queryResOperationsCount(
+    resId: string,
+    params?: QueryOperationsCountParams
+): Promise<number> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryOperationsCountParams);
+    const res = await getRequest<{ count: number }>(
+        getAbsoluteUrl(
+            `resources/${encodeURIComponent(resId)}/operations/count`,
+            config.authApiUrl,
+            queryParams
+        ),
+        noCache
+    );
+    return res?.count ? res.count : 0;
+}

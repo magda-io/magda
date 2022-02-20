@@ -101,12 +101,19 @@ export default class RegistryClient {
             .catch(createServiceError);
     }
 
-    async getAspectDefinition(aspectId: string): Promise<AspectDefinition> {
+    async getAspectDefinition(
+        aspectId: string,
+        jwtToken?: string
+    ): Promise<AspectDefinition> {
         try {
             const res = await this.aspectDefinitionsApi.getById(
                 this.tenantId,
-                aspectId
+                aspectId,
+                jwtToken
             );
+            if (typeof res.body === "string") {
+                throw new Error("Invalid non-json response: " + res.body);
+            }
             return res.body;
         } catch (e) {
             throw this.toServerError(e);
