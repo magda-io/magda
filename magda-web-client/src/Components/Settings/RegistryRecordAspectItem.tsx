@@ -8,6 +8,12 @@ import Placeholder from "rsuite/Placeholder";
 import { getRecordAspect } from "../../api-clients/RegistryApis";
 import "./RegistryRecordAspectItem.scss";
 
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
+import highlighterSyntaxJson from "react-syntax-highlighter/dist/esm/languages/hljs/json";
+import highlighterStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
+
+SyntaxHighlighter.registerLanguage("json", highlighterSyntaxJson);
+
 const Paragraph = Placeholder.Paragraph;
 
 type PropsType = {
@@ -41,13 +47,23 @@ const RegistryRecordAspectItem: FunctionComponent<PropsType> = (props) => {
     );
 
     return (
-        <Panel header={aspectId} defaultExpanded={defaultExpanded}>
+        <Panel
+            header={aspectId}
+            defaultExpanded={defaultExpanded}
+            className="registry-record-aspect-item-container"
+        >
             {isLoading ? (
                 <Paragraph rows={5}>
                     <Loader center content="loading" />
                 </Paragraph>
             ) : (
-                <pre>{aspectData}</pre>
+                <SyntaxHighlighter
+                    language="json"
+                    style={highlighterStyle}
+                    wrapLongLines={true}
+                >
+                    {JSON.stringify(aspectData, undefined, 2)}
+                </SyntaxHighlighter>
             )}
         </Panel>
     );

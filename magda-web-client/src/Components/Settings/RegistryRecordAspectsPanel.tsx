@@ -146,7 +146,7 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
                             {aspectIds.map((aspectId, idx) => (
                                 <RegistryRecordAspectItem
                                     key={idx}
-                                    defaultExpanded
+                                    defaultExpanded={idx === 0}
                                     recordId={recordId}
                                     aspectId={aspectId}
                                 />

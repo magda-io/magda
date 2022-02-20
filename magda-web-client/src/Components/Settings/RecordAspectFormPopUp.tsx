@@ -42,6 +42,17 @@ export type RefType = {
     close: () => void;
 };
 
+function compareAspectDefDropdownItem(
+    a: AspectDefDropdownItemType,
+    b: AspectDefDropdownItemType
+) {
+    const aStr = a.rawData?.name?.toLowerCase();
+    const bStr = b.rawData?.name?.toLowerCase();
+    if (aStr < bStr) return -1;
+    else if (aStr > bStr) return 1;
+    else return 0;
+}
+
 const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     props,
     ref
@@ -227,6 +238,7 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                     <SelectPicker
                                         virtualized
                                         block
+                                        disabled={submitData.loading}
                                         data={
                                             aspectDefDropdownData
                                                 ? aspectDefDropdownData
@@ -237,6 +249,9 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                                 ...v,
                                                 id: aspectId
                                             }))
+                                        }
+                                        sort={() =>
+                                            compareAspectDefDropdownItem
                                         }
                                     />
                                 ) : (

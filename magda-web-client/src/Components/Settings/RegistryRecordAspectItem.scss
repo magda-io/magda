@@ -1,4 +1,9 @@
 .registry-records-page {
-    .record-aspects-list {
+    .registry-record-aspect-item-container {
+        .rs-panel-body {
+            pre {
+                background: none !important;
+            }
+        }
     }
 }
