@@ -35,7 +35,7 @@ type PropsType = {
 
 const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
     const recordId = props?.match?.params?.recordId;
-    const [inputRecordId, setInputRecordId] = useState<string>();
+    const [inputRecordId, setInputRecordId] = useState<string>("");
     const recordFormRef = useRef<RecordFormPopUpRefType>(null);
 
     //change this value to force the record data to be reloaded
