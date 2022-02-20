@@ -1,4 +1,10 @@
-import React, { FunctionComponent } from "react";
+import React, {
+    FunctionComponent,
+    useState,
+    useCallback,
+    RefObject,
+    SyntheticEvent
+} from "react";
 import { useAsync } from "react-async-hook";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
@@ -7,10 +13,19 @@ import Loader from "rsuite/Loader";
 import Placeholder from "rsuite/Placeholder";
 import { getRecordAspect } from "../../api-clients/RegistryApis";
 import "./RegistryRecordAspectItem.scss";
+import IconButton from "rsuite/IconButton";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import highlighterSyntaxJson from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import highlighterStyle from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
+import {
+    MdBorderColor,
+    MdDeleteForever,
+    MdKeyboardArrowDown,
+    MdKeyboardArrowUp
+} from "react-icons/md";
+import reportError from "./reportError";
+import { RefType as RecordAspectFormPopUpRefType } from "./RecordAspectFormPopUp";
 
 SyntaxHighlighter.registerLanguage("json", highlighterSyntaxJson);
 
@@ -20,13 +35,20 @@ type PropsType = {
     recordId: string;
     aspectId: string;
     defaultExpanded?: boolean;
+    recordAspectFormRef: RefObject<RecordAspectFormPopUpRefType>;
 };
 
 const RegistryRecordAspectItem: FunctionComponent<PropsType> = (props) => {
-    const { recordId, aspectId, defaultExpanded } = props;
+    const { recordId, aspectId, defaultExpanded, recordAspectFormRef } = props;
+    const [isOpen, setIsOpen] = useState<boolean>(
+        typeof defaultExpanded === "boolean" ? defaultExpanded : false
+    );
+
+    //change this value to force the role data to be reloaded
+    const [dataReloadToken, setDataReloadToken] = useState<string>("");
 
     const { result: aspectData, loading: isLoading } = useAsync(
-        async (recordId: string, aspectId: string) => {
+        async (recordId: string, aspectId: string, dataReloadToken: string) => {
             try {
                 return await getRecordAspect(recordId, aspectId, true);
             } catch (e) {
@@ -43,13 +65,55 @@ const RegistryRecordAspectItem: FunctionComponent<PropsType> = (props) => {
                 throw e;
             }
         },
-        [recordId, aspectId]
+        [recordId, aspectId, dataReloadToken]
+    );
+
+    const editAspectHandler = useCallback(
+        (e: SyntheticEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            recordAspectFormRef.current?.open(aspectId, () => {
+                setDataReloadToken(`${Math.random()}`);
+            });
+        },
+        [aspectId, recordAspectFormRef.current]
     );
 
     return (
         <Panel
-            header={aspectId}
-            defaultExpanded={defaultExpanded}
+            id={aspectId}
+            onSelect={() => setIsOpen((v) => !v)}
+            expanded={isOpen}
+            header={
+                <div>
+                    {isOpen ? (
+                        <MdKeyboardArrowUp className="expand-indicator-icon" />
+                    ) : (
+                        <MdKeyboardArrowDown className="expand-indicator-icon" />
+                    )}
+                    <span className="panel-heading-text">{aspectId}</span>
+                    <div className="button-area">
+                        <IconButton
+                            size="md"
+                            title="Edit Aspect"
+                            aria-label="Edit Aspect"
+                            icon={<MdBorderColor />}
+                            onClick={editAspectHandler}
+                        />{" "}
+                        <IconButton
+                            size="md"
+                            title="Delete Aspect"
+                            aria-label="Delete Aspect"
+                            icon={<MdDeleteForever />}
+                            onClick={() =>
+                                reportError(
+                                    "This function is under development."
+                                )
+                            }
+                        />
+                    </div>
+                </div>
+            }
             className="registry-record-aspect-item-container"
         >
             {isLoading ? (

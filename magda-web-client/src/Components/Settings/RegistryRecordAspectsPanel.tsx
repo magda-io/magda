@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, useRef } from "react";
+import React, { FunctionComponent, useState, useRef, useCallback } from "react";
 import { useAsync } from "react-async-hook";
 import Pagination from "rsuite/Pagination";
 import Notification from "rsuite/Notification";
@@ -88,11 +88,11 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
 
     const [aspectIds, totalCount] = result ? result : [[], 0];
 
-    const createAspectHandler = () => {
+    const createAspectHandler = useCallback(() => {
         recordAspectFormRef.current?.open(undefined, () => {
             setAspectReloadToken(`${Math.random()}`);
         });
-    };
+    }, [recordAspectFormRef.current]);
 
     return (
         <>
@@ -149,6 +149,7 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
                                     defaultExpanded={idx === 0}
                                     recordId={recordId}
                                     aspectId={aspectId}
+                                    recordAspectFormRef={recordAspectFormRef}
                                 />
                             ))}
                         </PanelGroup>

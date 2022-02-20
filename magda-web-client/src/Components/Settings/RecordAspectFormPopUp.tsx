@@ -64,6 +64,7 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     const isCreateForm = aspectId ? false : true;
     const onCompleteRef = useRef<SubmitCompleteHandlerType>();
     const [aspectReloadToken, setAspectReloadToken] = useState<string>("");
+    const editorRef = useRef<any>();
 
     const {
         result: JsonEditor,
@@ -77,10 +78,10 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                 import(/* webpackChunkName:'jsoneditor' */ "brace/theme/github")
             ]);
             return function EditorHoc(props) {
-                console.log(Object.values(JsonEditor.modes));
                 return (
                     <div className="json-editor-container">
                         <JsonEditor
+                            ref={editorRef}
                             name="jsonSchema"
                             ace={ace}
                             mode={"code"}
@@ -111,6 +112,8 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                 if (selectAspectId === aspectId) {
                     setAspectReloadToken(`${Math.random()}`);
                 }
+            } else {
+                setAspectId(undefined);
             }
             setIsOpen(true);
         },
@@ -150,6 +153,9 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             }
             if (typeof aspect?.data !== "object") {
                 throw new Error("Aspect data can't be an emmpty value!");
+            }
+            if (editorRef?.current?.err) {
+                throw new Error(`${editorRef?.current?.err}`);
             }
 
             await updateRecordAspect(recordId, aspect.id, aspect.data, true);
@@ -280,12 +286,14 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                 ) : JsonEditor ? (
                                     <JsonEditor
                                         value={aspect?.data ? aspect.data : {}}
-                                        onChange={(jsonData) =>
+                                        onError={(e) => reportError(`${e}`)}
+                                        onChange={(jsonData) => {
+                                            console.log("onchange: ", jsonData);
                                             setAspect((v) => ({
                                                 ...v,
                                                 data: jsonData
-                                            }))
-                                        }
+                                            }));
+                                        }}
                                     />
                                 ) : (
                                     "Error: cannot load JsonEditor."
