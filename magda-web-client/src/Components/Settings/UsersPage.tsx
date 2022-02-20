@@ -16,10 +16,16 @@ import Pagination from "rsuite/Pagination";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
 import { Input, InputGroup } from "rsuite";
-import { MdSearch, MdMode, MdSwitchAccount } from "react-icons/md";
+import {
+    MdSearch,
+    MdSwitchAccount,
+    MdBorderColor,
+    MdDeleteForever
+} from "react-icons/md";
 import AccessVerification from "./AccessVerification";
 import IconButton from "rsuite/IconButton";
 import OrgUnitNameLabel from "../OrgUnitNameLabel";
+import reportError from "./reportError";
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
@@ -158,11 +164,6 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                     }
                                     return (
                                         <div>
-                                            <IconButton
-                                                size="md"
-                                                ria-label="Edit User"
-                                                icon={<MdMode />}
-                                            />{" "}
                                             <Link
                                                 to={`/settings/users/${
                                                     (rowData as any)?.id
@@ -170,10 +171,33 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                             >
                                                 <IconButton
                                                     size="md"
+                                                    title="View User Roles"
                                                     aria-label="View User Roles"
                                                     icon={<MdSwitchAccount />}
                                                 />
-                                            </Link>
+                                            </Link>{" "}
+                                            <IconButton
+                                                size="md"
+                                                title="Edit Role"
+                                                aria-label="Edit Role"
+                                                icon={<MdBorderColor />}
+                                                onClick={() =>
+                                                    reportError(
+                                                        "This function is under development."
+                                                    )
+                                                }
+                                            />{" "}
+                                            <IconButton
+                                                size="md"
+                                                title="Delete Role"
+                                                aria-label="Delete Role"
+                                                icon={<MdDeleteForever />}
+                                                onClick={() =>
+                                                    reportError(
+                                                        "This function is under development."
+                                                    )
+                                                }
+                                            />
                                         </div>
                                     );
                                 }}

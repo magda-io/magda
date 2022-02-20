@@ -85,6 +85,19 @@ export async function getUsers(): Promise<User[]> {
     );
 }
 
+export async function getUserById(
+    userId: string,
+    noCache = false
+): Promise<User> {
+    return await getRequest<User>(
+        getAbsoluteUrl(
+            `users/${encodeURIComponent(userId)}`,
+            config.authApiUrl
+        ),
+        noCache
+    );
+}
+
 /**
  * Update user info by userId. Admin access only.
  * Try to update invalid field will receive 500 error.
@@ -323,7 +336,7 @@ export type QueryResourcesParams = {
     noCache?: boolean;
 };
 
-export type ResourcesRecord = {
+export type ResourceRecord = {
     id: string;
     uri: string;
     name: string;
@@ -332,11 +345,11 @@ export type ResourcesRecord = {
 
 export async function queryResources(
     params?: QueryResourcesParams
-): Promise<ResourcesRecord[]> {
+): Promise<ResourceRecord[]> {
     const { noCache, ...queryParams } = params
         ? params
         : ({} as QueryRolesParams);
-    return await getRequest<ResourcesRecord[]>(
+    return await getRequest<ResourceRecord[]>(
         getAbsoluteUrl(`resources`, config.authApiUrl, queryParams),
         noCache
     );
@@ -358,6 +371,16 @@ export async function queryResourcesCount(
         noCache
     );
     return res?.count ? res.count : 0;
+}
+
+export async function getResourceById(resId: string, noCache: boolean = false) {
+    return await getRequest<ResourceRecord>(
+        getAbsoluteUrl(
+            `resources/${encodeURIComponent(resId)}`,
+            config.authApiUrl
+        ),
+        noCache
+    );
 }
 
 export type QueryOperationsParams = {

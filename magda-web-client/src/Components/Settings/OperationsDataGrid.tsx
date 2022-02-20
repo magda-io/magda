@@ -4,14 +4,15 @@ import Table from "rsuite/Table";
 import Pagination from "rsuite/Pagination";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
-import { Input, InputGroup } from "rsuite";
-import { MdSearch } from "react-icons/md";
+import { Input, InputGroup, IconButton } from "rsuite";
+import { MdSearch, MdBorderColor, MdDeleteForever } from "react-icons/md";
 import {
     queryResOperations,
     queryResOperationsCount,
     OperationRecord
 } from "../../api-clients/AuthApis";
 import "./OperationsDataGrid.scss";
+import reportError from "./reportError";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -102,12 +103,16 @@ const OperationsDataGrid: FunctionComponent<PropsType> = (props) => {
                     data={(data?.length ? data : []) as any}
                     loading={isLoading}
                 >
-                    <Column width={200} resizable>
+                    <Column width={100} resizable>
+                        <HeaderCell> id</HeaderCell>
+                        <Cell dataKey="id" />
+                    </Column>
+                    <Column width={250} resizable>
                         <HeaderCell> URI</HeaderCell>
                         <Cell dataKey="uri" />
                     </Column>
 
-                    <Column width={200} resizable>
+                    <Column width={200} flexGrow={1}>
                         <HeaderCell> Name</HeaderCell>
                         <Cell dataKey="name" />
                     </Column>
@@ -116,18 +121,38 @@ const OperationsDataGrid: FunctionComponent<PropsType> = (props) => {
                         <HeaderCell>Description</HeaderCell>
                         <Cell dataKey="description" />
                     </Column>
-                    <Column width={120} fixed="right">
+                    <Column width={100} fixed="right">
                         <HeaderCell>Action</HeaderCell>
-                        <Cell>
+                        <Cell verticalAlign="middle" style={{ padding: "0px" }}>
                             {(rowData) => {
                                 function handleAction() {
                                     alert(`id:${(rowData as any).id}`);
                                 }
                                 return (
-                                    <span>
-                                        <a onClick={handleAction}> Edit </a> |{" "}
-                                        <a onClick={handleAction}> Remove </a>
-                                    </span>
+                                    <div>
+                                        <IconButton
+                                            size="md"
+                                            title="Edit Operation"
+                                            aria-label="Edit Operation"
+                                            icon={<MdBorderColor />}
+                                            onClick={() =>
+                                                reportError(
+                                                    "This function is under development."
+                                                )
+                                            }
+                                        />{" "}
+                                        <IconButton
+                                            size="md"
+                                            title="Delete Operation"
+                                            aria-label="Delete Operation"
+                                            icon={<MdDeleteForever />}
+                                            onClick={() =>
+                                                reportError(
+                                                    "This function is under development."
+                                                )
+                                            }
+                                        />
+                                    </div>
                                 );
                             }}
                         </Cell>

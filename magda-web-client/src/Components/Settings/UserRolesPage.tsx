@@ -1,19 +1,28 @@
 import React, { FunctionComponent } from "react";
-import { withRouter, match } from "react-router-dom";
-import { Location, History } from "history";
+import { useParams } from "react-router-dom";
 import "./main.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
 import AccessVerification from "./AccessVerification";
 import RolesDataGrid from "./RolesDataGrid";
+import { getUserById } from "api-clients/AuthApis";
+import { useAsync } from "react-async-hook";
 
-type PropsType = {
-    location: Location;
-    history: History;
-    match: match<{ userId: string }>;
-};
+type PropsType = {};
 
 const UserRolesPage: FunctionComponent<PropsType> = (props) => {
+    const { userId } = useParams<{ userId: string }>();
+
+    const { result: user } = useAsync(
+        async (userId: string) => {
+            if (!userId) {
+                return undefined;
+            }
+            return await getUserById(userId);
+        },
+        [userId]
+    );
+
     return (
         <div className="flex-main-container setting-page-main-container roles-page">
             <SideNavigation />
@@ -21,17 +30,19 @@ const UserRolesPage: FunctionComponent<PropsType> = (props) => {
                 <Breadcrumb
                     items={[
                         { to: "/settings/users", title: "Users" },
-                        { title: "Roles" }
+                        {
+                            title: user?.displayName
+                                ? `Roles of User: ${user?.displayName}`
+                                : "Roles"
+                        }
                     ]}
                 />
                 <AccessVerification operationUri="authObject/role/read" />
 
-                <RolesDataGrid
-                    queryParams={{ user_id: props?.match?.params?.userId }}
-                />
+                <RolesDataGrid queryParams={{ user_id: userId }} />
             </div>
         </div>
     );
 };
 
-export default withRouter(UserRolesPage);
+export default UserRolesPage;

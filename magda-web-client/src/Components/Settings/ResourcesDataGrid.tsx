@@ -1,18 +1,25 @@
 import React, { FunctionComponent, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-async-hook";
 import Table from "rsuite/Table";
 import Pagination from "rsuite/Pagination";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
-import { Input, InputGroup } from "rsuite";
-import { MdSearch } from "react-icons/md";
+import { Input, InputGroup, IconButton } from "rsuite";
+import {
+    MdSearch,
+    MdConstruction,
+    MdBorderColor,
+    MdDeleteForever
+} from "react-icons/md";
 import {
     queryResources,
     QueryResourcesParams,
     queryResourcesCount,
-    ResourcesRecord
+    ResourceRecord
 } from "../../api-clients/AuthApis";
 import "./ResourcesDataGrid.scss";
+import reportError from "./reportError";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -49,7 +56,7 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = (props) => {
                     noCache: true,
                     id
                 });
-                return [data, count] as [ResourcesRecord[], number];
+                return [data, count] as [ResourceRecord[], number];
             } catch (e) {
                 toaster.push(
                     <Notification
@@ -105,12 +112,12 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = (props) => {
                         <Cell dataKey="id" />
                     </Column>
 
-                    <Column width={200} resizable>
+                    <Column width={220} resizable>
                         <HeaderCell> URI</HeaderCell>
                         <Cell dataKey="uri" />
                     </Column>
 
-                    <Column width={200} resizable>
+                    <Column width={200} flexGrow={1}>
                         <HeaderCell> Name</HeaderCell>
                         <Cell dataKey="name" />
                     </Column>
@@ -125,16 +132,48 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = (props) => {
                     </Column>
                     <Column width={120} fixed="right">
                         <HeaderCell>Action</HeaderCell>
-                        <Cell>
+                        <Cell verticalAlign="middle" style={{ padding: "0px" }}>
                             {(rowData) => {
                                 function handleAction() {
                                     alert(`id:${(rowData as any).id}`);
                                 }
                                 return (
-                                    <span>
-                                        <a onClick={handleAction}> Edit </a> |{" "}
-                                        <a onClick={handleAction}> Remove </a>
-                                    </span>
+                                    <div>
+                                        <Link
+                                            to={`/settings/resources/${
+                                                (rowData as any)?.id
+                                            }/operations`}
+                                        >
+                                            <IconButton
+                                                size="md"
+                                                title="View the resource's operations"
+                                                aria-label="View the resource's operations"
+                                                icon={<MdConstruction />}
+                                            />
+                                        </Link>{" "}
+                                        <IconButton
+                                            size="md"
+                                            title="Edit Resource"
+                                            aria-label="Edit Resource"
+                                            icon={<MdBorderColor />}
+                                            onClick={() =>
+                                                reportError(
+                                                    "This function is under development."
+                                                )
+                                            }
+                                        />{" "}
+                                        <IconButton
+                                            size="md"
+                                            title="Delete Resource"
+                                            aria-label="Delete Resource"
+                                            icon={<MdDeleteForever />}
+                                            onClick={() =>
+                                                reportError(
+                                                    "This function is under development."
+                                                )
+                                            }
+                                        />
+                                    </div>
                                 );
                             }}
                         </Cell>

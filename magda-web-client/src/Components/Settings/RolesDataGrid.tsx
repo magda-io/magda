@@ -4,8 +4,8 @@ import Table from "rsuite/Table";
 import Pagination from "rsuite/Pagination";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
-import { Input, InputGroup } from "rsuite";
-import { MdSearch } from "react-icons/md";
+import { Input, InputGroup, IconButton } from "rsuite";
+import { MdSearch, MdBorderColor, MdDeleteForever } from "react-icons/md";
 import UserNameLabel from "../UserNameLabel";
 import {
     queryRoles,
@@ -14,6 +14,7 @@ import {
     RoleRecord
 } from "../../api-clients/AuthApis";
 import "./RolesDataGrid.scss";
+import reportError from "./reportError";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -155,16 +156,36 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                     </Column>
                     <Column width={120} fixed="right">
                         <HeaderCell>Action</HeaderCell>
-                        <Cell>
+                        <Cell verticalAlign="middle" style={{ padding: "0px" }}>
                             {(rowData) => {
                                 function handleAction() {
                                     alert(`id:${(rowData as any).id}`);
                                 }
                                 return (
-                                    <span>
-                                        <a onClick={handleAction}> Edit </a> |{" "}
-                                        <a onClick={handleAction}> Remove </a>
-                                    </span>
+                                    <div>
+                                        <IconButton
+                                            size="md"
+                                            title="Edit Role"
+                                            aria-label="Edit Role"
+                                            icon={<MdBorderColor />}
+                                            onClick={() =>
+                                                reportError(
+                                                    "This function is under development."
+                                                )
+                                            }
+                                        />{" "}
+                                        <IconButton
+                                            size="md"
+                                            title="Delete Role"
+                                            aria-label="Delete Role"
+                                            icon={<MdDeleteForever />}
+                                            onClick={() =>
+                                                reportError(
+                                                    "This function is under development."
+                                                )
+                                            }
+                                        />
+                                    </div>
                                 );
                             }}
                         </Cell>
