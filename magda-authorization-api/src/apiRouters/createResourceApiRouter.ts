@@ -286,7 +286,7 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
             authDecisionClient,
             database,
             "authObject/resource/read",
-            (req, res) => req.params.id,
+            (req, res) => req.params.resId,
             "resource"
         ),
         createFetchResourceOperationsHandler(
@@ -305,7 +305,7 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
             authDecisionClient,
             database,
             "authObject/resource/read",
-            (req, res) => req.params.id,
+            (req, res) => req.params.resId,
             "resource"
         ),
         createFetchResourceOperationsHandler(
