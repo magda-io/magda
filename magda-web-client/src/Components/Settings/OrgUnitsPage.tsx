@@ -32,6 +32,7 @@ import {
 import ViewOrgUnitPopUp, {
     RefType as ViewOrgUnitPopUpRefType
 } from "./ViewOrgUnitPopUp";
+import reportError from "./reportError";
 
 interface ItemType extends ItemDataType {
     rawData: OrgUnit;
@@ -53,10 +54,20 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                 title={<span className="node-title">{node.name}</span>}
                 icon={isRoot ? <MdFolderSpecial /> : <MdFolder />}
             >
-                <Dropdown.Item icon={<MdCreateNewFolder />}>
+                <Dropdown.Item
+                    icon={<MdCreateNewFolder />}
+                    onClick={() =>
+                        reportError("this function is under development.")
+                    }
+                >
                     <span className="node-dropdown-menu-item-text">New</span>
                 </Dropdown.Item>
-                <Dropdown.Item icon={<MdEditNote />}>
+                <Dropdown.Item
+                    icon={<MdEditNote />}
+                    onClick={() =>
+                        reportError("this function is under development.")
+                    }
+                >
                     <span className="node-dropdown-menu-item-text">Edit</span>
                 </Dropdown.Item>
                 <Dropdown.Item
@@ -68,7 +79,12 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                     </span>
                 </Dropdown.Item>
                 {isRoot ? null : (
-                    <Dropdown.Item icon={<MdDeleteForever />}>
+                    <Dropdown.Item
+                        icon={<MdDeleteForever />}
+                        onClick={() =>
+                            reportError("this function is under development.")
+                        }
+                    >
                         <span className="node-dropdown-menu-item-text">
                             Delete
                         </span>
