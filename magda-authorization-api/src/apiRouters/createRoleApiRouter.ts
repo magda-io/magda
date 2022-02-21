@@ -117,11 +117,11 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *    [{
      *        id: "xxx-xxx-xxxx-xxxx-xx",
      *        name: "View Datasets",
-     *        resourceId: "xxx-xxx-xxxx-xx",
-     *        resourceId: "object/dataset/draft",
-     *        userOwnershipConstraint: true,
-     *        orgUnitOwnershipConstraint: false,
-     *        preAuthorisedConstraint: false,
+     *        resource_id: "xxx-xxx-xxxx-xx",
+     *        resource_uri: "object/dataset/draft",
+     *        user_ownership_constraint: true,
+     *        org_unit_ownership_constraint: false,
+     *        pre_authorised_constraint: false,
      *        operations: [{
      *          id: "xxxxx-xxx-xxx-xxxx",
      *          name: "Read Draft Dataset",
