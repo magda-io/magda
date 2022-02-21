@@ -589,3 +589,19 @@ export async function deleteRolePermission(
         )
     );
 }
+
+export async function getPermissionById(
+    permissionId: string,
+    noCache = false
+): Promise<RolePermissionRecord> {
+    if (!permissionId) {
+        throw new Error("Invalid empty permissionId!");
+    }
+    return await getRequest<RolePermissionRecord>(
+        getAbsoluteUrl(
+            `permissions/${encodeURIComponent(permissionId)}`,
+            config.authApiUrl
+        ),
+        noCache
+    );
+}

@@ -3,15 +3,20 @@ import Database from "../Database";
 import respondWithError from "../respondWithError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import { requireObjectPermission } from "../recordAuthMiddlewares";
-import { withAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import {
+    withAuthDecision,
+    getUserId
+} from "magda-typescript-common/src/authorization-api/authMiddleware";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import {
     searchTableRecord,
     createTableRecord,
-    getTableRecord
+    getTableRecord,
+    updateTableRecord
 } from "magda-typescript-common/src/SQLUtils";
 import { uniq } from "lodash";
 import ServerError from "magda-typescript-common/src/ServerError";
+import e from "express";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -171,6 +176,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     // create an new permission and add to the role
     router.post(
         "/:roleId/permissions",
+        getUserId,
         // we consider this operation as an operation of updating the role
         // thus, require permission to perform `authObject/role/update`
         requireObjectPermission(
@@ -229,18 +235,26 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                 let permissionRecord: any;
                 try {
                     await client.query("BEGIN");
-
+                    const permissionSubmitData = { ...permissionData };
+                    if (res?.locals?.userId) {
+                        permissionSubmitData.create_by = res.locals.userId;
+                        permissionSubmitData.owner_id = res.locals.userId;
+                        permissionSubmitData.edit_by = res.locals.userId;
+                    }
                     permissionRecord = await createTableRecord(
                         client,
                         "permission",
-                        permissionData,
+                        permissionSubmitData,
                         [
                             "name",
                             "resource_id",
                             "user_ownership_constraint",
                             "org_unit_ownership_constraint",
                             "pre_authorised_constraint",
-                            "description"
+                            "description",
+                            "create_by",
+                            "owner_id",
+                            "edit_by"
                         ]
                     );
 
@@ -270,6 +284,172 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                 respondWithError(
                     "Create a permission and add to the role " +
                         req?.params?.roleId,
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    // update a permission
+    router.put(
+        "/:roleId/permissions/:permissionId",
+        getUserId,
+        // we consider this operation as an operation of updating the role
+        // thus, require permission to perform `authObject/role/update`
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/role/update",
+            (req, res) => req.params.roleId,
+            "role"
+        ),
+        async function (req, res) {
+            try {
+                const pool = database.getPool();
+                const roleId = req.params.roleId;
+                const permissionId = req.params.permissionId;
+                const { operationIds, ...permissionData } = req.body;
+
+                if (!roleId) {
+                    throw new Error(
+                        "Failed to update permission: invalid empty roleId."
+                    );
+                }
+
+                if (!permissionId) {
+                    throw new Error(
+                        "Failed to update permission: invalid empty permissionId."
+                    );
+                }
+
+                const rolePermissionRecords = await searchTableRecord(
+                    pool,
+                    "role_permissions",
+                    [
+                        sqls`role_id = ${roleId}`,
+                        sqls`permission_id = ${permissionId}`
+                    ],
+                    {
+                        limit: 1
+                    }
+                );
+
+                if (!rolePermissionRecords?.length) {
+                    throw new Error(
+                        "Failed to update permission: specified role doesn't contain the sepcified permission"
+                    );
+                }
+
+                const permission = await getTableRecord(
+                    pool,
+                    "permissions",
+                    permissionId
+                );
+                if (!permission) {
+                    throw new Error(
+                        "Failed to update permission: cannot locate the permission record sepcified by permissionId: " +
+                            permissionId
+                    );
+                }
+
+                const opIds = operationIds ? uniq(operationIds) : [];
+
+                const resourceId = permissionData?.resource_id
+                    ? permissionData.resource_id
+                    : permission?.resource_id;
+
+                const resource = await getTableRecord(
+                    pool,
+                    "resources",
+                    resourceId
+                );
+                if (!resource) {
+                    throw new Error(
+                        "Failed to update permission: cannot locate resource by supplied resource_id."
+                    );
+                }
+
+                if (opIds.length) {
+                    const result = await pool.query(
+                        ...sqls`SELECT COUNT(*) as count
+                    FROM operations 
+                    WHERE id IN (${SQLSyntax.csv(
+                        ...operationIds
+                    )}) AND resource_id = ${resource.id}`.toQuery()
+                    );
+
+                    if (result?.rows?.[0]?.["count"] !== operationIds.length) {
+                        throw new Error(
+                            `Failed to update permission: all provided operation id must be valid and belong to the resource ${resource.id}`
+                        );
+                    }
+                }
+
+                const client = await pool.connect();
+                let permissionRecord: any;
+                try {
+                    await client.query("BEGIN");
+                    const permissionUpdateData = {
+                        ...permissionData,
+                        edit_time: sqls` CURRENT_TIMESTAMP `
+                    };
+                    if (res?.locals?.userId) {
+                        permissionUpdateData.edit_by = res.locals.userId;
+                    } else {
+                        permissionUpdateData.edit_by = sqls` NULL `;
+                    }
+                    permissionRecord = await updateTableRecord(
+                        client,
+                        "permission",
+                        permissionId,
+                        permissionUpdateData,
+                        [
+                            "name",
+                            "resource_id",
+                            "user_ownership_constraint",
+                            "org_unit_ownership_constraint",
+                            "pre_authorised_constraint",
+                            "description",
+                            "create_by",
+                            "owner_id",
+                            "edit_by",
+                            "edit_time"
+                        ]
+                    );
+
+                    if (typeof operationIds?.length !== "undefined") {
+                        // operationIds property is provided
+                        // i.e. user's intention is to update operations as well
+                        // delete all current operation / permission relationship
+                        await client.query(
+                            ...sqls`DELETE FROM permission_operations WHERE permission_id=${permissionId}`.toQuery()
+                        );
+                    }
+
+                    if (opIds.length) {
+                        const values = (opIds as string[]).map(
+                            (id) => sqls`(${permissionId},${id})`
+                        );
+
+                        await client.query(
+                            ...sqls`INSERT INTO permission_operations 
+                            (permission_id, operation_id) VALUES 
+                            ${SQLSyntax.csv(...values)}`.toQuery()
+                        );
+                    }
+
+                    await client.query("COMMIT");
+                } catch (e) {
+                    await client.query("ROLLBACK");
+                    throw e;
+                } finally {
+                    client.release();
+                }
+                res.json(permissionRecord);
+            } catch (e) {
+                respondWithError(
+                    "Update permission for role " + req?.params?.roleId,
                     res,
                     e
                 );
