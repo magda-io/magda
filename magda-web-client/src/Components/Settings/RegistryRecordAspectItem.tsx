@@ -20,12 +20,11 @@ import highlighterSyntaxJson from "react-syntax-highlighter/dist/esm/languages/h
 import highlighterStyle from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
 import {
     MdBorderColor,
-    MdDeleteForever,
     MdKeyboardArrowDown,
     MdKeyboardArrowUp
 } from "react-icons/md";
-import reportError from "./reportError";
 import { RefType as RecordAspectFormPopUpRefType } from "./RecordAspectFormPopUp";
+import DeleteRecordAspectButton from "./DeleteRecordAspectButton";
 
 SyntaxHighlighter.registerLanguage("json", highlighterSyntaxJson);
 
@@ -36,6 +35,7 @@ type PropsType = {
     aspectId: string;
     defaultExpanded?: boolean;
     recordAspectFormRef: RefObject<RecordAspectFormPopUpRefType>;
+    onRecordAspectDeleted: () => void;
 };
 
 const RegistryRecordAspectItem: FunctionComponent<PropsType> = (props) => {
@@ -100,16 +100,10 @@ const RegistryRecordAspectItem: FunctionComponent<PropsType> = (props) => {
                             icon={<MdBorderColor />}
                             onClick={editAspectHandler}
                         />{" "}
-                        <IconButton
-                            size="md"
-                            title="Delete Aspect"
-                            aria-label="Delete Aspect"
-                            icon={<MdDeleteForever />}
-                            onClick={() =>
-                                reportError(
-                                    "This function is under development."
-                                )
-                            }
+                        <DeleteRecordAspectButton
+                            recordId={recordId}
+                            aspectId={aspectId}
+                            onDeleteComplete={props.onRecordAspectDeleted}
                         />
                     </div>
                 </div>

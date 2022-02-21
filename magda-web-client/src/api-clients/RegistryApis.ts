@@ -686,7 +686,7 @@ export async function updateRecordAspect<T = any>(
     aspectData: T,
     skipEnsureAspectExists: boolean = false
 ): Promise<[T, number]> {
-    if (skipEnsureAspectExists) {
+    if (!skipEnsureAspectExists) {
         await ensureAspectExists(aspectId);
     }
 

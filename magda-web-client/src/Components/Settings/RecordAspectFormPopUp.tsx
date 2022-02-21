@@ -151,14 +151,15 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             if (typeof aspect?.id !== "string" || !aspect.id.trim()) {
                 throw new Error("Aspect ID can't be blank!");
             }
-            if (typeof aspect?.data !== "object") {
-                throw new Error("Aspect data can't be an emmpty value!");
+            const aspectData = editorRef?.current?.jsonEditor?.get();
+            if (typeof aspectData !== "object") {
+                throw new Error("Aspect data can't be an empty value!");
             }
             if (editorRef?.current?.err) {
                 throw new Error(`${editorRef?.current?.err}`);
             }
 
-            await updateRecordAspect(recordId, aspect.id, aspect.data, true);
+            await updateRecordAspect(recordId, aspect.id, aspectData, true);
             setIsOpen(false);
             if (typeof onCompleteRef.current === "function") {
                 onCompleteRef.current(aspect.id);

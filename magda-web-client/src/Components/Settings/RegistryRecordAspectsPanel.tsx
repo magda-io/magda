@@ -94,6 +94,11 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
         });
     }, [recordAspectFormRef.current]);
 
+    const refreshAspects = useCallback(
+        () => setAspectReloadToken(`${Math.random()}`),
+        []
+    );
+
     return (
         <>
             {isLoading ? (
@@ -150,6 +155,7 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
                                     recordId={recordId}
                                     aspectId={aspectId}
                                     recordAspectFormRef={recordAspectFormRef}
+                                    onRecordAspectDeleted={refreshAspects}
                                 />
                             ))}
                         </PanelGroup>
