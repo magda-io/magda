@@ -24,6 +24,7 @@ import Form from "rsuite/Form";
 import reportError from "./reportError";
 import { ItemDataType } from "rsuite/esm/@types/common";
 import "jsoneditor-react/es/editor.min.css";
+import ServerError from "api-clients/ServerError";
 
 interface AspectDefDropdownItemType extends ItemDataType<string> {
     rawData: AspectDefRecord;
@@ -157,6 +158,19 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             }
             if (editorRef?.current?.err) {
                 throw new Error(`${editorRef?.current?.err}`);
+            }
+
+            if (isCreateForm) {
+                try {
+                    await getRecordAspect(recordId, aspect.id, true);
+                    throw new Error(
+                        `the record already has the ${aspect.id} aspect.`
+                    );
+                } catch (e) {
+                    if (e?.statusCode !== 404) {
+                        throw e;
+                    }
+                }
             }
 
             await updateRecordAspect(recordId, aspect.id, aspectData, true);
