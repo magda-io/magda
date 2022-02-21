@@ -35,7 +35,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
             try {
                 const roleId = req.params.roleId;
                 const conditions: SQLSyntax[] = [
-                    sqls`role_permissions.role_id = ${roleId}`
+                    sqls`(EXISTS (SELECT 1 FROM role_permissions rp WHERE rp.permission_id = permissions.id and rp.role_id = ${roleId}))`
                 ];
                 if (req.query?.keyword) {
                     const keyword = "%" + req.query?.keyword + "%";
@@ -68,23 +68,25 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                         sqls`permissions.edit_by = ${req.query.edit_by}`
                     );
                 }
+
                 const records = await searchTableRecord(
                     database.getPool(),
-                    "role_permissions",
+                    "permissions",
                     conditions,
                     {
-                        leftJoins: [
-                            {
-                                table: "permissions",
-                                joinCondition: sqls`permissions.id = role_permissions.permission_id`
-                            }
-                        ],
-                        selectedFields: [
-                            returnCount
-                                ? sqls`COUNT(DISTINCT permissions.id) as count`
-                                : sqls`permissions.*`
-                        ],
-                        groupBy: returnCount ? undefined : sqls`permissions.id`,
+                        selectedFields: returnCount
+                            ? [sqls`COUNT(permissions.*) as count`]
+                            : [
+                                  sqls`permissions.*`,
+                                  sqls`(
+                                        SELECT COALESCE(jsonb_agg(op.*), '[]'::jsonb)
+                                        FROM operations op 
+                                        WHERE exists (
+                                            SELECT 1 FROM permission_operations po WHERE po.permission_id = permissions.id AND po.operation_id = op.id
+                                        )  
+                                    ) as operations`,
+                                  sqls`( SELECT uri FROM resources r WHERE r.id = permissions.resource_id ) as resource_uri`
+                              ],
                         offset: returnCount
                             ? undefined
                             : (req?.query?.offset as string),
@@ -107,8 +109,8 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/role/:roleId/permissions Get all permissions of a role
-     * @apiDescription Returns an array of permissions. When no permissions can be found, an empty array will be returned.
+     * @api {get} /v0/auth/roles/:roleId/permissions Get all permissions of a role
+     * @apiDescription return a list permissions of a role.
      * Required admin access.
      *
      * @apiSuccessExample {json} 200
@@ -126,8 +128,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *          uri: "object/dataset/draft/read",
      *          description: "xxxxxx"
      *        }],
-     *        permissionIds: ["xxx-xxx-xxx-xxx-xx", "xxx-xx-xxx-xx-xxx-xx"],
-     *        description?: "This is an admin role",
+     *        description?: "this is a dummy permission",
      *    }]
      *
      * @apiErrorExample {json} 401/500
