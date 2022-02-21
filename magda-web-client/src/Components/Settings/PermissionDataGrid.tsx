@@ -2,8 +2,10 @@ import React, { FunctionComponent, useState, useCallback } from "react";
 import { useAsync } from "react-async-hook";
 import Table from "rsuite/Table";
 import Pagination from "rsuite/Pagination";
-import Panel from "rsuite/Panel";
+import Popover from "rsuite/Popover";
+import Tooltip from "rsuite/Tooltip";
 import List from "rsuite/List";
+import Whisper from "rsuite/Whisper";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
 import { Input, InputGroup, IconButton, Button } from "rsuite";
@@ -12,8 +14,7 @@ import {
     MdBorderColor,
     MdDeleteForever,
     MdAddCircle,
-    MdOutlineAddBox,
-    MdOutlineIndeterminateCheckBox
+    MdInfoOutline
 } from "react-icons/md";
 import {
     queryRolePermissions,
@@ -37,49 +38,6 @@ type PropsType = {
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
-const rowKey = "id";
-const ExpandCell = (props) => {
-    const { rowData, dataKey, expandedRowKeys, onChange, ...restProps } = props;
-    return (
-        <Cell {...restProps}>
-            <IconButton
-                size="xs"
-                appearance="subtle"
-                onClick={() => {
-                    onChange(rowData);
-                }}
-                icon={
-                    expandedRowKeys.some((key) => key === rowData[rowKey]) ? (
-                        <MdOutlineIndeterminateCheckBox />
-                    ) : (
-                        <MdOutlineAddBox />
-                    )
-                }
-            />
-        </Cell>
-    );
-};
-
-const renderRowExpanded = (rowData: any) => {
-    const operations: OperationRecord[] = rowData?.operations?.length
-        ? rowData.operations
-        : [];
-    return (
-        <div className="expanded-row">
-            <Panel header={`Permission ID: ${rowData.id}`} bordered>
-                <div>Operations: </div>
-                <List bordered>
-                    {operations.map((item, index) => (
-                        <List.Item key={index} index={index}>
-                            {item.uri}
-                        </List.Item>
-                    ))}
-                </List>
-            </Panel>
-        </div>
-    );
-};
-
 const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
     const { roleId } = props;
     const [keyword, setKeyword] = useState<string>("");
@@ -92,8 +50,6 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
 
     //change this value to force the role data to be reloaded
     const [dataReloadToken, setDataReloadToken] = useState<string>("");
-
-    const [expandedRowKeys, setExpandedRowKeys] = React.useState<string[]>([]);
 
     const { result, loading: isLoading } = useAsync(
         async (
@@ -156,25 +112,6 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
         [roleId]
     );
 
-    const handleExpanded = (rowData: RolePermissionRecord, dataKey) => {
-        let open = false;
-        const nextExpandedRowKeys: string[] = [];
-
-        expandedRowKeys.forEach((key) => {
-            if (key === rowData[rowKey]) {
-                open = true;
-            } else {
-                nextExpandedRowKeys.push(key);
-            }
-        });
-
-        if (!open) {
-            nextExpandedRowKeys.push(rowData[rowKey]);
-        }
-
-        setExpandedRowKeys(nextExpandedRowKeys);
-    };
-
     return (
         <div className="role-permissions-data-grid">
             <div className="search-button-container">
@@ -214,17 +151,10 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
                     autoHeight={true}
                     data={(permissions?.length ? permissions : []) as any}
                     loading={isLoading}
-                    rowKey={rowKey}
-                    expandedRowKeys={expandedRowKeys}
-                    renderRowExpanded={renderRowExpanded}
                 >
                     <Column width={100} align="center" resizable>
-                        <HeaderCell>#</HeaderCell>
-                        <ExpandCell
-                            dataKey="id"
-                            expandedRowKeys={expandedRowKeys}
-                            onChange={handleExpanded}
-                        />
+                        <HeaderCell>ID</HeaderCell>
+                        <Cell dataKey="id" />
                     </Column>
 
                     <Column width={200} resizable>
@@ -232,9 +162,52 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
                         <Cell dataKey="name" />
                     </Column>
 
-                    <Column width={150} resizable>
+                    <Column width={150} flexGrow={1}>
                         <HeaderCell>Resource URI</HeaderCell>
                         <Cell dataKey="resource_uri" />
+                    </Column>
+
+                    <Column width={80}>
+                        <HeaderCell>Operations</HeaderCell>
+                        <Cell align="center">
+                            {(rowData: RolePermissionRecord) => (
+                                <Whisper
+                                    placement="top"
+                                    controlId={`toolip-whisper-control-id-${rowData.id}`}
+                                    trigger="hover"
+                                    speaker={
+                                        <Popover title="Operations:">
+                                            <List bordered size="sm">
+                                                {rowData?.operations?.length ? (
+                                                    rowData.operations.map(
+                                                        (operation, idx) => (
+                                                            <List.Item
+                                                                key={idx}
+                                                                index={idx}
+                                                            >
+                                                                {operation.uri}
+                                                            </List.Item>
+                                                        )
+                                                    )
+                                                ) : (
+                                                    <List.Item
+                                                        key={0}
+                                                        index={0}
+                                                    >
+                                                        This permission contains
+                                                        no operations.
+                                                    </List.Item>
+                                                )}
+                                            </List>
+                                        </Popover>
+                                    }
+                                >
+                                    <div>
+                                        <MdInfoOutline />
+                                    </div>
+                                </Whisper>
+                            )}
+                        </Cell>
                     </Column>
 
                     <Column width={150} resizable>

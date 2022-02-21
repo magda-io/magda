@@ -11,9 +11,17 @@ type PropsType = {
 
 const CheckBoxIcon: FunctionComponent<PropsType> = (props) =>
     props?.value ? (
-        <MdOutlineCheckBox className="checkbox-icon" />
+        <MdOutlineCheckBox
+            className="checkbox-icon"
+            title="YES"
+            aria-label="YES"
+        />
     ) : (
-        <MdOutlineCancelPresentation className="checkbox-icon" />
+        <MdOutlineCancelPresentation
+            className="checkbox-icon"
+            title="NO"
+            aria-label="NO"
+        />
     );
 
 export default CheckBoxIcon;
