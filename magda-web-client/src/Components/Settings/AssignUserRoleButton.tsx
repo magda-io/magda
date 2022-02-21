@@ -31,7 +31,7 @@ interface RoleDropdownItemType extends ItemDataType<string> {
 const AssignUserRoleButton: FunctionComponent<PropsType> = (props) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [selectRoleId, setSelectRoleId] = useState<string>("");
-    const { userId, user } = props;
+    const { userId, user, onAssignedRole } = props;
 
     const {
         result: roles,
@@ -73,6 +73,10 @@ const AssignUserRoleButton: FunctionComponent<PropsType> = (props) => {
                 throw new Error("you haven't selected a role.");
             }
             await assignRoles(userId, [selectRoleId]);
+            if (typeof onAssignedRole === "function") {
+                onAssignedRole(selectRoleId);
+            }
+            setIsOpen(false);
         } catch (e) {
             reportError(`Failed to assign a role to the user: ${e}`);
             throw e;
