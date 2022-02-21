@@ -11,6 +11,7 @@ import {
     MdDeleteForever,
     MdAssignmentReturned
 } from "react-icons/md";
+import { GiKeyring } from "react-icons/gi";
 import UserNameLabel from "../UserNameLabel";
 import {
     queryRoles,
@@ -22,7 +23,7 @@ import {
 import "./RolesDataGrid.scss";
 import reportError from "./reportError";
 import AssignUserRoleButton from "./AssignUserRoleButton";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import ConfirmDialog from "./ConfirmDialog";
 
 const Column = Table.Column;
@@ -214,20 +215,50 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                                     <div>
                                         {userId ? (
                                             // thus, show action menu for a user's roles
-                                            <IconButton
-                                                size="md"
-                                                title="Remove the Role from the User"
-                                                aria-label="Remove the Role from the User"
-                                                icon={<MdAssignmentReturned />}
-                                                onClick={() =>
-                                                    removeRoleFromUser(
-                                                        roleId,
-                                                        roleName
-                                                    )
-                                                }
-                                            />
+                                            <>
+                                                <Link
+                                                    to={`/settings/users/${encodeURIComponent(
+                                                        userId
+                                                    )}/roles/${encodeURIComponent(
+                                                        roleId
+                                                    )}/permissions`}
+                                                >
+                                                    <IconButton
+                                                        size="md"
+                                                        title="View Role Permissions"
+                                                        aria-label="View Role Permissions"
+                                                        icon={<GiKeyring />}
+                                                    />
+                                                </Link>{" "}
+                                                <IconButton
+                                                    size="md"
+                                                    title="Remove the Role from the User"
+                                                    aria-label="Remove the Role from the User"
+                                                    icon={
+                                                        <MdAssignmentReturned />
+                                                    }
+                                                    onClick={() =>
+                                                        removeRoleFromUser(
+                                                            roleId,
+                                                            roleName
+                                                        )
+                                                    }
+                                                />
+                                            </>
                                         ) : (
                                             <>
+                                                <Link
+                                                    to={`/settings/roles/${encodeURIComponent(
+                                                        roleId
+                                                    )}/permissions`}
+                                                >
+                                                    <IconButton
+                                                        size="md"
+                                                        title="View Role Permissions"
+                                                        aria-label="View Role Permissions"
+                                                        icon={<GiKeyring />}
+                                                    />
+                                                </Link>{" "}
                                                 <IconButton
                                                     size="md"
                                                     title="Edit Role"

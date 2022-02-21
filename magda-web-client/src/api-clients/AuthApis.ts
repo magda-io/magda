@@ -333,6 +333,19 @@ export async function queryRolesCount(
     return res?.count ? res.count : 0;
 }
 
+export async function getRoleById(
+    roleId: string,
+    noCache = false
+): Promise<RoleRecord> {
+    return await getRequest<RoleRecord>(
+        getAbsoluteUrl(
+            `roles/${encodeURIComponent(roleId)}`,
+            config.authApiUrl
+        ),
+        noCache
+    );
+}
+
 export async function whoami() {
     return await request<User>(
         "GET",

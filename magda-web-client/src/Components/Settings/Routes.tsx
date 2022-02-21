@@ -10,6 +10,7 @@ import OrgUnitsPage from "./OrgUnitsPage";
 import ResourcesPage from "./ResourcesPage";
 import ResourceOperationsPage from "./OperationsPage";
 import RegistryRecordsPage from "./RegistryRecordsPage";
+import RolePermissionsPage from "./RolePermissionsPage";
 //import Index from "./Index";
 
 const Routes = () => {
@@ -36,8 +37,22 @@ const Routes = () => {
                 />
                 <Route
                     exact
+                    path="/settings/users/:userId/roles/:roleId/permissions"
+                    component={withHeader(RolePermissionsPage, {
+                        noContainerClass: true
+                    })}
+                />
+                <Route
+                    exact
                     path="/settings/roles"
                     component={withHeader(RolesPage, {
+                        noContainerClass: true
+                    })}
+                />
+                <Route
+                    exact
+                    path="/settings/roles/:roleId/permissions"
+                    component={withHeader(RolePermissionsPage, {
                         noContainerClass: true
                     })}
                 />

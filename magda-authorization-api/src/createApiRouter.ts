@@ -15,6 +15,7 @@ import createUserApiRouter from "./apiRouters/createUserApiRouter";
 import createRoleApiRouter from "./apiRouters/createRoleApiRouter";
 import createResourceApiRouter from "./apiRouters/createResourceApiRouter";
 import createOperationApiRouter from "./apiRouters/createOperationApiRouter";
+import createPermissionApiRouter from "./apiRouters/createPermissionApiRouter";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -209,6 +210,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
     router.use(
         "/public/operations",
         createOperationApiRouter({
+            database,
+            authDecisionClient: options.authDecisionClient
+        })
+    );
+
+    router.use(
+        "/public/permissions",
+        createPermissionApiRouter({
             database,
             authDecisionClient: options.authDecisionClient
         })

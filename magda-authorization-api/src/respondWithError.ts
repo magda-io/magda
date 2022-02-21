@@ -1,6 +1,7 @@
 import express from "express";
 import { NodeNotFoundError } from "./NestedSetModelQueryer";
 import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
+import ServerError from "magda-typescript-common/src/ServerError";
 
 export default function respondWithError(
     route: string,
@@ -16,7 +17,7 @@ export default function respondWithError(
             errorCode: 404,
             errorMessage: e.message || "Could not find resource"
         });
-    } else if (e instanceof GenericError) {
+    } else if (e instanceof GenericError || e instanceof ServerError) {
         res.status(e.statusCode).json({
             isError: true,
             errorCode: e.statusCode,

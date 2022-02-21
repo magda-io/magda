@@ -159,9 +159,6 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                 style={{ padding: "0px" }}
                             >
                                 {(rowData) => {
-                                    function handleAction() {
-                                        alert(`id:${(rowData as any).id}`);
-                                    }
                                     return (
                                         <div>
                                             <Link

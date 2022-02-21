@@ -11,41 +11,41 @@ export interface ApiRouterOptions {
     authDecisionClient: AuthDecisionQueryClient;
 }
 
-export default function createOperationApiRouter(options: ApiRouterOptions) {
+export default function createPermissionApiRouter(options: ApiRouterOptions) {
     const database = options.database;
     const authDecisionClient = options.authDecisionClient;
 
     const router: express.Router = express.Router();
 
-    // get operation by id
+    // get permission by id
     router.get(
         "/:id",
         withAuthDecision(authDecisionClient, {
-            operationUri: "authObject/operation/read"
+            operationUri: "authObject/permission/read"
         }),
         async function (req, res) {
             try {
-                const operationId = req?.params?.id?.trim();
-                if (!operationId) {
+                const permissionId = req?.params?.id?.trim();
+                if (!permissionId) {
                     throw new ServerError(
-                        "Invalid empty operation id is supplied.",
+                        "Invalid empty permission id is supplied.",
                         400
                     );
                 }
                 const record = await getTableRecord(
                     database.getPool(),
-                    "operations",
+                    "permissions",
                     req.params.id,
                     res.locals.authDecision
                 );
                 if (!record) {
                     throw new ServerError(
-                        `Cannot locate operation by id: ${operationId}`
+                        `Cannot locate permission by id: ${permissionId}`
                     );
                 }
                 res.json(record);
             } catch (e) {
-                respondWithError("GET operation by ID", res, e);
+                respondWithError("GET permission by ID", res, e);
             }
         }
     );

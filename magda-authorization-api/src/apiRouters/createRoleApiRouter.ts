@@ -11,6 +11,7 @@ import {
     getTableRecord
 } from "magda-typescript-common/src/SQLUtils";
 import { uniq } from "lodash";
+import ServerError from "magda-typescript-common/src/ServerError";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -443,6 +444,39 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
             operationUri: "authObject/role/read"
         }),
         createFetchRolesHandler(true, "GET role records count")
+    );
+
+    router.get(
+        "/:roleId",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/role/read"
+        }),
+        async function (req: Request, res: Response) {
+            try {
+                const roleId = req?.params?.roleId?.trim();
+                if (!roleId) {
+                    throw new ServerError(
+                        "Invalid empty role id is supplied.",
+                        400
+                    );
+                }
+                const record = await getTableRecord(
+                    database.getPool(),
+                    "roles",
+                    roleId,
+                    res.locals.authDecision
+                );
+                if (!record) {
+                    throw new ServerError(
+                        `Cannot locate role by id: ${roleId}`,
+                        404
+                    );
+                }
+                res.json(record);
+            } catch (e) {
+                respondWithError("GET /roles/:roleId", res, e);
+            }
+        }
     );
 
     return router;
