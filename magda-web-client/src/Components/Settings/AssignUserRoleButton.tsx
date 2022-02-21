@@ -6,7 +6,7 @@ import { User } from "reducers/userManagementReducer";
 import {
     queryRoles,
     RoleRecord,
-    assignRoles
+    addUserRoles
 } from "../../api-clients/AuthApis";
 import { useAsync, useAsyncCallback } from "react-async-hook";
 import reportError from "./reportError";
@@ -72,7 +72,7 @@ const AssignUserRoleButton: FunctionComponent<PropsType> = (props) => {
             if (!selectRoleId) {
                 throw new Error("you haven't selected a role.");
             }
-            await assignRoles(userId, [selectRoleId]);
+            await addUserRoles(userId, [selectRoleId]);
             if (typeof onAssignedRole === "function") {
                 onAssignedRole(selectRoleId);
             }

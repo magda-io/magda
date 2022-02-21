@@ -1,22 +1,29 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useCallback } from "react";
 import { useAsync } from "react-async-hook";
 import Table from "rsuite/Table";
 import Pagination from "rsuite/Pagination";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
 import { Input, InputGroup, IconButton } from "rsuite";
-import { MdSearch, MdBorderColor, MdDeleteForever } from "react-icons/md";
+import {
+    MdSearch,
+    MdBorderColor,
+    MdDeleteForever,
+    MdAssignmentReturned
+} from "react-icons/md";
 import UserNameLabel from "../UserNameLabel";
 import {
     queryRoles,
     QueryRolesParams,
     queryRolesCount,
-    RoleRecord
+    RoleRecord,
+    deleteUserRoles
 } from "../../api-clients/AuthApis";
 import "./RolesDataGrid.scss";
 import reportError from "./reportError";
 import AssignUserRoleButton from "./AssignUserRoleButton";
 import { useParams } from "react-router-dom";
+import ConfirmDialog from "./ConfirmDialog";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -82,6 +89,28 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
     );
 
     const [roles, totalCount] = result ? result : [[], 0];
+
+    const removeRoleFromUser = useCallback(
+        (roleId: string, roleName: string) => {
+            ConfirmDialog.open({
+                confirmMsg: `Please confirm the removal of role "${roleName}" from the user?`,
+                confirmHandler: async () => {
+                    try {
+                        if (!roleId) {
+                            throw new Error("Invalid empty role id!");
+                        }
+                        await deleteUserRoles(userId, [roleId]);
+                        setDataReloadToken(`${Math.random()}`);
+                    } catch (e) {
+                        reportError(
+                            `Failed to remove the role from the user: ${e}`
+                        );
+                    }
+                }
+            });
+        },
+        [userId]
+    );
 
     return (
         <div className="roles-data-grid">
@@ -172,36 +201,57 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                         <Cell dataKey="edit_time" />
                     </Column>
                     <Column width={120} fixed="right">
-                        <HeaderCell>Action</HeaderCell>
-                        <Cell verticalAlign="middle" style={{ padding: "0px" }}>
+                        <HeaderCell align="center">Action</HeaderCell>
+                        <Cell
+                            verticalAlign="middle"
+                            style={{ padding: "0px" }}
+                            align="center"
+                        >
                             {(rowData) => {
-                                function handleAction() {
-                                    alert(`id:${(rowData as any).id}`);
-                                }
+                                const roleId = (rowData as any)?.id;
+                                const roleName = (rowData as any)?.name;
                                 return (
                                     <div>
-                                        <IconButton
-                                            size="md"
-                                            title="Edit Role"
-                                            aria-label="Edit Role"
-                                            icon={<MdBorderColor />}
-                                            onClick={() =>
-                                                reportError(
-                                                    "This function is under development."
-                                                )
-                                            }
-                                        />{" "}
-                                        <IconButton
-                                            size="md"
-                                            title="Delete Role"
-                                            aria-label="Delete Role"
-                                            icon={<MdDeleteForever />}
-                                            onClick={() =>
-                                                reportError(
-                                                    "This function is under development."
-                                                )
-                                            }
-                                        />
+                                        {userId ? (
+                                            // thus, show action menu for a user's roles
+                                            <IconButton
+                                                size="md"
+                                                title="Remove the Role from the User"
+                                                aria-label="Remove the Role from the User"
+                                                icon={<MdAssignmentReturned />}
+                                                onClick={() =>
+                                                    removeRoleFromUser(
+                                                        roleId,
+                                                        roleName
+                                                    )
+                                                }
+                                            />
+                                        ) : (
+                                            <>
+                                                <IconButton
+                                                    size="md"
+                                                    title="Edit Role"
+                                                    aria-label="Edit Role"
+                                                    icon={<MdBorderColor />}
+                                                    onClick={() =>
+                                                        reportError(
+                                                            "This function is under development."
+                                                        )
+                                                    }
+                                                />{" "}
+                                                <IconButton
+                                                    size="md"
+                                                    title="Delete Role"
+                                                    aria-label="Delete Role"
+                                                    icon={<MdDeleteForever />}
+                                                    onClick={() =>
+                                                        reportError(
+                                                            "This function is under development."
+                                                        )
+                                                    }
+                                                />
+                                            </>
+                                        )}
                                     </div>
                                 );
                             }}
