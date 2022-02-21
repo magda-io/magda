@@ -464,3 +464,128 @@ export async function queryResOperationsCount(
     );
     return res?.count ? res.count : 0;
 }
+
+export type QueryPermissionsParams = {
+    keyword?: string;
+    resource_id?: string;
+    offset?: number;
+    limit?: number;
+    noCache?: boolean;
+};
+
+export interface PermissionRecord {
+    id: string;
+    name: string;
+    description: string;
+    resource_id: string;
+    user_ownership_constraint: boolean;
+    org_unit_ownership_constraint: boolean;
+    pre_authorised_conraint: boolean;
+    owner_id: string;
+    create_time: string;
+    create_by: string;
+    edit_time: string;
+    edit_by: string;
+}
+
+export interface RolePermissionRecord extends PermissionRecord {
+    resource_uri: string;
+    operations?: OperationRecord[];
+}
+
+export async function queryRolePermissions(
+    resId: string,
+    params?: QueryPermissionsParams
+): Promise<RolePermissionRecord[]> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryPermissionsParams);
+    return await getRequest<RolePermissionRecord[]>(
+        getAbsoluteUrl(
+            `roles/${encodeURIComponent(resId)}/permissions`,
+            config.authApiUrl,
+            queryParams
+        ),
+        noCache
+    );
+}
+
+export type QueryPermissionsCountParams = Omit<
+    QueryPermissionsParams,
+    "offset" | "limit"
+>;
+
+export async function queryRolePermissionsCount(
+    resId: string,
+    params?: QueryPermissionsCountParams
+): Promise<number> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryPermissionsCountParams);
+    const res = await getRequest<{ count: number }>(
+        getAbsoluteUrl(
+            `roles/${encodeURIComponent(resId)}/permissions/count`,
+            config.authApiUrl,
+            queryParams
+        ),
+        noCache
+    );
+    return res?.count ? res.count : 0;
+}
+
+interface CreateRolePermissionInputData
+    extends Omit<
+        PermissionRecord,
+        | "id"
+        | "owner_id"
+        | "create_by"
+        | "create_time"
+        | "edit_by"
+        | "edit_time"
+    > {
+    operationIds: string[];
+}
+
+export async function createRolePermission(
+    roleId: string,
+    permissionData: CreateRolePermissionInputData
+): Promise<PermissionRecord> {
+    if (!permissionData?.operationIds?.length) {
+        throw new Error("operationIds cannot be empty!");
+    }
+    if (!roleId) {
+        throw new Error("roleId cannot be empty!");
+    }
+    if (!permissionData?.resource_id) {
+        throw new Error("resource_id cannot be empty!");
+    }
+    return await request<PermissionRecord>(
+        "POST",
+        getAbsoluteUrl(
+            `roles/${encodeURIComponent(roleId)}/permissions`,
+            config.authApiUrl
+        ),
+        permissionData
+    );
+}
+
+export async function deleteRolePermission(
+    roleId: string,
+    permissionId: string
+) {
+    if (!permissionId) {
+        throw new Error("permissionId cannot be empty!");
+    }
+    if (!roleId) {
+        throw new Error("roleId cannot be empty!");
+    }
+    await request<PermissionRecord>(
+        "DELETE",
+        getAbsoluteUrl(
+            `roles/${encodeURIComponent(
+                roleId
+            )}/permissions/${encodeURIComponent(permissionId)}`,
+            config.authApiUrl
+        )
+    );
+}

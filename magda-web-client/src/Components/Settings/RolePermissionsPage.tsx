@@ -4,7 +4,7 @@ import "./main.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
 import AccessVerification from "./AccessVerification";
-import RolesDataGrid from "./RolesDataGrid";
+import PermissionDataGrid from "./PermissionDataGrid";
 import { getUserById, getRoleById } from "api-clients/AuthApis";
 import { useAsync } from "react-async-hook";
 
@@ -64,7 +64,7 @@ const RolePermissionsPage: FunctionComponent<PropsType> = (props) => {
                 <Breadcrumb items={breadcrumbItems} />
                 <AccessVerification operationUri="authObject/role/read" />
 
-                <RolesDataGrid queryParams={{ user_id: userId }} />
+                <PermissionDataGrid roleId={roleId} />
             </div>
         </div>
     );
