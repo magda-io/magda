@@ -269,8 +269,12 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
                                             aria-label="Edit Permission"
                                             icon={<MdBorderColor />}
                                             onClick={() =>
-                                                reportError(
-                                                    "This function is under development."
+                                                permissionFormRef?.current?.open(
+                                                    permissionId,
+                                                    () =>
+                                                        setDataReloadToken(
+                                                            `${Math.random()}`
+                                                        )
                                                 )
                                             }
                                         />{" "}

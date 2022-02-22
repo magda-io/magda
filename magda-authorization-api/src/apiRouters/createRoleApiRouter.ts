@@ -246,7 +246,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     }
                     permissionRecord = await createTableRecord(
                         client,
-                        "permission",
+                        "permissions",
                         permissionSubmitData,
                         [
                             "name",
@@ -272,7 +272,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     );
 
                     await client.query(
-                        ...sqls`INSERT INTO role_permission_operation (role_id, permission_id) VALUES (${roleId}, ${permissionRecord.id})`.toQuery()
+                        ...sqls`INSERT INTO role_permissions (role_id, permission_id) VALUES (${roleId}, ${permissionRecord.id})`.toQuery()
                     );
 
                     await client.query("COMMIT");
@@ -404,7 +404,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     }
                     permissionRecord = await updateTableRecord(
                         client,
-                        "permission",
+                        "permissions",
                         permissionId,
                         permissionUpdateData,
                         [
@@ -491,7 +491,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                 }
                 const permission = await getTableRecord(
                     pool,
-                    "permission",
+                    "permissions",
                     roleId
                 );
                 if (!permission) {

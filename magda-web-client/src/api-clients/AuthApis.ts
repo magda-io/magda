@@ -593,7 +593,7 @@ export async function updateRolePermission(
         throw new Error("resource_id cannot be empty!");
     }
     return await request<PermissionRecord>(
-        "POST",
+        "PUT",
         getAbsoluteUrl(
             `roles/${encodeURIComponent(
                 roleId
