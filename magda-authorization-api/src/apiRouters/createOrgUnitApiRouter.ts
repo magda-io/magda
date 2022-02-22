@@ -3,11 +3,9 @@ import Database from "../Database";
 import respondWithError from "../respondWithError";
 import handleMaybePromise from "../handleMaybePromise";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import {
-    requirePermission,
-    requireObjectPermission
-} from "magda-typescript-common/src/authorization-api/authMiddleware";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import { requireObjectPermission } from "../recordAuthMiddlewares";
+import ServerError from "magda-typescript-common/src/ServerError";
 
 export interface ApiRouterOptions {
     database: Database;
