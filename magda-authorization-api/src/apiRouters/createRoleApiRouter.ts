@@ -1,11 +1,11 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import Database from "../Database";
 import respondWithError from "../respondWithError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import { requireObjectPermission } from "../recordAuthMiddlewares";
 import {
     withAuthDecision,
-    requireUnconditionalAuthDecision,
+    requirePermission,
     getUserId
 } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
@@ -583,16 +583,15 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     router.post(
         "/",
         getUserId,
-        (req: Request, res: Response, next: NextFunction) => {
-            requireUnconditionalAuthDecision(authDecisionClient, {
-                operationUri: "authObject/role/create",
-                input: {
-                    authObject: {
-                        role: req.body
-                    }
+        requirePermission(
+            authDecisionClient,
+            "authObject/role/create",
+            (req: Request, res: Response) => ({
+                authObject: {
+                    role: req.body
                 }
-            })(req, res, next);
-        },
+            })
+        ),
         async function (req: Request, res: Response) {
             try {
                 const role = req?.body;

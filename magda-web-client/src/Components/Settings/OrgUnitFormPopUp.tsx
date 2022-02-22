@@ -12,7 +12,7 @@ import Message from "rsuite/Message";
 import Placeholder from "rsuite/Placeholder";
 import Input, { InputProps } from "rsuite/Input";
 import { useAsync, useAsyncCallback } from "react-async-hook";
-import "./RoleFormPopUp.scss";
+import "./OrgUnitFormPopUp.scss";
 import Form from "rsuite/Form";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
@@ -22,15 +22,17 @@ import {
     createRole,
     updateRole
 } from "api-clients/AuthApis";
+import { OrgUnit } from "reducers/userManagementReducer";
+import { getOrgUnitById } from "api-clients/OrgUnitApis";
 
 const Paragraph = Placeholder.Paragraph;
 
 type PropsType = {};
 
-type SubmitCompleteHandlerType = (submittedRoleId: string) => void;
+type SubmitCompleteHandlerType = (submittedOrgUnitId: string) => void;
 
 export type RefType = {
-    open: (roleId?: string, onComplete?: SubmitCompleteHandlerType) => void;
+    open: (orgUnitId?: string, onComplete?: SubmitCompleteHandlerType) => void;
     close: () => void;
 };
 
@@ -41,60 +43,65 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaInputProps>(
     (props, ref) => <Input {...props} as="textarea" ref={ref} />
 );
 
-const RoleFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
+const OrgUnitFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     props,
     ref
 ) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [roleId, setRoleId] = useState<string>();
-    const [role, setRole] = useState<RoleRecord>();
-    const isCreateForm = roleId ? false : true;
+    const [parentOrgUnitId, setParentOrgUnitId] = useState<string>();
+    const [orgUnitId, setOrgUnitId] = useState<string>();
+    const [orgUnit, setOrgUnit] = useState<OrgUnit>();
+    const isCreateForm = orgUnitId ? false : true;
     const onCompleteRef = useRef<SubmitCompleteHandlerType>();
     const [dataReloadToken, setdataReloadToken] = useState<string>("");
 
     useImperativeHandle(ref, () => ({
         open: (
-            selectRoleId?: string,
-            onComplete?: SubmitCompleteHandlerType
+            selectOrgUnitId?: string,
+            onComplete?: SubmitCompleteHandlerType,
+            parentOrgUnitId?: string
         ) => {
             onCompleteRef.current = onComplete;
-            selectRoleId = selectRoleId?.trim();
-            setRoleId(selectRoleId);
-            if (selectRoleId === roleId) {
+            selectOrgUnitId = selectOrgUnitId?.trim();
+            setOrgUnitId(selectOrgUnitId);
+            parentOrgUnitId = parentOrgUnitId?.trim();
+            setParentOrgUnitId(parentOrgUnitId);
+            if (selectOrgUnitId === orgUnitId) {
                 setdataReloadToken(`${Math.random()}`);
             }
             setIsOpen(true);
         },
         close: () => {
-            setRoleId(undefined);
+            setOrgUnitId(undefined);
+            setParentOrgUnitId(undefined);
             setIsOpen(false);
         }
     }));
 
     const { loading, error } = useAsync(
-        async (roleId?: string, dataReloadToken?: string) => {
-            if (!roleId) {
-                setRole(undefined);
+        async (orgUnitId?: string, dataReloadToken?: string) => {
+            if (!orgUnitId) {
+                setOrgUnit(undefined);
             } else {
-                const record = await getRoleById(roleId, true);
-                setRole(record);
+                const record = await getOrgUnitById(orgUnitId, true);
+                setOrgUnit(record);
             }
         },
-        [roleId, dataReloadToken]
+        [orgUnitId, dataReloadToken]
     );
 
     const submitData = useAsyncCallback(async () => {
         try {
-            if (typeof role?.name !== "string" || !role?.name?.trim()) {
-                throw new Error("role name can't be blank!");
+            if (typeof orgUnit?.name !== "string" || !orgUnit?.name?.trim()) {
+                throw new Error("org unit name can't be blank!");
             }
 
-            const roleData = {
-                name: role.name,
-                description: role?.description ? role.description : ""
+            const orgUnitData = {
+                name: orgUnit.name,
+                description: orgUnit?.description ? orgUnit.description : ""
             };
             if (isCreateForm) {
-                const newPermission = await createRole(roleData);
+                const newPermission = await create(orgUnitData);
                 setIsOpen(false);
                 if (typeof onCompleteRef.current === "function") {
                     onCompleteRef.current(newPermission.id);
@@ -198,4 +205,4 @@ const RoleFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     );
 };
 
-export default forwardRef<RefType, PropsType>(RoleFormPopUp);
+export default forwardRef<RefType, PropsType>(OrgUnitFormPopUp);

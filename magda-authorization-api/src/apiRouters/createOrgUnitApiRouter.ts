@@ -1,9 +1,13 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import Database from "../Database";
 import respondWithError from "../respondWithError";
 import handleMaybePromise from "../handleMaybePromise";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import {
+    requirePermission,
+    requireObjectPermission
+} from "magda-typescript-common/src/authorization-api/authMiddleware";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -252,20 +256,21 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {put} /v0/auth/orgunits/:nodeId Set details for a node
+     * @api {put} /v0/auth/orgunits/:nodeId Update details for a node
      * @apiDescription Creates/updates a node at the specified id
      *
      * @apiParam (Path) {string} nodeId id of the node to query
      * @apiParamExample (Body) {json}:
      *     {
-     *       id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
      *       name: "other-team"
      *       description: "The other teams"
      *     }
      *
      * @apiSuccessExample {string} 200
      *     {
-     *       "nodeId": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *       "id": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7",
+     *       "name": "other-team",
+     *       description: "The other teams"
      *     }
      *
      * @apiErrorExample {json} 401/404/500
@@ -280,25 +285,114 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
         requirePermission(authDecisionClient, "authObject/orgUnit/update"),
         async (req, res) => {
             try {
-                const nodeId = req.params.nodeId;
+                const nodeId = req?.params?.nodeId;
+                const newNodeData = {} as any;
+                if (req?.body?.name) {
+                    newNodeData.name = req.body.name;
+                }
+                if (req?.body?.description) {
+                    newNodeData.description = req.body.description;
+                }
 
-                const existingNodeMaybe = await orgQueryer.getNodeById(nodeId);
+                const existingNode = (
+                    await orgQueryer.getNodeById(nodeId)
+                ).valueOr(null);
 
-                existingNodeMaybe.caseOf({
-                    just: async () => {
-                        await orgQueryer.updateNode(nodeId, req.body);
-                        res.status(200).json({ nodeId: nodeId });
-                    },
-                    nothing: async () => {
-                        const newNodeId = await orgQueryer.insertNode(
-                            nodeId,
-                            req.body
-                        );
-                        res.status(200).json({ nodeId: newNodeId });
-                    }
-                });
+                if (!existingNode) {
+                    throw new ServerError(
+                        "Cannot locate org unit record: " + nodeId
+                    );
+                }
+
+                await orgQueryer.updateNode(nodeId, newNodeData);
+
+                res.json({ ...existingNode, ...newNodeData });
             } catch (e) {
                 respondWithError("PUT /public/orgunits/:nodeId", res, e);
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {post} /v0/auth/orgunits/:parentNodeId/insert Create a new node under the parent node
+     * @apiDescription Create a new node under the specified parent node
+     *
+     * @apiParam (Path) {string} parentNodeId id of the parent node
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       name: "other-team"
+     *       description: "The other teams"
+     *     }
+     *
+     * @apiSuccessExample {string} 200
+     *     {
+     *       "id": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7",
+     *       "name": "other-team",
+     *       description: "The other teams"
+     *     }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post(
+        "/:parentNodeId/insert",
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/orgUnit/create",
+            (req: Request, res: Response) => req.params.parentNodeId,
+            "orgUnit"
+        ),
+        async (req, res) => {
+            try {
+                const parentNodeId = req.params.parentNodeId;
+
+                const newNodeData = {} as any;
+                if (req?.body?.name) {
+                    newNodeData.name = req.body.name;
+                } else {
+                    throw new ServerError(
+                        "Failed to insert a new node: name cannot be empty!",
+                        400
+                    );
+                }
+
+                if (req?.body?.description) {
+                    newNodeData.description = req.body.description;
+                }
+
+                const parentNode = (
+                    await orgQueryer.getNodeById(parentNodeId)
+                ).valueOr(null);
+
+                if (!parentNode) {
+                    throw new ServerError(
+                        "Cannot locate parent org unit record: " + parentNodeId
+                    );
+                }
+
+                const newNodeId = await orgQueryer.insertNode(
+                    parentNodeId,
+                    newNodeData
+                );
+
+                const newNode = (
+                    await orgQueryer.getNodeById(newNodeId)
+                ).valueOrThrow(
+                    new ServerError(
+                        "Cannot locate the newly created node: " + newNodeId,
+                        500
+                    )
+                );
+
+                res.status(200).json(newNode);
+            } catch (e) {
+                respondWithError("POST orgunits/:parentNodeId/insert", res, e);
             }
         }
     );
