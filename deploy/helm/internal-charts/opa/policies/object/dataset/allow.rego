@@ -106,7 +106,7 @@ verifyPermission(inputOperationUri, inputObjectRefName) {
     input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["access-control"].orgUnitOwnerId
 }
 
-# if find a permission with org unit ownership constraint, plus both user & dataset have NOT been assigned org unit
+# if find a permission with org unit ownership constraint, plus dataset have NOT been assigned org unit
 # e.g. anonymous users can access all datasets that not belongs to an org unit
 verifyPermission(inputOperationUri, inputObjectRefName) {
     [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
@@ -126,7 +126,6 @@ verifyPermission(inputOperationUri, inputObjectRefName) {
 
     input.object[inputObjectRefName].publishing.state = permissionResourceType
 
-    not input.user.orgUnitId
     not input.object[inputObjectRefName]["access-control"].orgUnitOwnerId
 }
 

@@ -37,12 +37,10 @@ verifyRecordPermission(inputOperationUri, inputObjectRefName) {
     input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["access-control"].orgUnitOwnerId
 }
 
-# or when user has org unit ownership constraint permission but has no org unit assigned (anonymous users)
-# for this case, the user can access all records with NO org unit assigned
+# or when a user has org unit ownership constraint permission, he also can access all records with NO org unit assigned
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
     hasOrgUnitConstaintPermission(inputOperationUri)
 
-    not input.user.orgUnitId
     not input.object[inputObjectRefName]["access-control"].orgUnitOwnerId
 }
 
