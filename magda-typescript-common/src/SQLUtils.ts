@@ -3,6 +3,7 @@ import pg from "pg";
 import AuthDecision, { UnconditionalTrueDecision } from "./opa/AuthDecision";
 import { AspectQueryToSqlConfig } from "./opa/AspectQuery";
 import { camelCase, difference } from "lodash";
+import ServerError from "magda-typescript-common/src/ServerError";
 
 type PossibleObjectKind = "object" | "authObject";
 
@@ -81,20 +82,22 @@ export async function createTableRecord(
     if (!table.trim()) {
         throw new Error("invalid empty table name is supplied.");
     }
-    if (autoGenerateUuid) {
-        data["id"] = sqls`uuid_generate_v4()`;
-    }
 
     if (allowFieldList?.length) {
         const keys = Object.keys(data);
         const diff = difference(keys, allowFieldList);
         if (diff?.length) {
-            throw new Error(
+            throw new ServerError(
                 `Failed to create record, the following fields are not allowed: ${diff.join(
                     ","
-                )}`
+                )}`,
+                400
             );
         }
+    }
+
+    if (autoGenerateUuid) {
+        data["id"] = sqls`uuid_generate_v4()`;
     }
 
     const [fieldList, valueList] = Object.keys(data).reduce(
@@ -126,19 +129,23 @@ export async function updateTableRecord(
     allowFieldList?: string[]
 ) {
     if (!id.trim()) {
-        throw new Error("Failed to delete the record: empty id was provided.");
+        throw new ServerError(
+            "Failed to delete the record: empty id was provided.",
+            400
+        );
     }
     if (!table.trim()) {
-        throw new Error("invalid empty table name is supplied.");
+        throw new ServerError("invalid empty table name is supplied.", 500);
     }
     if (allowFieldList?.length) {
         const keys = Object.keys(data);
         const diff = difference(keys, allowFieldList);
         if (diff?.length) {
-            throw new Error(
+            throw new ServerError(
                 `Failed to update record, the following fields are not allowed: ${diff.join(
                     ","
-                )}`
+                )}`,
+                400
             );
         }
     }
@@ -166,10 +173,13 @@ export async function deleteTableRecord(
     id: string
 ) {
     if (!id.trim()) {
-        throw new Error("Failed to delete the record: empty id was provided.");
+        throw new ServerError(
+            "Failed to delete the record: empty id was provided.",
+            400
+        );
     }
     if (!table.trim()) {
-        throw new Error("invalid empty table name is supplied.");
+        throw new ServerError("invalid empty table name is supplied.", 500);
     }
     const sqlSyntax = sqls`DELETE FROM ${escapeIdentifier(
         table
@@ -210,7 +220,7 @@ export async function searchTableRecord<T = any>(
     }
 ): Promise<T[]> {
     if (!table.trim()) {
-        throw new Error("invalid empty table name is supplied.");
+        throw new ServerError("invalid empty table name is supplied.");
     }
     const objectKind = queryConfig?.objectKind
         ? queryConfig.objectKind

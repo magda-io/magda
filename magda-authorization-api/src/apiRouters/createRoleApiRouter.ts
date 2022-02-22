@@ -192,16 +192,18 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                 let { operationIds, ...permissionData } = req.body;
 
                 if (!operationIds?.length) {
-                    throw new Error(
-                        "Failed to create permission: operationIds is required and should be a list of operation ids."
+                    throw new ServerError(
+                        "Failed to create permission: operationIds is required and should be a list of operation ids.",
+                        400
                     );
                 }
 
                 operationIds = uniq(operationIds);
 
                 if (!permissionData.resource_id) {
-                    throw new Error(
-                        "Failed to create permission: resource_id is required."
+                    throw new ServerError(
+                        "Failed to create permission: resource_id is required.",
+                        400
                     );
                 }
 
@@ -211,8 +213,9 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     permissionData.resource_id
                 );
                 if (!resource) {
-                    throw new Error(
-                        "Failed to create permission: cannot locate resource by supplied resource_id."
+                    throw new ServerError(
+                        "Failed to create permission: cannot locate resource by supplied resource_id.",
+                        400
                     );
                 }
 
@@ -225,8 +228,9 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                 );
 
                 if (result?.rows?.[0]?.["count"] !== operationIds.length) {
-                    throw new Error(
-                        `Failed to create permission: all provided operation id must be valid and belong to the resource ${resource.id}`
+                    throw new ServerError(
+                        `Failed to create permission: all provided operation id must be valid and belong to the resource ${resource.id}`,
+                        400
                     );
                 }
 

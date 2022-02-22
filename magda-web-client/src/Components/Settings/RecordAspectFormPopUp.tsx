@@ -24,7 +24,6 @@ import Form from "rsuite/Form";
 import reportError from "./reportError";
 import { ItemDataType } from "rsuite/esm/@types/common";
 import "jsoneditor-react/es/editor.min.css";
-import ServerError from "api-clients/ServerError";
 
 interface AspectDefDropdownItemType extends ItemDataType<string> {
     rawData: AspectDefRecord;

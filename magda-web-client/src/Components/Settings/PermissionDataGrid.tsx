@@ -1,9 +1,8 @@
-import React, { FunctionComponent, useState, useCallback } from "react";
+import React, { FunctionComponent, useState, useCallback, useRef } from "react";
 import { useAsync } from "react-async-hook";
 import Table from "rsuite/Table";
 import Pagination from "rsuite/Pagination";
 import Popover from "rsuite/Popover";
-import Tooltip from "rsuite/Tooltip";
 import List from "rsuite/List";
 import Whisper from "rsuite/Whisper";
 import Notification from "rsuite/Notification";
@@ -20,13 +19,15 @@ import {
     queryRolePermissions,
     queryRolePermissionsCount,
     RolePermissionRecord,
-    deleteRolePermission,
-    OperationRecord
+    deleteRolePermission
 } from "../../api-clients/AuthApis";
 import "./PermissionDataGrid.scss";
 import reportError from "./reportError";
 import ConfirmDialog from "./ConfirmDialog";
 import CheckBoxIcon from "./CheckBoxIcon";
+import PermissionFormPopUp, {
+    RefType as PermissionFormPopUpRefType
+} from "./PermissionFormPopUp";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -47,6 +48,8 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
     const offset = (page - 1) * limit;
 
     const [searchInputText, setSearchInputText] = useState<string>("");
+
+    const permissionFormRef = useRef<PermissionFormPopUpRefType>(null);
 
     //change this value to force the role data to be reloaded
     const [dataReloadToken, setDataReloadToken] = useState<string>("");
@@ -119,7 +122,11 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
                     <Button
                         color="blue"
                         appearance="primary"
-                        onClick={() => undefined}
+                        onClick={() =>
+                            permissionFormRef?.current?.open(undefined, () => {
+                                setDataReloadToken(`${Math.random()}`);
+                            })
+                        }
                     >
                         <MdAddCircle /> Add Permission to Role
                     </Button>
@@ -144,6 +151,8 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
                     </InputGroup>
                 </div>
             </div>
+
+            <PermissionFormPopUp roleId={roleId} ref={permissionFormRef} />
 
             <div>
                 <Table
@@ -237,7 +246,7 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
                         <Cell align="center">
                             {(rowData: RolePermissionRecord) => (
                                 <CheckBoxIcon
-                                    value={rowData.pre_authorised_conraint}
+                                    value={rowData.pre_authorised_constraint}
                                 />
                             )}
                         </Cell>

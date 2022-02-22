@@ -480,7 +480,7 @@ export interface PermissionRecord {
     resource_id: string;
     user_ownership_constraint: boolean;
     org_unit_ownership_constraint: boolean;
-    pre_authorised_conraint: boolean;
+    pre_authorised_constraint: boolean;
     owner_id: string;
     create_time: string;
     create_by: string;
@@ -553,6 +553,9 @@ export async function createRolePermission(
     if (!permissionData?.operationIds?.length) {
         throw new Error("operationIds cannot be empty!");
     }
+    if (!permissionData?.name) {
+        throw new Error("permission name cannot be empty!");
+    }
     if (!roleId) {
         throw new Error("roleId cannot be empty!");
     }
@@ -563,6 +566,38 @@ export async function createRolePermission(
         "POST",
         getAbsoluteUrl(
             `roles/${encodeURIComponent(roleId)}/permissions`,
+            config.authApiUrl
+        ),
+        permissionData
+    );
+}
+
+export async function updateRolePermission(
+    roleId: string,
+    permissionId: string,
+    permissionData: CreateRolePermissionInputData
+): Promise<PermissionRecord> {
+    if (!permissionData?.operationIds?.length) {
+        throw new Error("operationIds cannot be empty!");
+    }
+    if (!permissionData?.name) {
+        throw new Error("permission name cannot be empty!");
+    }
+    if (!roleId) {
+        throw new Error("roleId cannot be empty!");
+    }
+    if (!permissionId) {
+        throw new Error("permissionId cannot be empty!");
+    }
+    if (!permissionData?.resource_id) {
+        throw new Error("resource_id cannot be empty!");
+    }
+    return await request<PermissionRecord>(
+        "POST",
+        getAbsoluteUrl(
+            `roles/${encodeURIComponent(
+                roleId
+            )}/permissions/${encodeURIComponent(permissionId)}`,
             config.authApiUrl
         ),
         permissionData

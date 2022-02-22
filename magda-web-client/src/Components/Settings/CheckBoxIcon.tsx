@@ -1,9 +1,5 @@
 import React, { FunctionComponent } from "react";
-import {
-    MdOutlineCheckBox,
-    //MdOutlineCheckBoxOutlineBlank
-    MdOutlineCancelPresentation
-} from "react-icons/md";
+import { MdDone, MdClear } from "react-icons/md";
 
 type PropsType = {
     value: boolean;
@@ -11,17 +7,9 @@ type PropsType = {
 
 const CheckBoxIcon: FunctionComponent<PropsType> = (props) =>
     props?.value ? (
-        <MdOutlineCheckBox
-            className="checkbox-icon"
-            title="YES"
-            aria-label="YES"
-        />
+        <MdDone className="checkbox-icon" title="YES" aria-label="YES" />
     ) : (
-        <MdOutlineCancelPresentation
-            className="checkbox-icon"
-            title="NO"
-            aria-label="NO"
-        />
+        <MdClear className="checkbox-icon" title="NO" aria-label="NO" />
     );
 
 export default CheckBoxIcon;

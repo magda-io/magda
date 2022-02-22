@@ -1,0 +1,17 @@
+.role-permission-form-popup {
+    .rs-modal-body {
+        padding-left: 3px;
+    }
+    .role-permission-popup-form {
+        width: 98%;
+        .inline-toggle-group {
+            .rs-form-control-label {
+                display: inline-block;
+            }
+            .rs-form-control {
+                width: 150px;
+                margin-left: 10px;
+            }
+        }
+    }
+}
