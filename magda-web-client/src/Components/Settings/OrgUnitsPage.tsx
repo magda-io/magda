@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, useRef } from "react";
+import React, { FunctionComponent, useState, useRef, useCallback } from "react";
 import { withRouter, match } from "react-router-dom";
 import { Location, History } from "history";
 import "./main.scss";
@@ -10,7 +10,9 @@ import { whoami } from "../../api-clients/AuthApis";
 import {
     getRootNode,
     getImmediateChildren,
-    moveSubTree
+    moveSubTree,
+    deleteNode,
+    deleteSubTree
 } from "../../api-clients/OrgUnitApis";
 import { useAsync } from "react-async-hook";
 import Notification from "rsuite/Notification";
@@ -33,6 +35,10 @@ import ViewOrgUnitPopUp, {
     RefType as ViewOrgUnitPopUpRefType
 } from "./ViewOrgUnitPopUp";
 import reportError from "./reportError";
+import OrgUnitFormPopUp, {
+    RefType as OrgUnitFormPopUpRefType
+} from "./OrgUnitFormPopUp";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface ItemType extends ItemDataType {
     rawData: OrgUnit;
@@ -47,6 +53,51 @@ type PropsType = {
 const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
     const [data, setData] = useState<ItemType[]>([]);
     const viewDetailPopUpRef = useRef<ViewOrgUnitPopUpRefType>(null);
+    const orgUnitFormRef = useRef<OrgUnitFormPopUpRefType>(null);
+    //change this value to force the role data to be reloaded
+    const [dataReloadToken, setDataReloadToken] = useState<string>("");
+
+    const deleteNodeHandler = useCallback(
+        (nodeId: string, nodeName: string) => {
+            ConfirmDialog.open({
+                confirmMsg: `Please confirm the deletion of org unit "${nodeName}"?
+            Only this Org Unit will be deleted and all sub trees belong to it will be moved to its parent Org Unit.`,
+                confirmHandler: async () => {
+                    try {
+                        if (!nodeId) {
+                            throw new Error("Invalid empty org unit id!");
+                        }
+                        await deleteNode(nodeId);
+                        setDataReloadToken(`${Math.random()}`);
+                    } catch (e) {
+                        reportError(`Failed to delete the node: ${e}`);
+                    }
+                }
+            });
+        },
+        []
+    );
+
+    const deleteSubTreeHandler = useCallback(
+        (nodeId: string, nodeName: string) => {
+            ConfirmDialog.open({
+                confirmMsg: `Please confirm the deletion of org unit sub tree starting with org unit "${nodeName}"?
+                All org units nodes belongs to the sub tree will be deleted.`,
+                confirmHandler: async () => {
+                    try {
+                        if (!nodeId) {
+                            throw new Error("Invalid empty org unit id!");
+                        }
+                        await deleteSubTree(nodeId);
+                        setDataReloadToken(`${Math.random()}`);
+                    } catch (e) {
+                        reportError(`Failed to delete the sub tree: ${e}`);
+                    }
+                }
+            });
+        },
+        []
+    );
 
     function createNodeLabel(node: OrgUnit, isRoot?: boolean) {
         return (
@@ -57,7 +108,11 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                 <Dropdown.Item
                     icon={<MdCreateNewFolder />}
                     onClick={() =>
-                        reportError("this function is under development.")
+                        orgUnitFormRef?.current?.open(
+                            undefined,
+                            () => setDataReloadToken(`${Math.random()}`),
+                            node.id
+                        )
                     }
                 >
                     <span className="node-dropdown-menu-item-text">New</span>
@@ -65,7 +120,9 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                 <Dropdown.Item
                     icon={<MdEditNote />}
                     onClick={() =>
-                        reportError("this function is under development.")
+                        orgUnitFormRef?.current?.open(node.id, () =>
+                            setDataReloadToken(`${Math.random()}`)
+                        )
                     }
                 >
                     <span className="node-dropdown-menu-item-text">Edit</span>
@@ -79,56 +136,68 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                     </span>
                 </Dropdown.Item>
                 {isRoot ? null : (
-                    <Dropdown.Item
-                        icon={<MdDeleteForever />}
-                        onClick={() =>
-                            reportError("this function is under development.")
-                        }
-                    >
-                        <span className="node-dropdown-menu-item-text">
-                            Delete
-                        </span>
-                    </Dropdown.Item>
+                    <>
+                        <Dropdown.Item
+                            icon={<MdDeleteForever />}
+                            onClick={() =>
+                                deleteNodeHandler(node.id, node.name)
+                            }
+                        >
+                            <span className="node-dropdown-menu-item-text">
+                                Delete
+                            </span>
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                            icon={<MdDeleteForever />}
+                            onClick={() =>
+                                deleteSubTreeHandler(node.id, node.name)
+                            }
+                        >
+                            <span className="node-dropdown-menu-item-text">
+                                Delete Sub Tree
+                            </span>
+                        </Dropdown.Item>
+                    </>
                 )}
             </Dropdown>
         );
     }
 
-    const {
-        result: userRootNode,
-        loading: isUserRootNodeLoading
-    } = useAsync(async () => {
-        try {
-            const userInfo = await whoami();
-            let rootNode: OrgUnit;
-            if (userInfo?.orgUnit?.id) {
-                rootNode = userInfo.orgUnit;
-            } else {
-                rootNode = await getRootNode(true);
+    const { result: userRootNode, loading: isUserRootNodeLoading } = useAsync(
+        async (dataReloadToken: string) => {
+            try {
+                const userInfo = await whoami();
+                let rootNode: OrgUnit;
+                if (userInfo?.orgUnit?.id) {
+                    rootNode = userInfo.orgUnit;
+                } else {
+                    rootNode = await getRootNode(true);
+                }
+                setData([
+                    {
+                        label: createNodeLabel(rootNode, true),
+                        value: rootNode.id,
+                        rawData: rootNode,
+                        children: []
+                    }
+                ]);
+                return rootNode;
+            } catch (e) {
+                toaster.push(
+                    <Notification
+                        type={"error"}
+                        closable={true}
+                        header="Error"
+                    >{`Failed to retrieve user root node: ${e}`}</Notification>,
+                    {
+                        placement: "topEnd"
+                    }
+                );
+                throw e;
             }
-            setData([
-                {
-                    label: createNodeLabel(rootNode, true),
-                    value: rootNode.id,
-                    rawData: rootNode,
-                    children: []
-                }
-            ]);
-            return rootNode;
-        } catch (e) {
-            toaster.push(
-                <Notification
-                    type={"error"}
-                    closable={true}
-                    header="Error"
-                >{`Failed to retrieve user root node: ${e}`}</Notification>,
-                {
-                    placement: "topEnd"
-                }
-            );
-            throw e;
-        }
-    }, []);
+        },
+        [dataReloadToken]
+    );
 
     return (
         <div className="flex-main-container setting-page-main-container org-units-page">
@@ -136,6 +205,7 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
             <div className="main-content-container">
                 <Breadcrumb items={[{ title: "Org Units" }]} />
                 <AccessVerification operationUri="authObject/orgUnit/read" />
+                <OrgUnitFormPopUp ref={orgUnitFormRef} />
                 <ViewOrgUnitPopUp ref={viewDetailPopUpRef} />
                 {isUserRootNodeLoading ? (
                     <Loader content="Loading..." />

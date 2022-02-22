@@ -16,14 +16,12 @@ import "./OrgUnitFormPopUp.scss";
 import Form from "rsuite/Form";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
-import {
-    RoleRecord,
-    getRoleById,
-    createRole,
-    updateRole
-} from "api-clients/AuthApis";
 import { OrgUnit } from "reducers/userManagementReducer";
-import { getOrgUnitById } from "api-clients/OrgUnitApis";
+import {
+    getOrgUnitById,
+    insertNode,
+    updateNode
+} from "api-clients/OrgUnitApis";
 
 const Paragraph = Placeholder.Paragraph;
 
@@ -32,7 +30,11 @@ type PropsType = {};
 type SubmitCompleteHandlerType = (submittedOrgUnitId: string) => void;
 
 export type RefType = {
-    open: (orgUnitId?: string, onComplete?: SubmitCompleteHandlerType) => void;
+    open: (
+        orgUnitId?: string,
+        onComplete?: SubmitCompleteHandlerType,
+        selectedParentOrgUnitId?: string
+    ) => void;
     close: () => void;
 };
 
@@ -100,17 +102,25 @@ const OrgUnitFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                 name: orgUnit.name,
                 description: orgUnit?.description ? orgUnit.description : ""
             };
+
+            if (!parentOrgUnitId) {
+                throw new Error("parentOrgUnitId cannot be empty!");
+            }
+
             if (isCreateForm) {
-                const newPermission = await create(orgUnitData);
+                const newNode = await insertNode(parentOrgUnitId, orgUnitData);
                 setIsOpen(false);
                 if (typeof onCompleteRef.current === "function") {
-                    onCompleteRef.current(newPermission.id);
+                    onCompleteRef.current(newNode.id);
                 }
             } else {
-                await updateRole(roleId as string, roleData);
+                if (!orgUnitId) {
+                    throw new Error("orgUnitId cannot be empty!");
+                }
+                await updateNode(orgUnitId, orgUnitData);
                 setIsOpen(false);
                 if (typeof onCompleteRef.current === "function") {
-                    onCompleteRef.current(roleId as string);
+                    onCompleteRef.current(orgUnitId);
                 }
             }
         } catch (e) {
@@ -120,7 +130,9 @@ const OrgUnitFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                     closable={true}
                     header="Error"
                 >{`Failed to ${
-                    isCreateForm ? "create role" : "update role"
+                    isCreateForm
+                        ? "Create a New Org Unit Node"
+                        : "Update the Org Unit"
                 }: ${e}`}</Notification>,
                 {
                     placement: "topEnd"
@@ -132,7 +144,7 @@ const OrgUnitFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
 
     return (
         <Modal
-            className="role-form-popup"
+            className="org-unit-form-popup"
             backdrop={"static"}
             keyboard={false}
             open={isOpen}
@@ -142,7 +154,7 @@ const OrgUnitFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
         >
             <Modal.Header>
                 <Modal.Title>
-                    {isCreateForm ? "Create Role" : "Update Role"}
+                    {isCreateForm ? "Create Org Unit" : "Update Org Unit"}
                 </Modal.Title>
             </Modal.Header>
 
@@ -153,7 +165,7 @@ const OrgUnitFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                     </Paragraph>
                 ) : error ? (
                     <Message showIcon type="error" header="Error">
-                        Failed to retrieve role record: {`${error}`}
+                        Failed to retrieve Org Unit record: {`${error}`}
                     </Message>
                 ) : (
                     <>
@@ -162,16 +174,16 @@ const OrgUnitFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                 backdrop
                                 content={`${
                                     isCreateForm ? "Creating" : "Updating"
-                                } Role...`}
+                                } Org Unit...`}
                                 vertical
                             />
                         ) : null}
                         <Form
-                            className="role-popup-form"
+                            className="org-unit-popup-form"
                             disabled={submitData.loading}
                             fluid
-                            onChange={(v) => setRole(v as any)}
-                            formValue={role}
+                            onChange={(v) => setOrgUnit(v as any)}
+                            formValue={orgUnit}
                         >
                             <Form.Group controlId="ctrl-name">
                                 <Form.ControlLabel>Name</Form.ControlLabel>
