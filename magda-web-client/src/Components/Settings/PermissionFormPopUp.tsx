@@ -22,7 +22,6 @@ import Toggle from "rsuite/Toggle";
 import { toaster } from "rsuite";
 import { ItemDataType } from "rsuite/esm/@types/common";
 import {
-    RolePermissionRecord,
     getPermissionById,
     createRolePermission,
     updateRolePermission,
@@ -40,6 +39,14 @@ interface ResourceDropDownItemType extends ItemDataType {
 
 interface OperationDropDownItemType extends ItemDataType {
     rawData: OperationRecord;
+}
+
+interface PermissionDataType extends Partial<CreateRolePermissionInputData> {
+    // will fill this single field with values from all 3 contraint fields
+    // this field is mainly used by checkbox UI
+    // at this moment, we only allow permission to have one type of constraint
+    // but checkbox group requires array data type. Thus, string[]
+    constraints: string[];
 }
 
 const Paragraph = Placeholder.Paragraph;
@@ -72,9 +79,7 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     const { roleId } = props;
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [permissionId, setPermissionId] = useState<string>();
-    const [permission, setPermission] = useState<
-        Partial<CreateRolePermissionInputData>
-    >();
+    const [permission, setPermission] = useState<PermissionDataType>();
     const isCreateForm = permissionId ? false : true;
     const onCompleteRef = useRef<SubmitCompleteHandlerType>();
     const [dataReloadToken, setdataReloadToken] = useState<string>("");
@@ -86,14 +91,10 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             onComplete?: SubmitCompleteHandlerType
         ) => {
             onCompleteRef.current = onComplete;
-            if (typeof selectPermissionId === "string") {
-                selectPermissionId = selectPermissionId.trim();
-                if (selectPermissionId) {
-                    setPermissionId(selectPermissionId);
-                }
-                if (selectPermissionId === permissionId) {
-                    setdataReloadToken(`${Math.random()}`);
-                }
+            selectPermissionId = selectPermissionId?.trim();
+            setPermissionId(selectPermissionId);
+            if (selectPermissionId === permissionId) {
+                setdataReloadToken(`${Math.random()}`);
             }
             setIsOpen(true);
         },
@@ -108,6 +109,13 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                 const record = await getPermissionById(permissionId);
                 setPermission({
                     ...record,
+                    constraints: record?.user_ownership_constraint
+                        ? ["user_ownership_constraint"]
+                        : record?.org_unit_ownership_constraint
+                        ? ["org_unit_ownership_constraint"]
+                        : record?.pre_authorised_constraint
+                        ? ["pre_authorised_constraint"]
+                        : [],
                     operationIds: record?.operations?.length
                         ? record.operations.map((op) => op.id)
                         : []
@@ -275,15 +283,43 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                             className="role-permission-popup-form"
                             disabled={submitData.loading}
                             fluid
-                            onChange={(v) => {
-                                console.log(v);
-                                setPermission(v);
+                            onChange={(p) => {
+                                const pData = {
+                                    ...p
+                                } as PermissionDataType;
+                                const constraints = pData?.constraints;
+                                pData.user_ownership_constraint = false;
+                                pData.org_unit_ownership_constraint = false;
+                                pData.pre_authorised_constraint = false;
+
+                                if (
+                                    constraints?.[0] ===
+                                    "user_ownership_constraint"
+                                ) {
+                                    pData.user_ownership_constraint = true;
+                                } else if (
+                                    constraints?.[0] ===
+                                    "org_unit_ownership_constraint"
+                                ) {
+                                    pData.org_unit_ownership_constraint = true;
+                                } else if (
+                                    constraints?.[0] ===
+                                    "pre_authorised_constraint"
+                                ) {
+                                    pData.pre_authorised_constraint = true;
+                                }
+                                setPermission(pData);
                             }}
-                            formValue={permission as RolePermissionRecord}
+                            formValue={permission as any}
                         >
                             <Form.Group controlId="ctrl-name">
                                 <Form.ControlLabel>Name</Form.ControlLabel>
-                                <Form.Control name="name" />
+                                <Form.Control
+                                    name="name"
+                                    value={
+                                        permission?.name ? permission.name : ""
+                                    }
+                                />
                             </Form.Group>
                             <Form.Group controlId="ctrl-resource-id">
                                 <Form.ControlLabel>Resource:</Form.ControlLabel>
@@ -324,41 +360,46 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                     </Form.Control>
                                 )}
                             </Form.Group>
-                            <Form.Group
-                                controlId="ctrl-user_ownership_constraint"
-                                className="inline-toggle-group"
-                            >
+                            <Form.Group controlId="ctrl-permission-constraint">
                                 <Form.ControlLabel>
-                                    Ownership Constraint:
+                                    Constraint:
                                 </Form.ControlLabel>
                                 <Form.Control
-                                    name="user_ownership_constraint"
-                                    accepter={Toggle}
-                                />
-                            </Form.Group>
-                            <Form.Group
-                                controlId="ctrl-org_unit_ownership_constraint"
-                                className="inline-toggle-group"
-                            >
-                                <Form.ControlLabel>
-                                    Org Unit Constraint:
-                                </Form.ControlLabel>
-                                <Form.Control
-                                    name="org_unit_ownership_constraint"
-                                    accepter={Toggle}
-                                />
-                            </Form.Group>
-                            <Form.Group
-                                controlId="ctrl-pre_authorised_constraint"
-                                className="inline-toggle-group"
-                            >
-                                <Form.ControlLabel>
-                                    Pre-Authorised Constraint:
-                                </Form.ControlLabel>
-                                <Form.Control
-                                    name="pre_authorised_constraint"
-                                    accepter={Toggle}
-                                />
+                                    name="constraints"
+                                    accepter={CheckboxGroup}
+                                    inline
+                                >
+                                    <Checkbox
+                                        key="user_ownership_constraint"
+                                        value="user_ownership_constraint"
+                                        disabled={
+                                            !!permission?.constraints?.[0] &&
+                                            !permission.user_ownership_constraint
+                                        }
+                                    >
+                                        Ownership Constraint
+                                    </Checkbox>
+                                    <Checkbox
+                                        key="org_unit_ownership_constraint"
+                                        value="org_unit_ownership_constraint"
+                                        disabled={
+                                            !!permission?.constraints?.[0] &&
+                                            !permission.org_unit_ownership_constraint
+                                        }
+                                    >
+                                        Org Unit Constraint
+                                    </Checkbox>
+                                    <Checkbox
+                                        key="pre_authorised_constraint"
+                                        value="pre_authorised_constraint"
+                                        disabled={
+                                            !!permission?.constraints?.[0] &&
+                                            !permission.pre_authorised_constraint
+                                        }
+                                    >
+                                        Pre-Authorised Constraint
+                                    </Checkbox>
+                                </Form.Control>
                             </Form.Group>
                             <Form.Group controlId="ctrl-description">
                                 <Form.ControlLabel>
