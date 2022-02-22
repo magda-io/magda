@@ -16,7 +16,6 @@ import {
 } from "magda-typescript-common/src/SQLUtils";
 import { uniq } from "lodash";
 import ServerError from "magda-typescript-common/src/ServerError";
-import e from "express";
 
 export interface ApiRouterOptions {
     database: Database;
