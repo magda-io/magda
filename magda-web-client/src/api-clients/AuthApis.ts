@@ -533,7 +533,7 @@ export async function queryRolePermissionsCount(
     return res?.count ? res.count : 0;
 }
 
-interface CreateRolePermissionInputData
+export interface CreateRolePermissionInputData
     extends Omit<
         PermissionRecord,
         | "id"

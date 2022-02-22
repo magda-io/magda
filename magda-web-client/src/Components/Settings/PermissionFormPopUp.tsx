@@ -98,7 +98,10 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             }
             setIsOpen(true);
         },
-        close: () => setIsOpen(false)
+        close: () => {
+            setPermissionId(undefined);
+            setIsOpen(false);
+        }
     }));
 
     const { loading, error } = useAsync(
@@ -106,7 +109,7 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             if (!permissionId) {
                 setPermission(undefined);
             } else {
-                const record = await getPermissionById(permissionId);
+                const record = await getPermissionById(permissionId, true);
                 setPermission({
                     ...record,
                     constraints: record?.user_ownership_constraint
@@ -308,18 +311,21 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                 ) {
                                     pData.pre_authorised_constraint = true;
                                 }
+
+                                if (
+                                    pData?.resource_id !==
+                                    permission?.resource_id
+                                ) {
+                                    pData.operationIds = [];
+                                }
+
                                 setPermission(pData);
                             }}
                             formValue={permission as any}
                         >
                             <Form.Group controlId="ctrl-name">
                                 <Form.ControlLabel>Name</Form.ControlLabel>
-                                <Form.Control
-                                    name="name"
-                                    value={
-                                        permission?.name ? permission.name : ""
-                                    }
-                                />
+                                <Form.Control name="name" />
                             </Form.Group>
                             <Form.Group controlId="ctrl-resource-id">
                                 <Form.ControlLabel>Resource:</Form.ControlLabel>

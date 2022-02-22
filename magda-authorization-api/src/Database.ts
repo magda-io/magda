@@ -621,7 +621,11 @@ export default class Database {
                 400
             );
         }
-        const permission = await getTableRecord(pool, "permissions", roleId);
+        const permission = await getTableRecord(
+            pool,
+            "permissions",
+            permissionId
+        );
         if (!permission) {
             throw new ServerError(
                 "Cannot locate permission record by ID: " + permissionId,
@@ -645,7 +649,7 @@ export default class Database {
                     ...sqls`DELETE FROM permission_operations WHERE permission_id = ${permissionId}`.toQuery()
                 );
                 await client.query(
-                    ...sqls`DELETE FROM permissions WHERE id = ${permissionId} LIMIT 1`.toQuery()
+                    ...sqls`DELETE FROM permissions WHERE id = ${permissionId}`.toQuery()
                 );
 
                 await client.query("COMMIT");
@@ -721,7 +725,7 @@ export default class Database {
             );
 
             await client.query(
-                ...sqls`DELETE FROM roles WHERE id = ${roleId} LIMIT 1`.toQuery()
+                ...sqls`DELETE FROM roles WHERE id = ${roleId}`.toQuery()
             );
 
             await client.query("COMMIT");
