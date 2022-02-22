@@ -11,6 +11,8 @@ import Placeholder from "rsuite/Placeholder";
 import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
 import InputPicker from "rsuite/InputPicker";
+import PopOver from "rsuite/PopOver";
+import Whisper from "rsuite/Whisper";
 import Input, { InputProps } from "rsuite/Input";
 import Checkbox from "rsuite/Checkbox";
 import CheckboxGroup from "rsuite/CheckboxGroup";
@@ -31,6 +33,7 @@ import {
     CreateRolePermissionInputData
 } from "api-clients/AuthApis";
 import reportError from "./reportError";
+import { MdInfoOutline } from "react-icons/md";
 
 interface ResourceDropDownItemType extends ItemDataType {
     rawData: ResourceRecord;
@@ -69,6 +72,40 @@ interface TextareaInputProps extends InputProps {
 }
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaInputProps>(
     (props, ref) => <Input {...props} as="textarea" ref={ref} />
+);
+
+const constraintTooltip = (
+    <PopOver style={{ width: "500px" }}>
+        <p>
+            You can set the contraint on the permission to limit the scope where
+            the user is granted the permission to perform the specified
+            operations. There are 3 types of constraint we can set on a
+            permission. They are:
+        </p>
+        <ul>
+            <li>
+                <b>Ownership Constraint:</b> the user can only perform the
+                operations specified by the permission on objects he owned.
+            </li>
+            <li>
+                <b>Org Unit Constraint:</b> the user can only perform the
+                operations specified by the permission on objects belong to the
+                Org Unit (or any child node of the Org Unit Sub Tree) that the
+                user is assigned to.
+            </li>
+            <li>
+                <b>Pre-authorised Constraint:</b> the user can only perform the
+                operations specified by the permission on objects that are
+                explicitly associated with the permission.
+            </li>
+        </ul>
+        <p>
+            Depends on the nature of the objects, not all objects support all or
+            any of the constraints. If you don't set the contraint on the
+            permission, the permission will grant users with access to the
+            specified resource objects without any scope limit.
+        </p>
+    </PopOver>
 );
 
 const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
@@ -367,7 +404,17 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                             </Form.Group>
                             <Form.Group controlId="ctrl-permission-constraint">
                                 <Form.ControlLabel>
-                                    Constraint:
+                                    Constraint:{" "}
+                                    <Whisper
+                                        placement="top"
+                                        controlId="ctrl-constraint-tooltip-hover"
+                                        trigger="hover"
+                                        speaker={constraintTooltip}
+                                    >
+                                        <span>
+                                            <MdInfoOutline />
+                                        </span>
+                                    </Whisper>
                                 </Form.ControlLabel>
                                 <Form.Control
                                     name="constraints"
