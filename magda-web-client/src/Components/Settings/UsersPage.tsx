@@ -122,7 +122,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                             <Cell dataKey="id" />
                         </Column>
 
-                        <Column width={150} resizable>
+                        <Column width={150} flexGrow={1}>
                             <HeaderCell>Display Name</HeaderCell>
                             <Cell dataKey="displayName" />
                         </Column>

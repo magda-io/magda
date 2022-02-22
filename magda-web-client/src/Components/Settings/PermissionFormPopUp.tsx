@@ -18,7 +18,6 @@ import { useAsync, useAsyncCallback } from "react-async-hook";
 import "./PermissionFormPopUp.scss";
 import Form from "rsuite/Form";
 import Notification from "rsuite/Notification";
-import Toggle from "rsuite/Toggle";
 import { toaster } from "rsuite";
 import { ItemDataType } from "rsuite/esm/@types/common";
 import {
@@ -422,7 +421,11 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                 )}
             </Modal.Body>
             <Modal.Footer>
-                <Button appearance="primary" onClick={submitData.execute}>
+                <Button
+                    appearance="primary"
+                    onClick={submitData.execute}
+                    disabled={!!error}
+                >
                     {isCreateForm ? "Create" : "Update"}
                 </Button>
                 <Button onClick={() => setIsOpen(false)}>Cancel</Button>

@@ -346,6 +346,32 @@ export async function getRoleById(
     );
 }
 
+export async function createRole(role: Partial<RoleRecord>) {
+    return await request<RoleRecord>(
+        "POST",
+        getAbsoluteUrl(`roles`, config.authApiUrl),
+        role
+    );
+}
+
+export async function updateRole(roleId: string, role: Partial<RoleRecord>) {
+    return await request<RoleRecord>(
+        "PUT",
+        getAbsoluteUrl(
+            `roles/${encodeURIComponent(roleId)}`,
+            config.authApiUrl
+        ),
+        role
+    );
+}
+
+export async function deleteRole(roleId: string) {
+    await request(
+        "DELETE",
+        getAbsoluteUrl(`roles/${encodeURIComponent(roleId)}`, config.authApiUrl)
+    );
+}
+
 export async function whoami() {
     return await request<User>(
         "GET",

@@ -1,6 +1,7 @@
-import React, { FunctionComponent, useState, useCallback } from "react";
+import React, { FunctionComponent, useState, useCallback, useRef } from "react";
 import { useAsync } from "react-async-hook";
 import Table from "rsuite/Table";
+import Button from "rsuite/Button";
 import Pagination from "rsuite/Pagination";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
@@ -9,7 +10,8 @@ import {
     MdSearch,
     MdBorderColor,
     MdDeleteForever,
-    MdAssignmentReturned
+    MdAssignmentReturned,
+    MdAddCircle
 } from "react-icons/md";
 import { GiKeyring } from "react-icons/gi";
 import UserNameLabel from "../UserNameLabel";
@@ -18,13 +20,17 @@ import {
     QueryRolesParams,
     queryRolesCount,
     RoleRecord,
-    deleteUserRoles
+    deleteUserRoles,
+    deleteRole
 } from "../../api-clients/AuthApis";
 import "./RolesDataGrid.scss";
 import reportError from "./reportError";
 import AssignUserRoleButton from "./AssignUserRoleButton";
 import { useParams, Link } from "react-router-dom";
 import ConfirmDialog from "./ConfirmDialog";
+import RoleFormPopUp, {
+    RefType as RoleFormPopUpRefType
+} from "./RoleFormPopUp";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -49,6 +55,8 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
 
     //change this value to force the role data to be reloaded
     const [dataReloadToken, setDataReloadToken] = useState<string>("");
+
+    const roleFormRef = useRef<RoleFormPopUpRefType>(null);
 
     const { result, loading: isLoading } = useAsync(
         async (
@@ -113,6 +121,26 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
         [userId]
     );
 
+    const deleteRoleHandler = useCallback(
+        (roleId: string, roleName: string) => {
+            ConfirmDialog.open({
+                confirmMsg: `Please confirm the deletion of role "${roleName}"?`,
+                confirmHandler: async () => {
+                    try {
+                        if (!roleId) {
+                            throw new Error("Invalid empty role id!");
+                        }
+                        await deleteRole(roleId);
+                        setDataReloadToken(`${Math.random()}`);
+                    } catch (e) {
+                        reportError(`Failed to delete the role: ${e}`);
+                    }
+                }
+            });
+        },
+        []
+    );
+
     return (
         <div className="roles-data-grid">
             <div className="search-button-container">
@@ -124,7 +152,19 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                                 setDataReloadToken(`${Math.random()}`)
                             }
                         />
-                    ) : null}
+                    ) : (
+                        <Button
+                            color="blue"
+                            appearance="primary"
+                            onClick={() =>
+                                roleFormRef?.current?.open(undefined, () => {
+                                    setDataReloadToken(`${Math.random()}`);
+                                })
+                            }
+                        >
+                            <MdAddCircle /> Create Role
+                        </Button>
+                    )}
                 </div>
                 <div className="search-button-inner-wrapper">
                     <InputGroup size="md" inside>
@@ -146,7 +186,7 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                     </InputGroup>
                 </div>
             </div>
-
+            <RoleFormPopUp ref={roleFormRef} />
             <div>
                 <Table
                     height={420}
@@ -164,7 +204,7 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                         <Cell dataKey="name" />
                     </Column>
 
-                    <Column width={150} resizable>
+                    <Column width={150} flexGrow={1}>
                         <HeaderCell>Description</HeaderCell>
                         <Cell dataKey="description" />
                     </Column>
@@ -265,8 +305,12 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                                                     aria-label="Edit Role"
                                                     icon={<MdBorderColor />}
                                                     onClick={() =>
-                                                        reportError(
-                                                            "This function is under development."
+                                                        roleFormRef?.current?.open(
+                                                            roleId,
+                                                            () =>
+                                                                setDataReloadToken(
+                                                                    `${Math.random()}`
+                                                                )
                                                         )
                                                     }
                                                 />{" "}
@@ -276,8 +320,9 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                                                     aria-label="Delete Role"
                                                     icon={<MdDeleteForever />}
                                                     onClick={() =>
-                                                        reportError(
-                                                            "This function is under development."
+                                                        deleteRoleHandler(
+                                                            roleId,
+                                                            roleName
                                                         )
                                                     }
                                                 />
