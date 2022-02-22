@@ -1,10 +1,11 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import Database from "../Database";
 import respondWithError from "../respondWithError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import { requireObjectPermission } from "../recordAuthMiddlewares";
 import {
     withAuthDecision,
+    requireUnconditionalAuthDecision,
     getUserId
 } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
@@ -414,8 +415,6 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                             "org_unit_ownership_constraint",
                             "pre_authorised_constraint",
                             "description",
-                            "create_by",
-                            "owner_id",
                             "edit_by",
                             "edit_time"
                         ]
@@ -580,6 +579,107 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         createFetchRolesHandler(true, "GET role records count")
     );
 
+    // create role record
+    router.post(
+        "/",
+        getUserId,
+        (req: Request, res: Response, next: NextFunction) => {
+            requireUnconditionalAuthDecision(authDecisionClient, {
+                operationUri: "authObject/role/create",
+                input: {
+                    authObject: {
+                        role: req.body
+                    }
+                }
+            })(req, res, next);
+        },
+        async function (req: Request, res: Response) {
+            try {
+                const role = req?.body;
+                role.name = role?.name?.trim();
+                if (!role.name) {
+                    throw new ServerError("Role name cannot be empty!", 400);
+                }
+                if (res?.locals?.userId) {
+                    role.create_by = res.locals.userId;
+                    role.owner_id = res.locals.userId;
+                    role.edit_by = res.locals.userId;
+                }
+                const newRole = await createTableRecord(
+                    database.getPool(),
+                    "roles",
+                    role,
+                    ["name", "description", "create_by", "owner_id", "edit_by"]
+                );
+                res.json(newRole);
+            } catch (e) {
+                respondWithError("POST /roles", res, e);
+            }
+        }
+    );
+
+    // update role record
+    router.put(
+        "/:roleId",
+        getUserId,
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/role/update",
+            (req, res) => req.params.roleId,
+            "role"
+        ),
+        async function (req: Request, res: Response) {
+            try {
+                const roleId = req?.params?.roleId?.trim();
+                const role = {
+                    ...req.body
+                };
+
+                role.name = role?.name?.trim();
+
+                if (!roleId) {
+                    throw new ServerError("Role ID cannot be empty!", 400);
+                }
+                if (!role.name) {
+                    throw new ServerError("Role name cannot be empty!", 400);
+                }
+
+                const roleRecord = await getTableRecord(
+                    database.getPool(),
+                    "roles",
+                    roleId
+                );
+                if (!roleRecord) {
+                    throw new ServerError(
+                        "Cannot locate role record by ID: " + roleId,
+                        400
+                    );
+                }
+
+                role["edit_time"] = sqls` CURRENT_TIMESTAMP `;
+                if (res?.locals?.userId) {
+                    role.edit_by = res.locals.userId;
+                } else {
+                    role.edit_by = sqls` NULL `;
+                }
+
+                const newRole = await updateTableRecord(
+                    database.getPool(),
+                    "roles",
+                    roleId,
+                    role,
+                    ["name", "description", "edit_by", "edit_time"]
+                );
+
+                res.json(newRole);
+            } catch (e) {
+                respondWithError("POST /roles", res, e);
+            }
+        }
+    );
+
+    // get role by id
     router.get(
         "/:roleId",
         withAuthDecision(authDecisionClient, {
@@ -613,6 +713,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         }
     );
 
+    // delete role record ( and any permission (not owned by other roles) belongs to it)
     router.delete(
         "/:roleId",
         requireObjectPermission(
