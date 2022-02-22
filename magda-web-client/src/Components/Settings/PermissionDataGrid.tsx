@@ -284,8 +284,9 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
                                             aria-label="Delete Permission"
                                             icon={<MdDeleteForever />}
                                             onClick={() =>
-                                                reportError(
-                                                    "This function is under development."
+                                                removePermissionFromRole(
+                                                    permissionId,
+                                                    permissionName
                                                 )
                                             }
                                         />
