@@ -24,8 +24,11 @@ import AuthDecision, {
 import SQLSyntax, { sqls } from "sql-syntax";
 import {
     parseIntParam,
-    MAX_PAGE_RECORD_NUMBER
+    MAX_PAGE_RECORD_NUMBER,
+    getTableRecord
 } from "magda-typescript-common/src/SQLUtils";
+import ServerError from "magda-typescript-common/src/ServerError";
+import { SYSTEM_ROLES } from "magda-typescript-common/src/authorization-api/constants";
 
 export interface DatabaseOptions {
     dbHost: string;
@@ -597,5 +600,136 @@ export default class Database {
             )})`,
             [userId, ...roleIdToBeDeleted]
         );
+    }
+
+    async deleteRolePermission(roleId?: string, permissionId?: string) {
+        roleId = roleId?.trim();
+        if (!roleId) {
+            throw new ServerError("Invalid empty role id supplied.", 400);
+        }
+        permissionId = permissionId?.trim();
+        if (!permissionId) {
+            throw new ServerError("Invalid empty permission id supplied.", 400);
+        }
+
+        const pool = this.pool;
+
+        const role = await getTableRecord(pool, "roles", roleId);
+        if (!role) {
+            throw new ServerError(
+                "Cannot locate role record by ID: " + roleId,
+                400
+            );
+        }
+        const permission = await getTableRecord(pool, "permissions", roleId);
+        if (!permission) {
+            throw new ServerError(
+                "Cannot locate permission record by ID: " + permissionId,
+                400
+            );
+        }
+        const result = await pool.query(
+            ...sqls`SELECT 1 FROM role_permissions WHERE role_id != ${roleId} AND permission_id = ${permissionId}`.toQuery()
+        );
+        await pool.query(
+            ...sqls`DELETE FROM role_permissions WHERE role_id = ${roleId} AND permission_id = ${permissionId}`.toQuery()
+        );
+        if (!result?.rows?.length) {
+            // the permission has not assigned to other roles
+            // we will delete the permission record as well
+            const client = await pool.connect();
+            try {
+                await client.query("BEGIN");
+
+                await client.query(
+                    ...sqls`DELETE FROM permission_operations WHERE permission_id = ${permissionId}`.toQuery()
+                );
+                await client.query(
+                    ...sqls`DELETE FROM permissions WHERE id = ${permissionId} LIMIT 1`.toQuery()
+                );
+
+                await client.query("COMMIT");
+            } catch (e) {
+                await client.query("ROLLBACK");
+                throw e;
+            } finally {
+                client.release();
+            }
+        }
+    }
+
+    async deleteRole(roleId?: string) {
+        roleId = roleId?.trim();
+        if (!roleId) {
+            throw new ServerError("Invalid empty role id supplied.", 400);
+        }
+
+        if (SYSTEM_ROLES.indexOf(roleId) !== -1) {
+            throw new ServerError(
+                `Cannot delete a system role: ${roleId}`,
+                400
+            );
+        }
+
+        const pool = this.pool;
+        const role = await getTableRecord(pool, "roles", roleId);
+        if (!role) {
+            throw new ServerError(
+                "Cannot locate role record by ID: " + roleId,
+                404
+            );
+        }
+        const userRolesResult = await pool.query(
+            ...sqls`SELECT 1 FROM user_roles WHERE role_id = ${roleId} LIMIT 1`.toQuery()
+        );
+        if (userRolesResult?.rows?.length) {
+            throw new ServerError(
+                "Please remove the role from all users and try again",
+                400
+            );
+        }
+
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+
+            await client.query(
+                ...sqls`DELETE FROM user_roles WHERE role_id = ${roleId}`.toQuery()
+            );
+            // delete all permission / operation relationship that not belong to other roles
+            await client.query(
+                ...sqls`DELETE FROM permission_operations WHERE permission_id IN (
+                            SELECT rp1.permission_id FROM role_permissions rp1 
+                            WHERE rp1.permission_id IN (
+                                SELECT rp2.permission_id FROM role_permissions rp2 WHERE rp2.role_id = ${roleId}
+                            ) AND NOT EXISTS (
+                                SELECT 1 FROM role_permissions rp3 WHERE rp1.permission_id = rp3.permission_id AND rp3.role_id != ${roleId}
+                            )
+                        )`.toQuery()
+            );
+
+            // delete all permissions that not belong to other roles
+            await client.query(
+                ...sqls`DELETE FROM permissions WHERE id IN (
+                            SELECT rp1.permission_id FROM role_permissions rp1 
+                            WHERE rp1.permission_id IN (
+                                SELECT rp2.permission_id FROM role_permissions rp2 WHERE rp2.role_id = ${roleId}
+                            ) AND NOT EXISTS (
+                                SELECT 1 FROM role_permissions rp3 WHERE rp1.permission_id = rp3.permission_id AND rp3.role_id != ${roleId}
+                            )
+                        )`.toQuery()
+            );
+
+            await client.query(
+                ...sqls`DELETE FROM roles WHERE id = ${roleId} LIMIT 1`.toQuery()
+            );
+
+            await client.query("COMMIT");
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
     }
 }

@@ -3,7 +3,7 @@ import pg from "pg";
 import AuthDecision, { UnconditionalTrueDecision } from "./opa/AuthDecision";
 import { AspectQueryToSqlConfig } from "./opa/AspectQuery";
 import { camelCase, difference } from "lodash";
-import ServerError from "magda-typescript-common/src/ServerError";
+import ServerError from "./ServerError";
 
 type PossibleObjectKind = "object" | "authObject";
 

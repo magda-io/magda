@@ -473,60 +473,10 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         ),
         async function (req, res) {
             try {
-                const roleId = req?.params?.roleId;
-                const permissionId = req?.params?.permissionId;
-                if (!roleId?.trim()) {
-                    throw new Error("Invalid empty role id supplied.");
-                }
-                if (!permissionId?.trim()) {
-                    throw new Error("Invalid empty permission id supplied.");
-                }
-
-                const pool = database.getPool();
-                const role = await getTableRecord(pool, "roles", roleId);
-                if (!role) {
-                    throw new Error(
-                        "Cannot locate role record by ID: " + roleId
-                    );
-                }
-                const permission = await getTableRecord(
-                    pool,
-                    "permissions",
-                    roleId
+                await database.deleteRolePermission(
+                    req?.params?.roleId,
+                    req?.params?.permissionId
                 );
-                if (!permission) {
-                    throw new Error(
-                        "Cannot locate permission record by ID: " + permissionId
-                    );
-                }
-                const result = await pool.query(
-                    ...sqls`SELECT id FROM role_permissions WHERE role_id != ${roleId} AND permission_id = ${permissionId}`.toQuery()
-                );
-                await pool.query(
-                    ...sqls`DELETE FROM role_permissions WHERE role_id = ${roleId} AND permission_id = ${permissionId} LIMIT 1`.toQuery()
-                );
-                if (!result?.rows?.length) {
-                    // the permission has not assigned to other roles
-                    // we will delete the permission record as well
-                    const client = await pool.connect();
-                    try {
-                        await client.query("BEGIN");
-
-                        await client.query(
-                            ...sqls`DELETE FROM permission_operations WHERE permission_id = ${permissionId}`.toQuery()
-                        );
-                        await client.query(
-                            ...sqls`DELETE FROM permissions WHERE id = ${permissionId} LIMIT 1`.toQuery()
-                        );
-
-                        await client.query("COMMIT");
-                    } catch (e) {
-                        await client.query("ROLLBACK");
-                        throw e;
-                    } finally {
-                        client.release();
-                    }
-                }
                 res.json({ result: true });
             } catch (e) {
                 respondWithError(
@@ -659,6 +609,25 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                 res.json(record);
             } catch (e) {
                 respondWithError("GET /roles/:roleId", res, e);
+            }
+        }
+    );
+
+    router.delete(
+        "/:roleId",
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/role/delete",
+            (req, res) => req?.params?.roleId,
+            "role"
+        ),
+        async function (req, res) {
+            try {
+                await database.deleteRole(req?.params?.roleId);
+                res.json({ result: true });
+            } catch (e) {
+                respondWithError("Delete a role" + req?.params?.roleId, res, e);
             }
         }
     );
