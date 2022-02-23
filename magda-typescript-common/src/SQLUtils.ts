@@ -231,7 +231,7 @@ export async function searchTableRecord<T = any>(
 
     let limit = parseIntParam(queryConfig?.limit);
     const offset = parseIntParam(queryConfig?.offset);
-    if (!limit || limit > MAX_PAGE_RECORD_NUMBER) {
+    if (limit > MAX_PAGE_RECORD_NUMBER) {
         limit = MAX_PAGE_RECORD_NUMBER;
     }
 

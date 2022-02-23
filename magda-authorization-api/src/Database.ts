@@ -221,10 +221,10 @@ export default class Database {
             prefixes: ["input.authObject.role"],
             tableRef: "r"
         });
-        const limit = parseIntParam(queryConfig?.limit);
-        let offset = parseIntParam(queryConfig?.offset);
-        if (!offset || offset > MAX_PAGE_RECORD_NUMBER) {
-            offset = MAX_PAGE_RECORD_NUMBER;
+        let limit = parseIntParam(queryConfig?.limit);
+        const offset = parseIntParam(queryConfig?.offset);
+        if (limit > MAX_PAGE_RECORD_NUMBER) {
+            limit = MAX_PAGE_RECORD_NUMBER;
         }
         const conditions = queryConfig?.conditions?.length
             ? queryConfig.conditions
