@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useRef } from "react";
 import { withRouter, Link } from "react-router-dom";
 import { Location, History } from "history";
 import "./main.scss";
@@ -20,12 +20,15 @@ import {
     MdSearch,
     MdSwitchAccount,
     MdBorderColor,
-    MdDeleteForever
+    MdAccountTree
 } from "react-icons/md";
 import AccessVerification from "./AccessVerification";
 import IconButton from "rsuite/IconButton";
 import OrgUnitNameLabel from "../OrgUnitNameLabel";
 import reportError from "./reportError";
+import AssignUserOrgUnitFormPopUp, {
+    RefType as AssignUserOrgUnitFormPopUpRefType
+} from "./AssignUserOrgUnitFormPopUp";
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
@@ -47,8 +50,20 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
 
     const [searchInputText, setSearchInputText] = useState<string>("");
 
+    const assignUserOrgUnitFormRef = useRef<AssignUserOrgUnitFormPopUpRefType>(
+        null
+    );
+
+    //change this value to force the role data to be reloaded
+    const [dataReloadToken, setDataReloadToken] = useState<string>("");
+
     const { result, loading: isLoading } = useAsync(
-        async (keyword: string, offset: number, limit: number) => {
+        async (
+            keyword: string,
+            offset: number,
+            limit: number,
+            dataReloadToken: string
+        ) => {
             try {
                 const users = await queryUsers({
                     keyword: keyword.trim() ? keyword : undefined,
@@ -75,7 +90,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                 return [];
             }
         },
-        [keyword, offset, limit]
+        [keyword, offset, limit, dataReloadToken]
     );
 
     const [users, totalCount] = result ? result : [[], 0];
@@ -88,6 +103,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                     items={[{ to: "/settings/users", title: "Users" }]}
                 />
                 <AccessVerification operationUri="authObject/user/read" />
+                <AssignUserOrgUnitFormPopUp ref={assignUserOrgUnitFormRef} />
                 <div className="search-button-container">
                     <div className="search-button-inner-wrapper">
                         <InputGroup size="md" inside>
@@ -153,7 +169,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                             </Cell>
                         </Column>
                         <Column width={120} fixed="right">
-                            <HeaderCell>Action</HeaderCell>
+                            <HeaderCell align="center">Action</HeaderCell>
                             <Cell
                                 verticalAlign="middle"
                                 style={{ padding: "0px" }}
@@ -175,20 +191,24 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                             </Link>{" "}
                                             <IconButton
                                                 size="md"
-                                                title="Edit Role"
-                                                aria-label="Edit Role"
-                                                icon={<MdBorderColor />}
+                                                title="Assign User to Org Unit"
+                                                aria-label="Assign User to Org Unit"
+                                                icon={<MdAccountTree />}
                                                 onClick={() =>
-                                                    reportError(
-                                                        "This function is under development."
+                                                    assignUserOrgUnitFormRef?.current?.open(
+                                                        (rowData as any).id,
+                                                        () =>
+                                                            setDataReloadToken(
+                                                                `${Math.random()}`
+                                                            )
                                                     )
                                                 }
                                             />{" "}
                                             <IconButton
                                                 size="md"
-                                                title="Delete Role"
-                                                aria-label="Delete Role"
-                                                icon={<MdDeleteForever />}
+                                                title="Edit User"
+                                                aria-label="Edit User"
+                                                icon={<MdBorderColor />}
                                                 onClick={() =>
                                                     reportError(
                                                         "This function is under development."
