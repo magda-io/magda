@@ -8,8 +8,8 @@ type StateType = {
     isOpen: boolean;
     confirmMsg: string;
     headingText: string;
-    confirmHandler: () => void | Promise<undefined>;
-    cancelHandler: () => void;
+    confirmHandler: () => void | Promise<void>;
+    cancelHandler: () => void | Promise<void>;
     loadingText: string;
     isLoading: boolean;
 };
@@ -114,10 +114,10 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
                         Confirm
                     </Button>
                     <Button
-                        onClick={(e: SyntheticEvent) => {
+                        onClick={async (e: SyntheticEvent) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            this.state.cancelHandler();
+                            await this.state.cancelHandler();
                             this.setState({ isOpen: false });
                         }}
                     >

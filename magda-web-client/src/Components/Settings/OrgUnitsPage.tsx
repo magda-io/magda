@@ -20,6 +20,7 @@ import { toaster } from "rsuite";
 import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
 import Tree from "rsuite/Tree";
+import { DropData } from "rsuite/esm/Tree/Tree";
 import Dropdown from "rsuite/Dropdown";
 import { OrgUnit } from "reducers/userManagementReducer";
 import { ItemDataType } from "rsuite/esm/@types/common";
@@ -93,10 +94,17 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
     const viewDetailPopUpRef = useRef<ViewOrgUnitPopUpRefType>(null);
     const orgUnitFormRef = useRef<OrgUnitFormPopUpRefType>(null);
     //change this value to force the role data to be reloaded
+    // eslint-disable-next-line
     const [dataReloadToken, setDataReloadToken] = useState<string>("");
 
+    const [isDataLoading, setIsDataLoading] = useState<boolean>(false);
+
     const deleteNodeHandler = useCallback(
-        (nodeId: string, nodeName: string) => {
+        (nodeId: string, nodeName: string, isRoot: boolean) => {
+            if (isRoot) {
+                reportError("Cannot delete root node: " + nodeName);
+                return;
+            }
             ConfirmDialog.open({
                 confirmMsg: `Please confirm the deletion of org unit "${nodeName}"?
             Only this Org Unit will be deleted and all sub trees belong to it will be moved to its parent Org Unit.`,
@@ -105,19 +113,76 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                         if (!nodeId) {
                             throw new Error("Invalid empty org unit id!");
                         }
+                        const {
+                            node: currentNode,
+                            parentNode
+                        } = searchNodeById(nodeId, data);
+                        if (!parentNode) {
+                            throw new Error(
+                                "Cannot refresh in-memory data. Cannot locate parentNode of node:" +
+                                    nodeName
+                            );
+                        }
+                        if (!currentNode) {
+                            throw new Error(
+                                "Cannot refresh in-memory data. Cannot locate node:" +
+                                    nodeName
+                            );
+                        }
+                        let children: ItemType[];
+                        if (expandItemValues.indexOf(nodeId as any) !== -1) {
+                            // deleted node has already been expanded
+                            // save current children now
+                            children = currentNode?.children?.length
+                                ? currentNode.children
+                                : [];
+                        } else {
+                            // deleted node has not been expanded yet
+                            // retrieve children now
+                            // if we do it after the deletion, the server will respond [] as the node is deleted already.
+                            children = await getChildrenHandler(currentNode);
+                        }
+                        // delete the node now
                         await deleteNode(nodeId);
-                        setDataReloadToken(`${Math.random()}`);
+                        if (!parentNode?.children?.length) {
+                            parentNode.children = [];
+                        }
+                        parentNode.children = parentNode.children.filter(
+                            (item) => item.rawData.id !== nodeId
+                        );
+                        if (expandItemValues.indexOf(nodeId as any) !== -1) {
+                            // deleted node has already been expanded
+                            // remove it from setExpandItemValues as well
+                            setExpandItemValues((itemValues) =>
+                                itemValues.filter(
+                                    (item) => item !== (nodeId as any)
+                                )
+                            );
+                        }
+                        parentNode.children = [
+                            ...parentNode.children,
+                            ...children
+                        ];
+                        setData((data) => [...data]);
                     } catch (e) {
                         reportError(`Failed to delete the node: ${e}`);
                     }
                 }
             });
         },
-        []
+        // eslint-disable-next-line
+        [data, expandItemValues, getChildrenHandler]
     );
 
     const deleteSubTreeHandler = useCallback(
-        (nodeId: string, nodeName: string) => {
+        (nodeId: string, nodeName: string, isRoot: boolean) => {
+            if (isRoot) {
+                reportError(
+                    "Cannot delete sub tree that includes the root node: " +
+                        nodeName
+                );
+                return;
+            }
             ConfirmDialog.open({
                 confirmMsg: `Please confirm the deletion of org unit sub tree starting with org unit "${nodeName}"?
                 All org units nodes belongs to the sub tree will be deleted.`,
@@ -126,19 +191,38 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                         if (!nodeId) {
                             throw new Error("Invalid empty org unit id!");
                         }
+                        debugger;
+                        const {
+                            node: currentNode,
+                            parentNode
+                        } = searchNodeById(nodeId, data);
+                        if (!parentNode || !currentNode) {
+                            throw new Error(
+                                "Cannot refresh in-memory data. Cannot locate node or parentNode of node:" +
+                                    nodeName
+                            );
+                        }
                         await deleteSubTree(nodeId);
-                        setDataReloadToken(`${Math.random()}`);
+                        parentNode.children = parentNode?.children?.filter(
+                            (item) => item.rawData.id !== nodeId
+                        );
+                        setData((data) => [...data]);
+                        setExpandItemValues((itemValues) =>
+                            itemValues.filter(
+                                (item) => item !== (nodeId as any)
+                            )
+                        );
                     } catch (e) {
                         reportError(`Failed to delete the sub tree: ${e}`);
                     }
                 }
             });
         },
-        []
+        [data]
     );
 
     const createNodeLabel = useCallback(
-        (node: OrgUnit, isRoot?: boolean) => {
+        (node: OrgUnit, isRoot: boolean) => {
             return (
                 <Dropdown
                     title={<span className="node-title">{node.name}</span>}
@@ -186,6 +270,11 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                                         //setIsDataLoading(true);
                                         const nodes = await getChildrenHandler(
                                             parentNode
+                                        );
+                                        setExpandItemValues((itemValues) =>
+                                            itemValues.concat([
+                                                parentNode.rawData.id
+                                            ])
                                         );
                                         parentNode.children = nodes;
                                     }
@@ -254,7 +343,11 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                             <Dropdown.Item
                                 icon={<MdDeleteForever />}
                                 onClick={() =>
-                                    deleteNodeHandler(node.id, node.name)
+                                    deleteNodeHandler(
+                                        node.id,
+                                        node.name,
+                                        isRoot
+                                    )
                                 }
                             >
                                 <span className="node-dropdown-menu-item-text">
@@ -264,7 +357,11 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                             <Dropdown.Item
                                 icon={<MdDeleteForever />}
                                 onClick={() =>
-                                    deleteSubTreeHandler(node.id, node.name)
+                                    deleteSubTreeHandler(
+                                        node.id,
+                                        node.name,
+                                        isRoot
+                                    )
                                 }
                             >
                                 <span className="node-dropdown-menu-item-text">
@@ -280,6 +377,8 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
             data,
             deleteNodeHandler,
             deleteSubTreeHandler,
+            // eslint-disable-next-line
+            getChildrenHandler,
             expandItemValues,
             // eslint-disable-next-line
             nodeToTreeItem
@@ -330,8 +429,6 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
         [dataReloadToken]
     );
 
-    console.log(data);
-
     const getChildrenHandler = useCallback(
         async (activeNode) => {
             try {
@@ -352,6 +449,65 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
         [nodeToTreeItem]
     );
 
+    const onDropHandler = useCallback(
+        async (dragData: DropData<ItemType>, event) => {
+            try {
+                setIsDataLoading(true);
+                const {
+                    node: dragNode,
+                    parentNode: dragNodeParentNode
+                } = searchNodeById(dragData.dragNode.rawData.id, data);
+                const { node: dropNode } = searchNodeById(
+                    dragData.dropNode.rawData.id,
+                    data
+                );
+                if (!dragNodeParentNode || !dragNode || !dropNode) {
+                    debugger;
+                    throw new Error(
+                        "Cannot update in memory tree data after moving nodes. Cannot find drag node, drop node or drag node parent."
+                    );
+                }
+                // we need to save dropNode's children before the move
+                let dropNodeChildren: ItemType[];
+                if (
+                    expandItemValues.indexOf(dropNode?.rawData?.id as any) !==
+                    -1
+                ) {
+                    // dropNode has already been expanded
+                    dropNodeChildren = dropNode?.children?.length
+                        ? dropNode.children
+                        : [];
+                } else {
+                    // dropNode not yet expanded
+                    // we manually expand it
+                    dropNodeChildren = await getChildrenHandler(dropNode);
+                }
+                await moveSubTree(dragNode?.rawData?.id, dropNode?.rawData?.id);
+                // remove dragNode from its parent
+                dragNodeParentNode.children = dragNodeParentNode?.children?.filter(
+                    (item) => item.rawData.id !== dragNode?.rawData?.id
+                );
+
+                dropNode.children = dropNodeChildren.concat([dragNode]);
+                setData((data) => data.concat([]));
+                if (
+                    expandItemValues.indexOf(dropNode?.rawData?.id as any) ===
+                    -1
+                ) {
+                    // we need add drop node to the list as we've manually expanded it already
+                    setExpandItemValues((itemValues) =>
+                        itemValues.concat([dropNode?.rawData?.id])
+                    );
+                }
+                setIsDataLoading(false);
+            } catch (e) {
+                setIsDataLoading(false);
+                reportError(`Failed to move org unit: ${e}`);
+            }
+        },
+        [data, expandItemValues, getChildrenHandler]
+    );
+
     return (
         <div className="flex-main-container setting-page-main-container org-units-page">
             <SideNavigation />
@@ -360,6 +516,9 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                 <AccessVerification operationUri="authObject/orgUnit/read" />
                 <OrgUnitFormPopUp ref={orgUnitFormRef} />
                 <ViewOrgUnitPopUp ref={viewDetailPopUpRef} />
+                {isDataLoading ? (
+                    <Loader backdrop content="loading..." vertical />
+                ) : null}
                 {isUserRootNodeLoading ? (
                     <Loader content="Loading..." />
                 ) : !userRootNode ? (
@@ -375,26 +534,10 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                             setExpandItemValues(expandItemValues);
                             console.log("expandItemValues: ", expandItemValues);
                             console.log("activeNode: ", activeNode);
-                            console.log("concat: ", concat);
+                            console.log("data: ", data);
                         }}
                         getChildren={getChildrenHandler}
-                        onDrop={async (
-                            { dragNode, dropNode, createUpdateDataFunction },
-                            event
-                        ) => {
-                            try {
-                                await moveSubTree(
-                                    dragNode?.rawData?.id,
-                                    dropNode?.rawData?.id
-                                );
-                                setData(
-                                    createUpdateDataFunction(data) as any[]
-                                );
-                            } catch (e) {
-                                reportError(`Failed to move org unit: ${e}`);
-                                throw e;
-                            }
-                        }}
+                        onDrop={onDropHandler as any}
                     />
                 )}
             </div>
