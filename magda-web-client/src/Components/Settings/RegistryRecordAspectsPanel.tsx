@@ -92,7 +92,7 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
         recordAspectFormRef.current?.open(undefined, () => {
             setAspectReloadToken(`${Math.random()}`);
         });
-    }, [recordAspectFormRef.current]);
+    }, [recordAspectFormRef]);
 
     const refreshAspects = useCallback(
         () => setAspectReloadToken(`${Math.random()}`),

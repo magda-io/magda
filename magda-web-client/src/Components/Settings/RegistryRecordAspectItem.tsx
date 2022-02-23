@@ -76,7 +76,7 @@ const RegistryRecordAspectItem: FunctionComponent<PropsType> = (props) => {
                 setDataReloadToken(`${Math.random()}`);
             });
         },
-        [aspectId, recordAspectFormRef.current]
+        [aspectId, recordAspectFormRef]
     );
 
     return (
