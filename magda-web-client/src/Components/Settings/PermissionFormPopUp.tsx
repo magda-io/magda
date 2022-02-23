@@ -11,7 +11,7 @@ import Placeholder from "rsuite/Placeholder";
 import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
 import InputPicker from "rsuite/InputPicker";
-import PopOver from "rsuite/PopOver";
+import Popover from "rsuite/Popover";
 import Whisper from "rsuite/Whisper";
 import Input, { InputProps } from "rsuite/Input";
 import Checkbox from "rsuite/Checkbox";
@@ -75,7 +75,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaInputProps>(
 );
 
 const constraintTooltip = (
-    <PopOver style={{ width: "500px" }}>
+    <Popover style={{ width: "500px" }}>
         <p>
             You can set the contraint on the permission to limit the scope where
             the user is granted the permission to perform the specified
@@ -105,7 +105,7 @@ const constraintTooltip = (
             permission, the permission will grant users with access to the
             specified resource objects without any scope limit.
         </p>
-    </PopOver>
+    </Popover>
 );
 
 const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
