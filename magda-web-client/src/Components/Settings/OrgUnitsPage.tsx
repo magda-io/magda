@@ -42,6 +42,8 @@ import ConfirmDialog from "./ConfirmDialog";
 
 interface ItemType extends ItemDataType {
     rawData: OrgUnit;
+    isRootNode: boolean;
+    children?: ItemType[];
 }
 
 type PropsType = {
@@ -50,8 +52,44 @@ type PropsType = {
     match: match<{ userId: string }>;
 };
 
+/**
+ * search in the in-memory tree data structure by node id.
+ * Will return an object with refs to locate `node` & possible parent node.
+ * If can't find the node, it will return an empty object.
+ *
+ * @param {ItemType[]} data
+ * @param {string} nodeId
+ * @return {*}  {{ node?: ItemType; parentNode?: ItemType }}
+ */
+function searchNodeById(
+    nodeId: string,
+    data?: ItemType[],
+    parentNode?: ItemType
+): { node?: ItemType; parentNode?: ItemType } {
+    if (!data?.length) {
+        return {};
+    }
+    for (let i = 0; i < data.length; i++) {
+        const curNode = data[i];
+        if (curNode?.rawData?.id === nodeId) {
+            return {
+                node: curNode,
+                parentNode
+            };
+        }
+        const result = searchNodeById(nodeId, curNode?.children, curNode);
+        if (result?.node) {
+            return result;
+        }
+    }
+    return {};
+}
+
 const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
     const [data, setData] = useState<ItemType[]>([]);
+    const [expandItemValues, setExpandItemValues] = useState<ItemDataType[]>(
+        []
+    );
     const viewDetailPopUpRef = useRef<ViewOrgUnitPopUpRefType>(null);
     const orgUnitFormRef = useRef<OrgUnitFormPopUpRefType>(null);
     //change this value to force the role data to be reloaded
@@ -99,69 +137,169 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
         []
     );
 
-    function createNodeLabel(node: OrgUnit, isRoot?: boolean) {
-        return (
-            <Dropdown
-                title={<span className="node-title">{node.name}</span>}
-                icon={isRoot ? <MdFolderSpecial /> : <MdFolder />}
-            >
-                <Dropdown.Item
-                    icon={<MdCreateNewFolder />}
-                    onClick={() =>
-                        orgUnitFormRef?.current?.open(
-                            undefined,
-                            () => setDataReloadToken(`${Math.random()}`),
-                            node.id
-                        )
-                    }
+    const createNodeLabel = useCallback(
+        (node: OrgUnit, isRoot?: boolean) => {
+            return (
+                <Dropdown
+                    title={<span className="node-title">{node.name}</span>}
+                    icon={isRoot ? <MdFolderSpecial /> : <MdFolder />}
                 >
-                    <span className="node-dropdown-menu-item-text">New</span>
-                </Dropdown.Item>
-                <Dropdown.Item
-                    icon={<MdEditNote />}
-                    onClick={() =>
-                        orgUnitFormRef?.current?.open(node.id, () =>
-                            setDataReloadToken(`${Math.random()}`)
-                        )
-                    }
-                >
-                    <span className="node-dropdown-menu-item-text">Edit</span>
-                </Dropdown.Item>
-                <Dropdown.Item
-                    icon={<MdOutlinePageview />}
-                    onClick={() => viewDetailPopUpRef?.current?.open(node.id)}
-                >
-                    <span className="node-dropdown-menu-item-text">
-                        View Details
-                    </span>
-                </Dropdown.Item>
-                {isRoot ? null : (
-                    <>
-                        <Dropdown.Item
-                            icon={<MdDeleteForever />}
-                            onClick={() =>
-                                deleteNodeHandler(node.id, node.name)
-                            }
-                        >
-                            <span className="node-dropdown-menu-item-text">
-                                Delete
-                            </span>
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                            icon={<MdDeleteForever />}
-                            onClick={() =>
-                                deleteSubTreeHandler(node.id, node.name)
-                            }
-                        >
-                            <span className="node-dropdown-menu-item-text">
-                                Delete Sub Tree
-                            </span>
-                        </Dropdown.Item>
-                    </>
-                )}
-            </Dropdown>
-        );
-    }
+                    <Dropdown.Item
+                        icon={<MdCreateNewFolder />}
+                        onClick={() =>
+                            orgUnitFormRef?.current?.open(
+                                undefined,
+                                async (newNode, newNodeId, parentNodeId) => {
+                                    // when edit, newNodeId should be undefined
+                                    if (!parentNodeId) {
+                                        reportError(
+                                            "Cannot update in memory tree data after the new node creation: parentNodeId is undefined"
+                                        );
+                                        return;
+                                    }
+                                    const { node: parentNode } = searchNodeById(
+                                        parentNodeId,
+                                        data
+                                    );
+                                    if (!parentNode) {
+                                        reportError(
+                                            "Cannot update in memory tree data after the new node creation: cannot locate parent node with ID: " +
+                                                parentNodeId
+                                        );
+                                        return;
+                                    }
+                                    if (
+                                        expandItemValues.indexOf(
+                                            parentNode.rawData.id as any
+                                        ) !== -1
+                                    ) {
+                                        // parent node has been expanded
+                                        if (parentNode?.children?.length) {
+                                            parentNode.children = [];
+                                        }
+                                        parentNode.children = [
+                                            ...(parentNode.children as ItemType[]),
+                                            nodeToTreeItem(newNode)
+                                        ];
+                                    } else {
+                                        // parent node has been not been expanded yet
+                                        //setIsDataLoading(true);
+                                        const nodes = await getChildrenHandler(
+                                            parentNode
+                                        );
+                                        parentNode.children = nodes;
+                                    }
+                                    setData((data) => [...data]);
+                                },
+                                node.id
+                            )
+                        }
+                    >
+                        <span className="node-dropdown-menu-item-text">
+                            New
+                        </span>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                        icon={<MdEditNote />}
+                        onClick={() =>
+                            orgUnitFormRef?.current?.open(
+                                node.id,
+                                (newNode, newNodeId, parentNodeId) => {
+                                    // when edit, parentNodeId should be undefined
+                                    if (!newNodeId) {
+                                        reportError(
+                                            "Cannot update in memory tree data after the new node creation: newNodeId is undefined"
+                                        );
+                                        return;
+                                    }
+                                    const {
+                                        node: nodeCurrentData
+                                    } = searchNodeById(newNodeId, data);
+                                    if (!nodeCurrentData) {
+                                        reportError(
+                                            "Cannot update in memory tree data after the new node creation: cannot locate node with ID: " +
+                                                newNodeId
+                                        );
+                                        return;
+                                    }
+                                    nodeCurrentData.rawData = {
+                                        ...nodeCurrentData.rawData,
+                                        ...newNode
+                                    };
+                                    nodeCurrentData.label = createNodeLabel(
+                                        nodeCurrentData.rawData,
+                                        nodeCurrentData.isRootNode
+                                    );
+                                    setData((data) => [...data]);
+                                }
+                            )
+                        }
+                    >
+                        <span className="node-dropdown-menu-item-text">
+                            Edit
+                        </span>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                        icon={<MdOutlinePageview />}
+                        onClick={() =>
+                            viewDetailPopUpRef?.current?.open(node.id)
+                        }
+                    >
+                        <span className="node-dropdown-menu-item-text">
+                            View Details
+                        </span>
+                    </Dropdown.Item>
+                    {isRoot ? null : (
+                        <>
+                            <Dropdown.Item
+                                icon={<MdDeleteForever />}
+                                onClick={() =>
+                                    deleteNodeHandler(node.id, node.name)
+                                }
+                            >
+                                <span className="node-dropdown-menu-item-text">
+                                    Delete
+                                </span>
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                                icon={<MdDeleteForever />}
+                                onClick={() =>
+                                    deleteSubTreeHandler(node.id, node.name)
+                                }
+                            >
+                                <span className="node-dropdown-menu-item-text">
+                                    Delete Sub Tree
+                                </span>
+                            </Dropdown.Item>
+                        </>
+                    )}
+                </Dropdown>
+            );
+        },
+        [
+            data,
+            deleteNodeHandler,
+            deleteSubTreeHandler,
+            expandItemValues,
+            // eslint-disable-next-line
+            nodeToTreeItem
+        ]
+    );
+
+    const nodeToTreeItem = useCallback(
+        (node: OrgUnit, isRootNode?: boolean | number): ItemType => {
+            const isRootNodeVal =
+                typeof isRootNode === "boolean" ? isRootNode : false;
+            return {
+                label: createNodeLabel(node, isRootNodeVal),
+                value: node.id,
+                rawData: node,
+                isRootNode: isRootNodeVal,
+                children: []
+            } as ItemType;
+        },
+        [createNodeLabel]
+    );
 
     const { result: userRootNode, loading: isUserRootNodeLoading } = useAsync(
         async (dataReloadToken: string) => {
@@ -173,14 +311,7 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                 } else {
                     rootNode = await getRootNode(true);
                 }
-                setData([
-                    {
-                        label: createNodeLabel(rootNode, true),
-                        value: rootNode.id,
-                        rawData: rootNode,
-                        children: []
-                    }
-                ]);
+                setData([nodeToTreeItem(rootNode, true)]);
                 return rootNode;
             } catch (e) {
                 toaster.push(
@@ -197,6 +328,28 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
             }
         },
         [dataReloadToken]
+    );
+
+    console.log(data);
+
+    const getChildrenHandler = useCallback(
+        async (activeNode) => {
+            try {
+                const nodes = await getImmediateChildren(
+                    activeNode?.rawData?.id,
+                    true
+                );
+                if (!nodes?.length) {
+                    return [] as ItemType[];
+                } else {
+                    return nodes.map(nodeToTreeItem) as ItemType[];
+                }
+            } catch (e) {
+                reportError(`Failed to retrieve org unit data: ${e}`);
+                return [] as ItemType[];
+            }
+        },
+        [nodeToTreeItem]
     );
 
     return (
@@ -217,37 +370,14 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                     <Tree
                         draggable
                         data={data}
-                        style={{ width: 280 }}
-                        getChildren={async (activeNode) => {
-                            try {
-                                const nodes = await getImmediateChildren(
-                                    activeNode?.rawData?.id,
-                                    true
-                                );
-                                if (!nodes?.length) {
-                                    return [] as ItemType[];
-                                } else {
-                                    return nodes.map((node) => ({
-                                        label: createNodeLabel(node),
-                                        value: node.id,
-                                        rawData: node,
-                                        children: []
-                                    }));
-                                }
-                            } catch (e) {
-                                toaster.push(
-                                    <Notification
-                                        type={"error"}
-                                        closable={true}
-                                        header="Error"
-                                    >{`Failed to retrieve org unit data: ${e}`}</Notification>,
-                                    {
-                                        placement: "topEnd"
-                                    }
-                                );
-                                throw e;
-                            }
+                        expandItemValues={expandItemValues}
+                        onExpand={(expandItemValues, activeNode, concat) => {
+                            setExpandItemValues(expandItemValues);
+                            console.log("expandItemValues: ", expandItemValues);
+                            console.log("activeNode: ", activeNode);
+                            console.log("concat: ", concat);
                         }}
+                        getChildren={getChildrenHandler}
                         onDrop={async (
                             { dragNode, dropNode, createUpdateDataFunction },
                             event
@@ -261,16 +391,7 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                                     createUpdateDataFunction(data) as any[]
                                 );
                             } catch (e) {
-                                toaster.push(
-                                    <Notification
-                                        type={"error"}
-                                        closable={true}
-                                        header="Error"
-                                    >{`Failed to move org unit: ${e}`}</Notification>,
-                                    {
-                                        placement: "topEnd"
-                                    }
-                                );
+                                reportError(`Failed to move org unit: ${e}`);
                                 throw e;
                             }
                         }}

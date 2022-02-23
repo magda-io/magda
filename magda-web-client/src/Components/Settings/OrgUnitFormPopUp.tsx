@@ -27,7 +27,11 @@ const Paragraph = Placeholder.Paragraph;
 
 type PropsType = {};
 
-type SubmitCompleteHandlerType = (submittedOrgUnitId: string) => void;
+type SubmitCompleteHandlerType = (
+    orgUnitData: OrgUnit,
+    submittedOrgUnitId?: string,
+    parentNodeId?: string
+) => void | Promise<void>;
 
 export type RefType = {
     open: (
@@ -103,24 +107,27 @@ const OrgUnitFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                 description: orgUnit?.description ? orgUnit.description : ""
             };
 
-            if (!parentOrgUnitId) {
-                throw new Error("parentOrgUnitId cannot be empty!");
-            }
-
             if (isCreateForm) {
+                if (!parentOrgUnitId) {
+                    throw new Error("parentOrgUnitId cannot be empty!");
+                }
                 const newNode = await insertNode(parentOrgUnitId, orgUnitData);
                 setIsOpen(false);
                 if (typeof onCompleteRef.current === "function") {
-                    onCompleteRef.current(newNode.id);
+                    await onCompleteRef.current(
+                        newNode,
+                        undefined,
+                        parentOrgUnitId
+                    );
                 }
             } else {
                 if (!orgUnitId) {
                     throw new Error("orgUnitId cannot be empty!");
                 }
-                await updateNode(orgUnitId, orgUnitData);
+                const newNode = await updateNode(orgUnitId, orgUnitData);
                 setIsOpen(false);
                 if (typeof onCompleteRef.current === "function") {
-                    onCompleteRef.current(orgUnitId);
+                    await onCompleteRef.current(newNode, orgUnitId, undefined);
                 }
             }
         } catch (e) {
