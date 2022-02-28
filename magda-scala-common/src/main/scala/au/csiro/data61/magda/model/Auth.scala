@@ -238,7 +238,7 @@ object Auth {
       hasResidualRules: Boolean,
       result: Option[JsValue],
       residualRules: Option[List[ConciseRule]],
-      hasWarns: Boolean = false,
+      hasWarns: Option[Boolean] = Some(false),
       warns: Option[List[String]] = None,
       unknowns: Option[List[String]] = None
   ) {
@@ -275,10 +275,10 @@ object Auth {
   }
 
   val UnconditionalTrueDecision =
-    AuthDecision(false, Some(JsTrue), None, false, None, None)
+    AuthDecision(false, Some(JsTrue), None)
 
   val UnconditionalFalseDecision =
-    AuthDecision(false, Some(JsFalse), None, false, None, None)
+    AuthDecision(false, Some(JsFalse), None)
 
   trait AuthProtocols extends DefaultJsonProtocol {
     implicit val userFormat = jsonFormat2(User)

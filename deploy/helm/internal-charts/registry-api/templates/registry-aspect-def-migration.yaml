@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: registry-aspect-definition-migrator
+  labels:
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+spec:
+  backoffLimit: {{ .Values.aspectDefinitionMigrator.backoffLimit | default 6 }}
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: "registry-aspect-definition-migrator"
+    spec:
+      {{- $imageEnv := omit . "Values" }}
+      {{- $_ := set $imageEnv "Values" (omit .Values "image") }}
+      {{- $_ := set $imageEnv.Values "image" .Values.aspectDefinitionMigrator.image }}
+      restartPolicy: OnFailure
+      {{- include "magda.imagePullSecrets" $imageEnv | indent 6 }}
+      containers:
+      - name: registry-aspect-definition-migrator
+        image: {{ include "magda.image" $imageEnv | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" $imageEnv | quote }}
+        command: 
+          - "node"
+          - "/usr/src/app/component/dist/index.js"
+          - "--registryUrl"
+          - "http://registry-api/v0"
+        env: 
+        - name: USER_ID
+          value: {{ .Values.global.defaultAdminUserId }}
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret

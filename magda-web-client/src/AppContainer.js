@@ -33,7 +33,7 @@ class AppContainer extends React.Component {
         return (
             <MagdaDocumentTitle>
                 <div className="au-grid wrapper">
-                    <div>
+                    <div className="inner-wrapper">
                         <nav
                             className="au-skip-link"
                             aria-label="skip links navigation"
@@ -62,6 +62,26 @@ class AppContainer extends React.Component {
                                 ExternalFooterComponent ? (
                                     <ExternalFooterComponent
                                         noTopMargin={true}
+                                        footerMediumNavs={
+                                            this.props.footerMediumNavs
+                                        }
+                                        footerSmallNavs={
+                                            this.props.footerSmallNavs
+                                        }
+                                        footerCopyRightItems={
+                                            this.props.footerCopyRightItems
+                                        }
+                                    />
+                                ) : (
+                                    <Footer noTopMargin={true} />
+                                )
+                            }
+                        />
+                        <Route
+                            path="/settings(/)*(.)*"
+                            render={() =>
+                                ExternalFooterComponent ? (
+                                    <ExternalFooterComponent
                                         footerMediumNavs={
                                             this.props.footerMediumNavs
                                         }

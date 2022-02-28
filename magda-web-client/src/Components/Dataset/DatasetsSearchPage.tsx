@@ -1,6 +1,6 @@
 import "./DatasetsSearchPage.scss";
 import { connect } from "react-redux";
-import { Redirect } from "react-router-dom";
+import { Redirect, withRouter } from "react-router-dom";
 import defined from "helpers/defined";
 import Pagination from "Components/Common/Pagination";
 import Notification from "Components/Common/Notification";
@@ -17,7 +17,6 @@ import {
 import queryString from "query-string";
 import ProgressBar from "Components/Common/ProgressBar";
 import stripFiltersFromQuery from "./Search/stripFiltersFromQuery";
-import PropTypes from "prop-types";
 import { Location } from "history";
 
 type Props = {
@@ -26,10 +25,6 @@ type Props = {
 };
 
 class Search extends Component<Props & any> {
-    static contextTypes = {
-        router: PropTypes.object
-    };
-
     state: {
         searchText?: string;
     };
@@ -100,7 +95,7 @@ class Search extends Component<Props & any> {
      * eg: {'q': 'water'}
      */
     updateQuery(query) {
-        this.context.router.history.push({
+        this.props.history.push({
             pathname: this.props.location.pathname,
             search: queryString.stringify(
                 Object.assign(
@@ -297,4 +292,4 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Search);
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Search));

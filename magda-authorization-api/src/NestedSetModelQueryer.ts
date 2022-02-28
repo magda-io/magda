@@ -1,6 +1,11 @@
 import pg from "pg";
 import _ from "lodash";
 import { Maybe } from "tsmonad";
+import SQLSyntax, { sqls } from "sql-syntax";
+import { escapeIdentifier } from "magda-typescript-common/src/SQLUtils";
+import AuthDecision, {
+    UnconditionalTrueDecision
+} from "magda-typescript-common/src/opa/AuthDecision";
 const textTree = require("text-treeview");
 
 export interface NodeRecord {
@@ -117,12 +122,12 @@ class NestedSetModelQueryer {
     private selectFields(
         tableAliasOrName: string = "",
         fields: string[] = null
-    ) {
+    ): SQLSyntax {
         const fieldList = isNonEmptyArray(fields)
             ? fields
             : this.defaultSelectFieldList;
         if (!isNonEmptyArray(fieldList)) {
-            return "*";
+            return sqls`*`;
         }
         if (!isValidSqlIdentifier(tableAliasOrName)) {
             throw new Error(
@@ -131,18 +136,20 @@ class NestedSetModelQueryer {
         }
         // --- do not double quote `tableAliasOrName`
         // --- or you will get missing FROM-clause entry for table error
-        return fieldList
-            .map((f) => {
-                if (!isValidSqlIdentifier(f)) {
-                    throw new Error(
-                        `Field name ${f} contains invalid characters.`
-                    );
-                }
-                return tableAliasOrName === ""
-                    ? `"${f}"`
-                    : `${tableAliasOrName}."${f}"`;
-            })
-            .join(", ");
+        return SQLSyntax.createUnsafely(
+            fieldList
+                .map((f) => {
+                    if (!isValidSqlIdentifier(f)) {
+                        throw new Error(
+                            `Field name ${f} contains invalid characters.`
+                        );
+                    }
+                    return tableAliasOrName === ""
+                        ? `"${f}"`
+                        : `${tableAliasOrName}."${f}"`;
+                })
+                .join(", ")
+        );
     }
 
     /**
@@ -160,34 +167,23 @@ class NestedSetModelQueryer {
         fields: string[] = null,
         client: pg.Client = null
     ): Promise<NodeRecord[]> {
-        const getParamPlaceholder = (() => {
-            let currentPlaceholder = 1;
-
-            return () => currentPlaceholder++;
-        })();
-
         const clauses = [
-            nodesQuery.name && {
-                sql: `"name" = $${getParamPlaceholder()}`,
-                values: [nodesQuery.name]
-            },
-            nodesQuery.leafNodesOnly && {
-                sql: `"left" = ( "right" - 1 )`
-            }
-        ].filter((x) => !!x);
+            nodesQuery.name
+                ? sqls`"name" = ${nodesQuery.name}`
+                : SQLSyntax.empty,
+            nodesQuery.leafNodesOnly
+                ? sqls`"left" = ( "right" - 1 )`
+                : SQLSyntax.empty
+        ];
+        const whereClause = SQLSyntax.where(SQLSyntax.joinWithAnd(clauses));
 
-        const whereClause =
-            clauses.length > 0
-                ? `WHERE ${clauses.map(({ sql }) => sql).join(" AND ")}`
-                : "";
-
-        const query = `SELECT ${this.selectFields("", fields)} FROM "${
-            this.tableName
-        }" ${whereClause}`;
+        const query = sqls`SELECT ${this.selectFields(
+            "",
+            fields
+        )} FROM ${escapeIdentifier(this.tableName)} ${whereClause}`;
 
         const result = await (client ? client : this.pool).query(
-            query,
-            _.flatMap(clauses, ({ values }) => values || [])
+            ...query.toQuery()
         );
         if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
@@ -205,16 +201,22 @@ class NestedSetModelQueryer {
     async getNodeById(
         id: string,
         fields: string[] = null,
-        client: pg.Client = null
+        client: pg.Client = null,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<Maybe<NodeRecord>> {
-        const result = await (client
-            ? client
-            : this.pool
-        ).query(
-            `SELECT ${this.selectFields("", fields)} FROM "${
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"]
+        });
+        const result = await (client ? client : this.pool).query(
+            ...sqls`SELECT ${this.selectFields(
+                "",
+                fields
+            )} FROM ${escapeIdentifier(
                 this.tableName
-            }" WHERE "id" = $1`,
-            [id]
+            )} WHERE ${SQLSyntax.joinWithAnd([
+                sqls`"id" = ${id}`,
+                authConditions
+            ])}`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length)
             return Maybe.nothing();
@@ -232,12 +234,22 @@ class NestedSetModelQueryer {
      */
     async getRootNode(
         fields: string[] = null,
-        client: pg.Client = null
+        client: pg.Client = null,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<Maybe<NodeRecord>> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"]
+        });
         const result = await (client ? client : this.pool).query(
-            `SELECT ${this.selectFields("", fields)} FROM "${
+            ...sqls`SELECT ${this.selectFields(
+                "",
+                fields
+            )} FROM ${escapeIdentifier(
                 this.tableName
-            }" WHERE "left" = 1`
+            )} WHERE ${SQLSyntax.joinWithAnd([
+                sqls`"left" = 1`,
+                authConditions
+            ])}`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length)
             return Maybe.nothing();
@@ -260,19 +272,28 @@ class NestedSetModelQueryer {
         parentNodeId: string,
         includeMyself: boolean = false,
         fields: string[] = null,
-        client: pg.Client = null
+        client: pg.Client = null,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<NodeRecord[]> {
-        const tbl = this.tableName;
-
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"],
+            tableRef: "Children"
+        });
+        const tbl = escapeIdentifier(this.tableName);
+        const conditions = [
+            sqls`Children."left" ${
+                includeMyself ? sqls`>=` : sqls`>`
+            } Parents."left"`,
+            sqls`Children."left" ${
+                includeMyself ? sqls`<=` : sqls`<`
+            } Parents."right"`,
+            sqls`Parents."id" = ${parentNodeId}`,
+            authConditions
+        ];
         const result = await (client ? client : this.pool).query(
-            `SELECT ${this.selectFields("Children", fields)} 
-             FROM "${tbl}" AS Parents,  "${tbl}" AS Children
-             WHERE Children."left" ${
-                 includeMyself ? ">=" : ">"
-             } Parents."left" AND Children."left" ${
-                includeMyself ? "<=" : "<"
-            } Parents."right" AND Parents."id" = $1`,
-            [parentNodeId]
+            ...sqls`SELECT ${this.selectFields("Children", fields)} 
+             FROM ${tbl} AS Parents,  ${tbl} AS Children
+             WHERE ${SQLSyntax.joinWithAnd(conditions)}`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
@@ -294,18 +315,28 @@ class NestedSetModelQueryer {
         childNodeId: string,
         includeMyself: boolean = false,
         fields: string[] = null,
-        client: pg.Client = null
+        client: pg.Client = null,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<NodeRecord[]> {
-        const tbl = this.tableName;
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"],
+            tableRef: "Parents"
+        });
+        const tbl = escapeIdentifier(this.tableName);
+        const conditions = [
+            sqls`Children."left" ${
+                includeMyself ? sqls`>=` : sqls`>`
+            } Parents."left"`,
+            sqls`Children."left" ${
+                includeMyself ? sqls`<=` : sqls`<`
+            } Parents."right"`,
+            sqls`Children."id" = ${childNodeId}`,
+            authConditions
+        ];
         const result = await (client ? client : this.pool).query(
-            `SELECT ${this.selectFields("Parents", fields)} 
-             FROM "${tbl}" AS Parents,  "${tbl}" AS Children
-             WHERE Children."left" ${
-                 includeMyself ? ">=" : ">"
-             } Parents."left" AND Children."left" ${
-                includeMyself ? "<=" : "<"
-            } Parents."right" AND Children."id" = $1`,
-            [childNodeId]
+            ...sqls`SELECT ${this.selectFields("Parents", fields)} 
+             FROM ${tbl} AS Parents, ${tbl} AS Children
+             WHERE ${SQLSyntax.joinWithAnd(conditions)}`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
@@ -324,20 +355,29 @@ class NestedSetModelQueryer {
     async getImmediateChildren(
         parentNodeId: string,
         fields: string[] = null,
-        client: pg.Client = null
+        client: pg.Client = null,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<NodeRecord[]> {
-        const tbl = this.tableName;
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"],
+            tableRef: "Children"
+        });
+        const tbl = escapeIdentifier(this.tableName);
         const result = await (client ? client : this.pool).query(
-            `SELECT ${this.selectFields("Children", fields)} 
-            FROM "${tbl}" AS Parents, "${tbl}" AS Children
+            ...sqls`SELECT ${this.selectFields("Children", fields)} 
+            FROM ${tbl} AS Parents, ${tbl} AS Children
             WHERE Children."left" BETWEEN Parents."left" AND Parents."right" 
             AND Parents."left" = (
-                SELECT MAX(S."left") FROM "${tbl}" AS S
+                SELECT MAX(S."left") FROM ${tbl} AS S
                 WHERE S."left" < Children."left" AND S."right" > Children."right"
             ) 
-            AND Parents."id" = $1
-            ORDER BY Children."left" ASC`,
-            [parentNodeId]
+            AND Parents."id" = ${parentNodeId}
+            ${
+                authConditions.isEmpty
+                    ? SQLSyntax.empty
+                    : sqls` AND ${authConditions}`
+            }
+            ORDER BY Children."left" ASC`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
@@ -356,19 +396,28 @@ class NestedSetModelQueryer {
     async getImmediateParent(
         childNodeId: string,
         fields: string[] = null,
-        client: pg.Client = null
+        client: pg.Client = null,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<Maybe<NodeRecord>> {
-        const tbl = this.tableName;
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"],
+            tableRef: "Parents"
+        });
+        const tbl = escapeIdentifier(this.tableName);
         const result = await (client ? client : this.pool).query(
-            `SELECT ${this.selectFields("Parents", fields)} 
-            FROM "${tbl}" AS Parents, "${tbl}" AS Children
+            ...sqls`SELECT ${this.selectFields("Parents", fields)} 
+            FROM ${tbl} AS Parents, ${tbl} AS Children
             WHERE Children.left BETWEEN Parents.left AND Parents.right 
             AND Parents.left = (
-                SELECT MAX(S.left) FROM "${tbl}" AS S
+                SELECT MAX(S.left) FROM ${tbl} AS S
                 WHERE S.left < Children.left AND S.right > Children.right
             ) 
-            AND Children.id = $1`,
-            [childNodeId]
+            AND Children.id = ${childNodeId}
+            ${
+                authConditions.isEmpty
+                    ? SQLSyntax.empty
+                    : sqls` AND ${authConditions}`
+            }`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length)
             return Maybe.nothing();
@@ -385,15 +434,26 @@ class NestedSetModelQueryer {
      * @returns {Promise<NodeRecord[]>}
      * @memberof NestedSetModelQueryer
      */
-    async getAllNodesAtLevel(level: number): Promise<NodeRecord[]> {
-        const tbl = this.tableName;
+    async getAllNodesAtLevel(
+        level: number,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<NodeRecord[]> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"],
+            tableRef: "t2"
+        });
+        const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(
-            `SELECT ${this.selectFields("t2")}
-            FROM "${tbl}" AS t1, "${tbl}" AS t2
-            WHERE t2.left BETWEEN t1.left AND t1.right 
+            ...sqls`SELECT ${this.selectFields("t2")}
+            FROM ${tbl} AS t1, ${tbl} AS t2
+            WHERE t2.left BETWEEN t1.left AND t1.right
+            ${
+                authConditions.isEmpty
+                    ? SQLSyntax.empty
+                    : sqls` AND ${authConditions}`
+            }
             GROUP BY t2.id 
-            HAVING COUNT(t1.id) = $1`,
-            [level]
+            HAVING COUNT(t1.id) = ${level}`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
@@ -408,13 +468,24 @@ class NestedSetModelQueryer {
      * @throws NodeNotFoundError If the node can't be found in the tree
      * @memberof NestedSetModelQueryer
      */
-    async getLevelOfNode(nodeId: string): Promise<number> {
-        const tbl = this.tableName;
+    async getLevelOfNode(
+        nodeId: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<number> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"],
+            tableRef: "Parents"
+        });
+        const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(
-            `SELECT COUNT(Parents.id) AS level 
-            FROM "${tbl}" AS Parents, "${tbl}" AS Children
-            WHERE Children.left BETWEEN Parents.left AND Parents.right AND Children.id = $1`,
-            [nodeId]
+            ...sqls`SELECT COUNT(Parents.id) AS level 
+            FROM ${tbl} AS Parents, ${tbl} AS Children
+            WHERE Children.left BETWEEN Parents.left AND Parents.right AND Children.id = ${nodeId}
+            ${
+                authConditions.isEmpty
+                    ? SQLSyntax.empty
+                    : sqls` AND ${authConditions}`
+            }`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length)
             throw new NodeNotFoundError();
@@ -434,16 +505,27 @@ class NestedSetModelQueryer {
      * @throws NodeNotFoundError If the root node can't be found in the tree
      * @memberof NestedSetModelQueryer
      */
-    async getTreeHeight(): Promise<number> {
-        const tbl = this.tableName;
+    async getTreeHeight(
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<number> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"],
+            tableRef: "t1"
+        });
+        const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(
-            `SELECT MAX(level) AS height 
+            ...sqls`SELECT MAX(level) AS height 
              FROM(
                 SELECT COUNT(t1.id)
-                FROM "${tbl}" AS t1, "${tbl}" AS t2
+                FROM ${tbl} AS t1, ${tbl} AS t2
                 WHERE t2.left BETWEEN t1.left AND t1.right 
+                ${
+                    authConditions.isEmpty
+                        ? SQLSyntax.empty
+                        : sqls` AND ${authConditions}`
+                }
                 GROUP BY t2.id 
-             ) AS L(level)`
+             ) AS L(level)`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length)
             throw new NodeNotFoundError();
@@ -461,14 +543,23 @@ class NestedSetModelQueryer {
      * @memberof NestedSetModelQueryer
      */
     async getLeftMostImmediateChild(
-        parentNodeId: string
+        parentNodeId: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<Maybe<NodeRecord>> {
-        const tbl = this.tableName;
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"],
+            tableRef: "Children"
+        });
+        const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(
-            `SELECT ${this.selectFields("Children")}
-            FROM "${tbl}" AS Parents, "${tbl}" AS Children 
-            WHERE Children.left = Parents.left + 1 AND Parents.id = $1`,
-            [parentNodeId]
+            ...sqls`SELECT ${this.selectFields("Children")}
+            FROM ${tbl} AS Parents, ${tbl} AS Children 
+            WHERE Children.left = Parents.left + 1 AND Parents.id = ${parentNodeId}
+            ${
+                authConditions.isEmpty
+                    ? SQLSyntax.empty
+                    : sqls` AND ${authConditions}`
+            }`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length)
             return Maybe.nothing();
@@ -483,14 +574,23 @@ class NestedSetModelQueryer {
      * @memberof NestedSetModelQueryer
      */
     async getRightMostImmediateChild(
-        parentNodeId: string
+        parentNodeId: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<Maybe<NodeRecord>> {
-        const tbl = this.tableName;
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"],
+            tableRef: "Children"
+        });
+        const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(
-            `SELECT ${this.selectFields("Children")}
-            FROM "${tbl}" AS Parents, "${tbl}" AS Children 
-            WHERE Children.right = Parents.right - 1 AND Parents.id = $1`,
-            [parentNodeId]
+            ...sqls`SELECT ${this.selectFields("Children")}
+            FROM ${tbl} AS Parents, ${tbl} AS Children 
+            WHERE Children.right = Parents.right - 1 AND Parents.id = ${parentNodeId}
+            ${
+                authConditions.isEmpty
+                    ? SQLSyntax.empty
+                    : sqls` AND ${authConditions}`
+            }`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length)
             return Maybe.nothing();
@@ -510,17 +610,26 @@ class NestedSetModelQueryer {
      */
     async getTopDownPathBetween(
         higherNodeId: string,
-        lowerNodeId: string
+        lowerNodeId: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<Maybe<NodeRecord[]>> {
-        const tbl = this.tableName;
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"],
+            tableRef: "t2"
+        });
+        const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(
-            `SELECT ${this.selectFields("t2")}
-            FROM "${tbl}" AS t1, "${tbl}" AS t2, "${tbl}" AS t3 
-            WHERE t1.id = $1 AND t3.id = $2
+            ...sqls`SELECT ${this.selectFields("t2")}
+            FROM ${tbl} AS t1, ${tbl} AS t2, ${tbl} AS t3 
+            WHERE t1.id = ${higherNodeId} AND t3.id = ${lowerNodeId}
             AND t2.left BETWEEN t1.left AND t1.right 
             AND t3.left BETWEEN t2.left AND t2.right
-            ORDER BY (t2.right-t2.left) DESC`,
-            [higherNodeId, lowerNodeId]
+            ${
+                authConditions.isEmpty
+                    ? SQLSyntax.empty
+                    : sqls` AND ${authConditions}`
+            }
+            ORDER BY (t2.right-t2.left) DESC`.toQuery()
         );
         if (!result || !result.rows || !result.rows.length)
             return Maybe.nothing();

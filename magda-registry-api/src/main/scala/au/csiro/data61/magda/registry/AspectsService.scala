@@ -10,16 +10,13 @@ import au.csiro.data61.magda.directives.AuthDirectives.{
   requirePermission,
   requireUserId
 }
-import au.csiro.data61.magda.directives.TenantDirectives.{
-  requiresSpecifiedTenantId
-}
+import au.csiro.data61.magda.directives.TenantDirectives.requiresSpecifiedTenantId
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.registry.Directives.{
-  requireAspectUpdateOrCreateWhenNonExistPermission
-}
+import au.csiro.data61.magda.registry.Directives.requireAspectUpdateOrCreateWhenNonExistPermission
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
+import org.postgresql.util.PSQLException
 
 import javax.ws.rs.Path
 import scalikejdbc._
@@ -107,9 +104,26 @@ class AspectsService(
                   .create(aspect, tenantId, userId)(session) match {
                   case Success(result) =>
                     complete(result)
-                  case Failure(exception) =>
+                  case Failure(e: PSQLException) if e.getSQLState == "23505" =>
                     complete(
                       StatusCodes.BadRequest,
+                      ApiError(s"Duplicated aspect id supplied: ${aspect.id}")
+                    )
+                  case Failure(e: RuntimeException) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(e.getMessage)
+                    )
+                  case Failure(e: PSQLException) if e.getSQLState == "22001" =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(
+                        s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+                      )
+                    )
+                  case Failure(exception) =>
+                    complete(
+                      StatusCodes.InternalServerError,
                       ApiError(exception.getMessage)
                     )
                 }
@@ -207,9 +221,28 @@ class AspectsService(
                   ) match {
                     case Success(result) =>
                       complete(result)
-                    case Failure(exception) =>
+                    case Failure(e: PSQLException)
+                        if e.getSQLState == "23505" =>
                       complete(
                         StatusCodes.BadRequest,
+                        ApiError(s"Duplicated aspect id supplied: ${id}")
+                      )
+                    case Failure(e: PSQLException)
+                        if e.getSQLState == "22001" =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(
+                          s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+                        )
+                      )
+                    case Failure(e: RuntimeException) =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(e.getMessage)
+                      )
+                    case Failure(exception) =>
+                      complete(
+                        StatusCodes.InternalServerError,
                         ApiError(exception.getMessage)
                       )
                   }
@@ -306,9 +339,21 @@ class AspectsService(
                   .patchById(id, aspectPatch, tenantId, userId)(session) match {
                   case Success(result) =>
                     complete(result)
-                  case Failure(exception) =>
+                  case Failure(e: PSQLException) if e.getSQLState == "22001" =>
                     complete(
                       StatusCodes.BadRequest,
+                      ApiError(
+                        s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+                      )
+                    )
+                  case Failure(e: RuntimeException) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(e.getMessage)
+                    )
+                  case Failure(exception) =>
+                    complete(
+                      StatusCodes.InternalServerError,
                       ApiError(exception.getMessage)
                     )
                 }

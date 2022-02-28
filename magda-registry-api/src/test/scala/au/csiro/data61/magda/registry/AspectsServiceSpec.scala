@@ -105,7 +105,9 @@ class AspectsServiceSpec extends ApiSpec {
               TENANT_1
             ) ~> param.api(role).routes ~> check {
               status shouldEqual StatusCodes.BadRequest
-              responseAs[ApiError].message should include("already exists")
+              responseAs[ApiError].message should include(
+                "Duplicated aspect id supplied"
+              )
             }
           }
       }

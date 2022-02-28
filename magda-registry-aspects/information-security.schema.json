@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "Metadata about information security",
+    "title": "Information Security Aspect",
+    "description": "Metadata about information security",
     "type": "object",
     "properties": {
         "classification": {

@@ -6,6 +6,7 @@ import { ValidationFieldList } from "./Components/Dataset/Add/ValidationManager"
 import urijs from "urijs";
 import removePathPrefix from "helpers/removePathPrefix";
 import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
+import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient";
 
 export const ADMIN_ROLE_ID = ADMIN_USERS_ROLE_ID;
 
@@ -214,6 +215,8 @@ const credentialsFetchOptions: RequestInit = !isBackendSameOrigin
     : {
           credentials: "same-origin"
       };
+
+AuthDecisionQueryClient.fetchOptions = { ...credentialsFetchOptions };
 
 const contentApiURL =
     serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";

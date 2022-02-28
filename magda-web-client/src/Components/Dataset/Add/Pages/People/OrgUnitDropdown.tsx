@@ -31,7 +31,7 @@ const getOrgUnitName = async (id?: string) => {
 };
 
 const orgUnitsToOptionItems = (orgUnits: OrgUnitWithRelationship[]) =>
-    orgUnits.map(option => ({
+    orgUnits.map((option) => ({
         label: option.name,
         value: option.id
     }));
@@ -43,7 +43,7 @@ export default function OrgUnitDropdown({
 }: Props) {
     const { loading, error, result, execute } = useAsync(async () => {
         const orgUnits = await listOrgUnits({
-            orgUnitsOnly: true,
+            leafNodesOnly: true,
             relationshipOrgUnitId: custodianOrgUnitId
         });
         const custodianName = await getOrgUnitName(custodianOrgUnitId);
@@ -70,7 +70,7 @@ export default function OrgUnitDropdown({
     } else {
         const selectedValue =
             typeof orgUnitId !== "undefined" &&
-            find(result.orgUnits, option => option.id === orgUnitId);
+            find(result.orgUnits, (option) => option.id === orgUnitId);
 
         // --- default to list options alphabetically
         const sortedResult = result.orgUnits.sort((b, a) =>
@@ -87,7 +87,7 @@ export default function OrgUnitDropdown({
                         : result.custodianName;
                 const groups = partition(
                     sortedResult,
-                    item => item.relationship !== "unrelated"
+                    (item) => item.relationship !== "unrelated"
                 ).map((items, key) => ({
                     label: `Teams ${
                         key ? "outside" : "in"

@@ -1,4 +1,12 @@
+.other-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
 .app-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
     &.loading {
         // page height - header height
         min-height: calc(100vh - 112px);

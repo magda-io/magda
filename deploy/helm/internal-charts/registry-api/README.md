@@ -12,6 +12,9 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| aspectDefinitionMigrator.backoffLimit | int | `6` |  |
+| aspectDefinitionMigrator.enabled | bool | `true` |  |
+| aspectDefinitionMigrator.image.name | string | `"magda-migrator-registry-aspects"` |  |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |

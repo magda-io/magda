@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import ContentAdminPage from "Components/Admin/ContentAdminPage";
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
-import { withRouter } from "react-router";
+import { withRouter } from "react-router-dom";
 
 import { readContent, updateContent } from "actions/contentActions";
 

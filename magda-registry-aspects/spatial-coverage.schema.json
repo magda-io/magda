@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "Spatial extent defined (will try to confom as much to) in geojson.",
+    "title": "Spatial Coverage Aspect",
+    "description": "Spatial extent defined (will try to confom as much to) in geojson.",
     "type": "object",
     "properties": {
         "bbox": {

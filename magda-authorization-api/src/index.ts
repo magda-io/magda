@@ -1,10 +1,13 @@
 import express from "express";
 import yargs from "yargs";
+import "@magda/typescript-common/dist/pgTypes";
 
 import createApiRouter from "./createApiRouter";
 import createOpaRouter from "./createOpaRouter";
 import Database from "./Database";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import SQLSyntax from "sql-syntax";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -40,6 +43,17 @@ const argv = addJwtSecretFromEnvVar(
             describe: "The shared secret for intra-network communication",
             type: "string"
         })
+        .option("debug", {
+            describe: "When set to true, print verbose auth debug info to log.",
+            type: "boolean",
+            default: process.env.DEBUG == "true" ? true : false
+        })
+        .option("skipAuth", {
+            describe:
+                "When set to true, API will not query policy engine for auth decision but assume it's always permitted. It's for debugging only.",
+            type: "boolean",
+            default: process.env.SKIP_AUTH == "true" ? true : false
+        })
         .option("tenantId", {
             describe: "The tenant id for intra-network communication",
             type: "number",
@@ -56,6 +70,26 @@ const database = new Database({
     dbPort: argv.dbPort
 });
 
+const authDecisionQueryEndpoint =
+    argv.listenPort == 80
+        ? "http://localhost/v0"
+        : `http://localhost:${argv.listenPort}/v0`;
+const skipAuth = argv.skipAuth === true ? true : false;
+
+const authDecisionClient = new AuthDecisionQueryClient(
+    authDecisionQueryEndpoint,
+    skipAuth
+);
+
+console.log("Created Auth Decision Query Client: ");
+console.log(`Endpint: ${authDecisionQueryEndpoint}`);
+console.log(`SkipAuth: ${skipAuth}`);
+
+if (argv.debug === true) {
+    SQLSyntax.isDebugMode = true;
+    console.log("Debug mode has been turned on.");
+}
+
 app.use(
     "/v0",
     createApiRouter({
@@ -63,18 +97,24 @@ app.use(
         registryApiUrl: argv.registryApiUrl,
         opaUrl: argv.opaUrl,
         database,
-        tenantId: argv.tenantId
+        tenantId: argv.tenantId,
+        authDecisionClient: authDecisionClient
     })
 );
 
-app.use(
-    "/v0/opa",
-    createOpaRouter({
-        opaUrl: argv.opaUrl,
-        jwtSecret: argv.jwtSecret,
-        database
-    })
-);
+const opaRouter = createOpaRouter({
+    opaUrl: argv.opaUrl,
+    jwtSecret: argv.jwtSecret,
+    database,
+    debug: argv.debug
+});
+
+// make sure OPA is accessible in a consistent way within cluster or outside cluster.
+// i.e. authApiBaseUrl/opa
+// here `authApiBaseUrl` can be a within cluster access url: e.g. http://authorization-api/v0/
+// or an outside cluster url:  e.g. https://my-magda-domain/api/v0/auth/
+app.use("/v0/public/opa", opaRouter);
+app.use("/v0/opa", opaRouter);
 
 app.listen(argv.listenPort);
 console.log("Auth API started on port " + argv.listenPort);

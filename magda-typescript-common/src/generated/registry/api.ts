@@ -391,9 +391,11 @@ export class AspectDefinitionsApi {
      * Get a list of all aspects
      *
      * @param xMagdaTenantId 0
+     * @param xMagdaSession Magda internal session id
      */
     public getAll(
-        xMagdaTenantId: number
+        xMagdaTenantId: number,
+        xMagdaSession?: string
     ): Promise<{
         response: http.IncomingMessage;
         body: Array<AspectDefinition>;
@@ -411,6 +413,8 @@ export class AspectDefinitionsApi {
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 
@@ -457,10 +461,12 @@ export class AspectDefinitionsApi {
      *
      * @param xMagdaTenantId 0
      * @param id ID of the aspect to be fetched.
+     * @param xMagdaSession Magda internal session id
      */
     public getById(
         xMagdaTenantId: number,
-        id: string
+        id: string,
+        xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
         const localVarPath =
             this.basePath +
@@ -484,6 +490,8 @@ export class AspectDefinitionsApi {
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 
@@ -827,6 +835,196 @@ export class RecordAspectsApi {
         return new Promise<{
             response: http.IncomingMessage;
             body: DeleteResult;
+        }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (
+                        response.statusCode >= 200 &&
+                        response.statusCode <= 299
+                    ) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Get a list of a record&#39;s aspects
+     *
+     * @param xMagdaTenantId 0
+     * @param recordId ID of the record for which to fetch aspects.
+     * @param keyword Specify the keyword to search in the all aspects&#39; aspectId &amp; data fields.
+     * @param aspectIdOnly When set to true, will respond only an array contains aspect id only.
+     * @param start The index of the first record to retrieve.
+     * @param limit The maximum number of records to receive.
+     * @param xMagdaSession Magda internal session id
+     */
+    public getAspects(
+        xMagdaTenantId: number,
+        recordId: string,
+        keyword?: string,
+        aspectIdOnly?: boolean,
+        start?: number,
+        limit?: number,
+        xMagdaSession?: string
+    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+        const localVarPath =
+            this.basePath +
+            "/records/{recordId}/aspects".replace(
+                "{" + "recordId" + "}",
+                String(recordId)
+            );
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getAspects."
+            );
+        }
+
+        // verify required parameter 'recordId' is not null or undefined
+        if (recordId === null || recordId === undefined) {
+            throw new Error(
+                "Required parameter recordId was null or undefined when calling getAspects."
+            );
+        }
+
+        if (keyword !== undefined) {
+            queryParameters["keyword"] = keyword;
+        }
+
+        if (aspectIdOnly !== undefined) {
+            queryParameters["aspectIdOnly"] = aspectIdOnly;
+        }
+
+        if (start !== undefined) {
+            queryParameters["start"] = start;
+        }
+
+        if (limit !== undefined) {
+            queryParameters["limit"] = limit;
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "GET",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{
+            response: http.IncomingMessage;
+            body: Array<any>;
+        }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (
+                        response.statusCode >= 200 &&
+                        response.statusCode <= 299
+                    ) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Get the number of aspects that a record has
+     *
+     * @param xMagdaTenantId 0
+     * @param recordId ID of the record for which to fetch an aspect.
+     * @param keyword Specify the keyword to search in the all aspects&#39; aspectId &amp; data fields.
+     * @param xMagdaSession Magda internal session id
+     */
+    public getAspectsCount(
+        xMagdaTenantId: number,
+        recordId: string,
+        keyword?: string,
+        xMagdaSession?: string
+    ): Promise<{ response: http.IncomingMessage; body: CountResponse }> {
+        const localVarPath =
+            this.basePath +
+            "/records/{recordId}/aspects/count".replace(
+                "{" + "recordId" + "}",
+                String(recordId)
+            );
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getAspectsCount."
+            );
+        }
+
+        // verify required parameter 'recordId' is not null or undefined
+        if (recordId === null || recordId === undefined) {
+            throw new Error(
+                "Required parameter recordId was null or undefined when calling getAspectsCount."
+            );
+        }
+
+        if (keyword !== undefined) {
+            queryParameters["keyword"] = keyword;
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "GET",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{
+            response: http.IncomingMessage;
+            body: CountResponse;
         }>((resolve, reject) => {
             request(requestOptions, (error, response, body) => {
                 if (error) {

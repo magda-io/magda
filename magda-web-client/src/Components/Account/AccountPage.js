@@ -116,6 +116,10 @@ class Account extends React.Component {
                                     Administrate
                                 </CommonLink>
                             )}
+                            {"  "}
+                            <CommonLink href="/settings" className="au-btn">
+                                System Settings
+                            </CommonLink>
                         </div>
                     )}
                 </div>

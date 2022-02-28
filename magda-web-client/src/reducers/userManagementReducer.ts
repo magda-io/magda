@@ -18,6 +18,20 @@ export type User = {
     roles: Role[];
     permissions: any[];
     orgUnitId?: string;
+    orgUnit?: OrgUnit;
+    managingOrgUnitIds?: string[];
+};
+
+export type OrgUnit = {
+    id: string;
+    name: string;
+    description: string;
+    left?: number;
+    right?: number;
+    create_by?: string;
+    create_time?: string;
+    edit_by?: string;
+    edit_time?: string;
 };
 
 const defaultUserInfo: User = {

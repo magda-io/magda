@@ -1,5 +1,7 @@
 import { config } from "config";
 import request from "helpers/request";
+import getRequest from "helpers/getRequest";
+import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
 import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
 import ServerError from "./ServerError";
@@ -549,7 +551,9 @@ export type Record = {
     aspects: { [aspectId: string]: any };
 };
 
-async function createRecord(inputRecord: Record): Promise<[Record, number]> {
+export async function createRecord(
+    inputRecord: Record
+): Promise<[Record, number]> {
     const [res, headers] = await request<Record>(
         "POST",
         `${config.registryFullApiUrl}records`,
@@ -679,9 +683,12 @@ export async function updateDataset(
 export async function updateRecordAspect<T = any>(
     recordId: string,
     aspectId: string,
-    aspectData: T
+    aspectData: T,
+    skipEnsureAspectExists: boolean = false
 ): Promise<[T, number]> {
-    await ensureAspectExists(aspectId);
+    if (!skipEnsureAspectExists) {
+        await ensureAspectExists(aspectId);
+    }
 
     const [json, headers] = await request<T>(
         "PUT",
@@ -750,4 +757,130 @@ export async function tagRecordVersionEventId(record: Record, eventId: number) {
     versionData.versions[versionData.currentVersionNumber].eventId = eventId;
 
     return await updateRecordAspect(record.id, "version", versionData);
+}
+
+export async function fetchRecordById(recordId: string, noCache = false) {
+    return await getRequest<Record>(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(recordId)}`,
+            config.registryReadOnlyApiUrl
+        ),
+        noCache
+    );
+}
+
+export type QueryRecordAspectsParams = {
+    recordId: string;
+    keyword?: string;
+    aspectIdOnly?: boolean;
+    offset?: number;
+    limit?: number;
+    noCache?: boolean;
+};
+
+export type RecordAspectRecord = {
+    id: string;
+    data?: any;
+};
+
+export type QueryRecordAspectsReturnValueType = RecordAspectRecord[] | string[];
+
+/**
+ * Get all aspects of a record. When params.aspectIdOnly == `true`, it will response a list of aspect id.
+ *
+ * @export
+ * @template QueryRecordAspectsReturnValueType
+ * @param {QueryRecordAspectsParams} params
+ * @return {*}  {Promise<QueryRecordAspectsReturnValueType>}
+ */
+export async function queryRecordAspects<T = QueryRecordAspectsReturnValueType>(
+    params: QueryRecordAspectsParams
+): Promise<T> {
+    const { noCache, recordId, ...queryParams } = params
+        ? params
+        : ({} as QueryRecordAspectsParams);
+    if (!recordId?.trim()) {
+        throw new Error(
+            "Failed to request record aspects: record ID cannot be empty!"
+        );
+    }
+    return await getRequest<T>(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(recordId)}/aspects`,
+            config.registryReadOnlyApiUrl,
+            queryParams
+        ),
+        noCache
+    );
+}
+
+export type QueryRecordAspectsCountParams = Omit<
+    QueryRecordAspectsParams,
+    "aspectIdOnly" | "offset" | "limit"
+>;
+
+export async function queryRecordAspectsCount(
+    params?: QueryRecordAspectsCountParams
+): Promise<number> {
+    const { noCache, recordId, ...queryParams } = params
+        ? params
+        : ({} as QueryRecordAspectsCountParams);
+
+    try {
+        const res = await getRequest<{ count: number }>(
+            getAbsoluteUrl(
+                `records/${encodeURIComponent(recordId)}/aspects/count`,
+                config.registryReadOnlyApiUrl,
+                queryParams
+            ),
+            noCache
+        );
+        return res?.count ? res.count : 0;
+    } catch (e) {
+        if (e instanceof ServerError && e.statusCode === 404) {
+            return 0;
+        }
+        throw e;
+    }
+}
+
+export async function getRecordAspect<T = any>(
+    recordId: string,
+    aspectId: string,
+    noCache: boolean = false
+): Promise<T> {
+    if (!recordId?.trim()) {
+        throw new Error(
+            "Failed to get record aspect: record ID cannot be empty!"
+        );
+    }
+    if (!aspectId?.trim()) {
+        throw new Error(
+            "Failed to get record aspect: aspect ID cannot be empty!"
+        );
+    }
+    return await getRequest<T>(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(
+                recordId
+            )}/aspects/${encodeURIComponent(aspectId)}`,
+            config.registryReadOnlyApiUrl
+        ),
+        noCache
+    );
+}
+
+export type AspectDefRecord = {
+    id: string;
+    name: string;
+    jsonSchema: {
+        [key: string]: any;
+    };
+};
+
+export async function getAspectDefs(noCache = false) {
+    return await getRequest<AspectDefRecord[]>(
+        getAbsoluteUrl("aspects", config.registryReadOnlyApiUrl),
+        noCache
+    );
 }

@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/hyper-schema#",
-    "title": "Provenance",
+    "title": "Provenance Aspect",
     "description": "Describes how this data was collected or generated.",
     "type": "object",
     "properties": {

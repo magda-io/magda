@@ -1,0 +1,23 @@
+.setting-page-main-container {
+    position: relative;
+    min-height: 600px;
+    background-color: #fff;
+
+    .main-content-container {
+        padding-top: 25px;
+        padding-left: 250px;
+        width: 90%;
+        height: 100%;
+    }
+}
+
+.rs-picker-toggle {
+    outline: none !important;
+}
+
+h3 {
+    font-size: 1.25rem;
+    line-height: 1.2;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}

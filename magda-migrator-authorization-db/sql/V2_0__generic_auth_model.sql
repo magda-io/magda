@@ -1,3 +1,10 @@
+-- Add default org unit root node if not exists
+INSERT INTO "public"."org_units" ("name", "left", "right")
+SELECT 'Default Root', 1, 2
+WHERE NOT EXISTS (
+	SELECT 1 FROM "public"."org_units" WHERE "left" = 1
+);
+
 -- mark resource `registry/record` as depreciated
 UPDATE public.resources
 SET "name" = CONCAT('(depreciated) ',"name"), "description" = 'this resource is depreciated and will be removed in future versions'
@@ -31,19 +38,6 @@ VALUES
 ('object/record/read', 'Read Record', '', (SELECT id FROM resources WHERE uri = 'object/record')),
 ('object/record/update', 'Update Record', '', (SELECT id FROM resources WHERE uri = 'object/record')),
 ('object/record/delete', 'Delete Record', '', (SELECT id FROM resources WHERE uri = 'object/record'));
-
--- Add resource, operation for access `aspect` record
-INSERT INTO "public"."resources" 
-    ("uri", "name", "description")
-VALUES 
-('object/aspect', 'Aspects', 'Aspect definition record.');
-
-INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
-VALUES 
-('object/aspect/create','Create Record', '', (SELECT id FROM resources WHERE uri = 'object/aspect')),
-('object/aspect/read', 'Read Record', '', (SELECT id FROM resources WHERE uri = 'object/aspect')),
-('object/aspect/update', 'Update Record', '', (SELECT id FROM resources WHERE uri = 'object/aspect')),
-('object/aspect/delete', 'Delete Record', '', (SELECT id FROM resources WHERE uri = 'object/aspect'));
 
 -- Add resource, operation for access `aspect` definition
 INSERT INTO "public"."resources" 
@@ -97,19 +91,6 @@ VALUES
 ('object/webhook/update', 'Update Webhook Record', '', (SELECT id FROM resources WHERE uri = 'object/webhook')),
 ('object/webhook/delete', 'Delete Webhook Record', '', (SELECT id FROM resources WHERE uri = 'object/webhook')),
 ('object/webhook/ack', 'Acknowledge a previously-deferred webhook notification processing', '', (SELECT id FROM resources WHERE uri = 'object/webhook'));
-
--- Add resource, operation for access `events` 
-INSERT INTO "public"."resources" 
-    ("uri", "name", "description")
-VALUES 
-('object/event', 'Event', 'Registry record events');
-
-INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
-VALUES 
-('object/event/create','Create Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event')),
-('object/event/read', 'Read Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event')),
-('object/event/update', 'Update Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event')),
-('object/event/delete', 'Delete Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event'));
 
 -- Add resource, operation for access `events` 
 INSERT INTO "public"."resources" 

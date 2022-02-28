@@ -18,6 +18,17 @@ import {
 import { getUserId } from "magda-typescript-common/src/session/GetUserId";
 import NestedSetModelQueryer from "./NestedSetModelQueryer";
 import isUuid from "magda-typescript-common/src/util/isUuid";
+import AuthDecision, {
+    UnconditionalTrueDecision
+} from "magda-typescript-common/src/opa/AuthDecision";
+import SQLSyntax, { sqls } from "sql-syntax";
+import {
+    parseIntParam,
+    MAX_PAGE_RECORD_NUMBER,
+    getTableRecord
+} from "magda-typescript-common/src/SQLUtils";
+import ServerError from "magda-typescript-common/src/ServerError";
+import { SYSTEM_ROLES } from "magda-typescript-common/src/authorization-api/constants";
 
 export interface DatabaseOptions {
     dbHost: string;
@@ -55,6 +66,8 @@ export default class Database {
             "id",
             "name",
             "description",
+            "left",
+            "right",
             "create_by",
             "create_time",
             "edit_by",
@@ -70,23 +83,42 @@ export default class Database {
         return this.orgQueryer;
     }
 
-    getUser(id: string): Promise<Maybe<User>> {
+    getUser(
+        id: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<Maybe<User>> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.user"]
+        });
+        const whereSql = SQLSyntax.where(
+            SQLSyntax.joinWithAnd([authConditions, sqls`"id" = ${id}`])
+        );
+
+        const query = sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users ${whereSql}`;
+
         return this.pool
-            .query(
-                'SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE "id" = $1',
-                [id]
-            )
+            .query(...query.toQuery())
             .then((res) => arrayToMaybe(res.rows));
     }
 
-    async getUserRoles(id: string): Promise<Role[]> {
+    async getUserRoles(
+        id: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<Role[]> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.user"],
+            tableRef: "u"
+        });
         const result = await this.pool.query(
-            `SELECT r.id, r.name, rp.permission_id
+            ...sqls`SELECT r.id, r.name, rp.permission_id
                 FROM user_roles AS ur
+                LEFT JOIN users u ON u.id = ur.user_id
                 LEFT JOIN roles r ON r.id = ur.role_id
                 LEFT JOIN role_permissions rp ON rp.role_id = ur.role_id
-                WHERE ur.user_id = $1`,
-            [id]
+                WHERE ${SQLSyntax.joinWithAnd([
+                    sqls`ur.user_id = ${id}`,
+                    authConditions
+                ])}`.toQuery()
         );
         const list: any = {};
         result.rows.forEach((item) => {
@@ -108,9 +140,16 @@ export default class Database {
         return Object.values(list);
     }
 
-    async getUserPermissions(id: string): Promise<Permission[]> {
+    async getUserPermissions(
+        id: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<Permission[]> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.user"],
+            tableRef: "u"
+        });
         const result = await this.pool.query(
-            `SELECT DISTINCT ON (p.id, op.id)
+            ...sqls`SELECT DISTINCT ON (p.id, op.id)
                 p.id, p.name, p.resource_id, res.uri AS resource_uri,
                 p.user_ownership_constraint,
                 p.org_unit_ownership_constraint,
@@ -120,12 +159,15 @@ export default class Database {
                 op.name AS operation_name
                 FROM role_permissions rp
                 LEFT JOIN user_roles ur ON ur.role_id = rp.role_id
+                LEFT JOIN users u ON u.id = ur.user_id
                 LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
                 LEFT JOIN operations op ON op.id = po.operation_id
                 LEFT JOIN permissions p ON p.id = rp.permission_id
                 LEFT JOIN resources res ON res.id = p.resource_id
-                WHERE ur.user_id = $1`,
-            [id]
+                WHERE ${SQLSyntax.joinWithAnd([
+                    sqls`ur.user_id = ${id}`,
+                    authConditions
+                ])}`.toQuery()
         );
         return this.convertPermissionOperationRowsToPermissions(result);
     }
@@ -162,9 +204,33 @@ export default class Database {
         return Object.values(list);
     }
 
-    async getRolePermissions(id: string): Promise<Permission[]> {
+    async getRolePermissions(
+        id: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision,
+        queryConfig: {
+            offset?: string | number;
+            limit?: string | number;
+            conditions?: SQLSyntax[];
+        } = {
+            offset: 0,
+            limit: 0,
+            conditions: []
+        }
+    ): Promise<Permission[]> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.role"],
+            tableRef: "r"
+        });
+        let limit = parseIntParam(queryConfig?.limit);
+        const offset = parseIntParam(queryConfig?.offset);
+        if (limit > MAX_PAGE_RECORD_NUMBER) {
+            limit = MAX_PAGE_RECORD_NUMBER;
+        }
+        const conditions = queryConfig?.conditions?.length
+            ? queryConfig.conditions
+            : [];
         const result = await this.pool.query(
-            `SELECT  DISTINCT ON (p.id, op.id)
+            ...sqls`SELECT  DISTINCT ON (p.id, op.id)
             p.id, p.name, p.resource_id, res.uri AS resource_uri,
             p.user_ownership_constraint,
             p.org_unit_ownership_constraint,
@@ -173,20 +239,40 @@ export default class Database {
             op.uri AS operation_uri,
             op.name AS operation_name
             FROM role_permissions rp 
+            LEFT JOIN roles r ON r.id = rp.role_id
             LEFT JOIN permission_operations po ON po.permission_id = rp.permission_id
             LEFT JOIN operations op ON op.id = po.operation_id
             LEFT JOIN permissions p ON p.id = rp.permission_id
             LEFT JOIN resources res ON res.id = p.resource_id
-            WHERE rp.role_id = $1`,
-            [id]
+            WHERE ${SQLSyntax.joinWithAnd([
+                ...(conditions?.length ? conditions : []),
+                sqls`rp.role_id = ${id}`,
+                authConditions
+            ])}
+            ${offset ? sqls`OFFSET ${offset}` : SQLSyntax.empty}
+            ${limit ? sqls`LIMIT ${limit}` : SQLSyntax.empty}
+            `.toQuery()
         );
         return this.convertPermissionOperationRowsToPermissions(result);
     }
 
-    getUsers(): Promise<User[]> {
+    getUsers(
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<User[]> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.user"]
+        });
         return this.pool
             .query(
-                `SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE id <> '00000000-0000-4000-8000-000000000000'`
+                ...sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" 
+                FROM users 
+                ${SQLSyntax.where(
+                    SQLSyntax.joinWithAnd([
+                        // do not show the default admin account
+                        sqls`id <> '00000000-0000-4000-8000-000000000000'`,
+                        authConditions
+                    ])
+                )}`.toQuery()
             )
             .then((res) => res.rows);
     }
@@ -255,14 +341,31 @@ export default class Database {
         );
     }
 
+    /**
+     * This function is mainly used by internal service for user lookup
+     *
+     * @param {string} source
+     * @param {string} sourceId
+     * @return {*}  {Promise<Maybe<User>>}
+     * @memberof Database
+     */
     getUserByExternalDetails(
         source: string,
-        sourceId: string
+        sourceId: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<Maybe<User>> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.user"]
+        });
         return this.pool
             .query(
-                'SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE "sourceId" = $1 AND source = $2',
-                [sourceId, source]
+                ...sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" 
+                FROM users 
+                WHERE ${SQLSyntax.joinWithAnd([
+                    sqls`"sourceId" = ${sourceId}`,
+                    sqls`"source" = ${source}`,
+                    authConditions
+                ])}`.toQuery()
             )
             .then((res) => arrayToMaybe(res.rows));
     }
@@ -363,7 +466,17 @@ export default class Database {
             user.orgUnit = null;
         } else {
             user.orgUnit = (
-                await this.orgQueryer.getNodeById(user.orgUnitId)
+                await this.orgQueryer.getNodeById(user.orgUnitId, [
+                    "id",
+                    "name",
+                    "description",
+                    "left",
+                    "right",
+                    "create_by",
+                    "create_time",
+                    "edit_by",
+                    "edit_time"
+                ])
             ).valueOr(null);
             user.managingOrgUnitIds = (
                 await this.orgQueryer.getAllChildren(user.orgUnitId, true, [
@@ -374,10 +487,18 @@ export default class Database {
         return user;
     }
 
-    async getUserApiKeyById(apiKeyId: string): Promise<APIKeyRecord> {
+    async getUserApiKeyById(
+        apiKeyId: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<APIKeyRecord> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.apiKey"]
+        });
         const result = await this.pool.query(
-            "SELECT * FROM api_keys WHERE id=$1 LIMIT 1",
-            [apiKeyId]
+            ...sqls`SELECT * FROM api_keys WHERE ${SQLSyntax.joinWithAnd([
+                sqls`id = ${apiKeyId}`,
+                authConditions
+            ])} LIMIT 1`.toQuery()
         );
         if (!result?.rows?.length) {
             throw new Error(`cannot find API with ID ${apiKeyId}`);
@@ -479,5 +600,140 @@ export default class Database {
             )})`,
             [userId, ...roleIdToBeDeleted]
         );
+    }
+
+    async deleteRolePermission(roleId?: string, permissionId?: string) {
+        roleId = roleId?.trim();
+        if (!roleId) {
+            throw new ServerError("Invalid empty role id supplied.", 400);
+        }
+        permissionId = permissionId?.trim();
+        if (!permissionId) {
+            throw new ServerError("Invalid empty permission id supplied.", 400);
+        }
+
+        const pool = this.pool;
+
+        const role = await getTableRecord(pool, "roles", roleId);
+        if (!role) {
+            throw new ServerError(
+                "Cannot locate role record by ID: " + roleId,
+                400
+            );
+        }
+        const permission = await getTableRecord(
+            pool,
+            "permissions",
+            permissionId
+        );
+        if (!permission) {
+            throw new ServerError(
+                "Cannot locate permission record by ID: " + permissionId,
+                400
+            );
+        }
+        const result = await pool.query(
+            ...sqls`SELECT 1 FROM role_permissions WHERE role_id != ${roleId} AND permission_id = ${permissionId}`.toQuery()
+        );
+        await pool.query(
+            ...sqls`DELETE FROM role_permissions WHERE role_id = ${roleId} AND permission_id = ${permissionId}`.toQuery()
+        );
+        if (!result?.rows?.length) {
+            // the permission has not assigned to other roles
+            // we will delete the permission record as well
+            const client = await pool.connect();
+            try {
+                await client.query("BEGIN");
+
+                await client.query(
+                    ...sqls`DELETE FROM permission_operations WHERE permission_id = ${permissionId}`.toQuery()
+                );
+                await client.query(
+                    ...sqls`DELETE FROM permissions WHERE id = ${permissionId}`.toQuery()
+                );
+
+                await client.query("COMMIT");
+            } catch (e) {
+                await client.query("ROLLBACK");
+                throw e;
+            } finally {
+                client.release();
+            }
+        }
+    }
+
+    async deleteRole(roleId?: string) {
+        roleId = roleId?.trim();
+        if (!roleId) {
+            throw new ServerError("Invalid empty role id supplied.", 400);
+        }
+
+        if (SYSTEM_ROLES.indexOf(roleId) !== -1) {
+            throw new ServerError(
+                `Cannot delete a system role: ${roleId}`,
+                400
+            );
+        }
+
+        const pool = this.pool;
+        const role = await getTableRecord(pool, "roles", roleId);
+        if (!role) {
+            throw new ServerError(
+                "Cannot locate role record by ID: " + roleId,
+                404
+            );
+        }
+        const userRolesResult = await pool.query(
+            ...sqls`SELECT 1 FROM user_roles WHERE role_id = ${roleId} LIMIT 1`.toQuery()
+        );
+        if (userRolesResult?.rows?.length) {
+            throw new ServerError(
+                "Please remove the role from all users and try again",
+                400
+            );
+        }
+
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+
+            await client.query(
+                ...sqls`DELETE FROM user_roles WHERE role_id = ${roleId}`.toQuery()
+            );
+            // delete all permission / operation relationship that not belong to other roles
+            await client.query(
+                ...sqls`DELETE FROM permission_operations WHERE permission_id IN (
+                            SELECT rp1.permission_id FROM role_permissions rp1 
+                            WHERE rp1.permission_id IN (
+                                SELECT rp2.permission_id FROM role_permissions rp2 WHERE rp2.role_id = ${roleId}
+                            ) AND NOT EXISTS (
+                                SELECT 1 FROM role_permissions rp3 WHERE rp1.permission_id = rp3.permission_id AND rp3.role_id != ${roleId}
+                            )
+                        )`.toQuery()
+            );
+
+            // delete all permissions that not belong to other roles
+            await client.query(
+                ...sqls`DELETE FROM permissions WHERE id IN (
+                            SELECT rp1.permission_id FROM role_permissions rp1 
+                            WHERE rp1.permission_id IN (
+                                SELECT rp2.permission_id FROM role_permissions rp2 WHERE rp2.role_id = ${roleId}
+                            ) AND NOT EXISTS (
+                                SELECT 1 FROM role_permissions rp3 WHERE rp1.permission_id = rp3.permission_id AND rp3.role_id != ${roleId}
+                            )
+                        )`.toQuery()
+            );
+
+            await client.query(
+                ...sqls`DELETE FROM roles WHERE id = ${roleId}`.toQuery()
+            );
+
+            await client.query("COMMIT");
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
     }
 }

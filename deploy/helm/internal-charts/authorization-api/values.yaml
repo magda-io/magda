@@ -21,3 +21,6 @@ resources:
     memory: 50Mi
   limits:
     cpu: 50m
+
+# -- when set to true, auth API will print verbose debug info (e.g. auth decision process) to log
+debug: false

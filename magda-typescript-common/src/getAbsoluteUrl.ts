@@ -6,13 +6,14 @@ import urijs from "urijs";
  * @export
  * @param {string} url
  * @param {string} baseUrl
- * @param {{ [key: string]: string }} [optionalQueries]
+ * @param {{ [key: string]: any }} [optionalQueries] optional extra query parameters to add to the result url.
+ * All values supplied will be converted into string before encoded into the url.
  * @returns
  */
 export default function getAbsoluteUrl(
     url: string,
     baseUrl: string,
-    optionalQueries?: { [key: string]: string }
+    optionalQueries?: { [key: string]: any }
 ) {
     const uri = urijs(url);
     if (uri.hostname()) {

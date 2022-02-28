@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "Aspect capturing a complete representation of a distribution according to a CSW server",
+    "title": "CSW Distribution Aspect",
+    "description": "Aspect capturing a complete representation of a distribution according to a CSW server",
     "type": "object",
     "properties": {
         "xml": {

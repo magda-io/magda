@@ -15,6 +15,7 @@ export interface OpaRouterOptions {
     opaUrl: string;
     database: Database;
     jwtSecret: string;
+    debug?: boolean;
 }
 
 const opaRoutes = [
@@ -155,7 +156,6 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         normaliseInputField(reqData);
 
         reqData.input.user = userInfo;
-        reqData.input.user.roles = userInfo.roles.map((role) => role.id);
 
         const sessionClaim = getUserSession(req, jwtSecret).valueOr({});
 
@@ -430,6 +430,9 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
             reqOpts.json.input.operationUri = operationUri;
             reqOpts.json.input.resourceUri = resourceUri;
+            delete reqOpts.json.operationUri;
+            delete reqOpts.json.resourceUri;
+
             if (reqOpts?.json?.unknowns === "") {
                 delete reqOpts.json.unknowns;
             }
@@ -472,6 +475,12 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 : `${opaUrl}v1/data/entrypoint/allow`;
             const fullResponse = await request(apiEndpoint, reqOpts);
 
+            if (options?.debug === true) {
+                console.log("Auth debug info:");
+                console.log(`Auth request to: ${apiEndpoint}`);
+                console.log(`Auth request options: ${JSON.stringify(reqOpts)}`);
+            }
+
             if (
                 fullResponse.statusCode >= 200 &&
                 fullResponse.statusCode < 300
@@ -494,9 +503,15 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                         }
                         const resData = {
                             hasResidualRules: false,
-                            value: fullResponse.body.result,
+                            result: fullResponse.body.result,
+                            hasWarns: false,
                             unknowns: [] as string[]
                         };
+                        if (options?.debug === true) {
+                            console.log(
+                                `Auth decision: ${JSON.stringify(resData)}`
+                            );
+                        }
                         res.status(200).send(resData);
                         return;
                     }
@@ -534,7 +549,11 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                         if (parser.hasWarns) {
                             resData.warns = parser.warns;
                         }
-
+                        if (options?.debug === true) {
+                            console.log(
+                                `Auth decision: ${JSON.stringify(resData)}`
+                            );
+                        }
                         res.status(200).send(resData);
                     }
                 }

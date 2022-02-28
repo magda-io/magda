@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router";
+import { withRouter } from "react-router-dom";
 import Spinner from "Components/Common/Spinner";
 import { connect } from "react-redux";
 import { readContent, updateContent } from "actions/contentActions";

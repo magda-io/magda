@@ -60,3 +60,13 @@ skipAuthorization: false
 
 # -- Whether print all SQL in console. For DEBUG only
 printSQlInConsole: false
+
+aspectDefinitionMigrator:
+  enabled: true
+  backoffLimit: 6
+  image: 
+    name: magda-migrator-registry-aspects
+    # repository: 
+    # tag: 
+    # pullPolicy: 
+    # pullSecrets: 

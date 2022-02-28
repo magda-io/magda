@@ -31,6 +31,9 @@ spec:
             "--dbPort", "5432",
             "--opaUrl", "http://opa/",
             "--registryApiUrl", "http://registry-api/v0",
+{{- if .Values.debug }}
+            "--debug", "true",
+{{- end }}
             "--tenantId", "0"
         ]
 {{- if .Values.global.enableLivenessProbes }}

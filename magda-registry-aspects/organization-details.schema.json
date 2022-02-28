@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "Aspect for capturing basic details of an organization",
+    "title": "Organization Details Aspect",
+    "description": "Aspect for capturing basic details of an organization",
     "type": "object",
     "properties": {
         "name": {
