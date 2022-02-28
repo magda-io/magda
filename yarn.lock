@@ -7382,10 +7382,10 @@ direction@^1.0.2:
   resolved "https://registry.yarnpkg.com/direction/-/direction-1.0.4.tgz#2b86fb686967e987088caf8b89059370d4837442"
   integrity sha512-GYqKi1aH7PJXxdhTeZBFrg8vUBeKXi+cNprXsC1kpJcbcVnV9wBsrOu1cQEdG0WeQwlfHiy3XvnKfIrJ2R0NzQ==
 
-djv@^2.1.1:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/djv/-/djv-2.1.2.tgz#5bf4344cdd5f7df82764d99a4f0684899d570216"
-  integrity sha512-ltQSINn+7aMTp7pKeQpfZg2ACd/Gy6VrL3LYuT25/plwPBb7xlGOekr463Luqn816AWJLuP7KZQGFct2JICyeA==
+djv@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/djv/-/djv-2.1.4.tgz#a6bde1a87184be4f10640184de76079c1423023f"
+  integrity sha512-giDn+BVbtLlwtkvtcsZjbjzpALHB77skiv3FIu6Wp8b5j8BunDcVJYH0cGUaexp6s0Sb7IkquXXjsLBJhXwQpA==
   optionalDependencies:
     "@korzio/djv-draft-04" "^2.0.1"
 
