@@ -18,7 +18,7 @@
     "@magda/content-schemas": "^1.2.1-alpha.0",
     "@magda/typescript-common": "^1.2.1-alpha.0",
     "body-parser": "^1.13.2",
-    "djv": "^2.1.1",
+    "djv": "^2.1.4",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.4",
