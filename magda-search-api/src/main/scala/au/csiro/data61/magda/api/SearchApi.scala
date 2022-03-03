@@ -76,65 +76,62 @@ class SearchApi(
           */
         pathPrefix("facets") {
           requiresTenantId { tenantId =>
-            extractRequest { request =>
-              path(Segment / "options") { facetId ⇒
-                (get & parameters(
-                  'facetQuery ?,
-                  "start" ? 0,
-                  "limit" ? 10,
-                  'generalQuery ?,
-                  'publisher *,
-                  'dateFrom ?,
-                  'dateTo ?,
-                  'region *,
-                  'format *,
-                  'publishingState ?
-                )) {
-                  (
-                      facetQuery,
-                      start,
-                      limit,
-                      generalQuery,
-                      publishers,
-                      dateFrom,
-                      dateTo,
-                      regions,
-                      formats,
-                      publishingState
-                  ) =>
-                    withDatasetReadAuthDecision(authApiClient, publishingState) {
-                      authDecision =>
-                        val query = Query.fromQueryParams(
-                          generalQuery,
-                          publishers,
-                          dateFrom,
-                          dateTo,
-                          regions,
-                          formats,
-                          publishingState
-                        )
+            path(Segment / "options") { facetId ⇒
+              (get & parameters(
+                'facetQuery ?,
+                "start" ? 0,
+                "limit" ? 10,
+                'generalQuery ?,
+                'publisher *,
+                'dateFrom ?,
+                'dateTo ?,
+                'region *,
+                'format *,
+                'publishingState ?
+              )) {
+                (
+                    facetQuery,
+                    start,
+                    limit,
+                    generalQuery,
+                    publishers,
+                    dateFrom,
+                    dateTo,
+                    regions,
+                    formats,
+                    publishingState
+                ) =>
+                  withDatasetReadAuthDecision(authApiClient, publishingState) {
+                    authDecision =>
+                      val query = Query.fromQueryParams(
+                        generalQuery,
+                        publishers,
+                        dateFrom,
+                        dateTo,
+                        regions,
+                        formats,
+                        publishingState
+                      )
 
-                        FacetType.fromId(facetId) match {
-                          case Some(facetType) ⇒
-                            complete(
-                              searchQueryer.searchFacets(
-                                request.headers
-                                  .find(_.is("x-magda-session"))
-                                  .map(_.value()),
-                                facetType,
-                                facetQuery,
-                                query,
-                                start,
-                                limit,
-                                tenantId
-                              )
+                      FacetType.fromId(facetId) match {
+                        case Some(facetType) ⇒
+                          complete(
+                            searchQueryer.searchFacets(
+                              authDecision,
+                              facetType,
+                              facetQuery,
+                              query,
+                              start,
+                              limit,
+                              tenantId
                             )
-                          case None ⇒ complete(NotFound)
-                        }
-                    }
-                }
+                          )
+                        case None ⇒ complete(NotFound)
+                      }
+                  }
               }
             }
+
           }
         } ~
           /**
@@ -229,76 +226,75 @@ class SearchApi(
             */
           pathPrefix("datasets") {
             requiresTenantId { tenantId =>
-              extractRequest { request =>
-                (get & parameters(
-                  'query ?,
-                  "start" ? 0,
-                  "limit" ? 10,
-                  "facetSize" ? 10,
-                  'publisher *,
-                  'dateFrom ?,
-                  'dateTo ?,
-                  'region *,
-                  'format *,
-                  'publishingState ?
-                )) {
-                  (
-                      generalQuery,
-                      start,
-                      limit,
-                      facetSize,
-                      publishers,
-                      dateFrom,
-                      dateTo,
-                      regions,
-                      formats,
-                      publishingState
-                  ) =>
-                    val query = Query.fromQueryParams(
-                      generalQuery,
-                      publishers,
-                      dateFrom,
-                      dateTo,
-                      regions,
-                      formats,
-                      publishingState
-                    )
-
-                    onSuccess(
-                      searchQueryer.search(
-                        request.headers
-                          .find(_.is("x-magda-session"))
-                          .map(_.value()),
-                        query,
-                        start,
-                        limit,
-                        facetSize,
-                        tenantId
+              (get & parameters(
+                'query ?,
+                "start" ? 0,
+                "limit" ? 10,
+                "facetSize" ? 10,
+                'publisher *,
+                'dateFrom ?,
+                'dateTo ?,
+                'region *,
+                'format *,
+                'publishingState ?
+              )) {
+                (
+                    generalQuery,
+                    start,
+                    limit,
+                    facetSize,
+                    publishers,
+                    dateFrom,
+                    dateTo,
+                    regions,
+                    formats,
+                    publishingState
+                ) =>
+                  withDatasetReadAuthDecision(authApiClient, publishingState) {
+                    authDecision =>
+                      val query = Query.fromQueryParams(
+                        generalQuery,
+                        publishers,
+                        dateFrom,
+                        dateTo,
+                        regions,
+                        formats,
+                        publishingState
                       )
-                    ) { result =>
-                      val status =
-                        if (result.errorMessage.isDefined)
-                          StatusCodes.InternalServerError
-                        else StatusCodes.OK
 
-                      pathPrefix("datasets") {
-                        complete(status, result.copy(facets = None))
+                      onSuccess(
+                        searchQueryer.search(
+                          authDecision,
+                          query,
+                          start,
+                          limit,
+                          facetSize,
+                          tenantId
+                        )
+                      ) { result =>
+                        val status =
+                          if (result.errorMessage.isDefined)
+                            StatusCodes.InternalServerError
+                          else StatusCodes.OK
 
-                        /**
-                        * @apiGroup Search
-                        * @api {get} /v0/search/datasets/facets Search Datasets Return Facets
-                        * @apiDescription Returns the facets part of dataset search. For more details, see Search Datasets and Get Facet Options.
-                        * @apiSuccessExample {any} 200
-                        *                    See Search Datasets and Get Facet Options.
-                        *
-                        */
-                      } ~ pathPrefix("facets") {
-                        complete(status, result.facets)
-                      } ~ pathEnd {
-                        complete(status, result)
+                        pathPrefix("datasets") {
+                          complete(status, result.copy(facets = None))
+
+                          /**
+                          * @apiGroup Search
+                          * @api {get} /v0/search/datasets/facets Search Datasets Return Facets
+                          * @apiDescription Returns the facets part of dataset search. For more details, see Search Datasets and Get Facet Options.
+                          * @apiSuccessExample {any} 200
+                          *                    See Search Datasets and Get Facet Options.
+                          *
+                          */
+                        } ~ pathPrefix("facets") {
+                          complete(status, result.facets)
+                        } ~ pathEnd {
+                          complete(status, result)
+                        }
                       }
-                    }
-                }
+                  }
               }
             }
           } ~
@@ -379,29 +375,28 @@ class SearchApi(
             */
           pathPrefix("autoComplete") {
             requiresTenantId { tenantId =>
-              extractRequest { request =>
-                (get & parameters(
-                  "field",
-                  'input ?,
-                  "limit" ? 10
-                )) { (field, input, limit) ⇒
-                  onSuccess(
-                    searchQueryer.autoCompleteQuery(
-                      request.headers
-                        .find(_.is("x-magda-session"))
-                        .map(_.value()),
-                      field,
-                      input,
-                      Some(limit),
-                      tenantId
-                    )
-                  ) { result =>
-                    val status =
-                      if (result.errorMessage.isDefined)
-                        StatusCodes.InternalServerError
-                      else StatusCodes.OK
-                    complete(status, result)
-                  }
+              (get & parameters(
+                "field",
+                'input ?,
+                "limit" ? 10
+              )) { (field, input, limit) =>
+                withDatasetReadAuthDecision(authApiClient, None) {
+                  authDecision =>
+                    onSuccess(
+                      searchQueryer.autoCompleteQuery(
+                        authDecision,
+                        field,
+                        input,
+                        Some(limit),
+                        tenantId
+                      )
+                    ) { result =>
+                      val status =
+                        if (result.errorMessage.isDefined)
+                          StatusCodes.InternalServerError
+                        else StatusCodes.OK
+                      complete(status, result)
+                    }
                 }
               }
             }
