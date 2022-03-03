@@ -3,6 +3,16 @@ package au.csiro.data61.magda.model
 import au.csiro.data61.magda.util.Regex._
 import scalikejdbc._
 import au.csiro.data61.magda.util.SQLUtils
+import com.sksamuel.elastic4s.http.ElasticDsl
+import com.sksamuel.elastic4s.searches.queries.{
+  ExistsQuery,
+  Query => EsDslQuery
+}
+import com.sksamuel.elastic4s.searches.queries.matches.{
+  MatchAllQuery,
+  MatchNoneQuery,
+  MatchQuery
+}
 
 import java.net.URLDecoder
 
@@ -22,10 +32,117 @@ case class AspectQueryToSqlConfig(
     genericQueryUseLowerCaseColumnName: Boolean = true
 )
 
+case class AspectQueryToEsDslConfig(
+    prefixes: Set[String] = Set("input.object.dataset")
+)
+
 sealed trait AspectQuery {
+
+  val registryRefToEsRefMappings = Map(
+    "access-control" -> Map(
+      "orgUnitOwnerId" -> "accessControl.orgUnitOwnerId",
+      "ownerId" -> "accessControl.ownerId",
+      "preAuthorisedPermissionIds" -> "accessControl.preAuthorisedPermissionIds"
+    ),
+    "dcat-dataset-strings" -> Map(
+      "title" -> "title",
+      "description" -> "description",
+      "issued" -> "issued",
+      "modified" -> "modified",
+      "languages" -> "languages.keyword",
+      "publisher" -> "publisher.name.keyword",
+      "accrualPeriodicity" -> "accrualPeriodicity.keyword",
+      "accrualPeriodicityRecurrenceRule" -> "accrualPeriodicityRecurrenceRule",
+      "temporal.start" -> "temporal.start.date",
+      "temporal.end" -> "temporal.end.date",
+      "spatial" -> "spatial.geoJson",
+      "themes" -> "themes.keyword",
+      "keywords" -> "keywords.keyword",
+      "contactPoint.id" -> "contactPoint.identifier",
+      "landingPage" -> "landingPage.keyword"
+    ),
+    "access" -> Map(
+      "location" -> "accessNotes.location.keyword",
+      "notes" -> "accessNotes.notes.keyword"
+    ),
+    "dataset-quality-rating" -> Map(
+      "rating.score" -> "quality",
+      "rating.weighting" -> "quality"
+    ),
+    "provenance" -> Map(
+      "mechanism" -> "provenance.mechanism.keyword",
+      "sourceSystem" -> "provenance.sourceSystem.keyword",
+      "affiliatedOrganizationIds" -> "provenance.affiliatedOrganizationIds.keyword",
+      "isOpenData" -> "provenance.isOpenData"
+    ),
+    "publisher" -> Map(
+      "id" -> "publisher.identifier",
+      "title" -> "publisher.name.keyword",
+      "source.id" -> "publisher.source.id.keyword",
+      "source.name" -> "publisher.source.name.keyword",
+      "source.url" -> "publisher.source.url.keyword",
+      "organization-details.title" -> "publisher.name.keyword",
+      "organization-details.jurisdiction" -> "publisher.jurisdiction.keyword",
+      "organization-details.description" -> "publisher.description.keyword",
+      "organization-details.imageUrl" -> "publisher.imageUrl",
+      "organization-details.phone" -> "publisher.phone",
+      "organization-details.email" -> "publisher.email",
+      "organization-details.addrStreet" -> "publisher.addrStreet",
+      "organization-details.addrSuburb" -> "publisher.addrSuburb",
+      "organization-details.addrState" -> "publisher.addrState",
+      "organization-details.addrPostCode" -> "publisher.addrPostCode",
+      "organization-details.addrCountry" -> "publisher.addrCountry",
+      "organization-details.website" -> "publisher.website"
+    ),
+    "organization-details" -> Map(
+      "id" -> "publisher.identifier",
+      "title" -> "publisher.name.keyword",
+      "jurisdiction" -> "publisher.jurisdiction.keyword",
+      "description" -> "publisher.description.keyword",
+      "imageUrl" -> "publisher.imageUrl",
+      "phone" -> "publisher.phone",
+      "email" -> "publisher.email",
+      "addrStreet" -> "publisher.addrStreet",
+      "addrSuburb" -> "publisher.addrSuburb",
+      "addrState" -> "publisher.addrState",
+      "addrPostCode" -> "publisher.addrPostCode",
+      "addrCountry" -> "publisher.addrCountry",
+      "website" -> "publisher.website"
+    ),
+    "publishing" -> Map(
+      "state" -> "publishingState"
+    ),
+    "source" -> Map(
+      "id" -> "source.id.keyword",
+      "name" -> "source.name.keyword",
+      "originalName" -> "source.originalName.keyword",
+      "originalUrl" -> "source.originalUrl",
+      "url" -> "source.url"
+    )
+  )
+
   val aspectId: String
   val path: Seq[String]
   val negated: Boolean
+
+  // interface for implementing logic of translating different types of AspectQuery to ElasticSearch DSL queries
+  protected def esDslQueries(): Option[EsDslQuery]
+
+  protected def getEsFieldPath(): Option[String] = {
+    if (aspectId == "tenantId") {
+      Some(aspectId)
+    } else if (aspectId == "id") {
+      Some("identifier")
+    } else if (aspectId.isEmpty || registryRefToEsRefMappings
+                 .get(aspectId)
+                 .isEmpty || path.isEmpty) {
+      None
+    } else {
+      val mappings = registryRefToEsRefMappings(aspectId)
+      val fieldPath = path.mkString(".")
+      mappings.get(fieldPath)
+    }
+  }
 
   // interface for implementing logic of translating different types of AspectQuery to SQL queries
   // This translation is done within `record aspect` context.
@@ -88,8 +205,7 @@ sealed trait AspectQuery {
   /**
     * Public interface of all types of AspectQuery. Call this method to covert AspectQuery to SQL statement.
     * Sub-class might choose to override this method to alter generic logic
-    * @param recordIdSqlRef
-    * @param tenantIdSqlRef
+    * @param config AspectQueryToSqlConfig
     * @return
     */
   def toSql(
@@ -110,6 +226,15 @@ sealed trait AspectQuery {
       )
     }
   }
+
+  /**
+    * Public interface of all types of AspectQuery. Call this method to covert AspectQuery to ElasticSearch DSL query.
+    * @param config AspectQueryToEsDslConfig
+    * @return
+    */
+  def toEsDsl(
+      config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
+  ): Option[EsDslQuery] = esDslQueries
 }
 
 class AspectQueryTrue extends AspectQuery {
@@ -130,6 +255,9 @@ class AspectQueryTrue extends AspectQuery {
   ) =
     sqlQueries
 
+  def esDslQueries(): Option[EsDslQuery] =
+    Some(MatchAllQuery())
+
 }
 
 class AspectQueryFalse extends AspectQuery {
@@ -149,6 +277,9 @@ class AspectQueryFalse extends AspectQuery {
       config: AspectQueryToSqlConfig = AspectQueryToSqlConfig()
   ) =
     sqlQueries
+
+  def esDslQueries(): Option[EsDslQuery] =
+    Some(MatchNoneQuery())
 }
 
 case class AspectQueryExists(
@@ -156,6 +287,21 @@ case class AspectQueryExists(
     path: Seq[String],
     negated: Boolean = false
 ) extends AspectQuery {
+
+  def esDslQueries(): Option[EsDslQuery] = {
+    val field = getEsFieldPath
+    if (field.isEmpty) {
+      throw new Exception(
+        s"Failed to create ES DSL query: cannot convert registry ref to es ref: ${aspectId} / ${path
+          .mkString(".")}"
+      )
+    }
+    if (!negated) {
+      Some(ExistsQuery(field.get))
+    } else {
+      Some(ElasticDsl.boolQuery().not(ExistsQuery(field.get)))
+    }
+  }
 
   def sqlQueries(): Option[SQLSyntax] = {
     if (path.length > 0) {
@@ -206,6 +352,52 @@ case class AspectQueryWithValue(
     // there is no guarantee that auth decision will always be in order of `reference` `operator` `value`
     placeReferenceFirst: Boolean = true
 ) extends AspectQuery {
+
+  def esDslQueries(): Option[EsDslQuery] = {
+    val fieldOpt = getEsFieldPath
+    if (fieldOpt.isEmpty) {
+      throw new Exception(
+        s"Failed to create ES DSL query: cannot convert registry ref to es ref: ${aspectId} / ${path
+          .mkString(".")}"
+      )
+    }
+    val field = fieldOpt.get
+    val query = operator.value match {
+      case "=" => ElasticDsl.termQuery(field, value.esValue)
+      case ">" =>
+        if (placeReferenceFirst) {
+          ElasticDsl.rangeQuery(field).copy(gt = Some(value.esValue))
+        } else {
+          ElasticDsl.rangeQuery(field).copy(lt = Some(value.esValue))
+        }
+      case "<" =>
+        if (placeReferenceFirst) {
+          ElasticDsl.rangeQuery(field).copy(lt = Some(value.esValue))
+        } else {
+          ElasticDsl.rangeQuery(field).copy(gt = Some(value.esValue))
+        }
+      case ">=" =>
+        if (placeReferenceFirst) {
+          ElasticDsl.rangeQuery(field).copy(gte = Some(value.esValue))
+        } else {
+          ElasticDsl.rangeQuery(field).copy(lte = Some(value.esValue))
+        }
+      case "<=" =>
+        if (placeReferenceFirst) {
+          ElasticDsl.rangeQuery(field).copy(lte = Some(value.esValue))
+        } else {
+          ElasticDsl.rangeQuery(field).copy(gte = Some(value.esValue))
+        }
+      case unknownOp =>
+        throw new Exception(s"Unrecognised operator ${unknownOp}")
+    }
+
+    if (!negated) {
+      Some(query)
+    } else {
+      Some(ElasticDsl.boolQuery().not(query))
+    }
+  }
 
   def sqlQueries(): Option[SQLSyntax] = {
     Some(if (placeReferenceFirst) {
@@ -336,6 +528,22 @@ case class AspectQueryArrayNotEmpty(
     val negated: Boolean = false
 ) extends AspectQuery {
 
+  def esDslQueries(): Option[EsDslQuery] = {
+    val fieldOpt = getEsFieldPath
+    if (fieldOpt.isEmpty) {
+      throw new Exception(
+        s"Failed to create ES DSL query: cannot convert registry ref to es ref: ${aspectId} / ${path
+          .mkString(".")}"
+      )
+    }
+    val field = fieldOpt.get
+    if (!negated) {
+      Some(ExistsQuery(field))
+    } else {
+      Some(ElasticDsl.boolQuery().not(ExistsQuery(field)))
+    }
+  }
+
   def sqlQueries(): Option[SQLSyntax] = {
     if (path.isEmpty) {
       throw new Error(
@@ -385,6 +593,23 @@ case class AspectQueryValueInArray(
     value: AspectQueryValue,
     negated: Boolean = false
 ) extends AspectQuery {
+
+  override def esDslQueries(): Option[EsDslQuery] = {
+    val fieldOpt = getEsFieldPath
+    if (fieldOpt.isEmpty) {
+      throw new Exception(
+        s"Failed to create ES DSL query: cannot convert registry ref to es ref: ${aspectId} / ${path
+          .mkString(".")}"
+      )
+    }
+    val field = fieldOpt.get
+    val query = MatchQuery(field, value.esValue)
+    if (!negated) {
+      Some(query)
+    } else {
+      Some(ElasticDsl.boolQuery().not(query))
+    }
+  }
 
   def sqlQueries(): Option[SQLSyntax] = {
     if (path.isEmpty) {
@@ -439,6 +664,72 @@ case class AspectQueryGroup(
     negated: Boolean = false
 ) {
 
+  def toEsDsl(
+      config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
+  ): Option[EsDslQuery] = {
+    if (queries.isEmpty) {
+      return None
+    }
+    val joinedQuery = if (joinWithAnd) {
+      if (queries.exists {
+            case _: AspectQueryFalse => true
+            case _                   => false
+          }) {
+        // when unconditional FALSE exist, joinWithAnd should to evaluated to FALSE
+        MatchNoneQuery()
+      } else {
+        val esQueries = queries.map {
+          // unconditional true can be skipped in AND
+          case _: AspectQueryTrue => None
+          case aspectQuery =>
+            aspectQuery.toEsDsl(config)
+        }.flatten
+
+        if (esQueries.isEmpty) {
+          MatchAllQuery()
+        } else {
+          ElasticDsl
+            .boolQuery()
+            // use `must` for AND
+            .must(esQueries)
+        }
+      }
+    } else {
+      if (queries.exists {
+            case _: AspectQueryTrue => true
+            case _                  => false
+          }) {
+        // when unconditional TRUE exist, joinWithOr should to evaluated to TRUE
+        MatchAllQuery()
+      } else {
+        val esQueries = queries.map {
+          // unconditional false can be skipped in OR
+          case _: AspectQueryFalse => None
+          case aspectQuery =>
+            aspectQuery.toEsDsl(config)
+        }.flatten
+
+        if (esQueries.isEmpty) {
+          MatchNoneQuery()
+        } else {
+          ElasticDsl
+            .boolQuery()
+            // use `should` for OR
+            .should(esQueries)
+        }
+      }
+    }
+    if (negated) {
+      Some(
+        ElasticDsl
+          .boolQuery()
+          .not(joinedQuery)
+      )
+    } else {
+      Some(joinedQuery)
+    }
+  }
+
   def toSql(
       config: AspectQueryToSqlConfig = AspectQueryToSqlConfig()
   ): Option[SQLSyntax] = {
@@ -453,13 +744,17 @@ case class AspectQueryGroup(
         // when unconditional FALSE exist, joinWithAnd should to evaluated to FALSE
         Some(SQLUtils.SQL_FALSE)
       } else {
-        SQLSyntax.toAndConditionOpt(
-          queries.map {
-            // unconditional true can be skipped in AND
-            case _: AspectQueryTrue => None
-            case aspectQuery =>
-              aspectQuery.toSql(config)
-          }: _*
+        Some(
+          SQLSyntax
+            .toAndConditionOpt(
+              queries.map {
+                // unconditional true can be skipped in AND
+                case _: AspectQueryTrue => None
+                case aspectQuery =>
+                  aspectQuery.toSql(config)
+              }: _*
+            )
+            .getOrElse(SQLUtils.SQL_TRUE)
         )
       }
     } else {
@@ -470,13 +765,17 @@ case class AspectQueryGroup(
         // when unconditional TRUE exist, joinWithOr should to evaluated to TRUE
         Some(SQLUtils.SQL_TRUE)
       } else {
-        SQLSyntax.toOrConditionOpt(
-          queries.map {
-            // unconditional false can be skipped in OR
-            case _: AspectQueryFalse => None
-            case aspectQuery =>
-              aspectQuery.toSql(config)
-          }: _*
+        Some(
+          SQLSyntax
+            .toOrConditionOpt(
+              queries.map {
+                // unconditional false can be skipped in OR
+                case _: AspectQueryFalse => None
+                case aspectQuery =>
+                  aspectQuery.toSql(config)
+              }: _*
+            )
+            .getOrElse(SQLUtils.SQL_FALSE)
         )
       }
     }
@@ -491,22 +790,26 @@ case class AspectQueryGroup(
 sealed trait AspectQueryValue {
   // --- should create value using sqls"${value}" so it's used as `binding parameters`
   val value: SQLSyntax
+  val esValue: Any
   val postgresType: SQLSyntax
 }
 
 case class AspectQueryStringValue(string: String) extends AspectQueryValue {
   val value = sqls"${string}"
+  val esValue = string
   val postgresType = SQLSyntax.createUnsafely("TEXT")
 }
 
 case class AspectQueryBooleanValue(boolean: Boolean) extends AspectQueryValue {
   val value = sqls"${boolean}"
+  val esValue = boolean
   val postgresType = SQLSyntax.createUnsafely("BOOL")
 }
 
 case class AspectQueryBigDecimalValue(bigDecimal: BigDecimal)
     extends AspectQueryValue {
   val value = sqls"${bigDecimal}"
+  val esValue = bigDecimal.toDouble
   val postgresType = SQLSyntax.createUnsafely("NUMERIC")
 }
 

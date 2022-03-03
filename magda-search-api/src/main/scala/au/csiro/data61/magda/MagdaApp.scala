@@ -12,6 +12,7 @@ import akka.http.scaladsl.server.{
 }
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.api.SearchApi
+import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.search.elasticsearch.{
   DefaultClientProvider,
   ElasticSearchQueryer
@@ -45,8 +46,9 @@ object MagdaApp extends App {
   val listener = system.actorOf(Props(classOf[Listener]))
   system.eventStream.subscribe(listener, classOf[DeadLetter])
 
+  val authApiClient = new AuthApiClient()
   val searchQueryer = ElasticSearchQueryer.apply
-  val api = new SearchApi(searchQueryer)
+  val api = new SearchApi(authApiClient, searchQueryer)
 
   val interface = Option(System.getenv("npm_package_config_interface"))
     .orElse(Option(config.getString("http.interface")))

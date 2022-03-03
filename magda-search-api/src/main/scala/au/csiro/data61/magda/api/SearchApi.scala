@@ -8,9 +8,11 @@ import akka.http.scaladsl.server.Directives._
 import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.api.{model => apimodel}
+import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.search.SearchQueryer
 import com.typesafe.config.Config
+import au.csiro.data61.magda.search.Directives.withDatasetReadAuthDecision
 
 /**
   * @apiDefine Search Search API
@@ -19,7 +21,10 @@ import com.typesafe.config.Config
   * organisations.
   */
 
-class SearchApi(val searchQueryer: SearchQueryer)(
+class SearchApi(
+    val authApiClient: AuthApiClient,
+    val searchQueryer: SearchQueryer
+)(
     implicit val config: Config,
     implicit val logger: LoggingAdapter
 ) extends misc.Protocols
@@ -83,7 +88,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(
                   'dateTo ?,
                   'region *,
                   'format *,
-                  'publishingState *
+                  'publishingState ?
                 )) {
                   (
                       facetQuery,
@@ -97,32 +102,35 @@ class SearchApi(val searchQueryer: SearchQueryer)(
                       formats,
                       publishingState
                   ) =>
-                    val query = Query.fromQueryParams(
-                      generalQuery,
-                      publishers,
-                      dateFrom,
-                      dateTo,
-                      regions,
-                      formats,
-                      publishingState
-                    )
-
-                    FacetType.fromId(facetId) match {
-                      case Some(facetType) ⇒
-                        complete(
-                          searchQueryer.searchFacets(
-                            request.headers
-                              .find(_.is("x-magda-session"))
-                              .map(_.value()),
-                            facetType,
-                            facetQuery,
-                            query,
-                            start,
-                            limit,
-                            tenantId
-                          )
+                    withDatasetReadAuthDecision(authApiClient, publishingState) {
+                      authDecision =>
+                        val query = Query.fromQueryParams(
+                          generalQuery,
+                          publishers,
+                          dateFrom,
+                          dateTo,
+                          regions,
+                          formats,
+                          publishingState
                         )
-                      case None ⇒ complete(NotFound)
+
+                        FacetType.fromId(facetId) match {
+                          case Some(facetType) ⇒
+                            complete(
+                              searchQueryer.searchFacets(
+                                request.headers
+                                  .find(_.is("x-magda-session"))
+                                  .map(_.value()),
+                                facetType,
+                                facetQuery,
+                                query,
+                                start,
+                                limit,
+                                tenantId
+                              )
+                            )
+                          case None ⇒ complete(NotFound)
+                        }
                     }
                 }
               }
@@ -232,7 +240,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(
                   'dateTo ?,
                   'region *,
                   'format *,
-                  'publishingState *
+                  'publishingState ?
                 )) {
                   (
                       generalQuery,
@@ -245,7 +253,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(
                       regions,
                       formats,
                       publishingState
-                  ) ⇒
+                  ) =>
                     val query = Query.fromQueryParams(
                       generalQuery,
                       publishers,
