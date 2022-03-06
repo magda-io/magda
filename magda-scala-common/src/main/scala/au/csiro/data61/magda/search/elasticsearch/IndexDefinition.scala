@@ -25,6 +25,7 @@ import org.locationtech.jts.geom._
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import spray.json._
+import au.csiro.data61.magda.util.RichConfig._
 
 import scala.concurrent.Future
 
@@ -105,6 +106,14 @@ object IndexDefinition extends DefaultJsonProtocol {
     None,
     Some("wordnet")
   )
+
+  def applyIndexConfig(config: Config, indexReq: CreateIndexRequest) = {
+    var req = indexReq.copy(includeTypeName = Some(true))
+    config
+      .getOptionalString("indexer.refreshInterval")
+      .foreach(v => req = req.indexSetting("refresh_interval", v))
+    req
+  }
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
@@ -322,16 +331,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             )
           )
 
-      createIdxReq = createIdxReq.copy(includeTypeName = Some(true))
-
-      if (config.hasPath("indexer.refreshInterval")) {
-        createIdxReq.indexSetting(
-          "refresh_interval",
-          config.getString("indexer.refreshInterval")
-        )
-      } else {
-        createIdxReq
-      }
+      applyIndexConfig(config, createIdxReq)
     }
   )
 
@@ -395,7 +395,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 )
               )
             )
-        createIdxReq.copy(includeTypeName = Some(true))
+        applyIndexConfig(config, createIdxReq)
       },
       create = Some(
         (client, indices, config) =>
@@ -448,7 +448,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 UppercaseTokenFilter
               )
             )
-        createIdxReq.copy(includeTypeName = Some(true))
+        applyIndexConfig(config, createIdxReq)
       }
     )
 
@@ -475,7 +475,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 LowercaseTokenFilter
               )
             )
-        createIdxReq.copy(includeTypeName = Some(true))
+        applyIndexConfig(config, createIdxReq)
       }
     )
 
