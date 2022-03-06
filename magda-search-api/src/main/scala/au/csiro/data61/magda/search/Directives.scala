@@ -14,7 +14,7 @@ object Directives {
       publishingStatus: Option[String]
   ): Directive1[AuthDecision] = {
     val datasetType = publishingStatus.getOrElse("*")
-    if (!datasetType.matches("^[\\w\\d-_]+$")) {
+    if (datasetType != "*" && !datasetType.matches("^[\\w\\d-_]+$")) {
       complete(BadRequest, s"Invalid publishing status: ${datasetType}")
     } else {
       val operationUrl = s"object/dataset/${datasetType}/read"
