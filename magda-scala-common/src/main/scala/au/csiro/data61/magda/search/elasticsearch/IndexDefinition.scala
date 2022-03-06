@@ -107,11 +107,17 @@ object IndexDefinition extends DefaultJsonProtocol {
     Some("wordnet")
   )
 
-  def applyIndexConfig(config: Config, indexReq: CreateIndexRequest) = {
+  def applyIndexConfig(
+      config: Config,
+      indexReq: CreateIndexRequest,
+      processRefreshIntervalSetting: Boolean = false
+  ) = {
     var req = indexReq.copy(includeTypeName = Some(true))
-    config
-      .getOptionalString("indexer.refreshInterval")
-      .foreach(v => req = req.indexSetting("refresh_interval", v))
+    if (processRefreshIntervalSetting) {
+      config
+        .getOptionalString("indexer.refreshInterval")
+        .foreach(v => req = req.indexSetting("refresh_interval", v))
+    }
     req
   }
 
@@ -331,7 +337,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             )
           )
 
-      applyIndexConfig(config, createIdxReq)
+      applyIndexConfig(config, createIdxReq, true)
     }
   )
 
