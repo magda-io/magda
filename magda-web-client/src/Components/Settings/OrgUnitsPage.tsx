@@ -267,7 +267,7 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
             }
             if (expandItemValues.indexOf(parentNode.rawData.id as any) !== -1) {
                 // parent node has been expanded
-                if (parentNode?.children?.length) {
+                if (!parentNode?.children?.length) {
                     parentNode.children = [];
                 }
                 parentNode.children = [
