@@ -2,17 +2,16 @@ package au.csiro.data61.magda.indexer
 
 import java.time.temporal.ChronoUnit
 import java.util.UUID
-
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.HttpMethods.POST
 import akka.http.scaladsl.model.StatusCodes.{Accepted, OK}
 import au.csiro.data61.magda.api.SearchApi
 import au.csiro.data61.magda.api.model.{SearchResult, Protocols => ApiProtocols}
+import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.indexer.external.registry.WebhookApi
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 import au.csiro.data61.magda.model.Registry.{Record, _}
-
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
 import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols, _}
 import au.csiro.data61.magda.search.SearchQueryer
@@ -99,7 +98,8 @@ trait WebhookSpecBase
     val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
     val webhookApi = new WebhookApi(indexer)
     val searchQueryer = new ElasticSearchQueryer(indices)
-    val searchApi = new SearchApi(searchQueryer)(config, logger)
+    val authApiClient = new AuthApiClient()
+    val searchApi = new SearchApi(authApiClient, searchQueryer)(config, logger)
 
     val indexNames = List(
       indices.getIndex(config, Indices.DataSetsIndex),

@@ -14,6 +14,9 @@ import spray.json.{
   JsValue
 }
 import scalikejdbc.interpolation.SQLSyntax
+import com.sksamuel.elastic4s.http.ElasticDsl
+import com.sksamuel.elastic4s.searches.queries.matches.{MatchAllQuery}
+import com.sksamuel.elastic4s.searches.queries.{Query => EsDslQuery}
 
 import scala.collection.SortedSet
 
@@ -256,6 +259,23 @@ object Auth {
           Seq(AspectQueryGroup(queries = Seq(new AspectQueryFalse)))
         }
 
+      }
+    }
+
+    def toEsDsl(
+        config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
+    ): Option[EsDslQuery] = {
+      val queries = this
+        .toAspectQueryGroups(config.prefixes)
+        .map(
+          _.toEsDsl(config)
+        )
+        .flatten
+
+      if (queries.isEmpty) {
+        Some(MatchAllQuery())
+      } else {
+        Some(ElasticDsl.boolQuery().should(queries))
       }
     }
 

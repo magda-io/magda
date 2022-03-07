@@ -22,15 +22,18 @@ import au.csiro.data61.magda.api.BaseSearchApiSpec
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import org.scalacheck.Shrink
 import akka.http.scaladsl.server.Route
-import java.util.UUID
 
+import java.util.UUID
 import au.csiro.data61.magda.model.misc.Agent
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.indexer.crawler.Crawler
-import au.csiro.data61.magda.client.RegistryExternalInterface
+import au.csiro.data61.magda.client.{
+  AuthApiClient,
+  HttpFetcher,
+  RegistryExternalInterface
+}
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.client.HttpFetcher
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import au.csiro.data61.magda.test.opa.ResponseDatasetAllowAll
 import au.csiro.data61.magda.test.util.MagdaMatchers
@@ -167,7 +170,8 @@ class CrawlerApiSpec
       val crawler = new RegistryCrawler(externalInterface, indexer)
       val crawlerApi = new CrawlerApi(crawler, indexer)
       val searchQueryer = new ElasticSearchQueryer(indices)
-      val api = new SearchApi(searchQueryer)(config, logger)
+      val authApiClient = new AuthApiClient()
+      val api = new SearchApi(authApiClient, searchQueryer)(config, logger)
 
       val routes = crawlerApi.routes
 
