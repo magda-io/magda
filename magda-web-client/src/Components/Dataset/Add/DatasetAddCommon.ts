@@ -814,7 +814,7 @@ export async function loadStateFromRegistry(
         // --- we turned off cache here
         record = await fetchRecordWithNoCache(id, ["dataset-draft"], [], false);
     } catch (e) {
-        if (e! instanceof ServerError || e.statusCode !== 404) {
+        if (!(e instanceof ServerError) || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create blank status if can't find an existing one
             throw e;
         }
@@ -894,7 +894,7 @@ export async function saveStateToRegistry(state: State, id: string) {
         // --- we won't check `dataset-draft` aspect as it's possible a dataset record with no dataset-draft exist (e.g. edit flow)
         record = await fetchRecordWithNoCache(id, [], [], false);
     } catch (e) {
-        if (e! instanceof ServerError || e.statusCode !== 404) {
+        if (!(e instanceof ServerError) || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create one if can't find an existing one
             throw e;
         }
