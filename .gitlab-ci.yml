@@ -615,6 +615,8 @@ dockerize:opa:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   needs: 
+    - yarn-install
+    - build-builder-image
     - buildtest:opa-policies
   cache:
     paths: []
