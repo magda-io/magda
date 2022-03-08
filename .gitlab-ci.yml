@@ -624,7 +624,7 @@ dockerize:opa:
     - docker:dind
   script:
   - cd magda-opa
-  - docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-opa:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
+  - yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
 
 dockerize:dockerExtensions:
   stage: buildtest
