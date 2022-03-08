@@ -368,7 +368,7 @@ buildtest:typescript-apis-with-pg:
     OPA_URL: "http://docker:8181/"
   script:
     - cd magda-opa
-    - yarn dev
+    - yarn dev -d
     - cd ..
     - cd magda-typescript-common && yarn build && yarn test
     - cd ..
