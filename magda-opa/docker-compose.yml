@@ -1,7 +1,7 @@
 version: "3"
 services:
   test-opa:
-    image: openpolicyagent/opa:0.33.1
+    image: openpolicyagent/opa:0.37.2-static
     ports:
       - 8181:8181
     volumes:
