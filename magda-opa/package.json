@@ -15,7 +15,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-opa",
-      "include": "Dockerfile policies"
+      "include": "Dockerfile policies start.sh"
     }
   },
   "devDependencies": {
