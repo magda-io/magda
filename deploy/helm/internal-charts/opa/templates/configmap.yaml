@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: "default-opa-policies"
-data:
-  policy_files.json: {{ include "magda.filesToJson" (dict "root" . "filePattern" "policies/**/*" ) }}
