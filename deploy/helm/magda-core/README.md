@@ -52,6 +52,7 @@ Kubernetes: `>= 1.14.0-0`
 | global.awsRdsEndpoint | string | `nil` | AWS RDS DB instance access endpoint. e.g. xxxx.xxxx.ap-southeast-2.rds.amazonaws.com. Compulsory if `useAwsRdsDb` = true |
 | global.defaultAdminUserId | string | `"00000000-0000-4000-8000-000000000000"` |  |
 | global.defaultDatasetBucket | string | `"magda-datasets"` | The name of the bucket to store datasets in by default |
+| global.enableLivenessProbes | bool | `false` | Whether or not enabled livenessProbes on all services |
 | global.enableMultiTenants | bool | `false` |  |
 | global.enablePriorityClass | bool | `false` | whether enable magda priority class.  When `true`, Magda will create priorityClassName from "magda-10" to "magda-0" where "magda-10" indicates the highest priority.  At this moment, "magda-10" is only allocated to gateway. Please note: When you use in-k8s postgreSQL, you need to manually set the priority class for db instance to `magda-9`  as it currently has no priority class set by default.  Other components will be auto-assigned appropriate priority class when `enablePriorityClass` is on. |
 | global.exposeNodePorts | bool | `false` |  |

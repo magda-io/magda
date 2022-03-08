@@ -9,6 +9,7 @@ global:
   enablePriorityClass: false
   defaultContactEmail: "magda-test@googlegroups.com"
   enableMultiTenants: false
+  enableLivenessProbes: true
 
 tags:
   all: true
