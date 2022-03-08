@@ -56,9 +56,6 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             opaUrl: process.env["OPA_URL"]
                 ? process.env["OPA_URL"]
                 : "http://localhost:8181/",
-            registryApiUrl: process.env["REGISTRY_API_URL"]
-                ? process.env["REGISTRY_API_URL"]
-                : "http://localhost:6101/v0",
             tenantId: MAGDA_ADMIN_PORTAL_ID,
             authDecisionClient: new AuthDecisionQueryClient(
                 "http://localhost",

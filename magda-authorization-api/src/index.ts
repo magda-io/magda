@@ -34,11 +34,6 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:8181/"
         })
-        .option("registryApiUrl", {
-            describe: "The access endpoint URL of the Registry API",
-            type: "string",
-            default: "http://localhost:6101/v0"
-        })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
@@ -94,7 +89,6 @@ app.use(
     "/v0",
     createApiRouter({
         jwtSecret: argv.jwtSecret,
-        registryApiUrl: argv.registryApiUrl,
         opaUrl: argv.opaUrl,
         database,
         tenantId: argv.tenantId,

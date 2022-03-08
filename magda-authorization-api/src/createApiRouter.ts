@@ -19,7 +19,6 @@ import createPermissionApiRouter from "./apiRouters/createPermissionApiRouter";
 
 export interface ApiRouterOptions {
     database: Database;
-    registryApiUrl: string;
     opaUrl: string;
     authDecisionClient: AuthDecisionQueryClient;
     jwtSecret: string;

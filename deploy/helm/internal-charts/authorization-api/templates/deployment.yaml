@@ -30,9 +30,11 @@ spec:
             "--dbHost", "authorization-db",
             "--dbPort", "5432",
             "--opaUrl", "http://localhost:8181/",
-            "--registryApiUrl", "http://registry-api/v0",
 {{- if .Values.debug }}
             "--debug", "true",
+{{- end }}
+{{- if .Values.skipAuth }}
+            "--skipAuth", "true",
 {{- end }}
             "--tenantId", "0"
         ]
