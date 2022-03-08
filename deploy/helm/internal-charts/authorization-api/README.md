@@ -21,8 +21,18 @@ Kubernetes: `>= 1.14.0-0`
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"docker.io/data61"` |  |
 | image.name | string | `"magda-authorization-api"` |  |
-| resources.limits.cpu | string | `"50m"` |  |
-| resources.requests.cpu | string | `"10m"` |  |
+| opa.customPolicyConfigMaps | list | `[]` | a list of names of the configMaps that contains custom policy files. the configMap must be created using magda helm chart template: [magda.filesToJson](https://github.com/magda-io/magda/blob/21499b75c7a7ee00d68886338713217d83ccb91f/deploy/helm/magda-core/templates/_helpers.tpl#L244). More info see [here](https://github.com/magda-io/magda-configmap-dir-loader). |
+| opa.image.name | string | `"magda-opa"` |  |
+| opa.loaderImage.name | string | `"magda-configmap-dir-loader"` |  |
+| opa.loaderImage.pullPolicy | string | `"IfNotPresent"` |  |
+| opa.loaderImage.pullSecrets | bool | `false` |  |
+| opa.loaderImage.repository | string | `"docker.io/data61"` |  |
+| opa.loaderImage.tag | string | `"1.0.0-alpha.0"` |  |
+| opa.resources.limits.cpu | string | `"500m"` |  |
+| opa.resources.requests.cpu | string | `"20m"` |  |
+| opa.resources.requests.memory | string | `"50Mi"` |  |
+| resources.limits.cpu | string | `"500m"` |  |
+| resources.requests.cpu | string | `"20m"` |  |
 | resources.requests.memory | string | `"50Mi"` |  |
 
 ----------------------------------------------

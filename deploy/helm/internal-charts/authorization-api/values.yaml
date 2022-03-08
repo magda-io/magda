@@ -48,7 +48,7 @@ opa:
     limits:
       cpu: 500m
 
-  # customPolicyConfigMaps -- a list of names of the configMaps that contains custom policy files.
+  # opa.customPolicyConfigMaps -- a list of names of the configMaps that contains custom policy files.
   # the configMap must be created using magda helm chart template: [magda.filesToJson](https://github.com/magda-io/magda/blob/21499b75c7a7ee00d68886338713217d83ccb91f/deploy/helm/magda-core/templates/_helpers.tpl#L244).
   # More info see [here](https://github.com/magda-io/magda-configmap-dir-loader).
   customPolicyConfigMaps: []
