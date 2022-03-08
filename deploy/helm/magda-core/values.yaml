@@ -119,10 +119,6 @@ tags:
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   authorization-api: false
   
-  # tags.opa -- turn on / off [opa](../internal-charts/opa/README.md)
-  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
-  opa: false
-  
   # tags.authorization-db -- turn on / off [authorization-db](../internal-charts/authorization-db/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   authorization-db: false
