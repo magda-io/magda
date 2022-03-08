@@ -8,7 +8,7 @@
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push",
-    "test": "docker run -v ./policies:/policies openpolicyagent/opa:0.37.2 test -v ./policies"
+    "test": "docker run -v $PWD/policies:/policies openpolicyagent/opa:0.37.2-static test -v ./policies"
   },
   "author": "",
   "license": "Apache-2.0",
