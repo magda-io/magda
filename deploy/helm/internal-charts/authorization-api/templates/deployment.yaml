@@ -23,6 +23,8 @@ spec:
       - name: authorization-api
         image: {{ include "magda.image" . | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+        ports:
+        - containerPort: 80
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
