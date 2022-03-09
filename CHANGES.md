@@ -13,6 +13,7 @@
 - Added new APIs for managing auth objects
 - #3308 Policy enforcement on auth objects APIs
 - related #3250: Rewrite decision enforcement logic for search API
+- #3326 Build OPA docker image with builtin policies & Run OPA as a side car
 
 ## 1.2.0
 

@@ -87,6 +87,9 @@ global:
   # -- The name of the bucket to store datasets in by default
   defaultDatasetBucket: "magda-datasets"
 
+  # -- Whether or not enabled livenessProbes on all services
+  enableLivenessProbes: false
+
 # -- Whether or not auto create a k8s secrets named `auth-secrets` that contains:
 # <ul>
 # <li> JWT secret, under key: `jwt-secret`. Used internally by Magda gateway to issue JWT token.</li>
@@ -118,10 +121,6 @@ tags:
   # tags.authorization-api -- turn on / off [authorization-api](../internal-charts/authorization-api/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   authorization-api: false
-  
-  # tags.opa -- turn on / off [opa](../internal-charts/opa/README.md)
-  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
-  opa: false
   
   # tags.authorization-db -- turn on / off [authorization-db](../internal-charts/authorization-db/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.

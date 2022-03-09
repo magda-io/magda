@@ -17,10 +17,41 @@ autoscaler:
   targetCPUUtilizationPercentage: 80
 resources:
   requests:
-    cpu: 10m
+    cpu: 20m
     memory: 50Mi
   limits:
-    cpu: 50m
+    cpu: 500m
 
-# -- when set to true, auth API will print verbose debug info (e.g. auth decision process) to log
+# -- when set to true, auth API will print verbose debug info (e.g. sql statements) to log
 debug: false
+# -- when set to true, API will not query policy engine for auth decision but assume it's always permitted. 
+# It's for debugging only.
+skipAuth: false
+
+opa:
+  image: 
+    name: "magda-opa"
+    # repository: 
+    # tag: 
+    # pullPolicy: 
+    # pullSecrets:
+  
+  loaderImage: 
+    # Github repo: https://github.com/magda-io/magda-configmap-dir-loader
+    repository: docker.io/data61
+    name: "magda-configmap-dir-loader"
+    tag: "1.0.0-alpha.0"
+    pullPolicy: IfNotPresent
+    pullSecrets: false
+
+  resources:
+    requests:
+      cpu: 20m
+      memory: 50Mi
+    limits:
+      cpu: 500m
+
+  # opa.customPolicyConfigMaps -- a list of names of the configMaps that contains custom policy files.
+  # the configMap must be created using magda helm chart template: [magda.filesToJson](https://github.com/magda-io/magda/blob/21499b75c7a7ee00d68886338713217d83ccb91f/deploy/helm/magda-core/templates/_helpers.tpl#L244).
+  # More info see [here](https://github.com/magda-io/magda-configmap-dir-loader).
+  customPolicyConfigMaps: []

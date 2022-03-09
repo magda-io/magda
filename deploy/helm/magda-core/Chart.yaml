@@ -127,12 +127,6 @@ dependencies:
     tags:
       - all
       - admin-api
-  - name: opa
-    version: 1.2.0-alpha.0
-    repository: file://../internal-charts/opa
-    tags:
-      - all
-      - opa
   - name: storage-api
     version: 1.2.0-alpha.0
     repository: file://../internal-charts/storage-api

@@ -66,7 +66,6 @@ build-builder-image:
     cd magda-builder-scala && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
     cd .. 
 
-
 # Make sure sbt depenencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
 sbt-prebuild:
   stage: sbt-prebuild
@@ -368,9 +367,9 @@ buildtest:typescript-apis-with-pg:
     PGPASSWORD: password
     OPA_URL: "http://docker:8181/"
   script:
-    - cd deploy/helm/internal-charts/opa
-    - docker-compose up -d
-    - cd ../../../../
+    - cd magda-opa
+    - yarn dev -d
+    - cd ..
     - cd magda-typescript-common && yarn build && yarn test
     - cd ..
     - cd magda-minion-framework && yarn build && yarn test
@@ -378,8 +377,8 @@ buildtest:typescript-apis-with-pg:
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run test --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useAuthApi=true -- run build
-    - cd deploy/helm/internal-charts/opa
-    - docker-compose down
+    - cd magda-opa
+    - yarn dev-stop
   artifacts:
     paths:
       - "*/dist"
@@ -478,7 +477,8 @@ buildtest:opa-policies:
   services:
     - docker:dind
   script:
-    - docker run -v $PWD/deploy/helm/internal-charts/opa/policies:/policies openpolicyagent/opa:0.33.1 test -v ./policies
+    - cd magda-opa
+    - yarn test
 
 buildtest:helm-charts:
   stage: buildtest
@@ -609,6 +609,24 @@ dockerize:migrators:
   script:
     - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
+
+dockerize:opa:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  retry: 1
+  needs: 
+    - yarn-install
+    - build-builder-image
+    - buildtest:opa-policies
+  cache:
+    paths: []
+  before_script:
+    - ./gitlab-ci-buildx-setup.sh
+  services:
+    - docker:dind
+  script:
+  - cd magda-opa
+  - yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
 
 dockerize:dockerExtensions:
   stage: buildtest
@@ -998,32 +1016,3 @@ Publish Helm Chart:
     - aws s3 sync sync_dir s3://magda-charts/
     - aws s3 cp index_dir/index.yaml s3://magda-charts/index.yaml
 
-# Update scripts:
-#   stage: release
-#   only:
-#     # Strict Semvar validation
-#     - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
-#   except:
-#     - branches
-#     - triggers
-#   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-#   needs:
-#     - builders-and-yarn
-#     - pre-release:check-release-version
-#   dependencies:
-#     - builders-and-yarn
-#   script:
-#     - cd scripts
-#     - yarn pkg create-secrets/index.js --out-path create-secrets/build
-#     - cd ../../
-#     - if [ ! -d magda-config/ ]; then git clone https://github.com/magda-io/magda-config.git; else cd magda-config && git pull && cd ..; fi
-#     - cp magda/scripts/create-secrets/build/index-linux magda-config/create-secrets/index-linux
-#     - cp magda/scripts/create-secrets/build/index-macos magda-config/create-secrets/index-macos
-#     - cp magda/scripts/create-secrets/build/index-win.exe magda-config/create-secrets/index-win.exe
-#     - cd magda-config
-#     - cd create-secrets
-#     - git add index-linux index-macos index-win.exe
-#     - git config --global user.email "magdabot@magda.io"
-#     - git config --global user.name "magdabot"
-#     - git commit -m "Update create-secrets scripts `date`"
-#     - git push "https://x-access-token:$GITHUB_ACCESS_TOKEN@github.com/magda-io/magda-config" master

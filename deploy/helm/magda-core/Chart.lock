@@ -59,9 +59,6 @@ dependencies:
 - name: admin-api
   repository: file://../internal-charts/admin-api
   version: 1.2.0-alpha.0
-- name: opa
-  repository: file://../internal-charts/opa
-  version: 1.2.0-alpha.0
 - name: storage-api
   repository: file://../internal-charts/storage-api
   version: 1.2.0-alpha.0
@@ -80,5 +77,5 @@ dependencies:
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
   version: 1.2.0-alpha.0
-digest: sha256:90b1132c731386ae5dbbde02c5b167e905d4f52670d8948d71b63838efe723a8
-generated: "2021-12-22T13:39:25.865781+11:00"
+digest: sha256:2c27aa9db0eae2305a9bbc451582436ef26357a9f31a85b1a2a3ef6c00570823
+generated: "2022-03-08T21:57:31.06598+11:00"
