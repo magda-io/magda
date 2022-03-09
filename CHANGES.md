@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Next
+## v2.0.0
 
 - #3231 Upgraded to Open Policy Agent v0.33.x
 - #3253 Add New /auth/opa/decision Endpoint
