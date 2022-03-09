@@ -1,6 +1,6 @@
 # magda-core
 
-![Version: 1.2.0-alpha.0](https://img.shields.io/badge/Version-1.2.0--alpha.0-informational?style=flat-square)
+![Version: 2.0.0-alpha.0](https://img.shields.io/badge/Version-2.0.0--alpha.0-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes all core magda modules.
 
@@ -16,31 +16,31 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../internal-charts/admin-api | admin-api | 1.2.0-alpha.0 |
-| file://../internal-charts/apidocs-server | apidocs-server | 1.2.0-alpha.0 |
-| file://../internal-charts/authorization-api | authorization-api | 1.2.0-alpha.0 |
-| file://../internal-charts/authorization-db | authorization-db | 1.2.0-alpha.0 |
-| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 1.2.0-alpha.0 |
-| file://../internal-charts/combined-db | combined-db | 1.2.0-alpha.0 |
-| file://../internal-charts/content-api | content-api | 1.2.0-alpha.0 |
-| file://../internal-charts/content-db | content-db | 1.2.0-alpha.0 |
-| file://../internal-charts/correspondence-api | correspondence-api | 1.2.0-alpha.0 |
-| file://../internal-charts/elasticsearch | elasticsearch | 1.2.0-alpha.0 |
-| file://../internal-charts/gateway | gateway | 1.2.0-alpha.0 |
-| file://../internal-charts/indexer | indexer | 1.2.0-alpha.0 |
-| file://../internal-charts/ingress | ingress | 1.2.0-alpha.0 |
-| file://../internal-charts/priorities | priorities | 1.2.0-alpha.0 |
-| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 1.2.0-alpha.0 |
-| file://../internal-charts/registry-api | registry-api | 1.2.0-alpha.0 |
-| file://../internal-charts/registry-db | registry-db | 1.2.0-alpha.0 |
-| file://../internal-charts/search-api-node | search-api-node | 1.2.0-alpha.0 |
-| file://../internal-charts/search-api | search-api | 1.2.0-alpha.0 |
-| file://../internal-charts/session-db | session-db | 1.2.0-alpha.0 |
-| file://../internal-charts/storage-api | storage-api | 1.2.0-alpha.0 |
-| file://../internal-charts/tenant-api | tenant-api | 1.2.0-alpha.0 |
-| file://../internal-charts/tenant-db | tenant-db | 1.2.0-alpha.0 |
-| file://../internal-charts/web-server | web-server | 1.2.0-alpha.0 |
-| file://../magda-common | magda-common | 1.2.0-alpha.0 |
+| file://../internal-charts/admin-api | admin-api | 2.0.0-alpha.0 |
+| file://../internal-charts/apidocs-server | apidocs-server | 2.0.0-alpha.0 |
+| file://../internal-charts/authorization-api | authorization-api | 2.0.0-alpha.0 |
+| file://../internal-charts/authorization-db | authorization-db | 2.0.0-alpha.0 |
+| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 2.0.0-alpha.0 |
+| file://../internal-charts/combined-db | combined-db | 2.0.0-alpha.0 |
+| file://../internal-charts/content-api | content-api | 2.0.0-alpha.0 |
+| file://../internal-charts/content-db | content-db | 2.0.0-alpha.0 |
+| file://../internal-charts/correspondence-api | correspondence-api | 2.0.0-alpha.0 |
+| file://../internal-charts/elasticsearch | elasticsearch | 2.0.0-alpha.0 |
+| file://../internal-charts/gateway | gateway | 2.0.0-alpha.0 |
+| file://../internal-charts/indexer | indexer | 2.0.0-alpha.0 |
+| file://../internal-charts/ingress | ingress | 2.0.0-alpha.0 |
+| file://../internal-charts/priorities | priorities | 2.0.0-alpha.0 |
+| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 2.0.0-alpha.0 |
+| file://../internal-charts/registry-api | registry-api | 2.0.0-alpha.0 |
+| file://../internal-charts/registry-db | registry-db | 2.0.0-alpha.0 |
+| file://../internal-charts/search-api-node | search-api-node | 2.0.0-alpha.0 |
+| file://../internal-charts/search-api | search-api | 2.0.0-alpha.0 |
+| file://../internal-charts/session-db | session-db | 2.0.0-alpha.0 |
+| file://../internal-charts/storage-api | storage-api | 2.0.0-alpha.0 |
+| file://../internal-charts/tenant-api | tenant-api | 2.0.0-alpha.0 |
+| file://../internal-charts/tenant-db | tenant-db | 2.0.0-alpha.0 |
+| file://../internal-charts/web-server | web-server | 2.0.0-alpha.0 |
+| file://../magda-common | magda-common | 2.0.0-alpha.0 |
 | https://charts.magda.io | preview-map(magda-preview-map) | 1.1.0 |
 
 ## Values

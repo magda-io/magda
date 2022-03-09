@@ -1,7 +1,7 @@
 {
   "name": "@magda/typescript-common",
   "description": "Common TypeScript code shared between components.",
-  "version": "1.2.0-alpha.0",
+  "version": "2.0.0-alpha.0",
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
@@ -17,8 +17,8 @@
     "release": "npm publish || echo \"Skip releasing npm package @magda/typescript-common.\""
   },
   "devDependencies": {
-    "@magda/registry-aspects": "^1.2.0-alpha.0",
-    "@magda/scripts": "^1.2.0-alpha.0",
+    "@magda/registry-aspects": "^2.0.0-alpha.0",
+    "@magda/scripts": "^2.0.0-alpha.0",
     "@types/chai": "^4.0.0",
     "@types/chai-as-promised": "^7.1.0",
     "@types/cross-spawn": "^6.0.1",
@@ -27,6 +27,7 @@
     "@types/lodash": "^4.14.73",
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
+    "@types/pg": "^6.1.41",
     "@types/read-pkg-up": "^3.0.1",
     "@types/sinon": "^4.1.3",
     "@types/superagent": "^3.5.5",
@@ -34,7 +35,6 @@
     "@types/urijs": "1.19.13",
     "@types/uuid": "^8.0.0",
     "@types/yargs": "^12.0.8",
-    "@types/pg": "^6.1.41",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "djv": "^2.1.1",
@@ -61,15 +61,15 @@
     "lodash": "^4.17.11",
     "markdown-it": "^10.0.0",
     "moment": "^2.17.1",
+    "pg": "^6.4.0",
     "read-pkg-up": "^3.0.0",
     "request": "^2.88.0",
     "resolve": "^1.15.0",
+    "sql-syntax": "^1.1.3",
     "tsmonad": "^0.7.2",
     "urijs": "^1.19.4",
     "uuid": "^8.2.0",
-    "pg": "^6.4.0",
-    "yargs": "^12.0.5",
-    "sql-syntax": "^1.1.3"
+    "yargs": "^12.0.5"
   },
   "config": {
     "docker": {
