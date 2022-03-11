@@ -1260,6 +1260,7 @@ async function convertStateToDistributionRecords(
             name: distribution.title,
             aspects: {
                 "dcat-distribution-strings": aspect,
+                "access-control": getAccessControlAspectData(state),
                 // --- set distribution initial version if not exist
                 // --- the version will be bumped when it's superseded by a new file / distribution
                 version: distribution?.version
