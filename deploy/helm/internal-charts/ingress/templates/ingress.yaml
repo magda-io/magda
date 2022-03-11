@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
@@ -23,10 +23,13 @@ spec:
   rules:
   - http:
       paths:
-      - backend:
-          serviceName: {{ .Values.targetService | default "gateway" }}
-          servicePort: 80
-        path: {{ if eq (.Values.ingressClass | default "") "gce" -}} /* {{- else -}} / {{- end }}
+      - pathType: {{ if eq (.Values.ingressClass | default "") "gce" -}} "ImplementationSpecific" {{- else -}} "Prefix" {{- end }}
+        path: {{ if eq (.Values.ingressClass | default "") "gce" -}} "/*" {{- else -}} "/" {{- end }}
+        backend:
+          service:
+            name: {{ .Values.targetService | default "gateway" }}
+            port: 
+              number: 80
     {{- if .Values.hostname  }}
     host: {{ .Values.hostname }}
     {{- end }}

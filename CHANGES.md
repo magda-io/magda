@@ -9,6 +9,7 @@
 - #3320 Upgrade djv to 2.1.4
 - #3321 upgrade lodash to 4.17.21
 - #3126 Remove Hardcoded "postgres" username from Content DB migration script
+- #3233 use networking.k8s.io/v1 for default Ingress chart
 
 ## 1.2.0
 
