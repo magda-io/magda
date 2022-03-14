@@ -34,7 +34,7 @@ DELETE FROM resources WHERE uri = 'registry/record';
 -- update default role setup
 -- remove approver role for now to avoid confusion as approval process is still in development
 DELETE FROM role_permissions WHERE role_id = '14ff3f57-e8ea-4771-93af-c6ea91a798d5';
-DELETE FROM roles WHERE role_id = '14ff3f57-e8ea-4771-93af-c6ea91a798d5';
+DELETE FROM roles WHERE id = '14ff3f57-e8ea-4771-93af-c6ea91a798d5';
 -- remove unused view data permission (no constrant) created in schema version 1.3
 DELETE FROM role_permissions WHERE permission_id = '3d913ce7-e728-4bd2-9542-5e9983e45fe1';
 DELETE FROM permission_operations WHERE permission_id = '3d913ce7-e728-4bd2-9542-5e9983e45fe1';
