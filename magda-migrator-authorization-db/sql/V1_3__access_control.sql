@@ -176,8 +176,6 @@ WITH rows AS (
 INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
 VALUES 
 ('object/dataset/published/unpublish','Unpublish Published Dataset', '', (SELECT id FROM rows)),
-('object/dataset/published/updateLicenseInfo', 'Update Published Dataset (License Info Only)', '', (SELECT id FROM rows)),
-('object/dataset/published/updateNonLicenseInfo', 'Update Published Dataset (Non-License Info Only)', '', (SELECT id FROM rows)),
 ('object/dataset/published/read', 'Read Publish Dataset', '', (SELECT id FROM rows));
 
 -- Approver Roles View Permissions ---------------------------------------------------------------------
