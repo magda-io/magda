@@ -12,8 +12,6 @@ A complete solution for managing, publishing and discovering government data, pr
 
 ## Requirements
 
-Kubernetes: `>= 1.14.0-0`
-
 | Repository | Name | Version |
 |------------|------|---------|
 | file://../magda-core | magda-core | 1.2.1-alpha.0 |
