@@ -198,7 +198,7 @@ VALUES
 -- Create approver roles
 INSERT INTO "public"."roles" ("id", "name", "description") 
 VALUES 
-('14ff3f57-e8ea-4771-93af-c6ea91a798d5', 'Approvers', 'Users who can publish datasets');
+('14ff3f57-e8ea-4771-93af-c6ea91a798d5', 'Approvers', 'Users who can approve / publish dataset changes');
 
 -- Add permissions to different roles
 INSERT INTO "public"."role_permissions" ("role_id", "permission_id") 

@@ -31,19 +31,26 @@ DELETE FROM operations WHERE uri LIKE 'object/registry/record/%';
 DELETE FROM resources WHERE uri = 'registry/record';
 -- end remove obsolete resource `registry/record`
 
+-- update default role setup
+-- remove approver role for now to avoid confusion as approval process is still in development
+DELETE FROM role_permissions WHERE role_id = '14ff3f57-e8ea-4771-93af-c6ea91a798d5';
+DELETE FROM roles WHERE role_id = '14ff3f57-e8ea-4771-93af-c6ea91a798d5';
+-- remove unused view data permission (no constrant) created in schema version 1.3
+DELETE FROM role_permissions WHERE permission_id = '3d913ce7-e728-4bd2-9542-5e9983e45fe1';
+DELETE FROM permission_operations WHERE permission_id = '3d913ce7-e728-4bd2-9542-5e9983e45fe1';
+DELETE FROM permissions WHERE id = '3d913ce7-e728-4bd2-9542-5e9983e45fe1';
+-- remove unused view data permission (owner constrant) created in schema version 1.3
+DELETE FROM role_permissions WHERE permission_id = '72d52505-cf96-47b2-9b74-d0fdc1f5aee7';
+DELETE FROM permission_operations WHERE permission_id = '72d52505-cf96-47b2-9b74-d0fdc1f5aee7';
+DELETE FROM permissions WHERE id = '72d52505-cf96-47b2-9b74-d0fdc1f5aee7';
+
 -- Add create, update & delete published dataset records
 INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
 VALUES 
+('object/dataset/published/publish', 'Publish Changes', '', (SELECT id FROM resources WHERE uri = 'object/dataset/published')),
 ('object/dataset/published/create','Create Published Dataset', '', (SELECT id FROM resources WHERE uri = 'object/dataset/published')),
 ('object/dataset/published/update', 'Update Published Dataset', '', (SELECT id FROM resources WHERE uri = 'object/dataset/published')),
 ('object/dataset/published/delete', 'Delete Published Dataset', '', (SELECT id FROM resources WHERE uri = 'object/dataset/published'));
-
-INSERT INTO "public"."permissions" 
-    ("name", "resource_id", "user_ownership_constraint", "org_unit_ownership_constraint", "pre_authorised_constraint", "description") 
-VALUES 
-('Create Published Dataset', (SELECT id FROM resources WHERE uri = 'object/dataset/published') , 'f', 'f', 'f', 'This permission allows user to create published dataset record'),
-('Update Published Dataset', (SELECT id FROM resources WHERE uri = 'object/dataset/published'), 't', 'f', 'f', 'This permission allows user to update published dataset record'),
-('Delete Published Dataset', (SELECT id FROM resources WHERE uri = 'object/dataset/published'), 'f', 'f', 'f', 'This permission allows user to delete published dataset record');
 
 -- Add resource, operation for access generic `record`
 -- If a user has permissins to generic `record` type, he will access to all record types e.g. dataset, distributions, orgnisation etc.
@@ -229,3 +236,37 @@ VALUES
 ('authObject/orgUnit/read', 'Read Organization Unit', '', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit')),
 ('authObject/orgUnit/update', 'Update Organization Unit', '', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit')),
 ('authObject/orgUnit/delete', 'Delete Organization Unit', '', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit'));
+
+-- create Data Stewards role
+INSERT INTO "public"."roles" ("id", "name", "description") 
+VALUES 
+('4154bf84-d36e-4551-9734-4666f5b1e1c0', 'Data Stewards', 'Users who create & manage datatsets.');
+-- Add Draft Dataset permission (with owner constraint) to Data Stewards role
+-- including Create Draft Dataset, Update Draft Dataset, Read Draft Dataset, Delete Draft Dataset (all with owner constraint)
+INSERT INTO "public"."permissions" 
+    ("id", "name", "resource_id", "user_ownership_constraint", "org_unit_ownership_constraint", "pre_authorised_constraint", "description") 
+VALUES 
+('1c2e3c8d-b96d-43c0-ac21-4a0481f523a5', 'Draft Dataset Permission with Ownership Constraint', (SELECT id FROM resources WHERE uri = 'object/dataset/draft') , 't', 'f', 'f', 'This permission allows Data Stewards to create, update, view & delete his own draft datasets.'),
+('1b3380a8-a888-43f7-bf92-6410e1306c75', 'Published Dataset Permission with Ownership Constraint', (SELECT id FROM resources WHERE uri = 'object/dataset/published') , 't', 'f', 'f', 'This permission allows Data Stewards to create, update, view & delete his own published datasets.'),
+('7293dae6-9235-43ec-ae43-b90c0e89fdee', 'View Draft Datasets within Org Units', (SELECT id FROM resources WHERE uri = 'object/dataset/draft') , 'f', 't', 'f', 'This permission allows Data Stewards to view draft datasets within org units.'),
+('45247ef8-68b9-4dab-a5d5-a23143503887', 'View Published Datasets within Org Units', (SELECT id FROM resources WHERE uri = 'object/dataset/published') , 'f', 't', 'f', 'This permission allows Data Stewards to view published datasets within org units.');
+-- Add proper operations to permissions above
+INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
+VALUES 
+('1c2e3c8d-b96d-43c0-ac21-4a0481f523a5', (SELECT id FROM operations WHERE uri = 'object/dataset/draft/create')),
+('1c2e3c8d-b96d-43c0-ac21-4a0481f523a5', (SELECT id FROM operations WHERE uri = 'object/dataset/draft/update')),
+('1c2e3c8d-b96d-43c0-ac21-4a0481f523a5', (SELECT id FROM operations WHERE uri = 'object/dataset/draft/read')),
+('1c2e3c8d-b96d-43c0-ac21-4a0481f523a5', (SELECT id FROM operations WHERE uri = 'object/dataset/draft/delete'));
+INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
+VALUES 
+('1b3380a8-a888-43f7-bf92-6410e1306c75', (SELECT id FROM operations WHERE uri = 'object/dataset/published/create')),
+('1b3380a8-a888-43f7-bf92-6410e1306c75', (SELECT id FROM operations WHERE uri = 'object/dataset/published/update')),
+('1b3380a8-a888-43f7-bf92-6410e1306c75', (SELECT id FROM operations WHERE uri = 'object/dataset/published/read')),
+('1b3380a8-a888-43f7-bf92-6410e1306c75', (SELECT id FROM operations WHERE uri = 'object/dataset/published/delete'));
+INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
+VALUES 
+('7293dae6-9235-43ec-ae43-b90c0e89fde', (SELECT id FROM operations WHERE uri = 'object/dataset/draft/read'));
+INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
+VALUES 
+('45247ef8-68b9-4dab-a5d5-a23143503887', (SELECT id FROM operations WHERE uri = 'object/dataset/published/read'));
+-- end create Data Stewards role
