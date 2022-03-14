@@ -265,7 +265,7 @@ VALUES
 ('1b3380a8-a888-43f7-bf92-6410e1306c75', (SELECT id FROM operations WHERE uri = 'object/dataset/published/delete'));
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
-('7293dae6-9235-43ec-ae43-b90c0e89fde', (SELECT id FROM operations WHERE uri = 'object/dataset/draft/read'));
+('7293dae6-9235-43ec-ae43-b90c0e89fdee', (SELECT id FROM operations WHERE uri = 'object/dataset/draft/read'));
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
 ('45247ef8-68b9-4dab-a5d5-a23143503887', (SELECT id FROM operations WHERE uri = 'object/dataset/published/read'));
