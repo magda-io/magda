@@ -6,7 +6,6 @@ import "./OrgUnitsPage.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
 import AccessVerification from "./AccessVerification";
-import { whoami } from "../../api-clients/AuthApis";
 import {
     getRootNode,
     getImmediateChildren,
@@ -396,13 +395,7 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
     const { result: userRootNode, loading: isUserRootNodeLoading } = useAsync(
         async (dataReloadToken: string) => {
             try {
-                const userInfo = await whoami();
-                let rootNode: OrgUnit;
-                if (userInfo?.orgUnit?.id) {
-                    rootNode = userInfo.orgUnit;
-                } else {
-                    rootNode = await getRootNode(true);
-                }
+                const rootNode: OrgUnit = await getRootNode(true);
                 setData([nodeToTreeItem(rootNode, true)]);
                 return rootNode;
             } catch (e) {
