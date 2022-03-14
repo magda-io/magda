@@ -5,11 +5,31 @@ WHERE NOT EXISTS (
 	SELECT 1 FROM "public"."org_units" WHERE "left" = 1
 );
 
--- mark resource `registry/record` as depreciated
-UPDATE public.resources
-SET "name" = CONCAT('(depreciated) ',"name"), "description" = 'this resource is depreciated and will be removed in future versions'
-WHERE "uri" = 'registry/record';
+-- remove obsolete resource `registry/record` & relevant records defined in schema v1.7
+DELETE FROM role_permissions
+WHERE permission_id IN (
+	SELECT permissions.id 
+	FROM permissions 
+	LEFT JOIN resources ON resources.id = permissions.resource_id
+	WHERE resources.uri = 'registry/record'
+);
 
+DELETE FROM permission_operations
+WHERE operation_id IN (
+    SELECT id FROM operations WHERE uri LIKE 'object/registry/record/%'
+);
+
+DELETE FROM permissions
+WHERE id IN (
+	SELECT permissions.id 
+	FROM permissions 
+	LEFT JOIN resources ON resources.id = permissions.resource_id
+	WHERE resources.uri = 'registry/record'
+);
+
+DELETE FROM operations WHERE uri LIKE 'object/registry/record/%';
+DELETE FROM resources WHERE uri = 'registry/record';
+-- end remove obsolete resource `registry/record`
 
 -- Add create, update & delete published dataset records
 INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
@@ -30,7 +50,7 @@ VALUES
 INSERT INTO "public"."resources" 
     ("uri", "name", "description")
 VALUES 
-('object/record', 'Records', 'A generic concept represents all types of records. Any other derived record types (e.g. datasets) can be considered as generic records with certian aspect data attached.');
+('object/record', 'Records', 'A generic concept represents all types of records. Any other derived record types (e.g. datasets) can be considered as generic records with certian aspect data attached. Grant permissions to this resources will allow a user to access any specialized type records (e.g. dataset)');
 
 INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
 VALUES 
