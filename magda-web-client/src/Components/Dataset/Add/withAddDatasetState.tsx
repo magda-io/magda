@@ -6,6 +6,7 @@ import { loadState, State } from "./DatasetAddCommon";
 import { User } from "reducers/userManagementReducer";
 import { config } from "config";
 import { useAsync } from "react-async-hook";
+import { findPermissionGap } from "helpers/accessControlUtils";
 
 /* eslint-disable react-hooks/rules-of-hooks */
 
@@ -18,13 +19,25 @@ function mapStateToProps(state: any) {
     };
 }
 
+function hasMetaDataCreationToolAccess(user: User) {
+    return findPermissionGap(
+        [
+            "object/dataset/draft/read",
+            "object/dataset/published/read",
+            "object/dataset/draft/create",
+            "object/dataset/draft/update",
+            "object/dataset/published/create",
+            "object/dataset/published/update"
+        ],
+        user
+    );
+}
+
 export default <T extends Props>(Component: React.ComponentType<T>) => {
     const withAddDatasetState = (props: T) => {
+        const missingOperations = hasMetaDataCreationToolAccess(props.user);
         const isDisabled =
-            !config.featureFlags.previewAddDataset &&
-            (!props.user ||
-                props.user.id === "" ||
-                props.user.isAdmin !== true);
+            !config.featureFlags.previewAddDataset && missingOperations?.length;
 
         const [state, updateData] = useState<State | undefined>(undefined);
         const { loading, error } = useAsync(
@@ -46,9 +59,15 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                     className="au-body au-page-alerts au-page-alerts--error"
                     style={{ marginTop: "50px" }}
                 >
-                    <span>
-                        Only admin users are allowed to access this page.
-                    </span>
+                    <div>
+                        You need permissions of the following operations to
+                        access this page:
+                        <ul>
+                            {missingOperations.map((operationUri, idx) => (
+                                <li key={idx}>{operationUri}</li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             );
         } else if ((!state || loading) && !error) {
