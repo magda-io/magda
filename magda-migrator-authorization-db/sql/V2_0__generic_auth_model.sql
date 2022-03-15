@@ -43,6 +43,17 @@ DELETE FROM permissions WHERE id = '3d913ce7-e728-4bd2-9542-5e9983e45fe1';
 DELETE FROM role_permissions WHERE permission_id = '72d52505-cf96-47b2-9b74-d0fdc1f5aee7';
 DELETE FROM permission_operations WHERE permission_id = '72d52505-cf96-47b2-9b74-d0fdc1f5aee7';
 DELETE FROM permissions WHERE id = '72d52505-cf96-47b2-9b74-d0fdc1f5aee7';
+-- remove unused View Draft Dataset (Within Org Unit) created in schema version 1.5
+DELETE FROM role_permissions WHERE permission_id = '42d5b7ad-6430-4c34-84f4-f8605e0d69da';
+DELETE FROM permission_operations WHERE permission_id = '42d5b7ad-6430-4c34-84f4-f8605e0d69da';
+DELETE FROM permissions WHERE id = '42d5b7ad-6430-4c34-84f4-f8605e0d69da';
+-- update View Published Dataset with Org Unit Constraint permission created in schema version 1.3
+UPDATE permissions 
+SET "name" = 'View Published Dataset (Org Unit Constraint)', 
+    "user_ownership_constraint" = 'f', 
+    "org_unit_ownership_constraint" = 't', 
+    "pre_authorised_constraint" = 'f'
+WHERE "id" = 'e5ce2fc4-9f38-4f52-8190-b770ed2074e6';
 
 -- Add create, update & delete published dataset records
 INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
@@ -269,4 +280,11 @@ VALUES
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
 ('45247ef8-68b9-4dab-a5d5-a23143503887', (SELECT id FROM operations WHERE uri = 'object/dataset/published/read'));
+-- Add permissions to Data Stewards role
+INSERT INTO "public"."role_permissions" ("role_id", "permission_id") 
+VALUES 
+('4154bf84-d36e-4551-9734-4666f5b1e1c0', '1c2e3c8d-b96d-43c0-ac21-4a0481f523a5'),
+('4154bf84-d36e-4551-9734-4666f5b1e1c0', '1b3380a8-a888-43f7-bf92-6410e1306c75'),
+('4154bf84-d36e-4551-9734-4666f5b1e1c0', '7293dae6-9235-43ec-ae43-b90c0e89fdee'),
+('4154bf84-d36e-4551-9734-4666f5b1e1c0', '45247ef8-68b9-4dab-a5d5-a23143503887');
 -- end create Data Stewards role
