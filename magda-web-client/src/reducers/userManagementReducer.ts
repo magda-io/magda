@@ -1,4 +1,5 @@
 import { Action } from "../types";
+import { RolePermissionRecord } from "../api-clients/AuthApis";
 import { ANONYMOUS_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
 
 export type Role = {
@@ -16,7 +17,7 @@ export type User = {
     source: string;
     isAdmin: boolean;
     roles: Role[];
-    permissions: any[];
+    permissions: RolePermissionRecord[];
     orgUnitId?: string;
     orgUnit?: OrgUnit;
     managingOrgUnitIds?: string[];
