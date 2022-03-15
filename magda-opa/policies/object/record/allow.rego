@@ -30,12 +30,13 @@ allow {
     verifyDatasetPermission(inputOperationUri, "record")
 }
 
-# a draft dataset record might only contains `dataset-draft` aspect
+# a record can with publishing.state = "draft" must be a draft dataset
+# input.object.record["dataset-draft"] could not exist
 isDraftDataset {
-    input.object.record["dataset-draft"]
     input.object.record.publishing.state = "draft"
 }
 
+# a draft dataset record might only contains `dataset-draft` aspect
 isDraftDataset {
     input.object.record["dataset-draft"]
     not input.object.record.publishing.state
