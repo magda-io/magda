@@ -47,6 +47,18 @@ DELETE FROM permissions WHERE id = '72d52505-cf96-47b2-9b74-d0fdc1f5aee7';
 DELETE FROM role_permissions WHERE permission_id = '42d5b7ad-6430-4c34-84f4-f8605e0d69da';
 DELETE FROM permission_operations WHERE permission_id = '42d5b7ad-6430-4c34-84f4-f8605e0d69da';
 DELETE FROM permissions WHERE id = '42d5b7ad-6430-4c34-84f4-f8605e0d69da';
+-- remove 'object/dataset/published/updateLicenseInfo' defined in schema version 1.3
+DELETE FROM permission_operations
+WHERE operation_id IN (
+    SELECT id FROM operations WHERE uri = 'object/dataset/published/updateLicenseInfo'
+);
+DELETE FROM operations WHERE uri = 'object/dataset/published/updateLicenseInfo';
+-- remove 'object/dataset/published/updateNonLicenseInfo' defined in schema version 1.3
+DELETE FROM permission_operations
+WHERE operation_id IN (
+    SELECT id FROM operations WHERE uri = 'object/dataset/published/updateNonLicenseInfo'
+);
+DELETE FROM operations WHERE uri = 'object/dataset/published/updateNonLicenseInfo';
 -- update View Published Dataset with Org Unit Constraint permission created in schema version 1.3
 UPDATE permissions 
 SET "name" = 'View Published Dataset (Org Unit Constraint)', 
