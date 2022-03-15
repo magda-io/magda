@@ -20,12 +20,6 @@ export default function getMyDatasetAspectQueries(
                 AspectQueryOperators["="],
                 `draft`,
                 true
-            ),
-            new AspectQuery(
-                "access-control.ownerId",
-                AspectQueryOperators["="],
-                userId,
-                true
             )
         );
     } else {
@@ -34,12 +28,6 @@ export default function getMyDatasetAspectQueries(
                 "publishing.state",
                 AspectQueryOperators["="],
                 `published`,
-                true
-            ),
-            new AspectQuery(
-                "access-control.ownerId",
-                AspectQueryOperators["="],
-                userId,
                 true
             )
         );

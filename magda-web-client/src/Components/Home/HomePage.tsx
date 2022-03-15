@@ -168,7 +168,10 @@ class HomePage extends React.Component<PropsType> {
             // --- my dataset section should only show for desktop due to the size of the design
             return (
                 <Medium>
-                    <MyDatasetSection userId={this.props.user.id} />
+                    <MyDatasetSection
+                        userId={this.props.user.id}
+                        user={this.props.user}
+                    />
                 </Medium>
             );
         } else {
