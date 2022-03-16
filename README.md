@@ -73,7 +73,7 @@ Magda provides a user interface, which is served from its own microservice and c
 
 ## To try the last version (with prebuilt images)
 
-If you just want to install a local testing version, installing Magda using [Helm](https://helm.sh/) is relatively easier:
+If you just want to install a local testing version, installing Magda using [Helm](https://helm.sh/) is relatively easier (you can use [minikube](https://minikube.sigs.k8s.io/docs/) to install a local k8s test cluster):
 
 ```bash
 # Add Magda Helm Chart Repo:
