@@ -3,6 +3,7 @@ package storage.object
 import data.common.hasNoConstraintPermission
 import data.common.hasOwnerConstraintPermission
 import data.common.hasOrgUnitConstaintPermission
+import data.common.breakdownOperationUri
 
 default allow = false
 
