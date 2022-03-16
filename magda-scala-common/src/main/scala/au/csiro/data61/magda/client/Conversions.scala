@@ -77,7 +77,7 @@ object Conversions {
             },
             orgUnitId = accessControlData.get("orgUnitId") match {
               case Some(JsString(orgUnitId)) => Some(orgUnitId)
-              case _                              => None
+              case _                         => None
             },
             preAuthorisedPermissionIds =
               accessControlData.get("preAuthorisedPermissionIds") match {
