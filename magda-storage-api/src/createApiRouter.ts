@@ -9,6 +9,7 @@ import AuthorizedRegistryClient, {
 } from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 const { fileParser } = require("express-multipart-file-parser");
 import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
+import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient";
 
 export interface ApiRouterOptions {
     registryApiUrl: string;
@@ -17,6 +18,7 @@ export interface ApiRouterOptions {
     jwtSecret: string;
     tenantId: number;
     uploadLimit: string;
+    authDecisionClient: AuthDecisionQueryClient;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {

@@ -3,6 +3,7 @@ import express from "express";
 import yargs from "yargs";
 import createApiRouter from "./createApiRouter";
 import MagdaMinioClient from "./MagdaMinioClient";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -72,6 +73,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "array",
             default: ["magda-datasets"]
         })
+        .option("skipAuth", {
+            describe:
+                "When set to true, API will not query policy engine for auth decision but assume it's always permitted. It's for debugging only.",
+            type: "boolean",
+            default: process.env.SKIP_AUTH == "true" ? true : false
+        })
         .option("autoCreateBuckets", {
             describe:
                 "Whether or not to create the default buckets on startup.",
@@ -79,6 +86,14 @@ const argv = addJwtSecretFromEnvVar(
             default: true
         }).argv
 );
+
+const skipAuth = argv.skipAuth === true ? true : false;
+const authDecisionClient = new AuthDecisionQueryClient(
+    argv.authApiUrl,
+    skipAuth
+);
+
+console.log(`SkipAuth: ${skipAuth}`);
 
 (async () => {
     try {
@@ -116,7 +131,8 @@ const argv = addJwtSecretFromEnvVar(
                 authApiUrl: argv.authApiUrl,
                 jwtSecret: argv.jwtSecret as string,
                 tenantId: argv.tenantId,
-                uploadLimit: argv.uploadLimit
+                uploadLimit: argv.uploadLimit,
+                authDecisionClient
             })
         );
 
