@@ -1,13 +1,13 @@
 package authObject.orgUnit
 
-import data.common.hasNoConstaintPermission
+import data.common.hasNoConstraintPermission
 import data.common.hasOrgUnitConstaintPermission
 
 default allow = false
 
 # Users has a unlimited permission to perfom the operation on "org unit" record will be allowed
 allow {
-    hasNoConstaintPermission(input.operationUri)
+    hasNoConstraintPermission(input.operationUri)
 }
 
 # verify the user's permission with Org Unit Constaint

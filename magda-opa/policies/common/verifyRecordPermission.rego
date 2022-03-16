@@ -1,20 +1,20 @@
 package common
 
 import data.common.breakdownOperationUri
-import data.common.hasNoConstaintPermission
-import data.common.hasOwnerConstaintPermission
+import data.common.hasNoConstraintPermission
+import data.common.hasOwnerConstraintPermission
 import data.common.hasOrgUnitConstaintPermission
 import data.common.hasPreAuthConstaintPermission
 
 
 # if find a permission with no any constraints
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
-    hasNoConstaintPermission(inputOperationUri)
+    hasNoConstraintPermission(inputOperationUri)
 }
 
 # if find a permission with user ownership constraint
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
-    hasOwnerConstaintPermission(inputOperationUri)
+    hasOwnerConstraintPermission(inputOperationUri)
 
     # use inputObjectRefName and avoid hard code context data field name
     # In this way, we can control the reference output in residual rules
@@ -23,7 +23,7 @@ verifyRecordPermission(inputOperationUri, inputObjectRefName) {
 
 # when user has user ownership constraint permission, the user can also access all records with NO owner assigned
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
-    hasOwnerConstaintPermission(inputOperationUri)
+    hasOwnerConstraintPermission(inputOperationUri)
 
     # use inputObjectRefName and avoid hard code context data field name
     # In this way, we can control the reference output in residual rules
