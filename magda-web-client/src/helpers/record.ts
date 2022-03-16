@@ -250,7 +250,7 @@ export type ParsedDataset = {
     informationSecurity?: ParsedInformationSecurity;
     accessControl?: {
         ownerId: string;
-        orgUnitOwnerId: string;
+        orgUnitId: string;
         preAuthorisedPermissionIds: string[];
     };
     ckanExport?: CkanExportAspectType;

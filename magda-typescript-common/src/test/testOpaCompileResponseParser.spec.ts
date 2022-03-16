@@ -328,7 +328,7 @@ describe("Test OpaCompileResultParser with datasetPermissionWithOrgUnitConstrain
         expect(
             result.residualRules[0].expressions[1].toHumanReadableString()
         ).to.be.equal(
-            '"5447fcb1-74ec-451c-b6ef-007aa736a346" = input.object.dataset.accessControl.orgUnitOwnerId'
+            '"5447fcb1-74ec-451c-b6ef-007aa736a346" = input.object.dataset.accessControl.orgUnitId'
         );
     });
 
@@ -340,7 +340,7 @@ describe("Test OpaCompileResultParser with datasetPermissionWithOrgUnitConstrain
         const result = parser.evaluateAsHumanReadableString();
         expect(parser.hasWarns).to.be.equal(false);
         expect(result).to.be.equal(
-            `( input.object.dataset.publishingState = "published" AND \n"5447fcb1-74ec-451c-b6ef-007aa736a346" = input.object.dataset.accessControl.orgUnitOwnerId )\nOR\n( input.object.dataset.publishingState = "published" AND \n"b749759e-6e6a-44c0-87ab-4590744187cf" = input.object.dataset.accessControl.orgUnitOwnerId )`
+            `( input.object.dataset.publishingState = "published" AND \n"5447fcb1-74ec-451c-b6ef-007aa736a346" = input.object.dataset.accessControl.orgUnitId )\nOR\n( input.object.dataset.publishingState = "published" AND \n"b749759e-6e6a-44c0-87ab-4590744187cf" = input.object.dataset.accessControl.orgUnitId )`
         );
     });
 });

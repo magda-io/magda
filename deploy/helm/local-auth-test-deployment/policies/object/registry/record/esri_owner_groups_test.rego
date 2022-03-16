@@ -292,7 +292,7 @@ test_deny_read_if_permission_is_incorrect {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "orgUnitOwnerId": ["G1", "G2"],
+                        "orgUnitId": ["G1", "G2"],
                         "expiration": 9569380434535153100
                     }
                 }

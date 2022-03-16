@@ -103,7 +103,7 @@ verifyPermission(inputOperationUri, inputObjectRefName) {
     input.user.permissions[i].operations[_].uri = operationUri
 
     input.object[inputObjectRefName].publishing.state = permissionResourceType
-    input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["access-control"].orgUnitOwnerId
+    input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["access-control"].orgUnitId
 }
 
 # if find a permission with org unit ownership constraint, plus dataset have NOT been assigned org unit
@@ -126,7 +126,7 @@ verifyPermission(inputOperationUri, inputObjectRefName) {
 
     input.object[inputObjectRefName].publishing.state = permissionResourceType
 
-    not input.object[inputObjectRefName]["access-control"].orgUnitOwnerId
+    not input.object[inputObjectRefName]["access-control"].orgUnitId
 }
 
 # if find a permission with pre-authorised constraint

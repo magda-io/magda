@@ -34,14 +34,14 @@ verifyRecordPermission(inputOperationUri, inputObjectRefName) {
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
     hasOrgUnitConstaintPermission(inputOperationUri)
 
-    input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["access-control"].orgUnitOwnerId
+    input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["access-control"].orgUnitId
 }
 
 # or when a user has org unit ownership constraint permission, he also can access all records with NO org unit assigned
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
     hasOrgUnitConstaintPermission(inputOperationUri)
 
-    not input.object[inputObjectRefName]["access-control"].orgUnitOwnerId
+    not input.object[inputObjectRefName]["access-control"].orgUnitId
 }
 
 # if find a permission with pre-authorised constraint

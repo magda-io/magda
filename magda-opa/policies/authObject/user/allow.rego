@@ -22,5 +22,5 @@ allow {
 allow {
     hasOrgUnitConstaintPermission(input.operationUri)
 
-    input.object.user.orgUnitOwnerId = input.user.managingOrgUnitIds[_]
+    input.object.user.orgUnitId = input.user.managingOrgUnitIds[_]
 }

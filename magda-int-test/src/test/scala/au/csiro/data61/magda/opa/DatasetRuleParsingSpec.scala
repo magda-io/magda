@@ -99,7 +99,7 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
           "draft"
         )
         getMustFromBoolQuery(should(3))(1) shouldBe TermQuery(
-          "accessControl.orgUnitOwnerId",
+          "accessControl.orgUnitId",
           "OU01"
         )
         getShouldFromBoolQuery(should(3)).size shouldBe 0
@@ -112,7 +112,7 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
           "draft"
         )
         getMustFromBoolQuery(should(4))(1) shouldBe TermQuery(
-          "accessControl.orgUnitOwnerId",
+          "accessControl.orgUnitId",
           "OU03"
         )
         getShouldFromBoolQuery(should(4)).size shouldBe 0
@@ -125,7 +125,7 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
           "draft"
         )
         getMustFromBoolQuery(should(5))(1) shouldBe TermQuery(
-          "accessControl.orgUnitOwnerId",
+          "accessControl.orgUnitId",
           "OU04"
         )
         getShouldFromBoolQuery(should(5)).size shouldBe 0
@@ -549,7 +549,7 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
               |                      },
               |                      {
               |                        "type": "string",
-              |                        "value": "orgUnitOwnerId"
+              |                        "value": "orgUnitId"
               |                      }
               |                    ]
               |                  }
@@ -642,7 +642,7 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
               |                      },
               |                      {
               |                        "type": "string",
-              |                        "value": "orgUnitOwnerId"
+              |                        "value": "orgUnitId"
               |                      }
               |                    ]
               |                  }
@@ -735,7 +735,7 @@ class DatasetRuleParsingSpec extends FunSpec with Matchers with MockServer {
               |                      },
               |                      {
               |                        "type": "string",
-              |                        "value": "orgUnitOwnerId"
+              |                        "value": "orgUnitId"
               |                      }
               |                    ]
               |                  }

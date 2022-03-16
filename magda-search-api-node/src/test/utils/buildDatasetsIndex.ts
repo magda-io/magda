@@ -26,7 +26,7 @@ export default async function buildDatasetsIndex(
                         properties: {
                             accessControl: {
                                 properties: {
-                                    orgUnitOwnerId: { type: "keyword" },
+                                    orgUnitId: { type: "keyword" },
                                     ownerId: { type: "keyword" },
                                     preAuthorisedPermissionIds: {
                                         type: "keyword"

@@ -352,7 +352,7 @@ function getAccessControlAspectData(state: State) {
     const { dataset } = state;
     return {
         ownerId: dataset.editingUserId ? dataset.editingUserId : undefined,
-        orgUnitOwnerId: dataset.owningOrgUnitId
+        orgUnitId: dataset.owningOrgUnitId
             ? dataset.owningOrgUnitId
             : undefined,
         custodianOrgUnitId: dataset.custodianOrgUnitId
@@ -440,9 +440,9 @@ function populateDcatDatasetStringAspect(data: RawDataset, state: State) {
         state.dataset.ownerId = data.aspects?.["access-control"]?.ownerId;
     }
 
-    if (data.aspects?.["access-control"]?.orgUnitOwnerId) {
+    if (data.aspects?.["access-control"]?.orgUnitId) {
         state.dataset.owningOrgUnitId =
-            data.aspects?.["access-control"]?.orgUnitOwnerId;
+            data.aspects?.["access-control"]?.orgUnitId;
     }
 
     if (data.aspects?.["access-control"]?.custodianOrgUnitId) {

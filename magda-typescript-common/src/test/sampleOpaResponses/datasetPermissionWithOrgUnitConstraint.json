@@ -154,7 +154,7 @@
                                             },
                                             {
                                                 "type": "string",
-                                                "value": "orgUnitOwnerId"
+                                                "value": "orgUnitId"
                                             }
                                         ]
                                     }
@@ -247,7 +247,7 @@
                                             },
                                             {
                                                 "type": "string",
-                                                "value": "orgUnitOwnerId"
+                                                "value": "orgUnitId"
                                             }
                                         ]
                                     }
