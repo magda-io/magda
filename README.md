@@ -45,6 +45,8 @@ Magda is built around a collection of microservices that are distributed as dock
 
 ![Magda Architecture Diagram](docs/assets/marketecture.svg)
 
+If you are interested in the architecture details of Magda, you might want to have a look at [this doc](./docs/docs/architecture/Guide%20to%20Magda%20Internals.md).
+
 ### Registry
 
 Magda revolves around the _Registry_ - an unopinionated datastore built on top of Postgres. The Registry stores _records_ as a set of JSON documents called _aspects_. For instance, a dataset is represented as a record with a number of aspects - a basic one that records the name, description and so on as well as more esoteric ones that might not be present for every dataset, like temporal coverage or determined data quality. Likewise, distributions (the actual data files, or URLs linking to them) are also modelled as records, with their own sets of aspects covering both basic metadata once again, as well as more specific aspects like whether the URL to the file worked when last tested.
@@ -95,3 +97,5 @@ Great! Take a look at https://github.com/magda-io/magda/blob/master/.github/CONT
 - [Magda Helm Chart Reference](docs/docs/helm-charts-docs-index.md)
 - [Migration & Upgrade Documents](docs/docs/migration)
 - [Other documentations](docs/docs/index.md)
+
+More documents can be found from the folder [docs/docs/](./docs/docs/).

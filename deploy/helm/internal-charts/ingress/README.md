@@ -6,7 +6,7 @@ A Helm chart for Kubernetes
 
 ## Requirements
 
-Kubernetes: `>= 1.14.0-0`
+Kubernetes: `>= 1.19.0-0`
 
 ## Values
 
