@@ -2,6 +2,9 @@
 @import "./pancake/sass/core.scss";
 
 .homepage-app-container {
+    position: relative;
+    overflow-y: hidden;
+
     .app-container {
         position: relative;
     }
@@ -9,7 +12,7 @@
     .homepage-background-img {
         position: absolute;
         width: 100%;
-        height: 100vh;
+        height: auto;
         z-index: -1;
         min-width: $minimum;
     }
