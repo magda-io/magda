@@ -186,14 +186,17 @@ export default function createApiRouter(options: ApiRouterOptions) {
         "/public/role",
         createRoleApiRouter({
             database,
+            jwtSecret: options.jwtSecret,
             authDecisionClient: options.authDecisionClient
         })
     );
 
+    // in order to be backwards compatible, we make role apis avaiable at /roles as well
     router.use(
         "/public/roles",
         createRoleApiRouter({
             database,
+            jwtSecret: options.jwtSecret,
             authDecisionClient: options.authDecisionClient
         })
     );

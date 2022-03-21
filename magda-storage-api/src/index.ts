@@ -150,7 +150,8 @@ console.log(`SkipAuth: ${skipAuth}`);
                 registryClient,
                 tenantId: argv.tenantId,
                 uploadLimit: argv.uploadLimit,
-                authDecisionClient
+                authDecisionClient,
+                jwtSecret: argv.jwtSecret as string
             })
         );
 

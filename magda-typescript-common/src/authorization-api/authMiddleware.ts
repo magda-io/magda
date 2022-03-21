@@ -189,17 +189,19 @@ export function requirePermission(
  * @param {Response} res
  * @param {() => void} next
  */
-export function getUserId(req: Request, res: Response, next: () => void) {
-    getUserIdFromReq(req, req.get("X-Magda-Session")).caseOf({
-        just: (userId) => {
-            res.locals.userId = userId;
-            next();
-        },
-        nothing: () => {
-            res.locals.userId = undefined;
-            next();
-        }
-    });
+export function getUserId(jwtSecret: string) {
+    return (req: Request, res: Response, next: () => void) => {
+        getUserIdFromReq(req, jwtSecret).caseOf({
+            just: (userId) => {
+                res.locals.userId = userId;
+                next();
+            },
+            nothing: () => {
+                res.locals.userId = undefined;
+                next();
+            }
+        });
+    };
 }
 
 /**
@@ -211,8 +213,12 @@ export function getUserId(req: Request, res: Response, next: () => void) {
  * @param {Response} res
  * @param {() => void} next
  */
-export function requireUserId(req: Request, res: Response, next: () => void) {
-    getUserId(req, res, () => {
+export const requireUserId = (jwtSecret: string) => (
+    req: Request,
+    res: Response,
+    next: () => void
+) =>
+    getUserId(jwtSecret)(req, res, () => {
         if (!res.locals.userId) {
             res.status(403).send(
                 "Anonymous users access are not permitted: userId is required."
@@ -221,4 +227,3 @@ export function requireUserId(req: Request, res: Response, next: () => void) {
             return next();
         }
     });
-}

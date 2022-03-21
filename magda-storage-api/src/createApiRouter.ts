@@ -12,6 +12,7 @@ import { StorageBucketMetaData, StorageObjectMetaData } from "./common";
 export interface ApiRouterOptions {
     registryClient: AuthorizedRegistryClient;
     objectStoreClient: MagdaMinioClient;
+    jwtSecret: string;
     tenantId: number;
     uploadLimit: string;
     authDecisionClient: AuthDecisionQueryClient;
@@ -66,7 +67,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:bucketid",
-        getUserId,
+        getUserId(options.jwtSecret),
         requireStorageBucketPermission(
             options.authDecisionClient,
             options.objectStoreClient,
@@ -206,7 +207,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:bucket/*",
-        getUserId,
+        getUserId(options.jwtSecret),
         requireStorageObjectPermission(
             options.authDecisionClient,
             options.registryClient,
