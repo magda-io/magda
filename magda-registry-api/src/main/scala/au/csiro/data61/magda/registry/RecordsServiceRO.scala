@@ -690,7 +690,10 @@ class RecordsServiceRO(
     *      {
     *          "id": "string",
     *          "name": "string",
-    *          "aspects": {},
+    *          "aspects": {
+    *           "aspect1": {},
+    *           "aspect2": {}
+    *          },
     *          "sourceTag": "string"
     *      }
     * @apiUse GenericError
@@ -810,7 +813,8 @@ class RecordsServiceRO(
     *        "id": "string",
     *        "name": "string",
     *        "aspects": [
-    *            "string"
+    *          "aspect1",
+    *          "aspect2"
     *        ]
     *      }
     * @apiUse GenericError
@@ -881,6 +885,90 @@ class RecordsServiceRO(
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {get} /v0/registry/records/inFull/{id} Get a record with all attached aspects data by the record ID
+    * @apiDescription Gets a record by ID including all attached aspect data.
+    * @apiParam (path) {string} id ID of the record to be fetched.
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiSuccess (Success 200) {json} Response the record summary detail
+    * @apiSuccessExample {json} Response:
+    *      {
+    *        "id": "string",
+    *        "name": "string",
+    *        "aspects": {
+    *           "aspect1": {},
+    *           "aspect2": {}
+    *        }
+    *      }
+    * @apiUse GenericError
+    */
+  @Path("/inFull/{id}")
+  @ApiOperation(
+    value = "Get a record in full by ID",
+    nickname = "getByIdInFull",
+    httpMethod = "GET",
+    response = classOf[Record],
+    notes = "Get a record with all attached aspects data by the record ID."
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "id",
+        required = true,
+        dataType = "string",
+        paramType = "path",
+        value = "ID of the record to be fetched."
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      )
+    )
+  )
+  @ApiResponses(
+    Array(
+      new ApiResponse(
+        code = 404,
+        message = "No record exists with that ID.",
+        response = classOf[ApiError]
+      )
+    )
+  )
+  def getByIdInFull: Route = get {
+    path("inFull" / Segment) { id =>
+      requiresTenantId { tenantId =>
+        withAuthDecision(
+          authApiClient,
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
+          DB readOnly { implicit session =>
+            recordPersistence
+              .getCompleteRecordById(tenantId, authDecision, id) match {
+              case Some(record) => complete(record)
+              case None =>
+                complete(
+                  StatusCodes.NotFound,
+                  ApiError("No record exists with that ID.")
+                )
+            }
+          }
+        }
+      }
+    }
+  }
+
   def route: Route =
     getAll ~
       getCount ~
@@ -888,20 +976,21 @@ class RecordsServiceRO(
       getPageTokens ~
       getById ~
       getByIdSummary ~
-      new RecordAspectsServiceRO(
-        authApiClient,
-        system,
-        materializer,
-        config,
-        recordPersistence
-      ).route ~
-      new RecordHistoryService(
-        authApiClient,
-        config,
-        system,
-        materializer,
-        recordPersistence,
-        eventPersistence
-      ).route
+      getByIdInFull
+  new RecordAspectsServiceRO(
+    authApiClient,
+    system,
+    materializer,
+    config,
+    recordPersistence
+  ).route ~
+    new RecordHistoryService(
+      authApiClient,
+      config,
+      system,
+      materializer,
+      recordPersistence,
+      eventPersistence
+    ).route
 
 }

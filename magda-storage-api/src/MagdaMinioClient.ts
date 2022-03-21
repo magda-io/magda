@@ -6,8 +6,8 @@ import { Stream, Readable } from "stream";
 import * as Minio from "minio";
 
 export default class MagdaMinioClient implements ObjectStoreClient {
-    private readonly client: Minio.Client;
-    private readonly region: string;
+    public readonly client: Minio.Client;
+    public readonly region: string;
 
     constructor({
         endPoint,

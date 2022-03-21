@@ -1,21 +1,25 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { OutgoingHttpHeaders } from "http";
-import ObjectStoreClient from "./ObjectStoreClient";
+import MagdaMinioClient from "./MagdaMinioClient";
 import bodyParser from "body-parser";
-import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
-import { getUserId } from "magda-typescript-common/src/session/GetUserId";
+import {
+    mustBeAdmin,
+    getUserId
+} from "magda-typescript-common/src/authorization-api/authMiddleware";
 import AuthorizedRegistryClient, {
     AuthorizedRegistryOptions
 } from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 const { fileParser } = require("express-multipart-file-parser");
 import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
 import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient";
-
+import {
+    requireStorageBucketPermission,
+    requireStorageObjectPermission
+} from "./storageAuthMiddlewares";
+import { StorageBucketMetaData, StorageObjectMetaData } from "./common";
 export interface ApiRouterOptions {
-    registryApiUrl: string;
-    objectStoreClient: ObjectStoreClient;
-    authApiUrl: string;
-    jwtSecret: string;
+    registryClient: AuthorizedRegistryClient;
+    objectStoreClient: MagdaMinioClient;
     tenantId: number;
     uploadLimit: string;
     authDecisionClient: AuthDecisionQueryClient;
@@ -47,7 +51,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @apiDescription Creates a new bucket with a specified name. Restricted to admins only.
      *
-     * @apiParam (Request body) {string} bucketid The name of the bucket to be created
+     * @apiParam (Path) {string} bucketid The name of the bucket to be created
+     * @apiParam (body) {string} [orgUnitId] (Optional) The id of the orgUnit that the bucket belongs to.
+     * @apiParamExample {json} Request-Example:
+     *     {
+     *        "orgUnitId": "1e8aca17-2615-4cdf-91ec-f877cf9e6bdc"
+     *     }
      *
      * @apiSuccessExample {json} 201
      *    {
@@ -65,7 +74,21 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:bucketid",
-        mustBeAdmin(options.authApiUrl, options.jwtSecret),
+        getUserId,
+        requireStorageBucketPermission(
+            options.authDecisionClient,
+            options.objectStoreClient,
+            "storage/bucket/create",
+            async (req: Request, res: Response) => req?.params?.bucketid,
+            async (req: Request, res: Response) => {
+                const metaData: StorageBucketMetaData = {
+                    region: options.objectStoreClient.region,
+                    ownerId: res?.locals?.userId,
+                    orgUnitId: req?.body?.orgUnitId
+                };
+                return metaData;
+            }
+        ),
         async function (req, res) {
             try {
                 const bucketId = req.params.bucketid;
@@ -117,114 +140,46 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiErrorExample {text} 500
      *      "Unknown error"
      */
-    router.get("/:bucket/*", async function (req, res) {
-        const path = req.params[0];
-        const bucket = req.params.bucket;
+    router.get(
+        "/:bucket/*",
+        requireStorageObjectPermission(
+            options.authDecisionClient,
+            options.registryClient,
+            options.objectStoreClient,
+            "storage/object/read",
+            // bucket name
+            async (req: Request, res: Response) => req?.params?.bucket,
+            // object id / path
+            async (req: Request, res: Response) => req?.params?.[0]
+        ),
+        async function (req, res) {
+            const path = req.params[0];
+            const bucket = req.params.bucket;
 
-        const encodeBucketname = encodeURIComponent(bucket);
+            const encodeBucketname = encodeURIComponent(bucket);
 
-        const object = options.objectStoreClient.getFile(
-            encodeBucketname,
-            path
-        );
-
-        let headers: OutgoingHttpHeaders;
-        try {
-            headers = await object.headers();
-            Object.keys(headers).forEach((header) => {
-                const value = headers[header];
-                if (value !== undefined) {
-                    res.setHeader(header, value);
-                }
-            });
-        } catch (err) {
-            if (err.code === "NotFound") {
-                return res
-                    .status(404)
-                    .send(
-                        "No such object with path " +
-                            path +
-                            " in bucket " +
-                            bucket
-                    );
-            } else {
-                return res.status(500).send("Unknown error");
-            }
-        }
-        const recordIdNum = res.getHeader("Record-ID");
-        if (recordIdNum) {
-            const recordId = recordIdNum.toString();
-
-            const found = await checkRecordExists(req, recordId);
-            if (found === 404) {
-                return res.status(404).send("Could not retrieve the file.");
-            } else if (found === 500) {
-                return res.status(500).send("Internal server error");
-            }
-        }
-
-        const stream = await object.createStream();
-        if (stream) {
-            stream.on("error", (_e) => {
-                return res.status(500).send("Unknown error");
-            });
-            return stream.pipe(res);
-        }
-
-        // Shouldn't get here
-        console.error("Stream is undefined. Here is the request: ", req);
-        return res
-            .status(500)
-            .send(
-                "Stream not found. Object may be corrupted. We are looking into this."
+            const object = options.objectStoreClient.getFile(
+                encodeBucketname,
+                path
             );
-    });
 
-    /**
-     * Checks whether a record exists from the point of view of the user making the request
-     *
-     * @param req The incoming request (for getting user info)
-     * @param recordId The id of the record to check
-     */
-    async function checkRecordExists(
-        req: express.Request,
-        recordId: string
-    ): Promise<200 | 404 | 500> {
-        const maybeUserId = getUserId(req, options.jwtSecret);
-        let userId = maybeUserId.valueOr(undefined);
-
-        const registryOptions: AuthorizedRegistryOptions = {
-            baseUrl: options.registryApiUrl,
-            jwtSecret: options.jwtSecret,
-            userId: userId,
-            tenantId: options.tenantId,
-            maxRetries: 0
-        };
-        const registryClient = new AuthorizedRegistryClient(registryOptions);
-        const recordP = await registryClient.getRecord(
-            recordId,
-            undefined,
-            undefined
-        );
-
-        try {
-            const record = unionToThrowable(recordP);
-
-            // We could just return true here, but we'll give ourself a bit of extra cover by
-            // asserting that the id is correct
-            return record.id === recordId ? 200 : 404;
-        } catch (err) {
-            if (err.e && err.e.response && err.e.response.statusCode === 404) {
-                return 404;
-            } else {
-                console.error(
-                    "Error occurred when trying to contact registry",
-                    err.message
-                );
-                return 500;
+            const stream = await object.createStream();
+            if (stream) {
+                stream.on("error", (_e) => {
+                    return res.status(500).send("Unknown error");
+                });
+                return stream.pipe(res);
             }
+
+            // Shouldn't get here
+            console.error("Stream is undefined. Here is the request: ", req);
+            return res
+                .status(500)
+                .send(
+                    "Stream not found. Object may be corrupted. We are looking into this."
+                );
         }
-    }
+    );
 
     // Browser uploads
     /**
@@ -233,7 +188,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @api {post} /v0/storage/upload/{bucket}/{path} Request to upload files to {bucket}, in the directory {path}
      *
      *
-     * @apiDescription Uploads a file. Restricted to admins only.
+     * @apiDescription Uploads a file.
      *
      * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
      * @apiParam (Request path) {string} path The path in the bucket to put the file in
@@ -325,6 +280,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiParam (Request query) {string} recordId A record id to associate this file with - a user will only
      *      be allowed to access this file if they're also allowed to access the associated record. Should be
      *      url encoded.
+     * @apiParam (Request query) {string} [orgUnitId] (Optional) The id of the orgUnit that the bucket belongs to.
      *
      * @apiSuccessExample {json} 200
      *    {
@@ -344,7 +300,34 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:bucket/*",
-        mustBeAdmin(options.authApiUrl, options.jwtSecret),
+        getUserId,
+        requireStorageObjectPermission(
+            options.authDecisionClient,
+            options.registryClient,
+            options.objectStoreClient,
+            "storage/object/create",
+            // retrieve bucket name
+            async (req: Request, res: Response) => req?.params?.bucket,
+            // retrieve object id / path
+            async (req: Request, res: Response) => req?.params?.[0],
+            // create auth decision context data
+            async (req: Request, res: Response) => {
+                const metaData: StorageObjectMetaData = {
+                    recordId: req?.query?.recordId as string,
+                    contentType: req?.headers?.["content-type"] as string,
+                    cacheControl: req?.headers?.["cache-control"] as string,
+                    ownerId: res?.locals?.userId,
+                    orgUnitId: req?.query?.orgUnitId as string
+                };
+                const size = parseInt(
+                    req?.headers?.["content-length"] as string
+                );
+                if (!isNaN(size)) {
+                    metaData.size = size;
+                }
+                return metaData;
+            }
+        ),
         async function (req, res) {
             const path = req.params[0];
             const bucket = req.params.bucket;
@@ -362,21 +345,21 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 return res.status(400).json({ message: "No Content." });
             }
 
-            if (recordId) {
-                const found = await checkRecordExists(req, recordId);
-                if (found === 404) {
-                    return res.status(400).send("Invalid record id");
-                } else if (found === 500) {
-                    return res.status(500).send("Internal server error");
-                }
-            }
-
             const metaData: any = {
                 "Content-Type": contentType,
                 "Content-Length": contentLength
             };
             if (recordId) {
-                metaData["Record-ID"] = recordId;
+                metaData["magda-record-id"] = recordId;
+            }
+            if (res?.locals?.userId) {
+                metaData["magda-user-id"] = res.locals.userId;
+            }
+            if (req?.query?.orgUnitId) {
+                metaData["magda-org-unit-id"] = req.query.orgUnitId;
+            }
+            if (req?.headers?.["cache-control"]) {
+                metaData["Cache-Control"] = req.headers["cache-control"];
             }
             return options.objectStoreClient
                 .putFile(encodeBucketname, path, content, metaData)
@@ -421,7 +404,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.delete(
         "/:bucket/*",
-        mustBeAdmin(options.authApiUrl, options.jwtSecret),
+        requireStorageObjectPermission(
+            options.authDecisionClient,
+            options.registryClient,
+            options.objectStoreClient,
+            "storage/object/delete",
+            // retrieve bucket name
+            async (req: Request, res: Response) => req?.params?.bucket,
+            // retrieve object id / path
+            async (req: Request, res: Response) => req?.params?.[0]
+        ),
         async function (req, res) {
             const filePath = req.params[0];
             const bucket = req.params.bucket;

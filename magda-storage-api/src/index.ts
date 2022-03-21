@@ -4,6 +4,9 @@ import yargs from "yargs";
 import createApiRouter from "./createApiRouter";
 import MagdaMinioClient from "./MagdaMinioClient";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import AuthorizedRegistryClient, {
+    AuthorizedRegistryOptions
+} from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -62,6 +65,14 @@ const argv = addJwtSecretFromEnvVar(
             describe: "The tenant id for intra-network communication",
             type: "number",
             default: 0
+        })
+        .option("userId", {
+            describe:
+                "The user id to use when making authenticated requests to the registry",
+            type: "string",
+            demand: true,
+            default:
+                process.env.USER_ID || process.env.npm_package_config_userId
         })
         .option("uploadLimit", {
             describe: "How large a file can be uploaded to be stored by Magda",
@@ -123,13 +134,20 @@ console.log(`SkipAuth: ${skipAuth}`);
             );
         }
 
+        const registryOptions: AuthorizedRegistryOptions = {
+            baseUrl: argv.registryApiUrl,
+            jwtSecret: argv.jwtSecret as string,
+            userId: argv.userId,
+            tenantId: argv.tenantId,
+            maxRetries: 0
+        };
+        const registryClient = new AuthorizedRegistryClient(registryOptions);
+
         app.use(
             "/v0",
             createApiRouter({
                 objectStoreClient: minioClient,
-                registryApiUrl: argv.registryApiUrl,
-                authApiUrl: argv.authApiUrl,
-                jwtSecret: argv.jwtSecret as string,
+                registryClient,
                 tenantId: argv.tenantId,
                 uploadLimit: argv.uploadLimit,
                 authDecisionClient
