@@ -1,16 +1,8 @@
 import express, { Request, Response } from "express";
-import { OutgoingHttpHeaders } from "http";
 import MagdaMinioClient from "./MagdaMinioClient";
 import bodyParser from "body-parser";
-import {
-    mustBeAdmin,
-    getUserId
-} from "magda-typescript-common/src/authorization-api/authMiddleware";
-import AuthorizedRegistryClient, {
-    AuthorizedRegistryOptions
-} from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-const { fileParser } = require("express-multipart-file-parser");
-import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
+import { getUserId } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient";
 import {
     requireStorageBucketPermission,
@@ -178,93 +170,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 .send(
                     "Stream not found. Object may be corrupted. We are looking into this."
                 );
-        }
-    );
-
-    // Browser uploads
-    /**
-     * @apiGroup Storage
-     *
-     * @api {post} /v0/storage/upload/{bucket}/{path} Request to upload files to {bucket}, in the directory {path}
-     *
-     *
-     * @apiDescription Uploads a file.
-     *
-     * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
-     * @apiParam (Request path) {string} path The path in the bucket to put the file in
-     * @apiParam (Request query) {string} recordId A record id to associate this file with - a user will only
-     *      be allowed to access this file if they're also allowed to access the associated record. Should be
-     *      url encoded.
-     *
-     * @apiSuccessExample {string} 200 Successfully uploaded 2 files.
-     * {
-     *      "message": "Successfully uploaded 2 files.",
-     *      "etags": ["cafbab71cd98120b777799598f0d4808-1","19a3cb5d5706549c2f1a57a27cf30e41-1"]
-     * }
-     *
-     * @apiErrorExample {string} 500
-     *      Internal server error.
-     */
-    router.post(
-        "/upload/:bucket*",
-        fileParser({ rawBodyOptions: { limit: options.uploadLimit } }),
-        mustBeAdmin(options.authApiUrl, options.jwtSecret),
-        async (req: any, res) => {
-            if (!req.files || req.files.length === 0) {
-                return res.status(400).send("No files were uploaded.");
-            }
-
-            const recordId =
-                req.query.recordId && decodeURIComponent(req.query.recordId);
-
-            if (recordId) {
-                const found = await checkRecordExists(req, recordId);
-                if (found === 404) {
-                    return res.status(400).send("Invalid record id");
-                } else if (found === 500) {
-                    return res.status(500).send("Internal server error");
-                }
-            }
-
-            const bucket = req.params.bucket;
-            const encodeBucketname = encodeURIComponent(bucket);
-            const rawPath = req.params[0] as string;
-            const pathNoLeadingSlash = rawPath.startsWith("/")
-                ? rawPath.slice(1)
-                : rawPath;
-            const path = pathNoLeadingSlash.endsWith("/")
-                ? pathNoLeadingSlash.slice(pathNoLeadingSlash.length - 1)
-                : pathNoLeadingSlash;
-
-            const promises = (req.files as Array<any>).map((file: any) => {
-                const metaData: any = {
-                    "Content-Type": file.mimetype,
-                    "Content-Length": file.buffer.byteLength
-                };
-                if (recordId) {
-                    metaData["Record-ID"] = recordId;
-                }
-                const fileid = file.originalname;
-                const fullPath = path !== "" ? path + "/" + fileid : fileid;
-
-                return options.objectStoreClient
-                    .putFile(encodeBucketname, fullPath, file.buffer, metaData)
-                    .then((etag) => etag);
-            });
-            return Promise.all(promises)
-                .then((etags) => {
-                    return res.status(200).send({
-                        message:
-                            "Successfully uploaded " +
-                            etags.length +
-                            " file(s).",
-                        etags
-                    });
-                })
-                .catch((err: Error) => {
-                    console.error(err);
-                    return res.status(500).send("Internal server error.");
-                });
         }
     );
 
