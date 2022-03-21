@@ -976,21 +976,21 @@ class RecordsServiceRO(
       getPageTokens ~
       getById ~
       getByIdSummary ~
-      getByIdInFull
-  new RecordAspectsServiceRO(
-    authApiClient,
-    system,
-    materializer,
-    config,
-    recordPersistence
-  ).route ~
-    new RecordHistoryService(
-      authApiClient,
-      config,
-      system,
-      materializer,
-      recordPersistence,
-      eventPersistence
-    ).route
+      getByIdInFull ~
+      new RecordAspectsServiceRO(
+        authApiClient,
+        system,
+        materializer,
+        config,
+        recordPersistence
+      ).route ~
+      new RecordHistoryService(
+        authApiClient,
+        config,
+        system,
+        materializer,
+        recordPersistence,
+        eventPersistence
+      ).route
 
 }
