@@ -7,12 +7,16 @@ import request from "supertest";
 import nock from "nock";
 import fs from "fs";
 import delay from "magda-typescript-common/src/delay";
+import AuthorizedRegistryClient, {
+    AuthorizedRegistryOptions
+} from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 
 const jwt = require("jsonwebtoken");
 const Minio = require("minio");
 
 import createApiRouter from "../createApiRouter";
 import MagdaMinioClient from "../MagdaMinioClient";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 
 /** A random UUID */
 const USER_ID = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
@@ -58,13 +62,24 @@ describe("Storage API tests", () => {
 
     beforeEach(() => {
         app = express();
+        const registryOptions: AuthorizedRegistryOptions = {
+            baseUrl: registryApiUrl,
+            jwtSecret: jwtSecret,
+            userId: "00000000-0000-4000-8000-000000000000",
+            tenantId: 0,
+            maxRetries: 0
+        };
+        const registryClient = new AuthorizedRegistryClient(registryOptions);
+        const authDecisionClient = new AuthDecisionQueryClient(
+            authApiUrl,
+            true // skip auth query
+        );
         app.use(
             "/v0",
             createApiRouter({
                 objectStoreClient: new MagdaMinioClient(minioClientOpts),
-                authApiUrl,
-                registryApiUrl,
-                jwtSecret,
+                authDecisionClient,
+                registryClient,
                 tenantId: 0,
                 uploadLimit
             })

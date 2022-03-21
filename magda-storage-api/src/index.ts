@@ -1,4 +1,4 @@
-import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
 import express from "express";
 import yargs from "yargs";
 import createApiRouter from "./createApiRouter";

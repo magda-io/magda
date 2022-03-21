@@ -3,7 +3,7 @@ import MagdaMinioClient from "./MagdaMinioClient";
 import bodyParser from "body-parser";
 import { getUserId } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import {
     requireStorageBucketPermission,
     requireStorageObjectPermission
@@ -190,7 +190,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiSuccessExample {json} 200
      *    {
      *        "message":"File uploaded successfully",
-     *        "etag":"edd88378a7900bf663a5fa386386b585-1"
+     *        "etag":"edd88378a7900bf663a5fa386386b585-1",
+     *        "versionId": "xxxxxxxx"
      *    }
      *
      * @apiErrorExample {json} 400
@@ -268,10 +269,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
             }
             return options.objectStoreClient
                 .putFile(encodeBucketname, path, content, metaData)
-                .then((etag) => {
+                .then((uploadedObjectInfo) => {
                     return res.status(200).send({
                         message: "File uploaded successfully",
-                        etag: etag
+                        etag: uploadedObjectInfo.etag,
+                        versionId: uploadedObjectInfo.versionId
                     });
                 })
                 .catch((err: Error) => {

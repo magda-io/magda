@@ -1,11 +1,10 @@
 import ObjectFromStore from "./ObjectFromStore";
-import ObjectStoreClient from "./ObjectStoreClient";
 import { CreateBucketResponse } from "./ObjectStoreClient";
 import { Stream, Readable } from "stream";
-
 import * as Minio from "minio";
+import { UploadedObjectInfo } from "minio";
 
-export default class MagdaMinioClient implements ObjectStoreClient {
+export default class MagdaMinioClient {
     public readonly client: Minio.Client;
     public readonly region: string;
 
@@ -107,7 +106,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         objectName: string,
         content: any,
         metaData?: object
-    ): Promise<any> {
+    ): Promise<UploadedObjectInfo> {
         return new Promise((resolve, reject) => {
             const contentSize = content.length;
             const contentStream = new Readable();
@@ -129,11 +128,11 @@ export default class MagdaMinioClient implements ObjectStoreClient {
                 contentStream,
                 contentSize,
                 metaData,
-                (err: Error, eTag: string) => {
+                (err: Error, uploadedObjectInfo: UploadedObjectInfo) => {
                     if (err) {
                         return reject(err);
                     }
-                    return resolve(eTag);
+                    return resolve(uploadedObjectInfo);
                 }
             );
         });
