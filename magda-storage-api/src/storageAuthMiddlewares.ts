@@ -180,10 +180,23 @@ export function requireStorageObjectPermission(
                 return;
             }
 
-            const stateData = await storageClient.client.statObject(
-                bucketName,
-                objectName
-            );
+            let stateData;
+
+            try {
+                stateData = await storageClient.client.statObject(
+                    bucketName,
+                    objectName
+                );
+            } catch (e) {
+                if (e?.code === "NotFound") {
+                    stateData = {};
+                } else {
+                    throw new ServerError(
+                        `Cannot fetch storage object metadata: ${e}`,
+                        400
+                    );
+                }
+            }
 
             const objectMetaData: StorageObjectMetaData = {
                 size: stateData?.size,

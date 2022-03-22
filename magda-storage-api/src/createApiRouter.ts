@@ -9,6 +9,7 @@ import {
     requireStorageObjectPermission
 } from "./storageAuthMiddlewares";
 import { StorageBucketMetaData, StorageObjectMetaData } from "./common";
+import ServerError from "magda-typescript-common/src/ServerError";
 export interface ApiRouterOptions {
     registryClient: AuthorizedRegistryClient;
     objectStoreClient: MagdaMinioClient;
@@ -143,34 +144,50 @@ export default function createApiRouter(options: ApiRouterOptions) {
             // bucket name
             async (req: Request, res: Response) => req?.params?.bucket,
             // object id / path
-            async (req: Request, res: Response) => req?.params?.[0]
+            async (req: Request, res: Response) => req?.params?.[0],
+            async (req: Request, res: Response) => undefined
         ),
         async function (req, res) {
             const path = req.params[0];
             const bucket = req.params.bucket;
-
             const encodeBucketname = encodeURIComponent(bucket);
 
-            const object = options.objectStoreClient.getFile(
-                encodeBucketname,
-                path
-            );
-
-            const stream = await object.createStream();
-            if (stream) {
-                stream.on("error", (_e) => {
-                    return res.status(500).send("Unknown error");
-                });
-                return stream.pipe(res);
-            }
-
-            // Shouldn't get here
-            console.error("Stream is undefined. Here is the request: ", req);
-            return res
-                .status(500)
-                .send(
-                    "Stream not found. Object may be corrupted. We are looking into this."
+            try {
+                const object = options.objectStoreClient.getFile(
+                    encodeBucketname,
+                    path
                 );
+
+                const headers = await object.headers();
+                if (typeof headers === "object") {
+                    Object.keys(headers).forEach((headerName) => {
+                        const value = headers[headerName];
+                        if (typeof value !== "undefined") {
+                            res.setHeader(headerName, headers[headerName]);
+                        }
+                    });
+                }
+
+                const stream = await object.createStream();
+                if (stream) {
+                    stream.on("error", (_e) => {
+                        res.status(500).send("Unknown error");
+                    });
+                    stream.pipe(res);
+                } else {
+                    throw new ServerError("Failed to create stream.", 500);
+                }
+            } catch (e) {
+                if (e?.code === "NotFound") {
+                    res.status(404).send(
+                        `Cannot locate storage object: ${bucket}/${path}`
+                    );
+                } else if (e instanceof ServerError) {
+                    res.status(e.statusCode).send(e.message);
+                } else {
+                    res.status(500).send(`Failed to get storage object: ${e}`);
+                }
+            }
         }
     );
 
@@ -246,9 +263,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const encodeBucketname = encodeURIComponent(bucket);
             const content = req.body;
             const contentType = req.headers["content-type"];
-            const contentLength = req.headers["content-length"];
+            const contentLength = parseInt(req?.headers?.["content-length"]);
 
-            if (!contentLength) {
+            if (
+                !isNaN(contentLength) &&
+                !contentLength &&
+                typeof req.body !== "string"
+            ) {
                 return res.status(400).json({ message: "No Content." });
             }
 
@@ -320,7 +341,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
             // retrieve bucket name
             async (req: Request, res: Response) => req?.params?.bucket,
             // retrieve object id / path
-            async (req: Request, res: Response) => req?.params?.[0]
+            async (req: Request, res: Response) => req?.params?.[0],
+            async (req: Request, res: Response) => undefined
         ),
         async function (req, res) {
             const filePath = req.params[0];
