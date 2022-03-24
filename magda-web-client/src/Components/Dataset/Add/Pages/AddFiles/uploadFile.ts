@@ -46,7 +46,7 @@ export default async function uploadFile(
         if (res.status !== 200) {
             throw new Error("Could not upload file");
         }
-        // --- sucessfully upload the file, add to state.uploadedFileUrls
+        // --- successfully upload the file, add to state.uploadedFileUrls
         await promisifySetState(datasetStateUpdater)((state) => ({
             ...state,
             uploadedFileUrls: uniq([

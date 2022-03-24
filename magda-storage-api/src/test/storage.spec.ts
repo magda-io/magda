@@ -178,6 +178,88 @@ describe("Storage API tests", () => {
         });
     });
 
+    describe("Upload via POST", () => {
+        const csvContent = fs.readFileSync("src/test/test_csv_1.csv", "utf-8");
+
+        it("should result in the upload file being present in minio", async () => {
+            await mockAuthorization(
+                true,
+                jwtSecret,
+                request(app)
+                    .post("/v0/upload/" + bucketName)
+                    .attach("text", "src/test/test_csv_1.csv")
+                    .accept("csv")
+                    .expect((res) => {
+                        console.log(res);
+                    })
+                //.expect(200)
+            );
+
+            await mockAuthorization(
+                true,
+                jwtSecret,
+                request(app)
+                    .post("/v0/upload/" + bucketName)
+                    .attach("image", bananadance, "bananadance.gif")
+                    .accept("gif")
+                    .expect(200)
+            );
+
+            await injectUserId(
+                jwtSecret,
+                request(app)
+                    .get("/v0/" + bucketName + "/bananadance.gif")
+                    .accept("gif")
+                    .expect(200)
+                    .expect(bananadance)
+            );
+
+            await injectUserId(
+                jwtSecret,
+                request(app)
+                    .get("/v0/" + bucketName + "/test_csv_1.csv")
+                    .accept("csv")
+                    .expect(200)
+                    .expect(csvContent)
+            );
+        });
+
+        it("should allow arbitrary depth for file paths", async () => {
+            await mockAuthorization(
+                true,
+                jwtSecret,
+                request(app)
+                    .post("/v0/upload/" + bucketName + "/this/is/a/deep/path")
+                    .attach("text", "src/test/test_csv_1.csv")
+                    .expect(200)
+            );
+
+            await injectUserId(
+                jwtSecret,
+                request(app)
+                    .get(
+                        "/v0/" +
+                            bucketName +
+                            "/this/is/a/deep/path/test_csv_1.csv"
+                    )
+                    .accept("csv")
+                    .expect(200)
+                    .expect(csvContent)
+            );
+        });
+
+        it("should fail with 400 if it contains no files", () => {
+            return mockAuthorization(
+                true,
+                jwtSecret,
+                request(app)
+                    .post("/v0/upload/" + bucketName)
+                    .field("originalname", "test-browser-upload-1")
+                    .expect(400)
+            );
+        });
+    });
+
     describe("PUT", () => {
         it("should result in the file being downloadable", async () => {
             await mockAuthorization(

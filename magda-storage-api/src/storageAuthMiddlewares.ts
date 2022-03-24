@@ -229,7 +229,7 @@ export function requireStorageObjectPermission(
                 };
             }
 
-            if (operationType !== "update") {
+            if (operationType !== "upload" && operationType !== "update") {
                 requirePermission(
                     authDecisionClient,
                     operationUri,

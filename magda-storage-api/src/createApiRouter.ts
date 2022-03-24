@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import MagdaMinioClient from "./MagdaMinioClient";
 import bodyParser from "body-parser";
+const { fileParser } = require("express-multipart-file-parser");
 import { getUserId } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
@@ -17,6 +18,16 @@ export interface ApiRouterOptions {
     tenantId: number;
     uploadLimit: string;
     authDecisionClient: AuthDecisionQueryClient;
+}
+
+interface FileRequest extends Request {
+    files?: {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        buffer: Buffer;
+    }[];
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -190,6 +201,141 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     res.status(e.statusCode).send(e.message);
                 } else {
                     res.status(500).send(`Failed to get storage object: ${e}`);
+                }
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Storage
+     *
+     * @api {post} /v0/storage/upload/{bucket}/{path} Request to upload a file to {bucket}, in the directory {path}
+     *
+     *
+     * @apiDescription Uploads a object (file) as "form post"
+     * Please note:
+     * Besides users have `storage/object/upload` permission, a user also has access to a file when:
+     * - the file is associated with a record
+     * - the user has `object/record/update` or `object/record/create` permission to an existing record.
+     *
+     * @apiParam (Request body) {File[]} a list of file attachment. Please note: we only allow one file to be uploaded for one API call
+     * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
+     * @apiParam (Request path) {string} path The path in the bucket to put the file in
+     * @apiParam (Request query) {string} recordId A record id to associate this file with - a user will only
+     *      be allowed to access this file if they're also allowed to access the associated record. Should be
+     *      url encoded.
+     *
+     * @apiSuccessExample {string} 200 Successfully uploaded 2 files.
+     * {
+     *      "etag": "cafbab71cd98120b777799598f0d4808-1",
+     *      "versionId": "xxx-xxx-323x-xx-xx33"
+     * }
+     *
+     * @apiErrorExample {string} 500
+     *      Internal server error.
+     */
+    router.post(
+        "/upload/:bucket*",
+        getUserId(options.jwtSecret),
+        fileParser({ rawBodyOptions: { limit: options.uploadLimit } }),
+        requireStorageObjectPermission(
+            options.authDecisionClient,
+            options.registryClient,
+            options.objectStoreClient,
+            "storage/object/upload",
+            // retrieve bucket name
+            async (req: Request, res: Response) => req?.params?.bucket,
+            // retrieve object id / path
+            async (req: FileRequest, res: Response) => {
+                if (!req?.files?.length) {
+                    throw new ServerError(
+                        "Cannot locate any files in request body",
+                        400
+                    );
+                }
+                const rawPath = req.params[0] as string;
+                const pathNoLeadingSlash = rawPath.startsWith("/")
+                    ? rawPath.slice(1)
+                    : rawPath;
+                const path = pathNoLeadingSlash.endsWith("/")
+                    ? pathNoLeadingSlash.slice(pathNoLeadingSlash.length - 1)
+                    : pathNoLeadingSlash;
+
+                const file = req.files[0];
+
+                const fileid = file.originalname;
+                const fullPath = path !== "" ? path + "/" + fileid : fileid;
+
+                res.locals.objectName = fullPath;
+
+                return fullPath;
+            },
+            // create auth decision context data
+            async (req: FileRequest, res: Response) => {
+                if (!req?.files?.length) {
+                    throw new ServerError(
+                        "Cannot locate any files in request body",
+                        400
+                    );
+                }
+                if (req.files.length > 1) {
+                    throw new ServerError(
+                        "Only one file is allowed to be upload for one API call",
+                        400
+                    );
+                }
+                const file = req.files[0];
+                const metaData: StorageObjectMetaData = {
+                    recordId: req?.query?.recordId as string,
+                    contentType: file.mimetype,
+                    cacheControl: req?.headers?.["cache-control"] as string,
+                    ownerId: res?.locals?.userId,
+                    orgUnitId: req?.query?.orgUnitId as string
+                };
+                metaData.size = file.buffer.length;
+                return metaData;
+            }
+        ),
+        async (req: FileRequest, res: Response) => {
+            try {
+                const recordId =
+                    req.query.recordId &&
+                    decodeURIComponent(req?.query?.recordId as string);
+
+                const bucket = req.params.bucket;
+                const encodeBucketname = encodeURIComponent(bucket);
+
+                const file = req.files[0];
+                const metaData: any = {
+                    "Content-Type": file.mimetype,
+                    "Content-Length": file.buffer.length
+                };
+                if (recordId) {
+                    metaData["magda-record-id"] = recordId;
+                }
+                if (res?.locals?.userId) {
+                    metaData["magda-user-id"] = res.locals.userId;
+                }
+                if (req?.query?.orgUnitId) {
+                    metaData["magda-org-unit-id"] = req.query.orgUnitId;
+                }
+                if (req?.headers?.["cache-control"]) {
+                    metaData["Cache-Control"] = req.headers["cache-control"];
+                }
+
+                const uploadInfo = await options.objectStoreClient.putFile(
+                    encodeBucketname,
+                    res.locals.objectName,
+                    file.buffer,
+                    metaData
+                );
+
+                res.status(200).send(uploadInfo);
+            } catch (e) {
+                if (e instanceof ServerError) {
+                    res.status(e.statusCode).send(e.message);
+                } else {
+                    res.status(500).send("Failed to upload file: " + e);
                 }
             }
         }
