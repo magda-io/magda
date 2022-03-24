@@ -59,6 +59,8 @@ spec:
             secretKeyRef:
               name: storage-secrets
               key: accesskey
+        - name: USER_ID
+          value: {{ .Values.global.defaultAdminUserId }}
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
