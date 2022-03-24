@@ -43,7 +43,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @api {PUT} /v0/storage/buckets/{bucketid} Request to create a new bucket
      *
-     * @apiDescription Creates a new bucket with a specified name. Restricted to admins only.
+     * @apiDescription Creates a new bucket with a specified name.
      *
      * @apiParam (Path) {string} bucketid The name of the bucket to be created
      * @apiParam (body) {string} [orgUnitId] (Optional) The id of the orgUnit that the bucket belongs to.
@@ -121,6 +121,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @api {get} /v0/storage/{bucket}/{path} Request to download an object in {bucket} at path {path}
      *
      * @apiDescription Downloads an object
+     * Please note:
+     * Besides users have `storage/object/read` permission, a user also has access to a file when:
+     * - the file is associated with a record
+     * - the user has `object/record/read` permission to an existing record.
      *
      * @apiParam (Request path) {string} bucket The name of the bucket under which the requested object is
      * @apiParam (Request path) {string} path The name of the object being requested
@@ -196,7 +200,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @api {put} /v0/storage/{bucket}/{filePath}?{recordId} Request to upload an object to {bucket} with name {filePath}
      *
-     * @apiDescription Uploads an object. Restricted to admins only.
+     * @apiDescription Uploads an object.
+     * Please note:
+     * Besides users have `storage/object/upload` permission, a user also has access to a file when:
+     * - the file is associated with a record
+     * - the user has `object/record/update` or `object/record/create` permission to an existing record.
      *
      * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
      * @apiParam (Request path) {string} filePath The path of the file to delete
@@ -229,7 +237,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             options.authDecisionClient,
             options.registryClient,
             options.objectStoreClient,
-            "storage/object/create",
+            "storage/object/upload",
             // retrieve bucket name
             async (req: Request, res: Response) => req?.params?.bucket,
             // retrieve object id / path
@@ -316,7 +324,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @api {delete} /v0/storage/{bucket}/{filePath} Request to delete an object at {bucket} with path {filePath}
      *
      * @apiDescription Deletes an object. This is a hard delete, and cannot be undone.
-     * Note that if the {filePath} does not exist, the request will not fail.
+     * Please note:
+     * Besides users have `storage/object/delete` permission, a user also has access to a file when:
+     * - the file is associated with a record
+     * - the user has `object/record/delete` permission to an existing record.
      *
      * @apiParam (Request path) {string} bucket The name of the bucket where the object resides
      * @apiParam (Request path) {string} filePath The name of the object to be deleted
@@ -365,6 +376,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
             });
         }
     );
+
+    router.all;
 
     return router;
 }

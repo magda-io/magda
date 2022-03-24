@@ -155,6 +155,31 @@ VALUES
 ('object/event/update', 'Update Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event')),
 ('object/event/delete', 'Delete Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event'));
 
+-- Add resource, operation for access `storage bucket` 
+INSERT INTO "public"."resources" 
+    ("uri", "name", "description")
+VALUES 
+('storage/bucket', 'Storage Bucket', 'Storage Bucket');
+
+INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
+VALUES 
+('storage/bucket/create','Create Bucket', '', (SELECT id FROM resources WHERE uri = 'storage/bucket')),
+('storage/bucket/read', 'Read Bucket', '', (SELECT id FROM resources WHERE uri = 'storage/bucket')),
+('storage/bucket/update', 'Update Bucket', '', (SELECT id FROM resources WHERE uri = 'storage/bucket')),
+('storage/bucket/delete', 'Delete Bucket', '', (SELECT id FROM resources WHERE uri = 'storage/bucket'));
+
+-- Add resource, operation for access `storage object / file` 
+INSERT INTO "public"."resources" 
+    ("uri", "name", "description")
+VALUES 
+('storage/object', 'Storage Object', 'Storage Object (file)');
+
+INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
+VALUES 
+('storage/object/read', 'Read Object', '', (SELECT id FROM resources WHERE uri = 'storage/object')),
+('storage/object/upload', 'Upload Object', '', (SELECT id FROM resources WHERE uri = 'storage/object')),
+('storage/object/delete', 'Delete Object', '', (SELECT id FROM resources WHERE uri = 'storage/object'));
+
 -- Add resource, operation for access `apiKey` 
 INSERT INTO "public"."resources" 
     ("uri", "name", "description")
