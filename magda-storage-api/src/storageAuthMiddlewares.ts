@@ -5,6 +5,7 @@ import MagdaMinioClient from "./MagdaMinioClient";
 import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import ServerError from "magda-typescript-common/src/ServerError";
+import { BucketItemStat } from "minio";
 
 type RecordContextData = {
     [key: string]: any;
@@ -180,7 +181,7 @@ export function requireStorageObjectPermission(
                 return;
             }
 
-            let stateData;
+            let stateData: BucketItemStat | null;
 
             try {
                 stateData = await storageClient.client.statObject(
@@ -189,7 +190,7 @@ export function requireStorageObjectPermission(
                 );
             } catch (e) {
                 if (e?.code === "NotFound") {
-                    stateData = {};
+                    stateData = null;
                 } else {
                     throw new ServerError(
                         `Cannot fetch storage object metadata: ${e}`,
@@ -198,18 +199,21 @@ export function requireStorageObjectPermission(
                 }
             }
 
-            const objectMetaData: StorageObjectMetaData = {
-                size: stateData?.size,
-                ownerId: stateData?.metaData?.["magda-owner-id"],
-                orgUnitId: stateData?.metaData?.["magda-org-unit-id"],
-                recordId: stateData?.metaData?.["magda-record-id"]
-                    ? stateData.metaData["magda-record-id"]
-                    : // for backward compatibility before v2.0.0
-                      stateData?.metaData?.["record-id"],
-                contentType: stateData?.metaData?.["content-type"],
-                contentEncoding: stateData?.metaData?.["content-encoding"],
-                cacheControl: stateData?.metaData?.["cache-control"]
-            };
+            const objectMetaData: StorageObjectMetaData = stateData
+                ? {
+                      size: stateData?.size,
+                      ownerId: stateData?.metaData?.["magda-owner-id"],
+                      orgUnitId: stateData?.metaData?.["magda-org-unit-id"],
+                      recordId: stateData?.metaData?.["magda-record-id"]
+                          ? stateData.metaData["magda-record-id"]
+                          : // for backward compatibility before v2.0.0
+                            stateData?.metaData?.["record-id"],
+                      contentType: stateData?.metaData?.["content-type"],
+                      contentEncoding:
+                          stateData?.metaData?.["content-encoding"],
+                      cacheControl: stateData?.metaData?.["cache-control"]
+                  }
+                : metaData;
 
             const currentContextData: any = {
                 storage: {
@@ -229,7 +233,7 @@ export function requireStorageObjectPermission(
                 };
             }
 
-            if (operationType !== "upload" && operationType !== "update") {
+            if (operationType !== "upload") {
                 requirePermission(
                     authDecisionClient,
                     operationUri,

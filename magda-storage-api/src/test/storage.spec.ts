@@ -189,10 +189,7 @@ describe("Storage API tests", () => {
                     .post("/v0/upload/" + bucketName)
                     .attach("text", "src/test/test_csv_1.csv")
                     .accept("csv")
-                    .expect((res) => {
-                        console.log(res);
-                    })
-                //.expect(200)
+                    .expect(200)
             );
 
             await mockAuthorization(
@@ -477,19 +474,13 @@ describe("Storage API tests", () => {
                         request(app)
                             .delete("/v0/" + bucketName + "/delete-test-file-1")
                             .expect(200)
-                            // .expect(res=>{
-                            //     console.log(res);
-                            // })
                             .expect({ message: "File deleted successfully" })
                     ).then((_res) => {
                         return request(app)
                             .get("/v0/" + bucketName + "/delete-test-file-1")
                             .set("Accept", "application/json")
                             .set("Accept", "text/plain")
-                            .expect((res) => {
-                                console.log(res);
-                            });
-                        //.expect(404);
+                            .expect(404);
                     });
                 });
             });
