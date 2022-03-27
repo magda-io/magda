@@ -17,6 +17,8 @@ const Minio = require("minio");
 import createApiRouter from "../createApiRouter";
 import MagdaMinioClient from "../MagdaMinioClient";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import { UnconditionalTrueDecision } from "magda-typescript-common/src/opa/AuthDecision";
 
 /** A random UUID */
 const USER_ID = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
@@ -29,6 +31,11 @@ function injectUserId(jwtSecret: string, req: Test): Test {
     const id = jwt.sign({ userId: userId }, jwtSecret);
     return req.set("X-Magda-Session", id);
 }
+
+let authDecisionCallLogs: {
+    config: AuthDecisionReqConfig;
+    jwtToken?: string;
+}[] = [];
 
 describe("Storage API tests", () => {
     let app: express.Application;
@@ -70,10 +77,19 @@ describe("Storage API tests", () => {
             maxRetries: 0
         };
         const registryClient = new AuthorizedRegistryClient(registryOptions);
-        const authDecisionClient = new AuthDecisionQueryClient(
-            authApiUrl,
-            true // skip auth query
+        const authDecisionClient = sinon.createStubInstance(
+            AuthDecisionQueryClient
         );
+        authDecisionClient.getAuthDecision = authDecisionClient.getAuthDecision.callsFake(
+            async (config: AuthDecisionReqConfig, jwtToken?: string) => {
+                authDecisionCallLogs.push({
+                    config,
+                    jwtToken
+                });
+                return UnconditionalTrueDecision;
+            }
+        );
+
         app.use(
             "/v0",
             createApiRouter({
@@ -90,6 +106,7 @@ describe("Storage API tests", () => {
     });
 
     afterEach(() => {
+        authDecisionCallLogs = [];
         if ((<sinon.SinonStub>console.error).restore) {
             (<sinon.SinonStub>console.error).restore();
         }
@@ -182,15 +199,47 @@ describe("Storage API tests", () => {
         const csvContent = fs.readFileSync("src/test/test_csv_1.csv", "utf-8");
 
         it("should result in the upload file being present in minio", async () => {
+            registryScope
+                .get(
+                    "/records/inFull/magda-ds-eb747545-c298-46a6-904f-4b711a4eb319"
+                )
+                .reply(200, {
+                    id: "magda-ds-eb747545-c298-46a6-904f-4b711a4eb319",
+                    aspects: {
+                        test1: {}
+                    }
+                })
+                .persist();
+
             await mockAuthorization(
                 true,
                 jwtSecret,
                 request(app)
-                    .post("/v0/upload/" + bucketName)
+                    .post(
+                        "/v0/upload/" +
+                            bucketName +
+                            "?recordId=magda-ds-eb747545-c298-46a6-904f-4b711a4eb319"
+                    )
                     .attach("text", "src/test/test_csv_1.csv")
                     .accept("csv")
                     .expect(200)
             );
+
+            expect(authDecisionCallLogs.length).gt(1);
+            authDecisionCallLogs.forEach((item) => {
+                // should include record context data
+                expect(item?.config?.input?.object?.record?.id).to.equal(
+                    "magda-ds-eb747545-c298-46a6-904f-4b711a4eb319"
+                );
+
+                // should include file meta data
+                expect(
+                    item?.config?.input?.storage?.object?.bucketName
+                ).to.equal(bucketName);
+                expect(item?.config?.input?.storage?.object?.name).to.equal(
+                    "test_csv_1.csv"
+                );
+            });
 
             await mockAuthorization(
                 true,

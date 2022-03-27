@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { StorageBucketMetaData, StorageObjectMetaData } from "./common";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import MagdaMinioClient from "./MagdaMinioClient";
-import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import ServerError from "magda-typescript-common/src/ServerError";
 import { BucketItemStat } from "minio";
@@ -37,18 +37,17 @@ export function requireStorageBucketPermission(
                 ? await metaDataRetrieveFunc(req, res)
                 : {};
             if (operationType === "create") {
-                requirePermission(
-                    authDecisionClient,
+                requireUnconditionalAuthDecision(authDecisionClient, {
                     operationUri,
-                    (req, res) => ({
+                    input: {
                         storage: {
                             bucket: {
                                 ...(metaData ? metaData : {}),
                                 name: bucketName
                             }
                         }
-                    })
-                )(req, res, next);
+                    }
+                })(req, res, next);
                 return;
             }
             const tags = await storageClient.client.getBucketTagging(
@@ -64,30 +63,27 @@ export function requireStorageBucketPermission(
             }
             currentBucketContextData.name = bucketName;
             if (operationType !== "update") {
-                requirePermission(
-                    authDecisionClient,
+                requireUnconditionalAuthDecision(authDecisionClient, {
                     operationUri,
-                    (req, res) => ({
+                    input: {
                         storage: {
                             bucket: currentBucketContextData
                         }
-                    })
-                )(req, res, next);
+                    }
+                })(req, res, next);
             } else {
                 // for update operation, make sure user has permission to the bucket before & after update
-                requirePermission(
-                    authDecisionClient,
+                requireUnconditionalAuthDecision(authDecisionClient, {
                     operationUri,
-                    (req, res) => ({
+                    input: {
                         storage: {
                             bucket: currentBucketContextData
                         }
-                    })
-                )(req, res, () => {
-                    requirePermission(
-                        authDecisionClient,
+                    }
+                })(req, res, () => {
+                    requireUnconditionalAuthDecision(authDecisionClient, {
                         operationUri,
-                        (req, res) => ({
+                        input: {
                             storage: {
                                 bucket: {
                                     ...currentBucketContextData,
@@ -95,8 +91,8 @@ export function requireStorageBucketPermission(
                                     bucketName
                                 }
                             }
-                        })
-                    )(req, res, next);
+                        }
+                    })(req, res, next);
                 });
             }
         } catch (e) {
@@ -165,10 +161,9 @@ export function requireStorageObjectPermission(
                 : {};
 
             if (operationType === "create") {
-                requirePermission(
-                    authDecisionClient,
+                requireUnconditionalAuthDecision(authDecisionClient, {
                     operationUri,
-                    (req, res) => ({
+                    input: {
                         storage: {
                             object: {
                                 ...(metaData ? metaData : {}),
@@ -176,8 +171,8 @@ export function requireStorageObjectPermission(
                                 name: objectName
                             }
                         }
-                    })
-                )(req, res, next);
+                    }
+                })(req, res, next);
                 return;
             }
 
@@ -225,37 +220,43 @@ export function requireStorageObjectPermission(
                 }
             };
 
-            if (objectMetaData?.recordId) {
+            const recordId = objectMetaData?.recordId
+                ? objectMetaData.recordId
+                : metaData?.recordId;
+            if (recordId) {
                 currentContextData.object = {
-                    record: await createRecordContextData(
-                        objectMetaData.recordId
-                    )
+                    record: await createRecordContextData(recordId)
                 };
             }
 
             if (operationType !== "upload") {
-                requirePermission(
-                    authDecisionClient,
+                requireUnconditionalAuthDecision(authDecisionClient, {
                     operationUri,
-                    (req, res) => currentContextData
-                )(req, res, next);
+                    input: currentContextData
+                })(req, res, next);
             } else {
-                // for update operation, make sure user has permission to the bucket before & after update
-                requirePermission(
-                    authDecisionClient,
+                // for upload operation, make sure user has permission to the bucket before & after upload
+                requireUnconditionalAuthDecision(authDecisionClient, {
                     operationUri,
-                    (req, res) => currentContextData
-                )(req, res, () => {
+                    input: currentContextData
+                })(req, res, async () => {
                     const newContextData = { ...currentContextData };
+                    if (metaData?.recordId && metaData.recordId !== recordId) {
+                        // if new data specified a new record, we need to replace the context data.
+                        newContextData.object = {
+                            record: await createRecordContextData(
+                                metaData.recordId
+                            )
+                        };
+                    }
                     newContextData.storage.object = {
                         ...newContextData.storage.object,
                         ...(metaData ? metaData : {})
                     };
-                    requirePermission(
-                        authDecisionClient,
+                    requireUnconditionalAuthDecision(authDecisionClient, {
                         operationUri,
-                        (req, res) => newContextData
-                    )(req, res, next);
+                        input: newContextData
+                    })(req, res, next);
                 });
             }
         } catch (e) {

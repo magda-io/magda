@@ -26,6 +26,11 @@ class AuthDecisionQueryClient {
     constructor(authApiBaseUrl: string, skipQuery: boolean = false) {
         this.authApiBaseUrl = authApiBaseUrl;
         this.skipQuery = skipQuery;
+        if (this.skipQuery) {
+            console.warn(
+                "WARNING: Skip OPA (policy engine) querying option is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
+            );
+        }
     }
 
     async getAuthDecision(
@@ -34,7 +39,7 @@ class AuthDecisionQueryClient {
     ): Promise<AuthDecision> {
         if (this.skipQuery) {
             console.warn(
-                "WARNING: Skip OPA (policy engine) querying option is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
+                "WARNING: return unconditional true as Skip OPA (policy engine) querying option is turned on!"
             );
             return UnconditionalTrueDecision;
         }
