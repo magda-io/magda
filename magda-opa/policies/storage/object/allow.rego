@@ -20,6 +20,12 @@ allow {
     input.storage.object.ownerId = input.user.id
 }
 
+allow {
+    hasOwnerConstraintPermission(input.operationUri)
+    # or when a user has ownership constraint permission, he also can access all records with NO ownerId assigned
+    not input.storage.object.ownerId
+}
+
 # Rules for permissions with org unit constraint
 allow {
     hasOrgUnitConstaintPermission(input.operationUri)
@@ -27,15 +33,21 @@ allow {
     input.user.managingOrgUnitIds[_] = input.storage.object.orgUnitId
 }
 
+allow {
+    hasOrgUnitConstaintPermission(input.operationUri)
+    # or when a user has org unit ownership constraint permission, he also can access all object with NO org unit assigned
+    not input.storage.object.orgUnitId
+}
+
 
 # If user has access to the record that the file has attach to, he has access to the file (same operation) as well
-# This rule deals with any operation rather than `upload`
+# This rule deals with `read` operation
+# users with either "object/record/read" are allow to access
 allow {
     input.storage.object.recordId = input.object.record.id
     [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
-    operationType != "upload"
-    inputOperationUri := concat("/", ["object", "record", operationType])
-    data.object.record.verifyPermission(inputOperationUri)
+    operationType = "read"
+    data.object.record.verifyPermission("object/record/read")
 }
 
 # If user has access to the record that the file has attach to, he has access to the file (same operation) as well
@@ -53,4 +65,28 @@ allow {
     [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
     operationType = "upload"
     data.object.record.verifyPermission("object/record/update")
+}
+
+# If user has access to the record that the file has attach to, he has access to the file (same operation) as well
+# This rule deals with `delete` operation
+# users with either "object/record/create" or "object/record/update" or "object/record/delete" are allow to access
+allow {
+    input.storage.object.recordId = input.object.record.id
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+    operationType = "delete"
+    data.object.record.verifyPermission("object/record/create")
+}
+
+allow {
+    input.storage.object.recordId = input.object.record.id
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+    operationType = "delete"
+    data.object.record.verifyPermission("object/record/update")
+}
+
+allow {
+    input.storage.object.recordId = input.object.record.id
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+    operationType = "delete"
+    data.object.record.verifyPermission("object/record/delete")
 }
