@@ -66,7 +66,6 @@
     "@types/smoothscroll-polyfill": "^0.3.1",
     "@types/uuid": "^8.0.0",
     "@types/xlsx": "^0.0.36",
-    "@types/crypto-js": "^4.1.1",
     "@typescript-eslint/eslint-plugin": "2.34.0",
     "@typescript-eslint/parser": "2.34.0",
     "babel-eslint": "9.0.0",
@@ -169,8 +168,7 @@
     "weighted-mean": "^1.0.2",
     "worker-loader": "^2.0.0",
     "xlsx": "^0.14.0",
-    "yaml-front-matter": "^4.0.0",
-    "crypto-js": "^4.1.1"
+    "yaml-front-matter": "^4.0.0"
   },
   "browserslist": [
     "last 2 versions",

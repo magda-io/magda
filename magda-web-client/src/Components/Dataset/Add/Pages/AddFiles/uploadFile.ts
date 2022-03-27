@@ -1,5 +1,5 @@
 import { config, DATASETS_BUCKET } from "config";
-import getDownloadUrl from "./getDownloadUrl";
+import getStorageUrl from "@magda/typescript-common/dist/getStorageUrl";
 import promisifySetState from "helpers/promisifySetState";
 import { DatasetStateUpdaterType } from "../../DatasetAddCommon";
 import urijs from "urijs";
@@ -51,7 +51,7 @@ export default async function uploadFile(
             ...state,
             uploadedFileUrls: uniq([
                 ...state.uploadedFileUrls,
-                getDownloadUrl(datasetId, distId, file.name)
+                getStorageUrl(datasetId, distId, file.name)
             ])
         }));
 

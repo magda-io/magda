@@ -127,7 +127,7 @@ export function getValidS3ObjectKey(
     )}${newExtName}`;
 }
 
-export default function getDownloadUrl(
+export default function getStorageUrl(
     datasetId: string,
     distId: string,
     fileName: string
