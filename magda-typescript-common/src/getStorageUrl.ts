@@ -5,7 +5,7 @@ import md5 from "crypto-js/md5";
 // max allowed s3 object key length
 // minio implements an s3 alike / compatible API thus the similar limit should apply.
 const MAX_KEY_LENGTH = 1024;
-const InvalidCharsRegEx = /[^a-zA-Z0-9!\-_.*'()]/g;
+export const InvalidCharsRegEx = /[^a-zA-Z0-9!\-_.*'()]/g;
 
 function removeInvalidChars(input: string): string {
     if (!input || typeof input !== "string") {
@@ -64,7 +64,7 @@ export function getValidS3ObjectKey(
     if (!processedFileName.length) {
         // the file name doesn't contain any valid chars.
         // we generate a file name here.
-        processedFileName = `untitled_file_${uuidv4}.dat`;
+        processedFileName = `untitled_file_${uuidv4()}.dat`;
     }
 
     // try to shorten the object key as per rules in description above
