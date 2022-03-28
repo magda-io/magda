@@ -1251,7 +1251,7 @@ async function convertStateToDistributionRecords(
                   }
                 : distribution;
 
-        // --- version property should be created as a seperate version aspect
+        // --- version property should be created as a separate version aspect
         // --- rather than part of `dcat-distribution-strings`
         aspect.version = undefined;
 

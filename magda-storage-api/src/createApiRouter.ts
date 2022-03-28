@@ -159,8 +159,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             // bucket name
             async (req: Request, res: Response) => req?.params?.bucket,
             // object id / path
-            async (req: Request, res: Response) => req?.params?.[0],
-            async (req: Request, res: Response) => undefined
+            async (req: Request, res: Response) => req?.params?.[0]
         ),
         async function (req, res) {
             const path = req.params[0];
@@ -498,28 +497,36 @@ export default function createApiRouter(options: ApiRouterOptions) {
             // retrieve bucket name
             async (req: Request, res: Response) => req?.params?.bucket,
             // retrieve object id / path
-            async (req: Request, res: Response) => req?.params?.[0],
-            async (req: Request, res: Response) => undefined
+            async (req: Request, res: Response) => req?.params?.[0]
         ),
         async function (req, res) {
-            const filePath = req.params[0];
-            const bucket = req.params.bucket;
+            try {
+                const filePath = req.params[0];
+                const bucket = req.params.bucket;
 
-            const encodeBucketname = encodeURIComponent(bucket);
-            const deletionSuccess = await options.objectStoreClient.deleteFile(
-                encodeBucketname,
-                filePath
-            );
-            if (deletionSuccess) {
-                return res.status(200).send({
-                    message: "File deleted successfully"
-                });
+                const encodeBucketname = encodeURIComponent(bucket);
+                const deletionSuccess = await options.objectStoreClient.deleteFile(
+                    encodeBucketname,
+                    filePath
+                );
+                if (deletionSuccess) {
+                    res.status(200).send({
+                        message: "File deleted successfully"
+                    });
+                }
+                throw new ServerError(
+                    `Failed to delete the file ${filePath} in bucket ${bucket}.`
+                );
+            } catch (e) {
+                console.error(e);
+                if (e instanceof ServerError) {
+                    res.status(e.statusCode).send({ message: e.message });
+                } else {
+                    res.status(500).send({
+                        message: `Failed to delete the file: ${e}`
+                    });
+                }
             }
-            return res.status(500).send({
-                message:
-                    "Encountered error while deleting file." +
-                    "This has been logged and we are looking into this."
-            });
         }
     );
 

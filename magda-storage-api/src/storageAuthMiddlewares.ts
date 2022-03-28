@@ -105,6 +105,32 @@ export function requireStorageBucketPermission(
     };
 }
 
+async function createRecordContextData(
+    registryClient: AuthorizedRegistryClient,
+    recordId: string
+): Promise<RecordContextData | undefined> {
+    try {
+        const record = await registryClient.getRecordInFull(recordId);
+        const { aspects, ...contextData } = record;
+        if (aspects && typeof aspects === "object") {
+            Object.keys(aspects).forEach(
+                (key) => ((contextData as any)[key] = aspects[key])
+            );
+        }
+        return contextData;
+    } catch (e) {
+        const errorMsg = `Failed to retrieve record to construct auth decision context data: ${e}`;
+        console.warn(errorMsg);
+        if (e instanceof ServerError) {
+            if (e.statusCode === 404) {
+                return undefined;
+            }
+            throw e;
+        }
+        throw new ServerError(errorMsg, 500);
+    }
+}
+
 export function requireStorageObjectPermission(
     authDecisionClient: AuthDecisionQueryClient,
     registryClient: AuthorizedRegistryClient,
@@ -127,31 +153,6 @@ export function requireStorageObjectPermission(
     }
     const operationType = parts.pop();
 
-    async function createRecordContextData(
-        recordId: string
-    ): Promise<RecordContextData | undefined> {
-        try {
-            const record = await registryClient.getRecordInFull(recordId);
-            const { aspects, ...contextData } = record;
-            if (aspects && typeof aspects === "object") {
-                Object.keys(aspects).forEach(
-                    (key) => ((contextData as any)[key] = aspects[key])
-                );
-            }
-            return contextData;
-        } catch (e) {
-            const errorMsg = `Failed to retrieve record to construct auth decision context data: ${e}`;
-            console.log(errorMsg);
-            if (e instanceof ServerError) {
-                if (e.statusCode === 404) {
-                    return undefined;
-                }
-                throw e;
-            }
-            throw new ServerError(errorMsg, 500);
-        }
-    }
-
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
             const bucketName = await bucketNameRetrieveFunc(req, res);
@@ -159,22 +160,6 @@ export function requireStorageObjectPermission(
             const metaData = metaDataRetrieveFunc
                 ? await metaDataRetrieveFunc(req, res)
                 : {};
-
-            if (operationType === "create") {
-                requireUnconditionalAuthDecision(authDecisionClient, {
-                    operationUri,
-                    input: {
-                        storage: {
-                            object: {
-                                ...(metaData ? metaData : {}),
-                                bucketName,
-                                name: objectName
-                            }
-                        }
-                    }
-                })(req, res, next);
-                return;
-            }
 
             let stateData: BucketItemStat | null;
 
@@ -208,7 +193,7 @@ export function requireStorageObjectPermission(
                           stateData?.metaData?.["content-encoding"],
                       cacheControl: stateData?.metaData?.["cache-control"]
                   }
-                : metaData;
+                : {};
 
             const currentContextData: any = {
                 storage: {
@@ -220,44 +205,64 @@ export function requireStorageObjectPermission(
                 }
             };
 
-            const recordId = objectMetaData?.recordId
-                ? objectMetaData.recordId
-                : metaData?.recordId;
-            if (recordId) {
+            if (objectMetaData?.recordId) {
                 currentContextData.object = {
-                    record: await createRecordContextData(recordId)
+                    record: await createRecordContextData(
+                        registryClient,
+                        objectMetaData?.recordId
+                    )
                 };
             }
 
-            if (operationType !== "upload") {
+            if (operationType === "read" || operationType === "delete") {
                 requireUnconditionalAuthDecision(authDecisionClient, {
                     operationUri,
                     input: currentContextData
                 })(req, res, next);
-            } else {
-                // for upload operation, make sure user has permission to the bucket before & after upload
+                return;
+            }
+
+            if (operationType == "upload") {
+                const newRecordContextData = metaData?.recordId
+                    ? await createRecordContextData(
+                          registryClient,
+                          metaData.recordId
+                      )
+                    : {};
+
+                const newContextData = { ...currentContextData };
+                newContextData.object = {
+                    record: newRecordContextData
+                };
+                newContextData.storage.object = {
+                    ...newContextData.storage.object,
+                    ...(metaData ? metaData : {})
+                };
+
+                if (!stateData) {
+                    // storage object doesn't exist, we are creating the storage object
+                    // thus, we should use newContextData (contains object metadata proposed to create)
+                    requireUnconditionalAuthDecision(authDecisionClient, {
+                        operationUri,
+                        input: newContextData
+                    })(req, res, next);
+                    return;
+                }
+                // storage object exist, upload operation will replace the existing object, make sure user has permission to the object before & after upload
                 requireUnconditionalAuthDecision(authDecisionClient, {
                     operationUri,
                     input: currentContextData
                 })(req, res, async () => {
-                    const newContextData = { ...currentContextData };
-                    if (metaData?.recordId && metaData.recordId !== recordId) {
-                        // if new data specified a new record, we need to replace the context data.
-                        newContextData.object = {
-                            record: await createRecordContextData(
-                                metaData.recordId
-                            )
-                        };
-                    }
-                    newContextData.storage.object = {
-                        ...newContextData.storage.object,
-                        ...(metaData ? metaData : {})
-                    };
                     requireUnconditionalAuthDecision(authDecisionClient, {
                         operationUri,
                         input: newContextData
                     })(req, res, next);
                 });
+            } else {
+                throw new ServerError(
+                    `Unknown operation: ${operationUri}`,
+                    400
+                );
             }
         } catch (e) {
             if (e instanceof ServerError) {

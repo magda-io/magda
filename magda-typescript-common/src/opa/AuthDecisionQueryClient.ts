@@ -77,15 +77,16 @@ class AuthDecisionQueryClient {
         const reqUri = baseUri.segmentCoded(urlSegments).search(queryParams);
 
         const fetchConfig: RequestInit = {
+            headers: {} as Record<string, string>,
             ...AuthDecisionQueryClient.fetchOptions,
             ...this.fetchOptions,
             method: usePost ? "POST" : "GET"
         };
 
         if (jwtToken) {
-            fetchConfig.headers = {
-                "X-Magda-Session": jwtToken
-            };
+            (fetchConfig.headers as Record<string, string>)[
+                "X-Magda-Session"
+            ] = jwtToken;
         }
 
         const requestData: { [key: string]: any } = {};
@@ -104,6 +105,8 @@ class AuthDecisionQueryClient {
 
         if (usePost) {
             fetchConfig.body = JSON.stringify(requestData);
+            (fetchConfig.headers as Record<string, string>)["Content-Type"] =
+                "application/json";
         }
 
         const res = await fetch(reqUri.toString(), fetchConfig);

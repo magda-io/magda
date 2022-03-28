@@ -225,7 +225,7 @@ describe("Storage API tests", () => {
                     .expect(200)
             );
 
-            expect(authDecisionCallLogs.length).gt(1);
+            expect(authDecisionCallLogs.length).gte(1);
             authDecisionCallLogs.forEach((item) => {
                 // should include record context data
                 expect(item?.config?.input?.object?.record?.id).to.equal(
