@@ -377,7 +377,7 @@ VALUES
 INSERT INTO "public"."permissions" 
     ("id", "name", "resource_id", "user_ownership_constraint", "org_unit_ownership_constraint", "pre_authorised_constraint", "description") 
 VALUES 
-('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit/read') , 'f', 't', 'f', 'This permission allows users to read org unit info within his org unit sub tree.'),
+('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit') , 'f', 't', 'f', 'This permission allows users to read org unit info within his org unit sub tree.'),
 ('fe2ea6f1-192a-423c-9ae0-acb9f5d2dc48', 'Read Distribution with own org units', (SELECT id FROM resources WHERE uri = 'object/distribution') , 'f', 't', 'f', 'This permission allows users to read distribution info within his org unit sub tree.'),
 ('e204f8ca-718b-4a29-bea3-554a4551ed20', 'Read Orgnisation (Publisher) with own org units', (SELECT id FROM resources WHERE uri = 'object/organization') , 'f', 't', 'f', 'This permission allows users to read orgnisation (publisher) info within his org unit sub tree.');
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
