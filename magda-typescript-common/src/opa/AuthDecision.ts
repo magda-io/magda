@@ -80,7 +80,7 @@ export default class AuthDecision {
             this.toAspectQueryGroups(config.prefixes).map((item) =>
                 item.toSql(config)
             )
-        );
+        ).roundBracket();
     }
 }
 

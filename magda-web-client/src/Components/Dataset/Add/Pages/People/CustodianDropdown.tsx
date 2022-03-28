@@ -36,8 +36,10 @@ export default function CustodianDropdown({
         return (
             <div className="au-body au-page-alerts au-page-alerts--error">
                 <span style={{ verticalAlign: "-2px" }}>
-                    Could not retrieve data custodians, or there are no data
-                    custodians in the system.
+                    Could not retrieve data custodians list. Please make sure
+                    the organizational structure has been setup by system admin
+                    and your account has been assigned to an organizational
+                    unit.
                 </span>
                 <button className="au-btn au-btn--tertiary" onClick={execute}>
                     Try Again
@@ -45,7 +47,7 @@ export default function CustodianDropdown({
             </div>
         );
     } else {
-        const value = result.find(option => option.id === orgUnitId);
+        const value = result.find((option) => option.id === orgUnitId);
 
         return (
             <Select
@@ -63,7 +65,7 @@ export default function CustodianDropdown({
                 }}
                 styles={ReactSelectStyles}
                 value={value && { label: value.name, value: value.id }}
-                options={result.map(option => ({
+                options={result.map((option) => ({
                     label: option.name,
                     value: option.id
                 }))}

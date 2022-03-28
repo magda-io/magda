@@ -3,7 +3,10 @@ import Database from "../Database";
 import respondWithError from "../respondWithError";
 import handleMaybePromise from "../handleMaybePromise";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import {
+    requirePermission,
+    withAuthDecision
+} from "magda-typescript-common/src/authorization-api/authMiddleware";
 import { requireObjectPermission } from "../recordAuthMiddlewares";
 import ServerError from "magda-typescript-common/src/ServerError";
 
@@ -53,7 +56,9 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/bylevel/:orgLevel",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             try {
                 const orgLevel = req.params.orgLevel;
@@ -65,7 +70,10 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
                 if (levelNumber < 1 || isNaN(levelNumber))
                     throw new Error(`Invalid level number: ${orgLevel}.`);
 
-                const nodes = await orgQueryer.getAllNodesAtLevel(levelNumber);
+                const nodes = await orgQueryer.getAllNodesAtLevel(
+                    levelNumber,
+                    res.locals.authDecision
+                );
 
                 if (relationshipOrgUnitId && nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
@@ -118,7 +126,9 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             try {
                 const nodeName: string = req.query.nodeName as string;
@@ -126,10 +136,15 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
                 const relationshipOrgUnitId = req.query
                     .relationshipOrgUnitId as string;
 
-                const nodes = await orgQueryer.getNodes({
-                    name: nodeName,
-                    leafNodesOnly: leafNodesOnly === "true"
-                });
+                const nodes = await orgQueryer.getNodes(
+                    {
+                        name: nodeName,
+                        leafNodesOnly: leafNodesOnly === "true"
+                    },
+                    null,
+                    null,
+                    res.locals.authDecision
+                );
 
                 if (relationshipOrgUnitId && nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
@@ -169,11 +184,13 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/root",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             handleMaybePromise(
                 res,
-                orgQueryer.getRootNode(),
+                orgQueryer.getRootNode(null, null, res.locals.authDecision),
                 "GET /public/orgunits/root",
                 "Cannot locate the root tree node."
             );
@@ -240,12 +257,19 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:nodeId",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             const nodeId = req.params.nodeId;
             handleMaybePromise(
                 res,
-                orgQueryer.getNodeById(nodeId),
+                orgQueryer.getNodeById(
+                    nodeId,
+                    null,
+                    null,
+                    res.locals.authDecision
+                ),
                 "GET /public/orgunits/:nodeId",
                 `Could not find org unit with id ${nodeId}`
             );
@@ -418,11 +442,18 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:nodeId/children/immediate",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             try {
                 const nodeId = req.params.nodeId;
-                const nodes = await orgQueryer.getImmediateChildren(nodeId);
+                const nodes = await orgQueryer.getImmediateChildren(
+                    nodeId,
+                    null,
+                    null,
+                    res.locals.authDecision
+                );
                 res.status(200).json(nodes);
             } catch (e) {
                 respondWithError(
@@ -457,11 +488,19 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:nodeId/children/all",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             try {
                 const nodeId = req.params.nodeId;
-                const nodes = await orgQueryer.getAllChildren(nodeId);
+                const nodes = await orgQueryer.getAllChildren(
+                    nodeId,
+                    false,
+                    null,
+                    null,
+                    res.locals.authDecision
+                );
                 res.status(200).json(nodes);
             } catch (e) {
                 respondWithError(

@@ -165,9 +165,14 @@ class NestedSetModelQueryer {
     async getNodes(
         nodesQuery: NodesQuery = {},
         fields: string[] = null,
-        client: pg.Client = null
+        client: pg.Client = null,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<NodeRecord[]> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"]
+        });
         const clauses = [
+            authConditions,
             nodesQuery.name
                 ? sqls`"name" = ${nodesQuery.name}`
                 : SQLSyntax.empty,
