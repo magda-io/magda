@@ -523,7 +523,7 @@ describe("Storage API tests", () => {
                         request(app)
                             .delete("/v0/" + bucketName + "/delete-test-file-1")
                             .expect(200)
-                            .expect({ message: "File deleted successfully" })
+                            .expect({ deleted: true })
                     ).then((_res) => {
                         return request(app)
                             .get("/v0/" + bucketName + "/delete-test-file-1")
@@ -559,7 +559,7 @@ describe("Storage API tests", () => {
                                     "/path/path/path/delete-test-file-1"
                             )
                             .expect(200)
-                            .expect({ message: "File deleted successfully" })
+                            .expect({ deleted: true })
                     ).then((_res) => {
                         return request(app)
                             .get("/v0/" + bucketName + "/delete-test-file-1")
@@ -587,7 +587,7 @@ describe("Storage API tests", () => {
                         request(app)
                             .delete("/v0/" + bucketName + "/delete-test-file-2")
                             .expect(200)
-                            .expect({ message: "File deleted successfully" })
+                            .expect({ deleted: true })
                     ).then((_res) => {
                         return request(app)
                             .get("/v0/" + bucketName + "/delete-test-file-2")
@@ -609,6 +609,38 @@ describe("Storage API tests", () => {
                         .expect(200)
                 );
             });
+        });
+
+        it("should response 200 when deletes not exists file", async () => {
+            await mockAuthorization(
+                true,
+                jwtSecret,
+                request(app)
+                    .put("/v0/" + bucketName + "/delete-test-file-1")
+                    .set("Accept", "application/json")
+                    .set("Content-Type", "text/plain")
+                    .send("Testing delete")
+                    .expect(200)
+            );
+            await mockAuthorization(
+                true,
+                jwtSecret,
+                request(app)
+                    .delete("/v0/" + bucketName + "/delete-test-file-1")
+                    .expect(200)
+                    .expect({ deleted: true })
+            );
+            await request(app)
+                .get("/v0/" + bucketName + "/delete-test-file-1")
+                .set("Accept", "application/json")
+                .set("Accept", "text/plain")
+                .expect(404);
+
+            // delete again should response 200 with `deleted` field set to `false`
+            await request(app)
+                .delete("/v0/" + bucketName + "/delete-test-file-1")
+                .expect(200)
+                .expect({ deleted: false });
         });
     });
 });

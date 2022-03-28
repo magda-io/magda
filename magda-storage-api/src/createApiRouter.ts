@@ -159,7 +159,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
             // bucket name
             async (req: Request, res: Response) => req?.params?.bucket,
             // object id / path
-            async (req: Request, res: Response) => req?.params?.[0]
+            async (req: Request, res: Response) => req?.params?.[0],
+            undefined,
+            (req, res, next) => {
+                // when storage object not exist
+                res.status(404).send(
+                    `Cannot locate storage object: ${req.params.bucket}/${req.params[0]}`
+                );
+            }
         ),
         async function (req, res) {
             const path = req.params[0];
@@ -192,11 +199,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     throw new ServerError("Failed to create stream.", 500);
                 }
             } catch (e) {
-                if (e?.code === "NotFound") {
-                    res.status(404).send(
-                        `Cannot locate storage object: ${bucket}/${path}`
-                    );
-                } else if (e instanceof ServerError) {
+                if (e instanceof ServerError) {
                     res.status(e.statusCode).send(e.message);
                 } else {
                     res.status(500).send(`Failed to get storage object: ${e}`);
@@ -479,7 +482,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @apiSuccessExample {json} 200
      *    {
-     *        "message":"File deleted successfully",
+     *        // when `false`, indicate the storage object doesn't exist. Thus, no need for deletion.
+     *        "deleted": true
      *    }
      *
      * @apiErrorExample {json} 500
@@ -497,7 +501,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
             // retrieve bucket name
             async (req: Request, res: Response) => req?.params?.bucket,
             // retrieve object id / path
-            async (req: Request, res: Response) => req?.params?.[0]
+            async (req: Request, res: Response) => req?.params?.[0],
+            undefined,
+            (req, res, next) => {
+                // when storage object not exist
+                res.status(200).send({
+                    deleted: false
+                });
+            }
         ),
         async function (req, res) {
             try {
@@ -511,12 +522,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 );
                 if (deletionSuccess) {
                     res.status(200).send({
-                        message: "File deleted successfully"
+                        deleted: true
                     });
+                } else {
+                    throw new ServerError(
+                        `Failed to delete the file ${filePath} in bucket ${bucket}.`
+                    );
                 }
-                throw new ServerError(
-                    `Failed to delete the file ${filePath} in bucket ${bucket}.`
-                );
             } catch (e) {
                 console.error(e);
                 if (e instanceof ServerError) {

@@ -141,7 +141,12 @@ export function requireStorageObjectPermission(
     metaDataRetrieveFunc?: (
         req: Request,
         res: Response
-    ) => Promise<StorageObjectMetaData>
+    ) => Promise<StorageObjectMetaData>,
+    onStorageObjectNotFound?: (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => void
 ) {
     if (typeof operationUri !== "string" || !operationUri) {
         throw new Error("Invalid empty operationUri!");
@@ -171,6 +176,16 @@ export function requireStorageObjectPermission(
             } catch (e) {
                 if (e?.code === "NotFound") {
                     stateData = null;
+                    if (
+                        (operationType === "read" ||
+                            operationType === "delete") &&
+                        onStorageObjectNotFound
+                    ) {
+                        // if operationType == "read" or operationType == "delete"
+                        // optionally let onStorageObjectNotFound decide response and end processing earlier
+                        onStorageObjectNotFound(req, res, next);
+                        return;
+                    }
                 } else {
                     throw new ServerError(
                         `Cannot fetch storage object metadata: ${e}`,
