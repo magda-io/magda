@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { StorageBucketMetaData, StorageObjectMetaData } from "./common";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import MagdaMinioClient from "./MagdaMinioClient";
-import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import ServerError from "magda-typescript-common/src/ServerError";
 import { BucketItemStat } from "minio";
@@ -37,14 +37,11 @@ export function requireStorageBucketPermission(
                 ? await metaDataRetrieveFunc(req, res)
                 : {};
             if (operationType === "create") {
-                requireUnconditionalAuthDecision(authDecisionClient, {
-                    operationUri,
-                    input: {
-                        storage: {
-                            bucket: {
-                                ...(metaData ? metaData : {}),
-                                name: bucketName
-                            }
+                requirePermission(authDecisionClient, operationUri, {
+                    storage: {
+                        bucket: {
+                            ...(metaData ? metaData : {}),
+                            name: bucketName
                         }
                     }
                 })(req, res, next);
@@ -63,33 +60,24 @@ export function requireStorageBucketPermission(
             }
             currentBucketContextData.name = bucketName;
             if (operationType !== "update") {
-                requireUnconditionalAuthDecision(authDecisionClient, {
-                    operationUri,
-                    input: {
-                        storage: {
-                            bucket: currentBucketContextData
-                        }
+                requirePermission(authDecisionClient, operationUri, {
+                    storage: {
+                        bucket: currentBucketContextData
                     }
                 })(req, res, next);
             } else {
                 // for update operation, make sure user has permission to the bucket before & after update
-                requireUnconditionalAuthDecision(authDecisionClient, {
-                    operationUri,
-                    input: {
-                        storage: {
-                            bucket: currentBucketContextData
-                        }
+                requirePermission(authDecisionClient, operationUri, {
+                    storage: {
+                        bucket: currentBucketContextData
                     }
                 })(req, res, () => {
-                    requireUnconditionalAuthDecision(authDecisionClient, {
-                        operationUri,
-                        input: {
-                            storage: {
-                                bucket: {
-                                    ...currentBucketContextData,
-                                    ...(metaData ? metaData : {}),
-                                    bucketName
-                                }
+                    requirePermission(authDecisionClient, operationUri, {
+                        storage: {
+                            bucket: {
+                                ...currentBucketContextData,
+                                ...(metaData ? metaData : {}),
+                                bucketName
                             }
                         }
                     })(req, res, next);
@@ -230,10 +218,11 @@ export function requireStorageObjectPermission(
             }
 
             if (operationType === "read" || operationType === "delete") {
-                requireUnconditionalAuthDecision(authDecisionClient, {
+                requirePermission(
+                    authDecisionClient,
                     operationUri,
-                    input: currentContextData
-                })(req, res, next);
+                    currentContextData
+                )(req, res, next);
                 return;
             }
 
@@ -257,21 +246,24 @@ export function requireStorageObjectPermission(
                 if (!stateData) {
                     // storage object doesn't exist, we are creating the storage object
                     // thus, we should use newContextData (contains object metadata proposed to create)
-                    requireUnconditionalAuthDecision(authDecisionClient, {
+                    requirePermission(
+                        authDecisionClient,
                         operationUri,
-                        input: newContextData
-                    })(req, res, next);
+                        newContextData
+                    )(req, res, next);
                     return;
                 }
                 // storage object exist, upload operation will replace the existing object, make sure user has permission to the object before & after upload
-                requireUnconditionalAuthDecision(authDecisionClient, {
+                requirePermission(
+                    authDecisionClient,
                     operationUri,
-                    input: currentContextData
-                })(req, res, async () => {
-                    requireUnconditionalAuthDecision(authDecisionClient, {
+                    currentContextData
+                )(req, res, async () => {
+                    requirePermission(
+                        authDecisionClient,
                         operationUri,
-                        input: newContextData
-                    })(req, res, next);
+                        newContextData
+                    )(req, res, next);
                 });
             } else {
                 throw new ServerError(

@@ -9,7 +9,9 @@ import AuthDecisionQueryClient, {
 } from "../opa/AuthDecisionQueryClient";
 import AuthDecision, { isTrueEquivalent } from "../opa/AuthDecision";
 import { DEFAULT_ADMIN_USER_ID } from "./constants";
+import ServerError from "../ServerError";
 
+// deprecated middleware. To be removed after all code is secured with new model
 export const mustBeLoggedIn = (jwtSecret: string) =>
     function (this: any, req: Request, res: Response, next: () => void) {
         getUserIdHandling(req, res, jwtSecret, (userId: string) => {
@@ -20,6 +22,7 @@ export const mustBeLoggedIn = (jwtSecret: string) =>
 
 /**
  * Find the user making the request. Assign it to req passport style.
+ * !deprecated! should use middleware `getUserId` or `requireUserId` instead.
  */
 export const getUser = (
     baseAuthUrl: string,
@@ -56,6 +59,7 @@ export const getUser = (
     });
 };
 
+// deprecated middleware. To be removed after all code is secured with new model
 export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => {
     const getUserInstance = getUser(baseAuthUrl, jwtSecret);
     return (req: Request, res: Response, next: () => void) => {
@@ -94,10 +98,14 @@ export function withAuthDecision(
             res.locals.authDecision = authDecision;
             next();
         } catch (e) {
-            console.error(`Failed to get auth decision: ${e}`);
-            res.status(500).send(
-                "An error occurred while retrieving auth decision for the request."
-            );
+            console.error(`withAuthDecision middleware error: ${e}`);
+            if (e instanceof ServerError) {
+                res.status(e.statusCode).send(e.message);
+            } else {
+                res.status(500).send(
+                    `An error occurred while retrieving auth decision for the request: ${e}`
+                );
+            }
         }
     };
 }
@@ -135,6 +143,10 @@ export function requireUnconditionalAuthDecision(
     };
 }
 
+type InputDataOrFuncType =
+    | ((req: Request, res: Response) => Record<string, any>)
+    | Record<string, any>;
+
 /**
  * require permission based on input data provided.
  * Different from withAuthDecision, its method always set `unknowns` = Nil i.e. it will always attempt to make unconditional decision.
@@ -143,40 +155,42 @@ export function requireUnconditionalAuthDecision(
  * @export
  * @param {AuthDecisionQueryClient} authDecisionClient
  * @param {string} operationUri
- * @param {(req: Request, res: Response) => { [key: string]: any }} [inputDataFunc]
+ * @param {InputDataOrFuncType} [inputDataFunc] either a function that produce input data (auth decision context data) from `req` & `req` or a plain object
  * @return {*}
  */
 export function requirePermission(
     authDecisionClient: AuthDecisionQueryClient,
     operationUri: string,
-    inputDataFunc?: (req: Request, res: Response) => { [key: string]: any }
+    inputDataOrFunc?: InputDataOrFuncType
 ) {
     return (req: Request, res: Response, next: () => void) => {
-        const config = {
-            operationUri,
-            unknowns: []
-        } as AuthDecisionReqConfig;
-        if (inputDataFunc) {
-            config.input = inputDataFunc(req, res);
-        }
-        withAuthDecision(authDecisionClient, config)(req, res, () => {
-            const authDecision = res.locals.authDecision as AuthDecision;
-            if (authDecision?.hasResidualRules) {
-                console.warn(`Failed to make unconditional auth decision for operation '${operationUri}'. 
-                "Input: ${config?.input}. `);
-                res.status(403).send(
-                    `you are not permitted to perform '${operationUri}': no unconditional decision can be made.`
-                );
-            } else {
-                if (isTrueEquivalent(authDecision?.result)) {
-                    return next();
+        try {
+            const config = {
+                operationUri,
+                unknowns: []
+            } as AuthDecisionReqConfig;
+            if (inputDataOrFunc) {
+                if (typeof inputDataOrFunc === "function") {
+                    config.input = inputDataOrFunc(req, res);
                 } else {
-                    res.status(403).send(
-                        `you are not permitted to perform \`${config.operationUri}\` on required resources.`
-                    );
+                    config.input = inputDataOrFunc;
                 }
             }
-        });
+            requireUnconditionalAuthDecision(authDecisionClient, config, true)(
+                req,
+                res,
+                next
+            );
+        } catch (e) {
+            console.error(`requirePermission middleware error: ${e}`);
+            if (e instanceof ServerError) {
+                res.status(e.statusCode).send(e.message);
+            } else {
+                res.status(500).send(
+                    `requirePermission middleware error: ${e}`
+                );
+            }
+        }
     };
 }
 
