@@ -1,6 +1,6 @@
 # tenant-db
 
-![Version: 1.2.1-rc.0](https://img.shields.io/badge/Version-1.2.1--rc.0-informational?style=flat-square)
+![Version: 1.2.1](https://img.shields.io/badge/Version-1.2.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -10,7 +10,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-postgres | magda-postgres | 1.2.1-rc.0 |
+| file://../magda-postgres | magda-postgres | 1.2.1 |
 
 ## Values
 
