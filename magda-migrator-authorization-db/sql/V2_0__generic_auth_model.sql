@@ -119,7 +119,7 @@ VALUES
 INSERT INTO "public"."resources" 
     ("uri", "name", "description")
 VALUES 
-('object/organization', 'Organization', 'Organization record');
+('object/organization', 'Organization', 'Organization record. It contains the informaiton of an organization who is a dataset publisher or responsible for a dataset.');
 
 INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
 VALUES 
@@ -276,7 +276,7 @@ VALUES
 INSERT INTO "public"."resources" 
     ("uri", "name", "description")
 VALUES 
-('authObject/orgUnit', 'Organization Unit auth object', 'The organization unit that a record or a user might belong to.');
+('authObject/orgUnit', 'Organizational Unit', 'Organizational Units are used to represent / mirror your organization''s functional or business structure.');
 
 INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
 VALUES 
@@ -296,9 +296,13 @@ INSERT INTO "public"."permissions"
 VALUES 
 ('1c2e3c8d-b96d-43c0-ac21-4a0481f523a5', 'Draft Dataset Permission with Ownership Constraint', (SELECT id FROM resources WHERE uri = 'object/dataset/draft') , 't', 'f', 'f', 'This permission allows Data Stewards to create, update, view & delete his own draft datasets.'),
 ('1b3380a8-a888-43f7-bf92-6410e1306c75', 'Published Dataset Permission with Ownership Constraint', (SELECT id FROM resources WHERE uri = 'object/dataset/published') , 't', 'f', 'f', 'This permission allows Data Stewards to create, update, view & delete his own published datasets.'),
+('769d99b6-32a1-4f61-b4c0-662e46e94766', 'Distribution Permission with Ownership Constraint', (SELECT id FROM resources WHERE uri = 'object/distribution') , 't', 'f', 'f', 'This permission allows Data Stewards to create, update, view & delete his own distributions.'),
+('a45132c8-a43b-41ac-bd83-c9eb0a83be00', 'Orgnisation (Publisher) Permission within Ownership Constraint', (SELECT id FROM resources WHERE uri = 'object/organization') , 't', 'f', 'f', 'This permission allows Data Stewards to create & view orgnisation with ownership constraint.'),
 ('7293dae6-9235-43ec-ae43-b90c0e89fdee', 'View Draft Datasets within Org Units', (SELECT id FROM resources WHERE uri = 'object/dataset/draft') , 'f', 't', 'f', 'This permission allows Data Stewards to view draft datasets within org units.'),
 ('45247ef8-68b9-4dab-a5d5-a23143503887', 'View Published Datasets within Org Units', (SELECT id FROM resources WHERE uri = 'object/dataset/published') , 'f', 't', 'f', 'This permission allows Data Stewards to view published datasets within org units.'),
-('60ea27d1-5772-4e11-823d-92f88f927745', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'object/orgUnit') , 'f', 't', 'f', 'This permission allows Data Stewards to read org unit info within his org unit sub tree.');
+('5f89bd45-899a-4c37-9f71-3da878ad247b', 'View Distribution within Org Units', (SELECT id FROM resources WHERE uri = 'object/distribution') , 'f', 't', 'f', 'This permission allows Data Stewards to view distributions within org units.'),
+('6a54f495-bcd0-4474-be12-60e1454aec7e', 'View Orgnisation (Publisher) within Org Units', (SELECT id FROM resources WHERE uri = 'object/organization') , 'f', 't', 'f', 'This permission allows Data Stewards to view orgnisation (publisher) within org units.'),
+('60ea27d1-5772-4e11-823d-92f88f927745', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit') , 'f', 't', 'f', 'This permission allows Data Stewards to read org unit info within his org unit sub tree.');
 -- Add proper operations to permissions above
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
@@ -314,20 +318,40 @@ VALUES
 ('1b3380a8-a888-43f7-bf92-6410e1306c75', (SELECT id FROM operations WHERE uri = 'object/dataset/published/delete'));
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
+('769d99b6-32a1-4f61-b4c0-662e46e94766', (SELECT id FROM operations WHERE uri = 'object/distribution/create')),
+('769d99b6-32a1-4f61-b4c0-662e46e94766', (SELECT id FROM operations WHERE uri = 'object/distribution/update')),
+('769d99b6-32a1-4f61-b4c0-662e46e94766', (SELECT id FROM operations WHERE uri = 'object/distribution/read')),
+('769d99b6-32a1-4f61-b4c0-662e46e94766', (SELECT id FROM operations WHERE uri = 'object/distribution/delete'));
+INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
+VALUES 
+('a45132c8-a43b-41ac-bd83-c9eb0a83be00', (SELECT id FROM operations WHERE uri = 'object/organization/create')),
+('a45132c8-a43b-41ac-bd83-c9eb0a83be00', (SELECT id FROM operations WHERE uri = 'object/organization/read'));
+INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
+VALUES 
 ('7293dae6-9235-43ec-ae43-b90c0e89fdee', (SELECT id FROM operations WHERE uri = 'object/dataset/draft/read'));
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
 ('45247ef8-68b9-4dab-a5d5-a23143503887', (SELECT id FROM operations WHERE uri = 'object/dataset/published/read'));
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
-('60ea27d1-5772-4e11-823d-92f88f927745', (SELECT id FROM operations WHERE uri = 'object/orgUnit/read'));
+('5f89bd45-899a-4c37-9f71-3da878ad247b', (SELECT id FROM operations WHERE uri = 'object/distribution/read'));
+INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
+VALUES 
+('6a54f495-bcd0-4474-be12-60e1454aec7e', (SELECT id FROM operations WHERE uri = 'object/organization/read'));
+INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
+VALUES 
+('60ea27d1-5772-4e11-823d-92f88f927745', (SELECT id FROM operations WHERE uri = 'authObject/orgUnit/read'));
 -- Add permissions to Data Stewards role
 INSERT INTO "public"."role_permissions" ("role_id", "permission_id") 
 VALUES 
 ('4154bf84-d36e-4551-9734-4666f5b1e1c0', '1c2e3c8d-b96d-43c0-ac21-4a0481f523a5'),
 ('4154bf84-d36e-4551-9734-4666f5b1e1c0', '1b3380a8-a888-43f7-bf92-6410e1306c75'),
+('4154bf84-d36e-4551-9734-4666f5b1e1c0', '769d99b6-32a1-4f61-b4c0-662e46e94766'),
+('4154bf84-d36e-4551-9734-4666f5b1e1c0', 'a45132c8-a43b-41ac-bd83-c9eb0a83be00'),
 ('4154bf84-d36e-4551-9734-4666f5b1e1c0', '7293dae6-9235-43ec-ae43-b90c0e89fdee'),
 ('4154bf84-d36e-4551-9734-4666f5b1e1c0', '45247ef8-68b9-4dab-a5d5-a23143503887'),
+('4154bf84-d36e-4551-9734-4666f5b1e1c0', '5f89bd45-899a-4c37-9f71-3da878ad247b'),
+('4154bf84-d36e-4551-9734-4666f5b1e1c0', '6a54f495-bcd0-4474-be12-60e1454aec7e'),
 ('4154bf84-d36e-4551-9734-4666f5b1e1c0', '60ea27d1-5772-4e11-823d-92f88f927745');
 -- end create Data Stewards role
 
@@ -336,22 +360,34 @@ VALUES
 INSERT INTO "public"."permissions" 
     ("id", "name", "resource_id", "user_ownership_constraint", "org_unit_ownership_constraint", "pre_authorised_constraint", "description") 
 VALUES 
-('7a78954f-a776-44b0-8491-2850c8db09bd', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'object/orgUnit/read') , 'f', 't', 'f', 'This permission allows users to read org unit info within his org unit sub tree.');
+('7a78954f-a776-44b0-8491-2850c8db09bd', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit') , 'f', 't', 'f', 'This permission allows users to read org unit info within his org unit sub tree.'),
+('ce2be273-3db3-4d3b-8a2b-07af346e3187', 'Read Distribution with own org units', (SELECT id FROM resources WHERE uri = 'object/distribution') , 'f', 't', 'f', 'This permission allows users to read distribution info within his org unit sub tree.'),
+('adfad193-2f89-432b-9d37-c7a728d9cc92', 'Read Orgnisation (Publisher) with own org units', (SELECT id FROM resources WHERE uri = 'object/organization') , 'f', 't', 'f', 'This permission allows users to read orgnisation (publisher) info within his org unit sub tree.');
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
-('7a78954f-a776-44b0-8491-2850c8db09bd', (SELECT id FROM operations WHERE uri = 'object/orgUnit/read'));
+('7a78954f-a776-44b0-8491-2850c8db09bd', (SELECT id FROM operations WHERE uri = 'authObject/orgUnit/read')),
+('ce2be273-3db3-4d3b-8a2b-07af346e3187', (SELECT id FROM operations WHERE uri = 'object/distribution/read')),
+('adfad193-2f89-432b-9d37-c7a728d9cc92', (SELECT id FROM operations WHERE uri = 'object/organization/read'));
 INSERT INTO "public"."role_permissions" ("permission_id", "role_id") 
 VALUES 
-('7a78954f-a776-44b0-8491-2850c8db09bd', '00000000-0000-0001-0000-000000000000');
+('7a78954f-a776-44b0-8491-2850c8db09bd', '00000000-0000-0001-0000-000000000000'),
+('ce2be273-3db3-4d3b-8a2b-07af346e3187', '00000000-0000-0001-0000-000000000000'),
+('adfad193-2f89-432b-9d37-c7a728d9cc92', '00000000-0000-0001-0000-000000000000');
 -- Add to authenticated users
 INSERT INTO "public"."permissions" 
     ("id", "name", "resource_id", "user_ownership_constraint", "org_unit_ownership_constraint", "pre_authorised_constraint", "description") 
 VALUES 
-('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'object/orgUnit/read') , 'f', 't', 'f', 'This permission allows users to read org unit info within his org unit sub tree.');
+('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit/read') , 'f', 't', 'f', 'This permission allows users to read org unit info within his org unit sub tree.'),
+('fe2ea6f1-192a-423c-9ae0-acb9f5d2dc48', 'Read Distribution with own org units', (SELECT id FROM resources WHERE uri = 'object/distribution') , 'f', 't', 'f', 'This permission allows users to read distribution info within his org unit sub tree.'),
+('e204f8ca-718b-4a29-bea3-554a4551ed20', 'Read Orgnisation (Publisher) with own org units', (SELECT id FROM resources WHERE uri = 'object/organization') , 'f', 't', 'f', 'This permission allows users to read orgnisation (publisher) info within his org unit sub tree.');
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
-('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', (SELECT id FROM operations WHERE uri = 'object/orgUnit/read'));
+('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', (SELECT id FROM operations WHERE uri = 'authObject/orgUnit/read')),
+('fe2ea6f1-192a-423c-9ae0-acb9f5d2dc48', (SELECT id FROM operations WHERE uri = 'object/distribution/read')),
+('e204f8ca-718b-4a29-bea3-554a4551ed20', (SELECT id FROM operations WHERE uri = 'object/organization/read'));
 INSERT INTO "public"."role_permissions" ("permission_id", "role_id") 
 VALUES 
-('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', '00000000-0000-0002-0000-000000000000');
+('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', '00000000-0000-0002-0000-000000000000'),
+('fe2ea6f1-192a-423c-9ae0-acb9f5d2dc48', '00000000-0000-0002-0000-000000000000'),
+('e204f8ca-718b-4a29-bea3-554a4551ed20', '00000000-0000-0002-0000-000000000000');
 -- END add more permissions to authenticated & anonymous users role

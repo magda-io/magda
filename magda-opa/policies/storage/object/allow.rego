@@ -22,7 +22,7 @@ allow {
 
 allow {
     hasOwnerConstraintPermission(input.operationUri)
-    # or when a user has ownership constraint permission, he also can access all records with NO ownerId assigned
+    # or when a user has ownership constraint permission, he also can access all objects with NO ownerId assigned
     not input.storage.object.ownerId
 }
 
@@ -35,7 +35,7 @@ allow {
 
 allow {
     hasOrgUnitConstaintPermission(input.operationUri)
-    # or when a user has org unit ownership constraint permission, he also can access all object with NO org unit assigned
+    # or when a user has org unit ownership constraint permission, he also can access all objects with NO org unit assigned
     not input.storage.object.orgUnitId
 }
 
