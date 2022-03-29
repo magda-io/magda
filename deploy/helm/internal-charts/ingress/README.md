@@ -1,12 +1,12 @@
 # ingress
 
-![Version: 1.2.0-alpha.0](https://img.shields.io/badge/Version-1.2.0--alpha.0-informational?style=flat-square)
+![Version: 1.2.1-alpha.0](https://img.shields.io/badge/Version-1.2.1--alpha.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
 ## Requirements
 
-Kubernetes: `>= 1.14.0-0`
+Kubernetes: `>= 1.19.0-0`
 
 ## Values
 

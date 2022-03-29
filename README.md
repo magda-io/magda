@@ -45,6 +45,8 @@ Magda is built around a collection of microservices that are distributed as dock
 
 ![Magda Architecture Diagram](docs/assets/marketecture.svg)
 
+If you are interested in the architecture details of Magda, you might want to have a look at [this doc](./docs/docs/architecture/Guide%20to%20Magda%20Internals.md).
+
 ### Registry
 
 Magda revolves around the _Registry_ - an unopinionated datastore built on top of Postgres. The Registry stores _records_ as a set of JSON documents called _aspects_. For instance, a dataset is represented as a record with a number of aspects - a basic one that records the name, description and so on as well as more esoteric ones that might not be present for every dataset, like temporal coverage or determined data quality. Likewise, distributions (the actual data files, or URLs linking to them) are also modelled as records, with their own sets of aspects covering both basic metadata once again, as well as more specific aspects like whether the URL to the file worked when last tested.
@@ -71,7 +73,30 @@ Magda provides a user interface, which is served from its own microservice and c
 
 ## To try the last version (with prebuilt images)
 
-Use https://github.com/magda-io/magda-config
+If you just want to install a local testing version, installing Magda using [Helm](https://helm.sh/) is relatively easier (you can use [minikube](https://minikube.sigs.k8s.io/docs/) to install a local k8s test cluster):
+
+```bash
+# Add Magda Helm Chart Repo:
+helm repo add magda-io https://charts.magda.io
+
+# create a namespace "magda" in your cluster
+kubectl create namespace magda
+
+# install Magda version v1.2.0 to namespace "magda", turn off openfass function and expose the service via loadBalancer
+helm upgrade --namespace magda --install --version 1.2.0 --timeout 9999s --set global.openfaas.enabled=false,magda-core.gateway.service.type=LoadBalancer magda magda-io/magda
+```
+
+You can find out the load balancer IP and access it:
+
+```bash
+echo $(kubectl get svc --namespace magda gateway --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
+```
+
+If you are interested in playing more, you can also have a look at this tutorial repo:
+
+https://github.com/magda-io/magda-brown-bag
+
+Or find out more on: https://magda.io/docs/building-and-running if you are interested in development.
 
 ## To build and run from source
 
@@ -95,3 +120,5 @@ Great! Take a look at https://github.com/magda-io/magda/blob/master/.github/CONT
 - [Magda Helm Chart Reference](docs/docs/helm-charts-docs-index.md)
 - [Migration & Upgrade Documents](docs/docs/migration)
 - [Other documentations](docs/docs/index.md)
+
+More documents can be found from the folder [docs/docs/](./docs/docs/).

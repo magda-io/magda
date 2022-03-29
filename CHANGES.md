@@ -1,8 +1,20 @@
 # CHANGELOG
 
+## 1.2.1
+
+- Upgrade magda-csw-connector to v1.1.1 for [license extraction issue on certain sources](https://github.com/magda-io/magda-csw-connector/issues/21)
+- #3316 Upgrade node based service docker images to node 12
+- #3318 Remove openlayers from dependencies list
+- #3319 Upgrade kramdown to 2.3.1
+- #3320 Upgrade djv to 2.1.4
+- #3321 upgrade lodash to 4.17.21
+- #3126 Remove Hardcoded "postgres" username from Content DB migration script
+- #3233 use networking.k8s.io/v1 for default Ingress chart
+
 ## 1.2.0
 
 - #3291 Remove log4j from scala codebase dependency list
+- #3299 Add terria aspect when posting message if dataset format is "wms".
 - #3293 Upgrade elasticsearch to 6.8.22
 - Upgrade logback to 1.2.10
 - #3294 Indexer will auto-fixes non-topologically closed Polygons / MultiPolygons
