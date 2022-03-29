@@ -106,6 +106,9 @@ tags:
   # When `tags.all` is `false`, a default module will only be turned off when the corresponding module tag is `false` as well. 
   # Please note: since v1.0.0, correspondence-api is not part of default modules anymore. 
   all: true
+
+  # tags.cloud-sql-proxy -- turn on / off [cloud-sql-proxy](../internal-charts/cloud-sql-proxy/README.md)
+  cloud-sql-proxy: false
   
   # tags.apidocs-server -- turn on / off [apidocs-server](../internal-charts/apidocs-server/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
