@@ -7,7 +7,7 @@ global:
     pullPolicy: Always
   exposeNodePorts: false
   enablePriorityClass: false
-  defaultContactEmail: "jacky.jiang@data61.csiro.au"
+  defaultContactEmail: "simpleicegaming@gmail.com"
   enableMultiTenants: false
 
 tags:
