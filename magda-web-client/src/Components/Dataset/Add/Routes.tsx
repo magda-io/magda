@@ -1,4 +1,5 @@
 import React from "react";
+import "../../../rsuite.scss";
 import { Route, Switch, Redirect } from "react-router-dom";
 import { createId } from "./DatasetAddCommon";
 import withHeader from "Components/Header/withHeader";
