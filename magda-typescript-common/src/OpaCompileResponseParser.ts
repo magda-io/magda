@@ -62,6 +62,18 @@ export class RegoRule {
     public value: RegoValue;
 
     /**
+     * Whether the rule contains any expressions that has any resolvable references.
+     * reference start with `input.` should be considered as non-resolvable in context of partial evaluation.
+     * When this field is set to `true`, we should not attempt to evaluate this expression.
+     * i.e. evaluate() method should return immediately.
+     * This will speed up evaluation process.
+     *
+     * @type {boolean}
+     * @memberof RegoRule
+     */
+    public hasNoResolvableRef: boolean = false;
+
+    /**
      * All Rego expressions in this rule's rule body. @see RegoExp
      *
      * @type {RegoExp[]}
@@ -124,6 +136,12 @@ export class RegoRule {
         if (!(this.parser instanceof OpaCompileResponseParser)) {
             throw new Error("Require parser parameter to create a RegoRule");
         }
+        if (
+            this.expressions?.length &&
+            this.expressions.findIndex((exp) => !exp.hasNoResolvableRef) === -1
+        ) {
+            this.hasNoResolvableRef = true;
+        }
         this.evaluate();
     }
 
@@ -150,6 +168,10 @@ export class RegoRule {
      * @memberof RegoRule
      */
     evaluate() {
+        if (this.hasNoResolvableRef) {
+            return this;
+        }
+
         if (this.isCompleteEvaluated) {
             return this;
         }
@@ -353,6 +375,18 @@ export class RegoTerm {
     public value: RegoTermValue;
     private parser: OpaCompileResponseParser;
 
+    /**
+     * Whether the expression contains any resolvable references.
+     * reference start with `input.` should be considered as non-resolvable in context of partial evaluation.
+     * When this field is set to `true`, we should not attempt to evaluate this expression.
+     * i.e. evaluate() method should return immediately.
+     * This will speed up evaluation process.
+     *
+     * @type {boolean}
+     * @memberof RegoTerm
+     */
+    public hasNoResolvableRef: boolean = false;
+
     constructor(
         type: string,
         value: RegoTermValue,
@@ -361,6 +395,9 @@ export class RegoTerm {
         this.type = type;
         this.value = value;
         this.parser = parser;
+        if (this.value instanceof RegoRef && this.value.hasNoResolvableRef) {
+            this.hasNoResolvableRef = true;
+        }
     }
 
     clone() {
@@ -513,6 +550,9 @@ export class RegoTerm {
      * @memberof RegoTerm
      */
     getValue(): RegoValue {
+        if (this.hasNoResolvableRef) {
+            return undefined;
+        }
         if (!this.isRef()) {
             return this.value;
         } else {
@@ -535,6 +575,9 @@ export class RegoTerm {
      * @memberof RegoTerm
      */
     isValueResolvable(): boolean {
+        if (this.hasNoResolvableRef) {
+            return false;
+        }
         if (!this.isRef()) {
             return true;
         } else {
@@ -608,6 +651,18 @@ export class RegoExp {
     public terms: RegoTerm[];
 
     /**
+     * Whether the expression contains any resolvable references.
+     * reference start with `input.` should be considered as non-resolvable in context of partial evaluation.
+     * When this field is set to `true`, we should not attempt to evaluate this expression.
+     * i.e. evaluate() method should return immediately.
+     * This will speed up evaluation process.
+     *
+     * @type {boolean}
+     * @memberof RegoExp
+     */
+    public hasNoResolvableRef: boolean = false;
+
+    /**
      * Whether this expression is a negative expression
      * i.e. it's final evaluation result should be `false` if result is `true`
      *
@@ -653,6 +708,12 @@ export class RegoExp {
         this.isCompleteEvaluated = isCompleteEvaluated;
         this.value = value;
         this.parser = parser;
+        if (
+            this?.terms?.length &&
+            this.terms.findIndex((item) => !item.hasNoResolvableRef) === -1
+        ) {
+            this.hasNoResolvableRef = true;
+        }
     }
 
     clone(): RegoExp {
@@ -814,6 +875,9 @@ export class RegoExp {
      * @memberof RegoExp
      */
     evaluate() {
+        if (this.hasNoResolvableRef) {
+            return this;
+        }
         if (this.isCompleteEvaluated) {
             return this;
         }
@@ -967,8 +1031,27 @@ export class RegoExp {
 export class RegoRef {
     public parts: RegoRefPart[];
 
+    /**
+     * Whether the expression contains any resolvable references.
+     * reference start with `input.` should be considered as non-resolvable in context of partial evaluation.
+     * When this field is set to `true`, we should not attempt to evaluate this expression.
+     * i.e. evaluate() method should return immediately.
+     * This will speed up evaluation process.
+     *
+     * @type {boolean}
+     * @memberof RegoRef
+     */
+    public hasNoResolvableRef: boolean = false;
+
     constructor(parts: RegoRefPart[]) {
         this.parts = parts;
+        if (
+            // `input.` ref should be considered not resolvable in partial evaluate context.
+            (this.parts.length && this.parts[0]?.value === "input") ||
+            this.isOperator()
+        ) {
+            this.hasNoResolvableRef = true;
+        }
     }
 
     clone(): RegoRef {
@@ -1108,6 +1191,18 @@ export class RegoRuleSet {
     public isCompleteEvaluated: boolean = false;
     public parser: OpaCompileResponseParser;
 
+    /**
+     * Whether the ruleSet contains any rules that has any resolvable references.
+     * reference start with `input.` should be considered as non-resolvable in context of partial evaluation.
+     * When this field is set to `true`, we should not attempt to evaluate this expression.
+     * i.e. evaluate() method should return immediately.
+     * This will speed up evaluation process.
+     *
+     * @type {boolean}
+     * @memberof RegoRuleSet
+     */
+    public hasNoResolvableRef: boolean = false;
+
     constructor(
         parser: OpaCompileResponseParser,
         rules: RegoRule[],
@@ -1133,11 +1228,20 @@ export class RegoRuleSet {
         } else if (rules?.[0]?.name) {
             this.name = rules[0].name;
         }
-
+        if (
+            this.rules.length &&
+            this.rules.findIndex((r) => !r.hasNoResolvableRef) === -1
+        ) {
+            this.hasNoResolvableRef = true;
+        }
         this.evaluate();
     }
 
     evaluate(): RegoRuleSet {
+        if (this.hasNoResolvableRef) {
+            return this;
+        }
+
         if (this.isCompleteEvaluated) {
             return this;
         }

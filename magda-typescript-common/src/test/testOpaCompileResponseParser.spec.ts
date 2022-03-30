@@ -11,7 +11,22 @@ import testDataUnconditionalFalseSimple from "./sampleOpaResponses/unconditional
 import testDataUnconditionalTrueSimple from "./sampleOpaResponses/unconditionalTrueSimple.json";
 import testDataDatasetPermissionWithOrgUnitConstraint from "./sampleOpaResponses/datasetPermissionWithOrgUnitConstraint.json";
 import testDataSingleTermAspectRef from "./sampleOpaResponses/singleTermAspectRef.json";
+import testExtraLargeResponse from "./sampleOpaResponses/extraLargeResponse.json";
 import "mocha";
+
+describe("Test extra large opa response", () => {
+    it("should process extra large opa response in timely manager", function () {
+        // this test case should be completed in less than 2000ms
+        // should be around 800ms but we set for 2000ms in case CI get slower
+        this.timeout(2000);
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(JSON.stringify(testExtraLargeResponse));
+        parser.evaluate();
+        //console.log(parser.evaluateAsHumanReadableString());
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+});
 
 /**
  * Although equivalent, depends on how you write your policy,
