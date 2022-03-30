@@ -282,7 +282,7 @@ class NestedSetModelQueryer {
     ): Promise<NodeRecord[]> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Children"
+            tableRef: "children"
         });
         const tbl = escapeIdentifier(this.tableName);
         const conditions = [
@@ -325,7 +325,7 @@ class NestedSetModelQueryer {
     ): Promise<NodeRecord[]> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Parents"
+            tableRef: "parents"
         });
         const tbl = escapeIdentifier(this.tableName);
         const conditions = [
@@ -365,7 +365,7 @@ class NestedSetModelQueryer {
     ): Promise<NodeRecord[]> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Children"
+            tableRef: "children"
         });
         const tbl = escapeIdentifier(this.tableName);
         const result = await (client ? client : this.pool).query(
@@ -406,7 +406,7 @@ class NestedSetModelQueryer {
     ): Promise<Maybe<NodeRecord>> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Parents"
+            tableRef: "parents"
         });
         const tbl = escapeIdentifier(this.tableName);
         const result = await (client ? client : this.pool).query(
@@ -479,7 +479,7 @@ class NestedSetModelQueryer {
     ): Promise<number> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Parents"
+            tableRef: "parents"
         });
         const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(
@@ -553,7 +553,7 @@ class NestedSetModelQueryer {
     ): Promise<Maybe<NodeRecord>> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Children"
+            tableRef: "children"
         });
         const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(
@@ -584,7 +584,7 @@ class NestedSetModelQueryer {
     ): Promise<Maybe<NodeRecord>> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Children"
+            tableRef: "children"
         });
         const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(

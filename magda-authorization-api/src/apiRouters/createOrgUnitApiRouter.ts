@@ -165,7 +165,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/orgunits/root Get root organisation
+     * @api {get} /v0/auth/orgunits/root Get root organisational unit
      * @apiDescription Gets the root organisation unit (top of the tree).
      *
      * @apiSuccessExample {json} 200
