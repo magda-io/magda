@@ -512,7 +512,9 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 return;
             }
 
-            it(`should parse & evalute OPA repsonse "${file}"`, async () => {
+            it(`should parse & evaluate OPA response "${file}"`, async function () {
+                this.timeout(3000);
+                console.time("decision-endpoint-parse-evaluate-opa-time");
                 const sampleOpaResponse = fse.readJSONSync(
                     path.resolve(opaSampleRoot, file)
                 );
@@ -530,6 +532,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                     expect(res.body).to.be.deep.equal(sampleDecision);
                 });
                 expect(scope.isDone()).to.be.equal(true);
+                console.timeEnd("decision-endpoint-parse-evaluate-opa-time");
             });
         }
     });

@@ -16,9 +16,9 @@ import "mocha";
 
 describe("Test extra large opa response", () => {
     it("should process extra large opa response in timely manager", function () {
-        // this test case should be completed in less than 2000ms
-        // should be around 600ms but we set for 2000ms in case CI get slower
-        this.timeout(2000);
+        // this test case should be completed in less than 3000ms
+        // should be around 600ms locally but we set for 3000ms in case it get slower in CI (we use highmem instance)
+        this.timeout(3000);
         console.time("process-extra-large-opa-response-time");
         const parser = new OpaCompileResponseParser();
         const data = parser.parse(JSON.stringify(testExtraLargeResponse));
