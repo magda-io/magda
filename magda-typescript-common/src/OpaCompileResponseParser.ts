@@ -1463,6 +1463,8 @@ export default class OpaCompileResponseParser {
         "default_rule_"
     );
 
+    private ruleDuplicationCheckCache: { [key: string]: Set<string> } = {};
+
     private setQueryRuleResult(val: RegoValue) {
         this.completeRuleResults[this.pseudoQueryRuleName] = {
             fullName: this.pseudoQueryRuleName,
@@ -1534,8 +1536,9 @@ export default class OpaCompileResponseParser {
                     value: true,
                     parser: this
                 });
-                this.originalRules.push(rule);
-                this.rules.push(rule);
+                // this.originalRules.push(rule);
+                // this.rules.push(rule);
+                this.addRule(rule);
             });
         }
 
@@ -1556,11 +1559,14 @@ export default class OpaCompileResponseParser {
                         packageName,
                         this
                     );
-                    this.originalRules.push(regoRule);
-                    this.rules.push(regoRule);
+                    //this.originalRules.push(regoRule);
+                    //this.rules.push(regoRule);
+                    this.addRule(regoRule);
                 });
             });
         }
+
+        this.ruleDuplicationCheckCache = {};
 
         _.uniq(this.rules.map((r) => r.fullName)).forEach(
             (fullName) =>
@@ -1573,6 +1579,22 @@ export default class OpaCompileResponseParser {
 
         this.resolveAllRuleSets();
         return this.rules;
+    }
+
+    addRule(rule: RegoRule) {
+        this.originalRules.push(rule);
+        if (!this.ruleDuplicationCheckCache[rule.fullName]) {
+            this.ruleDuplicationCheckCache[rule.fullName] = new Set();
+        }
+        const setData = this.ruleDuplicationCheckCache[rule.fullName];
+        const { name, fullName, ...ruleData } = rule.toData();
+        const jsonData = JSON.stringify(ruleData);
+        const size = setData.size;
+        setData.add(jsonData);
+        if (size === setData.size) {
+            return;
+        }
+        this.rules.push(rule);
     }
 
     isRefResolvable(fullName: string): boolean {

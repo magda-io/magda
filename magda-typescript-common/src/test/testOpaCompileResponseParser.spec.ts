@@ -17,14 +17,16 @@ import "mocha";
 describe("Test extra large opa response", () => {
     it("should process extra large opa response in timely manager", function () {
         // this test case should be completed in less than 2000ms
-        // should be around 800ms but we set for 2000ms in case CI get slower
+        // should be around 600ms but we set for 2000ms in case CI get slower
         this.timeout(2000);
+        console.time("process-extra-large-opa-response-time");
         const parser = new OpaCompileResponseParser();
         const data = parser.parse(JSON.stringify(testExtraLargeResponse));
         parser.evaluate();
         //console.log(parser.evaluateAsHumanReadableString());
         expect(parser.hasWarns).to.be.equal(false);
         expect(data).to.be.an("array");
+        console.timeEnd("process-extra-large-opa-response-time");
     });
 });
 
