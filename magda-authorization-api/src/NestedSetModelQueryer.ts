@@ -230,7 +230,7 @@ class NestedSetModelQueryer {
 
     /**
      * Get the root node of the tree
-     * Return null if empty tree
+     * Return null if empty tree or the user has no access to the root node
      *
      * @param {string[]} [fields=null] Selected Fields; If null, use this.defaultSelectFieldList
      * @param {pg.Client} [client=null] Optional pg client; Use supplied client connection for query rather than a random connection from Pool
