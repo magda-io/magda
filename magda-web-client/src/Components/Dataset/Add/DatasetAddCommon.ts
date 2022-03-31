@@ -732,7 +732,7 @@ export function createBlankState(user: User): State {
         },
         datasetPublishing: {
             state: "draft",
-            level: "organization",
+            level: "creatorOrgUnit",
             contactPointDisplay: "team"
         },
         spatialCoverage: {
