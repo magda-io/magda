@@ -25,7 +25,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/orgunits/:higherNodeId/topDownPathTo/:lowerNodeId2 Get get top down path between 2 nodes
+     * @api {get} /v0/auth/orgunits/:higherNodeId/topDownPathTo/:lowerNodeId Get get top down path between 2 nodes
      * @apiDescription Get all nodes on the top to down path between the `higherNode` to the `lowerNode`.
      * Sort from higher level nodes to lower level node.
      * Result will include `higherNode` and the `lowerNode`.
@@ -48,7 +48,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      *    Not authorized
      */
     router.get(
-        "/:nodeId",
+        "/:higherNodeId/topDownPathTo/:lowerNodeId",
         withAuthDecision(authDecisionClient, {
             operationUri: "authObject/orgUnit/read"
         }),

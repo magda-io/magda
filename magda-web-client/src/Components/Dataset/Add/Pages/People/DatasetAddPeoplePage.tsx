@@ -12,8 +12,8 @@ import {
 } from "Components/Dataset/Add/DatasetAddCommon";
 import OrganisationAutoComplete from "./OrganisationAutocomplete";
 import DatasetAutoComplete from "./DatasetAutocomplete";
-import OrgUnitDropdown from "./OrgUnitDropdown";
-import CustodianDropdown from "./CustodianDropdown";
+import OrgUnitDropdown1 from "./OrgUnitDropdown";
+import OrgUnitDropDown from "../../OrgUnitDropDown";
 import YesNoReveal from "../../YesNoReveal";
 
 import ValidationRequiredLabel from "../../ValidationRequiredLabel";
@@ -69,54 +69,47 @@ export default function DatasetAddPeoplePage({
                         />
                     </div>
                 </div>
-                {config.featureFlags.placeholderWorkflowsOn ? (
+                <div>
+                    <h4>
+                        Which area of the organisation should be referenced as
+                        the data custodian?
+                    </h4>
                     <div>
-                        <h4>
-                            Which area of the organisation should be referenced
-                            as the data custodian?
-                        </h4>
-                        <div>
-                            <CustodianDropdown
-                                orgUnitId={dataset.custodianOrgUnitId}
-                                onChange={editDataset("custodianOrgUnitId")}
-                            />
-                        </div>
+                        <OrgUnitDropDown
+                            orgUnitId={dataset.custodianOrgUnitId}
+                            onChange={editDataset("custodianOrgUnitId")}
+                        />
                     </div>
-                ) : null}
+                </div>
 
-                {config.featureFlags.placeholderWorkflowsOn ? (
+                <div>
+                    <h4>
+                        Which team is responsible for maintaining this dataset?
+                    </h4>
                     <div>
-                        <h4>
-                            Which team is responsible for maintaining this
-                            dataset?
-                        </h4>
-                        <div>
-                            <OrgUnitDropdown
-                                orgUnitId={dataset.owningOrgUnitId}
-                                custodianOrgUnitId={dataset.custodianOrgUnitId}
-                                onChange={editDataset("owningOrgUnitId")}
-                            />
-                        </div>
+                        <OrgUnitDropdown1
+                            orgUnitId={dataset.owningOrgUnitId}
+                            custodianOrgUnitId={dataset.custodianOrgUnitId}
+                            onChange={editDataset("owningOrgUnitId")}
+                        />
                     </div>
-                ) : null}
-                {config.featureFlags.placeholderWorkflowsOn ? (
+                </div>
+                <div>
+                    <h4>
+                        How should the contact point(s) be referenced in the
+                        metadata?
+                    </h4>
                     <div>
-                        <h4>
-                            How should the contact point(s) be referenced in the
-                            metadata?
-                        </h4>
-                        <div>
-                            <AlwaysEditor
-                                value={publishing.contactPointDisplay}
-                                onChange={editPublishing("contactPointDisplay")}
-                                editor={codelistRadioEditor(
-                                    "dataset-contact-point-display",
-                                    codelists.contactPointDisplay
-                                )}
-                            />
-                        </div>
+                        <AlwaysEditor
+                            value={publishing.contactPointDisplay}
+                            onChange={editPublishing("contactPointDisplay")}
+                            editor={codelistRadioEditor(
+                                "dataset-contact-point-display",
+                                codelists.contactPointDisplay
+                            )}
+                        />
                     </div>
-                ) : null}
+                </div>
                 <hr />
                 <h3>Production</h3>
                 <h4>How was this dataset produced?</h4>

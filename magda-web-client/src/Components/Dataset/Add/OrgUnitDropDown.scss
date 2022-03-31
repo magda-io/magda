@@ -1,0 +1,20 @@
+.org-unit-drop-down.rs-picker-tree {
+    :first-child:focus {
+        outline: none;
+    }
+    .rs-picker-toggle-placeholder {
+        color: black;
+    }
+    .rs-picker-toggle-value {
+        color: black;
+    }
+    .rs-picker-toggle:hover {
+        border-color: hsl(0, 0%, 70%);
+    }
+    .rs-picker-toggle {
+        border-color: hsl(0, 0%, 80%);
+    }
+    .rs-picker-toggle-active {
+        box-shadow: 0 0 0 1px #2684ff;
+    }
+}

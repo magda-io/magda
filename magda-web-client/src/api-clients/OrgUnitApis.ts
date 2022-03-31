@@ -186,3 +186,25 @@ export async function deleteSubTree(nodeId: string) {
         )
     );
 }
+
+export async function getTopDownPathBetween(
+    higherNodeId: string,
+    lowerNodeId: string,
+    noCache = false
+) {
+    if (!isUuid(higherNodeId)) {
+        throw new Error(`Invalid higherNodeId: ${higherNodeId}`);
+    }
+    if (!isUuid(lowerNodeId)) {
+        throw new Error(`Invalid higherNodeId: ${lowerNodeId}`);
+    }
+    return getRequest<OrgUnit[]>(
+        getAbsoluteUrl(
+            `orgunits/${encodeURIComponent(
+                higherNodeId
+            )}/topDownPathTo/${encodeURIComponent(lowerNodeId)}`,
+            config.authApiUrl
+        ),
+        noCache
+    );
+}

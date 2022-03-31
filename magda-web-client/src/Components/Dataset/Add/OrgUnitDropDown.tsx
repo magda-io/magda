@@ -13,6 +13,7 @@ import {
 import { ItemDataType } from "rsuite/esm/@types/common";
 import { User } from "reducers/userManagementReducer";
 import ServerError from "@magda/typescript-common/dist/ServerError";
+import "./OrgUnitDropDown.scss";
 
 interface ItemType extends ItemDataType {
     rawData: OrgUnit;
@@ -30,7 +31,7 @@ const nodeToItem = (node: OrgUnit): ItemType => ({
     children: []
 });
 
-export default function CustodianDropdown({
+export default function OrgUnitDropDown({
     orgUnitId,
     onChange: onChangeCallback
 }: Props) {
@@ -98,6 +99,7 @@ export default function CustodianDropdown({
     } else {
         return (
             <TreePicker
+                className="org-unit-drop-down"
                 data={data}
                 size={"lg"}
                 block={true}
