@@ -113,9 +113,9 @@ magda:
       fallbackUrl: "https://data.gov.au"
       featureFlags:
         cataloguing: true
-        publishToDga: true
+        publishToDga: false
         placeholderWorkflowsOn: false
-        datasetApprovalWorkflowOn: true
+        datasetApprovalWorkflowOn: false
         useStorageApi: true
       vocabularyApiEndpoints:
         - "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json"
