@@ -8,6 +8,11 @@ import { config } from "config";
 import { useAsync } from "react-async-hook";
 import { findPermissionGap } from "helpers/accessControlUtils";
 
+import Placeholder from "rsuite/Placeholder";
+import Loader from "rsuite/Loader";
+
+const Paragraph = Placeholder.Paragraph;
+
 /* eslint-disable react-hooks/rules-of-hooks */
 
 type Props = { initialState: State; user: User } & RouterProps;
@@ -33,6 +38,18 @@ function hasMetaDataCreationToolAccess(user: User) {
     );
 }
 
+const loadingArea = (
+    <>
+        <Loader center size="sm" content="loading..." />
+        <Paragraph
+            style={{ marginTop: 30 }}
+            rows={12}
+            graph="square"
+            active
+        ></Paragraph>
+    </>
+);
+
 export default <T extends Props>(Component: React.ComponentType<T>) => {
     const withAddDatasetState = (props: T) => {
         const missingOperations = hasMetaDataCreationToolAccess(props.user);
@@ -52,7 +69,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
         );
 
         if (props.isFetchingWhoAmI) {
-            return <div>Loading...</div>;
+            return loadingArea;
         } else if (isDisabled) {
             return (
                 <div
@@ -71,7 +88,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                 </div>
             );
         } else if ((!state || loading) && !error) {
-            return <div>Loading...</div>;
+            return loadingArea;
         } else if (error) {
             return <div>Failed to load dataset data: {"" + error}</div>;
         } else {
