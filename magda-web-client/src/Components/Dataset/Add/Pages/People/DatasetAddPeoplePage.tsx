@@ -22,7 +22,6 @@ import ToolTip from "Components/Dataset/Add/ToolTip";
 
 import "./DatasetAddPeoplePage.scss";
 import { User } from "reducers/userManagementReducer";
-import { config } from "config";
 
 type Props = {
     edit: <K extends keyof AddMetadataState>(
@@ -76,8 +75,8 @@ export default function DatasetAddPeoplePage({
                     </h4>
                     <div>
                         <OrgUnitDropDown
-                            orgUnitId={dataset.custodianOrgUnitId}
-                            onChange={editDataset("custodianOrgUnitId")}
+                            orgUnitId={publishing?.custodianOrgUnitId}
+                            onChange={editPublishing("custodianOrgUnitId")}
                         />
                     </div>
                 </div>
@@ -88,9 +87,9 @@ export default function DatasetAddPeoplePage({
                     </h4>
                     <div>
                         <OrgUnitDropdown1
-                            orgUnitId={dataset.owningOrgUnitId}
-                            custodianOrgUnitId={dataset.custodianOrgUnitId}
-                            onChange={editDataset("owningOrgUnitId")}
+                            orgUnitId={publishing.managingOrgUnitId}
+                            custodianOrgUnitId={publishing?.custodianOrgUnitId}
+                            onChange={editPublishing("managingOrgUnitId")}
                         />
                     </div>
                 </div>

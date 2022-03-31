@@ -10,11 +10,29 @@
             "default": "published",
             "enum": ["draft", "published", "archived"]
         },
+        "custodianOrgUnitId": {
+            "title": "the id of organisational unit that should be referenced as the data custodian",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "managingOrgUnitId": {
+            "title": "the id of organisational unit that is responsible for maintaining this dataset",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
         "level": {
             "title": "Level dataset is visible at",
             "type": "string",
-            "default": "agency",
-            "enum": ["agency", "division", "branch", "team"]
+            "default": "organization",
+            "enum": [
+                "organization",
+                "custodian",
+                "team",
+                "creatorOrgUnit",
+                "selectedOrgUnit"
+            ]
         },
         "contactPointDisplay": {
             "title": "What should be shown for the contact point(s) of a dataset",

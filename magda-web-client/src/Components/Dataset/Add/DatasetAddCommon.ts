@@ -165,7 +165,6 @@ export type Dataset = {
     ownerId?: string; // --- actual owner of the dataset; Initially set to same as `editingUserId` but can be changed to different user.
     editingUserId?: string; // --- always populate with current logged-in user id (if available)
     owningOrgUnitId?: string;
-    custodianOrgUnitId?: string;
     contactPointDisplay?: string;
     landingPage?: string;
     importance?: string;
@@ -182,8 +181,10 @@ export type Provenance = {
 };
 
 export type DatasetPublishing = {
-    state: string;
-    level: string;
+    state?: string;
+    level?: string;
+    custodianOrgUnitId?: string;
+    managingOrgUnitId?: string;
     notesToApprover?: string;
     contactPointDisplay?: ContactPointDisplayOption;
     publishAsOpenData?: {
@@ -352,12 +353,7 @@ function getAccessControlAspectData(state: State) {
     const { dataset } = state;
     return {
         ownerId: dataset.editingUserId ? dataset.editingUserId : undefined,
-        orgUnitId: dataset.owningOrgUnitId
-            ? dataset.owningOrgUnitId
-            : undefined,
-        custodianOrgUnitId: dataset.custodianOrgUnitId
-            ? dataset.custodianOrgUnitId
-            : undefined
+        orgUnitId: dataset.owningOrgUnitId ? dataset.owningOrgUnitId : undefined
     };
 }
 
@@ -443,11 +439,6 @@ function populateDcatDatasetStringAspect(data: RawDataset, state: State) {
     if (data.aspects?.["access-control"]?.orgUnitId) {
         state.dataset.owningOrgUnitId =
             data.aspects?.["access-control"]?.orgUnitId;
-    }
-
-    if (data.aspects?.["access-control"]?.custodianOrgUnitId) {
-        state.dataset.custodianOrgUnitId =
-            data.aspects?.["access-control"]?.custodianOrgUnitId;
     }
 }
 
@@ -741,7 +732,7 @@ export function createBlankState(user: User): State {
         },
         datasetPublishing: {
             state: "draft",
-            level: "agency",
+            level: "organization",
             contactPointDisplay: "team"
         },
         spatialCoverage: {
