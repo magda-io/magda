@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import Database from "../Database";
 import respondWithError from "../respondWithError";
 import handleMaybePromise from "../handleMaybePromise";
+import handleServerError from "magda-typescript-common/src/handleServerError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import {
     requirePermission,
@@ -21,6 +22,55 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     const authDecisionClient = options.authDecisionClient;
 
     const router: express.Router = express.Router();
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/orgunits/:higherNodeId/topDownPathTo/:lowerNodeId2 Get get top down path between 2 nodes
+     * @apiDescription Get all nodes on the top to down path between the `higherNode` to the `lowerNode`.
+     * Sort from higher level nodes to lower level node.
+     * If a path doesn't exist, `[]` (empty array) will be responded.
+     * If you pass a lower node to the `higherNodeId` and a higher node to `lowerNodeId`, `[]` (empty array) will be responded.
+     * If you don't have access to the higherNode, `[]` (empty array) will be responded.
+     *
+     *
+     * @apiParam {string} nodeId id of the node to query
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *      name: "other-team"
+     *      description: "The other teams"
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    Not authorized
+     */
+    router.get(
+        "/:nodeId",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
+        async (req, res) => {
+            try {
+                const higherNodeId = req?.params?.higherNodeId;
+                const lowerNodeId2 = req?.params?.lowerNodeId2;
+                if (!higherNodeId) {
+                    throw new ServerError("higherNodeId cannot be empty.", 400);
+                }
+                if (!lowerNodeId2) {
+                    throw new ServerError("higherNodeId cannot be empty.", 400);
+                }
+                const nodes = await orgQueryer.getTopDownPathBetween(
+                    higherNodeId,
+                    lowerNodeId2,
+                    res.locals.authDecision
+                );
+                res.status(200).json(nodes);
+            } catch (e) {
+                handleServerError(req, res, e);
+            }
+        }
+    );
 
     /**
      * @apiGroup Auth

@@ -1,6 +1,6 @@
 import { config } from "config";
 import fetch from "isomorphic-fetch";
-import ServerError from "../api-clients/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 
 type RequestContentTypeJson = "application/json";
 type RequestContentTypePlainText = "text/plain";

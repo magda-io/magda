@@ -17,7 +17,7 @@ import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
 import { getUserById, updateUser } from "api-clients/AuthApis";
 import { User } from "reducers/userManagementReducer";
-import ServerError from "api-clients/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 import {
     getRootNode,
     OrgUnit,

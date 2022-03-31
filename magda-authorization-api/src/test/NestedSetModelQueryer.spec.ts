@@ -407,12 +407,12 @@ describe("Test NestedSetModelQueryer", function (this: Mocha.ISuiteCallbackConte
     it("`getTopDownPathBetween` should return top down path between two nodes", async () => {
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
-        let nodes: Maybe<NodeRecord[]>;
+        let nodes: NodeRecord[];
         nodes = await queryer.getTopDownPathBetween(
             await getNodeIdFromName(tableName, "Albert"),
             await getNodeIdFromName(tableName, "Donna")
         );
-        expect(nodes.valueOrThrow().map((n) => n.name)).to.have.members([
+        expect(nodes.map((n) => n.name)).to.have.members([
             "Albert",
             "Chuck",
             "Donna"
@@ -422,7 +422,7 @@ describe("Test NestedSetModelQueryer", function (this: Mocha.ISuiteCallbackConte
             await getNodeIdFromName(tableName, "Albert"),
             await getNodeIdFromName(tableName, "Eddie")
         );
-        expect(nodes.valueOrThrow().map((n) => n.name)).to.have.members([
+        expect(nodes.map((n) => n.name)).to.have.members([
             "Albert",
             "Chuck",
             "Eddie"
@@ -432,26 +432,20 @@ describe("Test NestedSetModelQueryer", function (this: Mocha.ISuiteCallbackConte
             await getNodeIdFromName(tableName, "Chuck"),
             await getNodeIdFromName(tableName, "Fred")
         );
-        expect(nodes.valueOrThrow().map((n) => n.name)).to.have.members([
-            "Chuck",
-            "Fred"
-        ]);
+        expect(nodes.map((n) => n.name)).to.have.members(["Chuck", "Fred"]);
 
         nodes = await queryer.getTopDownPathBetween(
             await getNodeIdFromName(tableName, "Albert"),
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(nodes.valueOrThrow().map((n) => n.name)).to.have.members([
-            "Albert",
-            "Bert"
-        ]);
+        expect(nodes.map((n) => n.name)).to.have.members(["Albert", "Bert"]);
 
         nodes = await queryer.getTopDownPathBetween(
             await getNodeIdFromName(tableName, "Bert"),
             await getNodeIdFromName(tableName, "Fred")
         );
         // --- there is no path between Bert and Fred
-        expect(nodes.equals(Maybe.nothing())).to.be.true;
+        expect(nodes.length).equal(0);
     });
 
     it("`compareNodes` should return 'ancestor', 'descendant', 'equal', 'unrelated' based on the nodes' level on the available path", async () => {

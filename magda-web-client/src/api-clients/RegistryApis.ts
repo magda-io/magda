@@ -4,7 +4,7 @@ import getRequest from "helpers/getRequest";
 import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
 import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
-import ServerError from "./ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 import flatMap from "lodash/flatMap";
 import partialRight from "lodash/partialRight";
 

@@ -605,8 +605,8 @@ class NestedSetModelQueryer {
     /**
      * Get all nodes on the top to down path between the `higherNode` to the `lowerNode`
      * Sort from higher level nodes to lower level node
-     * If a path doesn't exist, null will be returned
-     * If you pass a lower node to the `higherNodeId` and a higher node to `lowerNodeId`, null will be returned
+     * If a path doesn't exist, empty array (`[]`) will be returned
+     * If you pass a lower node to the `higherNodeId` and a higher node to `lowerNodeId`, empty array will be returned
      *
      * @param {string} higherNodeId
      * @param {string} lowerNodeId
@@ -617,7 +617,7 @@ class NestedSetModelQueryer {
         higherNodeId: string,
         lowerNodeId: string,
         authDecision: AuthDecision = UnconditionalTrueDecision
-    ): Promise<Maybe<NodeRecord[]>> {
+    ): Promise<NodeRecord[]> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
             tableRef: "t2"
@@ -636,9 +636,11 @@ class NestedSetModelQueryer {
             }
             ORDER BY (t2.right-t2.left) DESC`.toQuery()
         );
-        if (!result || !result.rows || !result.rows.length)
-            return Maybe.nothing();
-        return Maybe.just(result.rows);
+        if (!result?.rows?.length) {
+            return [];
+        } else {
+            return result.rows;
+        }
     }
 
     /**
