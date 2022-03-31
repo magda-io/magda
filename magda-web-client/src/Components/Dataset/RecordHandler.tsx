@@ -22,6 +22,8 @@ import { ParsedDataset, ParsedDistribution } from "helpers/record";
 import { FetchError } from "types";
 import DatasetPage from "./DatasetPage";
 import DistributionPage from "./DistributionPage";
+import { findPermissionGap, hasPermission } from "helpers/accessControlUtils";
+import { User } from "reducers/userManagementReducer";
 
 interface RecordHandlerPropsType {
     history: History;
@@ -44,6 +46,43 @@ interface RecordHandlerPropsType {
 
 interface StateType {
     addMargin: boolean;
+}
+
+function CheckUserHasEditPermissions(user?: User) {
+    if (!config?.featureFlags?.cataloguing) {
+        return false;
+    }
+
+    if (config?.featureFlags?.previewAddDataset) {
+        return false;
+    }
+
+    if (
+        findPermissionGap(
+            ["object/dataset/draft/read", "object/dataset/published/read"],
+            user
+        )?.length
+    ) {
+        return false;
+    }
+
+    // user should has either draft create or update permission
+    if (
+        !hasPermission("object/dataset/draft/create", user) &&
+        !hasPermission("object/dataset/draft/update", user)
+    ) {
+        return false;
+    }
+
+    // user should has either published create or update permission
+    if (
+        !hasPermission("object/dataset/published/create", user) &&
+        !hasPermission("object/dataset/published/update", user)
+    ) {
+        return false;
+    }
+
+    return true;
 }
 
 class RecordHandler extends React.Component<RecordHandlerPropsType, StateType> {
@@ -311,13 +350,9 @@ function mapStateToProps(state) {
     const distributionFetchError = record.distributionFetchError;
 
     // for now, assume that if the user is admin, they can edit the data
-    const hasEditPermissions =
-        (config.featureFlags.cataloguing &&
-            state.userManagement &&
-            state.userManagement.user &&
-            state.userManagement.user.isAdmin) ||
-        config.featureFlags.previewAddDataset;
-
+    const hasEditPermissions = CheckUserHasEditPermissions(
+        state?.userManagement?.user
+    );
     const isAdmin = state?.userManagement?.user?.isAdmin ? true : false;
 
     return {
