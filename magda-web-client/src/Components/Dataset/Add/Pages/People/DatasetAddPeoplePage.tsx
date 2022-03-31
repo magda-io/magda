@@ -12,7 +12,7 @@ import {
 } from "Components/Dataset/Add/DatasetAddCommon";
 import OrganisationAutoComplete from "./OrganisationAutocomplete";
 import DatasetAutoComplete from "./DatasetAutocomplete";
-import OrgUnitDropdown1 from "./OrgUnitDropdown";
+import ManagingOrgUnitDropdown from "./OrgUnitDropdown";
 import OrgUnitDropDown from "../../OrgUnitDropDown";
 import YesNoReveal from "../../YesNoReveal";
 
@@ -86,7 +86,7 @@ export default function DatasetAddPeoplePage({
                         Which team is responsible for maintaining this dataset?
                     </h4>
                     <div>
-                        <OrgUnitDropdown1
+                        <ManagingOrgUnitDropdown
                             orgUnitId={publishing.managingOrgUnitId}
                             custodianOrgUnitId={publishing?.custodianOrgUnitId}
                             onChange={editPublishing("managingOrgUnitId")}

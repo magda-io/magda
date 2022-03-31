@@ -4,6 +4,7 @@ import request from "helpers/request";
 import { v4 as isUuid } from "is-uuid";
 import getRequest from "helpers/getRequest";
 import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
+import mute404FetchDataError from "../helpers/mute404FetchDataError";
 
 export type OrgUnit = OrgUnitType;
 
@@ -65,10 +66,15 @@ export async function listOrgUnitsAtLevel(
 export async function getOrgUnitById(
     id: string,
     noCache: boolean = false
-): Promise<OrgUnit> {
-    return await getRequest<OrgUnit>(
-        getAbsoluteUrl(`orgunits/${encodeURIComponent(id)}`, config.authApiUrl),
-        noCache
+): Promise<OrgUnit | undefined> {
+    return mute404FetchDataError(() =>
+        getRequest<OrgUnit>(
+            getAbsoluteUrl(
+                `orgunits/${encodeURIComponent(id)}`,
+                config.authApiUrl
+            ),
+            noCache
+        )
     );
 }
 

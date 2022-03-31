@@ -1,24 +1,31 @@
 import React, { FunctionComponent } from "react";
-
+import { useSelector } from "react-redux";
 import { State } from "../../DatasetAddCommon";
-
+import { useAsync } from "react-async-hook";
 import CollapseBox from "./CollapseBox";
 import CollapseItem from "./CollapseItem";
-
+import { getOrgUnitById } from "api-clients/OrgUnitApis";
 import DescriptionBox from "Components/Common/DescriptionBox";
 import * as codelists from "constants/DatasetConstants";
 import ValidationRequiredLabel from "../../ValidationRequiredLabel";
 import { shouldValidate } from "../../ValidationManager";
 import { config } from "config";
 import { getFormatIcon } from "../../../View/DistributionIcon";
+import getAccessLevelDesc from "../DatasetAddAccessAndUsePage/getAccessLevelDesc";
+import Notification from "rsuite/Notification";
+import { toaster } from "rsuite";
 
 import "./AccessAndUse.scss";
+import { User } from "reducers/userManagementReducer";
 
 type PropsType = {
     stateData: State;
 };
 
 const AccessAndUse: FunctionComponent<PropsType> = (props) => {
+    const userData = useSelector<any, User | undefined>(
+        (state) => state?.userManagement?.user
+    );
     const {
         dataset,
         datasetPublishing,
@@ -26,6 +33,31 @@ const AccessAndUse: FunctionComponent<PropsType> = (props) => {
         distributions,
         informationSecurity
     } = props.stateData;
+
+    const { owningOrgUnitId } = dataset;
+
+    const { result: owningOrgUnit } = useAsync(
+        async (owningOrgUnitId?: string) => {
+            try {
+                return owningOrgUnitId
+                    ? await getOrgUnitById(owningOrgUnitId)
+                    : undefined;
+            } catch (e) {
+                toaster.push(
+                    <Notification
+                        type={"error"}
+                        closable={true}
+                        header="Error"
+                    >{`Failed to retrieve org unit info: ${e}`}</Notification>,
+                    {
+                        placement: "topEnd"
+                    }
+                );
+                throw e;
+            }
+        },
+        [owningOrgUnitId]
+    );
 
     return (
         <CollapseBox
@@ -48,10 +80,7 @@ const AccessAndUse: FunctionComponent<PropsType> = (props) => {
                 </CollapseItem>
             ) : null}
 
-            <CollapseItem
-                className="row"
-                alwaysShow={shouldValidate("$.datasetPublishing.level")}
-            >
+            <CollapseItem className="row" alwaysShow={true}>
                 <div className="col-sm-3">
                     <div className="title-box">
                         Who can see the dataset once it is published
@@ -60,9 +89,10 @@ const AccessAndUse: FunctionComponent<PropsType> = (props) => {
                     </div>
                 </div>
                 <div className="col-sm-9 content-box single-line">
-                    {datasetPublishing?.level
-                        ? codelists.publishingLevel[datasetPublishing.level]
-                        : codelists.NO_VALUE_LABEL}
+                    {getAccessLevelDesc(
+                        datasetPublishing?.level,
+                        owningOrgUnit?.name
+                    )}
                 </div>
             </CollapseItem>
 

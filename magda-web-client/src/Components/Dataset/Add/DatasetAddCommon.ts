@@ -168,8 +168,6 @@ export type Dataset = {
     contactPointDisplay?: string;
     landingPage?: string;
     importance?: string;
-    accessLevel?: string;
-    accessNotesTemp?: string;
 };
 
 export type Provenance = {

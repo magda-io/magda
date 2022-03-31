@@ -21,6 +21,7 @@ import * as ValidationManager from "../../ValidationManager";
 import { CustomValidatorType } from "../../ValidationManager";
 import CommonLink from "Components/Common/CommonLink";
 import urijs from "urijs";
+import DatasetAccessSettings from "./DatasetAccessSettings";
 
 import "./index.scss";
 
@@ -130,6 +131,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
 
     const editDatasetPublishing = props.edit("datasetPublishing");
     const editInformationSecurity = props.edit("informationSecurity");
+    const editDataset = props.edit("dataset");
     const editPublishToDga = (shouldPublishToDga: string | undefined) => {
         props.editStateWithUpdater((state) => ({
             ...state,
@@ -225,29 +227,16 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         </div>
                     </div>
                 ) : null}
-                <div className="question-who-can-see-dataset">
-                    <h4 className="with-icon">
-                        <span>
-                            Who can see the dataset once it is published?
-                        </span>
-                    </h4>
-                    <div className="input-area">
-                        <ToolTip>
-                            We recommend you publish your data to everyone in
-                            your organisation to help prevent data silos.
-                        </ToolTip>
-                        <div>
-                            <AlwaysEditor
-                                value={datasetPublishing.level}
-                                onChange={editDatasetPublishing("level")}
-                                editor={codelistRadioEditor(
-                                    "dataset-publishing-level",
-                                    codelists.publishingLevel
-                                )}
-                            />
-                        </div>
-                    </div>
-                </div>
+
+                <DatasetAccessSettings
+                    editAccessLevel={editDatasetPublishing("level")}
+                    editOrgUnitId={editDataset("owningOrgUnitId")}
+                    accessLevel={datasetPublishing?.level}
+                    orgUnitId={dataset?.owningOrgUnitId}
+                    custodianOrgUnitId={datasetPublishing?.custodianOrgUnitId}
+                    managingOrgUnitId={datasetPublishing?.managingOrgUnitId}
+                />
+
                 <h3 className="with-underline">Dataset use</h3>
                 {distributions.length !== 0 && (
                     <div className="question-license-apply-type">
