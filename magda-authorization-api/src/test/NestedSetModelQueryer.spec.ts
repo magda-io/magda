@@ -446,6 +446,14 @@ describe("Test NestedSetModelQueryer", function (this: Mocha.ISuiteCallbackConte
         );
         // --- there is no path between Bert and Fred
         expect(nodes.length).equal(0);
+
+        // Chuck's path to itself will be itself
+        nodes = await queryer.getTopDownPathBetween(
+            await getNodeIdFromName(tableName, "Chuck"),
+            await getNodeIdFromName(tableName, "Chuck")
+        );
+        expect(nodes.length).equal(1);
+        expect(nodes.map((n) => n.name)).to.have.members(["Chuck"]);
     });
 
     it("`compareNodes` should return 'ancestor', 'descendant', 'equal', 'unrelated' based on the nodes' level on the available path", async () => {

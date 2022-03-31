@@ -28,6 +28,8 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      * @api {get} /v0/auth/orgunits/:higherNodeId/topDownPathTo/:lowerNodeId2 Get get top down path between 2 nodes
      * @apiDescription Get all nodes on the top to down path between the `higherNode` to the `lowerNode`.
      * Sort from higher level nodes to lower level node.
+     * Result will include `higherNode` and the `lowerNode`.
+     * If `higherNode` and the `lowerNode` is the same node, an array contains the single node will be responded.
      * If a path doesn't exist, `[]` (empty array) will be responded.
      * If you pass a lower node to the `higherNodeId` and a higher node to `lowerNodeId`, `[]` (empty array) will be responded.
      * If you don't have access to the higherNode, `[]` (empty array) will be responded.

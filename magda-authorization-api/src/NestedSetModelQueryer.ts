@@ -604,7 +604,9 @@ class NestedSetModelQueryer {
 
     /**
      * Get all nodes on the top to down path between the `higherNode` to the `lowerNode`
-     * Sort from higher level nodes to lower level node
+     * Sort from higher level nodes to lower level node.
+     * Result will include `higherNode` and the `lowerNode`.
+     * If `higherNode` and the `lowerNode` is the same node, an array contains the single node will be return.
      * If a path doesn't exist, empty array (`[]`) will be returned
      * If you pass a lower node to the `higherNodeId` and a higher node to `lowerNodeId`, empty array will be returned
      *
