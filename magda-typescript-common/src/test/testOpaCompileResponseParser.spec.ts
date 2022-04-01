@@ -22,6 +22,11 @@ describe("Test extra large opa response", () => {
         console.time("process-extra-large-opa-response-time");
         const parser = new OpaCompileResponseParser();
         const data = parser.parse(JSON.stringify(testExtraLargeResponse));
+        console.log(
+            "no.of original rules vs filtered rules: ",
+            parser.originalRules.length,
+            parser.rules.length
+        );
         parser.evaluate();
         //console.log(parser.evaluateAsHumanReadableString());
         expect(parser.hasWarns).to.be.equal(false);

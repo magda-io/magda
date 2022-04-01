@@ -136,13 +136,72 @@ export class RegoRule {
         if (!(this.parser instanceof OpaCompileResponseParser)) {
             throw new Error("Require parser parameter to create a RegoRule");
         }
+
+        this.removeDuplicateExpressions();
+
         if (
             this.expressions?.length &&
             this.expressions.findIndex((exp) => !exp.hasNoResolvableRef) === -1
         ) {
             this.hasNoResolvableRef = true;
         }
+
         this.evaluate();
+    }
+
+    /**
+     * OPA PE result might contain duplicate expressions.
+     * https://github.com/open-policy-agent/opa/issues/4516
+     * This method will remove those duplication by simply string comparison.
+     *
+     * @return {*}
+     * @memberof RegoRule
+     */
+    removeDuplicateExpressions() {
+        if (!this?.expressions?.length) {
+            return;
+        }
+        const expSet = new Set();
+        this.expressions = this.expressions.filter((exp) => {
+            const orgSetLength = expSet.size;
+            // exp.toJSON() is faster than exp.toConciseJSON()
+            expSet.add(exp.toJSON(0, true));
+            return expSet.size > orgSetLength;
+        });
+    }
+
+    /**
+     * Test whether the rule is an "impossible" rule.
+     * If so, the rule should be simply discarded.
+     * See: https://github.com/open-policy-agent/opa/issues/4516
+     *
+     * @return {*}  {boolean}
+     * @memberof RegoRule
+     */
+    isImpossible(): boolean {
+        if (!this?.expressions?.length) {
+            return false;
+        }
+        const nonNegatedExpSet = new Set();
+        const negatedExps = this.expressions.filter((exp) => {
+            if (exp.isNegated) {
+                return true;
+            } else {
+                // add non negated exp content to set
+                // exp.toJSON() is faster than exp.toConciseJSON()
+                nonNegatedExpSet.add(exp.toJSON(0, true));
+                return false;
+            }
+        });
+        if (!negatedExps.length) {
+            return false;
+        }
+        for (const exp of negatedExps) {
+            if (nonNegatedExpSet.has(exp.toJSON(0, true, true))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     clone(options: Partial<RegoRuleOptions> = {}): RegoRule {
@@ -412,7 +471,7 @@ export class RegoTerm {
      */
     asString() {
         if (this.value instanceof RegoRef) return this.value.fullRefString();
-        else return this.value;
+        else return JSON.stringify(this.value);
     }
 
     /**
@@ -734,7 +793,22 @@ export class RegoExp {
      * @memberof RegoExp
      */
     termsAsString() {
-        return this.terms.map((t) => t.asString());
+        return this.terms.map((t) => t.asString()).join(" ");
+    }
+
+    /**
+     * Print concise format expression string presentation.
+     * Can be used for debugging
+     *
+     * @return {*}
+     * @memberof RegoExp
+     */
+    asString() {
+        if (this.isNegated) {
+            return "NOT " + this.termsAsString();
+        } else {
+            return this.termsAsString();
+        }
     }
 
     /**
@@ -950,24 +1024,41 @@ export class RegoExp {
         }
     }
 
-    toData(index: number = 0) {
+    toData(index: number = 0, ignoreIndex = false, ignoreNegated = false) {
         const terms = this.terms.map((term) => term.toData());
-        if (this.isNegated) {
-            return {
-                negated: true,
-                index,
-                terms
-            };
+        if (this.isNegated && !ignoreNegated) {
+            if (ignoreIndex) {
+                return {
+                    negated: true,
+                    terms
+                };
+            } else {
+                return {
+                    negated: true,
+                    index,
+                    terms
+                };
+            }
         } else {
-            return {
-                index,
-                terms
-            };
+            if (ignoreIndex) {
+                return {
+                    terms
+                };
+            } else {
+                return {
+                    index,
+                    terms
+                };
+            }
         }
     }
 
-    toJSON(index: number = 0): string {
-        return JSON.stringify(this.toData(index));
+    toJSON(
+        index: number = 0,
+        ignoreIndex = false,
+        ignoreNegated = false
+    ): string {
+        return JSON.stringify(this.toData(index, ignoreIndex, ignoreNegated));
     }
 
     toConciseData() {
@@ -1583,6 +1674,9 @@ export default class OpaCompileResponseParser {
 
     addRule(rule: RegoRule) {
         this.originalRules.push(rule);
+        if (rule.isImpossible()) {
+            return;
+        }
         if (!this.ruleDuplicationCheckCache[rule.fullName]) {
             this.ruleDuplicationCheckCache[rule.fullName] = new Set();
         }
