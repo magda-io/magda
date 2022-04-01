@@ -16,8 +16,13 @@ export default async function uploadFile(
     // Save first, so that the record id will be present.
     await saveDatasetToStorage();
 
+    const fileStorageUrl = getStorageUrl(datasetId, distId, file.name);
+    const [processedDatasetId, processedDistId, processedfileName] = urijs(
+        fileStorageUrl
+    ).segmentCoded();
+
     const formData = new FormData();
-    formData.append(file.name, file);
+    formData.append(processedfileName, file, processedfileName);
 
     const fetchUri = urijs(config.storageApiUrl);
     const fetchUrl = fetchUri
@@ -25,8 +30,8 @@ export default async function uploadFile(
             ...fetchUri.segmentCoded(),
             "upload",
             DATASETS_BUCKET,
-            datasetId,
-            distId
+            processedDatasetId,
+            processedDistId
         ])
         .search({ recordId: datasetId })
         .toString();
@@ -49,10 +54,7 @@ export default async function uploadFile(
         // --- successfully upload the file, add to state.uploadedFileUrls
         await promisifySetState(datasetStateUpdater)((state) => ({
             ...state,
-            uploadedFileUrls: uniq([
-                ...state.uploadedFileUrls,
-                getStorageUrl(datasetId, distId, file.name)
-            ])
+            uploadedFileUrls: uniq([...state.uploadedFileUrls, fileStorageUrl])
         }));
 
         // --- save a draft to storage

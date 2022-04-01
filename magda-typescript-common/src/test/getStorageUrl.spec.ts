@@ -2,7 +2,10 @@ import "mocha";
 import { expect } from "chai";
 import urijs from "urijs";
 import jsc from "./jsverify";
-import getStorageUrl, { InvalidCharsRegEx } from "../getStorageUrl";
+import getStorageUrl, {
+    InvalidCharsRegEx,
+    isValidS3ObjectKey
+} from "../getStorageUrl";
 
 function generateStr(len: number) {
     if (len <= 0) {
@@ -94,5 +97,44 @@ describe("getStorageUrl", function () {
                     expect(storageUrl.indexOf("test.exe")).not.equal(-1)
             )
         );
+    });
+});
+
+describe("isValidS3ObjectKey", () => {
+    it("should return false for `sds//sds`", () => {
+        expect(isValidS3ObjectKey("sds//sds")).to.be.false;
+    });
+    it("should return false for `/sds/ss/sds`", () => {
+        expect(isValidS3ObjectKey("/sds/ss/sds")).to.be.false;
+    });
+    it("should return true for `sds/ss/sds`", () => {
+        expect(isValidS3ObjectKey("sds/ss/sds")).to.be.true;
+    });
+    it("should return false for `sds/ss/sds/`", () => {
+        expect(isValidS3ObjectKey("sds/ss/sds/")).to.be.false;
+    });
+    it("should return true for `magda-ds-192f7ca4-f3ad-4f87-9331-941329c616dd/magda-dist-8cd82dfb-61cd-4bb4-b168-85a511e1109d/pdf-test.pdf`", () => {
+        expect(
+            isValidS3ObjectKey(
+                "magda-ds-192f7ca4-f3ad-4f87-9331-941329c616dd/magda-dist-8cd82dfb-61cd-4bb4-b168-85a511e1109d/pdf-test.pdf"
+            )
+        ).to.be.true;
+    });
+    it("should return false for `magda-datasets/magda-ds-192f7ca4-f3ad-4f87-9331-941329c616dd/magda-dist-68af523a-9ace-4ef9-b813-599b4c19dfbf/test spatial.csv`", () => {
+        expect(
+            isValidS3ObjectKey(
+                "magda-datasets/magda-ds-192f7ca4-f3ad-4f87-9331-941329c616dd/magda-dist-68af523a-9ace-4ef9-b813-599b4c19dfbf/test spatial.csv"
+            )
+        ).to.be.false;
+    });
+    it("should return true for `magda-datasets/magda-ds-192f7ca4-f3ad-4f87-9331-941329c616dd/magda-dist-68af523a-9ace-4ef9-b813-599b4c19dfbf/testspatial.csv`", () => {
+        expect(
+            isValidS3ObjectKey(
+                "magda-datasets/magda-ds-192f7ca4-f3ad-4f87-9331-941329c616dd/magda-dist-68af523a-9ace-4ef9-b813-599b4c19dfbf/testspatial.csv"
+            )
+        ).to.be.true;
+    });
+    it("should return false for key longer than 1024", () => {
+        expect(isValidS3ObjectKey(Array(1025).fill("a").join(""))).to.be.false;
     });
 });

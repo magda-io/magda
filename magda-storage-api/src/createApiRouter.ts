@@ -11,6 +11,7 @@ import {
 } from "./storageAuthMiddlewares";
 import { StorageBucketMetaData, StorageObjectMetaData } from "./common";
 import ServerError from "magda-typescript-common/src/ServerError";
+import { isValidS3ObjectKey } from "magda-typescript-common/src/getStorageUrl";
 export interface ApiRouterOptions {
     registryClient: AuthorizedRegistryClient;
     objectStoreClient: MagdaMinioClient;
@@ -268,6 +269,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 const fileid = file.originalname;
                 const fullPath = path !== "" ? path + "/" + fileid : fileid;
 
+                if (!isValidS3ObjectKey(fullPath)) {
+                    throw new ServerError(
+                        `object key: ${fullPath} is not valid storage object key.`,
+                        400
+                    );
+                }
+
                 res.locals.objectName = fullPath;
 
                 return fullPath;
@@ -389,7 +397,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
             // retrieve bucket name
             async (req: Request, res: Response) => req?.params?.bucket,
             // retrieve object id / path
-            async (req: Request, res: Response) => req?.params?.[0],
+            async (req: Request, res: Response) => {
+                const objectKey = req?.params?.[0] ? req.params[0] : "";
+                if (!objectKey || !isValidS3ObjectKey(objectKey)) {
+                    throw new ServerError(
+                        `object key: ${objectKey} is not valid storage object key.`,
+                        400
+                    );
+                }
+                return objectKey;
+            },
             // create auth decision context data
             async (req: Request, res: Response) => {
                 const metaData: StorageObjectMetaData = {

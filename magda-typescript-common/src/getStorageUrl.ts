@@ -7,7 +7,29 @@ import md5 from "crypto-js/md5";
 const MAX_KEY_LENGTH = 1024;
 export const InvalidCharsRegEx = /[^a-zA-Z0-9!\-_.*'()]/g;
 
-function removeInvalidChars(input: string): string {
+export function isValidS3ObjectKey(key: string) {
+    if (!key || typeof key !== "string") {
+        return false;
+    }
+    if (key.length > MAX_KEY_LENGTH) {
+        return false;
+    }
+    return (
+        key.split("/").findIndex((segment) => {
+            if (!segment) {
+                // two forward slashes `//` is invalid
+                return true;
+            }
+            if (removeInvalidChars(segment) !== segment) {
+                // has invalid chars
+                return true;
+            }
+            return false;
+        }) === -1
+    );
+}
+
+export function removeInvalidChars(input: string): string {
     if (!input || typeof input !== "string") {
         return "";
     }
