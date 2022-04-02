@@ -14,6 +14,13 @@
 - #3308 Policy enforcement on auth objects APIs
 - related #3250: Rewrite decision enforcement logic for search API
 - #3326 Build OPA docker image with builtin policies & Run OPA as a side car
+- #3330 Fine-tune Metadata creation tool workflow for the new auth model
+- #3332 Policy Enforcement on Storage API using new auth model
+- #3333 Rename access-control aspect orgUnitOwnerId field to orgUnitId
+- #3335 Reshape Storage API (in progress)
+- #3340 OPA AST parser takes too long to evaluate large response
+- Increase registry default request timeout to 60s (from 30s)
+- Bump Dataset index version to 49 & publishers index version to 7
 
 ## 1.2.1
 
