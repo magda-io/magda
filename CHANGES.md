@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## 1.2.2
+
 ## 1.2.1
 
 - Upgrade magda-csw-connector to v1.1.1 for [license extraction issue on certain sources](https://github.com/magda-io/magda-csw-connector/issues/21)
