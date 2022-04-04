@@ -73,7 +73,30 @@ Magda provides a user interface, which is served from its own microservice and c
 
 ## To try the last version (with prebuilt images)
 
-Use https://github.com/magda-io/magda-config
+If you just want to install a local testing version, installing Magda using [Helm](https://helm.sh/) is relatively easier (you can use [minikube](https://minikube.sigs.k8s.io/docs/) to install a local k8s test cluster):
+
+```bash
+# Add Magda Helm Chart Repo:
+helm repo add magda-io https://charts.magda.io
+
+# create a namespace "magda" in your cluster
+kubectl create namespace magda
+
+# install Magda version v1.2.0 to namespace "magda", turn off openfass function and expose the service via loadBalancer
+helm upgrade --namespace magda --install --version 1.2.0 --timeout 9999s --set global.openfaas.enabled=false,magda-core.gateway.service.type=LoadBalancer magda magda-io/magda
+```
+
+You can find out the load balancer IP and access it:
+
+```bash
+echo $(kubectl get svc --namespace magda gateway --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
+```
+
+If you are interested in playing more, you can also have a look at this tutorial repo:
+
+https://github.com/magda-io/magda-brown-bag
+
+Or find out more on: https://magda.io/docs/building-and-running if you are interested in development.
 
 ## To build and run from source
 

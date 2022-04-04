@@ -74,6 +74,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | tags.apidocs-server | bool | `false` | turn on / off [apidocs-server](../internal-charts/apidocs-server/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.authorization-api | bool | `false` | turn on / off [authorization-api](../internal-charts/authorization-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.authorization-db | bool | `false` | turn on / off [authorization-db](../internal-charts/authorization-db/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.cloud-sql-proxy | bool | `false` | turn on / off [cloud-sql-proxy](../internal-charts/cloud-sql-proxy/README.md) |
 | tags.combined-db | bool | `false` | turn on / off [combined-db](../internal-charts/combined-db/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.content-api | bool | `false` | turn on / off [content-api](../internal-charts/content-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.content-db | bool | `false` | turn on / off [content-db](../internal-charts/content-db/README.md) |
