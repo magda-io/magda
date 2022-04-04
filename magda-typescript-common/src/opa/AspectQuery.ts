@@ -10,10 +10,13 @@ export class AspectQueryValue {
         switch (typeof value) {
             case "number":
                 this.postgresType = sqls`NUMERIC`;
+                break;
             case "boolean":
                 this.postgresType = sqls`BOOL`;
+                break;
             case "string":
                 this.postgresType = sqls`TEXT`;
+                break;
             default:
                 throw new Error(
                     "getPostgresValueTypeCastStr: unsupported data type: `${" +

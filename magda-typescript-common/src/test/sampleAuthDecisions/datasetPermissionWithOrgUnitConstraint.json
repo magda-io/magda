@@ -31,7 +31,7 @@
                         },
                         {
                             "isRef": true,
-                            "value": "input.object.dataset.accessControl.orgUnitOwnerId"
+                            "value": "input.object.dataset.accessControl.orgUnitId"
                         }
                     ]
                 }
@@ -67,7 +67,7 @@
                         },
                         {
                             "isRef": true,
-                            "value": "input.object.dataset.accessControl.orgUnitOwnerId"
+                            "value": "input.object.dataset.accessControl.orgUnitId"
                         }
                     ]
                 }

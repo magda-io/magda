@@ -34,6 +34,9 @@ spec:
 {{- if .Values.minioRegion }}
             "--minioRegion", {{ .Values.minioRegion | quote }},
 {{- end }}
+{{- if .Values.skipAuth }}
+            "--skipAuth", "true",
+{{- end }}
             "--authApiUrl", "http://authorization-api/v0",
             "--tenantId", "0",
             "--uploadLimit", "100mb",
@@ -56,6 +59,8 @@ spec:
             secretKeyRef:
               name: storage-secrets
               key: accesskey
+        - name: USER_ID
+          value: {{ .Values.global.defaultAdminUserId }}
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:

@@ -40,7 +40,7 @@ sealed trait AspectQuery {
 
   val registryRefToEsRefMappings = Map(
     "access-control" -> Map(
-      "orgUnitOwnerId" -> "accessControl.orgUnitOwnerId",
+      "orgUnitId" -> "accessControl.orgUnitId",
       "ownerId" -> "accessControl.ownerId",
       "preAuthorisedPermissionIds" -> "accessControl.preAuthorisedPermissionIds"
     ),

@@ -2089,6 +2089,82 @@ export class RecordsApi {
         );
     }
     /**
+     * Get a record in full by ID
+     * Get a record with all attached aspects data by the record ID.
+     * @param id ID of the record to be fetched.
+     * @param xMagdaTenantId 0
+     * @param xMagdaSession Magda internal session id
+     */
+    public getByIdInFull(
+        id: string,
+        xMagdaTenantId: number,
+        xMagdaSession?: string
+    ): Promise<{ response: http.IncomingMessage; body: Record }> {
+        const localVarPath =
+            this.basePath +
+            "/records/inFull/{id}".replace("{" + "id" + "}", String(id));
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'id' is not null or undefined
+        if (id === null || id === undefined) {
+            throw new Error(
+                "Required parameter id was null or undefined when calling getByIdInFull."
+            );
+        }
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getByIdInFull."
+            );
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "GET",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: Record }>(
+            (resolve, reject) => {
+                request(requestOptions, (error, response, body) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        if (
+                            response.statusCode >= 200 &&
+                            response.statusCode <= 299
+                        ) {
+                            resolve({ response: response, body: body });
+                        } else {
+                            reject({ response: response, body: body });
+                        }
+                    }
+                });
+            }
+        );
+    }
+    /**
      * Get a summary record by ID
      * Gets a summary record, including all the aspect ids for which this record has data.
      * @param id ID of the record to be fetched.

@@ -165,9 +165,14 @@ class NestedSetModelQueryer {
     async getNodes(
         nodesQuery: NodesQuery = {},
         fields: string[] = null,
-        client: pg.Client = null
+        client: pg.Client = null,
+        authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<NodeRecord[]> {
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.orgUnit"]
+        });
         const clauses = [
+            authConditions,
             nodesQuery.name
                 ? sqls`"name" = ${nodesQuery.name}`
                 : SQLSyntax.empty,
@@ -225,7 +230,7 @@ class NestedSetModelQueryer {
 
     /**
      * Get the root node of the tree
-     * Return null if empty tree
+     * Return null if empty tree or the user has no access to the root node
      *
      * @param {string[]} [fields=null] Selected Fields; If null, use this.defaultSelectFieldList
      * @param {pg.Client} [client=null] Optional pg client; Use supplied client connection for query rather than a random connection from Pool
@@ -277,7 +282,7 @@ class NestedSetModelQueryer {
     ): Promise<NodeRecord[]> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Children"
+            tableRef: "children"
         });
         const tbl = escapeIdentifier(this.tableName);
         const conditions = [
@@ -320,7 +325,7 @@ class NestedSetModelQueryer {
     ): Promise<NodeRecord[]> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Parents"
+            tableRef: "parents"
         });
         const tbl = escapeIdentifier(this.tableName);
         const conditions = [
@@ -360,7 +365,7 @@ class NestedSetModelQueryer {
     ): Promise<NodeRecord[]> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Children"
+            tableRef: "children"
         });
         const tbl = escapeIdentifier(this.tableName);
         const result = await (client ? client : this.pool).query(
@@ -401,7 +406,7 @@ class NestedSetModelQueryer {
     ): Promise<Maybe<NodeRecord>> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Parents"
+            tableRef: "parents"
         });
         const tbl = escapeIdentifier(this.tableName);
         const result = await (client ? client : this.pool).query(
@@ -474,7 +479,7 @@ class NestedSetModelQueryer {
     ): Promise<number> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Parents"
+            tableRef: "parents"
         });
         const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(
@@ -548,7 +553,7 @@ class NestedSetModelQueryer {
     ): Promise<Maybe<NodeRecord>> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Children"
+            tableRef: "children"
         });
         const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(
@@ -579,7 +584,7 @@ class NestedSetModelQueryer {
     ): Promise<Maybe<NodeRecord>> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
-            tableRef: "Children"
+            tableRef: "children"
         });
         const tbl = escapeIdentifier(this.tableName);
         const result = await this.pool.query(
@@ -599,9 +604,11 @@ class NestedSetModelQueryer {
 
     /**
      * Get all nodes on the top to down path between the `higherNode` to the `lowerNode`
-     * Sort from higher level nodes to lower level node
-     * If a path doesn't exist, null will be returned
-     * If you pass a lower node to the `higherNodeId` and a higher node to `lowerNodeId`, null will be returned
+     * Sort from higher level nodes to lower level node.
+     * Result will include `higherNode` and the `lowerNode`.
+     * If `higherNode` and the `lowerNode` is the same node, an array contains the single node will be return.
+     * If a path doesn't exist, empty array (`[]`) will be returned
+     * If you pass a lower node to the `higherNodeId` and a higher node to `lowerNodeId`, empty array will be returned
      *
      * @param {string} higherNodeId
      * @param {string} lowerNodeId
@@ -612,7 +619,7 @@ class NestedSetModelQueryer {
         higherNodeId: string,
         lowerNodeId: string,
         authDecision: AuthDecision = UnconditionalTrueDecision
-    ): Promise<Maybe<NodeRecord[]>> {
+    ): Promise<NodeRecord[]> {
         const authConditions = authDecision.toSql({
             prefixes: ["input.authObject.orgUnit"],
             tableRef: "t2"
@@ -631,9 +638,11 @@ class NestedSetModelQueryer {
             }
             ORDER BY (t2.right-t2.left) DESC`.toQuery()
         );
-        if (!result || !result.rows || !result.rows.length)
-            return Maybe.nothing();
-        return Maybe.just(result.rows);
+        if (!result?.rows?.length) {
+            return [];
+        } else {
+            return result.rows;
+        }
     }
 
     /**

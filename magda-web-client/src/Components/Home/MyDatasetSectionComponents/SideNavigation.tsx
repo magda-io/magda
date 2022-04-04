@@ -1,8 +1,12 @@
 import React, { FunctionComponent } from "react";
 import { Link } from "react-router-dom";
 import "./SideNavigation.scss";
+import { User } from "reducers/userManagementReducer";
+import { hasPermission } from "helpers/accessControlUtils";
 
-type PropsType = {};
+type PropsType = {
+    user: User;
+};
 
 /* eslint-disable jsx-a11y/anchor-is-valid */
 const SideNavigation: FunctionComponent<PropsType> = (props) => {
@@ -10,11 +14,16 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
         <div className="side-navigation">
             <div className="sidenav">
                 <a className="icon-my-data active">
-                    <span>My data sets</span>
+                    <span>Datasets</span>
                 </a>
-                <Link to="/dataset/add/metadata" className="icon-add-dataset">
-                    <span>Add a data set</span>
-                </Link>
+                {hasPermission("object/dataset/draft/create", props.user) ? (
+                    <Link
+                        to="/dataset/add/metadata"
+                        className="icon-add-dataset"
+                    >
+                        <span>Add a Dataset</span>
+                    </Link>
+                ) : null}
             </div>
         </div>
     );

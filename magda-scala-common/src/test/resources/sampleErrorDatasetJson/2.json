@@ -4,7 +4,7 @@
         "spatial-coverage": {},
         "access-control": {
             "custodianOrgUnitId": "b16cd237-7ce6-4352-a59c-9e05dc65ba78",
-            "orgUnitOwnerId": "b16cd237-7ce6-4352-a59c-9e05dc65ba78"
+            "orgUnitId": "b16cd237-7ce6-4352-a59c-9e05dc65ba78"
         },
         "dcat-dataset-strings": {
             "custodianOrgUnitId": "b16cd237-7ce6-4352-a59c-9e05dc65ba78",

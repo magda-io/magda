@@ -1,5 +1,5 @@
 import { config, DATASETS_BUCKET } from "config";
-import getDownloadUrl from "./getDownloadUrl";
+import getStorageUrl from "@magda/typescript-common/dist/getStorageUrl";
 import promisifySetState from "helpers/promisifySetState";
 import { DatasetStateUpdaterType } from "../../DatasetAddCommon";
 import urijs from "urijs";
@@ -16,8 +16,13 @@ export default async function uploadFile(
     // Save first, so that the record id will be present.
     await saveDatasetToStorage();
 
+    const fileStorageUrl = getStorageUrl(datasetId, distId, file.name);
+    const [processedDatasetId, processedDistId, processedfileName] = urijs(
+        fileStorageUrl
+    ).segmentCoded();
+
     const formData = new FormData();
-    formData.append(file.name, file);
+    formData.append(processedfileName, file, processedfileName);
 
     const fetchUri = urijs(config.storageApiUrl);
     const fetchUrl = fetchUri
@@ -25,8 +30,8 @@ export default async function uploadFile(
             ...fetchUri.segmentCoded(),
             "upload",
             DATASETS_BUCKET,
-            datasetId,
-            distId
+            processedDatasetId,
+            processedDistId
         ])
         .search({ recordId: datasetId })
         .toString();
@@ -46,13 +51,10 @@ export default async function uploadFile(
         if (res.status !== 200) {
             throw new Error("Could not upload file");
         }
-        // --- sucessfully upload the file, add to state.uploadedFileUrls
+        // --- successfully upload the file, add to state.uploadedFileUrls
         await promisifySetState(datasetStateUpdater)((state) => ({
             ...state,
-            uploadedFileUrls: uniq([
-                ...state.uploadedFileUrls,
-                getDownloadUrl(datasetId, distId, file.name)
-            ])
+            uploadedFileUrls: uniq([...state.uploadedFileUrls, fileStorageUrl])
         }));
 
         // --- save a draft to storage

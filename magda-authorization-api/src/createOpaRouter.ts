@@ -363,6 +363,9 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         res: express.Response
     ) {
         try {
+            if (options?.debug === true) {
+                console.time("decision-endpoint-processing-time");
+            }
             setResponseNoCache(res);
 
             let operationUri = req.params[0];
@@ -568,6 +571,10 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 // Thus, we will try to use e.error if available
                 e?.error ? e.error : e?.message ? e.message : String(e)
             );
+        } finally {
+            if (options?.debug === true) {
+                console.timeEnd("decision-endpoint-processing-time");
+            }
         }
     }
 

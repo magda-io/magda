@@ -15,9 +15,9 @@ import { useAsync, useAsyncCallback } from "react-async-hook";
 import "./RoleFormPopUp.scss";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
-import { getUserById, updateUser, whoami } from "api-clients/AuthApis";
+import { getUserById, updateUser } from "api-clients/AuthApis";
 import { User } from "reducers/userManagementReducer";
-import ServerError from "api-clients/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 import {
     getRootNode,
     OrgUnit,
@@ -85,13 +85,7 @@ const AssignUserOrgUnitFormPopUp: ForwardRefRenderFunction<
     const { result: userRootNode, loading: isUserRootNodeLoading } = useAsync(
         async (dataReloadToken: string) => {
             try {
-                const userInfo = await whoami();
-                let rootNode: OrgUnit;
-                if (userInfo?.orgUnit?.id) {
-                    rootNode = userInfo.orgUnit;
-                } else {
-                    rootNode = await getRootNode(true);
-                }
+                const rootNode: OrgUnit = await getRootNode(true);
                 setData([
                     {
                         label: rootNode.name,

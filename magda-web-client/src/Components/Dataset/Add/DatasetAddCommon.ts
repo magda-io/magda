@@ -23,7 +23,7 @@ import { config } from "config";
 import { User } from "reducers/userManagementReducer";
 import { RawDataset, DatasetDraft } from "helpers/record";
 import { autocompletePublishers } from "api-clients/SearchApis";
-import ServerError from "../../../api-clients/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 import defer from "helpers/defer";
 import { ReactStateUpdaterType } from "helpers/promisifySetState";
 import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownloadUrl";
@@ -165,12 +165,9 @@ export type Dataset = {
     ownerId?: string; // --- actual owner of the dataset; Initially set to same as `editingUserId` but can be changed to different user.
     editingUserId?: string; // --- always populate with current logged-in user id (if available)
     owningOrgUnitId?: string;
-    custodianOrgUnitId?: string;
     contactPointDisplay?: string;
     landingPage?: string;
     importance?: string;
-    accessLevel?: string;
-    accessNotesTemp?: string;
 };
 
 export type Provenance = {
@@ -182,8 +179,10 @@ export type Provenance = {
 };
 
 export type DatasetPublishing = {
-    state: string;
-    level: string;
+    state?: string;
+    level?: string;
+    custodianOrgUnitId?: string;
+    managingOrgUnitId?: string;
     notesToApprover?: string;
     contactPointDisplay?: ContactPointDisplayOption;
     publishAsOpenData?: {
@@ -352,12 +351,7 @@ function getAccessControlAspectData(state: State) {
     const { dataset } = state;
     return {
         ownerId: dataset.editingUserId ? dataset.editingUserId : undefined,
-        orgUnitOwnerId: dataset.owningOrgUnitId
-            ? dataset.owningOrgUnitId
-            : undefined,
-        custodianOrgUnitId: dataset.custodianOrgUnitId
-            ? dataset.custodianOrgUnitId
-            : undefined
+        orgUnitId: dataset.owningOrgUnitId ? dataset.owningOrgUnitId : undefined
     };
 }
 
@@ -440,14 +434,9 @@ function populateDcatDatasetStringAspect(data: RawDataset, state: State) {
         state.dataset.ownerId = data.aspects?.["access-control"]?.ownerId;
     }
 
-    if (data.aspects?.["access-control"]?.orgUnitOwnerId) {
+    if (data.aspects?.["access-control"]?.orgUnitId) {
         state.dataset.owningOrgUnitId =
-            data.aspects?.["access-control"]?.orgUnitOwnerId;
-    }
-
-    if (data.aspects?.["access-control"]?.custodianOrgUnitId) {
-        state.dataset.custodianOrgUnitId =
-            data.aspects?.["access-control"]?.custodianOrgUnitId;
+            data.aspects?.["access-control"]?.orgUnitId;
     }
 }
 
@@ -741,7 +730,7 @@ export function createBlankState(user: User): State {
         },
         datasetPublishing: {
             state: "draft",
-            level: "agency",
+            level: "creatorOrgUnit",
             contactPointDisplay: "team"
         },
         spatialCoverage: {
@@ -1251,7 +1240,7 @@ async function convertStateToDistributionRecords(
                   }
                 : distribution;
 
-        // --- version property should be created as a seperate version aspect
+        // --- version property should be created as a separate version aspect
         // --- rather than part of `dcat-distribution-strings`
         aspect.version = undefined;
 
@@ -1260,6 +1249,7 @@ async function convertStateToDistributionRecords(
             name: distribution.title,
             aspects: {
                 "dcat-distribution-strings": aspect,
+                "access-control": getAccessControlAspectData(state),
                 // --- set distribution initial version if not exist
                 // --- the version will be bumped when it's superseded by a new file / distribution
                 version: distribution?.version

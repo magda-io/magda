@@ -83,6 +83,12 @@ trait RecordPersistence {
       dereference: Option[Boolean] = None
   )(implicit session: DBSession): Option[Record]
 
+  def getCompleteRecordById(
+      tenantId: TenantId,
+      authDecision: AuthDecision,
+      id: String
+  )(implicit session: DBSession): Option[Record]
+
   def getByIdsWithAspects(
       tenantId: TenantId,
       authDecision: AuthDecision,
@@ -384,6 +390,40 @@ class DefaultRecordPersistence(config: Config)
       .getSummaries(tenantId, authDecision, None, None, None, Some(id))
       .records
       .headOption
+  }
+
+  def getCompleteRecordById(
+      tenantId: TenantId,
+      authDecision: AuthDecision,
+      id: String
+  )(implicit session: DBSession): Option[Record] = {
+    val idWhereClause = Some(sqls"Records.recordId=$id")
+    val authDecisionCondition = authDecision.toSql()
+
+    val whereClauseParts = Seq(idWhereClause) :+ authDecisionCondition :+ SQLUtils
+      .tenantIdToWhereClause(tenantId)
+
+    sql"SELECT * FROM records ${SQLSyntax.where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))} LIMIT 1"
+      .map { rs =>
+        val aspects =
+          sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${id}"""
+            .map { rs =>
+              val aspectId = rs.string("aspectid")
+              (aspectId, JsonParser(rs.string("data")).asJsObject)
+            }
+            .list
+            .apply()
+        Record(
+          id = rs.string("recordId"),
+          name = rs.string("name"),
+          authnReadPolicyId = rs.stringOpt("authnReadPolicyId"),
+          sourceTag = rs.stringOpt("sourceTag"),
+          tenantId = rs.bigIntOpt("tenantId").map(BigInt.apply),
+          aspects = aspects.toMap
+        )
+      }
+      .single()
+      .apply()
   }
 
   def getByIdWithAspects(

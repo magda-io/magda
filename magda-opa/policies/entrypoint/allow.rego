@@ -61,6 +61,18 @@ allow {
 }
 
 allow {
+    ## delegate storage bucket related decision to storage bucket rules
+    startswith(input.operationUri, "storage/bucket/")
+    data.storage.bucket.allow
+}
+
+allow {
+    ## delegate storage object related decision to storage object rules
+    startswith(input.operationUri, "storage/object/")
+    data.storage.object.allow
+}
+
+allow {
     startswith(input.operationUri, "authObject/apiKey/")
     data.authObject.apiKey.allow
 }

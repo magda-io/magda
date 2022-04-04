@@ -4,7 +4,7 @@ import data.common.breakdownOperationUri
 
 
 # check if the user has a no constaint permission matches requested operation
-hasNoConstaintPermission(inputOperationUri) {
+hasNoConstraintPermission(inputOperationUri) {
     [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
     resourceUri := concat("/", [resourceUriPrefix, resourceType])

@@ -56,8 +56,10 @@ export default function OrgUnitDropdown({
         return (
             <div className="au-body au-page-alerts au-page-alerts--error">
                 <span style={{ verticalAlign: "-2px" }}>
-                    Could not retrieve data custodian list, or there are no data
-                    custodians in the system.
+                    Could not retrieve data custodians list. Please make sure
+                    the organizational structure has been setup by system admin
+                    and your account has been assigned to an organizational
+                    unit.
                 </span>
                 <button
                     className="au-btn au-btn--tertiary"

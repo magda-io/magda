@@ -20,6 +20,7 @@ import ServerError from "magda-typescript-common/src/ServerError";
 
 export interface ApiRouterOptions {
     database: Database;
+    jwtSecret: string;
     authDecisionClient: AuthDecisionQueryClient;
 }
 
@@ -176,7 +177,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     // create an new permission and add to the role
     router.post(
         "/:roleId/permissions",
-        getUserId,
+        getUserId(options.jwtSecret),
         // we consider this operation as an operation of updating the role
         // thus, require permission to perform `authObject/role/update`
         requireObjectPermission(
@@ -298,7 +299,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     // update a permission
     router.put(
         "/:roleId/permissions/:permissionId",
-        getUserId,
+        getUserId(options.jwtSecret),
         // we consider this operation as an operation of updating the role
         // thus, require permission to perform `authObject/role/update`
         requireObjectPermission(
@@ -582,7 +583,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     // create role record
     router.post(
         "/",
-        getUserId,
+        getUserId(options.jwtSecret),
         requirePermission(
             authDecisionClient,
             "authObject/role/create",
@@ -620,7 +621,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     // update role record
     router.put(
         "/:roleId",
-        getUserId,
+        getUserId(options.jwtSecret),
         requireObjectPermission(
             authDecisionClient,
             database,

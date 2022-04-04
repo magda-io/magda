@@ -29,7 +29,7 @@ test_allow_read_if_owner_and_permission_are_correct {
                 "record": {
                     "access-control": {
                         "ownerId": "personA",
-                        "orgUnitOwnerId": "3"
+                        "orgUnitId": "3"
                     }
                 }
             }
@@ -59,7 +59,7 @@ test_allow_read_if_orgunit_and_permission_are_correct {
                 "record": {
                     "access-control": {
                     "ownerId": "personB",
-                        "orgUnitOwnerId": "3"
+                        "orgUnitId": "3"
                     }
                 }
             }
@@ -89,7 +89,7 @@ test_deny_read_if_both_owner_and_orgunit_are_incorrect {
                 "record": {
                     "access-control": {
                         "ownerId": "personB",
-                        "orgUnitOwnerId": "3"
+                        "orgUnitId": "3"
                     }
                 }
             }
@@ -119,7 +119,7 @@ test_deny_read_if_permission_is_incorrect {
                 "record": {
                     "access-control": {
                         "ownerId": "personA",
-                        "orgUnitOwnerId": "3"
+                        "orgUnitId": "3"
                     }
                 }
             }

@@ -18,6 +18,7 @@ import { User } from "reducers/userManagementReducer";
 import MyDatasetSection from "./MyDatasetSection";
 import { getPluginHeader, HeaderNavItem } from "externalPluginComponents";
 import { config } from "../../config";
+import { findPermissionGap, hasPermission } from "helpers/accessControlUtils";
 
 const HeaderPlugin = getPluginHeader();
 
@@ -107,6 +108,42 @@ class HomePage extends React.Component<PropsType> {
         }
     }
 
+    hasMyDatasetSectionAccess() {
+        if (!config?.featureFlags?.cataloguing) {
+            return false;
+        }
+
+        if (
+            findPermissionGap(
+                ["object/dataset/draft/read", "object/dataset/published/read"],
+                this?.props?.user
+            )?.length
+        ) {
+            return false;
+        }
+
+        // user should has either draft create or update permission
+        if (
+            !hasPermission("object/dataset/draft/create", this?.props?.user) &&
+            !hasPermission("object/dataset/draft/update", this?.props?.user)
+        ) {
+            return false;
+        }
+
+        // user should has either published create or update permission
+        if (
+            !hasPermission(
+                "object/dataset/published/create",
+                this?.props?.user
+            ) &&
+            !hasPermission("object/dataset/published/update", this?.props?.user)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
     getStories() {
         if (
             this?.props?.isFetchingWhoAmI === true ||
@@ -114,37 +151,32 @@ class HomePage extends React.Component<PropsType> {
         ) {
             return null;
         }
-        if (this?.props?.user?.id) {
-            if (config?.featureFlags?.cataloguing) {
-                // --- my dataset section should only show for desktop due to the size of the design
-                // --- on mobile should still stories as before
-                return (
-                    <Small>
-                        <Stories stories={this.props.stories} />
-                    </Small>
-                );
-            } else {
-                return <Stories stories={this.props.stories} />;
-            }
+        if (this.hasMyDatasetSectionAccess()) {
+            // --- my dataset section should only show for desktop due to the size of the design
+            // --- on mobile should still stories as before
+            return (
+                <Small>
+                    <Stories stories={this.props.stories} />
+                </Small>
+            );
         } else {
             return <Stories stories={this.props.stories} />;
         }
     }
 
     getMyDatasetSection() {
-        if (
-            this?.props?.isFetchingWhoAmI === true ||
-            !this?.props?.user?.id ||
-            !config?.featureFlags?.cataloguing
-        ) {
-            return null;
-        } else {
+        if (this.hasMyDatasetSectionAccess()) {
             // --- my dataset section should only show for desktop due to the size of the design
             return (
                 <Medium>
-                    <MyDatasetSection userId={this.props.user.id} />
+                    <MyDatasetSection
+                        userId={this.props.user.id}
+                        user={this.props.user}
+                    />
                 </Medium>
             );
+        } else {
+            return null;
         }
     }
 

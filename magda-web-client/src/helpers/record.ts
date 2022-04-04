@@ -162,6 +162,22 @@ export type DatasetDraft = {
     };
 };
 
+export type PublishingAspect = {
+    custodianOrgUnitId?: string;
+    managingOrgUnitId?: string;
+    state?: "draft" | "published" | "archived";
+    level?:
+        | "organization"
+        | "custodian"
+        | "team"
+        | "creatorOrgUnit"
+        | "selectedOrgUnit";
+    contactPointDisplay?: "team" | "organization" | "custodian";
+    publishAsOpenData?: {
+        [key: string]: any;
+    };
+};
+
 export type RawDataset = {
     id: string;
     name: string;
@@ -183,6 +199,7 @@ export type RawDataset = {
         version?: VersionAspectData;
         "dataset-draft"?: DatasetDraft;
         currency?: CurrencyData;
+        publishing?: PublishingAspect;
     };
 };
 
@@ -250,7 +267,7 @@ export type ParsedDataset = {
     informationSecurity?: ParsedInformationSecurity;
     accessControl?: {
         ownerId: string;
-        orgUnitOwnerId: string;
+        orgUnitId: string;
         preAuthorisedPermissionIds: string[];
     };
     ckanExport?: CkanExportAspectType;

@@ -101,7 +101,7 @@ export interface UserToken {
 export interface AccessControlMetaData {
     accessControl?: {
         ownerId?: string;
-        orgUnitOwnerId?: string;
+        orgUnitId?: string;
         preAuthorisedPermissionIds?: string[];
     };
 }

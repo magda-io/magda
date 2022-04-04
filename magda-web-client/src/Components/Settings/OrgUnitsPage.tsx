@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useState, useRef, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { withRouter, match } from "react-router-dom";
 import { Location, History } from "history";
 import "./main.scss";
@@ -6,7 +7,6 @@ import "./OrgUnitsPage.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
 import AccessVerification from "./AccessVerification";
-import { whoami } from "../../api-clients/AuthApis";
 import {
     getRootNode,
     getImmediateChildren,
@@ -22,7 +22,7 @@ import Message from "rsuite/Message";
 import Tree from "rsuite/Tree";
 import { DropData } from "rsuite/esm/Tree/Tree";
 import Dropdown from "rsuite/Dropdown";
-import { OrgUnit } from "reducers/userManagementReducer";
+import { OrgUnit, User } from "reducers/userManagementReducer";
 import { ItemDataType } from "rsuite/esm/@types/common";
 import {
     MdFolder,
@@ -91,6 +91,9 @@ function searchNodeByIdRecursive(
 }
 
 const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
+    const userData = useSelector<any, User>(
+        (state) => state?.userManagement?.user
+    );
     const [data, setData] = useState<ItemType[]>([]);
     const searchNodeById = useCallback(
         (nodeId) => searchNodeByIdRecursive(nodeId, data),
@@ -394,15 +397,13 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
     };
 
     const { result: userRootNode, loading: isUserRootNodeLoading } = useAsync(
-        async (dataReloadToken: string) => {
+        async (userData: User, dataReloadToken: string) => {
             try {
-                const userInfo = await whoami();
-                let rootNode: OrgUnit;
-                if (userInfo?.orgUnit?.id) {
-                    rootNode = userInfo.orgUnit;
-                } else {
-                    rootNode = await getRootNode(true);
+                if (userData?.orgUnit?.id) {
+                    setData([nodeToTreeItem(userData.orgUnit, true)]);
+                    return userData.orgUnit;
                 }
+                const rootNode: OrgUnit = await getRootNode(true);
                 setData([nodeToTreeItem(rootNode, true)]);
                 return rootNode;
             } catch (e) {
@@ -419,7 +420,7 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                 throw e;
             }
         },
-        [dataReloadToken]
+        [userData, dataReloadToken]
     );
 
     const onDropHandler = useCallback(

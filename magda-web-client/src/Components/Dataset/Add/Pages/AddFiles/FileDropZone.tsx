@@ -10,7 +10,7 @@ import {
     DistributionSource,
     saveRuntimeStateToStorage
 } from "../../DatasetAddCommon";
-import getDownloadUrl from "./getDownloadUrl";
+import getStorageUrl from "@magda/typescript-common/dist/getStorageUrl";
 import processFile from "./processFile";
 import { getFiles } from "helpers/readFile";
 
@@ -118,7 +118,7 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                         ? true
                         : false,
                     downloadURL: stateData.datasetAccess.useStorageApi
-                        ? getDownloadUrl(datasetId, distRecordId, thisFile.name)
+                        ? getStorageUrl(datasetId, distRecordId, thisFile.name)
                         : undefined,
                     // --- allow other component to overwrite distribution status
                     ...initDistProps

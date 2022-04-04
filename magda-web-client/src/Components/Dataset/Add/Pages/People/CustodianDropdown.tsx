@@ -1,73 +1,148 @@
-import React from "react";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { useAsync } from "react-async-hook";
-import Select from "react-select";
-import { config } from "config";
+import TreePicker from "rsuite/TreePicker";
+import Notification from "rsuite/Notification";
+import { toaster } from "rsuite";
+import {
+    getRootNode,
+    OrgUnit,
+    getImmediateChildren,
+    getOrgUnitById
+} from "api-clients/OrgUnitApis";
+import { ItemDataType } from "rsuite/esm/@types/common";
+import { User } from "reducers/userManagementReducer";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 
-import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
-
-import { OrgUnit, listOrgUnitsAtLevel } from "api-clients/OrgUnitApis";
+interface ItemType extends ItemDataType {
+    rawData: OrgUnit;
+}
 
 type Props = {
     orgUnitId?: string;
     onChange: (orgUnitId: string) => void;
 };
 
-const getCustodians: () => Promise<OrgUnit[]> = async () => {
-    try {
-        const result = await listOrgUnitsAtLevel(config.custodianOrgLevel);
-        // --- list Custodians alphabetically
-        result.sort((b, a) => (a.name > b.name ? -1 : b.name > a.name ? 1 : 0));
-        return result;
-    } catch (e) {
-        console.error(e);
-        throw e;
-    }
-};
+const nodeToItem = (node: OrgUnit): ItemType => ({
+    label: node.name,
+    value: node.id,
+    rawData: { ...node },
+    children: []
+});
 
 export default function CustodianDropdown({
     orgUnitId,
     onChange: onChangeCallback
 }: Props) {
-    const { loading, error, result, execute } = useAsync(getCustodians, []);
+    const userData = useSelector<any, User>(
+        (state) => state?.userManagement?.user
+    );
+    const [data, setData] = useState<ItemType[]>([]);
+    const { result, loading, error, execute } = useAsync(async () => {
+        try {
+            const nodes: ItemType[] = [];
+            const rootNode = userData?.orgUnit?.id
+                ? userData.orgUnit
+                : await getRootNode();
+
+            let selectedNode: OrgUnit | null = null;
+            if (orgUnitId) {
+                try {
+                    selectedNode = await getOrgUnitById(orgUnitId);
+                } catch (e) {
+                    if (!(e instanceof ServerError) || e?.statusCode !== 404) {
+                        throw e;
+                    }
+                }
+            }
+            nodes.push(nodeToItem(rootNode));
+            setData([...nodes]);
+            return selectedNode;
+        } catch (e) {
+            toaster.push(
+                <Notification
+                    type={"error"}
+                    closable={true}
+                    header="Error"
+                >{`Failed to retrieve user root node: ${e}`}</Notification>,
+                {
+                    placement: "topEnd"
+                }
+            );
+            throw e;
+        }
+    }, [userData?.orgUnit?.id]);
 
     if (loading) {
         return <span>Loading...</span>;
-    } else if (error || !result || result.length === 0) {
+    } else if (error) {
+        if (error) {
+            console.error(error);
+        }
         return (
             <div className="au-body au-page-alerts au-page-alerts--error">
                 <span style={{ verticalAlign: "-2px" }}>
-                    Could not retrieve data custodians, or there are no data
-                    custodians in the system.
+                    Could not retrieve data custodians list. Please make sure
+                    the organizational structure has been setup by system admin
+                    and your account has been assigned to an organizational
+                    unit.
                 </span>
-                <button className="au-btn au-btn--tertiary" onClick={execute}>
+                <button
+                    className="au-btn au-btn--tertiary"
+                    onClick={() => execute(orgUnitId)}
+                >
                     Try Again
                 </button>
             </div>
         );
     } else {
-        const value = result.find(option => option.id === orgUnitId);
-
         return (
-            <Select
-                className="react-select"
-                isMulti={false}
-                isSearchable={false}
-                onChange={(rawValue, action) => {
-                    const value = rawValue as
-                        | { value: string }
-                        | undefined
-                        | null;
-                    if (value) {
-                        onChangeCallback(value.value);
+            <TreePicker
+                data={data}
+                size={"lg"}
+                block={true}
+                disabled={loading}
+                searchable={false}
+                placeholder={
+                    orgUnitId
+                        ? result
+                            ? result.name
+                            : "Unknown"
+                        : "Please Select"
+                }
+                onSelect={(activeNode, value, event) => {
+                    onChangeCallback(value as string);
+                }}
+                getChildren={async (activeNode) => {
+                    try {
+                        const nodes = await getImmediateChildren(
+                            activeNode?.rawData?.id,
+                            true
+                        );
+                        if (!nodes?.length) {
+                            return [] as ItemType[];
+                        } else {
+                            return nodes.map((node) => ({
+                                label: node.name,
+                                value: node.id,
+                                rawData: node,
+                                children: []
+                            }));
+                        }
+                    } catch (e) {
+                        toaster.push(
+                            <Notification
+                                type={"error"}
+                                closable={true}
+                                header="Error"
+                            >{`Failed to retrieve org unit data: ${e}`}</Notification>,
+                            {
+                                placement: "topEnd"
+                            }
+                        );
+                        throw e;
                     }
                 }}
-                styles={ReactSelectStyles}
-                value={value && { label: value.name, value: value.id }}
-                options={result.map(option => ({
-                    label: option.name,
-                    value: option.id
-                }))}
-                placeholder="Select a data custodian"
             />
         );
     }

@@ -10,7 +10,7 @@
             "minLength": 36,
             "maxLength": 36
         },
-        "orgUnitOwnerId": {
+        "orgUnitId": {
             "title": "the id of the organisation that the dataset belongs to",
             "type": "string",
             "minLength": 36,
@@ -24,12 +24,6 @@
                 "minLength": 36,
                 "maxLength": 36
             }
-        },
-        "custodianOrgUnitId": {
-            "title": "the id of the data custodian organisation unit",
-            "type": "string",
-            "minLength": 36,
-            "maxLength": 36
         }
     }
 }

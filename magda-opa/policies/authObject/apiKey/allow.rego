@@ -1,20 +1,20 @@
 package authObject.apiKey
 
-import data.common.hasNoConstaintPermission
-import data.common.hasOwnerConstaintPermission
+import data.common.hasNoConstraintPermission
+import data.common.hasOwnerConstraintPermission
 import data.common.hasOrgUnitConstaintPermission
 
 default allow = false
 
 # User has a permission to perfom operation with no constaint 
 allow {
-    hasNoConstaintPermission(input.operationUri)
+    hasNoConstraintPermission(input.operationUri)
 }
 
 # User has a permission to perfom operation with owner / user constaint
 # i.e. Only can perform operation on user's own api key
 allow {
-    hasOwnerConstaintPermission(input.operationUri)
+    hasOwnerConstraintPermission(input.operationUri)
 
     input.object.user.id = input.user.id
 }
@@ -24,5 +24,5 @@ allow {
 allow {
     hasOrgUnitConstaintPermission(input.operationUri)
 
-    input.object.user.orgUnitOwnerId = input.user.managingOrgUnitIds[_]
+    input.object.user.orgUnitId = input.user.managingOrgUnitIds[_]
 }

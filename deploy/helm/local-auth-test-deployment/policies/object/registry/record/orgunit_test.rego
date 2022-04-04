@@ -9,7 +9,7 @@ test_allow_correct_orgunit {
             "registry": {
                 "record": {
                     "access-control": {
-                        "orgUnitOwnerId": "3"
+                        "orgUnitId": "3"
                     }
                 }
             }
@@ -26,7 +26,7 @@ test_deny_wrong_orgunit {
             "registry": {
                 "record": {
                     "access-control": {
-                        "orgUnitOwnerId": "5"
+                        "orgUnitId": "5"
                     }
                 }
             }
@@ -57,7 +57,7 @@ test_deny_empty_managing_orgunit_ids {
             "registry": {
                 "record": {
                     "access-control": {
-                        "orgUnitOwnerId": "5"
+                        "orgUnitId": "5"
                     }
                 }
             }

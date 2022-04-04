@@ -23,13 +23,13 @@ Kubernetes: `>= 1.14.0-0`
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"docker.io/data61"` |  |
-| deployments.full | object | `{"idleTimeout":"60s","replicas":1,"requestTimeout":"30s"}` | deployment config for full registry instance. You can also specify different `resources` config under this key. |
+| deployments.full | object | `{"idleTimeout":"60s","replicas":1,"requestTimeout":"60s"}` | deployment config for full registry instance. You can also specify different `resources` config under this key. |
 | deployments.full.idleTimeout | string | `"60s"` | Default idle timeout for full instance. Make sure `idleTimeout` is longer than `requestTimeout` |
-| deployments.full.requestTimeout | string | `"30s"` | Default request timeout for full instance |
-| deployments.readOnly | object | `{"enable":false,"idleTimeout":"60s","replicas":1,"requestTimeout":"30s"}` | deployment config for readonly registry instances. You can also specify different `resources` config under this key. |
+| deployments.full.requestTimeout | string | `"60s"` | Default request timeout for full instance |
+| deployments.readOnly | object | `{"enable":false,"idleTimeout":"60s","replicas":1,"requestTimeout":"60s"}` | deployment config for readonly registry instances. You can also specify different `resources` config under this key. |
 | deployments.readOnly.idleTimeout | string | `"60s"` | Default idle timeout for readonly instance. Make sure `idleTimeout` is longer than `requestTimeout` |
 | deployments.readOnly.replicas | int | `1` | no. of replicates. Its value must no lower than `minReplicas` |
-| deployments.readOnly.requestTimeout | string | `"30s"` | Default request timeout for readonly instance |
+| deployments.readOnly.requestTimeout | string | `"60s"` | Default request timeout for readonly instance |
 | image.name | string | `"magda-registry-api"` |  |
 | livenessProbe | object | `{}` |  |
 | printSQlInConsole | bool | `false` | Whether print all SQL in console. For DEBUG only |

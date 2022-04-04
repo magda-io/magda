@@ -2,8 +2,12 @@ import express, { Request, Response } from "express";
 import Database from "../Database";
 import respondWithError from "../respondWithError";
 import handleMaybePromise from "../handleMaybePromise";
+import handleServerError from "magda-typescript-common/src/handleServerError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import {
+    requirePermission,
+    withAuthDecision
+} from "magda-typescript-common/src/authorization-api/authMiddleware";
 import { requireObjectPermission } from "../recordAuthMiddlewares";
 import ServerError from "magda-typescript-common/src/ServerError";
 
@@ -18,6 +22,57 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     const authDecisionClient = options.authDecisionClient;
 
     const router: express.Router = express.Router();
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/orgunits/:higherNodeId/topDownPathTo/:lowerNodeId Get get top down path between 2 nodes
+     * @apiDescription Get all nodes on the top to down path between the `higherNode` to the `lowerNode`.
+     * Sort from higher level nodes to lower level node.
+     * Result will include `higherNode` and the `lowerNode`.
+     * If `higherNode` and the `lowerNode` is the same node, an array contains the single node will be responded.
+     * If a path doesn't exist, `[]` (empty array) will be responded.
+     * If you pass a lower node to the `higherNodeId` and a higher node to `lowerNodeId`, `[]` (empty array) will be responded.
+     * If you don't have access to the higherNode, `[]` (empty array) will be responded.
+     *
+     *
+     * @apiParam {string} nodeId id of the node to query
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *      name: "other-team"
+     *      description: "The other teams"
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    Not authorized
+     */
+    router.get(
+        "/:higherNodeId/topDownPathTo/:lowerNodeId",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
+        async (req, res) => {
+            try {
+                const higherNodeId = req?.params?.higherNodeId;
+                const lowerNodeId2 = req?.params?.lowerNodeId2;
+                if (!higherNodeId) {
+                    throw new ServerError("higherNodeId cannot be empty.", 400);
+                }
+                if (!lowerNodeId2) {
+                    throw new ServerError("higherNodeId cannot be empty.", 400);
+                }
+                const nodes = await orgQueryer.getTopDownPathBetween(
+                    higherNodeId,
+                    lowerNodeId2,
+                    res.locals.authDecision
+                );
+                res.status(200).json(nodes);
+            } catch (e) {
+                handleServerError(req, res, e);
+            }
+        }
+    );
 
     /**
      * @apiGroup Auth
@@ -53,7 +108,9 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/bylevel/:orgLevel",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             try {
                 const orgLevel = req.params.orgLevel;
@@ -65,7 +122,10 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
                 if (levelNumber < 1 || isNaN(levelNumber))
                     throw new Error(`Invalid level number: ${orgLevel}.`);
 
-                const nodes = await orgQueryer.getAllNodesAtLevel(levelNumber);
+                const nodes = await orgQueryer.getAllNodesAtLevel(
+                    levelNumber,
+                    res.locals.authDecision
+                );
 
                 if (relationshipOrgUnitId && nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
@@ -118,7 +178,9 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             try {
                 const nodeName: string = req.query.nodeName as string;
@@ -126,10 +188,15 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
                 const relationshipOrgUnitId = req.query
                     .relationshipOrgUnitId as string;
 
-                const nodes = await orgQueryer.getNodes({
-                    name: nodeName,
-                    leafNodesOnly: leafNodesOnly === "true"
-                });
+                const nodes = await orgQueryer.getNodes(
+                    {
+                        name: nodeName,
+                        leafNodesOnly: leafNodesOnly === "true"
+                    },
+                    null,
+                    null,
+                    res.locals.authDecision
+                );
 
                 if (relationshipOrgUnitId && nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
@@ -150,7 +217,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/orgunits/root Get root organisation
+     * @api {get} /v0/auth/orgunits/root Get root organisational unit
      * @apiDescription Gets the root organisation unit (top of the tree).
      *
      * @apiSuccessExample {json} 200
@@ -169,11 +236,13 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/root",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             handleMaybePromise(
                 res,
-                orgQueryer.getRootNode(),
+                orgQueryer.getRootNode(null, null, res.locals.authDecision),
                 "GET /public/orgunits/root",
                 "Cannot locate the root tree node."
             );
@@ -240,12 +309,19 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:nodeId",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             const nodeId = req.params.nodeId;
             handleMaybePromise(
                 res,
-                orgQueryer.getNodeById(nodeId),
+                orgQueryer.getNodeById(
+                    nodeId,
+                    null,
+                    null,
+                    res.locals.authDecision
+                ),
                 "GET /public/orgunits/:nodeId",
                 `Could not find org unit with id ${nodeId}`
             );
@@ -418,11 +494,18 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:nodeId/children/immediate",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             try {
                 const nodeId = req.params.nodeId;
-                const nodes = await orgQueryer.getImmediateChildren(nodeId);
+                const nodes = await orgQueryer.getImmediateChildren(
+                    nodeId,
+                    null,
+                    null,
+                    res.locals.authDecision
+                );
                 res.status(200).json(nodes);
             } catch (e) {
                 respondWithError(
@@ -457,11 +540,19 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:nodeId/children/all",
-        requirePermission(authDecisionClient, "authObject/orgUnit/read"),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/orgUnit/read"
+        }),
         async (req, res) => {
             try {
                 const nodeId = req.params.nodeId;
-                const nodes = await orgQueryer.getAllChildren(nodeId);
+                const nodes = await orgQueryer.getAllChildren(
+                    nodeId,
+                    false,
+                    null,
+                    null,
+                    res.locals.authDecision
+                );
                 res.status(200).json(nodes);
             } catch (e) {
                 respondWithError(

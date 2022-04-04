@@ -26,6 +26,11 @@ class AuthDecisionQueryClient {
     constructor(authApiBaseUrl: string, skipQuery: boolean = false) {
         this.authApiBaseUrl = authApiBaseUrl;
         this.skipQuery = skipQuery;
+        if (this.skipQuery) {
+            console.warn(
+                "WARNING: Skip OPA (policy engine) querying option is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
+            );
+        }
     }
 
     async getAuthDecision(
@@ -34,7 +39,7 @@ class AuthDecisionQueryClient {
     ): Promise<AuthDecision> {
         if (this.skipQuery) {
             console.warn(
-                "WARNING: Skip OPA (policy engine) querying option is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
+                "WARNING: return unconditional true as Skip OPA (policy engine) querying option is turned on!"
             );
             return UnconditionalTrueDecision;
         }
@@ -72,15 +77,16 @@ class AuthDecisionQueryClient {
         const reqUri = baseUri.segmentCoded(urlSegments).search(queryParams);
 
         const fetchConfig: RequestInit = {
+            headers: {} as Record<string, string>,
             ...AuthDecisionQueryClient.fetchOptions,
             ...this.fetchOptions,
             method: usePost ? "POST" : "GET"
         };
 
         if (jwtToken) {
-            fetchConfig.headers = {
-                "X-Magda-Session": jwtToken
-            };
+            (fetchConfig.headers as Record<string, string>)[
+                "X-Magda-Session"
+            ] = jwtToken;
         }
 
         const requestData: { [key: string]: any } = {};
@@ -99,6 +105,8 @@ class AuthDecisionQueryClient {
 
         if (usePost) {
             fetchConfig.body = JSON.stringify(requestData);
+            (fetchConfig.headers as Record<string, string>)["Content-Type"] =
+                "application/json";
         }
 
         const res = await fetch(reqUri.toString(), fetchConfig);

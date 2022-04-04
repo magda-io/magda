@@ -62,6 +62,18 @@ export class RegoRule {
     public value: RegoValue;
 
     /**
+     * Whether the rule contains any expressions that has any resolvable references.
+     * reference start with `input.` should be considered as non-resolvable in context of partial evaluation.
+     * When this field is set to `true`, we should not attempt to evaluate this expression.
+     * i.e. evaluate() method should return immediately.
+     * This will speed up evaluation process.
+     *
+     * @type {boolean}
+     * @memberof RegoRule
+     */
+    public hasNoResolvableRef: boolean = false;
+
+    /**
      * All Rego expressions in this rule's rule body. @see RegoExp
      *
      * @type {RegoExp[]}
@@ -124,7 +136,72 @@ export class RegoRule {
         if (!(this.parser instanceof OpaCompileResponseParser)) {
             throw new Error("Require parser parameter to create a RegoRule");
         }
+
+        this.removeDuplicateExpressions();
+
+        if (
+            this.expressions?.length &&
+            this.expressions.findIndex((exp) => !exp.hasNoResolvableRef) === -1
+        ) {
+            this.hasNoResolvableRef = true;
+        }
+
         this.evaluate();
+    }
+
+    /**
+     * OPA PE result might contain duplicate expressions.
+     * https://github.com/open-policy-agent/opa/issues/4516
+     * This method will remove those duplication by simply string comparison.
+     *
+     * @return {*}
+     * @memberof RegoRule
+     */
+    removeDuplicateExpressions() {
+        if (!this?.expressions?.length) {
+            return;
+        }
+        const expSet = new Set();
+        this.expressions = this.expressions.filter((exp) => {
+            const orgSetLength = expSet.size;
+            // exp.toJSON() is faster than exp.toConciseJSON()
+            expSet.add(exp.toJSON(0, true));
+            return expSet.size > orgSetLength;
+        });
+    }
+
+    /**
+     * Test whether the rule is an "impossible" rule.
+     * If so, the rule should be simply discarded.
+     * See: https://github.com/open-policy-agent/opa/issues/4516
+     *
+     * @return {*}  {boolean}
+     * @memberof RegoRule
+     */
+    isImpossible(): boolean {
+        if (!this?.expressions?.length) {
+            return false;
+        }
+        const nonNegatedExpSet = new Set();
+        const negatedExps = this.expressions.filter((exp) => {
+            if (exp.isNegated) {
+                return true;
+            } else {
+                // add non negated exp content to set
+                // exp.toJSON() is faster than exp.toConciseJSON()
+                nonNegatedExpSet.add(exp.toJSON(0, true));
+                return false;
+            }
+        });
+        if (!negatedExps.length) {
+            return false;
+        }
+        for (const exp of negatedExps) {
+            if (nonNegatedExpSet.has(exp.toJSON(0, true, true))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     clone(options: Partial<RegoRuleOptions> = {}): RegoRule {
@@ -150,6 +227,10 @@ export class RegoRule {
      * @memberof RegoRule
      */
     evaluate() {
+        if (this.hasNoResolvableRef) {
+            return this;
+        }
+
         if (this.isCompleteEvaluated) {
             return this;
         }
@@ -353,6 +434,18 @@ export class RegoTerm {
     public value: RegoTermValue;
     private parser: OpaCompileResponseParser;
 
+    /**
+     * Whether the expression contains any resolvable references.
+     * reference start with `input.` should be considered as non-resolvable in context of partial evaluation.
+     * When this field is set to `true`, we should not attempt to evaluate this expression.
+     * i.e. evaluate() method should return immediately.
+     * This will speed up evaluation process.
+     *
+     * @type {boolean}
+     * @memberof RegoTerm
+     */
+    public hasNoResolvableRef: boolean = false;
+
     constructor(
         type: string,
         value: RegoTermValue,
@@ -361,6 +454,9 @@ export class RegoTerm {
         this.type = type;
         this.value = value;
         this.parser = parser;
+        if (this.value instanceof RegoRef && this.value.hasNoResolvableRef) {
+            this.hasNoResolvableRef = true;
+        }
     }
 
     clone() {
@@ -375,7 +471,7 @@ export class RegoTerm {
      */
     asString() {
         if (this.value instanceof RegoRef) return this.value.fullRefString();
-        else return this.value;
+        else return JSON.stringify(this.value);
     }
 
     /**
@@ -513,6 +609,9 @@ export class RegoTerm {
      * @memberof RegoTerm
      */
     getValue(): RegoValue {
+        if (this.hasNoResolvableRef) {
+            return undefined;
+        }
         if (!this.isRef()) {
             return this.value;
         } else {
@@ -535,6 +634,9 @@ export class RegoTerm {
      * @memberof RegoTerm
      */
     isValueResolvable(): boolean {
+        if (this.hasNoResolvableRef) {
+            return false;
+        }
         if (!this.isRef()) {
             return true;
         } else {
@@ -608,6 +710,18 @@ export class RegoExp {
     public terms: RegoTerm[];
 
     /**
+     * Whether the expression contains any resolvable references.
+     * reference start with `input.` should be considered as non-resolvable in context of partial evaluation.
+     * When this field is set to `true`, we should not attempt to evaluate this expression.
+     * i.e. evaluate() method should return immediately.
+     * This will speed up evaluation process.
+     *
+     * @type {boolean}
+     * @memberof RegoExp
+     */
+    public hasNoResolvableRef: boolean = false;
+
+    /**
      * Whether this expression is a negative expression
      * i.e. it's final evaluation result should be `false` if result is `true`
      *
@@ -653,6 +767,12 @@ export class RegoExp {
         this.isCompleteEvaluated = isCompleteEvaluated;
         this.value = value;
         this.parser = parser;
+        if (
+            this?.terms?.length &&
+            this.terms.findIndex((item) => !item.hasNoResolvableRef) === -1
+        ) {
+            this.hasNoResolvableRef = true;
+        }
     }
 
     clone(): RegoExp {
@@ -673,7 +793,22 @@ export class RegoExp {
      * @memberof RegoExp
      */
     termsAsString() {
-        return this.terms.map((t) => t.asString());
+        return this.terms.map((t) => t.asString()).join(" ");
+    }
+
+    /**
+     * Print concise format expression string presentation.
+     * Can be used for debugging
+     *
+     * @return {*}
+     * @memberof RegoExp
+     */
+    asString() {
+        if (this.isNegated) {
+            return "NOT " + this.termsAsString();
+        } else {
+            return this.termsAsString();
+        }
     }
 
     /**
@@ -814,6 +949,9 @@ export class RegoExp {
      * @memberof RegoExp
      */
     evaluate() {
+        if (this.hasNoResolvableRef) {
+            return this;
+        }
         if (this.isCompleteEvaluated) {
             return this;
         }
@@ -886,24 +1024,41 @@ export class RegoExp {
         }
     }
 
-    toData(index: number = 0) {
+    toData(index: number = 0, ignoreIndex = false, ignoreNegated = false) {
         const terms = this.terms.map((term) => term.toData());
-        if (this.isNegated) {
-            return {
-                negated: true,
-                index,
-                terms
-            };
+        if (this.isNegated && !ignoreNegated) {
+            if (ignoreIndex) {
+                return {
+                    negated: true,
+                    terms
+                };
+            } else {
+                return {
+                    negated: true,
+                    index,
+                    terms
+                };
+            }
         } else {
-            return {
-                index,
-                terms
-            };
+            if (ignoreIndex) {
+                return {
+                    terms
+                };
+            } else {
+                return {
+                    index,
+                    terms
+                };
+            }
         }
     }
 
-    toJSON(index: number = 0): string {
-        return JSON.stringify(this.toData(index));
+    toJSON(
+        index: number = 0,
+        ignoreIndex = false,
+        ignoreNegated = false
+    ): string {
+        return JSON.stringify(this.toData(index, ignoreIndex, ignoreNegated));
     }
 
     toConciseData() {
@@ -967,8 +1122,27 @@ export class RegoExp {
 export class RegoRef {
     public parts: RegoRefPart[];
 
+    /**
+     * Whether the expression contains any resolvable references.
+     * reference start with `input.` should be considered as non-resolvable in context of partial evaluation.
+     * When this field is set to `true`, we should not attempt to evaluate this expression.
+     * i.e. evaluate() method should return immediately.
+     * This will speed up evaluation process.
+     *
+     * @type {boolean}
+     * @memberof RegoRef
+     */
+    public hasNoResolvableRef: boolean = false;
+
     constructor(parts: RegoRefPart[]) {
         this.parts = parts;
+        if (
+            // `input.` ref should be considered not resolvable in partial evaluate context.
+            (this.parts.length && this.parts[0]?.value === "input") ||
+            this.isOperator()
+        ) {
+            this.hasNoResolvableRef = true;
+        }
     }
 
     clone(): RegoRef {
@@ -1108,6 +1282,18 @@ export class RegoRuleSet {
     public isCompleteEvaluated: boolean = false;
     public parser: OpaCompileResponseParser;
 
+    /**
+     * Whether the ruleSet contains any rules that has any resolvable references.
+     * reference start with `input.` should be considered as non-resolvable in context of partial evaluation.
+     * When this field is set to `true`, we should not attempt to evaluate this expression.
+     * i.e. evaluate() method should return immediately.
+     * This will speed up evaluation process.
+     *
+     * @type {boolean}
+     * @memberof RegoRuleSet
+     */
+    public hasNoResolvableRef: boolean = false;
+
     constructor(
         parser: OpaCompileResponseParser,
         rules: RegoRule[],
@@ -1133,11 +1319,20 @@ export class RegoRuleSet {
         } else if (rules?.[0]?.name) {
             this.name = rules[0].name;
         }
-
+        if (
+            this.rules.length &&
+            this.rules.findIndex((r) => !r.hasNoResolvableRef) === -1
+        ) {
+            this.hasNoResolvableRef = true;
+        }
         this.evaluate();
     }
 
     evaluate(): RegoRuleSet {
+        if (this.hasNoResolvableRef) {
+            return this;
+        }
+
         if (this.isCompleteEvaluated) {
             return this;
         }
@@ -1359,6 +1554,8 @@ export default class OpaCompileResponseParser {
         "default_rule_"
     );
 
+    private ruleDuplicationCheckCache: { [key: string]: Set<string> } = {};
+
     private setQueryRuleResult(val: RegoValue) {
         this.completeRuleResults[this.pseudoQueryRuleName] = {
             fullName: this.pseudoQueryRuleName,
@@ -1430,8 +1627,9 @@ export default class OpaCompileResponseParser {
                     value: true,
                     parser: this
                 });
-                this.originalRules.push(rule);
-                this.rules.push(rule);
+                // this.originalRules.push(rule);
+                // this.rules.push(rule);
+                this.addRule(rule);
             });
         }
 
@@ -1452,11 +1650,14 @@ export default class OpaCompileResponseParser {
                         packageName,
                         this
                     );
-                    this.originalRules.push(regoRule);
-                    this.rules.push(regoRule);
+                    //this.originalRules.push(regoRule);
+                    //this.rules.push(regoRule);
+                    this.addRule(regoRule);
                 });
             });
         }
+
+        this.ruleDuplicationCheckCache = {};
 
         _.uniq(this.rules.map((r) => r.fullName)).forEach(
             (fullName) =>
@@ -1469,6 +1670,25 @@ export default class OpaCompileResponseParser {
 
         this.resolveAllRuleSets();
         return this.rules;
+    }
+
+    addRule(rule: RegoRule) {
+        this.originalRules.push(rule);
+        if (rule.isImpossible()) {
+            return;
+        }
+        if (!this.ruleDuplicationCheckCache[rule.fullName]) {
+            this.ruleDuplicationCheckCache[rule.fullName] = new Set();
+        }
+        const setData = this.ruleDuplicationCheckCache[rule.fullName];
+        const { name, fullName, ...ruleData } = rule.toData();
+        const jsonData = JSON.stringify(ruleData);
+        const size = setData.size;
+        setData.add(jsonData);
+        if (size === setData.size) {
+            return;
+        }
+        this.rules.push(rule);
     }
 
     isRefResolvable(fullName: string): boolean {

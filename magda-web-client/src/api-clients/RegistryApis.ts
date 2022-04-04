@@ -4,7 +4,7 @@ import getRequest from "helpers/getRequest";
 import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
 import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
-import ServerError from "./ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 import flatMap from "lodash/flatMap";
 import partialRight from "lodash/partialRight";
 
@@ -148,33 +148,36 @@ const aspectJsonSchemaSavingCache: {
 
 /**
  * Ensure aspect exists in registry by storing the aspect def to registry.
- * Here we are not going to skip storing the aspect def if the aspect def already exisits as we do know whether it's an up-to-date one in registry.
+ * Here we are not going to skip storing the aspect def if the aspect def already exists as we don't know whether it's an up-to-date one in registry.
  * For now, we only make sure the aspect def won't be stored to registry for multiple times.
  * @param id
  * @param jsonSchema
  */
 export async function ensureAspectExists(id: string, jsonSchema?: any) {
-    if (!jsonSchema) {
-        jsonSchema = aspectSchemas[id];
-    }
+    // as we now auto create all built-in aspects on the first deployment, we will not auto re-create aspect from frontend anymore.
+    // we simply return here but might factor code properly later.
+    return;
+    // if (!jsonSchema) {
+    //     jsonSchema = aspectSchemas[id];
+    // }
 
-    if (!jsonSchema) {
-        throw new Error(`Cannot locate json schema for ${id}`);
-    }
+    // if (!jsonSchema) {
+    //     throw new Error(`Cannot locate json schema for ${id}`);
+    // }
 
-    if (!aspectJsonSchemaSavingCache[id]) {
-        aspectJsonSchemaSavingCache[id] = request(
-            "PUT",
-            `${config.registryFullApiUrl}aspects/${id}`,
-            {
-                id,
-                name: jsonSchema.title,
-                jsonSchema
-            }
-        );
-    }
+    // if (!aspectJsonSchemaSavingCache[id]) {
+    //     aspectJsonSchemaSavingCache[id] = request(
+    //         "PUT",
+    //         `${config.registryFullApiUrl}aspects/${id}`,
+    //         {
+    //             id,
+    //             name: jsonSchema.title,
+    //             jsonSchema
+    //         }
+    //     );
+    // }
 
-    await aspectJsonSchemaSavingCache[id];
+    // await aspectJsonSchemaSavingCache[id];
 }
 
 // --- See registry API document for API [Get a list of all records](https://dev.magda.io/api/v0/apidocs/index.html#api-Registry_Record_Service-GetV0RegistryRecords) for more details

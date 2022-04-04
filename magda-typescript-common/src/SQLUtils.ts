@@ -54,7 +54,7 @@ export function getTableColumnName(
 ): SQLSyntax {
     const id = [
         tableRef,
-        useLowerCaseColumnName ? columnName.toLowerCase : useLowerCaseColumnName
+        useLowerCaseColumnName ? columnName.toLowerCase() : columnName
     ]
         .filter((item) => item)
         .join(".");

@@ -11,7 +11,29 @@ import testDataUnconditionalFalseSimple from "./sampleOpaResponses/unconditional
 import testDataUnconditionalTrueSimple from "./sampleOpaResponses/unconditionalTrueSimple.json";
 import testDataDatasetPermissionWithOrgUnitConstraint from "./sampleOpaResponses/datasetPermissionWithOrgUnitConstraint.json";
 import testDataSingleTermAspectRef from "./sampleOpaResponses/singleTermAspectRef.json";
+import testExtraLargeResponse from "./sampleOpaResponses/extraLargeResponse.json";
 import "mocha";
+
+describe("Test extra large opa response", () => {
+    it("should process extra large opa response in timely manager", function () {
+        // this test case should be completed in less than 3000ms
+        // should be around 600ms locally but we set for 3000ms in case it get slower in CI (we use highmem instance)
+        this.timeout(3000);
+        console.time("process-extra-large-opa-response-time");
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(JSON.stringify(testExtraLargeResponse));
+        console.log(
+            "no.of original rules vs filtered rules: ",
+            parser.originalRules.length,
+            parser.rules.length
+        );
+        parser.evaluate();
+        //console.log(parser.evaluateAsHumanReadableString());
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+        console.timeEnd("process-extra-large-opa-response-time");
+    });
+});
 
 /**
  * Although equivalent, depends on how you write your policy,
@@ -328,7 +350,7 @@ describe("Test OpaCompileResultParser with datasetPermissionWithOrgUnitConstrain
         expect(
             result.residualRules[0].expressions[1].toHumanReadableString()
         ).to.be.equal(
-            '"5447fcb1-74ec-451c-b6ef-007aa736a346" = input.object.dataset.accessControl.orgUnitOwnerId'
+            '"5447fcb1-74ec-451c-b6ef-007aa736a346" = input.object.dataset.accessControl.orgUnitId'
         );
     });
 
@@ -340,7 +362,7 @@ describe("Test OpaCompileResultParser with datasetPermissionWithOrgUnitConstrain
         const result = parser.evaluateAsHumanReadableString();
         expect(parser.hasWarns).to.be.equal(false);
         expect(result).to.be.equal(
-            `( input.object.dataset.publishingState = "published" AND \n"5447fcb1-74ec-451c-b6ef-007aa736a346" = input.object.dataset.accessControl.orgUnitOwnerId )\nOR\n( input.object.dataset.publishingState = "published" AND \n"b749759e-6e6a-44c0-87ab-4590744187cf" = input.object.dataset.accessControl.orgUnitOwnerId )`
+            `( input.object.dataset.publishingState = "published" AND \n"5447fcb1-74ec-451c-b6ef-007aa736a346" = input.object.dataset.accessControl.orgUnitId )\nOR\n( input.object.dataset.publishingState = "published" AND \n"b749759e-6e6a-44c0-87ab-4590744187cf" = input.object.dataset.accessControl.orgUnitId )`
         );
     });
 });

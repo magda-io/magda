@@ -123,7 +123,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 48,
+    version = 49,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       var createIdxReq =
@@ -210,7 +210,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 ),
                 objectField("accessControl").fields(
                   keywordField("ownerId"),
-                  keywordField("orgUnitOwnerId"),
+                  keywordField("orgUnitId"),
                   keywordField("preAuthorisedPermissionIds")
                 ),
                 keywordField("years"),
@@ -413,7 +413,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val publishers: IndexDefinition =
     new IndexDefinition(
       name = "publishers",
-      version = 6,
+      version = 7,
       indicesIndex = Indices.PublishersIndex,
       definition = (indices, config) => {
         val createIdxReq =

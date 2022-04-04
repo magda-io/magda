@@ -31,7 +31,7 @@ deployments:
     replicas: 1
 
     # -- Default request timeout for full instance
-    requestTimeout: 30s
+    requestTimeout: 60s
 
     # -- Default idle timeout for full instance.
     # Make sure `idleTimeout` is longer than `requestTimeout`
@@ -45,7 +45,7 @@ deployments:
     replicas: 1
 
     # -- Default request timeout for readonly instance
-    requestTimeout: 30s
+    requestTimeout: 60s
 
     # -- Default idle timeout for readonly instance.
     # Make sure `idleTimeout` is longer than `requestTimeout`

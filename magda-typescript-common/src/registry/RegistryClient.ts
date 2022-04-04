@@ -151,6 +151,22 @@ export default class RegistryClient {
             .catch(createServiceError);
     }
 
+    async getRecordInFull(id: string): Promise<Record> {
+        try {
+            const res = await this.recordsApi.getByIdInFull(
+                encodeURIComponent(id),
+                this.tenantId,
+                this.jwt
+            );
+            if (typeof res.body === "string") {
+                throw new Error("Invalid non-json response: " + res.body);
+            }
+            return res.body;
+        } catch (e) {
+            throw this.toServerError(e);
+        }
+    }
+
     getRecords<I extends Record>(
         aspect?: Array<string>,
         optionalAspect?: Array<string>,
