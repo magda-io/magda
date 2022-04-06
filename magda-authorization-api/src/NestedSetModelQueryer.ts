@@ -206,7 +206,7 @@ class NestedSetModelQueryer {
     async getNodeById(
         id: string,
         fields: string[] = null,
-        client: pg.Client = null,
+        client: pg.PoolClient = null,
         authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<Maybe<NodeRecord>> {
         const authConditions = authDecision.toSql({
@@ -661,7 +661,7 @@ class NestedSetModelQueryer {
     async compareNodes(
         node1Id: string,
         node2Id: string,
-        client: pg.Client = null
+        client: pg.PoolClient = null
     ): Promise<CompareNodeResult> {
         const tbl = this.tableName;
         const result = await (client ? client : this.pool).query(
@@ -770,7 +770,7 @@ class NestedSetModelQueryer {
      */
     async createRootNode(
         node: NodeRecord,
-        existingClient: pg.Client = null
+        existingClient: pg.PoolClient = null
     ): Promise<string> {
         const tbl = this.tableName;
         const client = existingClient
@@ -836,7 +836,7 @@ class NestedSetModelQueryer {
     }
 
     private async getNodeDataWithinTx(
-        client: pg.Client,
+        client: pg.PoolClient,
         nodeId: string,
         fields: string[]
     ): Promise<NodeRecord> {

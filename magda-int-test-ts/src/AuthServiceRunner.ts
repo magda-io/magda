@@ -3,7 +3,10 @@ import DockerCompose from "dockerode-compose";
 import path from "path";
 import yaml from "js-yaml";
 import fs from "fs-extra";
-const tempy = require("tempy");
+import tempy from "tempy";
+import pg from "pg";
+import delay from "magda-typescript-common/src/delay";
+import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
 
 /**
  * Resolve magda module dir path.
@@ -79,7 +82,51 @@ export default class AuthServiceRunner {
         await this.createPostgres();
     }
 
-    async destroy() {}
+    async destroy() {
+        await this.destroyPostgres();
+    }
+
+    async testAlivePostgres() {
+        const dbConfig = getTestDBConfig() as any;
+        dbConfig.database = "postgres";
+        const client = new pg.Client(dbConfig);
+        await client.connect();
+        const result = await client.query("SELECT NOW()");
+        if (!result?.rows?.length) {
+            throw new Error("no query result returned.");
+        }
+        await client.end();
+        return true;
+    }
+
+    async waitAlive(
+        serviceName: string,
+        func: () => Promise<any>,
+        waitTime: number = 25000
+    ) {
+        if (waitTime <= 0) {
+            throw new Error(`waitAlive: Invalid wait time: ${waitTime}`);
+        }
+        const startTime = new Date().getTime();
+        while (true) {
+            try {
+                await func();
+                console.log(`${serviceName} is online....`);
+                return;
+            } catch (e) {
+                console.log(`${serviceName} is still offline: ${e}`);
+                const curTime = new Date().getTime();
+                if (curTime - startTime >= waitTime) {
+                    throw new Error(
+                        `${serviceName} is failed to get online in ${
+                            waitTime / 1000
+                        }s`
+                    );
+                }
+                await delay(1000);
+            }
+        }
+    }
 
     async createPostgres() {
         const baseDir = getMagdaModulePath("@magda/postgres");
@@ -87,7 +134,6 @@ export default class AuthServiceRunner {
             path.resolve(baseDir, "docker-compose.yml"),
             `${this.appImgRegistry}/magda-postgres:${this.appImgTag}`
         );
-        console.log(dockerComposeFile);
         this.postgresCompose = new DockerCompose(
             this.docker,
             dockerComposeFile,
@@ -96,8 +142,16 @@ export default class AuthServiceRunner {
         try {
             await this.postgresCompose.down({ volumes: true });
             await this.postgresCompose.up();
+            await this.waitAlive("Postgres", this.testAlivePostgres);
         } catch (e) {
-            console.log(e);
+            await this.destroyPostgres();
+            throw e;
+        }
+    }
+
+    async destroyPostgres() {
+        if (this.postgresCompose) {
+            await this.postgresCompose.down({ volumes: true });
         }
     }
 }

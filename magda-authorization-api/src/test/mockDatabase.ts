@@ -93,7 +93,7 @@ export default class MockDatabase {
             getNodeById: async (
                 id: string,
                 fields: string[] = null,
-                client: pg.Client = null
+                client: pg.PoolClient = null
             ): Promise<Maybe<NodeRecord>> => {
                 return Promise.resolve(Maybe.nothing());
             },
