@@ -55,6 +55,8 @@ export default class AuthServiceRunner {
 
     public readonly workspaceRoot: string;
 
+    public enableElasticSearch = false;
+
     constructor() {
         // docker config should be passed via env vars e.g.
         // DOCKER_HOST, DOCKER_TLS_VERIFY, DOCKER_CLIENT_TIMEOUT & DOCKER_CERT_PATH
@@ -84,16 +86,19 @@ export default class AuthServiceRunner {
                 ]);
             }
         ]);
-        await this.createElasticSearch();
+        if (this.enableElasticSearch) {
+            await this.createElasticSearch();
+        }
     }
 
     async destroy() {
         for (const file of this.tmpFiles) {
             fs.unlinkSync(file);
         }
-        await this.destroyPostgres();
-        await this.destroyOpa();
-        await this.destroyElasticSearch();
+        await Promise.all([this.destroyPostgres(), this.destroyOpa()]);
+        if (this.enableElasticSearch) {
+            await this.destroyElasticSearch();
+        }
     }
 
     async runMigrator(name: string, dbName: string) {
