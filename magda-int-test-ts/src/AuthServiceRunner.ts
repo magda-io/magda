@@ -10,6 +10,7 @@ import fs from "fs-extra";
 import tempy from "tempy";
 import pg from "pg";
 import fetch from "isomorphic-fetch";
+import child_process, { ChildProcess } from "child_process";
 
 /**
  * Resolve magda module dir path.
@@ -52,10 +53,15 @@ export default class AuthServiceRunner {
     private postgresCompose: DockerCompose;
     private elasticSearchCompose: DockerCompose;
     private opaCompose: DockerCompose;
+    private authApiProcess: ChildProcess;
 
     public readonly workspaceRoot: string;
 
     public enableElasticSearch = false;
+
+    public jwtSecret: string = uuidV4();
+    public authApiDebugMode = false;
+    public authApiSkipAuth = false;
 
     constructor() {
         // docker config should be passed via env vars e.g.
@@ -74,6 +80,7 @@ export default class AuthServiceRunner {
         await this.docker.info();
 
         await Promise.all([this.createOpa(), this.createPostgres()]);
+        await this.createAuthApi();
         if (this.enableElasticSearch) {
             await this.createElasticSearch();
         }
@@ -83,9 +90,64 @@ export default class AuthServiceRunner {
         for (const file of this.tmpFiles) {
             fs.unlinkSync(file);
         }
-        await Promise.all([this.destroyPostgres(), this.destroyOpa()]);
+        await Promise.all([
+            this.destroyAuthApi(),
+            this.destroyPostgres(),
+            this.destroyOpa()
+        ]);
         if (this.enableElasticSearch) {
             await this.destroyElasticSearch();
+        }
+    }
+
+    async createAuthApi() {
+        const authApiExecute = `${path.resolve(
+            this.workspaceRoot,
+            "./magda-authorization-api/dist/index.js"
+        )}`;
+        if (!fs.existsSync(authApiExecute)) {
+            throw new Error(
+                `Cannot locate auth api built entrypoint file: ${authApiExecute}`
+            );
+        }
+        const authApiProcess = child_process.fork(
+            authApiExecute,
+            [
+                "--jwtSecret",
+                this.jwtSecret,
+                "--debug",
+                `${this.authApiDebugMode}`,
+                "--skipAuth",
+                `${this.authApiSkipAuth}`
+            ],
+            {
+                stdio: "inherit",
+                env: {
+                    PGUSER: "client",
+                    PGPASSWORD: "password"
+                }
+            }
+        );
+
+        this.authApiProcess = authApiProcess;
+
+        // authApiProcess.stdout.on("data", (data) => {
+        //     console.log(`AuthApi: ${data}`);
+        // });
+
+        authApiProcess.on("exit", (code) => {
+            this.authApiProcess = undefined;
+            console.log(`AuthApi exited with code ${code}`);
+        });
+
+        authApiProcess.on("error", (error) => {
+            console.error(`AuthApi has thrown an error: ${error}`);
+        });
+    }
+
+    async destroyAuthApi() {
+        if (this.authApiProcess && !this.authApiProcess.killed) {
+            this.authApiProcess.kill();
         }
     }
 
