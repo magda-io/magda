@@ -1,12 +1,15 @@
 import Docker from "dockerode";
 import DockerCompose from "dockerode-compose";
+import ServerError from "magda-typescript-common/src/ServerError";
+import delay from "magda-typescript-common/src/delay";
+import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
 import path from "path";
+import { v4 as uuidV4 } from "uuid";
 import yaml from "js-yaml";
 import fs from "fs-extra";
 import tempy from "tempy";
 import pg from "pg";
-import delay from "magda-typescript-common/src/delay";
-import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
+import fetch from "isomorphic-fetch";
 
 /**
  * Resolve magda module dir path.
@@ -16,29 +19,6 @@ import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig
 function getMagdaModulePath(moduleName: string) {
     const pkgJsonPath = require.resolve(`${moduleName}/package.json`);
     return path.dirname(pkgJsonPath);
-}
-
-function createTmpDockerComposeFile(filePath: string, image: string) {
-    if (!image) {
-        throw new Error(
-            "createTmpDockerComposeFile: Invalid empty image parameter."
-        );
-    }
-    const composeConfig = yaml.load(fs.readFileSync(filePath, "utf8")) as any;
-    if (
-        !composeConfig?.services ||
-        typeof composeConfig.services !== "object"
-    ) {
-        throw new Error("Invalid Docker Compose file: can't find any services");
-    }
-    const serviceKeys = Object.keys(composeConfig.services);
-    if (!serviceKeys?.length) {
-        throw new Error("Invalid Docker Compose file: empty services");
-    }
-    composeConfig.services[serviceKeys[0]].image = image;
-    const newConfigFile = tempy.file({ extension: "yaml" });
-    fs.writeFileSync(newConfigFile, yaml.dump(composeConfig));
-    return newConfigFile;
 }
 
 /**
@@ -67,7 +47,10 @@ export default class AuthServiceRunner {
     public publicImgRegistry: string = "docker.io/data61";
     public publicImgTag: string = "latest";
 
+    private tmpFiles: string[] = [];
+
     private postgresCompose: DockerCompose;
+    private elasticSearchCompose: DockerCompose;
 
     constructor() {
         // docker config should be passed via env vars e.g.
@@ -80,10 +63,15 @@ export default class AuthServiceRunner {
         await this.docker.info();
 
         await this.createPostgres();
+        await this.createElasticSearch();
     }
 
     async destroy() {
+        for (const file of this.tmpFiles) {
+            fs.unlinkSync(file);
+        }
         await this.destroyPostgres();
+        await this.destroyElasticSearch();
     }
 
     async testAlivePostgres() {
@@ -102,7 +90,7 @@ export default class AuthServiceRunner {
     async waitAlive(
         serviceName: string,
         func: () => Promise<any>,
-        waitTime: number = 25000
+        waitTime: number = 30000
     ) {
         if (waitTime <= 0) {
             throw new Error(`waitAlive: Invalid wait time: ${waitTime}`);
@@ -130,9 +118,9 @@ export default class AuthServiceRunner {
 
     async createPostgres() {
         const baseDir = getMagdaModulePath("@magda/postgres");
-        const dockerComposeFile = createTmpDockerComposeFile(
+        const dockerComposeFile = this.createTmpDockerComposeFile(
             path.resolve(baseDir, "docker-compose.yml"),
-            `${this.appImgRegistry}/magda-postgres:${this.appImgTag}`
+            undefined
         );
         this.postgresCompose = new DockerCompose(
             this.docker,
@@ -140,7 +128,10 @@ export default class AuthServiceRunner {
             "test-postgres"
         );
         try {
-            await this.postgresCompose.down({ volumes: true });
+            await Promise.all([
+                this.postgresCompose.down({ volumes: true }),
+                this.postgresCompose.pull()
+            ]);
             await this.postgresCompose.up();
             await this.waitAlive("Postgres", this.testAlivePostgres);
         } catch (e) {
@@ -153,5 +144,120 @@ export default class AuthServiceRunner {
         if (this.postgresCompose) {
             await this.postgresCompose.down({ volumes: true });
         }
+    }
+
+    async createElasticSearch() {
+        const baseDir = getMagdaModulePath("@magda/elastic-search");
+        const dockerComposeFile = this.createTmpDockerComposeFile(
+            path.resolve(baseDir, "docker-compose.yml"),
+            `${this.appImgRegistry}/magda-elasticsearch:${this.appImgTag}`,
+            true,
+            (config) => {
+                delete config.services["test-es"].volumes;
+                delete config.services["test-es"].entrypoint;
+            }
+        );
+
+        this.elasticSearchCompose = new DockerCompose(
+            this.docker,
+            dockerComposeFile,
+            "test-es"
+        );
+        try {
+            await Promise.all([
+                this.elasticSearchCompose.down({ volumes: true }),
+                this.elasticSearchCompose.pull()
+            ]);
+            await this.elasticSearchCompose.up();
+            await this.waitAlive(
+                "ElasticSearch",
+                async () => {
+                    const res = await fetch(
+                        "http://localhost:9200/_cluster/health"
+                    );
+                    if (res.status !== 200) {
+                        throw new ServerError(
+                            `${res.statusText}. ${await res.text()}`
+                        );
+                    }
+                    const data = await res.json();
+                    if (data?.status !== "green") {
+                        throw new Error(
+                            `The cluster is in ${data?.status} status.`
+                        );
+                    }
+                    return true;
+                },
+                60000
+            );
+        } catch (e) {
+            await this.destroyElasticSearch();
+            throw e;
+        }
+    }
+
+    async destroyElasticSearch() {
+        if (this.elasticSearchCompose) {
+            await this.elasticSearchCompose.down({ volumes: true });
+        }
+    }
+
+    /**
+     * Create a copy of the docker compose file provided with service's image field replaced.
+     * When `useSameDir`, the new config file will be created in the same directory.
+     *
+     * @param {string} filePath
+     * @param {string} [image]
+     * @param {boolean} [useSameDir=false]
+     * @param {(configData: any) => any} [configDataUpdater]
+     * @return {*}
+     * @memberof AuthServiceRunner
+     */
+    createTmpDockerComposeFile(
+        filePath: string,
+        image?: string,
+        useSameDir = false,
+        configDataUpdater?: (configData: any) => any
+    ) {
+        if (!image && !configDataUpdater) {
+            return filePath;
+        }
+
+        const composeConfig = yaml.load(
+            fs.readFileSync(filePath, "utf8")
+        ) as any;
+
+        if (image) {
+            if (
+                !composeConfig?.services ||
+                typeof composeConfig.services !== "object"
+            ) {
+                throw new Error(
+                    "Invalid Docker Compose file: can't find any services"
+                );
+            }
+            const serviceKeys = Object.keys(composeConfig.services);
+            if (!serviceKeys?.length) {
+                throw new Error("Invalid Docker Compose file: empty services");
+            }
+            composeConfig.services[serviceKeys[0]].image = image;
+        }
+
+        if (configDataUpdater) {
+            configDataUpdater(composeConfig);
+        }
+
+        let newConfigFile: string;
+        if (useSameDir) {
+            newConfigFile = path.resolve(
+                path.dirname(filePath),
+                `${uuidV4()}.yaml`
+            );
+        } else {
+            newConfigFile = tempy.file({ extension: "yaml" });
+        }
+        fs.writeFileSync(newConfigFile, yaml.dump(composeConfig));
+        this.tmpFiles.push(newConfigFile);
+        return newConfigFile;
     }
 }

@@ -1,8 +1,8 @@
 #!/bin/bash
 echo "Setting up data directory"
 
-mkdir /data/data
-mkdir /data/log
+mkdir -p /data/data
+mkdir -p /data/log
 chown -R elasticsearch:elasticsearch /data
 
 echo "Setting up snapshot directory"
