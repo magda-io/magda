@@ -53,18 +53,37 @@ export default class AuthServiceRunner {
     private elasticSearchCompose: DockerCompose;
     private opaCompose: DockerCompose;
 
+    public readonly workspaceRoot: string;
+
     constructor() {
         // docker config should be passed via env vars e.g.
         // DOCKER_HOST, DOCKER_TLS_VERIFY, DOCKER_CLIENT_TIMEOUT & DOCKER_CERT_PATH
         // our gitlab pipeline already setup in this way.
         this.docker = new Docker();
+        this.workspaceRoot = path.resolve(
+            path.dirname(
+                require.resolve("@magda/typescript-common/package.json")
+            ),
+            "../"
+        );
     }
 
     async create() {
         await this.docker.info();
 
-        await this.createOpa();
-        await this.createPostgres();
+        await Promise.all([
+            this.createOpa(),
+            async () => {
+                await this.createPostgres();
+                await Promise.all([
+                    this.runMigrator("authorization-db", "auth"),
+                    this.runMigrator("content-db", "content"),
+                    this.runMigrator("registry-db", "postgres"),
+                    this.runMigrator("session-db", "session"),
+                    this.runMigrator("tenant-db", "tenant")
+                ]);
+            }
+        ]);
         await this.createElasticSearch();
     }
 
@@ -75,6 +94,28 @@ export default class AuthServiceRunner {
         await this.destroyPostgres();
         await this.destroyOpa();
         await this.destroyElasticSearch();
+    }
+
+    async runMigrator(name: string, dbName: string) {
+        const volBind = `${this.workspaceRoot}/magda-migrator-${name}/sql:/flyway/sql/${dbName}`;
+        await this.docker.run(
+            "data61/magda-db-migrator:master",
+            undefined,
+            process.stdout,
+            {
+                HostConfig: {
+                    Binds: [volBind],
+                    NetworkMode: "host"
+                },
+                Env: [
+                    "DB_HOST=localhost",
+                    "PGUSER=postgres",
+                    "PGPASSWORD=password",
+                    "CLIENT_USERNAME=client",
+                    "CLIENT_PASSWORD=password"
+                ]
+            }
+        );
     }
 
     async createOpa() {
