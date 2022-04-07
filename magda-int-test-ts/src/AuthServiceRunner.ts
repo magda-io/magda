@@ -1,4 +1,4 @@
-import Docker from "dockerode";
+import Docker, { Container } from "dockerode";
 import DockerCompose from "dockerode-compose";
 import ServerError from "magda-typescript-common/src/ServerError";
 import delay from "magda-typescript-common/src/delay";
@@ -73,19 +73,7 @@ export default class AuthServiceRunner {
     async create() {
         await this.docker.info();
 
-        await Promise.all([
-            this.createOpa(),
-            async () => {
-                await this.createPostgres();
-                await Promise.all([
-                    this.runMigrator("authorization-db", "auth"),
-                    this.runMigrator("content-db", "content"),
-                    this.runMigrator("registry-db", "postgres"),
-                    this.runMigrator("session-db", "session"),
-                    this.runMigrator("tenant-db", "tenant")
-                ]);
-            }
-        ]);
+        await Promise.all([this.createOpa(), this.createPostgres()]);
         if (this.enableElasticSearch) {
             await this.createElasticSearch();
         }
@@ -103,7 +91,7 @@ export default class AuthServiceRunner {
 
     async runMigrator(name: string, dbName: string) {
         const volBind = `${this.workspaceRoot}/magda-migrator-${name}/sql:/flyway/sql/${dbName}`;
-        await this.docker.run(
+        const [, container] = (await this.docker.run(
             "data61/magda-db-migrator:master",
             undefined,
             process.stdout,
@@ -120,7 +108,9 @@ export default class AuthServiceRunner {
                     "CLIENT_PASSWORD=password"
                 ]
             }
-        );
+        )) as [any, Container];
+        const delResult = await container.remove();
+        return delResult;
     }
 
     async createOpa() {
@@ -226,6 +216,14 @@ export default class AuthServiceRunner {
             await this.destroyPostgres();
             throw e;
         }
+
+        await Promise.all([
+            this.runMigrator("authorization-db", "auth"),
+            this.runMigrator("content-db", "content"),
+            this.runMigrator("registry-db", "postgres"),
+            this.runMigrator("session-db", "session"),
+            this.runMigrator("tenant-db", "tenant")
+        ]);
     }
 
     async destroyPostgres() {
