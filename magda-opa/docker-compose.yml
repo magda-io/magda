@@ -7,3 +7,5 @@ services:
     volumes:
       - ./policies:/policies
     command: ["run", "--server", "/policies"]
+    expose:
+      - 8181

@@ -51,6 +51,7 @@ export default class AuthServiceRunner {
 
     private postgresCompose: DockerCompose;
     private elasticSearchCompose: DockerCompose;
+    private opaCompose: DockerCompose;
 
     constructor() {
         // docker config should be passed via env vars e.g.
@@ -62,6 +63,7 @@ export default class AuthServiceRunner {
     async create() {
         await this.docker.info();
 
+        await this.createOpa();
         await this.createPostgres();
         await this.createElasticSearch();
     }
@@ -71,7 +73,47 @@ export default class AuthServiceRunner {
             fs.unlinkSync(file);
         }
         await this.destroyPostgres();
+        await this.destroyOpa();
         await this.destroyElasticSearch();
+    }
+
+    async createOpa() {
+        const baseDir = getMagdaModulePath("@magda/opa");
+        const dockerComposeFile = this.createTmpDockerComposeFile(
+            path.resolve(baseDir, "docker-compose.yml"),
+            undefined
+        );
+        this.opaCompose = new DockerCompose(
+            this.docker,
+            dockerComposeFile,
+            "test-opa"
+        );
+        try {
+            await Promise.all([
+                this.opaCompose.down({ volumes: true }),
+                this.opaCompose.pull()
+            ]);
+            await this.opaCompose.up();
+            await this.waitAlive("OPA", async () => {
+                const res = await fetch("http://localhost:8181/health");
+                if (res.status !== 200) {
+                    throw new ServerError(
+                        `${res.statusText}. ${await res.text()}`
+                    );
+                }
+                await res.json();
+                return true;
+            });
+        } catch (e) {
+            await this.destroyOpa();
+            throw e;
+        }
+    }
+
+    async destroyOpa() {
+        if (this.opaCompose) {
+            await this.opaCompose.down({ volumes: true });
+        }
     }
 
     async testAlivePostgres() {
