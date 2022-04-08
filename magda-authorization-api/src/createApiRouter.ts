@@ -82,9 +82,37 @@ export default function createApiRouter(options: ApiRouterOptions) {
     };
 
     /**
-     * retrieve user info with api key id & api key
-     * this api is only meant to be accessed internally (by gateway)
-     * This route needs to run without MUST_BE_ADMIN middleware as it will authenticate request by APIkey itself
+     * @apiGroup Auth
+     * @api {get} /v0/private/users/apikey/:userId/permissions Get user info with given API key ID & Key
+     * @apiDescription Retrieve user info with api key id & api key.
+     * This api is only available within cluster (i.e. it's not available via gateway) and only created for the gateway for purpose of verifying incoming API keys.
+     * This route doesn't require auth decision to be made as a user must provide valid API key id & key to retrieve his own user info only.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        id: "xxx-xxx-xxxx-xxxx-xx",
+     *        name: "View Datasets",
+     *        resourceId: "xxx-xxx-xxxx-xx",
+     *        resourceId: "object/dataset/draft",
+     *        userOwnershipConstraint: true,
+     *        orgUnitOwnershipConstraint: false,
+     *        preAuthorisedConstraint: false,
+     *        operations: [{
+     *          id: "xxxxx-xxx-xxx-xxxx",
+     *          name: "Read Draft Dataset",
+     *          uri: "object/dataset/draft/read",
+     *          description: "xxxxxx"
+     *        }],
+     *        permissionIds: ["xxx-xxx-xxx-xxx-xx", "xxx-xx-xxx-xx-xxx-xx"],
+     *        description?: "This is an admin role",
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
      */
     router.get("/private/users/apikey/:apiKeyId", async function (req, res) {
         try {
@@ -124,9 +152,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 throw new GenericError("Unauthorized", 401);
             }
         } catch (e) {
-            const error =
-                e instanceof GenericError ? e : new GenericError("" + e);
-            respondWithError("/private/users/apikey/:apiKeyId", res, error);
+            respondWithError("/private/users/apikey/:apiKeyId", res, e);
         }
         res.end();
     });

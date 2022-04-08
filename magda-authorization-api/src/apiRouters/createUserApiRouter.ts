@@ -291,6 +291,49 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
+     * @api {post} /v0/auth/users Create a new user
+     * @apiDescription Create a new user
+     * Supply a JSON object that contains fields of the new user in body.
+     *
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       displayName: "xxxx"
+     *       isAdmin: true
+     *     }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+            id: "2a92d9e7-9fb8-4fe4-a2d1-13b6bcf1776d"
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post(
+        "/",
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/create",
+            (req, res) => req.params.userId,
+            "user"
+        ),
+        async (req, res) => {
+            try {
+                const user = await database.createUser(req.body);
+                res.json(user);
+            } catch (e) {
+                respondWithError("create a new user", res, e);
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
      * @api {put} /v0/auth/users/:userId Update User By Id
      * @apiDescription Updates a user's info by Id. 
      * Supply a JSON object that contains fields to be udpated in body.
@@ -299,7 +342,6 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiParamExample (Body) {json}:
      *     {
      *       displayName: "xxxx"
-     *       isAdmin: true
      *     }
      *
      * @apiSuccessExample {json} 200
