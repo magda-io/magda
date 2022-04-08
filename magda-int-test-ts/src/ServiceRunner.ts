@@ -11,6 +11,7 @@ import tempy from "tempy";
 import pg from "pg";
 import fetch from "isomorphic-fetch";
 import child_process, { ChildProcess } from "child_process";
+import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
 
 /**
  * Resolve magda module dir path.
@@ -58,15 +59,20 @@ export default class ServiceRunner {
     private elasticSearchCompose: DockerCompose;
     private opaCompose: DockerCompose;
     private authApiProcess: ChildProcess;
+    private registryApiProcess: ChildProcess;
+    private aspectMigratorProcess: ChildProcess;
 
     public readonly workspaceRoot: string;
 
     public enableElasticSearch = false;
     public enableAuthService = true;
+    public enableRegistryApi = false;
 
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
     public authApiSkipAuth = false;
+
+    public sbtPath: string = "";
 
     constructor() {
         // docker config should be passed via env vars e.g.
@@ -89,6 +95,10 @@ export default class ServiceRunner {
             await this.createAuthApi();
         }
 
+        if (this.enableRegistryApi) {
+            await this.createRegistryApi();
+        }
+
         if (this.enableElasticSearch) {
             await this.createElasticSearch();
         }
@@ -103,8 +113,138 @@ export default class ServiceRunner {
             this.destroyPostgres(),
             this.destroyOpa()
         ]);
+        if (this.enableRegistryApi) {
+            await this.destroyRegistryApi();
+            await this.destroyAspectMigrator();
+        }
         if (this.enableElasticSearch) {
             await this.destroyElasticSearch();
+        }
+    }
+
+    getSbtPath() {
+        if (this.sbtPath) {
+            return this.sbtPath;
+        }
+        try {
+            const sbtPath = child_process.execSync("which sbt", {
+                encoding: "utf-8"
+            });
+            if (sbtPath) {
+                this.sbtPath = sbtPath;
+                return this.sbtPath;
+            } else {
+                throw new Error("get empty sbt path.");
+            }
+        } catch (e) {
+            throw new Error(`Failed to get SBT path: ${e}`);
+        }
+    }
+
+    async runAspectMigrator() {
+        const aspectMigratorExecute = `${path.resolve(
+            this.workspaceRoot,
+            "./magda-migrator-registry-aspects/dist/index.js"
+        )}`;
+        if (!fs.existsSync(aspectMigratorExecute)) {
+            throw new Error(
+                `Cannot locate aspect migrator built entrypoint file: ${aspectMigratorExecute}`
+            );
+        }
+
+        return new Promise((resolve, reject) => {
+            const aspectMigratorProcess = child_process.fork(
+                aspectMigratorExecute,
+                ["--jwtSecret", this.jwtSecret],
+                {
+                    cwd: path.resolve(
+                        this.workspaceRoot,
+                        "./magda-migrator-registry-aspects"
+                    ),
+                    stdio: "inherit",
+                    env: {
+                        USER_ID: DEFAULT_ADMIN_USER_ID
+                    }
+                }
+            );
+
+            this.aspectMigratorProcess = aspectMigratorProcess;
+
+            aspectMigratorProcess.on("exit", (code) => {
+                this.aspectMigratorProcess = undefined;
+                console.log(`aspectMigrator exited with code ${code}`);
+                if (!code) {
+                    resolve();
+                } else {
+                    reject(
+                        new Error(
+                            "aspectMigrator exit with non-zero exit code!"
+                        )
+                    );
+                }
+            });
+
+            aspectMigratorProcess.on("error", (error) => {
+                reject(
+                    new Error(`aspectMigrator has thrown an error: ${error}`)
+                );
+            });
+        });
+    }
+
+    async destroyAspectMigrator() {
+        if (this.aspectMigratorProcess && !this.aspectMigratorProcess.killed) {
+            this.aspectMigratorProcess.kill();
+        }
+    }
+
+    async createRegistryApi() {
+        const registryApiProcess = child_process.spawn("sbt ~registryApi/run", {
+            cwd: this.workspaceRoot,
+            stdio: "inherit",
+            shell: true,
+            env: {
+                ...process.env,
+                POSTGRES_PASSWORD: "password",
+                JWT_SECRET: this.jwtSecret
+            }
+        });
+
+        this.registryApiProcess = registryApiProcess;
+
+        registryApiProcess.on("exit", (code) => {
+            this.registryApiProcess = undefined;
+            console.log(`RegistryAPI exited with code ${code}`);
+        });
+
+        registryApiProcess.on("error", (error) => {
+            console.error(`RegistryAPI has thrown an error: ${error}`);
+        });
+
+        try {
+            await this.waitAlive("RegistryApi", async () => {
+                const res = await fetch(
+                    "http://localhost:6101/v0/status/ready"
+                );
+                if (res.status !== 200) {
+                    throw new ServerError(
+                        `${res.statusText}. ${await res.text()}`
+                    );
+                }
+                console.log(await res.text());
+                return true;
+            });
+        } catch (e) {
+            await this.destroyRegistryApi();
+            throw e;
+        }
+
+        await this.runAspectMigrator();
+    }
+
+    async destroyRegistryApi() {
+        if (this.registryApiProcess && !this.registryApiProcess.killed) {
+            this.registryApiProcess.kill();
         }
     }
 
@@ -139,10 +279,6 @@ export default class ServiceRunner {
 
         this.authApiProcess = authApiProcess;
 
-        // authApiProcess.stdout.on("data", (data) => {
-        //     console.log(`AuthApi: ${data}`);
-        // });
-
         authApiProcess.on("exit", (code) => {
             this.authApiProcess = undefined;
             console.log(`AuthApi exited with code ${code}`);
@@ -151,6 +287,24 @@ export default class ServiceRunner {
         authApiProcess.on("error", (error) => {
             console.error(`AuthApi has thrown an error: ${error}`);
         });
+
+        try {
+            await this.waitAlive("AuthApi", async () => {
+                const res = await fetch(
+                    "http://localhost:6104/v0/public/users/whoami"
+                );
+                if (res.status !== 200) {
+                    throw new ServerError(
+                        `${res.statusText}. ${await res.text()}`
+                    );
+                }
+                await res.json();
+                return true;
+            });
+        } catch (e) {
+            await this.destroyAuthApi();
+            throw e;
+        }
     }
 
     async destroyAuthApi() {
