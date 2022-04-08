@@ -48,6 +48,10 @@ export default class ServiceRunner {
     public publicImgRegistry: string = "docker.io/data61";
     public publicImgTag: string = "latest";
 
+    public projectNameSuffix: string = Math.ceil(
+        Math.random() * 10000
+    ).toString();
+
     private tmpFiles: string[] = [];
 
     private postgresCompose: DockerCompose;
@@ -58,6 +62,7 @@ export default class ServiceRunner {
     public readonly workspaceRoot: string;
 
     public enableElasticSearch = false;
+    public enableAuthService = true;
 
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
@@ -79,8 +84,11 @@ export default class ServiceRunner {
     async create() {
         await this.docker.info();
 
-        await Promise.all([this.createOpa(), this.createPostgres()]);
-        await this.createAuthApi();
+        if (this.enableAuthService) {
+            await Promise.all([this.createOpa(), this.createPostgres()]);
+            await this.createAuthApi();
+        }
+
         if (this.enableElasticSearch) {
             await this.createElasticSearch();
         }
