@@ -7,7 +7,7 @@
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
     "compile": "tsc -b && ts-module-alias-transformer dist",
-    "test": "PGUSER=postgres mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/**/*.spec.ts\""
+    "test": "PGUSER=postgres mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/tests/**/*.spec.ts\""
   },
   "devDependencies": {
     "@types/chai": "^4.0.0",

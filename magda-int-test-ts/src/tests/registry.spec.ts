@@ -2,7 +2,7 @@ import {} from "mocha";
 //import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
 import { expect } from "chai";
 import delay from "magda-typescript-common/src/delay";
-import ServiceRunner from "./ServiceRunner";
+import ServiceRunner from "../ServiceRunner";
 //const jwt = require("jsonwebtoken");
 
 //const dbConfig = getTestDBConfig();
