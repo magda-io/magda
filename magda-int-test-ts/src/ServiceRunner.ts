@@ -39,9 +39,9 @@ function getMagdaModulePath(moduleName: string) {
  * When the env is no longer required, the `destroy` method should be called to clean up all resources.
  * Please note: in CI, this class requires dind (Docker in Docker)
  *
- * @class AuthServiceRunner
+ * @class ServiceRunner
  */
-export default class AuthServiceRunner {
+export default class ServiceRunner {
     public readonly docker: Docker;
     public appImgRegistry: string = "localhost:5000/data61";
     public appImgTag: string = "latest";
