@@ -297,13 +297,16 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *
      * @apiParamExample (Body) {json}:
      *     {
-     *       displayName: "xxxx"
-     *       isAdmin: true
+     *       displayName: "xxxx",
+     *       email: "sdds@sds.com"
      *     }
      *
      * @apiSuccessExample {json} 200
      *    {
-            id: "2a92d9e7-9fb8-4fe4-a2d1-13b6bcf1776d"
+     *      id: "2a92d9e7-9fb8-4fe4-a2d1-13b6bcf1776d",
+     *      displayName: "xxxx",
+     *      email: "sdds@sds.com",
+     *      //....
      *    }
      *
      * @apiErrorExample {json} 401/404/500
@@ -335,8 +338,8 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Auth
      * @api {put} /v0/auth/users/:userId Update User By Id
-     * @apiDescription Updates a user's info by Id. 
-     * Supply a JSON object that contains fields to be udpated in body.
+     * @apiDescription Updates a user's info by Id.
+     * Supply a JSON object that contains fields to be updated in body.
      *
      * @apiParam {string} userId id of user
      * @apiParamExample (Body) {json}:
@@ -346,7 +349,10 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *
      * @apiSuccessExample {json} 200
      *    {
-            result: "SUCCESS"
+     *      id: "2a92d9e7-9fb8-4fe4-a2d1-13b6bcf1776d",
+     *      displayName: "xxxx",
+     *      email: "sdds@sds.com",
+     *      //....
      *    }
      *
      * @apiErrorExample {json} 401/404/500
@@ -371,12 +377,10 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
 
             // update
             try {
-                await database.updateUser(userId, update);
-                res.status(200).json({
-                    result: "SUCCESS"
-                });
+                const user = await database.updateUser(userId, update);
+                res.status(200).json(user);
             } catch (e) {
-                respondWithError("/public/users/:userId", res, e);
+                respondWithError("update user by id", res, e);
             }
         }
     );

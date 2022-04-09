@@ -3,7 +3,9 @@ import {
     User,
     Role,
     Permission,
-    APIKeyRecord
+    APIKeyRecord,
+    UserRecord,
+    CreateUserData
 } from "magda-typescript-common/src/authorization-api/model";
 import { Maybe } from "tsmonad";
 import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
@@ -299,19 +301,14 @@ export default class Database {
 
     async updateUser(
         userId: string,
-        update: Partial<
-            Omit<
-                User,
-                | "id"
-                | "roles"
-                | "permissions"
-                | "managingOrgUnitIds"
-                | "orgUnit"
-            >
-        >
-    ): Promise<void> {
-        if (!update || !Object.keys(update).length) {
-            return;
+        update: Partial<UserRecord>
+    ): Promise<UserRecord> {
+        if (
+            !update ||
+            typeof update !== "object" ||
+            !Object.keys(update).length
+        ) {
+            throw new ServerError("user update data cannot be empty.", 400);
         }
 
         const updates: SQLSyntax[] = [];
@@ -327,16 +324,23 @@ export default class Database {
             );
         });
 
-        if (!updates.length) {
-            return;
-        }
-
         await this.pool.query(
             ...sqls`UPDATE users SET ${SQLSyntax.join(
                 updates,
                 sqls`,`
             )} WHERE id = ${userId}}`.toQuery()
         );
+
+        const fetchUserResult = await this.pool.query(
+            ...sqls`SELECT * FROM users WHERE id = ${userId}`.toQuery()
+        );
+        if (!fetchUserResult?.rows?.length) {
+            throw new ServerError(
+                "failed to locate user by id: " + userId,
+                400
+            );
+        }
+        return fetchUserResult.rows[0];
     }
 
     /**
@@ -368,9 +372,29 @@ export default class Database {
             .then((res) => arrayToMaybe(res.rows));
     }
 
-    async createUser(user: User): Promise<User> {
-        if (!user || typeof user !== "object" || !Object.keys(user).length) {
-            throw new ServerError("Empty user data supplied.", 400);
+    async createUser(user: CreateUserData): Promise<UserRecord> {
+        if (!user?.displayName) {
+            throw new ServerError(`displayName cannot be empty.`, 400);
+        }
+
+        if (!user?.email) {
+            throw new ServerError(`email cannot be empty.`, 400);
+        }
+
+        if (!user?.isAdmin) {
+            user.isAdmin = false;
+        }
+
+        if (!user?.photoURL) {
+            user.photoURL = "";
+        }
+
+        if (!user?.source) {
+            user.source = "";
+        }
+
+        if (!user?.sourceId) {
+            user.sourceId = "";
         }
 
         const insertFields = [sqls`id`];
@@ -392,14 +416,6 @@ export default class Database {
                 `orgUnitId ${user?.orgUnitId} is not a valid uuid.`,
                 400
             );
-        }
-
-        if (!user?.displayName) {
-            throw new ServerError(`displayName cannot be empty.`, 400);
-        }
-
-        if (!user?.email) {
-            throw new ServerError(`email cannot be empty.`, 400);
         }
 
         const result = await this.pool.query(
@@ -425,7 +441,16 @@ export default class Database {
             );
         }
 
-        return userInfo;
+        const fetchUserResult = await this.pool.query(
+            ...sqls`SELECT * FROM users WHERE id = ${userId}`.toQuery()
+        );
+        if (!fetchUserResult?.rows?.length) {
+            throw new ServerError(
+                "failed to locate newly created user by id: " + userId,
+                500
+            );
+        }
+        return fetchUserResult.rows[0];
     }
 
     async check(): Promise<any> {

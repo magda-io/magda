@@ -12,17 +12,37 @@ declare global {
     }
 }
 
-export interface PublicUser {
-    id?: string;
+export interface UserRecord {
+    id: string;
     displayName: string;
-    photoURL?: string;
+    photoURL: string;
     isAdmin: boolean;
-    roles?: Role[];
-    permissions?: Permission[];
-    managingOrgUnitIds?: string[];
-    orgUnitId?: string;
-    orgUnit?: OrgUnit;
+    orgUnitId: string;
+    email: string;
+    source: string;
+    sourceId: string;
 }
+
+export type PublicUser = Partial<
+    Pick<UserRecord, "id" | "photoURL" | "orgUnitId">
+> &
+    Omit<
+        UserRecord,
+        "id" | "photoURL" | "orgUnitId" | "email" | "source" | "sourceId"
+    > & {
+        roles?: Role[];
+        permissions?: Permission[];
+        managingOrgUnitIds?: string[];
+        orgUnit?: OrgUnit;
+    };
+
+export type User = PublicUser &
+    Pick<UserRecord, "email" | "source" | "sourceId">;
+
+export type CreateUserData = Partial<
+    Omit<UserRecord, "email" | "displayName" | "id">
+> &
+    Pick<UserRecord, "displayName" | "email">;
 
 export type OrgUnitRelationshipType =
     | "ancestor"
@@ -44,11 +64,6 @@ export interface OrgUnit {
     editTime?: Date;
 }
 
-export interface User extends PublicUser {
-    email: string;
-    source: string;
-    sourceId: string;
-}
 export interface APIKeyRecord {
     id: string;
     user_id: string;

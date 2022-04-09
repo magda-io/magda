@@ -1,5 +1,12 @@
 import fetch from "isomorphic-fetch";
-import { User, Role, Permission, OrgUnit } from "./model";
+import {
+    User,
+    CreateUserData,
+    UserRecord,
+    Role,
+    Permission,
+    OrgUnit
+} from "./model";
 import { Maybe } from "tsmonad";
 import lodash from "lodash";
 import buildJwt from "../session/buildJwt";
@@ -101,11 +108,11 @@ export default class ApiClient {
     /**
      * create a user
      *
-     * @param {User} user
-     * @returns {Promise<User>}
+     * @param {CreateUserData} user
+     * @returns {Promise<UserRecord>}
      * @memberof ApiClient
      */
-    async createUser(user: User): Promise<RequiredKeys<User, "id">> {
+    async createUser(user: CreateUserData): Promise<UserRecord> {
         try {
             const res = await fetch(
                 `${this.baseUrl}private/users`,
@@ -123,7 +130,7 @@ export default class ApiClient {
                 );
             }
             const resData = await res.json();
-            return { ...user, ...resData };
+            return resData;
         } catch (e) {
             console.error(e);
             throw e;
