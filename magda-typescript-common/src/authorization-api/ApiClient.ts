@@ -5,7 +5,8 @@ import {
     UserRecord,
     Role,
     Permission,
-    OrgUnit
+    OrgUnit,
+    OrgUnitRecord
 } from "./model";
 import { Maybe } from "tsmonad";
 import lodash from "lodash";
@@ -14,6 +15,7 @@ import GenericError from "./GenericError";
 import addTrailingSlash from "../addTrailingSlash";
 import urijs from "urijs";
 import { RequiredKeys } from "../utilityTypes";
+import ServerError from "../ServerError";
 
 export default class ApiClient {
     private jwt: string = null;
@@ -361,6 +363,37 @@ export default class ApiClient {
             this.getMergeRequestInitOption()
         );
         return await this.processJsonResponse<OrgUnit[]>(res);
+    }
+
+    async createOrgNode(
+        parentNodeId: string,
+        node: Partial<
+            Omit<
+                OrgUnitRecord,
+                | "id"
+                | "createBy"
+                | "createTime"
+                | "editBy"
+                | "editTime"
+                | "left"
+                | "right"
+            >
+        >
+    ): Promise<OrgUnit> {
+        const uri = urijs(`${this.baseUrl}public/orgunits`).segmentCoded(
+            parentNodeId
+        );
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption({ method: "put" })
+        );
+        if (res.status != 200) {
+            throw new ServerError(
+                `Failed to create node: ${await res.text()}`,
+                res.status
+            );
+        }
+        return await res.json();
     }
 
     private async handleGetResult<T = User>(

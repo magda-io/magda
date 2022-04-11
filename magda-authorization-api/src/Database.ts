@@ -20,6 +20,7 @@ import {
 import { getUserId } from "magda-typescript-common/src/session/GetUserId";
 import NestedSetModelQueryer from "./NestedSetModelQueryer";
 import isUuid from "magda-typescript-common/src/util/isUuid";
+import { v4 as uuidV4 } from "uuid";
 import AuthDecision, {
     UnconditionalTrueDecision
 } from "magda-typescript-common/src/opa/AuthDecision";
@@ -373,6 +374,8 @@ export default class Database {
     }
 
     async createUser(user: CreateUserData): Promise<UserRecord> {
+        const userId = uuidV4();
+
         if (!user?.displayName) {
             throw new ServerError(`displayName cannot be empty.`, 400);
         }
@@ -390,15 +393,14 @@ export default class Database {
         }
 
         if (!user?.source) {
-            user.source = "";
+            user.source = "unknown";
         }
 
         if (!user?.sourceId) {
-            user.sourceId = "";
+            user.sourceId = userId;
         }
-
         const insertFields = [sqls`id`];
-        const values = [sqls`uuid_generate_v4()`];
+        const values = [sqls`${userId}`];
 
         Object.keys(user).forEach((field) => {
             if (!this.isValidUserUpdateField(field)) {
@@ -418,16 +420,22 @@ export default class Database {
             );
         }
 
-        const result = await this.pool.query(
+        await this.pool.query(
             ...sqls`INSERT INTO users 
             (${SQLSyntax.join(insertFields, sqls`,`)}) 
             VALUES 
-            (${SQLSyntax.join(values, sqls`,`)}) 
-            RETURNING id`.toQuery()
+            (${SQLSyntax.join(values, sqls`,`)})`.toQuery()
         );
 
-        const userInfo = result.rows[0];
-        const userId = userInfo.id;
+        const fetchUserResult = await this.pool.query(
+            ...sqls`SELECT * FROM users WHERE id = ${userId}`.toQuery()
+        );
+        if (!fetchUserResult?.rows?.length) {
+            throw new ServerError(
+                "failed to locate newly created user by id: " + userId,
+                500
+            );
+        }
 
         //--- add default authenticated role to the newly create user
         await this.pool.query(
@@ -441,15 +449,6 @@ export default class Database {
             );
         }
 
-        const fetchUserResult = await this.pool.query(
-            ...sqls`SELECT * FROM users WHERE id = ${userId}`.toQuery()
-        );
-        if (!fetchUserResult?.rows?.length) {
-            throw new ServerError(
-                "failed to locate newly created user by id: " + userId,
-                500
-            );
-        }
         return fetchUserResult.rows[0];
     }
 

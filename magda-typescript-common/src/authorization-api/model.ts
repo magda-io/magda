@@ -50,19 +50,22 @@ export type OrgUnitRelationshipType =
     | "equal"
     | "unrelated";
 
-export interface OrgUnit {
-    id?: string;
-    name?: string;
-    description?: string;
+export interface OrgUnitRecord {
+    id: string;
+    name: string;
+    description: string;
+    left: number;
+    right: number;
+    createBy: string;
+    createTime: Date;
+    editBy: string;
+    editTime: Date;
+}
+
+export type OrgUnit = Partial<OrgUnitRecord> & {
     // only available when query the orgUnit relationship against a node with some APIs
     relationship?: OrgUnitRelationshipType;
-    left?: number;
-    right?: number;
-    createBy?: string;
-    createTime?: Date;
-    editBy?: string;
-    editTime?: Date;
-}
+};
 
 export interface APIKeyRecord {
     id: string;

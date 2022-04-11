@@ -29,7 +29,7 @@
     "@magda/typescript-common": "^2.0.0-alpha.0",
     "commander": "^9.1.0",
     "dockerode": "^3.3.1",
-    "dockerode-compose": "magda-io/dockerode-compose#magda",
+    "dockerode-compose": "magda-io/dockerode-compose#v1.22-magda.1",
     "fs-extra": "8.1.0",
     "pg": "^7.18.2",
     "tempy": "^1.0.1",
