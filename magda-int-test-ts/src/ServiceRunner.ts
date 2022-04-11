@@ -316,10 +316,20 @@ export default class ServiceRunner {
         }
     }
 
+    pullImage(image: string) {
+        return new Promise(async (resolve, reject) => {
+            const pullStream = await this.docker.pull(image);
+            pullStream.pipe(process.stdout);
+            pullStream.once("end", resolve);
+        });
+    }
+
     async runMigrator(name: string, dbName: string) {
+        const mainMigratorImg = "data61/magda-db-migrator:master";
+        await this.pullImage(mainMigratorImg);
         const volBind = `${this.workspaceRoot}/magda-migrator-${name}/sql:/flyway/sql/${dbName}`;
         const [, container] = (await this.docker.run(
-            "data61/magda-db-migrator:master",
+            mainMigratorImg,
             undefined,
             process.stdout,
             {
