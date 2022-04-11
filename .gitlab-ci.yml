@@ -31,7 +31,7 @@ stages:
 
 yarn-install:
   stage: builders
-  image: data61/magda-builder-docker:buildx
+  image: data61/magda-builder-docker:master
   retry: 1
   needs: []
   cache:
@@ -50,7 +50,7 @@ yarn-install:
 
 build-builder-image:
   stage: builders
-  image: data61/magda-builder-docker:buildx
+  image: data61/magda-builder-docker:master
   retry: 1
   needs: []
   before_script:
@@ -482,6 +482,8 @@ buildtest:integration-tests:
       fi
     - docker info
     - docker-compose --version
+    # we can remove socat installation in future once the change is merged into master as it's installed in base image
+    - apk add socat 
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:

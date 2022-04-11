@@ -12,6 +12,7 @@ import pg from "pg";
 import fetch from "isomorphic-fetch";
 import child_process, { ChildProcess } from "child_process";
 import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
+import urijs from "urijs";
 
 /**
  * Resolve magda module dir path.
@@ -77,6 +78,14 @@ export default class ServiceRunner {
     // default: wait for service online within 5 mins
     public maxWaitLiveTime: number = 300000;
 
+    // the docker host mat available at a different ip / hostname
+    // setting this to portforward the docker based services to localhost
+    public dockerServiceForwardHost: string = "";
+
+    public portForwardingProcessList: {
+        [key: string]: ChildProcess;
+    } = {};
+
     constructor() {
         // docker config should be passed via env vars e.g.
         // DOCKER_HOST, DOCKER_TLS_VERIFY, DOCKER_CLIENT_TIMEOUT & DOCKER_CERT_PATH
@@ -88,6 +97,22 @@ export default class ServiceRunner {
             ),
             "../"
         );
+    }
+
+    setDockerServiceForwardHost() {
+        if (this.dockerServiceForwardHost) {
+            return;
+        }
+        const dockerHost = process?.env?.DOCKER_HOST;
+        if (!dockerHost) {
+            return;
+        }
+        const dockerHostUri = urijs(dockerHost);
+        const hostname = dockerHostUri.hostname();
+        if (hostname === "127.0.0.1") {
+            return;
+        }
+        this.dockerServiceForwardHost = hostname;
     }
 
     async create() {
@@ -123,6 +148,7 @@ export default class ServiceRunner {
         if (this.enableElasticSearch) {
             await this.destroyElasticSearch();
         }
+        this.destroyAllPortForward();
     }
 
     getSbtPath() {
@@ -142,6 +168,79 @@ export default class ServiceRunner {
         } catch (e) {
             throw new Error(`Failed to get SBT path: ${e}`);
         }
+    }
+
+    async createPortForward(
+        remotePort: number,
+        localPort?: number,
+        hostname?: string
+    ) {
+        if (!localPort) {
+            localPort = remotePort;
+        }
+        if (!hostname) {
+            hostname = this.dockerServiceForwardHost;
+        }
+        if (!remotePort || !localPort) {
+            throw new Error("Forward port should not be empty!");
+        }
+        if (!hostname) {
+            throw new Error("Forward hostname should not be empty!");
+        }
+
+        return new Promise((resolve, reject) => {
+            if (this.portForwardingProcessList[localPort]) {
+                throw new Error(
+                    `Port ${localPort} already has an existing port forwarding process running.`
+                );
+            }
+            const portForwardCmd = `socat TCP4-LISTEN:${localPort},fork,reuseaddr TCP4:${hostname}:${remotePort}"`;
+            const portForwardProcess = child_process.spawn(portForwardCmd, {
+                stdio: "inherit",
+                shell: true
+            });
+
+            this.portForwardingProcessList[
+                localPort.toString()
+            ] = portForwardProcess;
+
+            portForwardProcess.on("exit", (code) => {
+                this.portForwardingProcessList[localPort] = undefined;
+                console.log(
+                    `portforward for ${hostname}${remotePort} exited with code ${code}`
+                );
+                if (!code) {
+                    resolve();
+                } else {
+                    reject(
+                        new Error(
+                            `portforward for ${hostname}${remotePort} exit with non-zero exit code!`
+                        )
+                    );
+                }
+            });
+
+            portForwardProcess.on("error", (error) => {
+                reject(
+                    new Error(
+                        `portforward for ${hostname}${remotePort} has thrown an error: ${error}`
+                    )
+                );
+            });
+        });
+    }
+
+    async destroyPortForward(localPort: string | number) {
+        const process = this.portForwardingProcessList[localPort];
+        if (process && !process.killed) {
+            process.kill();
+            this.portForwardingProcessList[localPort] = undefined;
+        }
+    }
+
+    async destroyAllPortForward() {
+        const ports = Object.keys(this.portForwardingProcessList);
+        ports.forEach((port) => this.destroyPortForward(port));
     }
 
     async runAspectMigrator() {
@@ -368,7 +467,10 @@ export default class ServiceRunner {
             ]);
             await this.opaCompose.up();
             await this.waitAlive("OPA", async () => {
-                const res = await fetch("http://localhost:8181/health");
+                const opaHost = this.dockerServiceForwardHost
+                    ? this.dockerServiceForwardHost
+                    : "localhost";
+                const res = await fetch(`http://${opaHost}:8181/health`);
                 if (res.status !== 200) {
                     throw new ServerError(
                         `${res.statusText}. ${await res.text()}`
@@ -377,6 +479,9 @@ export default class ServiceRunner {
                 await res.json();
                 return true;
             });
+            if (this.dockerServiceForwardHost) {
+                await this.createPortForward(8181);
+            }
         } catch (e) {
             await this.destroyOpa();
             throw e;
@@ -387,11 +492,18 @@ export default class ServiceRunner {
         if (this.opaCompose) {
             await this.opaCompose.down({ volumes: true });
         }
+        if (this.dockerServiceForwardHost) {
+            await this.destroyPortForward(8181);
+        }
     }
 
     async testAlivePostgres() {
+        const dbhost = this.dockerServiceForwardHost
+            ? this.dockerServiceForwardHost
+            : "localhost";
         const dbConfig = getTestDBConfig() as any;
         dbConfig.database = "postgres";
+        dbConfig.host = dbhost;
         const client = new pg.Client(dbConfig);
         await client.connect();
         const result = await client.query("SELECT NOW()");
@@ -452,7 +564,10 @@ export default class ServiceRunner {
                 this.postgresCompose.pull()
             ]);
             await this.postgresCompose.up();
-            await this.waitAlive("Postgres", this.testAlivePostgres);
+            await this.waitAlive("Postgres", this.testAlivePostgres.bind(this));
+            if (this.dockerServiceForwardHost) {
+                await this.createPortForward(5432);
+            }
         } catch (e) {
             await this.destroyPostgres();
             throw e;
@@ -470,6 +585,9 @@ export default class ServiceRunner {
     async destroyPostgres() {
         if (this.postgresCompose) {
             await this.postgresCompose.down({ volumes: true });
+        }
+        if (this.dockerServiceForwardHost) {
+            await this.destroyPortForward(5432);
         }
     }
 
