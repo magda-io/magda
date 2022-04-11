@@ -27,7 +27,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {post} /v0/auth/user/:userId/roles Add Roles to a user
+     * @api {post} /v0/auth/users/:userId/roles Add Roles to a user
      * @apiDescription Returns a list of current role ids of the user.
      * Required admin access.
      *
@@ -56,14 +56,14 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                 const roleIds = await database.addUserRoles(userId, req.body);
                 res.json(roleIds);
             } catch (e) {
-                respondWithError("POST /public/user/:userId/roles", res, e);
+                respondWithError("POST /public/users/:userId/roles", res, e);
             }
         }
     );
 
     /**
      * @apiGroup Auth
-     * @api {delete} /v0/auth/user/:userId/roles Remove a list roles from a user
+     * @api {delete} /v0/auth/users/:userId/roles Remove a list roles from a user
      * @apiDescription Returns the JSON response indicates the operation has been done successfully or not
      * Required admin access.
      *
@@ -94,14 +94,14 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                 await database.deleteUserRoles(userId, req.body);
                 res.json({ isError: false });
             } catch (e) {
-                respondWithError("DELETE /public/user/:userId/roles", res, e);
+                respondWithError("DELETE /public/users/:userId/roles", res, e);
             }
         }
     );
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/user/:userId/roles Get all roles of a user
+     * @api {get} /v0/auth/users/:userId/roles Get all roles of a user
      * @apiDescription Returns an array of roles. When no roles can be found, an empty array will be returned
      * Required admin access.
      *
@@ -135,14 +135,14 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                 const roles = await database.getUserRoles(userId);
                 res.json(roles);
             } catch (e) {
-                respondWithError("GET /public/user/:userId/roles", res, e);
+                respondWithError("GET /public/users/:userId/roles", res, e);
             }
         }
     );
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/user/:userId/permissions Get all permissions of a user
+     * @api {get} /v0/auth/users/:userId/permissions Get all permissions of a user
      * @apiDescription Returns an array of permissions. When no permissions can be found, an empty array will be returned.
      * Required admin access.
      *
@@ -188,7 +188,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                 res.json(permissions);
             } catch (e) {
                 respondWithError(
-                    "GET /public/user/:userId/permissions",
+                    "GET /public/users/:userId/permissions",
                     res,
                     e
                 );

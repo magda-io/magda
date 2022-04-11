@@ -544,7 +544,7 @@ export default class Database {
      */
     async addUserRoles(userId: string, roleIds: string[]): Promise<string[]> {
         if (!isUuid(userId)) {
-            throw new Error(`Invalid user id: ${userId}`);
+            throw new ServerError(`Invalid user id: ${userId}`, 400);
         }
 
         const dbClient = await this.pool.connect();
@@ -572,7 +572,10 @@ export default class Database {
                 await Promise.all(
                     roleIdsToAdd.map((roleId) => {
                         if (!isUuid(roleId)) {
-                            throw new Error(`Invalid role ID: ${roleId}`);
+                            throw new ServerError(
+                                `Invalid role ID: ${roleId}`,
+                                400
+                            );
                         }
                         dbClient.query(
                             ...sqls`INSERT INTO user_roles (role_id, user_id) VALUES(${roleId}, ${userId})`.toQuery()

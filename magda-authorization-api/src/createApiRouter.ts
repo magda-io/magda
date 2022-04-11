@@ -207,7 +207,17 @@ export default function createApiRouter(options: ApiRouterOptions) {
         })
     );
 
-    // in order to be backwards compatible, we make role apis avaiable at /role as well
+    // in order to be backwards compatible, we make role apis available at /user as well
+    router.use(
+        "/public/user",
+        createUserApiRouter({
+            database,
+            authDecisionClient: options.authDecisionClient,
+            jwtSecret: options.jwtSecret
+        })
+    );
+
+    // in order to be backwards compatible, we make role apis available at /role as well
     router.use(
         "/public/role",
         createRoleApiRouter({

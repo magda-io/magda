@@ -11,7 +11,6 @@ import {
 import { Maybe } from "tsmonad";
 import lodash from "lodash";
 import buildJwt from "../session/buildJwt";
-import GenericError from "./GenericError";
 import addTrailingSlash from "../addTrailingSlash";
 import urijs from "urijs";
 import { RequiredKeys } from "../utilityTypes";
@@ -47,8 +46,14 @@ export default class ApiClient {
         if (res.status >= 200 && res.status < 300) {
             return (await res.json()) as T;
         } else {
-            const responseText = (await res.text()).replace(/<(.|\n)*?>/g, "");
-            throw new GenericError(responseText, res.status);
+            const responseText = await res.text();
+            throw new ServerError(
+                `Error: ${res.statusText}. ${responseText.replace(
+                    /<(.|\n)*?>/g,
+                    ""
+                )}`,
+                res.status
+            );
         }
     }
 
@@ -150,7 +155,7 @@ export default class ApiClient {
      */
     async addUserRoles(userId: string, roleIds: string[]): Promise<string[]> {
         const res = await fetch(
-            `${this.baseUrl}public/user/${userId}/roles`,
+            `${this.baseUrl}public/users/${userId}/roles`,
             this.getMergeRequestInitOption({
                 method: "POST",
                 headers: {
@@ -193,7 +198,7 @@ export default class ApiClient {
      */
     async getUserRoles(userId: string): Promise<Role[]> {
         const res = await fetch(
-            `${this.baseUrl}public/user/${userId}/roles`,
+            `${this.baseUrl}public/users/${userId}/roles`,
             this.getMergeRequestInitOption()
         );
         return await this.processJsonResponse<Role[]>(res);
@@ -208,7 +213,7 @@ export default class ApiClient {
      */
     async getUserPermissions(userId: string): Promise<Permission[]> {
         const res = await fetch(
-            `${this.baseUrl}public/user/${userId}/permissions`,
+            `${this.baseUrl}public/users/${userId}/permissions`,
             this.getMergeRequestInitOption()
         );
         return await this.processJsonResponse<Permission[]>(res);
@@ -223,7 +228,7 @@ export default class ApiClient {
      */
     async getRolePermissions(roleId: string): Promise<Permission[]> {
         const res = await fetch(
-            `${this.baseUrl}public/role/${roleId}/permissions`,
+            `${this.baseUrl}public/roles/${roleId}/permissions`,
             this.getMergeRequestInitOption()
         );
         return await this.processJsonResponse<Permission[]>(res);
