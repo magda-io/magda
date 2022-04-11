@@ -40,12 +40,6 @@ isDraftDataset {
     input.object.record.publishing.state = "draft"
 }
 
-# a draft dataset record might only contains `dataset-draft` aspect
-isDraftDataset {
-    input.object.record["dataset-draft"]
-    not input.object.record.publishing.state
-}
-
 # delegated to draft dataset rules
 verifyPermission(operationUri) {
     isDraftDataset
