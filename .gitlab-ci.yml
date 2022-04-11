@@ -465,6 +465,51 @@ buildtest:storage-api:
       - "*/dist"
     expire_in: 7 days
 
+buildtest:integration-tests:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  retry: 1
+  needs:
+    - yarn-install
+    - build-builder-image
+    - registry-typescript-api
+    - sbt-prebuild
+    - dockerize:dockerExtensions
+  before_script:
+    - |
+      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
+        export DOCKER_HOST='tcp://localhost:2375'
+      fi
+    - docker info
+    - docker-compose --version
+  cache:
+    key: $CI_JOB_NAME-$CACHE_VERSION
+    paths:
+      - "$CI_PROJECT_DIR/pip-cache"
+  services:
+    - docker:dind
+  variables:
+    POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
+    POSTGRES_DB: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: "password"
+  script:
+    - cd magda-authorization-api && yarn build
+    - cd ..
+    - cd magda-storage-api && yarn build
+    - cd ..
+    - cd magda-int-test-ts
+    - yarn test
+  artifacts:
+    paths:
+      - "target"
+      - "project/target"
+      - "project/project/target"
+      - "*/target"
+      - "*/project/target"
+      - "*/project/project/target"
+    expire_in: 7 days
+
 buildtest:opa-policies:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
@@ -629,7 +674,7 @@ dockerize:opa:
   - yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
 
 dockerize:dockerExtensions:
-  stage: buildtest
+  stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   needs:
