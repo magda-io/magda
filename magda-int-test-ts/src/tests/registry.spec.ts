@@ -30,6 +30,7 @@ describe("registry auth integration tests", () => {
         const serviceRunner = new ServiceRunner();
         serviceRunner.enableRegistryApi = true;
         serviceRunner.jwtSecret = jwtSecret;
+        serviceRunner.authApiDebugMode = false;
 
         let authenticatedUserId: string;
         let dataStewardUserId: string;
@@ -39,21 +40,25 @@ describe("registry auth integration tests", () => {
         before(async function (this) {
             this.timeout(ENV_SETUP_TIME_OUT);
             await serviceRunner.create();
-            const authticatedUser = await authApiClient.createUser({
-                displayName: "Test AuthtenticatedUser",
-                email: "test@test.com",
+            const authenticatedUser = await authApiClient.createUser({
+                displayName: "Test AuthenticatedUser1",
+                email: "authenticatedUser1@test.com",
                 source: "internal",
                 sourceId: uuidV4()
             });
-            authenticatedUserId = authticatedUser.id;
+            authenticatedUserId = authenticatedUser.id;
             const dataStewardUser = await authApiClient.createUser({
-                displayName: "Test AuthtenticatedUser",
-                email: "test@test.com",
+                displayName: "Test dataStewardUser",
+                email: "dataStewward@test.com",
                 source: "internal",
                 sourceId: uuidV4()
             });
             dataStewardUserId = dataStewardUser.id;
-            authApiClient;
+            // add data steward user role to the data steward user
+            // "4154bf84-d36e-4551-9734-4666f5b1e1c0" is the default data steward role id
+            await authApiClient.addUserRoles(dataStewardUserId, [
+                "4154bf84-d36e-4551-9734-4666f5b1e1c0"
+            ]);
         });
 
         after(async function (this) {
@@ -78,7 +83,10 @@ describe("registry auth integration tests", () => {
                             name: "test draft dataset"
                         },
                         data: "{}",
-                        timeStamp: "Sun Apr 10 2022 15:33:56 GMT+1000"
+                        timestamp: "2022-04-11T12:52:24.278Z"
+                    },
+                    publishing: {
+                        state: "draft"
                     },
                     "access-control": {
                         ownerId: dataStewardUserId
