@@ -74,6 +74,9 @@ export default class ServiceRunner {
 
     public sbtPath: string = "";
 
+    // default: wait for service online within 5 mins
+    public maxWaitLiveTime: number = 300000;
+
     constructor() {
         // docker config should be passed via env vars e.g.
         // DOCKER_HOST, DOCKER_TLS_VERIFY, DOCKER_CLIENT_TIMEOUT & DOCKER_CERT_PATH
@@ -392,8 +395,12 @@ export default class ServiceRunner {
     async waitAlive(
         serviceName: string,
         func: () => Promise<any>,
-        waitTime: number = 30000
+        waitTime?: number
     ) {
+        if (!waitTime) {
+            waitTime = this.maxWaitLiveTime;
+        }
+
         if (waitTime <= 0) {
             throw new Error(`waitAlive: Invalid wait time: ${waitTime}`);
         }
