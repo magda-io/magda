@@ -284,6 +284,24 @@ describe("registry auth integration tests", function (this) {
             });
 
             testUserDatasetAccess(
+                "should not allow an anonymous user to access the draft dataset that is not assigned to any orgUnit",
+                false,
+                {},
+                ANONYMOUS_USERS_ROLE_ID,
+                undefined
+            );
+
+            testUserDatasetAccess(
+                "should not allow an anonymous user to access the draft dataset that is assigned to `Section B`",
+                false,
+                {
+                    orgUnitId: orgUnitRefs["Section B"].id
+                },
+                ANONYMOUS_USERS_ROLE_ID,
+                undefined
+            );
+
+            testUserDatasetAccess(
                 "should not allow an authenticated user to access the draft dataset that is not assigned to any orgUnit",
                 false,
                 {},
