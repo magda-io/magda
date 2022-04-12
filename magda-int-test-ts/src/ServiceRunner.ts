@@ -195,7 +195,7 @@ export default class ServiceRunner {
                     `Port ${localPort} already has an existing port forwarding process running.`
                 );
             }
-            const portForwardCmd = `socat TCP4-LISTEN:${localPort},fork,reuseaddr TCP4:${hostname}:${remotePort}"`;
+            const portForwardCmd = `socat TCP4-LISTEN:${localPort},fork,reuseaddr TCP4:${hostname}:${remotePort}`;
             const portForwardProcess = child_process.spawn(portForwardCmd, {
                 stdio: "inherit",
                 shell: true
