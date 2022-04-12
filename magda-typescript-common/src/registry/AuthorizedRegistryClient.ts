@@ -5,12 +5,15 @@ import {
     Operation,
     WebHookAcknowledgementResponse,
     MultipleDeleteResult,
-    EventsPage
+    EventsPage,
+    DeleteResult
 } from "../generated/registry/api";
-import RegistryClient, { RegistryOptions } from "./RegistryClient";
+import RegistryClient, {
+    RegistryOptions,
+    toServerError
+} from "./RegistryClient";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
-import createServiceError from "../createServiceError";
 import buildJwt from "../session/buildJwt";
 import { IncomingMessage } from "http";
 import { Maybe } from "tsmonad";
@@ -83,7 +86,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("putAspectDefinition"));
     }
 
     postHook(hook: WebHook): Promise<WebHook | Error> {
@@ -103,7 +106,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("postHook"));
     }
 
     putHook(hook: WebHook): Promise<WebHook | Error> {
@@ -127,7 +130,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("putHook"));
     }
 
     getHook(hookId: string): Promise<Maybe<WebHook> | Error> {
@@ -162,7 +165,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                             retriesLeft
                         )
                     )
-            ).catch(createServiceError)
+            ).catch(toServerError("getHook"))
         );
     }
 
@@ -178,7 +181,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getHooks"));
     }
 
     resumeHook(
@@ -208,7 +211,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("resumeHook"));
     }
 
     putRecord(
@@ -236,7 +239,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("putRecord"));
     }
 
     putRecordAspect(
@@ -267,7 +270,36 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("putRecordAspect"));
+    }
+
+    deleteRecordAspect(
+        recordId: string,
+        aspectId: string,
+        tenantId: number = this.tenantId
+    ): Promise<DeleteResult | Error> {
+        const operation = () =>
+            this.recordAspectsApi.deleteById(
+                encodeURIComponent(recordId),
+                aspectId,
+                this.jwt,
+                tenantId
+            );
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to PUT data registry aspect ${aspectId} for record with ID "${recordId}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("putRecordAspect"));
     }
 
     patchRecordAspect(
@@ -298,7 +330,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("patchRecordAspect"));
     }
 
     deleteBySource(
@@ -334,7 +366,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                         retriesLeft
                     )
                 )
-        ).catch(createServiceError);
+        ).catch(toServerError("deleteBySource"));
     }
 
     getRecordHistory(
@@ -365,6 +397,6 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             }
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getRecordHistory"));
     }
 }
