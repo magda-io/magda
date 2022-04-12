@@ -97,6 +97,7 @@ export default class ServiceRunner {
             ),
             "../"
         );
+        this.setDockerServiceForwardHost();
     }
 
     setDockerServiceForwardHost() {
