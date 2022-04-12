@@ -292,16 +292,20 @@ export default class ServiceRunner {
     }
 
     async createRegistryApi() {
-        const registryApiProcess = child_process.spawn("sbt ~registryApi/run", {
-            cwd: this.workspaceRoot,
-            stdio: "inherit",
-            shell: true,
-            env: {
-                ...process.env,
-                POSTGRES_PASSWORD: "password",
-                JWT_SECRET: this.jwtSecret
+        const registryApiProcess = child_process.spawn(
+            "cat",
+            ["/dev/null", "|", "sbt", '"registryApi/run"'],
+            {
+                cwd: this.workspaceRoot,
+                stdio: "inherit",
+                shell: true,
+                env: {
+                    ...process.env,
+                    POSTGRES_PASSWORD: "password",
+                    JWT_SECRET: this.jwtSecret
+                }
             }
-        });
+        );
 
         this.registryApiProcess = registryApiProcess;
 
