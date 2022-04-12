@@ -10,7 +10,6 @@ import {
 import URI from "urijs";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
-import createServiceError from "../createServiceError";
 import { Response } from "request";
 import ServerError from "../ServerError";
 
@@ -32,6 +31,24 @@ export interface RecordsPage<I extends Record> {
     nextPageToken?: string;
     records: I[];
 }
+
+export const toServerError = (apiName: string) => (
+    error:
+        | {
+              body: any;
+              response: Response;
+          }
+        | any
+) => {
+    if (error?.response?.statusCode) {
+        return new ServerError(
+            `Failed to ${apiName}: ${error.body}`,
+            error.response.statusCode
+        );
+    } else {
+        return new ServerError(`Failed to ${apiName}: ${error}`, 500);
+    }
+};
 
 export default class RegistryClient {
     protected baseUri: URI;
@@ -69,14 +86,6 @@ export default class RegistryClient {
         this.recordHistoryApi = new RecordHistoryApi(registryApiUrl);
     }
 
-    toServerError(error: { body: any; response: Response }) {
-        if (error?.response) {
-            return new ServerError(error.body, error.response.statusCode);
-        } else {
-            return error;
-        }
-    }
-
     getRecordUrl(id: string): string {
         return this.baseUri.clone().segment("records").segment(id).toString();
     }
@@ -98,7 +107,7 @@ export default class RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getAspectDefinitions"));
     }
 
     async getAspectDefinition(
@@ -116,7 +125,7 @@ export default class RegistryClient {
             }
             return res.body;
         } catch (e) {
-            throw this.toServerError(e);
+            throw toServerError("getAspectDefinition")(e);
         }
     }
 
@@ -148,7 +157,7 @@ export default class RegistryClient {
             }
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getRecord"));
     }
 
     async getRecordInFull(id: string): Promise<Record> {
@@ -163,7 +172,7 @@ export default class RegistryClient {
             }
             return res.body;
         } catch (e) {
-            throw this.toServerError(e);
+            throw toServerError("getRecordInFull")(e);
         }
     }
 
@@ -205,7 +214,7 @@ export default class RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getRecords"));
     }
 
     getRecordsPageTokens(
@@ -233,6 +242,6 @@ export default class RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getRecordsPageTokens"));
     }
 }

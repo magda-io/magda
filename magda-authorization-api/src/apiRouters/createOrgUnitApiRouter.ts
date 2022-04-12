@@ -331,7 +331,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Auth
      * @api {put} /v0/auth/orgunits/:nodeId Update details for a node
-     * @apiDescription Creates/updates a node at the specified id
+     * @apiDescription Update the node with the specified id with supplied node data.
      *
      * @apiParam (Path) {string} nodeId id of the node to query
      * @apiParamExample (Body) {json}:

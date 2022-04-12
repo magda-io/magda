@@ -39,7 +39,27 @@ export default class ApiClient {
     }
 
     getMergeRequestInitOption(extraOptions: RequestInit = null): RequestInit {
-        return lodash.merge({}, this.requestInitOption, extraOptions);
+        let defaultContentTypeCfg: RequestInit = {};
+        if (
+            extraOptions?.body &&
+            (!extraOptions?.headers ||
+                (typeof extraOptions.headers === "object" &&
+                    Object.keys(extraOptions.headers)
+                        .map((key) => key.toLowerCase())
+                        .indexOf("content-type") == -1))
+        ) {
+            defaultContentTypeCfg = {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            };
+        }
+        return lodash.merge(
+            {},
+            this.requestInitOption,
+            extraOptions,
+            defaultContentTypeCfg
+        );
     }
 
     async processJsonResponse<T = any>(res: Response) {
@@ -366,12 +386,15 @@ export default class ApiClient {
             >
         >
     ): Promise<OrgUnit> {
-        const uri = urijs(`${this.baseUrl}public/orgunits`).segmentCoded(
-            parentNodeId
-        );
+        const uri = urijs(`${this.baseUrl}public/orgunits`)
+            .segmentCoded(parentNodeId)
+            .segmentCoded("insert");
         const res = await fetch(
             uri.toString(),
-            this.getMergeRequestInitOption({ method: "put" })
+            this.getMergeRequestInitOption({
+                method: "post",
+                body: JSON.stringify(node)
+            })
         );
         if (res.status != 200) {
             throw new ServerError(

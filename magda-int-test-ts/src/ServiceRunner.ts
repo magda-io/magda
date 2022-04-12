@@ -293,8 +293,8 @@ export default class ServiceRunner {
 
     async createRegistryApi() {
         const registryApiProcess = child_process.spawn(
-            "cat",
-            ["/dev/null", "|", "sbt", '"registryApi/run"'],
+            "sbt",
+            ['"registryApi/run"'],
             {
                 cwd: this.workspaceRoot,
                 stdio: "inherit",

@@ -112,56 +112,6 @@ describe("Test ApiClient.ts", function () {
         expect(data).to.deep.equal(mockUserData[1]);
     });
 
-    it("`getUserPublic` should return the correct test user record if called without sepecifying user ID", async function () {
-        const api = new ApiClient(argv.authorizationApi);
-        const data = (await api.getUserPublic(mockUserData[1].id)).valueOr(
-            null
-        );
-        const expectedUserData = {
-            id: mockUserData[1].id,
-            photoURL: mockUserData[1].photoURL,
-            displayName: mockUserData[1].displayName,
-            isAdmin: mockUserData[1].isAdmin
-        };
-        expect(data).to.deep.equal(expectedUserData);
-    });
-
-    it("`getUserPublic` should return the correct test user record if called as a standard user", async function () {
-        const api = new ApiClient(
-            argv.authorizationApi,
-            argv.jwtSecret,
-            mockUserData[1].id
-        );
-        const data = (await api.getUserPublic(mockUserData[1].id)).valueOr(
-            null
-        );
-        const expectedUserData = {
-            id: mockUserData[1].id,
-            photoURL: mockUserData[1].photoURL,
-            displayName: mockUserData[1].displayName,
-            isAdmin: mockUserData[1].isAdmin
-        };
-        expect(data).to.deep.equal(expectedUserData);
-    });
-
-    it("`getUserPublic` should return the correct test user record if called as admin user", async function () {
-        const api = new ApiClient(
-            argv.authorizationApi,
-            argv.jwtSecret,
-            argv.userId
-        );
-        const data = (await api.getUserPublic(mockUserData[1].id)).valueOr(
-            null
-        );
-        const expectedUserData = {
-            id: mockUserData[1].id,
-            photoURL: mockUserData[1].photoURL,
-            displayName: mockUserData[1].displayName,
-            isAdmin: mockUserData[1].isAdmin
-        };
-        expect(data).to.deep.equal(expectedUserData);
-    });
-
     const newUserDataToBeInserted = {
         displayName: "Test User2",
         email: "test@test.com",
