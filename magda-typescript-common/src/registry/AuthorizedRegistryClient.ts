@@ -18,43 +18,36 @@ import buildJwt from "../session/buildJwt";
 import { IncomingMessage } from "http";
 import { Maybe } from "tsmonad";
 
-export interface AuthorizedRegistryUserIdAndJwtSecretOptions
-    extends RegistryOptions {
-    userId: string;
-    jwtSecret: string;
-    jwt?: never;
+// when none of jwt, userId or jwtSecret is provided, the request is deemed to be issued by anonymous users
+export interface AuthorizedRegistryOptions extends RegistryOptions {
+    jwt?: string;
+    userId?: string;
+    jwtSecret?: string;
 }
-
-export interface AuthorizedRegistryJwtOptions extends RegistryOptions {
-    jwt: string;
-    userId?: never;
-    jwtSecret?: never;
-}
-
-export type AuthorizedRegistryOptions =
-    | AuthorizedRegistryUserIdAndJwtSecretOptions
-    | AuthorizedRegistryJwtOptions;
 
 export default class AuthorizedRegistryClient extends RegistryClient {
-    protected jwt: string;
+    protected jwt: string = undefined;
 
     constructor(options: AuthorizedRegistryOptions) {
+        super(options);
+
         if (options.tenantId === undefined || options.tenantId === null) {
             throw Error("A tenant id must be defined.");
         }
 
-        if (!options.jwt) {
-            if (!options.userId || !options.jwtSecret) {
-                throw Error(
-                    "Either jwt or userId and jwtSecret must have values."
-                );
-            }
+        if (options?.userId && !options.jwtSecret) {
+            throw Error("jwtSecret must be supplied when userId is supplied.");
         }
 
-        super(options);
-        this.jwt = options.jwt
-            ? options.jwt
-            : buildJwt(options.jwtSecret, options.userId);
+        if (!options?.userId && options.jwtSecret) {
+            throw Error("userId must be supplied when jwtSecret is supplied.");
+        }
+
+        if (options?.userId && options.jwtSecret) {
+            this.jwt = buildJwt(options.jwtSecret, options.userId);
+        } else if (options?.jwt) {
+            this.jwt = options.jwt;
+        }
     }
 
     async getAspectDefinition(aspectId: string): Promise<AspectDefinition> {

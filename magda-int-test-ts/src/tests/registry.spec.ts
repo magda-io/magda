@@ -6,7 +6,8 @@ import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClie
 import {
     DEFAULT_ADMIN_USER_ID,
     AUTHENTICATED_USERS_ROLE_ID,
-    DATA_STEWARDS_ROLE_ID
+    DATA_STEWARDS_ROLE_ID,
+    ANONYMOUS_USERS_ROLE_ID
 } from "magda-typescript-common/src/authorization-api/constants";
 import RegistryApiClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
@@ -27,14 +28,24 @@ const authApiClient = new AuthApiClient(
     DEFAULT_ADMIN_USER_ID
 );
 
-const getRegistryClient = (userId: string) =>
-    new RegistryApiClient({
-        baseUrl: "http://localhost:6101/v0",
-        maxRetries: 0,
-        tenantId: 0,
-        jwtSecret: jwtSecret,
-        userId
-    });
+const getRegistryClient = (userId?: string) => {
+    if (userId) {
+        return new RegistryApiClient({
+            baseUrl: "http://localhost:6101/v0",
+            maxRetries: 0,
+            tenantId: 0,
+            jwtSecret: jwtSecret,
+            userId
+        });
+    } else {
+        // registry client that acts as ANONYMOUS_USERS
+        return new RegistryApiClient({
+            baseUrl: "http://localhost:6101/v0",
+            maxRetries: 0,
+            tenantId: 0
+        });
+    }
+};
 
 describe("registry auth integration tests", function (this) {
     this.timeout(300000);
@@ -42,9 +53,6 @@ describe("registry auth integration tests", function (this) {
     serviceRunner.enableRegistryApi = true;
     serviceRunner.jwtSecret = jwtSecret;
     serviceRunner.authApiDebugMode = false;
-
-    let authenticatedUserId: string;
-    let dataStewardUserId: string;
 
     const orgUnitRefs = {} as { [key: string]: OrgUnit };
 
@@ -225,23 +233,32 @@ describe("registry auth integration tests", function (this) {
                 }
             );
 
-            const testUser2Data: CreateUserData = {
-                displayName: "Test User2",
-                email: "testUser2@test.com",
-                source: "internal",
-                sourceId: uuidV4()
-            };
+            let testUser2RegistryClient: RegistryApiClient;
+            if (testUserRoleId === ANONYMOUS_USERS_ROLE_ID) {
+                testUser2RegistryClient = getRegistryClient();
+            } else {
+                const testUser2Data: CreateUserData = {
+                    displayName: "Test User2",
+                    email: "testUser2@test.com",
+                    source: "internal",
+                    sourceId: uuidV4()
+                };
 
-            if (testUserOrgUnitId) {
-                expect(isUuid(testUserOrgUnitId)).to.be.true;
-                testUser2Data.orgUnitId = testUserOrgUnitId;
+                if (testUserOrgUnitId) {
+                    expect(isUuid(testUserOrgUnitId)).to.be.true;
+                    testUser2Data.orgUnitId = testUserOrgUnitId;
+                }
+
+                const testUser2 = await authApiClient.createUser(testUser2Data);
+
+                await authApiClient.addUserRoles(testUser2.id, [
+                    testUserRoleId
+                ]);
+
+                testUser2RegistryClient = getRegistryClient(testUser2.id);
             }
 
-            const testUser2 = await authApiClient.createUser(testUser2Data);
-
-            await authApiClient.addUserRoles(testUser2.id, [testUserRoleId]);
-
-            result = await getRegistryClient(testUser2.id).getRecord(datasetId);
+            result = await testUser2RegistryClient.getRecord(datasetId);
 
             if (shouldHasAccess) {
                 // the test user should has access
@@ -259,28 +276,6 @@ describe("registry auth integration tests", function (this) {
         this.timeout(ENV_SETUP_TIME_OUT);
         await serviceRunner.create();
         await createOrgUnits();
-        const authenticatedUser = await authApiClient.createUser({
-            displayName: "Test AuthenticatedUser1",
-            email: "authenticatedUser1@test.com",
-            source: "internal",
-            sourceId: uuidV4()
-        });
-        authenticatedUserId = authenticatedUser.id;
-        await authApiClient.addUserRoles(authenticatedUserId, [
-            AUTHENTICATED_USERS_ROLE_ID
-        ]);
-        const dataStewardUser = await authApiClient.createUser({
-            displayName: "Test dataStewardUser",
-            email: "dataStewward@test.com",
-            source: "internal",
-            sourceId: uuidV4(),
-            orgUnitId: orgUnitRefs["Section B"].id
-        });
-        dataStewardUserId = dataStewardUser.id;
-        // add data steward user role to the data steward user
-        await authApiClient.addUserRoles(dataStewardUserId, [
-            DATA_STEWARDS_ROLE_ID
-        ]);
 
         describe("Test Dataset Metadata Creation Workflow", function () {
             after(async function (this) {
