@@ -500,6 +500,8 @@ buildtest:integration-tests:
     - cd ..
     - cd magda-storage-api && yarn build
     - cd ..
+    - cd magda-migrator-registry-aspects && yarn build
+    - cd ..
     - cd magda-int-test-ts
     - yarn test
   artifacts:
