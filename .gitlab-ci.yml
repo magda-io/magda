@@ -491,7 +491,7 @@ buildtest:integration-tests:
   services:
     - docker:dind
   variables:
-    POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
+    POSTGRES_URL: "jdbc:postgresql://localhost/postgres"
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: "password"
