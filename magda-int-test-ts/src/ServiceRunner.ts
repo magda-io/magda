@@ -189,45 +189,35 @@ export default class ServiceRunner {
             throw new Error("Forward hostname should not be empty!");
         }
 
-        return new Promise((resolve, reject) => {
-            if (this.portForwardingProcessList[localPort]) {
-                throw new Error(
-                    `Port ${localPort} already has an existing port forwarding process running.`
-                );
+        if (this.portForwardingProcessList[localPort]) {
+            throw new Error(
+                `Port ${localPort} already has an existing port forwarding process running.`
+            );
+        }
+        const portForwardCmd = `socat TCP4-LISTEN:${localPort},fork,reuseaddr TCP4:${hostname}:${remotePort}`;
+        const portForwardProcess = child_process.spawn(portForwardCmd, {
+            stdio: "inherit",
+            shell: true
+        });
+
+        this.portForwardingProcessList[
+            localPort.toString()
+        ] = portForwardProcess;
+
+        portForwardProcess.on("exit", (code) => {
+            this.portForwardingProcessList[localPort] = undefined;
+            const msg = `portforward for ${hostname}:${remotePort} exited with code ${code}`;
+            if (!code) {
+                console.log(msg);
+            } else {
+                console.error(msg);
             }
-            const portForwardCmd = `socat TCP4-LISTEN:${localPort},fork,reuseaddr TCP4:${hostname}:${remotePort}`;
-            const portForwardProcess = child_process.spawn(portForwardCmd, {
-                stdio: "inherit",
-                shell: true
-            });
+        });
 
-            this.portForwardingProcessList[
-                localPort.toString()
-            ] = portForwardProcess;
-
-            portForwardProcess.on("exit", (code) => {
-                this.portForwardingProcessList[localPort] = undefined;
-                console.log(
-                    `portforward for ${hostname}${remotePort} exited with code ${code}`
-                );
-                if (!code) {
-                    resolve();
-                } else {
-                    reject(
-                        new Error(
-                            `portforward for ${hostname}${remotePort} exit with non-zero exit code!`
-                        )
-                    );
-                }
-            });
-
-            portForwardProcess.on("error", (error) => {
-                reject(
-                    new Error(
-                        `portforward for ${hostname}${remotePort} has thrown an error: ${error}`
-                    )
-                );
-            });
+        portForwardProcess.on("error", (error) => {
+            console.error(
+                `portforward for ${hostname}:${remotePort} has thrown an error: ${error}`
+            );
         });
     }
 
