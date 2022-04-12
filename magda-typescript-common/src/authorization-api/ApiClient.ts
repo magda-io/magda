@@ -31,11 +31,13 @@ export default class ApiClient {
         if (jwtSecret && userId) {
             this.jwt = buildJwt(jwtSecret, userId);
         }
-        this.requestInitOption = {
-            headers: {
-                "X-Magda-Session": this.jwt
-            }
-        };
+        if (this.jwt) {
+            this.requestInitOption = {
+                headers: {
+                    "X-Magda-Session": this.jwt
+                }
+            };
+        }
     }
 
     getMergeRequestInitOption(extraOptions: RequestInit = null): RequestInit {
@@ -123,7 +125,7 @@ export default class ApiClient {
     async createUser(user: CreateUserData): Promise<UserRecord> {
         try {
             const res = await fetch(
-                `${this.baseUrl}private/users`,
+                `${this.baseUrl}public/users`,
                 this.getMergeRequestInitOption({
                     method: "POST",
                     headers: {
