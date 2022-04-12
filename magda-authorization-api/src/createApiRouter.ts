@@ -157,8 +157,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
         res.end();
     });
 
+    // in future, there will be no need for any private (in cluster access only endpoint)
+    // after we add fine-gained access control to all private endpoints and make them public
     router.all("/private/*", MUST_BE_ADMIN);
 
+    /**
+     * Todo: we should move this API to public facing endpoint and add fine-gained access control.
+     */
     router.get("/private/users/lookup", function (req, res) {
         const source = req.query.source as string;
         const sourceId = req.query.sourceId as string;
@@ -170,6 +175,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
         );
     });
 
+    /**
+     * This route is deprecated as we have public facing API with fine-gained access control
+     */
     router.get("/private/users/:userId", function (req, res) {
         const userId = req.params.userId;
 
@@ -180,6 +188,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
         );
     });
 
+    /**
+     * This route is deprecated as we have public facing API with fine-gained access control
+     */
     router.post("/private/users", async function (req, res) {
         try {
             const user = await database.createUser(req.body);

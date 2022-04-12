@@ -67,25 +67,6 @@ export default class ApiClient {
     async getUser(userId: string): Promise<Maybe<RequiredKeys<User, "id">>> {
         return await this.handleGetResult(
             fetch(
-                `${this.baseUrl}private/users/${userId}`,
-                this.getMergeRequestInitOption()
-            )
-        );
-    }
-
-    /**
-     * Get the data of a user.
-     * (Deprecated) This is the public facing API and will return less fields.
-     *
-     * @param {string} userId
-     * @returns {Promise<Maybe<User>>}
-     * @memberof ApiClient
-     */
-    async getUserPublic(
-        userId: string
-    ): Promise<Maybe<RequiredKeys<User, "id">>> {
-        return await this.handleGetResult(
-            fetch(
                 `${this.baseUrl}public/users/${userId}`,
                 this.getMergeRequestInitOption()
             )

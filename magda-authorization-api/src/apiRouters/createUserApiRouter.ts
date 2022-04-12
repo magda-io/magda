@@ -5,7 +5,6 @@ import handleMaybePromise from "../handleMaybePromise";
 import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import { NO_CACHE } from "../utilityMiddlewares";
-import { PublicUser } from "magda-typescript-common/src/authorization-api/model";
 import { requireObjectPermission } from "../recordAuthMiddlewares";
 import { withAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
@@ -199,7 +198,8 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Auth
      * @api {get} /v0/auth/users/whoami Get Current User Info (whoami)
-     * @apiDescription Returns current user
+     * @apiDescription Returns the user info of the current user. If the user has not logged in yet,
+     * the user will be considered as an anonymous user.
      *
      * @apiSuccessExample {json} 200
      *    {
@@ -464,7 +464,8 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Auth
      * @api {get} /v0/auth/users/:userId Get User By Id
-     * @apiDescription Returns user by id
+     * @apiDescription Returns user by id.
+     * Unlike `whoami` API endpoint, this API requires `authObject/user/read` permission.
      *
      * @apiParam {string} userId id of user
      *
@@ -473,7 +474,8 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *        "id":"...",
      *        "displayName":"Fred Nerk",
      *        "photoURL":"...",
-     *        "isAdmin": true
+     *        "OrgUnitId": "xxx"
+     *        ...
      *    }
      *
      * @apiErrorExample {json} 401/404/500
@@ -491,20 +493,10 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
         }),
         (req, res) => {
             const userId = req.params.userId;
-            const getPublicUser = database
-                .getUser(userId, res.locals.authDecision)
-                .then((userMaybe) =>
-                    userMaybe.map((user) => {
-                        const publicUser: PublicUser = {
-                            id: user.id,
-                            photoURL: user.photoURL,
-                            displayName: user.displayName,
-                            isAdmin: user.isAdmin
-                        };
-
-                        return publicUser;
-                    })
-                );
+            const getPublicUser = database.getUser(
+                userId,
+                res.locals.authDecision
+            );
 
             handleMaybePromise(res, getPublicUser, "/public/users/:userId");
         }
