@@ -182,6 +182,31 @@ describe("registry auth integration tests", function (this) {
         return datasetSetId;
     }
 
+    async function createTestDistributionByUser(
+        userId: string,
+        accessControlAspect?: AccessControlAspect
+    ) {
+        return await createTestDatasetByUser(
+            userId,
+            {
+                id: "",
+                name: "test dist",
+                aspects: {
+                    "dcat-distribution-strings": {
+                        title: "a test distribution",
+                        description: "this is a test distribution"
+                    },
+                    "access-control": {}
+                },
+                tenantId: 0,
+                sourceTag: "",
+                // authnReadPolicyId is deprecated and to be removed
+                authnReadPolicyId: ""
+            },
+            accessControlAspect
+        );
+    }
+
     function testUserDatasetAccess(
         testDesc: string,
         shouldHasAccess: boolean,
@@ -655,6 +680,147 @@ describe("registry auth integration tests", function (this) {
                 expect(
                     record.aspects["dcat-dataset-strings"]["title"]
                 ).to.equal("test dataset updated name");
+            });
+
+            it("should not allow a user to access distributions that he has no access via `dereference`", async () => {
+                expect(isUuid(orgUnitRefs["Section B"].id)).to.equal(true);
+                const dataStewardUser = await authApiClient.createUser({
+                    displayName: "Test dataStewardUser",
+                    email: "dataStewward@test.com",
+                    source: "internal",
+                    sourceId: uuidV4(),
+                    orgUnitId: orgUnitRefs["Section B"].id
+                });
+                const dataStewardUserId = dataStewardUser.id;
+                // add data steward user role to the data steward user
+                await authApiClient.addUserRoles(dataStewardUserId, [
+                    DATA_STEWARDS_ROLE_ID
+                ]);
+
+                const disId1 = await createTestDistributionByUser(
+                    dataStewardUserId
+                );
+
+                const disId2 = await createTestDistributionByUser(
+                    dataStewardUserId
+                );
+
+                const disId3 = await createTestDistributionByUser(
+                    dataStewardUserId
+                );
+
+                const datasetId = await createTestDatasetByUser(
+                    dataStewardUserId,
+                    {
+                        id: "",
+                        name: "test dataset",
+                        aspects: {
+                            "dcat-dataset-strings": {
+                                title: "test dataset",
+                                description: "this is a test one"
+                            },
+                            publishing: {
+                                state: "published"
+                            },
+                            "dataset-distributions": {
+                                distributions: [disId1, disId2, disId3]
+                            }
+                        },
+                        tenantId: 0,
+                        sourceTag: "",
+                        // authnReadPolicyId is deprecated and to be removed
+                        authnReadPolicyId: ""
+                    }
+                );
+
+                let result = await getRegistryClient(
+                    dataStewardUserId
+                ).getRecord(
+                    datasetId,
+                    [
+                        "dcat-dataset-strings",
+                        "publishing",
+                        "dataset-distributions"
+                    ],
+                    [],
+                    true
+                );
+
+                expect(result).to.not.be.an.instanceof(Error);
+                expect(
+                    (result as Record).aspects["dataset-distributions"][
+                        "distributions"
+                    ]
+                ).to.have.lengthOf(3);
+                expect(
+                    (result as Record).aspects["dataset-distributions"][
+                        "distributions"
+                    ][0]
+                ).to.have.own.property("aspects");
+                expect(
+                    (result as Record).aspects["dataset-distributions"][
+                        "distributions"
+                    ][0]["aspects"]["dcat-distribution-strings"]["title"]
+                ).to.equal("a test distribution");
+                expect(
+                    (result as Record).aspects["dataset-distributions"][
+                        "distributions"
+                    ].map((item: any) => item.id)
+                ).to.include.members([disId1, disId2, disId3]);
+
+                // revoke the access to 2ns dist
+                expect(isUuid(orgUnitRefs["Branch B"].id)).to.equal(true);
+                // use admin user to revoke
+                result = await getRegistryClient(
+                    DEFAULT_ADMIN_USER_ID
+                ).patchRecord(disId2, [
+                    {
+                        op: "replace",
+                        path: "/aspects/access-control/orgUnitId",
+                        value: orgUnitRefs["Branch B"].id
+                    },
+                    {
+                        op: "remove",
+                        path: "/aspects/access-control/ownerId"
+                    }
+                ]);
+
+                expect(result).to.not.be.an.instanceof(Error);
+
+                // verify record's distribution again
+                result = await getRegistryClient(dataStewardUserId).getRecord(
+                    datasetId,
+                    [
+                        "dcat-dataset-strings",
+                        "publishing",
+                        "dataset-distributions"
+                    ],
+                    [],
+                    true
+                );
+
+                expect(result).to.not.be.an.instanceof(Error);
+                expect(
+                    (result as Record).aspects["dataset-distributions"][
+                        "distributions"
+                    ]
+                ).to.have.lengthOf(2);
+                expect(
+                    (result as Record).aspects["dataset-distributions"][
+                        "distributions"
+                    ].map((item: any) => item.id)
+                    // -- dist2 is not included anymore
+                ).to.include.members([disId1, disId3]);
+                expect(
+                    (result as Record).aspects["dataset-distributions"][
+                        "distributions"
+                    ][0]
+                ).to.have.own.property("aspects");
+                expect(
+                    (result as Record).aspects["dataset-distributions"][
+                        "distributions"
+                    ][0]["aspects"]["dcat-distribution-strings"]["title"]
+                ).to.equal("a test distribution");
             });
         });
     });
