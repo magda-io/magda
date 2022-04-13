@@ -21,15 +21,6 @@ verifyRecordPermission(inputOperationUri, inputObjectRefName) {
     input.object[inputObjectRefName]["access-control"].ownerId = input.user.id
 }
 
-# when user has user ownership constraint permission, the user can also access all records with NO owner assigned
-verifyRecordPermission(inputOperationUri, inputObjectRefName) {
-    hasOwnerConstraintPermission(inputOperationUri)
-
-    # use inputObjectRefName and avoid hard code context data field name
-    # In this way, we can control the reference output in residual rules
-    not input.object[inputObjectRefName]["access-control"].ownerId
-}
-
 # if find a permission with org unit ownership constraint
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
     hasOrgUnitConstaintPermission(inputOperationUri)

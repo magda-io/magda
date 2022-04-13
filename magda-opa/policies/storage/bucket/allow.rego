@@ -19,12 +19,6 @@ allow {
     input.storage.bucket.ownerId = input.user.id
 }
 
-allow {
-    hasOwnerConstraintPermission(input.operationUri)
-    # or when a user has ownership constraint permission, he also can access all buckets with NO ownerId assigned
-    not input.storage.bucket.ownerId
-}
-
 # Rules for permissions with org unit constraint
 allow {
     hasOrgUnitConstaintPermission(input.operationUri)

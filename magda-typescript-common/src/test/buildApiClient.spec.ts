@@ -126,7 +126,7 @@ describe("Test ApiClient.ts", function () {
         return expect(
             api.createUser(newUserDataToBeInserted)
         ).to.eventually.rejectedWith(
-            `Encountered error 401 when POSTing new user to ${argv.authorizationApi}`
+            "Encountered error 401: Unauthorised when creating new user to http://localhost:6104/v0/public/users"
         );
     });
 
@@ -139,7 +139,7 @@ describe("Test ApiClient.ts", function () {
         return expect(
             api.createUser(newUserDataToBeInserted)
         ).to.eventually.rejectedWith(
-            `Encountered error 403 when POSTing new user to ${argv.authorizationApi}`
+            "Encountered error 403: Can only be accessed by Admin users when creating new user to http://localhost:6104/v0/public/users"
         );
     });
 

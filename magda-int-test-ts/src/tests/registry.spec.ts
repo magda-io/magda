@@ -214,24 +214,28 @@ describe("registry auth integration tests", function (this) {
             expect(result).to.not.be.an.instanceof(Error);
             expect(unionToThrowable(result).id).to.equal(datasetId);
 
-            // we delete access control aspect before assign the new datasetAccessControlAspect data
-            await getRegistryClient(dataStewardUserId).deleteRecordAspect(
-                datasetId,
-                "access-control"
-            );
+            // updating access-control aspect
+            if (datasetAccessControlAspect) {
+                // we delete access control aspect before assign the new datasetAccessControlAspect data
+                await getRegistryClient(dataStewardUserId).deleteRecordAspect(
+                    datasetId,
+                    "access-control"
+                );
 
-            if (datasetAccessControlAspect?.orgUnitId) {
-                expect(isUuid(datasetAccessControlAspect.orgUnitId)).to.be.true;
-            }
-
-            await getRegistryClient(dataStewardUserId).putRecordAspect(
-                datasetId,
-                "access-control",
-                {
-                    ownerId: dataStewardUserId,
-                    ...datasetAccessControlAspect
+                if (datasetAccessControlAspect?.orgUnitId) {
+                    expect(isUuid(datasetAccessControlAspect.orgUnitId)).to.be
+                        .true;
                 }
-            );
+
+                await getRegistryClient(dataStewardUserId).putRecordAspect(
+                    datasetId,
+                    "access-control",
+                    {
+                        ownerId: dataStewardUserId,
+                        ...datasetAccessControlAspect
+                    }
+                );
+            }
 
             let testUser2RegistryClient: RegistryApiClient;
             if (testUserRoleId === ANONYMOUS_USERS_ROLE_ID) {
@@ -396,6 +400,75 @@ describe("registry auth integration tests", function (this) {
                 DATA_STEWARDS_ROLE_ID,
                 orgUnitRefs["Section C"].id
             );
+
+            it("should allow data steward update its own draft dataset", async () => {
+                const dataStewardUser = await authApiClient.createUser({
+                    displayName: "Test dataStewardUser",
+                    email: "dataStewward@test.com",
+                    source: "internal",
+                    sourceId: uuidV4()
+                });
+                const dataStewardUserId = dataStewardUser.id;
+                // add data steward user role to the data steward user
+                await authApiClient.addUserRoles(dataStewardUserId, [
+                    DATA_STEWARDS_ROLE_ID
+                ]);
+
+                const datasetId = await createTestDatasetByUser(
+                    dataStewardUserId
+                );
+
+                const result = await getRegistryClient(
+                    dataStewardUserId
+                ).patchRecordAspect(datasetId, "dataset-draft", [
+                    {
+                        op: "replace",
+                        path: "/data",
+                        value: '{"name": "xxx"}'
+                    }
+                ]);
+
+                expect(result).to.not.be.an.instanceof(Error);
+            });
+
+            it("should not allow data steward update its own draft dataset to a dataset he has no access (e.g. assign to an orgunit he has no access)", async () => {
+                const dataStewardUser = await authApiClient.createUser({
+                    displayName: "Test dataStewardUser",
+                    email: "dataStewward@test.com",
+                    source: "internal",
+                    sourceId: uuidV4(),
+                    orgUnitId: orgUnitRefs["Branch B"].id
+                });
+                expect(isUuid(orgUnitRefs["Branch B"].id)).to.equal(true);
+
+                const dataStewardUserId = dataStewardUser.id;
+                // add data steward user role to the data steward user
+                await authApiClient.addUserRoles(dataStewardUserId, [
+                    DATA_STEWARDS_ROLE_ID
+                ]);
+
+                const datasetId = await createTestDatasetByUser(
+                    dataStewardUserId
+                );
+
+                expect(isUuid(orgUnitRefs["Branch A"].id)).to.equal(true);
+                const result = await getRegistryClient(
+                    dataStewardUserId
+                ).patchRecordAspect(datasetId, "access-control", [
+                    {
+                        op: "replace",
+                        path: "/orgUnitId",
+                        value: orgUnitRefs["Branch A"].id
+                    },
+                    {
+                        op: "remove",
+                        path: "/ownerId"
+                    }
+                ]);
+
+                expect(result).to.be.an.instanceof(Error);
+                expect((result as ServerError).statusCode).to.equal(403);
+            });
         });
     });
 
