@@ -136,7 +136,11 @@ export default class ApiClient {
             );
             if (res.status >= 400) {
                 throw new Error(
-                    `Encountered error ${res.status} when POSTing new user to ${this.baseUrl}/private/users`
+                    `Encountered error ${
+                        res.status
+                    }: ${await res.text()} when creating new user to ${
+                        this.baseUrl
+                    }public/users`
                 );
             }
             const resData = await res.json();

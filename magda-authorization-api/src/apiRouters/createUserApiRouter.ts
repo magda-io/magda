@@ -6,7 +6,10 @@ import GenericError from "magda-typescript-common/src/authorization-api/GenericE
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import { NO_CACHE } from "../utilityMiddlewares";
 import { requireObjectPermission } from "../recordAuthMiddlewares";
-import { withAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import {
+    withAuthDecision,
+    requirePermission
+} from "magda-typescript-common/src/authorization-api/authMiddleware";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import { searchTableRecord } from "magda-typescript-common/src/SQLUtils";
 
@@ -318,12 +321,14 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.post(
         "/",
-        requireObjectPermission(
+        requirePermission(
             authDecisionClient,
-            database,
             "authObject/user/create",
-            (req, res) => req.params.userId,
-            "user"
+            (req: Request, res: Response) => ({
+                authObject: {
+                    user: req.body
+                }
+            })
         ),
         async (req, res) => {
             try {
