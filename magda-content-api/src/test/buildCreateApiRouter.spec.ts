@@ -188,7 +188,7 @@ describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
             const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
             const isAdmin = true;
             nock(argv.authApiUrl)
-                .get(`/private/users/${userId}`)
+                .get(`/public/users/${userId}`)
                 .reply(200, { isAdmin });
             const id = jwt.sign({ userId: userId }, argv.jwtSecret);
             return req.set("X-Magda-Session", id);

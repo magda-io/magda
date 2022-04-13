@@ -41,8 +41,15 @@ export const toServerError = (apiName: string) => (
         | any
 ) => {
     if (error?.response?.statusCode) {
+        const detailedErrorMsg = error?.body
+            ? JSON.stringify(error.body)
+            : error?.response?.responseText
+            ? error.response.responseText
+            : "";
         return new ServerError(
-            `Failed to ${apiName}: ${JSON.stringify(error.body)}`,
+            `Failed to ${apiName}${
+                detailedErrorMsg ? `: ${detailedErrorMsg}` : ""
+            }`,
             error.response.statusCode
         );
     } else {
@@ -153,7 +160,7 @@ export default class RegistryClient {
                     formatServiceError("Failed to GET records.", e, retriesLeft)
                 ),
             (e) => {
-                return !e.response || e.response.statusCode !== 404;
+                return e?.response?.statusCode !== 404;
             }
         )
             .then((result) => result.body)
