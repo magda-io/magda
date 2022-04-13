@@ -86,10 +86,10 @@ describe("Test createOpenfaasGatewayProxy", () => {
 
         authApiScope = nock(authApiBaseUrl).persist();
         authApiScope
-            .get(new RegExp(`/private/users/${adminUserId}`, "i"))
+            .get(new RegExp(`/public/users/${adminUserId}`, "i"))
             .reply(200, { ...adminUserData });
         authApiScope
-            .get(new RegExp(`/private/users/${nonAdminUserId}`, "i"))
+            .get(new RegExp(`/public/users/${nonAdminUserId}`, "i"))
             .reply(200, { ...nonAdminUserData });
     });
 
