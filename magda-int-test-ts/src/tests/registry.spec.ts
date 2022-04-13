@@ -166,6 +166,8 @@ describe("registry auth integration tests", function (this) {
             }
         }
 
+        recordData.id = datasetSetId;
+
         let result = await getRegistryClient(userId).putRecord(recordData);
         expect(result).to.not.be.an.instanceof(Error);
 
@@ -281,6 +283,7 @@ describe("registry auth integration tests", function (this) {
         await serviceRunner.create();
         await createOrgUnits();
 
+        // we need to put actual test cases inside `before` as we need to org unit ids to generate our test case.
         describe("Test Dataset Metadata Creation Workflow", function () {
             after(async function (this) {
                 this.timeout(ENV_SETUP_TIME_OUT);
@@ -530,33 +533,7 @@ describe("registry auth integration tests", function (this) {
             });
 
             it("should allow data steward to edit a published dataset as draft dataset and re-publish it", async () => {
-                // create a published dataset using the default admin user
                 expect(isUuid(orgUnitRefs["Section B"].id)).to.equal(true);
-                const datasetId = await createTestDatasetByUser(
-                    DEFAULT_ADMIN_USER_ID,
-                    {
-                        id: uuidV4(),
-                        name: "test dataset",
-                        aspects: {
-                            "dcat-dataset-strings": {
-                                title: "test dataset",
-                                description: "this is a test one"
-                            },
-                            publishing: {
-                                state: "published"
-                            },
-                            "access-control": {
-                                orgUnitId: orgUnitRefs["Section B"].id,
-                                ownerId: DEFAULT_ADMIN_USER_ID
-                            }
-                        },
-                        tenantId: 0,
-                        sourceTag: "",
-                        // authnReadPolicyId is deprecated and to be removed
-                        authnReadPolicyId: ""
-                    }
-                );
-
                 const dataStewardUser = await authApiClient.createUser({
                     displayName: "Test dataStewardUser",
                     email: "dataStewward@test.com",
@@ -569,6 +546,27 @@ describe("registry auth integration tests", function (this) {
                 await authApiClient.addUserRoles(dataStewardUserId, [
                     DATA_STEWARDS_ROLE_ID
                 ]);
+
+                const datasetId = await createTestDatasetByUser(
+                    dataStewardUserId,
+                    {
+                        id: "",
+                        name: "test dataset",
+                        aspects: {
+                            "dcat-dataset-strings": {
+                                title: "test dataset",
+                                description: "this is a test one"
+                            },
+                            publishing: {
+                                state: "published"
+                            }
+                        },
+                        tenantId: 0,
+                        sourceTag: "",
+                        // authnReadPolicyId is deprecated and to be removed
+                        authnReadPolicyId: ""
+                    }
+                );
 
                 let result = await getRegistryClient(
                     dataStewardUserId
@@ -585,6 +583,10 @@ describe("registry auth integration tests", function (this) {
                         },
                         publishing: {
                             state: "draft"
+                        },
+                        "access-control": {
+                            ownerId: dataStewardUserId,
+                            orgUnitId: orgUnitRefs["Section B"].id
                         }
                     },
                     tenantId: 0,
@@ -608,9 +610,9 @@ describe("registry auth integration tests", function (this) {
 
                 let record = result as Record;
                 expect(record.aspects["publishing"]["state"]).to.equal("draft");
-                expect(record.aspects["dataset-draft"]["name"]).to.equal(
-                    "test dataset updated name"
-                );
+                expect(
+                    record.aspects["dataset-draft"]["dataset"]["name"]
+                ).to.equal("test dataset updated name");
                 expect(
                     record.aspects["dcat-dataset-strings"]["title"]
                 ).to.equal("test dataset");
