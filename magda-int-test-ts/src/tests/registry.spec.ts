@@ -822,6 +822,83 @@ describe("registry auth integration tests", function (this) {
                     ][0]["aspects"]["dcat-distribution-strings"]["title"]
                 ).to.equal("a test distribution");
             });
+
+            it("should allow a user to access draft dataset via pre-authorised permission", async () => {
+                const testUser = await authApiClient.createUser({
+                    displayName: "Test User",
+                    email: "testuser@test.com",
+                    source: "internal",
+                    sourceId: uuidV4(),
+                    orgUnitId: orgUnitRefs["Branch B"].id
+                });
+                expect(isUuid(orgUnitRefs["Branch B"].id)).to.equal(true);
+
+                const testUserId = testUser.id;
+
+                expect(isUuid(orgUnitRefs["Branch A"].id)).to.equal(true);
+                const datasetId = await createTestDatasetByUser(
+                    DEFAULT_ADMIN_USER_ID,
+                    undefined,
+                    {
+                        ownerId: DEFAULT_ADMIN_USER_ID,
+                        orgUnitId: orgUnitRefs["Branch A"].id
+                    }
+                );
+
+                let result = await getRegistryClient(testUserId).getRecord(
+                    datasetId
+                );
+
+                expect(result).to.be.an.instanceof(ServerError);
+                expect((result as ServerError).statusCode).to.equal(404);
+
+                const role = await authApiClient.createRole("test role");
+                const permission = await authApiClient.createRolePermission(
+                    role.id,
+                    {
+                        name: "record read permission",
+                        description: "",
+                        resource_id: (
+                            await authApiClient.getResourceByUri(
+                                "object/record"
+                            )
+                        ).id,
+                        user_ownership_constraint: false,
+                        org_unit_ownership_constraint: false,
+                        pre_authorised_constraint: true,
+                        operationIds: [
+                            (
+                                await authApiClient.getOperationByUri(
+                                    "object/record/read"
+                                )
+                            ).id
+                        ]
+                    }
+                );
+
+                result = await getRegistryClient(
+                    DEFAULT_ADMIN_USER_ID
+                ).patchRecordAspect(datasetId, "access-control", [
+                    {
+                        op: "add",
+                        path: "/preAuthorisedPermissionIds",
+                        value: [permission.id]
+                    }
+                ]);
+
+                expect(result).to.not.be.an.instanceof(Error);
+
+                // add test role to the test user
+                await authApiClient.addUserRoles(testUserId, [role.id]);
+
+                // testUser can access the record now
+                result = await getRegistryClient(testUserId).getRecord(
+                    datasetId
+                );
+
+                expect(result).to.not.be.an.instanceof(Error);
+                expect(unionToThrowable(result).id).to.equal(datasetId);
+            });
         });
     });
 

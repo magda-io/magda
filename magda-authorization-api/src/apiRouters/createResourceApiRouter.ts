@@ -18,6 +18,7 @@ import {
     searchTableRecord
 } from "magda-typescript-common/src/SQLUtils";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -312,6 +313,48 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
             true,
             "Get operations count of the resource"
         )
+    );
+
+    // get resource by URI
+    router.get(
+        "/byUri/*",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/resource/read"
+        }),
+        async function (req, res) {
+            try {
+                let resUri = req?.params?.[0];
+                if (typeof resUri !== "string") {
+                    throw new ServerError(
+                        "Invalid resource uri is supplied.",
+                        400
+                    );
+                }
+                resUri = resUri.trim();
+                if (!resUri) {
+                    throw new ServerError(
+                        "Invalid empty resource uri is supplied.",
+                        400
+                    );
+                }
+
+                const result = await database
+                    .getPool()
+                    .query(
+                        ...sqls`SELECT * FROM resources WHERE uri = ${resUri}`.toQuery()
+                    );
+
+                if (!result?.rows?.length) {
+                    throw new ServerError(
+                        `Cannot locate the resource by uri: ${resUri}`,
+                        404
+                    );
+                }
+                res.json(result.rows[0]);
+            } catch (e) {
+                respondWithError("GET resource by URI", res, e);
+            }
+        }
     );
 
     // get record by id

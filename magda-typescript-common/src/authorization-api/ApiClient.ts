@@ -6,7 +6,11 @@ import {
     Role,
     Permission,
     OrgUnit,
-    OrgUnitRecord
+    OrgUnitRecord,
+    CreateRolePermissionInputData,
+    PermissionRecord,
+    OperationRecord,
+    ResourceRecord
 } from "./model";
 import { Maybe } from "tsmonad";
 import lodash from "lodash";
@@ -15,6 +19,7 @@ import addTrailingSlash from "../addTrailingSlash";
 import urijs from "urijs";
 import { RequiredKeys } from "../utilityTypes";
 import ServerError from "../ServerError";
+import isUuid from "../util/isUuid";
 
 export default class ApiClient {
     private jwt: string = null;
@@ -402,13 +407,60 @@ export default class ApiClient {
                 body: JSON.stringify(node)
             })
         );
-        if (res.status != 200) {
-            throw new ServerError(
-                `Failed to create node: ${await res.text()}`,
-                res.status
-            );
+        return await this.processJsonResponse<OrgUnit>(res);
+    }
+
+    async createRole(name: string, desc?: string): Promise<Role> {
+        const uri = urijs(`${this.baseUrl}public/roles`);
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption({
+                method: "post",
+                body: JSON.stringify({
+                    name,
+                    description: desc ? desc : ""
+                })
+            })
+        );
+        return await this.processJsonResponse<Role>(res);
+    }
+
+    async createRolePermission(
+        roleId: string,
+        permissionData: CreateRolePermissionInputData
+    ): Promise<PermissionRecord> {
+        if (!isUuid(roleId)) {
+            throw new ServerError(`roleId: ${roleId} is not a valid UUID.`);
         }
-        return await res.json();
+        const uri = urijs(`${this.baseUrl}public/roles`)
+            .segmentCoded(roleId)
+            .segmentCoded("permissions");
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption({
+                method: "post",
+                body: JSON.stringify(permissionData)
+            })
+        );
+        return await this.processJsonResponse<PermissionRecord>(res);
+    }
+
+    async getOperationByUri(opUri: string) {
+        const uri = urijs(`${this.baseUrl}public/operations/byUri/${opUri}`);
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<OperationRecord>(res);
+    }
+
+    async getResourceByUri(resUri: string) {
+        const uri = urijs(`${this.baseUrl}public/resources/byUri/${resUri}`);
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<ResourceRecord>(res);
     }
 
     private async handleGetResult<T = User>(

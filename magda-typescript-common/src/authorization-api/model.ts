@@ -107,6 +107,49 @@ export interface Permission {
     editTime?: Date;
 }
 
+export interface PermissionRecord {
+    id: string;
+    name: string;
+    description: string;
+    resource_id: string;
+    user_ownership_constraint: boolean;
+    org_unit_ownership_constraint: boolean;
+    pre_authorised_constraint: boolean;
+    owner_id: string;
+    create_time: string;
+    create_by: string;
+    edit_time: string;
+    edit_by: string;
+}
+
+export interface CreateRolePermissionInputData
+    extends Omit<
+        PermissionRecord,
+        | "id"
+        | "owner_id"
+        | "create_by"
+        | "create_time"
+        | "edit_by"
+        | "edit_time"
+    > {
+    operationIds: string[];
+}
+
+export type OperationRecord = {
+    id: string;
+    uri: string;
+    name: string;
+    description: string;
+    resource_id: string;
+};
+
+export type ResourceRecord = {
+    id: string;
+    uri: string;
+    name: string;
+    description: string;
+};
+
 export interface UserToken {
     id: string;
 }

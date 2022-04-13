@@ -174,7 +174,48 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         )
     );
 
-    // create an new permission and add to the role
+    /**
+     * @apiGroup Auth
+     * @api {delete} /v0/auth/roles/:roleId/permissions Create a new permission and add to the role
+     * @apiDescription
+     * Create a new permission and add to the role specified by roleId.
+     * Returns the newly created permission record.
+     *
+     * @apiParam {string} roleId id of user
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       "name": "a test permission",
+     *       "user_ownership_constraint": false,
+     *       "org_unit_ownership_constraint": true,
+     *       "pre_authorised_constraint" : false,
+     *       "description": "a test permission",
+     *       "resource_id": "477d0720-aeda-47bd-8fc9-65badb851f46",
+     *       "operationIds": ["739b5a83-291d-4420-a0eb-8fbeb2b5c186", "e64241f7-1660-4a6c-9bd9-07f716cf9156"]
+     *     }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
+     *       "name": "a test permission",
+     *       "user_ownership_constraint": false,
+     *       "org_unit_ownership_constraint": true,
+     *       "pre_authorised_constraint" : false,
+     *       "description": "a test permission",
+     *       "resource_id": "477d0720-aeda-47bd-8fc9-65badb851f46",
+     *       "owner_id": "3535fdad-1804-4614-a9ce-ce196e880238",
+     *       "create_by": "3535fdad-1804-4614-a9ce-ce196e880238",
+     *       "edit_time": "2022-03-28T10:18:10.479Z",
+     *       "edit_by": "3535fdad-1804-4614-a9ce-ce196e880238",
+     *       "edit_time": "2022-03-28T10:18:10.479Z"
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.post(
         "/:roleId/permissions",
         getUserId(options.jwtSecret),
