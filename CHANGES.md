@@ -21,6 +21,7 @@
 - #3340 OPA AST parser takes too long to evaluate large response
 - Increase registry default request timeout to 60s (from 30s)
 - Bump Dataset index version to 49 & publishers index version to 7
+- Fixed registry API generated ts client patchRecord API response type
 
 ## 1.2.1
 

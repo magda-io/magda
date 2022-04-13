@@ -469,6 +469,191 @@ describe("registry auth integration tests", function (this) {
                 expect(result).to.be.an.instanceof(Error);
                 expect((result as ServerError).statusCode).to.equal(403);
             });
+
+            it("should allow data steward to update a draft dataset to published dataset", async () => {
+                const dataStewardUser = await authApiClient.createUser({
+                    displayName: "Test dataStewardUser",
+                    email: "dataStewward@test.com",
+                    source: "internal",
+                    sourceId: uuidV4()
+                });
+                const dataStewardUserId = dataStewardUser.id;
+                // add data steward user role to the data steward user
+                await authApiClient.addUserRoles(dataStewardUserId, [
+                    DATA_STEWARDS_ROLE_ID
+                ]);
+
+                const datasetId = await createTestDatasetByUser(
+                    dataStewardUserId
+                );
+
+                let result = await getRegistryClient(
+                    dataStewardUserId
+                ).patchRecord(datasetId, [
+                    {
+                        op: "replace",
+                        path: "/aspects/publishing/state",
+                        value: "published"
+                    },
+                    {
+                        op: "remove",
+                        path: "/aspects/dataset-draft"
+                    },
+                    {
+                        op: "add",
+                        path: "/aspects/dcat-dataset-strings/title",
+                        value: "test dataset"
+                    },
+                    {
+                        op: "add",
+                        path: "/aspects/dcat-dataset-strings/description",
+                        value: "this is a test dataset"
+                    }
+                ]);
+
+                expect(result).to.not.be.an.instanceof(Error);
+
+                result = await getRegistryClient(
+                    dataStewardUserId
+                ).getRecord(datasetId, ["dcat-dataset-strings", "publishing"]);
+
+                expect(result).to.not.be.an.instanceof(Error);
+
+                const record = result as Record;
+                expect(record.aspects["publishing"]["state"]).to.equal(
+                    "published"
+                );
+                expect(record.aspects["dataset-draft"]).to.be.undefined;
+                expect(
+                    record.aspects["dcat-dataset-strings"]["description"]
+                ).to.equal("this is a test dataset");
+            });
+
+            it("should allow data steward to edit a published dataset as draft dataset and re-publish it", async () => {
+                // create a published dataset using the default admin user
+                expect(isUuid(orgUnitRefs["Section B"].id)).to.equal(true);
+                const datasetId = await createTestDatasetByUser(
+                    DEFAULT_ADMIN_USER_ID,
+                    {
+                        id: uuidV4(),
+                        name: "test dataset",
+                        aspects: {
+                            "dcat-dataset-strings": {
+                                title: "test dataset",
+                                description: "this is a test one"
+                            },
+                            publishing: {
+                                state: "published"
+                            },
+                            "access-control": {
+                                orgUnitId: orgUnitRefs["Section B"].id,
+                                ownerId: DEFAULT_ADMIN_USER_ID
+                            }
+                        },
+                        tenantId: 0,
+                        sourceTag: "",
+                        // authnReadPolicyId is deprecated and to be removed
+                        authnReadPolicyId: ""
+                    }
+                );
+
+                const dataStewardUser = await authApiClient.createUser({
+                    displayName: "Test dataStewardUser",
+                    email: "dataStewward@test.com",
+                    source: "internal",
+                    sourceId: uuidV4(),
+                    orgUnitId: orgUnitRefs["Section B"].id
+                });
+                const dataStewardUserId = dataStewardUser.id;
+                // add data steward user role to the data steward user
+                await authApiClient.addUserRoles(dataStewardUserId, [
+                    DATA_STEWARDS_ROLE_ID
+                ]);
+
+                let result = await getRegistryClient(
+                    dataStewardUserId
+                ).putRecord({
+                    id: datasetId,
+                    name: "test dataset updated name",
+                    aspects: {
+                        "dataset-draft": {
+                            dataset: {
+                                name: "test dataset updated name"
+                            },
+                            data: "{}",
+                            timestamp: "2022-04-11T12:52:24.278Z"
+                        },
+                        publishing: {
+                            state: "draft"
+                        }
+                    },
+                    tenantId: 0,
+                    sourceTag: "",
+                    // authnReadPolicyId is deprecated and to be removed
+                    authnReadPolicyId: ""
+                });
+
+                expect(result).to.not.be.an.instanceof(Error);
+
+                // read the recode to confirm its current data
+                result = await getRegistryClient(
+                    dataStewardUserId
+                ).getRecord(datasetId, [
+                    "dcat-dataset-strings",
+                    "publishing",
+                    "dataset-draft"
+                ]);
+
+                expect(result).to.not.be.an.instanceof(Error);
+
+                let record = result as Record;
+                expect(record.aspects["publishing"]["state"]).to.equal("draft");
+                expect(record.aspects["dataset-draft"]["name"]).to.equal(
+                    "test dataset updated name"
+                );
+                expect(
+                    record.aspects["dcat-dataset-strings"]["title"]
+                ).to.equal("test dataset");
+
+                // modify again to make it published dataset
+                result = await getRegistryClient(dataStewardUserId).patchRecord(
+                    datasetId,
+                    [
+                        {
+                            op: "replace",
+                            path: "/aspects/publishing/state",
+                            value: "published"
+                        },
+                        {
+                            op: "remove",
+                            path: "/aspects/dataset-draft"
+                        },
+                        {
+                            op: "replace",
+                            path: "/aspects/dcat-dataset-strings/title",
+                            value: "test dataset updated name"
+                        }
+                    ]
+                );
+
+                // read the recode to confirm its current data
+                result = await getRegistryClient(dataStewardUserId).getRecord(
+                    datasetId,
+                    ["dcat-dataset-strings", "publishing"],
+                    ["dataset-draft"]
+                );
+
+                expect(result).to.not.be.an.instanceof(Error);
+
+                record = result as Record;
+                expect(record.aspects["publishing"]["state"]).to.equal(
+                    "published"
+                );
+                expect(record.aspects["dataset-draft"]).to.be.undefined;
+                expect(
+                    record.aspects["dcat-dataset-strings"]["title"]
+                ).to.equal("test dataset updated name");
+            });
         });
     });
 

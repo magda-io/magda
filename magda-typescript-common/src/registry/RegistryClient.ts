@@ -42,7 +42,7 @@ export const toServerError = (apiName: string) => (
 ) => {
     if (error?.response?.statusCode) {
         return new ServerError(
-            `Failed to ${apiName}: ${error.body}`,
+            `Failed to ${apiName}: ${JSON.stringify(error.body)}`,
             error.response.statusCode
         );
     } else {
