@@ -14,6 +14,14 @@ program
         "Start auth related services. Including postgres DB with latest schema, OPA and Auth API. This option doesn't require a local docker registry."
     )
     .option(
+        "--registryApi",
+        "Start registry API. This option doesn't require a local docker registry."
+    )
+    .option(
+        "--storageApi",
+        "Start registry API. This option doesn't require a local docker registry."
+    )
+    .option(
         "--jwtSecret, -s <JWT Secret>",
         "Specify JWT secret all service used. If not specified, a random generate secret will be used."
     )
@@ -60,6 +68,14 @@ if (!options?.auth) {
     serviceRunner.enableAuthService = false;
 }
 
+if (options?.registryApi) {
+    serviceRunner.enableRegistryApi = true;
+}
+
+if (options?.storageApi) {
+    serviceRunner.enableStorageApi = true;
+}
+
 if (options?.es) {
     serviceRunner.enableElasticSearch = true;
 }
@@ -88,11 +104,13 @@ process.on(
 
 process.on("SIGINT", async () => {
     shouldExit = true;
+    serviceRunner.shouldExit = true;
     await serviceRunner.destroy();
 });
 
 process.on("SIGTERM", async () => {
     shouldExit = true;
+    serviceRunner.shouldExit = true;
     await serviceRunner.destroy();
 });
 

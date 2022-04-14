@@ -62,16 +62,22 @@ export default class ServiceRunner {
     private authApiProcess: ChildProcess;
     private registryApiProcess: ChildProcess;
     private aspectMigratorProcess: ChildProcess;
+    private minioCompose: DockerCompose;
+    private storageApiProcess: ChildProcess;
+
+    public shouldExit = false;
 
     public readonly workspaceRoot: string;
 
     public enableElasticSearch = false;
     public enableAuthService = true;
     public enableRegistryApi = false;
+    public enableStorageApi = false;
 
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
     public authApiSkipAuth = false;
+    public storageApiSkipAuth = false;
 
     public sbtPath: string = "";
 
@@ -131,6 +137,11 @@ export default class ServiceRunner {
         if (this.enableElasticSearch) {
             await this.createElasticSearch();
         }
+
+        if (this.enableStorageApi) {
+            await this.createMinio();
+            await this.createStorageApi();
+        }
     }
 
     async destroy() {
@@ -148,6 +159,10 @@ export default class ServiceRunner {
         }
         if (this.enableElasticSearch) {
             await this.destroyElasticSearch();
+        }
+        if (this.enableStorageApi) {
+            await this.destroyMinio();
+            await this.destroyStorageApi();
         }
         this.destroyAllPortForward();
     }
@@ -168,6 +183,128 @@ export default class ServiceRunner {
             }
         } catch (e) {
             throw new Error(`Failed to get SBT path: ${e}`);
+        }
+    }
+
+    async createMinio() {
+        const baseDir = getMagdaModulePath("@magda/storage-api");
+        const dockerComposeFile = this.createTmpDockerComposeFile(
+            path.resolve(baseDir, "docker-compose.yml"),
+            undefined,
+            false,
+            (configData) => {
+                configData["services"]["minio"]["environment"] = {
+                    MINIO_ACCESS_KEY: "minio",
+                    MINIO_SECRET_KEY: "minio123",
+                    JWT_SECRET: this.jwtSecret
+                };
+                delete configData["services"]["minio"]["healthcheck"];
+            }
+        );
+        this.minioCompose = new DockerCompose(
+            this.docker,
+            dockerComposeFile,
+            "test-minio"
+        );
+        try {
+            await this.minioCompose.down({ volumes: true });
+            await this.minioCompose.pull();
+            await this.minioCompose.up();
+            await this.waitAlive(
+                "Minio",
+                async () => {
+                    const minioHost = this.dockerServiceForwardHost
+                        ? this.dockerServiceForwardHost
+                        : "localhost";
+                    const res = await fetch(
+                        `http://${minioHost}:9000/minio/health/live`
+                    );
+                    if (res.status !== 200) {
+                        throw new ServerError(
+                            `${res.statusText}. ${await res.text()}`
+                        );
+                    }
+                    return true;
+                },
+                120000
+            );
+            if (this.dockerServiceForwardHost) {
+                await this.createPortForward(9000);
+            }
+        } catch (e) {
+            await this.destroyMinio();
+            throw e;
+        }
+    }
+
+    async destroyMinio() {
+        if (this.minioCompose) {
+            await this.minioCompose.down({ volumes: true });
+        }
+        if (this.dockerServiceForwardHost) {
+            await this.destroyPortForward(9000);
+        }
+    }
+
+    async createStorageApi() {
+        const storageApiExecute = `${path.resolve(
+            this.workspaceRoot,
+            "./magda-storage-api/dist/index.js"
+        )}`;
+        if (!fs.existsSync(storageApiExecute)) {
+            throw new Error(
+                `Cannot locate storage api built entrypoint file: ${storageApiExecute}`
+            );
+        }
+        const storageApiProcess = child_process.fork(
+            storageApiExecute,
+            [
+                "--jwtSecret",
+                this.jwtSecret,
+                "--skipAuth",
+                `${this.storageApiSkipAuth}`,
+                "--userId",
+                DEFAULT_ADMIN_USER_ID
+            ],
+            {
+                stdio: "inherit",
+                env: {
+                    MINIO_ACCESS_KEY: "minio",
+                    MINIO_SECRET_KEY: "minio123"
+                }
+            }
+        );
+
+        this.storageApiProcess = storageApiProcess;
+
+        storageApiProcess.on("exit", (code) => {
+            this.storageApiProcess = undefined;
+            console.log(`StorageApi exited with code ${code}`);
+        });
+
+        storageApiProcess.on("error", (error) => {
+            console.error(`StorageApi has thrown an error: ${error}`);
+        });
+
+        try {
+            await this.waitAlive("StorageApi", async () => {
+                const res = await fetch("http://localhost:6121/v0/status/live");
+                if (res.status !== 200) {
+                    throw new ServerError(
+                        `${res.statusText}. ${await res.text()}`
+                    );
+                }
+                return true;
+            });
+        } catch (e) {
+            await this.destroyStorageApi();
+            throw e;
+        }
+    }
+
+    async destroyStorageApi() {
+        if (this.storageApiProcess && !this.storageApiProcess.killed) {
+            this.storageApiProcess.kill();
         }
     }
 
@@ -523,6 +660,11 @@ export default class ServiceRunner {
         }
         const startTime = new Date().getTime();
         while (true) {
+            if (this.shouldExit) {
+                throw new Error(
+                    "`shouldExit` mark is set. End liveness checker now..."
+                );
+            }
             try {
                 await func();
                 console.log(`${serviceName} is online....`);
