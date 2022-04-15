@@ -153,7 +153,6 @@ function testUserDatasetAccess(
 }
 
 describe("registry auth integration tests", () => {
-    // we need to put actual test cases inside `before` as we need to org unit ids to generate our test case.
     describe("Test Dataset Metadata Creation Workflow", function () {
         const serviceRunner = new ServiceRunner();
         serviceRunner.enableRegistryApi = true;

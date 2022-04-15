@@ -1,5 +1,6 @@
 import Docker, { Container } from "dockerode";
 import DockerCompose from "dockerode-compose";
+import { Client as MinioClient } from "minio";
 import ServerError from "magda-typescript-common/src/ServerError";
 import delay from "magda-typescript-common/src/delay";
 import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
@@ -92,6 +93,11 @@ export default class ServiceRunner {
         [key: string]: ChildProcess;
     } = {};
 
+    private minioClient?: MinioClient;
+    public minioAccessKey: string = "minio";
+    public minioSecretKey: string = "minio123";
+    public minioDefaultRegion: string = "unspecified-region";
+
     constructor() {
         // docker config should be passed via env vars e.g.
         // DOCKER_HOST, DOCKER_TLS_VERIFY, DOCKER_CLIENT_TIMEOUT & DOCKER_CERT_PATH
@@ -130,17 +136,17 @@ export default class ServiceRunner {
             await this.createAuthApi();
         }
 
-        if (this.enableRegistryApi) {
-            await this.createRegistryApi();
-        }
+        await Promise.all([
+            this.enableRegistryApi
+                ? this.createRegistryApi()
+                : Promise.resolve(),
+            this.enableStorageApi
+                ? this.createMinio().then(this.createStorageApi.bind(this))
+                : Promise.resolve()
+        ]);
 
         if (this.enableElasticSearch) {
             await this.createElasticSearch();
-        }
-
-        if (this.enableStorageApi) {
-            await this.createMinio();
-            await this.createStorageApi();
         }
     }
 
@@ -187,6 +193,17 @@ export default class ServiceRunner {
     }
 
     async createMinio() {
+        const minioHost = this.dockerServiceForwardHost
+            ? this.dockerServiceForwardHost
+            : "localhost";
+        this.minioClient = new MinioClient({
+            endPoint: minioHost,
+            port: 9000,
+            useSSL: false,
+            accessKey: this.minioAccessKey,
+            secretKey: this.minioSecretKey,
+            region: this.minioDefaultRegion
+        });
         const baseDir = getMagdaModulePath("@magda/storage-api");
         const dockerComposeFile = this.createTmpDockerComposeFile(
             path.resolve(baseDir, "docker-compose.yml"),
@@ -194,8 +211,8 @@ export default class ServiceRunner {
             false,
             (configData) => {
                 configData["services"]["minio"]["environment"] = {
-                    MINIO_ACCESS_KEY: "minio",
-                    MINIO_SECRET_KEY: "minio123",
+                    MINIO_ACCESS_KEY: this.minioAccessKey,
+                    MINIO_SECRET_KEY: this.minioSecretKey,
                     JWT_SECRET: this.jwtSecret
                 };
                 delete configData["services"]["minio"]["healthcheck"];
@@ -213,15 +230,19 @@ export default class ServiceRunner {
             await this.waitAlive(
                 "Minio",
                 async () => {
-                    const minioHost = this.dockerServiceForwardHost
-                        ? this.dockerServiceForwardHost
-                        : "localhost";
                     const res = await fetch(
-                        `http://${minioHost}:9000/minio/health/live`
+                        `http://${minioHost}:9000/minio/health/ready`
                     );
                     if (res.status !== 200) {
                         throw new ServerError(
                             `${res.statusText}. ${await res.text()}`
+                        );
+                    }
+                    try {
+                        await this.minioClient.listBuckets();
+                    } catch (e) {
+                        throw new Error(
+                            (e?.code ? `Error code: ${e.code}. ` : "") + `${e}`
                         );
                     }
                     return true;
@@ -264,13 +285,16 @@ export default class ServiceRunner {
                 "--skipAuth",
                 `${this.storageApiSkipAuth}`,
                 "--userId",
-                DEFAULT_ADMIN_USER_ID
+                DEFAULT_ADMIN_USER_ID,
+                "--minioRegion",
+                this.minioDefaultRegion
             ],
             {
                 stdio: "inherit",
                 env: {
-                    MINIO_ACCESS_KEY: "minio",
-                    MINIO_SECRET_KEY: "minio123"
+                    MINIO_ACCESS_KEY: this.minioAccessKey,
+                    MINIO_SECRET_KEY: this.minioSecretKey,
+                    MINIO_HOST: "localhost"
                 }
             }
         );
@@ -288,7 +312,9 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("StorageApi", async () => {
-                const res = await fetch("http://localhost:6121/v0/status/live");
+                const res = await fetch(
+                    "http://localhost:6121/v0/status/ready"
+                );
                 if (res.status !== 200) {
                     throw new ServerError(
                         `${res.statusText}. ${await res.text()}`

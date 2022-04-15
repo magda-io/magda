@@ -98,7 +98,9 @@ describe("Storage API tests", () => {
                 authDecisionClient,
                 registryClient,
                 tenantId: 0,
-                uploadLimit
+                uploadLimit,
+                autoCreateBuckets: false,
+                defaultBuckets: []
             })
         );
         registryScope = nock(registryApiUrl);

@@ -7679,15 +7679,15 @@ docker-modem@^3.0.0:
     split-ca "^1.0.1"
     ssh2 "^1.4.0"
 
-"dockerode-compose@github:magda-io/dockerode-compose#magda":
-  version "1.3.0"
-  resolved "https://codeload.github.com/magda-io/dockerode-compose/tar.gz/d73b7bedc7412fd01126034cc670b53080fd9a4e"
+"dockerode-compose@github:magda-io/dockerode-compose#magda-latest":
+  version "1.3.1"
+  resolved "https://codeload.github.com/magda-io/dockerode-compose/tar.gz/28d48b3b4b9fed63e56b990e61e6eb5a1ad782d1"
   dependencies:
-    dockerode "^3.2.1"
+    dockerode "^3.3.1"
     js-yaml "^4.0.0"
     tar-fs "^2.1.1"
 
-dockerode@^3.2.1, dockerode@^3.3.1:
+dockerode@^3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/dockerode/-/dockerode-3.3.1.tgz#74f66e239e092e7910e2beae6322d35c44b08cdc"
   integrity sha512-AS2mr8Lp122aa5n6d99HkuTNdRV1wkkhHwBdcnY6V0+28D3DSYwhxAk85/mM9XwD3RMliTxyr63iuvn5ZblFYQ==
