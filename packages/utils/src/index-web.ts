@@ -19,3 +19,11 @@ export {
     ServiceError,
     BadRequestError
 } from "@magda/typescript-common/dist/createServiceError";
+export { default as fetchRequest } from "@magda/typescript-common/dist/fetchRequest";
+export {
+    getDefaultRequestInitOptions,
+    setDefaultRequestInitOptions
+} from "@magda/typescript-common/dist/fetchRequest";
+export { default as getRequest } from "@magda/typescript-common/dist/getRequest";
+export { default as getRequestNoCache } from "@magda/typescript-common/dist/getRequestNoCache";
+export { default as createNoCacheFetchOptions } from "@magda/typescript-common/dist/createNoCacheFetchOptions";
