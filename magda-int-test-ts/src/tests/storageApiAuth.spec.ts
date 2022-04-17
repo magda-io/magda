@@ -84,6 +84,32 @@ async function getFile(
     return res;
 }
 
+async function deleteFile(
+    bucketName: string,
+    storageUrl: string,
+    userId?: string
+) {
+    const [datasetId, distId, fileName] = urijs(storageUrl).segmentCoded();
+    const config: RequestInit = {
+        method: "delete"
+    };
+    if (userId) {
+        config.headers = {
+            "X-Magda-Session": buildJwt(jwtSecret, userId)
+        };
+    }
+    const res = await fetch(
+        urijs(storageApiUrl)
+            .segmentCoded(bucketName)
+            .segmentCoded(datasetId)
+            .segmentCoded(distId)
+            .segmentCoded(fileName)
+            .toString(),
+        config
+    );
+    return res;
+}
+
 describe("storage api auth integration tests", () => {
     describe("Test Dataset Metadata Creation related Workflow", function () {
         const serviceRunner = new ServiceRunner();
@@ -236,6 +262,102 @@ describe("storage api auth integration tests", () => {
             expect(res.status).to.equal(200);
             expect(await res.text()).to.equal(testFileContent);
             expect(res.headers.get("content-type")).to.equal("text/csv");
+        });
+
+        it("should allow a data steward to delete the file that he uploaded for a dataset", async () => {
+            const dataStewardUser = await authApiClient.createUser({
+                displayName: "Test dataStewardUser",
+                email: "dataStewward@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            const dataStewardUserId = dataStewardUser.id;
+            const dataStewardUserJwtToken = buildJwt(
+                jwtSecret,
+                dataStewardUserId
+            );
+            // add data steward user role to the data steward user
+            await authApiClient.addUserRoles(dataStewardUserId, [
+                DATA_STEWARDS_ROLE_ID
+            ]);
+
+            const datasetId = await createTestDatasetByUser(dataStewardUserId);
+            // for a draft dataset, (to make it simple) we don't have to create a distribution record before upload the file.
+            // But we do need to generate distribution id beforehand
+            const distributionId = uuidV4();
+            const fileStorageUrl = getStorageUrl(
+                datasetId,
+                distributionId,
+                testFileName
+            );
+            const [
+                processedDatasetId,
+                processedDistId,
+                processedfileName
+            ] = urijs(fileStorageUrl).segmentCoded();
+
+            const formData = new FormData();
+            formData.append(processedfileName, testFileContent, {
+                filename: processedfileName,
+                contentType: "text/csv"
+            });
+
+            const fetchUri = urijs(storageApiUrl)
+                .segmentCoded("upload")
+                .segmentCoded(serviceRunner.defaultBucket)
+                .segmentCoded(processedDatasetId)
+                .segmentCoded(processedDistId)
+                .search({ recordId: datasetId });
+
+            // the data steward can upload a file that is associated with the dataset
+            // as he has permission to update permission of the draft dataset
+            let res = await fetch(fetchUri.toString(), {
+                method: "post",
+                body: formData.getBuffer(),
+                headers: {
+                    ...formData.getHeaders(),
+                    "X-Magda-Session": dataStewardUserJwtToken
+                }
+            });
+
+            expect(res.status).to.equal(200);
+            expect(await res.json()).to.have.own.property("etag");
+
+            // create a different user to try the deletion operation
+            // it should fail
+            const testUser = await authApiClient.createUser({
+                displayName: "Test User",
+                email: "testuser@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+
+            // try to delete the file
+            res = await deleteFile(
+                serviceRunner.defaultBucket,
+                fileStorageUrl,
+                testUser.id
+            );
+            // test user should be rejected
+            expect(res.status).to.equal(403);
+
+            // try again with the data steward
+            res = await deleteFile(
+                serviceRunner.defaultBucket,
+                fileStorageUrl,
+                dataStewardUserId
+            );
+            // this time should work
+            expect(res.status).to.equal(200);
+
+            // now try get the file with admin user
+            res = await getFile(
+                serviceRunner.defaultBucket,
+                fileStorageUrl,
+                DEFAULT_ADMIN_USER_ID
+            );
+            // we should get 404 (non found) as it's deleted
+            expect(res.status).to.equal(404);
         });
     });
 });
