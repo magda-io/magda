@@ -29,7 +29,7 @@ export default async function fetchRequest<T = any, CT = string>(
     method: string,
     url: string,
     body?: any,
-    contentType?: CT | RequestContentType | undefined,
+    contentType?: CT | RequestContentType | undefined | null,
     returnHeaders?: false,
     extraRequestOptions?: RequestInit
 ): Promise<T>;
@@ -38,7 +38,7 @@ export default async function fetchRequest<T = any, CT = string>(
     method: string,
     url: string,
     body?: any,
-    contentType?: CT | RequestContentType | undefined,
+    contentType?: CT | RequestContentType | undefined | null,
     returnHeaders?: true,
     extraRequestOptions?: RequestInit
 ): Promise<[T, Headers]>;
@@ -47,7 +47,11 @@ export default async function fetchRequest<T = any, CT = string>(
     method: string,
     url: string,
     body: any = undefined,
-    contentType: CT | RequestContentType | undefined = "application/json",
+    contentType:
+        | CT
+        | RequestContentType
+        | undefined
+        | null = "application/json",
     returnHeaders: boolean = false,
     extraRequestOptions: RequestInit = {}
 ): Promise<[T, Headers] | T> {

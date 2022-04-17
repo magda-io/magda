@@ -97,6 +97,7 @@ export default class ServiceRunner {
     public minioAccessKey: string = "minio";
     public minioSecretKey: string = "minio123";
     public minioDefaultRegion: string = "unspecified-region";
+    public defaultBucket: string = "magda-datasets";
 
     constructor() {
         // docker config should be passed via env vars e.g.
@@ -287,7 +288,9 @@ export default class ServiceRunner {
                 "--userId",
                 DEFAULT_ADMIN_USER_ID,
                 "--minioRegion",
-                this.minioDefaultRegion
+                this.minioDefaultRegion,
+                "--defaultBuckets",
+                this.defaultBucket
             ],
             {
                 stdio: "inherit",
