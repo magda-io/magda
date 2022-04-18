@@ -97,6 +97,8 @@ class StreamControllerTest extends FlatSpec with Matchers {
     private val buffer = new ListBuffer[Promise[Unit]]()
     private val batchProcessingSize = 4
 
+    var isReady: Boolean = false
+
     override def index(
         source: Source[DataSet, NotUsed]
     ): Future[SearchIndexer.IndexResult] =
