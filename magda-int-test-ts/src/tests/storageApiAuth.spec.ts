@@ -1,36 +1,23 @@
 import {} from "mocha";
-//import { expect } from "chai";
-//import fetchRequest from "magda-typescript-common/src/fetchRequest";
+import { expect } from "chai";
 import ServiceRunner from "../ServiceRunner";
 import partial from "lodash/partial";
 import { v4 as uuidV4 } from "uuid";
 import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
-//import RegistryApiClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import {
     DEFAULT_ADMIN_USER_ID,
-    // AUTHENTICATED_USERS_ROLE_ID,
     DATA_STEWARDS_ROLE_ID
-    //ANONYMOUS_USERS_ROLE_ID
 } from "magda-typescript-common/src/authorization-api/constants";
-//import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
-//import { CreateUserData } from "magda-typescript-common/src/authorization-api/model";
-//import { Record } from "magda-typescript-common/src/generated/registry/api";
-//import ServerError from "magda-typescript-common/src/ServerError";
-//import isUuid from "magda-typescript-common/src/util/isUuid";
-//import { AccessControlAspect } from "magda-typescript-common/src/registry/model";
 import getStorageUrl from "magda-typescript-common/src/getStorageUrl";
 import {
     createOrgUnits,
     getRegistryClient as getRegistryClientWithJwtSecret,
-    //getOrgUnitIdByName as getOrgUnitIdByNameWithAuthApiClient,
     createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret
-    //createTestDistributionByUser as createTestDistributionByUserWithAuthApiClientJwtSecret
 } from "./testUtils";
 import urijs from "urijs";
 import fetch from "isomorphic-fetch";
 import FormData from "form-data";
 import buildJwt from "magda-typescript-common/src/session/buildJwt";
-import { expect } from "chai";
 
 const ENV_SETUP_TIME_OUT = 300000; // -- 5 mins
 const jwtSecret = uuidV4();
@@ -41,20 +28,11 @@ const authApiClient = new AuthApiClient(
 );
 
 const getRegistryClient = partial(getRegistryClientWithJwtSecret, jwtSecret);
-// const getOrgUnitIdByName = partial(
-//     getOrgUnitIdByNameWithAuthApiClient,
-//     authApiClient
-// );
 const createTestDatasetByUser = partial(
     createTestDatasetByUserWithAuthApiClientJwtSecret,
     authApiClient,
     jwtSecret
 );
-// const createTestDistributionByUser = partial(
-//     createTestDistributionByUserWithAuthApiClientJwtSecret,
-//     authApiClient,
-//     jwtSecret
-// );
 
 const storageApiUrl = "http://localhost:6121/v0";
 
@@ -72,15 +50,17 @@ async function getFile(
             "X-Magda-Session": buildJwt(jwtSecret, userId)
         };
     }
-    const res = await fetch(
-        urijs(storageApiUrl)
-            .segmentCoded(bucketName)
-            .segmentCoded(datasetId)
-            .segmentCoded(distId)
-            .segmentCoded(fileName)
-            .toString(),
-        config
-    );
+    let fileStorageUri = urijs(storageApiUrl).segmentCoded(bucketName);
+    if (datasetId) {
+        fileStorageUri = fileStorageUri.segmentCoded(datasetId);
+    }
+    if (distId) {
+        fileStorageUri = fileStorageUri.segmentCoded(distId);
+    }
+    if (fileName) {
+        fileStorageUri = fileStorageUri.segmentCoded(fileName);
+    }
+    const res = await fetch(fileStorageUri.toString(), config);
     return res;
 }
 
@@ -98,41 +78,226 @@ async function deleteFile(
             "X-Magda-Session": buildJwt(jwtSecret, userId)
         };
     }
+    let fileStorageUri = urijs(storageApiUrl).segmentCoded(bucketName);
+    if (datasetId) {
+        fileStorageUri = fileStorageUri.segmentCoded(datasetId);
+    }
+    if (distId) {
+        fileStorageUri = fileStorageUri.segmentCoded(distId);
+    }
+    if (fileName) {
+        fileStorageUri = fileStorageUri.segmentCoded(fileName);
+    }
+    const res = await fetch(fileStorageUri.toString(), config);
+    return res;
+}
+
+async function createBucket(bucketName: string, userId?: string) {
+    const config: RequestInit = {
+        method: "put"
+    };
+    if (userId) {
+        config.headers = {
+            "X-Magda-Session": buildJwt(jwtSecret, userId)
+        };
+    }
     const res = await fetch(
-        urijs(storageApiUrl)
-            .segmentCoded(bucketName)
-            .segmentCoded(datasetId)
-            .segmentCoded(distId)
-            .segmentCoded(fileName)
-            .toString(),
+        urijs(storageApiUrl).segmentCoded(bucketName).toString(),
         config
     );
     return res;
 }
 
+async function addPermissionToUser(
+    userId: string,
+    operationUri: string,
+    constraints?: {
+        ownershipConstraint?: boolean;
+        orgUnitOwnershipConstraint?: boolean;
+        preAuthorisedConstraint?: boolean;
+    },
+    resourceUri?: string
+) {
+    const runtimeResourceUri = resourceUri
+        ? resourceUri
+        : operationUri.substring(0, operationUri.lastIndexOf("/"));
+    const role = await authApiClient.createRole(uuidV4());
+    const permission = await authApiClient.createRolePermission(role.id, {
+        name: uuidV4(),
+        description: "test permission",
+        resource_id: (await authApiClient.getResourceByUri(runtimeResourceUri))
+            .id,
+        user_ownership_constraint: constraints?.ownershipConstraint
+            ? true
+            : false,
+        org_unit_ownership_constraint: constraints?.orgUnitOwnershipConstraint
+            ? true
+            : false,
+        pre_authorised_constraint: constraints?.preAuthorisedConstraint
+            ? true
+            : false,
+        operationIds: [(await authApiClient.getOperationByUri(operationUri)).id]
+    });
+    await authApiClient.addUserRoles(userId, [role.id]);
+    return permission;
+}
+
 describe("storage api auth integration tests", () => {
+    const testFileName = "test file with a very long name.csv";
+    const testFileContent = 'a,b,c\n1,"a test string",3\n';
+
+    const serviceRunner = new ServiceRunner();
+    serviceRunner.enableAuthService = true;
+    serviceRunner.enableRegistryApi = true;
+    serviceRunner.enableStorageApi = true;
+    serviceRunner.jwtSecret = jwtSecret;
+    serviceRunner.authApiDebugMode = false;
+    serviceRunner.authApiDebugMode = false;
+
+    before(async function (this) {
+        this.timeout(ENV_SETUP_TIME_OUT);
+        await serviceRunner.create();
+        await createOrgUnits(authApiClient);
+    });
+
+    after(async function (this) {
+        this.timeout(ENV_SETUP_TIME_OUT);
+        await serviceRunner.destroy();
+    });
+
+    describe("General access control tests (non-record related access control)", function () {
+        it("should allow a user with storage/bucket/create permission to create a bucket", async () => {
+            const testUser = await authApiClient.createUser({
+                displayName: "Test User",
+                email: "testuser@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+
+            const testUserId = testUser.id;
+
+            let res = await createBucket("test-bucket-123", testUserId);
+            // test user has no access to create bucket now
+            expect(res.status).to.equal(403);
+
+            // grant no constraint permission to the test user
+            await addPermissionToUser(testUserId, "storage/bucket/create");
+
+            res = await createBucket("test-bucket-123", testUserId);
+            // test user can create bucket now
+            expect(res.status).to.equal(201);
+        });
+
+        it("should allow a user with storage/object/upload permission to upload", async () => {
+            const testUser = await authApiClient.createUser({
+                displayName: "Test User",
+                email: "testuser@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+
+            const testUserId = testUser.id;
+
+            // attempt uploading file on behalf of test user
+            const formData = new FormData();
+            formData.append("test-file.csv", testFileContent, {
+                filename: "test-file.csv",
+                contentType: "text/csv"
+            });
+
+            const fetchUri = urijs(storageApiUrl)
+                .segmentCoded("upload")
+                .segmentCoded(serviceRunner.defaultBucket);
+
+            const uploadRequestCfg = {
+                method: "post",
+                body: formData.getBuffer(),
+                headers: {
+                    ...formData.getHeaders(),
+                    "X-Magda-Session": buildJwt(jwtSecret, testUserId)
+                }
+            };
+            let res = await fetch(fetchUri.toString(), uploadRequestCfg);
+
+            // test user has no access to upload the file now
+            expect(res.status).to.equal(403);
+
+            // grant no constraint permission to the test user
+            await addPermissionToUser(testUserId, "storage/object/upload");
+
+            res = await fetch(fetchUri.toString(), uploadRequestCfg);
+            // test user can upload the file now
+            expect(res.status).to.equal(200);
+
+            // test file existence using an admin user
+            res = await getFile(
+                serviceRunner.defaultBucket,
+                "magda://storage-api/test-file.csv",
+                DEFAULT_ADMIN_USER_ID
+            );
+
+            expect(res.status).to.equal(200);
+            expect(await res.text()).to.equal(testFileContent);
+            expect(res.headers.get("content-type")).to.equal("text/csv");
+        });
+
+        it("should allow a user with storage/object/delete permission to delete an existing file", async () => {
+            // upload a file as an admin user
+            const formData = new FormData();
+            formData.append("test-file.csv", testFileContent, {
+                filename: "test-file.csv",
+                contentType: "text/csv"
+            });
+
+            const fetchUri = urijs(storageApiUrl)
+                .segmentCoded("upload")
+                .segmentCoded(serviceRunner.defaultBucket);
+
+            const uploadRequestCfg = {
+                method: "post",
+                body: formData.getBuffer(),
+                headers: {
+                    ...formData.getHeaders(),
+                    "X-Magda-Session": buildJwt(
+                        jwtSecret,
+                        DEFAULT_ADMIN_USER_ID
+                    )
+                }
+            };
+            let res = await fetch(fetchUri.toString(), uploadRequestCfg);
+            expect(res.status).to.equal(200);
+
+            const testUser = await authApiClient.createUser({
+                displayName: "Test User",
+                email: "testuser@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            const testUserId = testUser.id;
+
+            res = await deleteFile(
+                serviceRunner.defaultBucket,
+                "magda://storage-api/test-file.csv",
+                testUserId
+            );
+
+            // test user has no access to delete the file now
+            expect(res.status).to.equal(403);
+
+            // grant no constraint permission to the test user
+            await addPermissionToUser(testUserId, "storage/object/delete");
+
+            res = await deleteFile(
+                serviceRunner.defaultBucket,
+                "magda://storage-api/test-file.csv",
+                testUserId
+            );
+            // test user can delete the file now
+            expect(res.status).to.equal(200);
+        });
+    });
+
     describe("Test Dataset Metadata Creation related Workflow", function () {
-        const serviceRunner = new ServiceRunner();
-        serviceRunner.enableAuthService = true;
-        serviceRunner.enableRegistryApi = true;
-        serviceRunner.enableStorageApi = true;
-        serviceRunner.jwtSecret = jwtSecret;
-        serviceRunner.authApiDebugMode = false;
-
-        const testFileName = "test file with a very long name.csv";
-        const testFileContent = 'a,b,c\n1,"a test string",3\n';
-
-        before(async function (this) {
-            this.timeout(ENV_SETUP_TIME_OUT);
-            await serviceRunner.create();
-            await createOrgUnits(authApiClient);
-        });
-
-        after(async function (this) {
-            this.timeout(ENV_SETUP_TIME_OUT);
-            await serviceRunner.destroy();
-        });
-
         it("should allow a data steward to upload files that are associated with a draft dataset", async () => {
             const dataStewardUser = await authApiClient.createUser({
                 displayName: "Test dataStewardUser",
@@ -212,26 +377,12 @@ describe("storage api auth integration tests", () => {
             // test user has no access to read now
             expect(res.status).to.equal(403);
 
-            // create arbitrary permission of test dataset
-            const role = await authApiClient.createRole("test role");
-            const permission = await authApiClient.createRolePermission(
-                role.id,
+            // create arbitrary permission of test dataset & add to test user
+            const permission = await addPermissionToUser(
+                testUserId,
+                "object/record/read",
                 {
-                    name: "arbitrary permission to datasetId",
-                    description: "",
-                    resource_id: (
-                        await authApiClient.getResourceByUri("object/record")
-                    ).id,
-                    user_ownership_constraint: false,
-                    org_unit_ownership_constraint: false,
-                    pre_authorised_constraint: true,
-                    operationIds: [
-                        (
-                            await authApiClient.getOperationByUri(
-                                "object/record/read"
-                            )
-                        ).id
-                    ]
+                    preAuthorisedConstraint: true
                 }
             );
 
@@ -247,9 +398,6 @@ describe("storage api auth integration tests", () => {
             ]);
 
             expect(result).to.not.be.an.instanceof(Error);
-
-            // add test role to the test user
-            await authApiClient.addUserRoles(testUserId, [role.id]);
 
             // try request the file again by test user
             res = await getFile(
