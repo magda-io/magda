@@ -761,12 +761,8 @@ export default class ServiceRunner {
         const baseDir = getMagdaModulePath("@magda/elastic-search");
         const dockerComposeFile = this.createTmpDockerComposeFile(
             path.resolve(baseDir, "docker-compose.yml"),
-            `${this.appImgRegistry}/magda-elasticsearch:${this.appImgTag}`,
-            true,
-            (config) => {
-                delete config.services["test-es"].volumes;
-                delete config.services["test-es"].entrypoint;
-            }
+            undefined,
+            true
         );
 
         this.elasticSearchCompose = new DockerCompose(
