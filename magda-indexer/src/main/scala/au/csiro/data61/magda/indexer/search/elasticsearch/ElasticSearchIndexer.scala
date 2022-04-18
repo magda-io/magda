@@ -65,11 +65,16 @@ class ElasticSearchIndexer(
     * Returns an initialised ElasticClient on completion. Using this to get the client rather than just keeping a reference to an initialised client
     *  ensures that all queries will only complete after the client is initialised.
     */
-  private val setupFuture = setup()
+  private val setupFuture = setup().map { r =>
+    isReady = true
+    r
+  }
 
   implicit val scheduler: Scheduler = system.scheduler
 
-  override def ready: Future[Unit] = setupFuture.map(_ => Unit)
+  def ready: Future[Unit] = setupFuture.map(_ => Unit)
+
+  var isReady: Boolean = false
 
   private lazy val restoreQueue: SourceQueue[
     (ElasticClient, IndexDefinition, Snapshot, Promise[RestoreResult])

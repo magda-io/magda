@@ -65,13 +65,14 @@ export default class ServiceRunner {
     private aspectMigratorProcess: ChildProcess;
     private minioCompose: DockerCompose;
     private storageApiProcess: ChildProcess;
+    private indexerSetupProcess: ChildProcess;
 
     public shouldExit = false;
 
     public readonly workspaceRoot: string;
 
     public enableElasticSearch = false;
-    public enableAuthService = true;
+    public enableAuthService = false;
     public enableRegistryApi = false;
     public enableStorageApi = false;
 
@@ -779,8 +780,11 @@ export default class ServiceRunner {
             await this.waitAlive(
                 "ElasticSearch",
                 async () => {
+                    const esHost = this.dockerServiceForwardHost
+                        ? this.dockerServiceForwardHost
+                        : "localhost";
                     const res = await fetch(
-                        "http://localhost:9200/_cluster/health"
+                        `http://${esHost}:9200/_cluster/health`
                     );
                     if (res.status !== 200) {
                         throw new ServerError(
@@ -797,15 +801,82 @@ export default class ServiceRunner {
                 },
                 60000
             );
+            if (this.dockerServiceForwardHost) {
+                await this.createPortForward(9200);
+            }
         } catch (e) {
             await this.destroyElasticSearch();
             throw e;
         }
+        await this.createIndexerSetup();
     }
 
     async destroyElasticSearch() {
         if (this.elasticSearchCompose) {
             await this.elasticSearchCompose.down({ volumes: true });
+        }
+        if (this.dockerServiceForwardHost) {
+            await this.destroyPortForward(9200);
+        }
+        await this.destroyIndexerSetup();
+    }
+
+    async createIndexerSetup() {
+        const confFilePath = path
+            .resolve(
+                this.workspaceRoot,
+                "magda-int-test-ts",
+                "indexer-setup.conf"
+            )
+            .replace(/"/g, '"');
+
+        const indexerSetupProcess = child_process.spawn(
+            "sbt",
+            ['"indexer/run"', `"-Dconfig.file=${confFilePath}"`],
+            {
+                cwd: this.workspaceRoot,
+                stdio: "inherit",
+                shell: true,
+                env: {
+                    ...process.env,
+                    JWT_SECRET: this.jwtSecret
+                }
+            }
+        );
+
+        this.indexerSetupProcess = indexerSetupProcess;
+
+        indexerSetupProcess.on("exit", (code) => {
+            this.registryApiProcess = undefined;
+            console.log(`Indexer setup process exited with code ${code}`);
+        });
+
+        indexerSetupProcess.on("error", (error) => {
+            console.error(
+                `Indexer setup process has thrown an error: ${error}`
+            );
+        });
+
+        try {
+            await this.waitAlive("IndexerSetup", async () => {
+                const res = await fetch("http://localhost:6103/v0/ready");
+                if (res.status !== 200) {
+                    throw new ServerError(
+                        `${res.statusText}. ${await res.text()}`
+                    );
+                }
+                console.log(await res.text());
+                return true;
+            });
+        } catch (e) {
+            await this.destroyIndexerSetup();
+            throw e;
+        }
+    }
+
+    async destroyIndexerSetup() {
+        if (this.indexerSetupProcess && !this.indexerSetupProcess.killed) {
+            this.indexerSetupProcess.kill();
         }
     }
 

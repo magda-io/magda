@@ -64,8 +64,8 @@ if (options?.tag) {
     serviceRunner.appImgTag = options.tag;
 }
 
-if (!options?.auth) {
-    serviceRunner.enableAuthService = false;
+if (options?.auth) {
+    serviceRunner.enableAuthService = true;
 }
 
 if (options?.registryApi) {

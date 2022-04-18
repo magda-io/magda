@@ -155,6 +155,7 @@ function testUserDatasetAccess(
 describe("registry auth integration tests", () => {
     describe("Test Dataset Metadata Creation Workflow", function () {
         const serviceRunner = new ServiceRunner();
+        serviceRunner.enableAuthService = true;
         serviceRunner.enableRegistryApi = true;
         serviceRunner.jwtSecret = jwtSecret;
         serviceRunner.authApiDebugMode = false;

@@ -80,7 +80,13 @@ object IndexerApp extends App {
     }
   } map {
     case ShouldCrawl => {
-      crawler.crawl()
+      if (config.getBoolean("indexer.allowAutoCrawlOnStartingUp")) {
+        crawler.crawl()
+      } else {
+        logger.info(
+          "allowAutoCrawlOnStartingUp is disabled. Auto crawl skipped."
+        )
+      }
     }
     case _ => // this means we were able to resume a webhook, so all good now :)
   } recover {

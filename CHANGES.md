@@ -22,6 +22,10 @@
 - Increase registry default request timeout to 60s (from 30s)
 - Bump Dataset index version to 49 & publishers index version to 7
 - Fixed registry API generated ts client patchRecord API response type
+- add `allowAutoCrawlOnStartingUp` option to indexer
+- add `/v0/live` & `/v0/ready` endpoint to indexer
+- Related to #3315, introduce `ServiceRunner` to launch an integrated test & dev environment
+- #3315 rewrite auth related integration tests and execute tests using `ServiceRunner` rather than mini k8s cluster `kind`
 
 ## 1.2.1
 
