@@ -66,6 +66,7 @@ export default class ServiceRunner {
     private minioCompose: DockerCompose;
     private storageApiProcess: ChildProcess;
     private indexerSetupProcess: ChildProcess;
+    private searchApiProcess: ChildProcess;
 
     public shouldExit = false;
 
@@ -75,6 +76,7 @@ export default class ServiceRunner {
     public enableAuthService = false;
     public enableRegistryApi = false;
     public enableStorageApi = false;
+    public enableSearchApi = false;
 
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
@@ -144,11 +146,14 @@ export default class ServiceRunner {
                 : Promise.resolve(),
             this.enableStorageApi
                 ? this.createMinio().then(this.createStorageApi.bind(this))
+                : Promise.resolve(),
+            this.enableElasticSearch || this.enableSearchApi
+                ? this.createElasticSearch()
                 : Promise.resolve()
         ]);
 
-        if (this.enableElasticSearch) {
-            await this.createElasticSearch();
+        if (this.enableSearchApi) {
+            await this.createSearchApi();
         }
     }
 
@@ -165,12 +170,15 @@ export default class ServiceRunner {
             await this.destroyRegistryApi();
             await this.destroyAspectMigrator();
         }
-        if (this.enableElasticSearch) {
+        if (this.enableElasticSearch || this.enableSearchApi) {
             await this.destroyElasticSearch();
         }
         if (this.enableStorageApi) {
             await this.destroyMinio();
             await this.destroyStorageApi();
+        }
+        if (this.enableSearchApi) {
+            await this.destroySearchApi();
         }
         this.destroyAllPortForward();
     }
@@ -859,7 +867,9 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("IndexerSetup", async () => {
-                const res = await fetch("http://localhost:6103/v0/ready");
+                const res = await fetch(
+                    "http://localhost:6103/v0/status/ready"
+                );
                 if (res.status !== 200) {
                     throw new ServerError(
                         `${res.statusText}. ${await res.text()}`
@@ -877,6 +887,56 @@ export default class ServiceRunner {
     async destroyIndexerSetup() {
         if (this.indexerSetupProcess && !this.indexerSetupProcess.killed) {
             this.indexerSetupProcess.kill();
+        }
+    }
+
+    async createSearchApi() {
+        const searchApiProcess = child_process.spawn(
+            "sbt",
+            ['"searchApi/run"'],
+            {
+                cwd: this.workspaceRoot,
+                stdio: "inherit",
+                shell: true,
+                env: {
+                    ...process.env
+                }
+            }
+        );
+
+        this.searchApiProcess = searchApiProcess;
+
+        searchApiProcess.on("exit", (code) => {
+            this.searchApiProcess = undefined;
+            console.log(`SearchApi exited with code ${code}`);
+        });
+
+        searchApiProcess.on("error", (error) => {
+            console.error(`SearchApi has thrown an error: ${error}`);
+        });
+
+        try {
+            await this.waitAlive("SearchApi", async () => {
+                const res = await fetch(
+                    "http://localhost:6102/v0/status/ready"
+                );
+                if (res.status !== 200) {
+                    throw new ServerError(
+                        `${res.statusText}. ${await res.text()}`
+                    );
+                }
+                console.log(await res.text());
+                return true;
+            });
+        } catch (e) {
+            await this.destroySearchApi();
+            throw e;
+        }
+    }
+
+    async destroySearchApi() {
+        if (this.searchApiProcess && !this.searchApiProcess.killed) {
+            this.searchApiProcess.kill();
         }
     }
 

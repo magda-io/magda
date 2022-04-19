@@ -11,15 +11,17 @@ program
     )
     .option(
         "--auth",
-        "Start auth related services. Including postgres DB with latest schema, OPA and Auth API. This option doesn't require a local docker registry."
+        "Start auth related services. Including postgres DB with latest schema, OPA and Auth API. "
     )
-    .option(
-        "--registryApi",
-        "Start registry API. This option doesn't require a local docker registry."
-    )
+    .option("--registryApi", "Start registry API. ")
     .option(
         "--storageApi",
-        "Start registry API. This option doesn't require a local docker registry."
+        "Start registry API. This option includes minio service as well."
+    )
+    .option("--es", "Start Magda's elasticsearch service.")
+    .option(
+        "--searchApi",
+        "Start Magda's search API service. When this option is set, elasticsearch service will be started as well."
     )
     .option(
         "--jwtSecret, -s <JWT Secret>",
@@ -32,18 +34,6 @@ program
     .option(
         "--skipAuth",
         "When specify, Auth API will skip query OPA but always assume an `unconditionalTrue` decision. For debug purpose only."
-    )
-    .option(
-        "--es",
-        "Start Magda's elasticsearch service. Requires built Magda elasticsearch docker image available in local registry localhost:5000 (or use --registry, -r to specify a different registry)."
-    )
-    .option(
-        "--registry, -r <docker registry>",
-        "Specify alternative docker registry. Default: localhost:5000"
-    )
-    .option(
-        "--tag, -r <docker registry>",
-        "Specify alternative default image tag. Default: latest"
     );
 
 program.parse();
@@ -55,14 +45,6 @@ if (!Object.keys(options).length) {
 }
 
 const serviceRunner = new ServiceRunner();
-
-if (options?.registry) {
-    serviceRunner.appImgRegistry = `${options.registry}/data61`;
-}
-
-if (options?.tag) {
-    serviceRunner.appImgTag = options.tag;
-}
 
 if (options?.auth) {
     serviceRunner.enableAuthService = true;
@@ -78,6 +60,10 @@ if (options?.storageApi) {
 
 if (options?.es) {
     serviceRunner.enableElasticSearch = true;
+}
+
+if (options?.searchApi) {
+    serviceRunner.enableSearchApi = true;
 }
 
 if (options?.jwtSecret) {
