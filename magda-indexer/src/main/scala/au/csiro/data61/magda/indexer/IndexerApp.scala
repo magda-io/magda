@@ -12,16 +12,11 @@ import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import akka.http.scaladsl.Http
-
-import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook.{
-  initWebhook,
-  ShouldCrawl,
-  ShouldNotCrawl
-}
+import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook.{ShouldCrawl, ShouldNotCrawl, initWebhook}
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.client.RegistryExternalInterface
+import au.csiro.data61.magda.client.{AuthApiClient, RegistryExternalInterface}
+
 import scala.concurrent.Future
-import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
 import au.csiro.data61.magda.search.elasticsearch.Indices
 
 object IndexerApp extends App {
@@ -44,7 +39,8 @@ object IndexerApp extends App {
   val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
   val crawler = new RegistryCrawler(registryInterface, indexer)
 
-  val api = new IndexerApi(crawler, indexer)
+  val authClient = new AuthApiClient()
+  val api = new IndexerApi(crawler, indexer, authClient, registryInterface)
 
   logger.info(
     s"Listening on ${config.getString("http.interface")}:${config.getInt("http.port")}"

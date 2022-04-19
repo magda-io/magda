@@ -26,6 +26,7 @@
 - add `/v0/status/live` & `/v0/status/ready` endpoint to indexer
 - Related to #3315, introduce `ServiceRunner` to launch an integrated test & dev environment
 - #3315 rewrite auth related integration tests and execute tests using `ServiceRunner` rather than mini k8s cluster `kind`
+- #3345 Add dataset index / delete API endpoints to indexer
 
 ## 1.2.1
 

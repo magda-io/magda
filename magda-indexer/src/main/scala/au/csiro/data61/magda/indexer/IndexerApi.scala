@@ -4,12 +4,19 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import au.csiro.data61.magda.api.BaseMagdaApi
+import au.csiro.data61.magda.client.{AuthApiClient, RegistryExternalInterface}
 import au.csiro.data61.magda.indexer.crawler.{Crawler, CrawlerApi}
 import au.csiro.data61.magda.indexer.external.registry.WebhookApi
+import au.csiro.data61.magda.indexer.external.registry.DatasetApi
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import com.typesafe.config.Config
 
-class IndexerApi(crawler: Crawler, indexer: SearchIndexer)(
+class IndexerApi(
+    crawler: Crawler,
+    indexer: SearchIndexer,
+    authApiClient: AuthApiClient,
+    registryInterface: RegistryExternalInterface
+)(
     implicit system: ActorSystem,
     config: Config
 ) extends BaseMagdaApi {
@@ -19,6 +26,9 @@ class IndexerApi(crawler: Crawler, indexer: SearchIndexer)(
   val crawlerRoutes = new CrawlerApi(crawler, indexer).routes
   val hookRoutes = new WebhookApi(indexer).routes
 
+  val datasetRoutes =
+    new DatasetApi(indexer, authApiClient, registryInterface).routes
+
   /**
     * @apiDefine GenericError
     * @apiError (Error 500) {String} ResponseBody Respone body will contain further information on the error in free text format.
@@ -27,9 +37,12 @@ class IndexerApi(crawler: Crawler, indexer: SearchIndexer)(
   val routes =
     magdaRoute {
       pathPrefix("v0") {
-        pathPrefix("reindex") {
-          crawlerRoutes
-        } ~ path("registry-hook") {
+        pathPrefix("dataset") {
+          datasetRoutes
+        } ~
+          pathPrefix("reindex") {
+            crawlerRoutes
+          } ~ path("registry-hook") {
           hookRoutes
         } ~ pathPrefix("status") {
           path("live") {
