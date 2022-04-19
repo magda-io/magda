@@ -31,23 +31,24 @@ class IndexerApi(crawler: Crawler, indexer: SearchIndexer)(
           crawlerRoutes
         } ~ path("registry-hook") {
           hookRoutes
-        } ~
+        } ~ pathPrefix("status") {
           path("live") {
             get {
               complete(StatusCodes.OK, "ok")
             }
           } ~
-          // indexer setup job including region indexing work that may take long time (30 mins) depends on config.
-          // therefore, you might not want to use this endpoint as k8s readiness probe endpoint
-          path("ready") {
-            get {
-              if (indexer.isReady) {
-                complete(StatusCodes.OK, "ready")
-              } else {
-                complete(StatusCodes.ServiceUnavailable, "not ready")
+            // indexer setup job including region indexing work that may take long time (30 mins) depends on config.
+            // therefore, you might not want to use this endpoint as k8s readiness probe endpoint
+            path("ready") {
+              get {
+                if (indexer.isReady) {
+                  complete(StatusCodes.OK, "ready")
+                } else {
+                  complete(StatusCodes.ServiceUnavailable, "not ready")
+                }
               }
             }
-          }
+        }
       }
     }
 }
