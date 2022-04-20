@@ -19,9 +19,10 @@ import au.csiro.data61.magda.indexer.Directives.requireDatasetPermission
 import akka.http.scaladsl.model.StatusCodes
 import spray.json.{JsFalse, JsObject, JsTrue}
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContextExecutor}
 import scala.util.{Failure, Success}
 import au.csiro.data61.magda.indexer.Protocols
+import au.csiro.data61.magda.search.elasticsearch.Indices
 
 class DatasetApi(
     indexer: SearchIndexer,
@@ -42,7 +43,8 @@ class DatasetApi(
     * @apiGroup Indexer
     * @api {delete} http://indexer/v0/dataset/{datasetId} delete a dataset from the index
     *
-    * @apiDescription Delete a dataset from the search engine index
+    * @apiDescription Delete a dataset from the search engine index.
+    * This API will also refresh the dataset index to make sure the changes available for search.
     *
     * @apiSuccess (Success 200) {json} A Json object indicate the deletion result
     * @apiSuccessExample {json} Response:
@@ -66,7 +68,9 @@ class DatasetApi(
                 complete(StatusCodes.OK, JsObject(Map("deleted" -> JsFalse)))
             )
           ) {
-            onComplete(indexer.delete(List(datasetId))) {
+            onComplete(indexer.delete(List(datasetId)).flatMap { result =>
+              indexer.refreshIndex(Indices.DataSetsIndex).map(_ => result)
+            }) {
               case Success(_) =>
                 complete(StatusCodes.OK, JsObject(Map("deleted" -> JsTrue)))
               case Failure(e) =>
@@ -88,6 +92,7 @@ class DatasetApi(
     * @apiDescription Ask indexer to re-pull dataset data from registry and index into search engine index.
     * You only need to call this API when you want the changes of the datasets to go into search engine index immediately
     * without any delay of webhook system.
+    * This API will also refresh the dataset index to make sure the changes available for search.
     *
     * @apiSuccess (Success 200) {json} A Json object indicate the deletion result
     * @apiSuccessExample {json} Response:
@@ -118,12 +123,18 @@ class DatasetApi(
                 )
             )
           ) {
-            onComplete(registryInterface.getRecordInFull(datasetId).flatMap {
-              record =>
-                val dataSet = Conversions
-                  .convertRegistryDataSet(record, Some(getLogger))
-                indexer.index(Source(List(dataSet)))
-            }) {
+            onComplete(
+              registryInterface
+                .getRecordInFull(datasetId)
+                .flatMap { record =>
+                  val dataSet = Conversions
+                    .convertRegistryDataSet(record, Some(getLogger))
+                  indexer.index(Source(List(dataSet)))
+                }
+                .flatMap { result =>
+                  indexer.refreshIndex(Indices.DataSetsIndex).map(_ => result)
+                }
+            ) {
               case Success(indexResult) =>
                 complete(StatusCodes.OK, indexResult)
               case Failure(e) =>

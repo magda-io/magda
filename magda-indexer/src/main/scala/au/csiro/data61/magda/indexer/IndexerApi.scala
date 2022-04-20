@@ -10,6 +10,8 @@ import au.csiro.data61.magda.indexer.external.registry.WebhookApi
 import au.csiro.data61.magda.indexer.external.registry.DatasetApi
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import com.typesafe.config.Config
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import spray.json.{JsFalse, JsObject, JsTrue}
 
 class IndexerApi(
     crawler: Crawler,
@@ -19,7 +21,8 @@ class IndexerApi(
 )(
     implicit system: ActorSystem,
     config: Config
-) extends BaseMagdaApi {
+) extends BaseMagdaApi
+    with Protocols {
   implicit val ec = system.dispatcher
   override def getLogger = system.log
 
@@ -47,7 +50,7 @@ class IndexerApi(
         } ~ pathPrefix("status") {
           path("live") {
             get {
-              complete(StatusCodes.OK, "ok")
+              complete(StatusCodes.OK, JsObject("live" -> JsTrue))
             }
           } ~
             // indexer setup job including region indexing work that may take long time (30 mins) depends on config.
@@ -55,7 +58,10 @@ class IndexerApi(
             path("ready") {
               get {
                 if (indexer.isReady) {
-                  complete(StatusCodes.OK, "ready")
+                  complete(
+                    StatusCodes.OK,
+                    JsObject("ready" -> JsTrue)
+                  )
                 } else {
                   complete(StatusCodes.ServiceUnavailable, "not ready")
                 }

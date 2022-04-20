@@ -45,6 +45,7 @@ trait SearchIndexer {
   def trim(before: OffsetDateTime): Future[Unit]
   def isEmpty(index: Indices.Index): Future[Boolean]
   var isReady: Boolean
+  def refreshIndex(index: Indices.Index): Future[Unit]
 }
 
 object SearchIndexer {

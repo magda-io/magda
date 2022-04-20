@@ -18,6 +18,7 @@ import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.bulk.{BulkResponse, BulkResponseItem}
 import com.sksamuel.elastic4s.http.delete.DeleteByQueryResponse
 import com.sksamuel.elastic4s.http.index.CreateIndexResponse
+import com.sksamuel.elastic4s.http.index.admin.RefreshIndexResponse
 import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
 import com.sksamuel.elastic4s.http.search.SearchResponse
 import com.sksamuel.elastic4s.http.snapshots.{
@@ -632,6 +633,20 @@ class ElasticSearchIndexer(
             f.error.`type`,
             f.error.reason
           )
+      }
+  }
+
+  def refreshIndex(index: Indices.Index): Future[Unit] = {
+    setupFuture
+      .flatMap { client =>
+        client.execute(
+          ElasticDsl.refreshIndex(indices.getIndex(config, index))
+        )
+      }
+      .map {
+        case r: RequestSuccess[RefreshIndexResponse] =>
+        case f: RequestFailure =>
+          throw new Exception(s"Failed to refresh index: ${f.error}")
       }
   }
 
