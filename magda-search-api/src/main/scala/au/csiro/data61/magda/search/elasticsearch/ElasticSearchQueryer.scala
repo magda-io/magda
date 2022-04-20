@@ -82,7 +82,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   )
 
   val NON_LANGUAGE_FIELDS = Seq(
-    "_id",
+    "identifier",
     "catalog",
     "accrualPeriodicity",
     "contactPoint.identifier",
@@ -120,6 +120,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               MatchAll,
               requestedFacetSize
             )
+            logger.info(client.show(query))
             Future
               .sequence(
                 Seq(
