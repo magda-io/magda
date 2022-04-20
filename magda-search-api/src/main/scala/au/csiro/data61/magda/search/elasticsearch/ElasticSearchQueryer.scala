@@ -124,7 +124,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               MatchAll,
               requestedFacetSize
             )
-            if(debugMode) {
+            if (debugMode) {
               logger.info(client.show(query))
             }
             Future
