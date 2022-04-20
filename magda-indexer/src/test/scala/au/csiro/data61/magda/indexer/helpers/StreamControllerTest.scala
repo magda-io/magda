@@ -175,6 +175,10 @@ class StreamControllerTest extends FlatSpec with Matchers {
     override def isEmpty(index: Indices.Index): Future[Boolean] = {
       throw new Exception("isEmpty() not implemented")
     }
+
+    override def refreshIndex(index: Indices.Index): Future[Unit] = {
+      throw new Exception("refreshIndex() not implemented")
+    }
   }
 
   private def createDataSets(num: Int): Seq[DataSet] = {
