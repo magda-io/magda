@@ -764,11 +764,11 @@ export default class ServiceRunner {
             throw e;
         }
 
+        await this.runMigrator("registry-db", "postgres");
         await Promise.all([
             this.runMigrator("authorization-db", "auth"),
-            this.runMigrator("content-db", "content"),
-            this.runMigrator("registry-db", "postgres"),
             this.runMigrator("session-db", "session"),
+            this.runMigrator("content-db", "content"),
             this.runMigrator("tenant-db", "tenant")
         ]);
     }
