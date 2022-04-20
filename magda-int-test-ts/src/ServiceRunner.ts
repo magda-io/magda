@@ -77,6 +77,10 @@ export default class ServiceRunner {
     public enableRegistryApi = false;
     public enableStorageApi = false;
     public enableSearchApi = false;
+    // indexer will still run even this field is set to false
+    // in order to setup the indices in search engine.
+    // however, indexer will auto exit if this field is set to false.
+    public enableIndexer = false;
 
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
@@ -147,7 +151,9 @@ export default class ServiceRunner {
             this.enableStorageApi
                 ? this.createMinio().then(this.createStorageApi.bind(this))
                 : Promise.resolve(),
-            this.enableElasticSearch || this.enableSearchApi
+            this.enableElasticSearch ||
+            this.enableSearchApi ||
+            this.enableIndexer
                 ? this.createElasticSearch()
                 : Promise.resolve()
         ]);
@@ -170,7 +176,11 @@ export default class ServiceRunner {
             await this.destroyRegistryApi();
             await this.destroyAspectMigrator();
         }
-        if (this.enableElasticSearch || this.enableSearchApi) {
+        if (
+            this.enableElasticSearch ||
+            this.enableSearchApi ||
+            this.enableIndexer
+        ) {
             await this.destroyElasticSearch();
         }
         if (this.enableStorageApi) {
@@ -878,6 +888,10 @@ export default class ServiceRunner {
                 console.log(await res.text());
                 return true;
             });
+            if (!this.enableIndexer) {
+                console.log("Indexer is not required. Exiting now...");
+                await this.destroyIndexerSetup();
+            }
         } catch (e) {
             await this.destroyIndexerSetup();
             throw e;

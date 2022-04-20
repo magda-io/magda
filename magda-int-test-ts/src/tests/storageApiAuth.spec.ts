@@ -152,7 +152,6 @@ describe("storage api auth integration tests", () => {
     serviceRunner.enableStorageApi = true;
     serviceRunner.jwtSecret = jwtSecret;
     serviceRunner.authApiDebugMode = false;
-    serviceRunner.authApiDebugMode = false;
 
     before(async function (this) {
         this.timeout(ENV_SETUP_TIME_OUT);

@@ -24,6 +24,12 @@ program
         "Start Magda's search API service. When this option is set, elasticsearch service will be started as well."
     )
     .option(
+        "--indexer",
+        "Start Magda's indexer and keep it running. When this option is set, elasticsearch service will be started as well." +
+            "Please note: this service will still be run during elasticsearch's starting up in order to setup indices. " +
+            "However, when this switch is off, the indexer will auto-exit after the setup job is done."
+    )
+    .option(
         "--jwtSecret, -s <JWT Secret>",
         "Specify JWT secret all service used. If not specified, a random generate secret will be used."
     )
@@ -64,6 +70,10 @@ if (options?.es) {
 
 if (options?.searchApi) {
     serviceRunner.enableSearchApi = true;
+}
+
+if (options?.indexer) {
+    serviceRunner.enableIndexer = true;
 }
 
 if (options?.jwtSecret) {
