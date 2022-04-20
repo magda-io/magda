@@ -66,6 +66,8 @@ kubectl create namespace magda
 
 ### 6> Create required secrets in Magda deployment namespace `magda`
 
+> Please note: since Magda v1.0.0, Magda's helm chart can auto-generate internal secrets for core modules. You don't have to manually generate secrets unless it's external key / secret that is supplied by external providers. e.g. smtp username & password or authentication plugin credentials (if you use any) 
+
 > You need [pwgen](https://linux.die.net/man/1/pwgen) command line tool to follow the instruction below. If it's not availble on nyour system, you need to install one.
 
 ```bash
