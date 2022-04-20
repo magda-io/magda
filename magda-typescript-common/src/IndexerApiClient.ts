@@ -21,7 +21,7 @@ export default class IndexerApiClient extends BaseApiClient {
     async indexDataset(datasetId: string) {
         return await fetchRequest<IndexResult>(
             "put",
-            this.baseApiUri
+            this.getBaseApiUri()
                 .segmentCoded("dataset")
                 .segmentCoded(datasetId)
                 .toString(),
@@ -35,7 +35,7 @@ export default class IndexerApiClient extends BaseApiClient {
     async deleteDataset(datasetId: string) {
         return await fetchRequest<DeleteResult>(
             "delete",
-            this.baseApiUri
+            this.getBaseApiUri()
                 .segmentCoded("dataset")
                 .segmentCoded(datasetId)
                 .toString(),

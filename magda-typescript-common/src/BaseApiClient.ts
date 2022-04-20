@@ -22,7 +22,7 @@ export default abstract class BaseApiClient {
     public readonly authMode: "jwtToken" | "apiKey" | "noAuth";
 
     protected baseApiUrl: string;
-    public readonly baseApiUri: urijs;
+    private readonly baseApiUri: urijs;
     protected jwtSecret: string;
     public readonly apiKeyId: string;
     protected apiKey: string;
@@ -49,6 +49,10 @@ export default abstract class BaseApiClient {
         } else {
             this.authMode = "noAuth";
         }
+    }
+
+    protected getBaseApiUri() {
+        return this.baseApiUri.clone();
     }
 
     protected setHeader(

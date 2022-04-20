@@ -323,9 +323,11 @@ export default class ServiceRunner {
 
         this.storageApiProcess = storageApiProcess;
 
-        storageApiProcess.on("exit", (code) => {
+        storageApiProcess.on("exit", (code, signal) => {
             this.storageApiProcess = undefined;
-            console.log(`StorageApi exited with code ${code}`);
+            console.log(
+                `StorageApi exited with code ${code} or signal ${signal}`
+            );
         });
 
         storageApiProcess.on("error", (error) => {
@@ -389,9 +391,9 @@ export default class ServiceRunner {
             localPort.toString()
         ] = portForwardProcess;
 
-        portForwardProcess.on("exit", (code) => {
+        portForwardProcess.on("exit", (code, signal) => {
             this.portForwardingProcessList[localPort] = undefined;
-            const msg = `portforward for ${hostname}:${remotePort} exited with code ${code}`;
+            const msg = `portforward for ${hostname}:${remotePort} exited with code ${code} or signal ${signal}`;
             if (!code) {
                 console.log(msg);
             } else {
@@ -448,9 +450,11 @@ export default class ServiceRunner {
 
             this.aspectMigratorProcess = aspectMigratorProcess;
 
-            aspectMigratorProcess.on("exit", (code) => {
+            aspectMigratorProcess.on("exit", (code, signal) => {
                 this.aspectMigratorProcess = undefined;
-                console.log(`aspectMigrator exited with code ${code}`);
+                console.log(
+                    `aspectMigrator exited with code ${code} or signal ${signal}`
+                );
                 if (!code) {
                     resolve();
                 } else {
@@ -494,9 +498,11 @@ export default class ServiceRunner {
 
         this.registryApiProcess = registryApiProcess;
 
-        registryApiProcess.on("exit", (code) => {
+        registryApiProcess.on("exit", (code, signal) => {
             this.registryApiProcess = undefined;
-            console.log(`RegistryAPI exited with code ${code}`);
+            console.log(
+                `RegistryAPI exited with code ${code} or signal ${signal}`
+            );
         });
 
         registryApiProcess.on("error", (error) => {
@@ -561,9 +567,9 @@ export default class ServiceRunner {
 
         this.authApiProcess = authApiProcess;
 
-        authApiProcess.on("exit", (code) => {
+        authApiProcess.on("exit", (code, signal) => {
             this.authApiProcess = undefined;
-            console.log(`AuthApi exited with code ${code}`);
+            console.log(`AuthApi exited with code ${code} or signal ${signal}`);
         });
 
         authApiProcess.on("error", (error) => {
@@ -864,9 +870,11 @@ export default class ServiceRunner {
 
         this.indexerSetupProcess = indexerSetupProcess;
 
-        indexerSetupProcess.on("exit", (code) => {
+        indexerSetupProcess.on("exit", (code, signal) => {
             this.registryApiProcess = undefined;
-            console.log(`Indexer setup process exited with code ${code}`);
+            console.log(
+                `Indexer setup process exited with code ${code} or signal ${signal}`
+            );
         });
 
         indexerSetupProcess.on("error", (error) => {
@@ -920,9 +928,11 @@ export default class ServiceRunner {
 
         this.searchApiProcess = searchApiProcess;
 
-        searchApiProcess.on("exit", (code) => {
+        searchApiProcess.on("exit", (code, signal) => {
             this.searchApiProcess = undefined;
-            console.log(`SearchApi exited with code ${code}`);
+            console.log(
+                `SearchApi exited with code ${code} or signal ${signal}`
+            );
         });
 
         searchApiProcess.on("error", (error) => {

@@ -7,7 +7,7 @@ import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClie
 import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
 import {
     createOrgUnits,
-    //getRegistryClient as getRegistryClientWithJwtSecret,
+    getRegistryClient as getRegistryClientWithJwtSecret,
     createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret
 } from "./testUtils";
 import urijs from "urijs";
@@ -15,6 +15,7 @@ import buildJwt from "magda-typescript-common/src/session/buildJwt";
 import IndexerApiClient from "magda-typescript-common/src/IndexerApiClient";
 import fetchRequest from "magda-typescript-common/src/fetchRequest";
 //import delay from "magda-typescript-common/src/delay";
+import Try from "magda-typescript-common/src/Try";
 
 const ENV_SETUP_TIME_OUT = 300000; // -- 5 mins
 const jwtSecret = uuidV4();
@@ -24,7 +25,7 @@ const authApiClient = new AuthApiClient(
     DEFAULT_ADMIN_USER_ID
 );
 
-//const getRegistryClient = partial(getRegistryClientWithJwtSecret, jwtSecret);
+const getRegistryClient = partial(getRegistryClientWithJwtSecret, jwtSecret);
 const createTestDatasetByUser = partial(
     createTestDatasetByUserWithAuthApiClientJwtSecret,
     authApiClient,
@@ -99,7 +100,7 @@ async function getDataset(datasetId: string, userId?: string) {
 //     return permission;
 // }
 
-describe("search api auth integration tests", () => {
+describe("search api auth integration tests", function () {
     const serviceRunner = new ServiceRunner();
     serviceRunner.enableAuthService = true;
     serviceRunner.enableRegistryApi = true;
@@ -119,9 +120,18 @@ describe("search api auth integration tests", () => {
         await serviceRunner.destroy();
     });
 
-    describe("Test Dataset Metadata Creation related Workflow", function () {
+    describe("Test Dataset Metadata Creation related Workflow", function (this) {
+        this.timeout(300000);
+
         it("should allow anonymous users & users with only authenticated users role to access published public datasets that are not assigned to any orgUnits", async function (this) {
-            //this.timeout(300000);
+            const testUser = await authApiClient.createUser({
+                displayName: "Test User",
+                email: "testuser@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            const testUserId = testUser.id;
+
             const datasetId = await createTestDatasetByUser(
                 DEFAULT_ADMIN_USER_ID,
                 {
@@ -133,18 +143,60 @@ describe("search api auth integration tests", () => {
                 } as any
             );
 
-            const r = await indexerApiClient.indexDataset(datasetId);
-            console.log(r);
+            let indexResult = await Try(
+                indexerApiClient.indexDataset(datasetId)
+            );
+            expect(indexResult.error).to.not.be.an.instanceof(Error);
+            expect(indexResult.value?.successes).to.equal(1);
 
-            try {
-                // admin user should be able to see it
-                let res = await getDataset(datasetId, DEFAULT_ADMIN_USER_ID);
+            // admin user should be able to see it
+            let r = await Try(getDataset(datasetId, DEFAULT_ADMIN_USER_ID));
+            expect(r.error).to.not.be.an.instanceof(Error);
+            expect(r.value.hitCount).to.equal(1);
+            expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);
 
-                expect(res.hitCount).to.equal(1);
-                expect(res?.dataSets?.[0]?.identifier).to.equal(datasetId);
-            } catch (e) {
-                console.log(e);
-            }
+            // anonymous users can't see it as it's a draft
+            r = await Try(getDataset(datasetId));
+            expect(r.error).to.not.be.an.instanceof(Error);
+            expect(r.value.hitCount).to.equal(0);
+
+            // user with only authenticated users role can't see it as it's a draft
+            r = await Try(getDataset(datasetId, testUserId));
+            expect(r.error).to.not.be.an.instanceof(Error);
+            expect(r.value.hitCount).to.equal(0);
+
+            // update dataset to published one
+            r = await Try(
+                getRegistryClient(DEFAULT_ADMIN_USER_ID).patchRecordAspect(
+                    datasetId,
+                    "publishing",
+                    [
+                        {
+                            op: "replace",
+                            path: "/state",
+                            value: "published"
+                        }
+                    ]
+                )
+            );
+            expect(r.error).to.not.be.an.instanceof(Error);
+
+            // force indexer to index this dataset now
+            indexResult = await Try(indexerApiClient.indexDataset(datasetId));
+            expect(indexResult.error).to.not.be.an.instanceof(Error);
+            expect(indexResult.value?.successes).to.equal(1);
+
+            // anonymous users can see it now as it's a published dataset and public (not assign to any orgUnit)
+            r = await Try(getDataset(datasetId));
+            expect(r.error).to.not.be.an.instanceof(Error);
+            expect(r.value.hitCount).to.equal(1);
+            expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);
+
+            // user with only authenticated users role can see it now as it's a published dataset and public
+            r = await Try(getDataset(datasetId, testUserId));
+            expect(r.error).to.not.be.an.instanceof(Error);
+            expect(r.value.hitCount).to.equal(1);
+            expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);
         });
     });
 });
