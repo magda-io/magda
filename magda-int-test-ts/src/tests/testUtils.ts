@@ -7,6 +7,7 @@ import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization
 import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
 import { Record } from "magda-typescript-common/src/generated/registry/api";
 import { AccessControlAspect } from "magda-typescript-common/src/registry/model";
+import merge from "lodash/merge";
 
 export async function createOrgUnits(authApiClient: AuthApiClient) {
     /**
@@ -102,29 +103,31 @@ export async function createTestDatasetByUser(
         new Error(`Invalid user id: ${userId}. Cannot locate user info.`)
     );
     const datasetSetId = uuidV4();
+    const defaultRecordData = {
+        id: datasetSetId,
+        name: "test dataset",
+        aspects: {
+            "dataset-draft": {
+                dataset: {
+                    name: "test dataset"
+                },
+                data: "{}",
+                timestamp: "2022-04-11T12:52:24.278Z"
+            },
+            publishing: {
+                state: "draft"
+            },
+            "access-control": {}
+        },
+        tenantId: 0,
+        sourceTag: "",
+        // authnReadPolicyId is deprecated and to be removed
+        authnReadPolicyId: ""
+    };
     const recordData = record
-        ? record
-        : {
-              id: datasetSetId,
-              name: "test dataset",
-              aspects: {
-                  "dataset-draft": {
-                      dataset: {
-                          name: "test dataset"
-                      },
-                      data: "{}",
-                      timestamp: "2022-04-11T12:52:24.278Z"
-                  },
-                  publishing: {
-                      state: "draft"
-                  },
-                  "access-control": {}
-              },
-              tenantId: 0,
-              sourceTag: "",
-              // authnReadPolicyId is deprecated and to be removed
-              authnReadPolicyId: ""
-          };
+        ? merge(defaultRecordData, record)
+        : defaultRecordData;
+
     if (!recordData?.aspects) {
         recordData.aspects = {};
     }
