@@ -12,7 +12,11 @@ import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.search.elasticsearch.DefaultClientProvider
 import au.csiro.data61.magda.search.elasticsearch.DefaultIndices
 import akka.http.scaladsl.Http
-import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook.{ShouldCrawl, ShouldNotCrawl, initWebhook}
+import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook.{
+  ShouldCrawl,
+  ShouldNotCrawl,
+  initWebhook
+}
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.client.{AuthApiClient, RegistryExternalInterface}
 
