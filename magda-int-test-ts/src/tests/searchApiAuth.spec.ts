@@ -17,7 +17,7 @@ import IndexerApiClient from "magda-typescript-common/src/IndexerApiClient";
 import fetchRequest from "magda-typescript-common/src/fetchRequest";
 import Try from "magda-typescript-common/src/Try";
 
-const ENV_SETUP_TIME_OUT = 300000; // -- 5 mins
+const ENV_SETUP_TIME_OUT = 1200000; // -- 20 mins
 const jwtSecret = uuidV4();
 const authApiClient = new AuthApiClient(
     "http://localhost:6104/v0",
@@ -71,7 +71,7 @@ async function getDataset(datasetId: string, userId?: string) {
 }
 
 describe("search api auth integration tests", function (this) {
-    this.timeout(300000);
+    this.timeout(ENV_SETUP_TIME_OUT);
 
     const serviceRunner = new ServiceRunner();
     serviceRunner.enableAuthService = true;

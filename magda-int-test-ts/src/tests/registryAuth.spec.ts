@@ -25,7 +25,7 @@ import {
     createTestDistributionByUser as createTestDistributionByUserWithAuthApiClientJwtSecret
 } from "./testUtils";
 
-const ENV_SETUP_TIME_OUT = 300000; // -- 5 mins
+const ENV_SETUP_TIME_OUT = 600000; // -- 10 mins
 const jwtSecret = uuidV4();
 const authApiClient = new AuthApiClient(
     "http://localhost:6104/v0",
