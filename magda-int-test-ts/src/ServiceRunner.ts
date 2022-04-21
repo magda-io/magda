@@ -190,7 +190,8 @@ export default class ServiceRunner {
         if (this.enableSearchApi) {
             await this.destroySearchApi();
         }
-        this.destroyAllPortForward();
+        await this.destroyAllPortForward();
+        await delay(5000);
     }
 
     getSbtPath() {
@@ -418,7 +419,7 @@ export default class ServiceRunner {
 
     async destroyAllPortForward() {
         const ports = Object.keys(this.portForwardingProcessList);
-        ports.forEach((port) => this.destroyPortForward(port));
+        await Promise.all(ports.map((port) => this.destroyPortForward(port)));
     }
 
     async runAspectMigrator() {
