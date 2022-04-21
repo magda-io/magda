@@ -106,62 +106,43 @@ const authDecisionClient = new AuthDecisionQueryClient(
 
 console.log(`SkipAuth: ${skipAuth}`);
 
-(async () => {
-    try {
-        const app = express();
+const app = express();
 
-        const minioClient = new MagdaMinioClient({
-            endPoint: argv.minioHost,
-            port: argv.minioPort,
-            useSSL: argv.minioEnableSSL,
-            accessKey: argv.minioAccessKey,
-            secretKey: argv.minioSecretKey,
-            region: argv.minioRegion
-        });
+const minioClient = new MagdaMinioClient({
+    endPoint: argv.minioHost,
+    port: argv.minioPort,
+    useSSL: argv.minioEnableSSL,
+    accessKey: argv.minioAccessKey,
+    secretKey: argv.minioSecretKey,
+    region: argv.minioRegion
+});
 
-        if (argv.autoCreateBuckets) {
-            console.info("Ensuring that default buckets exist...");
+const registryOptions: AuthorizedRegistryOptions = {
+    baseUrl: argv.registryApiUrl,
+    jwtSecret: argv.jwtSecret as string,
+    userId: argv.userId,
+    tenantId: argv.tenantId,
+    maxRetries: 0
+};
+const registryClient = new AuthorizedRegistryClient(registryOptions);
 
-            for (let bucket of argv.defaultBuckets) {
-                console.info(`Creating default bucket ${bucket}`);
-                await minioClient.createBucket(bucket);
-            }
+app.use(
+    "/v0",
+    createApiRouter({
+        objectStoreClient: minioClient,
+        registryClient,
+        tenantId: argv.tenantId,
+        uploadLimit: argv.uploadLimit,
+        authDecisionClient,
+        jwtSecret: argv.jwtSecret as string,
+        autoCreateBuckets: argv.autoCreateBuckets,
+        defaultBuckets: argv.defaultBuckets
+    })
+);
 
-            console.info("Finished creating default buckets");
-        } else {
-            console.info(
-                "Skipping creation of default buckets. (autoCreateBuckets: false)"
-            );
-        }
+app.listen(argv.listenPort);
 
-        const registryOptions: AuthorizedRegistryOptions = {
-            baseUrl: argv.registryApiUrl,
-            jwtSecret: argv.jwtSecret as string,
-            userId: argv.userId,
-            tenantId: argv.tenantId,
-            maxRetries: 0
-        };
-        const registryClient = new AuthorizedRegistryClient(registryOptions);
-
-        app.use(
-            "/v0",
-            createApiRouter({
-                objectStoreClient: minioClient,
-                registryClient,
-                tenantId: argv.tenantId,
-                uploadLimit: argv.uploadLimit,
-                authDecisionClient,
-                jwtSecret: argv.jwtSecret as string
-            })
-        );
-
-        app.listen(argv.listenPort);
-
-        console.log("Storage API started on port " + argv.listenPort);
-    } catch (e) {
-        console.error(e);
-    }
-})();
+console.log("Storage API started on port " + argv.listenPort);
 
 process.on(
     "unhandledRejection",

@@ -19,6 +19,8 @@ export interface ApiRouterOptions {
     tenantId: number;
     uploadLimit: string;
     authDecisionClient: AuthDecisionQueryClient;
+    autoCreateBuckets: boolean;
+    defaultBuckets: string[];
 }
 
 interface FileRequest extends Request {
@@ -33,22 +35,55 @@ interface FileRequest extends Request {
 
 export default function createApiRouter(options: ApiRouterOptions) {
     const router: express.Router = express.Router();
+    let hasDefaultBucketsCreated = false;
+
+    async function initialization() {
+        try {
+            if (options.autoCreateBuckets) {
+                console.info("Ensuring that default buckets exist...");
+
+                for (const bucket of options.defaultBuckets) {
+                    console.info(`Creating default bucket ${bucket}`);
+                    await options.objectStoreClient.createBucket(bucket);
+                }
+                console.info("Finished creating default buckets");
+            } else {
+                console.info(
+                    "Skipping creation of default buckets. (autoCreateBuckets: false)"
+                );
+            }
+            hasDefaultBucketsCreated = true;
+        } catch (e) {
+            console.log("Failed to create default buckets...");
+            throw e;
+        }
+    }
+
+    initialization().catch((e) => {
+        console.error(e);
+        console.log("Initialization Failed! Exiting now...");
+        process.exit(1);
+    });
+
+    // Liveness probe
+    router.get("/status/live", function (_req, res) {
+        res.status(200).send("OK");
+    });
+
+    // Readiness probe
+    router.get("/status/ready", function (_req, res) {
+        if (hasDefaultBucketsCreated) {
+            res.status(200).send("OK");
+        } else {
+            res.status(503).send("Default buckets are yet to created.");
+        }
+    });
 
     // JSON files are interpreted as text
     router.use(bodyParser.text({ type: ["text/*", "application/json"] }));
     router.use(
         bodyParser.raw({ type: ["image/*", "application/octet-stream"] })
     );
-
-    // Liveness probe
-    router.get("/status/live", function (_req, res) {
-        return res.status(200).send("OK");
-    });
-
-    // Readiness probe
-    router.get("/status/ready", function (_req, res) {
-        return res.status(200).send("OK");
-    });
 
     /**
      * @apiGroup Storage

@@ -5,6 +5,7 @@ import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisio
 import { withAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import { getTableRecord } from "magda-typescript-common/src/SQLUtils";
 import ServerError from "magda-typescript-common/src/ServerError";
+import { sqls } from "sql-syntax";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -16,6 +17,48 @@ export default function createOperationApiRouter(options: ApiRouterOptions) {
     const authDecisionClient = options.authDecisionClient;
 
     const router: express.Router = express.Router();
+
+    // get operation by URI
+    router.get(
+        "/byUri/*",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/operation/read"
+        }),
+        async function (req, res) {
+            try {
+                let opUri = req?.params?.[0];
+                if (typeof opUri !== "string") {
+                    throw new ServerError(
+                        "Invalid operation uri is supplied.",
+                        400
+                    );
+                }
+                opUri = opUri.trim();
+                if (!opUri) {
+                    throw new ServerError(
+                        "Invalid empty operation uri is supplied.",
+                        400
+                    );
+                }
+
+                const result = await database
+                    .getPool()
+                    .query(
+                        ...sqls`SELECT * FROM operations WHERE uri = ${opUri}`.toQuery()
+                    );
+
+                if (!result?.rows?.length) {
+                    throw new ServerError(
+                        `Cannot locate the operation by uri: ${opUri}`,
+                        404
+                    );
+                }
+                res.json(result.rows[0]);
+            } catch (e) {
+                respondWithError("GET operation by URI", res, e);
+            }
+        }
+    );
 
     // get operation by id
     router.get(

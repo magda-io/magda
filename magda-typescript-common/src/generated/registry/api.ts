@@ -2416,7 +2416,7 @@ export class RecordsApi {
         id: string,
         recordPatch: Array<Operation>,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
+    ): Promise<{ response: http.IncomingMessage; body: Record }> {
         const localVarPath =
             this.basePath +
             "/records/{id}".replace("{" + "id" + "}", String(id));
@@ -2477,25 +2477,24 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: AspectDefinition;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
+        return new Promise<{ response: http.IncomingMessage; body: Record }>(
+            (resolve, reject) => {
+                request(requestOptions, (error, response, body) => {
+                    if (error) {
+                        reject(error);
                     } else {
-                        reject({ response: response, body: body });
+                        if (
+                            response.statusCode >= 200 &&
+                            response.statusCode <= 299
+                        ) {
+                            resolve({ response: response, body: body });
+                        } else {
+                            reject({ response: response, body: body });
+                        }
                     }
-                }
-            });
-        });
+                });
+            }
+        );
     }
     /**
      * Modify a record by ID

@@ -32,6 +32,9 @@ spec:
           - "-DauthApi.baseUrl=http://authorization-api"
           - "-Dopa.baseUrl=http://authorization-api/v0/opa/"
           - "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9200"
+{{- if .Values.debug }}
+          - "-DsearchApi.debug=true"
+{{- end }}
 {{- if .Values.datasetsIndexVersion }}
           - "-DelasticSearch.indices.datasets.version={{ .Values.datasetsIndexVersion }}"
 {{- end }}

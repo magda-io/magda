@@ -1,12 +1,25 @@
 import fetch from "isomorphic-fetch";
-import { User, Role, Permission, OrgUnit } from "./model";
+import {
+    User,
+    CreateUserData,
+    UserRecord,
+    Role,
+    Permission,
+    OrgUnit,
+    OrgUnitRecord,
+    CreateRolePermissionInputData,
+    PermissionRecord,
+    OperationRecord,
+    ResourceRecord
+} from "./model";
 import { Maybe } from "tsmonad";
 import lodash from "lodash";
 import buildJwt from "../session/buildJwt";
-import GenericError from "./GenericError";
 import addTrailingSlash from "../addTrailingSlash";
 import urijs from "urijs";
 import { RequiredKeys } from "../utilityTypes";
+import ServerError from "../ServerError";
+import isUuid from "../util/isUuid";
 
 export default class ApiClient {
     private jwt: string = null;
@@ -23,23 +36,51 @@ export default class ApiClient {
         if (jwtSecret && userId) {
             this.jwt = buildJwt(jwtSecret, userId);
         }
-        this.requestInitOption = {
-            headers: {
-                "X-Magda-Session": this.jwt
-            }
-        };
+        if (this.jwt) {
+            this.requestInitOption = {
+                headers: {
+                    "X-Magda-Session": this.jwt
+                }
+            };
+        }
     }
 
     getMergeRequestInitOption(extraOptions: RequestInit = null): RequestInit {
-        return lodash.merge({}, this.requestInitOption, extraOptions);
+        let defaultContentTypeCfg: RequestInit = {};
+        if (
+            extraOptions?.body &&
+            (!extraOptions?.headers ||
+                (typeof extraOptions.headers === "object" &&
+                    Object.keys(extraOptions.headers)
+                        .map((key) => key.toLowerCase())
+                        .indexOf("content-type") == -1))
+        ) {
+            defaultContentTypeCfg = {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            };
+        }
+        return lodash.merge(
+            {},
+            this.requestInitOption,
+            extraOptions,
+            defaultContentTypeCfg
+        );
     }
 
     async processJsonResponse<T = any>(res: Response) {
         if (res.status >= 200 && res.status < 300) {
             return (await res.json()) as T;
         } else {
-            const responseText = (await res.text()).replace(/<(.|\n)*?>/g, "");
-            throw new GenericError(responseText, res.status);
+            const responseText = await res.text();
+            throw new ServerError(
+                `Error: ${res.statusText}. ${responseText.replace(
+                    /<(.|\n)*?>/g,
+                    ""
+                )}`,
+                res.status
+            );
         }
     }
 
@@ -51,25 +92,6 @@ export default class ApiClient {
      * @memberof ApiClient
      */
     async getUser(userId: string): Promise<Maybe<RequiredKeys<User, "id">>> {
-        return await this.handleGetResult(
-            fetch(
-                `${this.baseUrl}private/users/${userId}`,
-                this.getMergeRequestInitOption()
-            )
-        );
-    }
-
-    /**
-     * Get the data of a user.
-     * (Deprecated) This is the public facing API and will return less fields.
-     *
-     * @param {string} userId
-     * @returns {Promise<Maybe<User>>}
-     * @memberof ApiClient
-     */
-    async getUserPublic(
-        userId: string
-    ): Promise<Maybe<RequiredKeys<User, "id">>> {
         return await this.handleGetResult(
             fetch(
                 `${this.baseUrl}public/users/${userId}`,
@@ -101,14 +123,14 @@ export default class ApiClient {
     /**
      * create a user
      *
-     * @param {User} user
-     * @returns {Promise<User>}
+     * @param {CreateUserData} user
+     * @returns {Promise<UserRecord>}
      * @memberof ApiClient
      */
-    async createUser(user: User): Promise<RequiredKeys<User, "id">> {
+    async createUser(user: CreateUserData): Promise<UserRecord> {
         try {
             const res = await fetch(
-                `${this.baseUrl}private/users`,
+                `${this.baseUrl}public/users`,
                 this.getMergeRequestInitOption({
                     method: "POST",
                     headers: {
@@ -119,11 +141,15 @@ export default class ApiClient {
             );
             if (res.status >= 400) {
                 throw new Error(
-                    `Encountered error ${res.status} when POSTing new user to ${this.baseUrl}/private/users`
+                    `Encountered error ${
+                        res.status
+                    }: ${await res.text()} when creating new user to ${
+                        this.baseUrl
+                    }public/users`
                 );
             }
             const resData = await res.json();
-            return { ...user, ...resData };
+            return resData;
         } catch (e) {
             console.error(e);
             throw e;
@@ -141,7 +167,7 @@ export default class ApiClient {
      */
     async addUserRoles(userId: string, roleIds: string[]): Promise<string[]> {
         const res = await fetch(
-            `${this.baseUrl}public/user/${userId}/roles`,
+            `${this.baseUrl}public/users/${userId}/roles`,
             this.getMergeRequestInitOption({
                 method: "POST",
                 headers: {
@@ -184,7 +210,7 @@ export default class ApiClient {
      */
     async getUserRoles(userId: string): Promise<Role[]> {
         const res = await fetch(
-            `${this.baseUrl}public/user/${userId}/roles`,
+            `${this.baseUrl}public/users/${userId}/roles`,
             this.getMergeRequestInitOption()
         );
         return await this.processJsonResponse<Role[]>(res);
@@ -199,7 +225,7 @@ export default class ApiClient {
      */
     async getUserPermissions(userId: string): Promise<Permission[]> {
         const res = await fetch(
-            `${this.baseUrl}public/user/${userId}/permissions`,
+            `${this.baseUrl}public/users/${userId}/permissions`,
             this.getMergeRequestInitOption()
         );
         return await this.processJsonResponse<Permission[]>(res);
@@ -214,7 +240,7 @@ export default class ApiClient {
      */
     async getRolePermissions(roleId: string): Promise<Permission[]> {
         const res = await fetch(
-            `${this.baseUrl}public/role/${roleId}/permissions`,
+            `${this.baseUrl}public/roles/${roleId}/permissions`,
             this.getMergeRequestInitOption()
         );
         return await this.processJsonResponse<Permission[]>(res);
@@ -354,6 +380,87 @@ export default class ApiClient {
             this.getMergeRequestInitOption()
         );
         return await this.processJsonResponse<OrgUnit[]>(res);
+    }
+
+    async createOrgNode(
+        parentNodeId: string,
+        node: Partial<
+            Omit<
+                OrgUnitRecord,
+                | "id"
+                | "createBy"
+                | "createTime"
+                | "editBy"
+                | "editTime"
+                | "left"
+                | "right"
+            >
+        >
+    ): Promise<OrgUnit> {
+        const uri = urijs(`${this.baseUrl}public/orgunits`)
+            .segmentCoded(parentNodeId)
+            .segmentCoded("insert");
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption({
+                method: "post",
+                body: JSON.stringify(node)
+            })
+        );
+        return await this.processJsonResponse<OrgUnit>(res);
+    }
+
+    async createRole(name: string, desc?: string): Promise<Role> {
+        const uri = urijs(`${this.baseUrl}public/roles`);
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption({
+                method: "post",
+                body: JSON.stringify({
+                    name,
+                    description: desc ? desc : ""
+                })
+            })
+        );
+        return await this.processJsonResponse<Role>(res);
+    }
+
+    async createRolePermission(
+        roleId: string,
+        permissionData: CreateRolePermissionInputData
+    ): Promise<PermissionRecord> {
+        if (!isUuid(roleId)) {
+            throw new ServerError(`roleId: ${roleId} is not a valid UUID.`);
+        }
+        const uri = urijs(`${this.baseUrl}public/roles`)
+            .segmentCoded(roleId)
+            .segmentCoded("permissions");
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption({
+                method: "post",
+                body: JSON.stringify(permissionData)
+            })
+        );
+        return await this.processJsonResponse<PermissionRecord>(res);
+    }
+
+    async getOperationByUri(opUri: string) {
+        const uri = urijs(`${this.baseUrl}public/operations/byUri/${opUri}`);
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<OperationRecord>(res);
+    }
+
+    async getResourceByUri(resUri: string) {
+        const uri = urijs(`${this.baseUrl}public/resources/byUri/${resUri}`);
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<ResourceRecord>(res);
     }
 
     private async handleGetResult<T = User>(

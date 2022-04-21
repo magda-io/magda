@@ -20,12 +20,6 @@ allow {
     input.storage.object.ownerId = input.user.id
 }
 
-allow {
-    hasOwnerConstraintPermission(input.operationUri)
-    # or when a user has ownership constraint permission, he also can access all objects with NO ownerId assigned
-    not input.storage.object.ownerId
-}
-
 # Rules for permissions with org unit constraint
 allow {
     hasOrgUnitConstaintPermission(input.operationUri)

@@ -1,0 +1,10 @@
+version: "3"
+services:
+  test-postgres:
+    image: postgres:13.3
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: "password"

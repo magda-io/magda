@@ -442,8 +442,28 @@ class RecordsService(
     * @apiParam (body) {json} recordPatch The RFC 6902 patch to apply to the aspect.
     * @apiParamExample {json} Request-Example
     * [
+    *    // update record's name field
     *    {
-    *        "path": "string"
+    *      "op": "replace",
+    *      "path": "/name",
+    *      "value": "a new record name"
+    *    },
+    *    // update the record's `publishing` aspect `state` field
+    *    {
+    *      "op": "replace",
+    *      "path": "/aspects/publishing/state",
+    *      "value": "published"
+    *    },
+    *    // remove the record's `dataset-draft` aspect
+    *    {
+    *      "op": "remove",
+    *      "path": "/aspects/dataset-draft"
+    *    },
+    *    // add a "title" field to the record's `dcat-dataset-strings` aspect
+    *    {
+    *      "op": "add",
+    *      "path": "/aspects/dcat-dataset-strings/title",
+    *      "value": "test dataset"
     *    }
     * ]
     *
@@ -468,7 +488,7 @@ class RecordsService(
     value = "Modify a record by applying a JSON Patch",
     nickname = "patchById",
     httpMethod = "PATCH",
-    response = classOf[AspectDefinition],
+    response = classOf[Record],
     notes =
       "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902)."
   )

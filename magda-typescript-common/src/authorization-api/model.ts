@@ -12,17 +12,37 @@ declare global {
     }
 }
 
-export interface PublicUser {
-    id?: string;
+export interface UserRecord {
+    id: string;
     displayName: string;
-    photoURL?: string;
+    photoURL: string;
     isAdmin: boolean;
-    roles?: Role[];
-    permissions?: Permission[];
-    managingOrgUnitIds?: string[];
-    orgUnitId?: string;
-    orgUnit?: OrgUnit;
+    orgUnitId: string;
+    email: string;
+    source: string;
+    sourceId: string;
 }
+
+export type PublicUser = Partial<
+    Pick<UserRecord, "id" | "photoURL" | "orgUnitId">
+> &
+    Omit<
+        UserRecord,
+        "id" | "photoURL" | "orgUnitId" | "email" | "source" | "sourceId"
+    > & {
+        roles?: Role[];
+        permissions?: Permission[];
+        managingOrgUnitIds?: string[];
+        orgUnit?: OrgUnit;
+    };
+
+export type User = PublicUser &
+    Pick<UserRecord, "email" | "source" | "sourceId">;
+
+export type CreateUserData = Partial<
+    Omit<UserRecord, "email" | "displayName" | "id">
+> &
+    Pick<UserRecord, "displayName" | "email">;
 
 export type OrgUnitRelationshipType =
     | "ancestor"
@@ -30,25 +50,23 @@ export type OrgUnitRelationshipType =
     | "equal"
     | "unrelated";
 
-export interface OrgUnit {
-    id?: string;
-    name?: string;
-    description?: string;
-    // only available when query the orgUnit relationship against a node with some APIs
-    relationship?: OrgUnitRelationshipType;
-    left?: number;
-    right?: number;
-    createBy?: string;
-    createTime?: Date;
-    editBy?: string;
-    editTime?: Date;
+export interface OrgUnitRecord {
+    id: string;
+    name: string;
+    description: string;
+    left: number;
+    right: number;
+    createBy: string;
+    createTime: Date;
+    editBy: string;
+    editTime: Date;
 }
 
-export interface User extends PublicUser {
-    email: string;
-    source: string;
-    sourceId: string;
-}
+export type OrgUnit = Partial<OrgUnitRecord> & {
+    // only available when query the orgUnit relationship against a node with some APIs
+    relationship?: OrgUnitRelationshipType;
+};
+
 export interface APIKeyRecord {
     id: string;
     user_id: string;
@@ -88,6 +106,49 @@ export interface Permission {
     editBy?: string;
     editTime?: Date;
 }
+
+export interface PermissionRecord {
+    id: string;
+    name: string;
+    description: string;
+    resource_id: string;
+    user_ownership_constraint: boolean;
+    org_unit_ownership_constraint: boolean;
+    pre_authorised_constraint: boolean;
+    owner_id: string;
+    create_time: string;
+    create_by: string;
+    edit_time: string;
+    edit_by: string;
+}
+
+export interface CreateRolePermissionInputData
+    extends Omit<
+        PermissionRecord,
+        | "id"
+        | "owner_id"
+        | "create_by"
+        | "create_time"
+        | "edit_by"
+        | "edit_time"
+    > {
+    operationIds: string[];
+}
+
+export type OperationRecord = {
+    id: string;
+    uri: string;
+    name: string;
+    description: string;
+    resource_id: string;
+};
+
+export type ResourceRecord = {
+    id: string;
+    uri: string;
+    name: string;
+    description: string;
+};
 
 export interface UserToken {
     id: string;

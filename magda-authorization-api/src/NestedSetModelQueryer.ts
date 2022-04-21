@@ -6,6 +6,7 @@ import { escapeIdentifier } from "magda-typescript-common/src/SQLUtils";
 import AuthDecision, {
     UnconditionalTrueDecision
 } from "magda-typescript-common/src/opa/AuthDecision";
+import isUuid from "@magda/typescript-common/dist/util/isUuid";
 const textTree = require("text-treeview");
 
 export interface NodeRecord {
@@ -206,7 +207,7 @@ class NestedSetModelQueryer {
     async getNodeById(
         id: string,
         fields: string[] = null,
-        client: pg.Client = null,
+        client: pg.PoolClient = null,
         authDecision: AuthDecision = UnconditionalTrueDecision
     ): Promise<Maybe<NodeRecord>> {
         const authConditions = authDecision.toSql({
@@ -661,7 +662,7 @@ class NestedSetModelQueryer {
     async compareNodes(
         node1Id: string,
         node2Id: string,
-        client: pg.Client = null
+        client: pg.PoolClient = null
     ): Promise<CompareNodeResult> {
         const tbl = this.tableName;
         const result = await (client ? client : this.pool).query(
@@ -770,7 +771,7 @@ class NestedSetModelQueryer {
      */
     async createRootNode(
         node: NodeRecord,
-        existingClient: pg.Client = null
+        existingClient: pg.PoolClient = null
     ): Promise<string> {
         const tbl = this.tableName;
         const client = existingClient
@@ -836,7 +837,7 @@ class NestedSetModelQueryer {
     }
 
     private async getNodeDataWithinTx(
-        client: pg.Client,
+        client: pg.PoolClient,
         nodeId: string,
         fields: string[]
     ): Promise<NodeRecord> {
@@ -1244,33 +1245,30 @@ class NestedSetModelQueryer {
         nodeData: NodeRecord,
         client: pg.Client = null
     ): Promise<void> {
-        if (nodeId.trim() === "") {
-            throw new Error("nodeId can't be empty!");
+        if (!isUuid(nodeId)) {
+            throw new Error("nodeId is not valid UUID!");
         }
-        const sqlValues: any[] = [nodeId];
-        const updateFields: string[] = Object.keys(nodeData).filter(
-            (k) => k !== "left" && k !== "right" && k !== "id"
-        );
+        const sqlUpdates: SQLSyntax[] = Object.keys(nodeData)
+            .filter((k) => k !== "left" && k !== "right" && k !== "id")
+            .map(
+                (fieldName) =>
+                    sqls`${escapeIdentifier(fieldName)} = ${
+                        nodeData[fieldName]
+                    }`
+            );
 
-        if (!updateFields.length) {
+        if (!sqlUpdates.length) {
+            console.log("update node parameter: ", nodeId, nodeData);
             throw new Error("No valid node data passed for updating.");
         }
 
-        const setFieldList = updateFields
-            .map((f) => {
-                if (!isValidSqlIdentifier(f)) {
-                    throw new Error(
-                        `field name: ${f} contains invalid characters!`
-                    );
-                }
-                sqlValues.push(nodeData[f]);
-                return `"${f}" = $${sqlValues.length}`;
-            })
-            .join(", ");
-
         await (client ? client : this.pool).query(
-            `UPDATE "${this.tableName}" SET ${setFieldList} WHERE "id" = $1`,
-            sqlValues
+            ...sqls`UPDATE ${escapeIdentifier(
+                this.tableName
+            )} SET ${SQLSyntax.join(
+                sqlUpdates,
+                sqls` , `
+            )} WHERE "id" = ${nodeId}`.toQuery()
         );
     }
 

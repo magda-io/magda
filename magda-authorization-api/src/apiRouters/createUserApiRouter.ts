@@ -5,9 +5,11 @@ import handleMaybePromise from "../handleMaybePromise";
 import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import { NO_CACHE } from "../utilityMiddlewares";
-import { PublicUser } from "magda-typescript-common/src/authorization-api/model";
 import { requireObjectPermission } from "../recordAuthMiddlewares";
-import { withAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import {
+    withAuthDecision,
+    requirePermission
+} from "magda-typescript-common/src/authorization-api/authMiddleware";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import { searchTableRecord } from "magda-typescript-common/src/SQLUtils";
 
@@ -27,7 +29,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {post} /v0/auth/user/:userId/roles Add Roles to a user
+     * @api {post} /v0/auth/users/:userId/roles Add Roles to a user
      * @apiDescription Returns a list of current role ids of the user.
      * Required admin access.
      *
@@ -56,14 +58,14 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                 const roleIds = await database.addUserRoles(userId, req.body);
                 res.json(roleIds);
             } catch (e) {
-                respondWithError("POST /public/user/:userId/roles", res, e);
+                respondWithError("POST /public/users/:userId/roles", res, e);
             }
         }
     );
 
     /**
      * @apiGroup Auth
-     * @api {delete} /v0/auth/user/:userId/roles Remove a list roles from a user
+     * @api {delete} /v0/auth/users/:userId/roles Remove a list roles from a user
      * @apiDescription Returns the JSON response indicates the operation has been done successfully or not
      * Required admin access.
      *
@@ -94,14 +96,14 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                 await database.deleteUserRoles(userId, req.body);
                 res.json({ isError: false });
             } catch (e) {
-                respondWithError("DELETE /public/user/:userId/roles", res, e);
+                respondWithError("DELETE /public/users/:userId/roles", res, e);
             }
         }
     );
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/user/:userId/roles Get all roles of a user
+     * @api {get} /v0/auth/users/:userId/roles Get all roles of a user
      * @apiDescription Returns an array of roles. When no roles can be found, an empty array will be returned
      * Required admin access.
      *
@@ -135,14 +137,14 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                 const roles = await database.getUserRoles(userId);
                 res.json(roles);
             } catch (e) {
-                respondWithError("GET /public/user/:userId/roles", res, e);
+                respondWithError("GET /public/users/:userId/roles", res, e);
             }
         }
     );
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/user/:userId/permissions Get all permissions of a user
+     * @api {get} /v0/auth/users/:userId/permissions Get all permissions of a user
      * @apiDescription Returns an array of permissions. When no permissions can be found, an empty array will be returned.
      * Required admin access.
      *
@@ -188,7 +190,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                 res.json(permissions);
             } catch (e) {
                 respondWithError(
-                    "GET /public/user/:userId/permissions",
+                    "GET /public/users/:userId/permissions",
                     res,
                     e
                 );
@@ -199,7 +201,8 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Auth
      * @api {get} /v0/auth/users/whoami Get Current User Info (whoami)
-     * @apiDescription Returns current user
+     * @apiDescription Returns the user info of the current user. If the user has not logged in yet,
+     * the user will be considered as an anonymous user.
      *
      * @apiSuccessExample {json} 200
      *    {
@@ -291,20 +294,70 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
+     * @api {post} /v0/auth/users Create a new user
+     * @apiDescription Create a new user
+     * Supply a JSON object that contains fields of the new user in body.
+     *
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       displayName: "xxxx",
+     *       email: "sdds@sds.com"
+     *     }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *      id: "2a92d9e7-9fb8-4fe4-a2d1-13b6bcf1776d",
+     *      displayName: "xxxx",
+     *      email: "sdds@sds.com",
+     *      //....
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post(
+        "/",
+        requirePermission(
+            authDecisionClient,
+            "authObject/user/create",
+            (req: Request, res: Response) => ({
+                authObject: {
+                    user: req.body
+                }
+            })
+        ),
+        async (req, res) => {
+            try {
+                const user = await database.createUser(req.body);
+                res.json(user);
+            } catch (e) {
+                respondWithError("create a new user", res, e);
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
      * @api {put} /v0/auth/users/:userId Update User By Id
-     * @apiDescription Updates a user's info by Id. 
-     * Supply a JSON object that contains fields to be udpated in body.
+     * @apiDescription Updates a user's info by Id.
+     * Supply a JSON object that contains fields to be updated in body.
      *
      * @apiParam {string} userId id of user
      * @apiParamExample (Body) {json}:
      *     {
      *       displayName: "xxxx"
-     *       isAdmin: true
      *     }
      *
      * @apiSuccessExample {json} 200
      *    {
-            result: "SUCCESS"
+     *      id: "2a92d9e7-9fb8-4fe4-a2d1-13b6bcf1776d",
+     *      displayName: "xxxx",
+     *      email: "sdds@sds.com",
+     *      //....
      *    }
      *
      * @apiErrorExample {json} 401/404/500
@@ -329,12 +382,10 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
 
             // update
             try {
-                await database.updateUser(userId, update);
-                res.status(200).json({
-                    result: "SUCCESS"
-                });
+                const user = await database.updateUser(userId, update);
+                res.status(200).json(user);
             } catch (e) {
-                respondWithError("/public/users/:userId", res, e);
+                respondWithError("update user by id", res, e);
             }
         }
     );
@@ -418,7 +469,8 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Auth
      * @api {get} /v0/auth/users/:userId Get User By Id
-     * @apiDescription Returns user by id
+     * @apiDescription Returns user by id.
+     * Unlike `whoami` API endpoint, this API requires `authObject/user/read` permission.
      *
      * @apiParam {string} userId id of user
      *
@@ -427,7 +479,8 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *        "id":"...",
      *        "displayName":"Fred Nerk",
      *        "photoURL":"...",
-     *        "isAdmin": true
+     *        "OrgUnitId": "xxx"
+     *        ...
      *    }
      *
      * @apiErrorExample {json} 401/404/500
@@ -445,20 +498,10 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
         }),
         (req, res) => {
             const userId = req.params.userId;
-            const getPublicUser = database
-                .getUser(userId, res.locals.authDecision)
-                .then((userMaybe) =>
-                    userMaybe.map((user) => {
-                        const publicUser: PublicUser = {
-                            id: user.id,
-                            photoURL: user.photoURL,
-                            displayName: user.displayName,
-                            isAdmin: user.isAdmin
-                        };
-
-                        return publicUser;
-                    })
-                );
+            const getPublicUser = database.getUser(
+                userId,
+                res.locals.authDecision
+            );
 
             handleMaybePromise(res, getPublicUser, "/public/users/:userId");
         }

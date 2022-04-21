@@ -73,7 +73,7 @@ export function getTableColumnName(
  * @return {*}
  */
 export async function createTableRecord(
-    poolOrClient: pg.Client | pg.Pool,
+    poolOrClient: pg.PoolClient | pg.Pool,
     table: string,
     data: { [key: string]: RawValue },
     allowFieldList?: string[],
@@ -122,7 +122,7 @@ export async function createTableRecord(
 }
 
 export async function updateTableRecord(
-    poolOrClient: pg.Client | pg.Pool,
+    poolOrClient: pg.PoolClient | pg.Pool,
     table: string,
     id: string,
     data: { [key: string]: Value },

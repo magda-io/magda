@@ -10,7 +10,7 @@ function getTestDBConfig() {
         host: host ? host : "localhost",
         database: database ? database : "postgres",
         user: user ? user : "postgres",
-        password: password ? password : ""
+        password: password ? password : "password"
     };
 }
 

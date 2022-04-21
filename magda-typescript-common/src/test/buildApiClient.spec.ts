@@ -112,56 +112,6 @@ describe("Test ApiClient.ts", function () {
         expect(data).to.deep.equal(mockUserData[1]);
     });
 
-    it("`getUserPublic` should return the correct test user record if called without sepecifying user ID", async function () {
-        const api = new ApiClient(argv.authorizationApi);
-        const data = (await api.getUserPublic(mockUserData[1].id)).valueOr(
-            null
-        );
-        const expectedUserData = {
-            id: mockUserData[1].id,
-            photoURL: mockUserData[1].photoURL,
-            displayName: mockUserData[1].displayName,
-            isAdmin: mockUserData[1].isAdmin
-        };
-        expect(data).to.deep.equal(expectedUserData);
-    });
-
-    it("`getUserPublic` should return the correct test user record if called as a standard user", async function () {
-        const api = new ApiClient(
-            argv.authorizationApi,
-            argv.jwtSecret,
-            mockUserData[1].id
-        );
-        const data = (await api.getUserPublic(mockUserData[1].id)).valueOr(
-            null
-        );
-        const expectedUserData = {
-            id: mockUserData[1].id,
-            photoURL: mockUserData[1].photoURL,
-            displayName: mockUserData[1].displayName,
-            isAdmin: mockUserData[1].isAdmin
-        };
-        expect(data).to.deep.equal(expectedUserData);
-    });
-
-    it("`getUserPublic` should return the correct test user record if called as admin user", async function () {
-        const api = new ApiClient(
-            argv.authorizationApi,
-            argv.jwtSecret,
-            argv.userId
-        );
-        const data = (await api.getUserPublic(mockUserData[1].id)).valueOr(
-            null
-        );
-        const expectedUserData = {
-            id: mockUserData[1].id,
-            photoURL: mockUserData[1].photoURL,
-            displayName: mockUserData[1].displayName,
-            isAdmin: mockUserData[1].isAdmin
-        };
-        expect(data).to.deep.equal(expectedUserData);
-    });
-
     const newUserDataToBeInserted = {
         displayName: "Test User2",
         email: "test@test.com",
@@ -176,7 +126,7 @@ describe("Test ApiClient.ts", function () {
         return expect(
             api.createUser(newUserDataToBeInserted)
         ).to.eventually.rejectedWith(
-            `Encountered error 401 when POSTing new user to ${argv.authorizationApi}`
+            "Encountered error 401: Unauthorised when creating new user to http://localhost:6104/v0/public/users"
         );
     });
 
@@ -189,7 +139,7 @@ describe("Test ApiClient.ts", function () {
         return expect(
             api.createUser(newUserDataToBeInserted)
         ).to.eventually.rejectedWith(
-            `Encountered error 403 when POSTing new user to ${argv.authorizationApi}`
+            "Encountered error 403: Can only be accessed by Admin users when creating new user to http://localhost:6104/v0/public/users"
         );
     });
 

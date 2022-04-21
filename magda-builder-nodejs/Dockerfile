@@ -10,6 +10,7 @@ RUN apk --no-cache add git openssh bash \
 	ca-certificates \
 	curl \
 	tar \
-	wget
+	wget \
+	socat
 
 ENTRYPOINT ["/bin/bash", "-l", "-c"]

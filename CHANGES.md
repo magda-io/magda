@@ -21,6 +21,13 @@
 - #3340 OPA AST parser takes too long to evaluate large response
 - Increase registry default request timeout to 60s (from 30s)
 - Bump Dataset index version to 49 & publishers index version to 7
+- Fixed registry API generated ts client patchRecord API response type
+- add `allowAutoCrawlOnStartingUp` option to indexer
+- add `/v0/status/live` & `/v0/status/ready` endpoint to indexer
+- Related to #3315, introduce `ServiceRunner` to launch an integrated test & dev environment
+- #3315 rewrite auth related integration tests and execute tests using `ServiceRunner` rather than mini k8s cluster `kind`
+- #3345 Add dataset index / delete API endpoints to indexer
+- Add `debug` switch to registry API, search API & Auth API
 
 ## 1.2.1
 

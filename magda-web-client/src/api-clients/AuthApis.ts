@@ -5,6 +5,12 @@ import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
 import { AuthPluginConfig } from "@magda/gateway/src/createAuthPluginRouter";
 import urijs from "urijs";
 import { User, Role } from "reducers/userManagementReducer";
+import {
+    PermissionRecord,
+    CreateRolePermissionInputData,
+    OperationRecord,
+    ResourceRecord
+} from "@magda/typescript-common/dist/authorization-api/model";
 
 export type AuthConfig =
     | {
@@ -388,13 +394,6 @@ export type QueryResourcesParams = {
     noCache?: boolean;
 };
 
-export type ResourceRecord = {
-    id: string;
-    uri: string;
-    name: string;
-    description: string;
-};
-
 export async function queryResources(
     params?: QueryResourcesParams
 ): Promise<ResourceRecord[]> {
@@ -441,14 +440,6 @@ export type QueryOperationsParams = {
     offset?: number;
     limit?: number;
     noCache?: boolean;
-};
-
-export type OperationRecord = {
-    id: string;
-    uri: string;
-    name: string;
-    description: string;
-    resource_id: string;
 };
 
 export async function queryResOperations(
@@ -499,21 +490,6 @@ export type QueryPermissionsParams = {
     noCache?: boolean;
 };
 
-export interface PermissionRecord {
-    id: string;
-    name: string;
-    description: string;
-    resource_id: string;
-    user_ownership_constraint: boolean;
-    org_unit_ownership_constraint: boolean;
-    pre_authorised_constraint: boolean;
-    owner_id: string;
-    create_time: string;
-    create_by: string;
-    edit_time: string;
-    edit_by: string;
-}
-
 export interface RolePermissionRecord extends PermissionRecord {
     resource_uri: string;
     operations?: OperationRecord[];
@@ -557,19 +533,6 @@ export async function queryRolePermissionsCount(
         noCache
     );
     return res?.count ? res.count : 0;
-}
-
-export interface CreateRolePermissionInputData
-    extends Omit<
-        PermissionRecord,
-        | "id"
-        | "owner_id"
-        | "create_by"
-        | "create_time"
-        | "edit_by"
-        | "edit_time"
-    > {
-    operationIds: string[];
 }
 
 export async function createRolePermission(

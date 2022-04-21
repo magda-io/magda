@@ -50,6 +50,8 @@ spec:
             "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
             "-Dregistry.baseUrl=http://registry-api",
             "-Dregistry.readOnlyBaseUrl=http://registry-api-read-only",
+            "-DauthApi.baseUrl=http://authorization-api",
+            "-Dopa.baseUrl=http://authorization-api/v0/opa/",
             "-Dindexer.readSnapshots={{ .Values.readSnapshots }}",
             "-Dindexer.makeSnapshots={{ .Values.makeSnapshots }}",
             "-Dakka.loglevel={{ .Values.global.logLevel }}",

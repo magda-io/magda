@@ -3,7 +3,9 @@ import {
     User,
     Role,
     Permission,
-    APIKeyRecord
+    APIKeyRecord,
+    UserRecord,
+    CreateUserData
 } from "magda-typescript-common/src/authorization-api/model";
 import { Maybe } from "tsmonad";
 import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
@@ -18,10 +20,11 @@ import {
 import { getUserId } from "magda-typescript-common/src/session/GetUserId";
 import NestedSetModelQueryer from "./NestedSetModelQueryer";
 import isUuid from "magda-typescript-common/src/util/isUuid";
+import { v4 as uuidV4 } from "uuid";
 import AuthDecision, {
     UnconditionalTrueDecision
 } from "magda-typescript-common/src/opa/AuthDecision";
-import SQLSyntax, { sqls } from "sql-syntax";
+import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import {
     parseIntParam,
     MAX_PAGE_RECORD_NUMBER,
@@ -299,23 +302,17 @@ export default class Database {
 
     async updateUser(
         userId: string,
-        update: Partial<
-            Omit<
-                User,
-                | "id"
-                | "roles"
-                | "permissions"
-                | "managingOrgUnitIds"
-                | "orgUnit"
-            >
-        >
-    ): Promise<void> {
-        if (!update || !Object.keys(update).length) {
-            return;
+        update: Partial<UserRecord>
+    ): Promise<UserRecord> {
+        if (
+            !update ||
+            typeof update !== "object" ||
+            !Object.keys(update).length
+        ) {
+            throw new ServerError("user update data cannot be empty.", 400);
         }
 
-        const updateSql: string[] = [];
-        const params: any[] = [];
+        const updates: SQLSyntax[] = [];
 
         Object.keys(update).forEach((field) => {
             if (!this.isValidUserUpdateField(field)) {
@@ -323,22 +320,28 @@ export default class Database {
                     `Field ${field} is not a valid user record update field.`
                 );
             }
-            params.push((update as any)[field]);
-            updateSql.push(`"${field}" = $${params.length}`);
+            updates.push(
+                sqls`${escapeIdentifier(field)} = ${(update as any)[field]}`
+            );
         });
 
-        if (!params.length) {
-            return;
-        }
-
-        params.push(userId);
-
         await this.pool.query(
-            `UPDATE users SET ${updateSql.join(", ")} WHERE id = $${
-                params.length
-            }`,
-            params
+            ...sqls`UPDATE users SET ${SQLSyntax.join(
+                updates,
+                sqls`,`
+            )} WHERE id = ${userId}}`.toQuery()
         );
+
+        const fetchUserResult = await this.pool.query(
+            ...sqls`SELECT * FROM users WHERE id = ${userId}`.toQuery()
+        );
+        if (!fetchUserResult?.rows?.length) {
+            throw new ServerError(
+                "failed to locate user by id: " + userId,
+                400
+            );
+        }
+        return fetchUserResult.rows[0];
     }
 
     /**
@@ -370,58 +373,83 @@ export default class Database {
             .then((res) => arrayToMaybe(res.rows));
     }
 
-    async createUser(user: User): Promise<User> {
-        const paramFields = [
-            "displayName",
-            "email",
-            "photoURL",
-            "source",
-            "sourceId",
-            "isAdmin"
-        ];
-        const params = paramFields.map((item, idx) => `$${idx + 1}`);
-        const paramData = [
-            user.displayName,
-            user.email,
-            user.photoURL,
-            user.source,
-            user.sourceId,
-            user.isAdmin
-        ];
+    async createUser(user: CreateUserData): Promise<UserRecord> {
+        const userId = uuidV4();
 
-        if (user.orgUnitId) {
-            paramFields.push("orgUnitId");
-            params.push(`$${paramFields.length}`);
-            paramData.push(user.orgUnitId);
+        if (!user?.displayName) {
+            throw new ServerError(`displayName cannot be empty.`, 400);
         }
 
-        const result = await this.pool.query(
-            `INSERT INTO users("id", ${paramFields
-                .map((field) => `"${field}"`)
-                .join(", ")}) VALUES(uuid_generate_v4(), ${params.join(
-                ", "
-            )}) RETURNING id`,
-            paramData
+        if (!user?.email) {
+            throw new ServerError(`email cannot be empty.`, 400);
+        }
+
+        if (!user?.isAdmin) {
+            user.isAdmin = false;
+        }
+
+        if (!user?.photoURL) {
+            user.photoURL = "";
+        }
+
+        if (!user?.source) {
+            user.source = "unknown";
+        }
+
+        if (!user?.sourceId) {
+            user.sourceId = userId;
+        }
+        const insertFields = [sqls`id`];
+        const values = [sqls`${userId}`];
+
+        Object.keys(user).forEach((field) => {
+            if (!this.isValidUserUpdateField(field)) {
+                throw new ServerError(
+                    `Field ${field} is not a valid user record field.`,
+                    400
+                );
+            }
+            insertFields.push(escapeIdentifier(field));
+            values.push(sqls`${(user as any)[field]}`);
+        });
+
+        if (user?.orgUnitId && !isUuid(user?.orgUnitId)) {
+            throw new ServerError(
+                `orgUnitId ${user?.orgUnitId} is not a valid uuid.`,
+                400
+            );
+        }
+
+        await this.pool.query(
+            ...sqls`INSERT INTO users 
+            (${SQLSyntax.join(insertFields, sqls`,`)}) 
+            VALUES 
+            (${SQLSyntax.join(values, sqls`,`)})`.toQuery()
         );
 
-        const userInfo = result.rows[0];
-        const userId = userInfo.id;
+        const fetchUserResult = await this.pool.query(
+            ...sqls`SELECT * FROM users WHERE id = ${userId}`.toQuery()
+        );
+        if (!fetchUserResult?.rows?.length) {
+            throw new ServerError(
+                "failed to locate newly created user by id: " + userId,
+                500
+            );
+        }
 
         //--- add default authenticated role to the newly create user
         await this.pool.query(
-            "INSERT INTO user_roles (role_id, user_id) VALUES($1, $2)",
-            [AUTHENTICATED_USERS_ROLE_ID, userId]
+            ...sqls`INSERT INTO user_roles (role_id, user_id) VALUES(${AUTHENTICATED_USERS_ROLE_ID}, ${userId})`.toQuery()
         );
 
         //--- add default Admin role to the newly create user (if isAdmin is true)
         if (user.isAdmin) {
             await this.pool.query(
-                "INSERT INTO user_roles (role_id, user_id) VALUES($1, $2)",
-                [ADMIN_USERS_ROLE_ID, userId]
+                ...sqls`INSERT INTO user_roles (role_id, user_id) VALUES(${ADMIN_USERS_ROLE_ID}, ${userId})`.toQuery()
             );
         }
 
-        return userInfo;
+        return fetchUserResult.rows[0];
     }
 
     async check(): Promise<any> {
@@ -516,7 +544,7 @@ export default class Database {
      */
     async addUserRoles(userId: string, roleIds: string[]): Promise<string[]> {
         if (!isUuid(userId)) {
-            throw new Error(`Invalid user id: ${userId}`);
+            throw new ServerError(`Invalid user id: ${userId}`, 400);
         }
 
         const dbClient = await this.pool.connect();
@@ -526,10 +554,9 @@ export default class Database {
             await dbClient.query("BEGIN");
 
             let result = await dbClient.query(
-                `SELECT role_id
+                ...sqls`SELECT role_id
                     FROM user_roles
-                    WHERE user_id = $1`,
-                [userId]
+                    WHERE user_id = ${userId}`.toQuery()
             );
 
             const currentRoleIds = !result.rows.length
@@ -545,11 +572,13 @@ export default class Database {
                 await Promise.all(
                     roleIdsToAdd.map((roleId) => {
                         if (!isUuid(roleId)) {
-                            throw new Error(`Invalid role ID: ${roleId}`);
+                            throw new ServerError(
+                                `Invalid role ID: ${roleId}`,
+                                400
+                            );
                         }
                         dbClient.query(
-                            "INSERT INTO user_roles (role_id, user_id) VALUES($1, $2)",
-                            [roleId, userId]
+                            ...sqls`INSERT INTO user_roles (role_id, user_id) VALUES(${roleId}, ${userId})`.toQuery()
                         );
                     })
                 );
@@ -576,18 +605,16 @@ export default class Database {
      */
     async deleteUserRoles(userId: string, roleIds: string[]): Promise<void> {
         if (!isUuid(userId)) {
-            throw new Error(`Invalid user id: ${userId}`);
+            throw new ServerError(`Invalid user id: ${userId}`, 400);
         }
 
-        const roleIdParams = [] as string[];
-        const roleIdToBeDeleted = !roleIds?.length
+        const roleIdToBeDeleted: SQLSyntax[] = !roleIds?.length
             ? []
             : roleIds.map((roleId, idx) => {
                   if (!isUuid(roleId)) {
-                      throw new Error(`Invalid role ID: ${roleId}`);
+                      throw new ServerError(`Invalid role ID: ${roleId}`, 400);
                   }
-                  roleIdParams.push(`$${idx + 2}`);
-                  return roleId;
+                  return sqls`${roleId}`;
               });
 
         if (!roleIdToBeDeleted.length) {
@@ -595,21 +622,19 @@ export default class Database {
         }
 
         await this.pool.query(
-            `DELETE FROM user_roles WHERE user_id = $1 AND role_id IN (${roleIdParams.join(
-                ", "
-            )})`,
-            [userId, ...roleIdToBeDeleted]
+            ...sqls`DELETE FROM user_roles WHERE user_id = ${userId} AND role_id IN (${SQLSyntax.join(
+                roleIdToBeDeleted,
+                sqls`,`
+            )})`.toQuery()
         );
     }
 
     async deleteRolePermission(roleId?: string, permissionId?: string) {
-        roleId = roleId?.trim();
-        if (!roleId) {
-            throw new ServerError("Invalid empty role id supplied.", 400);
+        if (!isUuid(roleId)) {
+            throw new ServerError("role id should be a valid uuid.", 400);
         }
-        permissionId = permissionId?.trim();
-        if (!permissionId) {
-            throw new ServerError("Invalid empty permission id supplied.", 400);
+        if (!isUuid(permissionId)) {
+            throw new ServerError("permission id should be a valid uuid.", 400);
         }
 
         const pool = this.pool;

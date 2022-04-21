@@ -4,40 +4,40 @@ This package includes the following common utilities that may help magda miniors
 
 ```typescript
 export declare function addJwtSecretFromEnvVar<T>(
-    argv: {
-        [key in keyof Arguments<T>]: Arguments<T>[key];
-    },
-    required?: boolean
-): {
+  argv: {
     [key in keyof Arguments<T>]: Arguments<T>[key];
+  },
+  required?: boolean
+): {
+  [key in keyof Arguments<T>]: Arguments<T>[key];
 };
 
 export declare function arrayToMaybe<T>(rows: T[]): Maybe<T>;
 
 export declare class AsyncPage<T> {
-    readonly requestNextPage: CreateAsyncPage<T>;
-    readonly data: T;
-    readonly hasData: boolean;
-    static create<T>(next: (data: T) => Promise<T>): AsyncPage<T>;
-    static single<T>(value: T): AsyncPage<T>;
-    static singlePromise<T>(valuePromise: Promise<T>): AsyncPage<T>;
-    static none<T>(): AsyncPage<T>;
-    constructor(data: T, hasData: boolean, requestNextPage: CreateAsyncPage<T>);
-    map<TResult>(selector: (data: T) => TResult): AsyncPage<TResult>;
-    forEach(callback: (data: T) => void): Promise<void>;
-    take(n: number): AsyncPage<T>;
+  readonly requestNextPage: CreateAsyncPage<T>;
+  readonly data: T;
+  readonly hasData: boolean;
+  static create<T>(next: (data: T) => Promise<T>): AsyncPage<T>;
+  static single<T>(value: T): AsyncPage<T>;
+  static singlePromise<T>(valuePromise: Promise<T>): AsyncPage<T>;
+  static none<T>(): AsyncPage<T>;
+  constructor(data: T, hasData: boolean, requestNextPage: CreateAsyncPage<T>);
+  map<TResult>(selector: (data: T) => TResult): AsyncPage<TResult>;
+  forEach(callback: (data: T) => void): Promise<void>;
+  take(n: number): AsyncPage<T>;
 }
 
 export declare function asyncPageToArray<T>(page: AsyncPage<T[]>): Promise<T[]>;
 
 export declare class BadRequestError extends ServiceError {
-    constructor(statusCode: number, errorResponse: ApiError, e: any);
+  constructor(statusCode: number, errorResponse: ApiError, e: any);
 }
 
 export declare function buildJwt(
-    jwtSecret: string,
-    userId: string,
-    session?: any
+  jwtSecret: string,
+  userId: string,
+  session?: any
 ): any;
 
 export declare const coerceJson: (param: string) => (json?: string) => any;
@@ -47,47 +47,82 @@ export declare function createServiceError(e: any): Error;
 export declare function encodeURIComponentWithApost(string: string): string;
 
 export declare function forEachAsync<T>(
-    page: AsyncPage<T[]>,
-    maxConcurrency: number,
-    callbackFn: (data: T) => Promise<void>
+  page: AsyncPage<T[]>,
+  maxConcurrency: number,
+  callbackFn: (data: T) => Promise<void>
 ): Promise<void>;
 
 export declare function formatServiceError(
-    baseMessage: string,
-    e: any,
-    retriesLeft: number
+  baseMessage: string,
+  e: any,
+  retriesLeft: number
 ): string;
 
 export declare function getMinikubeIP(): string;
 
 export declare const isUuid: (id: any) => boolean;
 
+// deprecated. Please use fetchRequest instead
 export declare const request: any;
 
+export declare function fetchRequest<T = any, CT = string>(
+  method: string,
+  url: string,
+  body?: any,
+  contentType?: CT | RequestContentType | undefined,
+  returnHeaders?: false,
+  extraRequestOptions?: RequestInit
+): Promise<T>;
+
+export declare function fetchRequest<T = any, CT = string>(
+  method: string,
+  url: string,
+  body?: any,
+  contentType?: CT | RequestContentType | undefined,
+  returnHeaders?: true,
+  extraRequestOptions?: RequestInit
+): Promise<[T, Headers]>;
+
+export declare function getDefaultRequestInitOptions(): RequestInit;
+export declare function setDefaultRequestInitOptions(
+  options: RequestInit
+): void;
+
+export declare function getRequest<T = any, CT = string>(
+  url: string,
+  noCache?: boolean,
+  extraFetchOptions?: RequestInit
+): Promise<T>;
+
+export declare function getRequestNoCache<T = any, CT = string>(
+  url: string,
+  extraFetchOptions?: RequestInit
+): Promise<T>;
+
 export declare function retry<T>(
-    op: () => Promise<T>,
-    delaySeconds: number,
-    retries: number,
-    onRetry: (e: any, retries: number) => any,
-    shouldRetry?: (e: any) => boolean
+  op: () => Promise<T>,
+  delaySeconds: number,
+  retries: number,
+  onRetry: (e: any, retries: number) => any,
+  shouldRetry?: (e: any) => boolean
 ): Promise<T>;
 
 export declare function retryBackoff<T>(
-    op: () => Promise<T>,
-    delaySeconds: number,
-    retries: number,
-    onRetry: (e: any, retries: number) => any,
-    easing?: (delaySeconds: number) => number
+  op: () => Promise<T>,
+  delaySeconds: number,
+  retries: number,
+  onRetry: (e: any, retries: number) => any,
+  easing?: (delaySeconds: number) => number
 ): Promise<T>;
 
 export declare function runLater<TResult>(
-    milliseconds: number,
-    functionToRunLater: () => Promise<TResult> | TResult
+  milliseconds: number,
+  functionToRunLater: () => Promise<TResult> | TResult
 ): Promise<TResult>;
 
 export declare class ServiceError extends Error {
-    e: any;
-    constructor(message: string, e: any);
+  e: any;
+  constructor(message: string, e: any);
 }
 
 export declare function unionToThrowable<T>(input: T | Error): T;

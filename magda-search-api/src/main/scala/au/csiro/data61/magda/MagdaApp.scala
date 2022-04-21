@@ -41,6 +41,16 @@ object MagdaApp extends App {
       }
       .result()
 
+  val debugMode = config.hasPath("searchApi.debug") && config.getBoolean(
+    "searchApi.debug"
+  )
+
+  if (debugMode) {
+    logger.warning(
+      "Debug mode is on. ES DSL Query will be printed in console..."
+    )
+  }
+
   logger.info("Starting Search API on port {}", config.getString("http.port"))
 
   val listener = system.actorOf(Props(classOf[Listener]))
