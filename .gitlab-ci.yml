@@ -495,6 +495,8 @@ buildtest:integration-tests:
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: "password"
+  tags:
+    - heavy
   script:
     - cd magda-authorization-api && yarn build
     - cd ..
