@@ -27,6 +27,7 @@
 - Related to #3315, introduce `ServiceRunner` to launch an integrated test & dev environment
 - #3315 rewrite auth related integration tests and execute tests using `ServiceRunner` rather than mini k8s cluster `kind`
 - #3345 Add dataset index / delete API endpoints to indexer
+- Add `debug` switch to registry API, search API & Auth API
 
 ## 1.2.1
 
