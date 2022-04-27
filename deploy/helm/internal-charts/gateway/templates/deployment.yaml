@@ -50,15 +50,6 @@ spec:
 {{- if .Values.auth.facebookClientId }}
             "--facebookClientId", {{ .Values.auth.facebookClientId | quote }},
 {{- end }}
-{{- if .Values.auth.arcgisClientId }}
-            "--arcgisClientId", {{ .Values.auth.arcgisClientId | quote }},
-{{- end }}
-{{- if .Values.auth.arcgisInstanceBaseUrl }}
-            "--arcgisInstanceBaseUrl", {{ .Values.auth.arcgisInstanceBaseUrl | quote }},
-{{- end }}
-{{- if .Values.auth.esriOrgGroup}}
-            "--esriOrgGroup", {{ .Values.auth.esriOrgGroup| quote }},
-{{- end }}
 {{- if .Values.enableAuthEndpoint }}
             "--enableAuthEndpoint", {{ .Values.enableAuthEndpoint | quote }},
 {{- end }}
@@ -159,14 +150,6 @@ spec:
             secretKeyRef:
               name: oauth-secrets
               key: facebook-client-secret
-              optional: true
-{{- end }}
-{{- if .Values.auth.arcgisClientId }}
-        - name: ARCGIS_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: arcgis-client-secret
               optional: true
 {{- end }}
         {{- include "magda.db-client-credential-env" (dict "dbName" "session-db" "root" .) | indent 8 }}

@@ -36,12 +36,6 @@ describe("Test createAuthRouter", function (this: Mocha.ISuiteCallbackContext) {
             userId: "000-xxxx-xxxx-xxx-xxx",
             facebookClientId: "xxxxx",
             facebookClientSecret: "xxxxx",
-            aafClientUri: "xxxxx",
-            aafClientSecret: "xxxxx",
-            arcgisClientId: "xxxxx",
-            arcgisClientSecret: "xxxxx",
-            arcgisInstanceBaseUrl: "xxxxx",
-            esriOrgGroup: "xxxxx",
             ckanUrl: "xxxx",
             authorizationApi: "xxxx",
             plugins: [

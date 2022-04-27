@@ -126,36 +126,6 @@ const argv = addJwtSecretFromEnvVar(
                 process.env.FACEBOOK_CLIENT_SECRET ||
                 process.env.npm_package_config_facebookClientSecret
         })
-        .option("arcgisClientId", {
-            describe: "The client ID to use for ArcGIS OAuth.",
-            type: "string",
-            default:
-                process.env.ARCGIS_CLIENT_ID ||
-                process.env.npm_package_config_arcgisClientId
-        })
-        .option("arcgisClientSecret", {
-            describe:
-                "The secret to use for ArcGIS OAuth.  This can also be specified with the ARCGIS_CLIENT_SECRET environment variable.",
-            type: "string",
-            default:
-                process.env.ARCGIS_CLIENT_SECRET ||
-                process.env.npm_package_config_arcgisClientSecret
-        })
-        .option("arcgisInstanceBaseUrl", {
-            describe: "The instance of ArcGIS infrastructure to use for OAuth.",
-            type: "string",
-            default:
-                process.env.ARCGIS_INSTANCE_BASE_URL ||
-                process.env.npm_package_config_arcgisInstanceBaseUrl
-        })
-        .option("esriOrgGroup", {
-            describe:
-                "A unique group name representing authenticated users of the esri portal",
-            type: "string",
-            default:
-                process.env.ESRI_ORG_GROUP ||
-                process.env.npm_package_config_esriOrgGroup
-        })
         .options("enableAuthEndpoint", {
             describe: "Whether enable the AuthEndpoint",
             type: "boolean",

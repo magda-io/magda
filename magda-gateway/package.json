@@ -36,8 +36,6 @@
     "lodash": "^4.17.4",
     "morgan": "^1.6.1",
     "passport": "^0.2.2",
-    "passport-arcgis": "^0.1.8",
-    "passport-custom": "^1.0.5",
     "passport-facebook": "^2.0.0",
     "pg": "^6.4.0",
     "read-pkg-up": "^3.0.0",

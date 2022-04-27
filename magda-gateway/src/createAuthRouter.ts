@@ -14,10 +14,6 @@ export interface AuthRouterOptions {
     jwtSecret: string;
     facebookClientId: string;
     facebookClientSecret: string;
-    arcgisClientId: string;
-    arcgisClientSecret: string;
-    arcgisInstanceBaseUrl: string;
-    esriOrgGroup: string;
     authorizationApi: string;
     externalUrl: string;
     userId: string;
@@ -45,21 +41,6 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
                       clientId: options.facebookClientId,
                       clientSecret: options.facebookClientSecret,
                       externalAuthHome: `${options.externalUrl}/auth`
-                  })
-                : null
-        },
-        {
-            id: "arcgis",
-            enabled: options.arcgisClientId ? true : false,
-            authRouter: options.arcgisClientId
-                ? require("./oauth2/arcgis").default({
-                      authorizationApi: authApi,
-                      passport: passport,
-                      clientId: options.arcgisClientId,
-                      clientSecret: options.arcgisClientSecret,
-                      arcgisInstanceBaseUrl: options.arcgisInstanceBaseUrl,
-                      externalAuthHome: `${options.externalUrl}/auth`,
-                      esriOrgGroup: options.esriOrgGroup
                   })
                 : null
         }
@@ -134,13 +115,13 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
 
     /**
      * @apiGroup Authentication API
-     * @api {get} https://<host>/auth/providers Get the list of available authentication providers
+     * @api {get} https://<host>/auth/providers Get the list of available authentication providers (deprecated)
      * @apiDescription Returns all installed authentication providers.
      *  This endpoint is only available when gateway `enableAuthEndpoint`=true.
      *  Please note: We are gradually replacing non-plugable authenticaiton providers with [authentication plugins](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/gateway#authentication-plugin-config)
      *
      * @apiSuccessExample {string} 200
-     *    ["facebook","google","arcgis"]
+     *    ["facebook"]
      *
      */
     authRouter.get("/providers", (req, res) => {

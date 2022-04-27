@@ -64,10 +64,6 @@ export type Config = {
     enableAuthEndpoint?: boolean;
     facebookClientId?: string;
     facebookClientSecret?: string;
-    arcgisClientId?: string;
-    arcgisClientSecret?: string;
-    arcgisInstanceBaseUrl?: string;
-    esriOrgGroup?: string;
     enableCkanRedirection?: boolean;
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
@@ -186,10 +182,6 @@ export default function buildApp(app: express.Application, config: Config) {
                 jwtSecret: config.jwtSecret,
                 facebookClientId: config.facebookClientId,
                 facebookClientSecret: config.facebookClientSecret,
-                arcgisClientId: config.arcgisClientId,
-                arcgisClientSecret: config.arcgisClientSecret,
-                arcgisInstanceBaseUrl: config.arcgisInstanceBaseUrl,
-                esriOrgGroup: config.esriOrgGroup,
                 authorizationApi: config.authorizationApi,
                 externalUrl: config.externalUrl,
                 userId: config.userId,

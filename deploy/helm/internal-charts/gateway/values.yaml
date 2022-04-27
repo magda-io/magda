@@ -59,21 +59,6 @@ auth:
   # and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool. 
   facebookClientId: ""
 
-  # -- ArcGIS / ESRI SSO client Id
-  # ArcGIS client secret is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `arcgis-client-secret` 
-  # and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool. 
-  # **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead.
-  arcgisClientId: ""
-
-  # -- ArcGIS / ESRI SSO server Base Url
-  # **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead.
-  arcgisInstanceBaseUrl: ""
-
-  # -- ArcGIS / ESRI SSO org group
-  # **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead.
-  esriOrgGroup: ""
-
-
 helmet:
   frameguard: false
 
