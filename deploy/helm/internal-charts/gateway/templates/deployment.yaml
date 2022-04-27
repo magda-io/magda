@@ -56,9 +56,6 @@ spec:
 {{- if .Values.auth.arcgisInstanceBaseUrl }}
             "--arcgisInstanceBaseUrl", {{ .Values.auth.arcgisInstanceBaseUrl | quote }},
 {{- end }}
-{{- if .Values.auth.aafClientUri}}
-            "--aafClientUri", {{ .Values.auth.aafClientUri| quote }},
-{{- end }}
 {{- if .Values.auth.esriOrgGroup}}
             "--esriOrgGroup", {{ .Values.auth.esriOrgGroup| quote }},
 {{- end }}
@@ -170,14 +167,6 @@ spec:
             secretKeyRef:
               name: oauth-secrets
               key: arcgis-client-secret
-              optional: true
-{{- end }}
-{{- if .Values.auth.aafClientUri }}
-        - name: AAF_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: aaf-client-secret
               optional: true
 {{- end }}
         {{- include "magda.db-client-credential-env" (dict "dbName" "session-db" "root" .) | indent 8 }}

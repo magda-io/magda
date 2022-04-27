@@ -156,21 +156,6 @@ const argv = addJwtSecretFromEnvVar(
                 process.env.ESRI_ORG_GROUP ||
                 process.env.npm_package_config_esriOrgGroup
         })
-        .option("aafClientUri", {
-            describe: "The aaf client Uri to use for AAF Auth.",
-            type: "string",
-            default:
-                process.env.AAF_CLIENT_URI ||
-                process.env.npm_package_config_aafClientUri
-        })
-        .option("aafClientSecret", {
-            describe:
-                "The secret to use for AAF Auth.  This can also be specified with the AAF_CLIENT_SECRET environment variable.",
-            type: "string",
-            default:
-                process.env.AAF_CLIENT_SECRET ||
-                process.env.npm_package_config_aafClientSecret
-        })
         .options("enableAuthEndpoint", {
             describe: "Whether enable the AuthEndpoint",
             type: "boolean",

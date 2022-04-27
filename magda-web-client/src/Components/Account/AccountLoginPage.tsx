@@ -1,9 +1,4 @@
 import React, { useState, FunctionComponent } from "react";
-import fbLogo from "assets/login/fb-logo.svg";
-import googleLogo from "assets/login/google-logo.svg";
-import arcgisLogo from "assets/login/esri-logo.svg";
-import aafLogo from "assets/login/aaf-logo.png";
-import ckanLogo from "assets/login/ckan.png";
 import magdaLogo from "assets/login/magda.png";
 import genericLogo from "assets/login/generic-logo.svg";
 import "./AccountLoginPage.scss";
@@ -100,9 +95,9 @@ type LoginFormPropsType = {
 const LoginFormArea: FunctionComponent<LoginFormPropsType> = (props) => {
     const { authConfig } = props;
 
-    let providerName: string = "";
-    let usernameLabel: string = "User name";
-    let passwordLabel: string = "Password";
+    let providerName = "";
+    let usernameLabel = "User name";
+    let passwordLabel = "Password";
     let loginFormExtraInfoHeading = "";
     let loginFormExtraInfoContent = "";
 
@@ -330,39 +325,9 @@ export default function Login(props) {
                                 </a>
                             </li>
                         );
-                    } else if (!item.isAuthPlugin && item.config === "ckan") {
-                        return (
-                            <li key={idx} className="login__provider">
-                                <a onClick={() => setSelectedAuthConfig(item)}>
-                                    <img
-                                        src={ckanLogo}
-                                        className="login__logo"
-                                        alt="logo"
-                                    />
-                                    Data.gov.au / Ckan
-                                </a>
-                            </li>
-                        );
                     } else if (!item.isAuthPlugin) {
                         let logo = genericLogo;
                         let name = ucwords(item.config);
-                        switch (item.config) {
-                            case "facebook":
-                                logo = fbLogo;
-                                break;
-                            case "google":
-                                logo = googleLogo;
-                                break;
-                            case "arcgis":
-                                logo = arcgisLogo;
-                                name = "Esri";
-                                break;
-                            case "aaf":
-                                logo = aafLogo;
-                                name = "AAF";
-                                break;
-                            // vanguard will use the default values
-                        }
 
                         return (
                             <li key={idx} className="login__provider">

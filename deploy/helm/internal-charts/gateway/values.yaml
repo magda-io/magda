@@ -73,10 +73,6 @@ auth:
   # **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead.
   esriOrgGroup: ""
 
-  # -- [AAF](https://aaf.edu.au/) SSO client URI
-  # AAF client secret is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `aaf-client-secret` 
-  # and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool. 
-  aafClientUri: ""
 
 helmet:
   frameguard: false

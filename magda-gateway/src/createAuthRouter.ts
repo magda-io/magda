@@ -14,8 +14,6 @@ export interface AuthRouterOptions {
     jwtSecret: string;
     facebookClientId: string;
     facebookClientSecret: string;
-    aafClientUri: string;
-    aafClientSecret: string;
     arcgisClientId: string;
     arcgisClientSecret: string;
     arcgisInstanceBaseUrl: string;
@@ -62,19 +60,6 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
                       arcgisInstanceBaseUrl: options.arcgisInstanceBaseUrl,
                       externalAuthHome: `${options.externalUrl}/auth`,
                       esriOrgGroup: options.esriOrgGroup
-                  })
-                : null
-        },
-        {
-            id: "aaf",
-            enabled: options.aafClientUri ? true : false,
-            authRouter: options.aafClientUri
-                ? require("./oauth2/aaf").default({
-                      authorizationApi: authApi,
-                      passport: passport,
-                      aafClientUri: options.aafClientUri,
-                      aafClientSecret: options.aafClientSecret,
-                      externalUrl: options.externalUrl
                   })
                 : null
         }

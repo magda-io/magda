@@ -12,13 +12,10 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| auth.aafClientUri | string | `""` | [AAF](https://aaf.edu.au/) SSO client URI AAF client secret is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `aaf-client-secret`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  |
 | auth.arcgisClientId | string | `""` | ArcGIS / ESRI SSO client Id ArcGIS client secret is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `arcgis-client-secret`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead. |
 | auth.arcgisInstanceBaseUrl | string | `""` | ArcGIS / ESRI SSO server Base Url **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead. |
 | auth.esriOrgGroup | string | `""` | ArcGIS / ESRI SSO org group **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead. |
 | auth.facebookClientId | string | `""` | facebook SSO client ID facebook client secret is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `facebook-client-secret`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  |
-| auth.vanguardWsFedIdpUrl | string | `""` | Vanguard integration entry point. `vanguardWsFedCertificate` is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `vanguard-certificate`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  |
-| auth.vanguardWsFedRealm | string | `""` | Vanguard realm id for entry point. |
 | authPlugins | list | `[]` | a list of authentication plugin config item.  Each authentication plugin config item can contain the following fields: <ul> <li>`key`: (string) the unique key of the auth plugin. Allowed characters: [a-zA-Z0-9\-] </li> <li>`baseUrl`: (string) the `baseUrl` where gateway proxy request to. </li> </ul> More info on authentication plugin see [Authentication Plugin Specification](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md) |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |

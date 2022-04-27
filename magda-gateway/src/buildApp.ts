@@ -64,8 +64,6 @@ export type Config = {
     enableAuthEndpoint?: boolean;
     facebookClientId?: string;
     facebookClientSecret?: string;
-    aafClientUri?: string;
-    aafClientSecret?: string;
     arcgisClientId?: string;
     arcgisClientSecret?: string;
     arcgisInstanceBaseUrl?: string;
@@ -188,8 +186,6 @@ export default function buildApp(app: express.Application, config: Config) {
                 jwtSecret: config.jwtSecret,
                 facebookClientId: config.facebookClientId,
                 facebookClientSecret: config.facebookClientSecret,
-                aafClientUri: config.aafClientUri,
-                aafClientSecret: config.aafClientSecret,
                 arcgisClientId: config.arcgisClientId,
                 arcgisClientSecret: config.arcgisClientSecret,
                 arcgisInstanceBaseUrl: config.arcgisInstanceBaseUrl,
