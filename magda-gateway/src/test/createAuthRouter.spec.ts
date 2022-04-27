@@ -44,9 +44,6 @@ describe("Test createAuthRouter", function (this: Mocha.ISuiteCallbackContext) {
             esriOrgGroup: "xxxxx",
             ckanUrl: "xxxx",
             authorizationApi: "xxxx",
-            vanguardWsFedIdpUrl: "",
-            vanguardWsFedRealm: "",
-            vanguardWsFedCertificate: "",
             plugins: [
                 {
                     key: "test-plugin",

@@ -78,14 +78,6 @@ auth:
   # and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool. 
   aafClientUri: ""
 
-  # -- Vanguard integration entry point.
-  # `vanguardWsFedCertificate` is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `vanguard-certificate` 
-  # and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool. 
-  vanguardWsFedIdpUrl: ""
-
-  # -- Vanguard realm id for entry point.
-  vanguardWsFedRealm: ""
-
 helmet:
   frameguard: false
 

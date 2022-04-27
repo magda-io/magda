@@ -76,9 +76,6 @@ export type Config = {
     fetchTenantsMinIntervalInMs?: number;
     tenantUrl?: string;
     enableMultiTenants?: boolean;
-    vanguardWsFedIdpUrl?: string;
-    vanguardWsFedRealm?: string;
-    vanguardWsFedCertificate?: string;
     openfaasGatewayUrl?: string;
     openfaasAllowAdminOnly?: boolean;
     defaultCacheControl?: string;
@@ -200,9 +197,6 @@ export default function buildApp(app: express.Application, config: Config) {
                 authorizationApi: config.authorizationApi,
                 externalUrl: config.externalUrl,
                 userId: config.userId,
-                vanguardWsFedIdpUrl: config.vanguardWsFedIdpUrl,
-                vanguardWsFedRealm: config.vanguardWsFedRealm,
-                vanguardWsFedCertificate: config.vanguardWsFedCertificate,
                 plugins: config.authPluginConfigJson
             })
         );

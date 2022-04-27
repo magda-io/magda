@@ -31,8 +31,6 @@ magda:
       enableHttpsRedirection: true
       auth:
         facebookClientId: "173073926555600"
-        vanguardWsFedIdpUrl: https://thirdparty.authentication.business.gov.au/fas/v2/wsfed12/authenticate
-        vanguardWsFedRealm: https://environment.magda.io/integration-test-2
       authPlugins:
       - key: google
         baseUrl: http://magda-auth-google

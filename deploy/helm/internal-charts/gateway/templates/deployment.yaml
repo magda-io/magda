@@ -62,12 +62,6 @@ spec:
 {{- if .Values.auth.esriOrgGroup}}
             "--esriOrgGroup", {{ .Values.auth.esriOrgGroup| quote }},
 {{- end }}
-{{- if .Values.auth.vanguardWsFedIdpUrl }}
-            "--vanguardWsFedIdpUrl", {{ .Values.auth.vanguardWsFedIdpUrl | quote }},
-{{- end }}
-{{- if .Values.auth.vanguardWsFedRealm }}
-            "--vanguardWsFedRealm", {{ .Values.auth.vanguardWsFedRealm | quote }},
-{{- end }}
 {{- if .Values.enableAuthEndpoint }}
             "--enableAuthEndpoint", {{ .Values.enableAuthEndpoint | quote }},
 {{- end }}
@@ -168,14 +162,6 @@ spec:
             secretKeyRef:
               name: oauth-secrets
               key: facebook-client-secret
-              optional: true
-{{- end }}
-{{- if .Values.auth.vanguardWsFedRealm }}
-        - name: VANGUARD_CERTIFICATE
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: vanguard-certificate
               optional: true
 {{- end }}
 {{- if .Values.auth.arcgisClientId }}
