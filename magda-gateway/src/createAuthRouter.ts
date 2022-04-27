@@ -23,9 +23,6 @@ export interface AuthRouterOptions {
     authorizationApi: string;
     externalUrl: string;
     userId: string;
-    vanguardWsFedIdpUrl: string;
-    vanguardWsFedRealm: string;
-    vanguardWsFedCertificate: string;
     plugins: AuthPluginBasicConfig[];
 }
 
@@ -77,20 +74,6 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
                       passport: passport,
                       aafClientUri: options.aafClientUri,
                       aafClientSecret: options.aafClientSecret,
-                      externalUrl: options.externalUrl
-                  })
-                : null
-        },
-        {
-            id: "vanguard",
-            enabled: options.vanguardWsFedIdpUrl ? true : false,
-            authRouter: options.vanguardWsFedIdpUrl
-                ? require("./oauth2/vanguard").default({
-                      authorizationApi: authApi,
-                      passport: passport,
-                      wsFedIdpUrl: options.vanguardWsFedIdpUrl,
-                      wsFedRealm: options.vanguardWsFedRealm,
-                      wsFedCertificate: options.vanguardWsFedCertificate,
                       externalUrl: options.externalUrl
                   })
                 : null
@@ -172,7 +155,7 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
      *  Please note: We are gradually replacing non-plugable authenticaiton providers with [authentication plugins](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/gateway#authentication-plugin-config)
      *
      * @apiSuccessExample {string} 200
-     *    ["internal","facebook","google","arcgis","ckan","vanguard"]
+     *    ["facebook","google","arcgis"]
      *
      */
     authRouter.get("/providers", (req, res) => {
