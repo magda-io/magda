@@ -24,27 +24,33 @@ When deploy with MAGDA, here are a list of common parameters are made available 
 
 ### Auth Plugin Redirect Url
 
-This parameter is available through Helm chart value [global.authPluginRedirectUrl](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/README.md#user-content-values).
+This config value is available through Helm chart value [global.authPluginRedirectUrl](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/README.md#user-content-values).
 
 The Auth Plugin's helm chart config should also let you config / override the redirect url via Auth Plug's helm chart config field `config.authPluginRedirectUrl`.
 
-Once the authentication plugin complete the authentication process, the plugin is required to redirect user agent / web browser to the url specified by this parameter.
+Once the authentication plugin complete the authentication process, the plugin is required to redirect user agent / web browser to the url specified by this config value.
 
-When the user agent / web browser is redirected, the plugin can choose to passing the following query parameters:
+When the user agent / web browser is redirected, the plugin can choose to passing the following query parameters to flag the authentication outcome:
 
 - `result`: Possible value: "success" or "failure".
   - When the parameter not present, its value should be assumed as "success"
 - `errorMessage`: error message that should be displayed to the user. Only available when `result`="failure".
 
-The default value of this parameter is `/sign-in-redirect` which is a default Magda frontend route that leads to the user's account page.
+The default value of this config value is `/sign-in-redirect` which is a default landing route that leads to the user's account page.
+
+The `authPluginRedirectUrl` config can also be an full URL string rather than a URL path (which imply current domain).
+
+However, unless an external domain is added to `authPluginAllowedExternalRedirectDomains` config, an auth plugin should never redirect the user to the external domain.
 
 [authentication-plugin-sdk](https://www.npmjs.com/package/@magda/authentication-plugin-sdk) provides function `redirectOnSuccess`, `redirectOnError` & `getAbsoluteUrl` to generate the redirection.
 
 #### Allowed External Redirect Domains
 
-Since v2.0.0, an auth plugin will never redirect the user to an external domain. Unless an external domain is added to a whitelist, any auth plugins will always ignore the domain part of the url (if supplied) and only redirect the user to the URL path under the current domain.
+An auth plugin should never redirect the user to an external domain unless an external domain is added to a whitelist.
 
-This whitelist can be configured via `global.authPluginAllowedExternalRedirectDomains` helm chart parameter.
+The external domain whitelist can be configured via `global.authPluginAllowedExternalRedirectDomains` helm chart config value.
+
+The auth plugin should simply ignore the domain part of the url, when the host part of the url is not on the whitelist. And only redirects the user to the URL path under the current domain.
 
 ### Cookie Options
 
