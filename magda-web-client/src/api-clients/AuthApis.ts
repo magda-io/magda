@@ -5,16 +5,6 @@ import { AuthPluginConfig } from "@magda/gateway/src/createAuthPluginRouter";
 import urijs from "urijs";
 import { User, Role } from "reducers/userManagementReducer";
 
-export type AuthConfig =
-    | {
-          isAuthPlugin: false;
-          config: string;
-      }
-    | {
-          isAuthPlugin: true;
-          config: AuthPluginConfig;
-      };
-
 export type QrCodeImgDataResponse = {
     token: string;
     data: string;
@@ -24,15 +14,6 @@ export type QrCodePollResponse = {
     result: "pending" | "success" | "failure";
     errorMessage: string;
 };
-
-export async function getAuthProviders(): Promise<string[]> {
-    const providers = await request("GET", `${config.baseUrl}auth/providers`);
-    if (providers) {
-        return providers;
-    } else {
-        return [];
-    }
-}
 
 export async function getAuthPlugins(): Promise<AuthPluginConfig[]> {
     const plugins = await request("GET", `${config.baseUrl}auth/plugins`);

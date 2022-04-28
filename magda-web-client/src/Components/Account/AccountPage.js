@@ -1,30 +1,13 @@
 import React from "react";
 import "./AccountPage.scss";
-import Login from "./AccountLoginPage";
+import LoginArea from "./AccountLoginPage";
 import { connect } from "react-redux";
-import queryString from "query-string";
-import { requestAuthProviders } from "actions/userManagementActions";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
-import { bindActionCreators } from "redux";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
 import CommonLink from "Components/Common/CommonLink";
 
 class Account extends React.Component {
-    constructor(props) {
-        super(props);
-
-        const params = queryString.parse(window.location.search);
-
-        this.state = {
-            signInError: params.signInError
-        };
-    }
-
-    componentDidMount() {
-        this.props.requestAuthProviders();
-    }
-
     renderRoles() {
         const user = this.props.user;
         return (
@@ -88,17 +71,7 @@ class Account extends React.Component {
                             ]}
                         />
                     </Medium>
-                    {!this.props.user.id && (
-                        <Login
-                            key={JSON.stringify(this.providers)}
-                            signInError={
-                                this.props.location.state &&
-                                this.props.location.state.signInError
-                            }
-                            providers={this.props.providers}
-                            location={this.props.location}
-                        />
-                    )}
+                    {!this.props.user.id && <LoginArea />}
                     {this.props.user.id && (
                         <div>
                             <h1>Account</h1>
@@ -134,13 +107,4 @@ function mapStateToProps(state) {
     };
 }
 
-const mapDispatchToProps = (dispatch) => {
-    return bindActionCreators(
-        {
-            requestAuthProviders
-        },
-        dispatch
-    );
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Account);
+export default connect(mapStateToProps)(Account);

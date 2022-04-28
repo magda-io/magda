@@ -67,8 +67,6 @@ magda:
       cors:
         credentials: true
         origin: true
-      auth:
-        facebookClientId: "173073926555600"
       authPlugins:
       - key: google
         baseUrl: http://magda-auth-google

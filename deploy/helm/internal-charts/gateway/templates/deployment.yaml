@@ -47,9 +47,6 @@ spec:
             {{- end }}
             "--dbHost", "session-db",
             "--dbPort", "5432",
-{{- if .Values.auth.facebookClientId }}
-            "--facebookClientId", {{ .Values.auth.facebookClientId | quote }},
-{{- end }}
 {{- if .Values.enableAuthEndpoint }}
             "--enableAuthEndpoint", {{ .Values.enableAuthEndpoint | quote }},
 {{- end }}
@@ -144,14 +141,6 @@ spec:
               key: session-secret
         - name: USER_ID
           value: {{ .Values.global.defaultAdminUserId }}
-{{- if .Values.auth.facebookClientId }}
-        - name: FACEBOOK_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: facebook-client-secret
-              optional: true
-{{- end }}
         {{- include "magda.db-client-credential-env" (dict "dbName" "session-db" "root" .) | indent 8 }}
       volumes:
         - name: config

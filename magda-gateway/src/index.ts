@@ -111,21 +111,6 @@ const argv = addJwtSecretFromEnvVar(
                 process.env.npm_package_config_SESSION_SECRET,
             demand: true
         })
-        .option("facebookClientId", {
-            describe: "The client ID to use for Facebook OAuth.",
-            type: "string",
-            default:
-                process.env.FACEBOOK_CLIENT_ID ||
-                process.env.npm_package_config_facebookClientId
-        })
-        .option("facebookClientSecret", {
-            describe:
-                "The secret to use for Facebook OAuth.  This can also be specified with the FACEBOOK_CLIENT_SECRET environment variable.",
-            type: "string",
-            default:
-                process.env.FACEBOOK_CLIENT_SECRET ||
-                process.env.npm_package_config_facebookClientSecret
-        })
         .options("enableAuthEndpoint", {
             describe: "Whether enable the AuthEndpoint",
             type: "boolean",

@@ -62,8 +62,6 @@ export type Config = {
     webAccessUsername?: string;
     webAccessPassword?: string;
     enableAuthEndpoint?: boolean;
-    facebookClientId?: string;
-    facebookClientSecret?: string;
     enableCkanRedirection?: boolean;
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
@@ -179,12 +177,6 @@ export default function buildApp(app: express.Application, config: Config) {
             "/auth",
             createAuthRouter({
                 authenticator: authenticator,
-                jwtSecret: config.jwtSecret,
-                facebookClientId: config.facebookClientId,
-                facebookClientSecret: config.facebookClientSecret,
-                authorizationApi: config.authorizationApi,
-                externalUrl: config.externalUrl,
-                userId: config.userId,
                 plugins: config.authPluginConfigJson
             })
         );
