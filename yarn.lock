@@ -3703,10 +3703,10 @@
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.3.tgz#9c088679876f374eb5983f150d4787aa6fb32d7e"
   integrity sha512-FvUupuM3rlRsRtCN+fDudtmytGO6iHJuuRKS1Ss0pG5z8oX0diNEw94UEL7hgDbpN94rgaK5R7sWm6RrSkZuAQ==
 
-"@types/urijs@1.19.13":
-  version "1.19.13"
-  resolved "https://registry.yarnpkg.com/@types/urijs/-/urijs-1.19.13.tgz#0bd025b65df8ee5f038bbf6f1cb2e95160b49a56"
-  integrity sha512-Wg/E8Q+ylkR6JElTwOcjG7kM99/iJz28E9RKr8syOxssRs3gWchsziUkb+Nr254aUBWHY0QiScGAfIx4lKI3/g==
+"@types/urijs@^1.19.11", "@types/urijs@^1.19.19":
+  version "1.19.19"
+  resolved "https://registry.yarnpkg.com/@types/urijs/-/urijs-1.19.19.tgz#2789369799907fc11e2bc6e3a00f6478c2281b95"
+  integrity sha512-FDJNkyhmKLw7uEvTxx5tSXfPeQpO0iy73Ry+PmYZJvQy0QIWX8a7kJ4kLWRf+EbTPJEPDSgPXHaM7pzr5lmvCg==
 
 "@types/uuid@^8.0.0":
   version "8.0.0"

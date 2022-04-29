@@ -19,7 +19,7 @@
     "@types/lodash": "^4.14.74",
     "@types/passport": "^1.0.3",
     "@types/pg": "^6.1.41",
-    "@types/urijs": "1.19.13",
+    "@types/urijs": "^1.19.19",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.2",
     "webpack": "^4.41.2",
