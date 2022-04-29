@@ -32,12 +32,12 @@ magda:
       authPlugins:
       - key: google
         baseUrl: http://magda-auth-google
-      - key: ckan
-        baseUrl: http://magda-auth-ckan
       - key: internal
         baseUrl: http://magda-auth-internal
       - key: arcgis
         baseUrl: http://magda-auth-arcgis
+      - key: facebook
+        baseUrl: http://magda-auth-facebook
       autoscaler:
         enabled: false
       helmet:
@@ -134,3 +134,6 @@ magda-auth-google:
 
 magda-auth-arcgis:
   arcgisClientId: "d0MgVUbbg5Z6vmWo"
+
+magda-auth-facebook:
+  clientId: "173073926555600"
