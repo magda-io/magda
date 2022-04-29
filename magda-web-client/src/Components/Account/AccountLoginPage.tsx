@@ -6,9 +6,7 @@ import { config, isBackendSameOrigin } from "config";
 import { useAsync } from "react-async-hook";
 import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml";
 import QrCodeLoginArea from "./QrCodeLoginArea";
-import { useLocation } from "react-router-dom";
-import { Location } from "history";
-import queryString from "query-string";
+import { withRouter } from "react-router-dom";
 
 const { baseUrl, baseExternalUrl, authPluginRedirectUrl } = config;
 
@@ -155,20 +153,7 @@ const isPasswordAuthItem = (config: AuthPluginConfig): boolean => {
 const getSortingStringFromAuthConfig = (config: AuthPluginConfig): string =>
     config.name;
 
-const getSignError = (location: Location) => {
-    if (!location?.search) {
-        return null;
-    }
-    const params = queryString.parse(location?.search);
-    if (params?.signInError) {
-        return params.signInError;
-    }
-    return null;
-};
-
-export default function Login(props) {
-    const location: Location = useLocation();
-    const signInError = getSignError(location);
+function AccountLoginPage(props) {
     const {
         result: authConfigItems,
         loading: isAuthPluginsLoading,
@@ -332,10 +317,10 @@ export default function Login(props) {
 
     return (
         <div className="row login__row">
-            {signInError && (
+            {props?.signInError && (
                 <div className="col-xs-12">
                     <div className="au-body au-page-alerts au-page-alerts--error">
-                        <p>Sign In Failed: {signInError} </p>
+                        <p>Error: {props.signInError} </p>
                     </div>
                 </div>
             )}
@@ -365,3 +350,5 @@ export default function Login(props) {
         </div>
     );
 }
+
+export default withRouter(AccountLoginPage);

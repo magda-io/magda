@@ -71,7 +71,13 @@ class Account extends React.Component {
                             ]}
                         />
                     </Medium>
-                    {!this.props.user.id && <LoginArea />}
+                    {!this.props.user.id && (
+                        <LoginArea
+                            signInError={
+                                this?.props?.location?.state?.signInError
+                            }
+                        />
+                    )}
                     {this.props.user.id && (
                         <div>
                             <h1>Account</h1>
