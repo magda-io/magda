@@ -152,6 +152,36 @@ function doK8sExecution(config, shouldNotAsk = false) {
             );
         }
 
+        if (
+            configData["use-oauth-secrets-google"] === true ||
+            configData["use-oauth-secrets-facebook"] === true ||
+            configData["use-oauth-secrets-arcgis"] === true ||
+            configData["use-oauth-secrets-aaf"] === true
+        ) {
+            const data = {};
+
+            if (configData["use-oauth-secrets-google"]) {
+                data["google-client-secret"] =
+                    configData["oauth-secrets-google"];
+            }
+
+            if (configData["use-oauth-secrets-facebook"]) {
+                data["facebook-client-secret"] =
+                    configData["oauth-secrets-facebook"];
+            }
+
+            if (configData["use-oauth-secrets-arcgis"]) {
+                data["arcgis-client-secret"] =
+                    configData["oauth-secrets-arcgis"];
+            }
+
+            if (configData["use-oauth-secrets-aaf"]) {
+                data["aaf-client-secret"] = configData["oauth-secrets-aaf"];
+            }
+
+            createSecret(env, namespace, configData, "oauth-secrets", data);
+        }
+
         createSecret(env, namespace, configData, "auth-secrets", {
             "jwt-secret": pwgen(64),
             "session-secret": pwgen()

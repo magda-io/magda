@@ -301,6 +301,103 @@ const questions = [
     {
         type: "list",
         dataType: "boolean",
+        name: "use-oauth-secrets-google",
+        message: "Do you want to create google-client-secret for oAuth SSO?",
+        choices: [
+            {
+                name: "YES",
+                value: true
+            },
+            {
+                name: "NO",
+                value: false
+            }
+        ]
+    },
+    {
+        type: "input",
+        name: "oauth-secrets-google",
+        message: "Please provide google api access key for oAuth SSO:",
+        when: onlyWhenQuestion("use-oauth-secrets-google", true),
+        validate: (input) =>
+            trim(input).length ? true : "secret cannot be empty!"
+    },
+    {
+        type: "list",
+        dataType: "boolean",
+        name: "use-oauth-secrets-facebook",
+        message: "Do you want to create facebook-client-secret for oAuth SSO?",
+        choices: [
+            {
+                name: "YES",
+                value: true
+            },
+            {
+                name: "NO",
+                value: false
+            }
+        ]
+    },
+    {
+        type: "input",
+        name: "oauth-secrets-facebook",
+        message: "Please provide facebook api access key for oAuth SSO:",
+        when: onlyWhenQuestion("use-oauth-secrets-facebook", true),
+        validate: (input) =>
+            trim(input).length ? true : "secret cannot be empty!"
+    },
+    {
+        type: "list",
+        dataType: "boolean",
+        name: "use-oauth-secrets-arcgis",
+        message: "Do you want to create arcgis-client-secret for oAuth SSO?",
+        choices: [
+            {
+                name: "YES",
+                value: true
+            },
+            {
+                name: "NO",
+                value: false
+            }
+        ]
+    },
+    {
+        type: "input",
+        name: "oauth-secrets-arcgis",
+        message: "Please provide arcgis api access key for oAuth SSO:",
+        when: onlyWhenQuestion("use-oauth-secrets-arcgis", true),
+        validate: (input) =>
+            trim(input).length ? true : "secret cannot be empty!"
+    },
+    {
+        type: "list",
+        dataType: "boolean",
+        name: "use-oauth-secrets-aaf",
+        message:
+            "Do you want to create aaf-client-secret for AAF Rapid Connect SSO?",
+        choices: [
+            {
+                name: "YES",
+                value: true
+            },
+            {
+                name: "NO",
+                value: false
+            }
+        ]
+    },
+    {
+        type: "input",
+        name: "oauth-secrets-aaf",
+        message: "Please provide AAF secret for AAF Rapid Connect SSO:",
+        when: onlyWhenQuestion("use-oauth-secrets-aaf", true),
+        validate: (input) =>
+            trim(input).length ? true : "secret cannot be empty!"
+    },
+    {
+        type: "list",
+        dataType: "boolean",
         name: "use-web-access-secret",
         message: "Do you want to setup HTTP Basic authentication?",
         choices: [
