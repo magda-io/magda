@@ -38,6 +38,8 @@ magda:
         baseUrl: http://magda-auth-arcgis
       - key: facebook
         baseUrl: http://magda-auth-facebook
+      - key: aaf
+        baseUrl: http://magda-auth-aaf
       autoscaler:
         enabled: false
       helmet:
@@ -137,3 +139,6 @@ magda-auth-arcgis:
 
 magda-auth-facebook:
   clientId: "173073926555600"
+
+magda-auth-aaf:
+  aafClientUri: "https://rapid.test.aaf.edu.au/jwt/authnrequest/research/G4-hTrIGgL10WlgQq04IBA"

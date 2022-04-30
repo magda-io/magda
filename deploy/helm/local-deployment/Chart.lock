@@ -14,6 +14,9 @@ dependencies:
 - name: magda-auth-facebook
   repository: https://charts.magda.io
   version: 1.0.0
+- name: magda-auth-aaf
+  repository: https://charts.magda.io
+  version: 1.0.0
 - name: magda-ckan-connector
   repository: https://charts.magda.io
   version: 1.3.0
@@ -110,5 +113,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 1.1.0
-digest: sha256:53349cd09f11015b4272b727567378c5381225c228069f9837e1372f162e1dbd
-generated: "2022-04-30T01:42:52.492972+10:00"
+digest: sha256:d7294f29fe79573610c5ac61ed48940e305e3488c1ba380ea8d6da09d5e28713
+generated: "2022-04-30T22:54:01.586277+10:00"
