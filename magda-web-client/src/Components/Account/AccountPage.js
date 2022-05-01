@@ -71,6 +71,17 @@ class Account extends React.Component {
                             ]}
                         />
                     </Medium>
+                    {this.props.user.id &&
+                    this?.props?.location?.state?.signInError ? (
+                        <div className="col-xs-12">
+                            <div className="au-body au-page-alerts au-page-alerts--error">
+                                <p>
+                                    Error:{" "}
+                                    {this.props.location.state.signInError}{" "}
+                                </p>
+                            </div>
+                        </div>
+                    ) : null}
                     {!this.props.user.id && (
                         <LoginArea
                             signInError={
