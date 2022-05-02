@@ -1,8 +1,12 @@
 # CHANGELOG
 
-## 1.2.2
+## 1.3.0
 
 - Upgrade nodemailer to 6.7.3
+- Upgrade urijs to 1.19.11 and @types/urijs to 1.19.19
+- #3020 Remove all legacy auth provider from gateway and convert them into auth plugins in separate repos
+- Add `authPluginAllowedExternalRedirectDomains` support to auth plugin spec & rewrite relevant packages
+- Redirect users to login page with proper error message, when they try to access the admin pages that they don't have permissions.
 
 ## 1.2.1
 
