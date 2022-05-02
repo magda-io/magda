@@ -21,6 +21,8 @@ import withHeader from "Components/Header/withHeader";
 import { makeAsync } from "Components/AsyncComponent";
 import { config } from "./config";
 
+import RequireAdmin from "./Components/RequireAdmin";
+
 const AdminPage = makeAsync(() =>
     import("Components/Admin/AdminPage").then((module) => module.default)
 );
@@ -99,7 +101,9 @@ const Routes = () => {
             <Route
                 exact
                 path="/admin"
-                component={withHeader(AdminPage, { includeSearchBox: true })}
+                component={RequireAdmin(
+                    withHeader(AdminPage, { includeSearchBox: true })
+                )}
             />
             <Route
                 exact
@@ -111,60 +115,70 @@ const Routes = () => {
             <Route
                 exact
                 path="/admin/home-stories"
-                component={withHeader(StoriesAdminPage)}
+                component={RequireAdmin(withHeader(StoriesAdminPage))}
             />
             <Route
                 exact
                 path="/admin/home-highlights"
-                component={withHeader(HighlightsAdminPage)}
+                component={RequireAdmin(withHeader(HighlightsAdminPage))}
             />
             <Route
                 exact
                 path="/admin/header-navigation"
-                component={withHeader(HeaderNavigationAdminPage, {
-                    includeSearchBox: true
-                })}
+                component={RequireAdmin(
+                    withHeader(HeaderNavigationAdminPage, {
+                        includeSearchBox: true
+                    })
+                )}
             />
             <Route
                 path="/admin/footer-navigation/:size"
-                component={withHeader(FooterNavigationAdminPage, {
-                    includeSearchBox: true
-                })}
+                component={RequireAdmin(
+                    withHeader(FooterNavigationAdminPage, {
+                        includeSearchBox: true
+                    })
+                )}
             />
             <Route
                 path="/admin/footer-navigation-links/:size/:category"
-                component={withHeader(FooterNavigationLinksAdminPage, {
-                    includeSearchBox: true
-                })}
+                component={RequireAdmin(
+                    withHeader(FooterNavigationLinksAdminPage, {
+                        includeSearchBox: true
+                    })
+                )}
             />
             <Route
                 exact
                 path="/admin/footer-copyright"
-                component={withHeader(FooterCopyrightAdminPage, {
-                    includeSearchBox: true
-                })}
+                component={RequireAdmin(
+                    withHeader(FooterCopyrightAdminPage, {
+                        includeSearchBox: true
+                    })
+                )}
             />
             <Route
                 exact
                 path="/admin/connectors"
-                component={withHeader(ConnectorsAdminPage, {
-                    includeSearchBox: true
-                })}
+                component={RequireAdmin(
+                    withHeader(ConnectorsAdminPage, {
+                        includeSearchBox: true
+                    })
+                )}
             />
             <Route
                 exact
                 path="/admin/accounts"
-                component={withHeader(AccountsAdminPage)}
+                component={RequireAdmin(withHeader(AccountsAdminPage))}
             />
             <Route
                 exact
                 path="/admin/pages"
-                component={withHeader(AdminStaticPagesPage)}
+                component={RequireAdmin(withHeader(AdminStaticPagesPage))}
             />
             <Route
                 exact
                 path="/admin/i18n"
-                component={withHeader(LanguageAdminPage)}
+                component={RequireAdmin(withHeader(LanguageAdminPage))}
             />
             <Route
                 exact

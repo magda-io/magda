@@ -31,7 +31,7 @@
     "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",
     "@types/tempy": "^0.1.0",
-    "@types/urijs": "1.19.13",
+    "@types/urijs": "^1.19.19",
     "@types/yargs": "^12.0.8",
     "chai": "^4.1.0",
     "mocha": "^3.4.2",
@@ -52,7 +52,7 @@
     "recursive-readdir": "^2.2.2",
     "request": "^2.88.0",
     "tempy": "^0.2.1",
-    "urijs": "^1.19.4",
+    "urijs": "^1.19.11",
     "yargs": "^12.0.5"
   },
   "config": {

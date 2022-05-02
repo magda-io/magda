@@ -159,7 +159,7 @@
     "traverse": "^0.6.6",
     "typescript": "3.8.3",
     "ucwords": "^1.0.5",
-    "urijs": "^1.19.4",
+    "urijs": "^1.19.11",
     "use-debounce": "^3.3.0",
     "uuid": "^8.2.0",
     "webpack-cli": "^3.3.12",
