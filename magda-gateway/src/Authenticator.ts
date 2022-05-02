@@ -371,7 +371,7 @@ export default class Authenticator {
                         // --- for non logout path, no need to wait till `destroySession` complete
                         destroySession(req).catch((err) => {
                             // --- only log here if failed to delete session data from session store
-                            console.log(`Failed to destory session: ${err}`);
+                            console.log(`Failed to destroy session: ${err}`);
                         });
                         this.deleteCookie(res);
                         return next();
@@ -392,7 +392,7 @@ export default class Authenticator {
     }
 
     /**
-     * A middleware waraps all required authenticator middleware.
+     * A middleware warps all required authenticator middleware.
      * Only this middleware should be used externally
      *
      * @param {express.Request} req

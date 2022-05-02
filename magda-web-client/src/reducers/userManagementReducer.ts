@@ -41,18 +41,12 @@ type UserManagementState = {
     user: User;
     isFetchingWhoAmI: boolean;
     whoAmIError: Error | null;
-    providers: any[];
-    isFetchingProviders: boolean;
-    providersError?: Error | null;
 };
 
 const initialData: UserManagementState = {
     user: { ...defaultUserInfo },
     isFetchingWhoAmI: false,
-    whoAmIError: null,
-    providers: [],
-    isFetchingProviders: false,
-    providersError: null
+    whoAmIError: null
 };
 
 const userManagementMapping = (
@@ -90,23 +84,6 @@ const userManagementMapping = (
             return Object.assign({}, state, {
                 isSigningOut: false,
                 signOutError: action.error
-            });
-        case "REQUEST_AUTH_PROVIDERS":
-            return Object.assign({}, state, {
-                isFetchingProviders: true,
-                providersError: null
-            });
-        case "RECEIVE_AUTH_PROVIDERS":
-            return Object.assign({}, state, {
-                isFetchingProviders: false,
-                providersError: null,
-                providers: action.providers
-            });
-        case "RECEIVE_AUTH_PROVIDERS_ERROR":
-            return Object.assign({}, state, {
-                isFetchingProviders: false,
-                providersError: action.err,
-                providers: initialData.providers
             });
         default:
             return state;
