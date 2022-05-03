@@ -1,8 +1,5 @@
 import { Request, Response } from "express";
-import {
-    getUserId as getUserIdFromReq,
-    getUserIdHandling
-} from "../session/GetUserId";
+import { getUserId as getUserIdFromReq } from "../session/GetUserId";
 import ApiClient from "./ApiClient";
 import AuthDecisionQueryClient, {
     AuthDecisionReqConfig
@@ -10,15 +7,6 @@ import AuthDecisionQueryClient, {
 import AuthDecision, { isTrueEquivalent } from "../opa/AuthDecision";
 import { DEFAULT_ADMIN_USER_ID } from "./constants";
 import ServerError from "../ServerError";
-
-// deprecated middleware. To be removed after all code is secured with new model
-export const mustBeLoggedIn = (jwtSecret: string) =>
-    function (this: any, req: Request, res: Response, next: () => void) {
-        getUserIdHandling(req, res, jwtSecret, (userId: string) => {
-            this.userId = userId;
-            next();
-        });
-    };
 
 /**
  * Find the user making the request. Assign it to req passport style.
