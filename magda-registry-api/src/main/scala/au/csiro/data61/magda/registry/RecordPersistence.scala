@@ -932,6 +932,7 @@ class DefaultRecordPersistence(config: Config)
             })
             .map(aspect => (aspect._1, aspect._2.asJsObject))
             .toMap,
+          sourceTag = patchedRecord.sourceTag,
           tenantId = Some(tenantId.tenantId)
         ),
         latestEventId
