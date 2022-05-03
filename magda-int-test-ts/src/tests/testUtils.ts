@@ -120,9 +120,7 @@ export async function createTestDatasetByUser(
             "access-control": {}
         },
         tenantId: 0,
-        sourceTag: "",
-        // authnReadPolicyId is deprecated and to be removed
-        authnReadPolicyId: ""
+        sourceTag: ""
     };
     const recordData = record
         ? merge(defaultRecordData, record)
@@ -188,9 +186,7 @@ export async function createTestDistributionByUser(
                 "access-control": {}
             },
             tenantId: 0,
-            sourceTag: "",
-            // authnReadPolicyId is deprecated and to be removed
-            authnReadPolicyId: ""
+            sourceTag: ""
         },
         accessControlAspect
     );

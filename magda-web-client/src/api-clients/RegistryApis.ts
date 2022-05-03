@@ -550,7 +550,6 @@ export async function doesRecordExist(id: string) {
 export type Record = {
     id: string;
     name: string;
-    authnReadPolicyId?: string;
     aspects: { [aspectId: string]: any };
 };
 

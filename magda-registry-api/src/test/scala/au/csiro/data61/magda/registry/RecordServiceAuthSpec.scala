@@ -1798,7 +1798,6 @@ class RecordServiceAuthSpec extends ApiSpec {
               "testId1",
               "testName",
               Map(),
-              Some("blah"),
               sourceTag = Some("sourceTag1")
             )
           ) ~> addUserId() ~> addTenantIdHeader(

@@ -112,10 +112,6 @@ export class Record {
      */
     "aspects": any;
     /**
-     * The read authorization policy id of a record
-     */
-    "authnReadPolicyId": string;
-    /**
      * A tag representing the action by the source of this record (e.g. an id for a individual crawl of a data portal).
      */
     "sourceTag": string;

@@ -317,7 +317,6 @@
                             "title": "Magda Marketecture.xml"
                         }
                     },
-                    "authnReadPolicyId": "object.registry.record.public",
                     "id": "magda-dist-6efe5654-5217-4c82-bae9-c7837406f13b",
                     "name": "Magda Marketecture.xml"
                 },
@@ -596,7 +595,6 @@
                             "title": "Data61_BU_Strategy_Refresh_2019_08.docx"
                         }
                     },
-                    "authnReadPolicyId": "object.registry.record.public",
                     "id": "magda-dist-2ed55d18-ca5b-467d-86fa-07c28579564e",
                     "name": "Data61_BU_Strategy_Refresh_2019_08.docx"
                 },
@@ -875,7 +873,6 @@
                             "title": "Data61_BU_Strategy_Refresh_2019_08.docx"
                         }
                     },
-                    "authnReadPolicyId": "object.registry.record.public",
                     "id": "magda-dist-736fd92f-33ee-4730-8072-c2195f3d13c2",
                     "name": "Data61_BU_Strategy_Refresh_2019_08.docx"
                 }
