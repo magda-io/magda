@@ -125,7 +125,7 @@ class DatasetApi(
           ) {
             onComplete(
               registryInterface
-                .getRecordInFull(datasetId)
+                .getRecordById(datasetId)
                 .flatMap { record =>
                   val dataSet = Conversions
                     .convertRegistryDataSet(record, Some(getLogger))

@@ -114,8 +114,8 @@ class RegistryExternalInterface(
   val optionalAspectQueryString =
     RegistryConstants.optionalAspects.map("optionalAspect=" + _).mkString("&")
   val baseApiPath = "/v0"
-  val recordsQueryStrong = s"?$aspectQueryString&$optionalAspectQueryString"
-  val baseRecordsPath = s"${baseApiPath}/records$recordsQueryStrong"
+  val recordsQueryString = s"?$aspectQueryString&$optionalAspectQueryString"
+  val baseRecordsPath = s"${baseApiPath}/records$recordsQueryString"
 
   def onError(response: HttpResponse)(entity: String) = {
     val error =
@@ -160,6 +160,23 @@ class RegistryExternalInterface(
     readOnlyFetcher
       .get(
         path = s"/v0/records/inFull/${id.toUrlSegment}",
+        headers = Seq(systemIdHeader, authHeader)
+      )
+      .flatMap { response =>
+        response.status match {
+          case OK =>
+            Unmarshal(response.entity).to[Record]
+          case _ =>
+            Unmarshal(response.entity).to[String].flatMap(onError(response))
+        }
+      }
+  }
+
+  def getRecordById(id: String): Future[Record] = {
+    readOnlyFetcher
+      .get(
+        path =
+          s"${baseApiPath}/records/${id.toUrlSegment}${recordsQueryString}&dereference=true",
         headers = Seq(systemIdHeader, authHeader)
       )
       .flatMap { response =>
