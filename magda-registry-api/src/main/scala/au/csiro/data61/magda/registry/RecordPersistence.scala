@@ -218,16 +218,6 @@ trait RecordPersistence {
       optionalAspects: Iterable[String]
   ): Source[Option[Record], NotUsed]
 
-  /**
-    * Gets a list of all potential policy ids for a given operation and (optional) set of records.
-    * Will return the config default policy id as part of the list if any record within the scope
-    * has a policy id of NULL.
-    */
-  def getPolicyIds(
-      operation: AuthOperations.OperationType,
-      recordIds: Option[Set[String]] = None
-  )(implicit session: DBSession): Try[List[String]]
-
   /** Given a record and aspects being requested, returns the ids of all records that the record/aspect id combinations link to */
   def getLinkedRecordIds(
       recordId: String,
@@ -416,7 +406,6 @@ class DefaultRecordPersistence(config: Config)
         Record(
           id = rs.string("recordId"),
           name = rs.string("name"),
-          authnReadPolicyId = rs.stringOpt("authnReadPolicyId"),
           sourceTag = rs.stringOpt("sourceTag"),
           tenantId = rs.bigIntOpt("tenantId").map(BigInt.apply),
           aspects = aspects.toMap
@@ -870,15 +859,15 @@ class DefaultRecordPersistence(config: Config)
         }
       }
       eventId <- Try {
-        // only update / generate event if name or authnReadPolicyId have changed. Id can't change, aspect changes are handled separately
-        if ((record.name, record.authnReadPolicyId) != (patchedRecord.name, patchedRecord.authnReadPolicyId)) {
+        // only update / generate event if name have changed. Id can't change, aspect changes are handled separately
+        if (record.name != patchedRecord.name) {
           val event =
             PatchRecordEvent(id, tenantId.tenantId, recordOnlyPatch).toJson.compactPrint
           val eventId =
             sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $event::json)"
               .updateAndReturnGeneratedKey()
               .apply()
-          sql"""update Records set name = ${patchedRecord.name}, authnReadPolicyId = ${patchedRecord.authnReadPolicyId}, lastUpdate = $eventId
+          sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId
                   where (recordId, tenantId) = ($id, ${tenantId.tenantId})""".update
             .apply()
 
@@ -943,7 +932,7 @@ class DefaultRecordPersistence(config: Config)
             })
             .map(aspect => (aspect._1, aspect._2.asJsObject))
             .toMap,
-          patchedRecord.authnReadPolicyId,
+          sourceTag = patchedRecord.sourceTag,
           tenantId = Some(tenantId.tenantId)
         ),
         latestEventId
@@ -1124,14 +1113,13 @@ class DefaultRecordPersistence(config: Config)
           CreateRecordEvent(
             record.id,
             tenantId.tenantId,
-            record.name,
-            record.authnReadPolicyId
+            record.name
           ).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
       _ <- Try {
-        sql"""insert into Records (recordId, tenantId, name, lastUpdate, sourcetag, authnreadpolicyid) values (${record.id}, ${tenantId.tenantId}, ${record.name}, $eventId, ${record.sourceTag}, ${record.authnReadPolicyId})""".update
+        sql"""insert into Records (recordId, tenantId, name, lastUpdate, sourcetag) values (${record.id}, ${tenantId.tenantId}, ${record.name}, $eventId, ${record.sourceTag})""".update
           .apply()
       } match {
         case Failure(e: SQLException)
@@ -1338,7 +1326,6 @@ class DefaultRecordPersistence(config: Config)
                 "id" -> event.data.fields("recordId"),
                 "name" -> event.data.fields("name"),
                 "tenantId" -> JsNumber(event.tenantId),
-                "authnReadPolicyId" -> JsNull,
                 "sourceTag" -> JsNull,
                 "aspects" -> JsObject()
               )
@@ -1392,53 +1379,6 @@ class DefaultRecordPersistence(config: Config)
         case obj: JsObject => Some(obj.convertTo[Record])
         case _             => None
       }
-  }
-
-  def getPolicyIds(
-      operation: AuthOperations.OperationType,
-      recordIds: Option[Set[String]] = None
-  )(implicit session: DBSession): Try[List[String]] = {
-    if (recordIds.map(_.isEmpty) == Some(true)) {
-      // No record ids = no policy ids
-      Success(List())
-    } else {
-      val whereClause = recordIds match {
-        case Some(recordIds) =>
-          sqls"""WHERE ${SQLSyntax.joinWithOr(
-            recordIds
-              .map(recordId => sqls"""recordid = ${recordId}""")
-              .toSeq: _*
-          )}"""
-        case _ => SQLSyntax.empty
-      }
-
-      val column = operation match {
-        case AuthOperations.read =>
-          SQLSyntax.createUnsafely("authnreadpolicyid")
-        case _ =>
-          throw new NotImplementedError(
-            "Auth for operations other than read not yet implemented"
-          )
-      }
-
-      Try {
-        sql"""SELECT DISTINCT ${column}
-      FROM records
-      $whereClause
-      """.map(
-            rs =>
-              // If the column is null, replace it with the default opa policy id
-              rs.stringOpt(column).orElse(defaultOpaPolicyId).flatMap {
-                // if policyId is empty string, treat it as Null as well
-                case policyId: String if (policyId.trim != "") => Some(policyId)
-                case _                                         => defaultOpaPolicyId
-              }
-          )
-          .list()
-          .apply()
-          .flatten
-      }
-    }
   }
 
   def getLinkedRecordIds(
@@ -1608,8 +1548,7 @@ class DefaultRecordPersistence(config: Config)
               select Records.sequence as sequence,
                      Records.recordId as recordId,
                      Records.name as recordName,
-                     Records.tenantId as tenantId,
-                     Records.authnReadPolicyId as authnReadPolicyId
+                     Records.tenantId as tenantId
                      ${if (aspectSelectors.nonEmpty) sqls", $aspectSelectors"
       else SQLSyntax.empty},
                      Records.sourcetag as sourceTag
@@ -1727,7 +1666,6 @@ class DefaultRecordPersistence(config: Config)
             (aspectId, JsonParser(rs.string(s"aspect$index")).asJsObject)
         }
         .toMap,
-      rs.stringOpt("authnReadPolicyId"),
       rs.stringOpt("sourceTag"),
       rs.bigIntOpt("tenantId").map(BigInt.apply)
     )
@@ -1872,8 +1810,6 @@ class DefaultRecordPersistence(config: Config)
                               Records.recordId,
                               'name',
                               Records.name,
-                              'authnReadPolicyId',
-                              Records.authnReadPolicyId,
                               'aspects',
                               (
                                 SELECT jsonb_object_agg(aspectId, data)
@@ -1940,7 +1876,6 @@ class DefaultRecordPersistence(config: Config)
                         jsonb_build_object(
                           'id', Records.recordId,
                           'name', Records.name,
-                          'authnReadPolicyId', Records.authnReadPolicyId,
                           'aspects', (
                             SELECT jsonb_object_agg(aspectId, data)
                             FROM RecordAspects

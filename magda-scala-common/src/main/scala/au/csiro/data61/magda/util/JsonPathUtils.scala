@@ -166,9 +166,8 @@ object JsonPathUtils {
     val recordOnlyPatch = recordPatch.filter(
       op =>
         op.path match {
-          case "aspects" / _                         => false
-          case path if (path == "authnReadPolicyId") => false
-          case _                                     => true
+          case "aspects" / _ => false
+          case _             => true
         }
     )
 

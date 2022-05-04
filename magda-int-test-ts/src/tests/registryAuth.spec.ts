@@ -434,9 +434,7 @@ describe("registry auth integration tests", () => {
                     }
                 },
                 tenantId: 0,
-                sourceTag: "",
-                // authnReadPolicyId is deprecated and to be removed
-                authnReadPolicyId: ""
+                sourceTag: ""
             });
 
             let result = await getRegistryClient(dataStewardUserId).putRecord({
@@ -459,9 +457,7 @@ describe("registry auth integration tests", () => {
                     }
                 },
                 tenantId: 0,
-                sourceTag: "",
-                // authnReadPolicyId is deprecated and to be removed
-                authnReadPolicyId: ""
+                sourceTag: ""
             });
 
             expect(result).to.not.be.an.instanceof(Error);
@@ -566,9 +562,7 @@ describe("registry auth integration tests", () => {
                     }
                 },
                 tenantId: 0,
-                sourceTag: "",
-                // authnReadPolicyId is deprecated and to be removed
-                authnReadPolicyId: ""
+                sourceTag: ""
             });
 
             let result = await getRegistryClient(dataStewardUserId).getRecord(

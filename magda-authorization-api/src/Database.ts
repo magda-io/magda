@@ -329,7 +329,7 @@ export default class Database {
             ...sqls`UPDATE users SET ${SQLSyntax.join(
                 updates,
                 sqls`,`
-            )} WHERE id = ${userId}}`.toQuery()
+            )} WHERE id = ${userId}`.toQuery()
         );
 
         const fetchUserResult = await this.pool.query(

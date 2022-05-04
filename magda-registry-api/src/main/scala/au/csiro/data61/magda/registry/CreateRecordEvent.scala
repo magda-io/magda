@@ -3,8 +3,7 @@ package au.csiro.data61.magda.registry
 case class CreateRecordEvent(
     recordId: String,
     tenantId: BigInt,
-    name: String,
-    authnReadPolicyId: Option[String]
+    name: String
 ) extends RecordEvent
 
 object CreateRecordEvent {

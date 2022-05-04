@@ -80,11 +80,6 @@ object Directives extends Protocols with SprayJsonSupport {
               .foreach(
                 item => recordJsFields += ("tenantId" -> JsNumber(item))
               )
-            rs.stringOpt("authnReadPolicyId")
-              .foreach(
-                item =>
-                  recordJsFields += ("authnReadPolicyId" -> JsString(item))
-              )
           }
 
         if (recordJsFields.isEmpty) {

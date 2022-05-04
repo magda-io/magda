@@ -411,7 +411,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
                 status shouldEqual StatusCodes.OK
                 responseAs[Record] shouldEqual newRecord.copy(
                   tenantId = Some(TENANT_1),
-                  sourceTag = None
+                  sourceTag = Some("tag")
                 )
               }
 

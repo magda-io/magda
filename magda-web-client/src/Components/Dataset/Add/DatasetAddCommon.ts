@@ -335,9 +335,6 @@ type Access = {
     notes?: string;
 };
 
-const DEFAULT_POLICY_ID = "object.registry.record.owner_only";
-const PUBLISHED_DATASET_POLICY_ID = "object.registry.record.public";
-
 function getInternalDatasetSourceAspectData() {
     return {
         id: "magda",
@@ -918,7 +915,6 @@ export async function saveStateToRegistry(state: State, id: string) {
             {
                 id,
                 name: "",
-                authnReadPolicyId: DEFAULT_POLICY_ID,
                 aspects: {
                     publishing: getPublishingAspectData(state),
                     "access-control": getAccessControlAspectData(state),
@@ -990,7 +986,6 @@ async function ensureBlankDatasetIsSavedToRegistry(
             {
                 id,
                 name,
-                authnReadPolicyId: DEFAULT_POLICY_ID,
                 aspects: {
                     publishing: getPublishingAspectData(state),
                     "access-control": getAccessControlAspectData(state),
@@ -1125,8 +1120,7 @@ async function convertStateToDatasetRecord(
     distributionRecords: Record[],
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    isUpdate: boolean = false,
-    authnReadPolicyId?: string
+    isUpdate: boolean = false
 ): Promise<Record> {
     const {
         dataset,
@@ -1153,14 +1147,9 @@ async function convertStateToDatasetRecord(
         }));
     }
 
-    const authPolicy = authnReadPolicyId
-        ? authnReadPolicyId
-        : DEFAULT_POLICY_ID;
-
     const inputDataset = {
         id: datasetId,
         name: dataset.title,
-        authnReadPolicyId: authPolicy,
         aspects: {
             publishing: getPublishingAspectData(state),
             "dcat-dataset-strings": buildDcatDatasetStrings(dataset),
@@ -1222,15 +1211,9 @@ async function convertStateToDatasetRecord(
     return inputDataset;
 }
 
-async function convertStateToDistributionRecords(
-    state: State,
-    authnReadPolicyId?: string
-) {
+async function convertStateToDistributionRecords(state: State) {
     const { dataset, distributions, licenseLevel } = state;
 
-    const authPolicy = authnReadPolicyId
-        ? authnReadPolicyId
-        : DEFAULT_POLICY_ID;
     const distributionRecords = distributions.map((distribution) => {
         const aspect =
             licenseLevel === "dataset"
@@ -1261,8 +1244,7 @@ async function convertStateToDistributionRecords(
                               ? distribution.downloadURL
                               : undefined
                       )
-            },
-            authnReadPolicyId: authPolicy
+            }
         };
     });
 
@@ -1334,21 +1316,16 @@ export async function createDatasetFromState(
     datasetId: string,
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    authnReadPolicyId?: string,
     tagVersion: boolean = false
 ) {
-    const distributionRecords = await convertStateToDistributionRecords(
-        state,
-        authnReadPolicyId
-    );
+    const distributionRecords = await convertStateToDistributionRecords(state);
 
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
         distributionRecords,
         state,
         setState,
-        false,
-        authnReadPolicyId
+        false
     );
 
     return await createDataset(datasetRecord, distributionRecords, tagVersion);
@@ -1358,20 +1335,15 @@ export async function updateDatasetFromState(
     datasetId: string,
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    authnReadPolicyId?: string,
     tagVersion: boolean = false
 ) {
-    const distributionRecords = await convertStateToDistributionRecords(
-        state,
-        authnReadPolicyId
-    );
+    const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
         distributionRecords,
         state,
         setState,
-        true,
-        authnReadPolicyId
+        true
     );
     return await updateDataset(datasetRecord, distributionRecords, tagVersion);
 }
@@ -1521,7 +1493,6 @@ export async function submitDatasetFromState(
             datasetId,
             state,
             setState,
-            PUBLISHED_DATASET_POLICY_ID,
             true
         );
     } else {
@@ -1529,7 +1500,6 @@ export async function submitDatasetFromState(
             datasetId,
             state,
             setState,
-            PUBLISHED_DATASET_POLICY_ID,
             true
         );
     }

@@ -1129,8 +1129,7 @@ class RecordsServiceSpec extends ApiSpec {
                       withLinkAspectId -> JsObject(
                         "someLink" -> JsString(sourceRecordId)
                       )
-                    ),
-                    "authnReadPolicyId" -> JsString("blah")
+                    )
                   )
                 )
               )
@@ -1156,8 +1155,7 @@ class RecordsServiceSpec extends ApiSpec {
                       withLinkAspectId -> JsObject(
                         "someLink" -> JsString(sourceRecordId)
                       )
-                    ),
-                    "authnReadPolicyId" -> JsString("blah")
+                    )
                   )
                 )
               )
@@ -1180,8 +1178,7 @@ class RecordsServiceSpec extends ApiSpec {
                       withLinkAspectId -> JsObject(
                         "someLink" -> JsString(targetRecordId)
                       )
-                    ),
-                    "authnReadPolicyId" -> JsString("blah")
+                    )
                   )
                 )
               )
@@ -1214,8 +1211,7 @@ class RecordsServiceSpec extends ApiSpec {
                       withLinkAspectId -> JsObject(
                         "someLink" -> JsString(sourceRecordId)
                       )
-                    ),
-                    "authnReadPolicyId" -> JsString("blah")
+                    )
                   )
                 )
               )
@@ -1238,8 +1234,7 @@ class RecordsServiceSpec extends ApiSpec {
                       withLinkAspectId -> JsObject(
                         "someLink" -> JsString(targetRecordId)
                       )
-                    ),
-                    "authnReadPolicyId" -> JsString("blah")
+                    )
                   )
                 )
               )
@@ -1385,8 +1380,7 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      ),
-                      "authnReadPolicyId" -> JsString("blah")
+                      )
                     ),
                     JsObject(
                       "id" -> JsString(withLinksAnotherTargetRecordId),
@@ -1397,8 +1391,7 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      ),
-                      "authnReadPolicyId" -> JsString("blah")
+                      )
                     )
                   )
                 )
@@ -1424,8 +1417,7 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      ),
-                      "authnReadPolicyId" -> JsString("blah")
+                      )
                     ),
                     JsObject(
                       "id" -> JsString(withLinksAnotherTargetRecordId),
@@ -1436,8 +1428,7 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      ),
-                      "authnReadPolicyId" -> JsString("blah")
+                      )
                     )
                   )
                 )
@@ -1468,8 +1459,7 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      ),
-                      "authnReadPolicyId" -> JsString("blah")
+                      )
                     ),
                     JsObject(
                       "id" -> JsString(withLinksAnotherTargetRecordId),
@@ -1480,8 +1470,7 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      ),
-                      "authnReadPolicyId" -> JsString("blah")
+                      )
                     )
                   )
                 )
@@ -1509,8 +1498,7 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksAnotherTargetRecordId)
                           )
                         )
-                      ),
-                      "authnReadPolicyId" -> JsString("blah")
+                      )
                     )
                   )
                 )
@@ -1539,8 +1527,7 @@ class RecordsServiceSpec extends ApiSpec {
                               JsString(withLinksAnotherTargetRecordId)
                             )
                           )
-                        ),
-                        "authnReadPolicyId" -> JsString("blah")
+                        )
                       )
                     )
                   )
@@ -3995,8 +3982,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map(),
-            tenantId = Some(TENANT_1),
-            authnReadPolicyId = Some("old.policy")
+            tenantId = Some(TENANT_1)
           )
 
         Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
@@ -4013,7 +3999,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         val newRecord =
-          record.copy(name = "newName", authnReadPolicyId = Some("new.policy"))
+          record.copy(name = "newName")
         Put("/v0/records/testId", newRecord) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -4054,8 +4040,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "newName",
             Map(),
-            tenantId = Some(TENANT_1),
-            authnReadPolicyId = Some("new.policy")
+            tenantId = Some(TENANT_1)
           )
         }
 
@@ -4083,60 +4068,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "newName",
             Map(),
-            tenantId = Some(TENANT_2),
-            authnReadPolicyId = Some("new.policy")
-          )
-        }
-      }
-
-      it("can set authnReadPolicyId to NULL") { implicit param =>
-        val record =
-          Record(
-            "testId",
-            "testName",
-            Map(),
-            tenantId = Some(TENANT_1),
-            authnReadPolicyId = Some("old.policy")
-          )
-        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(role).routes ~> check {
-          status shouldEqual StatusCodes.OK
-          // --- check if response eventId = latest event of the record
-          checkRecordLastEventId(
-            "testId",
-            header("x-magda-event-id").map(_.value()),
-            TENANT_1
-          )
-        }
-
-        val newRecord =
-          record.copy(authnReadPolicyId = None)
-        Put("/v0/records/testId", newRecord) ~> addUserId() ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(role).routes ~> check {
-          status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual newRecord.copy(
-            tenantId = Some(TENANT_1)
-          )
-          // --- check if response eventId = latest event of the record
-          checkRecordLastEventId(
-            "testId",
-            header("x-magda-event-id").map(_.value()),
-            TENANT_1
-          )
-        }
-
-        Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_1) ~> param
-          .api(role)
-          .routes ~> check {
-          status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record(
-            "testId",
-            "testName",
-            Map(),
-            tenantId = Some(TENANT_1),
-            authnReadPolicyId = None
+            tenantId = Some(TENANT_2)
           )
         }
       }
@@ -4517,48 +4449,6 @@ class RecordsServiceSpec extends ApiSpec {
           .api(role)
           .routes ~> check {
           status shouldEqual StatusCodes.NotFound
-        }
-      }
-
-      it("can modify authnReadPolicyId") { implicit param =>
-        val record = Record(
-          "testId",
-          "testName",
-          Map(),
-          authnReadPolicyId = Some("policyA")
-        )
-        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(role).routes ~> check {
-          status shouldEqual StatusCodes.OK
-          // --- check if response eventId = latest event of the record
-          checkRecordLastEventId(
-            "testId",
-            header("x-magda-event-id").map(_.value()),
-            TENANT_1
-          )
-        }
-
-        val patch = JsonPatch(
-          Replace(Pointer.root / "authnReadPolicyId", JsString("policyB"))
-        )
-        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(role).routes ~> check {
-          status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual Record(
-            "testId",
-            "testName",
-            Map(),
-            tenantId = Some(TENANT_1),
-            authnReadPolicyId = Some("policyB")
-          )
-          // --- check if response eventId = latest event of the record
-          checkRecordLastEventId(
-            "testId",
-            header("x-magda-event-id").map(_.value()),
-            TENANT_1
-          )
         }
       }
 
@@ -5477,21 +5367,18 @@ class RecordsServiceSpec extends ApiSpec {
               "wrongtag-nosource",
               "name",
               Map(),
-              Some("blah"),
               Some("wrongtag")
             )
           val wrongTagWrongSource = Record(
             "wrongtag-wrongsource",
             "name",
             buildAspects("wrong"),
-            Some("blah"),
             Some("wrongtag")
           )
           val wrongTagRightSource = Record(
             "wrongtag-rightsource",
             "name",
             buildAspects("right"),
-            Some("blah"),
             Some("wrongtag")
           )
 
@@ -5501,7 +5388,6 @@ class RecordsServiceSpec extends ApiSpec {
             "righttag-wrongsource",
             "name",
             buildAspects("wrong"),
-            Some("blah"),
             Some("righttag")
           )
 
@@ -5509,7 +5395,6 @@ class RecordsServiceSpec extends ApiSpec {
             "righttag-rightsource",
             "name",
             buildAspects("right"),
-            Some("blah"),
             Some("righttag")
           )
 
@@ -5687,7 +5572,6 @@ class RecordsServiceSpec extends ApiSpec {
             "righttag-rightsource",
             "name",
             buildAspects("right"),
-            Some("blah"),
             Some("righttag")
           )
 
