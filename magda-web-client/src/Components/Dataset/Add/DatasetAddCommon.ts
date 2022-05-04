@@ -1493,7 +1493,6 @@ export async function submitDatasetFromState(
             datasetId,
             state,
             setState,
-            PUBLISHED_DATASET_POLICY_ID,
             true
         );
     } else {
@@ -1501,7 +1500,6 @@ export async function submitDatasetFromState(
             datasetId,
             state,
             setState,
-            PUBLISHED_DATASET_POLICY_ID,
             true
         );
     }
