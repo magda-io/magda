@@ -26,8 +26,10 @@
 - add `/v0/status/live` & `/v0/status/ready` endpoint to indexer
 - Related to #3315, introduce `ServiceRunner` to launch an integrated test & dev environment
 - #3315 rewrite auth related integration tests and execute tests using `ServiceRunner` rather than mini k8s cluster `kind`
-- #3345 Add dataset index / delete API endpoints to indexer
+- #3345 Add dataset index / delete by ID API endpoints to indexer
 - Add `debug` switch to registry API, search API & Auth API
+- Related to #3331, remove any logic related to obsolete `authnReadPolicyId` record field
+- Related to #3331, remove obsolete policy files `object/registry/*`
 
 ## 1.3.0
 
