@@ -6,14 +6,14 @@ import urijs from "urijs";
  * @export
  * @param {string} url A full url string or a url path string (/a/b/c).
  * @param {string} baseUrl A baseUrl used to generate a full url when a url path string is supplied via the `url` parameter.
- * @param {{ [key: string]: any }} [optionalQueries]
+ * @param {{ [key: string]: string }} [optionalQueries]
  * @param {string[]} [allowedUrlHosts] Optional; when specify, the host of `url` parameter will only be used if it is included by this list.
  * @returns
  */
 export default function getAbsoluteUrl(
     url: string,
     baseUrl: string,
-    optionalQueries?: { [key: string]: any },
+    optionalQueries?: { [key: string]: string },
     allowedUrlHosts?: string[]
 ) {
     const uri = urijs(url);
