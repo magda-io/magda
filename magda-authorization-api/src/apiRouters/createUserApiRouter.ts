@@ -242,7 +242,8 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Auth
      * @api {get} /v0/auth/users/all Get all users
-     * @apiDescription Returns all users
+     * @apiDescription Returns all users. To be deprecated.
+     * You should use `/v0/auth/users` or `/v0/auth/users/count` instead as they support pagination.
      *
      * @apiSuccessExample {json} 200
      *    [{
@@ -448,7 +449,38 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
         };
     }
 
-    // get user records meet selection criteria
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/users Get users
+     * @apiDescription Returns a list users that meet query parameters and the current user is allowed to access.
+     *
+     * @apiParam (Query String) {number} [offset] The index of the first record in the result set to retrieve.
+     * @apiParam (Query String) {number} [limit] The maximum number of records of the result set to receive. If not present, a default value of 500 will be used.
+     * @apiParam (Query String) {string} [keyword] When set, will only return user records whose "displayName", "email" or "source" field contains the specified keyword.
+     * @apiParam (Query String) {string} [id] When set, will only return records whose id is the specified ID.
+     * @apiParam (Query String) {string} [source] When set, will only return records whose source is the specified source name.
+     * @apiParam (Query String) {string} [sourceId] When set, will only return records whose sourceId is the specified source ID.
+     * @apiParam (Query String) {string} [orgUnitId] When set, will only return records whose orgUnitId is the specified org unit id.
+     *
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        "id":"...",
+     *        "displayName":"Fred Nerk",
+     *        "email":"fred.nerk@data61.csiro.au",
+     *        "photoURL":"...",
+     *        "source":"google",
+     *        "isAdmin": true,
+     *        "orgUnitId": "..."
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/",
         withAuthDecision(authDecisionClient, {
@@ -457,7 +489,31 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
         createFetchUsersHandler(false, "Get Users")
     );
 
-    // get records count
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/users/count Get user records count
+     * @apiDescription Returns the count of users that meet query parameters and the current user is allowed to access.
+     * This API offers the similar functionality as `/v0/auth/users` API, except only return the records count number.
+     *
+     * @apiParam (Query String) {string} [keyword] When set, will only return user records whose "displayName", "email" or "source" field contains the specified keyword.
+     * @apiParam (Query String) {string} [id] When set, will only return records whose id is the specified ID.
+     * @apiParam (Query String) {string} [source] When set, will only return records whose source is the specified source name.
+     * @apiParam (Query String) {string} [sourceId] When set, will only return records whose sourceId is the specified source ID.
+     * @apiParam (Query String) {string} [orgUnitId] When set, will only return records whose orgUnitId is the specified org unit id.
+     *
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "count": 3
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/count",
         withAuthDecision(authDecisionClient, {
