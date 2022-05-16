@@ -112,4 +112,20 @@ export default class MockDatabase {
     async getUserApiKeyById(apiKeyId: string): Promise<APIKeyRecord> {
         return mockApiKeyStore.getRecordById(apiKeyId);
     }
+
+    async updateApiKeyAttempt(apiKeyId: string, isSuccessfulAttempt: Boolean) {
+        return mockApiKeyStore.updateApiKeyAttempt(
+            apiKeyId,
+            isSuccessfulAttempt
+        );
+    }
+
+    updateApiKeyAttemptNonBlocking(
+        apiKeyId: string,
+        isSuccessfulAttempt: Boolean
+    ) {
+        this.updateApiKeyAttempt(apiKeyId, isSuccessfulAttempt).catch((e) =>
+            console.error("failed to update api key timestamp: " + e)
+        );
+    }
 }
