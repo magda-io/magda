@@ -23,6 +23,7 @@ export interface ApiRouterOptions {
     authDecisionClient: AuthDecisionQueryClient;
     jwtSecret: string;
     tenantId: number;
+    failedApiKeyAuthBackOffSeconds: number;
 }
 
 /**
@@ -83,7 +84,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/private/users/apikey/:apiKeyId Get user info with given API key ID & Key
+     * @api {get} /v0/private/users/apikey/:apiKeyId Api Key Verification API
      * @apiDescription Retrieve user info with api key id & api key.
      * This api is only available within cluster (i.e. it's not available via gateway) and only created for the gateway for purpose of verifying incoming API keys.
      * This route doesn't require auth decision to be made as a user must provide valid API key id & key to retrieve his own user info only.
@@ -118,6 +119,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
         try {
             const apiKey = req.get("X-Magda-API-Key");
             const apiKeyId = req.params.apiKeyId;
+            const backOffSeconds = options.failedApiKeyAuthBackOffSeconds
+                ? options.failedApiKeyAuthBackOffSeconds
+                : 0;
 
             if (!apiKeyId || !isUUID.anyNonNil(apiKeyId)) {
                 // --- 400 Bad Request
@@ -144,6 +148,18 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 apiKeyRecord.expiry_time?.getTime() < new Date().getTime()
             ) {
                 throw new GenericError("the api key is expired.", 401);
+            }
+            if (apiKeyRecord?.last_failed_attempt_time) {
+                const lastFailTime = apiKeyRecord.last_failed_attempt_time?.getTime();
+                if (
+                    lastFailTime &&
+                    lastFailTime + backOffSeconds * 1000 < new Date().getTime()
+                ) {
+                    throw new GenericError(
+                        `the api key had failed verification attempts in the last ${backOffSeconds} seconds.`,
+                        401
+                    );
+                }
             }
             const match = await bcrypt.compare(apiKey, apiKeyRecord.hash);
             if (match) {
