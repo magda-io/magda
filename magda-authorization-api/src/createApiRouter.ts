@@ -83,7 +83,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/private/users/apikey/:userId/permissions Get user info with given API key ID & Key
+     * @api {get} /v0/private/users/apikey/:apiKeyId Get user info with given API key ID & Key
      * @apiDescription Retrieve user info with api key id & api key.
      * This api is only available within cluster (i.e. it's not available via gateway) and only created for the gateway for purpose of verifying incoming API keys.
      * This route doesn't require auth decision to be made as a user must provide valid API key id & key to retrieve his own user info only.
@@ -136,6 +136,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
             }
 
             const apiKeyRecord = await database.getUserApiKeyById(apiKeyId);
+            if (!apiKeyRecord?.enabled) {
+                throw new GenericError("the api key is disabled.", 401);
+            }
+            if (
+                apiKeyRecord?.expiry_time &&
+                apiKeyRecord.expiry_time?.getTime() < new Date().getTime()
+            ) {
+                throw new GenericError("the api key is expired.", 401);
+            }
             const match = await bcrypt.compare(apiKey, apiKeyRecord.hash);
             if (match) {
                 const user = (
@@ -148,10 +157,17 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
                 res.json(user);
                 res.status(200);
+                // non-blocking call. any error will be printed on server log
+                database.updateApiKeyAttemptNonBlocking(
+                    req.params.apiKeyId,
+                    true
+                );
             } else {
                 throw new GenericError("Unauthorized", 401);
             }
         } catch (e) {
+            // non-blocking call. any error will be printed on server log
+            database.updateApiKeyAttemptNonBlocking(req.params.apiKeyId, false);
             respondWithError("/private/users/apikey/:apiKeyId", res, e);
         }
         res.end();

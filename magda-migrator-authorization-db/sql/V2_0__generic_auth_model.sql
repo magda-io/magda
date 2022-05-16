@@ -391,3 +391,15 @@ VALUES
 ('fe2ea6f1-192a-423c-9ae0-acb9f5d2dc48', '00000000-0000-0002-0000-000000000000'),
 ('e204f8ca-718b-4a29-bea3-554a4551ed20', '00000000-0000-0002-0000-000000000000');
 -- END add more permissions to authenticated & anonymous users role
+-- upgrade api_keys table-- 
+ALTER TABLE "public"."api_keys" ADD COLUMN "expiry_time" timestamptz DEFAULT NULL;
+ALTER TABLE "public"."api_keys" ADD COLUMN "last_successful_attempt_time" timestamptz DEFAULT NULL;
+ALTER TABLE "public"."api_keys" ADD COLUMN "last_failed_attempt_time" timestamptz DEFAULT NULL;
+ALTER TABLE "public"."api_keys" ADD COLUMN "enabled" boolean default true;
+-- end upgrade api_keys table-- 
+-- upgrade credentials table--
+ALTER TABLE "public"."credentials" ADD COLUMN "expiry_time" timestamptz DEFAULT NULL;
+ALTER TABLE "public"."credentials" ADD COLUMN "last_successful_attempt_time" timestamptz DEFAULT NULL;
+ALTER TABLE "public"."credentials" ADD COLUMN "last_failed_attempt_time" timestamptz DEFAULT NULL;
+ALTER TABLE "public"."credentials" ADD COLUMN "enabled" boolean default true;
+-- end upgrade credentials table-- 

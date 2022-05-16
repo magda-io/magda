@@ -70,8 +70,12 @@ export type OrgUnit = Partial<OrgUnitRecord> & {
 export interface APIKeyRecord {
     id: string;
     user_id: string;
-    created_timestamp: string;
+    created_timestamp: Date;
     hash: string;
+    enabled: boolean;
+    expiry_time?: Date;
+    last_successful_attempt_time?: Date;
+    last_failed_attempt_time?: Date;
 }
 export interface Role {
     id: string;

@@ -534,6 +534,27 @@ export default class Database {
         return result.rows[0] as APIKeyRecord;
     }
 
+    async updateApiKeyAttempt(apiKeyId: string, isSuccessfulAttempt: Boolean) {
+        if (!apiKeyId) {
+            throw new ServerError("invalid empty api key id.", 400);
+        }
+        const updateTimestampCol = isSuccessfulAttempt
+            ? sqls`last_successful_attempt_time`
+            : `last_failed_attempt_time`;
+        await this.pool.query(
+            ...sqls`UPDATE api_keys SET ${updateTimestampCol} = CURRENT_TIMESTAMP WHERE id = ${apiKeyId}`.toQuery()
+        );
+    }
+
+    updateApiKeyAttemptNonBlocking(
+        apiKeyId: string,
+        isSuccessfulAttempt: Boolean
+    ): void {
+        this.updateApiKeyAttempt(apiKeyId, isSuccessfulAttempt).catch((e) => {
+            console.error("Failed to update API key attempt timestamp: " + e);
+        });
+    }
+
     /**
      * Add a list of roleIds to the user if the user don't has the role. Return a list of current role ids after the changes.
      *
