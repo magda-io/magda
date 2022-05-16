@@ -31,7 +31,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth
      * @api {post} /v0/auth/users/:userId/roles Add Roles to a user
      * @apiDescription Returns a list of current role ids of the user.
-     * Required admin access.
+     * You need have update permission to the user record in order to access this API.
      *
      * @apiSuccessExample {json} 200
      *    ["xxxx-xxxx-xxx-xxx-xx", "xx-xx-xxx-xxxx-xxxxx"]
@@ -67,7 +67,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth
      * @api {delete} /v0/auth/users/:userId/roles Remove a list roles from a user
      * @apiDescription Returns the JSON response indicates the operation has been done successfully or not
-     * Required admin access.
+     * You need have update permission to the user record in order to access this API.
      *
      * @apiSuccessExample {json} 200
      *    {
@@ -105,7 +105,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth
      * @api {get} /v0/auth/users/:userId/roles Get all roles of a user
      * @apiDescription Returns an array of roles. When no roles can be found, an empty array will be returned
-     * Required admin access.
+     * You need have read permission to the user record in order to access this API.
      *
      * @apiSuccessExample {json} 200
      *    [{
@@ -146,7 +146,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth
      * @api {get} /v0/auth/users/:userId/permissions Get all permissions of a user
      * @apiDescription Returns an array of permissions. When no permissions can be found, an empty array will be returned.
-     * Required admin access.
+     * You need have read permission to the user record in order to access this API.
      *
      * @apiSuccessExample {json} 200
      *    [{
@@ -191,6 +191,240 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
             } catch (e) {
                 respondWithError(
                     "GET /public/users/:userId/permissions",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/users/:userId/apiKeys Get all API keys of a user
+     * @apiDescription Returns an array of api keys. When no api keys can be found, an empty array will be returned.
+     * You need have read permission to the user record in order to access this API.
+     *
+     * @apiParam (Path) {string} userId the id of the user.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        id: "b559889a-2843-4a60-9c6d-103d51eb4410",
+     *        user_id: "be374b6e-d428-4211-b642-b2b65abcf051",
+     *        created_timestamp: "2022-05-16T13:02:59.430Z",
+     *        hash: "$2b$10$6DD8hle27X/dVdDD3Sl3Y.V6NtJ9jBiy2cyS8SnBO5EEWMD5Wpdwe",
+     *        expiry_time: null,
+     *        last_successful_attempt_time: null,
+     *        last_failed_attempt_time: null,
+     *        enabled: true
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:userId/apiKeys",
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/read",
+            (req, res) => req.params.userId,
+            "user"
+        ),
+        async function (req, res) {
+            try {
+                const userId = req.params.userId;
+                const apiKeys = await database.getUserApiKeys(userId);
+                res.json(apiKeys);
+            } catch (e) {
+                respondWithError("GET /public/users/:userId/apiKeys", res, e);
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {post} /v0/auth/users/:userId/apiKeys Create a new API key for the user
+     * @apiDescription Create a new API key for the specified user.
+     * Optional supply a JSON object that contains `expiry_time` in body.
+     * You need have update permission to the user record in order to access this API.
+     *
+     * @apiParam (Path) {string} userId the id of the user.
+     * @apiParam (Json Body) {string} [expiryTime] The expiry time (in ISO format (ISO 8601)) of the API key that is about to be created.
+     *
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       expiryTime: "2022-05-16T13:02:59.430Z"
+     *     }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        id: "b559889a-2843-4a60-9c6d-103d51eb4410",
+     *        key: "1RoGs0+MMYxjJlGH6UkyRnXC8Wrc9Y1ecREAnm5D2GM="
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post(
+        "/:userId/apiKeys",
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/update",
+            (req, res) => req.params.userId,
+            "user"
+        ),
+        async function (req, res) {
+            try {
+                const userId = req.params.userId;
+                let expiryTime = req?.body?.expiryTime
+                    ? new Date(req.body.expiryTime)
+                    : null;
+                if (isNaN(expiryTime?.getTime())) {
+                    expiryTime = null;
+                }
+                const apiKey = await database.createUserApiKey(
+                    userId,
+                    expiryTime
+                );
+                res.json(apiKey);
+            } catch (e) {
+                respondWithError("POST /public/users/:userId/apiKeys", res, e);
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {put} /v0/auth/users/:userId/apiKeys/:apiKeyId Update an API Key of the user
+     * @apiDescription Update an API Key of the user.
+     * You need have update permission to the user record in order to access this API.
+     *
+     * @apiParam (Path) {string} userId the id of the user.
+     * @apiParam (Path) {string} apiKeyId the id of the api key.
+     * @apiParam (Json Body) {string} [expiryTime] The expiry time (in ISO format (ISO 8601)) of the API key.
+     * @apiParam (Json Body) {boolean} [enabled] Whether the api key is enabled.
+     *
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       "enabled": false
+     *     }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        id: "b559889a-2843-4a60-9c6d-103d51eb4410",
+     *        user_id: "be374b6e-d428-4211-b642-b2b65abcf051",
+     *        created_timestamp: "2022-05-16T13:02:59.430Z",
+     *        hash: "$2b$10$6DD8hle27X/dVdDD3Sl3Y.V6NtJ9jBiy2cyS8SnBO5EEWMD5Wpdwe",
+     *        expiry_time: null,
+     *        last_successful_attempt_time: null,
+     *        last_failed_attempt_time: null,
+     *        enabled: false
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.put(
+        "/:userId/apiKeys/:apiKeyId",
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/update",
+            (req, res) => req.params.userId,
+            "user"
+        ),
+        async function (req, res) {
+            try {
+                const userId = req.params.userId;
+                const apiKeyId = req.params.apiKeyId;
+
+                let expiryTime = req?.body?.expiryTime
+                    ? new Date(req.body.expiryTime)
+                    : undefined;
+
+                if (isNaN(expiryTime?.getTime())) {
+                    expiryTime = undefined;
+                }
+
+                const enabled =
+                    typeof req?.body?.enabled === "boolean"
+                        ? req.body.enabled
+                        : undefined;
+
+                await database.updateUserApiKey(
+                    userId,
+                    apiKeyId,
+                    enabled,
+                    expiryTime
+                );
+                const apiKey = await database.getApiKeyById(apiKeyId);
+                res.json(apiKey);
+            } catch (e) {
+                respondWithError(
+                    "PUT /public/users/:userId/apiKeys/:apiKeyId",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {delete} /v0/auth/users/:userId/apiKeys/:apiKeyId Delete an API Key of the user
+     * @apiDescription Delete an API Key of the user
+     * You need have update permission to the user record in order to access this API.
+     *
+     * @apiParam (Path) {string} userId the id of the user.
+     * @apiParam (Path) {string} apiKeyId the id of the api key.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "deleted": true
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.delete(
+        "/:userId/apiKeys/:apiKeyId",
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/update",
+            (req, res) => req.params.userId,
+            "user"
+        ),
+        async function (req, res) {
+            try {
+                const userId = req.params.userId;
+                const apiKeyId = req.params.apiKeyId;
+
+                const result = await database.deleteUserApiKey(
+                    userId,
+                    apiKeyId
+                );
+                res.json(result);
+            } catch (e) {
+                respondWithError(
+                    "DELETE /public/users/:userId/apiKeys/:apiKeyId",
                     res,
                     e
                 );

@@ -393,12 +393,14 @@ VALUES
 -- END add more permissions to authenticated & anonymous users role
 -- upgrade api_keys table-- 
 ALTER TABLE "public"."api_keys" ADD COLUMN "expiry_time" timestamptz DEFAULT NULL;
+ALTER TABLE "public"."api_keys" ADD COLUMN "edit_time" timestamptz DEFAULT NULL;
 ALTER TABLE "public"."api_keys" ADD COLUMN "last_successful_attempt_time" timestamptz DEFAULT NULL;
 ALTER TABLE "public"."api_keys" ADD COLUMN "last_failed_attempt_time" timestamptz DEFAULT NULL;
 ALTER TABLE "public"."api_keys" ADD COLUMN "enabled" boolean default true;
 -- end upgrade api_keys table-- 
 -- upgrade credentials table--
 ALTER TABLE "public"."credentials" ADD COLUMN "expiry_time" timestamptz DEFAULT NULL;
+ALTER TABLE "public"."credentials" ADD COLUMN "edit_time" timestamptz DEFAULT NULL;
 ALTER TABLE "public"."credentials" ADD COLUMN "last_successful_attempt_time" timestamptz DEFAULT NULL;
 ALTER TABLE "public"."credentials" ADD COLUMN "last_failed_attempt_time" timestamptz DEFAULT NULL;
 ALTER TABLE "public"."credentials" ADD COLUMN "enabled" boolean default true;
