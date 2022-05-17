@@ -12,6 +12,7 @@ import {
 } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import { searchTableRecord } from "magda-typescript-common/src/SQLUtils";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -241,6 +242,65 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                 res.json(apiKeys);
             } catch (e) {
                 respondWithError("GET /public/users/:userId/apiKeys", res, e);
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/users/:userId/apiKeys/:apiKeyId Get an API key of a user by ID
+     * @apiDescription Get an API key record of a user by ID by API key ID.
+     * You need have read permission to the user record in order to access this API.
+     *
+     * @apiParam (Path) {string} userId the id of the user.
+     * @apiParam (Path) {string} apiKeyId the id of the api key.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        id: "b559889a-2843-4a60-9c6d-103d51eb4410",
+     *        user_id: "be374b6e-d428-4211-b642-b2b65abcf051",
+     *        created_timestamp: "2022-05-16T13:02:59.430Z",
+     *        hash: "$2b$10$6DD8hle27X/dVdDD3Sl3Y.V6NtJ9jBiy2cyS8SnBO5EEWMD5Wpdwe",
+     *        expiry_time: null,
+     *        last_successful_attempt_time: null,
+     *        last_failed_attempt_time: null,
+     *        enabled: true
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:userId/apiKeys/:apiKeyId",
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/read",
+            (req, res) => req.params.userId,
+            "user"
+        ),
+        async function (req, res) {
+            try {
+                const userId = req.params.userId;
+                const apiKeyId = req.params.apiKeyId;
+                const apiKey = await database.getApiKeyById(apiKeyId);
+                if (!apiKey || apiKey.user_id !== userId) {
+                    throw new ServerError(
+                        `Cannot locate api key by id: ${apiKeyId} for user: ${userId}.`,
+                        404
+                    );
+                }
+                res.json(apiKey);
+            } catch (e) {
+                respondWithError(
+                    "GET /public/users/:userId/apiKey/:apiKeyId",
+                    res,
+                    e
+                );
             }
         }
     );

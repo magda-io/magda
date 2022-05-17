@@ -688,7 +688,7 @@ export default class Database {
         }
         const updateTimestampCol = isSuccessfulAttempt
             ? sqls`last_successful_attempt_time`
-            : `last_failed_attempt_time`;
+            : sqls`last_failed_attempt_time`;
         await this.pool.query(
             ...sqls`UPDATE api_keys SET ${updateTimestampCol} = CURRENT_TIMESTAMP WHERE id = ${apiKeyId}`.toQuery()
         );
