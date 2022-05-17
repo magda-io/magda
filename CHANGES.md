@@ -30,6 +30,7 @@
 - Add `debug` switch to registry API, search API & Auth API
 - Related to #3331, remove any logic related to obsolete `authnReadPolicyId` record field
 - Related to #3331, remove obsolete policy files `object/registry/*`
+- Added APIs for managing API keys
 
 ## 1.3.0
 

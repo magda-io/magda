@@ -153,7 +153,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 const lastFailTime = apiKeyRecord.last_failed_attempt_time?.getTime();
                 if (
                     lastFailTime &&
-                    lastFailTime + backOffSeconds * 1000 < new Date().getTime()
+                    lastFailTime + backOffSeconds * 1000 > new Date().getTime()
                 ) {
                     throw new GenericError(
                         `the api key had failed verification attempts in the last ${backOffSeconds} seconds.`,

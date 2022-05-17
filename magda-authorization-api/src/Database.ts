@@ -188,14 +188,14 @@ export default class Database {
             tableRef: "u"
         });
         const result = await this.pool.query(
-            ...sqls`SELECT DISTINCT ON (a.id)
+            ...sqls`SELECT * FROM (SELECT DISTINCT ON (a.id)
                 a.*
                 FROM api_keys a
                 LEFT JOIN users u ON u.id = a.user_id
                 WHERE ${SQLSyntax.joinWithAnd([
                     sqls`a.user_id = ${userId}`,
                     authConditions
-                ])}`.toQuery()
+                ])}) r ORDER BY r.created_timestamp DESC`.toQuery()
         );
         if (!result?.rows?.length) {
             return [];
@@ -229,7 +229,7 @@ export default class Database {
             ...sqls`SELECT id, "displayName" FROM users WHERE id=${userId} LIMIT 1`.toQuery()
         );
 
-        if (!users || !users.rows || !users.rows.length) {
+        if (!users?.rows?.length) {
             throw new ServerError(
                 `Cannot locate user record with user id: ${userId}`,
                 404
