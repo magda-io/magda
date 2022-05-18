@@ -23,11 +23,11 @@ Kubernetes: `>= 1.14.0-0`
 | image.name | string | `"magda-indexer"` |  |
 | makeSnapshots | bool | `false` |  |
 | readSnapshots | bool | `false` |  |
-| reindexJobImage.name | string | `"alpine"` |  |
+| reindexJobImage.name | string | `"node"` |  |
 | reindexJobImage.pullPolicy | string | `"IfNotPresent"` |  |
 | reindexJobImage.pullSecrets | bool | `false` |  |
 | reindexJobImage.repository | string | `"docker.io"` |  |
-| reindexJobImage.tag | string | `"latest"` |  |
+| reindexJobImage.tag | string | `"12-alpine"` |  |
 | resources.limits.cpu | string | `"250m"` |  |
 | resources.requests.cpu | string | `"100m"` |  |
 | resources.requests.memory | string | `"250Mi"` |  |
