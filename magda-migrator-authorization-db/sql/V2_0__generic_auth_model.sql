@@ -414,6 +414,6 @@ VALUES
 INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
 VALUES 
 ('api/indexer/reindex','the API triggers full proactive reindex', '', (SELECT id FROM resources WHERE uri = 'api/indexer')),
-('api/indexer/reindex/in-progress', 'the API gets the progress info of the recent full proactive reindex', '', (SELECT id FROM resources WHERE uri = 'api/indexer'))
+('api/indexer/reindex/in-progress', 'the API gets the progress info of the recent full proactive reindex', '', (SELECT id FROM resources WHERE uri = 'api/indexer')),
 ('api/indexer/reindex/snapshot','the API triggers snapshot creation', '', (SELECT id FROM resources WHERE uri = 'api/indexer'));
 -- end add new indexer api resource / operations --
