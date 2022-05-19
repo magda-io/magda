@@ -30,6 +30,7 @@ import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownload
 import deleteFile from "./Pages/AddFiles/deleteFile";
 import escapeJsonPatchPointer from "helpers/escapeJsonPatchPath";
 import uniq from "lodash/uniq";
+import { indexDatasetById } from "api-clients/IndexerApis";
 
 export type Distribution = {
     title: string;
@@ -1525,8 +1526,23 @@ export async function submitDatasetFromState(
 
     await cleanUpDistributions(state);
 
-    return await cleanUpOrphanFiles(
+    const failedFileInfo = await cleanUpOrphanFiles(
         state.uploadedFileUrls,
         state.distributions
     );
+
+    const indexResult = await indexDatasetById(datasetId);
+    if (indexResult?.failureReasons?.length) {
+        console.error(`Failed to index dataset ${datasetId}: `, indexResult);
+        throw new ServerError(
+            `Failed to index dataset ${datasetId} for search engine: ${indexResult.failureReasons.join(
+                "; "
+            )}`,
+            500
+        );
+    } else if (indexResult?.warnReasons?.length) {
+        console.warn(`Warnings when index dataset ${datasetId}: `, indexResult);
+    }
+
+    return failedFileInfo;
 }
