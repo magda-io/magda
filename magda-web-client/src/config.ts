@@ -81,6 +81,7 @@ const serverConfig: {
     showNotificationBanner?: boolean;
     contentApiBaseUrl?: string;
     previewMapBaseUrl?: string;
+    indexerApiBaseUrl?: string;
     registryApiBaseUrl?: string;
     registryApiReadOnlyBaseUrl?: string;
     searchApiBaseUrl?: string;
@@ -290,6 +291,8 @@ export const config = {
     contentApiURL,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
+    indexerApiBaseUrl:
+        serverConfig?.indexerApiBaseUrl || fallbackApiHost + "api/v0/indexer/",
     registryReadOnlyApiUrl: registryReadOnlyApiUrl,
     registryFullApiUrl: registryFullApiUrl,
     adminApiUrl:
