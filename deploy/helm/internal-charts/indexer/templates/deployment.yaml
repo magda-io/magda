@@ -32,7 +32,7 @@ spec:
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
-            path: /v0/reindex/in-progress
+            path: /v0/status/live
             port: 6103
           initialDelaySeconds: 120
           periodSeconds: 10
