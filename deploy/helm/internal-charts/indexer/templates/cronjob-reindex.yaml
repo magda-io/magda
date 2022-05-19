@@ -28,7 +28,7 @@ spec:
             command:
               - "/bin/sh"
               - "-c"
-              - "cd /trigger-script && yarn install && node index.js"
+              - "mkdir /workdir && cp /trigger-script/* /workdir/ && cd /workdir && yarn install && node index.js"
             env:
             - name: JWT_SECRET
               valueFrom:
