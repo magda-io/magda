@@ -60,7 +60,8 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             authDecisionClient: new AuthDecisionQueryClient(
                 "http://localhost",
                 true
-            )
+            ),
+            failedApiKeyAuthBackOffSeconds: 5
         });
 
         const app = express();
@@ -283,7 +284,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
     describe("GET /private/users/:userId", () => {
         silenceErrorLogs(() => {
-            it("should return 401 status code if requested without sepecifying user ID", async () => {
+            it("should return 401 status code if requested without specifying user ID", async () => {
                 await jsc.assert(
                     jsc.forall(userDataArb, async (userData) => {
                         try {

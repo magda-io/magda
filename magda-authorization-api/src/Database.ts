@@ -32,6 +32,7 @@ import {
 } from "magda-typescript-common/src/SQLUtils";
 import ServerError from "magda-typescript-common/src/ServerError";
 import { SYSTEM_ROLES } from "magda-typescript-common/src/authorization-api/constants";
+import { generateAPIKey, createApiKeyHash } from "./apiKeyUtils";
 
 export interface DatabaseOptions {
     dbHost: string;
@@ -173,6 +174,153 @@ export default class Database {
                 ])}`.toQuery()
         );
         return this.convertPermissionOperationRowsToPermissions(result);
+    }
+
+    async getUserApiKeys(
+        userId: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<APIKeyRecord[]> {
+        if (!userId) {
+            throw new ServerError("User ID cannot be empty!", 400);
+        }
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.user"],
+            tableRef: "u"
+        });
+        const result = await this.pool.query(
+            ...sqls`SELECT * FROM (SELECT DISTINCT ON (a.id)
+                a.*
+                FROM api_keys a
+                LEFT JOIN users u ON u.id = a.user_id
+                WHERE ${SQLSyntax.joinWithAnd([
+                    sqls`a.user_id = ${userId}`,
+                    authConditions
+                ])}) r ORDER BY r.created_timestamp DESC`.toQuery()
+        );
+        if (!result?.rows?.length) {
+            return [];
+        } else {
+            return result.rows;
+        }
+    }
+
+    async getApiKeyById(id: string): Promise<APIKeyRecord | null> {
+        if (!id) {
+            throw new ServerError("API Key ID cannot be empty!", 400);
+        }
+        const result = await this.pool.query(
+            ...sqls`SELECT * FROM api_keys WHERE id=${id} LIMIT 1`.toQuery()
+        );
+        if (!result?.rows?.length) {
+            return null;
+        } else {
+            return result.rows[0];
+        }
+    }
+
+    async createUserApiKey(
+        userId: string,
+        expiryTime?: Date
+    ): Promise<{ id: string; key: string }> {
+        if (!userId) {
+            throw new ServerError("User ID cannot be empty!", 400);
+        }
+        const users = await this.pool.query(
+            ...sqls`SELECT id, "displayName" FROM users WHERE id=${userId} LIMIT 1`.toQuery()
+        );
+
+        if (!users?.rows?.length) {
+            throw new ServerError(
+                `Cannot locate user record with user id: ${userId}`,
+                404
+            );
+        }
+
+        const newKey = await generateAPIKey();
+        const keyHash = await createApiKeyHash(newKey);
+
+        const result = await this.pool.query(
+            ...sqls`INSERT INTO "api_keys" 
+                ("id", "user_id", "created_timestamp", "hash", "expiry_time", "enabled") 
+                VALUES
+                (uuid_generate_v4(), ${userId}, CURRENT_TIMESTAMP, ${keyHash}, ${
+                expiryTime ? expiryTime : null
+            }, True) RETURNING id`.toQuery()
+        );
+        const apiKeyId = result.rows[0].id;
+        return {
+            id: apiKeyId,
+            key: newKey
+        };
+    }
+
+    async updateUserApiKey(
+        userId: string,
+        apiKeyId: string,
+        enabled: boolean | undefined,
+        expiryTime: Date | undefined
+    ): Promise<void> {
+        if (!userId) {
+            throw new ServerError("User ID cannot be empty!", 400);
+        }
+        if (!apiKeyId) {
+            throw new ServerError("API Key ID cannot be empty!", 400);
+        }
+        if (typeof enabled !== "boolean" && !(expiryTime instanceof Date)) {
+            // nothing to update
+            return;
+        }
+        const apiKey = await this.pool.query(
+            ...sqls`SELECT id FROM api_keys WHERE user_id=${userId} AND id=${apiKeyId} LIMIT 1`.toQuery()
+        );
+
+        if (!apiKey?.rows?.length) {
+            throw new ServerError(
+                `Cannot locate api key record with api key id: ${apiKeyId} user id: ${userId}`,
+                404
+            );
+        }
+
+        const updates: SQLSyntax[] = [sqls`edit_time=CURRENT_TIMESTAMP`];
+        if (typeof enabled === "boolean") {
+            updates.push(sqls`"enabled"=${enabled}`);
+        }
+        if (expiryTime instanceof Date) {
+            updates.push(sqls`"expiry_time"=${expiryTime}`);
+        }
+
+        await this.pool.query(
+            ...sqls`UPDATE "api_keys" SET ${SQLSyntax.join(
+                updates,
+                sqls`, `
+            )} WHERE id = ${apiKeyId}`.toQuery()
+        );
+    }
+
+    async deleteUserApiKey(
+        userId: string,
+        apiKeyId: string
+    ): Promise<{ deleted: boolean }> {
+        if (!userId) {
+            throw new ServerError("User ID cannot be empty!", 400);
+        }
+        if (!apiKeyId) {
+            throw new ServerError("API Key ID cannot be empty!", 400);
+        }
+
+        const apiKey = await this.pool.query(
+            ...sqls`SELECT id FROM api_keys WHERE user_id=${userId} AND id=${apiKeyId} LIMIT 1`.toQuery()
+        );
+
+        if (!apiKey?.rows?.length) {
+            return { deleted: false };
+        }
+
+        await this.pool.query(
+            ...sqls`DELETE FROM api_keys WHERE id = ${apiKeyId}`.toQuery()
+        );
+
+        return { deleted: true };
     }
 
     private convertPermissionOperationRowsToPermissions(
@@ -532,6 +680,27 @@ export default class Database {
             throw new Error(`cannot find API with ID ${apiKeyId}`);
         }
         return result.rows[0] as APIKeyRecord;
+    }
+
+    async updateApiKeyAttempt(apiKeyId: string, isSuccessfulAttempt: Boolean) {
+        if (!apiKeyId) {
+            throw new ServerError("invalid empty api key id.", 400);
+        }
+        const updateTimestampCol = isSuccessfulAttempt
+            ? sqls`last_successful_attempt_time`
+            : sqls`last_failed_attempt_time`;
+        await this.pool.query(
+            ...sqls`UPDATE api_keys SET ${updateTimestampCol} = CURRENT_TIMESTAMP WHERE id = ${apiKeyId}`.toQuery()
+        );
+    }
+
+    updateApiKeyAttemptNonBlocking(
+        apiKeyId: string,
+        isSuccessfulAttempt: Boolean
+    ): void {
+        this.updateApiKeyAttempt(apiKeyId, isSuccessfulAttempt).catch((e) => {
+            console.error("Failed to update API key attempt timestamp: " + e);
+        });
     }
 
     /**

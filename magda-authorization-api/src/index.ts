@@ -49,6 +49,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "boolean",
             default: process.env.SKIP_AUTH == "true" ? true : false
         })
+        .option("failedApiKeyAuthBackOffSeconds", {
+            describe:
+                "How long time in number of seconds should the auth API fail all API key verification requests immediately without verifying the hash since the last failed API key verification request.",
+            type: "number",
+            default: 5
+        })
         .option("tenantId", {
             describe: "The tenant id for intra-network communication",
             type: "number",
@@ -92,7 +98,8 @@ app.use(
         opaUrl: argv.opaUrl,
         database,
         tenantId: argv.tenantId,
-        authDecisionClient: authDecisionClient
+        authDecisionClient: authDecisionClient,
+        failedApiKeyAuthBackOffSeconds: argv.failedApiKeyAuthBackOffSeconds
     })
 );
 
