@@ -59,7 +59,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
     const jwtSecret: string = options.jwtSecret;
     const opaUrl: string = options.opaUrl;
 
-    router.use(bodyParser.json({ type: "application/json" }));
+    router.use(bodyParser.json({ type: "application/json", limit: "100mb" }));
 
     function normaliseInputField(reqData: any) {
         if (reqData.input && typeof reqData.input === "object") return;

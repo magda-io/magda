@@ -64,7 +64,7 @@ const argv = addJwtSecretFromEnvVar(
 
 // Create a new Express application.
 var app = express();
-app.use(require("body-parser").json());
+app.use(require("body-parser").json({ limit: "100mb" }));
 
 const database = new Database({
     dbHost: argv.dbHost,
