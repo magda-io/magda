@@ -27,6 +27,7 @@ function createRows(
     datasetType: DatasetTypes,
     records: Record[] | undefined,
     loading: boolean,
+    setRecordReloadToken: React.Dispatch<React.SetStateAction<string>>,
     error?: any
 ) {
     if (loading) {
@@ -72,8 +73,31 @@ function createRows(
                                         record
                                     )}"?`,
                                     headingText: "Confirm to Delete?",
-                                    confirmHandler: () =>
-                                        deleteDataset(record.id)
+                                    loadingText: "Deleting dataset...",
+                                    errorNotificationDuration: 0,
+                                    confirmHandler: async () => {
+                                        const result = await deleteDataset(
+                                            record.id
+                                        );
+                                        if (result.hasError) {
+                                            console.error(
+                                                "Failed to remove resources when delete dataset:",
+                                                result
+                                            );
+                                            throw new Error(
+                                                `The following files are failed to be removed during the dataset deletion:
+                                                ${result.failureReasons
+                                                    .map(
+                                                        (item) =>
+                                                            `"${item.title}", error: ${item.error}`
+                                                    )
+                                                    .join(";\n ")}`
+                                            );
+                                        }
+                                        setRecordReloadToken(
+                                            "" + Math.random()
+                                        );
+                                    }
                                 })
                             }
                         />
@@ -134,13 +158,16 @@ function getDate(datasetType: DatasetTypes, record: Record) {
 const DatasetGrid: FunctionComponent<PropsType> = (props) => {
     const { datasetType } = props;
     const [offset, setPageOffset] = useState<number>(0);
+    //change this value to force the record data to be reloaded
+    const [recordReloadToken, setRecordReloadToken] = useState<string>("");
 
     const { result, loading, error } = useAsync(
         async (
             datasetType: DatasetTypes,
             searchText: string,
             userId: string,
-            offset: number
+            offset: number,
+            recordReloadToken: string
         ) => {
             const opts: FetchRecordsOptions = {
                 limit: PAGE_SIZE,
@@ -169,7 +196,13 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
 
             return await fetchRecords(opts);
         },
-        [props.datasetType, props.searchText, props.userId, offset]
+        [
+            props.datasetType,
+            props.searchText,
+            props.userId,
+            offset,
+            recordReloadToken
+        ]
     );
 
     const overAllLoading = loading;
@@ -192,6 +225,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                             datasetType,
                             result?.records,
                             overAllLoading,
+                            setRecordReloadToken,
                             overAllError
                         )}
                     </tbody>
