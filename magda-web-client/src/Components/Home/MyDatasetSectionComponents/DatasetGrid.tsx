@@ -18,9 +18,6 @@ type PropsType = {
     searchText: string;
     datasetType: DatasetTypes;
     userId: string;
-    datasetCount?: number;
-    datasetCountIsLoading: boolean;
-    datasetCountError?: Error;
 };
 
 function createRows(
@@ -116,12 +113,7 @@ function getDate(datasetType: DatasetTypes, record: Record) {
 }
 
 const DatasetGrid: FunctionComponent<PropsType> = (props) => {
-    const {
-        datasetType,
-        datasetCount,
-        datasetCountIsLoading,
-        datasetCountError
-    } = props;
+    const { datasetType } = props;
     const [offset, setPageOffset] = useState<number>(0);
 
     const { result, loading, error } = useAsync(
@@ -161,8 +153,8 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
         [props.datasetType, props.searchText, props.userId, offset]
     );
 
-    const overAllLoading = loading || datasetCountIsLoading;
-    const overAllError = error ? error : datasetCountError;
+    const overAllLoading = loading;
+    const overAllError = error;
 
     return (
         <>
@@ -189,8 +181,8 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 <button
                     className="next-page-button"
                     disabled={
-                        !datasetCount ||
-                        offset + PAGE_SIZE >= datasetCount ||
+                        !result?.hasMore ||
+                        !result?.records?.length ||
                         overAllLoading ||
                         overAllError
                             ? true
@@ -220,13 +212,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 </button>
                 {!overAllLoading && !overAllError ? (
                     <div className="page-idx-info-area">
-                        {(() => {
-                            const totalCount = offset + PAGE_SIZE;
-                            return totalCount > (datasetCount as number)
-                                ? datasetCount
-                                : totalCount;
-                        })()}{" "}
-                        / {datasetCount}
+                        Page: {offset + 1} - {offset + PAGE_SIZE}
                     </div>
                 ) : null}
             </div>
