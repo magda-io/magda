@@ -21,7 +21,7 @@ import {
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
-import { RawDataset, DatasetDraft } from "helpers/record";
+import { RawDataset, DatasetDraft, RawDistribution } from "helpers/record";
 import { autocompletePublishers } from "api-clients/SearchApis";
 import ServerError from "@magda/typescript-common/dist/ServerError";
 import defer from "helpers/defer";
@@ -30,7 +30,10 @@ import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownload
 import deleteFile from "./Pages/AddFiles/deleteFile";
 import escapeJsonPatchPointer from "helpers/escapeJsonPatchPath";
 import uniq from "lodash/uniq";
-import { indexDatasetById } from "api-clients/IndexerApis";
+import {
+    indexDatasetById,
+    deleteDatasetIndexById
+} from "api-clients/IndexerApis";
 
 export type Distribution = {
     title: string;
@@ -1545,4 +1548,145 @@ export async function submitDatasetFromState(
     }
 
     return failedFileInfo;
+}
+
+export async function deleteFileByUrl(
+    fileUrl: string
+): Promise<{ title: string; id?: string; error: string } | undefined> {
+    let distId, fileName;
+
+    try {
+        const result = getDistInfoFromDownloadUrl(fileUrl);
+        fileName = result.fileName;
+    } catch (e) {
+        return { title: fileUrl, error: "" + e };
+    }
+
+    try {
+        await deleteFile({
+            title: fileName,
+            downloadURL: fileUrl
+        } as Distribution);
+        return undefined;
+    } catch (e) {
+        console.error(e);
+        return { id: distId, title: fileName, error: "" + e };
+    }
+}
+
+export type FileOperationFailureReasonType = {
+    id?: string;
+    title: string;
+    error: string;
+};
+
+export type DatasetDeletionResultType = {
+    hasError: boolean;
+    deletedFiles: string[];
+    failedDeletedFiles: string[];
+    failureReasons: FileOperationFailureReasonType[];
+};
+
+export async function deleteDataset(
+    datasetId: string
+): Promise<DatasetDeletionResultType> {
+    const deletedFiles: string[] = [];
+    const failedDeletedFiles: string[] = [];
+    const failureReasons: FileOperationFailureReasonType[] = [];
+
+    const datasetStateData = await loadStateFromRegistry(datasetId, {} as User);
+    let datasetData: RawDataset;
+    try {
+        datasetData = await fetchRecordWithNoCache(datasetId, [
+            "dcat-distribution-strings",
+            "dataset-distributions",
+            "version"
+        ]);
+    } catch (e) {
+        if (e instanceof ServerError && e.statusCode === 404) {
+            return {
+                hasError: false,
+                deletedFiles,
+                failedDeletedFiles,
+                failureReasons
+            };
+        } else {
+            throw e;
+        }
+    }
+
+    const distributions = datasetData.aspects[
+        "distributions"
+    ] as RawDistribution[];
+
+    if (distributions?.length) {
+        for (const dist of distributions) {
+            const distInfo = dist.aspects["dcat-distribution-strings"];
+            const version = dist.aspects["version"];
+            if (distInfo?.useStorageApi && distInfo?.downloadURL) {
+                if (
+                    deletedFiles
+                        .concat(failedDeletedFiles)
+                        .indexOf(distInfo.downloadURL) === -1
+                ) {
+                    const result = await deleteFileByUrl(distInfo.downloadURL);
+                    if (result) {
+                        failureReasons.push(result);
+                        failedDeletedFiles.push(distInfo.downloadURL);
+                    } else {
+                        deletedFiles.push(distInfo.downloadURL);
+                    }
+                }
+            }
+            if (version?.versions?.length) {
+                for (const versionInfo of version.versions) {
+                    if (
+                        versionInfo?.internalDataFileUrl &&
+                        deletedFiles
+                            .concat(failedDeletedFiles)
+                            .indexOf(versionInfo.internalDataFileUrl) === -1
+                    ) {
+                        const result = await deleteFileByUrl(
+                            versionInfo.internalDataFileUrl
+                        );
+                        if (result) {
+                            failureReasons.push(result);
+                            failedDeletedFiles.push(
+                                versionInfo.internalDataFileUrl
+                            );
+                        } else {
+                            deletedFiles.push(versionInfo.internalDataFileUrl);
+                        }
+                    }
+                }
+            }
+            await deleteRecord(dist.id);
+        }
+    }
+
+    if (datasetStateData?.uploadedFileUrls?.length) {
+        for (const fileUrl of datasetStateData.uploadedFileUrls) {
+            if (
+                deletedFiles.concat(failedDeletedFiles).indexOf(fileUrl) === -1
+            ) {
+                const result = await deleteFileByUrl(fileUrl);
+                if (result) {
+                    failureReasons.push(result);
+                    failedDeletedFiles.push(fileUrl);
+                } else {
+                    deletedFiles.push(fileUrl);
+                }
+            }
+        }
+    }
+
+    await deleteRecord(datasetId);
+    await deleteDatasetIndexById(datasetId);
+
+    return {
+        hasError: failedDeletedFiles?.length ? true : false,
+        deletedFiles,
+        failedDeletedFiles,
+        failureReasons
+    };
 }
