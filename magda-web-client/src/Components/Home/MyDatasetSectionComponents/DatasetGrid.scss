@@ -1,11 +1,15 @@
 .my-dataset-section-container {
     .dataset-list-body {
+        .datat-grid-container {
+            padding-left: 50px;
+            padding-right: 30px;
+        }
         table {
             width: 100%;
             th,
             td {
                 &:first-child {
-                    padding-left: 50px;
+                    padding-left: 10px;
                 }
             }
         }
@@ -39,9 +43,25 @@
             width: 120px;
             text-align: center;
         }
-        .edit-button-col {
-            width: 80px;
+        .action-buttons-col {
+            width: 120px;
             text-align: center;
+            position: relative;
+            .edit-button {
+                float: left;
+                margin-left: 20px;
+            }
+            .delete-button {
+                border: none;
+                position: absolute;
+                top: 15px;
+                left: 60px;
+                cursor: pointer;
+                svg {
+                    width: 22px;
+                    height: 22px;
+                }
+            }
         }
 
         .grid-bottom-divider {

@@ -1680,8 +1680,8 @@ export async function deleteDataset(
         }
     }
 
-    await deleteRecord(datasetId);
     await deleteDatasetIndexById(datasetId);
+    await deleteRecord(datasetId);
 
     return {
         hasError: failedDeletedFiles?.length ? true : false,

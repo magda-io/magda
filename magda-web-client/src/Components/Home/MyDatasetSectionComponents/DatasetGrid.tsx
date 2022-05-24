@@ -11,6 +11,9 @@ import {
     DatasetTypes
 } from "api-clients/RegistryApis";
 import moment from "moment";
+import { BsFillTrashFill } from "react-icons/bs";
+import ConfirmDialog from "../../Settings/ConfirmDialog";
+import { deleteDataset } from "../../Dataset/Add/DatasetAddCommon";
 
 const PAGE_SIZE = 10;
 
@@ -47,7 +50,7 @@ function createRows(
             <tr key={idx}>
                 <td>{getTitle(datasetType, record)}</td>
                 <td className="date-col">{getDate(datasetType, record)}</td>
-                <td className="edit-button-col">
+                <td className="action-buttons-col">
                     <Link
                         className="edit-button"
                         to={`/dataset/${
@@ -59,6 +62,22 @@ function createRows(
                     >
                         <img src={editIcon} alt="edit button" />
                     </Link>
+
+                    <button className="delete-button">
+                        <BsFillTrashFill
+                            onClick={() =>
+                                ConfirmDialog.open({
+                                    confirmMsg: `Are you sure you want to delete the dataset "${getTitle(
+                                        datasetType,
+                                        record
+                                    )}"?`,
+                                    headingText: "Confirm to Delete?",
+                                    confirmHandler: () =>
+                                        deleteDataset(record.id)
+                                })
+                            }
+                        />
+                    </button>
                 </td>
             </tr>
         ));
@@ -158,24 +177,26 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
 
     return (
         <>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Dataset title</th>
-                        <th className="date-col">Last updated</th>
-                        <th className="edit-button-col">&nbsp;</th>
-                    </tr>
-                </thead>
+            <div className="datat-grid-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dataset title</th>
+                            <th className="date-col">Last updated</th>
+                            <th className="action-buttons-col">&nbsp;</th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    {createRows(
-                        datasetType,
-                        result?.records,
-                        overAllLoading,
-                        overAllError
-                    )}
-                </tbody>
-            </table>
+                    <tbody>
+                        {createRows(
+                            datasetType,
+                            result?.records,
+                            overAllLoading,
+                            overAllError
+                        )}
+                    </tbody>
+                </table>
+            </div>
             <hr className="grid-bottom-divider" />
             <div className="paging-area">
                 <button

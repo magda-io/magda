@@ -4,6 +4,8 @@ import DatasetGrid from "./DatasetGrid";
 import { DatasetTypes } from "api-clients/RegistryApis";
 import { ReactComponent as DismissIcon } from "assets/dismiss.svg";
 import { ReactComponent as SearchIcon } from "assets/search-dark.svg";
+import "../../../rsuite.scss";
+import ConfirmDialog from "../../Settings/ConfirmDialog";
 
 type PropsType = {
     userId: string;
@@ -19,6 +21,7 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
 
     return (
         <div className="dataset-list-container">
+            <ConfirmDialog />
             <div className="dataset-list-inner-container row">
                 <div className="dataset-list-header">
                     <div className="dataset-type-tab">

@@ -76,8 +76,7 @@ export async function indexDatasetById(
     datasetId: string
 ): Promise<IndexDatasetResult> {
     const url =
-        config.indexerApiBaseUrl +
-        `reindex/dataset/${encodeURIComponent(datasetId)}`;
+        config.indexerApiBaseUrl + `dataset/${encodeURIComponent(datasetId)}`;
     return await request<IndexDatasetResult>("PUT", url);
 }
 
@@ -86,7 +85,9 @@ export type DeleteDatasetIndexResult = {
 };
 
 /**
- * Delete one dataset from the search engine index on ad hoc basis
+ * Delete one dataset from the search engine index on ad hoc basis.
+ * Please note: this function only works before the dataset is deleted from registry.
+ * Otherwise, policy engine has no way to determine the access.
  *
  * @export
  * @param {string} datasetId
@@ -96,7 +97,6 @@ export async function deleteDatasetIndexById(
     datasetId: string
 ): Promise<DeleteDatasetIndexResult> {
     const url =
-        config.indexerApiBaseUrl +
-        `reindex/dataset/${encodeURIComponent(datasetId)}`;
+        config.indexerApiBaseUrl + `dataset/${encodeURIComponent(datasetId)}`;
     return await request<DeleteDatasetIndexResult>("DELETE", url);
 }

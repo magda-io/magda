@@ -2,6 +2,7 @@ import React, { SyntheticEvent } from "react";
 import Button from "rsuite/Button";
 import Modal from "rsuite/Modal";
 import Loader from "rsuite/Loader";
+import reportError from "../../helpers/reportError";
 
 type PropsType = {};
 type StateType = {
@@ -106,9 +107,14 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
                         onClick={async (e: SyntheticEvent) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            this.setState({ isLoading: true });
-                            await this.state.confirmHandler();
-                            this.setState({ isOpen: false });
+                            try {
+                                this.setState({ isLoading: true });
+                                await this.state.confirmHandler();
+                                this.setState({ isOpen: false });
+                            } catch (e) {
+                                this.setState({ isLoading: false });
+                                reportError(e);
+                            }
                         }}
                     >
                         Confirm
