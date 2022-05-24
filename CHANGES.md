@@ -31,6 +31,8 @@
 - Related to #3331, remove any logic related to obsolete `authnReadPolicyId` record field
 - Related to #3331, remove obsolete policy files `object/registry/*`
 - Added APIs for managing API keys
+- #3345 Add adhoc dataset indexing APIs, secure with new auth model and expose via Gateway with other indexer APIs
+- "My dataset section": Add Dataset deletion function & performance improvement
 
 ## 1.3.0
 
