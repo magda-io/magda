@@ -26,7 +26,7 @@ class IndexerApi(
   implicit val ec = system.dispatcher
   override def getLogger = system.log
 
-  val crawlerRoutes = new CrawlerApi(crawler, indexer).routes
+  val crawlerRoutes = new CrawlerApi(crawler, indexer, authApiClient).routes
   val hookRoutes = new WebhookApi(indexer).routes
 
   val datasetRoutes =

@@ -65,7 +65,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
         });
 
         const app = express();
-        app.use(require("body-parser").json());
+        app.use(require("body-parser").json({ limit: "100mb" }));
         app.use(apiRouter);
 
         return app;

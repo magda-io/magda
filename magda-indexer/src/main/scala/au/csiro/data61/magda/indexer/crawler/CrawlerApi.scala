@@ -4,12 +4,18 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes.{Accepted, Conflict, OK}
 import akka.http.scaladsl.server.Directives._
 import au.csiro.data61.magda.api.BaseMagdaApi
+import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import com.typesafe.config.Config
+import au.csiro.data61.magda.directives.AuthDirectives.requireUnconditionalAuthDecision
 
 import scala.util.{Failure, Success}
 
-class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(
+class CrawlerApi(
+    crawler: Crawler,
+    indexer: SearchIndexer,
+    authApiClient: AuthApiClient
+)(
     implicit system: ActorSystem,
     config: Config
 ) extends BaseMagdaApi {
@@ -20,24 +26,36 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(
     magdaRoute {
 
       path("snapshot") {
-
+        post {
+          requireUnconditionalAuthDecision(
+            authApiClient,
+            AuthDecisionReqConfig(operationUri = "api/indexer/reindex/snapshot")
+          ) {
+            indexer.snapshot()
+            complete(Accepted)
+          }
+        }
+      } ~
         /**
           * @apiGroup Indexer
-          * @api {get} http://indexer/v0/reindex/in-progress Reindex in progress (internal)
+          * @api {get} http://indexer/v0/reindex/in-progress Reindex in progress
           *
           * @apiDescription Reveals whether the indexer is currently reindexing. Returns a simple text "true" or "false".
+          * requires permission to operation uri `api/indexer/reindex/in-progress`
           *
           * @apiSuccess (Success 200) {String} Response `true` or `false`
           * @apiUse GenericError
           */
-        post {
-          indexer.snapshot()
-          complete(Accepted)
-        }
-      } ~
         path("in-progress") {
           get {
-            complete(OK, crawler.crawlInProgress().toString)
+            requireUnconditionalAuthDecision(
+              authApiClient,
+              AuthDecisionReqConfig(
+                operationUri = "api/indexer/reindex/in-progress"
+              )
+            ) {
+              complete(OK, crawler.crawlInProgress().toString)
+            }
           }
         } ~
         /**
@@ -50,15 +68,24 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(
           *
           * If this is already in progress, returns 409.
           *
+          * Requires permission to operation uri `api/indexer/reindex`
+          *
           * @apiSuccess (Success 202) {String} Response (blank)
           * @apiError (Error 409) {String} Response "Reindex in progress"
           * @apiUse GenericError
           */
         post {
-          if (crawl) {
-            complete(Accepted)
-          } else {
-            complete(Conflict, "Reindex in progress")
+          requireUnconditionalAuthDecision(
+            authApiClient,
+            AuthDecisionReqConfig(
+              operationUri = "api/indexer/reindex"
+            )
+          ) {
+            if (crawl) {
+              complete(Accepted)
+            } else {
+              complete(Conflict, "Reindex in progress")
+            }
           }
         }
     }
@@ -73,7 +100,6 @@ class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(
         case Failure(e) =>
           getLogger.error(e, "Crawl failed")
       }
-
       true
     }
   }

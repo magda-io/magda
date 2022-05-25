@@ -133,4 +133,10 @@ defaultRoutes:
   tenant:
     to: http://tenant-api/v0
     auth: true
+  "indexer/reindex":
+    to: http://indexer/v0/reindex
+    auth: true
+  "indexer/dataset":
+    to: http://indexer/v0/dataset
+    auth: true
 ```

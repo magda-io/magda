@@ -405,3 +405,15 @@ ALTER TABLE "public"."credentials" ADD COLUMN "last_successful_attempt_time" tim
 ALTER TABLE "public"."credentials" ADD COLUMN "last_failed_attempt_time" timestamptz DEFAULT NULL;
 ALTER TABLE "public"."credentials" ADD COLUMN "enabled" boolean default true;
 -- end upgrade credentials table-- 
+-- add new indexer api resource / operations --
+INSERT INTO "public"."resources" 
+    ("uri", "name", "description")
+VALUES 
+('api/indexer', 'Indexer APIs', 'represent the access to indexer APIs');
+
+INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
+VALUES 
+('api/indexer/reindex','the API triggers full proactive reindex', '', (SELECT id FROM resources WHERE uri = 'api/indexer')),
+('api/indexer/reindex/in-progress', 'the API gets the progress info of the recent full proactive reindex', '', (SELECT id FROM resources WHERE uri = 'api/indexer')),
+('api/indexer/reindex/snapshot','the API triggers snapshot creation', '', (SELECT id FROM resources WHERE uri = 'api/indexer'));
+-- end add new indexer api resource / operations --

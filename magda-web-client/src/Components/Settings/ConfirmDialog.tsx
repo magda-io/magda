@@ -2,6 +2,7 @@ import React, { SyntheticEvent } from "react";
 import Button from "rsuite/Button";
 import Modal from "rsuite/Modal";
 import Loader from "rsuite/Loader";
+import reportError from "./reportError";
 
 type PropsType = {};
 type StateType = {
@@ -12,6 +13,7 @@ type StateType = {
     cancelHandler: () => void | Promise<void>;
     loadingText: string;
     isLoading: boolean;
+    errorNotificationDuration?: number;
 };
 
 class ConfirmDialog extends React.Component<PropsType, StateType> {
@@ -42,6 +44,7 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
         cancelHandler?: () => void;
         loadingText?: string;
         isLoading?: boolean;
+        errorNotificationDuration?: number;
     }) {
         if (!ConfirmDialog.dialogRef) {
             throw new Error("ConfirmDialog has not been rendered yet!");
@@ -106,9 +109,22 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
                         onClick={async (e: SyntheticEvent) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            this.setState({ isLoading: true });
-                            await this.state.confirmHandler();
-                            this.setState({ isOpen: false });
+                            try {
+                                this.setState({ isLoading: true });
+                                await this.state.confirmHandler();
+                                this.setState({ isOpen: false });
+                            } catch (e) {
+                                this.setState({ isLoading: false });
+                                reportError(e, {
+                                    duration:
+                                        typeof this.state
+                                            .errorNotificationDuration ===
+                                        "undefined"
+                                            ? undefined
+                                            : this.state
+                                                  .errorNotificationDuration
+                                });
+                            }
                         }}
                     >
                         Confirm

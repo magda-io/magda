@@ -1,7 +1,12 @@
 export default {
     proxyRoutes: {
         search: {
-            to: "http://localhost:6102/v0"
+            to: "http://localhost:6102/v0",
+            auth: true
+        },
+        "registry/hooks": {
+            to: "http://localhost:6101/v0/hooks",
+            auth: true
         },
         registry: {
             to: "http://localhost:6101/v0",
@@ -34,6 +39,14 @@ export default {
         },
         storage: {
             to: "http://localhost:6121/v0",
+            auth: true
+        },
+        "indexer/reindex": {
+            to: "http://localhost:6103/v0/reindex",
+            auth: true
+        },
+        "indexer/dataset": {
+            to: "http://localhost:6103/v0/dataset",
             auth: true
         }
     },

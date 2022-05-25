@@ -52,6 +52,7 @@ export type dcatDistributionStrings = {
     license: string;
     description: string;
     title: string;
+    useStorageApi?: boolean;
 };
 
 export type DcatDatasetStrings = {

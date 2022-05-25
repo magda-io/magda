@@ -11,6 +11,9 @@ import {
     DatasetTypes
 } from "api-clients/RegistryApis";
 import moment from "moment";
+import { BsFillTrashFill } from "react-icons/bs";
+import ConfirmDialog from "../../Settings/ConfirmDialog";
+import { deleteDataset } from "../../Dataset/Add/DatasetAddCommon";
 
 const PAGE_SIZE = 10;
 
@@ -18,15 +21,13 @@ type PropsType = {
     searchText: string;
     datasetType: DatasetTypes;
     userId: string;
-    datasetCount?: number;
-    datasetCountIsLoading: boolean;
-    datasetCountError?: Error;
 };
 
 function createRows(
     datasetType: DatasetTypes,
     records: Record[] | undefined,
     loading: boolean,
+    setRecordReloadToken: React.Dispatch<React.SetStateAction<string>>,
     error?: any
 ) {
     if (loading) {
@@ -50,7 +51,7 @@ function createRows(
             <tr key={idx}>
                 <td>{getTitle(datasetType, record)}</td>
                 <td className="date-col">{getDate(datasetType, record)}</td>
-                <td className="edit-button-col">
+                <td className="action-buttons-col">
                     <Link
                         className="edit-button"
                         to={`/dataset/${
@@ -62,6 +63,45 @@ function createRows(
                     >
                         <img src={editIcon} alt="edit button" />
                     </Link>
+
+                    <button className="delete-button">
+                        <BsFillTrashFill
+                            onClick={() =>
+                                ConfirmDialog.open({
+                                    confirmMsg: `Are you sure you want to delete the dataset "${getTitle(
+                                        datasetType,
+                                        record
+                                    )}"?`,
+                                    headingText: "Confirm to Delete?",
+                                    loadingText: "Deleting dataset...",
+                                    errorNotificationDuration: 0,
+                                    confirmHandler: async () => {
+                                        const result = await deleteDataset(
+                                            record.id
+                                        );
+                                        if (result.hasError) {
+                                            console.error(
+                                                "Failed to remove resources when delete dataset:",
+                                                result
+                                            );
+                                            throw new Error(
+                                                `The following files are failed to be removed during the dataset deletion:
+                                                ${result.failureReasons
+                                                    .map(
+                                                        (item) =>
+                                                            `"${item.title}", error: ${item.error}`
+                                                    )
+                                                    .join(";\n ")}`
+                                            );
+                                        }
+                                        setRecordReloadToken(
+                                            "" + Math.random()
+                                        );
+                                    }
+                                })
+                            }
+                        />
+                    </button>
                 </td>
             </tr>
         ));
@@ -116,20 +156,18 @@ function getDate(datasetType: DatasetTypes, record: Record) {
 }
 
 const DatasetGrid: FunctionComponent<PropsType> = (props) => {
-    const {
-        datasetType,
-        datasetCount,
-        datasetCountIsLoading,
-        datasetCountError
-    } = props;
+    const { datasetType } = props;
     const [offset, setPageOffset] = useState<number>(0);
+    //change this value to force the record data to be reloaded
+    const [recordReloadToken, setRecordReloadToken] = useState<string>("");
 
     const { result, loading, error } = useAsync(
         async (
             datasetType: DatasetTypes,
             searchText: string,
             userId: string,
-            offset: number
+            offset: number,
+            recordReloadToken: string
         ) => {
             const opts: FetchRecordsOptions = {
                 limit: PAGE_SIZE,
@@ -158,39 +196,48 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
 
             return await fetchRecords(opts);
         },
-        [props.datasetType, props.searchText, props.userId, offset]
+        [
+            props.datasetType,
+            props.searchText,
+            props.userId,
+            offset,
+            recordReloadToken
+        ]
     );
 
-    const overAllLoading = loading || datasetCountIsLoading;
-    const overAllError = error ? error : datasetCountError;
+    const overAllLoading = loading;
+    const overAllError = error;
 
     return (
         <>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Dataset title</th>
-                        <th className="date-col">Last updated</th>
-                        <th className="edit-button-col">&nbsp;</th>
-                    </tr>
-                </thead>
+            <div className="datat-grid-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dataset title</th>
+                            <th className="date-col">Last updated</th>
+                            <th className="action-buttons-col">&nbsp;</th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    {createRows(
-                        datasetType,
-                        result?.records,
-                        overAllLoading,
-                        overAllError
-                    )}
-                </tbody>
-            </table>
+                    <tbody>
+                        {createRows(
+                            datasetType,
+                            result?.records,
+                            overAllLoading,
+                            setRecordReloadToken,
+                            overAllError
+                        )}
+                    </tbody>
+                </table>
+            </div>
             <hr className="grid-bottom-divider" />
             <div className="paging-area">
                 <button
                     className="next-page-button"
                     disabled={
-                        !datasetCount ||
-                        offset + PAGE_SIZE >= datasetCount ||
+                        !result?.hasMore ||
+                        !result?.records?.length ||
                         overAllLoading ||
                         overAllError
                             ? true
@@ -220,13 +267,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 </button>
                 {!overAllLoading && !overAllError ? (
                     <div className="page-idx-info-area">
-                        {(() => {
-                            const totalCount = offset + PAGE_SIZE;
-                            return totalCount > (datasetCount as number)
-                                ? datasetCount
-                                : totalCount;
-                        })()}{" "}
-                        / {datasetCount}
+                        Page: {offset + 1} - {offset + PAGE_SIZE}
                     </div>
                 ) : null}
             </div>

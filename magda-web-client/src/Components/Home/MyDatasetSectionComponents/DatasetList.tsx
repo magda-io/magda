@@ -4,7 +4,8 @@ import DatasetGrid from "./DatasetGrid";
 import { DatasetTypes } from "api-clients/RegistryApis";
 import { ReactComponent as DismissIcon } from "assets/dismiss.svg";
 import { ReactComponent as SearchIcon } from "assets/search-dark.svg";
-import useDatasetCount from "./useDatasetCount";
+import "../../../rsuite.scss";
+import ConfirmDialog from "../../Settings/ConfirmDialog";
 
 type PropsType = {
     userId: string;
@@ -18,35 +19,20 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
     const [searchText, setSearchText] = useState<string>("");
     const [inputText, setInputText] = useState<string>("");
 
-    const {
-        result: draftCount,
-        loading: draftCountIsLoading,
-        error: draftCountError
-    } = useDatasetCount("drafts", searchText, props.userId);
-
-    const {
-        result: publishedCount,
-        loading: publishedCountIsLoading,
-        error: publishedCountError
-    } = useDatasetCount("published", searchText, props.userId);
-
     return (
         <div className="dataset-list-container">
+            <ConfirmDialog />
             <div className="dataset-list-inner-container row">
                 <div className="dataset-list-header">
                     <div className="dataset-type-tab">
                         <a
+                            aria-label="sds"
                             className={`${
                                 activeTab === "drafts" ? "active" : ""
                             }`}
                             onClick={() => setActiveTab("drafts")}
                         >
-                            Drafts &nbsp;
-                            <span className="dataset-count-info">
-                                {!draftCountIsLoading && !draftCountError
-                                    ? draftCount
-                                    : null}
-                            </span>
+                            Drafts
                         </a>
                         <a
                             className={`${
@@ -54,13 +40,7 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                             }`}
                             onClick={() => setActiveTab("published")}
                         >
-                            Published &nbsp;
-                            <span className="dataset-count-info">
-                                {!publishedCountIsLoading &&
-                                !publishedCountError
-                                    ? publishedCount
-                                    : null}
-                            </span>
+                            Published
                         </a>
                     </div>
                     <div className="search-box-wrapper">
@@ -103,19 +83,6 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                         searchText={searchText}
                         datasetType={activeTab}
                         userId={props.userId}
-                        datasetCount={
-                            activeTab === "drafts" ? draftCount : publishedCount
-                        }
-                        datasetCountIsLoading={
-                            activeTab === "drafts"
-                                ? draftCountIsLoading
-                                : publishedCountIsLoading
-                        }
-                        datasetCountError={
-                            activeTab === "drafts"
-                                ? draftCountError
-                                : publishedCountError
-                        }
                     />
                 </div>
             </div>

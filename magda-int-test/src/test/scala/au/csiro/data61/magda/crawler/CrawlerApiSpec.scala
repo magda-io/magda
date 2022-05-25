@@ -166,11 +166,11 @@ class CrawlerApiSpec
             }
           }
       }
+      val authApiClient = new AuthApiClient()
       val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
       val crawler = new RegistryCrawler(externalInterface, indexer)
-      val crawlerApi = new CrawlerApi(crawler, indexer)
+      val crawlerApi = new CrawlerApi(crawler, indexer, authApiClient)
       val searchQueryer = new ElasticSearchQueryer(indices)
-      val authApiClient = new AuthApiClient()
       val api = new SearchApi(authApiClient, searchQueryer)(config, logger)
 
       val routes = crawlerApi.routes
