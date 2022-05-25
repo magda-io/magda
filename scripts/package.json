@@ -1,6 +1,6 @@
 {
   "name": "@magda/scripts",
-  "version": "2.0.0-alpha.0",
+  "version": "2.0.0-alpha.3",
   "description": "Scripts for building, running, and deploying MAGDA",
   "license": "Apache-2.0",
   "bin": {

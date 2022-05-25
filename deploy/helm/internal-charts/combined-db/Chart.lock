@@ -1,6 +1,6 @@
 dependencies:
 - name: magda-postgres
   repository: file://../magda-postgres
-  version: 2.0.0-alpha.0
-digest: sha256:271ef384d6c737deebe11f253fbc74074b94d103c5351f13ec33e0b71e19e1b3
-generated: "2022-03-09T14:58:00.448295+11:00"
+  version: 2.0.0-alpha.3
+digest: sha256:6c5707a5d8bc2389d781d44787211679a140d8114fca930fd5176ada879ade42
+generated: "2022-05-25T11:41:05.769828+10:00"
