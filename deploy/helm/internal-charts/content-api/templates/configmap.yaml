@@ -2,6 +2,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "scss-compiler-config"
+  {{- $imageEnv := omit . "Values" }}
+  {{- $_ := set $imageEnv "Values" (omit .Values "image") }}
+  {{- $_ := set $imageEnv.Values "image" .Values.scssCompilerImage }}
 data:
-  image: "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-scss-compiler:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
+  image: {{ include "magda.image" $imageEnv | quote }}
+  pullSecrets: {{ include "magda.image.getConsolidatedPullSecretList" $imageEnv | mustFromJson | mustToRawJson | quote }}
   scssVars: {{ .Values.scssVars | default dict | mustToRawJson | quote }}
