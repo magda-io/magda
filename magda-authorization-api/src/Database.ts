@@ -856,6 +856,50 @@ export default class Database {
         }
     }
 
+    async deletePermission(permissionId?: string): Promise<boolean> {
+        if (!isUuid(permissionId)) {
+            throw new ServerError("permission id should be a valid uuid.", 400);
+        }
+
+        const pool = this.pool;
+        const permission = await getTableRecord(
+            pool,
+            "permissions",
+            permissionId
+        );
+        if (!permission) {
+            return false;
+        }
+        const result = await pool.query(
+            ...sqls`SELECT 1 FROM role_permissions WHERE permission_id = ${permissionId}`.toQuery()
+        );
+        if (result?.rows?.length) {
+            throw new ServerError(
+                `Cannot delete permission: ${permissionId} before remove it from all assigned roles.`,
+                400
+            );
+        }
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+
+            await client.query(
+                ...sqls`DELETE FROM permission_operations WHERE permission_id = ${permissionId}`.toQuery()
+            );
+            await client.query(
+                ...sqls`DELETE FROM permissions WHERE id = ${permissionId}`.toQuery()
+            );
+
+            await client.query("COMMIT");
+            return true;
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
+    }
+
     async deleteRole(roleId?: string) {
         roleId = roleId?.trim();
         if (!roleId) {

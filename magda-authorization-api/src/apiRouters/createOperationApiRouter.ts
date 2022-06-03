@@ -3,7 +3,15 @@ import Database from "../Database";
 import respondWithError from "../respondWithError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import { withAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
-import { getTableRecord } from "magda-typescript-common/src/SQLUtils";
+import {
+    requireObjectPermission,
+    requireObjectUpdatePermission
+} from "../recordAuthMiddlewares";
+import {
+    getTableRecord,
+    updateTableRecord,
+    deleteTableRecord
+} from "magda-typescript-common/src/SQLUtils";
 import ServerError from "magda-typescript-common/src/ServerError";
 import { sqls } from "sql-syntax";
 
@@ -89,6 +97,60 @@ export default function createOperationApiRouter(options: ApiRouterOptions) {
                 res.json(record);
             } catch (e) {
                 respondWithError("GET operation by ID", res, e);
+            }
+        }
+    );
+
+    // modify operation by ID
+    router.put(
+        "/:id",
+        requireObjectUpdatePermission(
+            authDecisionClient,
+            database,
+            "authObject/operation/update",
+            (req, res) => req.params.id,
+            "operation"
+        ),
+        async function (req, res) {
+            try {
+                const record = await updateTableRecord(
+                    database.getPool(),
+                    "operations",
+                    req.params.id,
+                    req.body,
+                    ["uri", "name", "description"]
+                );
+                res.json(record);
+            } catch (e) {
+                respondWithError("modify `operation`", res, e);
+            }
+        }
+    );
+
+    // delete by ID
+    router.delete(
+        "/:id",
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/operation/delete",
+            (req, res) => req.params.id,
+            "operation"
+        ),
+        async function (req, res) {
+            try {
+                await deleteTableRecord(
+                    database.getPool(),
+                    "operations",
+                    req.params.id
+                );
+                res.json(true);
+            } catch (e) {
+                respondWithError(
+                    `delete \`operation\` ${req.params.id}`,
+                    res,
+                    e
+                );
             }
         }
     );
