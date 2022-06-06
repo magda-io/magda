@@ -26,7 +26,30 @@ export default function createOperationApiRouter(options: ApiRouterOptions) {
 
     const router: express.Router = express.Router();
 
-    // get operation by URI
+    /**
+     * @apiGroup Auth Operations
+     * @api {get} /v0/auth/operations/byUri/* Get a operation record by URI
+     * @apiDescription Get a operation record by URI
+     * Required `authObject/operation/read` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} resUri the operation uri can be specified at the end of the URI path. e.g. `/v0/auth/operations/byUri/object/aspect/delete`
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
+     *       "uri": "object/aspect/delete",
+     *       "name": "Delete Aspect Definition",
+     *       "description": "test description",
+     *       "resource_id": "2c0981d2-71bf-4806-a590-d1c779dcad8b"
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/byUri/*",
         withAuthDecision(authDecisionClient, {
@@ -68,7 +91,30 @@ export default function createOperationApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // get operation by id
+    /**
+     * @apiGroup Auth Operations
+     * @api {get} /v0/auth/operations/:id Get an operation record by ID
+     * @apiDescription Get an operation record by ID
+     * Required `authObject/operation/read` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} id the operation id.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
+     *       "uri": "object/aspect/delete",
+     *       "name": "Delete Aspect Definition",
+     *       "description": "test description",
+     *       "resource_id": "2c0981d2-71bf-4806-a590-d1c779dcad8b"
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/:id",
         withAuthDecision(authDecisionClient, {
@@ -101,7 +147,37 @@ export default function createOperationApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // modify operation by ID
+    /**
+     * @apiGroup Auth Operations
+     * @api {put} /v0/auth/operations/:id Update a operation record
+     * @apiDescription Update a operation record
+     * Supply a JSON object that contains fields to be updated in body.
+     * You need have `authObject/operation/update` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} id id of the operation record
+     * @apiParamExample (Body) {json}:
+     *    {
+     *       "uri": "object/aspect/delete",
+     *       "name": "Delete Aspect Definition",
+     *       "description": "test description"
+     *    }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
+     *       "uri": "object/aspect/delete",
+     *       "name": "Delete Aspect Definition",
+     *       "description": "test description",
+     *       "resource_id": "2c0981d2-71bf-4806-a590-d1c779dcad8b"
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.put(
         "/:id",
         requireObjectUpdatePermission(
@@ -127,7 +203,29 @@ export default function createOperationApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // delete by ID
+    /**
+     * @apiGroup Auth Operations
+     * @api {delete} /v0/auth/operations/:id Delete an operation record
+     * @apiDescription Delete an operation record.
+     * When the operation is deleted, access will be removed from all existing permissions that are relevant to the operation.
+     *
+     * You need `authObject/operation/delete` permission in order to access this API.
+     *
+     * @apiParam (URL Path) {string} id id of the operation
+     *
+     * @apiSuccess [Response Body] {boolean} result Indicates whether the deletion action is actually performed or the record doesn't exist.
+     * @apiSuccessExample {json} 200
+     *    {
+     *        result: true
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.delete(
         "/:id",
         requireObjectPermission(
@@ -144,7 +242,7 @@ export default function createOperationApiRouter(options: ApiRouterOptions) {
                     "operations",
                     req.params.id
                 );
-                res.json(true);
+                res.json({ result: true });
             } catch (e) {
                 respondWithError(
                     `delete \`operation\` ${req.params.id}`,

@@ -29,7 +29,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     const router: express.Router = express.Router();
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Roles
      * @api {post} /v0/auth/users/:userId/roles Add Roles to a user
      * @apiDescription Returns a list of current role ids of the user.
      * You need have update permission to the user record in order to access this API.
@@ -65,7 +65,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Roles
      * @api {delete} /v0/auth/users/:userId/roles Remove a list roles from a user
      * @apiDescription Returns the JSON response indicates the operation has been done successfully or not
      * You need have update permission to the user record in order to access this API.
@@ -103,7 +103,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Roles
      * @api {get} /v0/auth/users/:userId/roles Get all roles of a user
      * @apiDescription Returns an array of roles. When no roles can be found, an empty array will be returned
      * You need have read permission to the user record in order to access this API.
@@ -144,7 +144,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Permissions
      * @api {get} /v0/auth/users/:userId/permissions Get all permissions of a user
      * @apiDescription Returns an array of permissions. When no permissions can be found, an empty array will be returned.
      * You need have read permission to the user record in order to access this API.
@@ -200,7 +200,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth API Keys
      * @api {get} /v0/auth/users/:userId/apiKeys Get all API keys of a user
      * @apiDescription Returns an array of api keys. When no api keys can be found, an empty array will be returned.
      * You need have read permission to the user record in order to access this API.
@@ -247,7 +247,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth API Keys
      * @api {get} /v0/auth/users/:userId/apiKeys/:apiKeyId Get an API key of a user by ID
      * @apiDescription Get an API key record of a user by ID by API key ID.
      * You need have read permission to the user record in order to access this API.
@@ -306,7 +306,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth API Keys
      * @api {post} /v0/auth/users/:userId/apiKeys Create a new API key for the user
      * @apiDescription Create a new API key for the specified user.
      * Optional supply a JSON object that contains `expiry_time` in body.
@@ -363,7 +363,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth API Keys
      * @api {put} /v0/auth/users/:userId/apiKeys/:apiKeyId Update an API Key of the user
      * @apiDescription Update an API Key of the user.
      * You need have update permission to the user record in order to access this API.
@@ -443,7 +443,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth API Keys
      * @api {delete} /v0/auth/users/:userId/apiKeys/:apiKeyId Delete an API Key of the user
      * @apiDescription Delete an API Key of the user
      * You need have update permission to the user record in order to access this API.
@@ -493,7 +493,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Users
      * @api {get} /v0/auth/users/whoami Get Current User Info (whoami)
      * @apiDescription Returns the user info of the current user. If the user has not logged in yet,
      * the user will be considered as an anonymous user.
@@ -534,10 +534,11 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     });
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Users
      * @api {get} /v0/auth/users/all Get all users
-     * @apiDescription Returns all users. To be deprecated.
-     * You should use `/v0/auth/users` or `/v0/auth/users/count` instead as they support pagination.
+     * @apiDescription Returns all users.
+     * @apiDeprecated Legacy API to be deprecated.
+     * You should use (#Auth_Users:GetV0AuthUsers) or (#Auth_Users:GetV0AuthUsersCount) instead as they support pagination.
      *
      * @apiSuccessExample {json} 200
      *    [{
@@ -588,7 +589,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Users
      * @api {post} /v0/auth/users Create a new user
      * @apiDescription Create a new user
      * Supply a JSON object that contains fields of the new user in body.
@@ -636,7 +637,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Users
      * @api {put} /v0/auth/users/:userId Update User By Id
      * @apiDescription Updates a user's info by Id.
      * Supply a JSON object that contains fields to be updated in body.
@@ -744,7 +745,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     }
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Users
      * @api {get} /v0/auth/users Get users
      * @apiDescription Returns a list users that meet query parameters and the current user is allowed to access.
      *
@@ -784,7 +785,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Users
      * @api {get} /v0/auth/users/count Get user records count
      * @apiDescription Returns the count of users that meet query parameters and the current user is allowed to access.
      * This API offers the similar functionality as `/v0/auth/users` API, except only return the records count number.
@@ -817,7 +818,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Users
      * @api {get} /v0/auth/users/:userId Get User By Id
      * @apiDescription Returns user by id.
      * Unlike `whoami` API endpoint, this API requires `authObject/user/read` permission.

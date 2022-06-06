@@ -89,7 +89,33 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         };
     }
 
-    // get records meet selection criteria
+    /**
+     * @apiGroup Auth Resources
+     * @api {get} /v0/auth/resources Get all matched resource records
+     * @apiDescription return a list matched resource records.
+     * Required `authObject/resource/read` permission to access this API.
+     *
+     * @apiParam (Query String) {string} [keyword] When specified, will return only permissions whose `name`, `description` or `uri` contains the supplied keyword.
+     * @apiParam (Query String) {string} [id] When specified, will return the records whose `id` matches the supplied value.
+     * @apiParam (Query String) {string} [uri] When specified, will return the records whose `uri` field matches the supplied value.
+     * @apiParam (Query String) {number} [offset] When specified, will return the records from specified offset in the result set.
+     * @apiParam (Query String) {number} [limit] This parameter no.of records to be returned.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        "id": "xxx-xxx-xxxx-xxxx-xx",
+     *        "uri": "object/record",
+     *        "name": "Records",
+     *        "description": "A generic concept represents all types of records. Any other derived record types (e.g. datasets) can be considered as generic records with certian aspect data attached. Grant permissions to this resources will allow a user to access any specialized type records (e.g. dataset)",
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/",
         withAuthDecision(authDecisionClient, {
@@ -98,7 +124,28 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         createFetchResourcesHandler(false, "Get resources")
     );
 
-    // get records count
+    /**
+     * @apiGroup Auth Resources
+     * @api {get} /v0/auth/resource/count Get the count of all matched resource records
+     * @apiDescription return the count number of all matched resource records.
+     * Required `authObject/resource/read` permission to access this API.
+     *
+     * @apiParam (Query String) {string} [keyword] When specified, will return only permissions whose `name`, `description` or `uri` contains the supplied keyword.
+     * @apiParam (Query String) {string} [id] When specified, will return the records whose `id` matches the supplied value.
+     * @apiParam (Query String) {string} [uri] When specified, will return the records whose `uri` field matches the supplied value.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *      "count" : 5
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/count",
         withAuthDecision(authDecisionClient, {
@@ -107,7 +154,37 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         createFetchResourcesHandler(true, "Get resources count")
     );
 
-    // create record
+    /**
+     * @apiGroup Auth Resources
+     * @api {post} /v0/auth/resources Create a new resource record.
+     * @apiDescription
+     * Create a new resource record.
+     * Returns the newly created resource record.
+     * Required `authObject/resource/create` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParamExample (Body) {json}:
+     *     {
+     *        "uri": "object/record",
+     *        "name": "Records",
+     *        "description": "test description"
+     *     }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
+     *       "uri": "object/record",
+     *       "name": "Records",
+     *       "description": "test description"
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.post(
         "/",
         requirePermission(
@@ -134,7 +211,36 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // modify record by ID
+    /**
+     * @apiGroup Auth Resources
+     * @api {put} /v0/auth/resources/:id Update a resource record
+     * @apiDescription Update a resource record
+     * Supply a JSON object that contains fields to be updated in body.
+     * You need have `authObject/resource/update` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} id id of the resource
+     * @apiParamExample (Body) {json}:
+     *     {
+     *        "uri": "object/record",
+     *        "name": "Records",
+     *        "description": "test description"
+     *    }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
+     *       "uri": "object/record",
+     *       "name": "Records",
+     *       "description": "test description"
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.put(
         "/:id",
         requireObjectUpdatePermission(
@@ -160,7 +266,30 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // delete by ID
+    /**
+     * @apiGroup Auth Resources
+     * @api {delete} /v0/auth/resources/:id Delete a resource record
+     * @apiDescription Delete a resource record.
+     * When the resource is deleted, any operations that are associated with this resource will be removed as well.
+     * However, if there is a permission associated with the resource that is to be deleted, a database error will be thrown.
+     *
+     * You need `authObject/resource/delete` permission in order to access this API.
+     *
+     * @apiParam (URL Path) {string} id id of the resource
+     *
+     * @apiSuccess [Response Body] {boolean} result Indicates whether the deletion action is actually performed or the record doesn't exist.
+     * @apiSuccessExample {json} 200
+     *    {
+     *        result: true
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.delete(
         "/:id",
         requireObjectPermission(
@@ -177,7 +306,7 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                     "resources",
                     req.params.id
                 );
-                res.json(true);
+                res.json({ result: true });
             } catch (e) {
                 respondWithError(
                     `delete \`resource\` ${req.params.id}`,
@@ -188,7 +317,37 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // create an operation for the resource
+    /**
+     * @apiGroup Auth Operations
+     * @api {post} /v0/auth/resources/:resId/operations Create an operation for a resource
+     * @apiDescription Create an new operation for a resource
+     * Returns the newly created operation record.
+     * Required `authObject/operation/create` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} resId id of the resource
+     * @apiParamExample (Body) {json}:
+     *     {
+     *        "uri": "object/aspect/delete",
+     *        "name": "Delete Aspect Definition",
+     *        "description": "test description"
+     *     }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
+     *       "uri": "object/aspect/delete",
+     *       "name": "Delete Aspect Definition",
+     *       "description": "test description",
+     *       "resource_id": "2c0981d2-71bf-4806-a590-d1c779dcad8b"
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.post(
         "/:resId/operations",
         requirePermission(
@@ -244,6 +403,9 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                         ).roundBracket()
                     );
                 }
+                if (req.query?.id) {
+                    conditions.push(sqls`"id" = ${req.query.id}`);
+                }
                 if (req.query?.uri) {
                     conditions.push(sqls`"uri" = ${req.query.uri}`);
                 }
@@ -277,7 +439,34 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         };
     }
 
-    // get operations of a resource
+    /**
+     * @apiGroup Auth Operations
+     * @api {get} /v0/auth/resources/:resId/operations Get operations of a resource that meet selection criteria
+     * @apiDescription return operation records of a role that meet selection criteria
+     * Required `authObject/resource/read` permission to access this API.
+     *
+     * @apiParam (Query String) {string} [keyword] When specified, will return only role records whose `name`, `description` or `uri` contains the supplied keyword.
+     * @apiParam (Query String) {string} [id] When specified, will return the records whose `id` matches the supplied value.
+     * @apiParam (Query String) {string} [uri] When specified, will return the records whose `uri` matches the supplied value.
+     * @apiParam (Query String) {number} [offset] When specified, will return the records from specified offset in the result set.
+     * @apiParam (Query String) {number} [limit] This parameter no.of records to be returned.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
+     *       "uri": "object/aspect/delete",
+     *       "name": "Delete Aspect Definition",
+     *       "description": "test description",
+     *       "resource_id": "2c0981d2-71bf-4806-a590-d1c779dcad8b"
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/:resId/operations",
         // when user has the permission to access the resource
@@ -296,7 +485,28 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         )
     );
 
-    // get operation count of a resource
+    /**
+     * @apiGroup Auth Operations
+     * @api {get} /v0/auth/resources/:resId/operations/count Get the count of all operations of a resource that meet selection criteria
+     * @apiDescription return the count of all operation records of a role that meet selection criteria
+     * Required `authObject/resource/read` permission to access this API.
+     *
+     * @apiParam (Query String) {string} [keyword] When specified, will return only role records whose `name`, `description` or `uri` contains the supplied keyword.
+     * @apiParam (Query String) {string} [id] When specified, will return the records whose `id` matches the supplied value.
+     * @apiParam (Query String) {string} [uri] When specified, will return the records whose `uri` matches the supplied value.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "count": 5
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/:resId/operations/count",
         // when user has the permission to access the resource
@@ -315,7 +525,29 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         )
     );
 
-    // get resource by URI
+    /**
+     * @apiGroup Auth Resources
+     * @api {get} /v0/auth/resources/byUri/* Get a resource record by URI
+     * @apiDescription Get a resource record by URI
+     * Required `authObject/resource/read` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} resUri the resource uri can be specified at the end of the URI path. e.g. `/v0/auth/resources/byUri/object/record`
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "id": "xxx-xxx-xxxx-xxxx-xx",
+     *        "uri": "object/record",
+     *        "name": "Records",
+     *        "description": "A generic concept represents all types of records. "
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/byUri/*",
         withAuthDecision(authDecisionClient, {
@@ -357,7 +589,29 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // get record by id
+    /**
+     * @apiGroup Auth Resources
+     * @api {get} /v0/auth/resources/:id Get a resource record by ID
+     * @apiDescription Get a resource record by ID
+     * Required `authObject/resource/read` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} id the resource id.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "id": "xxx-xxx-xxxx-xxxx-xx",
+     *        "uri": "object/record",
+     *        "name": "Records",
+     *        "description": "A generic concept represents all types of records. "
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/:id",
         withAuthDecision(authDecisionClient, {

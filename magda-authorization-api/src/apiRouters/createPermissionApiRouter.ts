@@ -31,7 +31,7 @@ export default function createPermissionApiRouter(options: ApiRouterOptions) {
     const router: express.Router = express.Router();
 
     /**
-     * @apiGroup Auth Permission
+     * @apiGroup Auth Permissions
      * @api {get} /v0/auth/permissions/:id Get permission by ID
      * @apiDescription return the permission record identified by the ID
      * Required admin access.
@@ -107,7 +107,7 @@ export default function createPermissionApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth Permission
+     * @apiGroup Auth Permissions
      * @api {post} /v0/auth/permissions Create a new permission record
      * @apiDescription Create a new permission
      * Returns the newly created permission record.
@@ -259,7 +259,7 @@ export default function createPermissionApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth Permission
+     * @apiGroup Auth Permissions
      * @api {put} /v0/auth/permissions/:permissionId Update a permission record
      * @apiDescription Update a permission record
      * Supply a JSON object that contains fields to be updated in body.
@@ -433,7 +433,7 @@ export default function createPermissionApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth Permission
+     * @apiGroup Auth Permissions
      * @api {delete} /v0/auth/permissions/:permissionId Delete a permission record
      * @apiDescription Delete a permission record.
      * If this permission has been assigned to any roles, an error will be thrown.

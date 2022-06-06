@@ -24,7 +24,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     const router: express.Router = express.Router();
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {get} /v0/auth/orgunits/:higherNodeId/topDownPathTo/:lowerNodeId Get get top down path between 2 nodes
      * @apiDescription Get all nodes on the top to down path between the `higherNode` to the `lowerNode`.
      * Sort from higher level nodes to lower level node.
@@ -75,7 +75,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {get} /v0/auth/orgunits/bylevel/:orgLevel List OrgUnits at certain org tree level
      * @apiDescription
      * List all OrgUnits at certain org tree level
@@ -149,7 +149,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {get} /v0/auth/orgunits Get orgunits by name
      * @apiDescription
      * Gets org units matching a name
@@ -216,7 +216,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {get} /v0/auth/orgunits/root Get root organisational unit
      * @apiDescription Gets the root organisation unit (top of the tree).
      *
@@ -250,7 +250,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {post} /v0/auth/orgunits/root Create root organisation
      * @apiDescription Creates the root organisation unit (top of the tree).
      *
@@ -287,7 +287,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {get} /v0/auth/orgunits/:nodeId Get details for a node
      * @apiDescription Gets the details of the node with this id.
      *
@@ -329,7 +329,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {put} /v0/auth/orgunits/:nodeId Update details for a node
      * @apiDescription Update the node with the specified id with supplied node data.
      *
@@ -388,7 +388,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {post} /v0/auth/orgunits/:parentNodeId/insert Create a new node under the parent node
      * @apiDescription Create a new node under the specified parent node
      *
@@ -472,7 +472,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {get} /v0/auth/orgunits/:nodeId/children/immediate Get immediate children for a node
      * @apiDescription Gets all the children immediately below the requested node. If the node doesn't exist, returns an empty list.
      *
@@ -518,7 +518,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {get} /v0/auth/orgunits/:nodeId/children/all Get all children for a node
      * @apiDescription Gets all the children below the requested node recursively. If node doesn't exist, returns an empty list.
      *
@@ -565,7 +565,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {delete} /v0/auth/orgunits/:nodeId/subtree Delete subtree
      * @apiDescription Deletes a node and all its children. Will delete the root node if that is the one specified in nodeId.
      *
@@ -600,7 +600,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {delete} /v0/auth/orgunits/:nodeId Delete an org unit node
      * @apiDescription Delete an org unit node. You can't delete a root node with this API.
      *
@@ -631,7 +631,7 @@ export default function createOrgUnitApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth OrgUnits
      * @api {put} /v0/auth/orgunits/:nodeId/move/:newParentId Move a sub tree to a new parennt
      * @apiDescription Move a sub tree to a new parennt.
      *

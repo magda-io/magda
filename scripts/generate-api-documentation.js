@@ -48,7 +48,7 @@ const output = `-o ${argv.output}`;
 const config = `-c ${argv.config}`;
 
 childProcess.execSync(
-    `apidoc ${input} -f ".*\.scala$" -f ".*\.ts$" -f ".*\.js$" ${output} ${config}`,
+    `apidoc --private true ${input} -f ".*\.scala$" -f ".*\.ts$" -f ".*\.js$" ${output} ${config}`,
     { stdio: "pipe" }
 );
 

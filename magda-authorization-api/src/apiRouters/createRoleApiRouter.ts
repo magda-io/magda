@@ -114,7 +114,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     }
 
     /**
-     * @apiGroup Auth Role
+     * @apiGroup Auth Permissions
      * @api {get} /v0/auth/roles/:roleId/permissions Get all matched permissions of a role
      * @apiDescription return a list matched permissions of a role.
      * Required `authObject/role/read` permission to access this API.
@@ -167,7 +167,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth Role
+     * @apiGroup Auth Permissions
      * @api {get} /v0/auth/roles/:roleId/permissions/count Get the count of all matched permissions of a role
      * @apiDescription return the count number of all matched permissions of a role.
      * Required `authObject/role/read` permission to access this API.
@@ -207,7 +207,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth Role
+     * @apiGroup Auth Permissions
      * @api {post} /v0/auth/roles/:roleId/permissions Create a new permission and add to the role
      * @apiDescription
      * Create a new permission and add to the role specified by roleId.
@@ -371,7 +371,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth Role
+     * @apiGroup Auth Permissions
      * @api {put} /v0/auth/roles/:roleId/permissions/:permissionId Update a role's permission record
      * @apiDescription Update a role's permission record
      * Supply a JSON object that contains fields to be updated in body.
@@ -577,7 +577,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Permissions
      * @api {delete} /v0/auth/roles/:roleId/permissions/:permissionId Delete a permission from a role
      * @apiDescription Delete a permission from a role.
      * if the permission has not assigned to other roles, the permission will be deleted as well.
@@ -700,7 +700,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     }
 
     /**
-     * @apiGroup Auth Role
+     * @apiGroup Auth Roles
      * @api {get} /v0/auth/roles Get role records meet selection criteria
      * @apiDescription return role records meet selection criteria
      * Required `authObject/role/read` permission to access this API.
@@ -742,7 +742,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth Role
+     * @apiGroup Auth Roles
      * @api {get} /v0/auth/roles/count Get the count of the role records meet selection criteria
      * @apiDescription return the count of the role records meet selection criteria
      * Required `authObject/role/read` permission to access this API.
@@ -775,7 +775,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth Role
+     * @apiGroup Auth Roles
      * @api {post} /v0/auth/roles Create a role record
      * @apiDescription
      * Create a role record
@@ -844,7 +844,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth Role
+     * @apiGroup Auth Roles
      * @api {put} /v0/auth/roles/:roleId Update a role record
      * @apiDescription Update a role's permission record
      * Supply a JSON object that contains fields to be updated in body.
@@ -936,9 +936,8 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // get role by id
     /**
-     * @apiGroup Auth Role
+     * @apiGroup Auth Roles
      * @api {get} /v0/auth/roles/:roleId Get a role record by ID
      * @apiDescription
      * Get a role record by ID
@@ -999,7 +998,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
+     * @apiGroup Auth Roles
      * @api {delete} /v0/auth/roles/:roleId Delete a role record
      * @apiDescription Delete a role record and any permission (not owned by other roles) belongs to it.
      * You need `authObject/role/delete` permission in order to access this API.
