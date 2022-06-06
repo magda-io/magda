@@ -300,6 +300,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         "/public/permissions",
         createPermissionApiRouter({
             database,
+            jwtSecret: options.jwtSecret,
             authDecisionClient: options.authDecisionClient
         })
     );
