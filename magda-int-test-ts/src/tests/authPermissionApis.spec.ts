@@ -112,4 +112,204 @@ describe("Permission related API integration tests", () => {
             expect(permissions[0].id).to.equal(permission.id);
         });
     });
+
+    describe("Test {delete} /v0/auth/roles/:roleId/permissions/:permissionId Remove a permission from a role", function () {
+        const serviceRunner = new ServiceRunner();
+        serviceRunner.enableAuthService = true;
+        serviceRunner.enableRegistryApi = false;
+        serviceRunner.jwtSecret = jwtSecret;
+        serviceRunner.authApiDebugMode = false;
+
+        before(async function (this) {
+            this.timeout(ENV_SETUP_TIME_OUT);
+            await serviceRunner.create();
+        });
+
+        after(async function (this) {
+            this.timeout(ENV_SETUP_TIME_OUT);
+            await serviceRunner.destroy();
+        });
+
+        it("should delete the permission record as well when it's not assigned to other roles by default", async () => {
+            const testRole = await authApiClient.createRole(
+                "test role",
+                "test role description"
+            );
+            const operation = await authApiClient.getOperationByUri(
+                "object/record/read"
+            );
+            const permission = await authApiClient.createPermission({
+                name: "test permission",
+                description: "test permission",
+                operationIds: [operation.id],
+                resource_id: operation.resource_id,
+                user_ownership_constraint: false,
+                org_unit_ownership_constraint: false,
+                pre_authorised_constraint: false
+            });
+
+            let res = await fetch(
+                `http://localhost:6104/v0/public/roles/${testRole.id}/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "post" })
+            );
+
+            expect(res.ok).to.be.true;
+            const data = await res.json();
+            expect(data.result).to.be.true;
+
+            // check permission record
+            res = await fetch(
+                `http://localhost:6104/v0/public/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "get" })
+            );
+            // permission record should exist
+            expect(res.ok).to.be.true;
+            expect((await res.json()).id).to.equal(permission.id);
+
+            res = await fetch(
+                `http://localhost:6104/v0/public/roles/${testRole.id}/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "delete" })
+            );
+
+            expect(res.ok).to.be.true;
+            expect((await res.json()).result).to.be.true;
+
+            // check permission record again
+            res = await fetch(
+                `http://localhost:6104/v0/public/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "get" })
+            );
+            // permission record should not exist
+            expect(res.status).to.equal(404);
+        });
+
+        it("should not delete the permission record when it's assigned to another roles by default", async () => {
+            const testRole = await authApiClient.createRole(
+                "test role",
+                "test role description"
+            );
+
+            const testRole2 = await authApiClient.createRole(
+                "test role2",
+                "test role2 description"
+            );
+
+            const operation = await authApiClient.getOperationByUri(
+                "object/record/read"
+            );
+
+            const permission = await authApiClient.createPermission({
+                name: "test permission",
+                description: "test permission",
+                operationIds: [operation.id],
+                resource_id: operation.resource_id,
+                user_ownership_constraint: false,
+                org_unit_ownership_constraint: false,
+                pre_authorised_constraint: false
+            });
+
+            // assign to test role
+            let res = await fetch(
+                `http://localhost:6104/v0/public/roles/${testRole.id}/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "post" })
+            );
+
+            expect(res.ok).to.be.true;
+            expect((await res.json()).result).to.be.true;
+
+            // assign to test role 2
+            res = await fetch(
+                `http://localhost:6104/v0/public/roles/${testRole2.id}/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "post" })
+            );
+            expect(res.ok).to.be.true;
+            expect((await res.json()).result).to.be.true;
+
+            // check permission record
+            res = await fetch(
+                `http://localhost:6104/v0/public/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "get" })
+            );
+            // permission record should exist
+            expect(res.ok).to.be.true;
+            expect((await res.json()).id).to.equal(permission.id);
+
+            res = await fetch(
+                `http://localhost:6104/v0/public/roles/${testRole.id}/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "delete" })
+            );
+
+            expect(res.ok).to.be.true;
+            expect((await res.json()).result).to.be.true;
+
+            // check permission record again
+            res = await fetch(
+                `http://localhost:6104/v0/public/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "get" })
+            );
+            // permission record should exist
+            expect(res.ok).to.be.true;
+            expect((await res.json()).id).to.equal(permission.id);
+
+            // permission still assigned to test role 2
+            let permissions = await authApiClient.getRolePermissions(
+                testRole2.id
+            );
+            expect(permissions.length).to.equal(1);
+            expect(permissions[0].id).to.equal(permission.id);
+        });
+
+        it("should not delete the permission record when it's not assigned to other roles but deletePermission = false", async () => {
+            const testRole = await authApiClient.createRole(
+                "test role",
+                "test role description"
+            );
+            const operation = await authApiClient.getOperationByUri(
+                "object/record/read"
+            );
+            const permission = await authApiClient.createPermission({
+                name: "test permission",
+                description: "test permission",
+                operationIds: [operation.id],
+                resource_id: operation.resource_id,
+                user_ownership_constraint: false,
+                org_unit_ownership_constraint: false,
+                pre_authorised_constraint: false
+            });
+
+            let res = await fetch(
+                `http://localhost:6104/v0/public/roles/${testRole.id}/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "post" })
+            );
+
+            expect(res.ok).to.be.true;
+            expect((await res.json()).result).to.be.true;
+
+            // check permission record
+            res = await fetch(
+                `http://localhost:6104/v0/public/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "get" })
+            );
+            // permission record should exist
+            expect(res.ok).to.be.true;
+            expect((await res.json()).id).to.equal(permission.id);
+
+            res = await fetch(
+                `http://localhost:6104/v0/public/roles/${testRole.id}/permissions/${permission.id}?deletePermission=false`,
+                authApiClient.getMergeRequestInitOption({ method: "delete" })
+            );
+
+            expect(res.ok).to.be.true;
+            expect((await res.json()).result).to.be.true;
+
+            // check permission record again
+            res = await fetch(
+                `http://localhost:6104/v0/public/permissions/${permission.id}`,
+                authApiClient.getMergeRequestInitOption({ method: "get" })
+            );
+            // permission record should still exist (as deletePermission=false)
+            expect(res.ok).to.be.true;
+            expect((await res.json()).id).to.equal(permission.id);
+        });
+    });
 });

@@ -96,7 +96,8 @@ export default function createPermissionApiRouter(options: ApiRouterOptions) {
                 );
                 if (!records?.length) {
                     throw new ServerError(
-                        `Cannot locate permission by id: ${permissionId}`
+                        `Cannot locate permission by id: ${permissionId}`,
+                        404
                     );
                 }
                 res.json(records[0]);
