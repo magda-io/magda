@@ -445,6 +445,20 @@ export default class ApiClient {
         return await this.processJsonResponse<PermissionRecord>(res);
     }
 
+    async createPermission(
+        permissionData: CreateRolePermissionInputData
+    ): Promise<PermissionRecord> {
+        const uri = urijs(`${this.baseUrl}public/permissions`);
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption({
+                method: "post",
+                body: JSON.stringify(permissionData)
+            })
+        );
+        return await this.processJsonResponse<PermissionRecord>(res);
+    }
+
     async getOperationByUri(opUri: string) {
         const uri = urijs(`${this.baseUrl}public/operations/byUri/${opUri}`);
         const res = await fetch(
