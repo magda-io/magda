@@ -798,7 +798,11 @@ export default class Database {
         );
     }
 
-    async deleteRolePermission(roleId?: string, permissionId?: string) {
+    async deleteRolePermission(
+        roleId?: string,
+        permissionId?: string,
+        deletePermission: boolean = true
+    ) {
         if (!isUuid(roleId)) {
             throw new ServerError("role id should be a valid uuid.", 400);
         }
@@ -832,7 +836,7 @@ export default class Database {
         await pool.query(
             ...sqls`DELETE FROM role_permissions WHERE role_id = ${roleId} AND permission_id = ${permissionId}`.toQuery()
         );
-        if (!result?.rows?.length) {
+        if (!result?.rows?.length && deletePermission) {
             // the permission has not assigned to other roles
             // we will delete the permission record as well
             const client = await pool.connect();

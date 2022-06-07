@@ -208,6 +208,104 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth Permissions
+     * @api {post} /v0/auth/roles/:roleId/permissions/:permissionId Assign a permission to a role
+     * @apiDescription
+     * Assign an existing permission to the role specified by roleId.
+     * Required `authObject/role/update` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParam (URL Path) {string} permissionId id of the permission to be added to the role
+     *
+     * @apiSuccess (Response Body) {boolean} result Indicates whether the action is actually performed or the permission had assigned to the role already.
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "result": true
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post(
+        "/:roleId/permissions/:permissionId",
+        getUserId(options.jwtSecret),
+        // we consider this operation as an operation of updating the role
+        // thus, require permission to perform `authObject/role/update`
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/role/update",
+            (req, res) => req.params.roleId,
+            "role"
+        ),
+        async function (req, res) {
+            try {
+                const pool = database.getPool();
+                const roleId = req.params.roleId;
+                const permissionId = req.params.permissionId;
+
+                if (!roleId) {
+                    throw new Error(
+                        "Failed to add permission to the role: invalid empty roleId."
+                    );
+                }
+
+                if (!permissionId) {
+                    throw new Error(
+                        "Failed to add permission to the role: invalid empty permissionId."
+                    );
+                }
+
+                const permission = await getTableRecord(
+                    pool,
+                    "permissions",
+                    permissionId
+                );
+                if (!permission) {
+                    throw new ServerError(
+                        `Failed to add permission to the role: cannot locate permission by supplied permissionId: ${permissionId}`,
+                        400
+                    );
+                }
+
+                const role = await getTableRecord(pool, "roles", roleId);
+                if (!role) {
+                    throw new ServerError(
+                        `Failed to add permission to the role: cannot locate role by supplied roleId: ${roleId}`,
+                        400
+                    );
+                }
+
+                const result = await pool.query(
+                    ...sqls`SELECT 1 FROM role_permissions WHERE role_id = ${roleId} AND permission_id = ${permissionId} LIMIT 1`.toQuery()
+                );
+                if (result?.rows?.length) {
+                    // the permission assignment already exist
+                    // respond now
+                    res.json({ result: false });
+                    return;
+                }
+
+                await pool.query(
+                    ...sqls`INSERT INTO role_permissions (role_id, permission_id) VALUES (${roleId}, ${permissionId})`.toQuery()
+                );
+                res.json({ result: true });
+            } catch (e) {
+                respondWithError(
+                    `Assign a permission ${req?.params?.permissionId} to the role ` +
+                        req?.params?.roleId,
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth Permissions
      * @api {post} /v0/auth/roles/:roleId/permissions Create a new permission and add to the role
      * @apiDescription
      * Create a new permission and add to the role specified by roleId.
@@ -578,15 +676,18 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth Permissions
-     * @api {delete} /v0/auth/roles/:roleId/permissions/:permissionId Delete a permission from a role
-     * @apiDescription Delete a permission from a role.
-     * if the permission has not assigned to other roles, the permission will be deleted as well.
+     * @api {delete} /v0/auth/roles/:roleId/permissions/:permissionId Remove a permission from a role
+     * @apiDescription Remove a permission assignment from a role.
+     * if the permission has not assigned to any other roles, the permission will be deleted as well unless the `deletePermission` query string parameter is set to `false`.
      * You need `authObject/role/update` permission in order to access this API.
      *
      * @apiParam (URL Path) {string} roleId id of the role
      * @apiParam (URL Path) {string} permissionId id of the permission record
+     * @apiParam (QueryString) {boolean} [deletePermission] Default to `true`.
+     *  Indicate whether the API should attempt to delete the permission record as well after remove the permission assignment.
+     *  Please note: when `deletePermission` = true, the API will ony delete the permission record when it has not assigned to any other roles.
      *
-     * @apiSuccess [Response Body] {boolean} result Indicates whether the deletion action is actually performed or the permission record doesn't exist.
+     * @apiSuccess (Response Body) {boolean} result Indicates whether the deletion action is actually performed or the permission record doesn't exist.
      * @apiSuccessExample {json} 200
      *    {
      *        result: true
@@ -610,9 +711,17 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         ),
         async function (req, res) {
             try {
+                const deletePermission =
+                    typeof req?.query?.deletePermission === "undefined"
+                        ? true
+                        : req.query.deletePermission === "true"
+                        ? true
+                        : false;
+
                 await database.deleteRolePermission(
                     req?.params?.roleId,
-                    req?.params?.permissionId
+                    req?.params?.permissionId,
+                    deletePermission
                 );
                 res.json({ result: true });
             } catch (e) {
@@ -1005,7 +1114,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *
      * @apiParam (URL Path) {string} roleId id of the role
      *
-     * @apiSuccess [Response Body] {boolean} result Indicates whether the deletion action is actually performed or the permission record doesn't exist.
+     * @apiSuccess (Response Body) {boolean} result Indicates whether the deletion action is actually performed or the permission record doesn't exist.
      * @apiSuccessExample {json} 200
      *    {
      *        "result": true
