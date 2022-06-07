@@ -16,6 +16,7 @@ import createRoleApiRouter from "./apiRouters/createRoleApiRouter";
 import createResourceApiRouter from "./apiRouters/createResourceApiRouter";
 import createOperationApiRouter from "./apiRouters/createOperationApiRouter";
 import createPermissionApiRouter from "./apiRouters/createPermissionApiRouter";
+import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -52,18 +53,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
             options.jwtSecret,
             async (userId: string) => {
                 try {
+                    const msg403 =
+                        "Only admin users are authorised to access this API: " +
+                        req.url;
                     const user = (await database.getUser(userId)).valueOrThrow(
-                        new AuthError(
-                            `Cannot locate user record by id: ${userId}`,
-                            401
-                        )
+                        new AuthError(`Not authorized`, 401)
                     );
-                    if (!user.isAdmin)
-                        throw new AuthError(
-                            "Only admin users are authorised to access this API: " +
-                                req.url,
-                            403
-                        );
                     (req as any).user = {
                         // the default session data type is UserToken
                         // But any auth plugin provider could choose to customise the session by adding more fields
@@ -71,12 +66,30 @@ export default function createApiRouter(options: ApiRouterOptions) {
                         ...(req.user ? req.user : {}),
                         ...user
                     };
-                    next();
+                    // check the legacy `isAdmin` role
+                    if (user.isAdmin) {
+                        next();
+                        return;
+                    }
+                    const roles = await database.getUserRoles(userId);
+                    if (!roles?.length) {
+                        throw new AuthError(msg403, 403);
+                    }
+                    if (
+                        roles.findIndex(
+                            (role) => role.id === ADMIN_USERS_ROLE_ID
+                        ) !== -1
+                    ) {
+                        next();
+                        return;
+                    } else {
+                        throw new AuthError(msg403, 403);
+                    }
                 } catch (e) {
                     console.warn(e);
                     if (e instanceof AuthError)
                         res.status(e.statusCode).send(e.message);
-                    else res.status(401).send("Not authorized");
+                    else res.status(500).send(`${e}`);
                 }
             }
         );

@@ -5,7 +5,7 @@ import AuthDecisionQueryClient, {
     AuthDecisionReqConfig
 } from "../opa/AuthDecisionQueryClient";
 import AuthDecision, { isTrueEquivalent } from "../opa/AuthDecision";
-import { DEFAULT_ADMIN_USER_ID } from "./constants";
+import { DEFAULT_ADMIN_USER_ID, ADMIN_USERS_ROLE_ID } from "./constants";
 import ServerError from "../ServerError";
 
 /**
@@ -51,12 +51,45 @@ export const getUser = (
 export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => {
     const getUserInstance = getUser(baseAuthUrl, jwtSecret);
     return (req: Request, res: Response, next: () => void) => {
-        getUserInstance(req, res, () => {
-            if (req.user && (req.user as any).isAdmin) {
-                next();
-            } else {
-                console.warn("Rejecting because user is not an admin");
-                res.status(401).send("Not authorized.");
+        getUserInstance(req, res, async () => {
+            try {
+                // check the legacy `isAdmin` role
+                if (req?.user?.isAdmin) {
+                    next();
+                    return;
+                } else if (req?.user?.id) {
+                    const msg403 =
+                        "Only admin users are authorised to access this API: " +
+                        req.url;
+                    const apiClient = new ApiClient(
+                        baseAuthUrl,
+                        jwtSecret,
+                        DEFAULT_ADMIN_USER_ID
+                    );
+                    const roles = await apiClient.getUserRoles(req.user.id);
+                    if (!roles?.length) {
+                        throw new ServerError(msg403, 403);
+                    }
+                    if (
+                        roles.findIndex(
+                            (role) => role.id === ADMIN_USERS_ROLE_ID
+                        ) !== -1
+                    ) {
+                        next();
+                        return;
+                    } else {
+                        throw new ServerError(msg403, 403);
+                    }
+                } else {
+                    throw new ServerError("Not authorized", 401);
+                }
+            } catch (e) {
+                if (e instanceof ServerError) {
+                    console.warn(`Rejecting by mustBeAdmin: ${e}`);
+                    res.status(e.statusCode).send(e.message);
+                } else {
+                    res.status(500).send(`${e}`);
+                }
             }
         });
     };
