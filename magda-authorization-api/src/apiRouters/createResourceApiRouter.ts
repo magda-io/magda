@@ -361,12 +361,22 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
         ),
         async function (req, res) {
             try {
+                const pool = database.getPool();
+                const resId = req.params.resId;
+                const resource = await getTableRecord(pool, "resources", resId);
+                if (!resource) {
+                    throw new ServerError(
+                        "Failed to create operation for resource : cannot locate the resource record specified by id: " +
+                            resId,
+                        400
+                    );
+                }
                 const record = await createTableRecord(
-                    database.getPool(),
-                    "operation",
+                    pool,
+                    "operations",
                     {
                         ...req.body,
-                        resource_id: req.params.resId
+                        resource_id: resId
                     },
                     ["uri", "name", "description", "resource_id"]
                 );
