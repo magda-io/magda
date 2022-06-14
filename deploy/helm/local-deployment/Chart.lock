@@ -110,5 +110,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 1.1.0
-digest: sha256:53349cd09f11015b4272b727567378c5381225c228069f9837e1372f162e1dbd
-generated: "2022-04-30T01:42:52.492972+10:00"
+digest: sha256:38095596b4b8427323159d4564f06a3f991483acd3d1fab062d3260bc0933ef2
+generated: "2022-06-14T22:29:43.727544+10:00"
