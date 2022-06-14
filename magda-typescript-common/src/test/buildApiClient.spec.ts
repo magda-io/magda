@@ -7,6 +7,7 @@ import addJwtSecretFromEnvVar from "../session/addJwtSecretFromEnvVar";
 import mockAuthApiHost from "./mockAuthApiHost";
 import ApiClient from "../authorization-api/ApiClient";
 import mockUserDataStore from "./mockUserDataStore";
+import urijs from "urijs";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -44,44 +45,50 @@ describe("Test ApiClient.ts", function () {
         argv.userId
     );
 
-    before(function () {
+    beforeEach(function () {
         sinon.stub(console, "error").callsFake(() => {});
         sinon.stub(console, "warn").callsFake(() => {});
         mockHost.start();
     });
 
-    after(function () {
+    afterEach(function () {
         (console.error as any).restore();
         (console.warn as any).restore();
         mockHost.stop();
     });
 
-    it("`lookupUser` should return 'Unauthorised' error if called without sepecifying user ID", async function () {
+    it("`lookupUser` should throw 'Unauthorised' error if called without specifying source or sourceId", async function () {
         const api = new ApiClient(argv.authorizationApi);
-        return expect(
-            api.lookupUser("ckan", "testuser")
-        ).to.eventually.rejectedWith("Unauthorised");
+        try {
+            await api.lookupUser(undefined, "testuser");
+            expect.fail("expect an error thrown");
+        } catch (e) {}
+        try {
+            await api.lookupUser("testsource", undefined);
+            expect.fail("expect an error thrown");
+        } catch (e) {}
     });
 
-    it("`lookupUser` should return 'Can only be accessed by Admin users' error if called as a standard user", async function () {
-        const api = new ApiClient(
-            argv.authorizationApi,
-            argv.jwtSecret,
-            mockUserData[1].id
-        );
-        return expect(
-            api.lookupUser("ckan", "testuser")
-        ).to.eventually.rejectedWith("Can only be accessed by Admin users");
-    });
+    it("`lookupUser` should request /public/users API with correct query parameters", async function () {
+        const api = new ApiClient(argv.authorizationApi);
+        let hasCalled = false;
+        mockHost.scope
+            .get("/public/users")
+            .query(true)
+            .reply(function (this: any, uri, requestBody) {
+                const parsedUri = urijs(uri);
+                const queries = parsedUri.search(true);
+                expect(queries).to.have.property("source", "source1");
+                expect(queries).to.have.property("sourceId", "testuser");
+                expect(queries).to.have.property("limit", "1");
+                hasCalled = true;
+                return [200, JSON.stringify([{ id: "xxx1" }])];
+            });
 
-    it("`lookupUser` should return the correct test user record if called as admin user", async function () {
-        const api = new ApiClient(
-            argv.authorizationApi,
-            argv.jwtSecret,
-            argv.userId
-        );
-        const data = (await api.lookupUser("ckan", "testuser")).valueOr(null);
-        expect(data).to.deep.equal(mockUserData[1]);
+        const user = await api.lookupUser("source1", "testuser");
+
+        expect(user.valueOrThrow()).to.have.property("id", "xxx1");
+        expect(hasCalled).to.be.true;
     });
 
     it("`getUser` should return 'Unauthorised' error if called without sepecifying user ID", async function () {

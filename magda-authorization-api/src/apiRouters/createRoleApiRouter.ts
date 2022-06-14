@@ -15,7 +15,7 @@ import {
     getTableRecord,
     updateTableRecord
 } from "magda-typescript-common/src/SQLUtils";
-import { uniq } from "lodash";
+import uniq from "lodash/uniq";
 import ServerError from "magda-typescript-common/src/ServerError";
 
 export interface ApiRouterOptions {
@@ -114,10 +114,19 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     }
 
     /**
-     * @apiGroup Auth
-     * @api {get} /v0/auth/roles/:roleId/permissions Get all permissions of a role
-     * @apiDescription return a list permissions of a role.
-     * Required admin access.
+     * @apiGroup Auth Permissions
+     * @api {get} /v0/auth/roles/:roleId/permissions Get all matched permissions of a role
+     * @apiDescription return a list matched permissions of a role.
+     * Required `authObject/role/read` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParam (Query String) {string} [keyword] When specified, will return only permissions whose `name` or `description` contains the supplied keyword.
+     * @apiParam (Query String) {string} [id] When specified, will return the permission whose `id` matches the supplied value.
+     * @apiParam (Query String) {string} [owner_id] When specified, will return the permission whose `owner_id` matches the supplied value.
+     * @apiParam (Query String) {string} [create_by] When specified, will return the permission whose `create_by` matches the supplied value.
+     * @apiParam (Query String) {string} [edit_by] When specified, will return the permission whose `edit_by` matches the supplied value.
+     * @apiParam (Query String) {number} [offset] When specified, will return the records from specified offset in the result set.
+     * @apiParam (Query String) {number} [limit] This parameter no.of records to be returned.
      *
      * @apiSuccessExample {json} 200
      *    [{
@@ -157,7 +166,30 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         createFetchPermissionsHandler(false, "Get role's permission records")
     );
 
-    // get role permissions count
+    /**
+     * @apiGroup Auth Permissions
+     * @api {get} /v0/auth/roles/:roleId/permissions/count Get the count of all matched permissions of a role
+     * @apiDescription return the count number of all matched permissions of a role.
+     * Required `authObject/role/read` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParam (Query String) {string} [keyword] When specified, will return only permissions whose `name` or `description` contains the supplied keyword.
+     * @apiParam (Query String) {string} [id] When specified, will return the permission whose `id` matches the supplied value.
+     * @apiParam (Query String) {string} [owner_id] When specified, will return the permission whose `owner_id` matches the supplied value.
+     * @apiParam (Query String) {string} [create_by] When specified, will return the permission whose `create_by` matches the supplied value.
+     * @apiParam (Query String) {string} [edit_by] When specified, will return the permission whose `edit_by` matches the supplied value.
+     * @apiSuccessExample {json} 200
+     *    {
+     *      "count" : 5
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/:roleId/permissions/count",
         // users have permission to a role will have access to read all permissions it contains
@@ -175,13 +207,112 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth
-     * @api {delete} /v0/auth/roles/:roleId/permissions Create a new permission and add to the role
+     * @apiGroup Auth Permissions
+     * @api {post} /v0/auth/roles/:roleId/permissions/:permissionId Assign a permission to a role
+     * @apiDescription
+     * Assign an existing permission to the role specified by roleId.
+     * Required `authObject/role/update` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParam (URL Path) {string} permissionId id of the permission to be added to the role
+     *
+     * @apiSuccess (Response Body) {boolean} result Indicates whether the action is actually performed or the permission had assigned to the role already.
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "result": true
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post(
+        "/:roleId/permissions/:permissionId",
+        getUserId(options.jwtSecret),
+        // we consider this operation as an operation of updating the role
+        // thus, require permission to perform `authObject/role/update`
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/role/update",
+            (req, res) => req.params.roleId,
+            "role"
+        ),
+        async function (req, res) {
+            try {
+                const pool = database.getPool();
+                const roleId = req.params.roleId;
+                const permissionId = req.params.permissionId;
+
+                if (!roleId) {
+                    throw new Error(
+                        "Failed to add permission to the role: invalid empty roleId."
+                    );
+                }
+
+                if (!permissionId) {
+                    throw new Error(
+                        "Failed to add permission to the role: invalid empty permissionId."
+                    );
+                }
+
+                const permission = await getTableRecord(
+                    pool,
+                    "permissions",
+                    permissionId
+                );
+                if (!permission) {
+                    throw new ServerError(
+                        `Failed to add permission to the role: cannot locate permission by supplied permissionId: ${permissionId}`,
+                        400
+                    );
+                }
+
+                const role = await getTableRecord(pool, "roles", roleId);
+                if (!role) {
+                    throw new ServerError(
+                        `Failed to add permission to the role: cannot locate role by supplied roleId: ${roleId}`,
+                        400
+                    );
+                }
+
+                const result = await pool.query(
+                    ...sqls`SELECT 1 FROM role_permissions WHERE role_id = ${roleId} AND permission_id = ${permissionId} LIMIT 1`.toQuery()
+                );
+                if (result?.rows?.length) {
+                    // the permission assignment already exist
+                    // respond now
+                    res.json({ result: false });
+                    return;
+                }
+
+                await pool.query(
+                    ...sqls`INSERT INTO role_permissions (role_id, permission_id) VALUES (${roleId}, ${permissionId})`.toQuery()
+                );
+                res.json({ result: true });
+            } catch (e) {
+                respondWithError(
+                    `Assign a permission ${req?.params?.permissionId} to the role ` +
+                        req?.params?.roleId,
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth Permissions
+     * @api {post} /v0/auth/roles/:roleId/permissions Create a new permission and add to the role
      * @apiDescription
      * Create a new permission and add to the role specified by roleId.
      * Returns the newly created permission record.
+     * Required `authObject/role/update` permission to access this API.
      *
-     * @apiParam {string} roleId id of user
+     * @apiParam (URL Path) {string} roleId id of the role
      * @apiParamExample (Body) {json}:
      *     {
      *       "name": "a test permission",
@@ -337,7 +468,49 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // update a permission
+    /**
+     * @apiGroup Auth Permissions
+     * @api {put} /v0/auth/roles/:roleId/permissions/:permissionId Update a role's permission record
+     * @apiDescription Update a role's permission record
+     * Supply a JSON object that contains fields to be updated in body.
+     * You need have update permission to the role record (`authObject/role/update`) in order to access this API.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParam (URL Path) {string} permissionId id of the permission record
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       "name": "xxxxx",
+     *       "description": "xxsdsd",
+     *       "resource_id": "1c0889aa-6d4f-4492-9a6f-1ecc4765e8d6",
+     *       "user_ownership_constraint": true,
+     *       "org_unit_ownership_constraint": false,
+     *       "pre_authorised_constraint": false,
+     *       "operationIds": ["8d4b99f3-c0c0-46e6-9832-330d14abad00", "7c2013bd-eee6-40f1-83ef-920600d21db3"]
+     *     }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *      id: "c85a9735-7d85-4d50-a151-c79dec644ba0",
+     *      "name": "xxxxx",
+     *      "description": "sdfsdfds sdfsdf sdfs",
+     *      "resource_id": "1c0889aa-6d4f-4492-9a6f-1ecc4765e8d6",
+     *      "user_ownership_constraint": true,
+     *      "org_unit_ownership_constraint": false,
+     *      "pre_authorised_constraint": false,
+     *      "owner_id": "78b37c9b-a59a-4da1-9b84-ac48dff43a1a",
+     *      "create_by": "78b37c9b-a59a-4da1-9b84-ac48dff43a1a",
+     *      "create_time": "2022-06-03 02:28:34.794547+00",
+     *      "edit_by": "78b37c9b-a59a-4da1-9b84-ac48dff43a1a",
+     *      "edit_time": "2022-06-03 02:28:34.794547+00"
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.put(
         "/:roleId/permissions/:permissionId",
         getUserId(options.jwtSecret),
@@ -383,7 +556,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
 
                 if (!rolePermissionRecords?.length) {
                     throw new Error(
-                        "Failed to update permission: specified role doesn't contain the sepcified permission"
+                        "Failed to update permission: specified role doesn't contain the specified permission"
                     );
                 }
 
@@ -394,7 +567,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                 );
                 if (!permission) {
                     throw new Error(
-                        "Failed to update permission: cannot locate the permission record sepcified by permissionId: " +
+                        "Failed to update permission: cannot locate the permission record specified by permissionId: " +
                             permissionId
                     );
                 }
@@ -501,8 +674,32 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    //delete a permission from the role
-    // if the permission has not assigned to other roles, the permission will be deleted as well
+    /**
+     * @apiGroup Auth Permissions
+     * @api {delete} /v0/auth/roles/:roleId/permissions/:permissionId Remove a permission from a role
+     * @apiDescription Remove a permission assignment from a role.
+     * if the permission has not assigned to any other roles, the permission will be deleted as well unless the `deletePermission` query string parameter is set to `false`.
+     * You need `authObject/role/update` permission in order to access this API.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParam (URL Path) {string} permissionId id of the permission record
+     * @apiParam (QueryString) {boolean} [deletePermission] Default to `true`.
+     *  Indicate whether the API should attempt to delete the permission record as well after remove the permission assignment.
+     *  Please note: when `deletePermission` = true, the API will ony delete the permission record when it has not assigned to any other roles.
+     *
+     * @apiSuccess (Response Body) {boolean} result Indicates whether the deletion action is actually performed or the permission record doesn't exist.
+     * @apiSuccessExample {json} 200
+     *    {
+     *        result: true
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.delete(
         "/:roleId/permissions/:permissionId",
         requireObjectPermission(
@@ -514,9 +711,17 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         ),
         async function (req, res) {
             try {
+                const deletePermission =
+                    typeof req?.query?.deletePermission === "undefined"
+                        ? true
+                        : req.query.deletePermission === "true"
+                        ? true
+                        : false;
+
                 await database.deleteRolePermission(
                     req?.params?.roleId,
-                    req?.params?.permissionId
+                    req?.params?.permissionId,
+                    deletePermission
                 );
                 res.json({ result: true });
             } catch (e) {
@@ -603,7 +808,40 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         };
     }
 
-    // get role records meet selection criteria
+    /**
+     * @apiGroup Auth Roles
+     * @api {get} /v0/auth/roles Get role records meet selection criteria
+     * @apiDescription return role records meet selection criteria
+     * Required `authObject/role/read` permission to access this API.
+     *
+     * @apiParam (Query String) {string} [keyword] When specified, will return only role records whose `name` or `description` contains the supplied keyword.
+     * @apiParam (Query String) {string} [id] When specified, will return the records whose `id` matches the supplied value.
+     * @apiParam (Query String) {string} [owner_id] When specified, will return the records whose `owner_id` matches the supplied value.
+     * @apiParam (Query String) {string} [create_by] When specified, will return the records whose `create_by` matches the supplied value.
+     * @apiParam (Query String) {string} [edit_by] When specified, will return the records whose `edit_by` matches the supplied value.
+     * @apiParam (Query String) {string} [user_id] When specified, will return the records whose `user_id` matches the supplied value.
+     * @apiParam (Query String) {number} [offset] When specified, will return the records from specified offset in the result set.
+     * @apiParam (Query String) {number} [limit] This parameter no.of records to be returned.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        id: "xxx-xxx-xxxx-xxxx-xx",
+     *        name: "test role",
+     *        description: "this is a dummy role",
+     *        owner_id: "xxx-xxx-xxxx-xx",
+     *        create_by: "xxx-xxx-xxxx-xx",
+     *        create_time: "2019-04-04 04:20:54.376504+00",
+     *        edit_by: "xxx-xxx-xxxx-xx",
+     *        edit_time: "2019-04-04 04:20:54.376504+00"
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/",
         withAuthDecision(authDecisionClient, {
@@ -612,7 +850,31 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         createFetchRolesHandler(false, "GET roles")
     );
 
-    // get records count
+    /**
+     * @apiGroup Auth Roles
+     * @api {get} /v0/auth/roles/count Get the count of the role records meet selection criteria
+     * @apiDescription return the count of the role records meet selection criteria
+     * Required `authObject/role/read` permission to access this API.
+     *
+     * @apiParam (Query String) {string} [keyword] When specified, will return only role records whose `name` or `description` contains the supplied keyword.
+     * @apiParam (Query String) {string} [id] When specified, will return the records whose `id` matches the supplied value.
+     * @apiParam (Query String) {string} [owner_id] When specified, will return the records whose `owner_id` matches the supplied value.
+     * @apiParam (Query String) {string} [create_by] When specified, will return the records whose `create_by` matches the supplied value.
+     * @apiParam (Query String) {string} [edit_by] When specified, will return the records whose `edit_by` matches the supplied value.
+     * @apiParam (Query String) {string} [user_id] When specified, will return the records whose `user_id` matches the supplied value.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "count": 5
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/count",
         withAuthDecision(authDecisionClient, {
@@ -621,7 +883,38 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         createFetchRolesHandler(true, "GET role records count")
     );
 
-    // create role record
+    /**
+     * @apiGroup Auth Roles
+     * @api {post} /v0/auth/roles Create a role record
+     * @apiDescription
+     * Create a role record
+     * Required `authObject/role/create` permission to access this API.
+     *
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       "name": "a test role",
+     *       "description": "a test role"
+     *     }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
+     *       "name": "a test role",
+     *       "description": "a test role",
+     *       "owner_id": "xxx-xxx-xxxx-xx",
+     *       "create_by": "xxx-xxx-xxxx-xx",
+     *       "create_time": "2019-04-04 04:20:54.376504+00",
+     *       "edit_by": "xxx-xxx-xxxx-xx",
+     *       "edit_time": "2019-04-04 04:20:54.376504+00"
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.post(
         "/",
         getUserId(options.jwtSecret),
@@ -659,7 +952,39 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // update role record
+    /**
+     * @apiGroup Auth Roles
+     * @api {put} /v0/auth/roles/:roleId Update a role record
+     * @apiDescription Update a role's permission record
+     * Supply a JSON object that contains fields to be updated in body.
+     * You need have `authObject/role/update` permission in order to access this API.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       "name": "a test role",
+     *       "description": "a test role"
+     *     }
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
+     *       "name": "a test role",
+     *       "description": "a test role",
+     *       "owner_id": "xxx-xxx-xxxx-xx",
+     *       "create_by": "xxx-xxx-xxxx-xx",
+     *       "create_time": "2019-04-04 04:20:54.376504+00",
+     *       "edit_by": "xxx-xxx-xxxx-xx",
+     *       "edit_time": "2019-04-04 04:20:54.376504+00"
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.put(
         "/:roleId",
         getUserId(options.jwtSecret),
@@ -720,7 +1045,34 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // get role by id
+    /**
+     * @apiGroup Auth Roles
+     * @api {get} /v0/auth/roles/:roleId Get a role record by ID
+     * @apiDescription
+     * Get a role record by ID
+     * Required `authObject/role/read` permission to access this API.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
+     *       "name": "a test role",
+     *       "description": "a test role",
+     *       "owner_id": "xxx-xxx-xxxx-xx",
+     *       "create_by": "xxx-xxx-xxxx-xx",
+     *       "create_time": "2019-04-04 04:20:54.376504+00",
+     *       "edit_by": "xxx-xxx-xxxx-xx",
+     *       "edit_time": "2019-04-04 04:20:54.376504+00"
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.get(
         "/:roleId",
         withAuthDecision(authDecisionClient, {
@@ -754,7 +1106,27 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    // delete role record ( and any permission (not owned by other roles) belongs to it)
+    /**
+     * @apiGroup Auth Roles
+     * @api {delete} /v0/auth/roles/:roleId Delete a role record
+     * @apiDescription Delete a role record and any permission (not owned by other roles) belongs to it.
+     * You need `authObject/role/delete` permission in order to access this API.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     *
+     * @apiSuccess (Response Body) {boolean} result Indicates whether the deletion action is actually performed or the permission record doesn't exist.
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "result": true
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
     router.delete(
         "/:roleId",
         requireObjectPermission(

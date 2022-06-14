@@ -33,8 +33,9 @@
 - Added APIs for managing API keys
 - #3345 Add adhoc dataset indexing APIs, secure with new auth model and expose via Gateway with other indexer APIs
 - "My dataset section": Add Dataset deletion function & performance improvement
-- Fixed: helm chart verison update script incorrectly skip updating dependencies version when `versionUpdateExclude` config in package.json is empty
+- Fixed: helm chart version update script incorrectly skip updating dependencies version when `versionUpdateExclude` config in package.json is empty
 - Fixed: incorrect scss-compiler-config data might be generated if non-default docker image config is used.
+- #3360: Recategorize auth object related API docs & more auth object related APIs for convenient of future UI development.
 
 ## 1.3.0
 

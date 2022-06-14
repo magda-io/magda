@@ -112,12 +112,30 @@ export default class ApiClient {
         source: string,
         sourceId: string
     ): Promise<Maybe<RequiredKeys<User, "id">>> {
-        return this.handleGetResult(
-            fetch(
-                `${this.baseUrl}private/users/lookup?source=${source}&sourceId=${sourceId}`,
-                this.getMergeRequestInitOption()
-            )
+        if (!source) {
+            throw new ServerError("source cannot be empty!", 400);
+        }
+        if (!sourceId) {
+            throw new ServerError("sourceId cannot be empty!", 400);
+        }
+        const uri = urijs(`${this.baseUrl}public/users`).search({
+            source,
+            sourceId,
+            limit: 1
+        });
+
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption()
         );
+        if (!res.ok) {
+            throw new ServerError(await res.text(), res.status);
+        }
+        const data = await res.json();
+        if (!data?.length) {
+            return Maybe.nothing<RequiredKeys<User, "id">>();
+        }
+        return Maybe.just<RequiredKeys<User, "id">>(data[0]);
     }
 
     /**
@@ -435,6 +453,20 @@ export default class ApiClient {
         const uri = urijs(`${this.baseUrl}public/roles`)
             .segmentCoded(roleId)
             .segmentCoded("permissions");
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption({
+                method: "post",
+                body: JSON.stringify(permissionData)
+            })
+        );
+        return await this.processJsonResponse<PermissionRecord>(res);
+    }
+
+    async createPermission(
+        permissionData: CreateRolePermissionInputData
+    ): Promise<PermissionRecord> {
+        const uri = urijs(`${this.baseUrl}public/permissions`);
         const res = await fetch(
             uri.toString(),
             this.getMergeRequestInitOption({

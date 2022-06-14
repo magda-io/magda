@@ -798,7 +798,11 @@ export default class Database {
         );
     }
 
-    async deleteRolePermission(roleId?: string, permissionId?: string) {
+    async deleteRolePermission(
+        roleId?: string,
+        permissionId?: string,
+        deletePermission: boolean = true
+    ) {
         if (!isUuid(roleId)) {
             throw new ServerError("role id should be a valid uuid.", 400);
         }
@@ -832,7 +836,7 @@ export default class Database {
         await pool.query(
             ...sqls`DELETE FROM role_permissions WHERE role_id = ${roleId} AND permission_id = ${permissionId}`.toQuery()
         );
-        if (!result?.rows?.length) {
+        if (!result?.rows?.length && deletePermission) {
             // the permission has not assigned to other roles
             // we will delete the permission record as well
             const client = await pool.connect();
@@ -853,6 +857,50 @@ export default class Database {
             } finally {
                 client.release();
             }
+        }
+    }
+
+    async deletePermission(permissionId?: string): Promise<boolean> {
+        if (!isUuid(permissionId)) {
+            throw new ServerError("permission id should be a valid uuid.", 400);
+        }
+
+        const pool = this.pool;
+        const permission = await getTableRecord(
+            pool,
+            "permissions",
+            permissionId
+        );
+        if (!permission) {
+            return false;
+        }
+        const result = await pool.query(
+            ...sqls`SELECT 1 FROM role_permissions WHERE permission_id = ${permissionId}`.toQuery()
+        );
+        if (result?.rows?.length) {
+            throw new ServerError(
+                `Cannot delete permission: ${permissionId} before remove it from all assigned roles.`,
+                400
+            );
+        }
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+
+            await client.query(
+                ...sqls`DELETE FROM permission_operations WHERE permission_id = ${permissionId}`.toQuery()
+            );
+            await client.query(
+                ...sqls`DELETE FROM permissions WHERE id = ${permissionId}`.toQuery()
+            );
+
+            await client.query("COMMIT");
+            return true;
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
         }
     }
 
