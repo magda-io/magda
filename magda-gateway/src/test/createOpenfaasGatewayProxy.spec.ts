@@ -154,14 +154,14 @@ describe("Test createOpenfaasGatewayProxy", () => {
         expect(res.body.requestBody).to.deep.equal({ data: randomData });
     });
 
-    it("should return 401 when a non-admin user to access openfaas gateway and `allowAdminOnly` = true", async () => {
+    it("should return 403 when a non-admin user to access openfaas gateway and `allowAdminOnly` = true", async () => {
         const testReq = createTestRequest(true, nonAdminUserId);
         const randomPath = "/" + randomstring.generate();
 
-        await testReq.get(randomPath).expect(401);
+        await testReq.get(randomPath).expect(403);
 
         const randomData = randomstring.generate();
-        await testReq.post(randomPath).send({ data: randomData }).expect(401);
+        await testReq.post(randomPath).send({ data: randomData }).expect(403);
     });
 
     it("should return 401 when unauthenticated user to access openfaas gateway and `allowAdminOnly` = true", async () => {
