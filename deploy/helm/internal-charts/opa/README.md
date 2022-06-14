@@ -1,6 +1,6 @@
 # opa
 
-![Version: 0.0.60-dt.1](https://img.shields.io/badge/Version-0.0.60--dt.1-informational?style=flat-square)
+![Version: 0.0.60-dt.2](https://img.shields.io/badge/Version-0.0.60--dt.2-informational?style=flat-square)
 
 Magda's Access Control Policy Engine ([Open Policy Agent](https://www.openpolicyagent.org/))
 
