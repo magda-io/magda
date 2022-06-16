@@ -170,3 +170,30 @@ export interface AccessControlMetaData {
         preAuthorisedPermissionIds?: string[];
     };
 }
+
+export interface CreateAccessGroupRequestBodyType {
+    name: string;
+    resourceUri: string;
+    description?: string;
+    keywords?: string[];
+    operationUris: string[];
+    ownerId?: string;
+    orgUnitId?: string;
+}
+
+export interface AccessGroup {
+    id: string;
+    name: string;
+    resourceUri: string;
+    operationUris: string[];
+    description?: string;
+    keywords?: string[];
+    permissionId: string;
+    roleId: string;
+    ownerId?: string;
+    orgUnit?: string;
+    createTime?: Date;
+    createBy?: string;
+    editTime?: Date;
+    editBy?: string;
+}

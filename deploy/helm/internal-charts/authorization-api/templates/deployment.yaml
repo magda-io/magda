@@ -31,6 +31,7 @@ spec:
             "--listenPort", "80",
             "--dbHost", "authorization-db",
             "--dbPort", "5432",
+            "--registryApiUrl", "http://registry-api/v0",
             "--opaUrl", "http://localhost:8181/",
 {{- if .Values.debug }}
             "--debug", "true",

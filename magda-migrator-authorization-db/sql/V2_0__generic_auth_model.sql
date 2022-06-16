@@ -155,6 +155,16 @@ VALUES
 ('object/event/update', 'Update Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event')),
 ('object/event/delete', 'Delete Event Record', '', (SELECT id FROM resources WHERE uri = 'object/event'));
 
+-- Add resource, operation for access `accessGroups` 
+INSERT INTO "public"."resources" 
+    ("uri", "name", "description")
+VALUES 
+('object/accessGroup', 'Access Group', 'Access Group Records');
+
+INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
+VALUES 
+('object/accessGroup/create','Create Access Group', '', (SELECT id FROM resources WHERE uri = 'object/accessGroup'));
+
 -- Add resource, operation for access `storage bucket` 
 INSERT INTO "public"."resources" 
     ("uri", "name", "description")

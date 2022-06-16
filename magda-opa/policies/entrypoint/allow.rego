@@ -61,6 +61,12 @@ allow {
 }
 
 allow {
+    ## delegate access group related decision to access group rules
+    startswith(input.operationUri, "object/accessGroup/")
+    data.object.accessGroup.allow
+}
+
+allow {
     ## delegate storage bucket related decision to storage bucket rules
     startswith(input.operationUri, "storage/bucket/")
     data.storage.bucket.allow

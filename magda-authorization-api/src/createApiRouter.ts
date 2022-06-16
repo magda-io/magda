@@ -16,7 +16,9 @@ import createRoleApiRouter from "./apiRouters/createRoleApiRouter";
 import createResourceApiRouter from "./apiRouters/createResourceApiRouter";
 import createOperationApiRouter from "./apiRouters/createOperationApiRouter";
 import createPermissionApiRouter from "./apiRouters/createPermissionApiRouter";
+import createAccessGroupApiRouter from "./apiRouters/createAccessGroupApiRouter";
 import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -25,6 +27,7 @@ export interface ApiRouterOptions {
     jwtSecret: string;
     tenantId: number;
     failedApiKeyAuthBackOffSeconds: number;
+    registryClient: AuthorizedRegistryClient;
 }
 
 /**
@@ -390,6 +393,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
             database,
             jwtSecret: options.jwtSecret,
             authDecisionClient: options.authDecisionClient
+        })
+    );
+
+    router.use(
+        "/public/accessGroups",
+        createAccessGroupApiRouter({
+            database,
+            jwtSecret: options.jwtSecret,
+            authDecisionClient: options.authDecisionClient,
+            registryClient: options.registryClient
         })
     );
 

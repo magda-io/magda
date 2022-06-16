@@ -5,7 +5,9 @@ import {
     Permission,
     APIKeyRecord,
     UserRecord,
-    CreateUserData
+    CreateUserData,
+    ResourceRecord,
+    OperationRecord
 } from "magda-typescript-common/src/authorization-api/model";
 import { Maybe } from "tsmonad";
 import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
@@ -977,5 +979,37 @@ export default class Database {
         } finally {
             client.release();
         }
+    }
+
+    async getResourceByUri(
+        uri: string,
+        client: pg.Client | pg.PoolClient = null
+    ) {
+        if (!uri) {
+            throw new ServerError("uri cannot be empty!", 400);
+        }
+        const result = await (client ? client : this.pool).query(
+            ...sqls`SELECT * FROM resources WHERE uri = ${uri} LIMIT 1`.toQuery()
+        );
+        if (!result?.rows?.length) {
+            return null;
+        }
+        return result.rows[0] as ResourceRecord;
+    }
+
+    async getOperationByUri(
+        uri: string,
+        client: pg.Client | pg.PoolClient = null
+    ) {
+        if (!uri) {
+            throw new ServerError("uri cannot be empty!", 400);
+        }
+        const result = await (client ? client : this.pool).query(
+            ...sqls`SELECT * FROM operations WHERE uri = ${uri} LIMIT 1`.toQuery()
+        );
+        if (!result?.rows?.length) {
+            return null;
+        }
+        return result.rows[0] as OperationRecord;
     }
 }

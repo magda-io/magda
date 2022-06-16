@@ -207,6 +207,29 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             .catch(toServerError("resumeHook"));
     }
 
+    creatRecord(
+        record: Record,
+        tenantId: number = this.tenantId
+    ): Promise<Record | Error> {
+        const operation = () =>
+            this.recordsApi.create(tenantId, record, this.jwt);
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to create registry record with ID "${record.id}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("createRecord"));
+    }
+
     putRecord(
         record: Record,
         tenantId: number = this.tenantId

@@ -7,6 +7,9 @@ import createOpaRouter from "./createOpaRouter";
 import Database from "./Database";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import AuthorizedRegistryClient, {
+    AuthorizedRegistryOptions
+} from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import SQLSyntax from "sql-syntax";
 
 const argv = addJwtSecretFromEnvVar(
@@ -55,6 +58,19 @@ const argv = addJwtSecretFromEnvVar(
             type: "number",
             default: 5
         })
+        .option("registryApiUrl", {
+            describe: "The access endpoint URL of the Registry API",
+            type: "string",
+            default: "http://localhost:6101/v0"
+        })
+        .option("userId", {
+            describe:
+                "The user id to use when making authenticated requests to the registry",
+            type: "string",
+            demand: true,
+            default:
+                process.env.USER_ID || process.env.npm_package_config_userId
+        })
         .option("tenantId", {
             describe: "The tenant id for intra-network communication",
             type: "number",
@@ -86,6 +102,16 @@ console.log("Created Auth Decision Query Client: ");
 console.log(`Endpint: ${authDecisionQueryEndpoint}`);
 console.log(`SkipAuth: ${skipAuth}`);
 
+const registryOptions: AuthorizedRegistryOptions = {
+    baseUrl: argv.registryApiUrl,
+    jwtSecret: argv.jwtSecret as string,
+    userId: argv.userId,
+    tenantId: argv.tenantId,
+    maxRetries: 0
+};
+
+const registryClient = new AuthorizedRegistryClient(registryOptions);
+
 if (argv.debug === true) {
     SQLSyntax.isDebugMode = true;
     console.log("Debug mode has been turned on.");
@@ -99,7 +125,8 @@ app.use(
         database,
         tenantId: argv.tenantId,
         authDecisionClient: authDecisionClient,
-        failedApiKeyAuthBackOffSeconds: argv.failedApiKeyAuthBackOffSeconds
+        failedApiKeyAuthBackOffSeconds: argv.failedApiKeyAuthBackOffSeconds,
+        registryClient
     })
 );
 

@@ -95,6 +95,13 @@ export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => {
     };
 };
 
+export type AuthDecisionReqConfigOrConfigFuncParam =
+    | AuthDecisionReqConfig
+    | ((
+          req: Request,
+          res: Response
+      ) => AuthDecisionReqConfig | Promise<AuthDecisionReqConfig>);
+
 /**
  * Make auth decision based on auth decision request config.
  * Depends on the config provided, either partial eval (conditional decision on a set of records/objects)
@@ -102,21 +109,26 @@ export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => {
  *
  * @export
  * @param {AuthDecisionQueryClient} authDecisionClient
- * @param {AuthDecisionReqConfig} config
+ * @param {AuthDecisionReqConfigOrConfigFuncParam} configOrConfigFunc
  * @return {*}
  */
 export function withAuthDecision(
     authDecisionClient: AuthDecisionQueryClient,
-    config: AuthDecisionReqConfig
+    configOrConfigFunc: AuthDecisionReqConfigOrConfigFuncParam
 ) {
     return async (req: Request, res: Response, next: () => void) => {
         try {
+            const config =
+                typeof configOrConfigFunc === "function"
+                    ? await configOrConfigFunc(req, res)
+                    : configOrConfigFunc;
             const jwtToken = req.get("X-Magda-Session");
             const authDecision = await authDecisionClient.getAuthDecision(
                 config,
                 jwtToken
             );
             res.locals.authDecision = authDecision;
+            res.locals.authDecisionConfig = config;
             next();
         } catch (e) {
             console.error(`withAuthDecision middleware error: ${e}`);
@@ -138,29 +150,33 @@ export function withAuthDecision(
  *
  * @export
  * @param {AuthDecisionQueryClient} authDecisionClient
- * @param {AuthDecisionReqConfig} config
+ * @param {AuthDecisionReqConfigOrConfigFuncParam} configOrConfigFunc
  * @param {boolean} [requiredDecision=true]
  * @return {*}
  */
 export function requireUnconditionalAuthDecision(
     authDecisionClient: AuthDecisionQueryClient,
-    config: AuthDecisionReqConfig,
+    configOrConfigFunc: AuthDecisionReqConfigOrConfigFuncParam,
     requiredDecision: boolean = true
 ) {
     return (req: Request, res: Response, next: () => void) => {
-        withAuthDecision(authDecisionClient, config)(req, res, () => {
-            const authDecision = res.locals.authDecision as AuthDecision;
-            if (
-                authDecision?.hasResidualRules === false &&
-                isTrueEquivalent(authDecision?.result) == requiredDecision
-            ) {
-                return next();
-            } else {
-                res.status(403).send(
-                    `you are not permitted to perform \`${config.operationUri}\` on required resources.`
-                );
+        withAuthDecision(authDecisionClient, configOrConfigFunc)(
+            req,
+            res,
+            () => {
+                const authDecision = res.locals.authDecision as AuthDecision;
+                if (
+                    authDecision?.hasResidualRules === false &&
+                    isTrueEquivalent(authDecision?.result) == requiredDecision
+                ) {
+                    return next();
+                } else {
+                    res.status(403).send(
+                        `you are not permitted to perform \`${res?.locals?.authDecisionConfig?.operationUri}\` on required resources.`
+                    );
+                }
             }
-        });
+        );
     };
 }
 

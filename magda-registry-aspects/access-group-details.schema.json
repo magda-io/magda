@@ -1,0 +1,84 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Access Group Details Aspect",
+    "description": "The aspect contains detail information of an access-group record. A access group can be used to grant users access to resources across orgUnit structure.",
+    "type": "object",
+    "properties": {
+        "name": {
+            "title": "Name",
+            "description": "A name given to the access group",
+            "type": "string"
+        },
+        "resourceUri": {
+            "title": "Resource URI",
+            "description": "One access group can only grant access to the same type of resources. The Resource URI specifies the type of resources that the access group manages. At this moment, only registry records `object/record` is supported.",
+            "type": "string",
+            "enum": ["object/record"]
+        },
+        "description": {
+            "title": "Description",
+            "description": "The free text description for the access group",
+            "type": "string"
+        },
+        "keywords": {
+            "title": "Keywords",
+            "description": "Tags (or keywords) help users discover the access-group",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
+        },
+        "operationUris": {
+            "title": "Operation URIs",
+            "description": "A list of operations that the access group allows enrolled users to perform on included resources.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
+        },
+        "permissionId": {
+            "title": "Access Group Permission ID",
+            "description": "The ID of the permission record that defines the access to be granted to all users to be added to this access group. The permission record must be a `pre-authorised` type permission record.",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "roleId": {
+            "title": "Access Group Role ID",
+            "description": "The ID of the role record that is auto-created with the access-group creation. This role will be used to grant the access group permission (specified by `permissionId`) to all users who are added to this access group.",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "createTime": {
+            "title": "Creation time",
+            "description": "the date and time when the record was created",
+            "type": "string",
+            "format": "date-time"
+        },
+        "createBy": {
+            "title": "Create By",
+            "description": "The ID of the user who created the access-group",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "editTime": {
+            "title": "Edit time",
+            "description": "the date and time when the record was last updated",
+            "type": "string",
+            "format": "date-time"
+        },
+        "editBy": {
+            "title": "Edit By",
+            "description": "The ID of the last user who updated the access-group",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        }
+    },
+    "required": ["name", "resourceUri", "permissionId", "roleId"],
+    "additionalProperties": false
+}
