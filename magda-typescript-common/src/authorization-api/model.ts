@@ -181,6 +181,15 @@ export interface CreateAccessGroupRequestBodyType {
     orgUnitId?: string;
 }
 
+export interface UpdateAccessGroupRequestBodyType {
+    name?: string;
+    description?: string;
+    keywords?: string[];
+    operationUris?: string[];
+    ownerId?: string;
+    orgUnitId?: string;
+}
+
 export interface AccessGroup {
     id: string;
     name: string;

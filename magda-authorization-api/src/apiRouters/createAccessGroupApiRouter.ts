@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import Database from "../Database";
 import respondWithError from "../respondWithError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
@@ -23,12 +23,20 @@ import ServerError from "magda-typescript-common/src/ServerError";
 import { sqls, SQLSyntax } from "sql-syntax";
 import {
     CreateAccessGroupRequestBodyType,
+    UpdateAccessGroupRequestBodyType,
     PermissionRecord
 } from "magda-typescript-common/src/authorization-api/model";
-import uniq from "lodash/uniq";
 import isUuid from "magda-typescript-common/src/util/isUuid";
 import { v4 as uuidV4 } from "uuid";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
+import isArray from "lodash/isArray";
+import uniq from "lodash/uniq";
+
+type JsonPatch = {
+    op: string;
+    path: string;
+    value?: any;
+};
 
 export interface ApiRouterOptions {
     database: Database;
@@ -241,77 +249,21 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 try {
                     await client.query("BEGIN");
 
-                    const resource = await database.getResourceByUri(
-                        agData.resourceUri,
+                    const permissionRecord = await database.createPermission(
+                        {
+                            name: "auto-created access group permission",
+                            description:
+                                "auto-created access group permission for access group " +
+                                recordId,
+                            resourceUri: agData.resourceUri,
+                            operationUris: agData.operationUris,
+                            userOwnershipConstraint: false,
+                            orgUnitOwnershipConstraint: false,
+                            preAuthorisedConstraint: true,
+                            createBy: userId ? userId : null,
+                            ownerId: userId ? userId : null
+                        },
                         client
-                    );
-
-                    if (!resource) {
-                        throw new ServerError(
-                            `resource uri ${agData.resourceUri} doesn't exist`,
-                            400
-                        );
-                    }
-
-                    const result = await pool.query(
-                        ...sqls`SELECT id
-                        FROM operations 
-                        WHERE uri IN (${SQLSyntax.csv(
-                            ...agData.operationUris.map((item) => sqls`${item}`)
-                        )}) AND resource_id = ${resource.id}`.toQuery()
-                    );
-
-                    if (result?.rows?.length !== agData.operationUris.length) {
-                        throw new ServerError(
-                            `Not all provided operation uris are valid and belong to the resource ${resource.uri}`,
-                            400
-                        );
-                    }
-
-                    const operationIds = result.rows;
-
-                    const permissionData = {
-                        name: "auto-created access group permission",
-                        description:
-                            "auto-created access group permission for access group " +
-                            recordId,
-                        resource_id: resource.id,
-                        user_ownership_constraint: false,
-                        org_unit_ownership_constraint: false,
-                        pre_authorised_constraint: true
-                    } as PermissionRecord;
-
-                    if (userId) {
-                        permissionData["create_by"] = userId;
-                        permissionData["owner_id"] = userId;
-                        permissionData["edit_by"] = userId;
-                    }
-
-                    const permissionRecord = await createTableRecord(
-                        client,
-                        "permissions",
-                        permissionData as any,
-                        [
-                            "name",
-                            "resource_id",
-                            "user_ownership_constraint",
-                            "org_unit_ownership_constraint",
-                            "pre_authorised_constraint",
-                            "description",
-                            "create_by",
-                            "owner_id",
-                            "edit_by"
-                        ]
-                    );
-
-                    const values = (operationIds as string[]).map(
-                        (id) => sqls`(${permissionRecord.id},${id})`
-                    );
-
-                    await client.query(
-                        ...sqls`INSERT INTO permission_operations 
-                    (permission_id, operation_id) VALUES 
-                    ${SQLSyntax.csv(...values)}`.toQuery()
                     );
 
                     const roleData = {
@@ -359,7 +311,9 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 }
                 res.json({
                     ...agRecord.aspects["access-group-details"],
-                    id: recordId
+                    id: recordId,
+                    ownerId: agData.ownerId,
+                    orgUnitId: agData.orgUnitId
                 });
             } catch (e) {
                 respondWithError("Create Access Group", res, e);
@@ -367,28 +321,84 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
         }
     );
 
+    async function patchAccessGroup(
+        id: string,
+        recordJsonPatches: JsonPatch[]
+    ) {
+        const resultOrError = await registryClient.patchRecord(
+            id,
+            recordJsonPatches
+        );
+        if (resultOrError instanceof Error) {
+            throw resultOrError;
+        }
+        const recordOrError = await registryClient.getRecord(
+            id,
+            ["access-group-details"],
+            ["access-control"],
+            false
+        );
+        if (recordOrError instanceof Error) {
+            throw recordOrError;
+        }
+        return {
+            ...(recordOrError?.aspects?.["access-group-details"]
+                ? recordOrError.aspects["access-group-details"]
+                : {}),
+            ownerId: recordOrError?.aspects?.["access-control"]?.ownerId
+                ? recordOrError.aspects["access-control"].ownerId
+                : null,
+            orgUnitId: recordOrError?.aspects?.["access-control"]?.orgUnitId
+                ? recordOrError.aspects["access-control"].orgUnitId
+                : null,
+            id
+        };
+    }
+
     /**
      * @apiGroup Auth Access Groups
      * @api {put} /v0/auth/accessGroups/:id Update an access group
-     * @apiDescription Update a access group
+     * @apiDescription Update an access group
      * Supply a JSON object that contains fields to be updated in body.
      * You need have `authObject/operation/update` permission to access this API.
+     * Please note: you can't update the `resourceUri` field of an access group.
+     * If you have to change the resource type, you should delete the access group and create a new one.
      *
-     * @apiParam (URL Path) {string} id id of the operation record
+     * @apiParam (URL Path) {string} id id of the access group
+     * @apiParam (Request Body) {string} [name] the name given to the access group
+     * @apiParam (Request Body) {string} [description] The free text description for the access group
+     * @apiParam (Request Body) {string[]} [keywords] Tags (or keywords) help users discover the access-group
+     * @apiParam (Request Body) {string} [operationUris] A list of operations that the access group allows enrolled users to perform on included resources.
+     * @apiParam (Request Body) {string | null} [ownerId] The user ID of the access group owner. If not specified, the request user (if available) will be the owner.
+     * If a null value is supplied, the owner of the access group will be set to null.
+     * @apiParam (Request Body) {string | null} [orgUnitId] The ID of the orgUnit that the access group belongs to. If not specified, the request user's orgUnit (if available) will be used.
+     * If a null value is supplied, the orgUnit of the access group will be set to null.
      * @apiParamExample (Body) {json}:
-     *    {
-     *       "uri": "object/aspect/delete",
-     *       "name": "Delete Aspect Definition",
-     *       "description": "test description"
-     *    }
+     *     {
+     *       "name": "a test access group 2",
+     *       "description": "a test access group",
+     *       "keywords": ["keyword 1", "keyword2"],
+     *       "operationUris": ["object/record/read"],
+     *       "ownerId": "3535fdad-1804-4614-a9ce-ce196e880238",
+     *       "orgUnitId": null
+     *     }
      *
      * @apiSuccessExample {json} 200
      *    {
      *       "id": "e30135df-523f-46d8-99f6-2450fd8d6a37",
-     *       "uri": "object/aspect/delete",
-     *       "name": "Delete Aspect Definition",
-     *       "description": "test description",
-     *       "resource_id": "2c0981d2-71bf-4806-a590-d1c779dcad8b"
+     *       "name": "a test access group 2",
+     *       "description": "a test access group",
+     *       "resourceUri": "object/record",
+     *       "operationUris": ["object/record/read"],
+     *       "keywords": ["keyword 1", "keyword2"],
+     *       "permissionId": "2b117a5f-dadb-4130-bf44-b72ee67d009b",
+     *       "roleId": "5b616fa0-a123-4e9c-b197-65b3db8522fa",
+     *       "ownerId": "3535fdad-1804-4614-a9ce-ce196e880238",
+     *       "orgUnitId": null,
+     *       "createBy": "3535fdad-1804-4614-a9ce-ce196e880238",
+     *       "editTime": "2022-03-28T10:18:10.479Z",
+     *       "editBy": "3535fdad-1804-4614-a9ce-ce196e880238",
+     *       "editTime": "2022-03-28T10:18:10.479Z"
      *    }
      *
      * @apiErrorExample {json} 401/404/500
@@ -400,25 +410,161 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:id",
-        requireObjectUpdatePermission(
+        requireUnconditionalAuthDecision(
             authDecisionClient,
-            database,
-            "authObject/operation/update",
-            (req, res) => req.params.id,
-            "operation"
-        ),
-        async function (req, res) {
-            try {
-                const record = await updateTableRecord(
-                    database.getPool(),
-                    "operations",
-                    req.params.id,
-                    req.body,
-                    ["uri", "name", "description"]
+            async (req: Request, res: Response) => {
+                const id = `${req.params.id}`.trim();
+                if (!id) {
+                    throw new ServerError(
+                        "Cannot locate valid ID from url path",
+                        400
+                    );
+                }
+                const recordOrError = await registryClient.getRecord(
+                    id,
+                    ["access-group-details"],
+                    ["access-control"],
+                    false
                 );
-                res.json(record);
+                if (recordOrError instanceof Error) {
+                    throw recordOrError;
+                }
+                res.locals.originalAccessGroup = recordOrError;
+                return {
+                    operationUri: "object/record/update",
+                    input: {
+                        object: {
+                            accessGroup: {
+                                ...(recordOrError?.aspects?.[
+                                    "access-group-details"
+                                ]
+                                    ? recordOrError.aspects[
+                                          "access-group-details"
+                                      ]
+                                    : {})
+                            }
+                        }
+                    }
+                };
+            }
+        ),
+        getUserId,
+        async function (req: Request, res: Response) {
+            try {
+                const id = `${req.params.id}`.trim();
+                const userId = res.locals.userId;
+                const permissionId =
+                    res?.locals?.originalAccessGroup?.aspects?.[
+                        "access-group-details"
+                    ]?.permissionId;
+                if (!permissionId) {
+                    throw new ServerError(
+                        "The current access group record has invalid empty permissionId.",
+                        500
+                    );
+                }
+
+                const data = req.body as UpdateAccessGroupRequestBodyType;
+                const jsonPatches: {
+                    op: string;
+                    path: string;
+                    value: any;
+                }[] = [];
+                if (typeof data?.name !== "undefined") {
+                    jsonPatches.push({
+                        op: "replace",
+                        path: "/aspects/access-group-details/name",
+                        value: `${data.name}`
+                    });
+                }
+                if (typeof data?.description !== "undefined") {
+                    jsonPatches.push({
+                        op: "replace",
+                        path: "/aspects/access-group-details/description",
+                        value: `${data.description}`
+                    });
+                }
+                if (typeof data?.keywords !== "undefined") {
+                    if (!isArray(data.keywords)) {
+                        throw new ServerError(
+                            "`keywords` field should be an array.",
+                            400
+                        );
+                    }
+                    const keywords = data.keywords.filter(
+                        (item) => typeof item === "string"
+                    );
+                    if (keywords.length !== data.keywords.length) {
+                        throw new ServerError(
+                            "All items in `keywords` field should be strings.",
+                            400
+                        );
+                    }
+                    jsonPatches.push({
+                        op: "replace",
+                        path: "/aspects/access-group-details/keywords",
+                        value: uniq(keywords)
+                    });
+                }
+                if (typeof data?.ownerId !== "undefined") {
+                    if (!isUuid(data.ownerId) && data.ownerId !== null) {
+                        throw new ServerError(
+                            "`ownerId` field needs to be either an UUID or null.",
+                            400
+                        );
+                    }
+                    jsonPatches.push({
+                        op: "replace",
+                        path: "/aspects/access-control/ownerId",
+                        value: data.ownerId
+                    });
+                }
+                if (typeof data?.orgUnitId !== "undefined") {
+                    if (!isUuid(data.orgUnitId) && data.orgUnitId !== null) {
+                        throw new ServerError(
+                            "`ownerId` field needs to be either an UUID or null.",
+                            400
+                        );
+                    }
+                    jsonPatches.push({
+                        op: "replace",
+                        path: "/aspects/access-control/orgUnitId",
+                        value: data.orgUnitId
+                    });
+                }
+
+                if (typeof data?.operationUris === "undefined") {
+                    // no need to update permission operations as it's not supplied
+                    res.json(await patchAccessGroup(id, jsonPatches));
+                    return;
+                }
+
+                const pool = database.getPool();
+                const client = await pool.connect();
+
+                try {
+                    await client.query("BEGIN");
+
+                    await database.updatePermission(
+                        permissionId,
+                        {
+                            operationUris: data.operationUris,
+                            ownerId: data?.ownerId ? data.ownerId : null,
+                            editBy: userId ? userId : null
+                        },
+                        client
+                    );
+
+                    res.json(await patchAccessGroup(id, jsonPatches));
+                    await client.query("COMMIT");
+                } catch (e) {
+                    await client.query("ROLLBACK");
+                    throw e;
+                } finally {
+                    client.release();
+                }
             } catch (e) {
-                respondWithError("modify `operation`", res, e);
+                respondWithError("Update Access Group", res, e);
             }
         }
     );

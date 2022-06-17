@@ -30,11 +30,16 @@ import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import {
     parseIntParam,
     MAX_PAGE_RECORD_NUMBER,
-    getTableRecord
+    getTableRecord,
+    createTableRecord,
+    updateTableRecord
 } from "magda-typescript-common/src/SQLUtils";
 import ServerError from "magda-typescript-common/src/ServerError";
 import { SYSTEM_ROLES } from "magda-typescript-common/src/authorization-api/constants";
 import { generateAPIKey, createApiKeyHash } from "./apiKeyUtils";
+import isArray from "lodash/isArray";
+import uniq from "lodash/uniq";
+import isEmpty from "lodash/isEmpty";
 
 export interface DatabaseOptions {
     dbHost: string;
@@ -61,6 +66,34 @@ export const defaultAnonymousUserInfo: User = {
     orgUnit: null,
     managingOrgUnitIds: []
 };
+
+export interface CreatePermissionOptions {
+    name: string;
+    description: string;
+    userOwnershipConstraint?: boolean;
+    orgUnitOwnershipConstraint?: boolean;
+    preAuthorisedConstraint?: boolean;
+    resourceId?: string;
+    resourceUri?: string;
+    operationIds?: string[];
+    operationUris?: string[];
+    ownerId?: string;
+    createBy?: string;
+}
+
+export interface UpdatePermissionOptions {
+    name?: string;
+    description?: string;
+    userOwnershipConstraint?: boolean;
+    orgUnitOwnershipConstraint?: boolean;
+    preAuthorisedConstraint?: boolean;
+    resourceId?: string;
+    resourceUri?: string;
+    operationIds?: string[];
+    operationUris?: string[];
+    ownerId?: string | null;
+    editBy?: string | null;
+}
 
 export default class Database {
     private pool: pg.Pool;
@@ -1011,5 +1044,465 @@ export default class Database {
             return null;
         }
         return result.rows[0] as OperationRecord;
+    }
+
+    async createPermission(
+        options: CreatePermissionOptions,
+        client: pg.PoolClient = null
+    ) {
+        const shouldReleaseClient = client ? false : true;
+        if (!client) {
+            client = await this.pool.connect();
+        }
+
+        if (options?.resourceId && options?.resourceUri) {
+            throw new ServerError(
+                "`resourceId` & `resourceUri` parameter cannot be both supplied.",
+                400
+            );
+        }
+        if (!options?.resourceId && !options?.resourceUri) {
+            throw new ServerError(
+                "Either `resourceId` or `resourceUri` parameter has to be supplied.",
+                400
+            );
+        }
+        if (isArray(options?.operationIds) && isArray(options?.operationUris)) {
+            throw new ServerError(
+                "`operationIds` & `operationUris` parameter cannot be both supplied.",
+                400
+            );
+        }
+        if (
+            !isArray(options?.operationIds) &&
+            !isArray(options?.operationUris)
+        ) {
+            throw new ServerError(
+                "Either `operationIds` or `operationUris` has be valid array.",
+                400
+            );
+        }
+        let {
+            name,
+            description,
+            userOwnershipConstraint,
+            orgUnitOwnershipConstraint,
+            preAuthorisedConstraint,
+            resourceId,
+            operationIds,
+            ownerId,
+            createBy
+        } = options;
+
+        if (!name || typeof name !== "string") {
+            throw new ServerError(
+                "`name` field must be a non-empty string.",
+                400
+            );
+        }
+
+        if (ownerId && !isUuid(ownerId)) {
+            throw new ServerError("`ownerId` field must be a valid uuid.", 400);
+        }
+
+        if (createBy && !isUuid(createBy)) {
+            throw new ServerError(
+                "`createBy` field must be a valid uuid.",
+                400
+            );
+        }
+
+        description = description ? "" + description : "";
+        userOwnershipConstraint =
+            typeof userOwnershipConstraint == "boolean"
+                ? userOwnershipConstraint
+                : false;
+        orgUnitOwnershipConstraint =
+            typeof orgUnitOwnershipConstraint == "boolean"
+                ? orgUnitOwnershipConstraint
+                : false;
+        preAuthorisedConstraint =
+            typeof preAuthorisedConstraint == "boolean"
+                ? preAuthorisedConstraint
+                : false;
+        let resource: ResourceRecord;
+        if (options?.resourceUri) {
+            resource = await this.getResourceByUri(options.resourceUri, client);
+            if (!resource) {
+                throw new ServerError(
+                    `resource uri ${options.resourceUri} doesn't exist`,
+                    400
+                );
+            }
+            resourceId = resource.id;
+        } else {
+            resource = await getTableRecord(client, "resources", resourceId);
+            if (!resource) {
+                throw new ServerError(
+                    `cannot locate resource with id: ${options.resourceId}`,
+                    400
+                );
+            }
+        }
+
+        if (isArray(options?.operationUris)) {
+            // operationUris is supplied
+            // validate operationUris
+            let operationUris = options.operationUris;
+            operationUris = operationUris
+                .filter((item) => !!item)
+                .map((item) => `${item}`.trim().toLowerCase())
+                .filter((item) => !!item);
+            if (!operationUris.length) {
+                throw new ServerError(
+                    "Supplied `operationUris` doesn't contain any valid items",
+                    400
+                );
+            }
+            operationUris = uniq(operationUris);
+            const result = await client.query(
+                ...sqls`SELECT id
+                FROM operations 
+                WHERE uri IN (${SQLSyntax.csv(
+                    ...operationUris.map((item) => sqls`${item}`)
+                )}) AND resource_id = ${resourceId}`.toQuery()
+            );
+
+            if (result?.rows?.length !== operationUris.length) {
+                throw new ServerError(
+                    `Not all provided operation uris are valid and belong to the resource ${resource.uri}`,
+                    400
+                );
+            }
+            operationIds = result.rows;
+        } else {
+            // operationIds is supplied
+            // validate operationIds
+            const invalidOperationId = operationIds.find(
+                (item) => !isUuid(item)
+            );
+            if (typeof invalidOperationId !== "undefined") {
+                throw new ServerError(
+                    `One of the provided operation id is not valid UUID: ${invalidOperationId}`,
+                    400
+                );
+            }
+            if (!operationIds.length) {
+                throw new ServerError(
+                    "Supplied `operationIds` must not be empty array",
+                    400
+                );
+            }
+
+            const result = await client.query(
+                ...sqls`SELECT COUNT(*) as count
+            FROM operations 
+            WHERE id IN (${SQLSyntax.csv(
+                ...operationIds.map((item) => sqls`${item}`)
+            )}) AND resource_id = ${resource.id}`.toQuery()
+            );
+
+            if (result?.rows?.[0]?.["count"] !== operationIds.length) {
+                throw new Error(
+                    `Not all provided operation ids are valid and belong to the resource ${resource.uri}`
+                );
+            }
+            operationIds = uniq(operationIds);
+        }
+
+        const permissionData = {
+            name,
+            description,
+            resource_id: resourceId,
+            user_ownership_constraint: userOwnershipConstraint,
+            org_unit_ownership_constraint: orgUnitOwnershipConstraint,
+            pre_authorised_constraint: preAuthorisedConstraint
+        } as any;
+
+        if (ownerId) {
+            permissionData["owner_id"] = ownerId;
+        }
+
+        if (createBy) {
+            permissionData["create_by"] = createBy;
+            permissionData["edit_by"] = createBy;
+        }
+
+        try {
+            await client.query("BEGIN");
+            const permission = await createTableRecord(
+                client,
+                "permissions",
+                permissionData,
+                [
+                    "name",
+                    "resource_id",
+                    "user_ownership_constraint",
+                    "org_unit_ownership_constraint",
+                    "pre_authorised_constraint",
+                    "description",
+                    "create_by",
+                    "owner_id",
+                    "edit_by"
+                ]
+            );
+
+            const values = (operationIds as string[]).map(
+                (id) => sqls`(${permission.id},${id})`
+            );
+
+            await client.query(
+                ...sqls`INSERT INTO permission_operations 
+            (permission_id, operation_id) VALUES 
+            ${SQLSyntax.csv(...values)}`.toQuery()
+            );
+            await client.query("COMMIT");
+            return permission;
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            if (shouldReleaseClient) {
+                client.release();
+            }
+        }
+    }
+
+    async updatePermission(
+        id: string,
+        options: UpdatePermissionOptions,
+        client: pg.PoolClient = null
+    ) {
+        if (isEmpty(options)) {
+            throw new ServerError("Empty update options are supplied.");
+        }
+        const shouldReleaseClient = client ? false : true;
+        if (!client) {
+            client = await this.pool.connect();
+        }
+
+        if (!isUuid(id)) {
+            throw new ServerError("id must be a valid UUID", 400);
+        }
+
+        const permission = await getTableRecord(client, "permissions", id);
+        if (!permission) {
+            throw new ServerError(
+                `cannot locate permission with id: ${id}`,
+                400
+            );
+        }
+
+        let {
+            name,
+            description,
+            userOwnershipConstraint,
+            orgUnitOwnershipConstraint,
+            preAuthorisedConstraint,
+            resourceId,
+            resourceUri,
+            operationIds,
+            operationUris,
+            ownerId,
+            editBy
+        } = options;
+
+        let resource: ResourceRecord;
+        if (resourceUri) {
+            resource = await this.getResourceByUri(resourceUri, client);
+            if (!resource) {
+                throw new ServerError(
+                    `resource uri ${resourceUri} doesn't exist`,
+                    400
+                );
+            }
+            resourceId = resource.id;
+        } else if (resourceId) {
+            if (!isUuid(resourceId)) {
+                throw new ServerError(
+                    `supplied resourceId ${resourceId} is not valid UUID`,
+                    400
+                );
+            }
+            resource = await getTableRecord(client, "resources", resourceId);
+            if (!resource) {
+                throw new ServerError(
+                    `cannot locate resource with id: ${resourceId}`,
+                    400
+                );
+            }
+        } else {
+            resourceId = permission.resource_id;
+            resource = await getTableRecord(client, "resources", resourceId);
+            if (!resource) {
+                throw new ServerError(
+                    `cannot locate resource with id: ${resourceId}`,
+                    500
+                );
+            }
+        }
+
+        if (isArray(operationUris)) {
+            if (!operationUris.length) {
+                operationIds = [];
+            } else {
+                operationUris = operationUris
+                    .filter((item) => !!item)
+                    .map((item) => `${item}`.trim().toLowerCase())
+                    .filter((item) => !!item);
+                if (!operationUris.length) {
+                    throw new ServerError(
+                        "Supplied `operationUris` contains invalid items",
+                        400
+                    );
+                }
+                operationUris = uniq(operationUris);
+                const result = await client.query(
+                    ...sqls`SELECT id
+                FROM operations 
+                WHERE uri IN (${SQLSyntax.csv(
+                    ...operationUris.map((item) => sqls`${item}`)
+                )}) AND resource_id = ${resourceId}`.toQuery()
+                );
+
+                if (result?.rows?.length !== operationUris.length) {
+                    throw new ServerError(
+                        `Not all provided operation uris are valid and belong to the resource ${resource.uri}`,
+                        400
+                    );
+                }
+                operationIds = result.rows;
+            }
+        } else if (isArray(operationIds) && operationIds.length) {
+            const invalidOperationId = operationIds.find(
+                (item) => !isUuid(item)
+            );
+            if (typeof invalidOperationId !== "undefined") {
+                throw new ServerError(
+                    `One of the provided operation id is not valid UUID: ${invalidOperationId}`,
+                    400
+                );
+            }
+
+            const result = await client.query(
+                ...sqls`SELECT COUNT(*) as count
+            FROM operations 
+            WHERE id IN (${SQLSyntax.csv(
+                ...operationIds.map((item) => sqls`${item}`)
+            )}) AND resource_id = ${resourceId}`.toQuery()
+            );
+
+            if (result?.rows?.[0]?.["count"] !== operationIds.length) {
+                throw new Error(
+                    `Not all provided operation ids are valid and belong to the resource ${resource.uri}`
+                );
+            }
+            operationIds = uniq(operationIds);
+        }
+
+        const permissionData = {
+            resource_id: resourceId
+        } as any;
+
+        if (name) {
+            name = `${name}`.trim();
+            if (!name) {
+                throw new ServerError("`name` cannot be empty", 400);
+            }
+            permissionData["name"] = name;
+        }
+
+        if (description) {
+            description = `${description}`.trim();
+            permissionData["description"] = description;
+        }
+
+        if (typeof userOwnershipConstraint === "boolean") {
+            permissionData[
+                "user_ownership_constraint"
+            ] = userOwnershipConstraint;
+        }
+
+        if (typeof orgUnitOwnershipConstraint === "boolean") {
+            permissionData[
+                "org_unit_ownership_constraint"
+            ] = orgUnitOwnershipConstraint;
+        }
+
+        if (typeof preAuthorisedConstraint === "boolean") {
+            permissionData[
+                "pre_authorised_constraint"
+            ] = preAuthorisedConstraint;
+        }
+
+        if (ownerId === null || isUuid(ownerId)) {
+            permissionData["owner_id"] = ownerId;
+        } else if (ownerId && !isUuid(ownerId)) {
+            throw new ServerError("`ownerId` must be valid UUID", 400);
+        }
+
+        if (editBy === null || isUuid(editBy)) {
+            permissionData["edit_by"] = editBy;
+        } else if (editBy && !isUuid(editBy)) {
+            throw new ServerError("`editBy` must be valid UUID", 400);
+        }
+
+        try {
+            await client.query("BEGIN");
+
+            const permissionUpdateData = {
+                ...permissionData,
+                edit_time: sqls` CURRENT_TIMESTAMP `
+            };
+
+            const permissionRecord = await updateTableRecord(
+                client,
+                "permissions",
+                id,
+                permissionUpdateData,
+                [
+                    "name",
+                    "resource_id",
+                    "user_ownership_constraint",
+                    "org_unit_ownership_constraint",
+                    "pre_authorised_constraint",
+                    "description",
+                    "owner_id",
+                    "edit_by",
+                    "edit_time"
+                ]
+            );
+
+            if (isArray(operationIds)) {
+                // operationIds property is provided
+                // i.e. user's intention is to update operations as well
+                // delete all current operation / permission relationship
+                await client.query(
+                    ...sqls`DELETE FROM permission_operations WHERE permission_id=${id}`.toQuery()
+                );
+            }
+
+            if (operationIds.length) {
+                const values = (operationIds as string[]).map(
+                    (item) => sqls`(${id},${item})`
+                );
+
+                await client.query(
+                    ...sqls`INSERT INTO permission_operations 
+                    (permission_id, operation_id) VALUES 
+                    ${SQLSyntax.csv(...values)}`.toQuery()
+                );
+            }
+
+            await client.query("COMMIT");
+            return permissionRecord;
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            if (shouldReleaseClient) {
+                client.release();
+            }
+        }
     }
 }
