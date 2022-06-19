@@ -52,6 +52,7 @@ class RecordsServiceRO(
     *   - `aspectId.path.to.field`
     *   - `operator`
     *   - `value`
+    *
     *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
     *
     *   If more than one queries is passed through the `aspectQuery` parameters, they will be grouped with `AND` logic.
@@ -69,6 +70,8 @@ class RecordsServiceRO(
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
     *   - `:<=` less than or equal to
+    *   - `:<|` the field is an array value and contains the value
+    *   - `:!<|` the field is not an array value or not contains the value
     *
     *   Example URL with aspectQuery `dcat-dataset-strings.title:?%rating%` (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
     *
@@ -452,6 +455,8 @@ class RecordsServiceRO(
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
     *   - `:<=` less than or equal to
+    *   - `:<|` the field is an array value and contains the value
+    *   - `:!<|` the field is not an array value or not contains the value
     *
     *   Example URL with aspectQuery `dcat-dataset-strings.title:?%rating%` (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
     *

@@ -827,12 +827,14 @@ object AspectQuery {
     * `:>=` greater than or equal to
     * `:<`  less than
     * `:<=` less than or equal to
+    * `:<|` contains the value
+    * `:!<|` not contains the value
     *
     * Value after the operator should be in `application/x-www-form-urlencoded` MIME format
     * Example URL with aspectQuery: dcat-dataset-strings.title:?%rating% (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
     * /v0/records?limit=100&optionalAspect=source&aspect=dcat-dataset-strings&aspectQuery=dcat-dataset-strings.title:?%2525rating%2525
     */
-  val operatorValueRegex = raw"^(.+)(:[!><=?~]*)(.+)$$".r
+  val operatorValueRegex = raw"^(.+)(:[!><=?~|]*)(.+)$$".r
   val numericValueRegex = raw"[-0-9.]+".r
 
   def parse(string: String): AspectQuery = {
@@ -947,6 +949,27 @@ object AspectQuery {
             AspectQueryStringValue(valueStr)
           },
           operator = SQLSyntax.createUnsafely("<=")
+        )
+      case ":<|" =>
+        AspectQueryValueInArray(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = if (numericValueRegex matches valueStr) {
+            AspectQueryBigDecimalValue(valueStr.toDouble)
+          } else {
+            AspectQueryStringValue(valueStr)
+          }
+        )
+      case ":!<|" =>
+        AspectQueryValueInArray(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = if (numericValueRegex matches valueStr) {
+            AspectQueryBigDecimalValue(valueStr.toDouble)
+          } else {
+            AspectQueryStringValue(valueStr)
+          },
+          true
         )
       case _ =>
         throw new Error(s"Unsupported aspectQuery operator: ${opStr}")
