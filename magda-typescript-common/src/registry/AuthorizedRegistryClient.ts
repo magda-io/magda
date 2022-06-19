@@ -414,6 +414,26 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         ).catch(toServerError("deleteBySource"));
     }
 
+    deleteRecord(id: string, tenantId: number = this.tenantId) {
+        const operation = () =>
+            this.recordsApi.deleteById(tenantId, id, this.jwt);
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to DELETE registry record with ID "${id}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("deletetRecord"));
+    }
+
     getRecordHistory(
         id: string,
         pageToken?: string,

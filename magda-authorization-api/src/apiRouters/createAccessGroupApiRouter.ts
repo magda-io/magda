@@ -3,28 +3,15 @@ import Database from "../Database";
 import respondWithError from "../respondWithError";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
 import {
     getUserId,
-    withAuthDecision,
     requireUnconditionalAuthDecision
 } from "magda-typescript-common/src/authorization-api/authMiddleware";
-import {
-    requireObjectPermission,
-    requireObjectUpdatePermission
-} from "../recordAuthMiddlewares";
-import {
-    getTableRecord,
-    updateTableRecord,
-    deleteTableRecord,
-    createTableRecord
-} from "magda-typescript-common/src/SQLUtils";
+import { createTableRecord } from "magda-typescript-common/src/SQLUtils";
 import ServerError from "magda-typescript-common/src/ServerError";
-import { sqls, SQLSyntax } from "sql-syntax";
 import {
     CreateAccessGroupRequestBodyType,
-    UpdateAccessGroupRequestBodyType,
-    PermissionRecord
+    UpdateAccessGroupRequestBodyType
 } from "magda-typescript-common/src/authorization-api/model";
 import isUuid from "magda-typescript-common/src/util/isUuid";
 import { v4 as uuidV4 } from "uuid";
@@ -355,6 +342,62 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
         };
     }
 
+    const requireAccessGroupAccess = (
+        operationUri: string,
+        notFoundHandler?: (
+            req: Request,
+            res: Response,
+            next: NextFunction
+        ) => void
+    ) =>
+        requireUnconditionalAuthDecision(
+            authDecisionClient,
+            async (req: Request, res: Response, next: NextFunction) => {
+                const id = `${req.params.id}`.trim();
+                if (!id) {
+                    throw new ServerError(
+                        "Cannot locate valid ID from url path",
+                        400
+                    );
+                }
+                const recordOrError = await registryClient.getRecord(
+                    id,
+                    ["access-group-details"],
+                    ["access-control"],
+                    false
+                );
+                if (recordOrError instanceof Error) {
+                    if (
+                        recordOrError instanceof ServerError &&
+                        recordOrError.statusCode === 404
+                    ) {
+                        if (typeof notFoundHandler === "function") {
+                            notFoundHandler(req, res, next);
+                            return null;
+                        }
+                    }
+                    throw recordOrError;
+                }
+                res.locals.originalAccessGroup = recordOrError;
+                return {
+                    operationUri,
+                    input: {
+                        object: {
+                            accessGroup: {
+                                ...(recordOrError?.aspects?.[
+                                    "access-group-details"
+                                ]
+                                    ? recordOrError.aspects[
+                                          "access-group-details"
+                                      ]
+                                    : {})
+                            }
+                        }
+                    }
+                };
+            }
+        );
+
     /**
      * @apiGroup Auth Access Groups
      * @api {put} /v0/auth/accessGroups/:id Update an access group
@@ -410,44 +453,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:id",
-        requireUnconditionalAuthDecision(
-            authDecisionClient,
-            async (req: Request, res: Response) => {
-                const id = `${req.params.id}`.trim();
-                if (!id) {
-                    throw new ServerError(
-                        "Cannot locate valid ID from url path",
-                        400
-                    );
-                }
-                const recordOrError = await registryClient.getRecord(
-                    id,
-                    ["access-group-details"],
-                    ["access-control"],
-                    false
-                );
-                if (recordOrError instanceof Error) {
-                    throw recordOrError;
-                }
-                res.locals.originalAccessGroup = recordOrError;
-                return {
-                    operationUri: "object/record/update",
-                    input: {
-                        object: {
-                            accessGroup: {
-                                ...(recordOrError?.aspects?.[
-                                    "access-group-details"
-                                ]
-                                    ? recordOrError.aspects[
-                                          "access-group-details"
-                                      ]
-                                    : {})
-                            }
-                        }
-                    }
-                };
-            }
-        ),
+        requireAccessGroupAccess("object/record/update"),
         getUserId,
         async function (req: Request, res: Response) {
             try {
@@ -564,7 +570,11 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     client.release();
                 }
             } catch (e) {
-                respondWithError("Update Access Group", res, e);
+                respondWithError(
+                    `Update Access Group: ${req?.params?.id}`,
+                    res,
+                    e
+                );
             }
         }
     );
@@ -573,13 +583,14 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth Access Groups
      * @api {delete} /v0/auth/accessGroups/:id Delete an access group
      * @apiDescription Delete an access group
-     * When the operation is deleted, access will be removed from all existing permissions that are relevant to the operation.
+     * You can only delete an access group when all resources (e.g. datasets) that are associated with the access group are removed from the access group.
+     * Once an access group is deleted, the role & permission that are associated with the access group will be also deleted.
      *
-     * You need `authObject/operation/delete` permission in order to access this API.
+     * You need `object/record/delete` permission to the access group record in order to access this API.
      *
-     * @apiParam (URL Path) {string} id id of the operation
+     * @apiParam (URL Path) {string} id id of the access group
      *
-     * @apiSuccess [Response Body] {boolean} result Indicates whether the deletion action is actually performed or the record doesn't exist.
+     * @apiSuccess [Response Body] {boolean} result Indicates whether the deletion action is actually performed or the access group doesn't exist.
      * @apiSuccessExample {json} 200
      *    {
      *        result: true
@@ -594,24 +605,89 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.delete(
         "/:id",
-        requireObjectPermission(
-            authDecisionClient,
-            database,
-            "authObject/operation/delete",
-            (req, res) => req.params.id,
-            "operation"
+        requireAccessGroupAccess(
+            "object/record/delete",
+            (req, res, next: Function) => {
+                // reach here indicates the access group record doesn't exist
+                // we will response 200 with {result: false}
+                res.json({ result: false });
+                return null; // return null to skip rest of request processing
+            }
         ),
         async function (req, res) {
             try {
-                await deleteTableRecord(
-                    database.getPool(),
-                    "operations",
-                    req.params.id
+                const id = `${req.params.id}`.trim();
+                // use previously fetched record by `requireAccessGroupAccess`
+                const accessGroupRecord = res.locals
+                    .originalAccessGroup as Record;
+                const permissionId =
+                    accessGroupRecord?.aspects?.["access-group-details"]?.[
+                        "permissionId"
+                    ];
+                const roleId =
+                    accessGroupRecord?.aspects?.["access-group-details"]?.[
+                        "roleId"
+                    ];
+                if (!isUuid(permissionId)) {
+                    throw new ServerError(
+                        "The access group permission id is not a valid UUID",
+                        500
+                    );
+                }
+                if (!isUuid(roleId)) {
+                    throw new ServerError(
+                        "The access group role id is not a valid UUID",
+                        500
+                    );
+                }
+                const searchRecordResult = await registryClient.getRecords(
+                    [],
+                    [],
+                    undefined,
+                    undefined,
+                    1,
+                    [
+                        `access-control.preAuthorisedPermissionIds:<-${encodeURIComponent(
+                            permissionId
+                        )}`
+                    ]
                 );
-                res.json({ result: true });
+                if (searchRecordResult instanceof Error) {
+                    throw searchRecordResult;
+                }
+                if (searchRecordResult?.records?.length) {
+                    throw new ServerError(
+                        "You need to remove all records from the access group before you can delete the access group",
+                        400
+                    );
+                }
+
+                const pool = database.getPool();
+                const client = await pool.connect();
+
+                try {
+                    await client.query("BEGIN");
+
+                    await database.deleteRole(roleId, client);
+                    await database.deletePermission(permissionId, client);
+
+                    const deleteResult = await registryClient.deleteRecord(id);
+                    if (deleteResult instanceof Error) {
+                        throw deleteResult;
+                    }
+                    await client.query("COMMIT");
+                    res.json({
+                        result: deleteResult?.deleted === true ? true : false
+                    });
+                } catch (e) {
+                    await client.query("ROLLBACK");
+                    throw e;
+                } finally {
+                    client.release();
+                }
             } catch (e) {
                 respondWithError(
-                    `delete \`operation\` ${req.params.id}`,
+                    `delete \`access group\` ${req?.params?.id}`,
                     res,
                     e
                 );

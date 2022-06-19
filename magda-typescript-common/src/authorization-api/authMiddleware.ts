@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { getUserId as getUserIdFromReq } from "../session/GetUserId";
 import ApiClient from "./ApiClient";
 import AuthDecisionQueryClient, {
@@ -99,8 +99,12 @@ export type AuthDecisionReqConfigOrConfigFuncParam =
     | AuthDecisionReqConfig
     | ((
           req: Request,
-          res: Response
-      ) => AuthDecisionReqConfig | Promise<AuthDecisionReqConfig>);
+          res: Response,
+          next: NextFunction
+      ) =>
+          | AuthDecisionReqConfig
+          | null
+          | Promise<AuthDecisionReqConfig | null>);
 
 /**
  * Make auth decision based on auth decision request config.
@@ -109,7 +113,12 @@ export type AuthDecisionReqConfigOrConfigFuncParam =
  *
  * @export
  * @param {AuthDecisionQueryClient} authDecisionClient
- * @param {AuthDecisionReqConfigOrConfigFuncParam} configOrConfigFunc
+ * @param {AuthDecisionReqConfigOrConfigFuncParam} configOrConfigFunc An auth decision config object or a function returns an auth decision config object.
+ * When a function is supplied, the function can opt to:
+ * - return an auth decision object based on incoming request.
+ * - throw an Error
+ * - send the response and return a `null` value to skip the rest of request processing.
+ * - call `next` function and return a `null` value to skip the rest of processing of current middleware
  * @return {*}
  */
 export function withAuthDecision(
@@ -120,8 +129,11 @@ export function withAuthDecision(
         try {
             const config =
                 typeof configOrConfigFunc === "function"
-                    ? await configOrConfigFunc(req, res)
+                    ? await configOrConfigFunc(req, res, next)
                     : configOrConfigFunc;
+            if (!config) {
+                return;
+            }
             const jwtToken = req.get("X-Magda-Session");
             const authDecision = await authDecisionClient.getAuthDecision(
                 config,
