@@ -8,7 +8,8 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.client.{AuthDecisionReqConfig}
+import au.csiro.data61.magda.ServerError
+import au.csiro.data61.magda.client.AuthDecisionReqConfig
 import au.csiro.data61.magda.registry.Directives.{
   requireRecordPermission,
   requireRecordUpdateOrCreateWhenNonExistPermission
@@ -16,11 +17,10 @@ import au.csiro.data61.magda.registry.Directives.{
 import au.csiro.data61.magda.directives.AuthDirectives.{
   requirePermission,
   requireUnconditionalAuthDecision,
-  requireUserId
+  requireUserId,
+  withAuthDecision
 }
-import au.csiro.data61.magda.directives.TenantDirectives.{
-  requiresSpecifiedTenantId
-}
+import au.csiro.data61.magda.directives.TenantDirectives.requiresSpecifiedTenantId
 import au.csiro.data61.magda.model.Auth.recordToContextData
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
@@ -438,7 +438,7 @@ class RecordsService(
     *
     * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
     *
-    * @apiParam (path) {string} id ID of the aspect to be saved.
+    * @apiParam (path) {string} id ID of the record to be patched.
     * @apiParam (body) {json} recordPatch The RFC 6902 patch to apply to the aspect.
     * @apiParamExample {json} Request-Example
     * [
@@ -506,7 +506,7 @@ class RecordsService(
         required = true,
         dataType = "string",
         paramType = "path",
-        value = "ID of the aspect to be saved."
+        value = "ID of the record to be pacthed."
       ),
       new ApiImplicitParam(
         name = "recordPatch",
@@ -561,12 +561,135 @@ class RecordsService(
                 }
               }
               webHookActor ! WebHookActor
-                .Process(ignoreWaitingForResponse = false, Some(List(id)))
+                .Process()
               theResult
             }
           }
         }
 
+      }
+    }
+  }
+
+  /**
+    * @apiGroup Registry Record Service
+    * @api {patch} /v0/registry/records Modify a list of records by applying the same JSON Patch
+    *
+    * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+    *
+    * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
+    * @apiParam (body) {object[]} jsonPatch The RFC 6902 patch to apply to the aspect.
+    * @apiParamExample {json} Request-Example
+    * {
+    *   "recordIds": ["dsd-sds-xsds-22", "sds-sdds-2334-dds-34", "sdds-3439-34334343"],
+    *   "jsonPatch": [
+    *      // update record's name field
+    *      {
+    *        "op": "replace",
+    *        "path": "/name",
+    *        "value": "a new record name"
+    *      },
+    *      // update the record's `publishing` aspect `state` field
+    *      {
+    *        "op": "replace",
+    *        "path": "/aspects/publishing/state",
+    *        "value": "published"
+    *      },
+    *      // remove the record's `dataset-draft` aspect
+    *      {
+    *        "op": "remove",
+    *        "path": "/aspects/dataset-draft"
+    *      },
+    *      // add a "title" field to the record's `dcat-dataset-strings` aspect
+    *      {
+    *        "op": "add",
+    *        "path": "/aspects/dcat-dataset-strings/title",
+    *        "value": "test dataset"
+    *      }
+    *   ]
+    * }
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    *
+    * @apiSuccess (Success 200) {json} Response a list of event id for each of the record after applied the json pathes
+    * @apiSuccessExample {json} Response:
+    *      [122, 123, 124]
+    * @apiUse GenericError
+    */
+  @Path("/")
+  @ApiOperation(
+    value = "Modify a list of records by applying the same JSON Patch",
+    nickname = "patchRecords",
+    httpMethod = "PATCH",
+    response = classOf[List[String]],
+    notes =
+      "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902)."
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "requestData",
+        required = true,
+        dataType = "au.csiro.data61.magda.model.Registry$PatchRecordsRequest",
+        paramType = "body",
+        value = "An json object has key 'recordIds' & 'jsonPath'"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = true,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      )
+    )
+  )
+  def patchRecords: Route = patch {
+    requireUserId { userId =>
+      requiresSpecifiedTenantId { tenantId =>
+        entity(as[PatchRecordsRequest]) { requestData =>
+          withAuthDecision(
+            authClient,
+            AuthDecisionReqConfig("object/record/read")
+          ) { authDecision =>
+            val result = DB localTx { implicit session =>
+              recordPersistence.patchRecords(
+                tenantId,
+                authDecision,
+                requestData.recordIds,
+                requestData.jsonPath,
+                userId
+              ) match {
+                case Success(result) =>
+                  complete(
+                    StatusCodes.OK,
+                    result
+                  )
+                case Failure(ServerError(msg, statusCode)) =>
+                  complete(
+                    statusCode,
+                    ApiError(msg)
+                  )
+                case Failure(e) =>
+                  complete(
+                    StatusCodes.InternalServerError,
+                    ApiError(e.getMessage)
+                  )
+              }
+            }
+            webHookActor ! WebHookActor
+              .Process()
+            result
+          }
+        }
       }
     }
   }

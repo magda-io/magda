@@ -89,11 +89,20 @@ export class JsObject {
 
 export class JsValue {}
 
+export class JsonPatch {
+    "ops": Array<Operation>;
+}
+
 export class MultipleDeleteResult {
     "count": number;
 }
 
 export class Operation {}
+
+export class PatchRecordsRequest {
+    "recordIds": Array<string>;
+    "jsonPath": JsonPatch;
+}
 
 /**
  * A record in the registry, usually including data for one or more aspects, unique for a tenant.
@@ -2403,7 +2412,7 @@ export class RecordsApi {
      * Modify a record by applying a JSON Patch
      * The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
      * @param xMagdaTenantId 0
-     * @param id ID of the aspect to be saved.
+     * @param id ID of the record to be pacthed.
      * @param recordPatch The RFC 6902 patch to apply to the aspect.
      * @param xMagdaSession Magda internal session id
      */
@@ -2491,6 +2500,89 @@ export class RecordsApi {
                 });
             }
         );
+    }
+    /**
+     * Modify a list of records by applying the same JSON Patch
+     * The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+     * @param xMagdaTenantId 0
+     * @param requestData An json object has key &#39;recordIds&#39; &amp; &#39;jsonPath&#39;
+     * @param xMagdaSession Magda internal session id
+     */
+    public patchRecords(
+        xMagdaTenantId: number,
+        requestData: PatchRecordsRequest,
+        xMagdaSession: string
+    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+        const localVarPath = this.basePath + "/records";
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling patchRecords."
+            );
+        }
+
+        // verify required parameter 'requestData' is not null or undefined
+        if (requestData === null || requestData === undefined) {
+            throw new Error(
+                "Required parameter requestData was null or undefined when calling patchRecords."
+            );
+        }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error(
+                "Required parameter xMagdaSession was null or undefined when calling patchRecords."
+            );
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "PATCH",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+            body: requestData
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{
+            response: http.IncomingMessage;
+            body: Array<any>;
+        }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (
+                        response.statusCode >= 200 &&
+                        response.statusCode <= 299
+                    ) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
     }
     /**
      * Modify a record by ID

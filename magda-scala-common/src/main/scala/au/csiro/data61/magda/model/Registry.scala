@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.model
 
 import java.time.{OffsetDateTime, ZoneOffset}
-
 import akka.event.LoggingAdapter
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime, Periodicity}
 import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols, _}
@@ -10,6 +9,7 @@ import enumeratum.values.{IntEnum, IntEnumEntry}
 import io.swagger.annotations.{ApiModel, ApiModelProperty}
 import spray.json.lenses.JsonLenses._
 import spray.json._
+import gnieh.diffson.sprayJson._
 
 import scala.annotation.meta.field
 import scala.util.{Failure, Success, Try}
@@ -260,6 +260,8 @@ object Registry
       ) lastEventIdReceived: Long
   )
 
+  case class PatchRecordsRequest(recordIds: List[String], jsonPath: JsonPatch)
+
   object RegistryConstants {
     val aspects = List("dcat-dataset-strings")
 
@@ -308,6 +310,7 @@ object Registry
   implicit val recordPageFormat = jsonFormat1(
     Registry.RegistryCountResponse.apply
   )
+
 
   implicit object RecordTypeFormat extends RootJsonFormat[Registry.RecordType] {
 

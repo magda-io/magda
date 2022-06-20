@@ -4,6 +4,7 @@ import java.sql.SQLException
 import akka.NotUsed
 import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.ServerError
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
 import gnieh.diffson._
@@ -155,6 +156,15 @@ trait RecordPersistence {
       userId: String,
       forceSkipAspectValidation: Boolean = false
   )(implicit session: DBSession): Try[(Record, Long)]
+
+  def patchRecords(
+      tenantId: SpecifiedTenantId,
+      authDecision: AuthDecision,
+      recordIds: Seq[String],
+      recordPatch: JsonPatch,
+      userId: String,
+      forceSkipAspectValidation: Boolean = false
+  )(implicit session: DBSession): Try[Seq[Long]]
 
   def patchRecordAspectById(
       tenantId: SpecifiedTenantId,
@@ -937,6 +947,69 @@ class DefaultRecordPersistence(config: Config)
         ),
         latestEventId
       )
+  }
+
+  /**
+    * Apply record json patch to a list of records (specified by recordIds) and return a list event id (for each of records)
+    * @param tenantId
+    * @param authDecision
+    * @param recordIds
+    * @param recordPatch
+    * @param userId
+    * @param forceSkipAspectValidation
+    * @param session
+    * @return
+    */
+  def patchRecords(
+      tenantId: SpecifiedTenantId,
+      authDecision: AuthDecision,
+      recordIds: Seq[String],
+      recordPatch: JsonPatch,
+      userId: String,
+      forceSkipAspectValidation: Boolean = false
+  )(implicit session: DBSession): Try[Seq[Long]] = {
+    Try {
+      val noEmptyIds = recordIds.filter(!_.trim.isEmpty)
+      if (noEmptyIds.isEmpty) {
+        throw ServerError(
+          "there is no non-empty ids supplied via `recordIds` parameter.",
+          400
+        )
+      }
+      val result = getRecords(
+        tenantId,
+        authDecision,
+        Seq(),
+        Seq(),
+        None,
+        None,
+        Some(noEmptyIds.length),
+        Some(false),
+        List(Some(sqls"recordId in ($noEmptyIds)")),
+        None,
+        Some(noEmptyIds.length)
+      )
+      if (result.records.length != noEmptyIds.length) {
+        throw ServerError("", 403)
+      }
+    }.flatMap { _ =>
+      recordIds
+        .map(
+          id =>
+            patchRecordById(
+              tenantId,
+              id,
+              recordPatch,
+              userId,
+              forceSkipAspectValidation
+            ).map(_._2)
+        )
+        .foldLeft(Try(Seq[Long]())) {
+          case (Success(result), Success(newItem)) => Success(result :+ newItem)
+          case (Success(_), Failure(ex))           => Failure(ex)
+        }
+    }
+
   }
 
   def patchRecordAspectById(
