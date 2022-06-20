@@ -277,7 +277,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError(
-                        `Failed to PUT data registry record with ID "${recordId}".`,
+                        `Failed to PATCH data registry record with ID "${recordId}".`,
                         e,
                         retriesLeft
                     )
@@ -285,6 +285,36 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         )
             .then((result) => result.body)
             .catch(toServerError("patchRecord"));
+    }
+
+    patchRecords(
+        recordIds: string[],
+        recordPatch: Operation[],
+        tenantId: number = this.tenantId
+    ): Promise<string[] | Error> {
+        const operation = () =>
+            this.recordsApi.patchRecords(
+                tenantId,
+                { recordIds, jsonPath: recordPatch as any },
+                this.jwt
+            );
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to PATCH registry records with ID "${recordIds.join(
+                            ", "
+                        )}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("patchRecords"));
     }
 
     putRecordAspect(

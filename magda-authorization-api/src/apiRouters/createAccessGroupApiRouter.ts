@@ -149,10 +149,10 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      * @apiParam (Request Body) {string} resourceUri The Resource URI specifies the type of resources that the access group manages.
      * At this moment, only one value `object/record` (registry records) is supported.
      * @apiParam (Request Body) {string} operationUris A list of operations that the access group allows enrolled users to perform on included resources.
-     * @apiParam (Request Body) {string | null} [ownerId] The user ID of the access group owner. If not specified, the request user (if available) will be the owner.
-     * If a null value is supplied, the owner of the access group will be set to null.
-     * @apiParam (Request Body) {string | null} [orgUnitId] The ID of the orgUnit that the access group belongs to. If not specified, the request user's orgUnit (if available) will be used.
-     * If a null value is supplied, the orgUnit of the access group will be set to null.
+     * @apiParam (Request Body) {string} [ownerId] The user ID of the access group owner. If not specified, the request user (if available) will be the owner.
+     * If a `null` value is supplied, the owner of the access group will be set to `null`.
+     * @apiParam (Request Body) {string} [orgUnitId] The ID of the orgUnit that the access group belongs to. If not specified, the request user's orgUnit (if available) will be used.
+     * If a `null` value is supplied, the orgUnit of the access group will be set to `null`.
      *
      * @apiParamExample (Body) {json}:
      *     {
@@ -412,10 +412,10 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      * @apiParam (Request Body) {string} [description] The free text description for the access group
      * @apiParam (Request Body) {string[]} [keywords] Tags (or keywords) help users discover the access-group
      * @apiParam (Request Body) {string} [operationUris] A list of operations that the access group allows enrolled users to perform on included resources.
-     * @apiParam (Request Body) {string | null} [ownerId] The user ID of the access group owner. If not specified, the request user (if available) will be the owner.
-     * If a null value is supplied, the owner of the access group will be set to null.
-     * @apiParam (Request Body) {string | null} [orgUnitId] The ID of the orgUnit that the access group belongs to. If not specified, the request user's orgUnit (if available) will be used.
-     * If a null value is supplied, the orgUnit of the access group will be set to null.
+     * @apiParam (Request Body) {string} [ownerId] The user ID of the access group owner. If not specified, the request user (if available) will be the owner.
+     * If a `null` value is supplied, the owner of the access group will be set to `null`.
+     * @apiParam (Request Body) {string} [orgUnitId] The ID of the orgUnit that the access group belongs to. If not specified, the request user's orgUnit (if available) will be used.
+     * If a `null` value is supplied, the orgUnit of the access group will be set to `null`.
      * @apiParamExample (Body) {json}:
      *     {
      *       "name": "a test access group 2",
@@ -647,7 +647,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     undefined,
                     1,
                     [
-                        `access-control.preAuthorisedPermissionIds:<-${encodeURIComponent(
+                        `access-control.preAuthorisedPermissionIds:<|${encodeURIComponent(
                             permissionId
                         )}`
                     ]
@@ -688,6 +688,174 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
             } catch (e) {
                 respondWithError(
                     `delete \`access group\` ${req?.params?.id}`,
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth Access Groups
+     * @api {post} /v0/auth/accessGroups/:groupId/datasets/:datasetId Add an Dataset to an Access Group
+     * @apiDescription Add an Dataset to an Access Group
+     *
+     * Access group users will all granted access (specified by the access group permission) to all added datasets.
+     *
+     * You need `object/record/update` permission to both access group and dataset record in order to access this API.
+     *
+     * @apiParam (URL Path) {string} groupId id of the access group
+     * @apiParam (URL Path) {string} datasetId id of the dataset
+     *
+     * @apiSuccess [Response Body] {boolean} result Indicates whether the action is actually performed or the dataset had already been added to the access group.
+     * @apiSuccessExample {json} 200
+     *    {
+     *        result: true
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post(
+        "/:groupId/datasets/:datasetId",
+        requireUnconditionalAuthDecision(
+            authDecisionClient,
+            async (req, res, next) => {
+                const datasetId = req.params?.datasetId;
+                if (!datasetId) {
+                    throw new ServerError("datasetId cannot be empty", 400);
+                }
+                const fetchRecordResult = await registryClient.getRecordInFull(
+                    datasetId
+                );
+                if (fetchRecordResult instanceof Error) {
+                    throw fetchRecordResult;
+                }
+                const { aspects, ...recordData } = fetchRecordResult;
+                if (aspects?.length) {
+                    aspects.forEach(
+                        (item: any, idx: string) =>
+                            ((recordData as any)[idx] = item)
+                    );
+                }
+                res.locals.originalAccessGroup = fetchRecordResult;
+                return {
+                    operationUri: "object/record/update",
+                    input: {
+                        object: {
+                            recordData
+                        }
+                    }
+                };
+            }
+        ),
+        requireUnconditionalAuthDecision(
+            authDecisionClient,
+            async (req, res, next) => {
+                const groupId = req.params?.groupId;
+                if (!groupId) {
+                    throw new ServerError(
+                        "access group id cannot be empty",
+                        400
+                    );
+                }
+                const fetchRecordResult = await registryClient.getRecordInFull(
+                    groupId
+                );
+                if (fetchRecordResult instanceof Error) {
+                    throw fetchRecordResult;
+                }
+                const { aspects, ...recordData } = fetchRecordResult;
+                if (aspects?.length) {
+                    aspects.forEach(
+                        (item: any, idx: string) =>
+                            ((recordData as any)[idx] = item)
+                    );
+                }
+                res.locals.originalDataset = fetchRecordResult;
+                return {
+                    operationUri: "object/record/update",
+                    input: {
+                        object: {
+                            recordData
+                        }
+                    }
+                };
+            }
+        ),
+        async function (req, res) {
+            try {
+                const recordIds = [] as string[];
+                if (res?.locals?.originalDataset?.id) {
+                    recordIds.push(res.locals.originalDataset.id as string);
+                }
+
+                const distributionIds =
+                    res?.locals?.originalDataset?.aspects?.[
+                        "dataset-distributions"
+                    ];
+
+                if (distributionIds?.length) {
+                    recordIds.splice(0, 0, ...distributionIds);
+                }
+
+                const permissionId =
+                    res?.locals?.originalAccessGroup?.aspects?.[
+                        "access-group-details"
+                    ]?.["permissionId"];
+
+                if (!isUuid(permissionId)) {
+                    throw new ServerError(
+                        `The access group "${req.params?.groupId}" has an invalid permissionId.`,
+                        500
+                    );
+                }
+
+                let existingPreAuthorisedPermissionIds =
+                    res?.locals?.originalDataset?.aspects?.["access-control"]?.[
+                        "preAuthorisedPermissionIds"
+                    ];
+
+                if (!isArray(existingPreAuthorisedPermissionIds)) {
+                    existingPreAuthorisedPermissionIds = [permissionId];
+                } else {
+                    if (
+                        existingPreAuthorisedPermissionIds.indexOf(
+                            permissionId
+                        ) !== -1
+                    ) {
+                        // the dataset has the access group's permission id already
+                        // no need to re-do it
+                        res.json({ result: false });
+                        return;
+                    }
+                    existingPreAuthorisedPermissionIds.push(permissionId);
+                }
+
+                existingPreAuthorisedPermissionIds = uniq(
+                    existingPreAuthorisedPermissionIds
+                );
+
+                const result = await registryClient.patchRecords(recordIds, [
+                    {
+                        op: "replace",
+                        path:
+                            "/aspects/access-control/preAuthorisedPermissionIds",
+                        value: existingPreAuthorisedPermissionIds
+                    }
+                ]);
+
+                if (result instanceof Error) {
+                    throw result;
+                }
+                res.json({ result: true });
+            } catch (e) {
+                respondWithError(
+                    `Add an Dataset "${req?.params?.datasetId}" to an Access Group ${req?.params?.groupId}`,
                     res,
                     e
                 );
