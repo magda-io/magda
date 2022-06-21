@@ -20,6 +20,8 @@ import {
 import { Request } from "supertest";
 import mockApiKeyStore from "./mockApiKeyStore";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
 
 describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
@@ -43,7 +45,8 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 listenPort: 6014,
                 dbHost: "localhost",
                 dbPort: 5432,
-                jwtSecret: "squirrel"
+                jwtSecret: "squirrel",
+                userId: DEFAULT_ADMIN_USER_ID
             })
         );
         return argv;
@@ -61,6 +64,13 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 "http://localhost",
                 true
             ),
+            registryClient: new AuthorizedRegistryClient({
+                baseUrl: "http://localhost:6101/v0",
+                jwtSecret: argv.jwtSecret as string,
+                userId: argv.userId,
+                tenantId: MAGDA_ADMIN_PORTAL_ID,
+                maxRetries: 0
+            }),
             failedApiKeyAuthBackOffSeconds: 5
         });
 

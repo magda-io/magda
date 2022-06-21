@@ -8,15 +8,9 @@ import {
     requirePermission,
     getUserId
 } from "magda-typescript-common/src/authorization-api/authMiddleware";
-import {
-    searchTableRecord,
-    createTableRecord,
-    getTableRecord,
-    updateTableRecord
-} from "magda-typescript-common/src/SQLUtils";
+import { searchTableRecord } from "magda-typescript-common/src/SQLUtils";
 import ServerError from "magda-typescript-common/src/ServerError";
-import SQLSyntax, { sqls } from "sql-syntax";
-import uniq from "lodash/uniq";
+import { sqls } from "sql-syntax";
 
 export interface ApiRouterOptions {
     database: Database;
