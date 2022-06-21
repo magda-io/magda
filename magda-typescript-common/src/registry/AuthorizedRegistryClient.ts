@@ -17,6 +17,7 @@ import formatServiceError from "../formatServiceError";
 import buildJwt from "../session/buildJwt";
 import { IncomingMessage } from "http";
 import { Maybe } from "tsmonad";
+import ServerError from "../ServerError";
 
 // when none of jwt, userId or jwtSecret is provided, the request is deemed to be issued by anonymous users
 export interface AuthorizedRegistryOptions extends RegistryOptions {
@@ -57,7 +58,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     putAspectDefinition(
         aspectDefinition: AspectDefinition,
         tenantId: number = this.tenantId
-    ): Promise<AspectDefinition | Error> {
+    ): Promise<AspectDefinition | ServerError> {
         const operation = () =>
             this.aspectDefinitionsApi.putById(
                 tenantId,
@@ -82,7 +83,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             .catch(toServerError("putAspectDefinition"));
     }
 
-    postHook(hook: WebHook): Promise<WebHook | Error> {
+    postHook(hook: WebHook): Promise<WebHook | ServerError> {
         const operation = () => this.webHooksApi.create(hook, this.jwt);
 
         return retry(
@@ -102,7 +103,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             .catch(toServerError("postHook"));
     }
 
-    putHook(hook: WebHook): Promise<WebHook | Error> {
+    putHook(hook: WebHook): Promise<WebHook | ServerError> {
         const operation = () =>
             this.webHooksApi.putById(
                 encodeURIComponent(hook.id),
@@ -126,7 +127,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             .catch(toServerError("putHook"));
     }
 
-    getHook(hookId: string): Promise<Maybe<WebHook> | Error> {
+    getHook(hookId: string): Promise<Maybe<WebHook> | ServerError> {
         const operation = () =>
             this.webHooksApi
                 .getById(encodeURIComponent(hookId), this.jwt)
@@ -136,11 +137,9 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                         if (e.response && e.response.statusCode === 404) {
                             return Maybe.nothing();
                         } else {
-                            throw new Error(
-                                "Failed to get hook, status was " +
-                                    (e.response && e.response.statusCode) +
-                                    "\n" +
-                                    e.message
+                            throw new ServerError(
+                                "Failed to get hook: " + e.message,
+                                e?.response?.statusCode
                             );
                         }
                     }
@@ -162,7 +161,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         );
     }
 
-    getHooks(): Promise<WebHook[] | Error> {
+    getHooks(): Promise<WebHook[] | ServerError> {
         const operation = () => () => this.webHooksApi.getAll(this.jwt);
         return <any>retry(
             operation(),
@@ -182,7 +181,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         succeeded: boolean = false,
         lastEventIdReceived: string = null,
         active?: boolean
-    ): Promise<WebHookAcknowledgementResponse | Error> {
+    ): Promise<WebHookAcknowledgementResponse | ServerError> {
         const operation = () =>
             this.webHooksApi.ack(
                 encodeURIComponent(webhookId),
@@ -210,7 +209,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     creatRecord(
         record: Record,
         tenantId: number = this.tenantId
-    ): Promise<Record | Error> {
+    ): Promise<Record | ServerError> {
         const operation = () =>
             this.recordsApi.create(tenantId, record, this.jwt);
         return retry(
@@ -233,7 +232,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     putRecord(
         record: Record,
         tenantId: number = this.tenantId
-    ): Promise<Record | Error> {
+    ): Promise<Record | ServerError> {
         const operation = () =>
             this.recordsApi.putById(
                 tenantId,
@@ -262,7 +261,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         recordId: string,
         recordPatch: Operation[],
         tenantId: number = this.tenantId
-    ): Promise<Record | Error> {
+    ): Promise<Record | ServerError> {
         const operation = () =>
             this.recordsApi.patchById(
                 tenantId,
@@ -291,7 +290,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         recordIds: string[],
         recordPatch: Operation[],
         tenantId: number = this.tenantId
-    ): Promise<string[] | Error> {
+    ): Promise<string[] | ServerError> {
         const operation = () =>
             this.recordsApi.patchRecords(
                 tenantId,
@@ -322,7 +321,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         aspectId: string,
         aspect: any,
         tenantId: number = this.tenantId
-    ): Promise<Record | Error> {
+    ): Promise<Record | ServerError> {
         const operation = () =>
             this.recordAspectsApi.putById(
                 encodeURIComponent(recordId),
@@ -352,7 +351,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         recordId: string,
         aspectId: string,
         tenantId: number = this.tenantId
-    ): Promise<DeleteResult | Error> {
+    ): Promise<DeleteResult | ServerError> {
         const operation = () =>
             this.recordAspectsApi.deleteById(
                 encodeURIComponent(recordId),
@@ -382,7 +381,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         aspectId: string,
         aspectPatch: Operation[],
         tenantId: number = this.tenantId
-    ): Promise<Record | Error> {
+    ): Promise<Record | ServerError> {
         const operation = () =>
             this.recordAspectsApi.patchById(
                 encodeURIComponent(recordId),
@@ -412,7 +411,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         sourceTagToPreserve: string,
         sourceId: string,
         tenantId: number = this.tenantId
-    ): Promise<MultipleDeleteResult | "Processing" | Error> {
+    ): Promise<MultipleDeleteResult | "Processing" | ServerError> {
         const operation = () =>
             this.recordsApi
                 .trimBySourceTag(
@@ -429,7 +428,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     }
                 });
 
-        return retry<MultipleDeleteResult | "Processing" | Error>(
+        return retry<MultipleDeleteResult | "Processing" | ServerError>(
             operation,
             this.secondsBetweenRetries,
             this.maxRetries,
@@ -444,7 +443,10 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         ).catch(toServerError("deleteBySource"));
     }
 
-    deleteRecord(id: string, tenantId: number = this.tenantId) {
+    deleteRecord(
+        id: string,
+        tenantId: number = this.tenantId
+    ): Promise<DeleteResult | ServerError> {
         const operation = () =>
             this.recordsApi.deleteById(tenantId, id, this.jwt);
         return retry(
@@ -469,7 +471,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         pageToken?: string,
         start?: number,
         limit?: number
-    ): Promise<EventsPage | Error> {
+    ): Promise<EventsPage | ServerError> {
         const operation = (id: string) => () =>
             this.recordHistoryApi.history(
                 this.tenantId,
