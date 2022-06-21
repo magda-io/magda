@@ -97,7 +97,7 @@ export default class RegistryClient {
         return this.baseUri.clone().segment("records").segment(id).toString();
     }
 
-    getAspectDefinitions(): Promise<AspectDefinition[] | Error> {
+    getAspectDefinitions(): Promise<AspectDefinition[] | ServerError> {
         const operation = () => () =>
             this.aspectDefinitionsApi.getAll(this.tenantId);
         return <any>retry(
@@ -128,7 +128,10 @@ export default class RegistryClient {
                 jwtToken
             );
             if (typeof res.body === "string") {
-                throw new Error("Invalid non-json response: " + res.body);
+                throw new ServerError(
+                    "Invalid non-json response: ",
+                    res?.response?.statusCode
+                );
             }
             return res.body;
         } catch (e) {
@@ -141,7 +144,7 @@ export default class RegistryClient {
         aspect?: Array<string>,
         optionalAspect?: Array<string>,
         dereference?: boolean
-    ): Promise<Record | Error> {
+    ): Promise<Record | ServerError> {
         const operation = (id: string) => () =>
             this.recordsApi.getById(
                 encodeURIComponent(id),
@@ -175,7 +178,10 @@ export default class RegistryClient {
                 this.jwt
             );
             if (typeof res.body === "string") {
-                throw new Error("Invalid non-json response: " + res.body);
+                throw new ServerError(
+                    "Invalid non-json response: " + res.body,
+                    res?.response?.statusCode
+                );
             }
             return res.body;
         } catch (e) {
@@ -194,7 +200,7 @@ export default class RegistryClient {
         orderBy?: string,
         orderByDir?: string,
         orderNullFirst?: boolean
-    ): Promise<RecordsPage<I> | Error> {
+    ): Promise<RecordsPage<I> | ServerError> {
         const operation = (pageToken: string) => () =>
             this.recordsApi.getAll(
                 this.tenantId,
@@ -227,7 +233,7 @@ export default class RegistryClient {
     getRecordsPageTokens(
         aspect?: Array<string>,
         limit?: number
-    ): Promise<string[] | Error> {
+    ): Promise<string[] | ServerError> {
         const operation = () =>
             this.recordsApi.getPageTokens(
                 this.tenantId,
