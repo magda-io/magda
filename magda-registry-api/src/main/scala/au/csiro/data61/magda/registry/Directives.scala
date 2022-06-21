@@ -26,7 +26,7 @@ import au.csiro.data61.magda.directives.AuthDirectives.{
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Auth
 import au.csiro.data61.magda.model.Registry.{AspectDefinition, Record, WebHook}
-import au.csiro.data61.magda.util.JsonPathUtils.applyJsonPathToRecordContextData
+import au.csiro.data61.magda.util.JsonPatchUtils.applyJsonPathToRecordContextData
 import au.csiro.data61.magda.model.Auth.{
   UnconditionalTrueDecision,
   recordToContextData

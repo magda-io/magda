@@ -9,7 +9,7 @@ import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
-import au.csiro.data61.magda.util.JsonPathUtils.processRecordPatchOperationsOnAspects
+import au.csiro.data61.magda.util.JsonPatchUtils.processRecordPatchOperationsOnAspects
 
 class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
   def DEFAULT_META_SCHEMA_URI = "https://json-schema.org/draft-07/schema#"

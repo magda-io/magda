@@ -29,7 +29,7 @@ import scala.util.{Failure, Success, Try}
 import com.typesafe.config.Config
 import scalikejdbc.interpolation.SQLSyntax
 import au.csiro.data61.magda.util.{JsonUtils, SQLUtils}
-import au.csiro.data61.magda.util.JsonPathUtils.processRecordPatchOperationsOnAspects
+import au.csiro.data61.magda.util.JsonPatchUtils.processRecordPatchOperationsOnAspects
 
 trait RecordPersistence {
 
@@ -206,6 +206,15 @@ trait RecordPersistence {
   def deleteRecord(
       tenantId: SpecifiedTenantId,
       recordId: String,
+      userId: String
+  )(implicit session: DBSession): Try[(Boolean, Long)]
+
+  def deleteRecordAspectArrayItems(
+      tenantId: SpecifiedTenantId,
+      recordId: String,
+      aspectId: String,
+      jsonPath: JsonPatch,
+      jsonItems: Seq[JsValue],
       userId: String
   )(implicit session: DBSession): Try[(Boolean, Long)]
 
@@ -1353,6 +1362,24 @@ class DefaultRecordPersistence(config: Config)
 
       }
     } yield (rowsDeleted > 0, eventId)
+  }
+
+  def deleteRecordAspectArrayItems(
+      tenantId: SpecifiedTenantId,
+      recordId: String,
+      aspectId: String,
+      jsonPath: JsonPatch,
+      jsonItems: Seq[JsValue],
+      userId: String
+  )(implicit session: DBSession): Try[(Boolean, Long)] = {
+    getRecordAspectById(
+      tenantId,
+      UnconditionalTrueDecision,
+      recordId,
+      aspectId
+    ).map{ aspectData =>
+
+    }
   }
 
   def trimRecordsBySource(

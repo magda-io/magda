@@ -6,7 +6,7 @@ import gnieh.diffson.sprayJson._
 import spray.json.JsObject
 import gnieh.diffson.PatchException
 
-object JsonPathUtils {
+object JsonPatchUtils {
 
   def processRecordPatchOperationsOnAspects[T](
       recordPatch: JsonPatch,
@@ -156,7 +156,7 @@ object JsonPathUtils {
   /**
     * Apply Json path to policy engine record context json data
     * @param recordContextData
-    * @param jsonPath
+    * @param recordPatch
     * @return
     */
   def applyJsonPathToRecordContextData(
