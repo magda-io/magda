@@ -658,7 +658,7 @@ class RecordsService(
         entity(as[PatchRecordsRequest]) { requestData =>
           withAuthDecision(
             authClient,
-            AuthDecisionReqConfig("object/record/read")
+            AuthDecisionReqConfig("object/record/update")
           ) { authDecision =>
             val result = DB localTx { implicit session =>
               recordPersistence.patchRecords(
@@ -688,6 +688,135 @@ class RecordsService(
             webHookActor ! WebHookActor
               .Process()
             result
+          }
+        }
+      }
+    }
+  }
+
+  /**
+    * @apiGroup Registry Record Aspects
+    * @api {put} /v0/registry/records/aspects/:aspectId Modify a list of records's aspect with same new data
+    *
+    * @apiDescription  Modify a list of records's aspect with same new data
+    *
+    * @apiParam (path) {string} aspectId the id of the aspect to be updated
+    * @apiParam (query) {boolean} [merge] Indicate whether merge the new data into existing aspect data or replace it. Default: `false`
+    * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
+    * @apiParam (body) {object} data the new aspect data. When `merge` = true, the new data will be merged into existing aspect data (if exists).
+    *
+    * @apiParamExample {json} Request-Example
+    * {
+    *   "recordIds": ["dsd-sds-xsds-22", "sds-sdds-2334-dds-34", "sdds-3439-34334343"],
+    *   "data": {
+    *      "a" : 1,
+    *      "b" : [1,2]
+    *   }
+    * }
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    *
+    * @apiSuccess (Success 200) {json} Response a list of event id for each of the record after applied the new aspect data
+    * @apiSuccessExample {json} Response:
+    *      [122, 123, 124]
+    * @apiUse GenericError
+    */
+  @Path("/aspects/:aspectId")
+  @ApiOperation(
+    value = "Modify a list of records's aspect with same new data",
+    nickname = "putRecordsAspect",
+    httpMethod = "PUT",
+    response = classOf[List[String]],
+    notes = "Modify a list of records's aspect with same new data"
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "aspectId",
+        required = true,
+        dataType = "string",
+        paramType = "path",
+        value = "ID of the aspect to update."
+      ),
+      new ApiImplicitParam(
+        name = "requestData",
+        required = true,
+        dataType =
+          "au.csiro.data61.magda.model.Registry$PutRecordsAspectRequest",
+        paramType = "body",
+        value = "An json object has key 'recordIds' & 'data'"
+      ),
+      new ApiImplicitParam(
+        name = "merge",
+        required = false,
+        dataType = "boolean",
+        paramType = "query",
+        value =
+          "Whether merge the supplied aspect data to existing aspect data or replace it"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = true,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      )
+    )
+  )
+  def putRecordsAspect: Route = put {
+    path("aspects" / Segment) { (aspectId: String) =>
+      requireUserId { userId =>
+        requiresSpecifiedTenantId { tenantId =>
+          entity(as[PutRecordsAspectRequest]) { requestData =>
+            parameters(
+              'merge.as[Boolean].?
+            ) { merge =>
+              withAuthDecision(
+                authClient,
+                AuthDecisionReqConfig("object/record/update")
+              ) { authDecision =>
+                val result = DB localTx { implicit session =>
+                  recordPersistence.putRecordsAspectById(
+                    tenantId,
+                    authDecision,
+                    requestData.recordIds,
+                    aspectId,
+                    requestData.data,
+                    userId,
+                    false,
+                    merge.getOrElse(false)
+                  ) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        result
+                      )
+                    case Failure(ServerError(msg, statusCode)) =>
+                      complete(
+                        statusCode,
+                        ApiError(msg)
+                      )
+                    case Failure(e) =>
+                      complete(
+                        StatusCodes.InternalServerError,
+                        ApiError(e.getMessage)
+                      )
+                  }
+                }
+                webHookActor ! WebHookActor
+                  .Process()
+                result
+              }
+            }
           }
         }
       }
@@ -816,9 +945,11 @@ class RecordsService(
     super.route ~
       putById ~
       patchById ~
+      patchRecords ~
       trimBySourceTag ~
       deleteById ~
       create ~
+      putRecordsAspect ~
       new RecordAspectsService(
         webHookActor,
         authClient,

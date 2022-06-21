@@ -175,6 +175,17 @@ trait RecordPersistence {
       forceSkipAspectValidation: Boolean = false
   )(implicit session: DBSession): Try[(JsObject, Long)]
 
+  def putRecordsAspectById(
+      tenantId: SpecifiedTenantId,
+      authDecision: AuthDecision,
+      recordIds: Seq[String],
+      aspectId: String,
+      newAspect: JsObject,
+      userId: String,
+      forceSkipAspectValidation: Boolean = false,
+      merge: Boolean = false
+  )(implicit session: DBSession): Try[Seq[Long]]
+
   def putRecordAspectById(
       tenantId: SpecifiedTenantId,
       recordId: String,
@@ -991,7 +1002,10 @@ class DefaultRecordPersistence(config: Config)
         Some(noEmptyIds.length)
       )
       if (result.records.length != noEmptyIds.length) {
-        throw ServerError("", 403)
+        throw ServerError(
+          "You don't have permission to all records requested",
+          403
+        )
       }
     }.flatMap { _ =>
       recordIds
@@ -1083,6 +1097,65 @@ class DefaultRecordPersistence(config: Config)
         }
       }
     } yield (patchedAspect, eventId)
+  }
+
+  def putRecordsAspectById(
+      tenantId: SpecifiedTenantId,
+      authDecision: AuthDecision,
+      recordIds: Seq[String],
+      aspectId: String,
+      newAspect: JsObject,
+      userId: String,
+      forceSkipAspectValidation: Boolean = false,
+      merge: Boolean = false
+  )(implicit session: DBSession): Try[Seq[Long]] = {
+    Try {
+      val noEmptyIds = recordIds.filter(!_.trim.isEmpty)
+      if (noEmptyIds.isEmpty) {
+        throw ServerError(
+          "there is no non-empty ids supplied via `recordIds` parameter.",
+          400
+        )
+      }
+      val result = getRecords(
+        tenantId,
+        authDecision,
+        Seq(),
+        Seq(),
+        None,
+        None,
+        Some(noEmptyIds.length),
+        Some(false),
+        List(Some(sqls"recordId in ($noEmptyIds)")),
+        None,
+        Some(noEmptyIds.length)
+      )
+      if (result.records.length != noEmptyIds.length) {
+        throw ServerError(
+          "You don't have permission to all records requested",
+          403
+        )
+      }
+    }.flatMap { _ =>
+      recordIds
+        .map(
+          id =>
+            putRecordAspectById(
+              tenantId,
+              id,
+              aspectId,
+              newAspect,
+              userId,
+              forceSkipAspectValidation,
+              merge
+            ).map(_._2)
+        )
+        .foldLeft(Try(Seq[Long]())) {
+          case (Success(result), Success(newItem)) => Success(result :+ newItem)
+          case (Success(_), Failure(ex))           => Failure(ex)
+        }
+    }
+
   }
 
   def putRecordAspectById(

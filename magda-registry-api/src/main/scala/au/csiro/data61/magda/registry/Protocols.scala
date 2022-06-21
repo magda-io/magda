@@ -49,4 +49,7 @@ trait Protocols extends DiffsonProtocol {
   implicit val patchRecordsRequestFormat = jsonFormat2(
     PatchRecordsRequest.apply
   )
+  implicit val putRecordsAspectRequestFormat = jsonFormat2(
+    PutRecordsAspectRequest.apply
+  )
 }
