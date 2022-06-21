@@ -1,6 +1,12 @@
 package au.csiro.data61.magda.registry
 
-import au.csiro.data61.magda.model.Registry.{Record, RecordSummary, RecordType, jsonFormat2, _}
+import au.csiro.data61.magda.model.Registry.{
+  Record,
+  RecordSummary,
+  RecordType,
+  jsonFormat2,
+  _
+}
 import gnieh.diffson.sprayJson._
 
 final case class ReadyStatus(ready: Boolean = false)

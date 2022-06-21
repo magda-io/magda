@@ -311,7 +311,6 @@ object Registry
     Registry.RegistryCountResponse.apply
   )
 
-
   implicit object RecordTypeFormat extends RootJsonFormat[Registry.RecordType] {
 
     def write(obj: Registry.RecordType) = obj match {
