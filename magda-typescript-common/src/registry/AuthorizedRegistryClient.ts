@@ -320,6 +320,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         recordId: string,
         aspectId: string,
         aspect: any,
+        merge: boolean = false,
         tenantId: number = this.tenantId
     ): Promise<Record | ServerError> {
         const operation = () =>
@@ -328,7 +329,8 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 aspectId,
                 aspect,
                 this.jwt,
-                tenantId
+                tenantId,
+                merge
             );
         return retry(
             operation,

@@ -104,6 +104,11 @@ export class PatchRecordsRequest {
     "jsonPath": JsonPatch;
 }
 
+export class PutRecordsAspectRequest {
+    "recordIds": Array<string>;
+    "data": JsObject;
+}
+
 /**
  * A record in the registry, usually including data for one or more aspects, unique for a tenant.
  */
@@ -1246,13 +1251,15 @@ export class RecordAspectsApi {
      * @param aspect The record aspect to save.
      * @param xMagdaSession Magda internal session id
      * @param xMagdaTenantId 0
+     * @param merge Whether merge the supplied aspect data to existing aspect data or replace it
      */
     public putById(
         recordId: string,
         aspectId: string,
         aspect: any,
         xMagdaSession: string,
-        xMagdaTenantId: number
+        xMagdaTenantId: number,
+        merge?: boolean
     ): Promise<{ response: http.IncomingMessage; body: any }> {
         const localVarPath =
             this.basePath +
@@ -1296,6 +1303,10 @@ export class RecordAspectsApi {
             throw new Error(
                 "Required parameter xMagdaTenantId was null or undefined when calling putById."
             );
+        }
+
+        if (merge !== undefined) {
+            queryParameters["merge"] = merge;
         }
 
         headerParams["X-Magda-Session"] = xMagdaSession;
@@ -2676,6 +2687,109 @@ export class RecordsApi {
                 });
             }
         );
+    }
+    /**
+     * Modify a list of records&#39;s aspect with same new data
+     * Modify a list of records&#39;s aspect with same new data
+     * @param xMagdaTenantId 0
+     * @param aspectId ID of the aspect to update.
+     * @param requestData An json object has key &#39;recordIds&#39; &amp; &#39;data&#39;
+     * @param xMagdaSession Magda internal session id
+     * @param merge Whether merge the supplied aspect data to existing aspect data or replace it
+     */
+    public putRecordsAspect(
+        xMagdaTenantId: number,
+        aspectId: string,
+        requestData: PutRecordsAspectRequest,
+        xMagdaSession: string,
+        merge?: boolean
+    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+        const localVarPath =
+            this.basePath +
+            "/records/aspects/:aspectId".replace(
+                "{" + "aspectId" + "}",
+                String(aspectId)
+            );
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling putRecordsAspect."
+            );
+        }
+
+        // verify required parameter 'aspectId' is not null or undefined
+        if (aspectId === null || aspectId === undefined) {
+            throw new Error(
+                "Required parameter aspectId was null or undefined when calling putRecordsAspect."
+            );
+        }
+
+        // verify required parameter 'requestData' is not null or undefined
+        if (requestData === null || requestData === undefined) {
+            throw new Error(
+                "Required parameter requestData was null or undefined when calling putRecordsAspect."
+            );
+        }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error(
+                "Required parameter xMagdaSession was null or undefined when calling putRecordsAspect."
+            );
+        }
+
+        if (merge !== undefined) {
+            queryParameters["merge"] = merge;
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "PUT",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+            body: requestData
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{
+            response: http.IncomingMessage;
+            body: Array<any>;
+        }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (
+                        response.statusCode >= 200 &&
+                        response.statusCode <= 299
+                    ) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
     }
     /**
      * Trim by source tag
