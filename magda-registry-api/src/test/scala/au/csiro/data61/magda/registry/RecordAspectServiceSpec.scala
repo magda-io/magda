@@ -68,7 +68,7 @@ class RecordAspectServiceSpec extends ApiSpec {
                 "test-aspect" ->
                   """
                     | {
-                    |    "a" : [1,2],
+                    |    "a" : ["1","2"],
                     |    "b" : "yes",
                     |    "d" : {
                     |      "d1":1
@@ -87,7 +87,7 @@ class RecordAspectServiceSpec extends ApiSpec {
                 "test-aspect" ->
                   """
                     | {
-                    |    "a" : [3,4]
+                    |    "a" : ["3","4"]
                     | }
                     |""".stripMargin.parseJson.asJsObject
               ),
@@ -115,7 +115,7 @@ class RecordAspectServiceSpec extends ApiSpec {
               )
             ),
             "data" -> JsObject(
-              "a" -> JsArray(Vector(JsNumber(2), JsNumber(5))),
+              "a" -> JsArray(Vector(JsString("2"), JsString("5"))),
               "b" -> JsString("no"),
               "c" -> JsString("c-value"),
               "d" -> JsObject("d2" -> JsNumber(2))
@@ -137,7 +137,7 @@ class RecordAspectServiceSpec extends ApiSpec {
           "test-aspect",
           """
             |{
-            |  "a" : [1,2,5],
+            |  "a" : ["1","2","5"],
             |  "b" : "no",
             |  "c" : "c-value",
             |  "d" : {
@@ -155,7 +155,7 @@ class RecordAspectServiceSpec extends ApiSpec {
           "test-aspect",
           """
             |{
-            |  "a" : [3,4,2,5],
+            |  "a" : ["3","4","2","5"],
             |  "b" : "no",
             |  "c" : "c-value",
             |  "d" : {
@@ -171,7 +171,7 @@ class RecordAspectServiceSpec extends ApiSpec {
           "test-aspect",
           """
             |{
-            |  "a" : [2,5],
+            |  "a" : ["2","5"],
             |  "b" : "no",
             |  "c" : "c-value",
             |  "d" : {

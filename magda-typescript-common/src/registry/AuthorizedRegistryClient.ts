@@ -349,6 +349,40 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             .catch(toServerError("putRecordAspect"));
     }
 
+    putRecordsAspect(
+        recordIds: string[],
+        aspectId: string,
+        aspectData: any,
+        merge: boolean = false,
+        tenantId: number = this.tenantId
+    ): Promise<string[] | ServerError> {
+        const operation = () =>
+            this.recordsApi.putRecordsAspect(
+                tenantId,
+                aspectId,
+                { recordIds, data: aspectData },
+                this.jwt,
+                merge
+            );
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to PUT aspect ${aspectId} for records with ID: "${recordIds.join(
+                            ","
+                        )}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("putRecordsAspect"));
+    }
+
     deleteRecordAspect(
         recordId: string,
         aspectId: string,

@@ -815,39 +815,15 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     );
                 }
 
-                let existingPreAuthorisedPermissionIds =
-                    res?.locals?.originalDataset?.aspects?.["access-control"]?.[
-                        "preAuthorisedPermissionIds"
-                    ];
-
-                if (!isArray(existingPreAuthorisedPermissionIds)) {
-                    existingPreAuthorisedPermissionIds = [permissionId];
-                } else {
-                    if (
-                        existingPreAuthorisedPermissionIds.indexOf(
-                            permissionId
-                        ) !== -1
-                    ) {
-                        // the dataset has the access group's permission id already
-                        // no need to re-do it
-                        res.json({ result: false });
-                        return;
-                    }
-                    existingPreAuthorisedPermissionIds.push(permissionId);
-                }
-
-                existingPreAuthorisedPermissionIds = uniq(
-                    existingPreAuthorisedPermissionIds
-                );
-
-                const result = await registryClient.patchRecords(recordIds, [
+                const result = await registryClient.putRecordsAspect(
+                    recordIds,
+                    "access-control",
                     {
-                        op: "replace",
-                        path:
-                            "/aspects/access-control/preAuthorisedPermissionIds",
-                        value: existingPreAuthorisedPermissionIds
-                    }
-                ]);
+                        preAuthorisedPermissionIds: [permissionId]
+                    },
+                    // merge data. will not produce duplicates array items
+                    true
+                );
 
                 if (result instanceof Error) {
                     throw result;
