@@ -28,7 +28,7 @@ import au.csiro.data61.magda.model.{
 import scala.util.{Failure, Success, Try}
 import com.typesafe.config.Config
 import scalikejdbc.interpolation.SQLSyntax
-import au.csiro.data61.magda.util.SQLUtils
+import au.csiro.data61.magda.util.{JsonUtils, SQLUtils}
 import au.csiro.data61.magda.util.JsonPathUtils.processRecordPatchOperationsOnAspects
 
 trait RecordPersistence {
@@ -181,7 +181,8 @@ trait RecordPersistence {
       aspectId: String,
       newAspect: JsObject,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
+      forceSkipAspectValidation: Boolean = false,
+      merge: Boolean = false
   )(implicit session: DBSession): Try[(JsObject, Long)]
 
   def createRecord(
@@ -1090,63 +1091,70 @@ class DefaultRecordPersistence(config: Config)
       aspectId: String,
       newAspect: JsObject,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
+      forceSkipAspectValidation: Boolean = false,
+      merge: Boolean = false
   )(implicit session: DBSession): Try[(JsObject, Long)] = {
-    for {
-      // --- validate Aspect data against JSON schema
-      _ <- Try {
-        if (!forceSkipAspectValidation)
-          aspectValidator.validate(aspectId, newAspect, tenantId)(
-            session
-          )
-      }
-      (oldAspect, eventId) <- this.getRecordAspectById(
-        tenantId,
-        UnconditionalTrueDecision,
-        recordId,
-        aspectId
-      ) match {
-        case Some(aspect) => Success((aspect, None))
-        // Possibility of a race condition here. The aspect doesn't exist, so we try to create it.
-        // But someone else could have created it in the meantime. So if our create fails, try one
-        // more time to get an existing one. We use a nested transaction so that, if the create fails,
-        // we don't end up with an extraneous record creation event in the database.
-        case None =>
-          DB.localTx { nested =>
-            // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
-            // --- as the aspect data has been validated (unless not required) in the beginning of current method
-            createRecordAspect(
-              tenantId,
-              recordId,
-              aspectId,
-              newAspect,
-              userId,
-              true
-            )(nested)
-          } match {
-            case Success((aspect, eventId)) => Success((aspect, Some(eventId)))
-            case Failure(e) =>
-              this.getRecordAspectById(
-                tenantId,
-                UnconditionalTrueDecision,
-                recordId,
-                aspectId
-              ) match {
-                case Some(aspect) => Success((aspect, None))
-                case None         => Failure(e)
-              }
-          }
-      }
-      recordAspectPatch <- Try {
-        // Diff the old record aspect and the new one
-        val oldAspectJson = oldAspect.toJson
-        val newAspectJson = newAspect.toJson
 
-        JsonDiff.diff(oldAspectJson, newAspectJson, remember = false)
+    (getRecordAspectById(
+      tenantId,
+      UnconditionalTrueDecision,
+      recordId,
+      aspectId
+    ) match {
+      case Some(aspect) => Success((aspect, None))
+      // Possibility of a race condition here. The aspect doesn't exist, so we try to create it.
+      // But someone else could have created it in the meantime. So if our create fails, try one
+      // more time to get an existing one. We use a nested transaction so that, if the create fails,
+      // we don't end up with an extraneous record creation event in the database.
+      case None =>
+        DB.localTx { nested =>
+          createRecordAspect(
+            tenantId,
+            recordId,
+            aspectId,
+            newAspect,
+            userId,
+            forceSkipAspectValidation
+          )(nested)
+        } match {
+          case Success((aspect, eventId)) => Success((aspect, Some(eventId)))
+          case Failure(e) =>
+            getRecordAspectById(
+              tenantId,
+              UnconditionalTrueDecision,
+              recordId,
+              aspectId
+            ) match {
+              case Some(aspect) => Success((aspect, None))
+              case None         => Failure(e)
+            }
+        }
+    }).flatMap { result =>
+      val oldAspect = result._1
+      val eventId = result._2
+      val finalAspectData = if (merge) {
+        JsonUtils.merge(oldAspect, newAspect)
+      } else {
+        newAspect
       }
+
+      if (!forceSkipAspectValidation) {
+        // --- validate Aspect data against JSON schema
+        aspectValidator.validate(aspectId, finalAspectData, tenantId)(
+          session
+        )
+      }
+
+      // Diff the old record aspect and the new one
+      val oldAspectJson = oldAspect.toJson
+      val finalAspectDataJson = finalAspectData.toJson
+
+      val recordAspectPatch =
+        JsonDiff.diff(oldAspectJson, finalAspectDataJson, remember = false)
+
       // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
-      // --- as the aspect data has been validated (unless not required) in the beginning of current method
-      result <- patchRecordAspectById(
+      // --- as the aspect data has been validated (unless not required)
+      patchRecordAspectById(
         tenantId,
         recordId,
         aspectId,
@@ -1162,7 +1170,7 @@ class DefaultRecordPersistence(config: Config)
             Success(aspectData, patchEventId)
           }
       }
-    } yield result
+    }
   }
 
   def createRecord(

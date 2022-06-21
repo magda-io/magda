@@ -52,6 +52,7 @@ class RecordAspectsService(
     *   Please note: when the record (specified by recordId ) doesn't exist, this API will respond 400 error.
     * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
     * @apiParam (path) {string} aspectId ID of the aspect to update
+    * @apiParam (query) {boolean} [merge] Whether merge with existing aspect data or replace it. Default: `false`
     * @apiParam (body) {json} aspect The record aspect to save
     * @apiParamExample {json} Request-Example
     *    {
@@ -116,6 +117,14 @@ class RecordAspectsService(
         value = "The record aspect to save."
       ),
       new ApiImplicitParam(
+        name = "merge",
+        required = false,
+        dataType = "boolean",
+        paramType = "query",
+        value =
+          "Whether merge the supplied aspect data to existing aspect data or replace it"
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Session",
         required = true,
         dataType = "String",
@@ -137,39 +146,48 @@ class RecordAspectsService(
         requireUserId { userId =>
           requiresSpecifiedTenantId { tenantId =>
             entity(as[JsObject]) { aspect =>
-              requireRecordAspectUpdatePermission(
-                authClient,
-                recordId,
-                aspectId,
-                Left(aspect)
-              ) {
-                val theResult = DB localTx { session =>
-                  recordPersistence.putRecordAspectById(
-                    tenantId,
-                    recordId,
-                    aspectId,
-                    aspect,
-                    userId
-                  )(session) match {
-                    case Success(result) =>
-                      complete(
-                        StatusCodes.OK,
-                        List(RawHeader("x-magda-event-id", result._2.toString)),
-                        result._1
-                      )
-                    case Failure(exception) =>
-                      complete(
-                        StatusCodes.BadRequest,
-                        ApiError(exception.getMessage)
-                      )
+              parameters(
+                'merge.as[Boolean].?
+              ) { merge =>
+                requireRecordAspectUpdatePermission(
+                  authClient,
+                  recordId,
+                  aspectId,
+                  Left(aspect),
+                  merge.getOrElse(false)
+                ) {
+                  val theResult = DB localTx { session =>
+                    recordPersistence.putRecordAspectById(
+                      tenantId,
+                      recordId,
+                      aspectId,
+                      aspect,
+                      userId,
+                      false,
+                      merge.getOrElse(false)
+                    )(session) match {
+                      case Success(result) =>
+                        complete(
+                          StatusCodes.OK,
+                          List(
+                            RawHeader("x-magda-event-id", result._2.toString)
+                          ),
+                          result._1
+                        )
+                      case Failure(exception) =>
+                        complete(
+                          StatusCodes.BadRequest,
+                          ApiError(exception.getMessage)
+                        )
+                    }
                   }
+                  webHookActor ! WebHookActor
+                    .Process(
+                      ignoreWaitingForResponse = false,
+                      Some(List(aspectId))
+                    )
+                  theResult
                 }
-                webHookActor ! WebHookActor
-                  .Process(
-                    ignoreWaitingForResponse = false,
-                    Some(List(aspectId))
-                  )
-                theResult
               }
             }
           }

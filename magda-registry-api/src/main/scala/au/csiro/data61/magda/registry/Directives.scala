@@ -32,6 +32,7 @@ import au.csiro.data61.magda.model.Auth.{
   recordToContextData
 }
 import au.csiro.data61.magda.model.TenantId.{SpecifiedTenantId, TenantId}
+import au.csiro.data61.magda.util.JsonUtils
 import gnieh.diffson.PatchException
 
 object Directives extends Protocols with SprayJsonSupport {
@@ -312,6 +313,7 @@ object Directives extends Protocols with SprayJsonSupport {
       recordId: String,
       aspectId: String,
       newAspectOrAspectJsonPath: Either[JsObject, JsonPatch],
+      merge: Boolean = false,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
     (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
@@ -332,7 +334,18 @@ object Directives extends Protocols with SprayJsonSupport {
           ).map { currentRecordData =>
             val recordContextDataAfterUpdate = newAspectOrAspectJsonPath match {
               case Left(newAspect) =>
-                JsObject(currentRecordData.fields + (aspectId -> newAspect))
+                if (merge) {
+                  // merge aspect data
+                  val oldAspectData =
+                    currentRecordData.fields.get(aspectId).getOrElse(JsObject())
+                  val finalAspectData =
+                    JsonUtils.merge(oldAspectData, newAspect)
+                  JsObject(
+                    currentRecordData.fields + (aspectId -> finalAspectData)
+                  )
+                } else {
+                  JsObject(currentRecordData.fields + (aspectId -> newAspect))
+                }
               case Right(recordJsonPath) =>
                 val newAspectData = recordJsonPath(
                   currentRecordData.fields

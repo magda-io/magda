@@ -20,7 +20,7 @@ class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
     else config.getBoolean("validateJsonSchema")
   }
 
-  def validate(aspectId: String, aspectData: JsObject, tenantId: TenantId)(
+  def validate(aspectId: String, aspectData: JsValue, tenantId: TenantId)(
       implicit session: DBSession
   ) {
     if (shouldValidate()) {
@@ -43,7 +43,7 @@ class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
 
   def validateWithDefinition(
       aspectDef: AspectDefinition,
-      aspectData: JsObject
+      aspectData: JsValue
   ): Unit = {
     if (!aspectDef.jsonSchema.isDefined) {
       // --- json schema not set means skipping validation
