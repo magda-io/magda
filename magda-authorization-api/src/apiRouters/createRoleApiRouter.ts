@@ -15,7 +15,6 @@ import {
     getTableRecord,
     updateTableRecord
 } from "magda-typescript-common/src/SQLUtils";
-import uniq from "lodash/uniq";
 import ServerError from "magda-typescript-common/src/ServerError";
 
 export interface ApiRouterOptions {
