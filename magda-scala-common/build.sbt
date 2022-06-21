@@ -41,6 +41,7 @@ libraryDependencies ++= {
     "io.lemonlabs"                 %% "scala-uri"            % "3.6.0",
     "org.scalamock"                %% "scalamock"            % "5.1.0" % Test,
     "org.scalikejdbc"              %% "scalikejdbc"          % "3.0.0-RC3",
-    "org.json4s"                   %  "json4s-native_2.12"   % "4.0.5"
+    "org.json4s"                   %  "json4s-native_2.12"   % "4.0.5",
+    "com.jayway.jsonpath"          %  "json-path"            % "2.7.0"
   )
 }
