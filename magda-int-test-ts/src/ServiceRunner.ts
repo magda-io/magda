@@ -552,6 +552,8 @@ export default class ServiceRunner {
             [
                 "--jwtSecret",
                 this.jwtSecret,
+                "--userId",
+                DEFAULT_ADMIN_USER_ID,
                 "--debug",
                 `${this.authApiDebugMode}`,
                 "--skipAuth",
