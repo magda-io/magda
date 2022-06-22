@@ -213,10 +213,22 @@ trait RecordPersistence {
       tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String,
-      jsonPath: JsonPatch,
+      jsonPath: String,
       jsonItems: Seq[JsValue],
-      userId: String
+      userId: String,
+      forceSkipAspectValidation: Boolean = false
   )(implicit session: DBSession): Try[(Boolean, Long)]
+
+  def deleteRecordsAspectArrayItems(
+      tenantId: SpecifiedTenantId,
+      authDecision: AuthDecision,
+      recordIds: Seq[String],
+      aspectId: String,
+      jsonPath: String,
+      jsonItems: Seq[JsValue],
+      userId: String,
+      forceSkipAspectValidation: Boolean = false
+  )(implicit session: DBSession): Try[Seq[Long]]
 
   def trimRecordsBySource(
       tenantId: SpecifiedTenantId,
@@ -1368,17 +1380,94 @@ class DefaultRecordPersistence(config: Config)
       tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String,
-      jsonPath: JsonPatch,
+      jsonPath: String,
       jsonItems: Seq[JsValue],
-      userId: String
+      userId: String,
+      forceSkipAspectValidation: Boolean = false
   )(implicit session: DBSession): Try[(Boolean, Long)] = {
     getRecordAspectById(
       tenantId,
       UnconditionalTrueDecision,
       recordId,
       aspectId
-    ).map{ aspectData =>
+    ).map { aspectData =>
+      val newAspectData = JsonUtils.deleteJsonArrayItemsByJsonPath(
+        aspectData,
+        jsonPath,
+        jsonItems
+      )
+      putRecordAspectById(
+        tenantId,
+        recordId,
+        aspectId,
+        newAspectData.asJsObject,
+        userId,
+        forceSkipAspectValidation,
+        false
+      ).map { v =>
+        (true, v._2) // true and eventId
+      }
+    } match {
+      case Some(v) => v
+      case None    => Try(false, 0)
+    }
+  }
 
+  def deleteRecordsAspectArrayItems(
+      tenantId: SpecifiedTenantId,
+      authDecision: AuthDecision,
+      recordIds: Seq[String],
+      aspectId: String,
+      jsonPath: String,
+      jsonItems: Seq[JsValue],
+      userId: String,
+      forceSkipAspectValidation: Boolean = false
+  )(implicit session: DBSession): Try[Seq[Long]] = {
+    Try {
+      val noEmptyIds = recordIds.filter(!_.trim.isEmpty)
+      if (noEmptyIds.isEmpty) {
+        throw ServerError(
+          "there is no non-empty ids supplied via `recordIds` parameter.",
+          400
+        )
+      }
+      val result = getRecords(
+        tenantId,
+        authDecision,
+        Seq(),
+        Seq(),
+        None,
+        None,
+        Some(noEmptyIds.length),
+        Some(false),
+        List(Some(sqls"recordId in ($noEmptyIds)")),
+        None,
+        Some(noEmptyIds.length)
+      )
+      if (result.records.length != noEmptyIds.length) {
+        throw ServerError(
+          "You don't have permission to all records requested",
+          403
+        )
+      }
+    }.flatMap { _ =>
+      recordIds
+        .map(
+          id =>
+            deleteRecordAspectArrayItems(
+              tenantId,
+              id,
+              aspectId,
+              jsonPath,
+              jsonItems,
+              userId,
+              forceSkipAspectValidation
+            ).map(_._2)
+        )
+        .foldLeft(Try(Seq[Long]())) {
+          case (Success(result), Success(newItem)) => Success(result :+ newItem)
+          case (Success(_), Failure(ex))           => Failure(ex)
+        }
     }
   }
 
