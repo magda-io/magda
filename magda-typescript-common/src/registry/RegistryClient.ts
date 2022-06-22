@@ -170,6 +170,34 @@ export default class RegistryClient {
             .catch(toServerError("getRecord"));
     }
 
+    getRecordAspect(id: string, aspectId: string): Promise<any | ServerError> {
+        const operation = (id: string) => () =>
+            this.recordAspectsApi.getById(
+                this.tenantId,
+                encodeURIComponent(id),
+                encodeURIComponent(aspectId),
+                this.jwt
+            );
+        return <any>retry(
+            operation(id),
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        "Failed to GET record Aspect.",
+                        e,
+                        retriesLeft
+                    )
+                ),
+            (e) => {
+                return e?.response?.statusCode !== 404;
+            }
+        )
+            .then((result) => result.body)
+            .catch(toServerError("getRecordAspect"));
+    }
+
     async getRecordInFull(id: string): Promise<Record> {
         try {
             const res = await this.recordsApi.getByIdInFull(

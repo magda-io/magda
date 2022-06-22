@@ -383,6 +383,39 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             .catch(toServerError("putRecordsAspect"));
     }
 
+    deleteRecordsAspectArrayItems(
+        recordIds: string[],
+        aspectId: string,
+        jsonPath: string,
+        items: (string | number)[],
+        tenantId: number = this.tenantId
+    ): Promise<string[] | ServerError> {
+        const operation = () =>
+            this.recordsApi.deleteRecordsAspectArrayItems(
+                tenantId,
+                aspectId,
+                { recordIds, jsonPath, items },
+                this.jwt
+            );
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to deleteRecordsAspectArrayItems at jsonPath "${jsonPath}" aspect ${aspectId} for records with ID: "${recordIds.join(
+                            ","
+                        )}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("deleteRecordsAspectArrayItems"));
+    }
+
     deleteRecordAspect(
         recordId: string,
         aspectId: string,
