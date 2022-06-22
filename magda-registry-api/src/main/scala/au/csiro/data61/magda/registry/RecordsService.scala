@@ -855,7 +855,7 @@ class RecordsService(
     *      [122, 123, 124]
     * @apiUse GenericError
     */
-  @Path("/aspects/:aspectId")
+  @Path("/aspectArrayItems/:aspectId")
   @ApiOperation(
     value = "Remove items from records' aspect data",
     nickname = "deleteRecordsAspectArrayItems",
@@ -896,8 +896,8 @@ class RecordsService(
       )
     )
   )
-  def deleteRecordsAspectArrayItems: Route = put {
-    path("aspects" / Segment) { (aspectId: String) =>
+  def deleteRecordsAspectArrayItems: Route = delete {
+    path("aspectArrayItems" / Segment) { (aspectId: String) =>
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[DeleteRecordsAspectArrayItemsRequest]) { requestData =>

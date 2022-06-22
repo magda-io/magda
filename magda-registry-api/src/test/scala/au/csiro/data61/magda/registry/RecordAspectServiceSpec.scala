@@ -54,6 +54,150 @@ class RecordAspectServiceSpec extends ApiSpec {
   }
 
   describe("Record Aspect Service Logic") {
+
+    describe(
+      "Delete items from an Array in Aspect Data {delete} /v0/registry/records/aspectArrayItems/{aspectId}"
+    ) {
+      it("should delete items from aspect data array correctly") { param =>
+        settingUpTestData(
+          param,
+          List(
+            Record(
+              id = "record-1",
+              name = "test record 1",
+              aspects = Map(
+                "test-aspect" ->
+                  """
+                    | {
+                    |    "b" : "yes",
+                    |    "d" : {
+                    |      "d1":["A","B","C",4, 5, 6]
+                    |    },
+                    |    "e": 2
+                    | }
+                    |""".stripMargin.parseJson.asJsObject
+              ),
+              None,
+              None
+            ),
+            Record(
+              id = "record-2",
+              name = "test record 2",
+              aspects = Map(
+                "test-aspect" ->
+                  """
+                    | {
+                    |    "a" : ["3","4"],
+                    |    "d" : {
+                    |      "d1":["A","B","C",14, 15, 16]
+                    |    }
+                    | }
+                    |""".stripMargin.parseJson.asJsObject
+              ),
+              None,
+              None
+            ),
+            Record(
+              id = "record-3",
+              name = "test record 3",
+              aspects = Map(
+                "test-aspect" ->
+                  """
+                    | {
+                    |    "a" : ["A","B", "C"]
+                    | }
+                    |""".stripMargin.parseJson.asJsObject
+              ),
+              None,
+              None
+            ),
+            Record(
+              id = "record-4",
+              name = "test record 4",
+              aspects = Map(),
+              None,
+              None
+            )
+          )
+        )
+
+        Delete(
+          s"/v0/records/aspectArrayItems/test-aspect",
+          JsObject(
+            "recordIds" -> JsArray(
+              Vector(
+                JsString("record-1"),
+                JsString("record-2"),
+                JsString("record-3"),
+                JsString("record-4")
+              )
+            ),
+            "jsonPath" -> JsString("$.d.d1"),
+            "items" -> JsArray(Vector(JsString("B"), JsNumber(5)))
+          )
+        ) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          withClue(s"Status Code: ${status} response: ${responseAs[String]}") {
+            status shouldEqual StatusCodes.OK
+          }
+          val eventList = responseAs[List[Long]]
+          eventList.length shouldBe 4
+          eventList(2) shouldBe 0 // record 3 should not changed
+          eventList(3) shouldBe 0 // record 3 should not changed
+        }
+
+        verifyAspectData(
+          param,
+          "record-1",
+          "test-aspect",
+          """
+            |{
+            |    "b" : "yes",
+            |    "d" : {
+            |      "d1":["A","C",4,6]
+            |    },
+            |    "e": 2
+            | }
+            |""".stripMargin
+        )
+
+        verifyAspectData(
+          param,
+          "record-2",
+          "test-aspect",
+          """
+            |{
+            |    "a" : ["3","4"],
+            |    "d" : {
+            |      "d1":["A","C",14, 15, 16]
+            |    }
+            | }
+            |""".stripMargin
+        )
+
+        verifyAspectData(
+          param,
+          "record-3",
+          "test-aspect",
+          """
+            |{
+            |    "a" : ["A","B","C"]
+            |}
+            |""".stripMargin
+        )
+
+        Get(s"/v0/records/record-4/aspects/test-aspect") ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          withClue(responseAs[String]) {
+            status shouldEqual StatusCodes.NotFound
+          }
+        }
+
+      }
+    }
+
     describe(
       "Modify endpoint {put} /v0/registry/records/aspects/{aspectId}"
     ) {
@@ -63,7 +207,7 @@ class RecordAspectServiceSpec extends ApiSpec {
           List(
             Record(
               id = "record-1",
-              name = "test record 2",
+              name = "test record 1",
               aspects = Map(
                 "test-aspect" ->
                   """
