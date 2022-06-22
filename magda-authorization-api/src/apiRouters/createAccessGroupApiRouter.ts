@@ -797,7 +797,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 const distributionIds =
                     res?.locals?.originalDataset?.aspects?.[
                         "dataset-distributions"
-                    ];
+                    ]?.["distributions"];
 
                 if (distributionIds?.length) {
                     recordIds.splice(0, 0, ...distributionIds);
@@ -832,6 +832,132 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
             } catch (e) {
                 respondWithError(
                     `Add an Dataset "${req?.params?.datasetId}" to an Access Group ${req?.params?.groupId}`,
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth Access Groups
+     * @api {delete} /v0/auth/accessGroups/:groupId/datasets/:datasetId Remove an Dataset from an Access Group
+     * @apiDescription Remove an Dataset from an Access Group
+     *
+     * Access group users will lost the access (granted by the access group) to the removed dataset.
+     *
+     * You need `object/record/update` permission to the access group.
+     *
+     * @apiParam (URL Path) {string} groupId id of the access group
+     * @apiParam (URL Path) {string} datasetId id of the dataset
+     *
+     * @apiSuccess [Response Body] {boolean} result Indicates whether the action is actually performed or the dataset had already been removed from the access group.
+     * @apiSuccessExample {json} 200
+     *    {
+     *        result: true
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.delete(
+        "/:groupId/datasets/:datasetId",
+        requireUnconditionalAuthDecision(
+            authDecisionClient,
+            async (req, res, next) => {
+                const groupId = req.params?.groupId;
+                if (!groupId) {
+                    throw new ServerError(
+                        "access group id cannot be empty",
+                        400
+                    );
+                }
+                const fetchRecordResult = await registryClient.getRecordInFull(
+                    groupId
+                );
+                if (fetchRecordResult instanceof Error) {
+                    throw fetchRecordResult;
+                }
+                const { aspects, ...recordData } = fetchRecordResult;
+                if (aspects?.length) {
+                    aspects.forEach(
+                        (item: any, idx: string) =>
+                            ((recordData as any)[idx] = item)
+                    );
+                }
+                res.locals.originalDataset = fetchRecordResult;
+                return {
+                    operationUri: "object/record/update",
+                    input: {
+                        object: {
+                            recordData
+                        }
+                    }
+                };
+            }
+        ),
+        async function (req, res) {
+            try {
+                const datasetId = req.params?.datasetId;
+                if (!datasetId) {
+                    throw new ServerError("datasetId cannot be empty", 400);
+                }
+                const permissionId =
+                    res?.locals?.originalAccessGroup?.aspects?.[
+                        "access-group-details"
+                    ]?.["permissionId"];
+
+                if (!isUuid(permissionId)) {
+                    throw new ServerError(
+                        `The access group "${req.params?.groupId}" has an invalid permissionId.`,
+                        500
+                    );
+                }
+
+                const datasetFetchResult = await registryClient.getRecord(
+                    datasetId,
+                    [],
+                    ["dataset-distributions"],
+                    false
+                );
+
+                if (datasetFetchResult instanceof Error) {
+                    throw datasetFetchResult;
+                }
+
+                const distributionIds =
+                    datasetFetchResult?.aspects?.["dataset-distributions"]?.[
+                        "dataset-distributions"
+                    ];
+
+                const recordIds: string[] = [
+                    datasetId,
+                    ...(distributionIds?.length
+                        ? distributionIds.filter(
+                              (item: any) =>
+                                  typeof item === "string" && item.trim()
+                          )
+                        : [])
+                ];
+
+                const result = await registryClient.deleteRecordsAspectArrayItems(
+                    recordIds,
+                    "access-control",
+                    "$.preAuthorisedPermissionIds",
+                    [permissionId]
+                );
+
+                if (result instanceof Error) {
+                    throw result;
+                }
+                res.json({ result: true });
+            } catch (e) {
+                respondWithError(
+                    `Remove a Dataset "${req?.params?.datasetId}" from an Access Group ${req?.params?.groupId}`,
                     res,
                     e
                 );
