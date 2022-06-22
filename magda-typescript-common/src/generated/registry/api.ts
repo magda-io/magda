@@ -47,6 +47,12 @@ export class CountResponse {
     "count": number;
 }
 
+export class DeleteRecordsAspectArrayItemsRequest {
+    "recordIds": Array<string>;
+    "jsonPath": string;
+    "items": Array<JsValue>;
+}
+
 export class DeleteResult {
     "deleted": boolean;
 }
@@ -1777,6 +1783,103 @@ export class RecordsApi {
         return new Promise<{
             response: http.IncomingMessage;
             body: DeleteResult;
+        }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (
+                        response.statusCode >= 200 &&
+                        response.statusCode <= 299
+                    ) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Remove items from records&#39; aspect data
+     * Remove items from records&#39; aspect data
+     * @param xMagdaTenantId 0
+     * @param aspectId ID of the aspect to update.
+     * @param requestData An json object has key &#39;recordIds&#39;, &#39;jsonPath&#39;, &#39;items&#39;
+     * @param xMagdaSession Magda internal session id
+     */
+    public deleteRecordsAspectArrayItems(
+        xMagdaTenantId: number,
+        aspectId: string,
+        requestData: DeleteRecordsAspectArrayItemsRequest,
+        xMagdaSession: string
+    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+        const localVarPath =
+            this.basePath +
+            "/records/aspects/:aspectId".replace(
+                "{" + "aspectId" + "}",
+                String(aspectId)
+            );
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling deleteRecordsAspectArrayItems."
+            );
+        }
+
+        // verify required parameter 'aspectId' is not null or undefined
+        if (aspectId === null || aspectId === undefined) {
+            throw new Error(
+                "Required parameter aspectId was null or undefined when calling deleteRecordsAspectArrayItems."
+            );
+        }
+
+        // verify required parameter 'requestData' is not null or undefined
+        if (requestData === null || requestData === undefined) {
+            throw new Error(
+                "Required parameter requestData was null or undefined when calling deleteRecordsAspectArrayItems."
+            );
+        }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error(
+                "Required parameter xMagdaSession was null or undefined when calling deleteRecordsAspectArrayItems."
+            );
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "DELETE",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+            body: requestData
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{
+            response: http.IncomingMessage;
+            body: Array<any>;
         }>((resolve, reject) => {
             request(requestOptions, (error, response, body) => {
                 if (error) {

@@ -262,6 +262,11 @@ object Registry
 
   case class PatchRecordsRequest(recordIds: List[String], jsonPath: JsonPatch)
   case class PutRecordsAspectRequest(recordIds: List[String], data: JsObject)
+  case class DeleteRecordsAspectArrayItemsRequest(
+      recordIds: List[String],
+      jsonPath: String,
+      items: List[JsValue]
+  )
 
   object RegistryConstants {
     val aspects = List("dcat-dataset-strings")

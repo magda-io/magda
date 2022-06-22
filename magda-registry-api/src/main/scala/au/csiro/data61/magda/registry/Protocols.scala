@@ -52,4 +52,7 @@ trait Protocols extends DiffsonProtocol {
   implicit val putRecordsAspectRequestFormat = jsonFormat2(
     PutRecordsAspectRequest.apply
   )
+  implicit val deleteRecordsAspectArrayItemsRequestFormat = jsonFormat3(
+    DeleteRecordsAspectArrayItemsRequest.apply
+  )
 }

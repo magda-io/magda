@@ -824,6 +824,125 @@ class RecordsService(
   }
 
   /**
+    * @apiGroup Registry Record Aspects
+    * @api {delete} /v0/registry/records/aspectArrayItems/:aspectId Remove items from records' aspect data
+    *
+    * @apiDescription  this API goes through the aspect data that is specified by aspectId of a list of registry records
+    * and delete items from the array that is located by the jsonPath.
+    * If the aspect doesn't exist for a record or the array can't be located with the jsonPath string or the value located with the jsonPath string is `null`,
+    * the operation will be skipped without throwing error. `0` will returned as eventId for this case.
+    * If the json data that is located by the jsonPath string exists and is not an Array or null, an error will be thrown and 400 code will be responded.
+    *
+    * @apiParam (path) {string} aspectId the id of the aspect to be updated
+    * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
+    * @apiParam (body) {string} jsonPath the jsonPath string that is used to locate the json array in the record aspect data
+    * @apiParam (body) {any[]} items a list of items to be removed from the located array. The type of the items can be either string or number.
+    *
+    * @apiParamExample {json} Request-Example
+    * {
+    *   "recordIds": ["dsd-sds-xsds-22", "sds-sdds-2334-dds-34", "sdds-3439-34334343"],
+    *   "aspectId": "access-control",
+    *   "jsonPath": "$.preAuthorisedPermissionIds",
+    *   "items": ["b133d777-6208-4aa1-8d0b-80bb49b7e5fc", "5d33cc4d-d914-468e-9f02-ae74484af716"]
+    * }
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    *
+    * @apiSuccess (Success 200) {json} Response a list of event id for each of the affected records after the operations
+    * @apiSuccessExample {json} Response:
+    *      [122, 123, 124]
+    * @apiUse GenericError
+    */
+  @Path("/aspects/:aspectId")
+  @ApiOperation(
+    value = "Remove items from records' aspect data",
+    nickname = "deleteRecordsAspectArrayItems",
+    httpMethod = "DELETE",
+    response = classOf[List[String]],
+    notes = "Remove items from records' aspect data"
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "aspectId",
+        required = true,
+        dataType = "string",
+        paramType = "path",
+        value = "ID of the aspect to update."
+      ),
+      new ApiImplicitParam(
+        name = "requestData",
+        required = true,
+        dataType =
+          "au.csiro.data61.magda.model.Registry$DeleteRecordsAspectArrayItemsRequest",
+        paramType = "body",
+        value = "An json object has key 'recordIds', 'jsonPath', 'items'"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = true,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      )
+    )
+  )
+  def deleteRecordsAspectArrayItems: Route = put {
+    path("aspects" / Segment) { (aspectId: String) =>
+      requireUserId { userId =>
+        requiresSpecifiedTenantId { tenantId =>
+          entity(as[DeleteRecordsAspectArrayItemsRequest]) { requestData =>
+            withAuthDecision(
+              authClient,
+              AuthDecisionReqConfig("object/record/update")
+            ) { authDecision =>
+              val result = DB localTx { implicit session =>
+                recordPersistence.deleteRecordsAspectArrayItems(
+                  tenantId,
+                  authDecision,
+                  requestData.recordIds,
+                  aspectId,
+                  requestData.jsonPath,
+                  requestData.items,
+                  userId
+                ) match {
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      result
+                    )
+                  case Failure(ServerError(msg, statusCode)) =>
+                    complete(
+                      statusCode,
+                      ApiError(msg)
+                    )
+                  case Failure(e) =>
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError(e.getMessage)
+                    )
+                }
+              }
+              webHookActor ! WebHookActor
+                .Process()
+              result
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
     * @apiGroup Registry Record Service
     * @api {post} /v0/registry/records Create a new record
     *
@@ -950,6 +1069,7 @@ class RecordsService(
       deleteById ~
       create ~
       putRecordsAspect ~
+      deleteRecordsAspectArrayItems ~
       new RecordAspectsService(
         webHookActor,
         authClient,

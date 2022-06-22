@@ -1042,7 +1042,8 @@ class DefaultRecordPersistence(config: Config)
         )
         .foldLeft(Try(Seq[Long]())) {
           case (Success(result), Success(newItem)) => Success(result :+ newItem)
-          case (Success(_), Failure(ex))           => Failure(ex)
+          case (_, Failure(ex))                    => Failure(ex)
+          case (Failure(ex), _)                    => Failure(ex)
         }
     }
 
@@ -1173,7 +1174,8 @@ class DefaultRecordPersistence(config: Config)
         )
         .foldLeft(Try(Seq[Long]())) {
           case (Success(result), Success(newItem)) => Success(result :+ newItem)
-          case (Success(_), Failure(ex))           => Failure(ex)
+          case (_, Failure(ex))                    => Failure(ex)
+          case (Failure(ex), _)                    => Failure(ex)
         }
     }
 
@@ -1466,7 +1468,8 @@ class DefaultRecordPersistence(config: Config)
         )
         .foldLeft(Try(Seq[Long]())) {
           case (Success(result), Success(newItem)) => Success(result :+ newItem)
-          case (Success(_), Failure(ex))           => Failure(ex)
+          case (_, Failure(ex))                    => Failure(ex)
+          case (Failure(ex), _)                    => Failure(ex)
         }
     }
   }
