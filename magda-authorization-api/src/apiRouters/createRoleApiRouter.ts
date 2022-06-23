@@ -16,6 +16,8 @@ import {
     updateTableRecord
 } from "magda-typescript-common/src/SQLUtils";
 import ServerError from "magda-typescript-common/src/ServerError";
+import isUuid from "@magda/typescript-common/dist/util/isUuid";
+import AuthDecision from "magda-typescript-common/src/opa/AuthDecision";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -25,12 +27,183 @@ export interface ApiRouterOptions {
 
 const roleKeywordSearchFields = ["name", "description"];
 const permissionKeywordSearchFields = ["name", "description"];
+const userKeywordSearchFields = ["displayName", "email", "source"];
 
 export default function createRoleApiRouter(options: ApiRouterOptions) {
     const database = options.database;
     const authDecisionClient = options.authDecisionClient;
 
     const router: express.Router = express.Router();
+
+    function createFetchRoleUsersHandler(
+        returnCount: boolean,
+        apiName: string
+    ) {
+        return async function fetchRoleUsers(req: Request, res: Response) {
+            try {
+                const roleId =
+                    res?.locals?.originalAccessGroup?.aspects?.[
+                        "access-group-details"
+                    ]?.["roleId"];
+
+                if (!isUuid(roleId)) {
+                    throw new ServerError(
+                        `The access group "${req.params?.groupId}" has an invalid roleId.`,
+                        500
+                    );
+                }
+
+                const authDecision: AuthDecision = res?.locals?.authDecision;
+                if (!authDecision) {
+                    throw new ServerError(
+                        `cannot locate auth decision from upstream middleware`,
+                        500
+                    );
+                }
+
+                const authConditions = authDecision.toSql({
+                    prefixes: ["input.authObject.user"],
+                    tableRef: "users"
+                });
+
+                const conditions: SQLSyntax[] = [
+                    sqls`(EXISTS (SELECT 1 FROM user_roles ur WHERE ur.user_id = users.id and ur.role_id = ${roleId}))`,
+                    authConditions
+                ];
+                if (req.query?.keyword) {
+                    const keyword = "%" + req.query?.keyword + "%";
+                    conditions.push(
+                        SQLSyntax.joinWithOr(
+                            userKeywordSearchFields.map(
+                                (field) =>
+                                    sqls`${escapeIdentifier(
+                                        "users." + field
+                                    )} ILIKE ${keyword}`
+                            )
+                        ).roundBracket()
+                    );
+                }
+
+                if (req.query?.id) {
+                    conditions.push(sqls`"users.id" = ${req.query.id}`);
+                }
+                if (req.query?.source) {
+                    conditions.push(sqls`"users.source" = ${req.query.source}`);
+                }
+                if (req.query?.orgUnitId) {
+                    conditions.push(
+                        sqls`"users.orgUnitId" = ${req.query.orgUnitId}`
+                    );
+                }
+                if (req.query?.sourceId) {
+                    conditions.push(
+                        sqls`"users.sourceId" = ${req.query.sourceId}`
+                    );
+                }
+
+                const records = await searchTableRecord(
+                    database.getPool(),
+                    "users",
+                    conditions,
+                    {
+                        selectedFields: returnCount
+                            ? [sqls`COUNT(users.*) as count`]
+                            : [sqls`users.*`],
+                        offset: returnCount
+                            ? undefined
+                            : (req?.query?.offset as string),
+                        limit: returnCount
+                            ? undefined
+                            : (req?.query?.limit as string)
+                    }
+                );
+                if (returnCount) {
+                    // response will be {count: number}
+                    res.json(records[0]);
+                } else {
+                    res.json(records);
+                }
+            } catch (e) {
+                respondWithError(apiName, res, e);
+            }
+        };
+    }
+
+    /**
+     * @apiGroup Auth Users
+     * @api {get} /v0/auth/roles/:roleId/users Get all matched users with a role
+     * @apiDescription return a list matched users who have a certain role
+     * Required `authObject/user/read` permission to access this API.
+     * If you don't have access to any users, empty array will be returned.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParam (Query String) {number} [offset] The index of the first record in the result set to retrieve.
+     * @apiParam (Query String) {number} [limit] The maximum number of records of the result set to receive. If not present, a default value of 500 will be used.
+     * @apiParam (Query String) {string} [keyword] When set, will only return user records whose "displayName", "email" or "source" field contains the specified keyword.
+     * @apiParam (Query String) {string} [id] When set, will only return records whose id is the specified ID.
+     * @apiParam (Query String) {string} [source] When set, will only return records whose source is the specified source name.
+     * @apiParam (Query String) {string} [sourceId] When set, will only return records whose sourceId is the specified source ID.
+     * @apiParam (Query String) {string} [orgUnitId] When set, will only return records whose orgUnitId is the specified org unit id.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        "id":"...",
+     *        "displayName":"Fred Nerk",
+     *        "email":"fred.nerk@data61.csiro.au",
+     *        "photoURL":"...",
+     *        "source":"google",
+     *        "isAdmin": true,
+     *        "orgUnitId": "..."
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:groupId/users",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
+        createFetchRoleUsersHandler(false, "Get users with a certain role")
+    );
+
+    /**
+     * @apiGroup Auth Access Groups
+     * @api {get} /v0/auth/roles/:roleId/users/count Get the count of all matched users with a role
+     * @apiDescription return the count number of all matched users who have a certain role
+     * Required `authObject/user/read` permission to access this API.
+     * If you don't have access to any users, 0 count will be returned.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParam (Query String) {string} [keyword] When set, will only return user records whose "displayName", "email" or "source" field contains the specified keyword.
+     * @apiParam (Query String) {string} [id] When set, will only return records whose id is the specified ID.
+     * @apiParam (Query String) {string} [source] When set, will only return records whose source is the specified source name.
+     * @apiParam (Query String) {string} [sourceId] When set, will only return records whose sourceId is the specified source ID.
+     * @apiParam (Query String) {string} [orgUnitId] When set, will only return records whose orgUnitId is the specified org unit id.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *      "count" : 5
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:groupId/users/count",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
+        createFetchRoleUsersHandler(true, "Get user count with a certain role")
+    );
 
     function createFetchPermissionsHandler(
         returnCount: boolean,
