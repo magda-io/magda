@@ -7,7 +7,10 @@ import {
     getUserId,
     requireUnconditionalAuthDecision
 } from "magda-typescript-common/src/authorization-api/authMiddleware";
-import { createTableRecord } from "magda-typescript-common/src/SQLUtils";
+import {
+    createTableRecord,
+    getTableRecord
+} from "magda-typescript-common/src/SQLUtils";
 import ServerError from "magda-typescript-common/src/ServerError";
 import {
     CreateAccessGroupRequestBodyType,
@@ -18,6 +21,7 @@ import { v4 as uuidV4 } from "uuid";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import isArray from "lodash/isArray";
 import uniq from "lodash/uniq";
+import { sqls } from "sql-syntax";
 
 type JsonPatch = {
     op: string;
@@ -776,7 +780,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             ((recordData as any)[idx] = item)
                     );
                 }
-                res.locals.originalDataset = fetchRecordResult;
+                res.locals.originalAccessGroup = fetchRecordResult;
                 return {
                     operationUri: "object/record/update",
                     input: {
@@ -889,7 +893,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             ((recordData as any)[idx] = item)
                     );
                 }
-                res.locals.originalDataset = fetchRecordResult;
+                res.locals.originalAccessGroup = fetchRecordResult;
                 return {
                     operationUri: "object/record/update",
                     input: {
@@ -958,6 +962,138 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
             } catch (e) {
                 respondWithError(
                     `Remove a Dataset "${req?.params?.datasetId}" from an Access Group ${req?.params?.groupId}`,
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth Access Groups
+     * @api {post} /v0/auth/accessGroups/:groupId/users/:userId Add an User to an Access Group
+     * @apiDescription Add an User to an Access Group
+     *
+     * Access group users have access (specified by the access group permission) to all datasets in the access group.
+     *
+     * You need `object/record/update` permission to both access group in order to access this API.
+     *
+     * @apiParam (URL Path) {string} groupId id of the access group
+     * @apiParam (URL Path) {string} userId id of the user to be added to the access group
+     *
+     * @apiSuccess [Response Body] {boolean} result Indicates whether the action is actually performed or the user had already been added to the access group.
+     * @apiSuccessExample {json} 200
+     *    {
+     *        result: true
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post(
+        "/:groupId/users/:userId",
+        requireUnconditionalAuthDecision(
+            authDecisionClient,
+            async (req, res, next) => {
+                const groupId = req.params?.groupId;
+                if (!groupId) {
+                    throw new ServerError(
+                        "access group id cannot be empty",
+                        400
+                    );
+                }
+                const fetchRecordResult = await registryClient.getRecordInFull(
+                    groupId
+                );
+                if (fetchRecordResult instanceof Error) {
+                    throw fetchRecordResult;
+                }
+                const { aspects, ...recordData } = fetchRecordResult;
+                if (aspects?.length) {
+                    aspects.forEach(
+                        (item: any, idx: string) =>
+                            ((recordData as any)[idx] = item)
+                    );
+                }
+                res.locals.originalAccessGroup = fetchRecordResult;
+                return {
+                    operationUri: "object/record/update",
+                    input: {
+                        object: {
+                            recordData
+                        }
+                    }
+                };
+            }
+        ),
+        async function (req, res) {
+            try {
+                const userId = req.params?.userId;
+                if (!isUuid(userId)) {
+                    throw new ServerError(`userId is not valid`, 400);
+                }
+
+                const roleId =
+                    res?.locals?.originalAccessGroup?.aspects?.[
+                        "access-group-details"
+                    ]?.["roleId"];
+
+                if (!isUuid(roleId)) {
+                    throw new ServerError(
+                        `The access group "${req.params?.groupId}" has an invalid roleId.`,
+                        500
+                    );
+                }
+
+                const pool = database.getPool();
+
+                const role = getTableRecord(pool, "roles", roleId);
+                if (!role) {
+                    throw new ServerError(
+                        "Cannot locate access group role with id: " + roleId,
+                        500
+                    );
+                }
+
+                const user = getTableRecord(pool, "users", userId);
+                if (!user) {
+                    throw new ServerError(
+                        "Cannot locate user with id: " + userId,
+                        400
+                    );
+                }
+
+                const client = await pool.connect();
+                try {
+                    await client.query("BEGIN");
+
+                    const result = await client.query(
+                        ...sqls`SELECT 1 FROM user_roles WHERE user_id=${userId} AND role_id=${roleId}`.toQuery()
+                    );
+                    if (result?.rows?.length) {
+                        res.json({ result: false });
+                        await client.query("COMMIT");
+                        return;
+                    }
+
+                    await client.query(
+                        ...sqls`INSERT INTO user_roles (user_id, role_id) VALUES (${userId}, ${roleId})`.toQuery()
+                    );
+                    await client.query("COMMIT");
+                    res.json({ result: true });
+                } catch (e) {
+                    await client.query("ROLLBACK");
+                    throw e;
+                } finally {
+                    client.release();
+                }
+            } catch (e) {
+                respondWithError(
+                    `Add an user "${req?.params?.userId}" to an Access Group ${req?.params?.groupId}`,
                     res,
                     e
                 );
