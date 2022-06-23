@@ -976,7 +976,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      *
      * Access group users have access (specified by the access group permission) to all datasets in the access group.
      *
-     * You need `object/record/update` permission to both access group in order to access this API.
+     * You need `object/record/update` permission to the access group record in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (URL Path) {string} userId id of the user to be added to the access group
@@ -1094,6 +1094,120 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
             } catch (e) {
                 respondWithError(
                     `Add an user "${req?.params?.userId}" to an Access Group ${req?.params?.groupId}`,
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth Access Groups
+     * @api {delete} /v0/auth/accessGroups/:groupId/users/:userId Remove an User from an Access Group
+     * @apiDescription Remove an User from an Access Group
+     *
+     * You need `object/record/update` permission to the access group record in order to access this API.
+     *
+     * @apiParam (URL Path) {string} groupId id of the access group
+     * @apiParam (URL Path) {string} userId id of the user to be added to the access group
+     *
+     * @apiSuccess [Response Body] {boolean} result Indicates whether the action is actually performed or the user had already been added to the access group.
+     * @apiSuccessExample {json} 200
+     *    {
+     *        result: true
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.delete(
+        "/:groupId/users/:userId",
+        requireUnconditionalAuthDecision(
+            authDecisionClient,
+            async (req, res, next) => {
+                const groupId = req.params?.groupId;
+                if (!groupId) {
+                    throw new ServerError(
+                        "access group id cannot be empty",
+                        400
+                    );
+                }
+                const fetchRecordResult = await registryClient.getRecordInFull(
+                    groupId
+                );
+                if (fetchRecordResult instanceof Error) {
+                    throw fetchRecordResult;
+                }
+                const { aspects, ...recordData } = fetchRecordResult;
+                if (aspects?.length) {
+                    aspects.forEach(
+                        (item: any, idx: string) =>
+                            ((recordData as any)[idx] = item)
+                    );
+                }
+                res.locals.originalAccessGroup = fetchRecordResult;
+                return {
+                    operationUri: "object/record/update",
+                    input: {
+                        object: {
+                            recordData
+                        }
+                    }
+                };
+            }
+        ),
+        async function (req, res) {
+            try {
+                const userId = req.params?.userId;
+                if (!isUuid(userId)) {
+                    throw new ServerError(`userId is not valid`, 400);
+                }
+
+                const roleId =
+                    res?.locals?.originalAccessGroup?.aspects?.[
+                        "access-group-details"
+                    ]?.["roleId"];
+
+                if (!isUuid(roleId)) {
+                    throw new ServerError(
+                        `The access group "${req.params?.groupId}" has an invalid roleId.`,
+                        500
+                    );
+                }
+
+                const pool = database.getPool();
+
+                const role = getTableRecord(pool, "roles", roleId);
+                if (!role) {
+                    throw new ServerError(
+                        "Cannot locate access group role with id: " + roleId,
+                        500
+                    );
+                }
+
+                const user = getTableRecord(pool, "users", userId);
+                if (!user) {
+                    throw new ServerError(
+                        "Cannot locate user with id: " + userId,
+                        400
+                    );
+                }
+
+                const result = await pool.query(
+                    ...sqls`DELETE FROM user_roles WHERE user_id=${userId} AND role_id=${roleId} RETURNING id`.toQuery()
+                );
+                if (result?.rows?.length) {
+                    res.json({ result: true });
+                } else {
+                    res.json({ result: false });
+                }
+            } catch (e) {
+                respondWithError(
+                    `Remove the user "${req?.params?.userId}" from the Access Group ${req?.params?.groupId}`,
                     res,
                     e
                 );
