@@ -9,7 +9,8 @@ import {
 } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import {
     createTableRecord,
-    getTableRecord
+    getTableRecord,
+    searchTableRecord
 } from "magda-typescript-common/src/SQLUtils";
 import ServerError from "magda-typescript-common/src/ServerError";
 import {
@@ -21,7 +22,7 @@ import { v4 as uuidV4 } from "uuid";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import isArray from "lodash/isArray";
 import uniq from "lodash/uniq";
-import { sqls } from "sql-syntax";
+import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 
 type JsonPatch = {
     op: string;
@@ -35,6 +36,8 @@ export interface ApiRouterOptions {
     jwtSecret: string;
     registryClient: AuthorizedRegistryClient;
 }
+
+const userKeywordSearchFields = ["displayName", "email", "source"];
 
 export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     const database = options.database;
@@ -1213,6 +1216,218 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 );
             }
         }
+    );
+
+    function createFetchUsersHandler(returnCount: boolean, apiName: string) {
+        return async function fetchUsers(req: Request, res: Response) {
+            try {
+                const roleId =
+                    res?.locals?.originalAccessGroup?.aspects?.[
+                        "access-group-details"
+                    ]?.["roleId"];
+
+                if (!isUuid(roleId)) {
+                    throw new ServerError(
+                        `The access group "${req.params?.groupId}" has an invalid roleId.`,
+                        500
+                    );
+                }
+                const conditions: SQLSyntax[] = [
+                    sqls`(EXISTS (SELECT 1 FROM user_roles ur WHERE ur.user_id = users.id and ur.role_id = ${roleId}))`
+                ];
+                if (req.query?.keyword) {
+                    const keyword = "%" + req.query?.keyword + "%";
+                    conditions.push(
+                        SQLSyntax.joinWithOr(
+                            userKeywordSearchFields.map(
+                                (field) =>
+                                    sqls`${escapeIdentifier(
+                                        "users." + field
+                                    )} ILIKE ${keyword}`
+                            )
+                        ).roundBracket()
+                    );
+                }
+
+                if (req.query?.id) {
+                    conditions.push(sqls`"users.id" = ${req.query.id}`);
+                }
+                if (req.query?.source) {
+                    conditions.push(sqls`"users.source" = ${req.query.source}`);
+                }
+                if (req.query?.orgUnitId) {
+                    conditions.push(
+                        sqls`"users.orgUnitId" = ${req.query.orgUnitId}`
+                    );
+                }
+                if (req.query?.sourceId) {
+                    conditions.push(
+                        sqls`"users.sourceId" = ${req.query.sourceId}`
+                    );
+                }
+
+                const records = await searchTableRecord(
+                    database.getPool(),
+                    "users",
+                    conditions,
+                    {
+                        selectedFields: returnCount
+                            ? [sqls`COUNT(users.*) as count`]
+                            : [sqls`users.*`],
+                        offset: returnCount
+                            ? undefined
+                            : (req?.query?.offset as string),
+                        limit: returnCount
+                            ? undefined
+                            : (req?.query?.limit as string)
+                    }
+                );
+                if (returnCount) {
+                    // response will be {count: number}
+                    res.json(records[0]);
+                } else {
+                    res.json(records);
+                }
+            } catch (e) {
+                respondWithError(apiName, res, e);
+            }
+        };
+    }
+
+    /**
+     * @apiGroup Auth Access Groups
+     * @api {get} /v0/auth/accessGroups/:groupId/users Get all matched users in an access group
+     * @apiDescription return a list matched users of an access group.
+     * Required `object/record/read` permission to the access group in order to access this API.
+     *
+     * @apiParam (URL Path) {string} groupId id of the access group
+     * @apiParam (Query String) {number} [offset] The index of the first record in the result set to retrieve.
+     * @apiParam (Query String) {number} [limit] The maximum number of records of the result set to receive. If not present, a default value of 500 will be used.
+     * @apiParam (Query String) {string} [keyword] When set, will only return user records whose "displayName", "email" or "source" field contains the specified keyword.
+     * @apiParam (Query String) {string} [id] When set, will only return records whose id is the specified ID.
+     * @apiParam (Query String) {string} [source] When set, will only return records whose source is the specified source name.
+     * @apiParam (Query String) {string} [sourceId] When set, will only return records whose sourceId is the specified source ID.
+     * @apiParam (Query String) {string} [orgUnitId] When set, will only return records whose orgUnitId is the specified org unit id.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        "id":"...",
+     *        "displayName":"Fred Nerk",
+     *        "email":"fred.nerk@data61.csiro.au",
+     *        "photoURL":"...",
+     *        "source":"google",
+     *        "isAdmin": true,
+     *        "orgUnitId": "..."
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:groupId/users",
+        requireUnconditionalAuthDecision(
+            authDecisionClient,
+            async (req, res, next) => {
+                const groupId = req.params?.groupId;
+                if (!groupId) {
+                    throw new ServerError(
+                        "access group id cannot be empty",
+                        400
+                    );
+                }
+                const fetchRecordResult = await registryClient.getRecordInFull(
+                    groupId
+                );
+                if (fetchRecordResult instanceof Error) {
+                    throw fetchRecordResult;
+                }
+                const { aspects, ...recordData } = fetchRecordResult;
+                if (aspects?.length) {
+                    aspects.forEach(
+                        (item: any, idx: string) =>
+                            ((recordData as any)[idx] = item)
+                    );
+                }
+                res.locals.originalAccessGroup = fetchRecordResult;
+                return {
+                    operationUri: "object/record/read",
+                    input: {
+                        object: {
+                            recordData
+                        }
+                    }
+                };
+            }
+        ),
+        createFetchUsersHandler(false, "Get users in an access group")
+    );
+
+    /**
+     * @apiGroup Auth Access Groups
+     * @api {get} /v0/auth/accessGroups/:groupId/users/count Get the count of all matched users in an access group
+     * @apiDescription return the count number of all matched users of an access group.
+     * Required `object/record/read` permission to the access group in order to access this API.
+     *
+     * @apiParam (URL Path) {string} groupId id of the access group
+     * @apiParam (Query String) {string} [keyword] When set, will only return user records whose "displayName", "email" or "source" field contains the specified keyword.
+     * @apiParam (Query String) {string} [id] When set, will only return records whose id is the specified ID.
+     * @apiParam (Query String) {string} [source] When set, will only return records whose source is the specified source name.
+     * @apiParam (Query String) {string} [sourceId] When set, will only return records whose sourceId is the specified source ID.
+     * @apiParam (Query String) {string} [orgUnitId] When set, will only return records whose orgUnitId is the specified org unit id.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *      "count" : 5
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:groupId/users/count",
+        requireUnconditionalAuthDecision(
+            authDecisionClient,
+            async (req, res, next) => {
+                const groupId = req.params?.groupId;
+                if (!groupId) {
+                    throw new ServerError(
+                        "access group id cannot be empty",
+                        400
+                    );
+                }
+                const fetchRecordResult = await registryClient.getRecordInFull(
+                    groupId
+                );
+                if (fetchRecordResult instanceof Error) {
+                    throw fetchRecordResult;
+                }
+                const { aspects, ...recordData } = fetchRecordResult;
+                if (aspects?.length) {
+                    aspects.forEach(
+                        (item: any, idx: string) =>
+                            ((recordData as any)[idx] = item)
+                    );
+                }
+                res.locals.originalAccessGroup = fetchRecordResult;
+                return {
+                    operationUri: "object/record/read",
+                    input: {
+                        object: {
+                            recordData
+                        }
+                    }
+                };
+            }
+        ),
+        createFetchUsersHandler(true, "Get user count in an access group")
     );
 
     return router;
