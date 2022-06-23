@@ -22,13 +22,8 @@ import { v4 as uuidV4 } from "uuid";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import isArray from "lodash/isArray";
 import uniq from "lodash/uniq";
+import isEmpty from "lodash/isEmpty";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
-
-type JsonPatch = {
-    op: string;
-    path: string;
-    value?: any;
-};
 
 export interface ApiRouterOptions {
     database: Database;
@@ -45,6 +40,60 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     const registryClient = options.registryClient;
 
     const router: express.Router = express.Router();
+
+    const requireAccessGroupUnconditionalPermission = (
+        operationUri: string,
+        notFoundHandler?: (
+            req: Request,
+            res: Response,
+            next: NextFunction
+        ) => void
+    ) =>
+        requireUnconditionalAuthDecision(
+            authDecisionClient,
+            async (req, res, next) => {
+                const groupId = req.params?.groupId;
+                if (!groupId) {
+                    throw new ServerError(
+                        "access group id cannot be empty",
+                        400
+                    );
+                }
+                const fetchRecordResult = await registryClient.getRecordInFull(
+                    groupId
+                );
+                if (fetchRecordResult instanceof Error) {
+                    if (
+                        fetchRecordResult instanceof ServerError &&
+                        fetchRecordResult.statusCode === 404
+                    ) {
+                        if (typeof notFoundHandler === "function") {
+                            notFoundHandler(req, res, next);
+                            return null;
+                        }
+                    }
+                    throw fetchRecordResult;
+                }
+                const { aspects, ...recordData } = fetchRecordResult;
+                if (aspects?.length) {
+                    aspects.forEach(
+                        (item: any, idx: string) =>
+                            ((recordData as any)[idx] = item)
+                    );
+                }
+                res.locals.originalAccessGroup = fetchRecordResult;
+                return {
+                    operationUri,
+                    input: {
+                        [operationUri.startsWith("object/record/")
+                            ? "record"
+                            : "accessGroup"]: {
+                            recordData
+                        }
+                    }
+                };
+            }
+        );
 
     async function validateAccessGroupCreationData(
         req: Request,
@@ -315,19 +364,45 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
         }
     );
 
-    async function patchAccessGroup(
-        id: string,
-        recordJsonPatches: JsonPatch[]
+    async function updateAccessGroupRecord(
+        groupId: string,
+        accessGroupDetailsAspectData: any,
+        accessControlAspectData: any
     ) {
-        const resultOrError = await registryClient.patchRecord(
-            id,
-            recordJsonPatches
-        );
-        if (resultOrError instanceof Error) {
-            throw resultOrError;
+        if (
+            isEmpty(accessGroupDetailsAspectData) &&
+            isEmpty(accessControlAspectData)
+        ) {
+            throw new ServerError(
+                "There is acceptable non-empty data fields supplied for update",
+                400
+            );
         }
+        if (!isEmpty(accessGroupDetailsAspectData)) {
+            const resultOrError = await registryClient.putRecordAspect(
+                groupId,
+                "access-group-details",
+                accessGroupDetailsAspectData,
+                true
+            );
+            if (resultOrError instanceof Error) {
+                throw resultOrError;
+            }
+        }
+        if (!isEmpty(accessControlAspectData)) {
+            const resultOrError = await registryClient.putRecordAspect(
+                groupId,
+                "access-control",
+                accessControlAspectData,
+                true
+            );
+            if (resultOrError instanceof Error) {
+                throw resultOrError;
+            }
+        }
+
         const recordOrError = await registryClient.getRecord(
-            id,
+            groupId,
             ["access-group-details"],
             ["access-control"],
             false
@@ -335,6 +410,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
         if (recordOrError instanceof Error) {
             throw recordOrError;
         }
+
         return {
             ...(recordOrError?.aspects?.["access-group-details"]
                 ? recordOrError.aspects["access-group-details"]
@@ -345,76 +421,20 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
             orgUnitId: recordOrError?.aspects?.["access-control"]?.orgUnitId
                 ? recordOrError.aspects["access-control"].orgUnitId
                 : null,
-            id
+            id: groupId
         };
     }
 
-    const requireAccessGroupAccess = (
-        operationUri: string,
-        notFoundHandler?: (
-            req: Request,
-            res: Response,
-            next: NextFunction
-        ) => void
-    ) =>
-        requireUnconditionalAuthDecision(
-            authDecisionClient,
-            async (req: Request, res: Response, next: NextFunction) => {
-                const id = `${req.params.id}`.trim();
-                if (!id) {
-                    throw new ServerError(
-                        "Cannot locate valid ID from url path",
-                        400
-                    );
-                }
-                const recordOrError = await registryClient.getRecord(
-                    id,
-                    ["access-group-details"],
-                    ["access-control"],
-                    false
-                );
-                if (recordOrError instanceof Error) {
-                    if (
-                        recordOrError instanceof ServerError &&
-                        recordOrError.statusCode === 404
-                    ) {
-                        if (typeof notFoundHandler === "function") {
-                            notFoundHandler(req, res, next);
-                            return null;
-                        }
-                    }
-                    throw recordOrError;
-                }
-                res.locals.originalAccessGroup = recordOrError;
-                return {
-                    operationUri,
-                    input: {
-                        object: {
-                            accessGroup: {
-                                ...(recordOrError?.aspects?.[
-                                    "access-group-details"
-                                ]
-                                    ? recordOrError.aspects[
-                                          "access-group-details"
-                                      ]
-                                    : {})
-                            }
-                        }
-                    }
-                };
-            }
-        );
-
     /**
      * @apiGroup Auth Access Groups
-     * @api {put} /v0/auth/accessGroups/:id Update an access group
+     * @api {put} /v0/auth/accessGroups/:groupId Update an access group
      * @apiDescription Update an access group
      * Supply a JSON object that contains fields to be updated in body.
      * You need have `authObject/operation/update` permission to access this API.
      * Please note: you can't update the `resourceUri` field of an access group.
      * If you have to change the resource type, you should delete the access group and create a new one.
      *
-     * @apiParam (URL Path) {string} id id of the access group
+     * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (Request Body) {string} [name] the name given to the access group
      * @apiParam (Request Body) {string} [description] The free text description for the access group
      * @apiParam (Request Body) {string[]} [keywords] Tags (or keywords) help users discover the access-group
@@ -459,12 +479,12 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.put(
-        "/:id",
-        requireAccessGroupAccess("object/record/update"),
+        "/:groupId",
+        requireAccessGroupUnconditionalPermission("object/record/update"),
         getUserId,
         async function (req: Request, res: Response) {
             try {
-                const id = `${req.params.id}`.trim();
+                const groupId = `${req.params.groupId}`.trim();
                 const userId = res.locals.userId;
                 const permissionId =
                     res?.locals?.originalAccessGroup?.aspects?.[
@@ -478,25 +498,19 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 }
 
                 const data = req.body as UpdateAccessGroupRequestBodyType;
-                const jsonPatches: {
-                    op: string;
-                    path: string;
-                    value: any;
-                }[] = [];
+
+                const accessGroupDetailsAspectData: any = {};
+                const accessControlAspectData: any = {};
+
                 if (typeof data?.name !== "undefined") {
-                    jsonPatches.push({
-                        op: "replace",
-                        path: "/aspects/access-group-details/name",
-                        value: `${data.name}`
-                    });
+                    accessGroupDetailsAspectData["name"] = data.name;
                 }
+
                 if (typeof data?.description !== "undefined") {
-                    jsonPatches.push({
-                        op: "replace",
-                        path: "/aspects/access-group-details/description",
-                        value: `${data.description}`
-                    });
+                    accessGroupDetailsAspectData["description"] =
+                        data.description;
                 }
+
                 if (typeof data?.keywords !== "undefined") {
                     if (!isArray(data.keywords)) {
                         throw new ServerError(
@@ -513,12 +527,9 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             400
                         );
                     }
-                    jsonPatches.push({
-                        op: "replace",
-                        path: "/aspects/access-group-details/keywords",
-                        value: uniq(keywords)
-                    });
+                    accessGroupDetailsAspectData["keywords"] = uniq(keywords);
                 }
+
                 if (typeof data?.ownerId !== "undefined") {
                     if (!isUuid(data.ownerId) && data.ownerId !== null) {
                         throw new ServerError(
@@ -526,11 +537,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             400
                         );
                     }
-                    jsonPatches.push({
-                        op: "replace",
-                        path: "/aspects/access-control/ownerId",
-                        value: data.ownerId
-                    });
+                    accessControlAspectData["ownerId"] = data.ownerId;
                 }
                 if (typeof data?.orgUnitId !== "undefined") {
                     if (!isUuid(data.orgUnitId) && data.orgUnitId !== null) {
@@ -539,16 +546,18 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             400
                         );
                     }
-                    jsonPatches.push({
-                        op: "replace",
-                        path: "/aspects/access-control/orgUnitId",
-                        value: data.orgUnitId
-                    });
+                    accessControlAspectData["orgUnitId"] = data.orgUnitId;
                 }
 
                 if (typeof data?.operationUris === "undefined") {
                     // no need to update permission operations as it's not supplied
-                    res.json(await patchAccessGroup(id, jsonPatches));
+                    res.json(
+                        await updateAccessGroupRecord(
+                            groupId,
+                            accessGroupDetailsAspectData,
+                            accessControlAspectData
+                        )
+                    );
                     return;
                 }
 
@@ -568,7 +577,13 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         client
                     );
 
-                    res.json(await patchAccessGroup(id, jsonPatches));
+                    res.json(
+                        await updateAccessGroupRecord(
+                            groupId,
+                            accessGroupDetailsAspectData,
+                            accessControlAspectData
+                        )
+                    );
                     await client.query("COMMIT");
                 } catch (e) {
                     await client.query("ROLLBACK");
@@ -588,14 +603,14 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth Access Groups
-     * @api {delete} /v0/auth/accessGroups/:id Delete an access group
+     * @api {delete} /v0/auth/accessGroups/:groupId Delete an access group
      * @apiDescription Delete an access group
      * You can only delete an access group when all resources (e.g. datasets) that are associated with the access group are removed from the access group.
      * Once an access group is deleted, the role & permission that are associated with the access group will be also deleted.
      *
      * You need `object/record/delete` permission to the access group record in order to access this API.
      *
-     * @apiParam (URL Path) {string} id id of the access group
+     * @apiParam (URL Path) {string} groupId id of the access group
      *
      * @apiSuccess [Response Body] {boolean} result Indicates whether the deletion action is actually performed or the access group doesn't exist.
      * @apiSuccessExample {json} 200
@@ -611,8 +626,8 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.delete(
-        "/:id",
-        requireAccessGroupAccess(
+        "/:groupId",
+        requireAccessGroupUnconditionalPermission(
             "object/record/delete",
             (req, res, next: Function) => {
                 // reach here indicates the access group record doesn't exist
@@ -623,7 +638,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
         ),
         async function (req, res) {
             try {
-                const id = `${req.params.id}`.trim();
+                const groupId = `${req.params.groupId}`.trim();
                 // use previously fetched record by `requireAccessGroupAccess`
                 const accessGroupRecord = res.locals
                     .originalAccessGroup as Record;
@@ -678,7 +693,9 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     await database.deleteRole(roleId, client);
                     await database.deletePermission(permissionId, client);
 
-                    const deleteResult = await registryClient.deleteRecord(id);
+                    const deleteResult = await registryClient.deleteRecord(
+                        groupId
+                    );
                     if (deleteResult instanceof Error) {
                         throw deleteResult;
                     }
@@ -694,7 +711,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 }
             } catch (e) {
                 respondWithError(
-                    `delete \`access group\` ${req?.params?.id}`,
+                    `delete \`access group\` ${req?.params?.groupId}`,
                     res,
                     e
                 );
@@ -760,40 +777,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 };
             }
         ),
-        requireUnconditionalAuthDecision(
-            authDecisionClient,
-            async (req, res, next) => {
-                const groupId = req.params?.groupId;
-                if (!groupId) {
-                    throw new ServerError(
-                        "access group id cannot be empty",
-                        400
-                    );
-                }
-                const fetchRecordResult = await registryClient.getRecordInFull(
-                    groupId
-                );
-                if (fetchRecordResult instanceof Error) {
-                    throw fetchRecordResult;
-                }
-                const { aspects, ...recordData } = fetchRecordResult;
-                if (aspects?.length) {
-                    aspects.forEach(
-                        (item: any, idx: string) =>
-                            ((recordData as any)[idx] = item)
-                    );
-                }
-                res.locals.originalAccessGroup = fetchRecordResult;
-                return {
-                    operationUri: "object/record/update",
-                    input: {
-                        object: {
-                            recordData
-                        }
-                    }
-                };
-            }
-        ),
+        requireAccessGroupUnconditionalPermission("object/record/update"),
         async function (req, res) {
             try {
                 const recordIds = [] as string[];
@@ -873,40 +857,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.delete(
         "/:groupId/datasets/:datasetId",
-        requireUnconditionalAuthDecision(
-            authDecisionClient,
-            async (req, res, next) => {
-                const groupId = req.params?.groupId;
-                if (!groupId) {
-                    throw new ServerError(
-                        "access group id cannot be empty",
-                        400
-                    );
-                }
-                const fetchRecordResult = await registryClient.getRecordInFull(
-                    groupId
-                );
-                if (fetchRecordResult instanceof Error) {
-                    throw fetchRecordResult;
-                }
-                const { aspects, ...recordData } = fetchRecordResult;
-                if (aspects?.length) {
-                    aspects.forEach(
-                        (item: any, idx: string) =>
-                            ((recordData as any)[idx] = item)
-                    );
-                }
-                res.locals.originalAccessGroup = fetchRecordResult;
-                return {
-                    operationUri: "object/record/update",
-                    input: {
-                        object: {
-                            recordData
-                        }
-                    }
-                };
-            }
-        ),
+        requireAccessGroupUnconditionalPermission("object/record/update"),
         async function (req, res) {
             try {
                 const datasetId = req.params?.datasetId;
@@ -999,40 +950,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.post(
         "/:groupId/users/:userId",
-        requireUnconditionalAuthDecision(
-            authDecisionClient,
-            async (req, res, next) => {
-                const groupId = req.params?.groupId;
-                if (!groupId) {
-                    throw new ServerError(
-                        "access group id cannot be empty",
-                        400
-                    );
-                }
-                const fetchRecordResult = await registryClient.getRecordInFull(
-                    groupId
-                );
-                if (fetchRecordResult instanceof Error) {
-                    throw fetchRecordResult;
-                }
-                const { aspects, ...recordData } = fetchRecordResult;
-                if (aspects?.length) {
-                    aspects.forEach(
-                        (item: any, idx: string) =>
-                            ((recordData as any)[idx] = item)
-                    );
-                }
-                res.locals.originalAccessGroup = fetchRecordResult;
-                return {
-                    operationUri: "object/record/update",
-                    input: {
-                        object: {
-                            recordData
-                        }
-                    }
-                };
-            }
-        ),
+        requireAccessGroupUnconditionalPermission("object/record/update"),
         async function (req, res) {
             try {
                 const userId = req.params?.userId;
@@ -1129,40 +1047,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.delete(
         "/:groupId/users/:userId",
-        requireUnconditionalAuthDecision(
-            authDecisionClient,
-            async (req, res, next) => {
-                const groupId = req.params?.groupId;
-                if (!groupId) {
-                    throw new ServerError(
-                        "access group id cannot be empty",
-                        400
-                    );
-                }
-                const fetchRecordResult = await registryClient.getRecordInFull(
-                    groupId
-                );
-                if (fetchRecordResult instanceof Error) {
-                    throw fetchRecordResult;
-                }
-                const { aspects, ...recordData } = fetchRecordResult;
-                if (aspects?.length) {
-                    aspects.forEach(
-                        (item: any, idx: string) =>
-                            ((recordData as any)[idx] = item)
-                    );
-                }
-                res.locals.originalAccessGroup = fetchRecordResult;
-                return {
-                    operationUri: "object/record/update",
-                    input: {
-                        object: {
-                            recordData
-                        }
-                    }
-                };
-            }
-        ),
+        requireAccessGroupUnconditionalPermission("object/record/update"),
         async function (req, res) {
             try {
                 const userId = req.params?.userId;
@@ -1329,40 +1214,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:groupId/users",
-        requireUnconditionalAuthDecision(
-            authDecisionClient,
-            async (req, res, next) => {
-                const groupId = req.params?.groupId;
-                if (!groupId) {
-                    throw new ServerError(
-                        "access group id cannot be empty",
-                        400
-                    );
-                }
-                const fetchRecordResult = await registryClient.getRecordInFull(
-                    groupId
-                );
-                if (fetchRecordResult instanceof Error) {
-                    throw fetchRecordResult;
-                }
-                const { aspects, ...recordData } = fetchRecordResult;
-                if (aspects?.length) {
-                    aspects.forEach(
-                        (item: any, idx: string) =>
-                            ((recordData as any)[idx] = item)
-                    );
-                }
-                res.locals.originalAccessGroup = fetchRecordResult;
-                return {
-                    operationUri: "object/record/read",
-                    input: {
-                        object: {
-                            recordData
-                        }
-                    }
-                };
-            }
-        ),
+        requireAccessGroupUnconditionalPermission("object/record/read"),
         createFetchUsersHandler(false, "Get users in an access group")
     );
 
@@ -1393,40 +1245,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:groupId/users/count",
-        requireUnconditionalAuthDecision(
-            authDecisionClient,
-            async (req, res, next) => {
-                const groupId = req.params?.groupId;
-                if (!groupId) {
-                    throw new ServerError(
-                        "access group id cannot be empty",
-                        400
-                    );
-                }
-                const fetchRecordResult = await registryClient.getRecordInFull(
-                    groupId
-                );
-                if (fetchRecordResult instanceof Error) {
-                    throw fetchRecordResult;
-                }
-                const { aspects, ...recordData } = fetchRecordResult;
-                if (aspects?.length) {
-                    aspects.forEach(
-                        (item: any, idx: string) =>
-                            ((recordData as any)[idx] = item)
-                    );
-                }
-                res.locals.originalAccessGroup = fetchRecordResult;
-                return {
-                    operationUri: "object/record/read",
-                    input: {
-                        object: {
-                            recordData
-                        }
-                    }
-                };
-            }
-        ),
+        requireAccessGroupUnconditionalPermission("object/record/read"),
         createFetchUsersHandler(true, "Get user count in an access group")
     );
 

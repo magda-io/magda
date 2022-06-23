@@ -322,7 +322,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         aspect: any,
         merge: boolean = false,
         tenantId: number = this.tenantId
-    ): Promise<Record | ServerError> {
+    ): Promise<any | ServerError> {
         const operation = () =>
             this.recordAspectsApi.putById(
                 encodeURIComponent(recordId),
