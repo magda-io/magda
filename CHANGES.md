@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.3.1
+
+- #3367 Fixed Content API header item schema target field type
+- #3369 Content API Get by id API didn't response content in correct mime type
+
 ## 1.3.0
 
 - Upgrade nodemailer to 6.7.3
