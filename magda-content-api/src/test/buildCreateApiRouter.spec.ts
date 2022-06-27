@@ -84,18 +84,48 @@ describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
                 .end(done);
         });
 
+        it("should return data for existing - json (without ext) - as json", (done) => {
+            agent
+                .get("/json-2")
+                .expect(200, { acdc: "test" })
+                .expect("Content-Type", /^application\/json/)
+                .end(done);
+        });
+
         IMAGE_FORMATS_SUPPORTED.forEach((format) => {
-            it(`should return data for existing - ${format} - as ${format}`, (done) => {
-                agent.get(`/${format}-id.bin`).expect(200).end(done);
+            it(`should return data for existing - ${format} - ext:bin- as ${format}`, (done) => {
+                const imgData = mockContentData.find(
+                    (item) => item.id === `${format}-id`
+                );
+                agent
+                    .get(`/${format}-id.bin`)
+                    .expect(200, Buffer.from(imgData.content, "base64"))
+                    .end(done);
+            });
+
+            it(`should return data for existing - ${format} - no ext - as ${format}`, (done) => {
+                const imgData = mockContentData.find(
+                    (item) => item.id === `${format}-id`
+                );
+                agent
+                    .get(`/${format}-id`)
+                    .expect(200, Buffer.from(imgData.content, "base64"))
+                    .end(done);
+            });
+
+            it(`should return data for existing - ${format} - ext:text - as ${format}`, (done) => {
+                const imgData = mockContentData.find(
+                    (item) => item.id === `${format}-id`
+                );
+                agent
+                    .get(`/${format}-id.text`)
+                    .expect(200, imgData.content)
+                    .end(done);
             });
         });
 
         it("should return 404 for non-existant", (done) => {
             agent.get("/json-3.json").expect(404).end(done);
-        });
-
-        it("should return 500 for other errors", (done) => {
-            agent.get("/svg-id.json").expect(500).end(done);
         });
 
         describe("list", () => {
@@ -256,7 +286,7 @@ describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
                 mime: "image/svg+xml",
                 content: gifImage,
                 getRoute: "/emailTemplates/assets/x-y-z.jpg",
-                expectedContent: gifImage.toString("utf8")
+                expectedContent: gifImage
             },
             {
                 route: "/lang/en/publishersPage/blahface",
@@ -270,7 +300,7 @@ describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
                 mime: "image/x-icon",
                 content: gifImage,
                 getRoute: "/favicon.ico",
-                expectedContent: gifImage.toString("utf8")
+                expectedContent: gifImage
             }
         ];
 

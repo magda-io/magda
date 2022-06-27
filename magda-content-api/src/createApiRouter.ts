@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Response } from "express";
 import _ from "lodash";
 import {
     getUser,
@@ -22,6 +22,7 @@ import {
 } from "magda-typescript-common/src/express/status";
 import AccessControlError from "magda-typescript-common/src/authorization-api/AccessControlError";
 import { User } from "magda-typescript-common/src/authorization-api/model";
+import mime from "mime-types";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -206,22 +207,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 )
             );
 
-            switch (format) {
-                case "json":
-                    JSON.parse(content.content);
-                    return returnText(res, content, "application/json");
-                case "js":
-                    return returnText(res, content, "application/javascript");
-                case "text":
-                    return returnText(res, content, "text/plain");
-                case "md":
-                    return returnText(res, content, "text/markdown");
-                case "css":
-                case "html":
-                    return returnText(res, content, `text/${format}`);
-                default:
-                    return returnBinary(res, content);
-            }
+            outputContent(res, content, format);
         } catch (e) {
             res.status(e.statusCode || 500).json({
                 result: "FAILED"
@@ -373,11 +359,20 @@ export default function createApiRouter(options: ApiRouterOptions) {
     return router;
 }
 
-function returnBinary(res: any, content: Content) {
-    const buffer = Buffer.from(content.content, "base64");
-    res.header("Content-Type", content.type).send(buffer);
-}
+function outputContent(
+    res: Response,
+    content: Content,
+    requestFormat?: string
+) {
+    const lookupResult = mime.lookup(requestFormat ? requestFormat : "");
+    const type: string = lookupResult ? lookupResult : content.type;
 
-function returnText(res: any, content: Content, mime: string) {
-    res.header("Content-Type", mime).send(content.content);
+    let data: Buffer | string;
+    if (type.startsWith("image/") || type === "application/octet-stream") {
+        data = Buffer.from(content.content, "base64");
+    } else {
+        data = content.content;
+    }
+
+    res.header("Content-Type", type).send(data);
 }
