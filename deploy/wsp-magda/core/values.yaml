@@ -1,0 +1,13 @@
+global:
+  connectors:
+    includeInitialJobs: true
+
+magda-auth-internal:
+  authPluginConfig:
+    loginFormExtraInfoContent: "Forgot your password? Email [test@example.com](test@example.com)"
+
+magda:
+  magda-core:
+    gateway:
+      service:
+        type: LoadBalancer

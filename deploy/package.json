@@ -18,6 +18,9 @@
     "clean-up-all-charts": "rm -rf helm/magda-core/charts helm/magda/charts helm/local-deployment/charts helm/local-auth-test-deployment/charts",
     "add-all-chart-version-changes": "git ls-files -m | grep Chart.yaml | xargs git add && git ls-files -m | grep Chart.lock | xargs git add && git ls-files -m | grep values.yaml | xargs git add",
     "add-all-helm-docs-changes": "helm-docs && git ls-files -m | grep -i readme.md | xargs git add",
+    "wsp-helm-dep-update": "helm dep up deploy/wsp-magda/core",
+    "wsp-deploy-local": "helm upgrade --namespace magda --install --timeout 9999s -f deploy/wsp-magda/local.yml magda deploy/wsp-magda/core",
+    "wsp-deploy-prod": "helm upgrade --namespace magda --install --timeout 9999s -f deploy/wsp-magda/prod.yml magda deploy/wsp-magda/core",
     "version": "yarn update-helm-chart-version && yarn update-all-charts && yarn add-all-chart-version-changes && yarn add-all-helm-docs-changes"
   },
   "author": "",

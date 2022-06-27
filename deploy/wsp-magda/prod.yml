@@ -1,0 +1,34 @@
+global:
+  externalUrl: "http://magda.dtv.wspdigitaltesting.com"
+
+tags:
+  ## "all" is a shortcut which turns on all services except minions.
+  all: true
+
+connector-dga:
+  config:
+    id: dga
+    name: "data.gov.au"
+    sourceUrl: "https://data.gov.au/data/"
+    pageSize: 1000
+    ignoreHarvestSources: ["*"]
+
+magda-auth-google:
+  googleClientId: 770312160805-26s4qsnon6nggg499vcollhuvltujoa5.apps.googleusercontent.com
+
+magda:
+  magda-core:
+    gateway:
+      service:
+        type: LoadBalancer
+      authPlugins:
+      - key: internal
+        baseUrl: http://magda-auth-internal
+      - key: google
+        baseUrl: http://magda-auth-google
+
+    web-server:
+      image:
+        repository: "<ecr repo>/data61"
+        tag: "latest"
+        pullPolicy: IfNotPresent
