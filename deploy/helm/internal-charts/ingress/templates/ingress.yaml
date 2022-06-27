@@ -2,34 +2,29 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    {{- if .Values.ingressClass }}
-    kubernetes.io/ingress.class: {{ .Values.ingressClass }}
-    {{- end }}
-    {{- if .Values.ipName }}
-    kubernetes.io/ingress.global-static-ip-name: {{ .Values.ipName }}
-    {{- end }}
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.certificateARN }}
+    alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
     nginx.ingress.kubernetes.io/client-body-buffer-size: 10M
     nginx.ingress.kubernetes.io/proxy-body-size: 10M
   name: ingress
 spec:
-  {{- if .Values.enableTls }}
-  tls:
-  - hosts:
-    - {{ .Values.hostname }}
-    {{- if not .Values.useDefaultCertificate}}
-    secretName: {{ .Values.tlsSecretName | default "magda-cert-tls" }}
-    {{- end }}
-  {{- end }}
   rules:
   - http:
       paths:
-      - pathType: {{ if eq (.Values.ingressClass | default "") "gce" -}} "ImplementationSpecific" {{- else -}} "Prefix" {{- end }}
-        path: {{ if eq (.Values.ingressClass | default "") "gce" -}} "/*" {{- else -}} "/" {{- end }}
+      - pathType: "Prefix"
+        path: "/"
+        backend:
+          service:
+            name: ssl-redirect
+            port:
+              name: use-annotation
+      - pathType: "Prefix"
+        path: "/"
         backend:
           service:
             name: {{ .Values.targetService | default "gateway" }}
-            port: 
+            port:
               number: 80
-    {{- if .Values.hostname  }}
-    host: {{ .Values.hostname }}
-    {{- end }}

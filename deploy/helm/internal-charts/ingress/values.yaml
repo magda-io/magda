@@ -1,2 +1,1 @@
-enableTls: false
-useDefaultCertificate: false
+certificateARN: "arn:aws:acm:region-id:account-id:certificate/certificate-id"
