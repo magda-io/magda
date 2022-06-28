@@ -1,0 +1,34 @@
+name: Build magda-web-server
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "The branch or ref to deploy"
+        required: true
+        default: "next"
+
+env:
+  AWS_DEFAULT_REGION: ap-southeast-2
+
+jobs:
+  deployment:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 'Deploy'
+        uses: 'deliverybot/helm@v1'
+        with:
+          release: 'magda'
+          namespace: 'magda'
+          chart: 'deploy/helm/wsp-magda'
+          token: '${{ github.token }}'
+          values: |
+            magda.magda-core.web-server.image.tag: ${GITHUB_SHA::8}
+          value-files: >-
+          [
+            "deploy/helm/wsp-deploy-test.yml"
+          ]
+        env:
+          KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
