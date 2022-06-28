@@ -4,6 +4,7 @@
 
 - #3367 Fixed Content API header item schema target field type
 - #3369 Content API Get by id API didn't response content in correct mime type
+- #3371 Content API Get by id API generate one more unnecessary DB query
 
 ## 1.3.0
 
