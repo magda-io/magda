@@ -26,9 +26,6 @@ jobs:
           token: '${{ github.token }}'
           values: |
             magda.magda-core.web-server.image.tag: ${GITHUB_SHA::8}
-          value-files: >-
-          [
-            "deploy/helm/wsp-deploy-test.yml"
-          ]
+          value-files: "deploy/helm/wsp-deploy-test.yml"
         env:
           KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
