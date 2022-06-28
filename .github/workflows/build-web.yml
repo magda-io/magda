@@ -35,7 +35,6 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: magda-web-service-test
-          IMAGE_TAG: ${GITHUB_SHA::8}
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f magda-web-server/Dockerfile magda-web-server
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker build -t $REGISTRY/$REPOSITORY:${GITHUB_SHA::8} -f magda-web-server/Dockerfile magda-web-server
+          docker push $REGISTRY/$REPOSITORY:${GITHUB_SHA::8}
