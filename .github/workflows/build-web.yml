@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "The branch or ref to deploy"
+        required: true
+        default: "next"
+
+env:
+  AWS_DEFAULT_REGION: ap-southeast-2
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::940728446396:role/GitHubActionsRole-Role-19PVMNHCS146H
+          aws-region: ${{env.AWS_DEFAULT_REGION}}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: magda-web-service-test
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f magda-web-server/Dockerfile magda-web-server
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
