@@ -1,4 +1,4 @@
-name: Build magda-web-server
+name: Deploy magda-web-server
 
 on:
   workflow_dispatch:
