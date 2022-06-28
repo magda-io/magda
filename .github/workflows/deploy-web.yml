@@ -16,6 +16,8 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: "next"
 
       - name: 'Helm Deploy'
         uses: 'vimeda/helm@v1.6.8'
