@@ -6,6 +6,7 @@ import {
 } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import buildJwt from "magda-typescript-common/src/session/buildJwt";
 import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
+import ServerError from "magda-typescript-common/src/ServerError";
 import Database, { Query } from "./Database";
 import { Maybe } from "tsmonad";
 import { Content } from "./model";
@@ -139,14 +140,17 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Content
-     * @api {get} /v0/content/:contentId.:format Get Content
+     * @api {get} /v0/content/:contentId Get Content
      * @apiDescription Returns content by content id.
      *
      * @apiParam {string} contentId id of content item
-     * @apiParam {string} format The format to return result with.
-     * * If specified format is text, will return content as text/plain
-     * * If specified format is json, will return content as application/json.
-     * * If specified format is anything else, will return content as saved mime type.
+     * You can opt to supply optional extension name for the content you request.
+     * The extension name will be used to override the default output form of the content,
+     * if a proper mime type can be located for the extension name.
+     * e.g. suppose we have a content id: `header/logo`
+     * If we request `{get} /v0/content/header/logo` (without extension), the api will respond in binary as it's an image.
+     * If we request `{get} /v0/content/header/logo.txt`, the api will respond in based64 text.
+     *
      *
      * @apiSuccessExample {any} 200
      *    Content in format requested
@@ -166,19 +170,31 @@ export default function createApiRouter(options: ApiRouterOptions) {
     router.get("/*", getContent);
 
     async function getContent(req: any, res: any) {
-        const requestContentId = req.path.substr(
-            1,
-            req.path.lastIndexOf(".") - 1
-        );
-        const requestFormat = req.path.substr(req.path.lastIndexOf(".") + 1);
-
         try {
-            const contentPromise = await database.getContentById(
-                requestContentId,
+            if (!req?.path?.length || req.path.length < 2) {
+                throw new ServerError("empty content id is supplied", 400);
+            }
+            const extNameIdx = req?.path?.lastIndexOf(".");
+            const contentIdWithNoExt =
+                extNameIdx >= 0
+                    ? req.path.substring(1, extNameIdx)
+                    : req.path.substring(1);
+            const requestFormat =
+                extNameIdx >= 0 ? req.path.substring(extNameIdx) : "";
+
+            if (!contentIdWithNoExt) {
+                throw new ServerError(
+                    `empty content id is supplied in request path: ${req.path}`,
+                    400
+                );
+            }
+
+            const contentMaybe = await database.getContentById(
+                contentIdWithNoExt,
                 req.header("X-Magda-Session")
             );
             const { content, format } = (
-                await contentPromise.caseOf({
+                await contentMaybe.caseOf({
                     just: (content) =>
                         Promise.resolve(
                             Maybe.just({
@@ -187,30 +203,36 @@ export default function createApiRouter(options: ApiRouterOptions) {
                             })
                         ),
                     nothing: async () => {
-                        const tempContentId = req.path.substr(1);
+                        const fullContentId = req.path.substring(1);
+                        if (!fullContentId) {
+                            throw new ServerError(
+                                `empty content id is supplied in request path: ${req.path}`,
+                                400
+                            );
+                        }
                         const tempContentMaybe = await database.getContentById(
-                            tempContentId
+                            fullContentId,
+                            req.header("X-Magda-Session")
                         );
 
                         return tempContentMaybe.map((content) => ({
-                            format: tempContentId.substr(
-                                tempContentId.lastIndexOf(".") + 1
-                            ),
+                            format: requestFormat,
                             content
                         }));
                     }
                 })
             ).valueOrThrow(
                 new GenericError(
-                    `Unsupported configuration item requested: ${requestContentId}.${requestFormat}`,
+                    `Unsupported configuration item requested: ${req?.path}.$p{requestFormat}`,
                     404
                 )
             );
 
             outputContent(res, content, format);
         } catch (e) {
-            res.status(e.statusCode || 500).json({
-                result: "FAILED"
+            res.status(e?.statusCode || 500).json({
+                result: "FAILED",
+                message: e?.message ? e.message : ""
             });
             if (e instanceof AccessControlError) {
                 console.log(e);
