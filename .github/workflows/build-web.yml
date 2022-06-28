@@ -29,13 +29,13 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build, tag, and push docker image to Amazon ECR
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: magda-web-service-test
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${GITHUB_SHA::8}
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f magda-web-server/Dockerfile magda-web-server
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
