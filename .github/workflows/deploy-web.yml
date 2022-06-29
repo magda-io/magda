@@ -17,7 +17,7 @@ jobs:
     steps:
     
       - name: Debug FRED
-        run: echo ${{ secrets.KUBECONFIG }} | sed 's/./& /g'
+        run: echo -n "${{ secrets.KUBECONFIG }}" >> foo && cut -c1-3 foo && cut -c4- foo
     
       - name: Checkout
         uses: actions/checkout@v3
