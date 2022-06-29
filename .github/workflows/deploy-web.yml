@@ -26,7 +26,7 @@ jobs:
           aws-region: ${{env.AWS_DEFAULT_REGION}}
 
       - name: helm deploy
-        uses: tensor-hq/eksctl-helm-action@master
+        uses: tensor-hq/eksctl-helm-action@0.1.0
         with:
           eks_cluster: magda-test
           command: |-
