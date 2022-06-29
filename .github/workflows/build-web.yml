@@ -53,6 +53,10 @@ jobs:
         run: yarn run build
         working-directory: ./magda-web-server
 
+      - name: Docker Build
+        run: yarn run docker-build-prod
+        working-directory: ./magda-web-server
+        
 #       - name: Configure AWS credentials
 #         uses: aws-actions/configure-aws-credentials@v1
 #         with:
