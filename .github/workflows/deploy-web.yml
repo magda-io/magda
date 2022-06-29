@@ -19,13 +19,8 @@ jobs:
         with:
           ref: "next"
 
-      - name: 'Helm Upgrade Deps'
-        uses: 'WyriHaximus/github-action-helm3@v2.0'
-        with:
-          exec: helm dep up deploy/helm/wsp-magda
-
       - name: 'Helm Deploy'
-        uses: 'deliverybot/3@v1.6.8'
+        uses: 'deliverybot/helm3@v1.6.8'
         with:
           release: 'magda'
           namespace: 'magda'
