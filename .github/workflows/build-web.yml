@@ -47,25 +47,22 @@ jobs:
       - name: Build magda-web-server
         run: yarn install && yarn run build
         working-directory: ./magda-web-server
-
-      - name: Docker Build
-        run: yarn run docker-build-prod
-        working-directory: ./magda-web-server
         
-#       - name: Configure AWS credentials
-#         uses: aws-actions/configure-aws-credentials@v1
-#         with:
-#           role-to-assume: arn:aws:iam::940728446396:role/GitHubRole-Build-7QP2Q93CJ5GH
-#           aws-region: ${{env.AWS_DEFAULT_REGION}}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::940728446396:role/GitHubRole-Build-7QP2Q93CJ5GH
+          aws-region: ${{env.AWS_DEFAULT_REGION}}
 
-#       - name: Login to Amazon ECR
-#         id: login-ecr
-#         uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-#       - name: Build, tag, and push docker image to Amazon ECR
-#         env:
-#           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-#           REPOSITORY: magda-web-service-test
-#         run: |
-#           docker build -t $REGISTRY/$REPOSITORY:${GITHUB_SHA::8} -f magda-web-server/Dockerfile magda-web-server
-#           docker push $REGISTRY/$REPOSITORY:${GITHUB_SHA::8}
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: magda-web-service-test
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:${GITHUB_SHA::8} .
+          docker push $REGISTRY/$REPOSITORY:${GITHUB_SHA::8}
+        working-directory: ./magda-web-server
