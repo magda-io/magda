@@ -12,11 +12,15 @@ env:
   AWS_DEFAULT_REGION: ap-southeast-2
 
 jobs:
-  docker:
+
+  build-magda:
+  
     runs-on: ubuntu-latest
+  
     permissions:
       id-token: write
       contents: write
+    
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -32,6 +36,11 @@ jobs:
         uses: actions/setup-node@v2-beta
         with:
           node-version: '12'
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Cache node modules
         uses: actions/cache@v2
