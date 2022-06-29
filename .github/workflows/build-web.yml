@@ -31,8 +31,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '12'
-          cache: 'npm'
 
+      - uses: c-hive/gha-yarn-cache@v2
+      
       - name: Add Magda Common
         run: |
           yarn install && yarn build
