@@ -34,7 +34,9 @@ jobs:
           cache: 'npm'
 
       - name: Add Magda Common
-        run: yarn add @magda/typescript-common
+        run: |
+          yarn install && yarn build
+          yarn add @magda/typescript-common
         working-directory: ./magda-typescript-common
       
       - name: Build magda-web-client
