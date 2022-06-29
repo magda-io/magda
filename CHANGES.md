@@ -36,6 +36,7 @@
 - Fixed: helm chart version update script incorrectly skip updating dependencies version when `versionUpdateExclude` config in package.json is empty
 - Fixed: incorrect scss-compiler-config data might be generated if non-default docker image config is used.
 - #3360: Recategorize auth object related API docs & more auth object related APIs for convenient of future UI development.
+- Fixed: `set-scss-vars` script will use proper imagePullSecrets to generate the UI CSS update job
 
 ## 1.3.1
 
