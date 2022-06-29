@@ -22,3 +22,5 @@ jobs:
 
       - name: Run Deploy
         run: docker-compose -f scripts/wsp-deploy/docker-compose.yml run helm-deploy
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
