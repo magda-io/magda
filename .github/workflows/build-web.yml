@@ -13,7 +13,7 @@ env:
 
 jobs:
 
-  build-magda:
+  build-magda-web-server:
   
     runs-on: ubuntu-latest
   
@@ -57,9 +57,11 @@ jobs:
       
       - name: Yarn Install
         run: yarn install
-      
+        working-directory: ./magda-web-server
+        
       - name: Yarn Build
         run: yarn run build
+        working-directory: ./magda-web-server
       
 #       - name: Build, tag, and push docker image to Amazon ECR
 #         env:
