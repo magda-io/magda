@@ -9,6 +9,7 @@ on:
         default: "next"
 
 env:
+  NODE_ENV: production
   AWS_DEFAULT_REGION: ap-southeast-2
 
 jobs:
