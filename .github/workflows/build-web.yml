@@ -33,6 +33,10 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       
+      - name: Add Magda Common
+        run: yarn add @magda/typescript-common
+        working-directory: ./magda-typescript-common
+      
       - name: Build magda-web-client
         run: yarn install && yarn run build
         working-directory: magda-web-client
