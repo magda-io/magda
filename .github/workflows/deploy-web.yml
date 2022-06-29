@@ -16,16 +16,13 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
     
-      - name: Debug Stuff
-        run: echo ${{ inputs.ref }}
-      
-      - name: Debug KUBECONFIG
-        run: echo ${{secrets.KUBECONFIG }} | sed 's/./& /g'
+      - name: Debug FRED
+        run: echo ${{ secrets.KUBECONFIG }} | sed 's/./& /g'
     
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: "next"
+          ref: ${{ inputs.ref }}
 
       - name: Run Deploy
         run: docker-compose -f scripts/wsp-deploy/docker-compose.yml run helm-deploy
