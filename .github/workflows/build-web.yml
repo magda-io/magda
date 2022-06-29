@@ -28,13 +28,34 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Prepare Node 12
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
 
-      - name: Build, tag, and push docker image to Amazon ECR
+      - name: Cache node modules
+        uses: actions/cache@v2
         env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: magda-web-service-test
-        run: |
-          docker build -t $REGISTRY/$REPOSITORY:${GITHUB_SHA::8} -f magda-web-server/Dockerfile magda-web-server
-          docker push $REGISTRY/$REPOSITORY:${GITHUB_SHA::8}
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      
+      - name: Yarn Install
+        run: yarn install
+      
+      - name: Yarn Build
+        run: yarn run build
+      
+#       - name: Build, tag, and push docker image to Amazon ECR
+#         env:
+#           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           REPOSITORY: magda-web-service-test
+#         run: |
+#           docker build -t $REGISTRY/$REPOSITORY:${GITHUB_SHA::8} -f magda-web-server/Dockerfile magda-web-server
+#           docker push $REGISTRY/$REPOSITORY:${GITHUB_SHA::8}
