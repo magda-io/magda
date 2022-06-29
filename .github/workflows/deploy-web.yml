@@ -19,15 +19,17 @@ jobs:
         with:
           ref: "next"
 
-      - name: 'Helm Deploy'
-        uses: 'deliverybot/helm@v1'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          release: 'magda'
-          namespace: 'magda'
-          chart: 'deploy/helm/wsp-magda'
-          token: '${{ github.token }}'
-          values: |
-            magda.magda-core.web-server.image.tag: ${GITHUB_SHA::8}
-          value-files: "deploy/helm/wsp-deploy-test.yml"
-        env:
-          KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
+          role-to-assume: arn:aws:iam::940728446396:role/GitHubRole-Deploy-FN5IHCDG5R5O
+          aws-region: ${{env.AWS_DEFAULT_REGION}}
+
+      - name: helm deploy
+        uses: tensor-hq/eksctl-helm-action@master
+        with:
+          eks_cluster: magda-test
+          command: |-
+            helm dep up deploy/helm/wsp-magda
+            helm upgrade --namespace magda --install magda deploy/helm/wsp-magda -f deploy/helm/wsp-deploy-test.yml --set "magda.magda-core.web-server.image.tag=${GITHUB_SHA::8}"
+
