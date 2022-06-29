@@ -45,12 +45,12 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
       
-      - name: Yarn Install
-        run: yarn install
-        working-directory: ./magda-web-server
-        
-      - name: Yarn Build
-        run: yarn run build
+      - name: Build magda-web-client
+        run: yarn install && yarn run build
+        working-directory: magda-web-client
+      
+      - name: Build magda-web-server
+        run: yarn install && yarn run build
         working-directory: ./magda-web-server
 
       - name: Docker Build
