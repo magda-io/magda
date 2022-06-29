@@ -19,13 +19,20 @@ jobs:
         with:
           ref: "next"
 
-      - name: 'Upgrade Deps'
-        uses: WyriHaximus/github-action-helm3@v2.0
+      - name: 'Helm Upgrade Deps'
+        uses: 'WyriHaximus/github-action-helm3@v2.0'
         with:
           exec: helm dep up deploy/helm/wsp-magda
 
-      - name: 'Deploy'
-        uses: WyriHaximus/github-action-helm3@v2.0
+      - name: 'Helm Deploy'
+        uses: 'deliverybot/3@v1.6.8'
         with:
-          exec: helm upgrade --namespace magda --install --timeout 9999s magda deploy/helm/wsp-magda -f deploy/helm/wsp-deploy-test.yml --set "magda.magda-core.web-server.image.tag=${GITHUB_SHA::8}"
-          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          release: 'magda'
+          namespace: 'magda'
+          chart: 'deploy/helm/wsp-magda'
+          token: '${{ github.token }}'
+          values: |
+            magda.magda-core.web-server.image.tag: ${GITHUB_SHA::8}
+          value-files: "deploy/helm/wsp-deploy-test.yml"
+        env:
+          KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
