@@ -20,7 +20,7 @@ jobs:
           ref: "next"
 
       - name: 'Helm Deploy'
-        uses: 'deliverybot/helm'
+        uses: 'deliverybot/helm@v1'
         with:
           release: 'magda'
           namespace: 'magda'
