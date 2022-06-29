@@ -14,8 +14,12 @@ env:
 jobs:
   deployment:
     runs-on: 'ubuntu-latest'
+    permissions:
+      id-token: write
+      contents: write
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           ref: "next"
 
@@ -25,7 +29,7 @@ jobs:
           role-to-assume: arn:aws:iam::940728446396:role/GitHubRole-Deploy-FN5IHCDG5R5O
           aws-region: ${{env.AWS_DEFAULT_REGION}}
 
-      - name: helm deploy
+      - name: Helm Deploy
         uses: tensor-hq/eksctl-helm-action@0.1.0
         with:
           eks_cluster: magda-test
