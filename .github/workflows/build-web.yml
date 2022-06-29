@@ -9,7 +9,6 @@ on:
         default: "next"
 
 env:
-  NODE_ENV: production
   AWS_DEFAULT_REGION: ap-southeast-2
 
 jobs:
@@ -36,7 +35,7 @@ jobs:
 
       - name: Add Magda Common
         run: |
-          yarn install --production=false && yarn build
+          yarn install && yarn build
           yarn add @magda/typescript-common
         working-directory: ./magda-typescript-common
       
