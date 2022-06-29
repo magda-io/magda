@@ -12,12 +12,37 @@ env:
   AWS_DEFAULT_REGION: ap-southeast-2
 
 jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::940728446396:role/GitHubRole-Build-7QP2Q93CJ5GH
+          aws-region: ${{env.AWS_DEFAULT_REGION}}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: magda-web-service-test
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$(git rev-parse --short HEAD) -f magda-web-server/Dockerfile magda-web-server
+          docker push $REGISTRY/$REPOSITORY:$(git rev-parse --short HEAD)
+          
   deployment:
     runs-on: 'ubuntu-latest'
     steps:
-    
-      - name: Debug FRED
-        run: echo -n "${{ secrets.KUBECONFIG }}" >> foo && cut -c1-3 foo && cut -c4- foo
     
       - name: Checkout
         uses: actions/checkout@v3
