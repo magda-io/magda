@@ -44,6 +44,8 @@
 - #3369 Content API Get by id API didn't response content in correct mime type
 - #3371 Content API Get by id API generate one more unnecessary DB query
 - #3363: Update postgres helm chart repo url
+- Upgrade openfaas helm chart to 5.5.5-magda.2 to be compatible with k8s 1.22
+- #3362 explicitly mark pods using emptyDir as safe to evict for cluster-autoscaler
 
 ## 1.3.0
 

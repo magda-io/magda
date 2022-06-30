@@ -14,6 +14,8 @@ spec:
     metadata:
       labels:
         service: authorization-api
+      annotations:
+         "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
     spec:
 {{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-8
