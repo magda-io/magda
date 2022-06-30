@@ -67,7 +67,7 @@ export default class RegistryClient {
     protected maxRetries: number;
     protected secondsBetweenRetries: number;
     protected tenantId: number;
-    protected jwt: string | undefined;
+    protected _jwt: string | undefined;
 
     constructor({
         baseUrl,
@@ -91,6 +91,14 @@ export default class RegistryClient {
         this.recordAspectsApi = new RecordAspectsApi(registryApiUrl);
         this.webHooksApi = new WebHooksApi(registryApiUrl);
         this.recordHistoryApi = new RecordHistoryApi(registryApiUrl);
+    }
+
+    public get jwt(): string | undefined {
+        return this._jwt;
+    }
+
+    public set jwt(jwtToken: string | undefined) {
+        this._jwt = jwtToken;
     }
 
     getRecordUrl(id: string): string {

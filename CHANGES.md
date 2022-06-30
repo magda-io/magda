@@ -37,6 +37,7 @@
 - Fixed: incorrect scss-compiler-config data might be generated if non-default docker image config is used.
 - #3360: Recategorize auth object related API docs & more auth object related APIs for convenient of future UI development.
 - Fixed: `set-scss-vars` script will use proper imagePullSecrets to generate the UI CSS update job
+- Make registry api auto re-generate JWT token
 
 ## 1.3.1
 

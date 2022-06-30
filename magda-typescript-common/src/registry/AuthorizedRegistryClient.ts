@@ -24,13 +24,70 @@ export interface AuthorizedRegistryOptions extends RegistryOptions {
     jwt?: string;
     userId?: string;
     jwtSecret?: string;
+    jwtTokenValidityPeriod?: number;
+    clockSkew?: number;
 }
 
 export default class AuthorizedRegistryClient extends RegistryClient {
-    protected jwt: string = undefined;
+    /**
+     * How long time (in seconds) the generated jwt token will remain valid.
+     * By default, it's 5 mins.
+     * Unless the client is set up with a fixed token, the client will auto generate
+     * a new jwt token once the existing auto-generated token is expired.
+     *
+     * When the value is set to 0, the client will never attempt to re-generate JWT token.
+     *
+     * @type {number}
+     * @memberof AuthorizedRegistryClient
+     */
+    public readonly jwtTokenValidityPeriod: number = 300;
+
+    /**
+     * Whether or not auto-generate token when the current token is expired.
+     * This option will be set to `false` when:
+     * - either `userId` or `jwtSecret` is not supplied
+     * - Or `jwt` token is supplied when create the client instance
+     *
+     * @type {boolean}
+     * @memberof AuthorizedRegistryClient
+     */
+    public readonly autoGenerateToken: boolean = true;
+
+    /**
+     * Allowing a clock skew (in seconds) when making the token generate decision.
+     * i.e. this client will generate JWT token earlier than its expire time to cover potential variation among different servers.
+     * Default to 30 seconds.
+     *
+     * @type {number}
+     * @memberof AuthorizedRegistryClient
+     */
+    public readonly clockSkew: number = 30;
+
+    /**
+     * When (in mil-seconds timestamp), the current generated JWT token will expire and a new token should be generated.
+     *
+     * @private
+     * @type {number}
+     * @memberof AuthorizedRegistryClient
+     */
+    private jwtTokenExpireTime: number = 0;
+
+    private userId: string = "";
+    private jwtSecret: string = "";
 
     constructor(options: AuthorizedRegistryOptions) {
         super(options);
+
+        if (
+            typeof options?.jwtTokenValidityPeriod === "number" &&
+            options.jwtTokenValidityPeriod >= 0
+        ) {
+            this.jwtTokenValidityPeriod = options.jwtTokenValidityPeriod;
+        }
+
+        if (typeof options?.clockSkew === "number") {
+            this.clockSkew = options.clockSkew;
+        }
 
         if (options.tenantId === undefined || options.tenantId === null) {
             throw Error("A tenant id must be defined.");
@@ -44,11 +101,52 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             throw Error("userId must be supplied when jwtSecret is supplied.");
         }
 
-        if (options?.userId && options.jwtSecret) {
-            this.jwt = buildJwt(options.jwtSecret, options.userId);
-        } else if (options?.jwt) {
-            this.jwt = options.jwt;
+        if (options?.userId) {
+            this.userId = options.userId;
         }
+
+        if (options?.jwtSecret) {
+            this.jwtSecret = options.jwtSecret;
+        }
+
+        if (!this.userId || !this.jwtSecret) {
+            this.autoGenerateToken = false;
+        }
+
+        if (typeof options?.jwt === "string" && options.jwt.length) {
+            this._jwt = options.jwt;
+            this.autoGenerateToken = false;
+        }
+    }
+
+    public get jwt(): string | undefined {
+        if (!this.autoGenerateToken) {
+            return this._jwt;
+        }
+        if (this.jwtTokenValidityPeriod === 0) {
+            return this._jwt;
+        }
+        const now = new Date().getTime();
+        if (this.jwtTokenExpireTime - this.clockSkew * 1000 > now) {
+            return this._jwt;
+        }
+        this._jwt = buildJwt(
+            this.jwtSecret,
+            this.userId,
+            this.jwtTokenValidityPeriod
+        );
+        this.jwtTokenExpireTime = now + this.jwtTokenValidityPeriod * 1000;
+        return this._jwt;
+    }
+
+    public set jwt(jwtToken: string | undefined) {
+        if (this.autoGenerateToken) {
+            throw new ServerError(
+                "Cannot set JWT token when autoGenerateToken = true",
+                500
+            );
+        }
+        this._jwt = jwtToken;
     }
 
     async getAspectDefinition(aspectId: string): Promise<AspectDefinition> {
