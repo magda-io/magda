@@ -1,7 +1,7 @@
 {
   "name": "@magda/auth-api-client",
   "description": "MAGDA Auth API Client",
-  "version": "1.2.2-alpha.0",
+  "version": "1.3.1-rc.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "webpack && api-extractor run -l",
@@ -12,7 +12,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "devDependencies": {
-    "@magda/typescript-common": "^1.2.2-alpha.0",
+    "@magda/typescript-common": "^1.3.1-rc.0",
     "@microsoft/api-extractor": "^7.7.8",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.2",
