@@ -32,7 +32,10 @@ jobs:
         with:
           node-version: '12'
 
-      - uses: c-hive/gha-yarn-cache@v2
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
       
       - name: Add Magda Common
         run: |
