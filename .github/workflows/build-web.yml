@@ -63,6 +63,5 @@ jobs:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: magda-web-service-test
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:${GITHUB_SHA::8} .
-          docker push $REGISTRY/$REPOSITORY:${GITHUB_SHA::8}
+          yarn docker-build-wsp --tag $REGISTRY/$REPOSITORY:$(git rev-parse --short HEAD) --push
         working-directory: ./magda-web-server
