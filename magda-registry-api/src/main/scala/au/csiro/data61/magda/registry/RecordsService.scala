@@ -841,7 +841,6 @@ class RecordsService(
     * @apiParamExample {json} Request-Example
     * {
     *   "recordIds": ["dsd-sds-xsds-22", "sds-sdds-2334-dds-34", "sdds-3439-34334343"],
-    *   "aspectId": "access-control",
     *   "jsonPath": "$.preAuthorisedPermissionIds",
     *   "items": ["b133d777-6208-4aa1-8d0b-80bb49b7e5fc", "5d33cc4d-d914-468e-9f02-ae74484af716"]
     * }
