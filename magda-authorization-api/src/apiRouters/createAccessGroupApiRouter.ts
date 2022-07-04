@@ -17,9 +17,10 @@ import {
     CreateAccessGroupRequestBodyType,
     UpdateAccessGroupRequestBodyType
 } from "magda-typescript-common/src/authorization-api/model";
+import { JsonPatch } from "magda-typescript-common/src/registry/model";
 import isUuid from "magda-typescript-common/src/util/isUuid";
 import { v4 as uuidV4 } from "uuid";
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
 import isArray from "lodash/isArray";
 import uniq from "lodash/uniq";
 import isEmpty from "lodash/isEmpty";
@@ -397,6 +398,36 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 throw resultOrError;
             }
         }
+
+        if (
+            accessGroupDetailsAspectData?.keywords ||
+            accessGroupDetailsAspectData?.operationUris
+        ) {
+            const patches: JsonPatch[] = [];
+            if (accessGroupDetailsAspectData?.keywords) {
+                patches.push({
+                    op: "replace",
+                    path: "/keywords",
+                    value: accessGroupDetailsAspectData.keywords
+                });
+            }
+            if (accessGroupDetailsAspectData?.operationUris) {
+                patches.push({
+                    op: "replace",
+                    path: "/operationUris",
+                    value: accessGroupDetailsAspectData.operationUris
+                });
+            }
+            const resultOrError = await registryClient.patchRecordAspect(
+                groupId,
+                "access-group-details",
+                patches
+            );
+            if (resultOrError instanceof Error) {
+                throw resultOrError;
+            }
+        }
+
         if (!isEmpty(accessControlAspectData)) {
             const resultOrError = await registryClient.putRecordAspect(
                 groupId,
@@ -567,6 +598,30 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         )
                     );
                     return;
+                } else {
+                    let operationUris = data?.operationUris?.length
+                        ? [...data.operationUris]
+                        : [];
+                    if (!operationUris.length) {
+                        throw new ServerError(
+                            "Supplied `operationUris` is empty",
+                            400
+                        );
+                    }
+                    operationUris = operationUris
+                        .filter((item) => !!item)
+                        .map((item) => `${item}`.trim().toLowerCase())
+                        .filter((item) => !!item);
+                    if (!operationUris.length) {
+                        throw new ServerError(
+                            "Supplied `operationUris` contains invalid items",
+                            400
+                        );
+                    }
+                    operationUris = uniq(operationUris);
+                    accessGroupDetailsAspectData[
+                        "operationUris"
+                    ] = operationUris;
                 }
 
                 const pool = database.getPool();
