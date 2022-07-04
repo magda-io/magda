@@ -294,10 +294,9 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
 
                     const permissionRecord = await database.createPermission(
                         {
-                            name: "auto-created access group permission",
+                            name: "auto-created for access group",
                             description:
-                                "auto-created access group permission for access group " +
-                                recordId,
+                                "auto-created for access group " + recordId,
                             resourceUri: agData.resourceUri,
                             operationUris: agData.operationUris,
                             userOwnershipConstraint: false,
@@ -310,10 +309,8 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     );
 
                     const roleData = {
-                        name: "auto-created access group role",
-                        description:
-                            "auto-created access group role for access group " +
-                            recordId
+                        name: "auto-created for access group",
+                        description: "auto-created for access group " + recordId
                     } as any;
 
                     if (userId) {
@@ -333,6 +330,17 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             "owner_id",
                             "edit_by"
                         ]
+                    );
+
+                    // add permission to the role
+                    await createTableRecord(
+                        client,
+                        "role_permissions",
+                        {
+                            role_id: role.id,
+                            permission_id: permissionRecord.id
+                        },
+                        ["role_id", "permission_id"]
                     );
 
                     agRecord.aspects["access-group-details"].permissionId =
