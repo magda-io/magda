@@ -1206,7 +1206,7 @@ export default class Database {
                         400
                     );
                 }
-                operationIds = result.rows;
+                operationIds = result.rows.map((item) => item.id);
             } else {
                 // operationIds is supplied
                 // validate operationIds
@@ -1414,7 +1414,7 @@ export default class Database {
                             400
                         );
                     }
-                    operationIds = result.rows;
+                    operationIds = result.rows.map((item) => item.id);
                 }
             } else if (isArray(operationIds) && operationIds.length) {
                 const invalidOperationId = operationIds.find(

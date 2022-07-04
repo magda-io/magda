@@ -256,7 +256,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 }
             }
         })),
-        getUserId,
+        getUserId(options.jwtSecret),
         async (req: Request, res: Response) => {
             try {
                 const agData = await validateAccessGroupCreationData(req, res);
@@ -481,7 +481,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     router.put(
         "/:groupId",
         requireAccessGroupUnconditionalPermission("object/record/update"),
-        getUserId,
+        getUserId(options.jwtSecret),
         async function (req: Request, res: Response) {
             try {
                 const groupId = `${req.params.groupId}`.trim();
