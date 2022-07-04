@@ -69,6 +69,8 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
+        - name: USER_ID
+          value: {{ .Values.global.defaultAdminUserId }}
         {{- include "magda.db-client-credential-env" (dict "dbName" "authorization-db" "root" .) | indent 8 }}
       - name: opa
         {{- $imageEnv := omit . "Values" }}
