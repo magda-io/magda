@@ -77,6 +77,29 @@ class RecordsServiceRO(
     *
     *   `/v0/records?limit=100&optionalAspect=source&aspect=dcat-dataset-strings&aspectQuery=dcat-dataset-strings.title:?%2525rating%2525`
     *
+    *   Please note: when both `aspectQuery` and `aspectOrQuery` present, query conditions generated from `aspectQuery` and `aspectOrQuery` will be joined with `AND`
+    *
+    *   e.g. For the following `aspectQuery` & `aspectOrQuery` queries are specified:
+    *   - `aspectQuery`:
+    *     - q1
+    *     - q2
+    *   - `aspectOrQuery`:
+    *     - q3
+    *     - q4
+    *
+    *   The generated query conditions will be `((q1 AND q2) AND (q3 OR q4))`
+    *   <br/><br/>
+    *
+    *   e.g. For the following `aspectQuery` & `aspectOrQuery` queries are specified:
+    *   - `aspectQuery`:
+    *     - q1
+    *     - q2
+    *   - `aspectOrQuery`:
+    *     - q3
+    *
+    *   The generated query conditions will be `((q1 AND q2) AND q3 )`. This is equivalent to set `aspectQuery` only as `q1`, `q2` and `q3`.
+    *   <br/><br/><br/>
+    *
     *   NOTE: This is an early stage API and may change greatly in the future.
     *
     * @apiParam (query) {string[]} aspectOrQuery Filter the records returned by a value within the aspect JSON.

@@ -163,7 +163,8 @@ VALUES
 
 INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
 VALUES 
-('object/accessGroup/create','Create Access Group', '', (SELECT id FROM resources WHERE uri = 'object/accessGroup'));
+('object/accessGroup/create','Create Access Group', 'Allow a user to create an access group via `POST /api/v0/auth/accessGroup` API. Once an access group is created, any other operations require relevant record level permission to the `access group` registry record to perform.', (SELECT id FROM resources WHERE uri = 'object/accessGroup')),
+('object/accessGroup/read','View Access Group', 'The actual read access is secured via resource operation `object/record/read` over access group registry records. This operation can be used by frontend to determine whether a user has access to `access group` related UI.', (SELECT id FROM resources WHERE uri = 'object/accessGroup'));
 
 -- Add resource, operation for access `storage bucket` 
 INSERT INTO "public"."resources" 
