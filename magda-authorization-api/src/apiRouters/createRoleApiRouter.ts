@@ -172,7 +172,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     );
 
     /**
-     * @apiGroup Auth Access Groups
+     * @apiGroup Auth Users
      * @api {get} /v0/auth/roles/:roleId/users/count Get the count of all matched users with a role
      * @apiDescription return the count number of all matched users who have a certain role
      * Required `authObject/user/read` permission to access this API.
