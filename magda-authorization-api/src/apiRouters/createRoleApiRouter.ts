@@ -41,15 +41,12 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
     ) {
         return async function fetchRoleUsers(req: Request, res: Response) {
             try {
-                const roleId =
-                    res?.locals?.originalAccessGroup?.aspects?.[
-                        "access-group-details"
-                    ]?.["roleId"];
+                const roleId = req.params.roleId;
 
                 if (!isUuid(roleId)) {
                     throw new ServerError(
-                        `The access group "${req.params?.groupId}" has an invalid roleId.`,
-                        500
+                        `Invalid role ID "${roleId}" has been supplied.`,
+                        400
                     );
                 }
 
@@ -164,7 +161,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.get(
-        "/:groupId/users",
+        "/:roleId/users",
         withAuthDecision(authDecisionClient, {
             operationUri: "authObject/user/read"
         }),
@@ -198,7 +195,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.get(
-        "/:groupId/users/count",
+        "/:roleId/users/count",
         withAuthDecision(authDecisionClient, {
             operationUri: "authObject/user/read"
         }),
