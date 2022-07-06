@@ -829,7 +829,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             ((recordData as any)[idx] = item)
                     );
                 }
-                res.locals.originalAccessGroup = fetchRecordResult;
+                res.locals.originalDataset = fetchRecordResult;
                 return {
                     operationUri: "object/record/update",
                     input: {

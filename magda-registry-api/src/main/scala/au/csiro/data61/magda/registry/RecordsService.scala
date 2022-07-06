@@ -723,7 +723,7 @@ class RecordsService(
     *      [122, 123, 124]
     * @apiUse GenericError
     */
-  @Path("/aspects/:aspectId")
+  @Path("/aspects/{aspectId}")
   @ApiOperation(
     value = "Modify a list of records's aspect with same new data",
     nickname = "putRecordsAspect",
@@ -854,7 +854,7 @@ class RecordsService(
     *      [122, 123, 124]
     * @apiUse GenericError
     */
-  @Path("/aspectArrayItems/:aspectId")
+  @Path("/aspectArrayItems/{aspectId}")
   @ApiOperation(
     value = "Remove items from records' aspect data",
     nickname = "deleteRecordsAspectArrayItems",

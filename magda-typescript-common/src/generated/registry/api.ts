@@ -1816,7 +1816,7 @@ export class RecordsApi {
     ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
         const localVarPath =
             this.basePath +
-            "/records/aspectArrayItems/:aspectId".replace(
+            "/records/aspectArrayItems/{aspectId}".replace(
                 "{" + "aspectId" + "}",
                 String(aspectId)
             );
@@ -2809,7 +2809,7 @@ export class RecordsApi {
     ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
         const localVarPath =
             this.basePath +
-            "/records/aspects/:aspectId".replace(
+            "/records/aspects/{aspectId}".replace(
                 "{" + "aspectId" + "}",
                 String(aspectId)
             );
