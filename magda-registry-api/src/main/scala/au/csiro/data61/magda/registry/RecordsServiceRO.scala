@@ -53,7 +53,9 @@ class RecordsServiceRO(
     *   - `operator`
     *   - `value`
     *
-    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
+    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format before encoded as query string parameter value.
+    *   
+    *   A sample query string encoding implementation is available [here](https://gist.github.com/t83714/db1725a347c07413c16803a77da13003).
     *
     *   If more than one queries is passed through the `aspectQuery` parameters, they will be grouped with `AND` logic.
     *
@@ -461,7 +463,9 @@ class RecordsServiceRO(
     *   - `aspectId.path.to.field`
     *   - `operator`
     *   - `value`
-    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
+    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format before encoded as query string parameter value.
+    *   
+    *   A sample query string encoding implementation is available [here](https://gist.github.com/t83714/db1725a347c07413c16803a77da13003).
     *
     *   If more than one queries is passed through the `aspectQuery` parameters, they will be grouped with `AND` logic.
     *
