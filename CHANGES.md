@@ -38,6 +38,8 @@
 - #3360: Recategorize auth object related API docs & more auth object related APIs for convenient of future UI development.
 - Fixed: `set-scss-vars` script will use proper imagePullSecrets to generate the UI CSS update job
 - Allow the `no cache` behaviour of `whoami` & `getUserById` api to be turned off
+- #3269 Backend support for Access Group
+- #3366 New Registry API capability: new filter operator, merge mode, group operations and more
 
 ## 1.3.1
 
