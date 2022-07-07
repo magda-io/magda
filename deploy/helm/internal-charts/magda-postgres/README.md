@@ -1,6 +1,6 @@
 # magda-postgres
 
-![Version: 2.0.0-alpha.0](https://img.shields.io/badge/Version-2.0.0--alpha.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+![Version: 2.0.0-alpha.5](https://img.shields.io/badge/Version-2.0.0--alpha.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 A helm wrapper chart that provides in-kubernetes postgreSQL for Magda.
 
@@ -52,7 +52,7 @@ More config postgreSQL related options, please refer to: https://github.com/bitn
 | postgresql.extraEnvVarsCM | string | `"{{ .Values.fullnameOverride }}-extra-env-vars"` | the name of config map contains extra env vars for postgresql pod. You should not change this value as this configMap is auto-generated. If you want to add extra env vars, you should add vars to `.Values.envVars` field of `magda-postgres` chart. Please note: For this field, you can use template string e.g. "{{ .Values.fullnameOverride }}" to reference any values passed to subchat `postgresql`. See more: https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function |
 | postgresql.fullnameOverride | string | `"default-db-postgresql"` | Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern. And point k8s service to DB instance. |
 | postgresql.image.repository | string | `"data61/magda-postgres"` |  |
-| postgresql.image.tag | string | `"2.0.0-alpha.0"` | the default docker image tag/version used by the postgresql chart.  When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number. |
+| postgresql.image.tag | string | `"2.0.0-alpha.5"` | the default docker image tag/version used by the postgresql chart.  When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number. |
 | postgresql.livenessProbe.enabled | bool | `false` | `customLivenessProbe` will only be used when `enabled`=`false` Otherwise, default livenessProbe will be used. |
 | postgresql.nameOverride | string | `"default-db-postgresql"` | Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern. And point k8s service to DB instance. |
 | postgresql.persistence.size | string | `"50Gi"` | set the persistence volume size of the postgresql statefulset |
