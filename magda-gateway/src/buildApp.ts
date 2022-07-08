@@ -62,23 +62,12 @@ export type Config = {
     webAccessUsername?: string;
     webAccessPassword?: string;
     enableAuthEndpoint?: boolean;
-    facebookClientId?: string;
-    facebookClientSecret?: string;
-    aafClientUri?: string;
-    aafClientSecret?: string;
-    arcgisClientId?: string;
-    arcgisClientSecret?: string;
-    arcgisInstanceBaseUrl?: string;
-    esriOrgGroup?: string;
     enableCkanRedirection?: boolean;
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
     fetchTenantsMinIntervalInMs?: number;
     tenantUrl?: string;
     enableMultiTenants?: boolean;
-    vanguardWsFedIdpUrl?: string;
-    vanguardWsFedRealm?: string;
-    vanguardWsFedCertificate?: string;
     openfaasGatewayUrl?: string;
     openfaasAllowAdminOnly?: boolean;
     defaultCacheControl?: string;
@@ -188,21 +177,6 @@ export default function buildApp(app: express.Application, config: Config) {
             "/auth",
             createAuthRouter({
                 authenticator: authenticator,
-                jwtSecret: config.jwtSecret,
-                facebookClientId: config.facebookClientId,
-                facebookClientSecret: config.facebookClientSecret,
-                aafClientUri: config.aafClientUri,
-                aafClientSecret: config.aafClientSecret,
-                arcgisClientId: config.arcgisClientId,
-                arcgisClientSecret: config.arcgisClientSecret,
-                arcgisInstanceBaseUrl: config.arcgisInstanceBaseUrl,
-                esriOrgGroup: config.esriOrgGroup,
-                authorizationApi: config.authorizationApi,
-                externalUrl: config.externalUrl,
-                userId: config.userId,
-                vanguardWsFedIdpUrl: config.vanguardWsFedIdpUrl,
-                vanguardWsFedRealm: config.vanguardWsFedRealm,
-                vanguardWsFedCertificate: config.vanguardWsFedCertificate,
                 plugins: config.authPluginConfigJson
             })
         );

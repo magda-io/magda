@@ -1,11 +1,11 @@
 apiVersion: v2
 name: "magda-local-deployment"
 description: ""
-version: "1.2.1-alpha.0"
+version: "1.2.2-alpha.0"
 kubeVersion: ">= 1.14.0-0"
 dependencies:
   - name: magda
-    version: 1.2.1-alpha.0
+    version: 1.2.2-alpha.0
     repository: "file://../magda"
 
   - name: magda-auth-google
@@ -28,6 +28,13 @@ dependencies:
     tags:
       - all
       - magda-auth-arcgis
+
+  - name: magda-auth-facebook
+    version: "1.0.0"
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - magda-auth-facebook
 
   ## Data.gov.au connector to provide some initial data. Remove this if you
   ## don't want any data.gov.au connector

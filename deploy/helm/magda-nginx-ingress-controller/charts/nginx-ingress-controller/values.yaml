@@ -1,5 +1,0 @@
-defaultCertificate:
-  domains:
-    - '*.magda.io'
-    - '*.dev.magda.io'
-    - magda.io

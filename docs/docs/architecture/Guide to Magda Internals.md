@@ -336,7 +336,7 @@ We also implemented policy enforcement on read operation related Registry APIs. 
 
 In order to solve all issues in previous implementations and fully realise OPA's potential as a central policy engine, we decide to implement a more generic authz model in our upcoming v2.0.0 release.
 
-If you are interested in most recent development work, you can checkout the [next](https://github.com/magda-io/magda/tree/next) branch of our repo to have a look or have a play the alpha release [v2.0.0-alpha.0](https://github.com/magda-io/magda/releases/tag/v2.0.0-alpha.0).
+If you are interested in most recent development work, you can checkout the [next](https://github.com/magda-io/magda/tree/next) branch of our repo to have a look or have a play the alpha release [v2.0.0-alpha.1](https://github.com/magda-io/magda/releases/tag/v2.0.0-alpha.1).
 
 In the next section, we will briefly introduce the new generic authz model that powers our upcoming v2.0.0 release.
 
@@ -783,3 +783,9 @@ This was done because:
 - We never got to the point where just passing the id and having the recipient service look up the user was a performance problem
 
 If performance problems did come up, it would certainly be possible to include more details about the user in the JWT, although attention would have to be paid to ensuring that this could be extended by third-party implementers of Magda.
+
+### How to debug Authorisation Decision made by the policy engine?
+
+You can set [authorization-api helm chart](https://github.com/magda-io/magda/tree/next/deploy/helm/internal-charts/authorization-api)'s `debug` config value to `true` to put `authorization-api` into "debug mode".
+
+Under "debug mode", `authorization-api` will print any authorisation decision details (including context data) to the logs.

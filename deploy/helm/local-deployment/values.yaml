@@ -16,6 +16,9 @@ magda-auth-arcgis:
   arcgisClientId: "d0MgVUbbg5Z6vmWo"
   arcgisInstanceBaseUrl: "https://www.arcgis.com"
 
+magda-auth-facebook:
+  clientId: "173073926555600"
+
 connector-dga:
   config:
     id: dga

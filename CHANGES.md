@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 1.3.1
+
+- #3367 Fixed Content API header item schema target field type
+- #3369 Content API Get by id API didn't response content in correct mime type
+- #3371 Content API Get by id API generate one more unnecessary DB query
+- Upgrade openfaas helm chart to 5.5.5-magda.2 to be compatible with k8s 1.22
+- #3362 explicitly mark pods using emptyDir as safe to evict for cluster-autoscaler
+
+## 1.3.0
+
+- Upgrade nodemailer to 6.7.3
+- Upgrade urijs to 1.19.11 and @types/urijs to 1.19.19
+- #3020 Remove all legacy auth provider from gateway and convert them into auth plugins in separate repos
+- Add `authPluginAllowedExternalRedirectDomains` support to auth plugin spec & rewrite relevant packages
+- Redirect users to login page with proper error message, when they try to access the admin pages that they don't have permissions.
+- #3363: Update postgres helm chart repo url
+
 ## 1.2.1
 
 - Upgrade magda-csw-connector to v1.1.1 for [license extraction issue on certain sources](https://github.com/magda-io/magda-csw-connector/issues/21)

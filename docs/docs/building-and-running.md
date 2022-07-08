@@ -201,7 +201,9 @@ If you want to just start up individual pods (e.g. just the combined database) y
 helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
 ```
 
-**You can find all available tags in [deploy/helm/magda-core/requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/requirements.yaml) and [deploy/helm/magda/requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda/requirements.yaml)**
+**You can find all available tags (sub charts) in [deploy/helm/magda-core/Chart.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/Chart.yaml#L11) and [deploy/helm/magda/Chart.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda/Chart.yaml#L9)**
+
+You can also find more information from our [Helm Charts Document](https://github.com/magda-io/magda/blob/master/docs/docs/helm-charts-docs-index.md).
 
 Once everything starts up, you can access the web front end on http://192.168.99.100:30100. The IP address may be different on your system. Get the real IP address by running:
 

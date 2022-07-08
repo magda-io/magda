@@ -34,19 +34,8 @@ describe("Test createAuthRouter", function (this: Mocha.ISuiteCallbackContext) {
             googleClientSecret: "xxxxx",
             externalUrl: "http://exmaple.com",
             userId: "000-xxxx-xxxx-xxx-xxx",
-            facebookClientId: "xxxxx",
-            facebookClientSecret: "xxxxx",
-            aafClientUri: "xxxxx",
-            aafClientSecret: "xxxxx",
-            arcgisClientId: "xxxxx",
-            arcgisClientSecret: "xxxxx",
-            arcgisInstanceBaseUrl: "xxxxx",
-            esriOrgGroup: "xxxxx",
             ckanUrl: "xxxx",
             authorizationApi: "xxxx",
-            vanguardWsFedIdpUrl: "",
-            vanguardWsFedRealm: "",
-            vanguardWsFedCertificate: "",
             plugins: [
                 {
                     key: "test-plugin",
@@ -131,32 +120,5 @@ describe("Test createAuthRouter", function (this: Mocha.ISuiteCallbackContext) {
             });
 
         expect(isSessionMiddlewareCalled).to.be.false;
-    });
-
-    it("should apply Authenticator routes (session management) to auth providers (e.g. facebook) routes", async () => {
-        const app = express();
-        let isSessionMiddlewareCalled = false;
-
-        const dummyAuthenticator = sinon.createStubInstance(Authenticator);
-
-        dummyAuthenticator.authenticatorMiddleware = (
-            req: Request,
-            res: Response,
-            next: NextFunction
-        ) => {
-            isSessionMiddlewareCalled = true;
-            next();
-        };
-
-        nock("http://my-auth-plugin").get("/").reply(200, "ok");
-
-        app.use(
-            "/auth",
-            createAuthRouter(getDummyAuthRouterConfig(dummyAuthenticator))
-        );
-
-        await request(app).get("/auth/login/facebook").expect(302);
-
-        expect(isSessionMiddlewareCalled).to.be.true;
     });
 });

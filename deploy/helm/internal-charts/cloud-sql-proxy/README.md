@@ -1,12 +1,41 @@
 # cloud-sql-proxy
 
-![Version: 1.2.1-alpha.0](https://img.shields.io/badge/Version-1.2.1--alpha.0-informational?style=flat-square) ![AppVersion: 1.11](https://img.shields.io/badge/AppVersion-1.11-informational?style=flat-square)
+![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square) ![AppVersion: 1.11](https://img.shields.io/badge/AppVersion-1.11-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
 ## Requirements
 
 Kubernetes: `>= 1.14.0-0`
+
+### How to Use
+
+You only need `cloud-sql-proxy` chart when you want to use Google Cloud SQL service rather than in-cluster PostgreSQL service.
+
+To config Magda to use Cloud SQL service, you need:
+- Set `global.useCombinedDb` to `false` & `global.useCloudSql` to `true`. See [doc here](https://github.com/magda-io/magda/tree/master/deploy/helm/magda-core#values)
+- Turn on `cloud-sql-proxy` by setting tag `tags.cloud-sql-proxy` to `true`
+- Configure `cloud-sql-proxy` chart e.g.
+
+```yaml
+# You need proper indentation depends on your actual deployment chart hierarchy
+cloud-sql-proxy:
+  replicas: 2
+  autoscaler:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+
+  resources:
+    requests:
+      cpu: 150m
+      memory: 50Mi
+
+  ## The cloud sql instance connection name
+  instanceConnectionName: xxxxx-xxxxx-xxx
+```
+
+> Please note: since v1.0.0, Magda requires PostgreSQL v13
 
 ### Requried Secret
 

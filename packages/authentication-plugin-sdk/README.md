@@ -81,12 +81,13 @@ export declare function createOrGetUserToken(
 ): Promise<UserToken>;
 
 /**
- * Join `url` with `baseUrl` if `url` is not an absolute url
+ * Join `url` with `baseUrl` if `url` is not an absolute (full) url string
  *
  * @export
- * @param {string} url
- * @param {string} baseUrl
+ * @param {string} url A full url string or a url path string (/a/b/c).
+ * @param {string} baseUrl A baseUrl used to generate a full url when a url path string is supplied via the `url` parameter.
  * @param {{ [key: string]: string }} [optionalQueries]
+ * @param {string[]} [allowedUrlHosts] Optional; when specify, the host of `url` parameter will only be used if it is included by this list.
  * @returns
  */
 export declare function getAbsoluteUrl(
@@ -94,7 +95,8 @@ export declare function getAbsoluteUrl(
   baseUrl: string,
   optionalQueries?: {
     [key: string]: string;
-  }
+  },
+  allowedUrlHosts?: string[]
 ): string;
 
 export declare function redirectOnSuccess(
