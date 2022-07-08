@@ -3,12 +3,6 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: registry-db-auto-vacuum-job
-  labels:
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/instance: {{ .Release.Name | quote }}
-    app.kubernetes.io/name: "magda"
-    app.kubernetes.io/component: {{ .Chart.Name }}
 spec:
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
@@ -23,14 +17,28 @@ spec:
         metadata:
           name: registry-db-auto-vacuum-cron-job
         spec:
+          {{- $imageEnv := omit . "Values" }}
+          {{- $_ := set $imageEnv "Values" (omit .Values "image") }}
+          {{- $_ := set $imageEnv.Values "image" .Values.vacuumJobImage }}
+          {{- include "magda.imagePullSecrets" $imageEnv | indent 10 }}
           containers:
             - name: registry-db-auto-vacuum-cron-job
-              image: "postgres:9.6.15"
-              imagePullPolicy: "IfNotPresent"
+              image: {{ include "magda.image" $imageEnv | quote }}
+              imagePullPolicy: {{ include "magda.imagePullPolicy" $imageEnv | quote }}
               command:
-                - "/bin/bash"
-              args:
-                - "/scripts/script.sh"
+              - "/bin/bash"
+              - "-c"
+              - |
+                # Add user 1001 to /etc/passwd as postgres lib will check username in it
+                # more details see the docker image repo
+                /usr/local/bin/adduser.sh
+                echo "Running DB maintenance routine:"
+                psql -c "VACUUM VERBOSE ANALYZE"
+                if [ "$?" == "0" ]; then
+                  echo "DB maintenance routine has been run sucessfully."
+                else 
+                  echo "DB maintenance routine failed."
+                fi;
               resources: 
                 requests:
                   cpu: 10m
@@ -46,28 +54,10 @@ spec:
                   value: postgres
                 - name: PGUSER
                   value: postgres
-                {{- if .Values.global.noDbAuth }}
-                - name: PGPASSWORD
-                  value: password
-                {{- else if .Values.global.useCloudSql }}
                 - name: PGPASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: cloudsql-db-credentials
-                      key: password
-                {{- else if not .Values.global.noDbAuth }}
-                - name: PGPASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: db-passwords
-                      key: {{ .Chart.Name }}
-                {{- end }}
-              volumeMounts:
-                - name: script-volume
-                  mountPath: /scripts
-          volumes:
-            - name: script-volume
-              configMap:
-                name: registry-db-auto-vacuum-script
+                      name: {{ .Values.global.postgresql.existingSecret | quote }}
+                      key: "postgresql-password"
           restartPolicy: "OnFailure"
 {{- end }}

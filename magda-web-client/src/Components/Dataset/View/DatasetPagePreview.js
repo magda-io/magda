@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import DataPreviewVis from "Components/Common/DataPreviewVis";
 import DataPreviewMap from "Components/Common/DataPreviewMap";
+import { getPluginExtraVisualisationSection } from "../../../externalPluginComponents";
 import PropTypes from "prop-types";
 import "./DatasetPagePreview.scss";
 
+const ExtraVisualisationSection = getPluginExtraVisualisationSection();
 export default class DatasetPagePreview extends Component {
     getDistributionForVis(distributions) {
         if (!distributions || distributions?.length === 0) {
@@ -28,6 +30,9 @@ export default class DatasetPagePreview extends Component {
                     distribution={this.getDistributionForVis(distributions)}
                 />
                 <DataPreviewMap distributions={distributions} />
+                {ExtraVisualisationSection ? (
+                    <ExtraVisualisationSection dataset={this.props.dataset} />
+                ) : null}
             </div>
         );
     }

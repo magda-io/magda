@@ -65,6 +65,16 @@ const argv = yargs
             type: "boolean",
             default: false
         },
+        platform: {
+            description:
+                "A list of platform that the docker image build should target. Specify this value will enable multi-arch image build.",
+            type: "string"
+        },
+        noCache: {
+            description: "Disable the cache during the docker image build.",
+            type: "boolean",
+            default: false
+        },
         cacheFromVersion: {
             description:
                 "Version to cache from when building, using the --cache-from field in docker. Will use the same repository and name. Using this options causes the image to be pulled before build.",
@@ -78,6 +88,18 @@ const argv = yargs
 
 if (!argv.build && !argv.output) {
     console.log("Either --build or --output <filename> must be specified.");
+    process.exit(1);
+}
+
+if (argv.platform && !argv.push) {
+    console.log(
+        "When --platform is specified, --push must be specified as well as multi-arch image can only be pushed to remote registry."
+    );
+    process.exit(1);
+}
+
+if (argv.noCache && argv.cacheFromVersion) {
+    console.log("When --noCache=true, --cacheFromVersion can't be specified.");
     process.exit(1);
 }
 
@@ -157,9 +179,12 @@ if (argv.build) {
         "docker",
         [
             ...extraParameters,
+            ...(argv.platform ? ["buildx"] : []),
             "build",
             ...tagArgs,
             ...cacheFromArgs,
+            ...(argv.noCache ? ["--no-cache"] : []),
+            ...(argv.platform ? ["--platform", argv.platform, "--push"] : []),
             "-f",
             `./component/Dockerfile`,
             "-"
@@ -175,7 +200,7 @@ if (argv.build) {
     dockerProcess.on("close", (code) => {
         fse.removeSync(dockerContextDir);
 
-        if (code === 0 && argv.push) {
+        if (code === 0 && argv.push && !argv.platform) {
             if (tags.length === 0) {
                 console.error("Can not push an image without a tag.");
                 process.exit(1);

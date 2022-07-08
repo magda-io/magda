@@ -15,16 +15,19 @@ spec:
       labels:
         service: search-api
     spec:
-{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-8
 {{- end }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: search-api
-        image: {{ template "dockerimage" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+        ports:
+        - containerPort: 6102
         command:
-          - "/app/bin/magda-search-api"
-          - "-Dhttp.port=80"
+          - "bin/magda-search-api"
+          - "-Dhttp.port=6102"
           - "-Dakka.loglevel={{ .Values.global.logLevel }}"
           - "-Dopa.baseUrl=http://authorization-api/v0/opa/"
           - "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9200"
@@ -34,23 +37,27 @@ spec:
 {{- if .Values.regionsIndexVersion }}
           - "-DelasticSearch.indices.regions.version={{ .Values.regionsIndexVersion }}"
 {{- end }}
+{{- if .Values.publishersIndexVersion }}
+          - "-DelasticSearch.indices.publishers.version={{ .Values.publishersIndexVersion }}"
+{{- end }}
+{{- if .Values.formatsIndexVersion }}
+          - "-DelasticSearch.indices.formats.version={{ .Values.formatsIndexVersion }}"
+{{- end }}
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
             path: /v0/status/live
-            port: 80
+            port: 6102
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 10
         readinessProbe:
           httpGet:
             path: /v0/status/ready
-            port: 80
+            port: 6102
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
 {{- end }}
-        ports:
-        - containerPort: 80
         resources:
 {{ toYaml .Values.resources | indent 10 }}

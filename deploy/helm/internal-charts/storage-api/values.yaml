@@ -1,10 +1,38 @@
-image: {}
+image: 
+  name: "magda-storage-api"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
 resources:
   requests:
     cpu: 10m
     memory: 30Mi
   limits:
     cpu: 50m
+
+# -- Whether or not auto create `storage-secrets`.
+# When auto created, random 20 chars will be generated for `accessKey` and random 40 chars will be generated for `secretKey`.
+# When use minio as gateway mode, you might want to manualy generate the secret in order supply cloud provider secrets. e.g.
+# <ul>
+#   <li>awsAccessKeyId: aws s3 access key id if use AWS s3</li>
+#   <li>awsSecretAccessKey: aws s3 secret access key id if use AWS s3</li>
+#   <li>gcs_key.json: GCS key file if use google GCS</li>
+# </ul>
+autoCreateSecrets: true
+
+# -- Create `defaultBuckets` on startup.
+autoCreateBuckets: true
+
+# -- Default buckets to create on startup.
+# If no value is provided `global.defaultDatasetBucket` will be used.
+defaultBuckets: []
 
 # -- specify bucket region
 # @default -- "unspecified-region"

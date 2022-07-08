@@ -68,8 +68,10 @@ Commands:
 
 > You will need to port forward the Magda database to localhost to make sure the utility can connect to your Magda database.
 
--   To do so, You can run `kubectl port-forward combined-db-0 5432`.
-    -   If you didn't install magda to the default namespace, you can use: `kubectl port-forward -n [namespace] combined-db-0 5432`
+- To do so, You can run `kubectl port-forward combined-db-postgresql-0 5432`.
+  - If you didn't install magda to the default namespace, you can use: `kubectl port-forward -n [namespace] combined-db-postgresql-0 5432`
+
+> Prior to Magda v1.0.0, you should port-forward pod combined-db-0
 
 #### Example
 

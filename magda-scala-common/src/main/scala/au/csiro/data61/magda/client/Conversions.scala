@@ -15,10 +15,27 @@ import java.time.{OffsetDateTime, ZoneOffset}
 
 object Conversions {
 
+  private def tryConvertValue[T](
+      v: => T,
+      fieldName: Option[String] = None
+  )(implicit logger: Option[LoggingAdapter]): Option[T] = Try(v) match {
+    case Success(result) => Some(result)
+    case Failure(e) =>
+      if (logger.isDefined) {
+        logger.get.error(
+          s"Failed to parse ${fieldName.map(str => s"field `${str}` for ").getOrElse("")}dataset data: ${e.getMessage}"
+        )
+        None
+      } else {
+        throw e
+      }
+  }
+
   def convertRegistryDataSet(
       hit: Record,
       logger: Option[LoggingAdapter] = None
   )(implicit defaultOffset: ZoneOffset): DataSet = {
+    implicit val localLogger = logger
     val dcatStrings = hit.aspects.getOrElse("dcat-dataset-strings", JsObject())
     val source = hit.aspects.getOrElse("source", JsObject())
     val temporalCoverage =
@@ -217,11 +234,11 @@ object Conversions {
       tenantId = hit.tenantId.get,
       title = dcatStrings.extract[String]('title.?),
       catalog = source.extract[String]('name.?),
-      description = getNullableStringField(dcatStrings, "description"),
+      description = getNullableStringField(dcatStrings, "description", true),
       issued = tryParseDate(dcatStrings.extract[String]('issued.?)),
       modified = tryParseDate(dcatStrings.extract[String]('modified.?)),
       languages = dcatStrings.extract[String]('languages.? / *).toSet,
-      publisher = publisher.map(convertPublisher),
+      publisher = publisher.flatMap(convertPublisher),
       accrualPeriodicity = dcatStrings
         .extract[String]('accrualPeriodicity.?)
         .map(Periodicity.fromString(_)),
@@ -229,20 +246,31 @@ object Conversions {
         dcatStrings.extract[String]('accrualPeriodicityRecurrenceRule.?),
       spatial = spatialData, // TODO: move this to the CKAN Connector
       temporal = temporal,
-      themes = dcatStrings.extract[String]('themes.? / *),
-      keywords = dcatStrings.extract[String]('keywords.? / *),
+      themes = tryConvertValue(
+        dcatStrings.extract[String]('themes.? / *),
+        Some("themes")
+      ).getOrElse(Seq()),
+      keywords = tryConvertValue(
+        dcatStrings.extract[String]('keywords.? / *),
+        Some("themes")
+      ).getOrElse(Seq()),
       contactPoint =
         dcatStrings.extract[String]('contactPoint.?).map(cp => Agent(Some(cp))),
       distributions = distributions
         .extract[JsObject]('distributions.? / *)
-        .map(convertDistribution(_, hit)),
+        .flatMap(v => tryConvertValue(convertDistribution(v, hit))),
       landingPage = dcatStrings.extract[String]('landingPage.?),
       quality = quality,
       hasQuality = hasQuality,
       score = None,
-      source = hit.aspects.get("source").map(_.convertTo[DataSouce]),
+      source = hit.aspects
+        .get("source")
+        .flatMap(v => tryConvertValue(v.convertTo[DataSouce], Some("source"))),
       provenance = provenanceOpt
-        .map(_.convertTo[Provenance]),
+        .flatMap(
+          item =>
+            tryConvertValue(item.convertTo[Provenance], Some("provenance"))
+        ),
       publishingState = Some(
         publishing.extract[String]('state.?).getOrElse("published")
       ), // assume not set means published
@@ -252,7 +280,8 @@ object Conversions {
   }
 
   private def convertDistribution(distribution: JsObject, hit: Record)(
-      implicit defaultOffset: ZoneOffset
+      implicit defaultOffset: ZoneOffset,
+      logger: Option[LoggingAdapter]
   ): Distribution = {
     val theDistribution = JsObject(
       distribution.fields + ("tenantId" -> JsNumber(hit.tenantId.get))
@@ -292,26 +321,44 @@ object Conversions {
         case Some(format) => Some(format)
         case None         => formatString
       },
-      source =
-        distributionRecord.aspects.get("source").map(_.convertTo[DataSouce])
+      source = distributionRecord.aspects
+        .get("source")
+        .flatMap(v => tryConvertValue(v.convertTo[DataSouce]))
     )
   }
 
   private def tryParseDate(
       dateString: Option[String]
-  )(implicit defaultOffset: ZoneOffset): Option[OffsetDateTime] = {
-    val YEAR_100 = OffsetDateTime.of(100, 1, 1, 0, 0, 0, 0, defaultOffset)
-    val YEAR_1000 = OffsetDateTime.of(1000, 1, 1, 0, 0, 0, 0, defaultOffset)
+  )(
+      implicit defaultOffset: ZoneOffset,
+      logger: Option[LoggingAdapter]
+  ): Option[OffsetDateTime] = {
+    Try {
+      val YEAR_100 = OffsetDateTime.of(100, 1, 1, 0, 0, 0, 0, defaultOffset)
+      val YEAR_1000 = OffsetDateTime.of(1000, 1, 1, 0, 0, 0, 0, defaultOffset)
 
-    dateString
-      .flatMap(s => DateParser.parseDateDefault(s, false))
-      .map {
-        //FIXME: Remove this hackiness when we get a proper temporal minion
-        case date if date.isBefore(YEAR_100) =>
-          date.withYear(date.getYear + 2000)
-        case date if date.isBefore(YEAR_1000) =>
-          date.withYear(Integer.parseInt(date.getYear.toString() + "0"))
-        case date => date
-      }
+      dateString
+        .flatMap(s => DateParser.parseDateDefault(s, false))
+        .map {
+          //FIXME: Remove this hackiness when we get a proper temporal minion
+          case date if date.isBefore(YEAR_100) =>
+            date.withYear(date.getYear + 2000)
+          case date if date.isBefore(YEAR_1000) =>
+            date.withYear(Integer.parseInt(date.getYear.toString() + "0"))
+          case date => date
+        }
+    } match {
+      case Success(v) => v
+      case Failure(e) =>
+        if (logger.isDefined) {
+          logger.get.error(
+            s"Failed to parse date data: ${e.getMessage}"
+          )
+          None
+        } else {
+          throw e
+        }
+    }
+
   }
 }

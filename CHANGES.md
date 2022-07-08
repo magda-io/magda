@@ -1,5 +1,99 @@
 # CHANGELOG
 
+## 1.3.1
+
+- #3367 Fixed Content API header item schema target field type
+- #3369 Content API Get by id API didn't response content in correct mime type
+- #3371 Content API Get by id API generate one more unnecessary DB query
+- Upgrade openfaas helm chart to 5.5.5-magda.2 to be compatible with k8s 1.22
+- #3362 explicitly mark pods using emptyDir as safe to evict for cluster-autoscaler
+
+## 1.3.0
+
+- Upgrade nodemailer to 6.7.3
+- Upgrade urijs to 1.19.11 and @types/urijs to 1.19.19
+- #3020 Remove all legacy auth provider from gateway and convert them into auth plugins in separate repos
+- Add `authPluginAllowedExternalRedirectDomains` support to auth plugin spec & rewrite relevant packages
+- Redirect users to login page with proper error message, when they try to access the admin pages that they don't have permissions.
+- #3363: Update postgres helm chart repo url
+
+## 1.2.1
+
+- Upgrade magda-csw-connector to v1.1.1 for [license extraction issue on certain sources](https://github.com/magda-io/magda-csw-connector/issues/21)
+- #3316 Upgrade node based service docker images to node 12
+- #3318 Remove openlayers from dependencies list
+- #3319 Upgrade kramdown to 2.3.1
+- #3320 Upgrade djv to 2.1.4
+- #3321 upgrade lodash to 4.17.21
+- #3126 Remove Hardcoded "postgres" username from Content DB migration script
+- #3233 use networking.k8s.io/v1 for default Ingress chart
+
+## 1.2.0
+
+- #3291 Remove log4j from scala codebase dependency list
+- #3299 Add terria aspect when posting message if dataset format is "wms".
+- #3293 Upgrade elasticsearch to 6.8.22
+- Upgrade logback to 1.2.10
+- #3294 Indexer will auto-fixes non-topologically closed Polygons / MultiPolygons
+- Crawler will now wait for 3 seconds (used to be 1 second) before perform trim action to avoid timeout issue
+- Refactor Indexer code to remove the redundant index queue
+- Allow overiding publisher / format indice version number for search API
+- #3301 Overide "LIQ NUM" & "REG AUD NUM" to category column type in Chart Preview
+- General home tiles & background visual improvements.
+
+## 1.1.0
+
+- #3246 Upgrade default cloudSql proxy version to v1.26.0
+- #3242 Allow default bucket names to be configured in `storage-api` & `web-server` charts
+- #3243 Stop creating the unused bucket `magda-bucket` on startup
+- #3262 Make magda's docker building scripts (@magda/docker-utils) support multi-arch build
+- #3263 Build Multi-Arch (`linux/amd64` & `linux/arm64`) Docker Images in CI (Except `magda-postgres` & `magda-elasticsearch`)
+- Related to #3263, Build Multi-Arch (`linux/amd64` & `linux/arm64`) Docker Image for `magda-elasticsearch` as well.
+- Related to #3263, adjusted helm chart for elasticsearch to make it run properly on linux/arm64 platform.
+- #3251 Fixed akka HTTP client POST request racing conditions
+- Registry-api, search API & indexer are now listen at non 80 port as they now run as non-root user in docker containers. Corresponding k8s svcs are still exposing services at 80 port.
+- Upgrade sbt to 1.4.9 to fix compatibility issues with apple m1 users
+- Fix: correct db backup job default schedule to `0 15 * * 6`
+- #3205: improve column type prediction logic & fixes the problem where visualisation / chart incorrectly put numeric columns to X
+- #3273 Fixed: when fetch data failed for preview chart, there should be proper error message shown to users
+- Fix TerriaJS sharing for data preview maps (See: https://github.com/TerriaJS/nationalmap/issues/1099)
+- #3232: fixed base backup made by wal-g remotely might miss files
+- #3192: Use use apiextensions.k8s.io/v1 for CRDs; Update all faas function charts
+- Upgraded both [CSW](https://github.com/magda-io/magda-csw-connector) & [project open data](https://github.com/magda-io/magda-project-open-data-connector) connector to v1.1.0
+- #3283 mitigate log4j DOS (denial of service) Vulnerability CVE-2021-45046
+- #3285 Set default Google Cloud SQL proxy version to 1.11 (Seems 1.11 is more stable on high load. If prefer higher version, user can manually set image version via Helm chart config)
+
+## 1.0.1
+
+- Mitigate log4j Vulnerability (CVE-2021-44228) by upgrading to 2.15.0 and set `LOG4J_FORMAT_MSG_NO_LOOKUPS` environment variable to `true`
+
+## 1.0.0
+
+- #3197 Minion SDK: Make minion proactive crawling records number configurable
+- #3208 rewritten Web Hook related API docs
+- #3123 Upgraded to PosgreSQL 13
+- #3213 SQL Compatibility adjustments for PosgreSQL 13
+- #3212 Migrate backup / recovery solution to wal-g
+- #3207 Auto-create db password secrets (backwards-compatible change)
+- #3215 Auto-create jwtSecret & Session Secret when not exists (backwards-compatible change)
+- #3216 Auto-create storage-secrets when not exists #3216 (backwards-compatible change)
+- #3221 Make correspondence-api turned off by default
+- #3223 "Open in NationalMap" button will send data with the version field
+- #3226 Release `magda-common` library Helm Chart to Share Common Deployment Logic with Plugin Developers
+- #3125 Skip previously run database migration scripts
+- remove magda-auth-ckan from default CD deployment
+- Related to #3229, implement docker image related templates
+- Related to #3229, add `magdaModuleType: "core"` to all core chart annotation
+- Related to #3229, internal charts use magda-common to handle docker image related logic
+- #3236 Fix VACUUM statement syntax for postgreSQL 13
+- #3237 Fix CloudSQL Chart incorrect set replicas when autoscaler is enabled
+- #3234 use scheduling.k8s.io/v1 for PriorityClass
+- Related to #3229, upgrade `connectors` to use magda-common to handle docker image related logic
+- Related to #3229, upgrade `magda-preview-map` to use magda-common to handle docker image related logic
+- Related to #3229, upgrade `minions` to use magda-common to handle docker image related logic
+- Make migrator jobs backoff limit configurable
+- Turn off TerriaJs V7 support in CI dev site deployment
+
 ## 0.0.60
 
 - Updated dataset pages and Ask A Question options for datasets with no contact points
@@ -53,6 +147,29 @@
 - #3155 remove "keyword type" defined for "description" fields to avoid "term" oversize
 - #3160 Add strip_html filter to "description" fields for elasticsearch indexing analyzer
 - Remove "data.gov.au" keyword from "correspondence-api" email "from" field
+- #3166 Update text description under the data source section on data detail page
+- #3168 Fixed: double clicking the search icon button will clear search text input incorrectly
+- #3171 Make Preview Map Preference Configurable
+- #3173 Allow External UI plugin to be supplied to add support to particular format in a customised way
+- #3177 Bring back Map Preview on Distribution Page
+- #3174 When service is WMS / WFS, render a layer selection / Feature Type dropdown if multiple layers / feature types are available
+- #3178 Better Error Handling for Preview Map via postMessage
+- Upgrade format & rating minion to 1.0.0, Preview Map to 1.0.1
+- #3179 Fixed Invalid HTML in description make Google Chrome Unresponsive
+- Further simplify the error message from map preview module
+- #3175 Make cloud sql proxy chart image version configurable, add autoscaler support & increase default resource
+- #3185 Adjust migrator jobs running sequence so registry-db job will be run earlier
+- #3170 Remove unused old admin UI endpoint from Gateway
+- #3164 Add `showContactButtonForNoContactPointDataset` helm chart config option
+- #3186 Fixed: avoid extra slash in inqury email dataset URLs
+- #3188 Publish openfaas chart & Move openfaas helm chart out of main repo
+- #3183 Make search input accept empty string as search query string
+- #3167 Upgrade chrono-node to latest version
+- Improve CSV visualisation tool date columns recognition logic
+- #3161 Fixed: UTF-16 encoded CSV causes "unsupported Unicode escape sequence" error when saving a dataset draft
+- Upgraded format-minion to v1.0.1
+- #3198 Indexer will by default auto reindex / trim obsolete publisher / format weekly
+- #3201 Fixed indexer might throw an error and interrupt crawling process upon invalid data
 
 ## 0.0.59
 

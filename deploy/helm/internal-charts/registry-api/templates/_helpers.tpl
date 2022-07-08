@@ -1,6 +1,6 @@
 {{/* vim: set filetype=mustache: */}}
 
-{{- define "magda.registry-deployment" -}}
+{{- define "magda.registry-deployment" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,9 +18,10 @@ spec:
       labels:
         service: {{ .name }}
     spec:
-{{- if and (.root.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .root.Values.global.enablePriorityClass }}
+{{- if and (.root.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .root.Values.global.enablePriorityClass }}
       priorityClassName: magda-8
 {{- end }}
+      {{- include "magda.imagePullSecrets" .root | indent 6 }}
       containers:
       - name: {{ .name }}
         env:
@@ -29,23 +30,14 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{- if .root.Values.global.noDbAuth }}
-        - name: POSTGRES_USER
-          value: client
-{{- else }}
-        - name: POSTGRES_USER
-          value: client
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: registry-db-client
-{{- end }}
-        image: {{ template "dockerimage" .root }}
-        imagePullPolicy: {{ .root.Values.image.pullPolicy | default .root.Values.global.image.pullPolicy }}
+        {{- include "magda.db-client-credential-env" (dict "dbName" "registry-db" "dbUserEnvName" "POSTGRES_USER" "dbPasswordEnvName" "POSTGRES_PASSWORD" "root" .root)  | indent 8 }}
+        image: {{ include "magda.image" .root | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" .root | quote }}
+        ports:
+        - containerPort: 6101
         command: [
-            "/app/bin/magda-registry-api",
-            "-Dhttp.port=80",
+            "bin/magda-registry-api",
+            "-Dhttp.port=6101",
             "-Dhttp.externalUrl.v0={{ .root.Values.global.externalUrl }}/api/v0/registry",
             "-Ddb.default.url=jdbc:postgresql://registry-db/postgres",
 {{- if .root.Values.db.poolInitialSize }}
@@ -74,20 +66,18 @@ spec:
         livenessProbe:
           httpGet:
             path: /v0/status/live
-            port: 80
+            port: 6101
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: {{ .root.Values.livenessProbe.timeoutSeconds | default 10 }}
         readinessProbe:
           httpGet:
             path: /v0/status/ready
-            port: 80
+            port: 6101
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
 {{- end }}
-        ports:
-        - containerPort: 80
         resources:
 {{ .deploymentConfig.resources | default .root.Values.resources | toYaml | indent 10 }}
-{{- end -}}
+{{- end }}

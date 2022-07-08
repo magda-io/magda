@@ -24,7 +24,7 @@
                         },
                         "target": {
                             "type": "string",
-                            "enum": ["", "blank"]
+                            "minLength": 1
                         },
                         "href": {
                             "type": "string",

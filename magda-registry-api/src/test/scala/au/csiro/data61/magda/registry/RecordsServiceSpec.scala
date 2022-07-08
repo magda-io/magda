@@ -208,7 +208,7 @@ class RecordsServiceSpec extends ApiSpec {
             recordSummary.id shouldEqual recordId
             recordSummary.tenantId shouldEqual Some(TENANT_1)
             recordSummary.name shouldEqual recordName
-            recordSummary.aspects shouldEqual List(aspectId2, aspectId1)
+            recordSummary.aspects shouldEqual List(aspectId1, aspectId2)
           }
         }
 
@@ -282,16 +282,16 @@ class RecordsServiceSpec extends ApiSpec {
             recordsSummary.records.head.tenantId shouldEqual Some(TENANT_1)
             recordsSummary.records.head.name shouldEqual recordName1
             recordsSummary.records.head.aspects shouldEqual List(
-              aspectId2,
-              aspectId1
+              aspectId1,
+              aspectId2
             )
 
             recordsSummary.records(1).id shouldEqual recordId2
             recordsSummary.records(1).tenantId shouldEqual Some(TENANT_1)
             recordsSummary.records(1).name shouldEqual recordName2
             recordsSummary.records(1).aspects shouldEqual List(
-              aspectId3,
-              aspectId1
+              aspectId1,
+              aspectId3
             )
 
             recordsSummary.records(2).id shouldEqual recordId3
@@ -311,16 +311,16 @@ class RecordsServiceSpec extends ApiSpec {
             recordsSummary.records.head.tenantId shouldEqual Some(TENANT_2)
             recordsSummary.records.head.name shouldEqual recordName1
             recordsSummary.records.head.aspects shouldEqual List(
-              aspectId2,
-              aspectId1
+              aspectId1,
+              aspectId2
             )
 
             recordsSummary.records(1).id shouldEqual recordId2
             recordsSummary.records(1).tenantId shouldEqual Some(TENANT_2)
             recordsSummary.records(1).name shouldEqual recordName2
             recordsSummary.records(1).aspects shouldEqual List(
-              aspectId3,
-              aspectId1
+              aspectId1,
+              aspectId3
             )
 
             recordsSummary.records(2).id shouldEqual recordId3

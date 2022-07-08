@@ -11,7 +11,8 @@ $section-headings-color: $magda-color;
 $body-link-color: darken($magda-color, 10%);
 $body-text-color: #484848;
 
-@import "{{ site.theme }}";
+//@import "{{ site.theme }}";
+@import "jekyll-theme-cayman";
 
 body {
     background: #fafafa;

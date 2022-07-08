@@ -1,7 +1,7 @@
 {
   "name": "@magda/magda-scss-compiler",
   "description": "The web-client SCSS compiler pod",
-  "version": "0.0.60-alpha.0",
+  "version": "1.2.2-alpha.0",
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
@@ -15,7 +15,7 @@
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.60-alpha.0",
+    "@magda/scripts": "^1.2.2-alpha.0",
     "@types/autoprefixer": "^9.1.0",
     "@types/chai": "^4.0.1",
     "@types/clean-css": "^3.4.30",
@@ -31,7 +31,7 @@
     "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",
     "@types/tempy": "^0.1.0",
-    "@types/urijs": "1.19.13",
+    "@types/urijs": "^1.19.19",
     "@types/yargs": "^12.0.8",
     "chai": "^4.1.0",
     "mocha": "^3.4.2",
@@ -40,8 +40,8 @@
     "typescript": "^3.7.2"
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.60-alpha.0",
-    "@magda/web-client": "^0.0.60-alpha.0",
+    "@magda/typescript-common": "^1.2.2-alpha.0",
+    "@magda/web-client": "^1.2.2-alpha.0",
     "autoprefixer": "^9.2.1",
     "clean-css": "^4.2.1",
     "escape-string-regexp": "^1.0.5",
@@ -52,7 +52,7 @@
     "recursive-readdir": "^2.2.2",
     "request": "^2.88.0",
     "tempy": "^0.2.1",
-    "urijs": "^1.19.4",
+    "urijs": "^1.19.11",
     "yargs": "^12.0.5"
   },
   "config": {

@@ -24,13 +24,14 @@ spec:
       labels:
         service: gateway
     spec:
-{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-10
 {{- end }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: gateway
-        image: {{ template "dockerimage" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         ports:
         - containerPort: {{ .Values.service.internalPort }}
         command: [
@@ -46,27 +47,6 @@ spec:
             {{- end }}
             "--dbHost", "session-db",
             "--dbPort", "5432",
-{{- if .Values.auth.facebookClientId }}
-            "--facebookClientId", {{ .Values.auth.facebookClientId | quote }},
-{{- end }}
-{{- if .Values.auth.arcgisClientId }}
-            "--arcgisClientId", {{ .Values.auth.arcgisClientId | quote }},
-{{- end }}
-{{- if .Values.auth.arcgisInstanceBaseUrl }}
-            "--arcgisInstanceBaseUrl", {{ .Values.auth.arcgisInstanceBaseUrl | quote }},
-{{- end }}
-{{- if .Values.auth.aafClientUri}}
-            "--aafClientUri", {{ .Values.auth.aafClientUri| quote }},
-{{- end }}
-{{- if .Values.auth.esriOrgGroup}}
-            "--esriOrgGroup", {{ .Values.auth.esriOrgGroup| quote }},
-{{- end }}
-{{- if .Values.auth.vanguardWsFedIdpUrl }}
-            "--vanguardWsFedIdpUrl", {{ .Values.auth.vanguardWsFedIdpUrl | quote }},
-{{- end }}
-{{- if .Values.auth.vanguardWsFedRealm }}
-            "--vanguardWsFedRealm", {{ .Values.auth.vanguardWsFedRealm | quote }},
-{{- end }}
 {{- if .Values.enableAuthEndpoint }}
             "--enableAuthEndpoint", {{ .Values.enableAuthEndpoint | quote }},
 {{- end }}
@@ -161,50 +141,7 @@ spec:
               key: session-secret
         - name: USER_ID
           value: {{ .Values.global.defaultAdminUserId }}
-{{- if .Values.auth.facebookClientId }}
-        - name: FACEBOOK_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: facebook-client-secret
-              optional: true
-{{- end }}
-{{- if .Values.auth.vanguardWsFedRealm }}
-        - name: VANGUARD_CERTIFICATE
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: vanguard-certificate
-              optional: true
-{{- end }}
-{{- if .Values.auth.arcgisClientId }}
-        - name: ARCGIS_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: arcgis-client-secret
-              optional: true
-{{- end }}
-{{- if .Values.auth.aafClientUri }}
-        - name: AAF_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: aaf-client-secret
-              optional: true
-{{- end }}
-{{- if .Values.global.noDbAuth }}
-        - name: PGUSER
-          value: client
-{{- else }}
-        - name: PGUSER
-          value: client
-        - name: PGPASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: session-db-client
-{{- end }}
+        {{- include "magda.db-client-credential-env" (dict "dbName" "session-db" "root" .) | indent 8 }}
       volumes:
         - name: config
           configMap:

@@ -1,3 +1,5 @@
+> This document might require some updates since we upgarded to postgreSQL 13 in Magda v1.0.0
+
 This is how @mwu2018 set up his Windows machine (Precision 7730) to develop Magda - it's here as a reference in case you get stuck on something when development Magda under Windows.
 
 1. Enable hyper-v

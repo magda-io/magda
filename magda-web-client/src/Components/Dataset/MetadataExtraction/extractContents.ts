@@ -153,7 +153,8 @@ async function extractSpreadsheetFile(
                     .map((row) => Object.values(row).join(","))
                     .join("\n");
             })
-            .join("\n\n");
+            .join("\n\n")
+            .replace(/\u0000/g, "");
     }
 
     return {
@@ -214,7 +215,7 @@ function getKeywordsFromWorksheet(
                 return;
             }
 
-            let value = sheet[key].v.trim();
+            let value = sheet[key].v.trim().replace(/\u0000/g, "");
 
             if (value === "") {
                 return;

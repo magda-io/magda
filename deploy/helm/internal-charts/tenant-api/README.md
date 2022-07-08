@@ -1,6 +1,6 @@
 # tenant-api
 
-![Version: 0.0.60-alpha.0](https://img.shields.io/badge/Version-0.0.60--alpha.0-informational?style=flat-square)
+![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -12,7 +12,10 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| image | object | `{}` |  |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
+| image.name | string | `"magda-tenant-api"` |  |
 | resources.limits.cpu | string | `"50m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"50Mi"` |  |

@@ -1,6 +1,6 @@
 # web-server
 
-![Version: 0.0.60-alpha.0](https://img.shields.io/badge/Version-0.0.60--alpha.0-informational?style=flat-square)
+![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -35,6 +35,10 @@ Kubernetes: `>= 1.14.0-0`
 | dateConfig.dateRegexes.endDateRegex | string | `"(end).*(date|dt|year|decade)"` |  |
 | dateConfig.dateRegexes.startDateRegex | string | `"(start|st).*(date|dt|year|decade)"` |  |
 | defaultContactEmail | string | `"mail@example.com"` |  |
+| defaultDatasetBucket | string | `nil` | Default bucket used to store datasets. If no value is provided `global.defaultDatasetBucket` will be used. |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
 | defaultTimeZone | string | `nil` | Default Timezone that used to display tiem related string. If not set, default value will be "Australia/Sydney" |
 | disableAuthenticationFeatures | bool | `false` |  |
 | discourseIntegrationDatasetPage | bool | `true` | Whether the discourse post integration should be turned on on dataset page. |
@@ -53,7 +57,7 @@ Kubernetes: `>= 1.14.0-0`
 | featureFlags.useStorageApi | bool | `true` | turn on / off the UI option to use Magda internal storage for file storage. |
 | gapiIds | list | `[]` | Google Analytics Ids |
 | homePageUrl | string | `nil` | an alternative home page url.  By default, all home page related links will take users to Magda home page. You can set a different URL here to take users to a different landing page. |
-| image | object | `{}` |  |
+| image.name | string | `"magda-web-server"` |  |
 | keywordsBlackList[0] | string | `"Mr"` |  |
 | keywordsBlackList[10] | string | `"Mr."` |  |
 | keywordsBlackList[11] | string | `"Ms."` |  |
@@ -91,12 +95,14 @@ Kubernetes: `>= 1.14.0-0`
 | noManualThemes | bool | `false` |  |
 | openInExternalTerriaMapButtonText | string | `nil` | When set, the string here will replace the text of the `Open in National Map` button in Map Preview area. |
 | openInExternalTerriaMapTargetUrl | string | `nil` | When set, the `Open in National Map` button in Map Preview area will sent map data to the URL provided and open the map preview there. When not set, UI will by default send to the National Map. |
+| previewMapFormatPerference | list | `[{"format":"WMS","urlRegex":"^(?!.*(SceneServer)).*$"},{"format":"ESRI MAPSERVER","urlRegex":"MapServer"},{"format":"WFS","urlRegex":"^(?!.*(SceneServer)).*$"},{"format":"ESRI FEATURESERVER","urlRegex":"FeatureServer"},{"format":"GeoJSON","singleFile":true},{"format":"csv-geo-au","singleFile":true},{"format":"KML","singleFile":true},{"format":"KMZ","singleFile":true}]` | Preview map module format perference list The list includes one or more `format perference item`. When there are more than one data source available, "Preview Map module" will use this perference to determine which data soruce will be used. It will go through the perference list. The first matched format (i.e. find a data source with the format ) will be chosen. A `format perference item` can have the following fields: <ul>  <li>format: the format of the preferred data source. compulsory. case insensitive. </li>  <li>       isDataFile: Optional. Default to `false`. Indicate whether the specified format is a static data file or API.        If it's a static file, "Preview Map Module" will attempt to check the target file size and ask user to confirm whether he wants to render the file for large files.       The file size threshold is specified by config option `automaticPreviewMaxFileSize`.  </li>  <li>       urlRegex: optional; when exists, it will be used as regex string to double check the data source access url to confirm whether it's indeed the format specified.       If not provided or empty, only `format` will be used to determine whether a data source matches the `format perference item`.  <li> </ul> |
 | registryApiBaseUrlInternal | string | `"http://registry-api/v0"` |  |
-| replicas | string | `nil` |  |
+| replicas | string | `nil` | no. of replicas required for the deployment. If not set, k8s will assume `1` but allows HPA (autoscaler) alters it. @default 1 |
 | resources.limits.cpu | string | `"100m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"30Mi"` |  |
 | service.type | string | `nil` | how to expose serice. Only used when `.Values.global.exposeNodePorts` is not true. @default ClusterIP |
+| showContactButtonForNoContactPointDataset | bool | `false` | Whether show the "Ask a question about this dataset" button for datasets without contact point info. By default, the "Ask a question about this dataset" button is only shown for datasets has contact point info. For datasets without contact point info, the inquiry will be sent to the default recipient provided by `global.defaultContactEmail`. |
 | showNotificationBanner | bool | `false` |  |
 | supportExternalTerriaMapV7 | bool | `false` | When set to true, the `Open in National Map` button in Map Preview area will send data in v7 format. |
 | uiBaseUrl | string | `nil` | Serve Magda UI at a non-root url path. e.g. `http://example.com/magda/`. Its value should have a leading slash, but no trailing slash. When not set, by default, the magda UI will be served at `/`. (e.g. `http://example.com/`)  When `global.externalUrl` is set to an URL with non-root path (e.g. http://example.com/magda-dir/),  unless `uiBaseUrl` has a non-empty value that is not `/`, the effective runtime value of `uiBaseUrl` will be overwritten to `/magda-dir`. You probably only want to manually set `uiBaseUrl` when you want to move magda UI to a non-root URL path but still leave all APIs at root path. |

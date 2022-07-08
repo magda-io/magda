@@ -1,13 +1,16 @@
-image: {}
-data:
-  storage: 200Gi
-# whether turn on the debug module for plsql debug through pgAdmin
-# After that, you need to run `CREATE EXTENSION pldbgapi;` 
-# in the database that you want to debug to turn it on database level
-debug: false
-resources:
-  requests:
-    cpu: 200m
-    memory: 500Mi
-  limits:
-    cpu: 500m
+magda-postgres:
+  postgresql: 
+    fullnameOverride: "combined-db-postgresql"
+    nameOverride: "combined-db-postgresql"
+    persistence:
+      size: "100Gi"
+    resources:
+      requests:
+        cpu: 200m
+        memory: 500Mi
+
+# -- whether auto-create secret for client account password.
+# After the migrator runs properly, a non-superuser DB account (named `client`) will be created.
+# If any logic databases (e.g. `content-db`, `session-db` etc.) are hosted by the single `combined-db`, its password will loaded from secret `combined-db-password` & key: `password`.
+# Set this option to `true` will make helm auto-create the secret with random password, ONLY when the secret not exists.
+autoCreateSecret: true

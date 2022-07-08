@@ -1,6 +1,6 @@
 # gateway
 
-![Version: 0.0.60-alpha.0](https://img.shields.io/badge/Version-0.0.60--alpha.0-informational?style=flat-square)
+![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square)
 
 The Gateway Component of Magda that routes incoming requets to other magda components.
 
@@ -12,13 +12,6 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| auth.aafClientUri | string | `""` | [AAF](https://aaf.edu.au/) SSO client URI AAF client secret is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `aaf-client-secret`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  |
-| auth.arcgisClientId | string | `""` | ArcGIS / ESRI SSO client Id ArcGIS client secret is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `arcgis-client-secret`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead. |
-| auth.arcgisInstanceBaseUrl | string | `""` | ArcGIS / ESRI SSO server Base Url **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead. |
-| auth.esriOrgGroup | string | `""` | ArcGIS / ESRI SSO org group **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead. |
-| auth.facebookClientId | string | `""` | facebook SSO client ID facebook client secret is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `facebook-client-secret`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  |
-| auth.vanguardWsFedIdpUrl | string | `""` | Vanguard integration entry point. `vanguardWsFedCertificate` is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `vanguard-certificate`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  |
-| auth.vanguardWsFedRealm | string | `""` | Vanguard realm id for entry point. |
 | authPlugins | list | `[]` | a list of authentication plugin config item.  Each authentication plugin config item can contain the following fields: <ul> <li>`key`: (string) the unique key of the auth plugin. Allowed characters: [a-zA-Z0-9\-] </li> <li>`baseUrl`: (string) the `baseUrl` where gateway proxy request to. </li> </ul> More info on authentication plugin see [Authentication Plugin Specification](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md) |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |
@@ -42,6 +35,9 @@ Kubernetes: `>= 1.14.0-0`
 | csp.directives.workerSrc[0] | string | `"'self'"` |  |
 | csp.directives.workerSrc[1] | string | `"blob:"` |  |
 | defaultCacheControl | string | `"public, max-age=60"` | If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable. |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
 | defaultRoutes | object | Default value see [defaultRoutes Default Value](#default-value-for-defaultroutes-field) section below | Default routes list here are available under `/api/v0/` path. See [Proxy Target Definition](#proxy-target-definition) section below for route format. |
 | defaultWebRouteConfig.auth | bool | `false` | whether this target requires session. Otherwise, session / password related midddleware won't run |
 | defaultWebRouteConfig.methods | list | `["GET"]` | array of string. "all" means all methods will be proxied  |
@@ -52,7 +48,7 @@ Kubernetes: `>= 1.14.0-0`
 | enableHttpsRedirection | bool | `false` | whether or not redirect incoming request using HTTP protocol to HTTPs |
 | enableWebAccessControl | bool | `false` | wether or not enable http basic auth access control. `username` & `password` will be retrieved from k8s secrets `web-access-secret`, `username` & `password` fields. |
 | helmet.frameguard | bool | `false` |  |
-| image | object | `{}` |  |
+| image.name | string | `"magda-gateway"` |  |
 | proxyTimeout | int | nil (120 seconds default value will be used by upstream lib internally) | How long time (in seconds) before upstream service must complete request in order to avoid request timeout error. If not set, the request will time out after 120 seconds. |
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.requests.cpu | string | `"50m"` |  |

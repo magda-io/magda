@@ -3,7 +3,7 @@
 [![GitHub release](https://img.shields.io/github/release/magda-io/magda.svg)](https://github.com/magda-io/magda/releases)
 [![pipeline status](https://gitlab.com/magda-data/magda/badges/master/pipeline.svg)](https://gitlab.com/magda-data/magda/commits/master)
 [![Try it out](https://img.shields.io/badge/try%20it%20out-demo.dev.magda.io-blue.svg)](https://demo.dev.magda.io)
-[![Get help or discuss on spectrum](https://img.shields.io/badge/Get%20help%20or%20discuss-on%20spectrum-7B16FF.svg?logoColor=white&logo=spectrum)](https://spectrum.chat/magda)
+[![GitHub Discussions](https://img.shields.io/github/discussions/magda-io/magda?label=Get%20help%20or%20discuss%20&style=plastic)](https://github.com/magda-io/magda/discussions)
 
 Magda is a data catalog system that will provide a single place where all of an organization's data can be catalogued, enriched, searched, tracked and prioritized - whether big or small, internally or externally sourced, available as files, databases or APIs. Magda is designed specifically around the concept of _federation_ - providing a single view across all data of interest to a user, regardless of where the data is stored or where it was sourced from. The system is able to quickly crawl external data sources, track changes, make automatic enhancements and make notifications when changes occur, giving data users a one-stop shop to discover all the data that's available to them.
 
@@ -11,7 +11,7 @@ Magda is a data catalog system that will provide a single place where all of an 
 
 ## Current Status
 
-Magda is under active development by a small team - we often have to prioritise between making the open-source side of the project more robust and adding features to our own deployments, which can mean newer features aren't documented well, or require specific configuration to work. If you run into problems using Magda, we're always happy to help on [Spectrum](https://spectrum.chat/magda).
+Magda is under active development by a small team - we often have to prioritise between making the open-source side of the project more robust and adding features to our own deployments, which can mean newer features aren't documented well, or require specific configuration to work. If you run into problems using Magda, we're always happy to help on [GitHub Discussions](https://github.com/magda-io/magda/discussions).
 
 ### As an open data search engine
 
@@ -23,19 +23,19 @@ Over the past 18 months, our focus has been to develop Magda into a more general
 
 ## Features
 
--   Powerful and scalable search based on ElasticSearch
--   Quick and reliable aggregation of external sources of datasets
--   An unopinionated central store of metadata, able to cater for most metadata schemas
--   Federated authentication via passport.js - log in via Google, Facebook, WSFed, AAF, CKAN, and easily create new providers.
--   Based on Kubernetes for cloud agnosticism - deployable to nearly any cloud, on-premises, or on a local machine.
--   Easy (as long as you know Kubernetes) installation and upgrades
--   Extensions are based on adding new docker images to the cluster, and hence can be developed in any language
+- Powerful and scalable search based on ElasticSearch
+- Quick and reliable aggregation of external sources of datasets
+- An unopinionated central store of metadata, able to cater for most metadata schemas
+- Federated authentication via passport.js - log in via Google, Facebook, WSFed, AAF, CKAN, and easily create new providers.
+- Based on Kubernetes for cloud agnosticism - deployable to nearly any cloud, on-premises, or on a local machine.
+- Easy (as long as you know Kubernetes) installation and upgrades
+- Extensions are based on adding new docker images to the cluster, and hence can be developed in any language
 
 ### Currently Under Development
 
--   A heavily automated, quick and easy to use data cataloguing process intended to produce high-quality metadata for discovery
--   A robust, policy-based authorization system built on Open Policy Agent - write flexible policies to restrict access to datasets and have them work across the system, including by restricting search results to what you're allowed to see.
--   Storage of datasets
+- A heavily automated, quick and easy to use data cataloguing process intended to produce high-quality metadata for discovery
+- A robust, policy-based authorization system built on Open Policy Agent - write flexible policies to restrict access to datasets and have them work across the system, including by restricting search results to what you're allowed to see.
+- Storage of datasets
 
 Our current roadmap is available at https://magda.io/docs/roadmap
 
@@ -44,6 +44,8 @@ Our current roadmap is available at https://magda.io/docs/roadmap
 Magda is built around a collection of microservices that are distributed as docker containers. This was done to provide easy extensibility - Magda can be customised by simply adding new services using any technology as docker images, and integrating them with the rest of the system via stable HTTP APIs. Using Helm and Kubernetes for orchestration means that configuration of a customised Magda instance can be stored and tracked as plain text, and instances with identical configuration can be quickly and easily reproduced.
 
 ![Magda Architecture Diagram](docs/assets/marketecture.svg)
+
+If you are interested in the architecture details of Magda, you might want to have a look at [this doc](./docs/docs/architecture/Guide%20to%20Magda%20Internals.md).
 
 ### Registry
 
@@ -71,7 +73,30 @@ Magda provides a user interface, which is served from its own microservice and c
 
 ## To try the last version (with prebuilt images)
 
-Use https://github.com/magda-io/magda-config
+If you just want to install a local testing version, installing Magda using [Helm](https://helm.sh/) is relatively easier (you can use [minikube](https://minikube.sigs.k8s.io/docs/) to install a local k8s test cluster):
+
+```bash
+# Add Magda Helm Chart Repo:
+helm repo add magda-io https://charts.magda.io
+
+# create a namespace "magda" in your cluster
+kubectl create namespace magda
+
+# install Magda version v1.2.0 to namespace "magda", turn off openfass function and expose the service via loadBalancer
+helm upgrade --namespace magda --install --version 1.2.0 --timeout 9999s --set global.openfaas.enabled=false,magda-core.gateway.service.type=LoadBalancer magda magda-io/magda
+```
+
+You can find out the load balancer IP and access it:
+
+```bash
+echo $(kubectl get svc --namespace magda gateway --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
+```
+
+If you are interested in playing more, you can also have a look at this tutorial repo:
+
+https://github.com/magda-io/magda-brown-bag
+
+Or find out more on: https://magda.io/docs/building-and-running if you are interested in development.
 
 ## To build and run from source
 
@@ -79,7 +104,7 @@ https://magda.io/docs/building-and-running
 
 ## To get help with developing or running Magda
 
-Start a discussion at https://spectrum.chat/magda. There's not a lot on there yet, but we monitor it closely :).
+Start a discussion at https://github.com/magda-io/magda/discussions. There's not a lot on there yet, but we monitor it closely :).
 
 ## Want to get help deploying it into your organisation?
 
@@ -91,6 +116,9 @@ Great! Take a look at https://github.com/magda-io/magda/blob/master/.github/CONT
 
 ## Documentation links
 
--   [Magda API Reference](https://demo.dev.magda.io/api/v0/apidocs/index.html)
--   [Magda Helm Chart Reference](docs/docs/helm-charts-docs-index.md)
--   [Other documentations](docs/docs/index.md)
+- [Magda API Reference](https://demo.dev.magda.io/api/v0/apidocs/index.html)
+- [Magda Helm Chart Reference](docs/docs/helm-charts-docs-index.md)
+- [Migration & Upgrade Documents](docs/docs/migration)
+- [Other documentations](docs/docs/index.md)
+
+More documents can be found from the folder [docs/docs/](./docs/docs/).

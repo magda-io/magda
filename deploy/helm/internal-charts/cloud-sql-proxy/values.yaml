@@ -1,4 +1,61 @@
+global: {}
+image:
+  name: gce-proxy
+  repository: gcr.io/cloudsql-docker
+  tag: "1.11"
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+# -- no. of replicas required for the deployment.
+# If not set, k8s will assume `1` but allows HPA (autoscaler) alters it.
+# @default 1
+replicas:
+
+autoscaler:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
 resources:
   requests:
-    cpu: 10m
-    memory: 10Mi
+    cpu: 50m
+    memory: 50Mi
+
+# -- Enables the proxy to use Cloud SQL IAM database authentication.
+# Available from docker image 1.23.0
+# @default -- false
+enableIamLogin: false
+
+# -- If provided, the maximum number of connections to establish before refusing new connections. 
+# Available from docker image 1.23.0
+# @default -- 0 (no limit).
+maxConnections: 0
+
+# -- A comma-delimited list of preferred IP types for connecting to an instance. 
+# For example, setting this to PRIVATE will force the proxy to connect to instances using an instance's associated private IP.
+# Available from docker image 1.23.0
+# @default -- PUBLIC,PRIVATE
+ipAddressTypes: ""
+
+# -- How long (in seconds) to wait for connections to close before shutting down the proxy.
+# Available from docker image 1.23.0
+# @default -- 0
+termTimeout: 0
+
+# -- Setting this flag will prevent the proxy from terminating if any errors occur during instance configuration. 
+# Please note that this means some instances may fail to be set up correctly while others may work if the proxy restarts.
+# Available from docker image 1.23.0
+# @default -- false
+skipFailedInstanceConfig: false
+
+# -- This is to log non-error output to standard out instead of standard error. 
+# For example, if you don't want connection related messages to log as errors, set this flag to true.
+# Available from docker image 1.23.0
+# @default -- false
+logDebugStdout: false
+
+# -- Writes all logging output as JSON with the following keys: level, ts, caller, msg.
+# Available from docker image 1.23.0
+# @default -- false
+structuredLogs: false

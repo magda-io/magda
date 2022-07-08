@@ -11,6 +11,3 @@ WITH (
     OIDS = FALSE
 )
 TABLESPACE pg_default;
-
-ALTER TABLE public.content
-    OWNER to postgres;

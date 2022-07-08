@@ -1,6 +1,6 @@
 # indexer
 
-![Version: 0.0.60-alpha.0](https://img.shields.io/badge/Version-0.0.60--alpha.0-informational?style=flat-square)
+![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -12,12 +12,22 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| autoReIndex.enable | bool | `true` | Whether turn on the cronjob to trigger reindex. `publisher` & `format` indices might contains obsolete records which require the triming / reindex process to be removed. |
+| autoReIndex.schedule | string | "0 15 * * 0": 15:00PM UTC timezone (1:00AM in AEST Sydney timezone) on every Sunday | auto reindex cronjob schedule string. specified using unix-cron format (in UTC timezone by default). |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
 | elasticsearch.replicas | int | `0` |  |
 | elasticsearch.shards | int | `1` |  |
 | elasticsearch.useGcsSnapshots | bool | `false` |  |
-| image | object | `{}` |  |
+| image.name | string | `"magda-indexer"` |  |
 | makeSnapshots | bool | `false` |  |
 | readSnapshots | bool | `false` |  |
+| reindexJobImage.name | string | `"alpine"` |  |
+| reindexJobImage.pullPolicy | string | `"IfNotPresent"` |  |
+| reindexJobImage.pullSecrets | bool | `false` |  |
+| reindexJobImage.repository | string | `"docker.io"` |  |
+| reindexJobImage.tag | string | `"latest"` |  |
 | resources.limits.cpu | string | `"250m"` |  |
 | resources.requests.cpu | string | `"100m"` |  |
 | resources.requests.memory | string | `"250Mi"` |  |

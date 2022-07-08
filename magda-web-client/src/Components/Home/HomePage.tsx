@@ -40,16 +40,16 @@ const getBgImg = (backgroundImageUrls) => {
 
     const screenSizes = Object.keys(imageMap);
 
-    function getBackgroundImage(imageUrl) {
-        return {
-            backgroundImage: "url(" + imageUrl + ")",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "cover"
-        };
-    }
+    // function getBackgroundImage(imageUrl) {
+    //     return {
+    //         backgroundImage: "url(" + imageUrl + ")",
+    //         backgroundPosition: "center",
+    //         backgroundRepeat: "no-repeat",
+    //         backgroundSize: "cover"
+    //     };
+    // }
     return (
-        <div>
+        <>
             {screenSizes.map((size, i) => (
                 <MediaQuery
                     key={size}
@@ -60,13 +60,14 @@ const getBgImg = (backgroundImageUrls) => {
                             : screenSizes[i + 1] + "px"
                     }
                 >
-                    <div
+                    <img
+                        alt="background"
+                        src={imageMap[size]}
                         className="homepage-background-img"
-                        style={getBackgroundImage(imageMap[size])}
                     />
                 </MediaQuery>
             ))}
-        </div>
+        </>
     );
 };
 

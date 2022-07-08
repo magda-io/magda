@@ -5,20 +5,8 @@ export default function resizeImage(img, width, height) {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
-    const imageAspect = img.width / img.height;
-    const targetAspect = width / height;
-    let x = 0,
-        y = 0,
-        dx = width,
-        dy = height;
-    if (imageAspect < targetAspect) {
-        dy = img.height * (dx / img.width);
-        y = (height - dy) / 2;
-    } else if (imageAspect > targetAspect) {
-        dx = img.width * (height / img.height);
-        y = (width - dx) / 2;
-    }
-    ctx.drawImage(img, x, y, dx, dy); // destination rectangle
+    console.log(`resizing image to ${width}, ${height}`);
+    ctx.drawImage(img, 0, 0, width, height); // destination rectangle
     return dataURItoBlob(canvas.toDataURL("image/jpeg", 90));
 }
 

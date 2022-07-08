@@ -155,3 +155,21 @@ export function getPluginDatasetLikeButton(): DatasetLikeButtonComponentType | n
         "DatasetLikeButton"
     );
 }
+
+type ExtraVisualisationSectionComponentPropsType = {
+    dataset: ParsedDataset;
+    distributionId?: string;
+};
+
+export type ExtraVisualisationSectionComponentType = ComponentType<
+    ExtraVisualisationSectionComponentPropsType
+>;
+export type ExternalExtraVisualisationSectionCompontType = ExternalCompontType<
+    ExtraVisualisationSectionComponentType
+>;
+
+export function getPluginExtraVisualisationSection(): ExtraVisualisationSectionComponentType | null {
+    return getComponent<ExtraVisualisationSectionComponentPropsType>(
+        "ExtraVisualisationSection"
+    );
+}

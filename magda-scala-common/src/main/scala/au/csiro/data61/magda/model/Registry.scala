@@ -358,44 +358,67 @@ object Registry
       }
   }
 
-  def convertPublisher(publisher: Registry.Record): Agent = {
-    val organizationDetails =
-      publisher.aspects.getOrElse("organization-details", JsObject())
-    val jurisdiction = organizationDetails.extract[String]('jurisdiction.?)
-    val name = organizationDetails.extract[String]('title.?)
-    Agent(
-      identifier = Some(publisher.id),
-      name = name,
-      jurisdiction = jurisdiction,
-      aggKeywords =
-        if (jurisdiction.isEmpty) Some(name.getOrElse(publisher.id).toLowerCase)
-        else
-          jurisdiction
-            .map(name.getOrElse(publisher.id) + ":" + _)
-            .map(_.toLowerCase),
-      description = organizationDetails.extract[String]('description.?),
-      acronym = getAcronymFromPublisherName(
-        organizationDetails.extract[String]('title.?)
-      ),
-      imageUrl = organizationDetails.extract[String]('imageUrl.?),
-      phone = organizationDetails.extract[String]('phone.?),
-      email = organizationDetails.extract[String]('email.?),
-      addrStreet = organizationDetails.extract[String]('addrStreet.?),
-      addrSuburb = organizationDetails.extract[String]('addrSuburb.?),
-      addrState = organizationDetails.extract[String]('addrState.?),
-      addrPostCode = organizationDetails.extract[String]('addrPostCode.?),
-      addrCountry = organizationDetails.extract[String]('addrCountry.?),
-      website = organizationDetails.extract[String]('website.?),
-      source = publisher.aspects.get("source").map(_.convertTo[DataSouce])
-    )
+  def convertPublisher(publisher: Registry.Record)(
+      implicit
+      logger: Option[LoggingAdapter]
+  ): Option[Agent] = {
+    Try {
+      val organizationDetails =
+        publisher.aspects.getOrElse("organization-details", JsObject())
+      val jurisdiction = organizationDetails.extract[String]('jurisdiction.?)
+      val name = organizationDetails.extract[String]('title.?)
+      Agent(
+        identifier = Some(publisher.id),
+        name = name,
+        jurisdiction = jurisdiction,
+        aggKeywords =
+          if (jurisdiction.isEmpty)
+            Some(name.getOrElse(publisher.id).toLowerCase)
+          else
+            jurisdiction
+              .map(name.getOrElse(publisher.id) + ":" + _)
+              .map(_.toLowerCase),
+        description = organizationDetails.extract[String]('description.?),
+        acronym = getAcronymFromPublisherName(
+          organizationDetails.extract[String]('title.?)
+        ),
+        imageUrl = organizationDetails.extract[String]('imageUrl.?),
+        phone = organizationDetails.extract[String]('phone.?),
+        email = organizationDetails.extract[String]('email.?),
+        addrStreet = organizationDetails.extract[String]('addrStreet.?),
+        addrSuburb = organizationDetails.extract[String]('addrSuburb.?),
+        addrState = organizationDetails.extract[String]('addrState.?),
+        addrPostCode = organizationDetails.extract[String]('addrPostCode.?),
+        addrCountry = organizationDetails.extract[String]('addrCountry.?),
+        website = organizationDetails.extract[String]('website.?),
+        source = publisher.aspects.get("source").map(_.convertTo[DataSouce])
+      )
+    } match {
+      case Success(v) => Some(v)
+      case Failure(e) =>
+        if (logger.isDefined) {
+          logger.get.error(
+            s"Failed to parse publisher data: ${e.getMessage}"
+          )
+          None
+        } else {
+          throw e
+        }
+    }
   }
 
-  def getNullableStringField(data: JsObject, field: String): Option[String] = {
+  def getNullableStringField(
+      data: JsObject,
+      field: String,
+      muteError: Boolean = false
+  ): Option[String] = {
     data.fields.get(field) match {
       case None                => None
       case Some(JsNull)        => None
       case Some(JsString(str)) => Some(str)
-      case _                   => deserializationError(s"Invalid nullableString field: ${field}")
+      case _ =>
+        if (muteError) None
+        else deserializationError(s"Invalid nullableString field: ${field}")
     }
   }
 }

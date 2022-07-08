@@ -1,4 +1,15 @@
-image: {}
+image: 
+  name: "magda-correspondence-api"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
 resources:
   requests:
     cpu: 10m

@@ -70,7 +70,7 @@ trait HttpElasticSugar {
   def ensureIndexExists(index: String): Unit =
     try {
       http.execute {
-        createIndex(index)
+        createIndex(index).copy(includeTypeName = Some(true))
       }.await
     } catch {
       case _: ResourceAlreadyExistsException => // Ok, ignore.

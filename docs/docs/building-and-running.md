@@ -6,17 +6,17 @@ These instructions assume you are using a Bash shell. You can easily get a Bash 
 
 You need to install following in order to build MAGDA:
 
--   [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts. Version 9+ works fine as of March 2018.
--   [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
--   [sbt](http://www.scala-sbt.org/) - To build the Scala components.
--   [yarn](https://yarnpkg.com/) - Npm replacement that makes node deps in a monorepo much easier.
+- [Node.js](https://nodejs.org/en/) - To build and run the TypeScript / JavaScript components, as well as many of the build scripts. Version 9+ works fine as of March 2018.
+- [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
+- [sbt](http://www.scala-sbt.org/) - To build the Scala components.
+- [yarn](https://yarnpkg.com/) - Npm replacement that makes node deps in a monorepo much easier.
 
 To push the images and run them on kubernetes, you'll need to install:
 
--   [GNU tar](https://www.gnu.org/software/tar/) - (Mac only) MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
--   [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.
--   [Helm 3](https://helm.sh/docs/intro/install/) to manage kubernetes deployments and config. Magda `0.0.57` and higher requires helm 3 to deploy.
--   [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
+- [GNU tar](https://www.gnu.org/software/tar/) - (Mac only) MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
+- [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.
+- [Helm 3](https://helm.sh/docs/intro/install/) to manage kubernetes deployments and config. Magda `0.0.57` and higher requires helm 3 to deploy.
+- [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
 
 You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). We've also started trialing [microk8s](./building-and-running-on-microk8s) on Linux, but we're not sure how well it's going to work long-term. Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
 
@@ -201,7 +201,9 @@ If you want to just start up individual pods (e.g. just the combined database) y
 helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
 ```
 
-**You can find all available tags in [deploy/helm/magda-core/requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/requirements.yaml) and [deploy/helm/magda/requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda/requirements.yaml)**
+**You can find all available tags (sub charts) in [deploy/helm/magda-core/Chart.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/Chart.yaml#L11) and [deploy/helm/magda/Chart.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda/Chart.yaml#L9)**
+
+You can also find more information from our [Helm Charts Document](https://github.com/magda-io/magda/blob/master/docs/docs/helm-charts-docs-index.md).
 
 Once everything starts up, you can access the web front end on http://192.168.99.100:30100. The IP address may be different on your system. Get the real IP address by running:
 
@@ -224,7 +226,8 @@ It's also possible to run what you're working on your host, and the services you
 This is super-easy, just run
 
 ```bash
-kubectl port-forward combined-db-0 5432:5432
+kubectl port-forward combined-db-postgresql-0 5432:5432
+# or kubectl port-forward combined-db-0 5432:5432 prior to Magda v1.0.0
 ```
 
 Now you can connect to the database in minikube as if it were running locally, while still taking advantage of all the automatic schema setup that the docker image does.
@@ -338,7 +341,8 @@ helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --se
 ```bash
 # Port forward database
 # this command doesn't terminate, so run it in a separate terminal
-kubectl port-forward combined-db-0 5432:5432
+kubectl port-forward combined-db-postgresql-0 5432:5432
+# or kubectl port-forward combined-db-0 5432:5432 prior to Magda v1.0.0
 ```
 
 3.  Start the registry API by executing the following command

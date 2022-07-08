@@ -1,0 +1,23 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+{{ template "chart.description" . }}
+
+Magda developers can add this library to chart `dependencies` list to leverage common deployment logic.
+e.g.:
+```yaml
+dependencies:
+  - name: magda-common
+    version: "1.0.0-alpha.0"
+    repository: "https://charts.magda.io"
+```
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}

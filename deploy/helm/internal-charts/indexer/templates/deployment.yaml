@@ -15,9 +15,10 @@ spec:
       labels:
         service: indexer
     spec:
-{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-7
 {{- end }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: indexer
         env:
@@ -32,18 +33,20 @@ spec:
         livenessProbe:
           httpGet:
             path: /v0/reindex/in-progress
-            port: 80
+            port: 6103
           initialDelaySeconds: 120
           periodSeconds: 10
           timeoutSeconds: 10
 {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
-        image: {{ template "dockerimage" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+        ports:
+        - containerPort: 6103
         command: [
-            "/app/bin/magda-indexer",
-            "-Dhttp.port=80",
+            "bin/magda-indexer",
+            "-Dhttp.port=6103",
             "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
             "-Dregistry.baseUrl=http://registry-api",
             "-Dregistry.readOnlyBaseUrl=http://registry-api-read-only",

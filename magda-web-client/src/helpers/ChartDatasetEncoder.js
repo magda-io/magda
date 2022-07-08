@@ -10,7 +10,8 @@ import concat from "lodash/concat";
 import takeRight from "lodash/takeRight";
 import sortBy from "lodash/sortBy";
 import * as d3 from "d3-collection";
-import chrono from "chrono-node";
+import * as chrono from "chrono-node";
+import escapeRegExp from "@magda/typescript-common/dist/util/escapeRegExp";
 
 const AVAILABLE_CHART_TYPES = ["bar", "pie", "scatter", "line"];
 const STRIP_NUMBER_REGEX = /[^\-\d.+]/g;
@@ -52,10 +53,18 @@ const OVERRIDE_TO_CATEGORY_COLUMNS = [
     "month",
     "reason",
     "year",
-    "country"
+    "country",
+    /^registration number$/i,
+    /^LIQ NUM$/i,
+    /^REG AUD NUM$/i
 ];
 /** Columns with these terms in them will be overridden as time types */
-const OVERRIDE_TO_TIME_COLUMNS = ["date", "time"];
+const OVERRIDE_TO_TIME_COLUMNS = [
+    "date",
+    "time",
+    /(^|\W)start\W+dt(\W|$)/i,
+    /(^|\W)end\W+dt(\W|$)/i
+];
 /** Columns with these terms in them will be overridden as numeric types */
 const OVERRIDE_TO_NUMERIC_COLUMNS = [
     "amt",
@@ -65,28 +74,21 @@ const OVERRIDE_TO_NUMERIC_COLUMNS = [
     "tax",
     "value",
     "length",
+    "expenditure",
     "total"
 ];
 const EXCLUDE_COLUMNS = ["long", "lat", "lng"];
 
-const noDelimiterParser = new chrono.Parser();
-noDelimiterParser.pattern = function () {
-    return /(\d{2})(\d{2})(\d{4})/gi;
-};
-noDelimiterParser.extract = function (text, ref, match, opt) {
-    return new chrono.ParsedResult({
-        ref: ref,
-        text: match[1] + "/" + match[2] + "/" + match[3],
-        index: match.index,
-        start: {
-            day: match[1],
-            month: match[2],
-            year: match[3]
-        }
-    });
+const noDelimiterParser = {
+    pattern: () => /(\d{2})(\d{2})(\d{4})/gi,
+    extract: (context, match) => ({
+        day: match[1],
+        month: match[2],
+        year: match[3]
+    })
 };
 
-const customChrono = chrono.en_GB;
+const customChrono = chrono.en.GB.clone();
 customChrono.parsers.push(noDelimiterParser);
 
 const parseNumber = (str) => {
@@ -189,30 +191,41 @@ function testKeywords(str, keywords) {
         return false;
     } else if (!keywords || !keywords.length) {
         return false;
-    } else {
-        const r = new RegExp(`.*(${keywords.join("|")}).*`, "i");
-        return !!r.test(str);
     }
+
+    str = (str + "").replace(/_/g, " ").trim();
+    const stringKeywords = [];
+    for (let i = 0; i < keywords.length; i++) {
+        const item = keywords[i];
+        if (item instanceof RegExp) {
+            if (item.test(str)) {
+                return true;
+            }
+        } else {
+            stringKeywords.push(escapeRegExp(item));
+        }
+    }
+    const r = new RegExp(`(^|\\W)(${stringKeywords.join("|")})(\\W|$)`, "i");
+    return !!r.test(str);
 }
 
 function fieldDefAdjustment(field) {
-    if (testKeywords(field.label, OVERRIDE_TO_CATEGORY_COLUMNS)) {
-        return {
-            ...field,
-            numeric: false,
-            category: true,
-            time: false
-        };
+    const outputField = { ...field };
+    // we should take number & time column override as priority
+    if (testKeywords(field.label, OVERRIDE_TO_NUMERIC_COLUMNS)) {
+        outputField.numeric = true;
+        outputField.category = false;
+        outputField.time = false;
+    } else if (testKeywords(field.label, OVERRIDE_TO_CATEGORY_COLUMNS)) {
+        outputField.numeric = false;
+        outputField.category = true;
+        outputField.time = false;
     } else if (testKeywords(field.label, OVERRIDE_TO_TIME_COLUMNS)) {
-        field.numeric = false;
-        field.category = false;
-        field.time = true;
-    } else if (testKeywords(field.label, OVERRIDE_TO_NUMERIC_COLUMNS)) {
-        field.numeric = true;
-        field.category = false;
-        field.time = false;
+        outputField.numeric = false;
+        outputField.category = false;
+        outputField.time = true;
     }
-    return field;
+    return outputField;
 }
 
 function preProcessFields(headerRow, distribution, chartType) {
@@ -532,10 +545,13 @@ class ChartDatasetEncoder {
         };
 
         const unsortedData = inner().map((datum) => {
-            let rawValue = datum[this.xAxis.name];
+            const rawValue = datum[this.xAxis.name];
+
+            console.log(getFieldDataType(this.xAxis));
 
             if (getFieldDataType(this.xAxis) === "time") {
                 const parsedDate = customChrono.parseDate(rawValue);
+                console.log(rawValue, parsedDate);
                 return { ...datum, [this.xAxis.name]: parsedDate || rawValue };
             } else {
                 return datum;

@@ -1,5 +1,30 @@
 production: false
-image: {}
+
+initContainerImage:
+  name: busybox
+  repository: docker.io
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+kibanaImage:
+  name: kibana-oss
+  repository: docker.elastic.co/kibana
+  tag: "6.8.22"
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+image: 
+  name: "magda-elasticsearch"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
 client:
   pluginsInstall: ""
   heapSize: "256m"
@@ -21,6 +46,7 @@ data:
     limits:
       cpu: 500m
 master:
+  replicas: 3
   pluginsInstall: ""
   resources:
     requests:

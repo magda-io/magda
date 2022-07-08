@@ -1,18 +1,19 @@
 import React from "react";
 import "./MarkdownViewer.scss";
-import truncate from "html-truncate";
+import clip from "text-clipper";
 import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml";
 
 class MarkdownViewer extends React.Component {
     render() {
         let html = markdownToHtml(this.props.markdown || "");
         if (this.props.truncate === true) {
-            html = truncate(
+            html = clip(
                 html,
-                this.props.truncateLength ? this.props.truncateLength : 150
+                this.props.truncateLength ? this.props.truncateLength : 150,
+                { html: true }
             );
         }
-        let markdown = { __html: html };
+        const markdown = { __html: html };
         return <div className="markdown" dangerouslySetInnerHTML={markdown} />;
     }
 }
@@ -32,7 +33,7 @@ export function willBeTruncated(
     options
 ) {
     const OrigHtml = markdownToHtml(markdownString);
-    const TruncatedHtml = truncate(OrigHtml, truncateLength);
+    const TruncatedHtml = clip(OrigHtml, truncateLength, { html: true });
     if (OrigHtml.trim() === TruncatedHtml.trim()) return false;
     return true;
 }

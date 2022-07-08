@@ -20,7 +20,11 @@ spec:
       labels:
         component: elasticsearch
         role: client
+      annotations:
+         "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
     spec:
+      {{- include "magda.elasticsearch.initContainer" . | indent 6 }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: es-client
         securityContext:
@@ -28,7 +32,8 @@ spec:
           capabilities:
             add:
               - IPC_LOCK
-        image: {{ template "dockerimage" . }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           tcpSocket:
@@ -45,6 +50,8 @@ spec:
         resources:
 {{ toYaml .Values.client.resources | indent 10 }}
         env:
+        - name: LOG4J_FORMAT_MSG_NO_LOOKUPS
+          value: "true"
         - name: NAMESPACE
           valueFrom:
             fieldRef:

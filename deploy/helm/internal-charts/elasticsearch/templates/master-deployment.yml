@@ -10,7 +10,7 @@ spec:
   strategy:
     rollingUpdate:
       maxUnavailable: 0
-  replicas: 3
+  replicas: {{ .Values.master.replicas | default 3 }}
   selector:
     matchLabels:
       component: elasticsearch
@@ -20,8 +20,12 @@ spec:
       labels:
         component: elasticsearch
         role: master
+      annotations:
+         "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
     spec:
-{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+      {{- include "magda.elasticsearch.initContainer" . | indent 6 }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-9
 {{- end }}
       affinity:
@@ -49,7 +53,8 @@ spec:
           capabilities:
             add:
               - IPC_LOCK
-        image: {{ template "dockerimage" . }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         readinessProbe:
           tcpSocket:
             port: transport
@@ -63,6 +68,8 @@ spec:
           periodSeconds: 60
 {{- end }}
         env:
+        - name: LOG4J_FORMAT_MSG_NO_LOOKUPS
+          value: "true"
         - name: NAMESPACE
           valueFrom:
             fieldRef:
