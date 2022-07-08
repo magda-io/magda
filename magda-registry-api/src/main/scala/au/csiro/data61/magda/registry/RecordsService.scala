@@ -8,7 +8,8 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.client.{AuthDecisionReqConfig}
+import au.csiro.data61.magda.ServerError
+import au.csiro.data61.magda.client.AuthDecisionReqConfig
 import au.csiro.data61.magda.registry.Directives.{
   requireRecordPermission,
   requireRecordUpdateOrCreateWhenNonExistPermission
@@ -16,11 +17,10 @@ import au.csiro.data61.magda.registry.Directives.{
 import au.csiro.data61.magda.directives.AuthDirectives.{
   requirePermission,
   requireUnconditionalAuthDecision,
-  requireUserId
+  requireUserId,
+  withAuthDecision
 }
-import au.csiro.data61.magda.directives.TenantDirectives.{
-  requiresSpecifiedTenantId
-}
+import au.csiro.data61.magda.directives.TenantDirectives.requiresSpecifiedTenantId
 import au.csiro.data61.magda.model.Auth.recordToContextData
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
@@ -438,7 +438,7 @@ class RecordsService(
     *
     * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
     *
-    * @apiParam (path) {string} id ID of the aspect to be saved.
+    * @apiParam (path) {string} id ID of the record to be patched.
     * @apiParam (body) {json} recordPatch The RFC 6902 patch to apply to the aspect.
     * @apiParamExample {json} Request-Example
     * [
@@ -506,7 +506,7 @@ class RecordsService(
         required = true,
         dataType = "string",
         paramType = "path",
-        value = "ID of the aspect to be saved."
+        value = "ID of the record to be pacthed."
       ),
       new ApiImplicitParam(
         name = "recordPatch",
@@ -561,12 +561,382 @@ class RecordsService(
                 }
               }
               webHookActor ! WebHookActor
-                .Process(ignoreWaitingForResponse = false, Some(List(id)))
+                .Process()
               theResult
             }
           }
         }
 
+      }
+    }
+  }
+
+  /**
+    * @apiGroup Registry Record Service
+    * @api {patch} /v0/registry/records Modify a list of records by applying the same JSON Patch
+    *
+    * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+    *
+    * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
+    * @apiParam (body) {object[]} jsonPatch The RFC 6902 patch to apply to the aspect.
+    * @apiParamExample {json} Request-Example
+    * {
+    *   "recordIds": ["dsd-sds-xsds-22", "sds-sdds-2334-dds-34", "sdds-3439-34334343"],
+    *   "jsonPatch": [
+    *      // update record's name field
+    *      {
+    *        "op": "replace",
+    *        "path": "/name",
+    *        "value": "a new record name"
+    *      },
+    *      // update the record's `publishing` aspect `state` field
+    *      {
+    *        "op": "replace",
+    *        "path": "/aspects/publishing/state",
+    *        "value": "published"
+    *      },
+    *      // remove the record's `dataset-draft` aspect
+    *      {
+    *        "op": "remove",
+    *        "path": "/aspects/dataset-draft"
+    *      },
+    *      // add a "title" field to the record's `dcat-dataset-strings` aspect
+    *      {
+    *        "op": "add",
+    *        "path": "/aspects/dcat-dataset-strings/title",
+    *        "value": "test dataset"
+    *      }
+    *   ]
+    * }
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    *
+    * @apiSuccess (Success 200) {json} Response a list of event id for each of the record after applied the json pathes
+    * @apiSuccessExample {json} Response:
+    *      [122, 123, 124]
+    * @apiUse GenericError
+    */
+  @Path("/")
+  @ApiOperation(
+    value = "Modify a list of records by applying the same JSON Patch",
+    nickname = "patchRecords",
+    httpMethod = "PATCH",
+    response = classOf[List[String]],
+    notes =
+      "The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902)."
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "requestData",
+        required = true,
+        dataType = "au.csiro.data61.magda.model.Registry$PatchRecordsRequest",
+        paramType = "body",
+        value = "An json object has key 'recordIds' & 'jsonPath'"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = true,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      )
+    )
+  )
+  def patchRecords: Route = patch {
+    requireUserId { userId =>
+      requiresSpecifiedTenantId { tenantId =>
+        entity(as[PatchRecordsRequest]) { requestData =>
+          withAuthDecision(
+            authClient,
+            AuthDecisionReqConfig("object/record/update")
+          ) { authDecision =>
+            val result = DB localTx { implicit session =>
+              recordPersistence.patchRecords(
+                tenantId,
+                authDecision,
+                requestData.recordIds,
+                requestData.jsonPath,
+                userId
+              ) match {
+                case Success(result) =>
+                  complete(
+                    StatusCodes.OK,
+                    result
+                  )
+                case Failure(ServerError(msg, statusCode)) =>
+                  complete(
+                    statusCode,
+                    ApiError(msg)
+                  )
+                case Failure(e) =>
+                  complete(
+                    StatusCodes.InternalServerError,
+                    ApiError(e.getMessage)
+                  )
+              }
+            }
+            webHookActor ! WebHookActor
+              .Process()
+            result
+          }
+        }
+      }
+    }
+  }
+
+  /**
+    * @apiGroup Registry Record Aspects
+    * @api {put} /v0/registry/records/aspects/:aspectId Modify a list of records's aspect with same new data
+    *
+    * @apiDescription  Modify a list of records's aspect with same new data
+    *
+    * @apiParam (path) {string} aspectId the id of the aspect to be updated
+    * @apiParam (query) {boolean} [merge] Indicate whether merge the new data into existing aspect data or replace it. Default: `false`
+    * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
+    * @apiParam (body) {object} data the new aspect data. When `merge` = true, the new data will be merged into existing aspect data (if exists).
+    *
+    * @apiParamExample {json} Request-Example
+    * {
+    *   "recordIds": ["dsd-sds-xsds-22", "sds-sdds-2334-dds-34", "sdds-3439-34334343"],
+    *   "data": {
+    *      "a" : 1,
+    *      "b" : [1,2]
+    *   }
+    * }
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    *
+    * @apiSuccess (Success 200) {json} Response a list of event id for each of the record after applied the new aspect data
+    * @apiSuccessExample {json} Response:
+    *      [122, 123, 124]
+    * @apiUse GenericError
+    */
+  @Path("/aspects/{aspectId}")
+  @ApiOperation(
+    value = "Modify a list of records's aspect with same new data",
+    nickname = "putRecordsAspect",
+    httpMethod = "PUT",
+    response = classOf[List[String]],
+    notes = "Modify a list of records's aspect with same new data"
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "aspectId",
+        required = true,
+        dataType = "string",
+        paramType = "path",
+        value = "ID of the aspect to update."
+      ),
+      new ApiImplicitParam(
+        name = "requestData",
+        required = true,
+        dataType =
+          "au.csiro.data61.magda.model.Registry$PutRecordsAspectRequest",
+        paramType = "body",
+        value = "An json object has key 'recordIds' & 'data'"
+      ),
+      new ApiImplicitParam(
+        name = "merge",
+        required = false,
+        dataType = "boolean",
+        paramType = "query",
+        value =
+          "Whether merge the supplied aspect data to existing aspect data or replace it"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = true,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      )
+    )
+  )
+  def putRecordsAspect: Route = put {
+    path("aspects" / Segment) { (aspectId: String) =>
+      requireUserId { userId =>
+        requiresSpecifiedTenantId { tenantId =>
+          entity(as[PutRecordsAspectRequest]) { requestData =>
+            parameters(
+              'merge.as[Boolean].?
+            ) { merge =>
+              withAuthDecision(
+                authClient,
+                AuthDecisionReqConfig("object/record/update")
+              ) { authDecision =>
+                val result = DB localTx { implicit session =>
+                  recordPersistence.putRecordsAspectById(
+                    tenantId,
+                    authDecision,
+                    requestData.recordIds,
+                    aspectId,
+                    requestData.data,
+                    userId,
+                    false,
+                    merge.getOrElse(false)
+                  ) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        result
+                      )
+                    case Failure(ServerError(msg, statusCode)) =>
+                      complete(
+                        statusCode,
+                        ApiError(msg)
+                      )
+                    case Failure(e) =>
+                      complete(
+                        StatusCodes.InternalServerError,
+                        ApiError(e.getMessage)
+                      )
+                  }
+                }
+                webHookActor ! WebHookActor
+                  .Process()
+                result
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+    * @apiGroup Registry Record Aspects
+    * @api {delete} /v0/registry/records/aspectArrayItems/:aspectId Remove items from records' aspect data
+    *
+    * @apiDescription  this API goes through the aspect data that is specified by aspectId of a list of registry records
+    * and delete items from the array that is located by the jsonPath.
+    * If the aspect doesn't exist for a record or the array can't be located with the jsonPath string or the value located with the jsonPath string is `null`,
+    * the operation will be skipped without throwing error. `0` will returned as eventId for this case.
+    * If the json data that is located by the jsonPath string exists and is not an Array or null, an error will be thrown and 400 code will be responded.
+    *
+    * @apiParam (path) {string} aspectId the id of the aspect to be updated
+    * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
+    * @apiParam (body) {string} jsonPath the jsonPath string that is used to locate the json array in the record aspect data
+    * @apiParam (body) {any[]} items a list of items to be removed from the located array. The type of the items can be either string or number.
+    *
+    * @apiParamExample {json} Request-Example
+    * {
+    *   "recordIds": ["dsd-sds-xsds-22", "sds-sdds-2334-dds-34", "sdds-3439-34334343"],
+    *   "jsonPath": "$.preAuthorisedPermissionIds",
+    *   "items": ["b133d777-6208-4aa1-8d0b-80bb49b7e5fc", "5d33cc4d-d914-468e-9f02-ae74484af716"]
+    * }
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    *
+    * @apiSuccess (Success 200) {json} Response a list of event id for each of the affected records after the operations
+    * @apiSuccessExample {json} Response:
+    *      [122, 123, 124]
+    * @apiUse GenericError
+    */
+  @Path("/aspectArrayItems/{aspectId}")
+  @ApiOperation(
+    value = "Remove items from records' aspect data",
+    nickname = "deleteRecordsAspectArrayItems",
+    httpMethod = "DELETE",
+    response = classOf[List[String]],
+    notes = "Remove items from records' aspect data"
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "aspectId",
+        required = true,
+        dataType = "string",
+        paramType = "path",
+        value = "ID of the aspect to update."
+      ),
+      new ApiImplicitParam(
+        name = "requestData",
+        required = true,
+        dataType =
+          "au.csiro.data61.magda.model.Registry$DeleteRecordsAspectArrayItemsRequest",
+        paramType = "body",
+        value = "An json object has key 'recordIds', 'jsonPath', 'items'"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = true,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      )
+    )
+  )
+  def deleteRecordsAspectArrayItems: Route = delete {
+    path("aspectArrayItems" / Segment) { (aspectId: String) =>
+      requireUserId { userId =>
+        requiresSpecifiedTenantId { tenantId =>
+          entity(as[DeleteRecordsAspectArrayItemsRequest]) { requestData =>
+            withAuthDecision(
+              authClient,
+              AuthDecisionReqConfig("object/record/update")
+            ) { authDecision =>
+              val result = DB localTx { implicit session =>
+                recordPersistence.deleteRecordsAspectArrayItems(
+                  tenantId,
+                  authDecision,
+                  requestData.recordIds,
+                  aspectId,
+                  requestData.jsonPath,
+                  requestData.items,
+                  userId
+                ) match {
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      result
+                    )
+                  case Failure(ServerError(msg, statusCode)) =>
+                    complete(
+                      statusCode,
+                      ApiError(msg)
+                    )
+                  case Failure(e) =>
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError(e.getMessage)
+                    )
+                }
+              }
+              webHookActor ! WebHookActor
+                .Process()
+              result
+            }
+          }
+        }
       }
     }
   }
@@ -693,9 +1063,12 @@ class RecordsService(
     super.route ~
       putById ~
       patchById ~
+      patchRecords ~
       trimBySourceTag ~
       deleteById ~
       create ~
+      putRecordsAspect ~
+      deleteRecordsAspectArrayItems ~
       new RecordAspectsService(
         webHookActor,
         authClient,

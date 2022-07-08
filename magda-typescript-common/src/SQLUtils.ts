@@ -73,7 +73,7 @@ export function getTableColumnName(
  * @return {*}
  */
 export async function createTableRecord(
-    poolOrClient: pg.PoolClient | pg.Pool,
+    poolOrClient: pg.PoolClient | pg.Pool | pg.Client,
     table: string,
     data: { [key: string]: RawValue },
     allowFieldList?: string[],
@@ -168,7 +168,7 @@ export async function updateTableRecord(
 }
 
 export async function deleteTableRecord(
-    poolOrClient: pg.Client | pg.Pool,
+    poolOrClient: pg.Client | pg.Pool | pg.PoolClient,
     table: string,
     id: string
 ) {
@@ -202,7 +202,7 @@ export function parseIntParam(p: number | string | undefined) {
 export const MAX_PAGE_RECORD_NUMBER = 500;
 
 export async function searchTableRecord<T = any>(
-    poolOrClient: pg.Client | pg.Pool,
+    poolOrClient: pg.Client | pg.Pool | pg.PoolClient,
     table: string,
     contiditions: SQLSyntax[] = [],
     queryConfig?: {
@@ -291,7 +291,7 @@ export async function searchTableRecord<T = any>(
 }
 
 export async function getTableRecord<T = any>(
-    poolOrClient: pg.Client | pg.Pool,
+    poolOrClient: pg.Client | pg.Pool | pg.PoolClient,
     table: string,
     id: string,
     authDecision: AuthDecision = UnconditionalTrueDecision,
@@ -316,7 +316,7 @@ export async function getTableRecord<T = any>(
 }
 
 export async function countTableRecord(
-    poolOrClient: pg.Client | pg.Pool,
+    poolOrClient: pg.Client | pg.Pool | pg.PoolClient,
     table: string,
     contiditions: SQLSyntax[] = [],
     authDecision?: AuthDecision,

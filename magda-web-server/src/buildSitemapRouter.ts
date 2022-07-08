@@ -1,6 +1,7 @@
 import express from "express";
 import Registry from "magda-typescript-common/src/registry/RegistryClient";
 import URI from "urijs";
+import ServerError from "magda-typescript-common/src/ServerError";
 const sm = require("sitemap");
 
 const DATASET_REQUIRED_ASPECTS = ["dcat-dataset-strings"];
@@ -115,8 +116,10 @@ export default function buildSitemapRouter({
     /**
      * Handles `| Error` union type failures from the registry client.
      */
-    function handleError<T>(result: T | Error) {
-        if (result instanceof Error) {
+    function handleError<T>(result: T | Error | ServerError) {
+        if (result instanceof ServerError) {
+            throw result;
+        } else if (result instanceof Error) {
             throw result;
         } else {
             return result;

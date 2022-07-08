@@ -498,6 +498,9 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiDescription Returns the user info of the current user. If the user has not logged in yet,
      * the user will be considered as an anonymous user.
      *
+     * @apiParam (Query String) {string} [allowCache] By default, this API will respond with certain headers to disable any client side cache behaviour.
+     * You can opt to supply a string value `true` for this parameter to stop sending those headers.
+     *
      * @apiSuccessExample {json} 200
      *    {
      *        "id":"...",
@@ -823,7 +826,9 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiDescription Returns user by id.
      * Unlike `whoami` API endpoint, this API requires `authObject/user/read` permission.
      *
-     * @apiParam {string} userId id of user
+     * @apiParam (URL Path) {string} userId id of user
+     * @apiParam (Query String) {string} [allowCache] By default, this API will respond with certain headers to disable any client side cache behaviour.
+     * You can opt to supply a string value `true` for this parameter to stop sending those headers.
      *
      * @apiSuccessExample {json} 200
      *    {

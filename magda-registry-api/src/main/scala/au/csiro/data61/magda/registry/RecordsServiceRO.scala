@@ -52,7 +52,10 @@ class RecordsServiceRO(
     *   - `aspectId.path.to.field`
     *   - `operator`
     *   - `value`
-    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
+    *
+    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format before encoded as query string parameter value.
+    *
+    *   A sample query string encoding implementation is available [here](https://gist.github.com/t83714/db1725a347c07413c16803a77da13003).
     *
     *   If more than one queries is passed through the `aspectQuery` parameters, they will be grouped with `AND` logic.
     *
@@ -69,10 +72,35 @@ class RecordsServiceRO(
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
     *   - `:<=` less than or equal to
+    *   - `:<|` the field is an array value and contains the value
+    *   - `:!<|` the field is not an array value or not contains the value
     *
     *   Example URL with aspectQuery `dcat-dataset-strings.title:?%rating%` (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
     *
     *   `/v0/records?limit=100&optionalAspect=source&aspect=dcat-dataset-strings&aspectQuery=dcat-dataset-strings.title:?%2525rating%2525`
+    *
+    *   Please note: when both `aspectQuery` and `aspectOrQuery` present, query conditions generated from `aspectQuery` and `aspectOrQuery` will be joined with `AND`
+    *
+    *   e.g. For the following `aspectQuery` & `aspectOrQuery` queries are specified:
+    *   - `aspectQuery`:
+    *     - q1
+    *     - q2
+    *   - `aspectOrQuery`:
+    *     - q3
+    *     - q4
+    *
+    *   The generated query conditions will be `((q1 AND q2) AND (q3 OR q4))`
+    *   <br/><br/>
+    *
+    *   e.g. For the following `aspectQuery` & `aspectOrQuery` queries are specified:
+    *   - `aspectQuery`:
+    *     - q1
+    *     - q2
+    *   - `aspectOrQuery`:
+    *     - q3
+    *
+    *   The generated query conditions will be `((q1 AND q2) AND q3 )`. This is equivalent to set `aspectQuery` only as `q1`, `q2` and `q3`.
+    *   <br/><br/><br/>
     *
     *   NOTE: This is an early stage API and may change greatly in the future.
     *
@@ -435,7 +463,9 @@ class RecordsServiceRO(
     *   - `aspectId.path.to.field`
     *   - `operator`
     *   - `value`
-    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
+    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format before encoded as query string parameter value.
+    *
+    *   A sample query string encoding implementation is available [here](https://gist.github.com/t83714/db1725a347c07413c16803a77da13003).
     *
     *   If more than one queries is passed through the `aspectQuery` parameters, they will be grouped with `AND` logic.
     *
@@ -452,6 +482,8 @@ class RecordsServiceRO(
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
     *   - `:<=` less than or equal to
+    *   - `:<|` the field is an array value and contains the value
+    *   - `:!<|` the field is not an array value or not contains the value
     *
     *   Example URL with aspectQuery `dcat-dataset-strings.title:?%rating%` (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
     *

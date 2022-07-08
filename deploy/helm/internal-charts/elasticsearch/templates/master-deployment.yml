@@ -20,6 +20,8 @@ spec:
       labels:
         component: elasticsearch
         role: master
+      annotations:
+         "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
     spec:
       {{- include "magda.elasticsearch.initContainer" . | indent 6 }}
       {{- include "magda.imagePullSecrets" . | indent 6 }}

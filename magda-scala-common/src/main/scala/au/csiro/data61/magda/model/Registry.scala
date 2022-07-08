@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.model
 
 import java.time.{OffsetDateTime, ZoneOffset}
-
 import akka.event.LoggingAdapter
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime, Periodicity}
 import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols, _}
@@ -10,6 +9,7 @@ import enumeratum.values.{IntEnum, IntEnumEntry}
 import io.swagger.annotations.{ApiModel, ApiModelProperty}
 import spray.json.lenses.JsonLenses._
 import spray.json._
+import gnieh.diffson.sprayJson._
 
 import scala.annotation.meta.field
 import scala.util.{Failure, Success, Try}
@@ -258,6 +258,14 @@ object Registry
           "The ID of the last event successfully received by the listener.  Further notifications will start after this event.",
         required = true
       ) lastEventIdReceived: Long
+  )
+
+  case class PatchRecordsRequest(recordIds: List[String], jsonPath: JsonPatch)
+  case class PutRecordsAspectRequest(recordIds: List[String], data: JsObject)
+  case class DeleteRecordsAspectArrayItemsRequest(
+      recordIds: List[String],
+      jsonPath: String,
+      items: List[JsValue]
   )
 
   object RegistryConstants {

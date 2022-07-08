@@ -1043,6 +1043,57 @@ class AspectQuerySpec extends FunSpec with Matchers {
         }
     )
 
+    testAspectQueryString(
+      "aspectQuery=testAspect4.field4.field-5:<|a-2",
+      aq =>
+        aq match {
+          case AspectQueryValueInArray(
+              aspectId,
+              path,
+              value,
+              negated
+              ) =>
+            aspectId shouldBe "testAspect4"
+            path.mkString(".") shouldBe "field4.field-5"
+            value shouldBe AspectQueryStringValue("a-2")
+            negated shouldBe false
+        }
+    )
+
+    testAspectQueryString(
+      "aspectQuery=testAspect4.field4.field-5%3A%3C%7C-a-2",
+      aq =>
+        aq match {
+          case AspectQueryValueInArray(
+              aspectId,
+              path,
+              value,
+              negated
+              ) =>
+            aspectId shouldBe "testAspect4"
+            path.mkString(".") shouldBe "field4.field-5"
+            value shouldBe AspectQueryStringValue("-a-2")
+            negated shouldBe false
+        }
+    )
+
+    testAspectQueryString(
+      "aspectQuery=testAspect4.field4.field-5%3A!%3C%7C-a-2",
+      aq =>
+        aq match {
+          case AspectQueryValueInArray(
+              aspectId,
+              path,
+              value,
+              negated
+              ) =>
+            aspectId shouldBe "testAspect4"
+            path.mkString(".") shouldBe "field4.field-5"
+            value shouldBe AspectQueryStringValue("-a-2")
+            negated shouldBe true
+        }
+    )
+
     def testComparisonOperators(operators: Seq[String]): Unit = {
       operators.map { opt =>
         testAspectQueryString(

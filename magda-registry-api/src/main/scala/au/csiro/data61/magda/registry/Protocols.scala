@@ -1,7 +1,12 @@
 package au.csiro.data61.magda.registry
 
-import au.csiro.data61.magda.model.Registry.{Record, RecordSummary, RecordType}
-import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.Registry.{
+  Record,
+  RecordSummary,
+  RecordType,
+  jsonFormat2,
+  _
+}
 import gnieh.diffson.sprayJson._
 
 final case class ReadyStatus(ready: Boolean = false)
@@ -41,4 +46,13 @@ trait Protocols extends DiffsonProtocol {
   implicit val webHookResponseFormat = jsonFormat1(WebHookResponse.apply)
   implicit val countResponseFormat = jsonFormat1(CountResponse.apply)
   implicit val readyState = jsonFormat1(ReadyStatus.apply)
+  implicit val patchRecordsRequestFormat = jsonFormat2(
+    PatchRecordsRequest.apply
+  )
+  implicit val putRecordsAspectRequestFormat = jsonFormat2(
+    PutRecordsAspectRequest.apply
+  )
+  implicit val deleteRecordsAspectArrayItemsRequestFormat = jsonFormat3(
+    DeleteRecordsAspectArrayItemsRequest.apply
+  )
 }

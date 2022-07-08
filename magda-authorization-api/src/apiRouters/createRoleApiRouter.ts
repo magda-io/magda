@@ -15,8 +15,9 @@ import {
     getTableRecord,
     updateTableRecord
 } from "magda-typescript-common/src/SQLUtils";
-import uniq from "lodash/uniq";
 import ServerError from "magda-typescript-common/src/ServerError";
+import isUuid from "@magda/typescript-common/dist/util/isUuid";
+import AuthDecision from "magda-typescript-common/src/opa/AuthDecision";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -26,12 +27,180 @@ export interface ApiRouterOptions {
 
 const roleKeywordSearchFields = ["name", "description"];
 const permissionKeywordSearchFields = ["name", "description"];
+const userKeywordSearchFields = ["displayName", "email", "source"];
 
 export default function createRoleApiRouter(options: ApiRouterOptions) {
     const database = options.database;
     const authDecisionClient = options.authDecisionClient;
 
     const router: express.Router = express.Router();
+
+    function createFetchRoleUsersHandler(
+        returnCount: boolean,
+        apiName: string
+    ) {
+        return async function fetchRoleUsers(req: Request, res: Response) {
+            try {
+                const roleId = req.params.roleId;
+
+                if (!isUuid(roleId)) {
+                    throw new ServerError(
+                        `Invalid role ID "${roleId}" has been supplied.`,
+                        400
+                    );
+                }
+
+                const authDecision: AuthDecision = res?.locals?.authDecision;
+                if (!authDecision) {
+                    throw new ServerError(
+                        `cannot locate auth decision from upstream middleware`,
+                        500
+                    );
+                }
+
+                const authConditions = authDecision.toSql({
+                    prefixes: ["input.authObject.user"],
+                    tableRef: "users"
+                });
+
+                const conditions: SQLSyntax[] = [
+                    sqls`(EXISTS (SELECT 1 FROM user_roles ur WHERE ur.user_id = users.id and ur.role_id = ${roleId}))`,
+                    authConditions
+                ];
+                if (req.query?.keyword) {
+                    const keyword = "%" + req.query?.keyword + "%";
+                    conditions.push(
+                        SQLSyntax.joinWithOr(
+                            userKeywordSearchFields.map(
+                                (field) =>
+                                    sqls`${escapeIdentifier(
+                                        "users." + field
+                                    )} ILIKE ${keyword}`
+                            )
+                        ).roundBracket()
+                    );
+                }
+
+                if (req.query?.id) {
+                    conditions.push(sqls`"users.id" = ${req.query.id}`);
+                }
+                if (req.query?.source) {
+                    conditions.push(sqls`"users.source" = ${req.query.source}`);
+                }
+                if (req.query?.orgUnitId) {
+                    conditions.push(
+                        sqls`"users.orgUnitId" = ${req.query.orgUnitId}`
+                    );
+                }
+                if (req.query?.sourceId) {
+                    conditions.push(
+                        sqls`"users.sourceId" = ${req.query.sourceId}`
+                    );
+                }
+
+                const records = await searchTableRecord(
+                    database.getPool(),
+                    "users",
+                    conditions,
+                    {
+                        selectedFields: returnCount
+                            ? [sqls`COUNT(users.*) as count`]
+                            : [sqls`users.*`],
+                        offset: returnCount
+                            ? undefined
+                            : (req?.query?.offset as string),
+                        limit: returnCount
+                            ? undefined
+                            : (req?.query?.limit as string)
+                    }
+                );
+                if (returnCount) {
+                    // response will be {count: number}
+                    res.json(records[0]);
+                } else {
+                    res.json(records);
+                }
+            } catch (e) {
+                respondWithError(apiName, res, e);
+            }
+        };
+    }
+
+    /**
+     * @apiGroup Auth Users
+     * @api {get} /v0/auth/roles/:roleId/users Get all matched users with a role
+     * @apiDescription return a list matched users who have a certain role
+     * Required `authObject/user/read` permission to access this API.
+     * If you don't have access to any users, empty array will be returned.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParam (Query String) {number} [offset] The index of the first record in the result set to retrieve.
+     * @apiParam (Query String) {number} [limit] The maximum number of records of the result set to receive. If not present, a default value of 500 will be used.
+     * @apiParam (Query String) {string} [keyword] When set, will only return user records whose "displayName", "email" or "source" field contains the specified keyword.
+     * @apiParam (Query String) {string} [id] When set, will only return records whose id is the specified ID.
+     * @apiParam (Query String) {string} [source] When set, will only return records whose source is the specified source name.
+     * @apiParam (Query String) {string} [sourceId] When set, will only return records whose sourceId is the specified source ID.
+     * @apiParam (Query String) {string} [orgUnitId] When set, will only return records whose orgUnitId is the specified org unit id.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        "id":"...",
+     *        "displayName":"Fred Nerk",
+     *        "email":"fred.nerk@data61.csiro.au",
+     *        "photoURL":"...",
+     *        "source":"google",
+     *        "isAdmin": true,
+     *        "orgUnitId": "..."
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:roleId/users",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
+        createFetchRoleUsersHandler(false, "Get users with a certain role")
+    );
+
+    /**
+     * @apiGroup Auth Users
+     * @api {get} /v0/auth/roles/:roleId/users/count Get the count of all matched users with a role
+     * @apiDescription return the count number of all matched users who have a certain role
+     * Required `authObject/user/read` permission to access this API.
+     * If you don't have access to any users, 0 count will be returned.
+     *
+     * @apiParam (URL Path) {string} roleId id of the role
+     * @apiParam (Query String) {string} [keyword] When set, will only return user records whose "displayName", "email" or "source" field contains the specified keyword.
+     * @apiParam (Query String) {string} [id] When set, will only return records whose id is the specified ID.
+     * @apiParam (Query String) {string} [source] When set, will only return records whose source is the specified source name.
+     * @apiParam (Query String) {string} [sourceId] When set, will only return records whose sourceId is the specified source ID.
+     * @apiParam (Query String) {string} [orgUnitId] When set, will only return records whose orgUnitId is the specified org unit id.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *      "count" : 5
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:roleId/users/count",
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
+        createFetchRoleUsersHandler(true, "Get user count with a certain role")
+    );
 
     function createFetchPermissionsHandler(
         returnCount: boolean,
@@ -363,86 +532,37 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
             try {
                 const pool = database.getPool();
                 const roleId = req.params.roleId;
-                let { operationIds, ...permissionData } = req.body;
 
-                if (!operationIds?.length) {
+                const role = await getTableRecord(pool, "roles", roleId);
+                if (!role) {
                     throw new ServerError(
-                        "Failed to create permission: operationIds is required and should be a list of operation ids.",
+                        "cannot locate role by supplied id:" + roleId,
                         400
                     );
                 }
 
-                operationIds = uniq(operationIds);
-
-                if (!permissionData.resource_id) {
-                    throw new ServerError(
-                        "Failed to create permission: resource_id is required.",
-                        400
-                    );
-                }
-
-                const resource = await getTableRecord(
-                    pool,
-                    "resources",
-                    permissionData.resource_id
-                );
-                if (!resource) {
-                    throw new ServerError(
-                        "Failed to create permission: cannot locate resource by supplied resource_id.",
-                        400
-                    );
-                }
-
-                const result = await pool.query(
-                    ...sqls`SELECT COUNT(*) as count
-                FROM operations 
-                WHERE id IN (${SQLSyntax.csv(
-                    ...operationIds
-                )}) AND resource_id = ${resource.id}`.toQuery()
-                );
-
-                if (result?.rows?.[0]?.["count"] !== operationIds.length) {
-                    throw new ServerError(
-                        `Failed to create permission: all provided operation id must be valid and belong to the resource ${resource.id}`,
-                        400
-                    );
-                }
+                const {
+                    resource_id,
+                    user_ownership_constraint,
+                    org_unit_ownership_constraint,
+                    pre_authorised_constraint
+                } = req.body;
 
                 const client = await pool.connect();
-                let permissionRecord: any;
                 try {
                     await client.query("BEGIN");
-                    const permissionSubmitData = { ...permissionData };
-                    if (res?.locals?.userId) {
-                        permissionSubmitData.create_by = res.locals.userId;
-                        permissionSubmitData.owner_id = res.locals.userId;
-                        permissionSubmitData.edit_by = res.locals.userId;
-                    }
-                    permissionRecord = await createTableRecord(
-                        client,
-                        "permissions",
-                        permissionSubmitData,
-                        [
-                            "name",
-                            "resource_id",
-                            "user_ownership_constraint",
-                            "org_unit_ownership_constraint",
-                            "pre_authorised_constraint",
-                            "description",
-                            "create_by",
-                            "owner_id",
-                            "edit_by"
-                        ]
-                    );
 
-                    const values = (operationIds as string[]).map(
-                        (id) => sqls`(${permissionRecord.id},${id})`
-                    );
-
-                    await client.query(
-                        ...sqls`INSERT INTO permission_operations 
-                    (permission_id, operation_id) VALUES 
-                    ${SQLSyntax.csv(...values)}`.toQuery()
+                    const permissionRecord = await database.createPermission(
+                        {
+                            ...(req.body ? req.body : {}),
+                            createBy: res?.locals?.userId,
+                            ownerId: res?.locals?.userId,
+                            userOwnershipConstraint: user_ownership_constraint,
+                            orgUnitOwnershipConstraint: org_unit_ownership_constraint,
+                            preAuthorisedConstraint: pre_authorised_constraint,
+                            resourceId: resource_id
+                        },
+                        client
                     );
 
                     await client.query(
@@ -450,13 +570,13 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     );
 
                     await client.query("COMMIT");
+                    res.json(permissionRecord);
                 } catch (e) {
                     await client.query("ROLLBACK");
                     throw e;
                 } finally {
                     client.release();
                 }
-                res.json(permissionRecord);
             } catch (e) {
                 respondWithError(
                     "Create a permission and add to the role " +
@@ -528,7 +648,6 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                 const pool = database.getPool();
                 const roleId = req.params.roleId;
                 const permissionId = req.params.permissionId;
-                const { operationIds, ...permissionData } = req.body;
 
                 if (!roleId) {
                     throw new Error(
@@ -539,6 +658,14 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                 if (!permissionId) {
                     throw new Error(
                         "Failed to update permission: invalid empty permissionId."
+                    );
+                }
+
+                const role = await getTableRecord(pool, "roles", roleId);
+                if (!role) {
+                    throw new ServerError(
+                        "cannot locate role by supplied id:" + roleId,
+                        400
                     );
                 }
 
@@ -560,110 +687,38 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     );
                 }
 
-                const permission = await getTableRecord(
-                    pool,
-                    "permissions",
-                    permissionId
-                );
-                if (!permission) {
-                    throw new Error(
-                        "Failed to update permission: cannot locate the permission record specified by permissionId: " +
-                            permissionId
-                    );
-                }
-
-                const opIds = operationIds ? uniq(operationIds) : [];
-
-                const resourceId = permissionData?.resource_id
-                    ? permissionData.resource_id
-                    : permission?.resource_id;
-
-                const resource = await getTableRecord(
-                    pool,
-                    "resources",
-                    resourceId
-                );
-                if (!resource) {
-                    throw new Error(
-                        "Failed to update permission: cannot locate resource by supplied resource_id."
-                    );
-                }
-
-                if (opIds.length) {
-                    const result = await pool.query(
-                        ...sqls`SELECT COUNT(*) as count
-                    FROM operations 
-                    WHERE id IN (${SQLSyntax.csv(
-                        ...operationIds
-                    )}) AND resource_id = ${resource.id}`.toQuery()
-                    );
-
-                    if (result?.rows?.[0]?.["count"] !== operationIds.length) {
-                        throw new Error(
-                            `Failed to update permission: all provided operation id must be valid and belong to the resource ${resource.id}`
-                        );
-                    }
-                }
-
                 const client = await pool.connect();
-                let permissionRecord: any;
                 try {
                     await client.query("BEGIN");
-                    const permissionUpdateData = {
-                        ...permissionData,
-                        edit_time: sqls` CURRENT_TIMESTAMP `
-                    };
-                    if (res?.locals?.userId) {
-                        permissionUpdateData.edit_by = res.locals.userId;
-                    } else {
-                        permissionUpdateData.edit_by = sqls` NULL `;
-                    }
-                    permissionRecord = await updateTableRecord(
-                        client,
-                        "permissions",
+
+                    const {
+                        resource_id,
+                        user_ownership_constraint,
+                        org_unit_ownership_constraint,
+                        pre_authorised_constraint
+                    } = req.body;
+
+                    const permissionRecord = await database.updatePermission(
                         permissionId,
-                        permissionUpdateData,
-                        [
-                            "name",
-                            "resource_id",
-                            "user_ownership_constraint",
-                            "org_unit_ownership_constraint",
-                            "pre_authorised_constraint",
-                            "description",
-                            "edit_by",
-                            "edit_time"
-                        ]
+                        {
+                            ...(req.body ? req.body : {}),
+                            editBy: res?.locals?.userId,
+                            ownerId: res?.locals?.userId,
+                            userOwnershipConstraint: user_ownership_constraint,
+                            orgUnitOwnershipConstraint: org_unit_ownership_constraint,
+                            preAuthorisedConstraint: pre_authorised_constraint,
+                            resourceId: resource_id
+                        },
+                        client
                     );
-
-                    if (typeof operationIds?.length !== "undefined") {
-                        // operationIds property is provided
-                        // i.e. user's intention is to update operations as well
-                        // delete all current operation / permission relationship
-                        await client.query(
-                            ...sqls`DELETE FROM permission_operations WHERE permission_id=${permissionId}`.toQuery()
-                        );
-                    }
-
-                    if (opIds.length) {
-                        const values = (opIds as string[]).map(
-                            (id) => sqls`(${permissionId},${id})`
-                        );
-
-                        await client.query(
-                            ...sqls`INSERT INTO permission_operations 
-                            (permission_id, operation_id) VALUES 
-                            ${SQLSyntax.csv(...values)}`.toQuery()
-                        );
-                    }
-
                     await client.query("COMMIT");
+                    res.json(permissionRecord);
                 } catch (e) {
                     await client.query("ROLLBACK");
                     throw e;
                 } finally {
                     client.release();
                 }
-                res.json(permissionRecord);
             } catch (e) {
                 respondWithError(
                     "Update permission for role " + req?.params?.roleId,

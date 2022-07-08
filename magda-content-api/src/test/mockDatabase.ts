@@ -15,6 +15,7 @@ export default class MockDatabase implements Database {
                         (item) =>
                             ({
                                 id: item.id,
+                                type: item.type,
                                 content: item.content
                             } as Content)
                     )

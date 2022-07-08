@@ -36,7 +36,19 @@
 - Fixed: helm chart version update script incorrectly skip updating dependencies version when `versionUpdateExclude` config in package.json is empty
 - Fixed: incorrect scss-compiler-config data might be generated if non-default docker image config is used.
 - #3360: Recategorize auth object related API docs & more auth object related APIs for convenient of future UI development.
+- Fixed: `set-scss-vars` script will use proper imagePullSecrets to generate the UI CSS update job
+- Allow the `no cache` behaviour of `whoami` & `getUserById` api to be turned off
+- #3269 Backend support for Access Group
+- #3366 New Registry API capability: new filter operator, merge mode, group operations and more
+
+## 1.3.1
+
+- #3367 Fixed Content API header item schema target field type
+- #3369 Content API Get by id API didn't response content in correct mime type
+- #3371 Content API Get by id API generate one more unnecessary DB query
 - #3363: Update postgres helm chart repo url
+- Upgrade openfaas helm chart to 5.5.5-magda.2 to be compatible with k8s 1.22
+- #3362 explicitly mark pods using emptyDir as safe to evict for cluster-autoscaler
 
 ## 1.3.0
 
@@ -45,6 +57,7 @@
 - #3020 Remove all legacy auth provider from gateway and convert them into auth plugins in separate repos
 - Add `authPluginAllowedExternalRedirectDomains` support to auth plugin spec & rewrite relevant packages
 - Redirect users to login page with proper error message, when they try to access the admin pages that they don't have permissions.
+- #3363: Update postgres helm chart repo url
 
 ## 1.2.1
 

@@ -9,7 +9,7 @@ import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
-import au.csiro.data61.magda.util.JsonPathUtils.processRecordPatchOperationsOnAspects
+import au.csiro.data61.magda.util.JsonPatchUtils.processRecordPatchOperationsOnAspects
 
 class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
   def DEFAULT_META_SCHEMA_URI = "https://json-schema.org/draft-07/schema#"
@@ -20,7 +20,7 @@ class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
     else config.getBoolean("validateJsonSchema")
   }
 
-  def validate(aspectId: String, aspectData: JsObject, tenantId: TenantId)(
+  def validate(aspectId: String, aspectData: JsValue, tenantId: TenantId)(
       implicit session: DBSession
   ) {
     if (shouldValidate()) {
@@ -43,7 +43,7 @@ class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
 
   def validateWithDefinition(
       aspectDef: AspectDefinition,
-      aspectData: JsObject
+      aspectData: JsValue
   ): Unit = {
     if (!aspectDef.jsonSchema.isDefined) {
       // --- json schema not set means skipping validation
