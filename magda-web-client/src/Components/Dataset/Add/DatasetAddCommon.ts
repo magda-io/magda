@@ -913,6 +913,16 @@ export async function saveStateToRegistry(state: State, id: string) {
         }
     };
 
+    const dcatDatasetStrinsAspectData = {
+        ...datasetDcatString,
+        title: datasetDcatString?.title ? datasetDcatString.title : "",
+        description: datasetDcatString?.description
+            ? datasetDcatString.description
+            : "",
+        themes: datasetDcatString?.themes ? datasetDcatString.themes : [],
+        keywords: datasetDcatString?.keywords ? datasetDcatString.keywords : []
+    };
+
     if (!record) {
         // --- dataset record not exist
         await createDataset(
@@ -922,7 +932,8 @@ export async function saveStateToRegistry(state: State, id: string) {
                 aspects: {
                     publishing: getPublishingAspectData(state),
                     "access-control": getAccessControlAspectData(state),
-                    source: getInternalDatasetSourceAspectData()
+                    source: getInternalDatasetSourceAspectData(),
+                    "dcat-dataset-strings": dcatDatasetStrinsAspectData
                 }
             },
             []
