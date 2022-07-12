@@ -12,11 +12,38 @@ env:
   AWS_DEFAULT_REGION: ap-southeast-2
 
 jobs:
-  deployment:
+
+  build:
     runs-on: [self-hosted, linux]
+    permissions:
+      id-token: write
+      contents: write
     steps:
-      - name: Hello workflow
-        run: uname
-      - name: Get Kuectl version
-        run: kubectl version
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::940728446396:role/GitHubRole-Build-7QP2Q93CJ5GH
+          aws-region: ${{env.AWS_DEFAULT_REGION}}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: magda-web-service-test
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$(git rev-parse --short HEAD) -f magda-web-server/Dockerfile magda-web-server
+          docker push $REGISTRY/$REPOSITORY:$(git rev-parse --short HEAD)
+          
+      - name: Run Deploy
+        run: docker-compose -f scripts/wsp-deploy/docker-compose.yml run helm-deploy
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
