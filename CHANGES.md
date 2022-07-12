@@ -7,6 +7,8 @@
 - #3371 Content API Get by id API generate one more unnecessary DB query
 - Upgrade openfaas helm chart to 5.5.5-magda.2 to be compatible with k8s 1.22
 - #3362 explicitly mark pods using emptyDir as safe to evict for cluster-autoscaler
+- minion SDK: allow crawlerRecordFetchNumber to be changed via runtime config e.g. env var
+- Use format-minion v1.1.2
 
 ## 1.3.0
 

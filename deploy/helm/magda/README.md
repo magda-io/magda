@@ -20,7 +20,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | https://charts.magda.io | magda-function-history-report | 1.1.0 |
 | https://charts.magda.io | minion-broken-link(magda-minion-broken-link) | 1.0.0 |
 | https://charts.magda.io | magda-minion-ckan-exporter | 1.0.0 |
-| https://charts.magda.io | minion-format(magda-minion-format) | 1.1.0 |
+| https://charts.magda.io | minion-format(magda-minion-format) | 1.1.2 |
 | https://charts.magda.io | minion-linked-data-rating(magda-minion-linked-data-rating) | 1.1.0 |
 | https://charts.magda.io | minion-visualization(magda-minion-visualization) | 1.0.0 |
 | https://charts.magda.io | openfaas | 5.5.5-magda.2 |
