@@ -1,0 +1,20 @@
+name: Deploy magda-web-server-ph
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "The branch or ref to deploy"
+        required: true
+        default: "next"
+
+env:
+  AWS_DEFAULT_REGION: ap-southeast-2
+
+jobs:
+  deployment:
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: Hello workflow
+        run: uname
+
