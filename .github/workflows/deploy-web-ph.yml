@@ -17,4 +17,6 @@ jobs:
     steps:
       - name: Hello workflow
         run: uname
+      - name: Get Kuectl version
+        run: kubectl version
 
