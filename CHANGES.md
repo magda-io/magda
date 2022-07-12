@@ -40,6 +40,7 @@
 - Allow the `no cache` behaviour of `whoami` & `getUserById` api to be turned off
 - #3269 Backend support for Access Group
 - #3366 New Registry API capability: new filter operator, merge mode, group operations and more
+- Add `target` & `rel` fields to footer link item schema
 
 ## 1.3.1
 
