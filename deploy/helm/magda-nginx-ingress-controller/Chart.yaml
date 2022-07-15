@@ -1,4 +1,0 @@
-apiVersion: v1
-description: "Ingress controller for magda"
-name: "magda-nginx-ingress-controller"
-version: "1.0.0"

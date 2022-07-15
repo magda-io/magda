@@ -63,6 +63,8 @@ class Crawler {
             const crawlerRecordFetchNumber = this.options
                 ?.crawlerRecordFetchNumber
                 ? this.options.crawlerRecordFetchNumber
+                : this.options?.argv?.crawlerRecordFetchNumber
+                ? this.options?.argv.crawlerRecordFetchNumber
                 : DEFAULT_CRAWLER_RECORD_FETCH_NUMBER;
 
             const registryPage = AsyncPage.create<RecordsPage<Record>>(
@@ -89,7 +91,7 @@ class Crawler {
                                 this.options.optionalAspects,
                                 previous && previous.nextPageToken,
                                 true,
-                                crawlerRecordFetchNumber
+                                crawlerRecordFetchNumber as number
                             )
                             .then(unionToThrowable)
                             .then((page) => {
