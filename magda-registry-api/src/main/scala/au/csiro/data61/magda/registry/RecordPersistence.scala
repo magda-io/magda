@@ -619,7 +619,7 @@ class DefaultRecordPersistence(config: Config)
           sqls"recordId = $recordId"
         ),
         keyword.map { item =>
-          sqls"(aspectid ILIKE ${s"%${item}%"} OR data ILIKE ${s"%${item}%"})"
+          sqls"(aspectid ILIKE ${s"%${item}%"} OR data::TEXT ILIKE ${s"%${item}%"})"
         },
         SQLUtils.tenantIdToWhereClause(tenantId, "tenantid"),
         authDecisionWhereClause

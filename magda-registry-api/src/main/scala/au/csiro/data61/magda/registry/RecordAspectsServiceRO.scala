@@ -327,7 +327,7 @@ class RecordAspectsServiceRO(
     )
   )
   def getAspectsCount = get {
-    path(Segment / "aspects") { (recordId: String) =>
+    path(Segment / "aspects" / "count") { (recordId: String) =>
       parameters(
         'keyword.as[String].?
       ) { (keyword) =>
