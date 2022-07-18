@@ -12,6 +12,14 @@
         "href": {
             "type": "string",
             "minLength": 1
+        },
+        "target": {
+            "type": "string",
+            "minLength": 1
+        },
+        "rel": {
+            "type": "string",
+            "minLength": 2
         }
     },
     "required": ["order", "label", "href"]

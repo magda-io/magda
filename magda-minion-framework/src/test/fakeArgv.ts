@@ -8,6 +8,7 @@ export default function fakeArgv(options: {
     jwtSecret: string;
     userId: string;
     listenPort: number;
+    crawlerRecordFetchNumber?: number;
 }): MinionArguments {
     return {
         ...options,

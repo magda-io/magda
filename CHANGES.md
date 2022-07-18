@@ -40,6 +40,7 @@
 - Allow the `no cache` behaviour of `whoami` & `getUserById` api to be turned off
 - #3269 Backend support for Access Group
 - #3366 New Registry API capability: new filter operator, merge mode, group operations and more
+- Add `target` & `rel` fields to footer link item schema
 
 ## 1.3.1
 
@@ -49,6 +50,8 @@
 - #3363: Update postgres helm chart repo url
 - Upgrade openfaas helm chart to 5.5.5-magda.2 to be compatible with k8s 1.22
 - #3362 explicitly mark pods using emptyDir as safe to evict for cluster-autoscaler
+- minion SDK: allow crawlerRecordFetchNumber to be changed via runtime config e.g. env var
+- Use format-minion v1.1.2
 
 ## 1.3.0
 
