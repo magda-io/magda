@@ -775,7 +775,7 @@ export type QueryRecordAspectsParams = {
     recordId: string;
     keyword?: string;
     aspectIdOnly?: boolean;
-    offset?: number;
+    start?: number;
     limit?: number;
     noCache?: boolean;
 };
