@@ -12,6 +12,7 @@
 - #3306 Added admin web UI for auth management
 - Added new APIs for managing auth objects
 - #3308 Policy enforcement on auth objects APIs
+- Add `records/:id/aspects` & `records/:id/aspects/count` APIs to registry
 - related #3250: Rewrite decision enforcement logic for search API
 - #3326 Build OPA docker image with builtin policies & Run OPA as a side car
 - #3330 Fine-tune Metadata creation tool workflow for the new auth model
@@ -41,6 +42,7 @@
 - #3269 Backend support for Access Group
 - #3366 New Registry API capability: new filter operator, merge mode, group operations and more
 - Add `target` & `rel` fields to footer link item schema
+- Make sure dataset creation tool always create `dcat-dataset-strings` aspect for draft datasets
 
 ## 1.3.1
 
