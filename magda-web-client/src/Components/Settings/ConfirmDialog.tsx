@@ -3,6 +3,7 @@ import Button from "rsuite/Button";
 import Modal from "rsuite/Modal";
 import Loader from "rsuite/Loader";
 import reportError from "./reportError";
+import { v4 as uuid } from "uuid";
 
 type PropsType = {};
 type StateType = {
@@ -17,14 +18,26 @@ type StateType = {
 };
 
 class ConfirmDialog extends React.Component<PropsType, StateType> {
-    public static dialogRef: ConfirmDialog;
+    public static dialogRef: ConfirmDialog | undefined;
+    public static dialogRefList: { [key: string]: ConfirmDialog } = {};
+
+    public id: string = uuid();
 
     constructor(props) {
         super(props);
         this.state = {
             ...ConfirmDialog.defaultState
         };
-        ConfirmDialog.dialogRef = this;
+    }
+
+    static getAvailableDialogRef(): ConfirmDialog | undefined {
+        const refs = Object.values(ConfirmDialog.dialogRefList).filter(
+            (item) => !!item
+        );
+        if (!refs?.length) {
+            return undefined;
+        }
+        return refs[0];
     }
 
     static defaultState: StateType = {
@@ -50,10 +63,10 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
             throw new Error("ConfirmDialog has not been rendered yet!");
         }
         if (!config?.confirmMsg) {
-            throw new Error("confirmMsg cann't be empty!");
+            throw new Error("confirmMsg can't be empty!");
         }
         if (!config?.confirmHandler) {
-            throw new Error("confirmHandler cann't be empty!");
+            throw new Error("confirmHandler can't be empty!");
         }
 
         ConfirmDialog.dialogRef.setState({
@@ -64,22 +77,39 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
     }
 
     static setLoading(isLoading: boolean) {
-        ConfirmDialog.dialogRef.setState({
+        ConfirmDialog.dialogRef?.setState({
             isLoading
         });
     }
 
     static close() {
-        ConfirmDialog.dialogRef.setState({
+        ConfirmDialog.dialogRef?.setState({
             ...ConfirmDialog.defaultState,
             isOpen: false
         });
+    }
+
+    componentDidMount() {
+        if (!ConfirmDialog.dialogRef) {
+            ConfirmDialog.dialogRef = this;
+        }
+        ConfirmDialog.dialogRefList[this.id] = this;
+    }
+
+    componentWillUnmount() {
+        delete ConfirmDialog.dialogRefList[this.id];
+        if (ConfirmDialog.dialogRef === this) {
+            ConfirmDialog.dialogRef = ConfirmDialog.getAvailableDialogRef();
+        }
     }
 
     render() {
         return (
             <Modal
                 className="confirm-dialog"
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
+                role="alertdialog"
                 overflow={true}
                 size="md"
                 backdrop={"static"}
@@ -88,10 +118,15 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
                 onClose={() => this.setState({ isOpen: false })}
             >
                 <Modal.Header>
-                    <Modal.Title>{this.state.headingText}</Modal.Title>
+                    <Modal.Title id={`modal-title-${this.id}`}>
+                        {this.state.headingText}
+                    </Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                    <>
+                <Modal.Body
+                    id={`modal-description-${this.id}`}
+                    style={{ minHeight: "80px" }}
+                >
+                    <div>
                         {this.state.isLoading ? (
                             <Loader
                                 backdrop
@@ -101,21 +136,21 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
                         ) : (
                             this.state.confirmMsg
                         )}
-                    </>
+                    </div>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button
                         appearance="primary"
-                        onClick={async (e: SyntheticEvent) => {
-                            e.preventDefault();
-                            e.stopPropagation();
+                        onClick={async (ev: SyntheticEvent) => {
+                            ev.preventDefault();
+                            ev.stopPropagation();
                             try {
                                 this.setState({ isLoading: true });
                                 await this.state.confirmHandler();
                                 this.setState({ isOpen: false });
-                            } catch (e) {
+                            } catch (ex) {
                                 this.setState({ isLoading: false });
-                                reportError(e, {
+                                reportError(ex, {
                                     duration:
                                         typeof this.state
                                             .errorNotificationDuration ===
@@ -130,9 +165,9 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
                         Confirm
                     </Button>
                     <Button
-                        onClick={async (e: SyntheticEvent) => {
-                            e.preventDefault();
-                            e.stopPropagation();
+                        onClick={async (ev: SyntheticEvent) => {
+                            ev.preventDefault();
+                            ev.stopPropagation();
                             await this.state.cancelHandler();
                             this.setState({ isOpen: false });
                         }}
