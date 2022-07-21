@@ -47,64 +47,67 @@ function createRows(
             </tr>
         );
     } else if (records?.length) {
-        return records.map((record, idx) => (
-            <tr key={idx}>
-                <td>{getTitle(datasetType, record)}</td>
-                <td className="date-col">{getDate(datasetType, record)}</td>
-                <td className="action-buttons-col">
-                    <Link
-                        className="edit-button"
-                        to={`/dataset/${
-                            record?.aspects?.["dataset-draft"]?.data ||
-                            !record?.aspects?.["dcat-dataset-strings"]
-                                ? "add/metadata"
-                                : "edit"
-                        }/${encodeURIComponent(record.id)}`}
-                    >
-                        <img src={editIcon} alt="edit button" />
-                    </Link>
+        return records.map((record, idx) => {
+            const isDraft = record?.aspects?.["publishing"]?.state
+                ? record.aspects["publishing"].state === "draft"
+                : // when publishing aspect not exist assume it's published dataset
+                  false;
+            return (
+                <tr key={idx}>
+                    <td>{getTitle(datasetType, record)}</td>
+                    <td className="date-col">{getDate(datasetType, record)}</td>
+                    <td className="action-buttons-col">
+                        <Link
+                            className="edit-button"
+                            to={`/dataset/${
+                                isDraft ? "add/metadata" : "edit"
+                            }/${encodeURIComponent(record.id)}`}
+                        >
+                            <img src={editIcon} alt="edit button" />
+                        </Link>
 
-                    <button className="delete-button">
-                        <BsFillTrashFill
-                            onClick={() =>
-                                ConfirmDialog.open({
-                                    confirmMsg: `Are you sure you want to delete the dataset "${getTitle(
-                                        datasetType,
-                                        record
-                                    )}"?`,
-                                    headingText: "Confirm to Delete?",
-                                    loadingText: "Deleting dataset...",
-                                    errorNotificationDuration: 0,
-                                    confirmHandler: async () => {
-                                        const result = await deleteDataset(
-                                            record.id
-                                        );
-                                        if (result.hasError) {
-                                            console.error(
-                                                "Failed to remove resources when delete dataset:",
-                                                result
+                        <button className="delete-button">
+                            <BsFillTrashFill
+                                onClick={() =>
+                                    ConfirmDialog.open({
+                                        confirmMsg: `Are you sure you want to delete the dataset "${getTitle(
+                                            datasetType,
+                                            record
+                                        )}"?`,
+                                        headingText: "Confirm to Delete?",
+                                        loadingText: "Deleting dataset...",
+                                        errorNotificationDuration: 0,
+                                        confirmHandler: async () => {
+                                            const result = await deleteDataset(
+                                                record.id
                                             );
-                                            throw new Error(
-                                                `The following files are failed to be removed during the dataset deletion:
+                                            if (result.hasError) {
+                                                console.error(
+                                                    "Failed to remove resources when delete dataset:",
+                                                    result
+                                                );
+                                                throw new Error(
+                                                    `The following files are failed to be removed during the dataset deletion:
                                                 ${result.failureReasons
                                                     .map(
                                                         (item) =>
                                                             `"${item.title}", error: ${item.error}`
                                                     )
                                                     .join(";\n ")}`
+                                                );
+                                            }
+                                            setRecordReloadToken(
+                                                "" + Math.random()
                                             );
                                         }
-                                        setRecordReloadToken(
-                                            "" + Math.random()
-                                        );
-                                    }
-                                })
-                            }
-                        />
-                    </button>
-                </td>
-            </tr>
-        ));
+                                    })
+                                }
+                            />
+                        </button>
+                    </td>
+                </tr>
+            );
+        });
     } else {
         return (
             <tr>

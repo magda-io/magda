@@ -376,7 +376,8 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     async function updateAccessGroupRecord(
         groupId: string,
         accessGroupDetailsAspectData: any,
-        accessControlAspectData: any
+        accessControlAspectData: any,
+        retrieveRecord: boolean = true
     ) {
         if (
             isEmpty(accessGroupDetailsAspectData) &&
@@ -438,6 +439,10 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
             if (resultOrError instanceof Error) {
                 throw resultOrError;
             }
+        }
+
+        if (!retrieveRecord) {
+            return;
         }
 
         const recordOrError = await registryClient.getRecord(
@@ -589,6 +594,15 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 }
 
                 if (typeof data?.operationUris === "undefined") {
+                    if (
+                        !isEmpty(accessGroupDetailsAspectData) ||
+                        !isEmpty(accessControlAspectData)
+                    ) {
+                        accessGroupDetailsAspectData["editBy"] = userId;
+                        accessGroupDetailsAspectData[
+                            "editTime"
+                        ] = new Date().toISOString();
+                    }
                     // no need to update permission operations as it's not supplied
                     res.json(
                         await updateAccessGroupRecord(
@@ -639,6 +653,11 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         },
                         client
                     );
+
+                    accessGroupDetailsAspectData["editBy"] = userId;
+                    accessGroupDetailsAspectData[
+                        "editTime"
+                    ] = new Date().toISOString();
 
                     res.json(
                         await updateAccessGroupRecord(
@@ -809,6 +828,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.post(
         "/:groupId/datasets/:datasetId",
+        getUserId(options.jwtSecret),
         requireUnconditionalAuthDecision(
             authDecisionClient,
             async (req, res, next) => {
@@ -882,6 +902,17 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 if (result instanceof Error) {
                     throw result;
                 }
+
+                await updateAccessGroupRecord(
+                    req.params.groupId,
+                    {
+                        editBy: res.locals.userId,
+                        editTime: new Date().toISOString()
+                    },
+                    undefined,
+                    false
+                );
+
                 res.json({ result: true });
             } catch (e) {
                 respondWithError(
@@ -920,6 +951,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.delete(
         "/:groupId/datasets/:datasetId",
+        getUserId(options.jwtSecret),
         requireAccessGroupUnconditionalPermission("object/record/update"),
         async function (req, res) {
             try {
@@ -975,6 +1007,15 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 if (result instanceof Error) {
                     throw result;
                 }
+                await updateAccessGroupRecord(
+                    req.params.groupId,
+                    {
+                        editBy: res.locals.userId,
+                        editTime: new Date().toISOString()
+                    },
+                    undefined,
+                    false
+                );
                 res.json({ result: true });
             } catch (e) {
                 respondWithError(
@@ -1013,6 +1054,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.post(
         "/:groupId/users/:userId",
+        getUserId(options.jwtSecret),
         requireAccessGroupUnconditionalPermission("object/record/update"),
         async function (req, res) {
             try {
@@ -1068,13 +1110,22 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         ...sqls`INSERT INTO user_roles (user_id, role_id) VALUES (${userId}, ${roleId})`.toQuery()
                     );
                     await client.query("COMMIT");
-                    res.json({ result: true });
                 } catch (e) {
                     await client.query("ROLLBACK");
                     throw e;
                 } finally {
                     client.release();
                 }
+                await updateAccessGroupRecord(
+                    req.params.groupId,
+                    {
+                        editBy: res.locals.userId,
+                        editTime: new Date().toISOString()
+                    },
+                    undefined,
+                    false
+                );
+                res.json({ result: true });
             } catch (e) {
                 respondWithError(
                     `Add an user "${req?.params?.userId}" to an Access Group ${req?.params?.groupId}`,
@@ -1110,6 +1161,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.delete(
         "/:groupId/users/:userId",
+        getUserId(options.jwtSecret),
         requireAccessGroupUnconditionalPermission("object/record/update"),
         async function (req, res) {
             try {
@@ -1151,6 +1203,17 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 const result = await pool.query(
                     ...sqls`DELETE FROM user_roles WHERE user_id=${userId} AND role_id=${roleId} RETURNING id`.toQuery()
                 );
+
+                await updateAccessGroupRecord(
+                    req.params.groupId,
+                    {
+                        editBy: res.locals.userId,
+                        editTime: new Date().toISOString()
+                    },
+                    undefined,
+                    false
+                );
+
                 if (result?.rows?.length) {
                     res.json({ result: true });
                 } else {

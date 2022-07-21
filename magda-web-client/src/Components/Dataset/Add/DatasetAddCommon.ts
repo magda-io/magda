@@ -882,13 +882,18 @@ export async function saveStateToRegistry(state: State, id: string) {
     try {
         // --- we turned off cache here
         // --- we won't check `dataset-draft` aspect as it's possible a dataset record with no dataset-draft exist (e.g. edit flow)
-        record = await fetchRecordWithNoCache(id, [], [], false);
+        record = await fetchRecordWithNoCache(id, [], ["publishing"], false);
     } catch (e) {
         if (!(e instanceof ServerError) || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create one if can't find an existing one
             throw e;
         }
     }
+
+    const isDraft = record?.aspects?.["publishing"]?.state
+        ? record.aspects["publishing"].state === "draft"
+        : // when publishing aspect not exist assume it's published dataset
+          false;
 
     let datasetDcatString;
 
@@ -913,6 +918,16 @@ export async function saveStateToRegistry(state: State, id: string) {
         }
     };
 
+    const dcatDatasetStrinsAspectData = {
+        ...datasetDcatString,
+        title: datasetDcatString?.title ? datasetDcatString.title : "",
+        description: datasetDcatString?.description
+            ? datasetDcatString.description
+            : "",
+        themes: datasetDcatString?.themes ? datasetDcatString.themes : [],
+        keywords: datasetDcatString?.keywords ? datasetDcatString.keywords : []
+    };
+
     if (!record) {
         // --- dataset record not exist
         await createDataset(
@@ -922,16 +937,23 @@ export async function saveStateToRegistry(state: State, id: string) {
                 aspects: {
                     publishing: getPublishingAspectData(state),
                     "access-control": getAccessControlAspectData(state),
-                    source: getInternalDatasetSourceAspectData()
+                    source: getInternalDatasetSourceAspectData(),
+                    "dcat-dataset-strings": dcatDatasetStrinsAspectData,
+                    "dataset-draft": datasetDraftAspectData
                 }
             },
             []
         );
-
-        // --- if `dataset-draft` not exist, the API will create the aspect data instead
-        await updateRecordAspect(id, "dataset-draft", datasetDraftAspectData);
     } else {
         await updateRecordAspect(id, "dataset-draft", datasetDraftAspectData);
+        if (isDraft) {
+            // for published dataset in editing mode, we don't want to update `dcat-dataset-strings` till published
+            await updateRecordAspect(
+                id,
+                "dcat-dataset-strings",
+                dcatDatasetStrinsAspectData
+            );
+        }
     }
 
     return id;
@@ -986,6 +1008,27 @@ async function ensureBlankDatasetIsSavedToRegistry(
         // --- if the dataset not exist in registry, save it now
         // --- the dataset should have the same visibility as the current one
         // --- but always be a draft one
+
+        let datasetDcatString;
+
+        try {
+            datasetDcatString = buildDcatDatasetStrings(state.dataset);
+        } catch (e) {
+            datasetDcatString = {};
+        }
+
+        const dcatDatasetStrinsAspectData = {
+            ...datasetDcatString,
+            title: datasetDcatString?.title ? datasetDcatString.title : "",
+            description: datasetDcatString?.description
+                ? datasetDcatString.description
+                : "",
+            themes: datasetDcatString?.themes ? datasetDcatString.themes : [],
+            keywords: datasetDcatString?.keywords
+                ? datasetDcatString.keywords
+                : []
+        };
+
         await createDataset(
             {
                 id,
@@ -993,7 +1036,8 @@ async function ensureBlankDatasetIsSavedToRegistry(
                 aspects: {
                     publishing: getPublishingAspectData(state),
                     "access-control": getAccessControlAspectData(state),
-                    source: getInternalDatasetSourceAspectData()
+                    source: getInternalDatasetSourceAspectData(),
+                    "dcat-dataset-strings": dcatDatasetStrinsAspectData
                 }
             },
             []
