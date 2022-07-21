@@ -732,7 +732,10 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                             : (req?.query?.offset as string),
                         limit: returnCount
                             ? undefined
-                            : (req?.query?.limit as string)
+                            : (req?.query?.limit as string),
+                        orderBy: returnCount
+                            ? undefined
+                            : sqls`"displayName" ASC`
                     }
                 );
                 if (returnCount) {

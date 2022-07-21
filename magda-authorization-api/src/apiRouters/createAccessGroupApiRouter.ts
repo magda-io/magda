@@ -1261,19 +1261,19 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 }
 
                 if (req.query?.id) {
-                    conditions.push(sqls`"users.id" = ${req.query.id}`);
+                    conditions.push(sqls`users.id = ${req.query.id}`);
                 }
                 if (req.query?.source) {
-                    conditions.push(sqls`"users.source" = ${req.query.source}`);
+                    conditions.push(sqls`users.source = ${req.query.source}`);
                 }
                 if (req.query?.orgUnitId) {
                     conditions.push(
-                        sqls`"users.orgUnitId" = ${req.query.orgUnitId}`
+                        sqls`users."orgUnitId" = ${req.query.orgUnitId}`
                     );
                 }
                 if (req.query?.sourceId) {
                     conditions.push(
-                        sqls`"users.sourceId" = ${req.query.sourceId}`
+                        sqls`users."sourceId" = ${req.query.sourceId}`
                     );
                 }
 
@@ -1290,7 +1290,10 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             : (req?.query?.offset as string),
                         limit: returnCount
                             ? undefined
-                            : (req?.query?.limit as string)
+                            : (req?.query?.limit as string),
+                        orderBy: returnCount
+                            ? undefined
+                            : sqls`users."displayName" ASC`
                     }
                 );
                 if (returnCount) {

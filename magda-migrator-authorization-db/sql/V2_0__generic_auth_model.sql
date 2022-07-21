@@ -428,3 +428,6 @@ VALUES
 ('api/indexer/reindex/in-progress', 'the API gets the progress info of the recent full proactive reindex', '', (SELECT id FROM resources WHERE uri = 'api/indexer')),
 ('api/indexer/reindex/snapshot','the API triggers snapshot creation', '', (SELECT id FROM resources WHERE uri = 'api/indexer'));
 -- end add new indexer api resource / operations --
+-- create index for user display name --
+CREATE INDEX users_display_name_gin_trgm_idx ON "public"."users" USING gin ("displayName" gin_trgm_ops);
+-- end create index for user display name --
