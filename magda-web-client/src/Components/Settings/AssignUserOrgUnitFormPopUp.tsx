@@ -21,9 +21,11 @@ import ServerError from "@magda/typescript-common/dist/ServerError";
 import {
     getRootNode,
     OrgUnit,
-    getImmediateChildren
+    getImmediateChildren,
+    getOrgUnitById
 } from "api-clients/OrgUnitApis";
 import { ItemDataType } from "rsuite/esm/@types/common";
+import reportError from "./reportError";
 
 const Paragraph = Placeholder.Paragraph;
 
@@ -50,6 +52,7 @@ const AssignUserOrgUnitFormPopUp: ForwardRefRenderFunction<
     const [user, setUser] = useState<Partial<User>>();
     const onCompleteRef = useRef<SubmitCompleteHandlerType>();
     const [dataReloadToken, setdataReloadToken] = useState<string>("");
+    const [selectedOrgUnitName, setSelectedOrgUnitName] = useState<string>("");
 
     useImperativeHandle(ref, () => ({
         open: (
@@ -69,6 +72,7 @@ const AssignUserOrgUnitFormPopUp: ForwardRefRenderFunction<
 
     const { loading, error } = useAsync(
         async (userId?: string, dataReloadToken?: string) => {
+            setSelectedOrgUnitName("");
             if (!userId) {
                 setUser(undefined);
             } else {
@@ -77,6 +81,13 @@ const AssignUserOrgUnitFormPopUp: ForwardRefRenderFunction<
                 }
                 const record = await getUserById(userId, true);
                 setUser(record);
+
+                if (record?.orgUnitId) {
+                    const orgUnit = await getOrgUnitById(record.orgUnitId);
+                    if (orgUnit) {
+                        setSelectedOrgUnitName(orgUnit.name);
+                    }
+                }
             }
         },
         [userId, dataReloadToken]
@@ -96,16 +107,7 @@ const AssignUserOrgUnitFormPopUp: ForwardRefRenderFunction<
                 ]);
                 return rootNode;
             } catch (e) {
-                toaster.push(
-                    <Notification
-                        type={"error"}
-                        closable={true}
-                        header="Error"
-                    >{`Failed to retrieve user root node: ${e}`}</Notification>,
-                    {
-                        placement: "topEnd"
-                    }
-                );
+                reportError(`Failed to retrieve user orgUnit root node: ${e}`);
                 throw e;
             }
         },
@@ -154,7 +156,10 @@ const AssignUserOrgUnitFormPopUp: ForwardRefRenderFunction<
             onClose={() => setIsOpen(false)}
         >
             <Modal.Header>
-                <Modal.Title>Assign Org Unit to User</Modal.Title>
+                <Modal.Title>
+                    Assign Org Unit to User
+                    {user?.displayName ? ` ${user.displayName}` : ""}
+                </Modal.Title>
             </Modal.Header>
 
             <Modal.Body>
@@ -183,6 +188,11 @@ const AssignUserOrgUnitFormPopUp: ForwardRefRenderFunction<
                             data={data}
                             block={true}
                             disabled={submitData.loading}
+                            placeholder={
+                                selectedOrgUnitName
+                                    ? selectedOrgUnitName
+                                    : "Please select an org unit..."
+                            }
                             onSelect={(activeNode, value, event) => {
                                 setUser((u) => ({
                                     ...(u ? u : {}),
