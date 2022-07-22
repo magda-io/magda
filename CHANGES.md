@@ -43,6 +43,7 @@
 - #3366 New Registry API capability: new filter operator, merge mode, group operations and more
 - Add `target` & `rel` fields to footer link item schema
 - Make sure dataset creation tool always create `dcat-dataset-strings` aspect for draft datasets
+- Add `reversePageTokenOrder` parameter to registry APIs `GET /records` & `GET /records/summary`
 
 ## 1.3.1
 
