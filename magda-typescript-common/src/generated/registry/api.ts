@@ -1406,6 +1406,7 @@ export class RecordHistoryApi {
      * @param limit The maximum number of events to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
      * @param aspect The aspects for which to included in event history, specified as multiple occurrences of this query parameter.
      * @param dereference true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.
+     * @param reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to &#x60;true&#x60;, higher pageToken records (newer records) will be returned.
      */
     public history(
         xMagdaTenantId: number,
@@ -1415,7 +1416,8 @@ export class RecordHistoryApi {
         start?: number,
         limit?: number,
         aspect?: Array<string>,
-        dereference?: boolean
+        dereference?: boolean,
+        reversePageTokenOrder?: boolean
     ): Promise<{ response: http.IncomingMessage; body: EventsPage }> {
         const localVarPath =
             this.basePath +
@@ -1466,6 +1468,10 @@ export class RecordHistoryApi {
 
         if (dereference !== undefined) {
             queryParameters["dereference"] = dereference;
+        }
+
+        if (reversePageTokenOrder !== undefined) {
+            queryParameters["reversePageTokenOrder"] = reversePageTokenOrder;
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
