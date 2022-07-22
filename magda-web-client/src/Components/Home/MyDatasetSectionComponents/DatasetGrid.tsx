@@ -3,24 +3,27 @@ import { Link } from "react-router-dom";
 import editIcon from "assets/edit.svg";
 import "./DatasetGrid.scss";
 import { useAsync } from "react-async-hook";
-import getMyDatasetAspectQueries from "./getMyDatasetAspectQueries";
+import getDatasetAspectQueries from "./getDatasetAspectQueries";
 import {
     Record,
     fetchRecords,
     FetchRecordsOptions,
     DatasetTypes
 } from "api-clients/RegistryApis";
+import Button from "rsuite/Button";
+import ButtonGroup from "rsuite/ButtonGroup";
+import reportError from "Components/Settings/reportError";
 import moment from "moment";
 import { BsFillTrashFill } from "react-icons/bs";
 import ConfirmDialog from "../../Settings/ConfirmDialog";
 import { deleteDataset } from "../../Dataset/Add/DatasetAddCommon";
+import uniq from "lodash/uniq";
 
 const PAGE_SIZE = 10;
 
 type PropsType = {
     searchText: string;
     datasetType: DatasetTypes;
-    userId: string;
 };
 
 function createRows(
@@ -159,8 +162,9 @@ function getDate(datasetType: DatasetTypes, record: Record) {
 }
 
 const DatasetGrid: FunctionComponent<PropsType> = (props) => {
-    const { datasetType } = props;
-    const [offset, setPageOffset] = useState<number>(0);
+    const { datasetType, searchText } = props;
+    const [pageTokenList, setPageTokenList] = useState<string[]>([]);
+    const [pageToken, setPageToken] = useState<string>();
     //change this value to force the record data to be reloaded
     const [recordReloadToken, setRecordReloadToken] = useState<string>("");
 
@@ -168,44 +172,32 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
         async (
             datasetType: DatasetTypes,
             searchText: string,
-            userId: string,
-            offset: number,
-            recordReloadToken: string
+            pageToken?: string,
+            recordReloadToken?: string
         ) => {
             const opts: FetchRecordsOptions = {
                 limit: PAGE_SIZE,
-                noCache: true
+                noCache: true,
+                pageToken,
+                reversePageTokenOrder: true
             };
-
-            if (offset) {
-                opts.start = offset;
-            }
 
             if (datasetType === "drafts") {
                 opts.aspects = ["publishing"];
                 opts.optionalAspects = ["dataset-draft"];
-                opts.orderBy = "dataset-draft.timestamp";
             } else {
                 opts.aspects = ["dcat-dataset-strings"];
                 opts.optionalAspects = ["publishing"];
-                opts.orderBy = "dcat-dataset-strings.modified";
             }
 
-            opts.aspectQueries = getMyDatasetAspectQueries(
+            opts.aspectQueries = getDatasetAspectQueries(
                 datasetType,
-                userId,
                 searchText
             );
 
             return await fetchRecords(opts);
         },
-        [
-            props.datasetType,
-            props.searchText,
-            props.userId,
-            offset,
-            recordReloadToken
-        ]
+        [datasetType, searchText, pageToken, recordReloadToken]
     );
 
     const overAllLoading = loading;
@@ -236,43 +228,53 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
             </div>
             <hr className="grid-bottom-divider" />
             <div className="paging-area">
-                <button
-                    className="next-page-button"
-                    disabled={
-                        !result?.hasMore ||
-                        !result?.records?.length ||
-                        overAllLoading ||
-                        overAllError
-                            ? true
-                            : false
-                    }
-                    onClick={() =>
-                        setPageOffset(
-                            (currentOffset) => currentOffset + PAGE_SIZE
-                        )
-                    }
-                >
-                    Next page
-                </button>
-                <button
-                    className="first-page-button"
-                    disabled={
-                        !offset || overAllLoading || overAllError ? true : false
-                    }
-                    onClick={() => {
-                        setPageOffset((currentOffset) => {
-                            const offset = currentOffset - PAGE_SIZE;
-                            return offset < 0 ? 0 : offset;
-                        });
-                    }}
-                >
-                    Previous page
-                </button>
-                {!overAllLoading && !overAllError ? (
-                    <div className="page-idx-info-area">
-                        Page: {offset + 1} - {offset + PAGE_SIZE}
-                    </div>
-                ) : null}
+                <ButtonGroup>
+                    <Button
+                        appearance="ghost"
+                        disabled={!pageToken}
+                        onClick={() => {
+                            setPageToken(undefined);
+                            setPageTokenList([""]);
+                        }}
+                    >
+                        First Page
+                    </Button>
+                    <Button
+                        appearance="ghost"
+                        disabled={!pageToken}
+                        onClick={() => {
+                            const newPageTokenList = [...pageTokenList];
+                            const prevPageToken = newPageTokenList.pop();
+                            setPageToken(
+                                prevPageToken ? prevPageToken : undefined
+                            );
+                            setPageTokenList(newPageTokenList);
+                        }}
+                    >
+                        Prev Page
+                    </Button>
+                    <Button
+                        appearance="ghost"
+                        disabled={!result?.nextPageToken || !result?.hasMore}
+                        onClick={() => {
+                            if (!result?.nextPageToken) {
+                                reportError(
+                                    "Failed to fetch next page: Next token is empty"
+                                );
+                                return;
+                            }
+                            const nextPageToken = result?.nextPageToken as string;
+                            setPageToken(nextPageToken);
+                            const newPageTokenList = uniq([
+                                ...pageTokenList,
+                                pageToken ? pageToken : ""
+                            ]);
+                            setPageTokenList(newPageTokenList);
+                        }}
+                    >
+                        Next Page
+                    </Button>
+                </ButtonGroup>
             </div>
         </>
     );

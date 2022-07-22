@@ -7,9 +7,7 @@ import { ReactComponent as SearchIcon } from "assets/search-dark.svg";
 import "../../../rsuite.scss";
 import ConfirmDialog from "../../Settings/ConfirmDialog";
 
-type PropsType = {
-    userId: string;
-};
+type PropsType = {};
 
 type TabNames = DatasetTypes;
 
@@ -82,7 +80,6 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                         key={`tab:${activeTab}|searchtext:${searchText}`}
                         searchText={searchText}
                         datasetType={activeTab}
-                        userId={props.userId}
                     />
                 </div>
             </div>

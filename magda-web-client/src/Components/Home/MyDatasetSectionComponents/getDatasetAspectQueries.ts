@@ -4,9 +4,8 @@ import {
     DatasetTypes
 } from "api-clients/RegistryApis";
 
-export default function getMyDatasetAspectQueries(
+export default function getDatasetAspectQueries(
     datasetType: DatasetTypes,
-    userId: string,
     searchText: string
 ) {
     const aspectQueries: AspectQuery[] = [];
@@ -26,8 +25,8 @@ export default function getMyDatasetAspectQueries(
         aspectQueries.push(
             new AspectQuery(
                 "publishing.state",
-                AspectQueryOperators["="],
-                `published`,
+                AspectQueryOperators["!="],
+                `draft`,
                 true
             )
         );
