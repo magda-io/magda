@@ -360,9 +360,13 @@ class DefaultRecordPersistence(config: Config)
     val andConditions =
       AspectQueryGroup(aspectQueries, joinWithAnd = true)
         .toSql(config)
+        // SQLSyntax.toAndConditionOpt fails to check the statement with and / or & newlines
+        // thus we manually add roundBracket here
+        .map(SQLSyntax.roundBracket(_))
     val orConditions =
       AspectQueryGroup(aspectOrQueries, joinWithAnd = false)
         .toSql(config)
+        .map(SQLSyntax.roundBracket(_))
 
     SQLSyntax
       .toAndConditionOpt(andConditions, orConditions)
