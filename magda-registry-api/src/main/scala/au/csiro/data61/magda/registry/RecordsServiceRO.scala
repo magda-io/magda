@@ -43,6 +43,7 @@ class RecordsServiceRO(
     * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
     * @apiParam (query) {string[]} optionalAspect The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter. These aspects will be included in a record if available, but a record will be included even if it is missing these aspects.
     * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
+    * @apiParam (query) {boolean} reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned.
     * @apiParam (query) {number} start The index of the first record to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
     * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
     * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
@@ -122,7 +123,7 @@ class RecordsServiceRO(
     *
     *   If orderBy reference an aspects that is not included by either `aspect` or `optionalAspect` parameters, it will be added to the `optionalAspect` list.
     *
-    *   Please Note: When `orderBy` is specified, `pageToken` parameter is not available. You should use `start` & `limit` instead for pagination purpose.
+    *   Please Note: When `pageToken` parameter is specified, `orderBy` is not available. You can set `reversePageTokenOrder` = `true` to reverse the pagination order though.
     *
     * @apiParam (query) {string} orderByDir Specify the order by direction. Either `asc` or `desc`. `desc` order is the default.
     * @apiParam (query) {boolean} orderNullFirst Specify whether nulls appear before (`true`) or after (`false`) non-null values in the sort ordering. Default to `false`.
@@ -248,6 +249,15 @@ class RecordsServiceRO(
           "Specify whether nulls appear before (`true`) or after (`false`) non-null values in the sort ordering."
       ),
       new ApiImplicitParam(
+        name = "reversePageTokenOrder",
+        required = false,
+        dataType = "boolean",
+        paramType = "query",
+        allowMultiple = false,
+        value =
+          "When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned."
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -281,7 +291,8 @@ class RecordsServiceRO(
             'aspectOrQuery.*,
             'orderBy.as[String].?,
             'orderByDir.as[String].?,
-            'orderNullFirst.as[Boolean].?
+            'orderNullFirst.as[Boolean].?,
+            'reversePageTokenOrder.as[Boolean].?
           ) {
             (
                 aspects,
@@ -294,7 +305,8 @@ class RecordsServiceRO(
                 aspectOrQueries,
                 orderBy,
                 orderByDir,
-                orderNullFirst
+                orderNullFirst,
+                reversePageTokenOrder
             ) =>
               val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
               val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
@@ -342,7 +354,8 @@ class RecordsServiceRO(
                             )
                           )
                         case _ => None
-                      }
+                      },
+                      reversePageTokenOrder = reversePageTokenOrder
                     )
                   }
                 }
@@ -358,6 +371,7 @@ class RecordsServiceRO(
     * @api {get} /v0/registry/records/summary Get a list of all records as summaries
     * @apiDescription Get a list of all records as summaries
     * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
+    * @apiParam (query) {boolean} reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned.
     * @apiParam (query) {number} start The index of the first record to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
     * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
@@ -410,6 +424,15 @@ class RecordsServiceRO(
           "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off."
       ),
       new ApiImplicitParam(
+        name = "reversePageTokenOrder",
+        required = false,
+        dataType = "boolean",
+        paramType = "query",
+        allowMultiple = false,
+        value =
+          "When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned."
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -432,20 +455,25 @@ class RecordsServiceRO(
           authApiClient,
           AuthDecisionReqConfig("object/record/read")
         ) { authDecision =>
-          parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) {
-            (pageToken, start, limit) =>
-              complete {
-                DB readOnly { implicit session =>
-                  recordPersistence
-                    .getAll(
-                      tenantId,
-                      authDecision,
-                      pageToken,
-                      start,
-                      limit
-                    )
-                }
+          parameters(
+            'pageToken.?,
+            'start.as[Int].?,
+            'limit.as[Int].?,
+            'reversePageTokenOrder.as[Boolean].?
+          ) { (pageToken, start, limit, reversePageTokenOrder) =>
+            complete {
+              DB readOnly { implicit session =>
+                recordPersistence
+                  .getAll(
+                    tenantId,
+                    authDecision,
+                    pageToken,
+                    start,
+                    limit,
+                    reversePageTokenOrder
+                  )
               }
+            }
           }
         }
       }

@@ -36,7 +36,8 @@ trait EventPersistence {
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId
+      tenantId: TenantId,
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): EventsPage
 
   def getRecordReferencedIds(
@@ -57,7 +58,8 @@ trait EventPersistence {
       limit: Option[Int] = None,
       lastEventId: Option[Long] = None,
       aspectIds: Set[String] = Set(),
-      eventTypes: Set[EventType] = Set()
+      eventTypes: Set[EventType] = Set(),
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): EventsPage
 }
 
@@ -66,6 +68,8 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     with DiffsonProtocol
     with EventPersistence {
   val eventStreamPageSize = 1000
+  val maxResultCount = 1000
+  val defaultResultCount = 100
 
   def streamEventsSince(
       sinceEventId: Long,
@@ -150,7 +154,8 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId
+      tenantId: TenantId,
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): EventsPage = {
     getEventsWithRecordSelector(
       pageToken = pageToken,
@@ -160,7 +165,8 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       recordId = recordId,
       aspectIds = aspectIds,
       eventTypes = eventTypes,
-      tenantId = tenantId
+      tenantId = tenantId,
+      reversePageTokenOrder = reversePageTokenOrder
     )
   }
 
@@ -173,11 +179,17 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
       tenantId: TenantId,
-      recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
+      recordSelector: Iterable[Option[SQLSyntax]] = Iterable(),
+      maxLimit: Option[Int] = None,
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): EventsPage = {
 
     val filters: Seq[Option[SQLSyntax]] = Seq(
-      pageToken.map(v => sqls"eventId > $v"),
+      pageToken.map(
+        v =>
+          if (reversePageTokenOrder.getOrElse(false)) sqls"eventId < $v"
+          else sqls"eventId > $v"
+      ),
       lastEventId.map(v => sqls"eventId <= $v"),
       recordId.map(v => sqls"data->>'recordId' = $v")
     ) ++ recordSelector
@@ -245,8 +257,25 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
         .and(eventTypesFilter)
     )
 
-    var lastEventIdInPage: Option[Long] = None
-    val events =
+    val limitValue = limit
+      .map(l => Math.min(l, maxLimit.getOrElse(maxResultCount)))
+      .getOrElse(defaultResultCount)
+
+    /* for some reason if you LIMIT 1 and ORDER BY eventId, postgres chooses a weird query plan, so use eventTime in that case*/
+    val orderBy = SQLSyntax.orderBy(
+      if (limit != Some(1)) sqls"eventId" else sqls"eventTime"
+    )
+    val orderByClause =
+      if (reversePageTokenOrder
+            .getOrElse(
+              false
+            )) {
+        orderBy.desc
+      } else {
+        orderBy.asc
+      }
+
+    val results =
       sql"""select
             eventId,
             eventTime,
@@ -256,22 +285,27 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
             tenantId
           from Events
           $whereClause
-      ${/* for some reason if you LIMIT 1 and ORDER BY eventId, postgres chooses a weird query plan, so use eventTime in that case*/ sqls""}
-          order by ${if (limit != Some(1)) sqls"eventId" else sqls"eventTime"} asc
+          ${orderByClause}
           offset ${start.getOrElse(0)}
-          limit ${limit.getOrElse(1000)}"""
+          limit ${limitValue + 1}"""
         .map(rs => {
-          // Side-effectily track the sequence number of the very last result.
-          lastEventIdInPage = Some(rs.long("eventId"))
-          rowToEvent(rs)
+          (
+            rs.long("eventId"),
+            rowToEvent(rs)
+          )
         })
         .list
         .apply()
 
+    val hasMore = results.length > limitValue
+    val trimmed = results.take(limitValue)
+    val lastSequence = if (hasMore) Some(trimmed.last._1) else None
+    val pageResults = trimmed.map(_._2)
+
     EventsPage(
-      lastEventIdInPage.isDefined,
-      lastEventIdInPage.map(_.toString),
-      events
+      hasMore,
+      lastSequence.map(_.toString),
+      pageResults
     )
   }
 
@@ -411,7 +445,8 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       limit: Option[Int] = None,
       lastEventId: Option[Long] = None,
       aspectIds: Set[String] = Set(),
-      eventTypes: Set[EventType] = Set()
+      eventTypes: Set[EventType] = Set(),
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): EventsPage = {
 
     val recordIds =
@@ -455,7 +490,8 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
             recordIds
           )
         )
-      ) ++ aspectFilters
+      ) ++ aspectFilters,
+      reversePageTokenOrder = reversePageTokenOrder
     )
   }
 

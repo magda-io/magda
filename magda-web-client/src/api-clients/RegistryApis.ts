@@ -355,6 +355,7 @@ export type FetchRecordsOptions = {
     orderBy?: string;
     orderByDirection?: "asc" | "desc";
     noCache?: boolean;
+    reversePageTokenOrder?: boolean;
 };
 
 export async function fetchRecords({
@@ -367,7 +368,8 @@ export async function fetchRecords({
     aspectQueries,
     orderBy,
     orderByDirection,
-    noCache
+    noCache,
+    reversePageTokenOrder
 }: FetchRecordsOptions): Promise<{
     records: RawDataset[];
     hasMore: boolean;
@@ -421,6 +423,10 @@ export async function fetchRecords({
                 `orderByDir=${encodeURIComponent(orderByDirection)}`
             );
         }
+    }
+
+    if (reversePageTokenOrder) {
+        parameters.push(`reversePageTokenOrder=true`);
     }
 
     const url =

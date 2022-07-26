@@ -44,7 +44,8 @@ trait RecordPersistence {
       authDecision: AuthDecision,
       pageToken: Option[String],
       start: Option[Int],
-      limit: Option[Int]
+      limit: Option[Int],
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): RecordsPage[RecordSummary]
 
   def getAllWithAspects(
@@ -58,7 +59,8 @@ trait RecordPersistence {
       dereference: Option[Boolean] = None,
       aspectQueries: Iterable[AspectQuery] = Nil,
       aspectOrQueries: Iterable[AspectQuery] = Nil,
-      orderBy: Option[OrderByDef] = None
+      orderBy: Option[OrderByDef] = None,
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): RecordsPage[Record]
 
   def getCount(
@@ -332,9 +334,17 @@ class DefaultRecordPersistence(config: Config)
       authDecision: AuthDecision,
       pageToken: Option[String],
       start: Option[Int],
-      limit: Option[Int]
+      limit: Option[Int],
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): RecordsPage[RecordSummary] = {
-    this.getSummaries(tenantId, authDecision, pageToken, start, limit)
+    this.getSummaries(
+      tenantId,
+      authDecision,
+      pageToken,
+      start,
+      limit,
+      reversePageTokenOrder = reversePageTokenOrder
+    )
   }
 
   private def getSqlFromAspectQueries(
@@ -350,9 +360,13 @@ class DefaultRecordPersistence(config: Config)
     val andConditions =
       AspectQueryGroup(aspectQueries, joinWithAnd = true)
         .toSql(config)
+        // SQLSyntax.toAndConditionOpt fails to check the statement with and / or & newlines
+        // thus we manually add roundBracket here
+        .map(SQLSyntax.roundBracket(_))
     val orConditions =
       AspectQueryGroup(aspectOrQueries, joinWithAnd = false)
         .toSql(config)
+        .map(SQLSyntax.roundBracket(_))
 
     SQLSyntax
       .toAndConditionOpt(andConditions, orConditions)
@@ -370,7 +384,8 @@ class DefaultRecordPersistence(config: Config)
       dereference: Option[Boolean] = None,
       aspectQueries: Iterable[AspectQuery] = Nil,
       aspectOrQueries: Iterable[AspectQuery] = Nil,
-      orderBy: Option[OrderByDef] = None
+      orderBy: Option[OrderByDef] = None,
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): RecordsPage[Record] = {
 
     // --- make sure if orderBy is used, the involved aspectId is, at least, included in optionalAspectIds
@@ -393,7 +408,9 @@ class DefaultRecordPersistence(config: Config)
       limit,
       dereference,
       selectors,
-      orderBy
+      orderBy,
+      None,
+      reversePageTokenOrder = reversePageTokenOrder
     )
   }
 
@@ -1694,7 +1711,8 @@ class DefaultRecordPersistence(config: Config)
       pageToken: Option[String],
       start: Option[Int],
       rawLimit: Option[Int],
-      recordId: Option[String] = None
+      recordId: Option[String] = None,
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): RecordsPage[RecordSummary] = {
     val idWhereClause = recordId.map(id => sqls"Records.recordId=$id")
     val authDecisionCondition = authDecision.toSql()
@@ -1702,9 +1720,17 @@ class DefaultRecordPersistence(config: Config)
     val whereClauseParts = Seq(idWhereClause) :+ authDecisionCondition :+ SQLUtils
       .tenantIdToWhereClause(tenantId) :+ pageToken
       .map(
-        token => sqls"Records.sequence > ${token.toLong}"
+        token =>
+          if (reversePageTokenOrder.getOrElse(false))
+            sqls"Records.sequence < ${token.toLong}"
+          else sqls"Records.sequence > ${token.toLong}"
       )
     val limit = rawLimit.getOrElse(defaultResultCount)
+
+    val orderBy =
+      if (reversePageTokenOrder.getOrElse(false))
+        sqls"order by sequence DESC"
+      else sqls"order by sequence"
 
     val result =
       sql"""select Records.sequence as sequence,
@@ -1721,7 +1747,7 @@ class DefaultRecordPersistence(config: Config)
                    Records.tenantId as tenantId
             from Records
             ${SQLSyntax.where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}
-            order by sequence
+            ${orderBy}
             offset ${start.getOrElse(0)}
             limit ${limit + 1}"""
         .map(rs => {
@@ -1753,7 +1779,8 @@ class DefaultRecordPersistence(config: Config)
       dereference: Option[Boolean] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable(),
       orderBy: Option[OrderByDef] = None,
-      maxLimit: Option[Int] = None
+      maxLimit: Option[Int] = None,
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): RecordsPage[Record] = {
 
     if (orderBy.isDefined && pageToken.isDefined) {
@@ -1778,7 +1805,12 @@ class DefaultRecordPersistence(config: Config)
 
     val whereClauseParts: Seq[Option[SQLSyntax]] =
       theRecordSelector.toSeq :+ aspectWhereClauses :+ authQueryConditions :+ pageToken
-        .map(token => sqls"Records.sequence > $token")
+        .map(
+          token =>
+            if (reversePageTokenOrder.getOrElse(false))
+              sqls"Records.sequence < $token"
+            else sqls"Records.sequence > $token"
+        )
 
     val aspectSelectors = aspectIdsToSelectClauses(
       tenantId,
@@ -1798,7 +1830,10 @@ class DefaultRecordPersistence(config: Config)
 
     val orderBySql = orderBy match {
       case None =>
-        SQLSyntax.orderBy(sqls"${tempName}.sequence")
+        if (reversePageTokenOrder.getOrElse(false))
+          SQLSyntax.orderBy(sqls"${tempName}.sequence").desc
+        else
+          SQLSyntax.orderBy(sqls"${tempName}.sequence")
       case Some(orderBy) =>
         orderBy.getSql(
           List.concat(aspectIds, optionalAspectIds),

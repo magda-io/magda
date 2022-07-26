@@ -204,7 +204,7 @@ export const MAX_PAGE_RECORD_NUMBER = 500;
 export async function searchTableRecord<T = any>(
     poolOrClient: pg.Client | pg.Pool | pg.PoolClient,
     table: string,
-    contiditions: SQLSyntax[] = [],
+    conditions: SQLSyntax[] = [],
     queryConfig?: {
         offset?: number | string;
         limit?: number | string;
@@ -217,6 +217,7 @@ export async function searchTableRecord<T = any>(
             joinCondition: SQLSyntax;
         }[];
         groupBy?: SQLSyntax | SQLSyntax[];
+        orderBy?: SQLSyntax | SQLSyntax[];
     }
 ): Promise<T[]> {
     if (!table.trim()) {
@@ -244,7 +245,7 @@ export async function searchTableRecord<T = any>(
           };
     const authConditions = authDecision.toSql(config);
     const where = SQLSyntax.where(
-        SQLSyntax.joinWithAnd([...contiditions, authConditions])
+        SQLSyntax.joinWithAnd([...conditions, authConditions])
     );
 
     const sqlSyntax = sqls`SELECT ${
@@ -275,6 +276,17 @@ export async function searchTableRecord<T = any>(
                                 ...(queryConfig.groupBy as SQLSyntax[])
                             )
                           : (queryConfig.groupBy as SQLSyntax)
+                  }`
+                : SQLSyntax.empty
+        }
+        ${
+            queryConfig?.orderBy
+                ? sqls`ORDER BY ${
+                      typeof (queryConfig.orderBy as any)?.length === "number"
+                          ? SQLSyntax.csv(
+                                ...(queryConfig.orderBy as SQLSyntax[])
+                            )
+                          : (queryConfig.orderBy as SQLSyntax)
                   }`
                 : SQLSyntax.empty
         }
@@ -318,7 +330,7 @@ export async function getTableRecord<T = any>(
 export async function countTableRecord(
     poolOrClient: pg.Client | pg.Pool | pg.PoolClient,
     table: string,
-    contiditions: SQLSyntax[] = [],
+    conditions: SQLSyntax[] = [],
     authDecision?: AuthDecision,
     objectKind?: PossibleObjectKind,
     toSqlConfig?: AspectQueryToSqlConfig
@@ -326,7 +338,7 @@ export async function countTableRecord(
     const records = await searchTableRecord<{ total: number }>(
         poolOrClient,
         table,
-        contiditions,
+        conditions,
         {
             authDecision,
             objectKind,

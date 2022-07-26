@@ -1406,6 +1406,7 @@ export class RecordHistoryApi {
      * @param limit The maximum number of events to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
      * @param aspect The aspects for which to included in event history, specified as multiple occurrences of this query parameter.
      * @param dereference true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.
+     * @param reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to &#x60;true&#x60;, higher pageToken records (newer records) will be returned.
      */
     public history(
         xMagdaTenantId: number,
@@ -1415,7 +1416,8 @@ export class RecordHistoryApi {
         start?: number,
         limit?: number,
         aspect?: Array<string>,
-        dereference?: boolean
+        dereference?: boolean,
+        reversePageTokenOrder?: boolean
     ): Promise<{ response: http.IncomingMessage; body: EventsPage }> {
         const localVarPath =
             this.basePath +
@@ -1466,6 +1468,10 @@ export class RecordHistoryApi {
 
         if (dereference !== undefined) {
             queryParameters["dereference"] = dereference;
+        }
+
+        if (reversePageTokenOrder !== undefined) {
+            queryParameters["reversePageTokenOrder"] = reversePageTokenOrder;
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
@@ -1912,6 +1918,7 @@ export class RecordsApi {
      * @param orderBy Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field
      * @param orderByDir Specify the order by direction. Either &#x60;asc&#x60; or &#x60;desc&#x60;
      * @param orderNullFirst Specify whether nulls appear before (&#x60;true&#x60;) or after (&#x60;false&#x60;) non-null values in the sort ordering.
+     * @param reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to &#x60;true&#x60;, higher pageToken records (newer records) will be returned.
      * @param xMagdaSession Magda internal session id
      */
     public getAll(
@@ -1927,6 +1934,7 @@ export class RecordsApi {
         orderBy?: string,
         orderByDir?: string,
         orderNullFirst?: boolean,
+        reversePageTokenOrder?: boolean,
         xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Array<Record> }> {
         const localVarPath = this.basePath + "/records";
@@ -1985,6 +1993,10 @@ export class RecordsApi {
             queryParameters["orderNullFirst"] = orderNullFirst;
         }
 
+        if (reversePageTokenOrder !== undefined) {
+            queryParameters["reversePageTokenOrder"] = reversePageTokenOrder;
+        }
+
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
@@ -2036,6 +2048,7 @@ export class RecordsApi {
      * @param pageToken A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
      * @param start The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
      * @param limit The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
+     * @param reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to &#x60;true&#x60;, higher pageToken records (newer records) will be returned.
      * @param xMagdaSession Magda internal session id
      */
     public getAllSummary(
@@ -2043,6 +2056,7 @@ export class RecordsApi {
         pageToken?: string,
         start?: number,
         limit?: number,
+        reversePageTokenOrder?: boolean,
         xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Array<RecordSummary> }> {
         const localVarPath = this.basePath + "/records/summary";
@@ -2067,6 +2081,10 @@ export class RecordsApi {
 
         if (limit !== undefined) {
             queryParameters["limit"] = limit;
+        }
+
+        if (reversePageTokenOrder !== undefined) {
+            queryParameters["reversePageTokenOrder"] = reversePageTokenOrder;
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;

@@ -30,6 +30,7 @@ import scala.concurrent.Future
   * @apiDescription Get a list of all aspects of a record
   * @apiParam (path) {string} recordId ID of the record to fetch.
   * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
+  * @apiParam (query) {boolean} reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned.
   * @apiParam (query) {number} start The index of the first event to retrieve. Specify pageToken instead will result in better performance when access high offset. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
   * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
   * @apiHeader {string} X-Magda-Session Magda internal session id
@@ -144,6 +145,15 @@ class RecordHistoryService(
         paramType = "query",
         value =
           "true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter."
+      ),
+      new ApiImplicitParam(
+        name = "reversePageTokenOrder",
+        required = false,
+        dataType = "boolean",
+        paramType = "query",
+        allowMultiple = false,
+        value =
+          "When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned."
       )
     )
   )
@@ -155,41 +165,52 @@ class RecordHistoryService(
           'pageToken.as[Long].?,
           'start.as[Int].?,
           'limit.as[Int].?,
-          'dereference.as[Boolean].?
-        ) { (aspects, pageToken, start, limit, dereference) =>
-          requireRecordEventReadPermission(
-            authApiClient,
-            id
-          ) {
-            complete(
-              DB readOnly { implicit session =>
-                val aspectIdSet = aspects.toSet
+          'dereference.as[Boolean].?,
+          'reversePageTokenOrder.as[Boolean].?
+        ) {
+          (
+              aspects,
+              pageToken,
+              start,
+              limit,
+              dereference,
+              reversePageTokenOrder
+          ) =>
+            requireRecordEventReadPermission(
+              authApiClient,
+              id
+            ) {
+              complete(
+                DB readOnly { implicit session =>
+                  val aspectIdSet = aspects.toSet
 
-                if (dereference.getOrElse(false)) {
-                  eventPersistence.getEventsWithDereference(
-                    tenantId = tenantId,
-                    // we have checked the permission so passing `UnconditionalTrueDecision` here
-                    authDecision = UnconditionalTrueDecision,
-                    recordId = id,
-                    pageToken = pageToken,
-                    start = start,
-                    limit = limit,
-                    aspectIds = aspectIdSet
-                  )
-                } else {
-                  eventPersistence.getEvents(
-                    aspectIds = aspectIdSet,
-                    recordId = Some(id),
-                    pageToken = pageToken,
-                    start = start,
-                    limit = limit,
-                    tenantId = tenantId
-                  )
+                  if (dereference.getOrElse(false)) {
+                    eventPersistence.getEventsWithDereference(
+                      tenantId = tenantId,
+                      // we have checked the permission so passing `UnconditionalTrueDecision` here
+                      authDecision = UnconditionalTrueDecision,
+                      recordId = id,
+                      pageToken = pageToken,
+                      start = start,
+                      limit = limit,
+                      aspectIds = aspectIdSet,
+                      reversePageTokenOrder = reversePageTokenOrder
+                    )
+                  } else {
+                    eventPersistence.getEvents(
+                      aspectIds = aspectIdSet,
+                      recordId = Some(id),
+                      pageToken = pageToken,
+                      start = start,
+                      limit = limit,
+                      tenantId = tenantId,
+                      reversePageTokenOrder = reversePageTokenOrder
+                    )
+                  }
+
                 }
-
-              }
-            )
-          }
+              )
+            }
         }
       }
     }
