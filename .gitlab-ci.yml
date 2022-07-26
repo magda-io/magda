@@ -31,7 +31,7 @@ stages:
 
 yarn-install:
   stage: builders
-  image: data61/magda-builder-docker:master
+  image: data61/magda-builder-docker:node14
   retry: 1
   needs: []
   cache:
@@ -50,7 +50,7 @@ yarn-install:
 
 build-builder-image:
   stage: builders
-  image: data61/magda-builder-docker:master
+  image: data61/magda-builder-docker:node14
   retry: 1
   needs: []
   before_script:
