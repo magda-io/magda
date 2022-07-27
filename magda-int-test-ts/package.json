@@ -7,7 +7,7 @@
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
     "compile": "tsc -b && ts-module-alias-transformer dist",
-    "test": "PGUSER=postgres mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/tests/**/*.spec.ts\"",
+    "test": "PGUSER=postgres mocha --timeout 100000--compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/tests/**/*.spec.ts\"",
     "run-service": "ts-node -r tsconfig-paths/register src/runService.ts"
   },
   "devDependencies": {
