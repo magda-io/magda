@@ -164,34 +164,28 @@ export default class ServiceRunner {
     }
 
     async destroy() {
+        await this.destroyAllPortForward();
         for (const file of this.tmpFiles) {
             fs.unlinkSync(file);
         }
         await Promise.all([
             this.destroyAuthApi(),
             this.destroyPostgres(),
-            this.destroyOpa()
-        ]);
-        if (this.enableRegistryApi) {
-            await this.destroyRegistryApi();
-            await this.destroyAspectMigrator();
-        }
-        if (
-            this.enableElasticSearch ||
+            this.destroyOpa(),
+            ...(this.enableRegistryApi
+                ? [this.destroyRegistryApi(), this.destroyAspectMigrator()]
+                : []),
+            ...(this.enableElasticSearch ||
             this.enableSearchApi ||
             this.enableIndexer
-        ) {
-            await this.destroyElasticSearch();
-        }
-        if (this.enableStorageApi) {
-            await this.destroyMinio();
-            await this.destroyStorageApi();
-        }
-        if (this.enableSearchApi) {
-            await this.destroySearchApi();
-        }
-        await this.destroyAllPortForward();
-        await delay(5000);
+                ? [this.destroyElasticSearch()]
+                : []),
+            ...(this.enableStorageApi
+                ? [this.destroyMinio(), this.destroyStorageApi()]
+                : []),
+            ...(this.enableSearchApi ? [this.destroySearchApi()] : [])
+        ]);
+        await delay(30000);
     }
 
     getSbtPath() {
