@@ -46,6 +46,9 @@
 - Add `reversePageTokenOrder` parameter to registry APIs `GET /records`, `GET /records/summary` & `GET /records/:recordId/history`
 - #3163 Fixed Registry history API incorrectly reports more event available on the last page
 - #3383 Registry get records API didn't group aspectOrQuery correctly
+- Upgrade to Node 14
+- Upgrade bcrypt to 5.0.1
+- Fixed auth policy: make sure datasets without `publishing` aspect will be considered published
 
 ## 1.3.1
 

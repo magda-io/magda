@@ -28,7 +28,7 @@
     "release": "npm publish || echo \"Skip releasing npm package @magda/scripts.\""
   },
   "devDependencies": {
-    "@types/pg": "^7.4.14",
+    "@types/pg": "^8.6.5",
     "@types/request": "^2.48.1"
   },
   "magda": {
@@ -58,7 +58,7 @@
     "lodash": "^4.17.5",
     "moment": "^2.19.4",
     "nodemon": "^1.11.0",
-    "pg": "^7.11.0",
+    "pg": "^8.7.3",
     "pkg": "^4.3.4",
     "pwgen": "0.1.6",
     "request": "^2.88.0",

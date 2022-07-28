@@ -18,7 +18,7 @@
     "@types/express-session": "^1.15.15",
     "@types/lodash": "^4.14.74",
     "@types/passport": "^1.0.3",
-    "@types/pg": "^7.14.4",
+    "@types/pg": "^8.6.5",
     "@types/urijs": "^1.19.19",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.2",
@@ -31,7 +31,7 @@
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "lodash": "^4.17.4",
-    "pg": "^7.18.2",
+    "pg": "^8.7.3",
     "urijs": "^1.19.11"
   },
   "magda": {
