@@ -624,7 +624,26 @@ dockerize:ui:
     - buildtest:ui
   script:
     - ./gitlab-ci-buildx-setup.sh
-    - yarn run in-submodules -- -f categories.ui=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
+    - cd $CI_PROJECT_DIR/magda-apidocs-server && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
+    - cd $CI_PROJECT_DIR/magda-web-server && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
+
+dockerize:ui-scss-compiler:
+  timeout: 120 minutes
+  stage: dockerize
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  retry: 2
+  cache:
+    paths: []
+  services:
+    - docker:dind
+  needs:
+    - yarn-install
+    - registry-typescript-api
+    - buildtest:ui
+  script:
+    - ./gitlab-ci-buildx-setup.sh
+    - cd magda-scss-compiler
+    - yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
 
 dockerize:typescript:
   stage: dockerize
