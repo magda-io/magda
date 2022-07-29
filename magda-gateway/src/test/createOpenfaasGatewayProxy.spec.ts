@@ -3,67 +3,22 @@ import express from "express";
 import { expect } from "chai";
 import nock, { Scope } from "nock";
 import supertest from "supertest";
-import randomstring from "randomstring";
-import {
-    AUTHENTICATED_USERS_ROLE_ID,
-    ADMIN_USERS_ROLE_ID
-} from "magda-typescript-common/src/authorization-api/constants";
 import createOpenfaasGatewayProxy from "../createOpenfaasGatewayProxy";
 import setupTenantMode from "../setupTenantMode";
-
-const adminUserData = {
-    id: "00000000-0000-4000-8000-000000000000",
-    displayName: "Test Admin User",
-    email: "xxxx@xxx.com",
-    photoURL: "//www.gravatar.com/avatar/sdfsdfdsfdsfdsfdsfsdfd",
-    source: "ckan",
-    isAdmin: true,
-    orgUnitId: null as string | null,
-    roles: [
-        {
-            id: AUTHENTICATED_USERS_ROLE_ID,
-            name: "Authenticated Users",
-            permissionIds: [] as string[]
-        },
-        {
-            id: ADMIN_USERS_ROLE_ID,
-            name: "Admin Users",
-            permissionIds: []
-        }
-    ],
-    managingOrgUnitIds: [] as string[],
-    orgUnit: null as any
-};
-
-const nonAdminUserData = {
-    id: "00000000-0000-4000-8000-100000000000",
-    displayName: "Test Non-Admin User",
-    email: "xxxx@xxx.com",
-    photoURL: "//www.gravatar.com/avatar/sdfdsfdssf",
-    source: "ckan",
-    isAdmin: false,
-    orgUnitId: null as string | null,
-    roles: [
-        {
-            id: AUTHENTICATED_USERS_ROLE_ID,
-            name: "Authenticated Users",
-            permissionIds: [] as string[]
-        }
-    ],
-    managingOrgUnitIds: [] as string[],
-    orgUnit: null as any
-};
+import createMockAuthDecisionQueryClient, {
+    MockAuthDecisionClientConfig
+} from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient";
+import {
+    UnconditionalTrueDecision,
+    UnconditionalFalseDecision
+} from "magda-typescript-common/src/opa/AuthDecision";
+import { getUserId } from "magda-typescript-common/src/session/GetUserId";
 
 describe("Test createOpenfaasGatewayProxy", () => {
     const openfaasGatewayUrl = "http://gateway.openfaas.com";
     const jwtSecret = "test-jwt";
     let openfaasGatewayScope: Scope;
-
-    const authApiBaseUrl = "http://authApi";
-    let authApiScope: Scope;
-
-    const adminUserId = ADMIN_USERS_ROLE_ID;
-    const nonAdminUserId = "00000000-0000-4000-8000-100000000000";
+    const testUserId = "6987c543-da7c-4695-99ef-d6bc2e900078";
 
     after(() => {
         nock.cleanAll();
@@ -75,32 +30,37 @@ describe("Test createOpenfaasGatewayProxy", () => {
         // Allow localhost connections so we can test local routes and mock servers.
         nock.enableNetConnect("127.0.0.1");
 
-        openfaasGatewayScope = nock(openfaasGatewayUrl).persist();
-        openfaasGatewayScope.get(/.*/).reply(200, (uri: string) => ({ uri }));
-        openfaasGatewayScope
-            .post(/.*/)
-            .reply(200, (uri: string, requestBody: any) => ({
+        function responseGenerator(this: any, uri: string, requestBody: any) {
+            const userId = getUserId(
+                {
+                    header: () => this.req.headers["x-magda-session"]
+                } as any,
+                jwtSecret
+            ).valueOrThrow();
+            return {
                 uri,
-                requestBody
-            }));
+                requestBody,
+                userId
+            };
+        }
 
-        authApiScope = nock(authApiBaseUrl).persist();
-        authApiScope
-            .get(new RegExp(`/public/users/${adminUserId}`, "i"))
-            .reply(200, { ...adminUserData });
-        authApiScope
-            .get(new RegExp(`/public/users/${nonAdminUserId}`, "i"))
-            .reply(200, { ...nonAdminUserData });
+        openfaasGatewayScope = nock(openfaasGatewayUrl).persist();
+        openfaasGatewayScope.get(/.*/).reply(200, responseGenerator);
+        openfaasGatewayScope.post(/.*/).reply(200, responseGenerator);
+        openfaasGatewayScope.put(/.*/).reply(200, responseGenerator);
+        openfaasGatewayScope.delete(/.*/).reply(200, responseGenerator);
     });
 
     /**
      * Create the test request
      *
-     * @param {boolean} allowAdminOnly
      * @param {string} [userId] optional parameter. Specified the authenticated userId. If undefined, indicates user not logged in yet.
      * @returns
      */
-    function createTestRequest(allowAdminOnly: boolean, userId?: string) {
+    function createTestRequest(
+        authDecisionOrHandler: MockAuthDecisionClientConfig,
+        userId: string = testUserId
+    ) {
         const tenantMode = setupTenantMode({
             enableMultiTenants: false
         });
@@ -119,15 +79,17 @@ describe("Test createOpenfaasGatewayProxy", () => {
             }
         };
 
+        const authDecisionClient = createMockAuthDecisionQueryClient(
+            authDecisionOrHandler
+        );
+
         const app: express.Application = express();
         app.use(
             createOpenfaasGatewayProxy({
                 gatewayUrl: openfaasGatewayUrl,
-                allowAdminOnly: allowAdminOnly,
-                baseAuthUrl: authApiBaseUrl,
-                jwtSecret,
+                authClient: authDecisionClient,
                 apiRouterOptions: {
-                    jwtSecret: "test",
+                    jwtSecret,
                     tenantMode,
                     authenticator: mockAuthenticator,
                     routes: {}
@@ -138,71 +100,60 @@ describe("Test createOpenfaasGatewayProxy", () => {
         return supertest(app);
     }
 
-    it("should allow admin users to access openfaas gateway if `allowAdminOnly` = true", async () => {
-        const testReq = createTestRequest(true, adminUserId);
-        const randomPath = "/" + randomstring.generate();
+    function test(
+        endpoint: string,
+        requiredOperation: string,
+        requestCreator: (
+            app: supertest.SuperTest<supertest.Test>
+        ) => supertest.Test
+    ) {
+        describe(`Test endpoint ${endpoint}`, () => {
+            it(`should require permission of operation ${requiredOperation}`, async () => {
+                const testReq = createTestRequest((config, jwtToken) => {
+                    expect(config.operationUri).to.equal(requiredOperation);
+                    return Promise.resolve(UnconditionalTrueDecision);
+                });
+                const response = await requestCreator(testReq).expect(200);
+                expect(response.body.userId).to.equal(testUserId);
+            });
 
-        let res = await testReq.get(randomPath).expect(200);
-        expect(res.body.uri).to.equal(randomPath);
+            it(`should response 403 when not sufficient permission`, async () => {
+                const testReq = createTestRequest((config, jwtToken) => {
+                    expect(config.operationUri).to.equal(requiredOperation);
+                    return Promise.resolve(UnconditionalFalseDecision);
+                });
+                await requestCreator(testReq).expect(403);
+            });
+        });
+    }
 
-        const randomData = randomstring.generate();
-        res = await testReq
-            .post(randomPath)
-            .send({ data: randomData })
-            .expect(200);
-        expect(res.body.uri).to.equal(randomPath);
-        expect(res.body.requestBody).to.deep.equal({ data: randomData });
-    });
+    test("/system/functions", "object/faas/function/read", (app) =>
+        app.get("/system/functions")
+    );
 
-    it("should return 403 when a non-admin user to access openfaas gateway and `allowAdminOnly` = true", async () => {
-        const testReq = createTestRequest(true, nonAdminUserId);
-        const randomPath = "/" + randomstring.generate();
+    test("/system/functions", "object/faas/function/create", (app) =>
+        app.post("/system/functions")
+    );
 
-        await testReq.get(randomPath).expect(403);
+    test("/system/functions", "object/faas/function/update", (app) =>
+        app.put("/system/functions")
+    );
 
-        const randomData = randomstring.generate();
-        await testReq.post(randomPath).send({ data: randomData }).expect(403);
-    });
+    test("/system/functions", "object/faas/function/delete", (app) =>
+        app.delete("/system/functions")
+    );
 
-    it("should return 401 when unauthenticated user to access openfaas gateway and `allowAdminOnly` = true", async () => {
-        const testReq = createTestRequest(true, undefined);
-        const randomPath = "/" + randomstring.generate();
+    test("/system/function/:functionName", "object/faas/function/read", (app) =>
+        app.get("/system/function/test-function")
+    );
 
-        await testReq.get(randomPath).expect(401);
+    test("/function/:functionName", "object/faas/function/invoke", (app) =>
+        app.post("/function/test-function")
+    );
 
-        const randomData = randomstring.generate();
-        await testReq.post(randomPath).send({ data: randomData }).expect(401);
-    });
-
-    it("should allow Non-admin users to access openfaas gateway if `allowAdminOnly` = false", async () => {
-        const testReq = createTestRequest(false, nonAdminUserId);
-        const randomPath = "/" + randomstring.generate();
-
-        let res = await testReq.get(randomPath).expect(200);
-        expect(res.body.uri).to.equal(randomPath);
-
-        const randomData = randomstring.generate();
-        res = await testReq
-            .post(randomPath)
-            .send({ data: randomData })
-            .expect(200);
-        expect(res.body.uri).to.equal(randomPath);
-        expect(res.body.requestBody).to.deep.equal({ data: randomData });
-    });
-
-    it("should allow unauthenticated users to access openfaas gateway if `allowAdminOnly` = false", async () => {
-        const testReq = createTestRequest(false, undefined);
-        const randomPath = "/" + randomstring.generate();
-
-        let res = await testReq.get(randomPath).expect(200);
-        expect(res.body.uri).to.equal(randomPath);
-
-        const randomData = randomstring.generate();
-        res = await testReq
-            .post(randomPath)
-            .send({ data: randomData })
-            .expect(200);
-        expect(res.body.uri).to.equal(randomPath);
-        expect(res.body.requestBody).to.deep.equal({ data: randomData });
-    });
+    test(
+        "/async-function/:functionName",
+        "object/faas/function/invoke",
+        (app) => app.post("/async-function/test-function")
+    );
 });
