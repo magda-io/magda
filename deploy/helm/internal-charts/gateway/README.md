@@ -57,6 +57,7 @@ Kubernetes: `>= 1.14.0-0`
 | service.externalPort | int | `80` |  |
 | service.internalPort | int | `80` |  |
 | service.type | string | `"NodePort"` |  |
+| skipAuth | bool | `false` | when set to true, API will not query policy engine for auth decision but assume it's always permitted.  It's for debugging only. |
 | web | string | `"http://web"` | Default web route.  This is the last route of the proxy. Main UI should be served from here. |
 | webRoutes | object | `{"preview-map":"http://preview-map:6110"}` | extra web routes. See [Proxy Target Definition](#proxy-target-definition) section below for route format. |
 

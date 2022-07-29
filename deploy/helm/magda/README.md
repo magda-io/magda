@@ -35,10 +35,9 @@ A complete solution for managing, publishing and discovering government data, pr
 | ckan-connector-functions.includeInitialJobs | bool | `false` |  |
 | global.connectors.includeCronJobs | bool | `true` |  |
 | global.connectors.includeInitialJobs | bool | `false` |  |
-| global.openfaas.allowAdminOnly | bool | `true` |  |
-| global.openfaas.enabled | bool | `true` |  |
-| global.openfaas.functionNamespace | string | `"openfaas-fn"` |  |
-| global.openfaas.mainNamespace | string | `"openfaas"` |  |
+| global.openfaas.enabled | bool | `true` | turn on / off openfaas All openfaas dependents should check this field to decide deployment logic (`tags` unfortunately not available to ). They choose to simply not deploy or prompt an error message via [helm required function](https://helm.sh/docs/howto/charts_tips_and_tricks/#know-your-template-functions) |
+| global.openfaas.functionNamespace | string | `"openfaas-fn"` | Default namespace for functions |
+| global.openfaas.mainNamespace | string | `"openfaas"` | Default namespace for gateway and other core modules |
 | global.openfaas.namespacePrefix | string | `""` |  |
 | global.openfaas.secrets.authSecrets | bool | `true` |  |
 | openfaas.basic_auth | bool | `false` |  |
