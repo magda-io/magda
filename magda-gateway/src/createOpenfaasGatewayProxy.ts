@@ -1,15 +1,14 @@
 import express from "express";
 import createBaseProxy from "./createBaseProxy";
-import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 import { GenericProxyRouterOptions } from "./createGenericProxyRouter";
 import buildJwt from "magda-typescript-common/src/session/buildJwt";
 
 interface OptionsType {
     gatewayUrl: string;
-    baseAuthUrl: string;
-    allowAdminOnly?: boolean;
     apiRouterOptions: GenericProxyRouterOptions;
-    jwtSecret: string;
+    authClient: AuthDecisionQueryClient;
 }
 
 export default function createOpenfaasGatewayProxy(
@@ -17,7 +16,7 @@ export default function createOpenfaasGatewayProxy(
 ): express.Router {
     const router = express.Router();
     const proxy = createBaseProxy(options.apiRouterOptions);
-    const jwtSecret = options.jwtSecret;
+    const jwtSecret = options.apiRouterOptions.jwtSecret;
 
     options.apiRouterOptions.authenticator.applyToRoute(router);
 
@@ -30,13 +29,77 @@ export default function createOpenfaasGatewayProxy(
         }
     });
 
-    if (options.allowAdminOnly) {
-        router.use(
-            mustBeAdmin(options.baseAuthUrl, options.apiRouterOptions.jwtSecret)
-        );
-    }
+    router.get(
+        "/system/functions",
+        requireUnconditionalAuthDecision(options.authClient, {
+            operationUri: "object/faas/function/read"
+        }),
+        (req: express.Request, res: express.Response) => {
+            proxy.web(req, res, { target: options.gatewayUrl });
+        }
+    );
 
-    router.all("*", (req: express.Request, res: express.Response) => {
+    router.post(
+        "/system/functions",
+        requireUnconditionalAuthDecision(options.authClient, {
+            operationUri: "object/faas/function/create"
+        }),
+        (req: express.Request, res: express.Response) => {
+            proxy.web(req, res, { target: options.gatewayUrl });
+        }
+    );
+
+    router.put(
+        "/system/functions",
+        requireUnconditionalAuthDecision(options.authClient, {
+            operationUri: "object/faas/function/update"
+        }),
+        (req: express.Request, res: express.Response) => {
+            proxy.web(req, res, { target: options.gatewayUrl });
+        }
+    );
+
+    router.delete(
+        "/system/functions",
+        requireUnconditionalAuthDecision(options.authClient, {
+            operationUri: "object/faas/function/delete"
+        }),
+        (req: express.Request, res: express.Response) => {
+            proxy.web(req, res, { target: options.gatewayUrl });
+        }
+    );
+
+    router.post(
+        "/function/:functionName",
+        requireUnconditionalAuthDecision(options.authClient, {
+            operationUri: "object/faas/function/invoke"
+        }),
+        (req: express.Request, res: express.Response) => {
+            proxy.web(req, res, { target: options.gatewayUrl });
+        }
+    );
+
+    router.post(
+        "/async-function/:functionName",
+        requireUnconditionalAuthDecision(options.authClient, {
+            operationUri: "object/faas/function/invoke"
+        }),
+        (req: express.Request, res: express.Response) => {
+            proxy.web(req, res, { target: options.gatewayUrl });
+        }
+    );
+
+    router.get(
+        "/system/function/:functionName",
+        requireUnconditionalAuthDecision(options.authClient, {
+            operationUri: "object/faas/function/read"
+        }),
+        (req: express.Request, res: express.Response) => {
+            proxy.web(req, res, { target: options.gatewayUrl });
+        }
+    );
+
+    router.get("/healthz", (req: express.Request, res: express.Response) => {
         proxy.web(req, res, { target: options.gatewayUrl });
     });
 

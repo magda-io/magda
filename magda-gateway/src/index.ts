@@ -87,6 +87,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:6104/v0"
         })
+        .option("skipAuth", {
+            describe:
+                "When set to true, API will not query policy engine for auth decision but assume it's always permitted. It's for debugging only.",
+            type: "boolean",
+            default: process.env.SKIP_AUTH == "true" ? true : false
+        })
         .option("web", {
             describe: "The base URL of the web site.",
             type: "string",
@@ -189,12 +195,6 @@ const argv = addJwtSecretFromEnvVar(
         .option("openfaasGatewayUrl", {
             describe: "Internal openfaas gateway url",
             type: "string"
-        })
-        .option("openfaasAllowAdminOnly", {
-            describe:
-                "Whether only allow admin users to access openfaas gateway.",
-            type: "boolean",
-            default: false
         })
         .option("defaultCacheControl", {
             describe:

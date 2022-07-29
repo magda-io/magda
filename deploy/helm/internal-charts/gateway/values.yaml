@@ -203,3 +203,7 @@ defaultCacheControl: "public, max-age=60"
 # If not set, the request will time out after 120 seconds.
 # @default -- nil (120 seconds default value will be used by upstream lib internally)
 proxyTimeout: 
+
+# -- when set to true, API will not query policy engine for auth decision but assume it's always permitted. 
+# It's for debugging only.
+skipAuth: false
