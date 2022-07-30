@@ -11,6 +11,7 @@ export type AuthDecisionReqConfig = {
     pretty?: boolean;
     humanReadable?: boolean;
     concise?: boolean;
+    jwtToken?: string;
     input?: {
         [key: string]: any;
     };

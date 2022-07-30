@@ -1,6 +1,5 @@
 package common
 
-import data.common.breakdownOperationUri
 import data.common.hasNoConstraintPermission
 import data.common.hasOwnerConstraintPermission
 import data.common.hasOrgUnitConstaintPermission

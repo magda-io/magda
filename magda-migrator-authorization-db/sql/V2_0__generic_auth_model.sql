@@ -296,6 +296,21 @@ VALUES
 ('authObject/orgUnit/update', 'Update Organization Unit', '', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit')),
 ('authObject/orgUnit/delete', 'Delete Organization Unit', '', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit'));
 
+-- Add resource, operation for access `faas function` 
+INSERT INTO "public"."resources" 
+    ("uri", "name", "description")
+VALUES 
+('object/faas/function', 'FaaS functions', 'Resource represents FaaS functions');
+
+INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
+VALUES 
+('object/faas/function/create','Deploy / Create a FaaS function', 'Allow a user to create / deploy a FaaS function.', (SELECT id FROM resources WHERE uri = 'object/faas/function')),
+('object/faas/function/read','Read any information of a FaaS function', 'Allow a user to read information of a FaaS function.', (SELECT id FROM resources WHERE uri = 'object/faas/function')),
+('object/faas/function/update','Update a FaaS function', 'Allow a user to update a FaaS function.', (SELECT id FROM resources WHERE uri = 'object/faas/function')),
+('object/faas/function/invoke','Invoke a FaaS function', 'Allow a user to invoke a FaaS function.', (SELECT id FROM resources WHERE uri = 'object/faas/function')),
+('object/faas/function/delete','Delete a FaaS function', 'Allow a user to delete a FaaS function.', (SELECT id FROM resources WHERE uri = 'object/faas/function'));
+-- End adding resource, operation for access `faas function` 
+
 -- create Data Stewards role
 INSERT INTO "public"."roles" ("id", "name", "description") 
 VALUES 
@@ -313,7 +328,8 @@ VALUES
 ('45247ef8-68b9-4dab-a5d5-a23143503887', 'View Published Datasets within Org Units', (SELECT id FROM resources WHERE uri = 'object/dataset/published') , 'f', 't', 'f', 'This permission allows Data Stewards to view published datasets within org units.'),
 ('5f89bd45-899a-4c37-9f71-3da878ad247b', 'View Distribution within Org Units', (SELECT id FROM resources WHERE uri = 'object/distribution') , 'f', 't', 'f', 'This permission allows Data Stewards to view distributions within org units.'),
 ('6a54f495-bcd0-4474-be12-60e1454aec7e', 'View Orgnisation (Publisher) within Org Units', (SELECT id FROM resources WHERE uri = 'object/organization') , 'f', 't', 'f', 'This permission allows Data Stewards to view orgnisation (publisher) within org units.'),
-('60ea27d1-5772-4e11-823d-92f88f927745', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit') , 'f', 't', 'f', 'This permission allows Data Stewards to read org unit info within his org unit sub tree.');
+('60ea27d1-5772-4e11-823d-92f88f927745', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit') , 'f', 't', 'f', 'This permission allows Data Stewards to read org unit info within his org unit sub tree.'),
+('2c1f7e2e-3ff2-460f-95b4-fef8b6698ac1', 'Read / invoke FaaS functions', (SELECT id FROM resources WHERE uri = 'object/faas/function') , 'f', 'f', 'f', 'This permission allows Data Stewards to read / invoke all FaaS functions.');
 -- Add proper operations to permissions above
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
@@ -352,6 +368,10 @@ VALUES
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
 ('60ea27d1-5772-4e11-823d-92f88f927745', (SELECT id FROM operations WHERE uri = 'authObject/orgUnit/read'));
+INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
+VALUES 
+('2c1f7e2e-3ff2-460f-95b4-fef8b6698ac1', (SELECT id FROM operations WHERE uri = 'object/faas/function/read')),
+('2c1f7e2e-3ff2-460f-95b4-fef8b6698ac1', (SELECT id FROM operations WHERE uri = 'object/faas/function/invoke'));
 -- Add permissions to Data Stewards role
 INSERT INTO "public"."role_permissions" ("role_id", "permission_id") 
 VALUES 
@@ -363,7 +383,8 @@ VALUES
 ('4154bf84-d36e-4551-9734-4666f5b1e1c0', '45247ef8-68b9-4dab-a5d5-a23143503887'),
 ('4154bf84-d36e-4551-9734-4666f5b1e1c0', '5f89bd45-899a-4c37-9f71-3da878ad247b'),
 ('4154bf84-d36e-4551-9734-4666f5b1e1c0', '6a54f495-bcd0-4474-be12-60e1454aec7e'),
-('4154bf84-d36e-4551-9734-4666f5b1e1c0', '60ea27d1-5772-4e11-823d-92f88f927745');
+('4154bf84-d36e-4551-9734-4666f5b1e1c0', '60ea27d1-5772-4e11-823d-92f88f927745'),
+('4154bf84-d36e-4551-9734-4666f5b1e1c0', '2c1f7e2e-3ff2-460f-95b4-fef8b6698ac1');
 -- end create Data Stewards role
 
 -- START add more permissions to authenticated & anonymous users role

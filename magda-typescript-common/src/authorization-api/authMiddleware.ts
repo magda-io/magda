@@ -134,7 +134,9 @@ export function withAuthDecision(
             if (!config) {
                 return;
             }
-            const jwtToken = req.get("X-Magda-Session");
+            const jwtToken = config?.jwtToken
+                ? config.jwtToken
+                : req.get("X-Magda-Session");
             const authDecision = await authDecisionClient.getAuthDecision(
                 config,
                 jwtToken

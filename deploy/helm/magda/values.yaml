@@ -12,14 +12,15 @@ global:
     includeInitialJobs: false
     includeCronJobs: true
   openfaas:
-    # turn on / off openfaas
+    # -- turn on / off openfaas
     # All openfaas dependents should check this field to decide deployment logic (`tags` unfortunately not available to ).
     # They choose to simply not deploy or prompt an error message via [helm required function](https://helm.sh/docs/howto/charts_tips_and_tricks/#know-your-template-functions)
     enabled: true 
     namespacePrefix: ""
-    functionNamespace: openfaas-fn  # Default namespace for functions
-    mainNamespace: openfaas # Default namespace for gateway and other core modules
-    allowAdminOnly: true # Only allow logged-in Admin to access openfaas gateway
+    # -- Default namespace for functions
+    functionNamespace: openfaas-fn  
+    # -- Default namespace for gateway and other core modules
+    mainNamespace: openfaas 
     secrets:
       authSecrets: true
 
