@@ -67,6 +67,12 @@ allow {
 }
 
 allow {
+    ## delegate FaaS function related decision to FaaS function rules
+    startswith(input.operationUri, "object/faas/function/")
+    data.object.faas.function.allow
+}
+
+allow {
     ## delegate storage bucket related decision to storage bucket rules
     startswith(input.operationUri, "storage/bucket/")
     data.storage.bucket.allow

@@ -20,6 +20,18 @@ describe("Test createOpenfaasGatewayProxy", () => {
     let openfaasGatewayScope: Scope;
     const testUserId = "6987c543-da7c-4695-99ef-d6bc2e900078";
 
+    function getUserIdFromJwtToken(jwtToken?: string) {
+        if (!jwtToken) {
+            return undefined;
+        }
+        return getUserId(
+            {
+                header: () => jwtToken
+            } as any,
+            jwtSecret
+        ).valueOrThrow();
+    }
+
     after(() => {
         nock.cleanAll();
         nock.enableNetConnect();
@@ -31,16 +43,12 @@ describe("Test createOpenfaasGatewayProxy", () => {
         nock.enableNetConnect("127.0.0.1");
 
         function responseGenerator(this: any, uri: string, requestBody: any) {
-            const userId = getUserId(
-                {
-                    header: () => this.req.headers["x-magda-session"]
-                } as any,
-                jwtSecret
-            ).valueOrThrow();
             return {
                 uri,
                 requestBody,
-                userId
+                userId: getUserIdFromJwtToken(
+                    this.req.headers["x-magda-session"]
+                )
             };
         }
 
@@ -111,6 +119,9 @@ describe("Test createOpenfaasGatewayProxy", () => {
             it(`should require permission of operation ${requiredOperation}`, async () => {
                 const testReq = createTestRequest((config, jwtToken) => {
                     expect(config.operationUri).to.equal(requiredOperation);
+                    expect(getUserIdFromJwtToken(jwtToken)).to.equal(
+                        testUserId
+                    );
                     return Promise.resolve(UnconditionalTrueDecision);
                 });
                 const response = await requestCreator(testReq).expect(200);
@@ -120,6 +131,9 @@ describe("Test createOpenfaasGatewayProxy", () => {
             it(`should response 403 when not sufficient permission`, async () => {
                 const testReq = createTestRequest((config, jwtToken) => {
                     expect(config.operationUri).to.equal(requiredOperation);
+                    expect(getUserIdFromJwtToken(jwtToken)).to.equal(
+                        testUserId
+                    );
                     return Promise.resolve(UnconditionalFalseDecision);
                 });
                 await requestCreator(testReq).expect(403);
