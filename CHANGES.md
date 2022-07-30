@@ -49,7 +49,7 @@
 - Upgrade to Node 14
 - Upgrade bcrypt to 5.0.1
 - Fixed auth policy: make sure datasets without `publishing` aspect will be considered published
-- #3348 secure openfaas gateway with new auth model
+- #3348 secure openfaas gateway with new auth model & update API docs
 
 ## 1.3.1
 
