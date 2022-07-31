@@ -59,11 +59,11 @@ build-builder-image:
     - docker:dind
   script: |
     # Build all three builder images and push to gitlab registry
-    cd magda-builder-nodejs && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    cd magda-builder-nodejs && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-nodejs:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
     cd .. 
-    cd magda-builder-docker && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    cd magda-builder-docker && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-docker:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
     cd .. 
-    cd magda-builder-scala && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    cd magda-builder-scala && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-scala:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
     cd .. 
 
 # Make sure sbt depenencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
@@ -71,7 +71,7 @@ sbt-prebuild:
   stage: sbt-prebuild
   needs: 
     - build-builder-image
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
@@ -97,7 +97,7 @@ sbt-prebuild:
 
 check-scala-formatting:
   stage: prebuild
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   needs: 
     - build-builder-image
   script:
@@ -105,7 +105,7 @@ check-scala-formatting:
 
 registry-typescript-api:
   stage: prebuild
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   needs: 
     - yarn-install
     - sbt-prebuild
@@ -118,7 +118,7 @@ registry-typescript-api:
 
 buildtest:search-with-index-cache:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   retry: 2
   timeout: 18 minutes
   needs: 
@@ -176,7 +176,7 @@ buildtest:search-with-index-cache:
 
 buildtest:search-no-index-cache:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   retry: 2
   timeout: 18 minutes
   needs: 
@@ -239,7 +239,7 @@ buildtest:search-no-index-cache:
 
 buildtest:ui:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   retry: 1
   needs: 
     - yarn-install
@@ -264,7 +264,7 @@ buildtest:ui:
 buildtest:registry:
   stage: buildtest
   retry: 2
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   needs: 
     - sbt-prebuild
   timeout: 30 minutes
@@ -290,7 +290,7 @@ buildtest:registry:
 buildtest:scala-others:
   stage: buildtest
   retry: 2
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   needs: 
     - sbt-prebuild
   timeout: 30 minutes
@@ -309,7 +309,7 @@ buildtest:scala-others:
 
 buildtest:typescript-apis-stateless:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   retry: 1
   needs: 
     - yarn-install
@@ -335,7 +335,7 @@ buildtest:typescript-apis-stateless:
 
 buildtest:typescript-apis-with-pg:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   needs: 
     - yarn-install
@@ -388,7 +388,7 @@ buildtest:typescript-apis-with-pg:
 
 buildtest:typescript-apis-with-es:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   needs:
     - yarn-install
@@ -429,7 +429,7 @@ buildtest:typescript-apis-with-es:
 
 buildtest:storage-api:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   needs:
     - yarn-install
@@ -467,7 +467,7 @@ buildtest:storage-api:
 
 buildtest:integration-tests:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   retry: 1
   needs:
     - yarn-install
@@ -518,7 +518,7 @@ buildtest:integration-tests:
 
 buildtest:opa-policies:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   needs:
     - yarn-install
@@ -565,7 +565,7 @@ buildtest:helm-charts:
 
 buildtest:helm-docs-check:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   needs: 
     - build-builder-image
   cache:
@@ -592,7 +592,7 @@ buildtest:helm-docs-check:
 
 dockerize:scala:
   stage: dockerize
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   retry: 2
   needs:
     - registry-typescript-api
@@ -612,7 +612,7 @@ dockerize:scala:
 
 dockerize:ui:
   stage: dockerize
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   cache:
     paths: []
@@ -630,7 +630,7 @@ dockerize:ui:
 dockerize:ui-scss-compiler:
   timeout: 120 minutes
   stage: dockerize
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   cache:
     paths: []
@@ -647,7 +647,7 @@ dockerize:ui-scss-compiler:
 
 dockerize:typescript:
   stage: dockerize
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   cache:
     paths: []
@@ -667,7 +667,7 @@ dockerize:typescript:
 
 dockerize:migrators:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   needs:
     - yarn-install
@@ -682,7 +682,7 @@ dockerize:migrators:
 
 dockerize:opa:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   needs: 
     - yarn-install
@@ -700,7 +700,7 @@ dockerize:opa:
 
 dockerize:dockerExtensions:
   stage: prebuild
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   needs:
     - yarn-install
@@ -854,7 +854,7 @@ pre-release:check-release-version:
   needs:
     - yarn-install
   cache: {}
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   script:
     - yarn check-release-version
 
@@ -890,7 +890,7 @@ Release-to-Docker-Hub-Github-Container:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   cache: {}
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   script:
     - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u gitlab-ci-token --password-stdin
@@ -940,7 +940,7 @@ Publish NPM Packages:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$BUILDER_IMG_TAG
+    name: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   cache: {}
   script:
     # Setup NPM token & scoped registry

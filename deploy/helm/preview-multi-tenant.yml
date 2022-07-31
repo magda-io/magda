@@ -2,7 +2,7 @@ global:
   rollingUpdate:
     maxUnavailable: 1000
   image:
-    repository: "registry.gitlab.com/magda-data/magda/data61"
+    repository: "registry.gitlab.com/magda-data/magda"
     pullSecrets: "regcred"
     pullPolicy: Always
   exposeNodePorts: false
@@ -76,7 +76,7 @@ magda:
         postgresql:
           image: 
             registry: "registry.gitlab.com"
-            repository: "magda-data/magda/data61/magda-postgres"
+            repository: "magda-data/magda/magda-postgres"
             pullPolicy: "Always"
             pullSecrets: 
               - "regcred"
