@@ -48,7 +48,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-admin-api",
+      "name": "magda-admin-api",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",

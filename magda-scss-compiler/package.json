@@ -57,7 +57,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-scss-compiler",
+      "name": "magda-scss-compiler",
       "include": "node_modules dist Dockerfile setup.sh package.json"
     },
     "jwtSecret": "squirrel",

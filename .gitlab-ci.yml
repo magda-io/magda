@@ -606,9 +606,9 @@ dockerize:scala:
     - ./gitlab-ci-buildx-setup.sh
     # output stage docker image content without build it
     - sbt docker:stage
-    - cd $CI_PROJECT_DIR/magda-search-api/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-search-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
-    - cd $CI_PROJECT_DIR/magda-registry-api/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-registry-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
-    - cd $CI_PROJECT_DIR/magda-indexer/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-indexer:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd $CI_PROJECT_DIR/magda-search-api/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-search-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd $CI_PROJECT_DIR/magda-registry-api/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-registry-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd $CI_PROJECT_DIR/magda-indexer/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-indexer:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
 
 dockerize:ui:
   stage: dockerize
@@ -858,16 +858,25 @@ pre-release:check-release-version:
   script:
     - yarn check-release-version
 
-Release-to-Docker-Hub:
+Release-to-Docker-Hub-Github-Container:
   stage: release
   services:
     - docker:dind
-  only:
-    # Strict Semvar validation
-    - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
-  except:
-    - branches
-    - triggers
+  rules:
+    # Strict Semvar validation. match any version string. Should release version tag
+    - if: $CI_COMMIT_TAG =~ /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
+      variables:
+        RELEASE_VERSION_TAG: "true"
+    # Regex matches non-pre-release version only e.g. v1.0.2; Should release `latest` tag
+    - if: $CI_COMMIT_TAG =~ /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
+      variables:
+        RELEASE_LATEST_TAG: "true"
+    - if: $CI_COMMIT_BRANCH == "master"
+      variables:
+        RELEASE_MASTER_TAG: "true"
+    - if: $CI_COMMIT_BRANCH == "next"
+      variables:
+        RELEASE_NEXT_TAG: "true"
   needs:
     - pre-release:check-release-version
     - yarn-install
@@ -884,67 +893,29 @@ Release-to-Docker-Hub:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
-    - yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
-
-# When a PR is merged to master, all images will be pushed to docker hub to replace `master` tag
-Release-Master-Tag-to-Docker-Hub:
-  stage: release
-  services:
-    - docker:dind
-  only:
-    - master
-  needs:
-    - yarn-install
-    - buildtest:helm-charts
-    - buildtest:helm-docs-check
-    - dockerize:scala
-    - dockerize:ui
-    - dockerize:ui-scss-compiler
-    - dockerize:typescript
-    - dockerize:migrators
-    - dockerize:dockerExtensions
-    - buildtest:integration-tests
-  cache: {}
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
-  retry: 1
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
-    - yarn run retag-and-push -- -- -- --toVersion=master --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
-
-# When a new version is released (except pre-release versions), all images will be pushed to docker hub to replace `latest` tag
-Release-Latest-Tag-to-Docker-Hub:
-  stage: release
-  services:
-    - docker:dind
-  only:
-    # Regex matches non-pre-release version only e.g. v1.0.2
-    - /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
-  except:
-    - branches
-    - triggers
-  needs:
-    - pre-release:check-release-version
-    - yarn-install
-    - buildtest:helm-charts
-    - buildtest:helm-docs-check
-    - dockerize:scala
-    - dockerize:ui
-    - dockerize:ui-scss-compiler
-    - dockerize:typescript
-    - dockerize:migrators
-    - dockerize:dockerExtensions
-    - Release-to-Docker-Hub
-    - buildtest:integration-tests
-  cache: {}
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
-  retry: 1
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
-    - yarn run retag-and-push -- -- -- --toVersion=latest --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
+    - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u gitlab-ci-token --password-stdin
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u magdabot --password-stdin
+    - echo "$GITHUB_ACCESS_TOKEN" | docker login ghcr.io -u magdabot --password-stdin
+    - |
+      if [ "$RELEASE_VERSION_TAG" == "true" ]; then
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --copyFromRegistry=true
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --copyFromRegistry=true
+      fi
+    - |
+      if [ "$RELEASE_LATEST_TAG" == "true" ]; then
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=latest --copyFromRegistry=true
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=latest --copyFromRegistry=true
+      fi
+    - |
+      if [ "$RELEASE_MASTER_TAG" == "true" ]; then
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=master --copyFromRegistry=true
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=master --copyFromRegistry=true
+      fi
+    - |
+      if [ "$RELEASE_NEXT_TAG" == "true" ]; then
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=next --copyFromRegistry=true
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=next --copyFromRegistry=true
+      fi
 
 Publish NPM Packages:
   stage: release
@@ -978,6 +949,46 @@ Publish NPM Packages:
     - yarn run in-submodules -f categories.npmPackage=true run release
 
 Publish Helm Chart:
+  stage: release
+  rules:
+    # Strict Semvar validation. match any version string. Should release version tag
+    - if: $CI_COMMIT_TAG =~ /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
+  needs:
+    - pre-release:check-release-version
+    - yarn-install
+    - buildtest:helm-charts
+    - buildtest:helm-docs-check
+    - dockerize:scala
+    - dockerize:ui
+    - dockerize:ui-scss-compiler
+    - dockerize:typescript
+    - dockerize:migrators
+    - dockerize:dockerExtensions
+    - buildtest:integration-tests
+  image:
+    name: dtzar/helm-kubectl:3.9.2
+  retry: 1
+  script: |
+    # release helm charts to github container registry
+    echo "$GITHUB_ACCESS_TOKEN" | helm registry login -u magdabot ghcr.io/magda-io --password-stdin
+    cd deploy/helm
+    # release magda-core helm chart
+    helm package magda-core
+    PKG_NAME=`ls *.tgz`
+    helm push ${PKG_NAME} oci://ghcr.io/magda-io/charts
+    unlink ${PKG_NAME}
+    # release magda helm chart
+    helm package magda
+    PKG_NAME=`ls *.tgz`
+    helm push ${PKG_NAME} oci://ghcr.io/magda-io/charts
+    unlink ${PKG_NAME}
+    # release magda-common helm chart
+    helm package magda-common
+    PKG_NAME=`ls *.tgz`
+    helm push ${PKG_NAME} oci://ghcr.io/magda-io/charts
+    unlink ${PKG_NAME}
+
+Publish Helm Chart S3:
   stage: release
   only:
     # Strict Semvar validation
@@ -1021,4 +1032,3 @@ Publish Helm Chart:
     - mv -f sync_dir/index.yaml index_dir/index.yaml
     - aws s3 sync sync_dir s3://magda-charts/
     - aws s3 cp index_dir/index.yaml s3://magda-charts/index.yaml
-

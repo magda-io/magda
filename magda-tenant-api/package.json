@@ -49,7 +49,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-tenant-api",
+      "name": "magda-tenant-api",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",

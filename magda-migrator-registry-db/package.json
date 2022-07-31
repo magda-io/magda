@@ -12,7 +12,7 @@
   "license": "Apache-2.0",
   "config": {
     "docker": {
-      "name": "data61/magda-migrator-registry-db",
+      "name": "magda-migrator-registry-db",
       "include": "Dockerfile sql"
     }
   },

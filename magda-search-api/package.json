@@ -15,7 +15,10 @@
   },
   "config": {
     "interface": "0.0.0.0",
-    "port": 6102
+    "port": 6102,
+    "docker": {
+      "name": "magda-search-api"
+    }
   },
   "magda": {
     "language": "scala",

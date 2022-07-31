@@ -17,7 +17,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-migrator-registry-aspects",
+      "name": "magda-migrator-registry-aspects",
       "include": "Dockerfile node_modules dist"
     },
     "jwtSecret": "squirrel",

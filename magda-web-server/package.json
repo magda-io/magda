@@ -60,7 +60,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-web-server",
+      "name": "magda-web-server",
       "include": "node_modules dist Dockerfile package.json ../node_modules/@magda/web-client/package.json ../node_modules/@magda/web-client/build"
     }
   },

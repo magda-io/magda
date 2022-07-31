@@ -81,7 +81,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-gateway",
+      "name": "magda-gateway",
       "include": "node_modules dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",

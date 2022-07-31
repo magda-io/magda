@@ -55,7 +55,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-content-api",
+      "name": "magda-content-api",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",

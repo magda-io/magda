@@ -38,7 +38,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-storage-api",
+      "name": "magda-storage-api",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",

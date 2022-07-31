@@ -13,6 +13,11 @@
     "dev": "cd .. && sbt ~indexer/relaunch"
   },
   "license": "Apache-2.0",
+  "config": {
+    "docker": {
+      "name": "magda-indexer"
+    }
+  },
   "magda": {
     "language": "scala"
   }

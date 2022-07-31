@@ -11,7 +11,7 @@
   "license": "Apache-2.0",
   "config": {
     "docker": {
-      "name": "data61/magda-builder-scala",
+      "name": "magda-builder-scala",
       "include": "Dockerfile"
     }
   },

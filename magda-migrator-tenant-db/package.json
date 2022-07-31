@@ -11,7 +11,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-migrator-tenant-db",
+      "name": "magda-migrator-tenant-db",
       "include": "Dockerfile sql"
     }
   },

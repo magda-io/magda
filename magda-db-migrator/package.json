@@ -12,7 +12,7 @@
   "license": "Apache-2.0",
   "config": {
     "docker": {
-      "name": "data61/magda-db-migrator",
+      "name": "magda-db-migrator",
       "include": "Dockerfile flyway-commandline-4.2.0-linux-x64.tar.gz migrate.sh"
     }
   },
