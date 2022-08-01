@@ -74,12 +74,6 @@ export const content: { [s: string]: ContentItem } = {
     "home/story-images/*": makeImageItem(),
     stylesheet: makeCssItem(),
     "page/*": makeJsonItem({}, { schema: schemas.page }),
-    // BEGIN TEMPORARY UNTIL STORAGE API GETS HERE
-    "csv/*": makeSpreadsheetItem({
-        route: /\/csv\-[a-z][\w\-]*[a-z]/,
-        private: true
-    }),
-    // END TEMPORARY UNTIL STORAGE API GETS HERE
     // BEGIN EMAIL TEMPLATE STUFF
     emailTemplates: makeHtmlItem({
         route: /\/emailTemplates\/\w+\.html/
@@ -151,23 +145,6 @@ function makeHtmlItem(extra: any = {}) {
                 type: "text/html",
                 limit: "1mb"
             })
-        },
-        extra
-    );
-}
-
-function makeSpreadsheetItem(extra: any = {}) {
-    return Object.assign(
-        {
-            body: bodyParser.raw({
-                type: [
-                    "text/csv",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                ],
-                limit: "10mb"
-            }),
-            encode: ContentEncoding.base64
         },
         extra
     );
