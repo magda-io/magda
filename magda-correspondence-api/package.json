@@ -68,7 +68,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-correspondence-api",
+      "name": "magda-correspondence-api",
       "include": "node_modules dist emailTemplates Dockerfile"
     },
     "jwtSecret": "squirrel",

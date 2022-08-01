@@ -47,7 +47,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-search-api-node",
+      "name": "magda-search-api-node",
       "include": "node_modules dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",

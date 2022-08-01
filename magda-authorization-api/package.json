@@ -64,7 +64,7 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-authorization-api",
+      "name": "magda-authorization-api",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",

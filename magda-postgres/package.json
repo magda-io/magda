@@ -14,7 +14,7 @@
   "license": "Apache-2.0",
   "config": {
     "docker": {
-      "name": "data61/magda-postgres",
+      "name": "magda-postgres",
       "include": "Dockerfile wal-g start.sh adduser.sh"
     }
   },

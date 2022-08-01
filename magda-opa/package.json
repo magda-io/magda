@@ -14,7 +14,7 @@
   "license": "Apache-2.0",
   "config": {
     "docker": {
-      "name": "data61/magda-opa",
+      "name": "magda-opa",
       "include": "Dockerfile policies start.sh"
     }
   },
