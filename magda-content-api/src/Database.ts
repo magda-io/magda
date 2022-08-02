@@ -109,13 +109,12 @@ export default class PostgresDatabase implements Database {
 
         const queryPatternsByField: { [key: string]: string[] } = {};
         queries.map((q) => {
-            if (queryPatternsByField[q.field]) {
-                queryPatternsByField[q.field] = queryPatternsByField[
-                    q.field
-                ].concat(q.patterns);
-            } else {
+            if (!queryPatternsByField[q.field]) {
                 queryPatternsByField[q.field] = [];
             }
+            queryPatternsByField[q.field] = queryPatternsByField[
+                q.field
+            ].concat(q.patterns);
         });
 
         const queryConditions = SQLSyntax.joinWithAnd(
