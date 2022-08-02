@@ -9,7 +9,8 @@
     ],
     "nohoist": [
       "**/react-scripts",
-      "**/react-scripts/**"
+      "**/react-scripts/**",
+      "**/@kubernetes/client-node/**"
     ]
   },
   "eslintIgnore": [

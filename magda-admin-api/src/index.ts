@@ -3,7 +3,6 @@ import yargs from "yargs";
 
 import buildApiRouter from "./buildApiRouter";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
-import { K8SApiType } from "./k8sApi";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -34,13 +33,6 @@ const argv = addJwtSecretFromEnvVar(
             describe: "When creating new pods, what tag should be used?",
             type: "string",
             default: "latest"
-        })
-        .option("kubernetesApiType", {
-            describe:
-                'What Kubernetes API to connect to. Use "cluster" when the admin API is running inside a Kubernetes cluster, even if it\'s a Minikube cluster. Use "minikube" in development when the admin API is running completely outside the Kubernetes environment and it should manipulate a Kubernetes environment running in Minikube.',
-            type: "string",
-            choices: ["minikube", "cluster"],
-            default: "minikube"
         })
         .option("pullPolicy", {
             describe: "K8S pull policy for created jobs",
@@ -82,7 +74,6 @@ app.use(
         dockerRepo: argv.dockerRepo,
         authApiUrl: argv.authApiUrl,
         imageTag: argv.imageTag,
-        kubernetesApiType: argv.kubernetesApiType as K8SApiType,
         registryApiUrl: argv.registryApiUrl,
         pullPolicy: argv.pullPolicy,
         jwtSecret: argv.jwtSecret,
