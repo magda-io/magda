@@ -13,6 +13,7 @@ allow {
 }
 
 # handle "read" operation for `header/navigation/drafts`
+# the legacy rule is created for backward compatibility
 allow {
     input.operationUri == "object/content/read"
     hasNoConstraintPermission(input.operationUri)
@@ -21,6 +22,7 @@ allow {
 }
 
 # handle "read" operation for `header/navigation/datasets`
+# the legacy rule is created for backward compatibility
 allow {
     input.operationUri == "object/content/read"
     hasNoConstraintPermission(input.operationUri)
