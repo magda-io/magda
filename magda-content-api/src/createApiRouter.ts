@@ -23,11 +23,12 @@ export interface ApiRouterOptions {
     database: Database;
     jwtSecret: string;
     authApiUrl: string;
-    skipAuth: boolean;
+    authDecisionClient: AuthDecisionQueryClient;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
     const database = options.database;
+    const authDecisionClient = options.authDecisionClient;
 
     const router: express.Router = express.Router();
 
@@ -38,13 +39,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     };
     installStatusRouter(router, status);
-
-    const skipAuth = options.skipAuth === true ? true : false;
-    const authDecisionClient = new AuthDecisionQueryClient(
-        options.authApiUrl,
-        skipAuth
-    );
-    console.log(`SkipAuth: ${skipAuth}`);
 
     /**
      * @apiGroup Content

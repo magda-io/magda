@@ -4,6 +4,7 @@ import yargs from "yargs";
 import createApiRouter from "./createApiRouter";
 import Database from "./Database";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -47,6 +48,13 @@ const argv = addJwtSecretFromEnvVar(
         }).argv
 );
 
+const skipAuth = argv.skipAuth === true ? true : false;
+const authDecisionClient = new AuthDecisionQueryClient(
+    argv.authApiUrl,
+    skipAuth
+);
+console.log(`SkipAuth: ${skipAuth}`);
+
 // Create a new Express application.
 var app = express();
 // app.use(require("body-parser").json());
@@ -55,7 +63,7 @@ app.use(
     "/v0",
     createApiRouter({
         authApiUrl: argv.authApiUrl,
-        skipAuth: argv.skipAuth,
+        authDecisionClient,
         jwtSecret: argv.jwtSecret,
         database: new Database({
             dbHost: argv.dbHost,

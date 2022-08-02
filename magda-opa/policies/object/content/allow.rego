@@ -1,6 +1,8 @@
 package object.content
 
 import data.common.hasNoConstraintPermission
+import data.object.dataset.hasAnyDraftReadPermission
+import data.object.dataset.hasAnyPublishedReadPermission
 
 default allow = false
 
