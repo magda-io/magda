@@ -311,6 +311,19 @@ VALUES
 ('object/faas/function/delete','Delete a FaaS function', 'Allow a user to delete a FaaS function.', (SELECT id FROM resources WHERE uri = 'object/faas/function'));
 -- End adding resource, operation for access `faas function` 
 
+-- Add resource, operation for `content` API 
+INSERT INTO "public"."resources" 
+    ("uri", "name", "description")
+VALUES 
+('object/content', 'content objects', 'Objects managed by content APIs');
+
+INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
+VALUES 
+('object/content/update','Create / update content objects', 'Allow a user to create / update content objects', (SELECT id FROM resources WHERE uri = 'object/content')),
+('object/content/read','Read content objects', 'Allow a user to read content objects', (SELECT id FROM resources WHERE uri = 'object/content')),
+('object/content/delete','Delete content objects', 'Allow a user to content objects', (SELECT id FROM resources WHERE uri = 'object/content'));
+-- End adding resource, operation for `content` API
+
 -- create Data Stewards role
 INSERT INTO "public"."roles" ("id", "name", "description") 
 VALUES 
@@ -394,34 +407,40 @@ INSERT INTO "public"."permissions"
 VALUES 
 ('7a78954f-a776-44b0-8491-2850c8db09bd', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit') , 'f', 't', 'f', 'This permission allows users to read org unit info within his org unit sub tree.'),
 ('ce2be273-3db3-4d3b-8a2b-07af346e3187', 'Read Distribution with own org units', (SELECT id FROM resources WHERE uri = 'object/distribution') , 'f', 't', 'f', 'This permission allows users to read distribution info within his org unit sub tree.'),
-('adfad193-2f89-432b-9d37-c7a728d9cc92', 'Read Orgnisation (Publisher) with own org units', (SELECT id FROM resources WHERE uri = 'object/organization') , 'f', 't', 'f', 'This permission allows users to read orgnisation (publisher) info within his org unit sub tree.');
+('adfad193-2f89-432b-9d37-c7a728d9cc92', 'Read Orgnisation (Publisher) with own org units', (SELECT id FROM resources WHERE uri = 'object/organization') , 'f', 't', 'f', 'This permission allows users to read orgnisation (publisher) info within his org unit sub tree.'),
+('d768254c-de97-4a1d-b955-53c76187edcf', 'Read content objects', (SELECT id FROM resources WHERE uri = 'object/content') , 'f', 'f', 'f', 'This permission allows users to read content objects.');
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
 ('7a78954f-a776-44b0-8491-2850c8db09bd', (SELECT id FROM operations WHERE uri = 'authObject/orgUnit/read')),
 ('ce2be273-3db3-4d3b-8a2b-07af346e3187', (SELECT id FROM operations WHERE uri = 'object/distribution/read')),
-('adfad193-2f89-432b-9d37-c7a728d9cc92', (SELECT id FROM operations WHERE uri = 'object/organization/read'));
+('adfad193-2f89-432b-9d37-c7a728d9cc92', (SELECT id FROM operations WHERE uri = 'object/organization/read')),
+('d768254c-de97-4a1d-b955-53c76187edcf', (SELECT id FROM operations WHERE uri = 'object/content/read'));
 INSERT INTO "public"."role_permissions" ("permission_id", "role_id") 
 VALUES 
 ('7a78954f-a776-44b0-8491-2850c8db09bd', '00000000-0000-0001-0000-000000000000'),
 ('ce2be273-3db3-4d3b-8a2b-07af346e3187', '00000000-0000-0001-0000-000000000000'),
-('adfad193-2f89-432b-9d37-c7a728d9cc92', '00000000-0000-0001-0000-000000000000');
+('adfad193-2f89-432b-9d37-c7a728d9cc92', '00000000-0000-0001-0000-000000000000'),
+('d768254c-de97-4a1d-b955-53c76187edcf', '00000000-0000-0001-0000-000000000000');
 -- Add to authenticated users
 INSERT INTO "public"."permissions" 
     ("id", "name", "resource_id", "user_ownership_constraint", "org_unit_ownership_constraint", "pre_authorised_constraint", "description") 
 VALUES 
 ('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit') , 'f', 't', 'f', 'This permission allows users to read org unit info within his org unit sub tree.'),
 ('fe2ea6f1-192a-423c-9ae0-acb9f5d2dc48', 'Read Distribution with own org units', (SELECT id FROM resources WHERE uri = 'object/distribution') , 'f', 't', 'f', 'This permission allows users to read distribution info within his org unit sub tree.'),
-('e204f8ca-718b-4a29-bea3-554a4551ed20', 'Read Orgnisation (Publisher) with own org units', (SELECT id FROM resources WHERE uri = 'object/organization') , 'f', 't', 'f', 'This permission allows users to read orgnisation (publisher) info within his org unit sub tree.');
+('e204f8ca-718b-4a29-bea3-554a4551ed20', 'Read Orgnisation (Publisher) with own org units', (SELECT id FROM resources WHERE uri = 'object/organization') , 'f', 't', 'f', 'This permission allows users to read orgnisation (publisher) info within his org unit sub tree.'),
+('d2974d9b-e965-403b-86b4-d5e143be6349', 'Read content objects', (SELECT id FROM resources WHERE uri = 'object/content') , 'f', 'f', 'f', 'This permission allows users to read content objects.');
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
 ('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', (SELECT id FROM operations WHERE uri = 'authObject/orgUnit/read')),
 ('fe2ea6f1-192a-423c-9ae0-acb9f5d2dc48', (SELECT id FROM operations WHERE uri = 'object/distribution/read')),
-('e204f8ca-718b-4a29-bea3-554a4551ed20', (SELECT id FROM operations WHERE uri = 'object/organization/read'));
+('e204f8ca-718b-4a29-bea3-554a4551ed20', (SELECT id FROM operations WHERE uri = 'object/organization/read')),
+('d2974d9b-e965-403b-86b4-d5e143be6349', (SELECT id FROM operations WHERE uri = 'object/content/read'));
 INSERT INTO "public"."role_permissions" ("permission_id", "role_id") 
 VALUES 
 ('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', '00000000-0000-0002-0000-000000000000'),
 ('fe2ea6f1-192a-423c-9ae0-acb9f5d2dc48', '00000000-0000-0002-0000-000000000000'),
-('e204f8ca-718b-4a29-bea3-554a4551ed20', '00000000-0000-0002-0000-000000000000');
+('e204f8ca-718b-4a29-bea3-554a4551ed20', '00000000-0000-0002-0000-000000000000'),
+('d2974d9b-e965-403b-86b4-d5e143be6349', '00000000-0000-0002-0000-000000000000');
 -- END add more permissions to authenticated & anonymous users role
 -- upgrade api_keys table-- 
 ALTER TABLE "public"."api_keys" ADD COLUMN "expiry_time" timestamptz DEFAULT NULL;

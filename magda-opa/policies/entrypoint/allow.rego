@@ -51,13 +51,9 @@ allow {
 }
 
 allow {
-    ## delegate content related decision to content_allowRead
+    ## delegate content related decision to content rules
     startswith(input.operationUri, "object/content/")
-    
-    ## Operation type must be read
-    endswith(input.operationUri, "/read")
-
-    data.object.content.allowRead
+    data.object.content.allow
 }
 
 allow {

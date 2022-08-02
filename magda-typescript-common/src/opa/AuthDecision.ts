@@ -190,6 +190,8 @@ export class ConciseExpression {
 
     getSqlOperator(): SQLSyntax {
         switch (this.operator) {
+            case "!=":
+                return sqls`!=`;
             case "=":
                 return sqls`=`;
             case ">":
