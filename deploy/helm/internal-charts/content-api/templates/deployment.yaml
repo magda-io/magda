@@ -31,6 +31,9 @@ spec:
 {{- if .Values.skipAuth }}
             "--skipAuth", "true",
 {{- end }}
+{{- if .Values.debug }}
+            "--debug", "true",
+{{- end }}
             "--listenPort", "80",
             "--dbHost", "content-db",
             "--dbPort", "5432"

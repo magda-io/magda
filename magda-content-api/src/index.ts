@@ -5,6 +5,7 @@ import createApiRouter from "./createApiRouter";
 import Database from "./Database";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import { SQLSyntax } from "sql-syntax";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -42,6 +43,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "boolean",
             default: process.env.SKIP_AUTH == "true" ? true : false
         })
+        .option("debug", {
+            describe:
+                "When set to true, print verbose debug info (e.g. SQL statements) to log.",
+            type: "boolean",
+            default: process.env.DEBUG == "true" ? true : false
+        })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
@@ -54,6 +61,11 @@ const authDecisionClient = new AuthDecisionQueryClient(
     skipAuth
 );
 console.log(`SkipAuth: ${skipAuth}`);
+
+if (argv.debug === true) {
+    console.log("DEBUG mode is ON!");
+    SQLSyntax.isDebugMode = true;
+}
 
 // Create a new Express application.
 var app = express();
