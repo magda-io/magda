@@ -4,7 +4,7 @@ RUN mkdir -p /usr/src/app
 COPY . /usr/src/app
 RUN ["/setup.sh"]
 
-FROM node:14-alpine
+FROM node:14
 RUN mkdir -p /usr/src/app
 COPY --from=build /usr/src/app /usr/src/app
 WORKDIR /usr/src/app/component
