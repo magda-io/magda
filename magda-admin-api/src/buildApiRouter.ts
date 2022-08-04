@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Response } from "express";
 
 import _ from "lodash";
 import K8SApi from "./k8sApi";
@@ -9,6 +9,7 @@ import {
 } from "magda-typescript-common/src/express/status";
 import { HttpError } from "@kubernetes/client-node";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import ServerError from "magda-typescript-common/src/ServerError";
 
 export interface Options {
     dockerRepo: string;
@@ -22,6 +23,16 @@ export interface Options {
     namespace?: string;
     authDecisionClient: AuthDecisionQueryClient;
     testMode?: boolean;
+}
+
+function handleError(e: Error, res: Response) {
+    if (e instanceof HttpError) {
+        res.status(e.statusCode).send(e.body);
+    } else if (e instanceof ServerError) {
+        res.status(e.statusCode).send(e.message);
+    } else {
+        res.status(500).send(`${e}`);
+    }
 }
 
 export default function buildApiRouter(options: Options) {
@@ -65,11 +76,7 @@ export default function buildApiRouter(options: Options) {
                 const connectors = await k8sApi.getConnectors();
                 res.json(connectors);
             } catch (e) {
-                if (e instanceof HttpError) {
-                    res.status(e.statusCode).send(e.body);
-                } else {
-                    res.status(500).send(`${e}`);
-                }
+                handleError(e, res);
             }
         }
     );
@@ -120,11 +127,7 @@ export default function buildApiRouter(options: Options) {
                 const connector = await k8sApi.getConnector(req.params.id);
                 res.json(connector);
             } catch (e) {
-                if (e instanceof HttpError) {
-                    res.status(e.statusCode).send(e.body);
-                } else {
-                    res.status(500).send(`${e}`);
-                }
+                handleError(e, res);
             }
         }
     );
@@ -176,11 +179,7 @@ export default function buildApiRouter(options: Options) {
                 const connector = await k8sApi.getConnector(id);
                 res.json(connector);
             } catch (e) {
-                if (e instanceof HttpError) {
-                    res.status(e.statusCode).send(e.body);
-                } else {
-                    res.status(500).send(`${e}`);
-                }
+                handleError(e, res);
             }
         }
     );
@@ -210,11 +209,7 @@ export default function buildApiRouter(options: Options) {
                 const result = await k8sApi.deleteConnector(id);
                 res.json({ result });
             } catch (e) {
-                if (e instanceof HttpError) {
-                    res.status(e.statusCode).send(e.body);
-                } else {
-                    res.status(500).send(`${e}`);
-                }
+                handleError(e, res);
             }
         }
     );
@@ -289,11 +284,7 @@ export default function buildApiRouter(options: Options) {
                 const data = await k8sApi.getConnector(id);
                 res.json(data);
             } catch (e) {
-                if (e instanceof HttpError) {
-                    res.status(e.statusCode).send(e.body);
-                } else {
-                    res.status(500).send(`${e}`);
-                }
+                handleError(e, res);
             }
         }
     );
@@ -323,11 +314,7 @@ export default function buildApiRouter(options: Options) {
                 await k8sApi.startConnector(id);
                 res.json({ result: true });
             } catch (e) {
-                if (e instanceof HttpError) {
-                    res.status(e.statusCode).send(e.body);
-                } else {
-                    res.status(500).send(`${e}`);
-                }
+                handleError(e, res);
             }
         }
     );
@@ -357,11 +344,7 @@ export default function buildApiRouter(options: Options) {
                 await k8sApi.stopConnector(id);
                 res.json({ result: true });
             } catch (e) {
-                if (e instanceof HttpError) {
-                    res.status(e.statusCode).send(e.body);
-                } else {
-                    res.status(500).send(`${e}`);
-                }
+                handleError(e, res);
             }
         }
     );

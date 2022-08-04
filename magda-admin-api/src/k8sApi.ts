@@ -333,6 +333,18 @@ export default class K8SApi {
             throw new ServerError(`expected missing "schedule" field`, 400);
         }
 
+        if (
+            !options.dockerImageString &&
+            (!options.dockerImageName ||
+                !options.dockerRepo ||
+                !options.dockerImageTag)
+        ) {
+            throw new ServerError(
+                "Either `dockerImageString` or all `dockerImageName`, `dockerRepo` and `dockerImageTag` fields are required.",
+                400
+            );
+        }
+
         const connectorObjectName = connectorObjName(connectorId);
 
         const configMap = new k8s.V1ConfigMap();
