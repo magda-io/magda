@@ -1,4 +1,5 @@
-import k8s, { HttpError } from "@kubernetes/client-node";
+import * as k8s from "@kubernetes/client-node";
+import { HttpError } from "@kubernetes/client-node";
 import { JsonConnectorConfig } from "magda-typescript-common/src/JsonConnector";
 import ServerError from "magda-typescript-common/src/ServerError";
 import _ from "lodash";
@@ -13,6 +14,19 @@ interface Connector extends JsonConnectorConfig {
         lastScheduleTime: string;
         lastSuccessfulTime: string;
     };
+}
+
+function getConnectorConfigMapNameFromCronJob(cronJob: k8s.V1CronJob): string {
+    const vols = cronJob?.spec?.jobTemplate?.spec?.template?.spec?.volumes;
+    if (!vols?.length) {
+        return null;
+    }
+    for (const vol of vols) {
+        if (!!vol?.configMap?.name?.startsWith("connector-")) {
+            return vol.configMap.name;
+        }
+    }
+    return null;
 }
 
 export default class K8SApi {
@@ -119,7 +133,16 @@ export default class K8SApi {
         const res = await this.coreApi.patchNamespacedConfigMap(
             id,
             this.namespace,
-            newConfig
+            newConfig,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+                headers: {
+                    "Content-Type": "application/merge-patch+json"
+                }
+            }
         );
         return res.body;
     }
@@ -210,11 +233,14 @@ export default class K8SApi {
                 400
             );
         }
+        const configMapName = getConnectorConfigMapNameFromCronJob(
+            connector.cronJob
+        );
         const configData = {
             ...connector.configData,
             ...connectorConfig
         };
-        await this.updateConfigMap(connectorObjName(id), {
+        await this.updateConfigMap(configMapName, {
             data: {
                 "config.json": JSON.stringify(configData)
             }
@@ -227,6 +253,15 @@ export default class K8SApi {
                 {
                     spec: {
                         schedule: connectorConfig.schedule
+                    }
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                    headers: {
+                        "Content-Type": "application/merge-patch+json"
                     }
                 }
             );
@@ -301,7 +336,16 @@ export default class K8SApi {
             await this.coreApi.patchNamespacedConfigMap(
                 connectorObjectName,
                 this.namespace,
-                configMap
+                configMap,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                    headers: {
+                        "Content-Type": "application/merge-patch+json"
+                    }
+                }
             );
         } catch (e) {
             if (e instanceof HttpError && e.statusCode === 404) {
@@ -327,20 +371,46 @@ export default class K8SApi {
 
     async startConnector(id: string) {
         const name = connectorObjName(id);
-        await this.batchApi.patchNamespacedCronJob(name, this.namespace, {
-            spec: {
-                suspend: false
+        await this.batchApi.patchNamespacedCronJob(
+            name,
+            this.namespace,
+            {
+                spec: {
+                    suspend: false
+                }
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+                headers: {
+                    "Content-Type": "application/merge-patch+json"
+                }
             }
-        });
+        );
     }
 
     async stopConnector(id: string) {
         const name = connectorObjName(id);
-        await this.batchApi.patchNamespacedCronJob(name, this.namespace, {
-            spec: {
-                suspend: true
+        await this.batchApi.patchNamespacedCronJob(
+            name,
+            this.namespace,
+            {
+                spec: {
+                    suspend: true
+                }
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+                headers: {
+                    "Content-Type": "application/merge-patch+json"
+                }
             }
-        });
+        );
     }
 
     async connectorCronJobObjectToConnectorData(cronJob: k8s.V1CronJob) {
@@ -359,7 +429,14 @@ export default class K8SApi {
                 )}`
             );
         }
-        const configMap = await this.getConfigMap(connectorId);
+        const configMapName = getConnectorConfigMapNameFromCronJob(cronJob);
+        if (!configMapName) {
+            throw new ServerError(
+                "Cannot retrieve configMap name from CronJob manifest",
+                500
+            );
+        }
+        const configMap = await this.getConfigMap(configMapName);
         const configData = JSON.parse(configMap?.data?.["config.json"]);
         const connectorData: Connector = {
             id: connectorId,

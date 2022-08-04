@@ -104,8 +104,8 @@ export default function buildApiRouter(options: Options) {
      * @apiSuccess (response body) {object} cronJob Details of the cronJob object created for the connector in [v1CronJob](https://github.com/kubernetes-client/javascript/blob/2b6813f99a85605f691973d6bc43f291ac072fc7/src/gen/model/v1CronJob.ts#L21) structure.
      * @apiSuccess (response body) {boolean} suspend Whether the cronjob has been suspended.
      * @apiSuccess (response body) {object} status The status of the cronjob
-     * @apiSuccess (response body) {object} status.lastScheduleTime The last schedule time
-     * @apiSuccess (response body) {object} status.lastSuccessfulTime The last successful job run time
+     * @apiSuccess (response body) {object} [status.lastScheduleTime] The last schedule time
+     * @apiSuccess (response body) {object} [status.lastSuccessfulTime] The last successful job run time
      *
      * @apiUse GenericError
      */
@@ -169,10 +169,18 @@ export default function buildApiRouter(options: Options) {
             operationUri: "object/connector/update"
         }),
         async (req, res) => {
-            const id = req.params.id;
-            await k8sApi.updateConnector(id, req.body);
-            const connector = await k8sApi.getConnector(id);
-            res.json(connector);
+            try {
+                const id = req.params.id;
+                await k8sApi.updateConnector(id, req.body);
+                const connector = await k8sApi.getConnector(id);
+                res.json(connector);
+            } catch (e) {
+                if (e instanceof HttpError) {
+                    res.status(e.statusCode).send(e.body);
+                } else {
+                    res.status(500).send(`${e}`);
+                }
+            }
         }
     );
 
@@ -196,9 +204,17 @@ export default function buildApiRouter(options: Options) {
             operationUri: "object/connector/delete"
         }),
         async (req, res) => {
-            const id = req.params.id;
-            const result = await k8sApi.deleteConnector(id);
-            res.json({ result });
+            try {
+                const id = req.params.id;
+                const result = await k8sApi.deleteConnector(id);
+                res.json({ result });
+            } catch (e) {
+                if (e instanceof HttpError) {
+                    res.status(e.statusCode).send(e.body);
+                } else {
+                    res.status(500).send(`${e}`);
+                }
+            }
         }
     );
 
@@ -247,29 +263,37 @@ export default function buildApiRouter(options: Options) {
             operationUri: "object/connector/create"
         }),
         async (req, res) => {
-            const {
-                id,
-                dockerImageString,
-                dockerImageName,
-                ...restConfigData
-            } = req.body;
-
-            await k8sApi.createConnector(
-                { id, ...restConfigData },
-                {
-                    registryApiUrl: options.registryApiUrl,
-                    tenantId: options.tenantId,
-                    defaultUserId: options.userId,
+            try {
+                const {
+                    id,
                     dockerImageString,
                     dockerImageName,
-                    dockerImageTag: options.imageTag,
-                    dockerRepo: options.dockerRepo,
-                    pullPolicy: options.pullPolicy
-                }
-            );
+                    ...restConfigData
+                } = req.body;
 
-            const data = await k8sApi.getConnector(id);
-            res.json(data);
+                await k8sApi.createConnector(
+                    { id, ...restConfigData },
+                    {
+                        registryApiUrl: options.registryApiUrl,
+                        tenantId: options.tenantId,
+                        defaultUserId: options.userId,
+                        dockerImageString,
+                        dockerImageName,
+                        dockerImageTag: options.imageTag,
+                        dockerRepo: options.dockerRepo,
+                        pullPolicy: options.pullPolicy
+                    }
+                );
+
+                const data = await k8sApi.getConnector(id);
+                res.json(data);
+            } catch (e) {
+                if (e instanceof HttpError) {
+                    res.status(e.statusCode).send(e.body);
+                } else {
+                    res.status(500).send(`${e}`);
+                }
+            }
         }
     );
 
@@ -293,9 +317,17 @@ export default function buildApiRouter(options: Options) {
             operationUri: "object/connector/update"
         }),
         async (req, res) => {
-            const id = req.params.id;
-            await k8sApi.startConnector(id);
-            res.json({ result: true });
+            try {
+                const id = req.params.id;
+                await k8sApi.startConnector(id);
+                res.json({ result: true });
+            } catch (e) {
+                if (e instanceof HttpError) {
+                    res.status(e.statusCode).send(e.body);
+                } else {
+                    res.status(500).send(`${e}`);
+                }
+            }
         }
     );
 
@@ -319,9 +351,17 @@ export default function buildApiRouter(options: Options) {
             operationUri: "object/connector/update"
         }),
         async (req, res) => {
-            const id = req.params.id;
-            await k8sApi.stopConnector(id);
-            res.json({ result: true });
+            try {
+                const id = req.params.id;
+                await k8sApi.stopConnector(id);
+                res.json({ result: true });
+            } catch (e) {
+                if (e instanceof HttpError) {
+                    res.status(e.statusCode).send(e.body);
+                } else {
+                    res.status(500).send(`${e}`);
+                }
+            }
         }
     );
 

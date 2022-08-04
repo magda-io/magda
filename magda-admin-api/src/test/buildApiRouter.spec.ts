@@ -10,6 +10,10 @@ import request from "supertest";
 
 import buildApiRouter from "../buildApiRouter";
 import { stateArb } from "./arbitraries";
+import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient";
+import AuthDecision, {
+    UnconditionalTrueDecision
+} from "magda-typescript-common/src/opa/AuthDecision";
 
 describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
@@ -734,18 +738,21 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
         });
     }
 
-    function buildExpressApp(imageTag: string = "imageTag") {
+    function buildExpressApp(
+        imageTag: string = "imageTag",
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ) {
         const apiRouter = buildApiRouter({
             dockerRepo: "dockerRepo",
             authApiUrl: "http://admin.example.com",
             imageTag,
-            kubernetesApiType: "test",
             registryApiUrl: "http://registry.example.com",
             pullPolicy: "pullPolicy",
             namespace,
             jwtSecret: "secret",
             userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
-            tenantId: 0
+            tenantId: 0,
+            authDecisionClient: createMockAuthDecisionQueryClient(authDecision)
         });
 
         const app = express();

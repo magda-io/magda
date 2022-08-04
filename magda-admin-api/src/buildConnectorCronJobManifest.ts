@@ -1,4 +1,4 @@
-import k8s from "@kubernetes/client-node";
+import * as k8s from "@kubernetes/client-node";
 import connectorObjName from "./connectorObjName";
 
 function buildConnectorCronJobManifest(options: {
@@ -35,6 +35,7 @@ function buildConnectorCronJobManifest(options: {
                         name: connectorObjectName
                     },
                     spec: {
+                        restartPolicy: "OnFailure",
                         containers: [
                             {
                                 command: [
