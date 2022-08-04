@@ -41,7 +41,7 @@ class DatasetApi(
 
   /**
     * @apiGroup Indexer
-    * @api {delete} http://indexer/v0/dataset/{datasetId} delete a dataset from the index
+    * @api {delete} /v0/indexer/dataset/{datasetId} delete a dataset from the index
     *
     * @apiDescription Delete a dataset from the search engine index.
     * This API will also refresh the dataset index to make sure the changes available for search.
@@ -87,7 +87,7 @@ class DatasetApi(
 
   /**
     * @apiGroup Indexer
-    * @api {put} http://indexer/v0/dataset/{datasetId} reindex a dataset by ID
+    * @api {put} /v0/indexer/dataset/{datasetId} reindex a dataset by ID
     *
     * @apiDescription Ask indexer to re-pull dataset data from registry and index into search engine index.
     * You only need to call this API when you want the changes of the datasets to go into search engine index immediately

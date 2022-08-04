@@ -38,7 +38,7 @@ class CrawlerApi(
       } ~
         /**
           * @apiGroup Indexer
-          * @api {get} http://indexer/v0/reindex/in-progress Reindex in progress
+          * @api {get} /v0/indexer/reindex/in-progress Check reindex progress
           *
           * @apiDescription Reveals whether the indexer is currently reindexing. Returns a simple text "true" or "false".
           * requires permission to operation uri `api/indexer/reindex/in-progress`
@@ -60,7 +60,7 @@ class CrawlerApi(
         } ~
         /**
           * @apiGroup Indexer
-          * @api {post} http://indexer/v0/reindex Trigger reindex (internal)
+          * @api {post} /v0/indexer/reindex Trigger reindex
           *
           * @apiDescription Triggers a new reindex, if possible. This means that all datasets and organisations in the
           * registry will be reingested into the ElasticSearch index, and any not present in the registry will be deleted
