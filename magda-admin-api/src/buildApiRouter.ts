@@ -2,12 +2,13 @@ import express from "express";
 
 import _ from "lodash";
 import K8SApi from "./k8sApi";
-import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import {
     installStatusRouter,
     createServiceProbe
 } from "magda-typescript-common/src/express/status";
 import { HttpError } from "@kubernetes/client-node";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 
 export interface Options {
     dockerRepo: string;
@@ -19,10 +20,12 @@ export interface Options {
     userId: string;
     tenantId: number;
     namespace?: string;
+    authDecisionClient: AuthDecisionQueryClient;
 }
 
 export default function buildApiRouter(options: Options) {
     const router: express.Router = express.Router();
+    const authDecisionClient = options.authDecisionClient;
 
     const k8sApi = new K8SApi(options.namespace);
 
@@ -39,8 +42,6 @@ export default function buildApiRouter(options: Options) {
     };
     installStatusRouter(router, status);
 
-    router.use(mustBeAdmin(options.authApiUrl, options.jwtSecret));
-
     /**
      * @apiGroup Connectors
      * @api {get} /v0/admin/connectors Get the list of all connectors
@@ -53,18 +54,24 @@ export default function buildApiRouter(options: Options) {
      *
      * @apiUse GenericError
      */
-    router.get("/connectors", async (req, res) => {
-        try {
-            const connectors = await k8sApi.getConnectors();
-            res.json(connectors);
-        } catch (e) {
-            if (e instanceof HttpError) {
-                res.status(e.statusCode).send(e.body);
-            } else {
-                res.status(500).send(`${e}`);
+    router.get(
+        "/connectors",
+        requireUnconditionalAuthDecision(authDecisionClient, {
+            operationUri: "object/connector/read"
+        }),
+        async (req, res) => {
+            try {
+                const connectors = await k8sApi.getConnectors();
+                res.json(connectors);
+            } catch (e) {
+                if (e instanceof HttpError) {
+                    res.status(e.statusCode).send(e.body);
+                } else {
+                    res.status(500).send(`${e}`);
+                }
             }
         }
-    });
+    );
 
     /**
      * @apiGroup Connectors
@@ -102,18 +109,24 @@ export default function buildApiRouter(options: Options) {
      *
      * @apiUse GenericError
      */
-    router.get("/connectors/:id", async (req, res) => {
-        try {
-            const connector = await k8sApi.getConnector(req.params.id);
-            res.json(connector);
-        } catch (e) {
-            if (e instanceof HttpError) {
-                res.status(e.statusCode).send(e.body);
-            } else {
-                res.status(500).send(`${e}`);
+    router.get(
+        "/connectors/:id",
+        requireUnconditionalAuthDecision(authDecisionClient, {
+            operationUri: "object/connector/read"
+        }),
+        async (req, res) => {
+            try {
+                const connector = await k8sApi.getConnector(req.params.id);
+                res.json(connector);
+            } catch (e) {
+                if (e instanceof HttpError) {
+                    res.status(e.statusCode).send(e.body);
+                } else {
+                    res.status(500).send(`${e}`);
+                }
             }
         }
-    });
+    );
 
     /**
      * @apiGroup Connectors
@@ -150,12 +163,18 @@ export default function buildApiRouter(options: Options) {
      *
      * @apiUse GenericError
      */
-    router.put("/connectors/:id", async (req, res) => {
-        const id = req.params.id;
-        await k8sApi.updateConnector(id, req.body);
-        const connector = await k8sApi.getConnector(id);
-        res.json(connector);
-    });
+    router.put(
+        "/connectors/:id",
+        requireUnconditionalAuthDecision(authDecisionClient, {
+            operationUri: "object/connector/update"
+        }),
+        async (req, res) => {
+            const id = req.params.id;
+            await k8sApi.updateConnector(id, req.body);
+            const connector = await k8sApi.getConnector(id);
+            res.json(connector);
+        }
+    );
 
     /**
      * @apiGroup Connectors
@@ -171,11 +190,17 @@ export default function buildApiRouter(options: Options) {
      *
      * @apiUse GenericError
      */
-    router.delete("/connectors/:id", async (req, res) => {
-        const id = req.params.id;
-        const result = await k8sApi.deleteConnector(id);
-        res.json({ result });
-    });
+    router.delete(
+        "/connectors/:id",
+        requireUnconditionalAuthDecision(authDecisionClient, {
+            operationUri: "object/connector/delete"
+        }),
+        async (req, res) => {
+            const id = req.params.id;
+            const result = await k8sApi.deleteConnector(id);
+            res.json({ result });
+        }
+    );
 
     /**
      * @apiGroup Connectors
@@ -216,31 +241,37 @@ export default function buildApiRouter(options: Options) {
      *
      * @apiUse GenericError
      */
-    router.post("/connectors", async (req, res) => {
-        const {
-            id,
-            dockerImageString,
-            dockerImageName,
-            ...restConfigData
-        } = req.body;
-
-        await k8sApi.createConnector(
-            { id, ...restConfigData },
-            {
-                registryApiUrl: options.registryApiUrl,
-                tenantId: options.tenantId,
-                defaultUserId: options.userId,
+    router.post(
+        "/connectors",
+        requireUnconditionalAuthDecision(authDecisionClient, {
+            operationUri: "object/connector/create"
+        }),
+        async (req, res) => {
+            const {
+                id,
                 dockerImageString,
                 dockerImageName,
-                dockerImageTag: options.imageTag,
-                dockerRepo: options.dockerRepo,
-                pullPolicy: options.pullPolicy
-            }
-        );
+                ...restConfigData
+            } = req.body;
 
-        const data = await k8sApi.getConnector(id);
-        res.json(data);
-    });
+            await k8sApi.createConnector(
+                { id, ...restConfigData },
+                {
+                    registryApiUrl: options.registryApiUrl,
+                    tenantId: options.tenantId,
+                    defaultUserId: options.userId,
+                    dockerImageString,
+                    dockerImageName,
+                    dockerImageTag: options.imageTag,
+                    dockerRepo: options.dockerRepo,
+                    pullPolicy: options.pullPolicy
+                }
+            );
+
+            const data = await k8sApi.getConnector(id);
+            res.json(data);
+        }
+    );
 
     /**
      * @apiGroup Connectors
@@ -256,11 +287,17 @@ export default function buildApiRouter(options: Options) {
      *
      * @apiUse GenericError
      */
-    router.post("/connectors/:id/start", async (req, res) => {
-        const id = req.params.id;
-        await k8sApi.startConnector(id);
-        res.json({ result: true });
-    });
+    router.post(
+        "/connectors/:id/start",
+        requireUnconditionalAuthDecision(authDecisionClient, {
+            operationUri: "object/connector/update"
+        }),
+        async (req, res) => {
+            const id = req.params.id;
+            await k8sApi.startConnector(id);
+            res.json({ result: true });
+        }
+    );
 
     /**
      * @apiGroup Connectors
@@ -276,11 +313,17 @@ export default function buildApiRouter(options: Options) {
      *
      * @apiUse GenericError
      */
-    router.post("/connectors/:id/stop", async (req, res) => {
-        const id = req.params.id;
-        await k8sApi.stopConnector(id);
-        res.json({ result: true });
-    });
+    router.post(
+        "/connectors/:id/stop",
+        requireUnconditionalAuthDecision(authDecisionClient, {
+            operationUri: "object/connector/update"
+        }),
+        async (req, res) => {
+            const id = req.params.id;
+            await k8sApi.stopConnector(id);
+            res.json({ result: true });
+        }
+    );
 
     return router;
 }
