@@ -21,13 +21,14 @@ export interface Options {
     tenantId: number;
     namespace?: string;
     authDecisionClient: AuthDecisionQueryClient;
+    testMode?: boolean;
 }
 
 export default function buildApiRouter(options: Options) {
     const router: express.Router = express.Router();
     const authDecisionClient = options.authDecisionClient;
 
-    const k8sApi = new K8SApi(options.namespace);
+    const k8sApi = new K8SApi(options.namespace, options.testMode);
 
     const status = {
         probes: {

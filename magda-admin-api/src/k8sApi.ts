@@ -6,7 +6,7 @@ import _ from "lodash";
 import connectorObjName from "./connectorObjName";
 import buildConnectorCronJobManifest from "./buildConnectorCronJobManifest";
 
-interface Connector extends JsonConnectorConfig {
+export interface Connector extends JsonConnectorConfig {
     cronJob: k8s.V1CronJob;
     configData: JsonConnectorConfig;
     suspend: boolean;
@@ -32,10 +32,31 @@ function getConnectorConfigMapNameFromCronJob(cronJob: k8s.V1CronJob): string {
 export default class K8SApi {
     public batchApi: k8s.BatchV1Api;
     public coreApi: k8s.CoreV1Api;
+    public namespace: string;
+    public testMode: boolean;
 
-    constructor(public namespace: string = "default") {
+    constructor(namespace: string = "default", testMode: boolean = false) {
+        this.namespace = namespace;
+        this.testMode = typeof testMode === "boolean" ? testMode : false;
         const kc = new k8s.KubeConfig();
-        kc.loadFromCluster();
+        if (this.testMode) {
+            kc.addCluster({
+                name: "test",
+                server: "http://mock-k8s-api.com",
+                skipTLSVerify: true
+            });
+            kc.addUser({
+                name: "test-user"
+            });
+            kc.addContext({
+                name: "test",
+                cluster: "test",
+                user: "test-user"
+            });
+            kc.setCurrentContext("test");
+        } else {
+            kc.loadFromCluster();
+        }
 
         this.batchApi = kc.makeApiClient(k8s.BatchV1Api);
         this.coreApi = kc.makeApiClient(k8s.CoreV1Api);
@@ -439,7 +460,7 @@ export default class K8SApi {
         const configMap = await this.getConfigMap(configMapName);
         const configData = JSON.parse(configMap?.data?.["config.json"]);
         const connectorData: Connector = {
-            id: connectorId,
+            id: connectorId.replace("connector-", ""),
             cronJob,
             name: configData?.name,
             ...configData,
