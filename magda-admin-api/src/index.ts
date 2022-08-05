@@ -3,7 +3,7 @@ import yargs from "yargs";
 
 import buildApiRouter from "./buildApiRouter";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
-import { K8SApiType } from "./k8sApi";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -35,13 +35,6 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "latest"
         })
-        .option("kubernetesApiType", {
-            describe:
-                'What Kubernetes API to connect to. Use "cluster" when the admin API is running inside a Kubernetes cluster, even if it\'s a Minikube cluster. Use "minikube" in development when the admin API is running completely outside the Kubernetes environment and it should manipulate a Kubernetes environment running in Minikube.',
-            type: "string",
-            choices: ["minikube", "cluster"],
-            default: "minikube"
-        })
         .option("pullPolicy", {
             describe: "K8S pull policy for created jobs",
             type: "string",
@@ -65,12 +58,25 @@ const argv = addJwtSecretFromEnvVar(
                 "Secret for decoding JWTs to determine if the caller is an admin",
             type: "string"
         })
+        .option("skipAuth", {
+            describe:
+                "When set to true, API will not query policy engine for auth decision but assume it's always permitted. It's for debugging only.",
+            type: "boolean",
+            default: process.env.SKIP_AUTH == "true" ? true : false
+        })
         .option("tenantId", {
             describe: "Tenant ID used to create connectors",
             type: "number",
             default: 0
         }).argv
 );
+
+const skipAuth = argv.skipAuth === true ? true : false;
+const authDecisionClient = new AuthDecisionQueryClient(
+    argv.authApiUrl,
+    skipAuth
+);
+console.log(`SkipAuth: ${skipAuth}`);
 
 // Create a new Express application.
 var app = express();
@@ -82,13 +88,13 @@ app.use(
         dockerRepo: argv.dockerRepo,
         authApiUrl: argv.authApiUrl,
         imageTag: argv.imageTag,
-        kubernetesApiType: argv.kubernetesApiType as K8SApiType,
         registryApiUrl: argv.registryApiUrl,
         pullPolicy: argv.pullPolicy,
         jwtSecret: argv.jwtSecret,
         userId: argv.userId,
         tenantId: argv.tenantId,
-        namespace: argv.namespace
+        namespace: argv.namespace,
+        authDecisionClient
     })
 );
 

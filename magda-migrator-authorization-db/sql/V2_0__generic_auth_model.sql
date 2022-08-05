@@ -324,6 +324,20 @@ VALUES
 ('object/content/delete','Delete content objects', 'Allow a user to content objects', (SELECT id FROM resources WHERE uri = 'object/content'));
 -- End adding resource, operation for `content` API
 
+-- Add resource, operation for `connectors` 
+INSERT INTO "public"."resources" 
+    ("uri", "name", "description")
+VALUES 
+('object/connector', 'Connectors', 'Resource represents data source connectors');
+
+INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
+VALUES 
+('object/connector/create','Create a new connector', 'Allow a user to create a new connector', (SELECT id FROM resources WHERE uri = 'object/connector')),
+('object/connector/update','Update a connector', 'Allow a user to update a connector', (SELECT id FROM resources WHERE uri = 'object/connector')),
+('object/connector/read','Read connector information', 'Allow a user to read the information of connectors', (SELECT id FROM resources WHERE uri = 'object/connector')),
+('object/connector/delete','Delete a connector', 'Allow a user to delete a connector', (SELECT id FROM resources WHERE uri = 'object/connector'));
+-- End adding resource, operation for `connectors`
+
 -- create Data Stewards role
 INSERT INTO "public"."roles" ("id", "name", "description") 
 VALUES 

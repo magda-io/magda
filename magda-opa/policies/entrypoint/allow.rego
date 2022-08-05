@@ -57,6 +57,12 @@ allow {
 }
 
 allow {
+    ## delegate connector related decision to connector rules
+    startswith(input.operationUri, "object/connector/")
+    data.object.connector.allow
+}
+
+allow {
     ## delegate access group related decision to access group rules
     startswith(input.operationUri, "object/accessGroup/")
     data.object.accessGroup.allow

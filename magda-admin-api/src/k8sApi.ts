@@ -1,85 +1,118 @@
-/// <reference types="./missing" />
-require("util.promisify/shim")();
-import Api from "kubernetes-client";
-import fs from "fs";
-import { promisify } from "util";
+import * as k8s from "@kubernetes/client-node";
+import { HttpError } from "@kubernetes/client-node";
+import { JsonConnectorConfig } from "magda-typescript-common/src/JsonConnector";
+import ServerError from "magda-typescript-common/src/ServerError";
 import _ from "lodash";
-import path from "path";
-import getMinikubeIP from "magda-typescript-common/src/util/getMinikubeIP";
-// var request = require('request');
-// require('request-debug')(request);
+import connectorObjName from "./connectorObjName";
+import buildConnectorCronJobManifest from "./buildConnectorCronJobManifest";
 
-export type K8SApiType = "minikube" | "cluster" | "test";
+export interface Connector extends JsonConnectorConfig {
+    cronJob: k8s.V1CronJob;
+    configData: JsonConnectorConfig;
+    suspend: boolean;
+    status: {
+        lastScheduleTime: string;
+        lastSuccessfulTime: string;
+    };
+}
+
+function getConnectorConfigMapNameFromCronJob(cronJob: k8s.V1CronJob): string {
+    const vols = cronJob?.spec?.jobTemplate?.spec?.template?.spec?.volumes;
+    if (!vols?.length) {
+        return null;
+    }
+    for (const vol of vols) {
+        if (!!vol?.configMap?.name?.startsWith("connector-")) {
+            return vol.configMap.name;
+        }
+    }
+    return null;
+}
 
 export default class K8SApi {
-    private batchApi: any;
-    private coreApi: any;
-    public readonly minikubeIP: string;
+    public batchApi: k8s.BatchV1Api;
+    public coreApi: k8s.CoreV1Api;
+    public namespace: string;
+    public testMode: boolean;
 
-    constructor(
-        public readonly apiType: K8SApiType,
-        private namespace: string = "default"
-    ) {
-        const details = K8SApi.getDetails(apiType);
-        this.batchApi = new Api.Batch(details);
-        this.coreApi = new Api.Core(details);
+    constructor(namespace: string = "default", testMode: boolean = false) {
+        this.namespace = namespace;
+        this.testMode = typeof testMode === "boolean" ? testMode : false;
+        const kc = new k8s.KubeConfig();
+        if (this.testMode) {
+            kc.addCluster({
+                name: "test",
+                server: "http://mock-k8s-api.com",
+                skipTLSVerify: true
+            });
+            kc.addUser({
+                name: "test-user"
+            });
+            kc.addContext({
+                name: "test",
+                cluster: "test",
+                user: "test-user"
+            });
+            kc.setCurrentContext("test");
+        } else {
+            kc.loadFromCluster();
+        }
 
-        // minikubeIP will only be defined if apiType === "minikube".
-        this.minikubeIP = details.minikubeIP;
+        this.batchApi = kc.makeApiClient(k8s.BatchV1Api);
+        this.coreApi = kc.makeApiClient(k8s.CoreV1Api);
     }
 
-    getJobs(): Promise<any> {
-        const jobs = this.batchApi.ns(this.namespace).jobs;
-        return promisify(jobs.get.bind(jobs))();
+    async getJobs() {
+        const res = await this.batchApi.listNamespacedJob(this.namespace);
+        return res.body.items;
     }
 
-    getJob(id: string): Promise<any> {
-        const jobs = this.batchApi.ns(this.namespace).jobs(id);
-        return promisify(jobs.get.bind(jobs))();
+    async getJob(id: string) {
+        const res = await this.batchApi.readNamespacedJob(id, this.namespace);
+        return res.body;
     }
 
-    getPodsWithSelector(selector: any): Promise<any> {
-        const pods = this.coreApi.ns(this.namespace).pods.matchLabels(selector);
-        return promisify(pods.get.bind(pods))();
+    async getPodsWithSelector(selector: string) {
+        const res = await this.coreApi.listNamespacedPod(
+            this.namespace,
+            undefined,
+            undefined,
+            undefined,
+            selector
+        );
+        return res.body.items;
     }
 
-    getService(id: string): Promise<any> {
-        const services = this.coreApi.ns(this.namespace).services(id);
-        return promisify(services.get.bind(services))();
+    async getService(id: string) {
+        const res = await this.coreApi.listNamespacedService(this.namespace);
+        return res.body.items;
     }
 
-    getJobStatus(id: string): Promise<any> {
-        const jobs = this.batchApi.ns(this.namespace).jobs(id);
-        return promisify(jobs.get.bind(jobs))({
-            name: `status`
-        });
+    async getJobStatus(id: string) {
+        const job = (await this.batchApi.readNamespacedJob(id, this.namespace))
+            .body;
+        return job.status;
     }
 
-    createJob(body: any): Promise<any> {
-        const jobs = this.batchApi.ns(this.namespace).jobs;
-        return promisify(jobs.post.bind(jobs))({
+    async createJob(body: k8s.V1Job) {
+        const res = await this.batchApi.createNamespacedJob(
+            this.namespace,
             body
-        });
+        );
+        return res.body;
     }
 
-    createService(body: any): Promise<any> {
-        const services = this.coreApi.ns(this.namespace).services;
-        return promisify(services.post.bind(services))({
+    async createService(body: k8s.V1Service) {
+        const res = await this.coreApi.createNamespacedService(
+            this.namespace,
             body
-        });
+        );
+        return res.body;
     }
 
-    deleteJob(id: string) {
-        const jobs = this.batchApi.ns(this.namespace).jobs;
-
-        return promisify(jobs.delete.bind(jobs))({
-            name: id,
-            body: {
-                kind: "DeleteOptions",
-                apiVersion: "batch/v1",
-                propagationPolicy: "Background"
-            }
-        });
+    async deleteJob(id: string) {
+        const res = await this.batchApi.deleteNamespacedJob(id, this.namespace);
+        return res.body;
     }
 
     deleteJobIfPresent(id: string) {
@@ -88,73 +121,366 @@ export default class K8SApi {
                 return this.deleteJob(id);
             })
             .catch((e) => {
-                if (e.code === 404) {
+                if (e instanceof HttpError && e.statusCode === 404) {
                     return Promise.resolve();
-                } else {
-                    throw e;
                 }
+                throw e;
             });
     }
 
-    deleteService(id: string) {
-        const services = this.coreApi.ns(this.namespace).services(id);
-
-        return promisify(services.delete.bind(services))();
+    async deleteService(id: string) {
+        const res = await this.coreApi.deleteNamespacedService(
+            id,
+            this.namespace
+        );
+        return res.body;
     }
 
-    getConnectorConfigMap(): Promise<any> {
-        const configmaps = this.coreApi.ns(this.namespace).configmaps;
+    async getConnectorConfigMaps() {
+        const configMaps = (
+            await this.coreApi.listNamespacedConfigMap(this.namespace)
+        )?.body?.items?.filter(
+            (item) => !!item?.metadata?.name?.startsWith("connector-")
+        );
 
-        return promisify(configmaps.get.bind(configmaps))({
-            name: "connector-config"
-        }).then((result: any) =>
-            _(result.data)
-                .mapKeys((value: any, key: string) => {
-                    return key.slice(0, key.length - 5);
-                })
-                .mapValues((value: string) => JSON.parse(value))
-                .value()
+        if (!configMaps?.length) {
+            return [];
+        } else {
+            return configMaps;
+        }
+    }
+
+    async updateConfigMap(id: string, newConfig: object) {
+        const res = await this.coreApi.patchNamespacedConfigMap(
+            id,
+            this.namespace,
+            newConfig,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+                headers: {
+                    "Content-Type": "application/merge-patch+json"
+                }
+            }
+        );
+        return res.body;
+    }
+
+    async getConfigMap(id: string) {
+        const res = await this.coreApi.readNamespacedConfigMap(
+            id,
+            this.namespace
+        );
+        return res.body;
+    }
+
+    async getConnectors() {
+        const cronJobs = (
+            await this.batchApi.listNamespacedCronJob(this.namespace)
+        )?.body?.items?.filter(
+            (item) => !!item?.metadata?.name?.startsWith("connector-")
+        );
+        if (!cronJobs?.length) {
+            return [];
+        }
+        const result = [] as Connector[];
+        for (let i = 0; i < cronJobs.length; i++) {
+            const connector = await this.connectorCronJobObjectToConnectorData(
+                cronJobs[i]
+            );
+            result.push(connector);
+        }
+        return result;
+    }
+
+    async getConnector(id: string) {
+        const res = await this.batchApi.readNamespacedCronJob(
+            connectorObjName(id),
+            this.namespace
+        );
+        return await this.connectorCronJobObjectToConnectorData(res.body);
+    }
+
+    async deleteConnector(id: string): Promise<boolean> {
+        let deleted: boolean = false;
+        try {
+            const connector = await this.getConnector(id);
+            if (
+                connector?.cronJob?.metadata?.labels?.[
+                    "app.kubernetes.io/managed-by"
+                ] === "Helm"
+            ) {
+                throw new ServerError(
+                    "Cannot delete a connector that is managed as part of the deployed Helm chart.",
+                    400
+                );
+            }
+            await this.batchApi.deleteNamespacedCronJob(
+                connectorObjName(id),
+                this.namespace
+            );
+            // set deleted = true as we at least took the action to remove cron job
+            deleted = true;
+            await this.coreApi.deleteNamespacedConfigMap(
+                connectorObjName(id),
+                this.namespace
+            );
+            return true;
+        } catch (e) {
+            if (e instanceof HttpError && e.statusCode == 404) {
+                return deleted;
+            }
+            throw e;
+        }
+    }
+
+    async updateConnector(
+        id: string,
+        connectorConfig: Partial<JsonConnectorConfig>
+    ) {
+        if (_.isEmpty(connectorConfig)) {
+            throw new ServerError("Supplied ConnectorConfig is empty", 400);
+        }
+        const connector = await this.getConnector(id);
+        if (
+            connector?.cronJob?.metadata?.labels?.[
+                "app.kubernetes.io/managed-by"
+            ] === "Helm"
+        ) {
+            throw new ServerError(
+                "Cannot update a connector that is managed as part of the deployed Helm chart.",
+                400
+            );
+        }
+        const configMapName = getConnectorConfigMapNameFromCronJob(
+            connector.cronJob
+        );
+        const configData = {
+            ...connector.configData,
+            ...connectorConfig
+        };
+        await this.updateConfigMap(configMapName, {
+            data: {
+                "config.json": JSON.stringify(configData)
+            }
+        });
+
+        if (connectorConfig?.schedule?.length) {
+            await this.batchApi.patchNamespacedCronJob(
+                connectorObjName(id),
+                this.namespace,
+                {
+                    spec: {
+                        schedule: connectorConfig.schedule
+                    }
+                },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                    headers: {
+                        "Content-Type": "application/merge-patch+json"
+                    }
+                }
+            );
+        }
+    }
+
+    async connectorExist(id: string) {
+        try {
+            await this.batchApi.readNamespacedCronJob(
+                connectorObjName(id),
+                this.namespace
+            );
+            return true;
+        } catch (e) {
+            if (e instanceof HttpError && e.statusCode === 404) {
+                return false;
+            }
+            throw e;
+        }
+    }
+
+    async createConnector(
+        connectorConfig: JsonConnectorConfig,
+        options: {
+            registryApiUrl: string;
+            tenantId: number;
+            defaultUserId: string;
+            dockerImageString?: string;
+            dockerImageName?: string;
+            dockerImageTag?: string;
+            dockerRepo?: string;
+            pullPolicy?: string;
+        }
+    ) {
+        const connectorId = connectorConfig?.id;
+        if (!connectorId) {
+            throw new ServerError("Connector ID cannot be empty.", 400);
+        }
+
+        if (await this.connectorExist(connectorId)) {
+            throw new ServerError(
+                `Connector with id ${connectorId} already exist.`,
+                400
+            );
+        }
+
+        if (!connectorConfig?.schedule) {
+            throw new ServerError(`expected missing "schedule" field`, 400);
+        }
+
+        if (
+            !options.dockerImageString &&
+            (!options.dockerImageName ||
+                !options.dockerRepo ||
+                !options.dockerImageTag)
+        ) {
+            throw new ServerError(
+                "Either `dockerImageString` or all `dockerImageName`, `dockerRepo` and `dockerImageTag` fields are required.",
+                400
+            );
+        }
+
+        const connectorObjectName = connectorObjName(connectorId);
+
+        const configMap = new k8s.V1ConfigMap();
+        configMap.apiVersion = "v1";
+        configMap.kind = "ConfigMap";
+        configMap.metadata = new k8s.V1ObjectMeta();
+        configMap.metadata.name = connectorObjectName;
+        configMap.metadata.namespace = this.namespace;
+        configMap.metadata.labels = {
+            "app.kubernetes.io/managed-by": "Magda"
+        };
+        configMap.data = {
+            "config.json": JSON.stringify(connectorConfig)
+        };
+
+        try {
+            await this.coreApi.readNamespacedConfigMap(
+                connectorObjectName,
+                this.namespace
+            );
+            // when configMap exists, patch the configMap
+            await this.coreApi.patchNamespacedConfigMap(
+                connectorObjectName,
+                this.namespace,
+                configMap,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                    headers: {
+                        "Content-Type": "application/merge-patch+json"
+                    }
+                }
+            );
+        } catch (e) {
+            if (e instanceof HttpError && e.statusCode === 404) {
+                // when configMap doesn't exist, create a new configMap
+                await this.coreApi.createNamespacedConfigMap(
+                    this.namespace,
+                    configMap
+                );
+            } else {
+                throw e;
+            }
+        }
+
+        const cronJob = buildConnectorCronJobManifest({
+            id: connectorId,
+            ...options,
+            schedule: connectorConfig.schedule,
+            namespace: this.namespace
+        });
+
+        await this.batchApi.createNamespacedCronJob(this.namespace, cronJob);
+    }
+
+    async startConnector(id: string) {
+        const name = connectorObjName(id);
+        await this.batchApi.patchNamespacedCronJob(
+            name,
+            this.namespace,
+            {
+                spec: {
+                    suspend: false
+                }
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+                headers: {
+                    "Content-Type": "application/merge-patch+json"
+                }
+            }
         );
     }
 
-    updateConnectorConfigMap(id: string, newConfig: any) {
-        const configmaps = this.coreApi.ns(this.namespace).configmaps;
-
-        return promisify(configmaps.patch.bind(configmaps))({
-            name: "connector-config",
-            body: {
-                data: {
-                    [`${id}.json`]:
-                        newConfig && JSON.stringify(newConfig, null, 2)
+    async stopConnector(id: string) {
+        const name = connectorObjName(id);
+        await this.batchApi.patchNamespacedCronJob(
+            name,
+            this.namespace,
+            {
+                spec: {
+                    suspend: true
+                }
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+                headers: {
+                    "Content-Type": "application/merge-patch+json"
                 }
             }
-        });
+        );
     }
 
-    static getDetails(apiType: K8SApiType) {
-        if (apiType === "minikube") {
-            const minikubeIP = getMinikubeIP();
-
-            const minikubePath = path.join(
-                process.env[
-                    process.platform === "win32" ? "USERPROFILE" : "HOME"
-                ],
-                ".minikube"
+    async connectorCronJobObjectToConnectorData(cronJob: k8s.V1CronJob) {
+        const connectorId = cronJob?.metadata?.name;
+        if (!connectorId) {
+            throw new Error(
+                `cronJob object has empty name field: ${JSON.stringify(
+                    cronJob
+                )}`
             );
-
-            return {
-                minikubeIP: minikubeIP,
-                url: `https://${minikubeIP}:8443`,
-                ca: fs.readFileSync(path.join(minikubePath, "ca.crt")),
-                cert: fs.readFileSync(path.join(minikubePath, "apiserver.crt")),
-                key: fs.readFileSync(path.join(minikubePath, "apiserver.key"))
-            };
-        } else if (apiType === "test") {
-            return {
-                url: "https://kubernetes.example.com"
-            };
-        } else {
-            return Api.config.getInCluster();
         }
+        if (!connectorId.startsWith("connector-")) {
+            throw new Error(
+                `cronJob object does not has a name start with "connector-": ${JSON.stringify(
+                    cronJob
+                )}`
+            );
+        }
+        const configMapName = getConnectorConfigMapNameFromCronJob(cronJob);
+        if (!configMapName) {
+            throw new ServerError(
+                "Cannot retrieve configMap name from CronJob manifest",
+                500
+            );
+        }
+        const configMap = await this.getConfigMap(configMapName);
+        const configData = JSON.parse(configMap?.data?.["config.json"]);
+        const connectorData: Connector = {
+            id: connectorId.replace("connector-", ""),
+            cronJob,
+            name: configData?.name,
+            ...configData,
+            schedule: cronJob?.spec?.schedule,
+            suspend: cronJob.spec.suspend,
+            status: cronJob?.status,
+            configData
+        };
+        return connectorData;
     }
 }
