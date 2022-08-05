@@ -12,7 +12,7 @@ import {
 } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import { searchTableRecord } from "magda-typescript-common/src/SQLUtils";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import ServerError from "magda-typescript-common/src/ServerError";
 
 export interface ApiRouterOptions {
     database: Database;

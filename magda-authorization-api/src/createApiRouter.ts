@@ -16,7 +16,7 @@ import createOperationApiRouter from "./apiRouters/createOperationApiRouter";
 import createPermissionApiRouter from "./apiRouters/createPermissionApiRouter";
 import createAccessGroupApiRouter from "./apiRouters/createAccessGroupApiRouter";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import { requireUnconditionalAuthDecision } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
+import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
 
 export interface ApiRouterOptions {
     database: Database;

@@ -6,7 +6,7 @@ import { escapeIdentifier } from "magda-typescript-common/src/SQLUtils";
 import AuthDecision, {
     UnconditionalTrueDecision
 } from "magda-typescript-common/src/opa/AuthDecision";
-import isUuid from "@magda/typescript-common/dist/util/isUuid";
+import isUuid from "magda-typescript-common/src/util/isUuid";
 const textTree = require("text-treeview");
 
 export interface NodeRecord {
