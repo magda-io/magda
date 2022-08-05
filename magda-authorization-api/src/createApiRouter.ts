@@ -1,11 +1,9 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import isUUID from "is-uuid";
 import bcrypt from "bcrypt";
 
 import Database from "./Database";
-import { getUserIdHandling } from "magda-typescript-common/src/session/GetUserId";
 import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
-import AuthError from "magda-typescript-common/src/authorization-api/AuthError";
 import { installStatusRouter } from "magda-typescript-common/src/express/status";
 import respondWithError from "./respondWithError";
 import handleMaybePromise from "./handleMaybePromise";
@@ -17,8 +15,8 @@ import createResourceApiRouter from "./apiRouters/createResourceApiRouter";
 import createOperationApiRouter from "./apiRouters/createOperationApiRouter";
 import createPermissionApiRouter from "./apiRouters/createPermissionApiRouter";
 import createAccessGroupApiRouter from "./apiRouters/createAccessGroupApiRouter";
-import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import { requireUnconditionalAuthDecision } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -36,6 +34,7 @@ export interface ApiRouterOptions {
 
 export default function createApiRouter(options: ApiRouterOptions) {
     const database = options.database;
+    const authDecisionClient = options.authDecisionClient;
 
     const router: express.Router = express.Router();
 
@@ -47,56 +46,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
     installStatusRouter(router, status);
     installStatusRouter(router, status, "/private");
     installStatusRouter(router, status, "/public");
-
-    const MUST_BE_ADMIN = function (req: Request, res: Response, next: any) {
-        //--- private API requires admin level access
-        getUserIdHandling(
-            req,
-            res,
-            options.jwtSecret,
-            async (userId: string) => {
-                try {
-                    const msg403 =
-                        "Only admin users are authorised to access this API: " +
-                        req.url;
-                    const user = (await database.getUser(userId)).valueOrThrow(
-                        new AuthError(`Not authorized`, 401)
-                    );
-                    (req as any).user = {
-                        // the default session data type is UserToken
-                        // But any auth plugin provider could choose to customise the session by adding more fields
-                        // avoid losing customise session data here
-                        ...(req.user ? req.user : {}),
-                        ...user
-                    };
-                    // check the legacy `isAdmin` role
-                    if (user.isAdmin) {
-                        next();
-                        return;
-                    }
-                    const roles = await database.getUserRoles(userId);
-                    if (!roles?.length) {
-                        throw new AuthError(msg403, 403);
-                    }
-                    if (
-                        roles.findIndex(
-                            (role) => role.id === ADMIN_USERS_ROLE_ID
-                        ) !== -1
-                    ) {
-                        next();
-                        return;
-                    } else {
-                        throw new AuthError(msg403, 403);
-                    }
-                } catch (e) {
-                    console.warn(e);
-                    if (e instanceof AuthError)
-                        res.status(e.statusCode).send(e.message);
-                    else res.status(500).send(`${e}`);
-                }
-            }
-        );
-    };
 
     /**
      * @apiGroup Auth API Keys
@@ -205,14 +154,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
         res.end();
     });
 
-    // in future, there will be no need for any private (in cluster access only endpoint)
-    // after we add fine-gained access control to all private endpoints and make them public
-    router.all("/private/*", MUST_BE_ADMIN);
-
     /**
      * @apiGroup Auth Users
      * @api {get} /private/users/lookup Lookup User
      * @apiDescription Lookup user by `source` & `sourceId`.
+     * require unconditional `authObject/user/read` permission to access.
      * @apiDeprecated use now (#Auth_Users:GetV0AuthUsers).
      * This api is only available within cluster (i.e. it's not available via gateway).
      * This route is deprecated as we have public facing API with fine-gained access control.
@@ -236,22 +182,29 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/private/users/lookup", function (req, res) {
-        const source = req.query.source as string;
-        const sourceId = req.query.sourceId as string;
+    router.get(
+        "/private/users/lookup",
+        requireUnconditionalAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
+        function (req, res) {
+            const source = req.query.source as string;
+            const sourceId = req.query.sourceId as string;
 
-        handleMaybePromise(
-            res,
-            database.getUserByExternalDetails(source, sourceId),
-            "/private/users/lookup"
-        );
-    });
+            handleMaybePromise(
+                res,
+                database.getUserByExternalDetails(source, sourceId),
+                "/private/users/lookup"
+            );
+        }
+    );
 
     /**
      * @apiGroup Auth Users
      * @api {get} /private/users/:userId Get User by Id (Private)
      * @apiDescription Get user record by user id.
      * This api is only available within cluster (i.e. it's not available via gateway).
+     * require unconditional `authObject/user/read` permission to access.
      * @apiDeprecated use now (#Auth_Users:GetV0AuthUsersUserid).
      * This route is deprecated as we have public facing API with fine-gained access control.
      *
@@ -273,15 +226,21 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/private/users/:userId", function (req, res) {
-        const userId = req.params.userId;
+    router.get(
+        "/private/users/:userId",
+        requireUnconditionalAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/read"
+        }),
+        function (req, res) {
+            const userId = req.params.userId;
 
-        handleMaybePromise(
-            res,
-            database.getUser(userId),
-            "/private/users/:userId"
-        );
-    });
+            handleMaybePromise(
+                res,
+                database.getUser(userId),
+                "/private/users/:userId"
+            );
+        }
+    );
 
     /**
      * @apiGroup Auth Users
@@ -289,6 +248,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiDescription Create a new user record.
      * Supply a JSON object that contains fields of the new user in body.
      * This api is only available within cluster (i.e. it's not available via gateway).
+     * require unconditional `authObject/user/create` permission to access.
      *
      * @apiDeprecated use now (#Auth_Users:PostV0AuthUsers).
      * This route is deprecated as we have public facing API with fine-gained access control.
@@ -314,21 +274,27 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.post("/private/users", async function (req, res) {
-        try {
-            const user = await database.createUser(req.body);
-            res.json(user);
-        } catch (e) {
-            respondWithError("/private/users", res, e);
+    router.post(
+        "/private/users",
+        requireUnconditionalAuthDecision(authDecisionClient, {
+            operationUri: "authObject/user/create"
+        }),
+        async function (req, res) {
+            try {
+                const user = await database.createUser(req.body);
+                res.json(user);
+            } catch (e) {
+                respondWithError("/private/users", res, e);
+            }
         }
-    });
+    );
 
     // attach orgunits apis
     router.use(
         "/public/orgunits",
         createOrgUnitApiRouter({
             database,
-            authDecisionClient: options.authDecisionClient
+            authDecisionClient
         })
     );
 
@@ -336,7 +302,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         "/public/users",
         createUserApiRouter({
             database,
-            authDecisionClient: options.authDecisionClient,
+            authDecisionClient,
             jwtSecret: options.jwtSecret
         })
     );
@@ -346,7 +312,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         "/public/user",
         createUserApiRouter({
             database,
-            authDecisionClient: options.authDecisionClient,
+            authDecisionClient,
             jwtSecret: options.jwtSecret
         })
     );
@@ -357,7 +323,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         createRoleApiRouter({
             database,
             jwtSecret: options.jwtSecret,
-            authDecisionClient: options.authDecisionClient
+            authDecisionClient
         })
     );
 
@@ -367,7 +333,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         createRoleApiRouter({
             database,
             jwtSecret: options.jwtSecret,
-            authDecisionClient: options.authDecisionClient
+            authDecisionClient
         })
     );
 
@@ -375,7 +341,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         "/public/resources",
         createResourceApiRouter({
             database,
-            authDecisionClient: options.authDecisionClient
+            authDecisionClient
         })
     );
 
@@ -383,7 +349,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         "/public/operations",
         createOperationApiRouter({
             database,
-            authDecisionClient: options.authDecisionClient
+            authDecisionClient
         })
     );
 
@@ -392,7 +358,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         createPermissionApiRouter({
             database,
             jwtSecret: options.jwtSecret,
-            authDecisionClient: options.authDecisionClient
+            authDecisionClient
         })
     );
 
@@ -401,7 +367,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         createAccessGroupApiRouter({
             database,
             jwtSecret: options.jwtSecret,
-            authDecisionClient: options.authDecisionClient,
+            authDecisionClient,
             registryClient: options.registryClient
         })
     );
