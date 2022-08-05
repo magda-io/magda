@@ -2,6 +2,7 @@ import createPool from "./createPool";
 import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant";
 import pg from "pg";
 import _ from "lodash";
+import { sqls } from "sql-syntax";
 
 export interface DatabaseOptions {
     dbHost: string;
@@ -22,8 +23,7 @@ export default class Database {
 
     async createTenant(tenant: Tenant): Promise<Tenant> {
         const result = await this.pool.query(
-            "INSERT INTO tenants(domainname, enabled) VALUES($1, $2) RETURNING domainname, id, enabled",
-            [tenant.domainname, tenant.enabled]
+            ...sqls`INSERT INTO tenants(domainname, enabled) VALUES(${tenant.domainname}, ${tenant.enabled}) RETURNING domainname, id, enabled`.toQuery()
         );
         const theTenant: Tenant = result.rows[0];
         return theTenant;

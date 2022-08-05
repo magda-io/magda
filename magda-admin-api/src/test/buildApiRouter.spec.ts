@@ -20,8 +20,6 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
     const namespace = "THISISANAMESPACE";
     let app: express.Express;
     let k8sApiScope: nock.Scope;
-    const k8sServiceHost = process.env.KUBERNETES_SERVICE_HOST;
-    const k8sServicePort = process.env.KUBERNETES_SERVICE_PORT;
     const registryApiUrl = "http://registry.example.com";
     const authApiUrl = "http://admin.example.com";
 
@@ -63,8 +61,6 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
         k8sApiScope = nock("http://mock-k8s-api.com");
         nock.disableNetConnect();
         nock.enableNetConnect("127.0.0.1");
-        process.env.KUBERNETES_SERVICE_HOST = "kubernetes.example.com";
-        process.env.KUBERNETES_SERVICE_PORT = "80";
     };
 
     beforeEach(beforeEachInner);
@@ -73,8 +69,6 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
         k8sApiScope.done();
         nock.enableNetConnect();
         nock.cleanAll();
-        process.env.KUBERNETES_SERVICE_HOST = k8sServiceHost;
-        process.env.KUBERNETES_SERVICE_PORT = k8sServicePort;
     };
 
     afterEach(afterEachInner);

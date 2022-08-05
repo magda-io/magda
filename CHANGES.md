@@ -54,6 +54,8 @@
 - #3337 Release docker images & helm charts to Github container registry as well
 - #3349 secure content API with new auth model
 - #3350 secure admin API (managing connectors) with new auth model
+- #3351 Secure tenant API with new auth model
+- Related #3331, remove legacy middlewares
 
 ## 1.3.1
 

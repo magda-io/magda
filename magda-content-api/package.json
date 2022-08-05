@@ -17,6 +17,7 @@
   "dependencies": {
     "@magda/content-schemas": "^2.0.0-alpha.0",
     "@magda/typescript-common": "^2.0.0-alpha.0",
+    "sql-syntax": "^1.1.3",
     "body-parser": "^1.13.2",
     "djv": "^2.1.4",
     "express": "^4.17.1",

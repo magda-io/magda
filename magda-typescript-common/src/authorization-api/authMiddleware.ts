@@ -1,99 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import { getUserId as getUserIdFromReq } from "../session/GetUserId";
-import ApiClient from "./ApiClient";
 import AuthDecisionQueryClient, {
     AuthDecisionReqConfig
 } from "../opa/AuthDecisionQueryClient";
 import AuthDecision, { isTrueEquivalent } from "../opa/AuthDecision";
-import { DEFAULT_ADMIN_USER_ID, ADMIN_USERS_ROLE_ID } from "./constants";
 import ServerError from "../ServerError";
-
-/**
- * Find the user making the request. Assign it to req passport style.
- * !deprecated! should use middleware `getUserId` or `requireUserId` instead.
- */
-export const getUser = (
-    baseAuthUrl: string,
-    jwtSecret: string,
-    actionUserId?: string
-) => (req: Request, res: Response, next: () => void) => {
-    getUserIdFromReq(req, jwtSecret).caseOf({
-        just: (userId) => {
-            const apiClient = new ApiClient(
-                baseAuthUrl,
-                jwtSecret,
-                actionUserId ? actionUserId : DEFAULT_ADMIN_USER_ID
-            );
-            apiClient
-                .getUser(userId)
-                .then((maybeUser) => {
-                    maybeUser.caseOf({
-                        just: (user) => {
-                            req.user = {
-                                // the default session data type is UserToken
-                                // But any auth plugin provider could choose to customise the session by adding more fields
-                                // avoid losing customise session data here
-                                ...(req.user ? req.user : {}),
-                                ...user
-                            };
-                            next();
-                        },
-                        nothing: next
-                    });
-                })
-                .catch(() => next());
-        },
-        nothing: next
-    });
-};
-
-// deprecated middleware. To be removed after all code is secured with new model
-export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => {
-    const getUserInstance = getUser(baseAuthUrl, jwtSecret);
-    return (req: Request, res: Response, next: () => void) => {
-        getUserInstance(req, res, async () => {
-            try {
-                // check the legacy `isAdmin` role
-                if (req?.user?.isAdmin) {
-                    next();
-                    return;
-                } else if (req?.user?.id) {
-                    const msg403 =
-                        "Only admin users are authorised to access this API: " +
-                        req.url;
-                    const apiClient = new ApiClient(
-                        baseAuthUrl,
-                        jwtSecret,
-                        DEFAULT_ADMIN_USER_ID
-                    );
-                    const roles = await apiClient.getUserRoles(req.user.id);
-                    if (!roles?.length) {
-                        throw new ServerError(msg403, 403);
-                    }
-                    if (
-                        roles.findIndex(
-                            (role) => role.id === ADMIN_USERS_ROLE_ID
-                        ) !== -1
-                    ) {
-                        next();
-                        return;
-                    } else {
-                        throw new ServerError(msg403, 403);
-                    }
-                } else {
-                    throw new ServerError("Not authorized", 401);
-                }
-            } catch (e) {
-                if (e instanceof ServerError) {
-                    console.warn(`Rejecting by mustBeAdmin: ${e}`);
-                    res.status(e.statusCode).send(e.message);
-                } else {
-                    res.status(500).send(`${e}`);
-                }
-            }
-        });
-    };
-};
 
 export type AuthDecisionReqConfigOrConfigFuncParam =
     | AuthDecisionReqConfig

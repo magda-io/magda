@@ -63,6 +63,12 @@ allow {
 }
 
 allow {
+    ## delegate tenant related decision to tenant rules
+    startswith(input.operationUri, "object/tenant/")
+    data.object.tenant.allow
+}
+
+allow {
     ## delegate access group related decision to access group rules
     startswith(input.operationUri, "object/accessGroup/")
     data.object.accessGroup.allow
