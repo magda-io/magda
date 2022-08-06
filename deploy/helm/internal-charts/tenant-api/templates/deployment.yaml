@@ -29,6 +29,12 @@ spec:
             "--listenPort", "80",
             "--dbHost", "tenant-db",
             "--dbPort", "5432",
+{{- if .Values.debug }}
+            "--debug", "true",
+{{- end }}
+{{- if .Values.skipAuth }}
+            "--skipAuth", "true",
+{{- end }}
             "--authApiUrl", "http://authorization-api/v0"
         ]
 {{- if .Values.global.enableLivenessProbes }}

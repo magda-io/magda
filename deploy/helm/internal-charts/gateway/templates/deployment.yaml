@@ -84,9 +84,9 @@ spec:
             "--enableMultiTenants", "false",
 {{- end }}
 {{- if .Values.global.magdaAdminPortalName }}
-            "--magdaAdminPortalName", {{ .Values.global.magdaAdminPortalName | quote}}
+            "--magdaAdminPortalName", {{ .Values.global.magdaAdminPortalName | quote }},
 {{- else if .Values.magdaAdminPortalName }}
-            "--magdaAdminPortalName", {{ .Values.magdaAdminPortalName | quote}}
+            "--magdaAdminPortalName", {{ .Values.magdaAdminPortalName | quote }},
 {{- end }}
 {{- if .Values.defaultCacheControl }}
             "--defaultCacheControl", {{ .Values.defaultCacheControl | quote }},

@@ -338,6 +338,20 @@ VALUES
 ('object/connector/delete','Delete a connector', 'Allow a user to delete a connector', (SELECT id FROM resources WHERE uri = 'object/connector'));
 -- End adding resource, operation for `connectors`
 
+-- Add resource, operation for `multi-tenancy tenants` managed by tenant api
+INSERT INTO "public"."resources" 
+    ("uri", "name", "description")
+VALUES 
+('object/tenant', 'Tenants', 'Resource represents multi-tenancy tenants');
+
+INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
+VALUES 
+('object/tenant/create','Create a new tenant', 'Allow a user to create a new tenant', (SELECT id FROM resources WHERE uri = 'object/tenant')),
+('object/tenant/update','Update a tenant', 'Allow a user to update a tenant', (SELECT id FROM resources WHERE uri = 'object/tenant')),
+('object/tenant/read','Read tenant information', 'Allow a user to read the information of tenants', (SELECT id FROM resources WHERE uri = 'object/tenant')),
+('object/tenant/delete','Delete a tenant', 'Allow a user to delete a tenant', (SELECT id FROM resources WHERE uri = 'object/tenant'));
+-- End adding resource, operation for `tenant`
+
 -- create Data Stewards role
 INSERT INTO "public"."roles" ("id", "name", "description") 
 VALUES 
