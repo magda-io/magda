@@ -21,7 +21,9 @@ function getTableRefFromObjectType(objectType: PossibleObjectType): SQLSyntax {
 }
 
 /**
- * middleware used to make auth decision on one object / record.
+ * This middleware is created for making unconditional decision for the access to one single object.
+ * Because of it, the middleware will auto-load the record data from database as part of `input` data for decision making.
+ * If you need partial decision making (without prior access to storage e.g. DB) on a group of objects, you should use [withAuthDecision](magda-typescript-common/src/authorization-api/authMiddleware) middleware
  *
  * @export
  * @param {AuthDecisionQueryClient} authDecisionClient
@@ -76,6 +78,14 @@ export function requireObjectPermission(
 
 /**
  * A middleware for query whether the user has permission to object before & after modification.
+ * Similar to `requireObjectPermission`, this middleware is created for making unconditional decision for the access to one single object.
+ * If you need partial decision making (without prior access to storage e.g. DB) on a group of objects, you should use [withAuthDecision](magda-typescript-common/src/authorization-api/authMiddleware) middleware
+ *
+ * In additional to `requireObjectPermission`, it ensures more precisely access control in "update" context.
+ * i.e. it ensures that the user has access to the object before / after the modification to the object.
+ * Because of it, the middleware will auto-load the record data from database as part of `input` data for decision making.
+ * Depends on the object type, you might not always need this type of control.
+ *
  *
  * @export
  * @param {AuthDecisionQueryClient} authDecisionClient
