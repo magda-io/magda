@@ -13,6 +13,7 @@ import {
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import { searchTableRecord } from "magda-typescript-common/src/SQLUtils";
 import ServerError from "magda-typescript-common/src/ServerError";
+import { omit } from "lodash";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -214,7 +215,6 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *        id: "b559889a-2843-4a60-9c6d-103d51eb4410",
      *        user_id: "be374b6e-d428-4211-b642-b2b65abcf051",
      *        created_timestamp: "2022-05-16T13:02:59.430Z",
-     *        hash: "$2b$10$6DD8hle27X/dVdDD3Sl3Y.V6NtJ9jBiy2cyS8SnBO5EEWMD5Wpdwe",
      *        expiry_time: null,
      *        last_successful_attempt_time: null,
      *        last_failed_attempt_time: null,
@@ -240,7 +240,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                     userId,
                     res.locals.authDecision
                 );
-                res.json(apiKeys);
+                res.json(apiKeys.map((item) => omit(item, "hash")));
             } catch (e) {
                 respondWithError("GET /public/users/:userId/apiKeys", res, e);
             }
@@ -263,7 +263,6 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *        id: "b559889a-2843-4a60-9c6d-103d51eb4410",
      *        user_id: "be374b6e-d428-4211-b642-b2b65abcf051",
      *        created_timestamp: "2022-05-16T13:02:59.430Z",
-     *        hash: "$2b$10$6DD8hle27X/dVdDD3Sl3Y.V6NtJ9jBiy2cyS8SnBO5EEWMD5Wpdwe",
      *        expiry_time: null,
      *        last_successful_attempt_time: null,
      *        last_failed_attempt_time: null,
@@ -296,7 +295,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                         404
                     );
                 }
-                res.json(apiKey);
+                res.json(omit(apiKey, "hash"));
             } catch (e) {
                 respondWithError(
                     "GET /public/users/:userId/apiKey/:apiKeyId",
