@@ -21,7 +21,7 @@ export default class Database {
         return res.rows;
     }
 
-    async createTenant(tenant: Tenant): Promise<Tenant> {
+    async createTenant(tenant: Omit<Tenant, "id">): Promise<Tenant> {
         const result = await this.pool.query(
             ...sqls`INSERT INTO tenants(domainname, enabled) VALUES(${tenant.domainname}, ${tenant.enabled}) RETURNING domainname, id, enabled`.toQuery()
         );
