@@ -64,7 +64,7 @@ connector-aurin:
   config:
     id: aurin
     name: Australian Urban Research Infrastructure Network
-    sourceUrl: https://openapi.aurin.org.au/public/csw
+    sourceUrl: https://data.aurin.org.au/
     pageSize: 100
 
 connector-brisbane:
