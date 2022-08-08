@@ -1,6 +1,6 @@
 import express from "express";
 import yargs from "yargs";
-
+import { createHttpTerminator } from "http-terminator";
 import buildApiRouter from "./buildApiRouter";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
@@ -98,7 +98,10 @@ app.use(
     })
 );
 
-app.listen(argv.listenPort);
+const server = app.listen(argv.listenPort);
+const httpTerminator = createHttpTerminator({
+    server
+});
 console.log("Admin API started on port " + argv.listenPort);
 
 process.on(
@@ -107,3 +110,11 @@ process.on(
         console.error(reason);
     }
 );
+
+process.on("SIGTERM", () => {
+    console.log("SIGTERM signal received: closing HTTP server");
+    httpTerminator.terminate().then(() => {
+        console.log("HTTP server closed");
+        process.exit(0);
+    });
+});

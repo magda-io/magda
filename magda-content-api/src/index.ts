@@ -1,6 +1,6 @@
 import express from "express";
 import yargs from "yargs";
-
+import { createHttpTerminator } from "http-terminator";
 import createApiRouter from "./createApiRouter";
 import Database from "./Database";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
@@ -85,7 +85,10 @@ app.use(
     })
 );
 
-app.listen(argv.listenPort);
+const server = app.listen(argv.listenPort);
+const httpTerminator = createHttpTerminator({
+    server
+});
 console.log("Contents API started on port " + argv.listenPort);
 
 process.on(
@@ -95,3 +98,11 @@ process.on(
         console.error(reason);
     }
 );
+
+process.on("SIGTERM", () => {
+    console.log("SIGTERM signal received: closing HTTP server");
+    httpTerminator.terminate().then(() => {
+        console.log("HTTP server closed");
+        process.exit(0);
+    });
+});

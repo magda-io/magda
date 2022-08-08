@@ -29,6 +29,7 @@
     "tsmonad": "^0.7.2",
     "wildcard": "^1.1.2",
     "mime-types": "^2.1.20",
+    "http-terminator": "^3.2.0",
     "yargs": "^12.0.5"
   },
   "devDependencies": {

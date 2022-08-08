@@ -1,7 +1,7 @@
 import express from "express";
 import yargs from "yargs";
 import "magda-typescript-common/src/pgTypes";
-
+import { createHttpTerminator } from "http-terminator";
 import createApiRouter from "./createApiRouter";
 import createOpaRouter from "./createOpaRouter";
 import Database from "./Database";
@@ -144,7 +144,10 @@ const opaRouter = createOpaRouter({
 app.use("/v0/public/opa", opaRouter);
 app.use("/v0/opa", opaRouter);
 
-app.listen(argv.listenPort);
+const server = app.listen(argv.listenPort);
+const httpTerminator = createHttpTerminator({
+    server
+});
 console.log("Auth API started on port " + argv.listenPort);
 
 process.on(
@@ -154,3 +157,11 @@ process.on(
         console.error(reason);
     }
 );
+
+process.on("SIGTERM", () => {
+    console.log("SIGTERM signal received: closing HTTP server");
+    httpTerminator.terminate().then(() => {
+        console.log("HTTP server closed");
+        process.exit(0);
+    });
+});

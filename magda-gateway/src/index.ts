@@ -2,7 +2,7 @@ import yargs from "yargs";
 import _ from "lodash";
 import express from "express";
 import buildApp from "./buildApp";
-
+import { createHttpTerminator } from "http-terminator";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
 
 const coerceJson = (path?: string) => path && require(path);
@@ -211,7 +211,10 @@ const argv = addJwtSecretFromEnvVar(
 // Create a new Express application.
 const app = express();
 buildApp(app, argv as any);
-app.listen(argv.listenPort);
+const server = app.listen(argv.listenPort);
+const httpTerminator = createHttpTerminator({
+    server
+});
 console.log("Listening on port " + argv.listenPort);
 
 process.on(
@@ -221,3 +224,11 @@ process.on(
         console.error(reason);
     }
 );
+
+process.on("SIGTERM", () => {
+    console.log("SIGTERM signal received: closing HTTP server");
+    httpTerminator.terminate().then(() => {
+        console.log("HTTP server closed");
+        process.exit(0);
+    });
+});

@@ -4,7 +4,7 @@ import URI from "urijs";
 import yargs from "yargs";
 import morgan from "morgan";
 import request from "magda-typescript-common/src/request";
-
+import { createHttpTerminator } from "http-terminator";
 import Registry from "magda-typescript-common/src/registry/RegistryClient";
 import coerceJson from "magda-typescript-common/src/coerceJson";
 import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
@@ -594,7 +594,10 @@ app.use("/", function (req, res) {
     res.redirect(303, redirectUri.toString());
 });
 
-app.listen(argv.listenPort);
+const server = app.listen(argv.listenPort);
+const httpTerminator = createHttpTerminator({
+    server
+});
 console.log("Listening on port " + argv.listenPort);
 
 process.on(
@@ -603,3 +606,11 @@ process.on(
         console.error(reason);
     }
 );
+
+process.on("SIGTERM", () => {
+    console.log("SIGTERM signal received: closing HTTP server");
+    httpTerminator.terminate().then(() => {
+        console.log("HTTP server closed");
+        process.exit(0);
+    });
+});
