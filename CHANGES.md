@@ -58,6 +58,7 @@
 - Related to #3331, remove legacy middlewares
 - #3352 Remove usage of MUST_BE_ADMIN middleware in auth API
 - #3380 Support Graceful Pod Shutdown
+- Upgrade to typescript 4.2.4 & api-extractor 7.15.2
 
 ## 1.3.1
 

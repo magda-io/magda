@@ -21,7 +21,7 @@ export function runConnectorTest(
         const catalogPort = registryPort + 1;
 
         function run() {
-            return new Promise((resolve, reject) => {
+            return new Promise<void>((resolve, reject) => {
                 const tsconfigPath = path.resolve("tsconfig.json");
                 const tsNodeExec = path.resolve(
                     path.dirname(

@@ -1,3 +1,4 @@
+declare module "*.json";
 declare module "dockerode-compose" {
     import Dockerode, { Network } from "dockerode";
 

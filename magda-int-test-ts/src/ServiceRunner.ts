@@ -427,7 +427,7 @@ export default class ServiceRunner {
             );
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             const aspectMigratorProcess = child_process.fork(
                 aspectMigratorExecute,
                 ["--jwtSecret", this.jwtSecret],
