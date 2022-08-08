@@ -35,7 +35,7 @@
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
     "testcheck": "^1.0.0-rc.2",
-    "typescript": "^3.7.2"
+    "typescript": "^4.2.4"
   },
   "dependencies": {
     "@magda/registry-aspects": "^2.0.0-alpha.0",

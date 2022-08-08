@@ -13,9 +13,9 @@
   "types": "dist/index.d.ts",
   "devDependencies": {
     "@magda/typescript-common": "^2.0.0-alpha.0",
-    "@microsoft/api-extractor": "^7.7.8",
+    "@microsoft/api-extractor": "^7.15.2",
     "ts-loader": "^6.2.1",
-    "typescript": "^3.7.2",
+    "typescript": "^4.2.4",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
   },
