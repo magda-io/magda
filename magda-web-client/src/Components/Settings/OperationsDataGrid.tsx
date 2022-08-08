@@ -8,9 +8,9 @@ import { Input, InputGroup, IconButton } from "rsuite";
 import { MdSearch, MdBorderColor, MdDeleteForever } from "react-icons/md";
 import {
     queryResOperations,
-    queryResOperationsCount,
-    OperationRecord
+    queryResOperationsCount
 } from "../../api-clients/AuthApis";
+import { OperationRecord } from "@magda/typescript-common/dist/authorization-api/model";
 import "./OperationsDataGrid.scss";
 import reportError from "./reportError";
 

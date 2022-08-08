@@ -58,7 +58,7 @@ class AutoCompleteInput<T> extends React.Component<
     private key: string = `AutoCompleteInput_${AutoCompleteInput.key++}`;
 
     getExcludeLookup: (excludes: T[]) => string[] = memoize((excludes: T[]) =>
-        keyBy(excludes, exclude =>
+        keyBy(excludes, (exclude) =>
             this.props.objectToString(exclude).toLowerCase()
         )
     );
@@ -81,7 +81,7 @@ class AutoCompleteInput<T> extends React.Component<
             }
 
             const options = optionsResult
-                .filter(option => {
+                .filter((option) => {
                     const stringOption = this.props.objectToString(option);
 
                     return !this.getExcludeLookup(this.props.exclude)[
@@ -90,7 +90,7 @@ class AutoCompleteInput<T> extends React.Component<
                 })
                 .slice(0, this.props.suggestionSize);
 
-            this.setState(state => ({
+            this.setState((state) => ({
                 ...state,
                 suggestions: options ? options : []
             }));
@@ -126,7 +126,7 @@ class AutoCompleteInput<T> extends React.Component<
 
     onSelect = (selectedString: string) => {
         const selectedObj = this.state.suggestions.find(
-            suggestion =>
+            (suggestion) =>
                 this.props.objectToString(suggestion) === selectedString
         );
 

@@ -248,7 +248,7 @@ const Routes = () => {
             />
             <Route
                 path="/dataset/:datasetId/distribution/:distributionId"
-                component={withHeader(RecordHandler, {
+                component={withHeader(RecordHandler as any, {
                     includeSearchBox: true
                 })}
             />
@@ -268,7 +268,7 @@ const Routes = () => {
 
             <Route
                 path="/dataset/:datasetId"
-                component={withHeader(RecordHandler, {
+                component={withHeader(RecordHandler as any, {
                     includeSearchBox: true
                 })}
             />

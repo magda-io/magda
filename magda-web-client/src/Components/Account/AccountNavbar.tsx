@@ -1,22 +1,18 @@
 import React, { SyntheticEvent } from "react";
 import { connect } from "react-redux";
-import { NavLink, withRouter } from "react-router-dom";
-import { Location, History } from "history";
+import { NavLink, withRouter, RouteComponentProps } from "react-router-dom";
 import { User } from "reducers/userManagementReducer";
 import { config } from "../../config";
 import urijs from "urijs";
 
 type PropsType = {
     user: User;
-    history: History;
-    location: Location;
     skipLink: boolean;
 };
 
-class AccountNavbar extends React.Component<PropsType> {
+class AccountNavbar extends React.Component<PropsType & RouteComponentProps> {
     signOut(event: SyntheticEvent) {
         event.preventDefault();
-        console.log(config);
         const authApiUri = urijs(config.authApiUrl);
         const authApiSeqments = authApiUri
             .segmentCoded()

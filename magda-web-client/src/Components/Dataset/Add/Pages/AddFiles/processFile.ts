@@ -211,7 +211,7 @@ export default async function processFile(
         const output = await extractors.runExtractors(
             input,
             (() => {
-                const safeConfig = { ...config };
+                const safeConfig = { ...config } as any;
                 // We need to delete facets because it has regexs in it,
                 // and these cause an error if you try to pass them to
                 // the webworker

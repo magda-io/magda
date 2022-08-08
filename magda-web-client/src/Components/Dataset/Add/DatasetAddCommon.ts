@@ -273,7 +273,7 @@ export type DatasetStateUpdaterType = ReactStateUpdaterType<State>;
 export const getDistributionDeleteCallback = (
     datasetStateUpdater: DatasetStateUpdaterType
 ) => (distId: string) =>
-    new Promise((resolve, reject) => {
+    new Promise<void>((resolve, reject) => {
         datasetStateUpdater(
             (state) => ({
                 ...state,
@@ -288,7 +288,7 @@ export const getDistributionDeleteCallback = (
 export const getDistributionAddCallback = (
     datasetStateUpdater: DatasetStateUpdaterType
 ) => (dist: Distribution) =>
-    new Promise((resolve, reject) => {
+    new Promise<void>((resolve, reject) => {
         datasetStateUpdater(
             (state) => ({
                 ...state,
@@ -304,7 +304,7 @@ export const getDistributionUpdateCallback = (
     distId: string,
     dist: ((prevState: Readonly<Distribution>) => Distribution) | Distribution
 ) =>
-    new Promise((resolve, reject) => {
+    new Promise<void>((resolve, reject) => {
         datasetStateUpdater((state) => {
             try {
                 return {

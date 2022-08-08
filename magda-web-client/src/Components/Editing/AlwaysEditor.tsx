@@ -49,7 +49,7 @@ export class AlwaysEditor<V> extends React.Component<
                     : "",
                 elRef: this.ref,
                 customValidator: this.props.customValidator,
-                setError: errorMessage => {
+                setError: (errorMessage) => {
                     this.setState({
                         isValidationError: true,
                         validationErrorMessage: errorMessage

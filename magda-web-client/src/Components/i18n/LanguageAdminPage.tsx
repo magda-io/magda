@@ -15,7 +15,7 @@ class Account extends React.Component<any, any> {
     }
 
     componentDidMount() {
-        listContent("lang/en/*").then(items => this.updateState({ items }));
+        listContent("lang/en/*").then((items) => this.updateState({ items }));
     }
 
     render() {
@@ -50,7 +50,7 @@ class Account extends React.Component<any, any> {
 
     renderItem(item) {
         const [, , section, head] = item.id.split("/");
-        const save = async value => {
+        const save = async (value) => {
             return writeContent(item.id, value, "text/plain");
         };
         return (

@@ -1,5 +1,9 @@
 {
-    "extends": ["react-app", "plugin:@typescript-eslint/recommended"],
+    "extends": [
+        "react-app",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:prettier/recommended"
+    ],
     "plugins": ["@typescript-eslint", "prettier"],
     "rules": {
         "prettier/prettier": "error",
@@ -11,8 +15,10 @@
         "@typescript-eslint/no-use-before-define": 0,
         "@typescript-eslint/no-var-requires": "warn",
         "@typescript-eslint/no-this-alias": "warn",
-        "@typescript-eslint/camelcase": "warn",
-        "@typescript-eslint/no-inferrable-types": "off"
+        "@typescript-eslint/no-inferrable-types": "off",
+        "@typescript-eslint/ban-types": "warn",
+        "@typescript-eslint/no-empty-function": "warn",
+        "@typescript-eslint/ban-ts-comment": "warn"
     },
     "parser": "@typescript-eslint/parser",
     "settings": {

@@ -21,7 +21,7 @@ function FallbackRouteHandler({ loading }: Props) {
     );
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     const loading = !state.content.isFetched;
     return {
         loading

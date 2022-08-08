@@ -45,7 +45,7 @@ export default function CustodianDropdown({
                 ? userData.orgUnit
                 : await getRootNode();
 
-            let selectedNode: OrgUnit | null = null;
+            let selectedNode: OrgUnit | undefined;
             if (orgUnitId) {
                 try {
                     selectedNode = await getOrgUnitById(orgUnitId);

@@ -5,7 +5,7 @@ import {
     FetchRecordsCountOptions,
     DatasetTypes
 } from "api-clients/RegistryApis";
-import getMyDatasetAspectQueries from "./getMyDatasetAspectQueries";
+import getDatasetAspectQueries from "./getDatasetAspectQueries";
 
 type PropsType = {
     searchText: string;
@@ -21,11 +21,7 @@ const DatasetCountLabel: FunctionComponent<PropsType> = (props) => {
             userId: string
         ) => {
             const opts: FetchRecordsCountOptions = {
-                aspectQueries: getMyDatasetAspectQueries(
-                    datasetType,
-                    userId,
-                    searchText
-                )
+                aspectQueries: getDatasetAspectQueries(datasetType, searchText)
             };
 
             if (datasetType === "drafts") {

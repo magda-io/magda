@@ -139,14 +139,6 @@ export function fetchOrganization(
 }
 
 /**
- * Store aspect json schema saving action promise.
- * Used by `ensureAspectExists` to make sure only save the aspect once within current session.
- */
-const aspectJsonSchemaSavingCache: {
-    [key: string]: Promise<any>;
-} = {};
-
-/**
  * Ensure aspect exists in registry by storing the aspect def to registry.
  * Here we are not going to skip storing the aspect def if the aspect def already exists as we don't know whether it's an up-to-date one in registry.
  * For now, we only make sure the aspect def won't be stored to registry for multiple times.

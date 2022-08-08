@@ -24,7 +24,7 @@ const getOrgUnitName = async (id?: string) => {
     }
     try {
         const orgUnit = await getOrgUnitById(id);
-        return orgUnit.name;
+        return orgUnit?.name;
     } catch (e) {
         return undefined;
     }

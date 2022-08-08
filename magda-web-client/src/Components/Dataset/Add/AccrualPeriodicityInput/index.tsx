@@ -43,7 +43,7 @@ const DEFAULT_CUSTOM_INPUT_VALUE = {
     byweekday: [RRule.MO] as Weekday[]
 };
 
-const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
+const AccrualPeriodicityInput: FunctionComponent<PropsType> = (props) => {
     const recurrenceRuleOptions = props.accrualPeriodicityRecurrenceRule
         ? RRule.parseString(props.accrualPeriodicityRecurrenceRule)
         : DEFAULT_CUSTOM_INPUT_VALUE;
@@ -63,7 +63,7 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
             const newSelectedWeekDays =
                 idx === -1
                     ? [...selectedWeekDays, weekday]
-                    : selectedWeekDays.filter(item => item !== weekday);
+                    : selectedWeekDays.filter((item) => item !== weekday);
 
             const newRecurrenceRuleOptions = {
                 ...recurrenceRuleOptions,
@@ -98,7 +98,7 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
     const onAccrualPeriodicitySelectChange = (
         recurrenceRuleOptions: Partial<RRuleOptions>
     ) => {
-        return option => {
+        return (option) => {
             const value = option.value;
             if (typeof props.onAccrualPeriodicityChange === "function") {
                 props.onAccrualPeriodicityChange(value);
@@ -124,7 +124,7 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
     const onRepeatInputChange = (
         recurrenceRuleOptions: Partial<RRuleOptions>
     ) => {
-        return event => {
+        return (event) => {
             if (
                 typeof props.onAccrualPeriodicityRecurrenceRuleChange !==
                 "function"
@@ -148,7 +148,7 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
     const onRepeatSelectChange = (
         recurrenceRuleOptions: Partial<RRuleOptions>
     ) => {
-        return option => {
+        return (option) => {
             if (
                 typeof props.onAccrualPeriodicityRecurrenceRuleChange !==
                 "function"
@@ -176,7 +176,7 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                 styles={CustomStyles}
                 isSearchable={false}
                 options={
-                    Object.keys(accrualPeriodicity).map(key => ({
+                    Object.keys(accrualPeriodicity).map((key) => ({
                         label: accrualPeriodicity[key],
                         value: key
                     })) as any
@@ -220,7 +220,7 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                         label:
                                             REPEAT_OPTIONS[
                                                 REPEAT_OPTIONS.map(
-                                                    item => item.value
+                                                    (item) => item.value
                                                 ).indexOf(
                                                     recurrenceRuleOptions.freq as Frequency
                                                 )
@@ -232,7 +232,7 @@ const AccrualPeriodicityInput: FunctionComponent<PropsType> = props => {
                                     recurrenceRuleOptions
                                 )}
                                 styles={{
-                                    control: provided => ({
+                                    control: (provided) => ({
                                         ...provided,
                                         width: "120px"
                                     })
