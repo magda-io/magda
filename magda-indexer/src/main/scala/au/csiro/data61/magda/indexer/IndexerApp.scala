@@ -1,10 +1,14 @@
 package au.csiro.data61.magda.indexer
 
-import akka.actor.Actor
-import akka.actor.ActorLogging
-import akka.actor.ActorSystem
-import akka.actor.DeadLetter
-import akka.actor.Props
+import akka.Done
+import akka.actor.{
+  Actor,
+  ActorLogging,
+  ActorSystem,
+  CoordinatedShutdown,
+  DeadLetter,
+  Props
+}
 import akka.event.Logging
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.AppConfig
@@ -22,6 +26,8 @@ import au.csiro.data61.magda.client.{AuthApiClient, RegistryExternalInterface}
 
 import scala.concurrent.Future
 import au.csiro.data61.magda.search.elasticsearch.Indices
+
+import scala.concurrent.duration.DurationLong
 
 object IndexerApp extends App {
   implicit val config = AppConfig.conf()
@@ -46,14 +52,55 @@ object IndexerApp extends App {
   val authClient = new AuthApiClient()
   val api = new IndexerApi(crawler, indexer, authClient, registryInterface)
 
+  val bindingFuture = Http()
+    .newServerAt(config.getString("http.interface"), config.getInt("http.port"))
+    .bind(api.routes)
+
   logger.info(
     s"Listening on ${config.getString("http.interface")}:${config.getInt("http.port")}"
   )
-  Http().bindAndHandle(
-    api.routes,
-    config.getString("http.interface"),
-    config.getInt("http.port")
+
+  logger.info(
+    "http.waitBeforeTermination: {}",
+    config
+      .getDuration("http.waitBeforeTermination")
+      .toMillis milliseconds
   )
+
+  logger.info(
+    "http.hardTerminationDeadline: {}",
+    config
+      .getDuration("http.hardTerminationDeadline")
+      .toMillis milliseconds
+  )
+
+  val shutdown = CoordinatedShutdown(system)
+  shutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "http-unbind") {
+    () =>
+      bindingFuture.flatMap(_.unbind()).map(_ => Done)
+  }
+  shutdown.addTask(
+    CoordinatedShutdown.PhaseServiceRequestsDone,
+    "http-graceful-termination"
+  ) { () =>
+    bindingFuture
+      .flatMap(
+        b =>
+          akka.pattern.after(
+            config
+              .getDuration("http.waitBeforeTermination")
+              .toMillis milliseconds,
+            system.scheduler
+          )(
+            b.terminate(
+              config
+                .getDuration("http.hardTerminationDeadline")
+                .toMillis milliseconds
+            )
+          )
+      )
+      .map(_ => Done)
+  }
 
   {
     if (config.getBoolean("registry.registerForWebhooks")) {

@@ -55,8 +55,9 @@
 - #3349 secure content API with new auth model
 - #3350 secure admin API (managing connectors) with new auth model
 - #3351 Secure tenant API with new auth model
-- Related #3331, remove legacy middlewares
+- Related to #3331, remove legacy middlewares
 - #3352 Remove usage of MUST_BE_ADMIN middleware in auth API
+- #3380 Support Graceful Pod Shutdown
 
 ## 1.3.1
 
