@@ -16,7 +16,7 @@ import {
     updateTableRecord
 } from "magda-typescript-common/src/SQLUtils";
 import ServerError from "magda-typescript-common/src/ServerError";
-import isUuid from "@magda/typescript-common/dist/util/isUuid";
+import isUuid from "magda-typescript-common/src/util/isUuid";
 import AuthDecision from "magda-typescript-common/src/opa/AuthDecision";
 
 export interface ApiRouterOptions {

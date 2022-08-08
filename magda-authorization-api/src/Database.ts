@@ -219,8 +219,8 @@ export default class Database {
             throw new ServerError("User ID cannot be empty!", 400);
         }
         const authConditions = authDecision.toSql({
-            prefixes: ["input.authObject.user"],
-            tableRef: "u"
+            prefixes: ["input.authObject.apiKey"],
+            tableRef: "a"
         });
         const result = await this.pool.query(
             ...sqls`SELECT * FROM (SELECT DISTINCT ON (a.id)
@@ -239,12 +239,24 @@ export default class Database {
         }
     }
 
-    async getApiKeyById(id: string): Promise<APIKeyRecord | null> {
+    async getApiKeyById(
+        id: string,
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ): Promise<APIKeyRecord | null> {
         if (!id) {
             throw new ServerError("API Key ID cannot be empty!", 400);
         }
+        const authConditions = authDecision.toSql({
+            prefixes: ["input.authObject.apiKey"]
+        });
+        const whereConditions = SQLSyntax.joinWithAnd([
+            sqls`id=${id}`,
+            authConditions
+        ]);
         const result = await this.pool.query(
-            ...sqls`SELECT * FROM api_keys WHERE id=${id} LIMIT 1`.toQuery()
+            ...sqls`SELECT * FROM api_keys ${SQLSyntax.where(
+                whereConditions
+            )} LIMIT 1`.toQuery()
         );
         if (!result?.rows?.length) {
             return null;

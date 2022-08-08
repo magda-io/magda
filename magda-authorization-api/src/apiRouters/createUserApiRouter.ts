@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import Database from "../Database";
 import respondWithError from "../respondWithError";
 import handleMaybePromise from "../handleMaybePromise";
@@ -8,11 +8,12 @@ import { NO_CACHE } from "../utilityMiddlewares";
 import { requireObjectPermission } from "../recordAuthMiddlewares";
 import {
     withAuthDecision,
-    requirePermission
+    requireUnconditionalAuthDecision
 } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import { searchTableRecord } from "magda-typescript-common/src/SQLUtils";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import ServerError from "magda-typescript-common/src/ServerError";
+import { omit } from "lodash";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -203,7 +204,9 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth API Keys
      * @api {get} /v0/auth/users/:userId/apiKeys Get all API keys of a user
      * @apiDescription Returns an array of api keys. When no api keys can be found, an empty array will be returned.
-     * You need have read permission to the user record in order to access this API.
+     * You need have `authObject/apiKey/read` permission in order to access this API.
+     * As the default `Authenticated Users` roles contains the permission to all `authObject/apiKey/*` type operations with ownership constraint.
+     * All `Authenticated Users` (i.e. non-anonymous) users should always have access to their own API keys.
      *
      * @apiParam (Path) {string} userId the id of the user.
      *
@@ -212,7 +215,6 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *        id: "b559889a-2843-4a60-9c6d-103d51eb4410",
      *        user_id: "be374b6e-d428-4211-b642-b2b65abcf051",
      *        created_timestamp: "2022-05-16T13:02:59.430Z",
-     *        hash: "$2b$10$6DD8hle27X/dVdDD3Sl3Y.V6NtJ9jBiy2cyS8SnBO5EEWMD5Wpdwe",
      *        expiry_time: null,
      *        last_successful_attempt_time: null,
      *        last_failed_attempt_time: null,
@@ -228,18 +230,17 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:userId/apiKeys",
-        requireObjectPermission(
-            authDecisionClient,
-            database,
-            "authObject/user/read",
-            (req, res) => req.params.userId,
-            "user"
-        ),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/apiKey/read"
+        }),
         async function (req, res) {
             try {
                 const userId = req.params.userId;
-                const apiKeys = await database.getUserApiKeys(userId);
-                res.json(apiKeys);
+                const apiKeys = await database.getUserApiKeys(
+                    userId,
+                    res.locals.authDecision
+                );
+                res.json(apiKeys.map((item) => omit(item, "hash")));
             } catch (e) {
                 respondWithError("GET /public/users/:userId/apiKeys", res, e);
             }
@@ -250,7 +251,9 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth API Keys
      * @api {get} /v0/auth/users/:userId/apiKeys/:apiKeyId Get an API key of a user by ID
      * @apiDescription Get an API key record of a user by ID by API key ID.
-     * You need have read permission to the user record in order to access this API.
+     * You need have `authObject/apiKey/read` permission in order to access this API.
+     * As the default `Authenticated Users` roles contains the permission to all `authObject/apiKey/*` type operations with ownership constraint.
+     * All `Authenticated Users` (i.e. non-anonymous) users should always have access to their own API keys.
      *
      * @apiParam (Path) {string} userId the id of the user.
      * @apiParam (Path) {string} apiKeyId the id of the api key.
@@ -260,7 +263,6 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *        id: "b559889a-2843-4a60-9c6d-103d51eb4410",
      *        user_id: "be374b6e-d428-4211-b642-b2b65abcf051",
      *        created_timestamp: "2022-05-16T13:02:59.430Z",
-     *        hash: "$2b$10$6DD8hle27X/dVdDD3Sl3Y.V6NtJ9jBiy2cyS8SnBO5EEWMD5Wpdwe",
      *        expiry_time: null,
      *        last_successful_attempt_time: null,
      *        last_failed_attempt_time: null,
@@ -276,25 +278,24 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:userId/apiKeys/:apiKeyId",
-        requireObjectPermission(
-            authDecisionClient,
-            database,
-            "authObject/user/read",
-            (req, res) => req.params.userId,
-            "user"
-        ),
+        withAuthDecision(authDecisionClient, {
+            operationUri: "authObject/apiKey/read"
+        }),
         async function (req, res) {
             try {
                 const userId = req.params.userId;
                 const apiKeyId = req.params.apiKeyId;
-                const apiKey = await database.getApiKeyById(apiKeyId);
+                const apiKey = await database.getApiKeyById(
+                    apiKeyId,
+                    res.locals.authDecision
+                );
                 if (!apiKey || apiKey.user_id !== userId) {
                     throw new ServerError(
                         `Cannot locate api key by id: ${apiKeyId} for user: ${userId}.`,
                         404
                     );
                 }
-                res.json(apiKey);
+                res.json(omit(apiKey, "hash"));
             } catch (e) {
                 respondWithError(
                     "GET /public/users/:userId/apiKey/:apiKeyId",
@@ -310,7 +311,9 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @api {post} /v0/auth/users/:userId/apiKeys Create a new API key for the user
      * @apiDescription Create a new API key for the specified user.
      * Optional supply a JSON object that contains `expiry_time` in body.
-     * You need have update permission to the user record in order to access this API.
+     * You need have `authObject/apiKey/create` permission in order to access this API.
+     * As the default `Authenticated Users` roles contains the permission to all `authObject/apiKey/*` type operations with ownership constraint.
+     * All `Authenticated Users` (i.e. non-anonymous) users should always have access to their own API keys.
      *
      * @apiParam (Path) {string} userId the id of the user.
      * @apiParam (Json Body) {string} [expiryTime] The expiry time (in ISO format (ISO 8601)) of the API key that is about to be created.
@@ -335,12 +338,19 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.post(
         "/:userId/apiKeys",
-        requireObjectPermission(
+        requireUnconditionalAuthDecision(
             authDecisionClient,
-            database,
-            "authObject/user/update",
-            (req, res) => req.params.userId,
-            "user"
+            async (req: Request, res: Response, next: NextFunction) => ({
+                operationUri: "authObject/apiKey/create",
+                input: {
+                    authObject: {
+                        apiKey: {
+                            user_id: req.params.userId,
+                            expiry_time: req?.body?.["expiry_time"]
+                        }
+                    }
+                }
+            })
         ),
         async function (req, res) {
             try {
@@ -366,7 +376,9 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth API Keys
      * @api {put} /v0/auth/users/:userId/apiKeys/:apiKeyId Update an API Key of the user
      * @apiDescription Update an API Key of the user.
-     * You need have update permission to the user record in order to access this API.
+     * You need have `authObject/apiKey/update` permission in order to access this API.
+     * As the default `Authenticated Users` roles contains the permission to all `authObject/apiKey/*` type operations with ownership constraint.
+     * All `Authenticated Users` (i.e. non-anonymous) users should always have access to their own API keys.
      *
      * @apiParam (Path) {string} userId the id of the user.
      * @apiParam (Path) {string} apiKeyId the id of the api key.
@@ -399,12 +411,21 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:userId/apiKeys/:apiKeyId",
-        requireObjectPermission(
+        requireUnconditionalAuthDecision(
             authDecisionClient,
-            database,
-            "authObject/user/update",
-            (req, res) => req.params.userId,
-            "user"
+            async (req: Request, res: Response, next: NextFunction) => {
+                return {
+                    operationUri: "authObject/apiKey/create",
+                    input: {
+                        authObject: {
+                            apiKey: {
+                                user_id: req.params.userId,
+                                expiry_time: req?.body?.["expiry_time"]
+                            }
+                        }
+                    }
+                };
+            }
         ),
         async function (req, res) {
             try {
@@ -446,7 +467,9 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth API Keys
      * @api {delete} /v0/auth/users/:userId/apiKeys/:apiKeyId Delete an API Key of the user
      * @apiDescription Delete an API Key of the user
-     * You need have update permission to the user record in order to access this API.
+     * You need have `authObject/apiKey/delete` permission in order to access this API.
+     * As the default `Authenticated Users` roles contains the permission to all `authObject/apiKey/*` type operations with ownership constraint.
+     * All `Authenticated Users` (i.e. non-anonymous) users should always have access to their own API keys.
      *
      * @apiParam (Path) {string} userId the id of the user.
      * @apiParam (Path) {string} apiKeyId the id of the api key.
@@ -468,9 +491,9 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
         requireObjectPermission(
             authDecisionClient,
             database,
-            "authObject/user/update",
-            (req, res) => req.params.userId,
-            "user"
+            "authObject/apiKey/delete",
+            (req, res) => req.params.apiKeyId,
+            "apiKey"
         ),
         async function (req, res) {
             try {
@@ -620,12 +643,14 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      */
     router.post(
         "/",
-        requirePermission(
+        requireUnconditionalAuthDecision(
             authDecisionClient,
-            "authObject/user/create",
-            (req: Request, res: Response) => ({
-                authObject: {
-                    user: req.body
+            async (req: Request, res: Response, next: NextFunction) => ({
+                operationUri: "authObject/user/create",
+                input: {
+                    authObject: {
+                        user: req.body
+                    }
                 }
             })
         ),

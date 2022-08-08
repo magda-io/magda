@@ -208,7 +208,7 @@ VALUES
 INSERT INTO "public"."resources" 
     ("uri", "name", "description")
 VALUES 
-('authObject/credential', 'User Credentials', 'User credentials that are used by the optional `magda-auth-internal` plugin for authenticating users');
+('authObject/credential', 'User Credentials', 'User credentials that are used by the optional `magda-auth-internal` plugin for authenticating users. Credentials APIs are only available via the `magda-auth-internal` plugin.');
 
 INSERT INTO "public"."operations" ("uri", "name", "description", "resource_id") 
 VALUES 
@@ -456,19 +456,28 @@ VALUES
 ('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', 'Read Org Units with own org units', (SELECT id FROM resources WHERE uri = 'authObject/orgUnit') , 'f', 't', 'f', 'This permission allows users to read org unit info within his org unit sub tree.'),
 ('fe2ea6f1-192a-423c-9ae0-acb9f5d2dc48', 'Read Distribution with own org units', (SELECT id FROM resources WHERE uri = 'object/distribution') , 'f', 't', 'f', 'This permission allows users to read distribution info within his org unit sub tree.'),
 ('e204f8ca-718b-4a29-bea3-554a4551ed20', 'Read Orgnisation (Publisher) with own org units', (SELECT id FROM resources WHERE uri = 'object/organization') , 'f', 't', 'f', 'This permission allows users to read orgnisation (publisher) info within his org unit sub tree.'),
-('d2974d9b-e965-403b-86b4-d5e143be6349', 'Read content objects', (SELECT id FROM resources WHERE uri = 'object/content') , 'f', 'f', 'f', 'This permission allows users to read content objects.');
+('d2974d9b-e965-403b-86b4-d5e143be6349', 'Read content objects', (SELECT id FROM resources WHERE uri = 'object/content') , 'f', 'f', 'f', 'This permission allows users to read content objects.'),
+('ac98c25f-09ab-43ff-bdbd-5a21499be6a3', 'Manage own API keys', (SELECT id FROM resources WHERE uri = 'authObject/apiKey') , 't', 'f', 'f', 'This permission allows users to managed their own API keys.'),
+('4ce18e69-0df7-4799-9d69-baa01152dd95', 'Update own credential', (SELECT id FROM resources WHERE uri = 'authObject/credential') , 't', 'f', 'f', 'This permission allows users to update their own credential.');
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") 
 VALUES 
 ('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', (SELECT id FROM operations WHERE uri = 'authObject/orgUnit/read')),
 ('fe2ea6f1-192a-423c-9ae0-acb9f5d2dc48', (SELECT id FROM operations WHERE uri = 'object/distribution/read')),
 ('e204f8ca-718b-4a29-bea3-554a4551ed20', (SELECT id FROM operations WHERE uri = 'object/organization/read')),
-('d2974d9b-e965-403b-86b4-d5e143be6349', (SELECT id FROM operations WHERE uri = 'object/content/read'));
+('d2974d9b-e965-403b-86b4-d5e143be6349', (SELECT id FROM operations WHERE uri = 'object/content/read')),
+('ac98c25f-09ab-43ff-bdbd-5a21499be6a3', (SELECT id FROM operations WHERE uri = 'authObject/apiKey/create')),
+('ac98c25f-09ab-43ff-bdbd-5a21499be6a3', (SELECT id FROM operations WHERE uri = 'authObject/apiKey/read')),
+('ac98c25f-09ab-43ff-bdbd-5a21499be6a3', (SELECT id FROM operations WHERE uri = 'authObject/apiKey/update')),
+('ac98c25f-09ab-43ff-bdbd-5a21499be6a3', (SELECT id FROM operations WHERE uri = 'authObject/apiKey/delete')),
+('4ce18e69-0df7-4799-9d69-baa01152dd95', (SELECT id FROM operations WHERE uri = 'authObject/credential/update'));
 INSERT INTO "public"."role_permissions" ("permission_id", "role_id") 
 VALUES 
 ('b8ca1f22-1faa-4c23-bcc2-c0051df9bccf', '00000000-0000-0002-0000-000000000000'),
 ('fe2ea6f1-192a-423c-9ae0-acb9f5d2dc48', '00000000-0000-0002-0000-000000000000'),
 ('e204f8ca-718b-4a29-bea3-554a4551ed20', '00000000-0000-0002-0000-000000000000'),
-('d2974d9b-e965-403b-86b4-d5e143be6349', '00000000-0000-0002-0000-000000000000');
+('d2974d9b-e965-403b-86b4-d5e143be6349', '00000000-0000-0002-0000-000000000000'),
+('ac98c25f-09ab-43ff-bdbd-5a21499be6a3', '00000000-0000-0002-0000-000000000000'),
+('4ce18e69-0df7-4799-9d69-baa01152dd95', '00000000-0000-0002-0000-000000000000');
 -- END add more permissions to authenticated & anonymous users role
 -- upgrade api_keys table-- 
 ALTER TABLE "public"."api_keys" ADD COLUMN "expiry_time" timestamptz DEFAULT NULL;

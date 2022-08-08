@@ -18,7 +18,7 @@ import {
     searchTableRecord
 } from "magda-typescript-common/src/SQLUtils";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import ServerError from "magda-typescript-common/src/ServerError";
 
 export interface ApiRouterOptions {
     database: Database;
