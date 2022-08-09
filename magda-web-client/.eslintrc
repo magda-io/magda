@@ -6,6 +6,7 @@
     ],
     "plugins": ["@typescript-eslint", "prettier"],
     "rules": {
+        "no-use-before-define": "off",
         "prettier/prettier": "error",
         "no-var": "warn",
         "prefer-const": "warn",
