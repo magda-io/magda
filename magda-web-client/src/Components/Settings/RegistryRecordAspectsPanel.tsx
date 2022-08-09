@@ -30,7 +30,7 @@ const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
     const { recordId } = props;
     const [keyword, setKeyword] = useState<string>("");
-    const [page, setPage] = useState<number>(1);
+    const [page, setPage] = useState<number>(0);
 
     const recordAspectFormRef = useRef<RecordAspectFormPopUpRefType>(null);
 
@@ -38,7 +38,7 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
     const [aspectReloadToken, setAspectReloadToken] = useState<string>("");
 
     const [limit, setLimit] = useState(DEFAULT_MAX_PAGE_RECORD_NUMBER);
-    const offset = (page - 1) * limit;
+    const offset = page * limit;
 
     const [searchInputText, setSearchInputText] = useState<string>("");
 
@@ -58,7 +58,7 @@ const RegistryRecordAspectsPanel: FunctionComponent<PropsType> = (props) => {
                     keyword: keyword.trim() ? keyword : undefined,
                     aspectIdOnly: true,
                     noCache: true,
-                    start: offset,
+                    offset,
                     limit
                 });
 

@@ -181,7 +181,9 @@ export enum AspectQueryOperators {
     ">" = ":>",
     "<" = ":<",
     ">=" = ":>=",
-    "<=" = ":<="
+    "<=" = ":<=",
+    arrayContains = ":<|",
+    arrayNotContains = ":!<|"
 }
 
 export class AspectQuery {
@@ -219,9 +221,11 @@ export class AspectQuery {
     }
 
     toString() {
-        return `${this.encodeAspectQueryComponent(this.path)}${
-            this.operator
-        }${this.encodeAspectQueryComponent(String(this.value))}`;
+        return encodeURIComponent(
+            formUrlencode(this.path) +
+                this.operator +
+                formUrlencode(String(this.value))
+        );
     }
 }
 
@@ -773,7 +777,7 @@ export type QueryRecordAspectsParams = {
     recordId: string;
     keyword?: string;
     aspectIdOnly?: boolean;
-    start?: number;
+    offset?: number;
     limit?: number;
     noCache?: boolean;
 };

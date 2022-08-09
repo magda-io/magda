@@ -302,7 +302,6 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                         value={aspect?.data ? aspect.data : {}}
                                         onError={(e) => reportError(`${e}`)}
                                         onChange={(jsonData) => {
-                                            console.log("onchange: ", jsonData);
                                             setAspect((v) => ({
                                                 ...v,
                                                 data: jsonData

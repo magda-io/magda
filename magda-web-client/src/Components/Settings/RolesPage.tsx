@@ -15,7 +15,7 @@ const RolesPage: FunctionComponent = () => {
                 />
                 <AccessVerification operationUri="authObject/role/read" />
 
-                <RolesDataGrid />
+                <RolesDataGrid directory="settings" />
             </div>
         </div>
     );

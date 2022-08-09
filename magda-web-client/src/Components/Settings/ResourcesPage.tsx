@@ -15,7 +15,7 @@ const ResourcesPage: FunctionComponent = () => {
                 />
                 <AccessVerification operationUri="authObject/resource/read" />
 
-                <ResourcesDataGrid />
+                <ResourcesDataGrid directory="settings" />
             </div>
         </div>
     );

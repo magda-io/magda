@@ -107,6 +107,9 @@ const AssignUserOrgUnitFormPopUp: ForwardRefRenderFunction<
                 ]);
                 return rootNode;
             } catch (e) {
+                if (e instanceof ServerError && e.statusCode === 404) {
+                    return null;
+                }
                 reportError(`Failed to retrieve user orgUnit root node: ${e}`);
                 throw e;
             }

@@ -39,6 +39,43 @@ type PropsType = {
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
+const DeleteButton: FunctionComponent<{
+    permissionId: string;
+    permissionName: string;
+    roleId: string;
+    setDataReloadToken: (value: React.SetStateAction<string>) => void;
+}> = (props) => {
+    const { permissionId, permissionName, roleId, setDataReloadToken } = props;
+    const removePermissionFromRole = useCallback(() => {
+        ConfirmDialog.open({
+            confirmMsg: `Please confirm the removal of permission "${permissionName}" from the role?`,
+            confirmHandler: async () => {
+                try {
+                    if (!permissionId) {
+                        throw new Error("Invalid empty permission id!");
+                    }
+                    await deleteRolePermission(roleId, permissionId);
+                    setDataReloadToken(`${Math.random()}`);
+                } catch (e) {
+                    reportError(
+                        `Failed to remove the permission from the role: ${e}`
+                    );
+                }
+            }
+        });
+    }, [permissionId, permissionName, roleId, setDataReloadToken]);
+
+    return (
+        <IconButton
+            size="md"
+            title="Delete Permission"
+            aria-label="Delete Permission"
+            icon={<MdDeleteForever />}
+            onClick={removePermissionFromRole}
+        />
+    );
+};
+
 const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
     const { roleId } = props;
     const [keyword, setKeyword] = useState<string>("");
@@ -92,28 +129,6 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
     );
 
     const [permissions, totalCount] = result ? result : [[], 0];
-
-    const removePermissionFromRole = useCallback(
-        (permissionId: string, permissionName: string) => {
-            ConfirmDialog.open({
-                confirmMsg: `Please confirm the removal of permission "${permissionName}" from the role?`,
-                confirmHandler: async () => {
-                    try {
-                        if (!permissionId) {
-                            throw new Error("Invalid empty permission id!");
-                        }
-                        await deleteRolePermission(roleId, permissionId);
-                        setDataReloadToken(`${Math.random()}`);
-                    } catch (e) {
-                        reportError(
-                            `Failed to remove the permission from the role: ${e}`
-                        );
-                    }
-                }
-            });
-        },
-        [roleId]
-    );
 
     return (
         <div className="role-permissions-data-grid">
@@ -278,16 +293,12 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
                                                 )
                                             }
                                         />{" "}
-                                        <IconButton
-                                            size="md"
-                                            title="Delete Permission"
-                                            aria-label="Delete Permission"
-                                            icon={<MdDeleteForever />}
-                                            onClick={() =>
-                                                removePermissionFromRole(
-                                                    permissionId,
-                                                    permissionName
-                                                )
+                                        <DeleteButton
+                                            permissionId={permissionId}
+                                            permissionName={permissionName}
+                                            roleId={roleId}
+                                            setDataReloadToken={
+                                                setDataReloadToken
                                             }
                                         />
                                     </div>
