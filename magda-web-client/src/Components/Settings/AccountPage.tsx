@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from "react";
+import React, { FunctionComponent, useCallback, useEffect } from "react";
 import {
     Switch,
     Route,
@@ -53,6 +53,12 @@ const AccountPage: FunctionComponent = () => {
         setActive(key);
         history.push(key);
     }, []);
+
+    useEffect(() => {
+        const unregister = history.listen((loc) => setActive(loc.pathname));
+        return unregister;
+    });
+
     return shouldRedirectToLoginPage ? (
         <>
             <Loader content="redirecting..." />
