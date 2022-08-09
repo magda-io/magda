@@ -21,7 +21,7 @@ import {
     AspectDefRecord
 } from "api-clients/RegistryApis";
 import Form from "rsuite/Form";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 import { ItemDataType } from "rsuite/esm/@types/common";
 import "jsoneditor-react/es/editor.min.css";
 

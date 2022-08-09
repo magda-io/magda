@@ -9,7 +9,7 @@ import {
     addUserRoles
 } from "../../api-clients/AuthApis";
 import { useAsync, useAsyncCallback } from "react-async-hook";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 import { ItemDataType } from "rsuite/esm/@types/common";
 import Placeholder from "rsuite/Placeholder";
 import Message from "rsuite/Message";

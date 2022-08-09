@@ -3,7 +3,7 @@ import Button from "rsuite/Button";
 import ConfirmDialog from "./ConfirmDialog";
 import { MdDeleteForever } from "react-icons/md";
 import { useAsyncCallback } from "react-async-hook";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 import { deleteRecordAspect } from "api-clients/RegistryApis";
 
 type PropsType = {

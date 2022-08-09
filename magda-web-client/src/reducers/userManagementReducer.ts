@@ -15,6 +15,7 @@ export type User = {
     email: string;
     photoURL: string;
     source: string;
+    sourceId?: string;
     isAdmin: boolean;
     roles: Role[];
     permissions: RolePermissionRecord[];
@@ -68,7 +69,7 @@ const initialData: UserManagementState = {
 const userManagementMapping = (
     state: UserManagementState = initialData,
     action: Action
-) => {
+): UserManagementState => {
     switch (action.type) {
         case "REQUEST_WHO_AM_I":
             return Object.assign({}, state, {

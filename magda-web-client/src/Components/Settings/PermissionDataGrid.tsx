@@ -22,7 +22,7 @@ import {
     deleteRolePermission
 } from "../../api-clients/AuthApis";
 import "./PermissionDataGrid.scss";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 import ConfirmDialog from "./ConfirmDialog";
 import CheckBoxIcon from "./CheckBoxIcon";
 import PermissionFormPopUp, {

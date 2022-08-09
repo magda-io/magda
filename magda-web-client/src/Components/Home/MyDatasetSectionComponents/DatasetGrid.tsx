@@ -12,7 +12,7 @@ import {
 } from "api-clients/RegistryApis";
 import Button from "rsuite/Button";
 import ButtonGroup from "rsuite/ButtonGroup";
-import reportError from "Components/Settings/reportError";
+import reportError from "helpers/reportError";
 import moment from "moment";
 import { BsFillTrashFill } from "react-icons/bs";
 import ConfirmDialog from "../../Settings/ConfirmDialog";

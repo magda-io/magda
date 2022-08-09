@@ -24,7 +24,7 @@ import {
     deleteRole
 } from "../../api-clients/AuthApis";
 import "./RolesDataGrid.scss";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 import AssignUserRoleButton from "./AssignUserRoleButton";
 import { useParams, Link } from "react-router-dom";
 import ConfirmDialog from "./ConfirmDialog";

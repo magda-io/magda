@@ -2,7 +2,7 @@ import { config, ADMIN_ROLE_ID } from "config";
 import request from "helpers/request";
 import getRequest from "helpers/getRequest";
 import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
-import { AuthPluginConfig } from "@magda/gateway/src/createAuthPluginRouter";
+import { AuthPluginConfig } from "@magda/authentication-plugin-sdk";
 import urijs from "urijs";
 import { User, Role } from "reducers/userManagementReducer";
 import {
@@ -11,6 +11,9 @@ import {
     OperationRecord,
     ResourceRecord
 } from "@magda/typescript-common/dist/authorization-api/model";
+import { Record } from "./RegistryApis";
+import ServerError from "@magda/typescript-common/dist/ServerError";
+import { v4 as isUuid } from "is-uuid";
 
 export type QrCodeImgDataResponse = {
     token: string;
@@ -225,7 +228,7 @@ export type QueryUsersParams = {
     noCache?: boolean;
 };
 
-export type UserRecord = {
+export interface UserRecord {
     id: string;
     displayName: string;
     email: string;
@@ -233,7 +236,7 @@ export type UserRecord = {
     source: string;
     sourceId: string;
     orgUnitId: string;
-};
+}
 
 export async function queryUsers(
     params?: QueryUsersParams
@@ -412,6 +415,48 @@ export async function getResourceById(resId: string, noCache: boolean = false) {
     );
 }
 
+export async function getResourceByUri(
+    resUri: string,
+    noCache: boolean = false
+) {
+    return await getRequest<ResourceRecord>(
+        getAbsoluteUrl(`resources/byUri/${resUri}`, config.authApiUrl),
+        noCache
+    );
+}
+
+export async function createResource(resource: Partial<ResourceRecord>) {
+    return await request<ResourceRecord>(
+        "POST",
+        getAbsoluteUrl("resources", config.authApiUrl),
+        resource
+    );
+}
+
+export async function updateResource(
+    resourceId: string,
+    resource: Partial<ResourceRecord>
+) {
+    return await request<ResourceRecord>(
+        "PUT",
+        getAbsoluteUrl(
+            `resources/${encodeURIComponent(resourceId)}`,
+            config.authApiUrl
+        ),
+        resource
+    );
+}
+
+export async function deleteResource(resourceId: string) {
+    await request(
+        "DELETE",
+        getAbsoluteUrl(
+            `resources/${encodeURIComponent(resourceId)}`,
+            config.authApiUrl
+        )
+    );
+}
+
 export type QueryOperationsParams = {
     keyword?: string;
     uri?: string;
@@ -458,6 +503,57 @@ export async function queryResOperationsCount(
         noCache
     );
     return res?.count ? res.count : 0;
+}
+
+export async function getResOperationsById(
+    resOperationId: string,
+    noCache: boolean = false
+) {
+    return await getRequest<OperationRecord>(
+        getAbsoluteUrl(
+            `operations/${encodeURIComponent(resOperationId)}`,
+            config.authApiUrl
+        ),
+        noCache
+    );
+}
+
+export async function createOperation(
+    resourceId: string,
+    operation: Partial<OperationRecord>
+) {
+    return await request<OperationRecord>(
+        "POST",
+        getAbsoluteUrl(
+            `resources/${encodeURIComponent(resourceId)}/operations`,
+            config.authApiUrl
+        ),
+        operation
+    );
+}
+
+export async function updateOperation(
+    operationId: string,
+    operation: Partial<OperationRecord>
+) {
+    return await request<OperationRecord>(
+        "PUT",
+        getAbsoluteUrl(
+            `operations/${encodeURIComponent(operationId)}`,
+            config.authApiUrl
+        ),
+        operation
+    );
+}
+
+export async function deleteOperation(operationId: string) {
+    await request(
+        "DELETE",
+        getAbsoluteUrl(
+            `operations/${encodeURIComponent(operationId)}`,
+            config.authApiUrl
+        )
+    );
 }
 
 export type QueryPermissionsParams = {
@@ -606,4 +702,332 @@ export async function getPermissionById(
         ),
         noCache
     );
+}
+
+export interface APIKeyRecord {
+    id: string;
+    user_id: string;
+    created_timestamp: Date;
+    hash: string;
+    enabled: boolean;
+    expiry_time?: Date;
+    last_successful_attempt_time?: Date;
+    last_failed_attempt_time?: Date;
+}
+
+export async function getUserApiKeys(userId: string, noCache: boolean = true) {
+    if (!userId) {
+        throw new Error("Invalid empty userId!");
+    }
+    return await getRequest<APIKeyRecord[]>(
+        getAbsoluteUrl(
+            `users/${encodeURIComponent(userId)}/apiKeys`,
+            config.authApiUrl
+        ),
+        noCache
+    );
+}
+
+export async function getUserApiKeyById(
+    userId: string,
+    apiKeyId: string,
+    noCache: boolean = true
+) {
+    if (!userId) {
+        throw new Error("Invalid empty userId!");
+    }
+    return await getRequest<APIKeyRecord>(
+        getAbsoluteUrl(
+            `users/${encodeURIComponent(userId)}/apiKeys/${encodeURIComponent(
+                apiKeyId
+            )}`,
+            config.authApiUrl
+        ),
+        noCache
+    );
+}
+
+export async function createUserApiKey(userId: string, expiryTime?: Date) {
+    if (!userId) {
+        throw new Error("Invalid empty userId!");
+    }
+    console.log("expiryTime: ", expiryTime);
+    return await request<{ id: string; key: string }>(
+        "post",
+        getAbsoluteUrl(
+            `users/${encodeURIComponent(userId)}/apiKeys`,
+            config.authApiUrl
+        ),
+        { expiryTime }
+    );
+}
+
+export async function updateUserApiKey(
+    userId: string,
+    apiKeyId: string,
+    data: {
+        enabled?: boolean;
+        expiryTime?: Date;
+    }
+) {
+    if (!userId) {
+        throw new Error("Invalid empty userId!");
+    }
+    if (!apiKeyId) {
+        throw new Error("Invalid empty apiKeyId!");
+    }
+    return await request<APIKeyRecord>(
+        "put",
+        getAbsoluteUrl(
+            `users/${encodeURIComponent(userId)}/apiKeys/${encodeURIComponent(
+                apiKeyId
+            )}`,
+            config.authApiUrl
+        ),
+        data
+    );
+}
+
+export async function deleteUserApiKey(userId: string, apiKeyId: string) {
+    if (!userId) {
+        throw new Error("Invalid empty userId!");
+    }
+    if (!apiKeyId) {
+        throw new Error("Invalid empty apiKeyId!");
+    }
+    return await request<{ deleted: boolean }>(
+        "delete",
+        getAbsoluteUrl(
+            `users/${encodeURIComponent(userId)}/apiKeys/${encodeURIComponent(
+                apiKeyId
+            )}`,
+            config.authApiUrl
+        )
+    );
+}
+
+export interface AccessGroup {
+    id?: string;
+    name: string;
+    description?: string;
+    keywords?: string[];
+    resourceUri: string;
+    operationUris: string[];
+    roleId: string;
+    permissionId: string;
+    ownerId?: string | null;
+    orgUnitId?: string | null;
+    createTime?: string;
+    createBy?: string;
+    editTime?: string;
+    editBy?: string;
+}
+
+export async function getAccessGroupById(
+    groupId: string,
+    noCache: boolean = true
+): Promise<AccessGroup> {
+    if (!groupId) {
+        throw new ServerError("groupId cannot be empty!", 400);
+    }
+    const accessGroupRecord = await getRequest<Record>(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(groupId)}`,
+            config.registryReadOnlyApiUrl,
+            {
+                optionalAspect: ["access-group-details", "access-control"],
+                dereference: false
+            }
+        ),
+        noCache
+    );
+    const accessGroupDetails =
+        accessGroupRecord?.aspects?.["access-group-details"];
+
+    if (!accessGroupDetails) {
+        throw new ServerError(
+            `Invalid access group record "${groupId}": cannot locate "access-group-details" aspect`,
+            500
+        );
+    }
+
+    const accessControls = accessGroupRecord?.aspects?.["access-control"];
+
+    return {
+        ...accessGroupDetails,
+        ownerId: accessControls?.ownerId ? accessControls.ownerId : null,
+        orgUnitId: accessControls?.orgUnitId ? accessControls.orgUnitId : null
+    };
+}
+
+export type AccessGroupCreateData = Omit<
+    AccessGroup,
+    | "id"
+    | "roleId"
+    | "permissionId"
+    | "createTime"
+    | "createBy"
+    | "editTime"
+    | "editBy"
+>;
+
+export async function createAccessGroup(
+    groupData: AccessGroupCreateData
+): Promise<AccessGroup> {
+    const accessGroupRecord = await request<AccessGroup>(
+        "post",
+        getAbsoluteUrl(`accessGroups`, config.authApiUrl),
+        groupData
+    );
+    return accessGroupRecord;
+}
+
+export type AccessGroupUpdateData = Partial<AccessGroupCreateData>;
+
+export async function updateAccessGroup(
+    groupId: string,
+    groupData: AccessGroupUpdateData
+): Promise<AccessGroup> {
+    const accessGroupRecord = await request<AccessGroup>(
+        "put",
+        getAbsoluteUrl(
+            `accessGroups/${encodeURIComponent(groupId)}`,
+            config.authApiUrl
+        ),
+        groupData
+    );
+    return accessGroupRecord;
+}
+
+export async function deleteAccessGroup(groupId: string) {
+    if (!groupId) {
+        throw new ServerError("Invalid empty access group id.", 400);
+    }
+    const result = await request<{ result: boolean }>(
+        "delete",
+        getAbsoluteUrl(
+            `accessGroups/${encodeURIComponent(groupId)}`,
+            config.authApiUrl
+        )
+    );
+    return result.result;
+}
+
+export async function addDatasetToAccessGroup(
+    datasetId: string,
+    groupId: string
+) {
+    if (!groupId) {
+        throw new ServerError("Invalid empty access group id.", 400);
+    }
+    if (!datasetId) {
+        throw new ServerError("Invalid empty dataset id.", 400);
+    }
+    const result = await request<{ result: boolean }>(
+        "post",
+        getAbsoluteUrl(
+            `accessGroups/${encodeURIComponent(
+                groupId
+            )}/datasets/${encodeURIComponent(datasetId)}`,
+            config.authApiUrl
+        )
+    );
+    return result.result;
+}
+
+export async function removeDatasetToAccessGroup(
+    datasetId: string,
+    groupId: string
+) {
+    if (!groupId) {
+        throw new ServerError("Invalid empty access group id.", 400);
+    }
+    if (!datasetId) {
+        throw new ServerError("Invalid empty dataset id.", 400);
+    }
+    const result = await request<{ result: boolean }>(
+        "delete",
+        getAbsoluteUrl(
+            `accessGroups/${encodeURIComponent(
+                groupId
+            )}/datasets/${encodeURIComponent(datasetId)}`,
+            config.authApiUrl
+        )
+    );
+    return result.result;
+}
+
+export async function addUserToAccessGroup(userId: string, groupId: string) {
+    if (!groupId) {
+        throw new ServerError("Invalid empty access group id.", 400);
+    }
+    if (!isUuid(userId)) {
+        throw new ServerError("Invalid userId: " + userId, 400);
+    }
+    const result = await request<{ result: boolean }>(
+        "post",
+        getAbsoluteUrl(
+            `accessGroups/${encodeURIComponent(
+                groupId
+            )}/users/${encodeURIComponent(userId)}`,
+            config.authApiUrl
+        )
+    );
+    return result.result;
+}
+
+export async function removeUserToAccessGroup(userId: string, groupId: string) {
+    if (!groupId) {
+        throw new ServerError("Invalid empty access group id.", 400);
+    }
+    if (!isUuid(userId)) {
+        throw new ServerError("Invalid userId: " + userId, 400);
+    }
+    const result = await request<{ result: boolean }>(
+        "delete",
+        getAbsoluteUrl(
+            `accessGroups/${encodeURIComponent(
+                groupId
+            )}/users/${encodeURIComponent(userId)}`,
+            config.authApiUrl
+        )
+    );
+    return result.result;
+}
+
+export async function queryRoleUsers(
+    roleId: string,
+    params?: QueryUsersParams
+): Promise<UserRecord[]> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryUsersParams);
+
+    return await getRequest<UserRecord[]>(
+        getAbsoluteUrl(
+            `roles/${encodeURIComponent(roleId)}/users`,
+            config.authApiUrl,
+            queryParams
+        ),
+        noCache
+    );
+}
+
+export async function queryRoleUsersCount(
+    roleId: string,
+    params?: QueryUsersCountParams
+): Promise<number> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryUsersCountParams);
+
+    const res = await getRequest<{ count: number }>(
+        getAbsoluteUrl(
+            `roles/${encodeURIComponent(roleId)}/users/count`,
+            config.authApiUrl,
+            queryParams
+        ),
+        noCache
+    );
+    return res?.count ? res.count : 0;
 }

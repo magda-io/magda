@@ -35,7 +35,7 @@ import {
 import ViewOrgUnitPopUp, {
     RefType as ViewOrgUnitPopUpRefType
 } from "./ViewOrgUnitPopUp";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 import OrgUnitFormPopUp, {
     RefType as OrgUnitFormPopUpRefType
 } from "./OrgUnitFormPopUp";

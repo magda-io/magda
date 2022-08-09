@@ -19,7 +19,7 @@ import {
 } from "../../api-clients/AuthApis";
 import { ResourceRecord } from "@magda/typescript-common/dist/authorization-api/model";
 import "./ResourcesDataGrid.scss";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;

@@ -25,7 +25,7 @@ import {
 import AccessVerification from "./AccessVerification";
 import IconButton from "rsuite/IconButton";
 import OrgUnitNameLabel from "../OrgUnitNameLabel";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 import AssignUserOrgUnitFormPopUp, {
     RefType as AssignUserOrgUnitFormPopUpRefType
 } from "./AssignUserOrgUnitFormPopUp";

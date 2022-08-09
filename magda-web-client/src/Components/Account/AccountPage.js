@@ -1,4 +1,5 @@
 import React from "react";
+import { Redirect } from "react-router-dom";
 import "./AccountPage.scss";
 import LoginArea from "./AccountLoginPage";
 import { connect } from "react-redux";
@@ -87,10 +88,14 @@ class Account extends React.Component {
                             signInError={
                                 this?.props?.location?.state?.signInError
                             }
+                            redirectTo={
+                                this?.props?.location?.state?.redirectTo
+                            }
                         />
                     )}
                     {this.props.user.id && (
                         <div>
+                            <Redirect to="/settings/account" />
                             <h1>Account</h1>
                             <p>Display Name: {this.props.user.displayName}</p>
                             {this.props.user.orgUnit && (

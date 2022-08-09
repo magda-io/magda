@@ -12,7 +12,7 @@ import {
 } from "../../api-clients/AuthApis";
 import { OperationRecord } from "@magda/typescript-common/dist/authorization-api/model";
 import "./OperationsDataGrid.scss";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;

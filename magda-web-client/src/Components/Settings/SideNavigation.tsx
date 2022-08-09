@@ -9,6 +9,7 @@ import {
     MdCollectionsBookmark,
     MdPageview
 } from "react-icons/md";
+import { BsPersonCircle } from "react-icons/bs";
 import "./SideNavigation.scss";
 
 type PropsType = {
@@ -25,6 +26,11 @@ type MenuItem = {
 };
 
 const defaultMenuItems: MenuItem[] = [
+    {
+        title: "My Account",
+        path: "/settings/account",
+        icon: <BsPersonCircle />
+    },
     {
         title: "Users",
         path: "/settings/users",
