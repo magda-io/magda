@@ -59,6 +59,7 @@
 - #3352 Remove usage of MUST_BE_ADMIN middleware in auth API
 - #3380 Support Graceful Pod Shutdown
 - Upgrade to typescript 4.2.4 & api-extractor 7.15.2
+- Upgrade react-scripts to 4.0.3 & craco to 6.4.5
 
 ## 1.3.1
 
