@@ -107,6 +107,7 @@ const FlatMultiSelectBox = (props: SelectProps) => {
     });
 
     const optionRefs: RefObject<OptionHandles>[] = options.map((opt) =>
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         useRef(null)
     );
     const scrollContainerRef: RefObject<HTMLDivElement> = useRef(null);

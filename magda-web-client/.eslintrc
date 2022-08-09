@@ -18,7 +18,8 @@
         "@typescript-eslint/no-inferrable-types": "off",
         "@typescript-eslint/ban-types": "warn",
         "@typescript-eslint/no-empty-function": "warn",
-        "@typescript-eslint/ban-ts-comment": "warn"
+        "@typescript-eslint/ban-ts-comment": "warn",
+        "@typescript-eslint/no-explicit-any": "off"
     },
     "parser": "@typescript-eslint/parser",
     "settings": {
