@@ -2,7 +2,7 @@ import { config, ADMIN_ROLE_ID } from "config";
 import request from "helpers/request";
 import getRequest from "helpers/getRequest";
 import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
-import { AuthPluginConfig } from "@magda/authentication-plugin-sdk";
+import { AuthPluginConfig } from "@magda/gateway/src/createAuthPluginRouter";
 import urijs from "urijs";
 import { User, Role } from "reducers/userManagementReducer";
 import {
