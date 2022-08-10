@@ -252,6 +252,8 @@ buildtest:ui:
     - yarn run eslint
     - cd magda-typescript-common && yarn build
     - cd ..
+    - cd packages/auth-api-client && yarn build
+    - cd ..
     - cd packages/authentication-plugin-sdk && yarn build
     - cd ..
     - yarn run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
