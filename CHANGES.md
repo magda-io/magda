@@ -234,6 +234,7 @@
 - Upgraded format-minion to v1.0.1
 - #3198 Indexer will by default auto reindex / trim obsolete publisher / format weekly
 - #3201 Fixed indexer might throw an error and interrupt crawling process upon invalid data
+- #3343 Consolidate admin/settings UI functionalities into "Settings" area
 
 ## 0.0.59
 
