@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { withRouter } from "react-router-dom";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 import Header from "../Header/Header";
 import SearchBoxSwitcher from "Components/Dataset/Search/SearchBoxSwitcher";
 import "./HomePage.scss";
@@ -86,7 +86,7 @@ type PropsType = {
     user: User;
 };
 
-class HomePage extends React.Component<PropsType> {
+class HomePage extends React.Component<PropsType & RouteComponentProps> {
     getMainContent() {
         if (this?.props?.isFetchingWhoAmI === true) {
             return null;
@@ -169,10 +169,7 @@ class HomePage extends React.Component<PropsType> {
             // --- my dataset section should only show for desktop due to the size of the design
             return (
                 <Medium>
-                    <MyDatasetSection
-                        userId={this.props.user.id}
-                        user={this.props.user}
-                    />
+                    <MyDatasetSection user={this.props.user} />
                 </Medium>
             );
         } else {

@@ -62,9 +62,9 @@ export function getComponent<T>(name: string): ComponentType<T> | null {
         return null;
     }
 
-    return withRouter(
+    return (withRouter(
         connect(mapStateToProps, mapDispatchToProps)(ExternalComponent as any)
-    );
+    ) as unknown) as ComponentType<T>;
 }
 
 export type HeaderNavItem = {

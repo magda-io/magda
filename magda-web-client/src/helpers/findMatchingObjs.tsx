@@ -1,6 +1,6 @@
 import find from "lodash/find";
 
-export default function(
+export default function (
     valueList: Array<string>,
     objList: Array<any>
 ): Array<any> {
@@ -8,9 +8,9 @@ export default function(
     function checkActiveOption(option: any) {
         return find(
             valueList,
-            o => o.toLowerCase() === option.value.toLowerCase()
+            (o) => o.toLowerCase() === option.value.toLowerCase()
         );
     }
-    list = objList.filter(o => checkActiveOption(o));
+    list = objList.filter((o) => checkActiveOption(o));
     return list;
 }

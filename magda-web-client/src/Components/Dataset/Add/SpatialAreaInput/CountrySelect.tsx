@@ -8,7 +8,7 @@ import CountrySelectStyles from "./CountrySelectStyles";
 import { Region } from "helpers/datasetSearch";
 export type OptionType = Region;
 
-const loadOptions = (props: PropsType) => async inputValue => {
+const loadOptions = (props: PropsType) => async (inputValue) => {
     const queryStr = inputValue.trim();
     const res = await fetch(
         `${config.searchApiUrl}regions?type=COUNTRY${
@@ -24,7 +24,7 @@ const loadOptions = (props: PropsType) => async inputValue => {
     }
     if (props.regionId && !props.value) {
         // --- set initial prepopulated value
-        data.regions.forEach(region => {
+        data.regions.forEach((region) => {
             if (region.regionId === props.regionId) {
                 typeof props.onChange === "function" &&
                     props.onChange(region, true);
@@ -43,7 +43,7 @@ interface PropsType {
     ) => void;
 }
 
-const CountrySelect: FunctionComponent<PropsType> = props => {
+const CountrySelect: FunctionComponent<PropsType> = (props) => {
     return (
         <div className="country-select">
             <ReactSelect<OptionType>
@@ -53,11 +53,11 @@ const CountrySelect: FunctionComponent<PropsType> = props => {
                 defaultOptions
                 value={props.value}
                 loadOptions={loadOptions(props)}
-                getOptionLabel={option => option.regionName as string}
-                getOptionValue={option => option.regionId as string}
+                getOptionLabel={(option) => option.regionName as string}
+                getOptionValue={(option) => option.regionId as string}
                 placeholder={"Please select a country..."}
                 styles={CountrySelectStyles}
-                onChange={option =>
+                onChange={(option) =>
                     typeof props.onChange === "function" &&
                     props.onChange(option)
                 }

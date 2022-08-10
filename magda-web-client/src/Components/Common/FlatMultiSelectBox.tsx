@@ -45,7 +45,7 @@ const FlatMultiSelectBoxOptionForwarding: RefForwardingComponent<
 > = (props, ref) => {
     const itemRef: RefObject<HTMLButtonElement> = useRef(null);
     useImperativeHandle(ref, () => ({
-        scrollIntoView: parentRef => {
+        scrollIntoView: (parentRef) => {
             if (
                 !itemRef ||
                 !itemRef.current ||
@@ -87,7 +87,7 @@ const FlatMultiSelectBox = (props: SelectProps) => {
     const value = props.value;
     let options: ArrayOptionItem[] = Array.isArray(props.options)
         ? props.options
-        : Object.keys(props.options).map(key => ({
+        : Object.keys(props.options).map((key) => ({
               label: props.options[key],
               value: key
           }));
@@ -106,7 +106,8 @@ const FlatMultiSelectBox = (props: SelectProps) => {
         return opt;
     });
 
-    const optionRefs: RefObject<OptionHandles>[] = options.map(opt =>
+    const optionRefs: RefObject<OptionHandles>[] = options.map((opt) =>
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         useRef(null)
     );
     const scrollContainerRef: RefObject<HTMLDivElement> = useRef(null);
@@ -138,7 +139,7 @@ const FlatMultiSelectBox = (props: SelectProps) => {
                                 } else {
                                     newValue = [
                                         ...originalValue.filter(
-                                            v => v !== value
+                                            (v) => v !== value
                                         )
                                     ];
                                 }

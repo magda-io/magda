@@ -4,7 +4,7 @@ import readFile from "helpers/readFile";
 
 export const base64ImageEditor: Editor<string> = {
     edit: (value: any, onChange: Function) => {
-        const change = async event => {
+        const change = async (event) => {
             value = await readFile("image/*", "DataURL");
             value = value.data;
             onChange(value);

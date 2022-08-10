@@ -30,7 +30,7 @@ class ContentAdminPage extends Component<any, any> {
     };
 
     refresh() {
-        listContent(this.props.pattern).then(list => {
+        listContent(this.props.pattern).then((list) => {
             list.sort((a, b) => {
                 a = (a.content && a.content.order) || 0;
                 b = (b.content && b.content.order) || 0;
@@ -175,7 +175,7 @@ class ContentAdminPage extends Component<any, any> {
                             </div>
                         );
                     }}
-                    onChange={items => {
+                    onChange={(items) => {
                         this.updateState({
                             list: items.map((item: any) => item.item),
                             orderChanged: true
@@ -318,7 +318,7 @@ class ContentAdminPage extends Component<any, any> {
     }
     renderEdit(item) {
         const { itemTitle } = this.props;
-        const save = async data => {
+        const save = async (data) => {
             data.order = item.content.order;
             await writeContent(item.id, data, "application/json");
             this.refresh();

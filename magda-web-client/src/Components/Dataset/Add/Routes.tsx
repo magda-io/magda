@@ -35,7 +35,7 @@ const Routes = () => {
             />
             <Route
                 path="/dataset/add/metadata/:datasetId/:step?"
-                component={withHeader(DatasetAddMetadataPage, {
+                component={withHeader(DatasetAddMetadataPage as any, {
                     includeDatasetPageProgressMeter: true
                 })}
             />
@@ -47,7 +47,7 @@ const Routes = () => {
             <Route
                 path="/dataset/edit/:datasetId/:step?"
                 component={withHeader(
-                    DatasetEditMetadataPage,
+                    DatasetEditMetadataPage as any,
                     {
                         includeDatasetPageProgressMeter: true
                     },

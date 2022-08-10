@@ -259,4 +259,4 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
     return renderResult;
 };
 
-export default withRouter(DatasetPage);
+export default withRouter(DatasetPage as any) as any;

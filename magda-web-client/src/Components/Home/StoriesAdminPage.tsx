@@ -14,8 +14,8 @@ export default class StoriesAdminPage extends Component {
             <ContentAdminPage
                 title="Stories"
                 itemTitle="Story"
-                generateNewId={id => `home/stories/${Date.now()}`}
-                titleFromItem={item => item.content.title}
+                generateNewId={(id) => `home/stories/${Date.now()}`}
+                titleFromItem={(item) => item.content.title}
                 pattern="home/stories/*"
                 newContent={{
                     title: "New Story Title",
@@ -32,7 +32,7 @@ export default class StoriesAdminPage extends Component {
 
 function editStory(item, onChange) {
     const itemId = item.id;
-    const save = field => value => {
+    const save = (field) => (value) => {
         item.content[field] = value;
         onChange(item.content);
     };

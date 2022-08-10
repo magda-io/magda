@@ -6,6 +6,11 @@
         "rootDir": "./src",
         "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
     },
+    "ts-node": {
+        "compilerOptions": {
+            "allowJs": false
+        }
+    },
     "references": [{ "path": "../magda-typescript-common" }],
     "include": ["./src"]
 }

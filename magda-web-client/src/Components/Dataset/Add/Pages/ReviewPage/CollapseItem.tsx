@@ -8,7 +8,7 @@ type PropsType = {
     className?: string;
 };
 
-const CollapseItem: FunctionComponent<PropsType> = props => {
+const CollapseItem: FunctionComponent<PropsType> = (props) => {
     const isOpen = useContext(CollapseBoxContext);
     const alwaysShow =
         typeof props.alwaysShow === "undefined" ? false : props.alwaysShow;

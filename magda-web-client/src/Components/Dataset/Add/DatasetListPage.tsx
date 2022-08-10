@@ -59,7 +59,7 @@ class DatasetListPage extends React.Component<any, any> {
                         <h2>Your draft datasets</h2>
                         <table style={{ width: "100%" }}>
                             <tbody>
-                                {datasets.map(dataset => {
+                                {datasets.map((dataset) => {
                                     return (
                                         <tr key={dataset.id}>
                                             <td>

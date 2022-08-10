@@ -13,7 +13,7 @@ type Props = {
     datasetId: string;
     history: any;
     isEdit?: boolean;
-    publishStatus: string; // "published" | "draft" | "archived"
+    publishStatus?: string; // "published" | "draft" | "archived"
 };
 
 // If you are not in preview mode

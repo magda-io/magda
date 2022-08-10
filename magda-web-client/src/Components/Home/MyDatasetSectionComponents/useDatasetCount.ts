@@ -4,7 +4,7 @@ import {
     FetchRecordsCountOptions,
     DatasetTypes
 } from "api-clients/RegistryApis";
-import getMyDatasetAspectQueries from "./getMyDatasetAspectQueries";
+import getDatasetAspectQueries from "./getDatasetAspectQueries";
 
 export default function useDatasetCount(
     datasetType: DatasetTypes,
@@ -18,11 +18,7 @@ export default function useDatasetCount(
             userId: string
         ) => {
             const opts: FetchRecordsCountOptions = {
-                aspectQueries: getMyDatasetAspectQueries(
-                    datasetType,
-                    userId,
-                    searchText
-                )
+                aspectQueries: getDatasetAspectQueries(datasetType, searchText)
             };
 
             if (datasetType === "drafts") {

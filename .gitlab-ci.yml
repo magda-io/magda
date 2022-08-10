@@ -249,7 +249,6 @@ buildtest:ui:
   variables:
     REACT_APP_SHA1: "$CI_COMMIT_SHA"
   script:
-    - yarn install
     - yarn run eslint
     - cd magda-typescript-common && yarn build
     - cd ..

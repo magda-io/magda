@@ -76,10 +76,10 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
 
                 updateData(loadedStateData);
             },
-            [isDisabled, props.match.params.datasetId, props.user]
+            [isDisabled, (props as any).match.params.datasetId, props.user]
         );
 
-        if (props.isFetchingWhoAmI) {
+        if ((props as any).isFetchingWhoAmI) {
             return loadingArea;
         } else if (isDisabled) {
             return (
@@ -107,7 +107,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
         }
     };
 
-    return connect(mapStateToProps)(withRouter(withEditDatasetState));
+    return connect(mapStateToProps)(withRouter(withEditDatasetState as any));
 };
 
 /* eslint-enable react-hooks/rules-of-hooks */

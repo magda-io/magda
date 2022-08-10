@@ -27,10 +27,12 @@ import {
     createRolePermission,
     updateRolePermission,
     queryResources,
-    queryResOperations,
-    ResourceRecord,
-    OperationRecord
+    queryResOperations
 } from "api-clients/AuthApis";
+import {
+    OperationRecord,
+    ResourceRecord
+} from "@magda/typescript-common/dist/authorization-api/model";
 import { CreateRolePermissionInputData } from "@magda/typescript-common/dist/authorization-api/model";
 import reportError from "./reportError";
 import { MdInfoOutline } from "react-icons/md";
