@@ -12,6 +12,7 @@ import ResourceOperationsPage from "./OperationsPage";
 import RegistryRecordsPage from "./RegistryRecordsPage";
 import RolePermissionsPage from "./RolePermissionsPage";
 import AccountPage from "./AccountPage";
+import DatasetManagementPage from "./DatasetManagementPage";
 
 const Routes = () => {
     return (
@@ -21,6 +22,13 @@ const Routes = () => {
                 <Route exact path="/settings">
                     <Redirect to="/settings/account" />
                 </Route>
+                <Route
+                    exact
+                    path="/settings/datasets"
+                    component={withHeader(DatasetManagementPage, {
+                        noContainerClass: true
+                    })}
+                />
                 <Route
                     exact
                     path="/settings/account(/)*(.)*"

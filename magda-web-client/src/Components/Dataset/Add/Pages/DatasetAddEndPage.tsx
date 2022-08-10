@@ -23,7 +23,7 @@ export default function DatasetAddEndPage(props: Props) {
     const isEdit = typeof props?.isEdit === "undefined" ? false : props.isEdit;
     let viewDatasetText;
     if (publishStatus === "draft") {
-        viewDatasetText = "View your draft dataset";
+        viewDatasetText = "View your dataset";
     } else {
         viewDatasetText = "View your dataset";
     }
@@ -49,7 +49,10 @@ export default function DatasetAddEndPage(props: Props) {
                     <h2 className="end-preview-subheading">{allDoneText}</h2>
                     <p className="dataset-status-txt">
                         You can view the status of your datasets from{" "}
-                        <CommonLink href="/">your home page</CommonLink>.
+                        <CommonLink href="/settings/datasets">
+                            "datasets management"
+                        </CommonLink>
+                        .
                     </p>
                 </div>
             </div>

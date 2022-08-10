@@ -32,7 +32,13 @@ function hasMetaDataCreationToolAccess(user: User) {
             "object/dataset/draft/create",
             "object/dataset/draft/update",
             "object/dataset/published/create",
-            "object/dataset/published/update"
+            "object/dataset/published/update",
+            "object/distribution/create",
+            "object/distribution/read",
+            "object/distribution/update",
+            "object/organization/read",
+            "object/faas/function/read",
+            "object/faas/function/invoke"
         ],
         user
     );

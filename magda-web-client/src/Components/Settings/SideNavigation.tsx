@@ -9,7 +9,7 @@ import {
     MdCollectionsBookmark,
     MdPageview
 } from "react-icons/md";
-import { BsPersonCircle } from "react-icons/bs";
+import { BsPersonCircle, BsJournals } from "react-icons/bs";
 import "./SideNavigation.scss";
 import { StateType } from "reducers/reducer";
 import { useSelector } from "react-redux";
@@ -37,6 +37,22 @@ const defaultMenuItems: MenuItem[] = [
         title: "My Account",
         path: "/settings/account",
         icon: <BsPersonCircle />
+    },
+    {
+        path: "/settings/datasets",
+        title: "Data Management",
+        icon: <BsJournals />,
+        requireOperationUris: [
+            "object/dataset/draft/read",
+            "object/dataset/draft/update",
+            "object/dataset/published/read",
+            "object/dataset/published/update",
+            "object/distribution/read",
+            "object/distribution/update",
+            "object/organization/read",
+            "object/faas/function/read",
+            "object/faas/function/invoke"
+        ]
     },
     {
         title: "Users",

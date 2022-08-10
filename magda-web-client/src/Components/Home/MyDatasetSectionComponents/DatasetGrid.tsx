@@ -1,6 +1,12 @@
-import React, { FunctionComponent, useState } from "react";
+import React, {
+    FunctionComponent,
+    useState,
+    useCallback,
+    useEffect
+} from "react";
 import { Link } from "react-router-dom";
-import editIcon from "assets/edit.svg";
+import { useHistory } from "react-router-dom";
+import { History } from "history";
 import "./DatasetGrid.scss";
 import { useAsync } from "react-async-hook";
 import getDatasetAspectQueries from "./getDatasetAspectQueries";
@@ -10,13 +16,19 @@ import {
     FetchRecordsOptions,
     DatasetTypes
 } from "api-clients/RegistryApis";
-import Button from "rsuite/Button";
-import ButtonGroup from "rsuite/ButtonGroup";
-import reportError from "helpers/reportError";
 import moment from "moment";
 import { BsFillTrashFill } from "react-icons/bs";
+import { MdBorderColor, MdOutlineArrowDropDown } from "react-icons/md";
 import ConfirmDialog from "../../Settings/ConfirmDialog";
 import { deleteDataset } from "../../Dataset/Add/DatasetAddCommon";
+import openWindow from "../../../helpers/openWindow";
+import Button from "rsuite/Button";
+import Popover from "rsuite/Popover";
+import Dropdown from "rsuite/Dropdown";
+import IconButton from "rsuite/IconButton";
+import ButtonGroup from "rsuite/ButtonGroup";
+import Whisper from "rsuite/Whisper";
+import reportError from "helpers/reportError";
 import uniq from "lodash/uniq";
 
 const PAGE_SIZE = 10;
@@ -24,13 +36,17 @@ const PAGE_SIZE = 10;
 type PropsType = {
     searchText: string;
     datasetType: DatasetTypes;
+    recordReloadToken?: string;
+    openInPopUp?: boolean;
 };
 
 function createRows(
+    history: History,
     datasetType: DatasetTypes,
     records: Record[] | undefined,
     loading: boolean,
     setRecordReloadToken: React.Dispatch<React.SetStateAction<string>>,
+    openInPopUp?: boolean,
     error?: any
 ) {
     if (loading) {
@@ -59,54 +75,127 @@ function createRows(
                 <tr key={idx}>
                     <td>{getTitle(datasetType, record)}</td>
                     <td className="date-col">{getDate(datasetType, record)}</td>
-                    <td className="action-buttons-col">
-                        <Link
-                            className="edit-button"
-                            to={`/dataset/${
-                                isDraft ? "add/metadata" : "edit"
-                            }/${encodeURIComponent(record.id)}`}
-                        >
-                            <img src={editIcon} alt="edit button" />
-                        </Link>
-
-                        <button className="delete-button">
-                            <BsFillTrashFill
-                                onClick={() =>
-                                    ConfirmDialog.open({
-                                        confirmMsg: `Are you sure you want to delete the dataset "${getTitle(
-                                            datasetType,
-                                            record
-                                        )}"?`,
-                                        headingText: "Confirm to Delete?",
-                                        loadingText: "Deleting dataset...",
-                                        errorNotificationDuration: 0,
-                                        confirmHandler: async () => {
-                                            const result = await deleteDataset(
-                                                record.id
-                                            );
-                                            if (result.hasError) {
-                                                console.error(
-                                                    "Failed to remove resources when delete dataset:",
-                                                    result
-                                                );
-                                                throw new Error(
-                                                    `The following files are failed to be removed during the dataset deletion:
-                                                ${result.failureReasons
-                                                    .map(
-                                                        (item) =>
-                                                            `"${item.title}", error: ${item.error}`
-                                                    )
-                                                    .join(";\n ")}`
-                                                );
-                                            }
-                                            setRecordReloadToken(
-                                                "" + Math.random()
-                                            );
-                                        }
-                                    })
-                                }
-                            />
-                        </button>
+                    <td
+                        className={`action-buttons-col ${
+                            isDraft ? "is-draft" : "is-not-draft"
+                        }`}
+                    >
+                        <ButtonGroup>
+                            <Button
+                                appearance="ghost"
+                                aria-label="actions available to the dataset"
+                                title="actions available to the dataset"
+                            >
+                                Actions
+                            </Button>
+                            <Whisper
+                                placement="bottomEnd"
+                                trigger="click"
+                                speaker={(
+                                    { onClose, left, top, className },
+                                    ref
+                                ) => {
+                                    return (
+                                        <Popover
+                                            ref={ref}
+                                            className={`${className} dataset-grid-action-dropdown`}
+                                            style={{ left, top }}
+                                            full
+                                        >
+                                            <Dropdown.Menu>
+                                                <Dropdown.Item
+                                                    key="edit-dataset"
+                                                    aria-label="Edit Dataset"
+                                                    icon={<MdBorderColor />}
+                                                    onClick={() => {
+                                                        onClose();
+                                                        const editorUrl = `/dataset/${
+                                                            isDraft
+                                                                ? "add/metadata"
+                                                                : "edit"
+                                                        }/${encodeURIComponent(
+                                                            record.id
+                                                        )}`;
+                                                        if (openInPopUp) {
+                                                            openWindow(
+                                                                `${editorUrl}?popup=true`,
+                                                                {
+                                                                    name:
+                                                                        "edit-dataset-" +
+                                                                        record.id
+                                                                }
+                                                            );
+                                                        } else {
+                                                            history.push(
+                                                                editorUrl
+                                                            );
+                                                        }
+                                                    }}
+                                                >
+                                                    Edit Dataset
+                                                </Dropdown.Item>
+                                                <Dropdown.Item
+                                                    key="delete-dataset"
+                                                    aria-label="Delete Dataset"
+                                                    icon={<BsFillTrashFill />}
+                                                    onClick={() => {
+                                                        onClose();
+                                                        ConfirmDialog.open({
+                                                            confirmMsg: `Are you sure you want to delete the dataset "${getTitle(
+                                                                datasetType,
+                                                                record
+                                                            )}"?`,
+                                                            headingText:
+                                                                "Confirm to Delete?",
+                                                            loadingText:
+                                                                "Deleting dataset...",
+                                                            errorNotificationDuration: 0,
+                                                            confirmHandler: async () => {
+                                                                const result = await deleteDataset(
+                                                                    record.id
+                                                                );
+                                                                if (
+                                                                    result.hasError
+                                                                ) {
+                                                                    console.error(
+                                                                        "Failed to remove resources when delete dataset:",
+                                                                        result
+                                                                    );
+                                                                    throw new Error(
+                                                                        `The following files are failed to be removed during the dataset deletion:
+                                                                        ${result.failureReasons
+                                                                            .map(
+                                                                                (
+                                                                                    item
+                                                                                ) =>
+                                                                                    `"${item.title}", error: ${item.error}`
+                                                                            )
+                                                                            .join(
+                                                                                ";\n "
+                                                                            )}`
+                                                                    );
+                                                                }
+                                                                setRecordReloadToken(
+                                                                    "" +
+                                                                        Math.random()
+                                                                );
+                                                            }
+                                                        });
+                                                    }}
+                                                >
+                                                    Delete dataset
+                                                </Dropdown.Item>
+                                            </Dropdown.Menu>
+                                        </Popover>
+                                    );
+                                }}
+                            >
+                                <IconButton
+                                    appearance="ghost"
+                                    icon={<MdOutlineArrowDropDown />}
+                                />
+                            </Whisper>
+                        </ButtonGroup>
                     </td>
                 </tr>
             );
@@ -135,7 +224,9 @@ function getTitle(datasetType: DatasetTypes, record: Record) {
     titleText = titleText ? titleText : "Untitled Dataset";
 
     return datasetType === "drafts" ? (
-        titleText
+        <Link to={`/dataset/add/metadata/${encodeURIComponent(record.id)}`}>
+            {titleText}
+        </Link>
     ) : (
         <Link to={`/dataset/${encodeURIComponent(record.id)}`}>
             {titleText}
@@ -162,18 +253,35 @@ function getDate(datasetType: DatasetTypes, record: Record) {
 }
 
 const DatasetGrid: FunctionComponent<PropsType> = (props) => {
-    const { datasetType, searchText } = props;
+    const history = useHistory();
+    const { datasetType, searchText, openInPopUp } = props;
     const [pageTokenList, setPageTokenList] = useState<string[]>([]);
     const [pageToken, setPageToken] = useState<string>();
     //change this value to force the record data to be reloaded
     const [recordReloadToken, setRecordReloadToken] = useState<string>("");
+    const combinedRecordToken = props?.recordReloadToken
+        ? props.recordReloadToken
+        : "" + recordReloadToken;
+
+    const onMessageReceived = useCallback((e: MessageEvent) => {
+        if (e?.data === "magda-refresh-dataset-records") {
+            setRecordReloadToken("" + Math.random());
+        }
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener("message", onMessageReceived);
+        return () => {
+            window.removeEventListener("message", onMessageReceived);
+        };
+    }, [onMessageReceived]);
 
     const { result, loading, error } = useAsync(
         async (
             datasetType: DatasetTypes,
             searchText: string,
             pageToken?: string,
-            recordReloadToken?: string
+            combinedRecordToken?: string
         ) => {
             const opts: FetchRecordsOptions = {
                 limit: PAGE_SIZE,
@@ -197,7 +305,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
 
             return await fetchRecords(opts);
         },
-        [datasetType, searchText, pageToken, recordReloadToken]
+        [datasetType, searchText, pageToken, combinedRecordToken]
     );
 
     const overAllLoading = loading;
@@ -217,10 +325,12 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
 
                     <tbody>
                         {createRows(
+                            history,
                             datasetType,
                             result?.records,
                             overAllLoading,
                             setRecordReloadToken,
+                            openInPopUp,
                             overAllError
                         )}
                     </tbody>
