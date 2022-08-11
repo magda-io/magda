@@ -436,11 +436,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         )
                                     ) {
                                         // --- trigger publish to dga validtion as well
-                                        setTimeout(() => {
-                                            ValidationManager.onInputFocusOut(
-                                                "$.datasetPublishing.publishAsOpenData.dga"
-                                            );
-                                        }, 1);
+                                        ValidationManager.onInputFocusOut(
+                                            "$.datasetPublishing.publishAsOpenData.dga"
+                                        );
                                     }
                                 }}
                             />

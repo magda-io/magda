@@ -159,6 +159,11 @@ const argv = yargs
         coerce: coerceJson("requestOpts"),
         default: "{}"
     })
+    .option("useMagdaStorageByDefault", {
+        describe: "Whether use magda to store dataset data files by default",
+        type: "boolean",
+        default: true
+    })
     .option("vocabularyApiEndpoints", {
         describe: "A list of Vocabulary API Endpoints",
         type: "string",
@@ -415,6 +420,7 @@ const webServerConfig = {
     gapiIds: argv.gapiIds,
     showNotificationBanner: argv.showNotificationBanner,
     featureFlags: argv.featureFlags || {},
+    useMagdaStorageByDefault: argv.useMagdaStorageByDefault,
     vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[],
     defaultOrganizationId: argv.defaultOrganizationId,
     defaultContactEmail: argv.defaultContactEmail,

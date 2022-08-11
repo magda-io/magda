@@ -84,6 +84,10 @@ featureFlags:
   # At this moment, `like / Dislike button` component is a place holder only for allowing plugin external UI plugin component.
   datasetLikeButton: false
 
+# -- Whether use Magda to store dataset data files by default
+# When use Magda's metadata creation tool to create a dataset, user can choose to upload data files to Magda's storage (via storage API).
+# Or managing the metadata only. When `featureFlags.useStorageApi` is set to `false`, this option has no effect.
+useMagdaStorageByDefault: true
 
 # The base url where the UI serves at. If not specify (or empty string), it assumes the UI serves at '/'.
 # it should have a leading slash, but no trailing slash
@@ -229,6 +233,6 @@ previewMapFormatPerference:
 # For datasets without contact point info, the inquiry will be sent to the default recipient provided by `global.defaultContactEmail`.
 showContactButtonForNoContactPointDataset: false
 
-# -- Default bucket used to store datasets.
+# -- Default bucket used to store datasets data files.
 # If no value is provided `global.defaultDatasetBucket` will be used.
 defaultDatasetBucket:

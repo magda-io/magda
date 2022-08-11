@@ -93,6 +93,7 @@ const serverConfig: {
     featureFlags?: {
         [id: string]: boolean;
     };
+    useMagdaStorageByDefault?: boolean;
     vocabularyApiEndpoints: string[];
     defaultOrganizationId?: string;
     defaultContactEmail?: string;
@@ -359,6 +360,10 @@ export const config = {
     featureFlags:
         serverConfig.featureFlags ||
         (process.env.NODE_ENV === "development" ? DEV_FEATURE_FLAGS : {}),
+    useMagdaStorageByDefault:
+        typeof serverConfig.useMagdaStorageByDefault === "boolean"
+            ? serverConfig.useMagdaStorageByDefault
+            : true,
     vocabularyApiEndpoints,
     defaultOrganizationId: serverConfig.defaultOrganizationId,
     defaultContactEmail: serverConfig.defaultContactEmail,

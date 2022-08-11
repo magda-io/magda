@@ -731,8 +731,8 @@ export function createBlankState(user: User): State {
         },
         datasetPublishing: {
             state: "draft",
-            level: "creatorOrgUnit",
-            contactPointDisplay: "team"
+            level: "custodian",
+            contactPointDisplay: "organization"
         },
         spatialCoverage: {
             // Australia, Mainland
@@ -742,7 +742,7 @@ export function createBlankState(user: User): State {
             intervals: []
         },
         datasetAccess: {
-            useStorageApi: false
+            useStorageApi: config.useMagdaStorageByDefault
         },
         informationSecurity: {},
         provenance: {},

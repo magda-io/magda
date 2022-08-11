@@ -35,7 +35,7 @@ Kubernetes: `>= 1.14.0-0`
 | dateConfig.dateRegexes.endDateRegex | string | `"(end).*(date|dt|year|decade)"` |  |
 | dateConfig.dateRegexes.startDateRegex | string | `"(start|st).*(date|dt|year|decade)"` |  |
 | defaultContactEmail | string | `"mail@example.com"` |  |
-| defaultDatasetBucket | string | `nil` | Default bucket used to store datasets. If no value is provided `global.defaultDatasetBucket` will be used. |
+| defaultDatasetBucket | string | `nil` | Default bucket used to store datasets data files. If no value is provided `global.defaultDatasetBucket` will be used. |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"docker.io/data61"` |  |
@@ -106,6 +106,7 @@ Kubernetes: `>= 1.14.0-0`
 | supportExternalTerriaMapV7 | bool | `false` | When set to true, the `Open in National Map` button in Map Preview area will send data in v7 format. |
 | uiBaseUrl | string | `nil` | Serve Magda UI at a non-root url path. e.g. `http://example.com/magda/`. Its value should have a leading slash, but no trailing slash. When not set, by default, the magda UI will be served at `/`. (e.g. `http://example.com/`)  When `global.externalUrl` is set to an URL with non-root path (e.g. http://example.com/magda-dir/),  unless `uiBaseUrl` has a non-empty value that is not `/`, the effective runtime value of `uiBaseUrl` will be overwritten to `/magda-dir`. You probably only want to manually set `uiBaseUrl` when you want to move magda UI to a non-root URL path but still leave all APIs at root path. |
 | useLocalStyleSheet | bool | `false` |  |
+| useMagdaStorageByDefault | bool | `true` | Whether use Magda to store dataset data files by default When use Magda's metadata creation tool to create a dataset, user can choose to upload data files to Magda's storage (via storage API). Or managing the metadata only. When `featureFlags.useStorageApi` is set to `false`, this option has no effect. |
 | vocabularyApiEndpoints | list | `[]` |  |
 
 ----------------------------------------------
