@@ -38,12 +38,10 @@ import com.sksamuel.elastic4s.snapshots._
 import com.typesafe.config.Config
 import spray.json._
 
-import java.util.concurrent.TimeoutException
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future, Promise}
-import scala.util.{Failure, Success}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
@@ -372,39 +370,14 @@ class ElasticSearchIndexer(
         Future(RestoreFailure)
       }
 
-    // false indicate create func not complete yet and still running in the background
-    // true indicate create func is fully completed.
     def processingDefinitionCreateHandler() = {
-      val createActionFuture: Future[Unit] = definition.create match {
+      definition.create match {
         case Some(createFunc) =>
           createFunc(client, indices, config)(materializer, system)
             .flatMap(_ => {
               createSnapshot(client, definition)
             })
         case None => Future(Unit)
-      }
-
-      val createFuncResult = try {
-        Await.result(
-          createActionFuture,
-          // only wait for create func execution for 15 seconds
-          // after that return and leave the create execution running in the background
-          15 seconds
-        )
-      } catch {
-        case e: Throwable => Failure(e)
-      }
-
-      createFuncResult match {
-        case Success(_)                   => Future(true)
-        case Failure(_: TimeoutException) => Future(false)
-        case Failure(e) =>
-          logger.error(
-            "Failed to execute create func for index {}: ",
-            definition.name,
-            e
-          )
-          throw e
       }
     }
 
