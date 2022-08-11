@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useAsync } from "react-async-hook";
 import TreePicker from "rsuite/TreePicker";
@@ -13,16 +13,12 @@ import {
 import { ItemDataType } from "rsuite/esm/@types/common";
 import { User } from "reducers/userManagementReducer";
 import ServerError from "@magda/typescript-common/dist/ServerError";
+import { useValidation } from "./ValidationManager";
 import "./OrgUnitDropDown.scss";
 
 interface ItemType extends ItemDataType {
     rawData: OrgUnit;
 }
-
-type Props = {
-    orgUnitId?: string;
-    onChange: (orgUnitId: string) => void;
-};
 
 const nodeToItem = (node: OrgUnit): ItemType => ({
     label: node.name,
@@ -31,10 +27,23 @@ const nodeToItem = (node: OrgUnit): ItemType => ({
     children: []
 });
 
-export default function OrgUnitDropDown({
-    orgUnitId,
-    onChange: onChangeCallback
-}: Props) {
+interface PropsType {
+    orgUnitId?: string;
+    onChange: (orgUnitId: string) => void;
+    validationFieldPath?: string;
+    validationFieldLabel?: string;
+}
+
+const OrgUnitDropDown: FunctionComponent<PropsType> = (props) => {
+    const { orgUnitId, onChange: onChangeCallback } = props;
+    const [
+        isValidationError,
+        validationErrorMessage,
+        validationCtlRef
+    ] = useValidation<HTMLDivElement>(
+        props.validationFieldPath,
+        props.validationFieldLabel
+    );
     const userData = useSelector<any, User>(
         (state) => state?.userManagement?.user
     );
@@ -98,54 +107,67 @@ export default function OrgUnitDropDown({
         );
     } else {
         return (
-            <TreePicker
-                className="org-unit-drop-down"
-                data={data}
-                size={"lg"}
-                block={true}
-                disabled={loading}
-                searchable={false}
-                placeholder={
-                    orgUnitId
-                        ? result
-                            ? result.name
-                            : "Unknown"
-                        : "Please Select"
-                }
-                onSelect={(activeNode, value, event) => {
-                    onChangeCallback(value as string);
-                }}
-                getChildren={async (activeNode) => {
-                    try {
-                        const nodes = await getImmediateChildren(
-                            activeNode?.rawData?.id,
-                            true
-                        );
-                        if (!nodes?.length) {
-                            return [] as ItemType[];
-                        } else {
-                            return nodes.map((node) => ({
-                                label: node.name,
-                                value: node.id,
-                                rawData: node,
-                                children: []
-                            }));
-                        }
-                    } catch (e) {
-                        toaster.push(
-                            <Notification
-                                type={"error"}
-                                closable={true}
-                                header="Error"
-                            >{`Failed to retrieve org unit data: ${e}`}</Notification>,
-                            {
-                                placement: "topEnd"
-                            }
-                        );
-                        throw e;
+            <div ref={validationCtlRef}>
+                {isValidationError ? (
+                    <div>
+                        <span className="au-error-text">
+                            {validationErrorMessage}
+                        </span>
+                    </div>
+                ) : null}
+                <TreePicker
+                    className={`org-unit-drop-down ${
+                        isValidationError ? "has-validation-error" : ""
+                    }`}
+                    data={data}
+                    size={"lg"}
+                    block={true}
+                    disabled={loading}
+                    searchable={false}
+                    placeholder={
+                        orgUnitId
+                            ? result
+                                ? result.name
+                                : "Unknown"
+                            : "Please Select"
                     }
-                }}
-            />
+                    onSelect={(activeNode, value, event) => {
+                        onChangeCallback(value as string);
+                    }}
+                    getChildren={async (activeNode) => {
+                        try {
+                            const nodes = await getImmediateChildren(
+                                activeNode?.rawData?.id,
+                                true
+                            );
+                            if (!nodes?.length) {
+                                return [] as ItemType[];
+                            } else {
+                                return nodes.map((node) => ({
+                                    label: node.name,
+                                    value: node.id,
+                                    rawData: node,
+                                    children: []
+                                }));
+                            }
+                        } catch (e) {
+                            toaster.push(
+                                <Notification
+                                    type={"error"}
+                                    closable={true}
+                                    header="Error"
+                                >{`Failed to retrieve org unit data: ${e}`}</Notification>,
+                                {
+                                    placement: "topEnd"
+                                }
+                            );
+                            throw e;
+                        }
+                    }}
+                />
+            </div>
         );
     }
-}
+};
+
+export default OrgUnitDropDown;

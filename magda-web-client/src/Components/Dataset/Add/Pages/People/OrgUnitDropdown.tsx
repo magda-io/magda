@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import { useAsync } from "react-async-hook";
 import Select from "react-select";
 import find from "lodash/find";
@@ -11,11 +11,14 @@ import {
     getOrgUnitById,
     OrgUnitWithRelationship
 } from "api-clients/OrgUnitApis";
+import { useValidation } from "../../ValidationManager";
 
 type Props = {
     orgUnitId?: string;
     custodianOrgUnitId?: string;
     onChange: (orgUnitId: string) => void;
+    validationFieldPath?: string;
+    validationFieldLabel?: string;
 };
 
 const getOrgUnitName = async (id?: string) => {
@@ -36,11 +39,16 @@ const orgUnitsToOptionItems = (orgUnits: OrgUnitWithRelationship[]) =>
         value: option.id
     }));
 
-export default function OrgUnitDropdown({
-    orgUnitId,
-    custodianOrgUnitId,
-    onChange: onChangeCallback
-}: Props) {
+const OrgUnitDropdown: FunctionComponent<Props> = (props) => {
+    const { orgUnitId, custodianOrgUnitId, onChange: onChangeCallback } = props;
+    const [
+        isValidationError,
+        validationErrorMessage,
+        validationCtlRef
+    ] = useValidation<HTMLDivElement>(
+        props.validationFieldPath,
+        props.validationFieldLabel
+    );
     const { loading, error, result, execute } = useAsync(async () => {
         const orgUnits = await listOrgUnits({
             leafNodesOnly: true,
@@ -104,31 +112,47 @@ export default function OrgUnitDropdown({
         })();
 
         return (
-            <Select
-                className="react-select"
-                isMulti={false}
-                isSearchable={true}
-                onChange={(rawValue, action) => {
-                    const value = rawValue as
-                        | { value: string }
-                        | undefined
-                        | null;
-                    if (value) {
-                        onChangeCallback(value.value);
+            <div
+                ref={validationCtlRef}
+                className={`react-select-with-validation-container ${
+                    isValidationError ? "invalid" : ""
+                }`}
+            >
+                {isValidationError ? (
+                    <div>
+                        <span className="au-error-text">
+                            {validationErrorMessage}
+                        </span>
+                    </div>
+                ) : null}
+                <Select
+                    className="react-select"
+                    isMulti={false}
+                    isSearchable={true}
+                    onChange={(rawValue, action) => {
+                        const value = rawValue as
+                            | { value: string }
+                            | undefined
+                            | null;
+                        if (value) {
+                            onChangeCallback(value.value);
+                        }
+                    }}
+                    styles={ReactSelectStyles}
+                    value={
+                        selectedValue
+                            ? {
+                                  label: selectedValue.name,
+                                  value: selectedValue.id
+                              }
+                            : undefined
                     }
-                }}
-                styles={ReactSelectStyles}
-                value={
-                    selectedValue
-                        ? {
-                              label: selectedValue.name,
-                              value: selectedValue.id
-                          }
-                        : undefined
-                }
-                options={options as any}
-                placeholder="Select a team"
-            />
+                    options={options as any}
+                    placeholder="Select a team"
+                />
+            </div>
         );
     }
-}
+};
+
+export default OrgUnitDropdown;

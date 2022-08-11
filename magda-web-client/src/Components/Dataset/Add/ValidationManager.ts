@@ -171,6 +171,10 @@ function convertConfigFieldItem(field: string): string {
             return "$.distributions[*].license";
         case "dataset.publisher":
             return "$.dataset.publisher";
+        case "publishing.custodianOrgUnitId":
+            return "$.datasetPublishing.custodianOrgUnitId";
+        case "publishing.managingOrgUnitId":
+            return "$.datasetPublishing.managingOrgUnitId";
         case "licenseLevel":
             return "$.licenseLevel";
         case "informationSecurity.classification":
@@ -235,7 +239,7 @@ function findItemsByJsonPaths(jsonPaths: string[]): ValidationItem[] {
     return uniq(jsonPaths.flatMap((jsonPath) => findItemsByJsonPath(jsonPath)));
 }
 
-export function shouldValidate(jsonPath: string) {
+export function shouldValidate(jsonPath: string): boolean {
     if (typeof stateDataGetter === "undefined") {
         // --- if stateDataGetter is not set, Validation function should be turned off
         return false;
@@ -262,7 +266,7 @@ export function shouldValidate(jsonPath: string) {
     }
 }
 
-export const registerValidationItem = (vItem: ValidationItem) => {
+export const registerValidationItem = (vItem: ValidationItem): void => {
     if (
         shouldValidate(vItem.jsonPath) &&
         validationItems.indexOf(vItem) === -1
@@ -273,7 +277,7 @@ export const registerValidationItem = (vItem: ValidationItem) => {
 
 export const deregisterValidationItem = (
     jsonPathOrItem: string | ValidationItem
-) => {
+): void => {
     if (typeof jsonPathOrItem === "string") {
         const jsonPath = jsonPathOrItem;
         // --- should clearError when deregister
@@ -432,7 +436,8 @@ function validateSelectedItems(items: ValidationItem[]) {
  *
  * @returns {boolean} True = all fields are valid; False = there is at least one field is invalid;
  */
-export const validateAll = () => validateSelectedItems(validationItems);
+export const validateAll = (): boolean =>
+    validateSelectedItems(validationItems);
 
 /**
  * Validate all inputs matching a list of json Paths.
@@ -444,7 +449,7 @@ export const validateAll = () => validateSelectedItems(validationItems);
  * @param {string[]} fieldPathList a list of json path for selecting inputs
  * @returns {boolean} True = all fields are valid; False = there is at least one field is invalid;
  */
-export const validateFields = (fieldPathList: string[] = []) => {
+export const validateFields = (fieldPathList: string[] = []): boolean => {
     if (typeof stateDataGetter === "undefined") {
         // --- if stateDataGetter is not set, Validation function should be turned off
         return true;
@@ -458,7 +463,9 @@ export const validateFields = (fieldPathList: string[] = []) => {
     return validateSelectedItems(items);
 };
 
-export const getOffset = (el: RefType<ElementType>) => {
+export const getOffset = (
+    el: RefType<ElementType>
+): { top: number; left: number } | null => {
     if (!el.current) {
         return null;
     }
@@ -472,7 +479,7 @@ export const getOffset = (el: RefType<ElementType>) => {
     };
 };
 
-export const deregisterAllValidationItem = () => {
+export const deregisterAllValidationItem = (): void => {
     validationItems = [];
 };
 

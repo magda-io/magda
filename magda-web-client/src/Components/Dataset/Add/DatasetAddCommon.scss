@@ -116,6 +116,15 @@
         }
     }
 
+    .react-select-with-validation-container.invalid {
+        .react-select {
+            div:first-child {
+                border-color: #d60000;
+                background-color: #fdf2f2 !important;
+            }
+        }
+    }
+
     .au-control-input__text:before,
     .au-control-input__text:after {
         border: 9px solid transparent;

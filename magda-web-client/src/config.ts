@@ -380,6 +380,7 @@ export const config = {
               "distributions.format",
               "distributions.license",
               "dataset.publisher",
+              "publishing.custodianOrgUnitId",
               "licenseLevel",
               "dataset.defaultLicense",
               "informationSecurity.classification",

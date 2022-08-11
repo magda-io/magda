@@ -72,11 +72,14 @@ export default function DatasetAddPeoplePage({
                     <h4>
                         Which area of the organisation should be referenced as
                         the data custodian?
+                        <ValidationRequiredLabel validationFieldPath="$.datasetPublishing.custodianOrgUnitId" />
                     </h4>
                     <div>
                         <OrgUnitDropDown
                             orgUnitId={publishing?.custodianOrgUnitId}
                             onChange={editPublishing("custodianOrgUnitId")}
+                            validationFieldPath="$.datasetPublishing.custodianOrgUnitId"
+                            validationFieldLabel="Data Custodian"
                         />
                     </div>
                 </div>
@@ -84,12 +87,15 @@ export default function DatasetAddPeoplePage({
                 <div>
                     <h4>
                         Which team is responsible for maintaining this dataset?
+                        <ValidationRequiredLabel validationFieldPath="$.datasetPublishing.managingOrgUnitId" />
                     </h4>
                     <div>
                         <ManagingOrgUnitDropdown
                             orgUnitId={publishing.managingOrgUnitId}
                             custodianOrgUnitId={publishing?.custodianOrgUnitId}
                             onChange={editPublishing("managingOrgUnitId")}
+                            validationFieldPath="$.datasetPublishing.managingOrgUnitId"
+                            validationFieldLabel="Managing Team"
                         />
                     </div>
                 </div>
