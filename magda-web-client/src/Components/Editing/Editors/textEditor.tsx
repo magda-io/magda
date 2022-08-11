@@ -153,9 +153,7 @@ export const MultilineTextEditor: FunctionComponent<MultilineTextEditorPropType>
         const extraProps: any = {};
         if (props.validationFieldPath) {
             extraProps.onBlur = () => {
-                ValidationManager.onInputFocusOut(
-                    props.validationFieldPath as string
-                );
+                ValidationManager.onInputFocusOut(props.validationFieldPath);
             };
         }
         let inValidClass = "";

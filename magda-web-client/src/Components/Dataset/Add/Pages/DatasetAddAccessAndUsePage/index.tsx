@@ -204,11 +204,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         )
                                     ) {
                                         // --- trigger classifcation validtion as well
-                                        setTimeout(() => {
-                                            ValidationManager.onInputFocusOut(
-                                                "$.informationSecurity.classification"
-                                            );
-                                        }, 1);
+                                        ValidationManager.onInputFocusOut(
+                                            "$.informationSecurity.classification"
+                                        );
                                     }
                                 }}
                                 validationFieldPath="$.datasetPublishing.publishAsOpenData.dga"

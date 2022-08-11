@@ -9,6 +9,7 @@ import {
     MutableRefObject
 } from "react";
 import uniq from "lodash/uniq";
+import defer from "helpers/defer";
 
 /**
  * A global module to manage / coordinate validation workflow.
@@ -362,18 +363,19 @@ function validateItem(item: ValidationItem): boolean | string {
  * Input should call this function when focus is removed from it
  *
  * @param {string} jsonPath
- * @returns {boolean} True = the field is valid; False = the field is invalid;
+ * @returns {void}
  */
-export const onInputFocusOut = (jsonPath: string) => {
-    const items = getItemsFromJsonPath(jsonPath);
-    if (!items || !items.length) {
-        return false;
+export const onInputFocusOut = (jsonPath?: string): void => {
+    if (!jsonPath) {
+        return;
     }
-    if (items.map((item) => validateItem(item)).filter((r) => !r).length) {
-        return false;
-    } else {
-        return true;
-    }
+    defer(() => {
+        const items = getItemsFromJsonPath(jsonPath);
+        if (!items || !items.length) {
+            return;
+        }
+        items.forEach((item) => validateItem(item));
+    });
 };
 
 /**

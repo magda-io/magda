@@ -13,7 +13,7 @@ import {
 import { ItemDataType } from "rsuite/esm/@types/common";
 import { User } from "reducers/userManagementReducer";
 import ServerError from "@magda/typescript-common/dist/ServerError";
-import { useValidation } from "./ValidationManager";
+import { useValidation, onInputFocusOut } from "./ValidationManager";
 import "./OrgUnitDropDown.scss";
 
 interface ItemType extends ItemDataType {
@@ -29,20 +29,25 @@ const nodeToItem = (node: OrgUnit): ItemType => ({
 
 interface PropsType {
     orgUnitId?: string;
-    onChange: (orgUnitId: string) => void;
+    onChange: (orgUnitId?: string) => void;
     validationFieldPath?: string;
     validationFieldLabel?: string;
 }
 
 const OrgUnitDropDown: FunctionComponent<PropsType> = (props) => {
-    const { orgUnitId, onChange: onChangeCallback } = props;
+    const {
+        orgUnitId,
+        onChange: onChangeCallback,
+        validationFieldPath,
+        validationFieldLabel
+    } = props;
     const [
         isValidationError,
         validationErrorMessage,
         validationCtlRef
     ] = useValidation<HTMLDivElement>(
-        props.validationFieldPath,
-        props.validationFieldLabel
+        validationFieldPath,
+        validationFieldLabel
     );
     const userData = useSelector<any, User>(
         (state) => state?.userManagement?.user
@@ -133,6 +138,12 @@ const OrgUnitDropDown: FunctionComponent<PropsType> = (props) => {
                     }
                     onSelect={(activeNode, value, event) => {
                         onChangeCallback(value as string);
+                        onInputFocusOut(validationFieldPath);
+                    }}
+                    cleanable={true}
+                    onClean={() => {
+                        onChangeCallback(undefined);
+                        onInputFocusOut(validationFieldPath);
                     }}
                     getChildren={async (activeNode) => {
                         try {

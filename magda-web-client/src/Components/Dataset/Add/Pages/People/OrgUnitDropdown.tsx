@@ -11,7 +11,7 @@ import {
     getOrgUnitById,
     OrgUnitWithRelationship
 } from "api-clients/OrgUnitApis";
-import { useValidation } from "../../ValidationManager";
+import { onInputFocusOut, useValidation } from "../../ValidationManager";
 
 type Props = {
     orgUnitId?: string;
@@ -40,14 +40,20 @@ const orgUnitsToOptionItems = (orgUnits: OrgUnitWithRelationship[]) =>
     }));
 
 const OrgUnitDropdown: FunctionComponent<Props> = (props) => {
-    const { orgUnitId, custodianOrgUnitId, onChange: onChangeCallback } = props;
+    const {
+        orgUnitId,
+        custodianOrgUnitId,
+        onChange: onChangeCallback,
+        validationFieldPath,
+        validationFieldLabel
+    } = props;
     const [
         isValidationError,
         validationErrorMessage,
         validationCtlRef
     ] = useValidation<HTMLDivElement>(
-        props.validationFieldPath,
-        props.validationFieldLabel
+        validationFieldPath,
+        validationFieldLabel
     );
     const { loading, error, result, execute } = useAsync(async () => {
         const orgUnits = await listOrgUnits({
@@ -136,6 +142,7 @@ const OrgUnitDropdown: FunctionComponent<Props> = (props) => {
                             | null;
                         if (value) {
                             onChangeCallback(value.value);
+                            onInputFocusOut(validationFieldPath);
                         }
                     }}
                     styles={ReactSelectStyles}
