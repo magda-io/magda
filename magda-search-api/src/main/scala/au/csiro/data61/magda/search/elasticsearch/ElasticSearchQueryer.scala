@@ -107,7 +107,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   ) = {
     val inputRegionsList = inputQuery.regions.toList
 
-    val authQuery = authDecision.toEsDsl().getOrElse(MatchAllQuery())
+    val authQuery: QueryDefinition =
+      authDecision.toEsDsl().getOrElse(MatchAllQuery())
 
     clientFuture.flatMap { implicit client =>
       val fullRegionsFutures = inputRegionsList.map(resolveFullRegion)
@@ -117,8 +118,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           case queryWithBoostRegions =>
             val query = buildQueryWithAggregations(
               tenantId,
-              queryWithBoostRegions,
               authQuery,
+              queryWithBoostRegions,
               start,
               limit,
               MatchAll,
@@ -410,8 +411,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   /** Builds an elastic search query out of the passed general magda Query */
   def buildQuery(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       start: Long,
       limit: Int,
       strategy: SearchStrategy
@@ -420,14 +421,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       .search(indices.getIndex(config, Indices.DataSetsIndex))
       .limit(limit)
       .start(start.toInt)
-      .query(buildEsQuery(tenantId, query, publishingStatusQuery, strategy))
+      .query(buildEsQuery(tenantId, authQuery, query, strategy))
   }
 
   /** Same as {@link #buildQuery} but also adds aggregations */
   def buildQueryWithAggregations(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       start: Long,
       limit: Int,
       strategy: SearchStrategy,
@@ -435,16 +436,16 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   ) =
     addAggregations(
       tenantId,
+      authQuery,
       buildQuery(
         tenantId,
+        authQuery,
         query,
-        publishingStatusQuery,
         start,
         limit,
         strategy
       ),
       query,
-      publishingStatusQuery,
       strategy,
       facetSize
     ).sourceExclude("accessControl") // --- do not include accessControl metadata
@@ -461,9 +462,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   /** Adds standard aggregations to an elasticsearch query */
   def addAggregations(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       searchDef: SearchRequest,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       strategy: SearchStrategy,
       facetSize: Int
   ) = {
@@ -473,8 +474,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           facetType =>
             aggsForFacetType(
               tenantId,
+              authQuery,
               query,
-              publishingStatusQuery,
               facetType,
               strategy,
               idealFacetSize(facetType, query, facetSize)
@@ -491,8 +492,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   /** Gets all applicable ES aggregations for the passed FacetType, given a Query */
   def aggsForFacetType(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       facetType: FacetType,
       strategy: SearchStrategy,
       facetSize: Int
@@ -505,8 +506,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         .subAggregations(
           alternativesAggregation(
             tenantId,
+            authQuery,
             query,
-            publishingStatusQuery,
             facetDef,
             strategy,
             facetSize
@@ -524,8 +525,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     */
   def alternativesAggregation(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       facetDef: FacetDefinition,
       strategy: SearchStrategy,
       facetSize: Int
@@ -536,7 +537,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         must(
           Seq(
             tenantIdTermQuery,
-            publishingStatusQuery,
+            authQuery,
             queryToQueryDef(facetDef.removeFromQuery(query), strategy, true)
           )
         )
@@ -555,8 +556,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   private def buildEsQuery(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       strategy: SearchStrategy
   ): QueryDefinition = {
     val geomScorerQuery = setToOption(query.boostRegions)(
@@ -584,13 +585,12 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
     val tenantTermQuery = tenantId.getEsQuery()
 
-    val q: QueryDefinition = queryToQueryDef(query, strategy)
     functionScoreQuery()
       .query(
         must(
           Seq(
             tenantTermQuery,
-            publishingStatusQuery,
+            authQuery,
             queryToQueryDef(query, strategy)
           )
         )
@@ -689,6 +689,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           Some(queryDef)
         }
       },
+      publishingStateQuery(query.publishingState),
       setToOption(query.publishers)(
         seq => should(seq.map(publisherQuery(strategy))).boost(2)
       ),
@@ -787,8 +788,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 client.execute {
                   buildQuery(
                     tenantId,
-                    facetDef.removeFromQuery(generalQuery),
                     authQuery,
+                    facetDef.removeFromQuery(generalQuery),
                     0,
                     0,
                     MatchAll

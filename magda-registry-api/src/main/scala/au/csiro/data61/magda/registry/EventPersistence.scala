@@ -313,9 +313,9 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     * get Ids of all records that are or were linked to the specified record
     *
     * @param tenantId TenantId
+    * @param authDecision auth decision
     * @param recordId the id of the record whose lined records should be queried for
     * @param aspectIds optional; if specified, only links are defined by specified aspects will be considered
-    * @param opaRecordQueries opaRecordQueries
     * @param session DB session
     * @return Seq[String] A list record id
     */
@@ -408,8 +408,6 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       } else {
         // We need to filter out any records that the current user has no access
         // We do this via `recordPersistence.getValidRecordIds`
-        // when `opaRecordQueries` is None, `recordPersistence.getValidRecordIds` will simply return `linkedRecordIds` directly
-        // as there is no need to check as user should have access to all records (likely an admin)
         recordPersistence.getValidRecordIds(
           tenantId,
           authDecision,
@@ -432,7 +430,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     * @param aspectIds
     * @param eventTypes
     * @param tenantId
-    * @param opaRecordQueries
+    * @param authDecision
     * @param session
     * @return
     */
