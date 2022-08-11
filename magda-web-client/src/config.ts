@@ -46,7 +46,6 @@ const DEV_FEATURE_FLAGS = {
     cataloguing: true,
     publishToDga: true,
     previewAddDataset: false,
-    placeholderWorkflowsOn: false,
     datasetApprovalWorkflowOn: false,
     useStorageApi: true,
     datasetLikeButton: false

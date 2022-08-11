@@ -118,8 +118,7 @@ magda:
       fallbackUrl: "https://data.gov.au"
       featureFlags:
         cataloguing: true
-        publishToDga: true
-        placeholderWorkflowsOn: false
+        publishToDga: false
         datasetApprovalWorkflowOn: true
         useStorageApi: true
 

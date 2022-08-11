@@ -143,8 +143,7 @@ magda:
       showNotificationBanner: false
       featureFlags:
         cataloguing: true
-        publishToDga: true
-        placeholderWorkflowsOn: false
+        publishToDga: false
         datasetApprovalWorkflowOn: true
         useStorageApi: true
       vocabularyApiEndpoints:

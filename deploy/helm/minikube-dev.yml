@@ -89,8 +89,7 @@ magda:
       showNotificationBanner: false
       featureFlags:
         cataloguing: true
-        publishToDga: true
-        placeholderWorkflowsOn: true
+        publishToDga: false
         datasetApprovalWorkflowOn: true
         useStorageApi: true
       dateConfig:

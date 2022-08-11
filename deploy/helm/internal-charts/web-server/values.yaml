@@ -73,10 +73,9 @@ featureFlags:
   # Under preview mode, user can play with the metadata creation tool without requiring admin permission.
   # No data will be saved under this mode.
   previewAddDataset: false
-  # featureFlags.publishToDga -- turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance
+  # featureFlags.publishToDga -- turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance.
+  # this is an experimental feature and requires the deployment of [magda-minion-ckan-exporter](https://github.com/magda-io/magda-minion-ckan-exporter)
   publishToDga: false
-  # featureFlags.placeholderWorkflowsOn -- turn on / off some metadata creation tool questions that are still under development
-  placeholderWorkflowsOn: false
   # featureFlags.datasetApprovalWorkflowOn -- turn on / off dataset approval note step
   datasetApprovalWorkflowOn: true
   # featureFlags.useStorageApi -- turn on / off the UI option to use Magda internal storage for file storage.
