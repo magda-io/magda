@@ -9,6 +9,7 @@ type PropsType = {
     unCheckedChildren?: ReactNode;
     fetchInitialCheckedStatus: () => Promise<boolean>;
     onChange: (checked: boolean) => Promise<boolean>;
+    size?: "lg" | "md" | "sm";
 };
 
 const AsyncToggle: FunctionComponent<PropsType> = (props) => {
@@ -42,6 +43,7 @@ const AsyncToggle: FunctionComponent<PropsType> = (props) => {
 
     return (
         <Toggle
+            size={props?.size ? props.size : undefined}
             loading={loading || initialLoading}
             checked={checked}
             onChange={onChangeHandler}
@@ -52,8 +54,8 @@ const AsyncToggle: FunctionComponent<PropsType> = (props) => {
             }
             unCheckedChildren={
                 <>
-                    {props?.checkedChildren
-                        ? props.checkedChildren
+                    {props?.unCheckedChildren
+                        ? props.unCheckedChildren
                         : "Disabled"}
                 </>
             }

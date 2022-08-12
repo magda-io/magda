@@ -682,12 +682,14 @@ export async function updateDataset(
  * @param {string} recordId
  * @param {string} aspectId
  * @param {T} aspectData
+ * @param {boolean} merge whether merge with existing aspect data or replace it
  * @returns {Promise<T>} Return array of updated aspect data and eventId
  */
 export async function updateRecordAspect<T = any>(
     recordId: string,
     aspectId: string,
     aspectData: T,
+    merge: boolean = false,
     skipEnsureAspectExists: boolean = false
 ): Promise<[T, number]> {
     if (!skipEnsureAspectExists) {
@@ -696,7 +698,9 @@ export async function updateRecordAspect<T = any>(
 
     const [json, headers] = await request<T>(
         "PUT",
-        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`,
+        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}${
+            merge ? "?merge=true" : ""
+        }`,
         aspectData,
         "application/json",
         true

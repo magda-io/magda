@@ -109,7 +109,13 @@ class EditDataset extends React.Component<Props, State> {
             />
         ),
         this.renderSubmitPage.bind(this),
-        () => <ReviewPage stateData={this.state} />,
+        () => (
+            <ReviewPage
+                stateData={this.state}
+                editStateWithUpdater={this.setState.bind(this)}
+                isEditView={true}
+            />
+        ),
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
             : () => (
@@ -256,7 +262,7 @@ class EditDataset extends React.Component<Props, State> {
                                             )
                                         }
                                     >
-                                        Review &amp; Publish
+                                        Review &amp; Submit
                                     </AsyncButton>
                                 )}
                             </div>

@@ -112,7 +112,13 @@ class NewDataset extends React.Component<Props, State> {
             />
         ),
         this.renderSubmitPage.bind(this),
-        () => <ReviewPage stateData={this.state} />,
+        () => (
+            <ReviewPage
+                stateData={this.state}
+                editStateWithUpdater={this.setState.bind(this)}
+                isEditView={false}
+            />
+        ),
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
             : () => (

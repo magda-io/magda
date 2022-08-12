@@ -13,12 +13,17 @@ import getDatasetAspectQueries from "./getDatasetAspectQueries";
 import {
     Record,
     fetchRecords,
+    updateRecordAspect,
     FetchRecordsOptions,
     DatasetTypes
 } from "api-clients/RegistryApis";
 import moment from "moment";
-import { BsFillTrashFill } from "react-icons/bs";
-import { MdBorderColor, MdOutlineArrowDropDown } from "react-icons/md";
+import { BsFillTrashFill, BsFolderSymlink } from "react-icons/bs";
+import {
+    MdBorderColor,
+    MdOutlineArrowDropDown,
+    MdPreview
+} from "react-icons/md";
 import ConfirmDialog from "../../Settings/ConfirmDialog";
 import { deleteDataset } from "../../Dataset/Add/DatasetAddCommon";
 import openWindow from "../../../helpers/openWindow";
@@ -40,9 +45,202 @@ type PropsType = {
     openInPopUp?: boolean;
 };
 
+function createDatsetRow(
+    history: History,
+    idx: number,
+    record: Record,
+    setRecordReloadToken: React.Dispatch<React.SetStateAction<string>>,
+    openInPopUp?: boolean
+) {
+    const isDraft = record?.aspects?.["publishing"]?.state
+        ? record.aspects["publishing"].state === "draft"
+        : // when publishing aspect not exist assume it's published dataset
+          false;
+    const hasEverPublished =
+        record?.aspects?.["publishing"]?.hasEverPublished === true
+            ? true
+            : false;
+    return (
+        <tr key={idx}>
+            <td>{getTitle(isDraft, record)}</td>
+            <td className="date-col">{getDate(isDraft, record)}</td>
+            <td
+                className={`action-buttons-col ${
+                    isDraft ? "is-draft" : "is-not-draft"
+                }`}
+            >
+                <ButtonGroup>
+                    <Button
+                        appearance="ghost"
+                        aria-label="actions available to the dataset"
+                        title="actions available to the dataset"
+                    >
+                        Actions
+                    </Button>
+                    <Whisper
+                        placement="bottomEnd"
+                        trigger="click"
+                        speaker={({ onClose, left, top, className }, ref) => {
+                            return (
+                                <Popover
+                                    ref={ref}
+                                    className={`${className} dataset-grid-action-dropdown`}
+                                    style={{ left, top }}
+                                    full
+                                >
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item
+                                            key="view-dataset"
+                                            aria-label="View Dataset"
+                                            icon={<MdPreview />}
+                                            onClick={() => {
+                                                onClose();
+                                                history.push(
+                                                    `/dataset/${encodeURIComponent(
+                                                        record.id
+                                                    )}/details`
+                                                );
+                                            }}
+                                        >
+                                            View Dataset
+                                        </Dropdown.Item>
+                                        {isDraft ? null : (
+                                            <Dropdown.Item
+                                                key="set-dataset-to-draft"
+                                                aria-label="Mark as draft"
+                                                icon={<BsFolderSymlink />}
+                                                onClick={() => {
+                                                    onClose();
+                                                    ConfirmDialog.open({
+                                                        confirmMsg: `Are you sure you want to mark the dataset "${getTitle(
+                                                            isDraft,
+                                                            record
+                                                        )}" as a draft dataset?`,
+                                                        headingText:
+                                                            "Confirm to update dataset?",
+                                                        loadingText:
+                                                            "Updating dataset...",
+                                                        errorNotificationDuration: 0,
+                                                        confirmHandler: async () => {
+                                                            await updateRecordAspect(
+                                                                record.id,
+                                                                "publishing",
+                                                                {
+                                                                    state:
+                                                                        "draft",
+                                                                    hasEverPublished: true
+                                                                },
+                                                                true
+                                                            );
+                                                            setRecordReloadToken(
+                                                                "" +
+                                                                    Math.random()
+                                                            );
+                                                        }
+                                                    });
+                                                }}
+                                            >
+                                                Mark as Draft
+                                            </Dropdown.Item>
+                                        )}
+                                        <Dropdown.Item
+                                            key="edit-dataset"
+                                            aria-label="Edit Dataset"
+                                            icon={<MdBorderColor />}
+                                            onClick={() => {
+                                                onClose();
+                                                // the following datasets will be edited using "editing" flow:
+                                                // - `hasEverPublished` = true
+                                                // - Or `isDraft` = false
+                                                const editorUrl = `/dataset/${
+                                                    isDraft && !hasEverPublished
+                                                        ? "add/metadata"
+                                                        : "edit"
+                                                }/${encodeURIComponent(
+                                                    record.id
+                                                )}`;
+                                                if (openInPopUp) {
+                                                    openWindow(
+                                                        `${editorUrl}?popup=true`,
+                                                        {
+                                                            name:
+                                                                "edit-dataset-" +
+                                                                record.id
+                                                        }
+                                                    );
+                                                } else {
+                                                    history.push(editorUrl);
+                                                }
+                                            }}
+                                        >
+                                            Edit Dataset
+                                        </Dropdown.Item>
+                                        <Dropdown.Item
+                                            key="delete-dataset"
+                                            aria-label="Delete Dataset"
+                                            icon={<BsFillTrashFill />}
+                                            onClick={() => {
+                                                onClose();
+                                                ConfirmDialog.open({
+                                                    confirmMsg: `Are you sure you want to delete the dataset "${getTitle(
+                                                        isDraft,
+                                                        record
+                                                    )}"?`,
+                                                    headingText:
+                                                        "Confirm to Delete?",
+                                                    loadingText:
+                                                        "Deleting dataset...",
+                                                    errorNotificationDuration: 0,
+                                                    confirmHandler: async () => {
+                                                        const result = await deleteDataset(
+                                                            record.id
+                                                        );
+                                                        if (result.hasError) {
+                                                            console.error(
+                                                                "Failed to remove resources when delete dataset:",
+                                                                result
+                                                            );
+                                                            throw new Error(
+                                                                `The following files are failed to be removed during the dataset deletion:
+                                                                ${result.failureReasons
+                                                                    .map(
+                                                                        (
+                                                                            item
+                                                                        ) =>
+                                                                            `"${item.title}", error: ${item.error}`
+                                                                    )
+                                                                    .join(
+                                                                        ";\n "
+                                                                    )}`
+                                                            );
+                                                        }
+                                                        setRecordReloadToken(
+                                                            "" + Math.random()
+                                                        );
+                                                    }
+                                                });
+                                            }}
+                                        >
+                                            Delete dataset
+                                        </Dropdown.Item>
+                                    </Dropdown.Menu>
+                                </Popover>
+                            );
+                        }}
+                    >
+                        <IconButton
+                            appearance="ghost"
+                            icon={<MdOutlineArrowDropDown />}
+                        />
+                    </Whisper>
+                </ButtonGroup>
+            </td>
+        </tr>
+    );
+}
+
 function createRows(
     history: History,
-    datasetType: DatasetTypes,
     records: Record[] | undefined,
     loading: boolean,
     setRecordReloadToken: React.Dispatch<React.SetStateAction<string>>,
@@ -66,140 +264,15 @@ function createRows(
             </tr>
         );
     } else if (records?.length) {
-        return records.map((record, idx) => {
-            const isDraft = record?.aspects?.["publishing"]?.state
-                ? record.aspects["publishing"].state === "draft"
-                : // when publishing aspect not exist assume it's published dataset
-                  false;
-            return (
-                <tr key={idx}>
-                    <td>{getTitle(datasetType, record)}</td>
-                    <td className="date-col">{getDate(datasetType, record)}</td>
-                    <td
-                        className={`action-buttons-col ${
-                            isDraft ? "is-draft" : "is-not-draft"
-                        }`}
-                    >
-                        <ButtonGroup>
-                            <Button
-                                appearance="ghost"
-                                aria-label="actions available to the dataset"
-                                title="actions available to the dataset"
-                            >
-                                Actions
-                            </Button>
-                            <Whisper
-                                placement="bottomEnd"
-                                trigger="click"
-                                speaker={(
-                                    { onClose, left, top, className },
-                                    ref
-                                ) => {
-                                    return (
-                                        <Popover
-                                            ref={ref}
-                                            className={`${className} dataset-grid-action-dropdown`}
-                                            style={{ left, top }}
-                                            full
-                                        >
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item
-                                                    key="edit-dataset"
-                                                    aria-label="Edit Dataset"
-                                                    icon={<MdBorderColor />}
-                                                    onClick={() => {
-                                                        onClose();
-                                                        const editorUrl = `/dataset/${
-                                                            isDraft
-                                                                ? "add/metadata"
-                                                                : "edit"
-                                                        }/${encodeURIComponent(
-                                                            record.id
-                                                        )}`;
-                                                        if (openInPopUp) {
-                                                            openWindow(
-                                                                `${editorUrl}?popup=true`,
-                                                                {
-                                                                    name:
-                                                                        "edit-dataset-" +
-                                                                        record.id
-                                                                }
-                                                            );
-                                                        } else {
-                                                            history.push(
-                                                                editorUrl
-                                                            );
-                                                        }
-                                                    }}
-                                                >
-                                                    Edit Dataset
-                                                </Dropdown.Item>
-                                                <Dropdown.Item
-                                                    key="delete-dataset"
-                                                    aria-label="Delete Dataset"
-                                                    icon={<BsFillTrashFill />}
-                                                    onClick={() => {
-                                                        onClose();
-                                                        ConfirmDialog.open({
-                                                            confirmMsg: `Are you sure you want to delete the dataset "${getTitle(
-                                                                datasetType,
-                                                                record
-                                                            )}"?`,
-                                                            headingText:
-                                                                "Confirm to Delete?",
-                                                            loadingText:
-                                                                "Deleting dataset...",
-                                                            errorNotificationDuration: 0,
-                                                            confirmHandler: async () => {
-                                                                const result = await deleteDataset(
-                                                                    record.id
-                                                                );
-                                                                if (
-                                                                    result.hasError
-                                                                ) {
-                                                                    console.error(
-                                                                        "Failed to remove resources when delete dataset:",
-                                                                        result
-                                                                    );
-                                                                    throw new Error(
-                                                                        `The following files are failed to be removed during the dataset deletion:
-                                                                        ${result.failureReasons
-                                                                            .map(
-                                                                                (
-                                                                                    item
-                                                                                ) =>
-                                                                                    `"${item.title}", error: ${item.error}`
-                                                                            )
-                                                                            .join(
-                                                                                ";\n "
-                                                                            )}`
-                                                                    );
-                                                                }
-                                                                setRecordReloadToken(
-                                                                    "" +
-                                                                        Math.random()
-                                                                );
-                                                            }
-                                                        });
-                                                    }}
-                                                >
-                                                    Delete dataset
-                                                </Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Popover>
-                                    );
-                                }}
-                            >
-                                <IconButton
-                                    appearance="ghost"
-                                    icon={<MdOutlineArrowDropDown />}
-                                />
-                            </Whisper>
-                        </ButtonGroup>
-                    </td>
-                </tr>
-            );
-        });
+        return records.map((record, idx) =>
+            createDatsetRow(
+                history,
+                idx,
+                record,
+                setRecordReloadToken,
+                openInPopUp
+            )
+        );
     } else {
         return (
             <tr>
@@ -211,9 +284,9 @@ function createRows(
     }
 }
 
-function getTitle(datasetType: DatasetTypes, record: Record) {
+function getTitle(isDraft: boolean, record: Record) {
     let titleText: string;
-    if (datasetType === "drafts") {
+    if (isDraft) {
         titleText = record?.aspects?.["dataset-draft"]?.["dataset"]?.title;
     } else {
         titleText = record?.aspects?.["dcat-dataset-strings"]?.title;
@@ -222,21 +295,12 @@ function getTitle(datasetType: DatasetTypes, record: Record) {
         titleText = record?.name;
     }
     titleText = titleText ? titleText : "Untitled Dataset";
-
-    return datasetType === "drafts" ? (
-        <Link to={`/dataset/add/metadata/${encodeURIComponent(record.id)}`}>
-            {titleText}
-        </Link>
-    ) : (
-        <Link to={`/dataset/${encodeURIComponent(record.id)}`}>
-            {titleText}
-        </Link>
-    );
+    return titleText;
 }
 
-function getDate(datasetType: DatasetTypes, record: Record) {
+function getDate(isDraft: boolean, record: Record) {
     let dateString;
-    if (datasetType === "drafts") {
+    if (isDraft) {
         dateString = record?.aspects?.["dataset-draft"]?.timestamp;
     } else {
         const modified = record?.aspects?.["dcat-dataset-strings"]?.modified;
@@ -326,7 +390,6 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                     <tbody>
                         {createRows(
                             history,
-                            datasetType,
                             result?.records,
                             overAllLoading,
                             setRecordReloadToken,
