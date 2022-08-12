@@ -338,7 +338,12 @@ export async function fetchHistoricalRecord<T = RawDataset>(
     return await response.json();
 }
 
-export const fetchRecordWithNoCache = partialRight(fetchRecord, true);
+export const fetchRecordWithNoCache = <T = RawDataset>(
+    id: string,
+    optionalAspects: string[] = DEFAULT_OPTIONAL_FETCH_ASPECT_LIST,
+    aspects: string[] = DEFAULT_COMPULSORY_FETCH_ASPECT_LIST,
+    dereference: boolean = true
+): Promise<T> => fetchRecord(id, optionalAspects, aspects, dereference, true);
 
 export type FetchRecordsOptions = {
     aspects?: string[];
