@@ -1578,17 +1578,34 @@ export async function submitDatasetFromState(
         state.distributions
     );
 
-    const indexResult = await indexDatasetById(datasetId);
-    if (indexResult?.failureReasons?.length) {
-        console.error(`Failed to index dataset ${datasetId}: `, indexResult);
-        throw new ServerError(
-            `Failed to index dataset ${datasetId} for search engine: ${indexResult.failureReasons.join(
-                "; "
-            )}`,
-            500
+    try {
+        const indexResult = await indexDatasetById(datasetId);
+        if (indexResult?.failureReasons?.length) {
+            console.error(
+                `Failed to index dataset ${datasetId}: `,
+                indexResult
+            );
+            throw new ServerError(
+                `Failed to index dataset ${datasetId} for search engine: ${indexResult.failureReasons.join(
+                    "; "
+                )}`,
+                500
+            );
+        } else if (indexResult?.warnReasons?.length) {
+            console.warn(
+                `Warnings when index dataset ${datasetId}: `,
+                indexResult
+            );
+        }
+    } catch (e) {
+        if (e instanceof Error) {
+            e.message = `Failed to index dataset ${datasetId} for search engine: ${e.message}`;
+        }
+        console.error(
+            `Failed to index dataset ${datasetId} for search engine: `,
+            e
         );
-    } else if (indexResult?.warnReasons?.length) {
-        console.warn(`Warnings when index dataset ${datasetId}: `, indexResult);
+        throw e;
     }
 
     return failedFileInfo;

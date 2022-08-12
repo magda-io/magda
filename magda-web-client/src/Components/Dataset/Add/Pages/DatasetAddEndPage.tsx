@@ -34,7 +34,7 @@ export default function DatasetAddEndPage(props: Props) {
     } else {
         allDoneText =
             publishStatus === "draft"
-                ? "Your dataset has been successfully sent off for approval."
+                ? "Your dataset has been successfully published."
                 : "Your dataset has been successfully submitted.";
     }
 

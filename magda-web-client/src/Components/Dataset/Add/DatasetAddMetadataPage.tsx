@@ -270,7 +270,7 @@ class NewDataset extends React.Component<Props, State> {
                                         className="au-btn au-btn--secondary save-button"
                                         onClick={this.saveAndExit.bind(this)}
                                     >
-                                        Save and exit
+                                        Save and exit without publishing
                                     </AsyncButton>
                                 )}
                             </div>

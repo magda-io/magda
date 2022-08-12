@@ -8,6 +8,8 @@ import "./AddDatasetProgressMeter.scss";
 import iconTick from "assets/tick.svg";
 import { History, Location } from "history";
 import { config } from "config";
+import { BsXCircleFill } from "react-icons/bs";
+import Button from "rsuite/Button";
 
 /* eslint-disable no-template-curly-in-string */
 
@@ -265,6 +267,13 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
                         }
                     )}
                 </div>
+                {isEdit ? (
+                    <Link to="/settings/datasets">
+                        <Button className="exit-button" appearance="ghost">
+                            <BsXCircleFill /> Exit
+                        </Button>
+                    </Link>
+                ) : null}
             </div>
         </div>
     );
