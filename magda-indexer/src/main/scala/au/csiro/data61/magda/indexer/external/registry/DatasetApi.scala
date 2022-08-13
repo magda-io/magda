@@ -45,6 +45,7 @@ class DatasetApi(
     *
     * @apiDescription Delete a dataset from the search engine index.
     * This API will also refresh the dataset index to make sure the changes available for search.
+    * Require "object&#47;dataset&#47;*&#47;delete" permission to the dataset in order to access this API.
     *
     * @apiSuccess (Success 200) {json} A Json object indicate the deletion result
     * @apiSuccessExample {json} Response:
@@ -60,7 +61,7 @@ class DatasetApi(
           requireDatasetPermission(
             authApiClient,
             registryInterface,
-            "object/dataset/delete",
+            "object/dataset/*/delete",
             datasetId,
             // when the record doesn't not exist, we respond 200 with isDeleted = false
             onDatasetNotFound = Some(
@@ -93,6 +94,7 @@ class DatasetApi(
     * You only need to call this API when you want the changes of the datasets to go into search engine index immediately
     * without any delay of webhook system.
     * This API will also refresh the dataset index to make sure the changes available for search.
+    * Require "object&#47;dataset&#47;*&#47;update" permission to the dataset in order to access this API.
     *
     * @apiSuccess (Success 200) {json} A Json object indicate the deletion result
     * @apiSuccessExample {json} Response:
@@ -112,7 +114,7 @@ class DatasetApi(
           requireDatasetPermission(
             authApiClient,
             registryInterface,
-            "object/dataset/update",
+            "object/dataset/*/update",
             datasetId,
             // when the record doesn't not exist, we respond 404 to indicate the dataset can't be found
             onDatasetNotFound = Some(

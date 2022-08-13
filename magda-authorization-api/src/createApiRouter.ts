@@ -55,23 +55,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * This route doesn't require auth decision to be made as a user must provide valid API key id & key to retrieve his own user info only.
      *
      * @apiSuccessExample {json} 200
-     *    [{
-     *        id: "xxx-xxx-xxxx-xxxx-xx",
-     *        name: "View Datasets",
-     *        resourceId: "xxx-xxx-xxxx-xx",
-     *        resourceId: "object/dataset/draft",
-     *        userOwnershipConstraint: true,
-     *        orgUnitOwnershipConstraint: false,
-     *        preAuthorisedConstraint: false,
-     *        operations: [{
-     *          id: "xxxxx-xxx-xxx-xxxx",
-     *          name: "Read Draft Dataset",
-     *          uri: "object/dataset/draft/read",
-     *          description: "xxxxxx"
-     *        }],
-     *        permissionIds: ["xxx-xxx-xxx-xxx-xx", "xxx-xx-xxx-xx-xxx-xx"],
-     *        description?: "This is an admin role",
-     *    }]
+     *    {
+     *        "id":"...",
+     *        "displayName":"Fred Nerk",
+     *        "photoURL":"...",
+     *        "OrgUnitId": "xxx"
+     *        ...
+     *    }
      *
      * @apiErrorExample {json} 401/500
      *    {
