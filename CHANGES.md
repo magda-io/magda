@@ -61,6 +61,9 @@
 - Upgrade to typescript 4.2.4 & api-extractor 7.15.2
 - Upgrade react-scripts to 4.0.3 & craco to 6.4.5
 - Make region index initial creation execute in the background without blocking indexer
+- #3343 Consolidate admin/settings UI functionalities
+- #3395 Allow users to change the publishing status of published dataset
+- Fixed metadata creation tool / editor cache handling issue & workflow improvements.
 
 ## 1.3.1
 
