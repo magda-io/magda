@@ -301,7 +301,7 @@ class NewDataset extends React.Component<Props, State> {
                 redirect(this.props.history, `/dataset/list`);
             } else {
                 // redirect to datasets management
-                redirect(this.props.history, `/settings/datasets`);
+                redirect(this.props.history, `/settings/datasets/draft`);
             }
         } catch (e) {
             this.props.createNewDatasetError(e);

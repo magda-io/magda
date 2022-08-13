@@ -24,7 +24,7 @@ const Routes = () => {
                 </Route>
                 <Route
                     exact
-                    path="/settings/datasets"
+                    path="/settings/datasets(/)*(.)*"
                     component={withHeader(DatasetManagementPage, {
                         noContainerClass: true
                     })}

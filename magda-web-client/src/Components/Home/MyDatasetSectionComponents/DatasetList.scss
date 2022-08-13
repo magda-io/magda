@@ -47,6 +47,9 @@
                 a.active {
                     border-bottom: 4px solid #001bea;
                 }
+                a:focus {
+                    outline: none;
+                }
             }
             input {
                 float: right;

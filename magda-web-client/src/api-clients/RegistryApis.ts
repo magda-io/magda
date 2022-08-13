@@ -6,7 +6,6 @@ import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
 import ServerError from "@magda/typescript-common/dist/ServerError";
 import flatMap from "lodash/flatMap";
-import partialRight from "lodash/partialRight";
 
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
 import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.schema.json";
@@ -305,6 +304,29 @@ export async function fetchRecord<T = RawDataset>(
     } else {
         return data;
     }
+}
+
+export async function fetchRecordAspect<T = any>(
+    datasetId: string,
+    aspectId: string,
+    noCache: boolean = false
+): Promise<T> {
+    const url =
+        config.registryReadOnlyApiUrl +
+        `records/${datasetId}/aspects/${aspectId}`;
+
+    const res = await fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
+    );
+
+    if (!res.ok) {
+        throw new ServerError(res.statusText, res.status);
+    }
+
+    return (await res.json()) as T;
 }
 
 export async function fetchHistoricalRecord<T = RawDataset>(
