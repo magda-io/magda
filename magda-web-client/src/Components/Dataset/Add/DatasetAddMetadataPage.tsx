@@ -46,6 +46,7 @@ import * as ValidationManager from "../Add/ValidationManager";
 import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 import redirect from "helpers/redirect";
+import Loader from "rsuite/Loader";
 
 type Props = {
     initialState: State;
@@ -279,6 +280,9 @@ class NewDataset extends React.Component<Props, State> {
                                         Save and exit without publishing
                                     </AsyncButton>
                                 )}
+                                {this.state.isPublishing ? (
+                                    <Loader content="Submit dataset, please wait..." />
+                                ) : null}
                             </div>
                         </div>
                     </>
