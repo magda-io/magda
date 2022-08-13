@@ -73,6 +73,10 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                             } catch (e) {
                                 setError(e);
                                 throw e;
+                            } finally {
+                                if (deletionPromisesRef?.current?.[distId]) {
+                                    delete deletionPromisesRef.current[distId];
+                                }
                             }
                         };
 
@@ -127,6 +131,10 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
     const closeModal = useCallback(async () => {
         try {
             setError(null);
+            if (!uploadedDistributions.length && !urlDistributions.length) {
+                setIsOpen(false);
+                return;
+            }
             const deletionPromises = deletionPromisesRef.current;
             // --- wait for existing deletion job
             await Promise.all(Object.values(deletionPromises));
@@ -145,6 +153,8 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
             setIsOpen(false);
         } catch (e) {
             setError(e);
+        } finally {
+            deletionPromisesRef.current = [] as any;
         }
     }, [
         uploadedDistributions,
@@ -156,6 +166,10 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
     const onAddFiles = useCallback(async () => {
         try {
             setError(null);
+            if (!uploadedDistributions.length && !urlDistributions.length) {
+                setIsOpen(false);
+                return;
+            }
             await promisifySetState(datasetStateUpdater)((state) => {
                 const allNewDists = uploadedDistributions.concat(
                     urlDistributions

@@ -13,6 +13,7 @@ import {
 import { findPermissionGap } from "helpers/accessControlUtils";
 import Placeholder from "rsuite/Placeholder";
 import Loader from "rsuite/Loader";
+import { resetFileUploadMarkers } from "../Add/Pages/AddFiles/uploadFile";
 
 const Paragraph = Placeholder.Paragraph;
 
@@ -64,6 +65,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                 if (isDisabled || !datasetId) {
                     return;
                 }
+                resetFileUploadMarkers();
                 // --- turn off cache
                 // --- edit flow will also save draft after file is uploaded to storage api
                 // --- to avoid orphan uploaded files when the user drops off in the half way before submit

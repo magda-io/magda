@@ -7,7 +7,7 @@ import { User } from "reducers/userManagementReducer";
 import { config } from "config";
 import { useAsync } from "react-async-hook";
 import { findPermissionGap } from "helpers/accessControlUtils";
-
+import { resetFileUploadMarkers } from "./Pages/AddFiles/uploadFile";
 import Placeholder from "rsuite/Placeholder";
 import Loader from "rsuite/Loader";
 
@@ -68,6 +68,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                 if (isDisabled || !datasetId) {
                     return;
                 }
+                resetFileUploadMarkers();
                 const datasetState = await loadState(datasetId, user);
                 updateData(datasetState);
             },

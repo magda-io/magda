@@ -284,21 +284,19 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
                         }
                     )}
                 </div>
-                {isEdit ? (
-                    <Link
-                        to={`/settings/datasets${
-                            isLoadingPublishingStatus
-                                ? ""
-                                : publishingStatus === "draft"
-                                ? "/draft"
-                                : "/published"
-                        }`}
-                    >
-                        <Button className="exit-button" appearance="ghost">
-                            <BsXCircleFill /> Exit
-                        </Button>
-                    </Link>
-                ) : null}
+                <Link
+                    to={`/settings/datasets${
+                        isLoadingPublishingStatus
+                            ? ""
+                            : publishingStatus === "draft"
+                            ? "/draft"
+                            : "/published"
+                    }`}
+                >
+                    <Button className="exit-button" appearance="ghost">
+                        <BsXCircleFill /> Exit
+                    </Button>
+                </Link>
             </div>
         </div>
     );
