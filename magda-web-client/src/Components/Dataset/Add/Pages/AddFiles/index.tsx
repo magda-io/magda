@@ -310,14 +310,6 @@ class AddFilesPage extends React.Component<Props> {
                 />
 
                 <AddDatasetLinkSection
-                    type={DistributionSource.DatasetUrl}
-                    distributions={state.distributions}
-                    datasetStateUpdater={this.props.setState}
-                    onProcessingComplete={this.updateDatasetWithDistributions}
-                />
-
-                <AddDatasetLinkSection
-                    type={DistributionSource.Api}
                     distributions={state.distributions}
                     datasetStateUpdater={this.props.setState}
                     onProcessingComplete={this.updateDatasetWithDistributions}
