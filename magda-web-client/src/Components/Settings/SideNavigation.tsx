@@ -40,7 +40,7 @@ const defaultMenuItems: MenuItem[] = [
     },
     {
         path: "/settings/datasets",
-        title: "Data Management",
+        title: "Dataset Management",
         icon: <BsJournals />,
         requireOperationUris: [
             "object/dataset/draft/read",
