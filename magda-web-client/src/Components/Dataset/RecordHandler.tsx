@@ -24,6 +24,8 @@ import DatasetPage from "./DatasetPage";
 import DistributionPage from "./DistributionPage";
 import { findPermissionGap, hasPermission } from "helpers/accessControlUtils";
 import { User } from "reducers/userManagementReducer";
+import { StateType } from "reducers/reducer";
+import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
 
 interface RecordHandlerPropsType {
     history: History;
@@ -44,11 +46,11 @@ interface RecordHandlerPropsType {
     isAdmin: boolean;
 }
 
-interface StateType {
+interface CompStateType {
     addMargin: boolean;
 }
 
-function CheckUserHasEditPermissions(user?: User) {
+function CheckUserHasEditPermissions(isDraft, user?: User) {
     if (!config?.featureFlags?.cataloguing) {
         return false;
     }
@@ -68,6 +70,7 @@ function CheckUserHasEditPermissions(user?: User) {
 
     // user should has either draft create or update permission
     if (
+        isDraft &&
         !hasPermission("object/dataset/draft/create", user) &&
         !hasPermission("object/dataset/draft/update", user)
     ) {
@@ -76,6 +79,7 @@ function CheckUserHasEditPermissions(user?: User) {
 
     // user should has either published create or update permission
     if (
+        !isDraft &&
         !hasPermission("object/dataset/published/create", user) &&
         !hasPermission("object/dataset/published/update", user)
     ) {
@@ -85,7 +89,10 @@ function CheckUserHasEditPermissions(user?: User) {
     return true;
 }
 
-class RecordHandler extends React.Component<RecordHandlerPropsType, StateType> {
+class RecordHandler extends React.Component<
+    RecordHandlerPropsType,
+    CompStateType
+> {
     constructor(props) {
         super(props);
         this.state = {
@@ -340,7 +347,7 @@ class RecordHandler extends React.Component<RecordHandlerPropsType, StateType> {
     }
 }
 
-function mapStateToProps(state) {
+function mapStateToProps(state: StateType) {
     const record = state.record;
     const dataset = record.dataset;
     const distribution = record.distribution;
@@ -349,11 +356,16 @@ function mapStateToProps(state) {
     const datasetFetchError = record.datasetFetchError;
     const distributionFetchError = record.distributionFetchError;
 
-    // for now, assume that if the user is admin, they can edit the data
     const hasEditPermissions = CheckUserHasEditPermissions(
+        dataset?.publishingState === "draft" ? true : false,
         state?.userManagement?.user
     );
-    const isAdmin = state?.userManagement?.user?.isAdmin ? true : false;
+    const isAdmin =
+        typeof state?.userManagement?.user?.roles?.find(
+            (r) => r.id === ADMIN_USERS_ROLE_ID
+        ) !== "undefined"
+            ? true
+            : false;
 
     return {
         dataset,
@@ -362,7 +374,6 @@ function mapStateToProps(state) {
         distributionIsFetching,
         distributionFetchError,
         datasetFetchError,
-        strings: state.content.strings,
         hasEditPermissions: hasEditPermissions ? true : false,
         isAdmin
     };

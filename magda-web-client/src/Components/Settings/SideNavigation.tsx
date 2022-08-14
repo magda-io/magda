@@ -40,15 +40,17 @@ const defaultMenuItems: MenuItem[] = [
     },
     {
         path: "/settings/datasets",
-        title: "Dataset Management",
+        title: "Datasets",
         icon: <BsJournals />,
         requireOperationUris: [
             "object/dataset/draft/read",
             "object/dataset/draft/update",
             "object/dataset/published/read",
             "object/dataset/published/update",
-            "object/distribution/read",
-            "object/distribution/update",
+            "object/distribution/draft/read",
+            "object/distribution/draft/update",
+            "object/distribution/published/read",
+            "object/distribution/published/update",
             "object/organization/read",
             "object/faas/function/read",
             "object/faas/function/invoke"

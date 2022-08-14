@@ -222,6 +222,12 @@ export type ParsedDistribution = {
     visualizationInfo: any;
     sourceDetails: any;
     ckanResource: any;
+    publishingState?: string;
+    accessControl?: {
+        ownerId: string;
+        orgUnitId: string;
+        preAuthorisedPermissionIds: string[];
+    };
     version?: VersionAspectData;
 };
 
@@ -423,6 +429,8 @@ export function parseDistribution(
     const downloadURL = info.downloadURL;
     const accessURL = info.accessURL;
     const accessNotes = info.accessNotes;
+    const accessControl = aspects["access-control"];
+    const publishing = aspects["publishing"] || {};
     const updatedDate = info.modified && getDateString(info.modified);
     const license = info.license || "Licence restrictions unknown";
     const description = info.description || "No description provided";
@@ -469,6 +477,8 @@ export function parseDistribution(
         compatiblePreviews,
         sourceDetails: aspects["source"],
         ckanResource: aspects["ckan-resource"],
+        accessControl,
+        publishingState: publishing["state"],
         version: aspects["version"]
     };
 }
