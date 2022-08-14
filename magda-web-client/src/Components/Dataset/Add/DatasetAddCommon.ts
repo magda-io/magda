@@ -1281,6 +1281,9 @@ async function convertStateToDistributionRecords(state: State) {
             aspects: {
                 "dcat-distribution-strings": aspect,
                 "access-control": getAccessControlAspectData(state),
+                "information-security": state.informationSecurity,
+                publishing: getPublishingAspectData(state),
+                source: getInternalDatasetSourceAspectData(),
                 // --- set distribution initial version if not exist
                 // --- the version will be bumped when it's superseded by a new file / distribution
                 version: distribution?.version
