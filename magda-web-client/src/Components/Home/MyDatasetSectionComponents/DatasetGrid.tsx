@@ -358,7 +358,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
             };
 
             if (datasetType === "drafts") {
-                opts.aspects = ["publishing"];
+                opts.aspects = ["publishing", "dcat-dataset-strings"];
                 opts.optionalAspects = ["dataset-draft"];
             } else {
                 opts.aspects = ["dcat-dataset-strings"];
