@@ -12,7 +12,9 @@ Kubernetes: `>= 1.19.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| clientBodyBufferSize | string | `"10M"` | HTTP post request body size limit. You might want to increase this limit for larger file upload. |
 | enableTls | bool | `false` |  |
+| proxyBodySize | string | `"10M"` | Proxy body size limit. You might want to increase this limit for larger file upload. |
 | useDefaultCertificate | bool | `false` |  |
 
 ----------------------------------------------

@@ -37,6 +37,8 @@ magda:
       hostname: dev.magda.io
       ingressClass: nginx
       enableTls: true
+      clientBodyBufferSize: 500M
+      proxyBodySize: 500M
       domains:
         - dev.magda.io
         - "*.dev.magda.io"

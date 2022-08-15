@@ -1,2 +1,6 @@
 enableTls: false
 useDefaultCertificate: false
+# -- HTTP post request body size limit. You might want to increase this limit for larger file upload.
+clientBodyBufferSize: 10M
+# -- Proxy body size limit. You might want to increase this limit for larger file upload.
+proxyBodySize: 10M
