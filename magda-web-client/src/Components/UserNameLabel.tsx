@@ -18,7 +18,7 @@ const UserNameLabel: FunctionComponent<{ userId?: string }> = (props) => {
             }
             const data = await request<User>(
                 "GET",
-                config.authApiUrl + `users/${userId}`
+                config.authApiUrl + `users/${userId}?allowCache=true`
             );
             return data.displayName ? data.displayName : "Unknown User";
         },
