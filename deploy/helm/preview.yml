@@ -27,6 +27,8 @@ magda:
       ingressClass: nginx
       enableTls: true
       useDefaultCertificate: true
+      clientBodyBufferSize: 500M
+      proxyBodySize: 500M
     gateway:
       enableAuthEndpoint: true
       enableHttpsRedirection: true
@@ -110,7 +112,6 @@ magda:
       featureFlags:
         cataloguing: true
         publishToDga: false
-        placeholderWorkflowsOn: false
         datasetApprovalWorkflowOn: false
         useStorageApi: true
       vocabularyApiEndpoints:

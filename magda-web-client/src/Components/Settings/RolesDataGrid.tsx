@@ -3,9 +3,10 @@ import { useAsync } from "react-async-hook";
 import Table from "rsuite/Table";
 import Button from "rsuite/Button";
 import Pagination from "rsuite/Pagination";
-import Notification from "rsuite/Notification";
-import { toaster } from "rsuite";
-import { Input, InputGroup, IconButton } from "rsuite";
+import Popover from "rsuite/Popover";
+import Input from "rsuite/Input";
+import InputGroup from "rsuite/InputGroup";
+import IconButton from "rsuite/IconButton";
 import {
     MdSearch,
     MdBorderColor,
@@ -24,13 +25,14 @@ import {
     deleteRole
 } from "../../api-clients/AuthApis";
 import "./RolesDataGrid.scss";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 import AssignUserRoleButton from "./AssignUserRoleButton";
 import { useParams, Link } from "react-router-dom";
 import ConfirmDialog from "./ConfirmDialog";
 import RoleFormPopUp, {
     RefType as RoleFormPopUpRefType
 } from "./RoleFormPopUp";
+import Whisper from "rsuite/Whisper";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -38,13 +40,16 @@ const Cell = Table.Cell;
 
 type PropsType = {
     queryParams?: QueryRolesParams;
+    directory: string;
 };
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
-const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
+const RolesDataGrid: FunctionComponent<PropsType> = ({
+    queryParams,
+    directory
+}: PropsType) => {
     const { userId } = useParams<{ userId: string }>();
-    const { queryParams } = props;
     const [keyword, setKeyword] = useState<string>("");
     const [page, setPage] = useState<number>(1);
 
@@ -81,16 +86,7 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                 });
                 return [roles, count] as [RoleRecord[], number];
             } catch (e) {
-                toaster.push(
-                    <Notification
-                        type={"error"}
-                        closable={true}
-                        header="Error"
-                    >{`Failed to load data: ${e}`}</Notification>,
-                    {
-                        placement: "topEnd"
-                    }
-                );
+                reportError(`Failed to load data: ${e}`);
                 throw e;
             }
         },
@@ -206,7 +202,29 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
 
                     <Column width={150} flexGrow={1}>
                         <HeaderCell>Description</HeaderCell>
-                        <Cell dataKey="description" />
+                        <Cell>
+                            {(rowData: any) =>
+                                rowData?.description ? (
+                                    <Whisper
+                                        trigger="hover"
+                                        placement={"top"}
+                                        enterable={true}
+                                        controlId={`control-id-desc-user-id-${rowData.id}`}
+                                        speaker={
+                                            <Popover>
+                                                <pre>
+                                                    {rowData?.description}
+                                                </pre>
+                                            </Popover>
+                                        }
+                                    >
+                                        <div>{rowData?.description}</div>
+                                    </Whisper>
+                                ) : (
+                                    ""
+                                )
+                            }
+                        </Cell>
                     </Column>
 
                     <Column width={100} resizable>
@@ -257,7 +275,7 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                                             // thus, show action menu for a user's roles
                                             <>
                                                 <Link
-                                                    to={`/settings/users/${encodeURIComponent(
+                                                    to={`/${directory}/users/${encodeURIComponent(
                                                         userId
                                                     )}/roles/${encodeURIComponent(
                                                         roleId
@@ -288,7 +306,7 @@ const RolesDataGrid: FunctionComponent<PropsType> = (props) => {
                                         ) : (
                                             <>
                                                 <Link
-                                                    to={`/settings/roles/${encodeURIComponent(
+                                                    to={`/${directory}/roles/${encodeURIComponent(
                                                         roleId
                                                     )}/permissions`}
                                                 >

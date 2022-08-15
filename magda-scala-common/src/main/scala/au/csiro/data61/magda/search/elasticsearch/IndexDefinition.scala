@@ -405,8 +405,12 @@ object IndexDefinition extends DefaultJsonProtocol {
       },
       create = Some(
         (client, indices, config) =>
-          (materializer, actorSystem) =>
+          (materializer, actorSystem) => {
+            implicit val ec = actorSystem.dispatcher
             setupRegions(client, indices)(config, materializer, actorSystem)
+            // do not return a future of setup region so that region setup won't block indexer processing request
+            Future(Unit)
+          }
       )
     )
 

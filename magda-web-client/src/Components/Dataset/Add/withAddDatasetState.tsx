@@ -7,7 +7,7 @@ import { User } from "reducers/userManagementReducer";
 import { config } from "config";
 import { useAsync } from "react-async-hook";
 import { findPermissionGap } from "helpers/accessControlUtils";
-
+import { resetFileUploadMarkers } from "./Pages/AddFiles/uploadFile";
 import Placeholder from "rsuite/Placeholder";
 import Loader from "rsuite/Loader";
 
@@ -32,7 +32,16 @@ function hasMetaDataCreationToolAccess(user: User) {
             "object/dataset/draft/create",
             "object/dataset/draft/update",
             "object/dataset/published/create",
-            "object/dataset/published/update"
+            "object/dataset/published/update",
+            "object/distribution/draft/create",
+            "object/distribution/draft/read",
+            "object/distribution/draft/update",
+            "object/distribution/published/create",
+            "object/distribution/published/read",
+            "object/distribution/published/update",
+            "object/organization/read",
+            "object/faas/function/read",
+            "object/faas/function/invoke"
         ],
         user
     );
@@ -62,6 +71,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                 if (isDisabled || !datasetId) {
                     return;
                 }
+                resetFileUploadMarkers();
                 const datasetState = await loadState(datasetId, user);
                 updateData(datasetState);
             },

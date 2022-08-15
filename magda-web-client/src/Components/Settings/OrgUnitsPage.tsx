@@ -35,7 +35,7 @@ import {
 import ViewOrgUnitPopUp, {
     RefType as ViewOrgUnitPopUpRefType
 } from "./ViewOrgUnitPopUp";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 import OrgUnitFormPopUp, {
     RefType as OrgUnitFormPopUpRefType
 } from "./OrgUnitFormPopUp";
@@ -435,7 +435,6 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
                     dragData.dropNode.rawData.id
                 );
                 if (!dragNodeParentNode || !dragNode || !dropNode) {
-                    debugger;
                     throw new Error(
                         "Cannot update in memory tree data after moving nodes. Cannot find drag node, drop node or drag node parent."
                     );

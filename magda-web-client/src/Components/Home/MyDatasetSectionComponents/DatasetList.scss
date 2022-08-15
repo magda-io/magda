@@ -1,5 +1,6 @@
 .my-dataset-section-container {
     .dataset-list-container {
+        position: relative;
         padding-left: 250px;
         width: 98%;
         height: 100%;
@@ -45,6 +46,9 @@
                 }
                 a.active {
                     border-bottom: 4px solid #001bea;
+                }
+                a:focus {
+                    outline: none;
                 }
             }
             input {

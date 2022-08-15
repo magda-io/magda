@@ -21,7 +21,7 @@ import {
     AspectDefRecord
 } from "api-clients/RegistryApis";
 import Form from "rsuite/Form";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 import { ItemDataType } from "rsuite/esm/@types/common";
 import "jsoneditor-react/es/editor.min.css";
 
@@ -172,7 +172,13 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                 }
             }
 
-            await updateRecordAspect(recordId, aspect.id, aspectData, true);
+            await updateRecordAspect(
+                recordId,
+                aspect.id,
+                aspectData,
+                false,
+                true
+            );
             setIsOpen(false);
             if (typeof onCompleteRef.current === "function") {
                 onCompleteRef.current(aspect.id);
@@ -302,7 +308,6 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                         value={aspect?.data ? aspect.data : {}}
                                         onError={(e) => reportError(`${e}`)}
                                         onChange={(jsonData) => {
-                                            console.log("onchange: ", jsonData);
                                             setAspect((v) => ({
                                                 ...v,
                                                 data: jsonData

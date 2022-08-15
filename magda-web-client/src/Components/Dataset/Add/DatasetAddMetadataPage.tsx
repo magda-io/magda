@@ -46,6 +46,7 @@ import * as ValidationManager from "../Add/ValidationManager";
 import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 import redirect from "helpers/redirect";
+import Loader from "rsuite/Loader";
 
 type Props = {
     initialState: State;
@@ -112,7 +113,13 @@ class NewDataset extends React.Component<Props, State> {
             />
         ),
         this.renderSubmitPage.bind(this),
-        () => <ReviewPage stateData={this.state} />,
+        () => (
+            <ReviewPage
+                stateData={this.state}
+                editStateWithUpdater={this.setState.bind(this)}
+                isEditView={false}
+            />
+        ),
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
             : () => (
@@ -270,9 +277,12 @@ class NewDataset extends React.Component<Props, State> {
                                         className="au-btn au-btn--secondary save-button"
                                         onClick={this.saveAndExit.bind(this)}
                                     >
-                                        Save and exit
+                                        Save and exit without publishing
                                     </AsyncButton>
                                 )}
+                                {this.state.isPublishing ? (
+                                    <Loader content="Submit dataset, please wait..." />
+                                ) : null}
                             </div>
                         </div>
                     </>
@@ -294,10 +304,8 @@ class NewDataset extends React.Component<Props, State> {
                 // --- still redirect to dataset list page in preview wmdoe
                 redirect(this.props.history, `/dataset/list`);
             } else {
-                // --- redirect to home page for my dataset section
-                // --- set nocache flag so that the my dataset section know to disable cache when query registry
-                // --- otherwise, the recent created dataset may not be list in my dataset
-                redirect(this.props.history, `/?nocache`);
+                // redirect to datasets management
+                redirect(this.props.history, `/settings/datasets/draft`);
             }
         } catch (e) {
             this.props.createNewDatasetError(e);

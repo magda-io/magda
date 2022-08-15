@@ -23,7 +23,7 @@ export default function DatasetAddEndPage(props: Props) {
     const isEdit = typeof props?.isEdit === "undefined" ? false : props.isEdit;
     let viewDatasetText;
     if (publishStatus === "draft") {
-        viewDatasetText = "View your draft dataset";
+        viewDatasetText = "View your dataset";
     } else {
         viewDatasetText = "View your dataset";
     }
@@ -34,7 +34,7 @@ export default function DatasetAddEndPage(props: Props) {
     } else {
         allDoneText =
             publishStatus === "draft"
-                ? "Your dataset has been successfully sent off for approval."
+                ? "Your dataset has been successfully published."
                 : "Your dataset has been successfully submitted.";
     }
 
@@ -49,7 +49,16 @@ export default function DatasetAddEndPage(props: Props) {
                     <h2 className="end-preview-subheading">{allDoneText}</h2>
                     <p className="dataset-status-txt">
                         You can view the status of your datasets from{" "}
-                        <CommonLink href="/">your home page</CommonLink>.
+                        <CommonLink
+                            href={`/settings/datasets/${
+                                publishStatus === "published"
+                                    ? "published"
+                                    : "draft"
+                            }`}
+                        >
+                            "datasets management"
+                        </CommonLink>
+                        .
                     </p>
                 </div>
             </div>
@@ -57,7 +66,11 @@ export default function DatasetAddEndPage(props: Props) {
                 <div>
                     <Link to={datasetPage}>
                         <div className="au-btn next-button end-preview-button draft-dataset-btn">
-                            <img className="draft-image-icon" src={draftIcon} />
+                            <img
+                                className="draft-image-icon"
+                                src={draftIcon}
+                                alt="dataset icon"
+                            />
                             <span className="draft-dataset-txt">
                                 {" "}
                                 {viewDatasetText}{" "}

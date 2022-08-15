@@ -351,7 +351,11 @@ function getInternalDatasetSourceAspectData() {
 function getAccessControlAspectData(state: State) {
     const { dataset } = state;
     return {
-        ownerId: dataset.editingUserId ? dataset.editingUserId : undefined,
+        ownerId: dataset.ownerId
+            ? dataset.ownerId
+            : dataset.editingUserId
+            ? dataset.editingUserId
+            : undefined,
         orgUnitId: dataset.owningOrgUnitId ? dataset.owningOrgUnitId : undefined
     };
 }
@@ -731,8 +735,8 @@ export function createBlankState(user: User): State {
         },
         datasetPublishing: {
             state: "draft",
-            level: "creatorOrgUnit",
-            contactPointDisplay: "team"
+            level: "custodian",
+            contactPointDisplay: "organization"
         },
         spatialCoverage: {
             // Australia, Mainland
@@ -742,7 +746,7 @@ export function createBlankState(user: User): State {
             intervals: []
         },
         datasetAccess: {
-            useStorageApi: false
+            useStorageApi: config.useMagdaStorageByDefault
         },
         informationSecurity: {},
         provenance: {},
@@ -1281,6 +1285,9 @@ async function convertStateToDistributionRecords(state: State) {
             aspects: {
                 "dcat-distribution-strings": aspect,
                 "access-control": getAccessControlAspectData(state),
+                "information-security": state.informationSecurity,
+                publishing: getPublishingAspectData(state),
+                source: getInternalDatasetSourceAspectData(),
                 // --- set distribution initial version if not exist
                 // --- the version will be bumped when it's superseded by a new file / distribution
                 version: distribution?.version
@@ -1578,17 +1585,34 @@ export async function submitDatasetFromState(
         state.distributions
     );
 
-    const indexResult = await indexDatasetById(datasetId);
-    if (indexResult?.failureReasons?.length) {
-        console.error(`Failed to index dataset ${datasetId}: `, indexResult);
-        throw new ServerError(
-            `Failed to index dataset ${datasetId} for search engine: ${indexResult.failureReasons.join(
-                "; "
-            )}`,
-            500
+    try {
+        const indexResult = await indexDatasetById(datasetId);
+        if (indexResult?.failureReasons?.length) {
+            console.error(
+                `Failed to index dataset ${datasetId}: `,
+                indexResult
+            );
+            throw new ServerError(
+                `Failed to index dataset ${datasetId} for search engine: ${indexResult.failureReasons.join(
+                    "; "
+                )}`,
+                500
+            );
+        } else if (indexResult?.warnReasons?.length) {
+            console.warn(
+                `Warnings when index dataset ${datasetId}: `,
+                indexResult
+            );
+        }
+    } catch (e) {
+        if (e instanceof Error) {
+            e.message = `Failed to index dataset ${datasetId} for search engine: ${e.message}`;
+        }
+        console.error(
+            `Failed to index dataset ${datasetId} for search engine: `,
+            e
         );
-    } else if (indexResult?.warnReasons?.length) {
-        console.warn(`Warnings when index dataset ${datasetId}: `, indexResult);
+        throw e;
     }
 
     return failedFileInfo;

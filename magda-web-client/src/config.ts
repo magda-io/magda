@@ -44,9 +44,8 @@ const fallbackApiHost = "https://dev.magda.io/";
 
 const DEV_FEATURE_FLAGS = {
     cataloguing: true,
-    publishToDga: true,
+    publishToDga: false,
     previewAddDataset: false,
-    placeholderWorkflowsOn: false,
     datasetApprovalWorkflowOn: false,
     useStorageApi: true,
     datasetLikeButton: false
@@ -94,6 +93,7 @@ const serverConfig: {
     featureFlags?: {
         [id: string]: boolean;
     };
+    useMagdaStorageByDefault?: boolean;
     vocabularyApiEndpoints: string[];
     defaultOrganizationId?: string;
     defaultContactEmail?: string;
@@ -360,6 +360,10 @@ export const config = {
     featureFlags:
         serverConfig.featureFlags ||
         (process.env.NODE_ENV === "development" ? DEV_FEATURE_FLAGS : {}),
+    useMagdaStorageByDefault:
+        typeof serverConfig.useMagdaStorageByDefault === "boolean"
+            ? serverConfig.useMagdaStorageByDefault
+            : true,
     vocabularyApiEndpoints,
     defaultOrganizationId: serverConfig.defaultOrganizationId,
     defaultContactEmail: serverConfig.defaultContactEmail,
@@ -381,6 +385,7 @@ export const config = {
               "distributions.format",
               "distributions.license",
               "dataset.publisher",
+              "publishing.custodianOrgUnitId",
               "licenseLevel",
               "dataset.defaultLicense",
               "informationSecurity.classification",

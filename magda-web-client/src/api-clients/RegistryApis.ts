@@ -6,7 +6,6 @@ import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
 import ServerError from "@magda/typescript-common/dist/ServerError";
 import flatMap from "lodash/flatMap";
-import partialRight from "lodash/partialRight";
 
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
 import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.schema.json";
@@ -181,7 +180,9 @@ export enum AspectQueryOperators {
     ">" = ":>",
     "<" = ":<",
     ">=" = ":>=",
-    "<=" = ":<="
+    "<=" = ":<=",
+    arrayContains = ":<|",
+    arrayNotContains = ":!<|"
 }
 
 export class AspectQuery {
@@ -219,9 +220,11 @@ export class AspectQuery {
     }
 
     toString() {
-        return `${this.encodeAspectQueryComponent(this.path)}${
-            this.operator
-        }${this.encodeAspectQueryComponent(String(this.value))}`;
+        return encodeURIComponent(
+            formUrlencode(this.path) +
+                this.operator +
+                formUrlencode(String(this.value))
+        );
     }
 }
 
@@ -303,6 +306,29 @@ export async function fetchRecord<T = RawDataset>(
     }
 }
 
+export async function fetchRecordAspect<T = any>(
+    datasetId: string,
+    aspectId: string,
+    noCache: boolean = false
+): Promise<T> {
+    const url =
+        config.registryReadOnlyApiUrl +
+        `records/${datasetId}/aspects/${aspectId}`;
+
+    const res = await fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
+    );
+
+    if (!res.ok) {
+        throw new ServerError(res.statusText, res.status);
+    }
+
+    return (await res.json()) as T;
+}
+
 export async function fetchHistoricalRecord<T = RawDataset>(
     id: string,
     eventId: number,
@@ -334,7 +360,12 @@ export async function fetchHistoricalRecord<T = RawDataset>(
     return await response.json();
 }
 
-export const fetchRecordWithNoCache = partialRight(fetchRecord, true);
+export const fetchRecordWithNoCache = <T = RawDataset>(
+    id: string,
+    optionalAspects: string[] = DEFAULT_OPTIONAL_FETCH_ASPECT_LIST,
+    aspects: string[] = DEFAULT_COMPULSORY_FETCH_ASPECT_LIST,
+    dereference: boolean = true
+): Promise<T> => fetchRecord(id, optionalAspects, aspects, dereference, true);
 
 export type FetchRecordsOptions = {
     aspects?: string[];
@@ -678,12 +709,14 @@ export async function updateDataset(
  * @param {string} recordId
  * @param {string} aspectId
  * @param {T} aspectData
+ * @param {boolean} merge whether merge with existing aspect data or replace it
  * @returns {Promise<T>} Return array of updated aspect data and eventId
  */
 export async function updateRecordAspect<T = any>(
     recordId: string,
     aspectId: string,
     aspectData: T,
+    merge: boolean = false,
     skipEnsureAspectExists: boolean = false
 ): Promise<[T, number]> {
     if (!skipEnsureAspectExists) {
@@ -692,7 +725,9 @@ export async function updateRecordAspect<T = any>(
 
     const [json, headers] = await request<T>(
         "PUT",
-        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`,
+        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}${
+            merge ? "?merge=true" : ""
+        }`,
         aspectData,
         "application/json",
         true
@@ -773,7 +808,7 @@ export type QueryRecordAspectsParams = {
     recordId: string;
     keyword?: string;
     aspectIdOnly?: boolean;
-    start?: number;
+    offset?: number;
     limit?: number;
     noCache?: boolean;
 };
@@ -883,4 +918,64 @@ export async function getAspectDefs(noCache = false) {
         getAbsoluteUrl("aspects", config.registryReadOnlyApiUrl),
         noCache
     );
+}
+
+export async function getDistributionIds(datasetId: string): Promise<string[]> {
+    try {
+        const data = await fetchRecordAspect(
+            datasetId,
+            "dataset-distributions",
+            true
+        );
+        if (data?.distributions?.length) {
+            return data.distributions as string[];
+        } else {
+            return [];
+        }
+    } catch (e) {
+        if (e instanceof ServerError && e.statusCode === 404) {
+            return [];
+        } else {
+            throw e;
+        }
+    }
+}
+
+/**
+ *
+ * Update aspect data of the same id aspect on both dataset record and all its distributions.
+ *
+ * @export
+ * @template T
+ * @param {string} datasetId
+ * @param {string} aspectId
+ * @param {T} aspectData
+ * @param {boolean} [merge=true] When set to `true`, the aspectData will be merged with existing data. Otherwise, always replace.
+ * @return {*}  {Promise<number[]>} a list of eventId of generated for each of records (including the dataset record & all its distributions).
+ * Please note: `0` event id returned indicates no changes have been done on the record.
+ */
+export async function updateAspectOfDatasetAndDistributions<T = any>(
+    datasetId: string,
+    aspectId: string,
+    aspectData: T,
+    merge: boolean = true
+): Promise<number[]> {
+    if (!datasetId) {
+        throw new ServerError("datasetId cannot be empty!", 400);
+    }
+    if (!aspectId) {
+        throw new ServerError("aspectId cannot be empty!", 400);
+    }
+
+    const datasetDistributionIds = await getDistributionIds(datasetId);
+    const url = getAbsoluteUrl(
+        `records/aspects/${encodeURIComponent(aspectId)}`,
+        config.registryFullApiUrl,
+        { merge }
+    );
+
+    return await request<number[]>("PUT", url, {
+        recordIds: [datasetId, ...datasetDistributionIds],
+        data: aspectData
+    });
 }

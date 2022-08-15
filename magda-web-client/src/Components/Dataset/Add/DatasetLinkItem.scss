@@ -205,6 +205,25 @@
         }
     }
 
+    .processing-item {
+        position: relative;
+        .delete-button {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border: none;
+            left: 440px;
+            top: 2px;
+            padding: 1px 0px 0px 0px;
+        }
+
+        .delete-button {
+            &:hover {
+                border: 1px solid #cccaca;
+            }
+        }
+    }
+
     .dataset-link-item-complete {
         position: relative;
         background-image: url("../../../assets/link-item-box.svg");
@@ -300,11 +319,27 @@
         position: relative;
         background-image: url("../../../assets/link-item-box.svg");
         background-repeat: no-repeat;
-        padding-left: 58px;
+        padding-left: 35px;
         padding-top: 14px;
         width: 790px;
         height: 171px;
         background-color: #f4f4f4;
+
+        .delete-button {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border: none;
+            right: 2px;
+            top: 2px;
+            padding: 1px 0px 0px 0px;
+        }
+
+        .delete-button {
+            &:hover {
+                border: 1px solid #cccaca;
+            }
+        }
 
         .au-text-input {
             height: 35px;

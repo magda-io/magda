@@ -43,24 +43,17 @@
             width: 120px;
             text-align: center;
         }
+
         .action-buttons-col {
-            width: 120px;
+            width: 220px;
             text-align: center;
-            position: relative;
-            .edit-button {
-                float: left;
-                margin-left: 20px;
+            .rs-btn-icon.rs-btn {
+                padding-top: 7px;
+                padding-bottom: 6px;
             }
-            .delete-button {
-                border: none;
-                position: absolute;
-                top: 15px;
-                left: 60px;
-                cursor: pointer;
-                svg {
-                    width: 22px;
-                    height: 22px;
-                }
+            .rs-btn {
+                padding-top: 5px;
+                padding-bottom: 5px;
             }
         }
 
@@ -76,6 +69,13 @@
             .rs-btn-group {
                 float: right;
             }
+        }
+    }
+}
+.dataset-grid-action-dropdown {
+    .rs-dropdown-item {
+        svg {
+            margin-right: 8px;
         }
     }
 }

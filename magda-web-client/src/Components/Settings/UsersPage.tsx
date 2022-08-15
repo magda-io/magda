@@ -25,10 +25,12 @@ import {
 import AccessVerification from "./AccessVerification";
 import IconButton from "rsuite/IconButton";
 import OrgUnitNameLabel from "../OrgUnitNameLabel";
-import reportError from "./reportError";
 import AssignUserOrgUnitFormPopUp, {
     RefType as AssignUserOrgUnitFormPopUpRefType
 } from "./AssignUserOrgUnitFormPopUp";
+import UserFormPopUp, {
+    RefType as UserFormPopUpRefType
+} from "./UserFormPopUp";
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
@@ -53,6 +55,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
     const assignUserOrgUnitFormRef = useRef<AssignUserOrgUnitFormPopUpRefType>(
         null
     );
+    const userFormRef = useRef<UserFormPopUpRefType>(null);
 
     //change this value to force the role data to be reloaded
     const [dataReloadToken, setDataReloadToken] = useState<string>("");
@@ -104,6 +107,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                 />
                 <AccessVerification operationUri="authObject/user/read" />
                 <AssignUserOrgUnitFormPopUp ref={assignUserOrgUnitFormRef} />
+                <UserFormPopUp ref={userFormRef} />
                 <div className="search-button-container">
                     <div className="search-button-inner-wrapper">
                         <InputGroup size="md" inside>
@@ -210,8 +214,12 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                                 aria-label="Edit User"
                                                 icon={<MdBorderColor />}
                                                 onClick={() =>
-                                                    reportError(
-                                                        "This function is under development."
+                                                    userFormRef?.current?.open(
+                                                        (rowData as any).id,
+                                                        () =>
+                                                            setDataReloadToken(
+                                                                `${Math.random()}`
+                                                            )
                                                     )
                                                 }
                                             />

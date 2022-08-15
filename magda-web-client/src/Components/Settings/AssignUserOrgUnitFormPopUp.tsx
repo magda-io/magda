@@ -25,7 +25,7 @@ import {
     getOrgUnitById
 } from "api-clients/OrgUnitApis";
 import { ItemDataType } from "rsuite/esm/@types/common";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 
 const Paragraph = Placeholder.Paragraph;
 
@@ -107,6 +107,9 @@ const AssignUserOrgUnitFormPopUp: ForwardRefRenderFunction<
                 ]);
                 return rootNode;
             } catch (e) {
+                if (e instanceof ServerError && e.statusCode === 404) {
+                    return null;
+                }
                 reportError(`Failed to retrieve user orgUnit root node: ${e}`);
                 throw e;
             }

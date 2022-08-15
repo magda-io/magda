@@ -13,6 +13,7 @@ import {
 import { findPermissionGap } from "helpers/accessControlUtils";
 import Placeholder from "rsuite/Placeholder";
 import Loader from "rsuite/Loader";
+import { resetFileUploadMarkers } from "../Add/Pages/AddFiles/uploadFile";
 
 const Paragraph = Placeholder.Paragraph;
 
@@ -34,7 +35,16 @@ function hasMetaDataCreationToolAccess(user: User) {
             "object/dataset/draft/create",
             "object/dataset/draft/update",
             "object/dataset/published/create",
-            "object/dataset/published/update"
+            "object/dataset/published/update",
+            "object/distribution/draft/create",
+            "object/distribution/draft/read",
+            "object/distribution/draft/update",
+            "object/distribution/published/create",
+            "object/distribution/published/read",
+            "object/distribution/published/update",
+            "object/organization/read",
+            "object/faas/function/read",
+            "object/faas/function/invoke"
         ],
         user
     );
@@ -64,6 +74,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                 if (isDisabled || !datasetId) {
                     return;
                 }
+                resetFileUploadMarkers();
                 // --- turn off cache
                 // --- edit flow will also save draft after file is uploaded to storage api
                 // --- to avoid orphan uploaded files when the user drops off in the half way before submit

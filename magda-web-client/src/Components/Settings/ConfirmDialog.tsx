@@ -2,7 +2,7 @@ import React, { SyntheticEvent } from "react";
 import Button from "rsuite/Button";
 import Modal from "rsuite/Modal";
 import Loader from "rsuite/Loader";
-import reportError from "./reportError";
+import reportError from "helpers/reportError";
 import { v4 as uuid } from "uuid";
 
 type PropsType = {};

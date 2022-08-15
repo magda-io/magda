@@ -37,6 +37,8 @@ magda:
       hostname: dev.magda.io
       ingressClass: nginx
       enableTls: true
+      clientBodyBufferSize: 500M
+      proxyBodySize: 500M
       domains:
         - dev.magda.io
         - "*.dev.magda.io"
@@ -143,9 +145,8 @@ magda:
       showNotificationBanner: false
       featureFlags:
         cataloguing: true
-        publishToDga: true
-        placeholderWorkflowsOn: false
-        datasetApprovalWorkflowOn: true
+        publishToDga: false
+        datasetApprovalWorkflowOn: false
         useStorageApi: true
       vocabularyApiEndpoints:
         - "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json"

@@ -22,6 +22,7 @@ import { CustomValidatorType } from "../../ValidationManager";
 import CommonLink from "Components/Common/CommonLink";
 import urijs from "urijs";
 import DatasetAccessSettings from "./DatasetAccessSettings";
+import DatasetOwnerSection from "./DatasetOwnerSection";
 
 import "./index.scss";
 
@@ -204,11 +205,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         )
                                     ) {
                                         // --- trigger classifcation validtion as well
-                                        setTimeout(() => {
-                                            ValidationManager.onInputFocusOut(
-                                                "$.informationSecurity.classification"
-                                            );
-                                        }, 1);
+                                        ValidationManager.onInputFocusOut(
+                                            "$.informationSecurity.classification"
+                                        );
                                     }
                                 }}
                                 validationFieldPath="$.datasetPublishing.publishAsOpenData.dga"
@@ -236,6 +235,13 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     custodianOrgUnitId={datasetPublishing?.custodianOrgUnitId}
                     managingOrgUnitId={datasetPublishing?.managingOrgUnitId}
                 />
+
+                {props.isEditView ? (
+                    <DatasetOwnerSection
+                        selectedUserId={dataset?.ownerId}
+                        onChange={editDataset("ownerId")}
+                    />
+                ) : null}
 
                 <h3 className="with-underline">Dataset use</h3>
                 {distributions.length !== 0 && (
@@ -438,11 +444,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         )
                                     ) {
                                         // --- trigger publish to dga validtion as well
-                                        setTimeout(() => {
-                                            ValidationManager.onInputFocusOut(
-                                                "$.datasetPublishing.publishAsOpenData.dga"
-                                            );
-                                        }, 1);
+                                        ValidationManager.onInputFocusOut(
+                                            "$.datasetPublishing.publishAsOpenData.dga"
+                                        );
                                     }
                                 }}
                             />

@@ -49,6 +49,7 @@
     "@magda/registry-aspects": "^2.0.0-alpha.0",
     "@magda/scripts": "^2.0.0-alpha.0",
     "@magda/typescript-common": "^2.0.0-alpha.0",
+    "type-fest": "~2.18.0",
     "@types/debounce-promise": "^3.1.1",
     "@types/is-uuid": "^1.0.0",
     "@types/jsonpath": "^0.2.0",

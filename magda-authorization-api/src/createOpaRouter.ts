@@ -233,7 +233,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * Regardless the `operation uri` supplied, this endpoint will always ask OPA to make decision using entrypoint policy `entrypoint/allow.rego`.
      * The `entrypoint/allow.rego` should be responsible for delegating the designated policy to make the actual auth decision for a particular type of resource.
      *
-     * e.g. The default policy `entrypoint/allow.rego` will delegate polciy `object/dataset/allow.rego` to make decision for operation uri: `object/dataset/draft/read`.
+     * e.g. The default policy `entrypoint/allow.rego` will delegate policy `object/dataset/allow.rego` to make decision for operation uri: `object/dataset/draft/read`.
      *
      * Please note: you can [replace built-in policy files](https://github.com/magda-io/magda/blob/master/docs/docs/how-to-add-custom-opa-policies.md) (including `entrypoint/allow.rego`) when deploy Magda with helm config.
      *
@@ -250,7 +250,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      *
      * @apiParam (Query String Parameters) {String} [resourceUri] Use to supply / overwrite the resource uri.
      * Please note: Magda's built-in policies don't utilise `resourceUri` as we can figure it out from `operationUri` instead.
-     * This interface is provided to facilite users' own customised implementation only.
+     * This interface is provided to facilitate users' own customised implementation only.
      *
      * @apiParam (Query String Parameters) {String[]} [unknowns] Use to supply A list of references that should be considered as "unknown" during the policy evaluation.
      * If a conclusive/unconditional auth decision can't be made without knowing "unknown" data, the residual rules of the "partial evaluation" result will be responded in [rego](https://www.openpolicyagent.org/docs/latest/policy-language/) AST JSON format.
@@ -270,10 +270,10 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * @apiParam (Query String Parameters) {string="true"} [rawAst] Output RAW AST response from OPA instead parsed & processed result.
      * As long as the parameter present in query string, the RAW AST option will be turned on. e.g. both `?rawAst` & `?rawAst=true` will work.
      *
-     * @apiParam (Query String Parameters) {string="full"} [explain] Include OPA decision explaination in the RAW AST response from OPA.
+     * @apiParam (Query String Parameters) {string="full"} [explain] Include OPA decision explanation in the RAW AST response from OPA.
      * Only work when `rawAst` is on.
      *
-     * @apiParam (Query String Parameters) {string="true"} [pretty] Include human readable OPA decision explaination in the RAW AST response from OPA.
+     * @apiParam (Query String Parameters) {string="true"} [pretty] Include human readable OPA decision explanation in the RAW AST response from OPA.
      * Only work when `rawAst` is on & `explain`="full".
      *
      * @apiParam (Query String Parameters) {string="true"} [humanReadable] Output parsed & processed result in human readable format.
@@ -291,7 +291,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      *
      * @apiParam (Request Body JSON) {String[]} [unknowns] Same as `unknowns` in query parameter. Users can also opt to supply `unknowns` via request body instead.
      *
-     * @apiParam (Request Body JSON) {Object} [input] OPA "`input` data". Use to provide extra context data to support the auth decison making.
+     * @apiParam (Request Body JSON) {Object} [input] OPA "`input` data". Use to provide extra context data to support the auth decision making.
      * e.g. When you need to make decision on one particular dataset (rather than a group of dataset), you can supply the `input` data object as the following:
      * ```json
      * {
@@ -314,8 +314,8 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      *  Usually, `true` means the operation should be `allowed`.
      *
      * @apiSuccess (Success JSON Response Body) {any} [result] Only presents when `hasResidualRules`=`false`.
-     *  The result field contains the policy evaluation result value. `true` means th eoperation is allowed and `false` means otherwise.
-     *  By default, it should be in `bool` type. However, you can opt to overwite the policy to return other type of data.
+     *  The result field contains the policy evaluation result value. `true` means the operation is allowed and `false` means otherwise.
+     *  By default, it should be in `bool` type. However, you can opt to overwrite the policy to return other type of data.
      *
      * @apiSuccess (Success JSON Response Body) {string[]} [unknowns] Will include any `unknowns` references set (either explicitly set or auto-set by this API)
      *  when request an auth decision from the policy engine.
@@ -444,7 +444,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
              * By default, we will auto-generate `unknowns` reference list.
              * The auto-generated `unknowns` reference list will contains a JSON path that is made up of string "input" and the first segment of `operationUri`.
              * e.g. if `operationUri` is `object/dataset/draft/read`, the `unknowns`=["input.object"]
-             * We can't set `input.object.dataset` as `unknown` as OPA currently can't correctly recognise reference as input.object[objectType] while objectType="dataset"
+             * We can't set `input.object.dataset` as `unknown` as OPA currently can't correctly recognize reference as input.object[objectType] while objectType="dataset"
              *
              *
              * We will not auto-generate `unknowns`, when:

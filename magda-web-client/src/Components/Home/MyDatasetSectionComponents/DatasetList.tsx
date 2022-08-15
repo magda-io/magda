@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import "./DatasetList.scss";
 import DatasetGrid from "./DatasetGrid";
 import { DatasetTypes } from "api-clients/RegistryApis";
@@ -6,40 +6,89 @@ import { ReactComponent as DismissIcon } from "assets/dismiss.svg";
 import { ReactComponent as SearchIcon } from "assets/search-dark.svg";
 import "../../../rsuite.scss";
 import ConfirmDialog from "../../Settings/ConfirmDialog";
+import Button from "rsuite/Button";
+import { BsPlusCircleFill } from "react-icons/bs";
+import openWindow from "helpers/openWindow";
+import { useHistory, Link, useLocation } from "react-router-dom";
+import { Location } from "history";
+import urijs from "urijs";
 
-type PropsType = {};
+type PropsType = {
+    openInPopUp?: boolean;
+};
 
 type TabNames = DatasetTypes;
 
+const DEFAULT_TAB_NAME = "drafts";
+
 /* eslint-disable jsx-a11y/anchor-is-valid */
 const DatasetList: FunctionComponent<PropsType> = (props) => {
-    const [activeTab, setActiveTab] = useState<TabNames>("drafts");
+    function getTabName(loc: Location) {
+        const uri = urijs(loc.pathname);
+        const segments = uri.segmentCoded();
+        if (!segments?.length) {
+            return DEFAULT_TAB_NAME;
+        }
+        const lastSegment = segments.pop();
+        if (lastSegment === "published") {
+            return "published";
+        } else {
+            return DEFAULT_TAB_NAME;
+        }
+    }
+
+    const history = useHistory();
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState<TabNames>(getTabName(location));
     const [searchText, setSearchText] = useState<string>("");
     const [inputText, setInputText] = useState<string>("");
+    const { openInPopUp } = props;
+
+    useEffect(() => {
+        const unregister = history.listen((loc) => {
+            const tabName = getTabName(loc);
+            setActiveTab(tabName);
+        });
+        return unregister;
+    });
 
     return (
         <div className="dataset-list-container">
             <ConfirmDialog />
+            <Button
+                className="create-new-dataset-button"
+                appearance="primary"
+                onClick={() => {
+                    if (openInPopUp) {
+                        openWindow("/dataset/add/metadata?popup=true");
+                    } else {
+                        history.push("/dataset/add/metadata");
+                    }
+                }}
+            >
+                <BsPlusCircleFill /> Create new dataset
+            </Button>
             <div className="dataset-list-inner-container row">
                 <div className="dataset-list-header">
                     <div className="dataset-type-tab">
-                        <a
-                            aria-label="sds"
+                        <Link
+                            aria-label="draft dataset"
                             className={`${
                                 activeTab === "drafts" ? "active" : ""
                             }`}
-                            onClick={() => setActiveTab("drafts")}
+                            to="/settings/datasets/draft"
                         >
                             Drafts
-                        </a>
-                        <a
+                        </Link>
+                        <Link
+                            aria-label="published dataset"
                             className={`${
                                 activeTab === "published" ? "active" : ""
                             }`}
-                            onClick={() => setActiveTab("published")}
+                            to="/settings/datasets/published"
                         >
                             Published
-                        </a>
+                        </Link>
                     </div>
                     <div className="search-box-wrapper">
                         <input
@@ -80,6 +129,7 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                         key={`tab:${activeTab}|searchtext:${searchText}`}
                         searchText={searchText}
                         datasetType={activeTab}
+                        openInPopUp={props.openInPopUp}
                     />
                 </div>
             </div>

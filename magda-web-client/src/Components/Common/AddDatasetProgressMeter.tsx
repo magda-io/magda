@@ -8,6 +8,11 @@ import "./AddDatasetProgressMeter.scss";
 import iconTick from "assets/tick.svg";
 import { History, Location } from "history";
 import { config } from "config";
+import { BsXCircleFill } from "react-icons/bs";
+import Button from "rsuite/Button";
+import { useAsync } from "react-async-hook";
+import { PublishingAspect } from "helpers/record";
+import { fetchRecordAspect } from "api-clients/RegistryApis";
 
 /* eslint-disable no-template-curly-in-string */
 
@@ -122,18 +127,35 @@ function createStepUrl(datasetId, item: StepItem) {
 
 const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
     const isEdit = props.isEdit;
-    function determineDatasetId() {
-        return props.match.params.datasetId;
-    }
-
-    function determineCurrentStep() {
+    const datasetId = props.match.params.datasetId;
+    const currentStep = (() => {
         const stepNo = parseInt(props.match.params.step);
         if (Number.isNaN(stepNo)) {
             return 0;
         } else {
             return stepNo;
         }
-    }
+    })();
+
+    const {
+        result: publishingStatus,
+        loading: isLoadingPublishingStatus
+    } = useAsync(
+        async (datasetId?: string, isEdit?: boolean) => {
+            if (!isEdit || !datasetId) {
+                return "draft";
+            } else {
+                const publishing = await fetchRecordAspect<PublishingAspect>(
+                    datasetId,
+                    "publishing",
+                    true
+                );
+
+                return publishing?.state === "draft" ? "draft" : "published";
+            }
+        },
+        [datasetId, isEdit]
+    );
 
     function renderStepItem(
         item: StepItem,
@@ -231,9 +253,6 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
         }
     }
 
-    const currentStep = determineCurrentStep();
-    const datasetId = determineDatasetId();
-
     if (currentStep >= stepMap.ALL_DONE) {
         return null;
     }
@@ -265,6 +284,19 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
                         }
                     )}
                 </div>
+                <Link
+                    to={`/settings/datasets${
+                        isLoadingPublishingStatus
+                            ? ""
+                            : publishingStatus === "draft"
+                            ? "/draft"
+                            : "/published"
+                    }`}
+                >
+                    <Button className="exit-button" appearance="ghost">
+                        <BsXCircleFill /> Exit
+                    </Button>
+                </Link>
             </div>
         </div>
     );

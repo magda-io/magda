@@ -290,15 +290,10 @@ class DefaultRecordPersistence(config: Config)
   val maxResultCount = 1000
   val defaultResultCount = 100
 
-  val defaultOpaPolicyId =
-    if (config.hasPath("opa.recordPolicyId"))
-      Some(config.getString("opa.recordPolicyId"))
-    else None
-
   /**
     * Given a list of recordIds, filter out any record that the current user has not access and return the rest of ids
     * @param tenantId
-    * @param opaRecordQueriesƒ
+    * @param authDecision
     * @param recordIds
     * @param session
     * @return Seq[String]

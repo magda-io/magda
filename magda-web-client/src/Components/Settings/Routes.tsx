@@ -11,7 +11,8 @@ import ResourcesPage from "./ResourcesPage";
 import ResourceOperationsPage from "./OperationsPage";
 import RegistryRecordsPage from "./RegistryRecordsPage";
 import RolePermissionsPage from "./RolePermissionsPage";
-//import Index from "./Index";
+import AccountPage from "./AccountPage";
+import DatasetManagementPage from "./DatasetManagementPage";
 
 const Routes = () => {
     return (
@@ -19,8 +20,22 @@ const Routes = () => {
             <ConfirmDialog />
             <Switch>
                 <Route exact path="/settings">
-                    <Redirect to="/settings/users" />
+                    <Redirect to="/settings/account" />
                 </Route>
+                <Route
+                    exact
+                    path="/settings/datasets(/)*(.)*"
+                    component={withHeader(DatasetManagementPage, {
+                        noContainerClass: true
+                    })}
+                />
+                <Route
+                    exact
+                    path="/settings/account(/)*(.)*"
+                    component={withHeader(AccountPage, {
+                        noContainerClass: true
+                    })}
+                />
                 <Route
                     exact
                     path="/settings/users"

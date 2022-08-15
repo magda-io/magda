@@ -34,7 +34,7 @@ import {
     ResourceRecord
 } from "@magda/typescript-common/dist/authorization-api/model";
 import { CreateRolePermissionInputData } from "@magda/typescript-common/dist/authorization-api/model";
-import reportError from "./reportError";
+import reportError from "../../helpers/reportError";
 import { MdInfoOutline } from "react-icons/md";
 
 interface ResourceDropDownItemType extends ItemDataType {
