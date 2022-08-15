@@ -919,3 +919,63 @@ export async function getAspectDefs(noCache = false) {
         noCache
     );
 }
+
+export async function getDistributionIds(datasetId: string): Promise<string[]> {
+    try {
+        const data = await fetchRecordAspect(
+            datasetId,
+            "dataset-distributions",
+            true
+        );
+        if (data?.distributions?.length) {
+            return data.distributions as string[];
+        } else {
+            return [];
+        }
+    } catch (e) {
+        if (e instanceof ServerError && e.statusCode === 404) {
+            return [];
+        } else {
+            throw e;
+        }
+    }
+}
+
+/**
+ *
+ * Update aspect data of the same id aspect on both dataset record and all its distributions.
+ *
+ * @export
+ * @template T
+ * @param {string} datasetId
+ * @param {string} aspectId
+ * @param {T} aspectData
+ * @param {boolean} [merge=true] When set to `true`, the aspectData will be merged with existing data. Otherwise, always replace.
+ * @return {*}  {Promise<number[]>} a list of eventId of generated for each of records (including the dataset record & all its distributions).
+ * Please note: `0` event id returned indicates no changes have been done on the record.
+ */
+export async function updateAspectOfDatasetAndDistributions<T = any>(
+    datasetId: string,
+    aspectId: string,
+    aspectData: T,
+    merge: boolean = true
+): Promise<number[]> {
+    if (!datasetId) {
+        throw new ServerError("datasetId cannot be empty!", 400);
+    }
+    if (!aspectId) {
+        throw new ServerError("aspectId cannot be empty!", 400);
+    }
+
+    const datasetDistributionIds = await getDistributionIds(datasetId);
+    const url = getAbsoluteUrl(
+        `records/aspects/${encodeURIComponent(aspectId)}`,
+        config.registryFullApiUrl,
+        { merge }
+    );
+
+    return await request<number[]>("PUT", url, {
+        recordIds: [datasetId, ...datasetDistributionIds],
+        data: aspectData
+    });
+}

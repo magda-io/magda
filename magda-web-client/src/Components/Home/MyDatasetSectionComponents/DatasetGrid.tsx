@@ -4,7 +4,6 @@ import React, {
     useCallback,
     useEffect
 } from "react";
-import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { History } from "history";
 import "./DatasetGrid.scss";
@@ -13,9 +12,9 @@ import getDatasetAspectQueries from "./getDatasetAspectQueries";
 import {
     Record,
     fetchRecords,
-    updateRecordAspect,
     FetchRecordsOptions,
-    DatasetTypes
+    DatasetTypes,
+    updateAspectOfDatasetAndDistributions
 } from "api-clients/RegistryApis";
 import moment from "moment";
 import { BsFillTrashFill, BsFolderSymlink } from "react-icons/bs";
@@ -35,6 +34,7 @@ import ButtonGroup from "rsuite/ButtonGroup";
 import Whisper from "rsuite/Whisper";
 import reportError from "helpers/reportError";
 import uniq from "lodash/uniq";
+import { indexDatasetById } from "api-clients/IndexerApis";
 
 const PAGE_SIZE = 10;
 
@@ -122,7 +122,7 @@ function createDatsetRow(
                                                             "Updating dataset...",
                                                         errorNotificationDuration: 0,
                                                         confirmHandler: async () => {
-                                                            await updateRecordAspect(
+                                                            await updateAspectOfDatasetAndDistributions(
                                                                 record.id,
                                                                 "publishing",
                                                                 {
@@ -131,6 +131,9 @@ function createDatsetRow(
                                                                     hasEverPublished: true
                                                                 },
                                                                 true
+                                                            );
+                                                            await indexDatasetById(
+                                                                record.id
                                                             );
                                                             setRecordReloadToken(
                                                                 "" +
