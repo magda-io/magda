@@ -48,8 +48,8 @@ Kubernetes: `>= 1.14.0-0`
 | externalCssFiles | list | `[]` | a list of external css file urls to be loaded. Can be used to further customise UI styling. this config value should be type of `string[]`. |
 | externalUIComponents | list | `[]` | a list of external UI component JS bundle file urls.  Can be used to replace existing built-in React UI component for customisation. this config value should be type of `string[]` |
 | extraConfigData | object | `{}` | Extra config data for external plugins. Normally served as a way to config external UI plugin components at runtime. |
-| featureFlags.cataloguing | bool | `false` | turn on / off metadata creation tool.  If this option is `false`, user won't be able to access the dataset add / edit UI  |
-| featureFlags.datasetApprovalWorkflowOn | bool | `true` | turn on / off dataset approval note step |
+| featureFlags.cataloguing | bool | `true` | turn on / off metadata creation tool.  If this option is `false`, user won't be able to access the dataset add / edit UI  |
+| featureFlags.datasetApprovalWorkflowOn | bool | `false` | turn on / off dataset approval note step |
 | featureFlags.datasetLikeButton | bool | `false` | turn on / off like / Dislike button.  At this moment, `like / Dislike button` component is a place holder only for allowing plugin external UI plugin component. |
 | featureFlags.previewAddDataset | bool | `false` | turn on / off the preview mode of metadata creation tool. Under preview mode, user can play with the metadata creation tool without requiring admin permission. No data will be saved under this mode. |
 | featureFlags.publishToDga | bool | `false` | turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance. this is an experimental feature and requires the deployment of [magda-minion-ckan-exporter](https://github.com/magda-io/magda-minion-ckan-exporter) |

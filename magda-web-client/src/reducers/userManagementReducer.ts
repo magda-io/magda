@@ -54,7 +54,7 @@ const defaultUserInfo: User = {
     permissions: []
 };
 
-type UserManagementState = {
+export type UserManagementState = {
     user: User;
     isFetchingWhoAmI: boolean;
     whoAmIError: Error | null;

@@ -90,7 +90,7 @@ magda:
       featureFlags:
         cataloguing: true
         publishToDga: false
-        datasetApprovalWorkflowOn: true
+        datasetApprovalWorkflowOn: false
         useStorageApi: true
       dateConfig:
         dateFormats:

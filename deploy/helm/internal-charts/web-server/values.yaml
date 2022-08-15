@@ -68,7 +68,7 @@ discourseIntegrationDistributionPage: true
 featureFlags:
   # featureFlags.cataloguing -- turn on / off metadata creation tool. 
   # If this option is `false`, user won't be able to access the dataset add / edit UI 
-  cataloguing: false
+  cataloguing: true
   # featureFlags.previewAddDataset -- turn on / off the preview mode of metadata creation tool.
   # Under preview mode, user can play with the metadata creation tool without requiring admin permission.
   # No data will be saved under this mode.
@@ -77,7 +77,7 @@ featureFlags:
   # this is an experimental feature and requires the deployment of [magda-minion-ckan-exporter](https://github.com/magda-io/magda-minion-ckan-exporter)
   publishToDga: false
   # featureFlags.datasetApprovalWorkflowOn -- turn on / off dataset approval note step
-  datasetApprovalWorkflowOn: true
+  datasetApprovalWorkflowOn: false
   # featureFlags.useStorageApi -- turn on / off the UI option to use Magda internal storage for file storage.
   useStorageApi: true
   # featureFlags.datasetLikeButton -- turn on / off like / Dislike button. 

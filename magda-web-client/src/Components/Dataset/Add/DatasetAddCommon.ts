@@ -351,7 +351,11 @@ function getInternalDatasetSourceAspectData() {
 function getAccessControlAspectData(state: State) {
     const { dataset } = state;
     return {
-        ownerId: dataset.editingUserId ? dataset.editingUserId : undefined,
+        ownerId: dataset.ownerId
+            ? dataset.ownerId
+            : dataset.editingUserId
+            ? dataset.editingUserId
+            : undefined,
         orgUnitId: dataset.owningOrgUnitId ? dataset.owningOrgUnitId : undefined
     };
 }

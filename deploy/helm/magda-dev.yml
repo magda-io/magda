@@ -146,7 +146,7 @@ magda:
       featureFlags:
         cataloguing: true
         publishToDga: false
-        datasetApprovalWorkflowOn: true
+        datasetApprovalWorkflowOn: false
         useStorageApi: true
       vocabularyApiEndpoints:
         - "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json"

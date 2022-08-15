@@ -22,6 +22,7 @@ import { CustomValidatorType } from "../../ValidationManager";
 import CommonLink from "Components/Common/CommonLink";
 import urijs from "urijs";
 import DatasetAccessSettings from "./DatasetAccessSettings";
+import DatasetOwnerSection from "./DatasetOwnerSection";
 
 import "./index.scss";
 
@@ -234,6 +235,13 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     custodianOrgUnitId={datasetPublishing?.custodianOrgUnitId}
                     managingOrgUnitId={datasetPublishing?.managingOrgUnitId}
                 />
+
+                {props.isEditView ? (
+                    <DatasetOwnerSection
+                        selectedUserId={dataset?.ownerId}
+                        onChange={editDataset("ownerId")}
+                    />
+                ) : null}
 
                 <h3 className="with-underline">Dataset use</h3>
                 {distributions.length !== 0 && (
