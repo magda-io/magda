@@ -3,6 +3,7 @@ import fetch from "isomorphic-fetch";
 import { actionTypes } from "../constants/ActionTypes";
 import { Action } from "../types";
 import request from "helpers/request";
+import createNoCacheFetchOptions from "api-clients/createNoCacheFetchOptions";
 
 export function requestContent(): Action {
     return {
@@ -24,13 +25,18 @@ export function requestContentError(error: any): Action {
     };
 }
 
-export function fetchContent() {
+export function fetchContent(noCache: boolean = false) {
     return async (dispatch: Function, getState: Function) => {
         // check if we need to fetch
         if (getState().content.isFetching) {
             return;
         }
-        await fetch(config.contentUrl, config.credentialsFetchOptions)
+        await fetch(
+            config.contentUrl,
+            noCache
+                ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+                : config.credentialsFetchOptions
+        )
             .then((response) => {
                 if (response.status === 200) {
                     return response.json();

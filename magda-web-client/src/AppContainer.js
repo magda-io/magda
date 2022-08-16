@@ -26,7 +26,7 @@ const ExternalFooterComponent = getPluginFooter();
 class AppContainer extends React.Component {
     componentDidMount() {
         this.props.requestWhoAmI();
-        this.props.fetchContent();
+        this.props.fetchContent(true);
     }
 
     render() {

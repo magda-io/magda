@@ -85,7 +85,7 @@ export function requestSignOut() {
             }
 
             await Promise.all([
-                dispatch(fetchContent()),
+                dispatch(fetchContent(true)),
                 dispatch(requestWhoAmI())
             ]);
         } catch (e) {
