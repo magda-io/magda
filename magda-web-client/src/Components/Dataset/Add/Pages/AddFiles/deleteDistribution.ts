@@ -10,6 +10,8 @@ import {
     saveRuntimeStateToStorage
 } from "../../DatasetAddCommon";
 import promisifySetState from "helpers/promisifySetState";
+import { isFileUploading } from "./uploadFile";
+import reportError from "helpers/reportError";
 
 const deleteDistribution = (
     datasetId: string,
@@ -33,7 +35,7 @@ const deleteDistribution = (
                 async (distToDelete) => {
                     try {
                         if (
-                            distToDelete?.useStorageApi !== true &&
+                            distToDelete?.useStorageApi !== true ||
                             !shouldUploadToStorageApi
                         ) {
                             await removeDist();
@@ -60,11 +62,41 @@ const deleteDistribution = (
                             }
 
                             if (!canDeleteFile(distToDelete)) {
-                                reject(
+                                if (isFileUploading(distToDelete.id!)) {
+                                    const error = new Error(
+                                        "Cannot delete file that is being uploading. Please try again later."
+                                    );
+                                    reportError(error);
+                                    reject(error);
+                                    return;
+                                }
+                                console.warn(
                                     new Error(
                                         "Tried to delete file that hasn't been fully processed"
                                     )
                                 );
+                                // remove dist from state
+                                await removeDist();
+
+                                // remove download url from uploaded file url list
+                                await promisifySetState(datasetStateUpdater)(
+                                    (state: State) => ({
+                                        ...state,
+                                        uploadedFileUrls: state.uploadedFileUrls.filter(
+                                            (item) =>
+                                                item !==
+                                                distToDelete.downloadURL
+                                        )
+                                    })
+                                );
+
+                                try {
+                                    await deleteFile(distToDelete);
+                                } catch (e) {
+                                    // log the error only as file is not in ready status likely failed to delete
+                                    // as it might be failed to upload in the first place
+                                    console.warn(e);
+                                }
                                 return;
                             }
 
@@ -89,8 +121,6 @@ const deleteDistribution = (
                                 })
                             );
 
-                            // warn before closing tab
-                            await deleteFile(distToDelete);
                             // remove dist from state
                             await removeDist();
 
@@ -104,6 +134,9 @@ const deleteDistribution = (
                                     )
                                 })
                             );
+
+                            // warn before closing tab
+                            await deleteFile(distToDelete);
 
                             resolve();
                         }

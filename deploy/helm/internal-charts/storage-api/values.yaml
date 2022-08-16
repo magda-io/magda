@@ -38,6 +38,10 @@ defaultBuckets: []
 # @default -- "unspecified-region"
 minioRegion: ""
 
+# -- when set to true, API will not query policy engine for auth decision but assume it's always permitted. 
+# It's for debugging only.
+skipAuth: false
+
 minio:
   host: "minio"
   port: 9000

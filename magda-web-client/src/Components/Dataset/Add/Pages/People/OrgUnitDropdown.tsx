@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import { useAsync } from "react-async-hook";
 import Select from "react-select";
 import find from "lodash/find";
@@ -11,11 +11,14 @@ import {
     getOrgUnitById,
     OrgUnitWithRelationship
 } from "api-clients/OrgUnitApis";
+import { onInputFocusOut, useValidation } from "../../ValidationManager";
 
 type Props = {
     orgUnitId?: string;
     custodianOrgUnitId?: string;
     onChange: (orgUnitId: string) => void;
+    validationFieldPath?: string;
+    validationFieldLabel?: string;
 };
 
 const getOrgUnitName = async (id?: string) => {
@@ -24,26 +27,37 @@ const getOrgUnitName = async (id?: string) => {
     }
     try {
         const orgUnit = await getOrgUnitById(id);
-        return orgUnit.name;
+        return orgUnit?.name;
     } catch (e) {
         return undefined;
     }
 };
 
 const orgUnitsToOptionItems = (orgUnits: OrgUnitWithRelationship[]) =>
-    orgUnits.map(option => ({
+    orgUnits.map((option) => ({
         label: option.name,
         value: option.id
     }));
 
-export default function OrgUnitDropdown({
-    orgUnitId,
-    custodianOrgUnitId,
-    onChange: onChangeCallback
-}: Props) {
+const OrgUnitDropdown: FunctionComponent<Props> = (props) => {
+    const {
+        orgUnitId,
+        custodianOrgUnitId,
+        onChange: onChangeCallback,
+        validationFieldPath,
+        validationFieldLabel
+    } = props;
+    const [
+        isValidationError,
+        validationErrorMessage,
+        validationCtlRef
+    ] = useValidation<HTMLDivElement>(
+        validationFieldPath,
+        validationFieldLabel
+    );
     const { loading, error, result, execute } = useAsync(async () => {
         const orgUnits = await listOrgUnits({
-            orgUnitsOnly: true,
+            leafNodesOnly: true,
             relationshipOrgUnitId: custodianOrgUnitId
         });
         const custodianName = await getOrgUnitName(custodianOrgUnitId);
@@ -56,8 +70,10 @@ export default function OrgUnitDropdown({
         return (
             <div className="au-body au-page-alerts au-page-alerts--error">
                 <span style={{ verticalAlign: "-2px" }}>
-                    Could not retrieve data custodian list, or there are no data
-                    custodians in the system.
+                    Could not retrieve data custodians list. Please make sure
+                    the organizational structure has been setup by system admin
+                    and your account has been assigned to an organizational
+                    unit.
                 </span>
                 <button
                     className="au-btn au-btn--tertiary"
@@ -70,7 +86,7 @@ export default function OrgUnitDropdown({
     } else {
         const selectedValue =
             typeof orgUnitId !== "undefined" &&
-            find(result.orgUnits, option => option.id === orgUnitId);
+            find(result.orgUnits, (option) => option.id === orgUnitId);
 
         // --- default to list options alphabetically
         const sortedResult = result.orgUnits.sort((b, a) =>
@@ -87,7 +103,7 @@ export default function OrgUnitDropdown({
                         : result.custodianName;
                 const groups = partition(
                     sortedResult,
-                    item => item.relationship !== "unrelated"
+                    (item) => item.relationship !== "unrelated"
                 ).map((items, key) => ({
                     label: `Teams ${
                         key ? "outside" : "in"
@@ -102,31 +118,48 @@ export default function OrgUnitDropdown({
         })();
 
         return (
-            <Select
-                className="react-select"
-                isMulti={false}
-                isSearchable={true}
-                onChange={(rawValue, action) => {
-                    const value = rawValue as
-                        | { value: string }
-                        | undefined
-                        | null;
-                    if (value) {
-                        onChangeCallback(value.value);
+            <div
+                ref={validationCtlRef}
+                className={`react-select-with-validation-container ${
+                    isValidationError ? "invalid" : ""
+                }`}
+            >
+                {isValidationError ? (
+                    <div>
+                        <span className="au-error-text">
+                            {validationErrorMessage}
+                        </span>
+                    </div>
+                ) : null}
+                <Select
+                    className="react-select"
+                    isMulti={false}
+                    isSearchable={true}
+                    onChange={(rawValue, action) => {
+                        const value = rawValue as
+                            | { value: string }
+                            | undefined
+                            | null;
+                        if (value) {
+                            onChangeCallback(value.value);
+                            onInputFocusOut(validationFieldPath);
+                        }
+                    }}
+                    styles={ReactSelectStyles}
+                    value={
+                        selectedValue
+                            ? {
+                                  label: selectedValue.name,
+                                  value: selectedValue.id
+                              }
+                            : undefined
                     }
-                }}
-                styles={ReactSelectStyles}
-                value={
-                    selectedValue
-                        ? {
-                              label: selectedValue.name,
-                              value: selectedValue.id
-                          }
-                        : undefined
-                }
-                options={options as any}
-                placeholder="Select a team"
-            />
+                    options={options as any}
+                    placeholder="Select a team"
+                />
+            </div>
         );
     }
-}
+};
+
+export default OrgUnitDropdown;

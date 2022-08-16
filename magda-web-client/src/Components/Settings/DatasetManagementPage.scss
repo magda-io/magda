@@ -1,0 +1,35 @@
+.flex-main-container {
+    .dataset-management-page.main-content-container {
+        min-height: 600px;
+
+        .dataset-list-container {
+            padding-left: 0px;
+
+            .create-new-dataset-button {
+                position: absolute;
+                right: 65px;
+                top: 30px;
+            }
+
+            .dataset-list-inner-container .dataset-list-header {
+                input {
+                    width: 340px;
+                    height: 45px;
+                    font-size: 18px;
+                    margin-right: 180px;
+                }
+                svg {
+                    width: 32px;
+                    height: 32px;
+                    right: 190px;
+                    top: 8px;
+                }
+                .dataset-type-tab {
+                    a {
+                        font-size: 20px;
+                    }
+                }
+            }
+        }
+    }
+}

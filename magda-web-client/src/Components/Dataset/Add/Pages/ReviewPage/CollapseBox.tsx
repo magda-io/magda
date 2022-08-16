@@ -3,7 +3,7 @@ import "./CollapseBox.scss";
 import CollapseBoxContext, { DEFAULT_OPEN_STATUS } from "./CollapseBoxContext";
 import plusIcon from "assets/noun-plus.svg";
 import minusIcon from "assets/noun-minus.svg";
-import { withRouter, RouteComponentProps } from "react-router";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 import { Link } from "react-router-dom";
 import urijs from "urijs";
 

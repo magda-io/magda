@@ -2,7 +2,6 @@ import {} from "mocha";
 import chai from "chai";
 import request from "supertest";
 import express from "express";
-import nock from "nock";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
 import fakeArgv from "magda-typescript-common/src/test/fakeArgv";
 import createApiRouter from "../createApiRouter";
@@ -10,6 +9,12 @@ import createApiRouter from "../createApiRouter";
 import mockDatabase from "./mockDatabase";
 import Database from "../Database";
 import { mockContentData } from "./mockContentStore";
+
+import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient";
+import AuthDecision, {
+    UnconditionalTrueDecision,
+    UnconditionalFalseDecision
+} from "magda-typescript-common/src/opa/AuthDecision";
 
 const IMAGE_FORMATS_SUPPORTED = ["png", "gif", "svg"];
 
@@ -37,11 +42,14 @@ describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
         return argv;
     }
 
-    function buildExpressApp() {
+    function buildExpressApp(
+        authDecision: AuthDecision = UnconditionalTrueDecision
+    ) {
         const apiRouter = createApiRouter({
             jwtSecret: argv.jwtSecret,
             database: (new mockDatabase() as any) as Database,
-            authApiUrl: argv.authApiUrl
+            authApiUrl: argv.authApiUrl,
+            authDecisionClient: createMockAuthDecisionQueryClient(authDecision)
         });
 
         const app = express();
@@ -212,20 +220,12 @@ describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
             "base64"
         );
 
-        const jwt = require("jsonwebtoken");
-
-        function admin(req: request.Test): request.Test {
-            const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
-            const isAdmin = true;
-            nock(argv.authApiUrl)
-                .get(`/private/users/${userId}`)
-                .reply(200, { isAdmin });
-            const id = jwt.sign({ userId: userId }, argv.jwtSecret);
-            return req.set("X-Magda-Session", id);
-        }
-
         it("should write and read", (done) => {
-            admin(agent.put("/header/logo"))
+            app = buildExpressApp(UnconditionalTrueDecision);
+            agent = request.agent(app);
+
+            agent
+                .put("/header/logo")
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(201)
@@ -238,7 +238,11 @@ describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
         });
 
         it("should not write non-existing", (done) => {
-            admin(agent.put("/header/lego"))
+            app = buildExpressApp(UnconditionalTrueDecision);
+            agent = request.agent(app);
+
+            agent
+                .put("/header/lego")
                 .set("Content-type", "image/gif")
                 .send(gifImage)
                 .expect(404)
@@ -246,7 +250,10 @@ describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
         });
 
         it("should not write non-conforming", (done) => {
-            admin(agent.put("/header/logo"))
+            app = buildExpressApp(UnconditionalTrueDecision);
+            agent = request.agent(app);
+            agent
+                .put("/header/logo")
                 .set("Content-type", "text/plain")
                 .send(gifImage)
                 .expect(500)
@@ -254,26 +261,23 @@ describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
         });
 
         it("should not write without access", (done) => {
+            app = buildExpressApp(UnconditionalFalseDecision);
+            agent = request.agent(app);
             agent
                 .put("/header/logo")
                 .set("Content-type", "image/gif")
                 .send(gifImage)
-                .expect(401)
+                .expect(403)
                 .end(done);
         });
 
         it("should not delete logo", (done) => {
-            admin(agent.delete("/logo")).expect(404).end(done);
+            app = buildExpressApp(UnconditionalTrueDecision);
+            agent = request.agent(app);
+            agent.delete("/logo").expect(404).end(done);
         });
 
         const CUSTOM_ROUTES = [
-            {
-                route: "/csv-xxx",
-                mime: "text/csv",
-                content: gifImage,
-                getRoute: "/csv-xxx.text",
-                expectedContent: gifImage.toString("base64")
-            },
             {
                 route: "/emailTemplates/xxx.html",
                 mime: "text/html",
@@ -306,7 +310,10 @@ describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
 
         CUSTOM_ROUTES.forEach((customRoute) => {
             it(`should upload and delete with custom routes ${customRoute.route}`, (done) => {
-                admin(agent.put(customRoute.route))
+                app = buildExpressApp(UnconditionalTrueDecision);
+                agent = request.agent(app);
+                agent
+                    .put(customRoute.route)
                     .set("Content-Type", customRoute.mime)
                     .send(customRoute.content)
                     .expect(201)
@@ -315,9 +322,7 @@ describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
                             .get(customRoute.getRoute)
                             .expect(customRoute.expectedContent)
                     )
-                    .then(() =>
-                        admin(agent.delete(customRoute.route)).expect(200)
-                    )
+                    .then(() => agent.delete(customRoute.route).expect(200))
                     .then(() => agent.get(customRoute.getRoute).expect(404))
                     .then(() => done())
                     .catch((e) => done(e));

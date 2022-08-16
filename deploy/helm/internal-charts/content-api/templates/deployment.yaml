@@ -28,7 +28,12 @@ spec:
             "node",
             "/usr/src/app/component/dist/index.js",
             "--authApiUrl", "http://authorization-api/v0",
-            "--opaUrl", "http://authorization-api/v0/opa/",
+{{- if .Values.skipAuth }}
+            "--skipAuth", "true",
+{{- end }}
+{{- if .Values.debug }}
+            "--debug", "true",
+{{- end }}
             "--listenPort", "80",
             "--dbHost", "content-db",
             "--dbPort", "5432"

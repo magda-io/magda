@@ -4,9 +4,11 @@ import Region from "./Components/Dataset/Search/Facets/Region";
 import Temporal from "./Components/Dataset/Search/Facets/Temporal";
 import { ValidationFieldList } from "./Components/Dataset/Add/ValidationManager";
 import urijs from "urijs";
-import removePathPrefix from "helpers/removePathPrefix";
+import removePathPrefix from "./helpers/removePathPrefix";
+import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
+import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient";
 
-export const ADMIN_ROLE_ID = "00000000-0000-0003-0000-000000000000";
+export const ADMIN_ROLE_ID = ADMIN_USERS_ROLE_ID;
 
 declare global {
     interface Window {
@@ -42,9 +44,8 @@ const fallbackApiHost = "https://dev.magda.io/";
 
 const DEV_FEATURE_FLAGS = {
     cataloguing: true,
-    publishToDga: true,
+    publishToDga: false,
     previewAddDataset: false,
-    placeholderWorkflowsOn: false,
     datasetApprovalWorkflowOn: false,
     useStorageApi: true,
     datasetLikeButton: false
@@ -79,6 +80,7 @@ const serverConfig: {
     showNotificationBanner?: boolean;
     contentApiBaseUrl?: string;
     previewMapBaseUrl?: string;
+    indexerApiBaseUrl?: string;
     registryApiBaseUrl?: string;
     registryApiReadOnlyBaseUrl?: string;
     searchApiBaseUrl?: string;
@@ -91,6 +93,7 @@ const serverConfig: {
     featureFlags?: {
         [id: string]: boolean;
     };
+    useMagdaStorageByDefault?: boolean;
     vocabularyApiEndpoints: string[];
     defaultOrganizationId?: string;
     defaultContactEmail?: string;
@@ -214,6 +217,8 @@ const credentialsFetchOptions: RequestInit = !isBackendSameOrigin
           credentials: "same-origin"
       };
 
+AuthDecisionQueryClient.fetchOptions = { ...credentialsFetchOptions };
+
 const contentApiURL =
     serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";
 
@@ -286,6 +291,8 @@ export const config = {
     contentApiURL,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
+    indexerApiBaseUrl:
+        serverConfig?.indexerApiBaseUrl || fallbackApiHost + "api/v0/indexer/",
     registryReadOnlyApiUrl: registryReadOnlyApiUrl,
     registryFullApiUrl: registryFullApiUrl,
     adminApiUrl:
@@ -353,6 +360,10 @@ export const config = {
     featureFlags:
         serverConfig.featureFlags ||
         (process.env.NODE_ENV === "development" ? DEV_FEATURE_FLAGS : {}),
+    useMagdaStorageByDefault:
+        typeof serverConfig.useMagdaStorageByDefault === "boolean"
+            ? serverConfig.useMagdaStorageByDefault
+            : true,
     vocabularyApiEndpoints,
     defaultOrganizationId: serverConfig.defaultOrganizationId,
     defaultContactEmail: serverConfig.defaultContactEmail,
@@ -374,6 +385,7 @@ export const config = {
               "distributions.format",
               "distributions.license",
               "dataset.publisher",
+              "publishing.custodianOrgUnitId",
               "licenseLevel",
               "dataset.defaultLicense",
               "informationSecurity.classification",

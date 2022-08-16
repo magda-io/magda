@@ -1,10 +1,14 @@
 package au.csiro.data61.magda.registry
 
-import akka.actor.Actor
-import akka.actor.ActorLogging
-import akka.actor.ActorSystem
-import akka.actor.DeadLetter
-import akka.actor.Props
+import akka.Done
+import akka.actor.{
+  Actor,
+  ActorLogging,
+  ActorSystem,
+  CoordinatedShutdown,
+  DeadLetter,
+  Props
+}
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpResponse
@@ -26,8 +30,8 @@ import com.typesafe.config.Config
 import scalikejdbc.LoggingSQLAndTimeSettings
 
 import scala.concurrent.ExecutionContextExecutor
-
-import scala.util.{Try, Success, Failure}
+import scala.concurrent.duration.DurationLong
+import scala.util.{Failure, Success, Try}
 
 object RegistryApp extends App {
 
@@ -124,5 +128,49 @@ object RegistryApp extends App {
     .orElse(Option(config.getInt("http.port")))
     .getOrElse(6101)
 
-  Http().bindAndHandle(api.routes, interface, port)
+  val bindingFuture = Http()
+    .newServerAt(interface, port)
+    .bind(api.routes)
+
+  logger.info(
+    "http.waitBeforeTermination: {}",
+    config
+      .getDuration("http.waitBeforeTermination")
+      .toMillis milliseconds
+  )
+
+  logger.info(
+    "http.hardTerminationDeadline: {}",
+    config
+      .getDuration("http.hardTerminationDeadline")
+      .toMillis milliseconds
+  )
+
+  val shutdown = CoordinatedShutdown(system)
+  shutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "http-unbind") {
+    () =>
+      bindingFuture.flatMap(_.unbind()).map(_ => Done)
+  }
+  shutdown.addTask(
+    CoordinatedShutdown.PhaseServiceRequestsDone,
+    "http-graceful-termination"
+  ) { () =>
+    bindingFuture
+      .flatMap(
+        b =>
+          akka.pattern.after(
+            config
+              .getDuration("http.waitBeforeTermination")
+              .toMillis milliseconds,
+            system.scheduler
+          )(
+            b.terminate(
+              config
+                .getDuration("http.hardTerminationDeadline")
+                .toMillis milliseconds
+            )
+          )
+      )
+      .map(_ => Done)
+  }
 }

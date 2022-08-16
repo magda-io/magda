@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "The temporal period that the dataset covers",
+    "title": "Dataset Temporal Period Aspect",
     "description": "Specifies the temporal period that the dataset covers as a list of time intervals.",
     "type": "object",
     "properties": {

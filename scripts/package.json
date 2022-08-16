@@ -1,10 +1,11 @@
 {
   "name": "@magda/scripts",
-  "version": "1.2.2-alpha.0",
+  "version": "2.0.0",
   "description": "Scripts for building, running, and deploying MAGDA",
   "license": "Apache-2.0",
   "bin": {
     "generate-registry-typescript": "generate-registry-typescript.js",
+    "create-jwt-token": "create-jwt-token.js",
     "create-docker-context-for-node-component": "create-docker-context-for-node-component.js",
     "generate-connector-jobs": "generate-connector-jobs.js",
     "run-typescript-in-nodemon": "run-typescript-in-nodemon.js",
@@ -27,7 +28,7 @@
     "release": "npm publish || echo \"Skip releasing npm package @magda/scripts.\""
   },
   "devDependencies": {
-    "@types/pg": "^7.4.14",
+    "@types/pg": "^8.6.5",
     "@types/request": "^2.48.1"
   },
   "magda": {
@@ -57,7 +58,7 @@
     "lodash": "^4.17.5",
     "moment": "^2.19.4",
     "nodemon": "^1.11.0",
-    "pg": "^7.11.0",
+    "pg": "^8.7.3",
     "pkg": "^4.3.4",
     "pwgen": "0.1.6",
     "request": "^2.88.0",
@@ -67,9 +68,9 @@
     "table": "^5.3.3",
     "tmp": "0.0.31",
     "toposort": "^1.0.6",
-    "ts-node": "^8.5.2",
-    "tsconfig-paths": "^3.9.0",
-    "typescript": "^3.7.2",
+    "ts-node": "^8.9.2",
+    "tsconfig-paths": "^4.1.0",
+    "typescript": "~4.2.4",
     "uniqid": "^5.0.3",
     "yaml": "^1.10.0",
     "yargs": "^12.0.5"

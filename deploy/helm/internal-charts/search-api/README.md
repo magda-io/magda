@@ -1,6 +1,6 @@
 # search-api
 
-![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square)
+![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -17,6 +17,7 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.minReplicas | int | `1` |  |
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
 | datasetsIndexVersion | string | `nil` | Manually set dataset index version. If not specify, default version will be used. you want to manually set this setting when upgrade to a Magda version that involves dataset index version changes. As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built. |
+| debug | bool | `false` | when set to true, search API will print verbose debug info (e.g. ES DSL query) to log |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"docker.io/data61"` |  |

@@ -52,6 +52,7 @@ export type dcatDistributionStrings = {
     license: string;
     description: string;
     title: string;
+    useStorageApi?: boolean;
 };
 
 export type DcatDatasetStrings = {
@@ -162,6 +163,22 @@ export type DatasetDraft = {
     };
 };
 
+export type PublishingAspect = {
+    custodianOrgUnitId?: string;
+    managingOrgUnitId?: string;
+    state?: "draft" | "published" | "archived";
+    level?:
+        | "organization"
+        | "custodian"
+        | "team"
+        | "creatorOrgUnit"
+        | "selectedOrgUnit";
+    contactPointDisplay?: "team" | "organization" | "custodian";
+    publishAsOpenData?: {
+        [key: string]: any;
+    };
+};
+
 export type RawDataset = {
     id: string;
     name: string;
@@ -183,6 +200,7 @@ export type RawDataset = {
         version?: VersionAspectData;
         "dataset-draft"?: DatasetDraft;
         currency?: CurrencyData;
+        publishing?: PublishingAspect;
     };
 };
 
@@ -204,6 +222,12 @@ export type ParsedDistribution = {
     visualizationInfo: any;
     sourceDetails: any;
     ckanResource: any;
+    publishingState?: string;
+    accessControl?: {
+        ownerId: string;
+        orgUnitId: string;
+        preAuthorisedPermissionIds: string[];
+    };
     version?: VersionAspectData;
 };
 
@@ -250,7 +274,7 @@ export type ParsedDataset = {
     informationSecurity?: ParsedInformationSecurity;
     accessControl?: {
         ownerId: string;
-        orgUnitOwnerId: string;
+        orgUnitId: string;
         preAuthorisedPermissionIds: string[];
     };
     ckanExport?: CkanExportAspectType;
@@ -405,6 +429,8 @@ export function parseDistribution(
     const downloadURL = info.downloadURL;
     const accessURL = info.accessURL;
     const accessNotes = info.accessNotes;
+    const accessControl = aspects["access-control"];
+    const publishing = aspects["publishing"] || {};
     const updatedDate = info.modified && getDateString(info.modified);
     const license = info.license || "Licence restrictions unknown";
     const description = info.description || "No description provided";
@@ -451,6 +477,8 @@ export function parseDistribution(
         compatiblePreviews,
         sourceDetails: aspects["source"],
         ckanResource: aspects["ckan-resource"],
+        accessControl,
+        publishingState: publishing["state"],
         version: aspects["version"]
     };
 }
@@ -480,7 +508,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         ? Object.assign({}, defaultDatasetAspects, dataset["aspects"])
         : defaultDatasetAspects;
     const identifier = dataset && dataset.id;
-    const accessControl = aspects["dataset-access-control"];
+    const accessControl = aspects["access-control"];
     const datasetInfo = aspects["dcat-dataset-strings"];
     const distribution = aspects["dataset-distributions"];
     const temporalCoverage = aspects["temporal-coverage"] || { intervals: [] };

@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 import logger from "redux-logger";
 import "./index.scss";
-import { BrowserRouter, Route } from "react-router-dom";
+import { BrowserRouter, Route, withRouter } from "react-router-dom";
 
 import thunkMiddleware from "redux-thunk";
 import React from "react";
@@ -34,8 +34,8 @@ class GAListener extends React.Component {
     };
 
     componentDidMount() {
-        this.sendPageView(this.context.router.history.location);
-        this.context.router.history.listen(this.sendPageView);
+        this.sendPageView(this.props.history.location);
+        this.props.history.listen(this.sendPageView);
     }
 
     sendPageView(location) {
@@ -48,6 +48,8 @@ class GAListener extends React.Component {
     }
 }
 
+const GAListenerWithRouter = withRouter(GAListener);
+
 ReactDOM.render(
     <Provider store={store}>
         <BrowserRouter
@@ -58,11 +60,11 @@ ReactDOM.render(
                     : uiBaseUrl
             }
         >
-            <GAListener>
+            <GAListenerWithRouter>
                 <ScrollToTop>
                     <Route path="/" component={AppContainer} />
                 </ScrollToTop>
-            </GAListener>
+            </GAListenerWithRouter>
         </BrowserRouter>
     </Provider>,
     document.getElementById("root")

@@ -11,7 +11,6 @@ import { getFormatIcon } from "./View/DistributionIcon";
 import apiAccessIcon from "assets/apiAccess.svg";
 import downloadWhiteIcon from "assets/download-white.svg";
 import CommonLink from "Components/Common/CommonLink";
-import { History, Location } from "history";
 import {
     ParsedDataset,
     ParsedDistribution,
@@ -326,4 +325,4 @@ const DistributionPage: FunctionComponent<PropsType> = (props) => {
     );
 };
 
-export default withRouter(DistributionPage);
+export default withRouter(DistributionPage as any) as any;

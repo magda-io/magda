@@ -29,8 +29,11 @@ spec:
           - "bin/magda-search-api"
           - "-Dhttp.port=6102"
           - "-Dakka.loglevel={{ .Values.global.logLevel }}"
-          - "-Dopa.baseUrl=http://authorization-api/v0/opa/"
+          - "-DauthApi.baseUrl=http://authorization-api"
           - "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9200"
+{{- if .Values.debug }}
+          - "-DsearchApi.debug=true"
+{{- end }}
 {{- if .Values.datasetsIndexVersion }}
           - "-DelasticSearch.indices.datasets.version={{ .Values.datasetsIndexVersion }}"
 {{- end }}

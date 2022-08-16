@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "Aspect capturing a complete representation of a distribution according to Project Open Data (data.json).",
+    "title": "Project Open Data Distribution Aspect",
+    "description": "Aspect capturing a complete representation of a distribution according to Project Open Data (data.json).",
     "type": "object",
     "allOf": [
         {

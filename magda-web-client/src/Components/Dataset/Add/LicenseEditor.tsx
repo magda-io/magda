@@ -42,7 +42,7 @@ export default function LicenseEditor({
                 isSearchable={false}
                 menuPortalTarget={document.body}
                 options={
-                    Object.keys(codelists.licenseLevel).map(key => ({
+                    Object.keys(codelists.licenseLevel).map((key) => ({
                         label: codelists.licenseLevel[key],
                         value: key
                     })) as any
@@ -68,7 +68,7 @@ export default function LicenseEditor({
                         validationFieldPath={validationFieldPath}
                         validationFieldLabel={validationFieldLabel}
                         value={license}
-                        onChange={newLicense => onChange(newLicense!)}
+                        onChange={(newLicense) => onChange(newLicense!)}
                         editor={textEditorEx({
                             placeholder: "Please specify a licence"
                         })}

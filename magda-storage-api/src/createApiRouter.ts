@@ -1,26 +1,83 @@
-import express from "express";
-import { OutgoingHttpHeaders } from "http";
-import ObjectStoreClient from "./ObjectStoreClient";
+import express, { Request, Response } from "express";
+import MagdaMinioClient from "./MagdaMinioClient";
 import bodyParser from "body-parser";
-import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
-import { getUserId } from "magda-typescript-common/src/session/GetUserId";
-import AuthorizedRegistryClient, {
-    AuthorizedRegistryOptions
-} from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 const { fileParser } = require("express-multipart-file-parser");
-import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
-
+import { getUserId } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import {
+    requireStorageBucketPermission,
+    requireStorageObjectPermission
+} from "./storageAuthMiddlewares";
+import { StorageBucketMetaData, StorageObjectMetaData } from "./common";
+import ServerError from "magda-typescript-common/src/ServerError";
+import { isValidS3ObjectKey } from "magda-typescript-common/src/getStorageUrl";
 export interface ApiRouterOptions {
-    registryApiUrl: string;
-    objectStoreClient: ObjectStoreClient;
-    authApiUrl: string;
+    registryClient: AuthorizedRegistryClient;
+    objectStoreClient: MagdaMinioClient;
     jwtSecret: string;
     tenantId: number;
     uploadLimit: string;
+    authDecisionClient: AuthDecisionQueryClient;
+    autoCreateBuckets: boolean;
+    defaultBuckets: string[];
+}
+
+interface FileRequest extends Request {
+    files?: {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        buffer: Buffer;
+    }[];
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
     const router: express.Router = express.Router();
+    let hasDefaultBucketsCreated = false;
+
+    async function initialization() {
+        try {
+            if (options.autoCreateBuckets) {
+                console.info("Ensuring that default buckets exist...");
+
+                for (const bucket of options.defaultBuckets) {
+                    console.info(`Creating default bucket ${bucket}`);
+                    await options.objectStoreClient.createBucket(bucket);
+                }
+                console.info("Finished creating default buckets");
+            } else {
+                console.info(
+                    "Skipping creation of default buckets. (autoCreateBuckets: false)"
+                );
+            }
+            hasDefaultBucketsCreated = true;
+        } catch (e) {
+            console.log("Failed to create default buckets...");
+            throw e;
+        }
+    }
+
+    initialization().catch((e) => {
+        console.error(e);
+        console.log("Initialization Failed! Exiting now...");
+        process.exit(1);
+    });
+
+    // Liveness probe
+    router.get("/status/live", function (_req, res) {
+        res.status(200).send("OK");
+    });
+
+    // Readiness probe
+    router.get("/status/ready", function (_req, res) {
+        if (hasDefaultBucketsCreated) {
+            res.status(200).send("OK");
+        } else {
+            res.status(503).send("Default buckets are yet to created.");
+        }
+    });
 
     // JSON files are interpreted as text
     router.use(bodyParser.text({ type: ["text/*", "application/json"] }));
@@ -28,24 +85,19 @@ export default function createApiRouter(options: ApiRouterOptions) {
         bodyParser.raw({ type: ["image/*", "application/octet-stream"] })
     );
 
-    // Liveness probe
-    router.get("/status/live", function (_req, res) {
-        return res.status(200).send("OK");
-    });
-
-    // Readiness probe
-    router.get("/status/ready", function (_req, res) {
-        return res.status(200).send("OK");
-    });
-
     /**
      * @apiGroup Storage
      *
      * @api {PUT} /v0/storage/buckets/{bucketid} Request to create a new bucket
      *
-     * @apiDescription Creates a new bucket with a specified name. Restricted to admins only.
+     * @apiDescription Creates a new bucket with a specified name.
      *
-     * @apiParam (Request body) {string} bucketid The name of the bucket to be created
+     * @apiParam (Path) {string} bucketid The name of the bucket to be created
+     * @apiParam (body) {string} [orgUnitId] (Optional) The id of the orgUnit that the bucket belongs to.
+     * @apiParamExample {json} Request-Example:
+     *     {
+     *        "orgUnitId": "1e8aca17-2615-4cdf-91ec-f877cf9e6bdc"
+     *     }
      *
      * @apiSuccessExample {json} 201
      *    {
@@ -63,7 +115,21 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:bucketid",
-        mustBeAdmin(options.authApiUrl, options.jwtSecret),
+        getUserId(options.jwtSecret),
+        requireStorageBucketPermission(
+            options.authDecisionClient,
+            options.objectStoreClient,
+            "storage/bucket/create",
+            async (req: Request, res: Response) => req?.params?.bucketid,
+            async (req: Request, res: Response) => {
+                const metaData: StorageBucketMetaData = {
+                    region: options.objectStoreClient.region,
+                    ownerId: res?.locals?.userId,
+                    orgUnitId: req?.body?.orgUnitId
+                };
+                return metaData;
+            }
+        ),
         async function (req, res) {
             try {
                 const bucketId = req.params.bucketid;
@@ -102,6 +168,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @api {get} /v0/storage/{bucket}/{path} Request to download an object in {bucket} at path {path}
      *
      * @apiDescription Downloads an object
+     * Please note:
+     * Besides users have `storage/object/read` permission, a user also has access to a file when:
+     * - the file is associated with a record
+     * - the user has `object/record/read` permission to an existing record.
      *
      * @apiParam (Request path) {string} bucket The name of the bucket under which the requested object is
      * @apiParam (Request path) {string} path The name of the object being requested
@@ -115,124 +185,78 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiErrorExample {text} 500
      *      "Unknown error"
      */
-    router.get("/:bucket/*", async function (req, res) {
-        const path = req.params[0];
-        const bucket = req.params.bucket;
-
-        const encodeBucketname = encodeURIComponent(bucket);
-
-        const object = options.objectStoreClient.getFile(
-            encodeBucketname,
-            path
-        );
-
-        let headers: OutgoingHttpHeaders;
-        try {
-            headers = await object.headers();
-            Object.keys(headers).forEach((header) => {
-                const value = headers[header];
-                if (value !== undefined) {
-                    res.setHeader(header, value);
-                }
-            });
-        } catch (err) {
-            if (err.code === "NotFound") {
-                return res
-                    .status(404)
-                    .send(
-                        "No such object with path " +
-                            path +
-                            " in bucket " +
-                            bucket
-                    );
-            } else {
-                return res.status(500).send("Unknown error");
-            }
-        }
-        const recordIdNum = res.getHeader("Record-ID");
-        if (recordIdNum) {
-            const recordId = recordIdNum.toString();
-
-            const found = await checkRecordExists(req, recordId);
-            if (found === 404) {
-                return res.status(404).send("Could not retrieve the file.");
-            } else if (found === 500) {
-                return res.status(500).send("Internal server error");
-            }
-        }
-
-        const stream = await object.createStream();
-        if (stream) {
-            stream.on("error", (_e) => {
-                return res.status(500).send("Unknown error");
-            });
-            return stream.pipe(res);
-        }
-
-        // Shouldn't get here
-        console.error("Stream is undefined. Here is the request: ", req);
-        return res
-            .status(500)
-            .send(
-                "Stream not found. Object may be corrupted. We are looking into this."
-            );
-    });
-
-    /**
-     * Checks whether a record exists from the point of view of the user making the request
-     *
-     * @param req The incoming request (for getting user info)
-     * @param recordId The id of the record to check
-     */
-    async function checkRecordExists(
-        req: express.Request,
-        recordId: string
-    ): Promise<200 | 404 | 500> {
-        const maybeUserId = getUserId(req, options.jwtSecret);
-        let userId = maybeUserId.valueOr(undefined);
-
-        const registryOptions: AuthorizedRegistryOptions = {
-            baseUrl: options.registryApiUrl,
-            jwtSecret: options.jwtSecret,
-            userId: userId,
-            tenantId: options.tenantId,
-            maxRetries: 0
-        };
-        const registryClient = new AuthorizedRegistryClient(registryOptions);
-        const recordP = await registryClient.getRecord(
-            recordId,
+    router.get(
+        "/:bucket/*",
+        requireStorageObjectPermission(
+            options.authDecisionClient,
+            options.registryClient,
+            options.objectStoreClient,
+            "storage/object/read",
+            // bucket name
+            async (req: Request, res: Response) => req?.params?.bucket,
+            // object id / path
+            async (req: Request, res: Response) => req?.params?.[0],
             undefined,
-            undefined
-        );
-
-        try {
-            const record = unionToThrowable(recordP);
-
-            // We could just return true here, but we'll give ourself a bit of extra cover by
-            // asserting that the id is correct
-            return record.id === recordId ? 200 : 404;
-        } catch (err) {
-            if (err.e && err.e.response && err.e.response.statusCode === 404) {
-                return 404;
-            } else {
-                console.error(
-                    "Error occurred when trying to contact registry",
-                    err.message
+            (req, res, next) => {
+                // when storage object not exist
+                res.status(404).send(
+                    `Cannot locate storage object: ${req.params.bucket}/${req.params[0]}`
                 );
-                return 500;
+            }
+        ),
+        async function (req, res) {
+            const path = req.params[0];
+            const bucket = req.params.bucket;
+            const encodeBucketname = encodeURIComponent(bucket);
+
+            try {
+                const object = options.objectStoreClient.getFile(
+                    encodeBucketname,
+                    path
+                );
+
+                const headers = await object.headers();
+                if (typeof headers === "object") {
+                    Object.keys(headers).forEach((headerName) => {
+                        const value = headers[headerName];
+                        if (typeof value !== "undefined") {
+                            res.setHeader(headerName, headers[headerName]);
+                        }
+                    });
+                }
+
+                const stream = await object.createStream();
+                if (stream) {
+                    stream.on("error", (_e) => {
+                        res.status(500).send("Unknown error");
+                    });
+                    stream.pipe(res);
+                } else {
+                    throw new ServerError("Failed to create stream.", 500);
+                }
+            } catch (e) {
+                if (e instanceof ServerError) {
+                    res.status(e.statusCode).send(e.message);
+                } else {
+                    res.status(500).send(`Failed to get storage object: ${e}`);
+                }
             }
         }
-    }
+    );
 
-    // Browser uploads
     /**
      * @apiGroup Storage
      *
-     * @api {post} /v0/storage/upload/{bucket}/{path} Request to upload files to {bucket}, in the directory {path}
+     * @api {post} /v0/storage/upload/{bucket}/{path} Request to upload a file to {bucket}, in the directory {path}
      *
      *
-     * @apiDescription Uploads a file. Restricted to admins only.
+     * @apiDescription Uploads a object (file) as "form post"
+     * Please note:
+     * Besides users have `storage/object/upload` permission, a user also has access to a file when:
+     * - the file is associated with a record
+     * - the user has `object/record/update` or `object/record/create` permission to an existing record.
      *
+     * @apiParam (Request body) {File[]} a list of file attachment. Please note: we only allow one file to be uploaded for one API call
      * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
      * @apiParam (Request path) {string} path The path in the bucket to put the file in
      * @apiParam (Request query) {string} recordId A record id to associate this file with - a user will only
@@ -241,8 +265,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @apiSuccessExample {string} 200 Successfully uploaded 2 files.
      * {
-     *      "message": "Successfully uploaded 2 files.",
-     *      "etags": ["cafbab71cd98120b777799598f0d4808-1","19a3cb5d5706549c2f1a57a27cf30e41-1"]
+     *      "etag": "cafbab71cd98120b777799598f0d4808-1",
+     *      "versionId": "xxx-xxx-323x-xx-xx33"
      * }
      *
      * @apiErrorExample {string} 500
@@ -250,64 +274,115 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.post(
         "/upload/:bucket*",
+        getUserId(options.jwtSecret),
         fileParser({ rawBodyOptions: { limit: options.uploadLimit } }),
-        mustBeAdmin(options.authApiUrl, options.jwtSecret),
-        async (req: any, res) => {
-            if (!req.files || req.files.length === 0) {
-                return res.status(400).send("No files were uploaded.");
-            }
-
-            const recordId =
-                req.query.recordId && decodeURIComponent(req.query.recordId);
-
-            if (recordId) {
-                const found = await checkRecordExists(req, recordId);
-                if (found === 404) {
-                    return res.status(400).send("Invalid record id");
-                } else if (found === 500) {
-                    return res.status(500).send("Internal server error");
+        requireStorageObjectPermission(
+            options.authDecisionClient,
+            options.registryClient,
+            options.objectStoreClient,
+            "storage/object/upload",
+            // retrieve bucket name
+            async (req: Request, res: Response) => req?.params?.bucket,
+            // retrieve object id / path
+            async (req: FileRequest, res: Response) => {
+                if (!req?.files?.length) {
+                    throw new ServerError(
+                        "Cannot locate any files in request body",
+                        400
+                    );
                 }
-            }
+                const rawPath = req.params[0] as string;
+                const pathNoLeadingSlash = rawPath.startsWith("/")
+                    ? rawPath.slice(1)
+                    : rawPath;
+                const path = pathNoLeadingSlash.endsWith("/")
+                    ? pathNoLeadingSlash.slice(pathNoLeadingSlash.length - 1)
+                    : pathNoLeadingSlash;
 
-            const bucket = req.params.bucket;
-            const encodeBucketname = encodeURIComponent(bucket);
-            const rawPath = req.params[0] as string;
-            const pathNoLeadingSlash = rawPath.startsWith("/")
-                ? rawPath.slice(1)
-                : rawPath;
-            const path = pathNoLeadingSlash.endsWith("/")
-                ? pathNoLeadingSlash.slice(pathNoLeadingSlash.length - 1)
-                : pathNoLeadingSlash;
+                const file = req.files[0];
 
-            const promises = (req.files as Array<any>).map((file: any) => {
-                const metaData: any = {
-                    "Content-Type": file.mimetype,
-                    "Content-Length": file.buffer.byteLength
-                };
-                if (recordId) {
-                    metaData["Record-ID"] = recordId;
-                }
                 const fileid = file.originalname;
                 const fullPath = path !== "" ? path + "/" + fileid : fileid;
 
-                return options.objectStoreClient
-                    .putFile(encodeBucketname, fullPath, file.buffer, metaData)
-                    .then((etag) => etag);
-            });
-            return Promise.all(promises)
-                .then((etags) => {
-                    return res.status(200).send({
-                        message:
-                            "Successfully uploaded " +
-                            etags.length +
-                            " file(s).",
-                        etags
-                    });
-                })
-                .catch((err: Error) => {
-                    console.error(err);
-                    return res.status(500).send("Internal server error.");
-                });
+                if (!isValidS3ObjectKey(fullPath)) {
+                    throw new ServerError(
+                        `object key: ${fullPath} is not valid storage object key.`,
+                        400
+                    );
+                }
+
+                res.locals.objectName = fullPath;
+
+                return fullPath;
+            },
+            // create auth decision context data
+            async (req: FileRequest, res: Response) => {
+                if (!req?.files?.length) {
+                    throw new ServerError(
+                        "Cannot locate any files in request body",
+                        400
+                    );
+                }
+                if (req.files.length > 1) {
+                    throw new ServerError(
+                        "Only one file is allowed to be upload for one API call",
+                        400
+                    );
+                }
+                const file = req.files[0];
+                const metaData: StorageObjectMetaData = {
+                    recordId: req?.query?.recordId as string,
+                    contentType: file.mimetype,
+                    cacheControl: req?.headers?.["cache-control"] as string,
+                    ownerId: res?.locals?.userId,
+                    orgUnitId: req?.query?.orgUnitId as string
+                };
+                metaData.size = file.buffer.length;
+                return metaData;
+            }
+        ),
+        async (req: FileRequest, res: Response) => {
+            try {
+                const recordId =
+                    req.query.recordId &&
+                    decodeURIComponent(req?.query?.recordId as string);
+
+                const bucket = req.params.bucket;
+                const encodeBucketname = encodeURIComponent(bucket);
+
+                const file = req.files[0];
+                const metaData: any = {
+                    "Content-Type": file.mimetype,
+                    "Content-Length": file.buffer.length
+                };
+                if (recordId) {
+                    metaData["magda-record-id"] = recordId;
+                }
+                if (res?.locals?.userId) {
+                    metaData["magda-user-id"] = res.locals.userId;
+                }
+                if (req?.query?.orgUnitId) {
+                    metaData["magda-org-unit-id"] = req.query.orgUnitId;
+                }
+                if (req?.headers?.["cache-control"]) {
+                    metaData["Cache-Control"] = req.headers["cache-control"];
+                }
+
+                const uploadInfo = await options.objectStoreClient.putFile(
+                    encodeBucketname,
+                    res.locals.objectName,
+                    file.buffer,
+                    metaData
+                );
+
+                res.status(200).send(uploadInfo);
+            } catch (e) {
+                if (e instanceof ServerError) {
+                    res.status(e.statusCode).send(e.message);
+                } else {
+                    res.status(500).send("Failed to upload file: " + e);
+                }
+            }
         }
     );
 
@@ -316,18 +391,24 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @api {put} /v0/storage/{bucket}/{filePath}?{recordId} Request to upload an object to {bucket} with name {filePath}
      *
-     * @apiDescription Uploads an object. Restricted to admins only.
+     * @apiDescription Uploads an object.
+     * Please note:
+     * Besides users have `storage/object/upload` permission, a user also has access to a file when:
+     * - the file is associated with a record
+     * - the user has `object/record/update` or `object/record/create` permission to an existing record.
      *
      * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
      * @apiParam (Request path) {string} filePath The path of the file to delete
      * @apiParam (Request query) {string} recordId A record id to associate this file with - a user will only
      *      be allowed to access this file if they're also allowed to access the associated record. Should be
      *      url encoded.
+     * @apiParam (Request query) {string} [orgUnitId] (Optional) The id of the orgUnit that the bucket belongs to.
      *
      * @apiSuccessExample {json} 200
      *    {
      *        "message":"File uploaded successfully",
-     *        "etag":"edd88378a7900bf663a5fa386386b585-1"
+     *        "etag":"edd88378a7900bf663a5fa386386b585-1",
+     *        "versionId": "xxxxxxxx"
      *    }
      *
      * @apiErrorExample {json} 400
@@ -342,7 +423,43 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:bucket/*",
-        mustBeAdmin(options.authApiUrl, options.jwtSecret),
+        getUserId(options.jwtSecret),
+        requireStorageObjectPermission(
+            options.authDecisionClient,
+            options.registryClient,
+            options.objectStoreClient,
+            "storage/object/upload",
+            // retrieve bucket name
+            async (req: Request, res: Response) => req?.params?.bucket,
+            // retrieve object id / path
+            async (req: Request, res: Response) => {
+                const objectKey = req?.params?.[0] ? req.params[0] : "";
+                if (!objectKey || !isValidS3ObjectKey(objectKey)) {
+                    throw new ServerError(
+                        `object key: ${objectKey} is not valid storage object key.`,
+                        400
+                    );
+                }
+                return objectKey;
+            },
+            // create auth decision context data
+            async (req: Request, res: Response) => {
+                const metaData: StorageObjectMetaData = {
+                    recordId: req?.query?.recordId as string,
+                    contentType: req?.headers?.["content-type"] as string,
+                    cacheControl: req?.headers?.["cache-control"] as string,
+                    ownerId: res?.locals?.userId,
+                    orgUnitId: req?.query?.orgUnitId as string
+                };
+                const size = parseInt(
+                    req?.headers?.["content-length"] as string
+                );
+                if (!isNaN(size)) {
+                    metaData.size = size;
+                }
+                return metaData;
+            }
+        ),
         async function (req, res) {
             const path = req.params[0];
             const bucket = req.params.bucket;
@@ -354,19 +471,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const encodeBucketname = encodeURIComponent(bucket);
             const content = req.body;
             const contentType = req.headers["content-type"];
-            const contentLength = req.headers["content-length"];
+            const contentLength = parseInt(req?.headers?.["content-length"]);
 
-            if (!contentLength) {
+            if (
+                !isNaN(contentLength) &&
+                !contentLength &&
+                typeof req.body !== "string"
+            ) {
                 return res.status(400).json({ message: "No Content." });
-            }
-
-            if (recordId) {
-                const found = await checkRecordExists(req, recordId);
-                if (found === 404) {
-                    return res.status(400).send("Invalid record id");
-                } else if (found === 500) {
-                    return res.status(500).send("Internal server error");
-                }
             }
 
             const metaData: any = {
@@ -374,14 +486,24 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 "Content-Length": contentLength
             };
             if (recordId) {
-                metaData["Record-ID"] = recordId;
+                metaData["magda-record-id"] = recordId;
+            }
+            if (res?.locals?.userId) {
+                metaData["magda-user-id"] = res.locals.userId;
+            }
+            if (req?.query?.orgUnitId) {
+                metaData["magda-org-unit-id"] = req.query.orgUnitId;
+            }
+            if (req?.headers?.["cache-control"]) {
+                metaData["Cache-Control"] = req.headers["cache-control"];
             }
             return options.objectStoreClient
                 .putFile(encodeBucketname, path, content, metaData)
-                .then((etag) => {
+                .then((uploadedObjectInfo) => {
                     return res.status(200).send({
                         message: "File uploaded successfully",
-                        etag: etag
+                        etag: uploadedObjectInfo.etag,
+                        versionId: uploadedObjectInfo.versionId
                     });
                 })
                 .catch((err: Error) => {
@@ -402,14 +524,18 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @api {delete} /v0/storage/{bucket}/{filePath} Request to delete an object at {bucket} with path {filePath}
      *
      * @apiDescription Deletes an object. This is a hard delete, and cannot be undone.
-     * Note that if the {filePath} does not exist, the request will not fail.
+     * Please note:
+     * Besides users have `storage/object/delete` permission, a user also has access to a file when:
+     * - the file is associated with a record
+     * - the user has `object/record/delete` permission to an existing record.
      *
      * @apiParam (Request path) {string} bucket The name of the bucket where the object resides
      * @apiParam (Request path) {string} filePath The name of the object to be deleted
      *
      * @apiSuccessExample {json} 200
      *    {
-     *        "message":"File deleted successfully",
+     *        // when `false`, indicate the storage object doesn't exist. Thus, no need for deletion.
+     *        "deleted": true
      *    }
      *
      * @apiErrorExample {json} 500
@@ -419,28 +545,56 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.delete(
         "/:bucket/*",
-        mustBeAdmin(options.authApiUrl, options.jwtSecret),
-        async function (req, res) {
-            const filePath = req.params[0];
-            const bucket = req.params.bucket;
-
-            const encodeBucketname = encodeURIComponent(bucket);
-            const deletionSuccess = await options.objectStoreClient.deleteFile(
-                encodeBucketname,
-                filePath
-            );
-            if (deletionSuccess) {
-                return res.status(200).send({
-                    message: "File deleted successfully"
+        requireStorageObjectPermission(
+            options.authDecisionClient,
+            options.registryClient,
+            options.objectStoreClient,
+            "storage/object/delete",
+            // retrieve bucket name
+            async (req: Request, res: Response) => req?.params?.bucket,
+            // retrieve object id / path
+            async (req: Request, res: Response) => req?.params?.[0],
+            undefined,
+            (req, res, next) => {
+                // when storage object not exist
+                res.status(200).send({
+                    deleted: false
                 });
             }
-            return res.status(500).send({
-                message:
-                    "Encountered error while deleting file." +
-                    "This has been logged and we are looking into this."
-            });
+        ),
+        async function (req, res) {
+            try {
+                const filePath = req.params[0];
+                const bucket = req.params.bucket;
+
+                const encodeBucketname = encodeURIComponent(bucket);
+                const deletionSuccess = await options.objectStoreClient.deleteFile(
+                    encodeBucketname,
+                    filePath
+                );
+                if (deletionSuccess) {
+                    res.status(200).send({
+                        deleted: true
+                    });
+                } else {
+                    throw new ServerError(
+                        `Failed to delete the file ${filePath} in bucket ${bucket}.`
+                    );
+                }
+            } catch (e) {
+                console.error(e);
+                if (e instanceof ServerError) {
+                    res.status(e.statusCode).send({ message: e.message });
+                } else {
+                    res.status(500).send({
+                        message: `Failed to delete the file: ${e}`
+                    });
+                }
+            }
         }
     );
+
+    router.all;
 
     return router;
 }

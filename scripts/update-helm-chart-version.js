@@ -92,16 +92,18 @@ function updateChartVersion(chartFilePath) {
             for (let i = 0; i < deps.items.length; i++) {
                 const repoStr = chart.getIn(["dependencies", i, "repository"]);
                 const nameStr = chart.getIn(["dependencies", i, "name"]);
+
                 if (
                     typeof repoStr === "string" &&
                     repoStr.indexOf("file://") === 0 &&
-                    excludedCharts.length &&
-                    excludedCharts.indexOf(nameStr) === -1
+                    (!excludedCharts.length ||
+                        excludedCharts.indexOf(nameStr) === -1)
                 ) {
                     const version = chart.getIn(
                         ["dependencies", i, "version"],
                         true
                     );
+
                     if (version) {
                         version.value = pkgVersion;
                     } else {

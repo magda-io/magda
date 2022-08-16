@@ -1,24 +1,43 @@
 package au.csiro.data61.magda.registry
 
+import au.csiro.data61.magda.model.AspectQueryToSqlConfig
+import au.csiro.data61.magda.model.Auth.{
+  AuthDecision,
+  UnconditionalTrueDecision
+}
 import scalikejdbc._
 import spray.json.JsonParser
 
 import scala.util.Try
 import scala.util.{Failure, Success}
 import java.sql.SQLException
-
 import spray.json._
 import gnieh.diffson.sprayJson._
-
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
+import au.csiro.data61.magda.util.SQLUtils
+import scalikejdbc.interpolation.SQLSyntax
 
 object AspectPersistence extends Protocols with DiffsonProtocol {
 
   def getAll(
-      tenantId: TenantId
+      tenantId: TenantId,
+      authDecision: AuthDecision
   )(implicit session: DBSession): List[AspectDefinition] = {
-    sql"select aspectId, name, jsonSchema, tenantId from Aspects where ${SQLUtil.tenantIdToWhereClause(tenantId)}"
+
+    val authDecisionCondition =
+      authDecision.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.aspect"),
+          genericQuery = true
+        )
+      )
+
+    val whereClauseParts = Seq(authDecisionCondition) :+ SQLUtils
+      .tenantIdToWhereClause(tenantId, "tenantid")
+
+    sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
+      .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"
       .map(rowToAspect)
       .list
       .apply()
@@ -26,21 +45,52 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
 
   def getById(
       id: String,
-      tenantId: TenantId
+      tenantId: TenantId,
+      authDecision: AuthDecision
   )(implicit session: DBSession): Option[AspectDefinition] = {
-    sql"""select aspectId, name, jsonSchema, tenantId from Aspects where aspectId=$id and ${SQLUtil
-      .tenantIdToWhereClause(tenantId)}""".map(rowToAspect).single.apply()
+    val authDecisionCondition =
+      authDecision.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("input.object.aspect"),
+          genericQuery = true
+        )
+      )
+
+    val whereClauseParts = Seq(authDecisionCondition) :+ SQLUtils
+      .tenantIdToWhereClause(tenantId, "tenantid") :+ Some(
+      SQLSyntax.eq(sqls"aspectId", id)
+    )
+
+    sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
+      .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"
+      .map(rowToAspect)
+      .single
+      .apply()
   }
 
   def getByIds(
       ids: Iterable[String],
-      tenantId: TenantId
+      tenantId: TenantId,
+      authDecision: AuthDecision
   )(implicit session: DBSession): List[AspectDefinition] = {
     if (ids.isEmpty)
       List()
     else {
-      sql"""select aspectId, name, jsonSchema, tenantId from Aspects where ${SQLUtil
-        .tenantIdToWhereClause(tenantId)} and aspectId in ($ids)"""
+      val authDecisionCondition =
+        authDecision.toSql(
+          AspectQueryToSqlConfig(
+            prefixes = Set("input.object.aspect"),
+            genericQuery = true
+          )
+        )
+
+      val whereClauseParts = Seq(authDecisionCondition) :+ SQLUtils
+        .tenantIdToWhereClause(tenantId, "tenantid") :+ Some(
+        SQLSyntax.in(sqls"aspectId", ids.toSeq)
+      )
+
+      sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
+        .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"
         .map(rowToAspect)
         .list
         .apply()
@@ -61,7 +111,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
             "The provided ID does not match the aspect's ID."
           )
         )
-      oldAspect <- this.getById(id, tenantId) match {
+      oldAspect <- this.getById(id, tenantId, UnconditionalTrueDecision) match {
         case Some(aspect) => Success(aspect)
         case None         => create(newAspect, tenantId, userId)
       }
@@ -83,7 +133,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       userId: String
   )(implicit session: DBSession): Try[AspectDefinition] = {
     for {
-      aspect <- this.getById(id, tenantId) match {
+      aspect <- this.getById(id, tenantId, UnconditionalTrueDecision) match {
         case Some(aspect) => Success(aspect)
         case None =>
           Failure(new RuntimeException("No aspect exists with that ID."))
@@ -159,21 +209,14 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
         .apply()
 
     // Create the actual Aspect
-    try {
+    Try {
       val jsonString = aspect.jsonSchema match {
         case Some(jsonSchema) => jsonSchema.compactPrint
         case None             => null
       }
       sql"insert into Aspects (aspectId, tenantId, name, lastUpdate, jsonSchema) values (${aspect.id}, ${tenantId.tenantId}, ${aspect.name}, $eventId, $jsonString::json)".update
         .apply()
-      Success(aspect)
-    } catch {
-      case e: SQLException =>
-        Failure(
-          new RuntimeException(
-            "An aspect with the specified ID already exists."
-          )
-        )
+      aspect
     }
   }
 

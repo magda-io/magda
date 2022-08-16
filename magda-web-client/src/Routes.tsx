@@ -89,10 +89,15 @@ const CatalogRoutes = makeAsync(() =>
     import("Components/Catalog/Routes").then((module) => module.default)
 );
 
+const SettingsRoutes = makeAsync(() =>
+    import("Components/Settings/Routes").then((module) => module.default)
+);
+
 const Routes = () => {
     return (
         <Switch>
             <Route exact path="/" component={HomePage} />
+            <Route path="/settings(/)*(.)*" component={SettingsRoutes} />
             <Route
                 exact
                 path="/admin"
@@ -243,7 +248,7 @@ const Routes = () => {
             />
             <Route
                 path="/dataset/:datasetId/distribution/:distributionId"
-                component={withHeader(RecordHandler, {
+                component={withHeader(RecordHandler as any, {
                     includeSearchBox: true
                 })}
             />
@@ -263,7 +268,7 @@ const Routes = () => {
 
             <Route
                 path="/dataset/:datasetId"
-                component={withHeader(RecordHandler, {
+                component={withHeader(RecordHandler as any, {
                     includeSearchBox: true
                 })}
             />

@@ -21,6 +21,8 @@ import * as ValidationManager from "../../ValidationManager";
 import { CustomValidatorType } from "../../ValidationManager";
 import CommonLink from "Components/Common/CommonLink";
 import urijs from "urijs";
+import DatasetAccessSettings from "./DatasetAccessSettings";
+import DatasetOwnerSection from "./DatasetOwnerSection";
 
 import "./index.scss";
 
@@ -130,6 +132,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
 
     const editDatasetPublishing = props.edit("datasetPublishing");
     const editInformationSecurity = props.edit("informationSecurity");
+    const editDataset = props.edit("dataset");
     const editPublishToDga = (shouldPublishToDga: string | undefined) => {
         props.editStateWithUpdater((state) => ({
             ...state,
@@ -153,9 +156,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
         <div className="row dataset-access-and-use-page">
             <div className="col-sm-12">
                 <h2>Access and Use</h2>
-
                 <h3 className="with-underline">Sharing</h3>
-
                 {config.featureFlags.publishToDga ? (
                     <div className="question-publish-to-dga">
                         <h4 className="with-icon">
@@ -204,11 +205,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         )
                                     ) {
                                         // --- trigger classifcation validtion as well
-                                        setTimeout(() => {
-                                            ValidationManager.onInputFocusOut(
-                                                "$.informationSecurity.classification"
-                                            );
-                                        }, 1);
+                                        ValidationManager.onInputFocusOut(
+                                            "$.informationSecurity.classification"
+                                        );
                                     }
                                 }}
                                 validationFieldPath="$.datasetPublishing.publishAsOpenData.dga"
@@ -228,34 +227,23 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     </div>
                 ) : null}
 
-                {config.featureFlags.placeholderWorkflowsOn ? (
-                    <div className="question-who-can-see-dataset">
-                        <h4 className="with-icon">
-                            <span>
-                                Who can see the dataset once it is published?
-                            </span>
-                        </h4>
-                        <div className="input-area">
-                            <ToolTip>
-                                We recommend you publish your data to everyone
-                                in your organisation to help prevent data silos.
-                            </ToolTip>
-                            <div>
-                                <AlwaysEditor
-                                    value={datasetPublishing.level}
-                                    onChange={editDatasetPublishing("level")}
-                                    editor={codelistRadioEditor(
-                                        "dataset-publishing-level",
-                                        codelists.publishingLevel
-                                    )}
-                                />
-                            </div>
-                        </div>
-                    </div>
+                <DatasetAccessSettings
+                    editAccessLevel={editDatasetPublishing("level")}
+                    editOrgUnitId={editDataset("owningOrgUnitId")}
+                    accessLevel={datasetPublishing?.level}
+                    orgUnitId={dataset?.owningOrgUnitId}
+                    custodianOrgUnitId={datasetPublishing?.custodianOrgUnitId}
+                    managingOrgUnitId={datasetPublishing?.managingOrgUnitId}
+                />
+
+                {props.isEditView ? (
+                    <DatasetOwnerSection
+                        selectedUserId={dataset?.ownerId}
+                        onChange={editDataset("ownerId")}
+                    />
                 ) : null}
 
                 <h3 className="with-underline">Dataset use</h3>
-
                 {distributions.length !== 0 && (
                     <div className="question-license-apply-type">
                         <h4>
@@ -310,7 +298,6 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         </div>
                     </div>
                 )}
-
                 <div className="question-license-restriction-type">
                     <h4>
                         What licence restrictions should be applied?
@@ -373,7 +360,6 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         </div>
                     )}
                 </div>
-
                 <div className="question-security-classification">
                     <h4>
                         <span>
@@ -458,11 +444,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         )
                                     ) {
                                         // --- trigger publish to dga validtion as well
-                                        setTimeout(() => {
-                                            ValidationManager.onInputFocusOut(
-                                                "$.datasetPublishing.publishAsOpenData.dga"
-                                            );
-                                        }, 1);
+                                        ValidationManager.onInputFocusOut(
+                                            "$.datasetPublishing.publishAsOpenData.dga"
+                                        );
                                     }
                                 }}
                             />

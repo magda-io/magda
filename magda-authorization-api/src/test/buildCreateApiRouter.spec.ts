@@ -19,16 +19,22 @@ import {
 } from "magda-typescript-common/src/test/arbitraries";
 import { Request } from "supertest";
 import mockApiKeyStore from "./mockApiKeyStore";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
+import AuthDecision, {
+    UnconditionalTrueDecision,
+    UnconditionalFalseDecision
+} from "magda-typescript-common/src/opa/AuthDecision";
+import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient";
+import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 
 describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
 
-    let app: express.Express;
     let argv: any;
 
     before(function () {
         argv = retrieveArgv();
-        app = buildExpressApp();
     });
 
     afterEach(function () {
@@ -42,27 +48,48 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 listenPort: 6014,
                 dbHost: "localhost",
                 dbPort: 5432,
-                jwtSecret: "squirrel"
+                jwtSecret: "squirrel",
+                userId: DEFAULT_ADMIN_USER_ID
             })
         );
         return argv;
     }
 
-    function buildExpressApp() {
+    function buildExpressApp(
+        authDecisionOrOperationUri:
+            | AuthDecision
+            | string = UnconditionalTrueDecision
+    ) {
         const apiRouter = createApiRouter({
             jwtSecret: argv.jwtSecret,
             database: new mockDatabase() as Database,
             opaUrl: process.env["OPA_URL"]
                 ? process.env["OPA_URL"]
                 : "http://localhost:8181/",
-            registryApiUrl: process.env["REGISTRY_API_URL"]
-                ? process.env["REGISTRY_API_URL"]
-                : "http://localhost:6101/v0",
-            tenantId: MAGDA_ADMIN_PORTAL_ID
+            tenantId: MAGDA_ADMIN_PORTAL_ID,
+            authDecisionClient: createMockAuthDecisionQueryClient(
+                typeof authDecisionOrOperationUri === "string"
+                    ? async (
+                          config: AuthDecisionReqConfig,
+                          jwtToken?: string
+                      ) =>
+                          config?.operationUri === authDecisionOrOperationUri
+                              ? UnconditionalTrueDecision
+                              : UnconditionalFalseDecision
+                    : authDecisionOrOperationUri
+            ),
+            registryClient: new AuthorizedRegistryClient({
+                baseUrl: "http://localhost:6101/v0",
+                jwtSecret: argv.jwtSecret as string,
+                userId: argv.userId,
+                tenantId: MAGDA_ADMIN_PORTAL_ID,
+                maxRetries: 0
+            }),
+            failedApiKeyAuthBackOffSeconds: 5
         });
 
         const app = express();
-        app.use(require("body-parser").json());
+        app.use(require("body-parser").json({ limit: "100mb" }));
         app.use(apiRouter);
 
         return app;
@@ -90,63 +117,8 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
     describe("POST /private/users", () => {
         silenceErrorLogs(() => {
-            it("should return 401 status code without creating a new user if called without sepecifying user ID", async () => {
-                const currentMockUserStoreSize = mockUserDataStore.countRecord();
-
-                await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
-                        try {
-                            mockUserDataStore.reset();
-                            const req = request(app)
-                                .post("/private/users")
-                                .send(userData);
-
-                            const res = await req.then((res) => res);
-
-                            expect(res.status).to.equal(401);
-                            expect(mockUserDataStore.countRecord()).to.equal(
-                                currentMockUserStoreSize
-                            );
-
-                            return true;
-                        } catch (e) {
-                            throw e;
-                        }
-                    })
-                );
-            });
-
-            it("should return 403 status code without creating a new user if called as a standard user", async () => {
-                const currentMockUserStoreSize = mockUserDataStore.countRecord();
-                const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
-
-                await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
-                        try {
-                            mockUserDataStore.reset();
-                            const req = request(app)
-                                .post("/private/users")
-                                .send(userData);
-
-                            setMockRequestSession(req, standardUserId);
-
-                            const res = await req.then((res) => res);
-
-                            expect(res.status).to.equal(403);
-                            expect(mockUserDataStore.countRecord()).to.equal(
-                                currentMockUserStoreSize
-                            );
-
-                            return true;
-                        } catch (e) {
-                            throw e;
-                        }
-                    })
-                );
-            });
-
-            it("should create a new user if called as an admin user", async () => {
-                const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
+            it("should create a new user if called with correct permission", async () => {
+                const app = buildExpressApp("authObject/user/create");
 
                 await jsc.assert(
                     jsc.forall(userDataArb, async (userData) => {
@@ -156,8 +128,6 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                             const req = request(app)
                                 .post("/private/users")
                                 .send(userData);
-
-                            setMockRequestSession(req, adminUserId);
 
                             const res = await req.then((res) => res);
                             expect(res.status).to.equal(200);
@@ -183,29 +153,27 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                     })
                 );
             });
-        });
-    });
 
-    describe("GET /private/users/lookup", () => {
-        silenceErrorLogs(() => {
-            it("should return 401 status code if requested without sepecifying user ID", async () => {
+            it("should return 403 status code without creating a new user if called as a standard user", async () => {
+                const currentMockUserStoreSize = mockUserDataStore.countRecord();
+                const app = buildExpressApp(
+                    "authObject/user/never-matched-operation"
+                );
+
                 await jsc.assert(
                     jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
-                            mockUserDataStore.createRecord(userData);
-
-                            const { source, sourceId } = userData;
                             const req = request(app)
-                                .get("/private/users/lookup")
-                                .query({
-                                    source,
-                                    sourceId
-                                });
+                                .post("/private/users")
+                                .send(userData);
 
                             const res = await req.then((res) => res);
 
-                            expect(res.status).to.equal(401);
+                            expect(res.status).to.equal(403);
+                            expect(mockUserDataStore.countRecord()).to.equal(
+                                currentMockUserStoreSize
+                            );
 
                             return true;
                         } catch (e) {
@@ -214,9 +182,15 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                     })
                 );
             });
+        });
+    });
 
+    describe("GET /private/users/lookup", () => {
+        silenceErrorLogs(() => {
             it("should return 403 status code if requested as a standard user", async () => {
-                const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
+                const app = buildExpressApp(
+                    "authObject/user/never-matched-operation"
+                );
 
                 await jsc.assert(
                     jsc.forall(userDataArb, async (userData) => {
@@ -231,7 +205,6 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                                     source,
                                     sourceId
                                 });
-                            setMockRequestSession(req, standardUserId);
                             const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(403);
@@ -245,7 +218,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             });
 
             it("should return correct user data if queried by `source` & `sourceID` and requested as an admin user", async () => {
-                const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
+                const app = buildExpressApp("authObject/user/read");
 
                 await jsc.assert(
                     jsc.forall(userDataArb, async (userData) => {
@@ -260,8 +233,6 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                                     source,
                                     sourceId
                                 });
-
-                            setMockRequestSession(req, adminUserId);
 
                             const res = await req.then((res) => res);
                             expect(res.status).to.equal(200);
@@ -281,32 +252,10 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
     describe("GET /private/users/:userId", () => {
         silenceErrorLogs(() => {
-            it("should return 401 status code if requested without sepecifying user ID", async () => {
-                await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
-                        try {
-                            mockUserDataStore.reset();
-                            const {
-                                id: userId
-                            } = mockUserDataStore.createRecord(userData);
-                            const req = request(app).get(
-                                `/private/users/${userId}`
-                            );
-
-                            const res = await req.then((res) => res);
-
-                            expect(res.status).to.equal(401);
-
-                            return true;
-                        } catch (e) {
-                            throw e;
-                        }
-                    })
-                );
-            });
-
             it("should return 403 status code if requested as a standard user", async () => {
-                const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
+                const app = buildExpressApp(
+                    "authObject/user/never-matched-operation"
+                );
 
                 await jsc.assert(
                     jsc.forall(userDataArb, async (userData) => {
@@ -319,7 +268,6 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                             const req = request(app).get(
                                 `/private/users/${userId}`
                             );
-                            setMockRequestSession(req, standardUserId);
                             const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(403);
@@ -333,7 +281,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             });
 
             it("should return correct user data if queried by `userId` and requested as an admin user", async () => {
-                const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
+                const app = buildExpressApp("authObject/user/read");
 
                 await jsc.assert(
                     jsc.forall(userDataArb, async (userData) => {
@@ -346,8 +294,6 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                             const req = request(app).get(
                                 `/private/users/${userId}`
                             );
-
-                            setMockRequestSession(req, adminUserId);
 
                             const res = await req.then((res) => res);
                             expect(res.status).to.equal(200);
@@ -370,6 +316,10 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
     describe("GET /private/users/apikey/:apiKeyId", () => {
         silenceErrorLogs(() => {
             it("should return correct user data with correct API key & API Key Id", async () => {
+                // api key verification doesn't require any permission
+                const app = buildExpressApp(
+                    "authObject/user/never-matched-operation"
+                );
                 await jsc.assert(
                     jsc.forall(
                         uuidArb,
@@ -413,6 +363,9 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             });
 
             it("should deny access with incorrect API key & API Key Id", async () => {
+                const app = buildExpressApp(
+                    "authObject/user/never-matched-operation"
+                );
                 await jsc.assert(
                     jsc.forall(
                         uuidArb,
@@ -456,6 +409,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
     describe("GET /public/users/:userId", () => {
         silenceErrorLogs(() => {
             it("should return correct user data if queried by `userId` without sepecifying user ID", async () => {
+                const app = buildExpressApp();
                 await jsc.assert(
                     jsc.forall(userDataArb, async (userData) => {
                         try {
@@ -487,7 +441,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
             it("should return correct user data if queried by `userId` and requested as a standard user", async () => {
                 const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
-
+                const app = buildExpressApp();
                 await jsc.assert(
                     jsc.forall(userDataArb, async (userData) => {
                         try {
@@ -519,7 +473,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
             it("should return correct user data if queried by `userId` and requested as an admin user", async () => {
                 const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
-
+                const app = buildExpressApp();
                 await jsc.assert(
                     jsc.forall(userDataArb, async (userData) => {
                         try {
@@ -555,6 +509,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
     describe("GET /public/users/whoami", () => {
         silenceErrorLogs(() => {
             it("should return 200 status code without including session header", async () => {
+                const app = buildExpressApp();
                 await jsc.assert(
                     jsc.forall(jsc.nat, async () => {
                         try {
@@ -576,6 +531,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             });
 
             it("should return correct user data specified by session header", async () => {
+                const app = buildExpressApp();
                 await jsc.assert(
                     jsc.forall(userDataArb, async (userData) => {
                         try {

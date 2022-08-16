@@ -73,6 +73,10 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                             } catch (e) {
                                 setError(e);
                                 throw e;
+                            } finally {
+                                if (deletionPromisesRef?.current?.[distId]) {
+                                    delete deletionPromisesRef.current[distId];
+                                }
                             }
                         };
 
@@ -127,6 +131,10 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
     const closeModal = useCallback(async () => {
         try {
             setError(null);
+            if (!uploadedDistributions.length && !urlDistributions.length) {
+                setIsOpen(false);
+                return;
+            }
             const deletionPromises = deletionPromisesRef.current;
             // --- wait for existing deletion job
             await Promise.all(Object.values(deletionPromises));
@@ -145,6 +153,8 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
             setIsOpen(false);
         } catch (e) {
             setError(e);
+        } finally {
+            deletionPromisesRef.current = [] as any;
         }
     }, [
         uploadedDistributions,
@@ -156,6 +166,10 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
     const onAddFiles = useCallback(async () => {
         try {
             setError(null);
+            if (!uploadedDistributions.length && !urlDistributions.length) {
+                setIsOpen(false);
+                return;
+            }
             await promisifySetState(datasetStateUpdater)((state) => {
                 const allNewDists = uploadedDistributions.concat(
                     urlDistributions
@@ -263,24 +277,24 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                 {processingErrorMessage ? (
                     <div className="process-url-error-message au-body au-page-alerts au-page-alerts--warning">
                         <h3>{processingErrorMessage}</h3>
-                        <div className="heading">Here’s what you can do:</div>
+                        <div className="heading">Here's what you can do:</div>
                         <ul>
                             <li>
                                 Double check the URL below is correct and
                                 without any typos. If you need to edit the URL,
-                                do so below and press ‘Fetch’ again
+                                do so below and press 'Fetch' again
                             </li>
                             <li>
-                                If the URL looks correct, it’s possible we can’t
+                                If the URL looks correct, it's possible we can't
                                 connect to the service or extract any meaningful
                                 metadata from it. You may want to try again
                                 later
                             </li>
                             <li>
                                 If you want to continue using this URL you can,
-                                however you’ll need to manually enter the
-                                dataset metadata. Use the ‘Manually enter
-                                metadata’ button below
+                                however you'll need to manually enter the
+                                dataset metadata. Use the 'Manually enter
+                                metadata' button below
                             </li>
                         </ul>
                     </div>

@@ -97,6 +97,8 @@ class StreamControllerTest extends FlatSpec with Matchers {
     private val buffer = new ListBuffer[Promise[Unit]]()
     private val batchProcessingSize = 4
 
+    var isReady: Boolean = false
+
     override def index(
         source: Source[DataSet, NotUsed]
     ): Future[SearchIndexer.IndexResult] =
@@ -172,6 +174,10 @@ class StreamControllerTest extends FlatSpec with Matchers {
 
     override def isEmpty(index: Indices.Index): Future[Boolean] = {
       throw new Exception("isEmpty() not implemented")
+    }
+
+    override def refreshIndex(index: Indices.Index): Future[Unit] = {
+      throw new Exception("refreshIndex() not implemented")
     }
   }
 

@@ -1,0 +1,55 @@
+{
+  "name": "@magda/int-test-ts",
+  "description": "Integration test cases in typescript",
+  "version": "2.0.0",
+  "license": "Apache-2.0",
+  "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
+    "build": "yarn run compile",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
+    "test": "PGUSER=postgres mocha --timeout 100000 --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/tests/**/*.spec.ts\"",
+    "run-service": "ts-node -r tsconfig-paths/register src/runService.ts"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.0",
+    "@types/dockerode": "^3.3.7",
+    "@types/lodash": "^4.14.73",
+    "@types/minio": "^7.0.12",
+    "@types/mocha": "^2.2.41",
+    "@types/nock": "^8.2.1",
+    "@types/pg": "^8.6.5",
+    "@types/sinon": "^4.1.3",
+    "@types/urijs": "^1.19.19",
+    "chai": "^4.1.2",
+    "isomorphic-fetch": "^2.2.1",
+    "jsonwebtoken": "^8.4.0",
+    "mocha": "^3.4.2",
+    "nock": "^9.0.14",
+    "nyc": "^13.1.0",
+    "sinon": "^4.2.1"
+  },
+  "dependencies": {
+    "@magda/typescript-common": "^2.0.0",
+    "commander": "^9.1.0",
+    "dockerode": "^3.3.1",
+    "dockerode-compose": "github:magda-io/dockerode-compose#magda-latest",
+    "form-data": "^4.0.0",
+    "fs-extra": "8.1.0",
+    "lodash": "^4.17.11",
+    "minio": "^7.0.26",
+    "pg": "^8.7.3",
+    "tempy": "^1.0.1",
+    "typescript": "~4.2.4",
+    "urijs": "^1.19.11",
+    "uuid": "^8.2.0"
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "test": true
+    }
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist"
+  }
+}

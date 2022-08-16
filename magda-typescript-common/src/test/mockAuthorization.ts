@@ -15,9 +15,9 @@ export default function mockAuthorization(
 
     if (!isAdmin)
         scope
-            .get(`/private/users/${userId}`)
+            .get(`/public/users/${userId}`)
             .reply(401, "Only admin users are authorised to access this API");
-    else scope.get(`/private/users/${userId}`).reply(200, { isAdmin });
+    else scope.get(`/public/users/${userId}`).reply(200, { isAdmin });
 
     const id = jwt.sign({ userId: userId }, jwtSecret);
 

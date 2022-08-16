@@ -18,6 +18,7 @@ import com.sksamuel.elastic4s.http.ElasticDsl._
 import com.sksamuel.elastic4s.http.bulk.{BulkResponse, BulkResponseItem}
 import com.sksamuel.elastic4s.http.delete.DeleteByQueryResponse
 import com.sksamuel.elastic4s.http.index.CreateIndexResponse
+import com.sksamuel.elastic4s.http.index.admin.RefreshIndexResponse
 import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
 import com.sksamuel.elastic4s.http.search.SearchResponse
 import com.sksamuel.elastic4s.http.snapshots.{
@@ -65,11 +66,16 @@ class ElasticSearchIndexer(
     * Returns an initialised ElasticClient on completion. Using this to get the client rather than just keeping a reference to an initialised client
     *  ensures that all queries will only complete after the client is initialised.
     */
-  private val setupFuture = setup()
+  private val setupFuture = setup().map { r =>
+    isReady = true
+    r
+  }
 
   implicit val scheduler: Scheduler = system.scheduler
 
-  override def ready: Future[Unit] = setupFuture.map(_ => Unit)
+  def ready: Future[Unit] = setupFuture.map(_ => Unit)
+
+  var isReady: Boolean = false
 
   private lazy val restoreQueue: SourceQueue[
     (ElasticClient, IndexDefinition, Snapshot, Promise[RestoreResult])
@@ -627,6 +633,20 @@ class ElasticSearchIndexer(
             f.error.`type`,
             f.error.reason
           )
+      }
+  }
+
+  def refreshIndex(index: Indices.Index): Future[Unit] = {
+    setupFuture
+      .flatMap { client =>
+        client.execute(
+          ElasticDsl.refreshIndex(indices.getIndex(config, index))
+        )
+      }
+      .map {
+        case r: RequestSuccess[RefreshIndexResponse] =>
+        case f: RequestFailure =>
+          throw new Exception(s"Failed to refresh index: ${f.error}")
       }
   }
 

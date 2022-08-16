@@ -1,6 +1,6 @@
 # web-server
 
-![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square)
+![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -35,7 +35,7 @@ Kubernetes: `>= 1.14.0-0`
 | dateConfig.dateRegexes.endDateRegex | string | `"(end).*(date|dt|year|decade)"` |  |
 | dateConfig.dateRegexes.startDateRegex | string | `"(start|st).*(date|dt|year|decade)"` |  |
 | defaultContactEmail | string | `"mail@example.com"` |  |
-| defaultDatasetBucket | string | `nil` | Default bucket used to store datasets. If no value is provided `global.defaultDatasetBucket` will be used. |
+| defaultDatasetBucket | string | `nil` | Default bucket used to store datasets data files. If no value is provided `global.defaultDatasetBucket` will be used. |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"docker.io/data61"` |  |
@@ -48,12 +48,11 @@ Kubernetes: `>= 1.14.0-0`
 | externalCssFiles | list | `[]` | a list of external css file urls to be loaded. Can be used to further customise UI styling. this config value should be type of `string[]`. |
 | externalUIComponents | list | `[]` | a list of external UI component JS bundle file urls.  Can be used to replace existing built-in React UI component for customisation. this config value should be type of `string[]` |
 | extraConfigData | object | `{}` | Extra config data for external plugins. Normally served as a way to config external UI plugin components at runtime. |
-| featureFlags.cataloguing | bool | `false` | turn on / off metadata creation tool.  If this option is `false`, user won't be able to access the dataset add / edit UI  |
-| featureFlags.datasetApprovalWorkflowOn | bool | `true` | turn on / off dataset approval note step |
+| featureFlags.cataloguing | bool | `true` | turn on / off metadata creation tool.  If this option is `false`, user won't be able to access the dataset add / edit UI  |
+| featureFlags.datasetApprovalWorkflowOn | bool | `false` | turn on / off dataset approval note step |
 | featureFlags.datasetLikeButton | bool | `false` | turn on / off like / Dislike button.  At this moment, `like / Dislike button` component is a place holder only for allowing plugin external UI plugin component. |
-| featureFlags.placeholderWorkflowsOn | bool | `false` | turn on / off some metadata creation tool questions that are still under development |
 | featureFlags.previewAddDataset | bool | `false` | turn on / off the preview mode of metadata creation tool. Under preview mode, user can play with the metadata creation tool without requiring admin permission. No data will be saved under this mode. |
-| featureFlags.publishToDga | bool | `false` | turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance |
+| featureFlags.publishToDga | bool | `false` | turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance. this is an experimental feature and requires the deployment of [magda-minion-ckan-exporter](https://github.com/magda-io/magda-minion-ckan-exporter) |
 | featureFlags.useStorageApi | bool | `true` | turn on / off the UI option to use Magda internal storage for file storage. |
 | gapiIds | list | `[]` | Google Analytics Ids |
 | homePageUrl | string | `nil` | an alternative home page url.  By default, all home page related links will take users to Magda home page. You can set a different URL here to take users to a different landing page. |
@@ -107,6 +106,7 @@ Kubernetes: `>= 1.14.0-0`
 | supportExternalTerriaMapV7 | bool | `false` | When set to true, the `Open in National Map` button in Map Preview area will send data in v7 format. |
 | uiBaseUrl | string | `nil` | Serve Magda UI at a non-root url path. e.g. `http://example.com/magda/`. Its value should have a leading slash, but no trailing slash. When not set, by default, the magda UI will be served at `/`. (e.g. `http://example.com/`)  When `global.externalUrl` is set to an URL with non-root path (e.g. http://example.com/magda-dir/),  unless `uiBaseUrl` has a non-empty value that is not `/`, the effective runtime value of `uiBaseUrl` will be overwritten to `/magda-dir`. You probably only want to manually set `uiBaseUrl` when you want to move magda UI to a non-root URL path but still leave all APIs at root path. |
 | useLocalStyleSheet | bool | `false` |  |
+| useMagdaStorageByDefault | bool | `true` | Whether use Magda to store dataset data files by default When use Magda's metadata creation tool to create a dataset, user can choose to upload data files to Magda's storage (via storage API). Or managing the metadata only. When `featureFlags.useStorageApi` is set to `false`, this option has no effect. |
 | vocabularyApiEndpoints | list | `[]` |  |
 
 ----------------------------------------------

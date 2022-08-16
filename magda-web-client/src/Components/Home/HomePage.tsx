@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { withRouter } from "react-router-dom";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 import Header from "../Header/Header";
 import SearchBoxSwitcher from "Components/Dataset/Search/SearchBoxSwitcher";
 import "./HomePage.scss";
@@ -15,9 +15,7 @@ import { Small, Medium } from "Components/Common/Responsive";
 import { Location } from "history";
 import MediaQuery from "react-responsive";
 import { User } from "reducers/userManagementReducer";
-import MyDatasetSection from "./MyDatasetSection";
 import { getPluginHeader, HeaderNavItem } from "externalPluginComponents";
-import { config } from "../../config";
 
 const HeaderPlugin = getPluginHeader();
 
@@ -85,7 +83,7 @@ type PropsType = {
     user: User;
 };
 
-class HomePage extends React.Component<PropsType> {
+class HomePage extends React.Component<PropsType & RouteComponentProps> {
     getMainContent() {
         if (this?.props?.isFetchingWhoAmI === true) {
             return null;
@@ -114,38 +112,7 @@ class HomePage extends React.Component<PropsType> {
         ) {
             return null;
         }
-        if (this?.props?.user?.id) {
-            if (config?.featureFlags?.cataloguing) {
-                // --- my dataset section should only show for desktop due to the size of the design
-                // --- on mobile should still stories as before
-                return (
-                    <Small>
-                        <Stories stories={this.props.stories} />
-                    </Small>
-                );
-            } else {
-                return <Stories stories={this.props.stories} />;
-            }
-        } else {
-            return <Stories stories={this.props.stories} />;
-        }
-    }
-
-    getMyDatasetSection() {
-        if (
-            this?.props?.isFetchingWhoAmI === true ||
-            !this?.props?.user?.id ||
-            !config?.featureFlags?.cataloguing
-        ) {
-            return null;
-        } else {
-            // --- my dataset section should only show for desktop due to the size of the design
-            return (
-                <Medium>
-                    <MyDatasetSection userId={this.props.user.id} />
-                </Medium>
-            );
-        }
+        return <Stories stories={this.props.stories} />;
     }
 
     render() {
@@ -181,7 +148,6 @@ class HomePage extends React.Component<PropsType> {
                     )}
                     {this.getStories()}
                 </div>
-                {this.getMyDatasetSection()}
             </div>
         );
     }

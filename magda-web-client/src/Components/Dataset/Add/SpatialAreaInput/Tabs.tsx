@@ -2,7 +2,7 @@ import React from "react";
 
 const noop = () => {};
 
-const Tabs = props => {
+const Tabs = (props) => {
     let { onChange } = props;
     if (typeof onChange !== "function") onChange = noop;
     return (

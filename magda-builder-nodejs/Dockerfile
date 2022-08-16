@@ -1,4 +1,4 @@
-FROM node:12-alpine
+FROM node:14-alpine
 
 RUN npm install -g lerna@3.22.1
 
@@ -10,6 +10,7 @@ RUN apk --no-cache add git openssh bash \
 	ca-certificates \
 	curl \
 	tar \
-	wget
+	wget \
+	socat
 
 ENTRYPOINT ["/bin/bash", "-l", "-c"]

@@ -77,7 +77,7 @@ package misc {
 
   case class AccessControl(
       ownerId: Option[String] = None,
-      orgUnitOwnerId: Option[String] = None,
+      orgUnitId: Option[String] = None,
       preAuthorisedPermissionIds: Option[Seq[String]] = None
   )
 

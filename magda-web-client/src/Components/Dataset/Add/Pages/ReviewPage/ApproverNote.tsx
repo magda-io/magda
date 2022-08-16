@@ -14,7 +14,7 @@ type PropsType = {
     stateData: State;
 };
 
-const ApproverNote: FunctionComponent<PropsType> = props => {
+const ApproverNote: FunctionComponent<PropsType> = (props) => {
     const { datasetPublishing } = props.stateData;
 
     return (

@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "Aspect describing source link status of a distribution (active or broken)",
+    "title": "Source Link Status Aspect",
+    "description": "Aspect describing source link status of a distribution (active or broken)",
     "type": "object",
     "properties": {
         "status": {

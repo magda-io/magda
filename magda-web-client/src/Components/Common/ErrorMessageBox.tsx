@@ -2,7 +2,7 @@ import React, { FunctionComponent, useRef, useEffect } from "react";
 import { connect } from "react-redux";
 import { config } from "config";
 import FileDeletionError from "helpers/FileDeletionError";
-import ServerError from "Components/Dataset/Add/Errors/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 
 type PropsType = {
     /**
@@ -130,14 +130,10 @@ const ErrorMessageBox: FunctionComponent<PropsType> = (props) => {
                     <div className="error-message-box au-body au-page-alerts au-page-alerts--error server-error">
                         <div>
                             <span>
-                                You don't have permission to publish the dataset
-                                - this is most likely because you've been logged
-                                out - please Sign In again to submit the
-                                dataset.
+                                The operation failed due to insufficient
+                                permissions - please check your account
+                                permissions and try again.
                             </span>
-                        </div>
-                        <div>
-                            <span>Everything has been saved locally.</span>
                         </div>
                     </div>
                 );

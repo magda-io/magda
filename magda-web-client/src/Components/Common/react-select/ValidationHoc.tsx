@@ -71,9 +71,7 @@ function ValidationHoc<OptionType>(
                 onChange(event, action);
             }
             if (validationFieldPath) {
-                setTimeout(() => {
-                    ValidationManager.onInputFocusOut(validationFieldPath);
-                }, 1);
+                ValidationManager.onInputFocusOut(validationFieldPath);
             }
         };
 

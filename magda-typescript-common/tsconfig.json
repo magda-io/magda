@@ -1,5 +1,8 @@
 {
     "extends": "../tsconfig-global.json",
+    "ts-node": {
+        "files": true
+    },
     "compilerOptions": {
         "outDir": "./dist",
         "strictNullChecks": false,

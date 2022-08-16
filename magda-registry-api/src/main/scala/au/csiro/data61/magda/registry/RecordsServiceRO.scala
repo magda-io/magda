@@ -8,13 +8,15 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
+import au.csiro.data61.magda.directives.AuthDirectives.withAuthDecision
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.registry.Directives._
 import com.typesafe.config.Config
 import io.swagger.annotations._
+
 import javax.ws.rs.Path
 import scalikejdbc.DB
-import au.csiro.data61.magda.client.AuthOperations
+import au.csiro.data61.magda.client.{AuthDecisionReqConfig}
+import au.csiro.data61.magda.model.AspectQuery
 import scalikejdbc.interpolation.SQLSyntax
 
 import scala.concurrent.ExecutionContext
@@ -41,6 +43,7 @@ class RecordsServiceRO(
     * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
     * @apiParam (query) {string[]} optionalAspect The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter. These aspects will be included in a record if available, but a record will be included even if it is missing these aspects.
     * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
+    * @apiParam (query) {boolean} reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned.
     * @apiParam (query) {number} start The index of the first record to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
     * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
     * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
@@ -50,7 +53,10 @@ class RecordsServiceRO(
     *   - `aspectId.path.to.field`
     *   - `operator`
     *   - `value`
-    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
+    *
+    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format before encoded as query string parameter value.
+    *
+    *   A sample query string encoding implementation is available [here](https://gist.github.com/t83714/db1725a347c07413c16803a77da13003).
     *
     *   If more than one queries is passed through the `aspectQuery` parameters, they will be grouped with `AND` logic.
     *
@@ -60,17 +66,42 @@ class RecordsServiceRO(
     *   - `:?`  matches a pattern, case insensitive. Use Postgresql [ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator.
     *     - e.g. `:?%rating%` will match the field contains keyword `rating`
     *     - e.g. `:?rating%` will match the field starts with keyword `rating`
-    *   - `:!?` does not match a pattern, case insensitive. Use Postgresql [NOT ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator
+    *   - `:!?` does not match a pattern, case insensitive. negative version of `:?`.
     *   - `:~`  matches POSIX regular expression, case insensitive. Use Postgresql [~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
-    *   - `:!~` does not match POSIX regular expression, case insensitive. Use Postgresql [!~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
+    *   - `:!~` does not match POSIX regular expression, case insensitive. negative version of `:~`.
     *   - `:>`  greater than
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
     *   - `:<=` less than or equal to
+    *   - `:<|` the field is an array value and contains the value
+    *   - `:!<|` the field is not an array value or not contains the value
     *
     *   Example URL with aspectQuery `dcat-dataset-strings.title:?%rating%` (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
     *
     *   `/v0/records?limit=100&optionalAspect=source&aspect=dcat-dataset-strings&aspectQuery=dcat-dataset-strings.title:?%2525rating%2525`
+    *
+    *   Please note: when both `aspectQuery` and `aspectOrQuery` present, query conditions generated from `aspectQuery` and `aspectOrQuery` will be joined with `AND`
+    *
+    *   e.g. For the following `aspectQuery` & `aspectOrQuery` queries are specified:
+    *   - `aspectQuery`:
+    *     - q1
+    *     - q2
+    *   - `aspectOrQuery`:
+    *     - q3
+    *     - q4
+    *
+    *   The generated query conditions will be `((q1 AND q2) AND (q3 OR q4))`
+    *   <br/><br/>
+    *
+    *   e.g. For the following `aspectQuery` & `aspectOrQuery` queries are specified:
+    *   - `aspectQuery`:
+    *     - q1
+    *     - q2
+    *   - `aspectOrQuery`:
+    *     - q3
+    *
+    *   The generated query conditions will be `((q1 AND q2) AND q3 )`. This is equivalent to set `aspectQuery` only as `q1`, `q2` and `q3`.
+    *   <br/><br/><br/>
     *
     *   NOTE: This is an early stage API and may change greatly in the future.
     *
@@ -92,7 +123,7 @@ class RecordsServiceRO(
     *
     *   If orderBy reference an aspects that is not included by either `aspect` or `optionalAspect` parameters, it will be added to the `optionalAspect` list.
     *
-    *   Please Note: When `orderBy` is specified, `pageToken` parameter is not available. You should use `start` & `limit` instead for pagination purpose.
+    *   Please Note: When `pageToken` parameter is specified, `orderBy` is not available. You can set `reversePageTokenOrder` = `true` to reverse the pagination order though.
     *
     * @apiParam (query) {string} orderByDir Specify the order by direction. Either `asc` or `desc`. `desc` order is the default.
     * @apiParam (query) {boolean} orderNullFirst Specify whether nulls appear before (`true`) or after (`false`) non-null values in the sort ordering. Default to `false`.
@@ -218,6 +249,15 @@ class RecordsServiceRO(
           "Specify whether nulls appear before (`true`) or after (`false`) non-null values in the sort ordering."
       ),
       new ApiImplicitParam(
+        name = "reversePageTokenOrder",
+        required = false,
+        dataType = "boolean",
+        paramType = "query",
+        allowMultiple = false,
+        value =
+          "When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned."
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -236,102 +276,91 @@ class RecordsServiceRO(
   def getAll: Route = get {
     pathEnd {
       requiresTenantId { tenantId =>
-        parameters(
-          'aspect.*,
-          'optionalAspect.*,
-          'pageToken.as[Long] ?,
-          'start.as[Int].?,
-          'limit.as[Int].?,
-          'dereference.as[Boolean].?,
-          'aspectQuery.*,
-          'aspectOrQuery.*,
-          'orderBy.as[String].?,
-          'orderByDir.as[String].?,
-          'orderNullFirst.as[Boolean].?
-        ) {
-          (
-              aspects,
-              optionalAspects,
-              pageToken,
-              start,
-              limit,
-              dereference,
-              aspectQueries,
-              aspectOrQueries,
-              orderBy,
-              orderByDir,
-              orderNullFirst
-          ) =>
-            val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
-            val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
+        withAuthDecision(
+          authApiClient,
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
+          parameters(
+            'aspect.*,
+            'optionalAspect.*,
+            'pageToken.as[Long] ?,
+            'start.as[Int].?,
+            'limit.as[Int].?,
+            'dereference.as[Boolean].?,
+            'aspectQuery.*,
+            'aspectOrQuery.*,
+            'orderBy.as[String].?,
+            'orderByDir.as[String].?,
+            'orderNullFirst.as[Boolean].?,
+            'reversePageTokenOrder.as[Boolean].?
+          ) {
+            (
+                aspects,
+                optionalAspects,
+                pageToken,
+                start,
+                limit,
+                dereference,
+                aspectQueries,
+                aspectOrQueries,
+                orderBy,
+                orderByDir,
+                orderNullFirst,
+                reversePageTokenOrder
+            ) =>
+              val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+              val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
 
-            withRecordOpaQueryIncludingLinks(
-              AuthOperations.read,
-              recordPersistence,
-              authApiClient,
-              None,
-              aspects ++ optionalAspects,
-              RecordsPage[Record](false, None, List())
-            )(
-              config,
-              system,
-              materializer,
-              ec
-            ) { opaQueries =>
-              opaQueries match {
-                case (recordQueries, linkedRecordQueries) =>
-                  if (orderBy.isDefined && pageToken.isDefined) {
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(
-                        "When `orderBy` parameter is specified, `pageToken` parameter is not supported. Use `start` instead."
-                      )
+              if (orderBy.isDefined && pageToken.isDefined) {
+                complete(
+                  StatusCodes.BadRequest,
+                  ApiError(
+                    "When `orderBy` parameter is specified, `pageToken` parameter is not supported. Use `start` instead."
+                  )
+                )
+              } else {
+                complete {
+                  DB readOnly { implicit session =>
+                    recordPersistence.getAllWithAspects(
+                      tenantId,
+                      authDecision,
+                      aspects,
+                      optionalAspects,
+                      pageToken,
+                      start,
+                      limit,
+                      dereference,
+                      parsedAspectQueries,
+                      parsedAspectOrQueries,
+                      orderBy match {
+                        case Some(field) =>
+                          Some(
+                            OrderByDef(
+                              field,
+                              orderByDir match {
+                                case Some("asc")  => SQLSyntax.asc
+                                case Some("desc") => SQLSyntax.desc
+                                case None         => SQLSyntax.desc
+                                case _ =>
+                                  throw new Error(
+                                    s"Invalid orderByDir parameter: ${orderByDir.toString}"
+                                  )
+                              },
+                              orderNullFirst match {
+                                case Some(true)  => true
+                                case Some(false) => false
+                                case _           => false
+                              }
+                            )
+                          )
+                        case _ => None
+                      },
+                      reversePageTokenOrder = reversePageTokenOrder
                     )
-                  } else {
-                    complete {
-                      DB readOnly { implicit session =>
-                        recordPersistence.getAllWithAspects(
-                          tenantId,
-                          aspects,
-                          optionalAspects,
-                          recordQueries,
-                          linkedRecordQueries,
-                          pageToken,
-                          start,
-                          limit,
-                          dereference,
-                          parsedAspectQueries,
-                          parsedAspectOrQueries,
-                          orderBy match {
-                            case Some(field) =>
-                              Some(
-                                OrderByDef(
-                                  field,
-                                  orderByDir match {
-                                    case Some("asc")  => SQLSyntax.asc
-                                    case Some("desc") => SQLSyntax.desc
-                                    case None         => SQLSyntax.desc
-                                    case _ =>
-                                      throw new Error(
-                                        s"Invalid orderByDir parameter: ${orderByDir.toString}"
-                                      )
-                                  },
-                                  orderNullFirst match {
-                                    case Some(true)  => true
-                                    case Some(false) => false
-                                    case _           => false
-                                  }
-                                )
-                              )
-                            case _ => None
-                          }
-                        )
-                      }
-                    }
                   }
-
+                }
               }
-            }
+          }
         }
       }
     }
@@ -342,6 +371,7 @@ class RecordsServiceRO(
     * @api {get} /v0/registry/records/summary Get a list of all records as summaries
     * @apiDescription Get a list of all records as summaries
     * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
+    * @apiParam (query) {boolean} reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned.
     * @apiParam (query) {number} start The index of the first record to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
     * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
@@ -394,6 +424,15 @@ class RecordsServiceRO(
           "The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off."
       ),
       new ApiImplicitParam(
+        name = "reversePageTokenOrder",
+        required = false,
+        dataType = "boolean",
+        paramType = "query",
+        allowMultiple = false,
+        value =
+          "When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned."
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -412,33 +451,30 @@ class RecordsServiceRO(
   def getAllSummary: Route = get {
     path("summary") {
       requiresTenantId { tenantId =>
-        parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) {
-          (pageToken, start, limit) =>
-            withRecordOpaQuery(
-              AuthOperations.read,
-              recordPersistence,
-              authApiClient,
-              None,
-              RecordsPage[RecordSummary](false, None, List())
-            )(
-              config,
-              system,
-              materializer,
-              ec
-            ) { opaQueries =>
-              complete {
-                DB readOnly { implicit session =>
-                  recordPersistence
-                    .getAll(
-                      tenantId,
-                      opaQueries,
-                      pageToken,
-                      start,
-                      limit
-                    )
-                }
+        withAuthDecision(
+          authApiClient,
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
+          parameters(
+            'pageToken.?,
+            'start.as[Int].?,
+            'limit.as[Int].?,
+            'reversePageTokenOrder.as[Boolean].?
+          ) { (pageToken, start, limit, reversePageTokenOrder) =>
+            complete {
+              DB readOnly { implicit session =>
+                recordPersistence
+                  .getAll(
+                    tenantId,
+                    authDecision,
+                    pageToken,
+                    start,
+                    limit,
+                    reversePageTokenOrder
+                  )
               }
             }
+          }
         }
       }
     }
@@ -455,7 +491,9 @@ class RecordsServiceRO(
     *   - `aspectId.path.to.field`
     *   - `operator`
     *   - `value`
-    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
+    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format before encoded as query string parameter value.
+    *
+    *   A sample query string encoding implementation is available [here](https://gist.github.com/t83714/db1725a347c07413c16803a77da13003).
     *
     *   If more than one queries is passed through the `aspectQuery` parameters, they will be grouped with `AND` logic.
     *
@@ -472,6 +510,8 @@ class RecordsServiceRO(
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
     *   - `:<=` less than or equal to
+    *   - `:<|` the field is an array value and contains the value
+    *   - `:!<|` the field is not an array value or not contains the value
     *
     *   Example URL with aspectQuery `dcat-dataset-strings.title:?%rating%` (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
     *
@@ -580,30 +620,22 @@ class RecordsServiceRO(
   def getCount: Route = get {
     path("count") {
       requiresTenantId { tenantId =>
-        parameters('aspect.*, 'aspectQuery.*, 'aspectOrQuery.*) {
-          (aspects, aspectQueries, aspectOrQueries) =>
-            val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
-            val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
+        withAuthDecision(
+          authApiClient,
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
+          parameters('aspect.*, 'aspectQuery.*, 'aspectOrQuery.*) {
+            (aspects, aspectQueries, aspectOrQueries) =>
+              val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+              val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
 
-            withRecordOpaQuery(
-              AuthOperations.read,
-              recordPersistence,
-              authApiClient,
-              None,
-              CountResponse(0)
-            )(
-              config,
-              system,
-              materializer,
-              ec
-            ) { opaQueries =>
               complete {
                 DB readOnly { implicit session =>
                   CountResponse(
                     recordPersistence
                       .getCount(
                         tenantId,
-                        opaQueries,
+                        authDecision,
                         aspects,
                         parsedAspectQueries,
                         parsedAspectOrQueries
@@ -611,7 +643,7 @@ class RecordsServiceRO(
                   )
                 }
               }
-            }
+          }
         }
       }
     }
@@ -679,27 +711,19 @@ class RecordsServiceRO(
     path("pagetokens") {
       pathEnd {
         requiresTenantId { tenantId =>
-          import scalikejdbc._
-          parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
-            withRecordOpaQuery(
-              AuthOperations.read,
-              recordPersistence,
-              authApiClient,
-              None,
-              List[String]()
-            )(
-              this.config,
-              system,
-              materializer,
-              ec
-            ) { opaQueries =>
+          withAuthDecision(
+            authApiClient,
+            AuthDecisionReqConfig("object/record/read")
+          ) { authDecision =>
+            import scalikejdbc._
+            parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
               complete {
                 DB readOnly { implicit session =>
                   "0" :: recordPersistence
                     .getPageTokens(
                       tenantId,
+                      authDecision,
                       aspect,
-                      opaQueries,
                       limit
                     )
                 }
@@ -726,7 +750,10 @@ class RecordsServiceRO(
     *      {
     *          "id": "string",
     *          "name": "string",
-    *          "aspects": {},
+    *          "aspects": {
+    *           "aspect1": {},
+    *           "aspect2": {}
+    *          },
     *          "sourceTag": "string"
     *      }
     * @apiUse GenericError
@@ -802,45 +829,32 @@ class RecordsServiceRO(
   def getById: Route = get {
     path(Segment) { id =>
       requiresTenantId { tenantId =>
-        parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) {
-          (aspects, optionalAspects, dereference) =>
-            withRecordOpaQueryIncludingLinks(
-              AuthOperations.read,
-              recordPersistence,
-              authApiClient,
-              Some(id),
-              aspects ++ optionalAspects,
-              StatusCodes.NotFound
-            )(
-              config,
-              system,
-              materializer,
-              ec
-            ) { opaQueries =>
-              opaQueries match {
-                case (recordQueries, linkedRecordQueries) =>
-                  DB readOnly { implicit session =>
-                    recordPersistence.getByIdWithAspects(
-                      tenantId,
-                      id,
-                      recordQueries,
-                      linkedRecordQueries,
-                      aspects,
-                      optionalAspects,
-                      dereference
-                    ) match {
-                      case Some(record) => complete(record)
-                      case None =>
-                        complete(
-                          StatusCodes.NotFound,
-                          ApiError(
-                            "No record exists with that ID or it does not have the required aspects."
-                          )
-                        )
-                    }
-                  }
+        withAuthDecision(
+          authApiClient,
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
+          parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) {
+            (aspects, optionalAspects, dereference) =>
+              DB readOnly { implicit session =>
+                recordPersistence.getByIdWithAspects(
+                  tenantId,
+                  authDecision,
+                  id,
+                  aspects,
+                  optionalAspects,
+                  dereference
+                ) match {
+                  case Some(record) => complete(record)
+                  case None =>
+                    complete(
+                      StatusCodes.NotFound,
+                      ApiError(
+                        "No record exists with that ID or it does not have the required aspects."
+                      )
+                    )
+                }
               }
-            }
+          }
         }
       }
     }
@@ -859,7 +873,8 @@ class RecordsServiceRO(
     *        "id": "string",
     *        "name": "string",
     *        "aspects": [
-    *            "string"
+    *          "aspect1",
+    *          "aspect2"
     *        ]
     *      }
     * @apiUse GenericError
@@ -910,21 +925,97 @@ class RecordsServiceRO(
   def getByIdSummary: Route = get {
     path("summary" / Segment) { id =>
       requiresTenantId { tenantId =>
-        withRecordOpaQuery(
-          AuthOperations.read,
-          recordPersistence,
+        withAuthDecision(
           authApiClient,
-          Some(id),
-          StatusCodes.NotFound
-        )(
-          config,
-          system,
-          materializer,
-          ec
-        ) { recordQueries =>
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
           DB readOnly { implicit session =>
             recordPersistence
-              .getById(tenantId, recordQueries, id) match {
+              .getById(tenantId, authDecision, id) match {
+              case Some(record) => complete(record)
+              case None =>
+                complete(
+                  StatusCodes.NotFound,
+                  ApiError("No record exists with that ID.")
+                )
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+    * @apiGroup Registry Record Service
+    * @api {get} /v0/registry/records/inFull/{id} Get a record with all attached aspects data by the record ID
+    * @apiDescription Gets a record by ID including all attached aspect data.
+    * @apiParam (path) {string} id ID of the record to be fetched.
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiSuccess (Success 200) {json} Response the record summary detail
+    * @apiSuccessExample {json} Response:
+    *      {
+    *        "id": "string",
+    *        "name": "string",
+    *        "aspects": {
+    *           "aspect1": {},
+    *           "aspect2": {}
+    *        }
+    *      }
+    * @apiUse GenericError
+    */
+  @Path("/inFull/{id}")
+  @ApiOperation(
+    value = "Get a record in full by ID",
+    nickname = "getByIdInFull",
+    httpMethod = "GET",
+    response = classOf[Record],
+    notes = "Get a record with all attached aspects data by the record ID."
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "id",
+        required = true,
+        dataType = "string",
+        paramType = "path",
+        value = "ID of the record to be fetched."
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      )
+    )
+  )
+  @ApiResponses(
+    Array(
+      new ApiResponse(
+        code = 404,
+        message = "No record exists with that ID.",
+        response = classOf[ApiError]
+      )
+    )
+  )
+  def getByIdInFull: Route = get {
+    path("inFull" / Segment) { id =>
+      requiresTenantId { tenantId =>
+        withAuthDecision(
+          authApiClient,
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
+          DB readOnly { implicit session =>
+            recordPersistence
+              .getCompleteRecordById(tenantId, authDecision, id) match {
               case Some(record) => complete(record)
               case None =>
                 complete(
@@ -945,6 +1036,7 @@ class RecordsServiceRO(
       getPageTokens ~
       getById ~
       getByIdSummary ~
+      getByIdInFull ~
       new RecordAspectsServiceRO(
         authApiClient,
         system,

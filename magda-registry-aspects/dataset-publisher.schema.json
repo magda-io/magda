@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/hyper-schema#",
-    "title": "Dataset publisher",
+    "title": "Dataset Publisher Aspect",
     "description": "Links to the publisher of a dataset.",
     "type": "object",
     "properties": {

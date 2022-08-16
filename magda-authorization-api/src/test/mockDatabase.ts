@@ -84,6 +84,7 @@ export default class MockDatabase {
         db.getUserRoles.callsFake(this.getUserRoles);
         db.getUser.callsFake(this.getUser);
         db.getCurrentUserInfo.callThrough();
+        db.getDefaultAnonymousUserInfo.callThrough();
         return await db.getCurrentUserInfo(req, jwtSecret);
     }
 
@@ -92,7 +93,7 @@ export default class MockDatabase {
             getNodeById: async (
                 id: string,
                 fields: string[] = null,
-                client: pg.Client = null
+                client: pg.PoolClient = null
             ): Promise<Maybe<NodeRecord>> => {
                 return Promise.resolve(Maybe.nothing());
             },
@@ -110,5 +111,21 @@ export default class MockDatabase {
 
     async getUserApiKeyById(apiKeyId: string): Promise<APIKeyRecord> {
         return mockApiKeyStore.getRecordById(apiKeyId);
+    }
+
+    async updateApiKeyAttempt(apiKeyId: string, isSuccessfulAttempt: Boolean) {
+        return mockApiKeyStore.updateApiKeyAttempt(
+            apiKeyId,
+            isSuccessfulAttempt
+        );
+    }
+
+    updateApiKeyAttemptNonBlocking(
+        apiKeyId: string,
+        isSuccessfulAttempt: Boolean
+    ) {
+        this.updateApiKeyAttempt(apiKeyId, isSuccessfulAttempt).catch((e) =>
+            console.error("failed to update api key timestamp: " + e)
+        );
     }
 }

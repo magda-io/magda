@@ -11,5 +11,6 @@ object AppConfig {
     ConfigFactory
       .load()
       .withFallback(ConfigFactory.parseResources("common.conf"))
+      .resolve()
   }
 }

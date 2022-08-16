@@ -67,7 +67,7 @@ object Conversions {
         None
     }
 
-    val accessControl = hit.aspects.get("dataset-access-control") match {
+    val accessControl = hit.aspects.get("access-control") match {
       case Some(JsObject(accessControlData)) =>
         Some(
           AccessControl(
@@ -75,9 +75,9 @@ object Conversions {
               case Some(JsString(ownerId)) => Some(ownerId)
               case _                       => None
             },
-            orgUnitOwnerId = accessControlData.get("orgUnitOwnerId") match {
-              case Some(JsString(orgUnitOwnerId)) => Some(orgUnitOwnerId)
-              case _                              => None
+            orgUnitId = accessControlData.get("orgUnitId") match {
+              case Some(JsString(orgUnitId)) => Some(orgUnitId)
+              case _                         => None
             },
             preAuthorisedPermissionIds =
               accessControlData.get("preAuthorisedPermissionIds") match {

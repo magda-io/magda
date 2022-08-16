@@ -16,3 +16,10 @@ resources:
     memory: 50Mi
   limits:
     cpu: 50m
+
+# -- when set to true, auth API will print verbose debug info (e.g. sql statements) to log
+debug: false
+
+# -- when set to true, API will not query policy engine for auth decision but assume it's always permitted. 
+# It's for debugging only.
+skipAuth: false

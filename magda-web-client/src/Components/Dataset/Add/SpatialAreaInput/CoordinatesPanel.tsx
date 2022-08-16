@@ -8,7 +8,7 @@ interface PropsType {
     onChange?: (bbox?: BoundingBox) => void;
 }
 
-const CoordinatesPanel: FunctionComponent<PropsType> = props => {
+const CoordinatesPanel: FunctionComponent<PropsType> = (props) => {
     return (
         <div className="coordinates-panel">
             <div className="editor-heading">Map preview:</div>

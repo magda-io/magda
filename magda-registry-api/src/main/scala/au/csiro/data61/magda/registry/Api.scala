@@ -112,7 +112,8 @@ class Api(
             webHookActor,
             authApiClient,
             system,
-            materializer
+            materializer,
+            authApiClient
           ).route
         }
     case None =>

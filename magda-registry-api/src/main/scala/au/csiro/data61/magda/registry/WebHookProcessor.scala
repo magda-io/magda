@@ -10,7 +10,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId.{SpecifiedTenantId}
-import au.csiro.data61.magda.opa.OpaTypes.OpaQuerySkipAccessControl
+import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
 import scalikejdbc._
 import spray.json.JsString
 
@@ -93,9 +93,8 @@ class WebHookProcessor(
                 val recordIds = tenantRecordIdsMap(tenantId)
                 pages :+ recordPersistence.getByIdsWithAspects(
                   SpecifiedTenantId(tenantId),
+                  UnconditionalTrueDecision,
                   recordIds,
-                  None,
-                  None,
                   webHook.config.aspects.getOrElse(Nil),
                   webHook.config.optionalAspects.getOrElse(Nil),
                   webHook.config.dereference
@@ -119,9 +118,8 @@ class WebHookProcessor(
                 val recordIds = tenantRecordIdsMap(tenantId)
                 pages :+ recordPersistence.getRecordsLinkingToRecordIds(
                   SpecifiedTenantId(tenantId),
+                  UnconditionalTrueDecision,
                   recordIds,
-                  None,
-                  None,
                   recordIdsExcluded,
                   webHook.config.aspects.getOrElse(Nil),
                   webHook.config.optionalAspects.getOrElse(Nil),
@@ -206,7 +204,11 @@ class WebHookProcessor(
         DB readOnly { implicit session =>
           Some(
             AspectPersistence
-              .getByIds(aspectDefinitionIds, AllTenantsId)
+              .getByIds(
+                aspectDefinitionIds,
+                AllTenantsId,
+                UnconditionalTrueDecision
+              )
           )
         }
     }
@@ -243,9 +245,9 @@ class WebHookProcessor(
             if (response.status.isFailure()) {
               response.discardEntityBytes()
 
-              DB localTx { session =>
+              DB localTx { implicit session =>
                 HookPersistence
-                  .setActive(session, webHook.id.get, active = false)
+                  .setActive(webHook.id.get, active = false)
               }
 
               Future(WebHookProcessor.HttpError(response.status))
@@ -256,28 +258,26 @@ class WebHookProcessor(
                 .map {
                   webHookResponse =>
                     if (webHookResponse.deferResponse) {
-                      DB localTx { session =>
+                      DB localTx { implicit session =>
                         HookPersistence.setIsWaitingForResponse(
-                          session,
                           webHook.id.get,
                           isWaitingForResponse = true
                         )
                         if (webHook.retryCount > 0) {
                           HookPersistence
-                            .resetRetryCount(session, webHook.id.get)
+                            .resetRetryCount(webHook.id.get)
                         }
                       }
                       WebHookProcessor.Deferred
                     } else {
-                      DB localTx { session =>
+                      DB localTx { implicit session =>
                         HookPersistence.setLastEvent(
-                          session,
                           webHook.id.get,
                           payload.lastEventId
                         )
                         if (webHook.retryCount > 0) {
                           HookPersistence
-                            .resetRetryCount(session, webHook.id.get)
+                            .resetRetryCount(webHook.id.get)
                         }
                       }
                       WebHookProcessor.NotDeferred
@@ -287,22 +287,21 @@ class WebHookProcessor(
                   case _: Throwable =>
                     // Success response that can't be unmarshalled to a WebHookResponse.  This is fine!
                     // It just means the webhook was handled successfully.
-                    DB localTx { session =>
+                    DB localTx { implicit session =>
                       HookPersistence.setLastEvent(
-                        session,
                         webHook.id.get,
                         payload.lastEventId
                       )
                       if (webHook.retryCount > 0) {
-                        HookPersistence.resetRetryCount(session, webHook.id.get)
+                        HookPersistence.resetRetryCount(webHook.id.get)
                       }
                     }
                     WebHookProcessor.NotDeferred
                 }
             }
           case (Failure(error), _) =>
-            DB localTx { session =>
-              HookPersistence.setActive(session, webHook.id.get, active = false)
+            DB localTx { implicit session =>
+              HookPersistence.setActive(webHook.id.get, active = false)
             }
             Future.failed(error)
         }

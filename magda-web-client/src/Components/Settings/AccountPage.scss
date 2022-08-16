@@ -1,0 +1,30 @@
+.setting-page-main-container {
+    .my-account-page {
+        padding-right: 20px;
+        .account-info-tab {
+            margin-bottom: 10px;
+            a {
+                text-decoration: none;
+                &:focus {
+                    outline: none !important;
+                }
+            }
+            .rs-nav-item {
+                padding-left: 33px;
+                svg {
+                    position: absolute;
+                    left: 10px;
+                    top: 12px;
+                }
+            }
+        }
+        .my-general-info-container {
+            position: relative;
+        }
+        .my-info-refresh-button {
+            position: absolute;
+            right: 60px;
+            top: 180px;
+        }
+    }
+}
