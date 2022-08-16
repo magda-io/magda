@@ -3,7 +3,9 @@ import urijs from "urijs";
 import { config } from "../config";
 const { uiBaseUrl } = config;
 
-function getCompleteUrl(url: string) {
+// We likely never need this function as history is auto-configured with based by react-router
+// https://github.com/remix-run/history/blob/3f69f9e07b0a739419704cffc3b3563133281548/modules/createBrowserHistory.js#L151
+function getCompleteUrl(url: string): string {
     const uri = urijs(url);
     if (uri.hostname()) {
         // --- absolute url, should be the final url
@@ -37,17 +39,14 @@ function redirect(
     history: History,
     url: string,
     queryParams?: { [key: string]: any }
-) {
-    const completeUrl = getCompleteUrl(url);
+): void {
     if (!queryParams || typeof queryParams !== "object") {
-        history.push(completeUrl);
+        history.push(url);
         return;
     }
-    const completeUri = urijs(completeUrl);
+    const uri = urijs(url);
     history.push(
-        completeUri
-            .search({ ...completeUri.search(true), ...queryParams })
-            .toString()
+        uri.search({ ...uri.search(true), ...queryParams }).toString()
     );
 }
 
