@@ -8,6 +8,7 @@
 - related #3250: Rewrote the OPA AST parser for better evaluation & reference handling
 - related #3250: Added common policy entry point: entrypoint/allow.rego
 - #3303 rename `dataset-access-control` aspect to `access-control` aspect
+- #3256 Unified policy for secure both registry records & Elasticsearch datasets
 - #3304 Implement authorisation enforcement for all registry API services according to the more generic auth model defined in #3256
 - #3306 Added admin web UI for auth management
 - Added new APIs for managing auth objects
