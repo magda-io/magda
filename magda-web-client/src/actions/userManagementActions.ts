@@ -85,8 +85,8 @@ export function requestSignOut() {
             }
 
             await Promise.all([
-                dispatch(fetchContent),
-                dispatch(requestWhoAmI)
+                dispatch(fetchContent()),
+                dispatch(requestWhoAmI())
             ]);
         } catch (e) {
             // --- notify user with a simply alert box
