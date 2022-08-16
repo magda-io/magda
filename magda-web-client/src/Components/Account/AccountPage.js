@@ -6,7 +6,6 @@ import { connect } from "react-redux";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
-import CommonLink from "Components/Common/CommonLink";
 
 class Account extends React.Component {
     renderRoles() {
@@ -93,30 +92,10 @@ class Account extends React.Component {
                             }
                         />
                     )}
-                    {this.props.user.id && (
-                        <div>
-                            <Redirect to="/settings/account" />
-                            <h1>Account</h1>
-                            <p>Display Name: {this.props.user.displayName}</p>
-                            {this.props.user.orgUnit && (
-                                <p>
-                                    Organisation Unit:{" "}
-                                    {this.props.user.orgUnit.name}
-                                </p>
-                            )}
-                            <p>Email: {this.props.user.email}</p>
-                            {this.renderRoles()}
-                            {this.props.user.isAdmin && (
-                                <CommonLink href="/admin" className="au-btn">
-                                    Administrate
-                                </CommonLink>
-                            )}
-                            {"  "}
-                            <CommonLink href="/settings" className="au-btn">
-                                System Settings
-                            </CommonLink>
-                        </div>
-                    )}
+                    {this.props.user.id &&
+                    !this.props?.location?.state?.signingOff ? (
+                        <Redirect to="/settings/account" />
+                    ) : null}
                 </div>
             </MagdaDocumentTitle>
         );
