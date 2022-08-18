@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.0.1
+
+- #3397 Only allow users to edit datasets that are created by Magda
+
 ## v2.0.0
 
 - #3231 Upgraded to Open Policy Agent v0.33.x
