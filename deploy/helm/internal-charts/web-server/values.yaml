@@ -83,6 +83,9 @@ featureFlags:
   # featureFlags.datasetLikeButton -- turn on / off like / Dislike button. 
   # At this moment, `like / Dislike button` component is a place holder only for allowing plugin external UI plugin component.
   datasetLikeButton: false
+  # featureFlags.enableAutoMetadataFetchButton -- turn on / off the auto metadata fetch button.
+  # Users are still able to add an "API / dataset URL" via "Manually enter metadata" button
+  enableAutoMetadataFetchButton: true
 
 # -- Whether use Magda to store dataset data files by default
 # When use Magda's metadata creation tool to create a dataset, user can choose to upload data files to Magda's storage (via storage API).

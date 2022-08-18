@@ -20,6 +20,7 @@ import {
     DcatDatasetStrings,
     TemporalCoverage
 } from "helpers/record";
+import { config } from "config";
 
 interface Props {
     type?: DistributionSource.DatasetUrl | DistributionSource.Api;
@@ -315,14 +316,15 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
                     }}
                     value={url}
                 />
-
-                <button
-                    className="au-btn fetch-button"
-                    disabled={fetchUrl.loading}
-                    onClick={() => fetchUrl.execute(url, props.type)}
-                >
-                    Auto-fetch metadata
-                </button>
+                {config?.featureFlags?.enableAutoMetadataFetchButton ? (
+                    <button
+                        className="au-btn fetch-button"
+                        disabled={fetchUrl.loading}
+                        onClick={() => fetchUrl.execute(url, props.type)}
+                    >
+                        Auto-fetch metadata
+                    </button>
+                ) : null}
                 {hasProcessingError || showManualButtonByDefault ? (
                     <button
                         className="au-btn au-btn--secondary manual-enter-metadata-button"
