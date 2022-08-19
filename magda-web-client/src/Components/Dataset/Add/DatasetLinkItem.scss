@@ -325,7 +325,20 @@
         height: 171px;
         background-color: #f4f4f4;
 
+        .row {
+            margin-right: 2px;
+        }
+
+        .SingleDatePickerInput_calendarIcon {
+            padding: 0px;
+        }
+
+        .DateInput {
+            width: 114px;
+        }
+
         .delete-button {
+            z-index: 1;
             position: absolute;
             width: 26px;
             height: 26px;

@@ -12,6 +12,10 @@ export default function getDatasetAspectQueries(
 
     searchText = searchText?.trim();
 
+    aspectQueries.push(
+        new AspectQuery("source.id", AspectQueryOperators["="], `magda`, true)
+    );
+
     if (datasetType === "drafts") {
         aspectQueries.push(
             new AspectQuery(
@@ -25,8 +29,8 @@ export default function getDatasetAspectQueries(
         aspectQueries.push(
             new AspectQuery(
                 "publishing.state",
-                AspectQueryOperators["!="],
-                `draft`,
+                AspectQueryOperators["="],
+                `published`,
                 true
             )
         );

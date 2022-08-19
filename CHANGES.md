@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v2.0.1
+
+- #3397 Only allow users to edit datasets that are created by Magda
+- #3398 Allow the "auto-fetch metadata" button to be turned off via Helm Config
+
 ## v2.0.0
 
 - #3231 Upgraded to Open Policy Agent v0.33.x

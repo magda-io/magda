@@ -48,7 +48,8 @@ const DEV_FEATURE_FLAGS = {
     previewAddDataset: false,
     datasetApprovalWorkflowOn: false,
     useStorageApi: true,
-    datasetLikeButton: false
+    datasetLikeButton: false,
+    enableAutoMetadataFetchButton: true
 };
 
 interface DateConfig {
