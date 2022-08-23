@@ -98,5 +98,11 @@ export async function deleteDatasetIndexById(
 ): Promise<DeleteDatasetIndexResult> {
     const url =
         config.indexerApiBaseUrl + `dataset/${encodeURIComponent(datasetId)}`;
-    return await request<DeleteDatasetIndexResult>("DELETE", url);
+    try {
+        return await request<DeleteDatasetIndexResult>("DELETE", url);
+    } catch (e) {
+        throw new Error(
+            `Failed to delete the search engine index for dataset ${datasetId}. Reason: ${e}`
+        );
+    }
 }

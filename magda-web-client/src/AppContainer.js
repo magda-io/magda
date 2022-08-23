@@ -25,7 +25,8 @@ import "./AppContainer.scss";
 const ExternalFooterComponent = getPluginFooter();
 class AppContainer extends React.Component {
     componentDidMount() {
-        this.props.requestWhoAmI();
+        // --- we fetch user data before AppContainer is mounted so that the fetching is started before app is rendered
+        //this.props.requestWhoAmI();
         this.props.fetchContent(true);
     }
 
