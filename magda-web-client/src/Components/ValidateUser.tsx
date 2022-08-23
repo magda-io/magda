@@ -1,13 +1,16 @@
-import React from "react";
-import { Redirect } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
-import { StateType } from "reducers/reducer";
+import React, { FunctionComponent } from "react";
+import { Redirect, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { User } from "reducers/userManagementReducer";
-import Loading from "Components/Common/Loading";
+import { useAsync } from "react-async-hook";
+import Loader from "rsuite/Loader";
+import { whoami } from "api-clients/AuthApis";
+import { completedSignOut } from "../actions/userManagementActions";
+
+type CheckUserFuncType = (user: User) => boolean;
 
 type PropsType = {
-    checkUserFunc?: (user: User) => boolean;
+    checkUserFunc?: CheckUserFuncType;
     /**
      * ValidateUser will redirect users to the original landing url after the re-authentication.
      * If you want to redirect them to a different url rather than the original landing url, you can supply the mapping here.
@@ -22,32 +25,52 @@ type PropsType = {
 const defaultUserChecker = (user: User) => !!user?.id;
 const exemptPaths = ["/sign-in-redirect", "/account"];
 
-function ValidateUser(props: PropsType) {
+const ValidateUser: FunctionComponent<PropsType> = (props) => {
+    const dispatch = useDispatch();
     const checkUserFunc = props?.checkUserFunc
         ? props.checkUserFunc
         : defaultUserChecker;
+
     const location = useLocation();
-    const user = useSelector<StateType, User>(
-        (state) => state?.userManagement?.user
-    );
-    const isUserLoading = useSelector<StateType, boolean>(
-        (state) => state?.userManagement?.isFetchingWhoAmI
-    );
-    const userLoadingError = useSelector<StateType, Error | null>(
-        (state) => state?.userManagement?.whoAmIError
+    const { pathname } = location;
+
+    const {
+        result: checkResult,
+        loading: isWhoAmILoading,
+        error: whoAmIError
+    } = useAsync(
+        async (checkUserFunc: CheckUserFuncType, pathname: string) => {
+            try {
+                const userData = await whoami();
+                const result = checkUserFunc(userData);
+                if (!result) {
+                    dispatch(completedSignOut());
+                }
+                return result;
+            } catch (e) {
+                dispatch(completedSignOut());
+                throw e;
+            }
+        },
+        [checkUserFunc, pathname]
     );
 
-    if (isUserLoading) {
-        return <Loading />;
+    if (isWhoAmILoading) {
+        return (
+            <Loader
+                content="Loading..."
+                style={{ position: "absolute", zIndex: 1 }}
+            />
+        );
     }
 
     if (exemptPaths.indexOf(location.pathname) !== -1) {
         return props?.children ? props?.children : null;
     }
 
-    const errorMessage = userLoadingError
+    const errorMessage = whoAmIError
         ? "Failed to fetch the user data. Please sign-in and try again."
-        : checkUserFunc(user)
+        : checkResult
         ? null
         : location.pathname === "/"
         ? ""
@@ -82,6 +105,6 @@ function ValidateUser(props: PropsType) {
     } else {
         return props?.children ? props?.children : null;
     }
-}
+};
 
 export default ValidateUser;
