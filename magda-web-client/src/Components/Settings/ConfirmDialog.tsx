@@ -141,6 +141,7 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
                 <Modal.Footer>
                     <Button
                         appearance="primary"
+                        disabled={this.state.isLoading}
                         onClick={async (ev: SyntheticEvent) => {
                             ev.preventDefault();
                             ev.stopPropagation();
@@ -165,6 +166,7 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
                         Confirm
                     </Button>
                     <Button
+                        disabled={this.state.isLoading}
                         onClick={async (ev: SyntheticEvent) => {
                             ev.preventDefault();
                             ev.stopPropagation();
