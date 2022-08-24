@@ -1,32 +1,50 @@
 import React, { FunctionComponent } from "react";
-import { useAsync } from "react-async-hook";
-import { config } from "../../config";
-import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient";
-import { isTrueEquivalent } from "@magda/typescript-common/dist/opa/AuthDecision";
+import { useSelector } from "react-redux";
+import { StateType } from "reducers/reducer";
+import { User } from "reducers/userManagementReducer";
 import Message from "rsuite/Message";
+import uniq from "lodash/uniq";
+import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
 
 type PropsType = {
-    operationUri: string;
+    operationUris: string[];
 };
 
-const authDecisionClient = new AuthDecisionQueryClient(config.authApiUrl);
-
 const AccessVerification: FunctionComponent<PropsType> = (props) => {
-    const { operationUri } = props;
-    const { result: authDecision, loading: isLoading, error } = useAsync(
-        async (operationUri) => {
-            return await authDecisionClient.getAuthDecision({
-                operationUri
-            });
-        },
-        [operationUri]
+    const requiredOperationUris = props?.operationUris?.length
+        ? props.operationUris
+        : [];
+    const isLoading = useSelector<StateType, boolean>(
+        (state) => state?.userManagement?.isFetchingWhoAmI
     );
+    const loadingError = useSelector<StateType, Error | null>(
+        (state) => state?.userManagement?.whoAmIError
+    );
+    const user = useSelector<StateType, User>(
+        (state) => state?.userManagement?.user
+    );
+    const userRoleIds = user?.roles?.length
+        ? user.roles.map((item) => item.id)
+        : [];
+    const userOpUris = uniq(
+        user?.permissions?.length
+            ? user.permissions.flatMap((permission) =>
+                  permission?.operations?.length
+                      ? permission?.operations.map((item) => item.uri)
+                      : []
+              )
+            : []
+    );
+
+    if (!requiredOperationUris.length) {
+        return null;
+    }
 
     if (isLoading) {
         return null;
     }
 
-    if (error) {
+    if (loadingError) {
         return (
             <Message
                 showIcon
@@ -35,17 +53,25 @@ const AccessVerification: FunctionComponent<PropsType> = (props) => {
                 closable={true}
                 style={{ margin: "5px" }}
             >
-                {`Failed to retrieve auth decision: ${error}`}
+                {`Failed to verify user permissions: ${loadingError}`}
             </Message>
         );
     }
 
     if (
-        authDecision?.hasResidualRules ||
-        isTrueEquivalent(authDecision?.result)
+        userRoleIds.findIndex((roleId) => roleId === ADMIN_USERS_ROLE_ID) !== -1
     ) {
-        // no matter unconditional true or conditional
-        // we should output empty content as the user has certain level access
+        // root admin user always has permissions
+        return null;
+    }
+
+    if (
+        requiredOperationUris.length &&
+        userOpUris.length &&
+        requiredOperationUris.findIndex(
+            (opUri) => userOpUris.indexOf(opUri) === -1
+        ) === -1
+    ) {
         return null;
     }
 
