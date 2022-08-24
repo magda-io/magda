@@ -13,7 +13,6 @@ const RolesPage: FunctionComponent = () => {
                 <Breadcrumb
                     items={[{ to: "/settings/roles", title: "Roles" }]}
                 />
-                <AccessVerification operationUri="authObject/role/read" />
 
                 <RolesDataGrid directory="settings" />
             </div>

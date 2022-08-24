@@ -485,7 +485,6 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
             <SideNavigation />
             <div className="main-content-container">
                 <Breadcrumb items={[{ title: "Org Units" }]} />
-                <AccessVerification operationUri="authObject/orgUnit/read" />
                 <OrgUnitFormPopUp ref={orgUnitFormRef} />
                 <ViewOrgUnitPopUp ref={viewDetailPopUpRef} />
                 {isDataLoading ? (

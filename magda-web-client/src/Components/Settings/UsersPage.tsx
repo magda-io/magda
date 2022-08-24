@@ -105,7 +105,6 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                 <Breadcrumb
                     items={[{ to: "/settings/users", title: "Users" }]}
                 />
-                <AccessVerification operationUri="authObject/user/read" />
                 <AssignUserOrgUnitFormPopUp ref={assignUserOrgUnitFormRef} />
                 <UserFormPopUp ref={userFormRef} />
                 <div className="search-button-container">

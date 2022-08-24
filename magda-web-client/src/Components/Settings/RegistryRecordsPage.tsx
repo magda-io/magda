@@ -123,7 +123,6 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
                             : [])
                     ]}
                 />
-                <AccessVerification operationUri="object/record/read" />
                 <RecordFormPopUp ref={recordFormRef} />
                 {recordLoading ? (
                     <>

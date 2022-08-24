@@ -35,8 +35,6 @@ const OperationsPage: FunctionComponent = () => {
                         }
                     ]}
                 />
-                <AccessVerification operationUri="authObject/resource/read" />
-
                 <OperationsDataGrid resourceId={resourceId} />
             </div>
         </div>

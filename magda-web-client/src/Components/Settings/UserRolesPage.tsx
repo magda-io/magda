@@ -37,7 +37,6 @@ const UserRolesPage: FunctionComponent<PropsType> = (props) => {
                         }
                     ]}
                 />
-                <AccessVerification operationUri="authObject/role/read" />
 
                 <RolesDataGrid
                     queryParams={{ user_id: userId }}

@@ -62,8 +62,6 @@ const RolePermissionsPage: FunctionComponent<PropsType> = (props) => {
             <SideNavigation />
             <div className="main-content-container">
                 <Breadcrumb items={breadcrumbItems} />
-                <AccessVerification operationUri="authObject/role/read" />
-
                 <PermissionDataGrid roleId={roleId} />
             </div>
         </div>
