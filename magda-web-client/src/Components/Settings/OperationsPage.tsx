@@ -2,7 +2,6 @@ import React, { FunctionComponent } from "react";
 import "./main.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
-import AccessVerification from "./AccessVerification";
 import OperationsDataGrid from "./OperationsDataGrid";
 import { useParams } from "react-router-dom";
 import { useAsync } from "react-async-hook";

@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import "./main.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
-import AccessVerification from "./AccessVerification";
 import PermissionDataGrid from "./PermissionDataGrid";
 import { getUserById, getRoleById } from "api-clients/AuthApis";
 import { useAsync } from "react-async-hook";

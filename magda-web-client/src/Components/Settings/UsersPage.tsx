@@ -22,7 +22,6 @@ import {
     MdBorderColor,
     MdAccountTree
 } from "react-icons/md";
-import AccessVerification from "./AccessVerification";
 import IconButton from "rsuite/IconButton";
 import OrgUnitNameLabel from "../OrgUnitNameLabel";
 import AssignUserOrgUnitFormPopUp, {

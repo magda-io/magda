@@ -6,7 +6,6 @@ import "./main.scss";
 import "./OrgUnitsPage.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
-import AccessVerification from "./AccessVerification";
 import {
     getRootNode,
     getImmediateChildren,
