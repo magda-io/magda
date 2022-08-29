@@ -465,9 +465,9 @@ The authorisation model is described in [OPA's rego policy language](https://www
 
 Among all policies files, [entrypoint/allow.rego](https://github.com/magda-io/magda/blob/next/magda-opa/policies/entrypoint/allow.rego) is the "entrypoint" policy. We should query against this "entrypoint" policy for all decisions sought for any resources. This "entrypoint" policy will then delegate the decision making to the appropriate policy for a particular resources. This structure enables a consistent decision making interface regardless the inclusive relationship between different types resources and avoids redundant authorisation rules to ensure single source of truth principle.
 
-e.g. When query the "entrypoint" policy with operation URI "object/dataset/record", the entrypoint will delegate the decision making to [object/dataset/allow.rego](https://github.com/magda-io/magda/blob/next/magda-opa/policies/object/dataset/allow.rego) and output rules specific for dataset records.
+e.g. When query the "entrypoint" policy with operation URI "object/dataset/read", the entrypoint will delegate the decision making to [object/dataset/allow.rego](https://github.com/magda-io/magda/blob/next/magda-opa/policies/object/dataset/allow.rego) and output rules specific for dataset records.
 
-However, when query the "entrypoint" policy with operation URI "object/record/record" (i.e. generic record resource), the entrypoint will delegate the decision to all defined subset resources policies (e.g. "dataset", "distribution", "organization" etc.). Together with authorisation rules for generic record resource, the query result will be similar to the following pseudo code:
+However, when query the "entrypoint" policy with operation URI "object/record/read" (i.e. generic record resource), the entrypoint will delegate the decision to all defined subset resources policies (e.g. "dataset", "distribution", "organization" etc.). Together with authorisation rules for generic record resource, the query result will be similar to the following pseudo code:
 
 ```
 - when the record looks like a dataset record, the following rules apply.
