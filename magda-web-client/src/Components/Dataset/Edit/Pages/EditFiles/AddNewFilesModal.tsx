@@ -324,7 +324,8 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                     <div className="au-body au-page-alerts au-page-alerts--error">
                         <div>
                             <span>
-                                Magda has encountered an error: {error?.message}
+                                System has encountered an error:{" "}
+                                {error?.message}
                             </span>
                         </div>
                     </div>
