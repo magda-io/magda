@@ -20,7 +20,7 @@
     "@magda/typescript-common": "^2.0.1",
     "body-parser": "^1.13.2",
     "compression": "^1.7.2",
-    "connect-pg-simple": "^6.0.1",
+    "connect-pg-simple": "^6.2.1",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.3",
     "escape-string-regexp": "^1.0.5",
