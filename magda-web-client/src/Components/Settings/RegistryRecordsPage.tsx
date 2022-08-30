@@ -5,7 +5,6 @@ import "./main.scss";
 import "./RegistryRecordsPage.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
-import AccessVerification from "./AccessVerification";
 import { useAsync } from "react-async-hook";
 import { fetchRecordById } from "../../api-clients/RegistryApis";
 import Loader from "rsuite/Loader";
@@ -123,7 +122,6 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
                             : [])
                     ]}
                 />
-                <AccessVerification operationUri="object/record/read" />
                 <RecordFormPopUp ref={recordFormRef} />
                 {recordLoading ? (
                     <>

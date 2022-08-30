@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import "./main.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
-import AccessVerification from "./AccessVerification";
 import RolesDataGrid from "./RolesDataGrid";
 import { getUserById } from "api-clients/AuthApis";
 import { useAsync } from "react-async-hook";
@@ -37,7 +36,6 @@ const UserRolesPage: FunctionComponent<PropsType> = (props) => {
                         }
                     ]}
                 />
-                <AccessVerification operationUri="authObject/role/read" />
 
                 <RolesDataGrid
                     queryParams={{ user_id: userId }}

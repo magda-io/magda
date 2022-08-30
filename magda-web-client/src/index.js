@@ -2,7 +2,7 @@
 import logger from "redux-logger";
 import "./index.scss";
 import { BrowserRouter, Route, withRouter } from "react-router-dom";
-
+import { requestWhoAmI } from "./actions/userManagementActions";
 import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
@@ -27,6 +27,8 @@ const store = createStore(
         )
     )
 );
+
+store.dispatch(requestWhoAmI());
 
 class GAListener extends React.Component {
     static contextTypes = {

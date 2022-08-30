@@ -2,7 +2,6 @@ import React, { FunctionComponent } from "react";
 import "./main.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
-import AccessVerification from "./AccessVerification";
 import RolesDataGrid from "./RolesDataGrid";
 
 const RolesPage: FunctionComponent = () => {
@@ -13,7 +12,6 @@ const RolesPage: FunctionComponent = () => {
                 <Breadcrumb
                     items={[{ to: "/settings/roles", title: "Roles" }]}
                 />
-                <AccessVerification operationUri="authObject/role/read" />
 
                 <RolesDataGrid directory="settings" />
             </div>

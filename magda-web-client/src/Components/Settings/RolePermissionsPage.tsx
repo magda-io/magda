@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import "./main.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
-import AccessVerification from "./AccessVerification";
 import PermissionDataGrid from "./PermissionDataGrid";
 import { getUserById, getRoleById } from "api-clients/AuthApis";
 import { useAsync } from "react-async-hook";
@@ -62,8 +61,6 @@ const RolePermissionsPage: FunctionComponent<PropsType> = (props) => {
             <SideNavigation />
             <div className="main-content-container">
                 <Breadcrumb items={breadcrumbItems} />
-                <AccessVerification operationUri="authObject/role/read" />
-
                 <PermissionDataGrid roleId={roleId} />
             </div>
         </div>

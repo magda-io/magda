@@ -108,9 +108,11 @@ const Routes = () => {
             <Route
                 exact
                 path="/admin/home"
-                component={withHeader(HomeAdminPage, {
-                    includeSearchBox: true
-                })}
+                component={RequireAdmin(
+                    withHeader(HomeAdminPage, {
+                        includeSearchBox: true
+                    })
+                )}
             />
             <Route
                 exact

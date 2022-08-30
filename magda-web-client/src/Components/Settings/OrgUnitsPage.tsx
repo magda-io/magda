@@ -6,7 +6,6 @@ import "./main.scss";
 import "./OrgUnitsPage.scss";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
-import AccessVerification from "./AccessVerification";
 import {
     getRootNode,
     getImmediateChildren,
@@ -485,7 +484,6 @@ const OrgUnitsPage: FunctionComponent<PropsType> = (props) => {
             <SideNavigation />
             <div className="main-content-container">
                 <Breadcrumb items={[{ title: "Org Units" }]} />
-                <AccessVerification operationUri="authObject/orgUnit/read" />
                 <OrgUnitFormPopUp ref={orgUnitFormRef} />
                 <ViewOrgUnitPopUp ref={viewDetailPopUpRef} />
                 {isDataLoading ? (

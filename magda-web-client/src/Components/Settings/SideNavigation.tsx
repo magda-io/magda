@@ -87,8 +87,8 @@ const defaultMenuItems: MenuItem[] = [
         title: "Org Units",
         path: "/settings/orgUnits",
         requireOperationUris: [
-            "authObject/orgUnits/read",
-            "authObject/orgUnits/update"
+            "authObject/orgUnit/read",
+            "authObject/orgUnit/update"
         ],
         icon: <MdAccountTree />
     },

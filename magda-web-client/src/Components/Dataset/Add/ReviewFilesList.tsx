@@ -55,8 +55,9 @@ const ReviewFilesList: FunctionComponent<PropsType> = (props) => {
                     <div className="body-container">
                         <div className="body-text-container">
                             <p>
-                                Magda has reviewed your files and pre-populated
-                                metadata fields based on the contents.
+                                The system has reviewed your files and
+                                pre-populated metadata fields based on the
+                                contents.
                             </p>
                             <p>
                                 Please review carefully, and update any fields

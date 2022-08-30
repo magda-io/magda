@@ -90,7 +90,7 @@ const classificationValidator: CustomValidatorType = (
             valid: false,
             validationMessage:
                 "Cannot proceed with this dataset. A dataset with security classification " +
-                "of PROTECTED or above cannot be stored in Magda."
+                "of PROTECTED or above cannot be stored in the system."
         };
     }
 
@@ -252,8 +252,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         </h4>
 
                         <ToolTip>
-                            By default, Magda adds Licenses at the Dataset Level
-                            (i.e. to all distributions), but this can be
+                            By default, system adds Licenses at the Dataset
+                            Level (i.e. to all distributions), but this can be
                             overriden to apply at a Distribution (each file or
                             URL) level if desired.
                         </ToolTip>
@@ -382,7 +382,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             >
                                 {() => (
                                     <>
-                                        Magda security classification refers to
+                                        The security classification refers to
                                         the Attorney-General Department’s
                                         Sensitive and Classification policy. It
                                         is important that the appropriate

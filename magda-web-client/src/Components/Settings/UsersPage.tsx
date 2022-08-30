@@ -22,7 +22,6 @@ import {
     MdBorderColor,
     MdAccountTree
 } from "react-icons/md";
-import AccessVerification from "./AccessVerification";
 import IconButton from "rsuite/IconButton";
 import OrgUnitNameLabel from "../OrgUnitNameLabel";
 import AssignUserOrgUnitFormPopUp, {
@@ -105,7 +104,6 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                 <Breadcrumb
                     items={[{ to: "/settings/users", title: "Users" }]}
                 />
-                <AccessVerification operationUri="authObject/user/read" />
                 <AssignUserOrgUnitFormPopUp ref={assignUserOrgUnitFormRef} />
                 <UserFormPopUp ref={userFormRef} />
                 <div className="search-button-container">

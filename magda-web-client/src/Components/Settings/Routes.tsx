@@ -13,13 +13,13 @@ import RegistryRecordsPage from "./RegistryRecordsPage";
 import RolePermissionsPage from "./RolePermissionsPage";
 import AccountPage from "./AccountPage";
 import DatasetManagementPage from "./DatasetManagementPage";
-import RequireLoggedIn from "../RequireLoggedIn";
+import ValidateUser from "Components/ValidateUser";
 
 const Routes = () => {
     return (
         <>
+            <ValidateUser />
             <ConfirmDialog />
-            <RequireLoggedIn />
             <Switch>
                 <Route exact path="/settings">
                     <Redirect to="/settings/account" />

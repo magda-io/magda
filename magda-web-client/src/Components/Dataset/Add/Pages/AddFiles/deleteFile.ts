@@ -40,8 +40,8 @@ export default async function deleteFile(distToDelete: Distribution) {
             }`
         );
         throw new UserVisibleError(
-            `Failed to remove file ${distToDelete.title} from Magda's storage. If you removed this ` +
-                `file because it shouldn't be stored on Magda, please contact ${
+            `Failed to remove file ${distToDelete.title} from the system's storage. If you removed this ` +
+                `file because it shouldn't be stored on the system, please contact ${
                     config.defaultContactEmail
                         ? config.defaultContactEmail
                         : "Administrator"
