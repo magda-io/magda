@@ -20,15 +20,17 @@ import {
     DcatDatasetStrings,
     TemporalCoverage
 } from "helpers/record";
+import { config } from "config";
 
-type Props = {
+interface Props {
     type?: DistributionSource.DatasetUrl | DistributionSource.Api;
+    showManualButtonByDefault?: boolean;
     datasetStateUpdater: DatasetStateUpdaterType;
     onProcessingError: (Error) => void;
     onClearProcessingError: () => void;
     onProcessingComplete?: (distributions: Distribution[]) => void;
     initDistProps?: Partial<Distribution>;
-};
+}
 
 type DistributionAspectsProcessor = (aspects: {
     [aspectId: string]: any;
@@ -165,6 +167,10 @@ const processTemporalCoverage: DistributionAspectsProcessor = (aspects) => {
 };
 
 const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
+    const showManualButtonByDefault =
+        typeof props?.showManualButtonByDefault === "boolean"
+            ? props.showManualButtonByDefault
+            : true;
     const { type, datasetStateUpdater } = props;
     const [url, setUrl] = useState("");
     const [validationErrorMessage, setValidationErrorMessage] = useState("");
@@ -301,7 +307,7 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
                     className={`au-text-input url-input ${
                         validationErrorMessage ? "invalid" : ""
                     }`}
-                    placeholder="Enter the download URL"
+                    placeholder="Enter the API or dataset URL"
                     onChange={(e) => setUrl(e.target.value)}
                     onKeyUp={(e) => {
                         if (e.keyCode === 13) {
@@ -310,15 +316,16 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
                     }}
                     value={url}
                 />
-
-                <button
-                    className="au-btn fetch-button"
-                    disabled={fetchUrl.loading}
-                    onClick={() => fetchUrl.execute(url, props.type)}
-                >
-                    Fetch
-                </button>
-                {hasProcessingError ? (
+                {config?.featureFlags?.enableAutoMetadataFetchButton ? (
+                    <button
+                        className="au-btn fetch-button"
+                        disabled={fetchUrl.loading}
+                        onClick={() => fetchUrl.execute(url, props.type)}
+                    >
+                        Auto-fetch metadata
+                    </button>
+                ) : null}
+                {hasProcessingError || showManualButtonByDefault ? (
                     <button
                         className="au-btn au-btn--secondary manual-enter-metadata-button"
                         onClick={manualCreate}

@@ -1,6 +1,6 @@
 {
   "name": "@magda/search-api-node",
-  "version": "1.2.2-alpha.0",
+  "version": "2.0.1",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "6.8.6",
-    "@magda/typescript-common": "^1.2.2-alpha.0",
+    "@magda/typescript-common": "^2.0.1",
     "express": "^4.17.1",
     "express-validation": "^3.0.2",
     "geojson": "^0.5.0",
@@ -25,7 +25,7 @@
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^1.2.2-alpha.0",
+    "@magda/scripts": "^2.0.1",
     "@types/chai": "^4.1.2",
     "@types/express": "^4.17.6",
     "@types/geojson": "^7946.0.7",
@@ -43,11 +43,11 @@
     "nyc": "^13.1.0",
     "sinon": "^4.2.1",
     "supertest": "^3.0.0",
-    "typescript": "^3.7.2"
+    "typescript": "~4.2.4"
   },
   "config": {
     "docker": {
-      "name": "data61/magda-search-api-node",
+      "name": "magda-search-api-node",
       "include": "node_modules dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",

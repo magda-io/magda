@@ -24,15 +24,18 @@ import TooltipWrapper from "Components/Common/TooltipWrapper";
 import helpIcon from "assets/help.svg";
 
 import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
-
 import "./DatasetFile.scss";
 
 function FileInProgress({
     file,
-    className
+    className,
+    canDelete,
+    onDelete
 }: {
     file: Distribution;
     className?: string;
+    canDelete: boolean;
+    onDelete?: () => any;
 }) {
     const progress = file._progress ? file._progress : 0;
     let width = Math.ceil((progress / 100) * 330);
@@ -42,6 +45,15 @@ function FileInProgress({
     return (
         <div className={`dataset-file-root ${className ? className : ""}`}>
             <div className="file-in-progress">
+                {canDelete ? (
+                    <button
+                        className={`dataset-file-delete-button au-btn au-btn--secondary`}
+                        arial-label="Remove file"
+                        onClick={() => onDelete!()}
+                    >
+                        <img src={dismissIcon} alt="delete icon" />
+                    </button>
+                ) : null}
                 <div className="file-icon-area">
                     <img
                         alt="format icon"
@@ -203,7 +215,14 @@ export default function DatasetFile({
         file._state !== DistributionState.Ready &&
         file._state !== DistributionState.Drafting
     ) {
-        return <FileInProgress file={file} className={className} />;
+        return (
+            <FileInProgress
+                file={file}
+                className={className}
+                canDelete={canDelete}
+                onDelete={onDelete}
+            />
+        );
     }
 
     return (
@@ -212,6 +231,16 @@ export default function DatasetFile({
                 !canEdit && !canDelete ? "read-only" : ""
             } ${className ? className : ""}`}
         >
+            {canDelete ? (
+                <button
+                    className={`dataset-file-delete-button au-btn au-btn--secondary`}
+                    arial-label="Remove file"
+                    onClick={() => onDelete!()}
+                >
+                    <img src={dismissIcon} alt="delete icon" />
+                </button>
+            ) : null}
+
             {editMode && canEdit ? (
                 <FileEditView
                     idx={idx!}
@@ -221,7 +250,7 @@ export default function DatasetFile({
                     setEditMode={setEditMode}
                 />
             ) : (
-                <React.Fragment>
+                <>
                     {canEdit ? (
                         <button
                             className={`dataset-file-edit-button au-btn au-btn--secondary`}
@@ -229,16 +258,6 @@ export default function DatasetFile({
                             onClick={() => setEditMode(!editMode)}
                         >
                             <img src={editIcon} alt="edit icon" />
-                        </button>
-                    ) : null}
-
-                    {canDelete ? (
-                        <button
-                            className={`dataset-file-delete-button au-btn au-btn--secondary`}
-                            arial-label="Remove file"
-                            onClick={() => onDelete!()}
-                        >
-                            <img src={dismissIcon} alt="delete icon" />
                         </button>
                     ) : null}
 
@@ -297,7 +316,7 @@ export default function DatasetFile({
                             </div>
                         </div>
                     </div>
-                </React.Fragment>
+                </>
             )}
         </div>
     );

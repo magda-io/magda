@@ -334,11 +334,9 @@ To address some of the issues above, we released [v0.0.57](https://github.com/ma
 
 We also implemented policy enforcement on read operation related Registry APIs. The implementation introduced a `authnReadPolicyId` column to registry `records` table to indicate the policy file to be used to make authz decision on any `read` operations for this records. As the implementation is not fully separated from decision making process (e.g. we need to know the policy id for a record before a decision can be made), the solution does work but make it harder for us to add support to other operations and also defeat the purpose of adopting OPA's partial evaluation feature, which is more useful for make decision on a set of resources.
 
-In order to solve all issues in previous implementations and fully realise OPA's potential as a central policy engine, we decide to implement a more generic authz model in our upcoming v2.0.0 release.
+In order to solve all issues in previous implementations and fully realise OPA's potential as a central policy engine, we decide to implement a more generic authz model in our [v2.0.0 release](https://github.com/magda-io/magda/releases/tag/v2.0.0).
 
-If you are interested in most recent development work, you can checkout the [next](https://github.com/magda-io/magda/tree/next) branch of our repo to have a look or have a play the alpha release [v2.0.0-alpha.1](https://github.com/magda-io/magda/releases/tag/v2.0.0-alpha.1).
-
-In the next section, we will briefly introduce the new generic authz model that powers our upcoming v2.0.0 release.
+In the next section, we will briefly introduce the new generic authz model that powers our v2.0.0 release.
 
 ## New Authorisation Model & Implementation
 
@@ -422,7 +420,7 @@ For a `Resource`, we often choose 2 segments URI. e.g. `object/record`. The firs
 
 When an Authz decision is sought, e.g. we need to know which records the current user can read, we only need to send the operation URI `object/record/read` to [the auth decision API](https://github.com/magda-io/magda/blob/e10a202de7cc0c3610b206ca9daaaabddb00e79f/magda-authorization-api/src/createOpaRouter.ts#L220).
 
-> The system screenshots in this section are from a setting area only available since v2.0.0. The setting area offers functions that allows users to manage all authz related objects. If you want to have a play, please try one of the v2.0.0 alpha pre-releases.
+> The system screenshots in this section are from a setting area only available since v2.0.0. The setting area offers functions that allows users to manage all authz related objects. If you want to have a play, please upgrade to [v2.0.0 release](https://github.com/magda-io/magda/releases/tag/v2.0.0) or newer.
 
 #### Permissions & Roles
 
@@ -465,9 +463,9 @@ The authorisation model is described in [OPA's rego policy language](https://www
 
 Among all policies files, [entrypoint/allow.rego](https://github.com/magda-io/magda/blob/next/magda-opa/policies/entrypoint/allow.rego) is the "entrypoint" policy. We should query against this "entrypoint" policy for all decisions sought for any resources. This "entrypoint" policy will then delegate the decision making to the appropriate policy for a particular resources. This structure enables a consistent decision making interface regardless the inclusive relationship between different types resources and avoids redundant authorisation rules to ensure single source of truth principle.
 
-e.g. When query the "entrypoint" policy with operation URI "object/dataset/record", the entrypoint will delegate the decision making to [object/dataset/allow.rego](https://github.com/magda-io/magda/blob/next/magda-opa/policies/object/dataset/allow.rego) and output rules specific for dataset records.
+e.g. When query the "entrypoint" policy with operation URI "object/dataset/read", the entrypoint will delegate the decision making to [object/dataset/allow.rego](https://github.com/magda-io/magda/blob/next/magda-opa/policies/object/dataset/allow.rego) and output rules specific for dataset records.
 
-However, when query the "entrypoint" policy with operation URI "object/record/record" (i.e. generic record resource), the entrypoint will delegate the decision to all defined subset resources policies (e.g. "dataset", "distribution", "organization" etc.). Together with authorisation rules for generic record resource, the query result will be similar to the following pseudo code:
+However, when query the "entrypoint" policy with operation URI "object/record/read" (i.e. generic record resource), the entrypoint will delegate the decision to all defined subset resources policies (e.g. "dataset", "distribution", "organization" etc.). Together with authorisation rules for generic record resource, the query result will be similar to the following pseudo code:
 
 ```
 - when the record looks like a dataset record, the following rules apply.

@@ -26,6 +26,7 @@ import {
     getPluginDatasetLikeButton
 } from "externalPluginComponents";
 import ucwords from "ucwords";
+import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 
 const ExternalDatasetEditButton = getPluginDatasetEditButton();
 const ExternalDatasetLikeButton = getPluginDatasetLikeButton();
@@ -54,199 +55,229 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
     const publisherId = dataset?.publisher?.id ? dataset.publisher.id : null;
 
     const renderResult = (
-        <div
-            itemScope
-            itemType="http://schema.org/Dataset"
-            className="record--dataset"
-        >
-            <Medium>
-                <Breadcrumbs breadcrumbs={breadcrumbs} />
-            </Medium>
-            {dataset.publishingState === "draft" ? (
-                <div className="au-page-alerts au-page-alerts--info">
-                    <h3>Draft Dataset</h3>
-                    <p>
-                        This dataset is a draft and has not been published yet.
-                        Once the dataset is approved, it will appear in your
-                        catalogue.
-                    </p>
-                </div>
-            ) : null}
+        <MagdaNamespacesConsumer ns={["global"]}>
+            {(translate) => {
+                const appName = translate(["appName", ""]);
+                return (
+                    <div
+                        itemScope
+                        itemType="http://schema.org/Dataset"
+                        className="record--dataset"
+                    >
+                        <Medium>
+                            <Breadcrumbs breadcrumbs={breadcrumbs} />
+                        </Medium>
+                        {dataset.publishingState === "draft" ? (
+                            <div className="au-page-alerts au-page-alerts--info">
+                                <h3>Draft Dataset</h3>
+                                <p>
+                                    This dataset is a draft and has not been
+                                    published yet. Once the dataset is approved,
+                                    it will appear in your catalogue.
+                                </p>
+                            </div>
+                        ) : null}
 
-            <CurrencyAlert dataset={dataset} />
+                        <CurrencyAlert dataset={dataset} />
 
-            <div className="row">
-                <div className="col-sm-8">
-                    <h1 itemProp="name">{dataset?.title}</h1>
-                    <div className="publisher-basic-info-row">
-                        <span
-                            itemProp="publisher"
-                            className="publisher"
-                            itemScope
-                            itemType="http://schema.org/Organization"
-                        >
-                            <Link
-                                to={`/organisations/${publisherId}`}
-                                itemProp="url"
+                        <div className="row">
+                            <div className="col-sm-8">
+                                <h1 itemProp="name">{dataset?.title}</h1>
+                                <div className="publisher-basic-info-row">
+                                    <span
+                                        itemProp="publisher"
+                                        className="publisher"
+                                        itemScope
+                                        itemType="http://schema.org/Organization"
+                                    >
+                                        <Link
+                                            to={`/organisations/${publisherId}`}
+                                            itemProp="url"
+                                        >
+                                            <span itemProp="name">
+                                                {dataset?.publisher?.name}
+                                            </span>
+                                        </Link>
+                                    </span>
+
+                                    {defined(dataset.issuedDate) && (
+                                        <span className="created-date hidden-sm">
+                                            <span className="separator hidden-sm">
+                                                {" "}
+                                                /{" "}
+                                            </span>
+                                            Created{" "}
+                                            <span itemProp="dateCreated">
+                                                {dataset.issuedDate}
+                                            </span>
+                                            &nbsp;
+                                        </span>
+                                    )}
+
+                                    {defined(dataset.updatedDate) && (
+                                        <span className="updated-date hidden-sm">
+                                            <span className="separator hidden-sm">
+                                                &nbsp;/&nbsp;
+                                            </span>
+                                            Updated{" "}
+                                            <span itemProp="dateModified">
+                                                {dataset.updatedDate}
+                                            </span>
+                                        </span>
+                                    )}
+                                    <div className="dataset-details-overview">
+                                        <Small>
+                                            <DescriptionBox
+                                                content={dataset.description}
+                                                truncateLength={200}
+                                            />
+                                        </Small>
+                                        <Medium>
+                                            <DescriptionBox
+                                                content={dataset.description}
+                                                truncateLength={500}
+                                            />
+                                        </Medium>
+                                    </div>
+                                    {dataset.hasQuality ? (
+                                        <div className="quality-rating-box">
+                                            <QualityIndicator
+                                                quality={
+                                                    dataset.linkedDataRating
+                                                }
+                                            />
+                                        </div>
+                                    ) : null}
+                                    {dataset.informationSecurity
+                                        ?.classification && (
+                                        <SecClassification
+                                            secClass={
+                                                dataset.informationSecurity
+                                                    .classification
+                                            }
+                                        />
+                                    )}
+                                    {dataset.informationSecurity
+                                        ?.disseminationLimits && (
+                                        <Sensitivity
+                                            sensitivityList={
+                                                dataset.informationSecurity
+                                                    .disseminationLimits
+                                            }
+                                        />
+                                    )}
+
+                                    {dataset.accrualPeriodicity ? (
+                                        <div>
+                                            <div
+                                                className={
+                                                    "description-heading"
+                                                }
+                                            >
+                                                Updated:
+                                            </div>
+                                            {ucwords(
+                                                dataset.accrualPeriodicity
+                                            )}
+                                        </div>
+                                    ) : null}
+
+                                    <TagsBox
+                                        content={dataset.tags}
+                                        title="Tags"
+                                    />
+                                    <TagsBox
+                                        content={dataset.themes}
+                                        title="Themes"
+                                    />
+                                    <ContactPoint
+                                        contactPoint={dataset.contactPoint}
+                                        landingPage={dataset.landingPage}
+                                        source={dataset.source}
+                                        sourceDetails={dataset.sourceDetails}
+                                    />
+                                    {defined(dataset.access?.location) && (
+                                        <div>
+                                            <div className="dataset-heading">
+                                                File Location (outside {appName}
+                                                ):
+                                            </div>
+                                            <div>{dataset.access.location}</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div
+                                className={` col-sm-4 datatset-details-page-function-area ${
+                                    addMargin ? "form-margin" : ""
+                                }`}
                             >
-                                <span itemProp="name">
-                                    {dataset?.publisher?.name}
-                                </span>
-                            </Link>
-                        </span>
-
-                        {defined(dataset.issuedDate) && (
-                            <span className="created-date hidden-sm">
-                                <span className="separator hidden-sm"> / </span>
-                                Created{" "}
-                                <span itemProp="dateCreated">
-                                    {dataset.issuedDate}
-                                </span>
-                                &nbsp;
-                            </span>
-                        )}
-
-                        {defined(dataset.updatedDate) && (
-                            <span className="updated-date hidden-sm">
-                                <span className="separator hidden-sm">
-                                    &nbsp;/&nbsp;
-                                </span>
-                                Updated{" "}
-                                <span itemProp="dateModified">
-                                    {dataset.updatedDate}
-                                </span>
-                            </span>
-                        )}
-                        <div className="dataset-details-overview">
-                            <Small>
-                                <DescriptionBox
-                                    content={dataset.description}
-                                    truncateLength={200}
+                                <DatasetPageSuggestForm
+                                    title={dataset.title}
+                                    toggleMargin={setAddMargin}
+                                    datasetId={dataset.identifier}
+                                    contactPoint={dataset.contactPoint}
                                 />
-                            </Small>
-                            <Medium>
-                                <DescriptionBox
-                                    content={dataset.description}
-                                    truncateLength={500}
-                                />
-                            </Medium>
+                                {isAdmin ? (
+                                    <div className="download-history-report-button">
+                                        <CommonLink
+                                            href={`${
+                                                config.openfaasBaseUrl
+                                            }function/magda-function-history-report?recordId=${encodeURIComponent(
+                                                dataset.identifier!
+                                            )}`}
+                                            className="au-btn au-btn--secondary"
+                                            target="__blank"
+                                        >
+                                            Download History Report
+                                        </CommonLink>
+                                    </div>
+                                ) : null}
+
+                                {ExternalDatasetEditButton ? (
+                                    <ExternalDatasetEditButton
+                                        dataset={dataset}
+                                    />
+                                ) : (
+                                    <DatasetEditButton
+                                        dataset={dataset}
+                                        hasEditPermissions={hasEditPermissions}
+                                    />
+                                )}
+
+                                {config?.featureFlags?.datasetLikeButton ? (
+                                    <DatasetLikeButton dataset={dataset} />
+                                ) : null}
+                            </div>
                         </div>
-                        {dataset.hasQuality ? (
-                            <div className="quality-rating-box">
-                                <QualityIndicator
-                                    quality={dataset.linkedDataRating}
+                        <div className="tab-content">
+                            <Switch>
+                                <Route
+                                    path="/dataset/:datasetId/details"
+                                    component={DatasetPageDetails}
                                 />
-                            </div>
-                        ) : null}
-                        {dataset.informationSecurity?.classification && (
-                            <SecClassification
-                                secClass={
-                                    dataset.informationSecurity.classification
-                                }
-                            />
-                        )}
-                        {dataset.informationSecurity?.disseminationLimits && (
-                            <Sensitivity
-                                sensitivityList={
-                                    dataset.informationSecurity
-                                        .disseminationLimits
-                                }
-                            />
-                        )}
-
-                        {dataset.accrualPeriodicity ? (
-                            <div>
-                                <div className={"description-heading"}>
-                                    Updated:
-                                </div>
-                                {ucwords(dataset.accrualPeriodicity)}
-                            </div>
-                        ) : null}
-
-                        <TagsBox content={dataset.tags} title="Tags" />
-                        <TagsBox content={dataset.themes} title="Themes" />
-                        <ContactPoint
-                            contactPoint={dataset.contactPoint}
-                            landingPage={dataset.landingPage}
-                            source={dataset.source}
-                            sourceDetails={dataset.sourceDetails}
-                        />
-                        {defined(dataset.access?.location) && (
-                            <div>
-                                <div className="dataset-heading">
-                                    File Location (outside Magda):
-                                </div>
-                                <div>{dataset.access.location}</div>
-                            </div>
-                        )}
+                                <Redirect
+                                    exact
+                                    from="/dataset/:datasetId"
+                                    to={{
+                                        pathname: `${baseUrlDataset}/details`,
+                                        search: `?q=${props.searchText}`
+                                    }}
+                                />
+                                <Redirect
+                                    exact
+                                    from="/dataset/:datasetId/resource/*"
+                                    to={{
+                                        pathname: `${baseUrlDataset}/details`,
+                                        search: `?q=${props.searchText}`
+                                    }}
+                                />
+                            </Switch>
+                        </div>
                     </div>
-                </div>
-                <div
-                    className={` col-sm-4 datatset-details-page-function-area ${
-                        addMargin ? "form-margin" : ""
-                    }`}
-                >
-                    <DatasetPageSuggestForm
-                        title={dataset.title}
-                        toggleMargin={setAddMargin}
-                        datasetId={dataset.identifier}
-                        contactPoint={dataset.contactPoint}
-                    />
-                    {isAdmin ? (
-                        <div className="download-history-report-button">
-                            <CommonLink
-                                href={`${
-                                    config.openfaasBaseUrl
-                                }function/magda-function-history-report?recordId=${encodeURIComponent(
-                                    dataset.identifier!
-                                )}`}
-                                className="au-btn au-btn--secondary"
-                                target="__blank"
-                            >
-                                Download History Report
-                            </CommonLink>
-                        </div>
-                    ) : null}
-
-                    {ExternalDatasetEditButton ? (
-                        <ExternalDatasetEditButton dataset={dataset} />
-                    ) : (
-                        <DatasetEditButton
-                            dataset={dataset}
-                            hasEditPermissions={hasEditPermissions}
-                        />
-                    )}
-
-                    {config?.featureFlags?.datasetLikeButton ? (
-                        <DatasetLikeButton dataset={dataset} />
-                    ) : null}
-                </div>
-            </div>
-            <div className="tab-content">
-                <Switch>
-                    <Route
-                        path="/dataset/:datasetId/details"
-                        component={DatasetPageDetails}
-                    />
-                    <Redirect
-                        exact
-                        from="/dataset/:datasetId"
-                        to={{
-                            pathname: `${baseUrlDataset}/details`,
-                            search: `?q=${props.searchText}`
-                        }}
-                    />
-                    <Redirect
-                        exact
-                        from="/dataset/:datasetId/resource/*"
-                        to={{
-                            pathname: `${baseUrlDataset}/details`,
-                            search: `?q=${props.searchText}`
-                        }}
-                    />
-                </Switch>
-            </div>
-        </div>
+                );
+            }}
+        </MagdaNamespacesConsumer>
     );
 
     useEffect(() => {
@@ -259,4 +290,4 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
     return renderResult;
 };
 
-export default withRouter(DatasetPage);
+export default withRouter(DatasetPage as any) as any;

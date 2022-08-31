@@ -1,6 +1,6 @@
 # magda
 
-![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square)
+![Version: 2.0.1](https://img.shields.io/badge/Version-2.0.1-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes the magda default deployment.
 
@@ -14,7 +14,7 @@ A complete solution for managing, publishing and discovering government data, pr
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-core | magda-core | 1.2.2-alpha.0 |
+| file://../magda-core | magda-core | 2.0.1 |
 | https://charts.magda.io | ckan-connector-functions(magda-ckan-connector) | 1.3.0 |
 | https://charts.magda.io | magda-function-esri-url-processor | 1.1.0 |
 | https://charts.magda.io | magda-function-history-report | 1.1.0 |
@@ -35,10 +35,9 @@ A complete solution for managing, publishing and discovering government data, pr
 | ckan-connector-functions.includeInitialJobs | bool | `false` |  |
 | global.connectors.includeCronJobs | bool | `true` |  |
 | global.connectors.includeInitialJobs | bool | `false` |  |
-| global.openfaas.allowAdminOnly | bool | `true` |  |
-| global.openfaas.enabled | bool | `true` |  |
-| global.openfaas.functionNamespace | string | `"openfaas-fn"` |  |
-| global.openfaas.mainNamespace | string | `"openfaas"` |  |
+| global.openfaas.enabled | bool | `true` | turn on / off openfaas All openfaas dependents should check this field to decide deployment logic (`tags` unfortunately not available to ). They choose to simply not deploy or prompt an error message via [helm required function](https://helm.sh/docs/howto/charts_tips_and_tricks/#know-your-template-functions) |
+| global.openfaas.functionNamespace | string | `"openfaas-fn"` | Default namespace for functions |
+| global.openfaas.mainNamespace | string | `"openfaas"` | Default namespace for gateway and other core modules |
 | global.openfaas.namespacePrefix | string | `""` |  |
 | global.openfaas.secrets.authSecrets | bool | `true` |  |
 | openfaas.basic_auth | bool | `false` |  |

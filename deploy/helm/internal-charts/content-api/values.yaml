@@ -43,3 +43,10 @@ resources:
 # &nbsp;&nbsp;&nbsp;&nbsp;"magda-color-secondary": "#30384d"<br/>
 # </div>
 scssVars: {}
+
+# -- when set to true, API will not query policy engine for auth decision but assume it's always permitted. 
+# It's for debugging only.
+skipAuth: false
+
+# -- When set to true, print verbose debug info (e.g. SQL statements) to log.
+debug: false

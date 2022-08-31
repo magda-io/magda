@@ -1,5 +1,6 @@
-import { FetchError } from "../types";
 import { config, defaultConfiguration } from "../config";
+import { actionTypes } from "../constants/ActionTypes";
+import { FetchError } from "../types";
 
 const initialData: ContentState = Object.assign(
     {
@@ -28,7 +29,7 @@ const contentReducer = (
     action: ContentAction
 ) => {
     switch (action.type) {
-        case "REQUEST_CONTENT":
+        case actionTypes.REQUEST_CONTENT:
             return Object.assign(
                 {},
                 state,
@@ -39,7 +40,7 @@ const contentReducer = (
                 },
                 parseContent([])
             );
-        case "REQUEST_CONTENT_ERROR":
+        case actionTypes.REQUEST_CONTENT_ERROR:
             return Object.assign(
                 {},
                 state,
@@ -50,7 +51,7 @@ const contentReducer = (
                 },
                 parseContent([])
             );
-        case "RECEIVE_CONTENT":
+        case actionTypes.RECEIVE_CONTENT:
             return Object.assign(
                 {},
                 state,

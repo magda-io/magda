@@ -1,0 +1,46 @@
+{
+  "name": "@magda/migrator-registry-aspects",
+  "version": "2.0.1",
+  "description": "Setting up built-in registry aspect definitions.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
+    "build": "yarn run compile",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
+    "watch": "tsc -b --watch",
+    "start": "node dist/index.js",
+    "dev": "run-typescript-in-nodemon src/index.ts",
+    "test": "echo \"test cases to be added\"",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "retag-and-push": "retag-and-push"
+  },
+  "config": {
+    "docker": {
+      "name": "magda-migrator-registry-aspects",
+      "include": "Dockerfile node_modules dist"
+    },
+    "jwtSecret": "squirrel",
+    "userId": "00000000-0000-4000-8000-000000000000"
+  },
+  "dependencies": {
+    "@magda/registry-aspects": "^2.0.1",
+    "@magda/typescript-common": "^2.0.1",
+    "fs-extra": "^8.1.0",
+    "yargs": "^12.0.5"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^8.1.0",
+    "@types/yargs": "^12.0.8",
+    "typescript": "~4.2.4"
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "dockerizedTool": true
+    }
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist"
+  }
+}

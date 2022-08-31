@@ -47,6 +47,12 @@ export class CountResponse {
     "count": number;
 }
 
+export class DeleteRecordsAspectArrayItemsRequest {
+    "recordIds": Array<string>;
+    "jsonPath": string;
+    "items": Array<JsValue>;
+}
+
 export class DeleteResult {
     "deleted": boolean;
 }
@@ -89,11 +95,25 @@ export class JsObject {
 
 export class JsValue {}
 
+export class JsonPatch {
+    "ops": Array<Operation>;
+}
+
 export class MultipleDeleteResult {
     "count": number;
 }
 
 export class Operation {}
+
+export class PatchRecordsRequest {
+    "recordIds": Array<string>;
+    "jsonPath": JsonPatch;
+}
+
+export class PutRecordsAspectRequest {
+    "recordIds": Array<string>;
+    "data": JsObject;
+}
 
 /**
  * A record in the registry, usually including data for one or more aspects, unique for a tenant.
@@ -111,10 +131,6 @@ export class Record {
      * The aspects included in this record
      */
     "aspects": any;
-    /**
-     * The read authorization policy id of a record
-     */
-    "authnReadPolicyId": string;
     /**
      * A tag representing the action by the source of this record (e.g. an id for a individual crawl of a data portal).
      */
@@ -170,6 +186,11 @@ export class WebHook {
     "retryCount": number;
     "isRunning": any;
     "isProcessing": any;
+    "ownerId": string;
+    "creatorId": string;
+    "editorId": string;
+    "createTime": Date;
+    "editTime": Date;
 }
 
 /**
@@ -386,9 +407,11 @@ export class AspectDefinitionsApi {
      * Get a list of all aspects
      *
      * @param xMagdaTenantId 0
+     * @param xMagdaSession Magda internal session id
      */
     public getAll(
-        xMagdaTenantId: number
+        xMagdaTenantId: number,
+        xMagdaSession?: string
     ): Promise<{
         response: http.IncomingMessage;
         body: Array<AspectDefinition>;
@@ -406,6 +429,8 @@ export class AspectDefinitionsApi {
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 
@@ -452,10 +477,12 @@ export class AspectDefinitionsApi {
      *
      * @param xMagdaTenantId 0
      * @param id ID of the aspect to be fetched.
+     * @param xMagdaSession Magda internal session id
      */
     public getById(
         xMagdaTenantId: number,
-        id: string
+        id: string,
+        xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
         const localVarPath =
             this.basePath +
@@ -479,6 +506,8 @@ export class AspectDefinitionsApi {
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 
@@ -840,6 +869,196 @@ export class RecordAspectsApi {
         });
     }
     /**
+     * Get a list of a record&#39;s aspects
+     *
+     * @param xMagdaTenantId 0
+     * @param recordId ID of the record for which to fetch aspects.
+     * @param keyword Specify the keyword to search in the all aspects&#39; aspectId &amp; data fields.
+     * @param aspectIdOnly When set to true, will respond only an array contains aspect id only.
+     * @param start The index of the first record to retrieve.
+     * @param limit The maximum number of records to receive.
+     * @param xMagdaSession Magda internal session id
+     */
+    public getAspects(
+        xMagdaTenantId: number,
+        recordId: string,
+        keyword?: string,
+        aspectIdOnly?: boolean,
+        start?: number,
+        limit?: number,
+        xMagdaSession?: string
+    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+        const localVarPath =
+            this.basePath +
+            "/records/{recordId}/aspects".replace(
+                "{" + "recordId" + "}",
+                String(recordId)
+            );
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getAspects."
+            );
+        }
+
+        // verify required parameter 'recordId' is not null or undefined
+        if (recordId === null || recordId === undefined) {
+            throw new Error(
+                "Required parameter recordId was null or undefined when calling getAspects."
+            );
+        }
+
+        if (keyword !== undefined) {
+            queryParameters["keyword"] = keyword;
+        }
+
+        if (aspectIdOnly !== undefined) {
+            queryParameters["aspectIdOnly"] = aspectIdOnly;
+        }
+
+        if (start !== undefined) {
+            queryParameters["start"] = start;
+        }
+
+        if (limit !== undefined) {
+            queryParameters["limit"] = limit;
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "GET",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{
+            response: http.IncomingMessage;
+            body: Array<any>;
+        }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (
+                        response.statusCode >= 200 &&
+                        response.statusCode <= 299
+                    ) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
+     * Get the number of aspects that a record has
+     *
+     * @param xMagdaTenantId 0
+     * @param recordId ID of the record for which to fetch an aspect.
+     * @param keyword Specify the keyword to search in the all aspects&#39; aspectId &amp; data fields.
+     * @param xMagdaSession Magda internal session id
+     */
+    public getAspectsCount(
+        xMagdaTenantId: number,
+        recordId: string,
+        keyword?: string,
+        xMagdaSession?: string
+    ): Promise<{ response: http.IncomingMessage; body: CountResponse }> {
+        const localVarPath =
+            this.basePath +
+            "/records/{recordId}/aspects/count".replace(
+                "{" + "recordId" + "}",
+                String(recordId)
+            );
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getAspectsCount."
+            );
+        }
+
+        // verify required parameter 'recordId' is not null or undefined
+        if (recordId === null || recordId === undefined) {
+            throw new Error(
+                "Required parameter recordId was null or undefined when calling getAspectsCount."
+            );
+        }
+
+        if (keyword !== undefined) {
+            queryParameters["keyword"] = keyword;
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "GET",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{
+            response: http.IncomingMessage;
+            body: CountResponse;
+        }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (
+                        response.statusCode >= 200 &&
+                        response.statusCode <= 299
+                    ) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
      * Get a record aspect by ID
      *
      * @param xMagdaTenantId 0
@@ -1038,13 +1257,15 @@ export class RecordAspectsApi {
      * @param aspect The record aspect to save.
      * @param xMagdaSession Magda internal session id
      * @param xMagdaTenantId 0
+     * @param merge Whether merge the supplied aspect data to existing aspect data or replace it
      */
     public putById(
         recordId: string,
         aspectId: string,
         aspect: any,
         xMagdaSession: string,
-        xMagdaTenantId: number
+        xMagdaTenantId: number,
+        merge?: boolean
     ): Promise<{ response: http.IncomingMessage; body: any }> {
         const localVarPath =
             this.basePath +
@@ -1088,6 +1309,10 @@ export class RecordAspectsApi {
             throw new Error(
                 "Required parameter xMagdaTenantId was null or undefined when calling putById."
             );
+        }
+
+        if (merge !== undefined) {
+            queryParameters["merge"] = merge;
         }
 
         headerParams["X-Magda-Session"] = xMagdaSession;
@@ -1181,6 +1406,7 @@ export class RecordHistoryApi {
      * @param limit The maximum number of events to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
      * @param aspect The aspects for which to included in event history, specified as multiple occurrences of this query parameter.
      * @param dereference true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.
+     * @param reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to &#x60;true&#x60;, higher pageToken records (newer records) will be returned.
      */
     public history(
         xMagdaTenantId: number,
@@ -1190,7 +1416,8 @@ export class RecordHistoryApi {
         start?: number,
         limit?: number,
         aspect?: Array<string>,
-        dereference?: boolean
+        dereference?: boolean,
+        reversePageTokenOrder?: boolean
     ): Promise<{ response: http.IncomingMessage; body: EventsPage }> {
         const localVarPath =
             this.basePath +
@@ -1241,6 +1468,10 @@ export class RecordHistoryApi {
 
         if (dereference !== undefined) {
             queryParameters["dereference"] = dereference;
+        }
+
+        if (reversePageTokenOrder !== undefined) {
+            queryParameters["reversePageTokenOrder"] = reversePageTokenOrder;
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
@@ -1576,6 +1807,103 @@ export class RecordsApi {
         });
     }
     /**
+     * Remove items from records&#39; aspect data
+     * Remove items from records&#39; aspect data
+     * @param xMagdaTenantId 0
+     * @param aspectId ID of the aspect to update.
+     * @param requestData An json object has key &#39;recordIds&#39;, &#39;jsonPath&#39;, &#39;items&#39;
+     * @param xMagdaSession Magda internal session id
+     */
+    public deleteRecordsAspectArrayItems(
+        xMagdaTenantId: number,
+        aspectId: string,
+        requestData: DeleteRecordsAspectArrayItemsRequest,
+        xMagdaSession: string
+    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+        const localVarPath =
+            this.basePath +
+            "/records/aspectArrayItems/{aspectId}".replace(
+                "{" + "aspectId" + "}",
+                String(aspectId)
+            );
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling deleteRecordsAspectArrayItems."
+            );
+        }
+
+        // verify required parameter 'aspectId' is not null or undefined
+        if (aspectId === null || aspectId === undefined) {
+            throw new Error(
+                "Required parameter aspectId was null or undefined when calling deleteRecordsAspectArrayItems."
+            );
+        }
+
+        // verify required parameter 'requestData' is not null or undefined
+        if (requestData === null || requestData === undefined) {
+            throw new Error(
+                "Required parameter requestData was null or undefined when calling deleteRecordsAspectArrayItems."
+            );
+        }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error(
+                "Required parameter xMagdaSession was null or undefined when calling deleteRecordsAspectArrayItems."
+            );
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "DELETE",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+            body: requestData
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{
+            response: http.IncomingMessage;
+            body: Array<any>;
+        }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (
+                        response.statusCode >= 200 &&
+                        response.statusCode <= 299
+                    ) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
+    }
+    /**
      * Get a list of all records
      *
      * @param xMagdaTenantId 0
@@ -1590,6 +1918,7 @@ export class RecordsApi {
      * @param orderBy Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field
      * @param orderByDir Specify the order by direction. Either &#x60;asc&#x60; or &#x60;desc&#x60;
      * @param orderNullFirst Specify whether nulls appear before (&#x60;true&#x60;) or after (&#x60;false&#x60;) non-null values in the sort ordering.
+     * @param reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to &#x60;true&#x60;, higher pageToken records (newer records) will be returned.
      * @param xMagdaSession Magda internal session id
      */
     public getAll(
@@ -1605,6 +1934,7 @@ export class RecordsApi {
         orderBy?: string,
         orderByDir?: string,
         orderNullFirst?: boolean,
+        reversePageTokenOrder?: boolean,
         xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Array<Record> }> {
         const localVarPath = this.basePath + "/records";
@@ -1663,6 +1993,10 @@ export class RecordsApi {
             queryParameters["orderNullFirst"] = orderNullFirst;
         }
 
+        if (reversePageTokenOrder !== undefined) {
+            queryParameters["reversePageTokenOrder"] = reversePageTokenOrder;
+        }
+
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
 
         headerParams["X-Magda-Session"] = xMagdaSession;
@@ -1714,6 +2048,7 @@ export class RecordsApi {
      * @param pageToken A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
      * @param start The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
      * @param limit The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
+     * @param reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to &#x60;true&#x60;, higher pageToken records (newer records) will be returned.
      * @param xMagdaSession Magda internal session id
      */
     public getAllSummary(
@@ -1721,6 +2056,7 @@ export class RecordsApi {
         pageToken?: string,
         start?: number,
         limit?: number,
+        reversePageTokenOrder?: boolean,
         xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Array<RecordSummary> }> {
         const localVarPath = this.basePath + "/records/summary";
@@ -1745,6 +2081,10 @@ export class RecordsApi {
 
         if (limit !== undefined) {
             queryParameters["limit"] = limit;
+        }
+
+        if (reversePageTokenOrder !== undefined) {
+            queryParameters["reversePageTokenOrder"] = reversePageTokenOrder;
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
@@ -1840,6 +2180,82 @@ export class RecordsApi {
 
         if (dereference !== undefined) {
             queryParameters["dereference"] = dereference;
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "GET",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{ response: http.IncomingMessage; body: Record }>(
+            (resolve, reject) => {
+                request(requestOptions, (error, response, body) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        if (
+                            response.statusCode >= 200 &&
+                            response.statusCode <= 299
+                        ) {
+                            resolve({ response: response, body: body });
+                        } else {
+                            reject({ response: response, body: body });
+                        }
+                    }
+                });
+            }
+        );
+    }
+    /**
+     * Get a record in full by ID
+     * Get a record with all attached aspects data by the record ID.
+     * @param id ID of the record to be fetched.
+     * @param xMagdaTenantId 0
+     * @param xMagdaSession Magda internal session id
+     */
+    public getByIdInFull(
+        id: string,
+        xMagdaTenantId: number,
+        xMagdaSession?: string
+    ): Promise<{ response: http.IncomingMessage; body: Record }> {
+        const localVarPath =
+            this.basePath +
+            "/records/inFull/{id}".replace("{" + "id" + "}", String(id));
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'id' is not null or undefined
+        if (id === null || id === undefined) {
+            throw new Error(
+                "Required parameter id was null or undefined when calling getByIdInFull."
+            );
+        }
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling getByIdInFull."
+            );
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
@@ -2128,7 +2544,7 @@ export class RecordsApi {
      * Modify a record by applying a JSON Patch
      * The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
      * @param xMagdaTenantId 0
-     * @param id ID of the aspect to be saved.
+     * @param id ID of the record to be pacthed.
      * @param recordPatch The RFC 6902 patch to apply to the aspect.
      * @param xMagdaSession Magda internal session id
      */
@@ -2137,7 +2553,7 @@ export class RecordsApi {
         id: string,
         recordPatch: Array<Operation>,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
+    ): Promise<{ response: http.IncomingMessage; body: Record }> {
         const localVarPath =
             this.basePath +
             "/records/{id}".replace("{" + "id" + "}", String(id));
@@ -2198,9 +2614,91 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
+        return new Promise<{ response: http.IncomingMessage; body: Record }>(
+            (resolve, reject) => {
+                request(requestOptions, (error, response, body) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        if (
+                            response.statusCode >= 200 &&
+                            response.statusCode <= 299
+                        ) {
+                            resolve({ response: response, body: body });
+                        } else {
+                            reject({ response: response, body: body });
+                        }
+                    }
+                });
+            }
+        );
+    }
+    /**
+     * Modify a list of records by applying the same JSON Patch
+     * The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+     * @param xMagdaTenantId 0
+     * @param requestData An json object has key &#39;recordIds&#39; &amp; &#39;jsonPath&#39;
+     * @param xMagdaSession Magda internal session id
+     */
+    public patchRecords(
+        xMagdaTenantId: number,
+        requestData: PatchRecordsRequest,
+        xMagdaSession: string
+    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+        const localVarPath = this.basePath + "/records";
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling patchRecords."
+            );
+        }
+
+        // verify required parameter 'requestData' is not null or undefined
+        if (requestData === null || requestData === undefined) {
+            throw new Error(
+                "Required parameter requestData was null or undefined when calling patchRecords."
+            );
+        }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error(
+                "Required parameter xMagdaSession was null or undefined when calling patchRecords."
+            );
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "PATCH",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+            body: requestData
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
         return new Promise<{
             response: http.IncomingMessage;
-            body: AspectDefinition;
+            body: Array<any>;
         }>((resolve, reject) => {
             request(requestOptions, (error, response, body) => {
                 if (error) {
@@ -2310,6 +2808,109 @@ export class RecordsApi {
                 });
             }
         );
+    }
+    /**
+     * Modify a list of records&#39;s aspect with same new data
+     * Modify a list of records&#39;s aspect with same new data
+     * @param xMagdaTenantId 0
+     * @param aspectId ID of the aspect to update.
+     * @param requestData An json object has key &#39;recordIds&#39; &amp; &#39;data&#39;
+     * @param xMagdaSession Magda internal session id
+     * @param merge Whether merge the supplied aspect data to existing aspect data or replace it
+     */
+    public putRecordsAspect(
+        xMagdaTenantId: number,
+        aspectId: string,
+        requestData: PutRecordsAspectRequest,
+        xMagdaSession: string,
+        merge?: boolean
+    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+        const localVarPath =
+            this.basePath +
+            "/records/aspects/{aspectId}".replace(
+                "{" + "aspectId" + "}",
+                String(aspectId)
+            );
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling putRecordsAspect."
+            );
+        }
+
+        // verify required parameter 'aspectId' is not null or undefined
+        if (aspectId === null || aspectId === undefined) {
+            throw new Error(
+                "Required parameter aspectId was null or undefined when calling putRecordsAspect."
+            );
+        }
+
+        // verify required parameter 'requestData' is not null or undefined
+        if (requestData === null || requestData === undefined) {
+            throw new Error(
+                "Required parameter requestData was null or undefined when calling putRecordsAspect."
+            );
+        }
+
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error(
+                "Required parameter xMagdaSession was null or undefined when calling putRecordsAspect."
+            );
+        }
+
+        if (merge !== undefined) {
+            queryParameters["merge"] = merge;
+        }
+
+        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
+
+        let useFormData = false;
+
+        let requestOptions: request.Options = {
+            method: "PUT",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            useQuerystring: this._useQuerystring,
+            json: true,
+            body: requestData
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+        return new Promise<{
+            response: http.IncomingMessage;
+            body: Array<any>;
+        }>((resolve, reject) => {
+            request(requestOptions, (error, response, body) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (
+                        response.statusCode >= 200 &&
+                        response.statusCode <= 299
+                    ) {
+                        resolve({ response: response, body: body });
+                    } else {
+                        reject({ response: response, body: body });
+                    }
+                }
+            });
+        });
     }
     /**
      * Trim by source tag

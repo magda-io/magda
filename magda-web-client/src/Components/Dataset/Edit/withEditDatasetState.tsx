@@ -10,6 +10,12 @@ import {
     DEFAULT_OPTIONAL_FETCH_ASPECT_LIST,
     DEFAULT_COMPULSORY_FETCH_ASPECT_LIST
 } from "api-clients/RegistryApis";
+import { findPermissionGap } from "helpers/accessControlUtils";
+import Placeholder from "rsuite/Placeholder";
+import Loader from "rsuite/Loader";
+import { resetFileUploadMarkers } from "../Add/Pages/AddFiles/uploadFile";
+
+const Paragraph = Placeholder.Paragraph;
 
 /* eslint-disable react-hooks/rules-of-hooks */
 type Props = { initialState: State; user: User } & RouterProps;
@@ -21,20 +27,54 @@ function mapStateToProps(state: any) {
     };
 }
 
+function hasMetaDataCreationToolAccess(user: User) {
+    return findPermissionGap(
+        [
+            "object/dataset/draft/read",
+            "object/dataset/published/read",
+            "object/dataset/draft/create",
+            "object/dataset/draft/update",
+            "object/dataset/published/create",
+            "object/dataset/published/update",
+            "object/distribution/draft/create",
+            "object/distribution/draft/read",
+            "object/distribution/draft/update",
+            "object/distribution/published/create",
+            "object/distribution/published/read",
+            "object/distribution/published/update",
+            "object/organization/read",
+            "object/faas/function/read",
+            "object/faas/function/invoke"
+        ],
+        user
+    );
+}
+
+const loadingArea = (
+    <>
+        <Loader center size="sm" content="loading..." />
+        <Paragraph
+            style={{ marginTop: 30 }}
+            rows={12}
+            graph="square"
+            active
+        ></Paragraph>
+    </>
+);
+
 export default <T extends Props>(Component: React.ComponentType<T>) => {
     const withEditDatasetState = (props: T) => {
         const [state, updateData] = useState<State | undefined>(undefined);
+        const missingOperations = hasMetaDataCreationToolAccess(props.user);
         const isDisabled =
-            !config.featureFlags.previewAddDataset &&
-            (!props.user ||
-                props.user.id === "" ||
-                props.user.isAdmin !== true);
+            !config.featureFlags.previewAddDataset && missingOperations?.length;
 
         const { loading, error } = useAsync(
             async (isDisabled, datasetId, user) => {
                 if (isDisabled || !datasetId) {
                     return;
                 }
+                resetFileUploadMarkers();
                 // --- turn off cache
                 // --- edit flow will also save draft after file is uploaded to storage api
                 // --- to avoid orphan uploaded files when the user drops off in the half way before submit
@@ -47,24 +87,30 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
 
                 updateData(loadedStateData);
             },
-            [isDisabled, props.match.params.datasetId, props.user]
+            [isDisabled, (props as any).match.params.datasetId, props.user]
         );
 
-        if (props.isFetchingWhoAmI) {
-            return <div>Loading...</div>;
+        if ((props as any).isFetchingWhoAmI) {
+            return loadingArea;
         } else if (isDisabled) {
             return (
                 <div
                     className="au-body au-page-alerts au-page-alerts--error"
                     style={{ marginTop: "50px" }}
                 >
-                    <span>
-                        Only admin users are allowed to access this page.
-                    </span>
+                    <div>
+                        You need permissions of the following operations to
+                        access this page:
+                        <ul>
+                            {missingOperations.map((operationUri, idx) => (
+                                <li key={idx}>{operationUri}</li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             );
         } else if ((!state || loading) && !error) {
-            return <div>Loading...</div>;
+            return loadingArea;
         } else if (error) {
             return <div>Failed to load dataset data: {"" + error}</div>;
         } else {
@@ -72,7 +118,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
         }
     };
 
-    return connect(mapStateToProps)(withRouter(withEditDatasetState));
+    return connect(mapStateToProps)(withRouter(withEditDatasetState as any));
 };
 
 /* eslint-enable react-hooks/rules-of-hooks */

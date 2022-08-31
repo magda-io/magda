@@ -1,6 +1,6 @@
 {
   "name": "@magda/migrator-session-db",
-  "version": "1.2.2-alpha.0",
+  "version": "2.0.1",
   "description": "The database storing session information.",
   "scripts": {
     "dev": "echo \"No dev mode available, use helm instead.\"",
@@ -11,13 +11,13 @@
   "license": "Apache-2.0",
   "config": {
     "docker": {
-      "name": "data61/magda-migrator-session-db",
+      "name": "magda-migrator-session-db",
       "include": "Dockerfile sql"
     }
   },
   "devDependencies": {
-    "@magda/db-migrator": "^1.2.2-alpha.0",
-    "@magda/scripts": "^1.2.2-alpha.0"
+    "@magda/db-migrator": "^2.0.1",
+    "@magda/scripts": "^2.0.1"
   },
   "magda": {
     "categories": {

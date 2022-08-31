@@ -49,7 +49,7 @@ export class AlwaysEditor<V> extends React.Component<
                     : "",
                 elRef: this.ref,
                 customValidator: this.props.customValidator,
-                setError: errorMessage => {
+                setError: (errorMessage) => {
                     this.setState({
                         isValidationError: true,
                         validationErrorMessage: errorMessage
@@ -86,7 +86,7 @@ export class AlwaysEditor<V> extends React.Component<
                 validationErrorMessage: this.state.validationErrorMessage,
                 onBlur: () => {
                     ValidationManager.onInputFocusOut(
-                        this.props.validationFieldPath as string
+                        this.props.validationFieldPath
                     );
                 }
             });

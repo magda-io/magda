@@ -4,6 +4,7 @@ import { DistributionSource } from "Components/Dataset/Add/DatasetAddCommon";
 import { Record } from "api-clients/RegistryApis";
 import GenericError from "helpers/GenericError";
 import promiseAny from "helpers/promiseAny";
+import isArray from "lodash/isArray";
 
 export type OpenfaasFunction = {
     name: string; // --- openfaas function name can be used as id to invoke function
@@ -30,7 +31,11 @@ export class UrlProcessingError extends GenericError {
     unableProcessUrl?: boolean;
 }
 
-type MagdaFuncFilterType = string | ((OpenfaasFunction) => boolean) | undefined;
+type MagdaFuncFilterType =
+    | string
+    | string[]
+    | ((OpenfaasFunction) => boolean)
+    | undefined;
 
 /**
  * Talks to openfaas gateway, get a list of deployed openfaas functions and optionaly filter by `magdaFuncType` or with a filter function.
@@ -75,6 +80,10 @@ export async function getOpenfaasFunctions(
         return data.filter(
             (item) => item?.labels?.magdaType === magdaFuncFilter
         );
+    } else if (isArray(magdaFuncFilter) && magdaFuncFilter.length) {
+        return data.filter(
+            (item) => magdaFuncFilter.indexOf(item?.labels?.magdaType) !== -1
+        );
     } else if (typeof magdaFuncFilter === "function") {
         return data.filter((item) => magdaFuncFilter(item));
     } else {
@@ -94,7 +103,7 @@ export async function getOpenfaasFunctions(
  */
 export async function getAllDataUrlProcessorsFromOpenfaasGateway(
     type?: DistributionSource
-) {
+): Promise<OpenfaasFunction[]> {
     let magdaFuncType;
 
     switch (type) {
@@ -104,6 +113,8 @@ export async function getAllDataUrlProcessorsFromOpenfaasGateway(
         case DistributionSource.Api:
             magdaFuncType = "api-url-processor";
             break;
+        default:
+            magdaFuncType = ["data-url-processor", "api-url-processor"];
     }
 
     return await getOpenfaasFunctions(magdaFuncType);

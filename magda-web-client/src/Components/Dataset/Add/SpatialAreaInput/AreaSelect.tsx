@@ -7,7 +7,7 @@ import AreaSelectStyles from "./AreaSelectStyles";
 
 import { Region } from "helpers/datasetSearch";
 
-const loadOptions = (props: PropsType) => async inputValue => {
+const loadOptions = (props: PropsType) => async (inputValue) => {
     if (!props.steRegion || !props.sa4Region) return [];
     const queryStr = inputValue.trim();
     const res = await fetch(
@@ -30,7 +30,7 @@ const loadOptions = (props: PropsType) => async inputValue => {
     }
     if (props.regionId && !props.value) {
         // --- set initial prepopulated value
-        data.regions.forEach(region => {
+        data.regions.forEach((region) => {
             if (region.regionId === props.regionId) {
                 typeof props.onChange === "function" &&
                     props.onChange(region, true);
@@ -52,7 +52,7 @@ interface PropsType {
     ) => void;
 }
 
-const AreaSelect: FunctionComponent<PropsType> = props => {
+const AreaSelect: FunctionComponent<PropsType> = (props) => {
     const { countryRegion, steRegion, sa4Region } = props;
 
     const isDisabled = countryRegion && steRegion && sa4Region ? false : true;
@@ -86,12 +86,12 @@ const AreaSelect: FunctionComponent<PropsType> = props => {
                 defaultOptions
                 value={props.value}
                 loadOptions={loadOptions(props)}
-                getOptionLabel={option => option.regionName as string}
-                getOptionValue={option => option.regionId as string}
+                getOptionLabel={(option) => option.regionName as string}
+                getOptionValue={(option) => option.regionId as string}
                 styles={AreaSelectStyles}
                 placeholder={placeHolderText}
                 isDisabled={isDisabled}
-                onChange={option =>
+                onChange={(option) =>
                     typeof props.onChange === "function" &&
                     props.onChange(option)
                 }

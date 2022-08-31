@@ -28,6 +28,21 @@ spec:
             command:
               - "/bin/sh"
               - "-c"
-              - "apk add --no-cache ca-certificates curl && curl -i -X POST http://indexer/v0/reindex"
+              - "mkdir /workdir && cp /trigger-script/* /workdir/ && cd /workdir && yarn install && node index.js"
+            env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: jwt-secret
+            - name: USER_ID
+              value: {{ .Values.global.defaultAdminUserId }}
+            volumeMounts:
+            - name: trigger-script
+              mountPath: /trigger-script
           restartPolicy: OnFailure
+          volumes:
+          - name: trigger-script
+            configMap:
+              name: indexer-reindex-trigger-script
 {{- end }}

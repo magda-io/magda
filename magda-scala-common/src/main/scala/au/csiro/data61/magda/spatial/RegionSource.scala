@@ -4,6 +4,7 @@ import java.net.URL
 
 import au.csiro.data61.magda.AppConfig
 import com.typesafe.config.{Config, ConfigObject}
+import au.csiro.data61.magda.util.RichConfig._
 
 import scala.collection.JavaConversions._
 
@@ -46,15 +47,6 @@ class RegionSources(config: Config) {
 
   def forName(name: String): Option[RegionSource] = lookup.get(name.toLowerCase)
 
-  private def getOptionalStringConfig(
-      fieldName: String,
-      regionSourceConfig: Config
-  ): Option[String] = {
-    if (regionSourceConfig.hasPath(fieldName))
-      Some(regionSourceConfig.getString(fieldName))
-    else None
-  }
-
   private def loadFromConfig(config: Config): Seq[RegionSource] = {
     config
       .root()
@@ -67,7 +59,7 @@ class RegionSources(config: Config) {
             idProperty = regionSourceConfig.getString("idField"),
             nameProperty = regionSourceConfig.getString("nameField"),
             shortNameProperty =
-              getOptionalStringConfig("shortNameField", regionSourceConfig),
+              regionSourceConfig.getOptionalString("shortNameField"),
             includeIdInName =
               if (regionSourceConfig.hasPath("includeIdInName"))
                 regionSourceConfig.getBoolean("includeIdInName")
@@ -83,21 +75,16 @@ class RegionSources(config: Config) {
               if (regionSourceConfig.hasPath("requireSimplify"))
                 regionSourceConfig.getBoolean("requireSimplify")
               else true,
-            lv1IdField =
-              getOptionalStringConfig("lv1IdField", regionSourceConfig),
-            lv2IdField =
-              getOptionalStringConfig("lv2IdField", regionSourceConfig),
-            lv3IdField =
-              getOptionalStringConfig("lv3IdField", regionSourceConfig),
-            lv4IdField =
-              getOptionalStringConfig("lv4IdField", regionSourceConfig),
-            lv5IdField =
-              getOptionalStringConfig("lv5IdField", regionSourceConfig),
-            lv1Id = getOptionalStringConfig("lv1Id", regionSourceConfig),
-            lv2Id = getOptionalStringConfig("lv2Id", regionSourceConfig),
-            lv3Id = getOptionalStringConfig("lv3Id", regionSourceConfig),
-            lv4Id = getOptionalStringConfig("lv4Id", regionSourceConfig),
-            lv5Id = getOptionalStringConfig("lv5Id", regionSourceConfig)
+            lv1IdField = regionSourceConfig.getOptionalString("lv1IdField"),
+            lv2IdField = regionSourceConfig.getOptionalString("lv2IdField"),
+            lv3IdField = regionSourceConfig.getOptionalString("lv3IdField"),
+            lv4IdField = regionSourceConfig.getOptionalString("lv4IdField"),
+            lv5IdField = regionSourceConfig.getOptionalString("lv5IdField"),
+            lv1Id = regionSourceConfig.getOptionalString("lv1Id"),
+            lv2Id = regionSourceConfig.getOptionalString("lv2Id"),
+            lv3Id = regionSourceConfig.getOptionalString("lv3Id"),
+            lv4Id = regionSourceConfig.getOptionalString("lv4Id"),
+            lv5Id = regionSourceConfig.getOptionalString("lv5Id")
           )
       }
       .toSeq

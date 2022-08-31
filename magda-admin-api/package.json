@@ -1,6 +1,6 @@
 {
   "name": "@magda/admin-api",
-  "version": "1.2.2-alpha.0",
+  "version": "2.0.1",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
@@ -14,19 +14,20 @@
     "retag-and-push": "retag-and-push"
   },
   "dependencies": {
-    "@magda/typescript-common": "^1.2.2-alpha.0",
+    "@kubernetes/client-node": "^0.16.3",
+    "@magda/typescript-common": "^2.0.1",
     "body-parser": "^1.13.2",
     "express": "^4.17.1",
     "http-proxy": "^1.16.2",
+    "http-terminator": "^3.2.0",
     "isomorphic-fetch": "^2.2.1",
-    "kubernetes-client": "3.17.2",
     "lodash": "^4.17.4",
     "nyc": "^13.1.0",
     "util.promisify": "^1.0.0",
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^1.2.2-alpha.0",
+    "@magda/scripts": "^2.0.1",
     "@types/chai": "^4.0.4",
     "@types/config": "0.0.32",
     "@types/express": "^4.17.6",
@@ -44,11 +45,11 @@
     "request-debug": "^0.2.0",
     "sinon": "^3.2.1",
     "supertest": "^3.0.0",
-    "typescript": "^3.7.2"
+    "typescript": "~4.2.4"
   },
   "config": {
     "docker": {
-      "name": "data61/magda-admin-api",
+      "name": "magda-admin-api",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",

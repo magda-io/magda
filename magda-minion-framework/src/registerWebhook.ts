@@ -35,7 +35,12 @@ export default async function registerNewWebhook(
         lastRetryTime: null,
         retryCount: 0,
         isRunning: null,
-        isProcessing: null
+        isProcessing: null,
+        ownerId: undefined,
+        createTime: undefined,
+        creatorId: undefined,
+        editTime: undefined,
+        editorId: undefined
     };
 
     return registry.putHook(newWebHook);

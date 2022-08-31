@@ -211,7 +211,7 @@ export default async function processFile(
         const output = await extractors.runExtractors(
             input,
             (() => {
-                const safeConfig = { ...config };
+                const safeConfig = { ...config } as any;
                 // We need to delete facets because it has regexs in it,
                 // and these cause an error if you try to pass them to
                 // the webworker
@@ -300,7 +300,7 @@ export default async function processFile(
                     // This happens if the DELETE fails, which is really catastrophic.
                     // We need to warn the user that manual cleanup may be required.
                     throw new UserVisibleError(
-                        "Adding the file failed, but Magda wasn't able to remove it from the system - if it's important that this file not remain in Magda, contact " +
+                        "Adding the file failed, but system wasn't able to remove it from the system - if it's important that this file not remain in system, contact " +
                             config.defaultContactEmail
                     );
                 } finally {

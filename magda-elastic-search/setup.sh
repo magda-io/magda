@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "Setting up data directory"
 
+[ ! -d "/data" ] && mkdir /data
 mkdir /data/data
 mkdir /data/log
 chown -R elasticsearch:elasticsearch /data

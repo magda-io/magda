@@ -51,9 +51,9 @@ users in different organization units. See the comment in the sql file for detai
 ### Start opa server
 
 ```
-cd deploy/helm/internal-charts/opa
+cd magda-opa
 
-docker-compose up
+yarn dev
 ```
 
 It will use the opa policies that are the same as in the real deployment.

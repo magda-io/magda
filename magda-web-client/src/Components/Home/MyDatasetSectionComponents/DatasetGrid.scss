@@ -1,11 +1,15 @@
 .my-dataset-section-container {
     .dataset-list-body {
+        .datat-grid-container {
+            padding-left: 50px;
+            padding-right: 30px;
+        }
         table {
             width: 100%;
             th,
             td {
                 &:first-child {
-                    padding-left: 50px;
+                    padding-left: 10px;
                 }
             }
         }
@@ -39,9 +43,18 @@
             width: 120px;
             text-align: center;
         }
-        .edit-button-col {
-            width: 80px;
+
+        .action-buttons-col {
+            width: 220px;
             text-align: center;
+            .rs-btn-icon.rs-btn {
+                padding-top: 7px;
+                padding-bottom: 6px;
+            }
+            .rs-btn {
+                padding-top: 5px;
+                padding-bottom: 5px;
+            }
         }
 
         .grid-bottom-divider {
@@ -53,36 +66,16 @@
 
         .paging-area {
             padding-right: 55px;
-            .next-page-button,
-            .first-page-button {
-                cursor: pointer;
+            .rs-btn-group {
                 float: right;
-                height: 42px;
-                width: 130px;
-                border-radius: 2px;
-                background-color: #30384d;
-                color: #ffffff;
-                font-size: 16px;
-                letter-spacing: -0.2px;
-                line-height: 24px;
-                text-align: center;
-                border: none;
-                &:disabled {
-                    opacity: 0.3;
-                    cursor: default;
-                }
             }
-            .first-page-button {
-                margin-right: 10px;
-            }
-            .page-idx-info-area {
-                float: right;
-                line-height: 42px;
-                margin-right: 10px;
-                color: #9b9b9b;
-                font-size: 17px;
-                letter-spacing: -0.5px;
-            }
+        }
+    }
+}
+.dataset-grid-action-dropdown {
+    .rs-dropdown-item {
+        svg {
+            margin-right: 8px;
         }
     }
 }

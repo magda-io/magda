@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2019-09/hyper-schema#",
-    "title": "The publishing state of a dataset",
+    "title": "Dataset Publishing State Aspect",
     "description": "Specifies the state and other metadata associated with publication of data within MAGDA system.",
     "type": "object",
     "properties": {
@@ -10,11 +10,35 @@
             "default": "published",
             "enum": ["draft", "published", "archived"]
         },
+        "hasEverPublished": {
+            "title": "Has ever published",
+            "description": "Whether the dataset has ever been published before. If `true`, editing workflow UI (rather than creation workflow) will be shown.",
+            "type": "boolean",
+            "default": false
+        },
+        "custodianOrgUnitId": {
+            "title": "the id of organisational unit that should be referenced as the data custodian",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "managingOrgUnitId": {
+            "title": "the id of organisational unit that is responsible for maintaining this dataset",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
         "level": {
             "title": "Level dataset is visible at",
             "type": "string",
-            "default": "agency",
-            "enum": ["agency", "division", "branch", "team"]
+            "default": "organization",
+            "enum": [
+                "organization",
+                "custodian",
+                "team",
+                "creatorOrgUnit",
+                "selectedOrgUnit"
+            ]
         },
         "contactPointDisplay": {
             "title": "What should be shown for the contact point(s) of a dataset",

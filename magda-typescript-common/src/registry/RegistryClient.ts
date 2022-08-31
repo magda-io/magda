@@ -10,7 +10,8 @@ import {
 import URI from "urijs";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
-import createServiceError from "../createServiceError";
+import { Response } from "request";
+import ServerError from "../ServerError";
 
 export interface RegistryOptions {
     baseUrl: string;
@@ -30,6 +31,31 @@ export interface RecordsPage<I extends Record> {
     nextPageToken?: string;
     records: I[];
 }
+
+export const toServerError = (apiName: string) => (
+    error:
+        | {
+              body: any;
+              response: Response;
+          }
+        | any
+) => {
+    if (error?.response?.statusCode) {
+        const detailedErrorMsg = error?.body
+            ? JSON.stringify(error.body)
+            : error?.response?.responseText
+            ? error.response.responseText
+            : "";
+        return new ServerError(
+            `Failed to ${apiName}${
+                detailedErrorMsg ? `: ${detailedErrorMsg}` : ""
+            }`,
+            error.response.statusCode
+        );
+    } else {
+        return new ServerError(`Failed to ${apiName}: ${error}`, 500);
+    }
+};
 
 export default class RegistryClient {
     protected baseUri: URI;
@@ -71,7 +97,7 @@ export default class RegistryClient {
         return this.baseUri.clone().segment("records").segment(id).toString();
     }
 
-    getAspectDefinitions(): Promise<AspectDefinition[] | Error> {
+    getAspectDefinitions(): Promise<AspectDefinition[] | ServerError> {
         const operation = () => () =>
             this.aspectDefinitionsApi.getAll(this.tenantId);
         return <any>retry(
@@ -88,7 +114,29 @@ export default class RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getAspectDefinitions"));
+    }
+
+    async getAspectDefinition(
+        aspectId: string,
+        jwtToken?: string
+    ): Promise<AspectDefinition> {
+        try {
+            const res = await this.aspectDefinitionsApi.getById(
+                this.tenantId,
+                aspectId,
+                jwtToken
+            );
+            if (typeof res.body === "string") {
+                throw new ServerError(
+                    "Invalid non-json response: ",
+                    res?.response?.statusCode
+                );
+            }
+            return res.body;
+        } catch (e) {
+            throw toServerError("getAspectDefinition")(e);
+        }
     }
 
     getRecord(
@@ -96,7 +144,7 @@ export default class RegistryClient {
         aspect?: Array<string>,
         optionalAspect?: Array<string>,
         dereference?: boolean
-    ): Promise<Record | Error> {
+    ): Promise<Record | ServerError> {
         const operation = (id: string) => () =>
             this.recordsApi.getById(
                 encodeURIComponent(id),
@@ -115,11 +163,58 @@ export default class RegistryClient {
                     formatServiceError("Failed to GET records.", e, retriesLeft)
                 ),
             (e) => {
-                return !e.response || e.response.statusCode !== 404;
+                return e?.response?.statusCode !== 404;
             }
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getRecord"));
+    }
+
+    getRecordAspect(id: string, aspectId: string): Promise<any | ServerError> {
+        const operation = (id: string) => () =>
+            this.recordAspectsApi.getById(
+                this.tenantId,
+                encodeURIComponent(id),
+                encodeURIComponent(aspectId),
+                this.jwt
+            );
+        return <any>retry(
+            operation(id),
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        "Failed to GET record Aspect.",
+                        e,
+                        retriesLeft
+                    )
+                ),
+            (e) => {
+                return e?.response?.statusCode !== 404;
+            }
+        )
+            .then((result) => result.body)
+            .catch(toServerError("getRecordAspect"));
+    }
+
+    async getRecordInFull(id: string): Promise<Record> {
+        try {
+            const res = await this.recordsApi.getByIdInFull(
+                encodeURIComponent(id),
+                this.tenantId,
+                this.jwt
+            );
+            if (typeof res.body === "string") {
+                throw new ServerError(
+                    "Invalid non-json response: " + res.body,
+                    res?.response?.statusCode
+                );
+            }
+            return res.body;
+        } catch (e) {
+            throw toServerError("getRecordInFull")(e);
+        }
     }
 
     getRecords<I extends Record>(
@@ -132,8 +227,9 @@ export default class RegistryClient {
         aspectOrQuery?: string[],
         orderBy?: string,
         orderByDir?: string,
-        orderNullFirst?: boolean
-    ): Promise<RecordsPage<I> | Error> {
+        orderNullFirst?: boolean,
+        reversePageTokenOrder?: boolean
+    ): Promise<RecordsPage<I> | ServerError> {
         const operation = (pageToken: string) => () =>
             this.recordsApi.getAll(
                 this.tenantId,
@@ -148,6 +244,7 @@ export default class RegistryClient {
                 orderBy,
                 orderByDir,
                 orderNullFirst,
+                reversePageTokenOrder,
                 this.jwt
             );
         return <any>retry(
@@ -160,13 +257,13 @@ export default class RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getRecords"));
     }
 
     getRecordsPageTokens(
         aspect?: Array<string>,
         limit?: number
-    ): Promise<string[] | Error> {
+    ): Promise<string[] | ServerError> {
         const operation = () =>
             this.recordsApi.getPageTokens(
                 this.tenantId,
@@ -188,6 +285,6 @@ export default class RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getRecordsPageTokens"));
     }
 }

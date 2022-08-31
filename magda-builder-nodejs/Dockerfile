@@ -1,6 +1,6 @@
-FROM node:12-alpine
+FROM node:14-alpine
 
-RUN npm install -g lerna
+RUN npm install -g lerna@3.22.1
 
 # Install haveged and run it so that we don't get lockups due to a lack of entropy
 RUN apk --no-cache add haveged
@@ -10,6 +10,7 @@ RUN apk --no-cache add git openssh bash \
 	ca-certificates \
 	curl \
 	tar \
-	wget
+	wget \
+	socat
 
 ENTRYPOINT ["/bin/bash", "-l", "-c"]

@@ -1,6 +1,6 @@
 # indexer
 
-![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square)
+![Version: 2.0.1](https://img.shields.io/badge/Version-2.0.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -23,11 +23,11 @@ Kubernetes: `>= 1.14.0-0`
 | image.name | string | `"magda-indexer"` |  |
 | makeSnapshots | bool | `false` |  |
 | readSnapshots | bool | `false` |  |
-| reindexJobImage.name | string | `"alpine"` |  |
+| reindexJobImage.name | string | `"node"` |  |
 | reindexJobImage.pullPolicy | string | `"IfNotPresent"` |  |
 | reindexJobImage.pullSecrets | bool | `false` |  |
 | reindexJobImage.repository | string | `"docker.io"` |  |
-| reindexJobImage.tag | string | `"latest"` |  |
+| reindexJobImage.tag | string | `"12-alpine"` |  |
 | resources.limits.cpu | string | `"250m"` |  |
 | resources.requests.cpu | string | `"100m"` |  |
 | resources.requests.memory | string | `"250Mi"` |  |

@@ -1,0 +1,26 @@
+.registry-records-page {
+    .record-aspects-list {
+        margin-top: 20px;
+        .search-button-container {
+            position: relative;
+            height: 42px;
+            margin-bottom: 5px;
+            .search-button-inner-wrapper {
+                position: absolute;
+                right: 5px;
+                width: 250px;
+                svg {
+                    width: 24px;
+                    height: 24px;
+                }
+            }
+            .create-record-aspect-button-container {
+                position: absolute;
+                left: 5px;
+            }
+        }
+        .pagination-container {
+            padding: 20px;
+        }
+    }
+}

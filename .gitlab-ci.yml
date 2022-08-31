@@ -9,7 +9,7 @@ variables:
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button`
-  CACHE_VERSION: ts-12-scala-7
+  CACHE_VERSION: ts-15-scala-7
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_TLS_VERIFY: 1
@@ -31,7 +31,7 @@ stages:
 
 yarn-install:
   stage: builders
-  image: data61/magda-builder-docker:buildx
+  image: data61/magda-builder-docker:node14
   retry: 1
   needs: []
   cache:
@@ -50,7 +50,7 @@ yarn-install:
 
 build-builder-image:
   stage: builders
-  image: data61/magda-builder-docker:buildx
+  image: data61/magda-builder-docker:node14
   retry: 1
   needs: []
   before_script:
@@ -59,17 +59,19 @@ build-builder-image:
     - docker:dind
   script: |
     # Build all three builder images and push to gitlab registry
-    cd magda-builder-nodejs && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . && cd ..
-    cd magda-builder-docker && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . && cd ..
-    cd magda-builder-scala && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . && cd ..
-
+    cd magda-builder-nodejs && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-nodejs:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    cd .. 
+    cd magda-builder-docker && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-docker:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    cd .. 
+    cd magda-builder-scala && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-scala:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    cd .. 
 
 # Make sure sbt depenencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
 sbt-prebuild:
   stage: sbt-prebuild
   needs: 
     - build-builder-image
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
@@ -95,7 +97,7 @@ sbt-prebuild:
 
 check-scala-formatting:
   stage: prebuild
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   needs: 
     - build-builder-image
   script:
@@ -103,7 +105,7 @@ check-scala-formatting:
 
 registry-typescript-api:
   stage: prebuild
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   needs: 
     - yarn-install
     - sbt-prebuild
@@ -116,7 +118,7 @@ registry-typescript-api:
 
 buildtest:search-with-index-cache:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   retry: 2
   timeout: 18 minutes
   needs: 
@@ -174,7 +176,7 @@ buildtest:search-with-index-cache:
 
 buildtest:search-no-index-cache:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   retry: 2
   timeout: 18 minutes
   needs: 
@@ -237,7 +239,7 @@ buildtest:search-no-index-cache:
 
 buildtest:ui:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   retry: 1
   needs: 
     - yarn-install
@@ -247,9 +249,9 @@ buildtest:ui:
   variables:
     REACT_APP_SHA1: "$CI_COMMIT_SHA"
   script:
-    - yarn install
     - yarn run eslint
-    - cd magda-typescript-common && yarn build && cd ..
+    - cd magda-typescript-common && yarn build
+    - cd ..
     - yarn run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.ui=true -- run test
   artifacts:
@@ -261,7 +263,7 @@ buildtest:ui:
 buildtest:registry:
   stage: buildtest
   retry: 2
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   needs: 
     - sbt-prebuild
   timeout: 30 minutes
@@ -287,7 +289,7 @@ buildtest:registry:
 buildtest:scala-others:
   stage: buildtest
   retry: 2
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   needs: 
     - sbt-prebuild
   timeout: 30 minutes
@@ -306,19 +308,23 @@ buildtest:scala-others:
 
 buildtest:typescript-apis-stateless:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   retry: 1
   needs: 
     - yarn-install
     - build-builder-image
     - registry-typescript-api
   script:
-    - cd magda-typescript-common && yarn build && yarn test && cd ..
-    - cd magda-minion-framework && yarn build && yarn test && cd ..
+    - cd magda-typescript-common && yarn build && yarn test
+    - cd ..
+    - cd magda-minion-framework && yarn build && yarn test
+    - cd ..
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run test --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useCommonLib=true -- run build
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useMinionLib=true -- run build
+    - yarn run in-submodules -- -f language=typescript -f categories.dockerizedTool=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f language=typescript -f categories.dockerizedTool=true -- run test --include-filtered-dependencies
   artifacts:
     paths:
       - "*/dist"
@@ -328,7 +334,7 @@ buildtest:typescript-apis-stateless:
 
 buildtest:typescript-apis-with-pg:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   needs: 
     - yarn-install
@@ -360,16 +366,18 @@ buildtest:typescript-apis-with-pg:
     PGPASSWORD: password
     OPA_URL: "http://docker:8181/"
   script:
-    - cd deploy/helm/internal-charts/opa
-    - docker-compose up -d
-    - cd ../../../../
-    - cd magda-typescript-common && yarn build && yarn test && cd ..
-    - cd magda-minion-framework && yarn build && yarn test && cd ..
+    - cd magda-opa
+    - yarn dev -d
+    - cd ..
+    - cd magda-typescript-common && yarn build && yarn test
+    - cd ..
+    - cd magda-minion-framework && yarn build && yarn test
+    - cd ..
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run test --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useAuthApi=true -- run build
-    - cd deploy/helm/internal-charts/opa
-    - docker-compose down
+    - cd magda-opa
+    - yarn dev-stop
   artifacts:
     paths:
       - "*/dist"
@@ -379,7 +387,7 @@ buildtest:typescript-apis-with-pg:
 
 buildtest:typescript-apis-with-es:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   needs:
     - yarn-install
@@ -420,7 +428,7 @@ buildtest:typescript-apis-with-es:
 
 buildtest:storage-api:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   needs:
     - yarn-install
@@ -456,9 +464,60 @@ buildtest:storage-api:
       - "*/dist"
     expire_in: 7 days
 
+buildtest:integration-tests:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
+  retry: 1
+  needs:
+    - yarn-install
+    - build-builder-image
+    - registry-typescript-api
+    - sbt-prebuild
+    - dockerize:dockerExtensions
+  before_script:
+    - |
+      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
+        export DOCKER_HOST='tcp://localhost:2375'
+      fi
+    - docker info
+    - docker-compose --version
+    # we can remove socat installation in future once the change is merged into master as it's installed in base image
+    - apk add socat 
+  cache:
+    key: $CI_JOB_NAME-$CACHE_VERSION
+    paths:
+      - "$CI_PROJECT_DIR/pip-cache"
+  services:
+    - docker:dind
+  variables:
+    POSTGRES_URL: "jdbc:postgresql://localhost/postgres"
+    POSTGRES_DB: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: "password"
+  tags:
+    - heavy
+  script:
+    - cd magda-authorization-api && yarn build
+    - cd ..
+    - cd magda-storage-api && yarn build
+    - cd ..
+    - cd magda-migrator-registry-aspects && yarn build
+    - cd ..
+    - cd magda-int-test-ts
+    - yarn test
+  artifacts:
+    paths:
+      - "target"
+      - "project/target"
+      - "project/project/target"
+      - "*/target"
+      - "*/project/target"
+      - "*/project/project/target"
+    expire_in: 7 days
+
 buildtest:opa-policies:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   needs:
     - yarn-install
@@ -468,7 +527,8 @@ buildtest:opa-policies:
   services:
     - docker:dind
   script:
-    - docker run -v $PWD/deploy/helm/internal-charts/opa/policies:/policies openpolicyagent/opa:0.17.1 test -v ./policies
+    - cd magda-opa
+    - yarn test
 
 buildtest:helm-charts:
   stage: buildtest
@@ -504,7 +564,7 @@ buildtest:helm-charts:
 
 buildtest:helm-docs-check:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   needs: 
     - build-builder-image
   cache:
@@ -531,7 +591,7 @@ buildtest:helm-docs-check:
 
 dockerize:scala:
   stage: dockerize
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   retry: 2
   needs:
     - registry-typescript-api
@@ -545,13 +605,13 @@ dockerize:scala:
     - ./gitlab-ci-buildx-setup.sh
     # output stage docker image content without build it
     - sbt docker:stage
-    - cd $CI_PROJECT_DIR/magda-search-api/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-search-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
-    - cd $CI_PROJECT_DIR/magda-registry-api/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-registry-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
-    - cd $CI_PROJECT_DIR/magda-indexer/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/data61/magda-indexer:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd $CI_PROJECT_DIR/magda-search-api/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-search-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd $CI_PROJECT_DIR/magda-registry-api/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-registry-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd $CI_PROJECT_DIR/magda-indexer/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-indexer:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
 
 dockerize:ui:
   stage: dockerize
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   cache:
     paths: []
@@ -563,11 +623,30 @@ dockerize:ui:
     - buildtest:ui
   script:
     - ./gitlab-ci-buildx-setup.sh
-    - yarn run in-submodules -- -f categories.ui=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
+    - cd $CI_PROJECT_DIR/magda-apidocs-server && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
+    - cd $CI_PROJECT_DIR/magda-web-server && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
 
-dockerize:typescript-apis:
+dockerize:ui-scss-compiler:
+  timeout: 120 minutes
   stage: dockerize
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
+  retry: 2
+  cache:
+    paths: []
+  services:
+    - docker:dind
+  needs:
+    - yarn-install
+    - registry-typescript-api
+    - buildtest:ui
+  script:
+    - ./gitlab-ci-buildx-setup.sh
+    - cd magda-scss-compiler
+    - yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
+
+dockerize:typescript:
+  stage: dockerize
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   cache:
     paths: []
@@ -583,10 +662,11 @@ dockerize:typescript-apis:
   script:
     - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
+    - yarn run in-submodules -- -f categories.dockerizedTool=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
 
 dockerize:migrators:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   needs:
     - yarn-install
@@ -599,9 +679,27 @@ dockerize:migrators:
     - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
 
-dockerize:dockerExtensions:
+dockerize:opa:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
+  retry: 1
+  needs: 
+    - yarn-install
+    - build-builder-image
+    - buildtest:opa-policies
+  cache:
+    paths: []
+  before_script:
+    - ./gitlab-ci-buildx-setup.sh
+  services:
+    - docker:dind
+  script:
+  - cd magda-opa
+  - yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
+
+dockerize:dockerExtensions:
+  stage: prebuild
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2
   needs:
     - yarn-install
@@ -616,83 +714,6 @@ dockerize:dockerExtensions:
     #- yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 
     - cd $CI_PROJECT_DIR/magda-elastic-search && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
     - cd $CI_PROJECT_DIR/magda-postgres && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG
-
-inttest:registryAuth:
-  # https://github.com/kind-ci/examples/blob/master/.gitlab-ci.yml
-  stage: preview
-  retry: 1
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$BUILDER_IMG_TAG
-  allow_failure: true
-  tags:
-    - heavy
-  needs:
-    - yarn-install
-    - sbt-prebuild
-    - buildtest:registry
-    - buildtest:helm-charts
-    - dockerize:dockerExtensions
-  services:
-    - docker:dind
-  cache:
-    key: $CI_JOB_NAME-$CACHE_VERSION
-    paths:
-      - /usr/local/bin/kind
-      - /usr/local/bin/kubectl
-      - /usr/local/bin/helm
-  variables:
-    KUBECTL: v1.19.14
-    KIND: v0.11.1
-  before_script:
-    - echo "Waiting for docker cli to respond before continuing build..."
-    - | 
-      for i in $(seq 1 30); do
-        if ! docker info &> /dev/null; then
-          echo "Docker not responding yet. Sleeping for 2s..." && sleep 2s
-        else
-          echo "Docker ready. Continuing build..."
-          break
-        fi
-      done
-  script: |
-    apk add --update postgresql-client sed curl pwgen
-    curl -Lo /usr/local/bin/kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND}/kind-$(uname)-amd64 -C -
-    chmod +x /usr/local/bin/kind
-    curl -Lo /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBECTL}/bin/linux/amd64/kubectl -C -
-    chmod +x /usr/local/bin/kubectl
-    curl -L https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz -C - | tar -xzO linux-amd64/helm > /usr/local/bin/helm
-    chmod +x /usr/local/bin/helm
-    
-    # create k8s cluster
-    kind create cluster --config=./kind-config.yaml --wait 20m --image kindest/node:v1.16.15@sha256:83067ed51bf2a3395b24687094e283a7c7c865ccc12a8b1d7aa673ba0c5e8861
-    
-    # Set up KUBECONFIG that links to kind - we use sed to edit it so it's pointing to gitlab's docker host
-    kind get kubeconfig | sed -E -e 's/localhost|0\.0\.0\.0/docker/g' > ./kubeconfig
-    
-    export KUBECONFIG="$(pwd)/kubeconfig"
-    export JWT_SECRET=udIsbcYaKs1G4n6AdiMSIvPx5KpxQAy8FA2aIcD46iCipNAZvds4jeXFLZKhVvSJZvhYb5Pvgvmtonk7UFfhGnYcd3DXM7KzHG7gBmGO8PCsOZ4t7icqZoJbpdDqYWMmd9XnrVXtJhR6HVFBmEmbk9AmFJ1Gz9ipYPGYLoFcavPs9iZ63KPXgdt4aBdWQcmICkGPYiY8CQOvqOoiU7hUhKDTkJgRRTSaax6UQDOveTQvQnd5uyXuV4os0tlahzRX
-    kubectl create ns test2
-    echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"auth-secrets\"}, \"type\": \"Opaque\", \"data\": {\"jwt-secret\": \"dWRJc2JjWWFLczFHNG42QWRpTVNJdlB4NUtweFFBeThGQTJhSWNENDZpQ2lwTkFadmRzNGplWEZMWktoVnZTSlp2aFliNVB2Z3ZtdG9uazdVRmZoR25ZY2QzRFhNN0t6SEc3Z0JtR084UENzT1o0dDdpY3Fab0picGREcVlXTW1kOVhuclZYdEpoUjZIVkZCbUVtYms5QW1GSjFHejlpcFlQR1lMb0ZjYXZQczlpWjYzS1BYZ2R0NGFCZFdRY21JQ2tHUFlpWThDUU92cU9vaVU3aFVoS0RUa0pnUlJUU2FheDZVUURPdmVUUXZRbmQ1dXlYdVY0b3MwdGxhaHpSWA==\"}}" | kubectl apply --namespace test2 -f -
-    echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"regcred\"}, \"type\": \"kubernetes.io/dockerconfigjson\", \"data\": { \".dockerconfigjson\": \"$DOCKERCONFIGJSON\" }}" | kubectl apply --namespace test2 -f -
-    
-    # Create DB password secret
-    export PGPASSWORD="${DB_PASSWORD:-$(pwgen 16 1)}"
-    kubectl create secret generic db-main-account-secret --from-literal=postgresql-password=$PGPASSWORD --namespace test2
-    
-    helm upgrade test2 deploy/helm/local-auth-test-deployment --debug --namespace test2 --install --timeout 1200s --set global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG
-    
-    # Forward local ports to kind
-    kubectl port-forward combined-db-postgresql-0 5432 --namespace test2 >/dev/null 2>&1 < /dev/null &
-    kubectl port-forward deployment/authorization-api 6104:80 --namespace test2 >/dev/null 2>&1 < /dev/null &
-    # Wait for port forwarding to start
-    timeout 22 sh -c 'until nc -z $0 $1; do sleep 1; done' localhost 5432
-    timeout 22 sh -c 'until nc -z $0 $1; do sleep 1; done' localhost 6104
-    # Set up some values
-    psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/organizations.sql
-    psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/users.sql
-    # Test!
-    export POSTGRES_USER=postgres
-    export POSTGRES_PASSWORD=$PGPASSWORD
-    sbt "registryApi/testOnly au.csiro.data61.magda.opa.*"
 
 (Full) Run As Preview: &runAsPreview
   stage: preview
@@ -767,7 +788,7 @@ inttest:registryAuth:
 (No Data) Run As Multi-tenant Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview-multi-tenant.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,magda.magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.magdaAdminPortalName=admin-$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600 --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview-multi-tenant.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,magda.magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.magdaAdminPortalName=$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
 
@@ -803,9 +824,11 @@ Deploy Master To Dev:
     - buildtest:helm-charts
     - dockerize:scala
     - dockerize:ui
-    - dockerize:typescript-apis
+    - dockerize:ui-scss-compiler
+    - dockerize:typescript
     - dockerize:migrators
     - dockerize:dockerExtensions
+    - buildtest:integration-tests
   image:
     name: dtzar/helm-kubectl:3.5.2
   retry: 1
@@ -821,29 +844,51 @@ Deploy Master To Dev:
 
 pre-release:check-release-version:
   stage: pre-release
-  only:
-    # Strict Semvar validation
-    - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
-  except:
-    - branches
-    - triggers
+  rules:
+    # Strict Semvar validation. match any version string. Should release version tag
+    - if: $CI_COMMIT_TAG =~ /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
+      variables:
+        SKIP_CHECK: "false"
+    # Regex matches non-pre-release version only e.g. v1.0.2; Should release `latest` tag
+    - if: $CI_COMMIT_TAG =~ /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
+      variables:
+        SKIP_CHECK: "false"
+    - if: $CI_COMMIT_BRANCH == "master"
+      variables:
+        SKIP_CHECK: "true"
+    - if: $CI_COMMIT_BRANCH == "next"
+      variables:
+        SKIP_CHECK: "true"
   needs:
     - yarn-install
   cache: {}
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$BUILDER_IMG_TAG
-  script:
-    - yarn check-release-version
+  image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
+  script: |
+    if [ "$SKIP_CHECK" == "true" ]; then
+      echo "Release version is skipped."
+    else 
+      yarn check-release-version
+    fi
 
-Release-to-Docker-Hub:
+Release-to-Docker-Hub-Github-Container:
   stage: release
   services:
     - docker:dind
-  only:
-    # Strict Semvar validation
-    - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
-  except:
-    - branches
-    - triggers
+  rules:
+    # Strict Semvar validation. match any version string. Should release version tag
+    - if: $CI_COMMIT_TAG =~ /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
+      variables:
+        RELEASE_VERSION_TAG: "true"
+    # Regex matches non-pre-release version only e.g. v1.0.2; Should release `latest` tag
+    - if: $CI_COMMIT_TAG =~ /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
+      variables:
+        RELEASE_LATEST_TAG: "true"
+    - if: $CI_COMMIT_BRANCH == "master"
+      variables:
+        RELEASE_MASTER_TAG: "true"
+    - if: $CI_COMMIT_BRANCH == "next"
+      variables:
+        RELEASE_NEXT_TAG: "true"
   needs:
     - pre-release:check-release-version
     - yarn-install
@@ -851,70 +896,38 @@ Release-to-Docker-Hub:
     - buildtest:helm-docs-check
     - dockerize:scala
     - dockerize:ui
-    - dockerize:typescript-apis
+    - dockerize:ui-scss-compiler
+    - dockerize:typescript
     - dockerize:migrators
     - dockerize:dockerExtensions
+    - buildtest:integration-tests
   cache: {}
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
-    - yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
-
-# When a PR is merged to master, all images will be pushed to docker hub to replace `master` tag
-Release-Master-Tag-to-Docker-Hub:
-  stage: release
-  services:
-    - docker:dind
-  only:
-    - master
-  needs:
-    - yarn-install
-    - buildtest:helm-charts
-    - buildtest:helm-docs-check
-    - dockerize:scala
-    - dockerize:ui
-    - dockerize:typescript-apis
-    - dockerize:migrators
-    - dockerize:dockerExtensions
-  cache: {}
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
-  retry: 1
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
-    - yarn run retag-and-push -- -- -- --toVersion=master --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
-
-# When a new version is released (except pre-release versions), all images will be pushed to docker hub to replace `latest` tag
-Release-Latest-Tag-to-Docker-Hub:
-  stage: release
-  services:
-    - docker:dind
-  only:
-    # Regex matches non-pre-release version only e.g. v1.0.2
-    - /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
-  except:
-    - branches
-    - triggers
-  needs:
-    - pre-release:check-release-version
-    - yarn-install
-    - buildtest:helm-charts
-    - buildtest:helm-docs-check
-    - dockerize:scala
-    - dockerize:ui
-    - dockerize:typescript-apis
-    - dockerize:migrators
-    - dockerize:dockerExtensions
-    - Release-to-Docker-Hub
-  cache: {}
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
-  retry: 1
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
-    - yarn run retag-and-push -- -- -- --toVersion=latest --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
+    - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u gitlab-ci-token --password-stdin
+    - echo "$DOCKER_HUB_PASSWORD" | docker login -u magdabot --password-stdin
+    - echo "$GITHUB_ACCESS_TOKEN" | docker login ghcr.io -u magdabot --password-stdin
+    - |
+      if [ "$RELEASE_VERSION_TAG" == "true" ]; then
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --copyFromRegistry=true
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --copyFromRegistry=true
+      fi
+    - |
+      if [ "$RELEASE_LATEST_TAG" == "true" ]; then
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=latest --copyFromRegistry=true
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=latest --copyFromRegistry=true
+      fi
+    - |
+      if [ "$RELEASE_MASTER_TAG" == "true" ]; then
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=master --copyFromRegistry=true
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=master --copyFromRegistry=true
+      fi
+    - |
+      if [ "$RELEASE_NEXT_TAG" == "true" ]; then
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=next --copyFromRegistry=true
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=next --copyFromRegistry=true
+      fi
 
 Publish NPM Packages:
   stage: release
@@ -933,11 +946,13 @@ Publish NPM Packages:
     - buildtest:typescript-apis-with-pg
     - dockerize:scala
     - dockerize:ui
-    - dockerize:typescript-apis
+    - dockerize:ui-scss-compiler
+    - dockerize:typescript
     - dockerize:migrators
     - dockerize:dockerExtensions
+    - buildtest:integration-tests
   image:
-    name: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$BUILDER_IMG_TAG
+    name: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   cache: {}
   script:
     # Setup NPM token & scoped registry
@@ -946,6 +961,46 @@ Publish NPM Packages:
     - yarn run in-submodules -f categories.npmPackage=true run release
 
 Publish Helm Chart:
+  stage: release
+  rules:
+    # Strict Semvar validation. match any version string. Should release version tag
+    - if: $CI_COMMIT_TAG =~ /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
+  needs:
+    - pre-release:check-release-version
+    - yarn-install
+    - buildtest:helm-charts
+    - buildtest:helm-docs-check
+    - dockerize:scala
+    - dockerize:ui
+    - dockerize:ui-scss-compiler
+    - dockerize:typescript
+    - dockerize:migrators
+    - dockerize:dockerExtensions
+    - buildtest:integration-tests
+  image:
+    name: dtzar/helm-kubectl:3.9.2
+  retry: 1
+  script: |
+    # release helm charts to github container registry
+    echo "$GITHUB_ACCESS_TOKEN" | helm registry login -u magdabot ghcr.io/magda-io --password-stdin
+    cd deploy/helm
+    # release magda-core helm chart
+    helm package magda-core
+    PKG_NAME=`ls *.tgz`
+    helm push ${PKG_NAME} oci://ghcr.io/magda-io/charts
+    unlink ${PKG_NAME}
+    # release magda helm chart
+    helm package magda
+    PKG_NAME=`ls *.tgz`
+    helm push ${PKG_NAME} oci://ghcr.io/magda-io/charts
+    unlink ${PKG_NAME}
+    # release magda-common helm chart
+    helm package magda-common
+    PKG_NAME=`ls *.tgz`
+    helm push ${PKG_NAME} oci://ghcr.io/magda-io/charts
+    unlink ${PKG_NAME}
+
+Publish Helm Chart S3:
   stage: release
   only:
     # Strict Semvar validation
@@ -960,9 +1015,11 @@ Publish Helm Chart:
     - buildtest:helm-docs-check
     - dockerize:scala
     - dockerize:ui
-    - dockerize:typescript-apis
+    - dockerize:ui-scss-compiler
+    - dockerize:typescript
     - dockerize:migrators
     - dockerize:dockerExtensions
+    - buildtest:integration-tests
   image:
     name: dtzar/helm-kubectl:3.5.2
   cache:
@@ -987,33 +1044,3 @@ Publish Helm Chart:
     - mv -f sync_dir/index.yaml index_dir/index.yaml
     - aws s3 sync sync_dir s3://magda-charts/
     - aws s3 cp index_dir/index.yaml s3://magda-charts/index.yaml
-
-# Update scripts:
-#   stage: release
-#   only:
-#     # Strict Semvar validation
-#     - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
-#   except:
-#     - branches
-#     - triggers
-#   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-#   needs:
-#     - builders-and-yarn
-#     - pre-release:check-release-version
-#   dependencies:
-#     - builders-and-yarn
-#   script:
-#     - cd scripts
-#     - yarn pkg create-secrets/index.js --out-path create-secrets/build
-#     - cd ../../
-#     - if [ ! -d magda-config/ ]; then git clone https://github.com/magda-io/magda-config.git; else cd magda-config && git pull && cd ..; fi
-#     - cp magda/scripts/create-secrets/build/index-linux magda-config/create-secrets/index-linux
-#     - cp magda/scripts/create-secrets/build/index-macos magda-config/create-secrets/index-macos
-#     - cp magda/scripts/create-secrets/build/index-win.exe magda-config/create-secrets/index-win.exe
-#     - cd magda-config
-#     - cd create-secrets
-#     - git add index-linux index-macos index-win.exe
-#     - git config --global user.email "magdabot@magda.io"
-#     - git config --global user.name "magdabot"
-#     - git commit -m "Update create-secrets scripts `date`"
-#     - git push "https://x-access-token:$GITHUB_ACCESS_TOKEN@github.com/magda-io/magda-config" master

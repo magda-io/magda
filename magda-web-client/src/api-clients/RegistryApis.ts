@@ -1,10 +1,11 @@
 import { config } from "config";
 import request from "helpers/request";
+import getRequest from "helpers/getRequest";
+import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
 import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
-import ServerError from "./ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError";
 import flatMap from "lodash/flatMap";
-import partialRight from "lodash/partialRight";
 
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
 import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.schema.json";
@@ -17,7 +18,7 @@ import informationSecurityAspect from "@magda/registry-aspects/information-secur
 import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
 import currencyAspect from "@magda/registry-aspects/currency.schema.json";
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
-import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
+import accessControlAspect from "@magda/registry-aspects/access-control.schema.json";
 import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
 import sourceAspect from "@magda/registry-aspects/source.schema.json";
 import datasetDraftAspect from "@magda/registry-aspects/dataset-draft.schema.json";
@@ -36,7 +37,7 @@ export const aspectSchemas = {
     access: accessAspect,
     provenance: provenanceAspect,
     "information-security": informationSecurityAspect,
-    "dataset-access-control": datasetAccessControlAspect,
+    "access-control": accessControlAspect,
     "dataset-publisher": datasetPublisherAspect,
     "organization-details": organizationDetailsAspect,
     currency: currencyAspect,
@@ -137,42 +138,37 @@ export function fetchOrganization(
 }
 
 /**
- * Store aspect json schema saving action promise.
- * Used by `ensureAspectExists` to make sure only save the aspect once within current session.
- */
-const aspectJsonSchemaSavingCache: {
-    [key: string]: Promise<any>;
-} = {};
-
-/**
  * Ensure aspect exists in registry by storing the aspect def to registry.
- * Here we are not going to skip storing the aspect def if the aspect def already exisits as we do know whether it's an up-to-date one in registry.
+ * Here we are not going to skip storing the aspect def if the aspect def already exists as we don't know whether it's an up-to-date one in registry.
  * For now, we only make sure the aspect def won't be stored to registry for multiple times.
  * @param id
  * @param jsonSchema
  */
 export async function ensureAspectExists(id: string, jsonSchema?: any) {
-    if (!jsonSchema) {
-        jsonSchema = aspectSchemas[id];
-    }
+    // as we now auto create all built-in aspects on the first deployment, we will not auto re-create aspect from frontend anymore.
+    // we simply return here but might factor code properly later.
+    return;
+    // if (!jsonSchema) {
+    //     jsonSchema = aspectSchemas[id];
+    // }
 
-    if (!jsonSchema) {
-        throw new Error(`Cannot locate json schema for ${id}`);
-    }
+    // if (!jsonSchema) {
+    //     throw new Error(`Cannot locate json schema for ${id}`);
+    // }
 
-    if (!aspectJsonSchemaSavingCache[id]) {
-        aspectJsonSchemaSavingCache[id] = request(
-            "PUT",
-            `${config.registryFullApiUrl}aspects/${id}`,
-            {
-                id,
-                name: jsonSchema.title,
-                jsonSchema
-            }
-        );
-    }
+    // if (!aspectJsonSchemaSavingCache[id]) {
+    //     aspectJsonSchemaSavingCache[id] = request(
+    //         "PUT",
+    //         `${config.registryFullApiUrl}aspects/${id}`,
+    //         {
+    //             id,
+    //             name: jsonSchema.title,
+    //             jsonSchema
+    //         }
+    //     );
+    // }
 
-    await aspectJsonSchemaSavingCache[id];
+    // await aspectJsonSchemaSavingCache[id];
 }
 
 // --- See registry API document for API [Get a list of all records](https://dev.magda.io/api/v0/apidocs/index.html#api-Registry_Record_Service-GetV0RegistryRecords) for more details
@@ -184,7 +180,9 @@ export enum AspectQueryOperators {
     ">" = ":>",
     "<" = ":<",
     ">=" = ":>=",
-    "<=" = ":<="
+    "<=" = ":<=",
+    arrayContains = ":<|",
+    arrayNotContains = ":!<|"
 }
 
 export class AspectQuery {
@@ -222,9 +220,11 @@ export class AspectQuery {
     }
 
     toString() {
-        return `${this.encodeAspectQueryComponent(this.path)}${
-            this.operator
-        }${this.encodeAspectQueryComponent(String(this.value))}`;
+        return encodeURIComponent(
+            formUrlencode(this.path) +
+                this.operator +
+                formUrlencode(String(this.value))
+        );
     }
 }
 
@@ -240,7 +240,7 @@ export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
     "dataset-quality-rating",
     "spatial-coverage",
     "publishing",
-    "dataset-access-control",
+    "access-control",
     "provenance",
     "information-security",
     "currency",
@@ -306,6 +306,29 @@ export async function fetchRecord<T = RawDataset>(
     }
 }
 
+export async function fetchRecordAspect<T = any>(
+    datasetId: string,
+    aspectId: string,
+    noCache: boolean = false
+): Promise<T> {
+    const url =
+        config.registryReadOnlyApiUrl +
+        `records/${datasetId}/aspects/${aspectId}`;
+
+    const res = await fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
+    );
+
+    if (!res.ok) {
+        throw new ServerError(res.statusText, res.status);
+    }
+
+    return (await res.json()) as T;
+}
+
 export async function fetchHistoricalRecord<T = RawDataset>(
     id: string,
     eventId: number,
@@ -337,7 +360,12 @@ export async function fetchHistoricalRecord<T = RawDataset>(
     return await response.json();
 }
 
-export const fetchRecordWithNoCache = partialRight(fetchRecord, true);
+export const fetchRecordWithNoCache = <T = RawDataset>(
+    id: string,
+    optionalAspects: string[] = DEFAULT_OPTIONAL_FETCH_ASPECT_LIST,
+    aspects: string[] = DEFAULT_COMPULSORY_FETCH_ASPECT_LIST,
+    dereference: boolean = true
+): Promise<T> => fetchRecord(id, optionalAspects, aspects, dereference, true);
 
 export type FetchRecordsOptions = {
     aspects?: string[];
@@ -350,6 +378,7 @@ export type FetchRecordsOptions = {
     orderBy?: string;
     orderByDirection?: "asc" | "desc";
     noCache?: boolean;
+    reversePageTokenOrder?: boolean;
 };
 
 export async function fetchRecords({
@@ -362,7 +391,8 @@ export async function fetchRecords({
     aspectQueries,
     orderBy,
     orderByDirection,
-    noCache
+    noCache,
+    reversePageTokenOrder
 }: FetchRecordsOptions): Promise<{
     records: RawDataset[];
     hasMore: boolean;
@@ -416,6 +446,10 @@ export async function fetchRecords({
                 `orderByDir=${encodeURIComponent(orderByDirection)}`
             );
         }
+    }
+
+    if (reversePageTokenOrder) {
+        parameters.push(`reversePageTokenOrder=true`);
     }
 
     const url =
@@ -545,11 +579,12 @@ export async function doesRecordExist(id: string) {
 export type Record = {
     id: string;
     name: string;
-    authnReadPolicyId?: string;
     aspects: { [aspectId: string]: any };
 };
 
-async function createRecord(inputRecord: Record): Promise<[Record, number]> {
+export async function createRecord(
+    inputRecord: Record
+): Promise<[Record, number]> {
     const [res, headers] = await request<Record>(
         "POST",
         `${config.registryFullApiUrl}records`,
@@ -674,18 +709,25 @@ export async function updateDataset(
  * @param {string} recordId
  * @param {string} aspectId
  * @param {T} aspectData
+ * @param {boolean} merge whether merge with existing aspect data or replace it
  * @returns {Promise<T>} Return array of updated aspect data and eventId
  */
 export async function updateRecordAspect<T = any>(
     recordId: string,
     aspectId: string,
-    aspectData: T
+    aspectData: T,
+    merge: boolean = false,
+    skipEnsureAspectExists: boolean = false
 ): Promise<[T, number]> {
-    await ensureAspectExists(aspectId);
+    if (!skipEnsureAspectExists) {
+        await ensureAspectExists(aspectId);
+    }
 
     const [json, headers] = await request<T>(
         "PUT",
-        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`,
+        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}${
+            merge ? "?merge=true" : ""
+        }`,
         aspectData,
         "application/json",
         true
@@ -750,4 +792,190 @@ export async function tagRecordVersionEventId(record: Record, eventId: number) {
     versionData.versions[versionData.currentVersionNumber].eventId = eventId;
 
     return await updateRecordAspect(record.id, "version", versionData);
+}
+
+export async function fetchRecordById(recordId: string, noCache = false) {
+    return await getRequest<Record>(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(recordId)}`,
+            config.registryReadOnlyApiUrl
+        ),
+        noCache
+    );
+}
+
+export type QueryRecordAspectsParams = {
+    recordId: string;
+    keyword?: string;
+    aspectIdOnly?: boolean;
+    offset?: number;
+    limit?: number;
+    noCache?: boolean;
+};
+
+export type RecordAspectRecord = {
+    id: string;
+    data?: any;
+};
+
+export type QueryRecordAspectsReturnValueType = RecordAspectRecord[] | string[];
+
+/**
+ * Get all aspects of a record. When params.aspectIdOnly == `true`, it will response a list of aspect id.
+ *
+ * @export
+ * @template QueryRecordAspectsReturnValueType
+ * @param {QueryRecordAspectsParams} params
+ * @return {*}  {Promise<QueryRecordAspectsReturnValueType>}
+ */
+export async function queryRecordAspects<T = QueryRecordAspectsReturnValueType>(
+    params: QueryRecordAspectsParams
+): Promise<T> {
+    const { noCache, recordId, ...queryParams } = params
+        ? params
+        : ({} as QueryRecordAspectsParams);
+    if (!recordId?.trim()) {
+        throw new Error(
+            "Failed to request record aspects: record ID cannot be empty!"
+        );
+    }
+    return await getRequest<T>(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(recordId)}/aspects`,
+            config.registryReadOnlyApiUrl,
+            queryParams
+        ),
+        noCache
+    );
+}
+
+export type QueryRecordAspectsCountParams = Omit<
+    QueryRecordAspectsParams,
+    "aspectIdOnly" | "offset" | "limit"
+>;
+
+export async function queryRecordAspectsCount(
+    params?: QueryRecordAspectsCountParams
+): Promise<number> {
+    const { noCache, recordId, ...queryParams } = params
+        ? params
+        : ({} as QueryRecordAspectsCountParams);
+
+    try {
+        const res = await getRequest<{ count: number }>(
+            getAbsoluteUrl(
+                `records/${encodeURIComponent(recordId)}/aspects/count`,
+                config.registryReadOnlyApiUrl,
+                queryParams
+            ),
+            noCache
+        );
+        return res?.count ? res.count : 0;
+    } catch (e) {
+        if (e instanceof ServerError && e.statusCode === 404) {
+            return 0;
+        }
+        throw e;
+    }
+}
+
+export async function getRecordAspect<T = any>(
+    recordId: string,
+    aspectId: string,
+    noCache: boolean = false
+): Promise<T> {
+    if (!recordId?.trim()) {
+        throw new Error(
+            "Failed to get record aspect: record ID cannot be empty!"
+        );
+    }
+    if (!aspectId?.trim()) {
+        throw new Error(
+            "Failed to get record aspect: aspect ID cannot be empty!"
+        );
+    }
+    return await getRequest<T>(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(
+                recordId
+            )}/aspects/${encodeURIComponent(aspectId)}`,
+            config.registryReadOnlyApiUrl
+        ),
+        noCache
+    );
+}
+
+export type AspectDefRecord = {
+    id: string;
+    name: string;
+    jsonSchema: {
+        [key: string]: any;
+    };
+};
+
+export async function getAspectDefs(noCache = false) {
+    return await getRequest<AspectDefRecord[]>(
+        getAbsoluteUrl("aspects", config.registryReadOnlyApiUrl),
+        noCache
+    );
+}
+
+export async function getDistributionIds(datasetId: string): Promise<string[]> {
+    try {
+        const data = await fetchRecordAspect(
+            datasetId,
+            "dataset-distributions",
+            true
+        );
+        if (data?.distributions?.length) {
+            return data.distributions as string[];
+        } else {
+            return [];
+        }
+    } catch (e) {
+        if (e instanceof ServerError && e.statusCode === 404) {
+            return [];
+        } else {
+            throw e;
+        }
+    }
+}
+
+/**
+ *
+ * Update aspect data of the same id aspect on both dataset record and all its distributions.
+ *
+ * @export
+ * @template T
+ * @param {string} datasetId
+ * @param {string} aspectId
+ * @param {T} aspectData
+ * @param {boolean} [merge=true] When set to `true`, the aspectData will be merged with existing data. Otherwise, always replace.
+ * @return {*}  {Promise<number[]>} a list of eventId of generated for each of records (including the dataset record & all its distributions).
+ * Please note: `0` event id returned indicates no changes have been done on the record.
+ */
+export async function updateAspectOfDatasetAndDistributions<T = any>(
+    datasetId: string,
+    aspectId: string,
+    aspectData: T,
+    merge: boolean = true
+): Promise<number[]> {
+    if (!datasetId) {
+        throw new ServerError("datasetId cannot be empty!", 400);
+    }
+    if (!aspectId) {
+        throw new ServerError("aspectId cannot be empty!", 400);
+    }
+
+    const datasetDistributionIds = await getDistributionIds(datasetId);
+    const url = getAbsoluteUrl(
+        `records/aspects/${encodeURIComponent(aspectId)}`,
+        config.registryFullApiUrl,
+        { merge }
+    );
+
+    return await request<number[]>("PUT", url, {
+        recordIds: [datasetId, ...datasetDistributionIds],
+        data: aspectData
+    });
 }

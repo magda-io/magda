@@ -1,0 +1,29 @@
+{
+    "$schema": "http://json-schema.org/hyper-schema#",
+    "title": "Access Control Aspect",
+    "description": "Access Control information of a dataset or other registry records. Including: ownership information and pre-authorised permissions. Previously named `dataset-access-control` for legacy reasons, this aspect can actually be used for any registry records.",
+    "type": "object",
+    "properties": {
+        "ownerId": {
+            "title": "the owner id (uuid) of dataset",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "orgUnitId": {
+            "title": "the id of the organisation that the dataset belongs to",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "preAuthorisedPermissionIds": {
+            "title": "A collection of permission Ids that are granted to access this dataset",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 36,
+                "maxLength": 36
+            }
+        }
+    }
+}

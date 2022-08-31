@@ -1,0 +1,24 @@
+{
+  "name": "@magda/opa",
+  "version": "2.0.1",
+  "description": "MAGDA's Open Policy Agent docker image with built-in policies.",
+  "scripts": {
+    "dev": "docker-compose up",
+    "dev-stop": "docker-compose down",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "retag-and-push": "retag-and-push",
+    "test": "docker run -v $PWD/policies:/policies openpolicyagent/opa:0.37.2-static test -v ./policies"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "config": {
+    "docker": {
+      "name": "magda-opa",
+      "include": "Dockerfile policies start.sh"
+    }
+  },
+  "devDependencies": {
+    "@magda/scripts": "^2.0.1"
+  }
+}

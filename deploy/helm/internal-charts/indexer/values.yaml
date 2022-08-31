@@ -6,9 +6,9 @@ image:
   # pullSecrets: 
 
 reindexJobImage: 
-  name: "alpine"
+  name: "node"
   repository: "docker.io"
-  tag: "latest"
+  tag: "12-alpine"
   pullPolicy: IfNotPresent
   pullSecrets: false
 

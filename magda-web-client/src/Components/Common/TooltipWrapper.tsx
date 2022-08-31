@@ -112,8 +112,9 @@ class TooltipWrapper extends React.Component<Props, State> {
                 {/* Caution: if this is ever not the first element be sure to fix adjustOffset */}
                 {this.props.launcher && this.props.launcher(this.forceOpen)}
                 <span
-                    className={`tooltiptext ${orientationClassName} ${this.props
-                        .innerElementClassName || ""}`}
+                    className={`tooltiptext ${orientationClassName} ${
+                        this.props.innerElementClassName || ""
+                    }`}
                     ref={this.tooltipTextElementRef}
                     style={{ marginLeft: "-" + this.state.offset + "px" }}
                 >

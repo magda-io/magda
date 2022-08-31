@@ -25,6 +25,7 @@ import org.locationtech.jts.geom._
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import spray.json._
+import au.csiro.data61.magda.util.RichConfig._
 
 import scala.concurrent.Future
 
@@ -106,9 +107,23 @@ object IndexDefinition extends DefaultJsonProtocol {
     Some("wordnet")
   )
 
+  def applyIndexConfig(
+      config: Config,
+      indexReq: CreateIndexRequest,
+      processRefreshIntervalSetting: Boolean = false
+  ) = {
+    var req = indexReq.copy(includeTypeName = Some(true))
+    if (processRefreshIntervalSetting) {
+      config
+        .getOptionalString("indexer.refreshInterval")
+        .foreach(v => req = req.indexSetting("refresh_interval", v))
+    }
+    req
+  }
+
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 48,
+    version = 49,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       var createIdxReq =
@@ -195,7 +210,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 ),
                 objectField("accessControl").fields(
                   keywordField("ownerId"),
-                  keywordField("orgUnitOwnerId"),
+                  keywordField("orgUnitId"),
                   keywordField("preAuthorisedPermissionIds")
                 ),
                 keywordField("years"),
@@ -322,16 +337,7 @@ object IndexDefinition extends DefaultJsonProtocol {
             )
           )
 
-      createIdxReq = createIdxReq.copy(includeTypeName = Some(true))
-
-      if (config.hasPath("indexer.refreshInterval")) {
-        createIdxReq.indexSetting(
-          "refresh_interval",
-          config.getString("indexer.refreshInterval")
-        )
-      } else {
-        createIdxReq
-      }
+      applyIndexConfig(config, createIdxReq, true)
     }
   )
 
@@ -395,19 +401,23 @@ object IndexDefinition extends DefaultJsonProtocol {
                 )
               )
             )
-        createIdxReq.copy(includeTypeName = Some(true))
+        applyIndexConfig(config, createIdxReq)
       },
       create = Some(
         (client, indices, config) =>
-          (materializer, actorSystem) =>
+          (materializer, actorSystem) => {
+            implicit val ec = actorSystem.dispatcher
             setupRegions(client, indices)(config, materializer, actorSystem)
+            // do not return a future of setup region so that region setup won't block indexer processing request
+            Future(Unit)
+          }
       )
     )
 
   val publishers: IndexDefinition =
     new IndexDefinition(
       name = "publishers",
-      version = 6,
+      version = 7,
       indicesIndex = Indices.PublishersIndex,
       definition = (indices, config) => {
         val createIdxReq =
@@ -448,7 +458,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 UppercaseTokenFilter
               )
             )
-        createIdxReq.copy(includeTypeName = Some(true))
+        applyIndexConfig(config, createIdxReq)
       }
     )
 
@@ -475,7 +485,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 LowercaseTokenFilter
               )
             )
-        createIdxReq.copy(includeTypeName = Some(true))
+        applyIndexConfig(config, createIdxReq)
       }
     )
 

@@ -45,7 +45,7 @@ export function MagdaSingleDatePicker({
                 onDateChange={onDateChange}
                 id={Math.random().toString()}
                 focused={focused}
-                onFocusChange={state => setFocused(!!state.focused)}
+                onFocusChange={(state) => setFocused(!!state.focused)}
                 isOutsideRange={isOutsideRange}
                 displayFormat={FORMAT}
                 noBorder
@@ -103,7 +103,7 @@ function MagdaDateRangePicker(props: {
                 startDateId={Math.random().toString()}
                 endDateId={Math.random().toString()}
                 focusedInput={focusedInput}
-                onFocusChange={focusedInput => setFocusedInput(focusedInput)}
+                onFocusChange={(focusedInput) => setFocusedInput(focusedInput)}
                 isOutsideRange={() => false}
                 displayFormat={FORMAT}
                 noBorder
@@ -128,7 +128,7 @@ export const dateIntervalEditor: Editor<Interval> = {
     }
 };
 
-export const multiDateIntervalEditor = function(renderAbove: boolean) {
+export const multiDateIntervalEditor = function (renderAbove: boolean) {
     const myMultiItemEditor = ListMultiItemEditor.create(
         dateIntervalEditor,
         () => {

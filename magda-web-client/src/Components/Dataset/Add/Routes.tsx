@@ -1,4 +1,5 @@
 import React from "react";
+import "../../../rsuite.scss";
 import { Route, Switch, Redirect } from "react-router-dom";
 import { createId } from "./DatasetAddCommon";
 import withHeader from "Components/Header/withHeader";
@@ -34,7 +35,7 @@ const Routes = () => {
             />
             <Route
                 path="/dataset/add/metadata/:datasetId/:step?"
-                component={withHeader(DatasetAddMetadataPage, {
+                component={withHeader(DatasetAddMetadataPage as any, {
                     includeDatasetPageProgressMeter: true
                 })}
             />
@@ -46,7 +47,7 @@ const Routes = () => {
             <Route
                 path="/dataset/edit/:datasetId/:step?"
                 component={withHeader(
-                    DatasetEditMetadataPage,
+                    DatasetEditMetadataPage as any,
                     {
                         includeDatasetPageProgressMeter: true
                     },

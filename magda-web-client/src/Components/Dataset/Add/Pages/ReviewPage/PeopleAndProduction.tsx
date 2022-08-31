@@ -16,27 +16,29 @@ type PropsType = {
     stateData: State;
 };
 
-const PeopleAndProduction: FunctionComponent<PropsType> = props => {
+const PeopleAndProduction: FunctionComponent<PropsType> = (props) => {
     const { dataset, datasetPublishing, provenance } = props.stateData;
+    const { owningOrgUnitId } = dataset;
+    const { custodianOrgUnitId } = datasetPublishing;
 
     const {
         loading: custodianOrgUnitNameLoading,
         result: custodianOrgUnitName,
         error: custodianOrgUnitNameError
     } = useAsync(
-        async custodianOrgUnitId => {
+        async (custodianOrgUnitId) => {
             try {
                 if (!custodianOrgUnitId) {
                     return codelists.NO_VALUE_LABEL;
                 }
                 const orgUnit = await getOrgUnitById(custodianOrgUnitId);
-                return orgUnit.name;
+                return orgUnit?.name;
             } catch (e) {
                 console.error(e);
                 throw e;
             }
         },
-        [dataset.custodianOrgUnitId]
+        [custodianOrgUnitId]
     );
 
     const {
@@ -44,19 +46,19 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
         result: owningOrgUnitName,
         error: owningOrgUnitNameError
     } = useAsync(
-        async owningOrgUnitId => {
+        async (owningOrgUnitId) => {
             try {
                 if (!owningOrgUnitId) {
                     return codelists.NO_VALUE_LABEL;
                 }
                 const orgUnit = await getOrgUnitById(owningOrgUnitId);
-                return orgUnit.name;
+                return orgUnit?.name;
             } catch (e) {
                 console.error(e);
                 throw e;
             }
         },
-        [dataset.owningOrgUnitId]
+        [owningOrgUnitId]
     );
 
     return (
@@ -210,7 +212,7 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
                     content={
                         provenance?.affiliatedOrganizations?.[0]?.name
                             ? provenance.affiliatedOrganizations
-                                  .map(item => `- ${item.name}`)
+                                  .map((item) => `- ${item.name}`)
                                   .join("\n")
                             : codelists.NO_VALUE_LABEL
                     }
@@ -234,7 +236,7 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
                     content={
                         provenance?.derivedFrom?.[0]?.name
                             ? provenance.derivedFrom
-                                  .map(item => `- ${item.name}`)
+                                  .map((item) => `- ${item.name}`)
                                   .join("\n")
                             : codelists.NO_VALUE_LABEL
                     }

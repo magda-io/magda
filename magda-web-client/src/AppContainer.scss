@@ -10,3 +10,13 @@
     justify-content: space-between;
     min-height: 100vh;
 }
+
+.inner-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.flex-main-container {
+    flex: 1;
+}

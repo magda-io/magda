@@ -32,7 +32,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "Either jwt or userId and jwtSecret must have values."
+            "userId must be supplied when jwtSecret is supplied."
         );
 
         expect(function () {
@@ -44,9 +44,10 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "Either jwt or userId and jwtSecret must have values."
+            "jwtSecret must be supplied when userId is supplied."
         );
 
+        // when all userId, jwtSecret & jwt are not provided, the client will act as an anonymous user
         expect(function () {
             new AuthorizedRegistryClient({
                 baseUrl: "some.where",
@@ -54,10 +55,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
                 jwtSecret: null,
                 tenantId: 0
             });
-        }).to.throw(
-            Error,
-            "Either jwt or userId and jwtSecret must have values."
-        );
+        }).to.not.throw();
 
         expect(function () {
             new AuthorizedRegistryClient({
@@ -68,7 +66,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "Either jwt or userId and jwtSecret must have values."
+            "jwtSecret must be supplied when userId is supplied."
         );
     });
 
@@ -81,17 +79,15 @@ describe("Test AuthorizedRegistryClient.ts", function () {
         expect(registry !== undefined);
     });
 
-    it("rejects null or empty jwt", async function () {
+    it("should not reject null or empty jwt and act as an anonymous user instead", async function () {
+        // when all userId, jwtSecret & jwt are not provided, the client will act as an anonymous user
         expect(function () {
             new AuthorizedRegistryClient({
                 baseUrl: "some.where",
                 jwt: null,
                 tenantId: 0
             });
-        }).to.throw(
-            Error,
-            "Either jwt or userId and jwtSecret must have values."
-        );
+        }).not.to.throw();
 
         expect(function () {
             new AuthorizedRegistryClient({
@@ -99,9 +95,6 @@ describe("Test AuthorizedRegistryClient.ts", function () {
                 jwt: "",
                 tenantId: 0
             });
-        }).to.throw(
-            Error,
-            "Either jwt or userId and jwtSecret must have values."
-        );
+        }).not.to.throw();
     });
 });

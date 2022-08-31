@@ -69,11 +69,13 @@ spec:
             "--web", {{ .Values.web | default "http://web" | quote }},
             "--defaultWebRouteConfig", "/etc/config/defaultWebRouteConfig.json",
             "--authorizationApi", "http://authorization-api/v0",
+{{- if .Values.skipAuth }}
+            "--skipAuth", "true",
+{{- end }}
             "--tenantUrl", "http://tenant-api/v0",
 {{- if .Values.global.openfaas }}
 {{- if .Values.global.openfaas.mainNamespace }}
             "--openfaasGatewayUrl", {{ include "magda.openfaasGatewayUrl" . | quote }},
-            "--openfaasAllowAdminOnly", {{ .Values.global.openfaas.allowAdminOnly | quote }},
 {{- end }}
 {{- end }}
 {{- if .Values.global.enableMultiTenants }}
@@ -82,9 +84,9 @@ spec:
             "--enableMultiTenants", "false",
 {{- end }}
 {{- if .Values.global.magdaAdminPortalName }}
-            "--magdaAdminPortalName", {{ .Values.global.magdaAdminPortalName | quote}}
+            "--magdaAdminPortalName", {{ .Values.global.magdaAdminPortalName | quote }},
 {{- else if .Values.magdaAdminPortalName }}
-            "--magdaAdminPortalName", {{ .Values.magdaAdminPortalName | quote}}
+            "--magdaAdminPortalName", {{ .Values.magdaAdminPortalName | quote }},
 {{- end }}
 {{- if .Values.defaultCacheControl }}
             "--defaultCacheControl", {{ .Values.defaultCacheControl | quote }},

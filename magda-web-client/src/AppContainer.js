@@ -4,36 +4,37 @@ import { config } from "./config";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 
-import Banner from "Components/Common/Banner";
-import Footer from "Components/Footer/Footer";
+import Banner from "./Components/Common/Banner";
+import Footer from "./Components/Footer/Footer";
 
 import { requestWhoAmI } from "./actions/userManagementActions";
 import { fetchContent } from "./actions/contentActions";
-import Notification from "Components/Common/Notification";
+import Notification from "./Components/Common/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
 
 import Routes from "./Routes";
 
-import { Medium } from "Components/Common/Responsive";
+import { Medium } from "./Components/Common/Responsive";
 
 import { Route, Switch } from "react-router-dom";
 
-import { getPluginFooter } from "externalPluginComponents";
+import { getPluginFooter } from "./externalPluginComponents";
 
 import "./AppContainer.scss";
 
 const ExternalFooterComponent = getPluginFooter();
 class AppContainer extends React.Component {
     componentDidMount() {
-        this.props.requestWhoAmI();
-        this.props.fetchContent();
+        // --- we fetch user data before AppContainer is mounted so that the fetching is started before app is rendered
+        //this.props.requestWhoAmI();
+        this.props.fetchContent(true);
     }
 
     render() {
         return (
             <MagdaDocumentTitle>
                 <div className="au-grid wrapper">
-                    <div>
+                    <div className="inner-wrapper">
                         <nav
                             className="au-skip-link"
                             aria-label="skip links navigation"
@@ -62,6 +63,26 @@ class AppContainer extends React.Component {
                                 ExternalFooterComponent ? (
                                     <ExternalFooterComponent
                                         noTopMargin={true}
+                                        footerMediumNavs={
+                                            this.props.footerMediumNavs
+                                        }
+                                        footerSmallNavs={
+                                            this.props.footerSmallNavs
+                                        }
+                                        footerCopyRightItems={
+                                            this.props.footerCopyRightItems
+                                        }
+                                    />
+                                ) : (
+                                    <Footer noTopMargin={true} />
+                                )
+                            }
+                        />
+                        <Route
+                            path="/settings(/)*(.)*"
+                            render={() =>
+                                ExternalFooterComponent ? (
+                                    <ExternalFooterComponent
                                         footerMediumNavs={
                                             this.props.footerMediumNavs
                                         }

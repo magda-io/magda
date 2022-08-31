@@ -7,12 +7,18 @@ import request from "supertest";
 import nock from "nock";
 import fs from "fs";
 import delay from "magda-typescript-common/src/delay";
+import AuthorizedRegistryClient, {
+    AuthorizedRegistryOptions
+} from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 
 const jwt = require("jsonwebtoken");
 const Minio = require("minio");
 
 import createApiRouter from "../createApiRouter";
 import MagdaMinioClient from "../MagdaMinioClient";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import { UnconditionalTrueDecision } from "magda-typescript-common/src/opa/AuthDecision";
 
 /** A random UUID */
 const USER_ID = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
@@ -25,6 +31,11 @@ function injectUserId(jwtSecret: string, req: Test): Test {
     const id = jwt.sign({ userId: userId }, jwtSecret);
     return req.set("X-Magda-Session", id);
 }
+
+let authDecisionCallLogs: {
+    config: AuthDecisionReqConfig;
+    jwtToken?: string;
+}[] = [];
 
 describe("Storage API tests", () => {
     let app: express.Application;
@@ -58,15 +69,38 @@ describe("Storage API tests", () => {
 
     beforeEach(() => {
         app = express();
+        const registryOptions: AuthorizedRegistryOptions = {
+            baseUrl: registryApiUrl,
+            jwtSecret: jwtSecret,
+            userId: "00000000-0000-4000-8000-000000000000",
+            tenantId: 0,
+            maxRetries: 0
+        };
+        const registryClient = new AuthorizedRegistryClient(registryOptions);
+        const authDecisionClient = sinon.createStubInstance(
+            AuthDecisionQueryClient
+        );
+        authDecisionClient.getAuthDecision = authDecisionClient.getAuthDecision.callsFake(
+            async (config: AuthDecisionReqConfig, jwtToken?: string) => {
+                authDecisionCallLogs.push({
+                    config,
+                    jwtToken
+                });
+                return UnconditionalTrueDecision;
+            }
+        );
+
         app.use(
             "/v0",
             createApiRouter({
-                objectStoreClient: new MagdaMinioClient(minioClientOpts),
-                authApiUrl,
-                registryApiUrl,
                 jwtSecret,
+                objectStoreClient: new MagdaMinioClient(minioClientOpts),
+                authDecisionClient,
+                registryClient,
                 tenantId: 0,
-                uploadLimit
+                uploadLimit,
+                autoCreateBuckets: false,
+                defaultBuckets: []
             })
         );
         registryScope = nock(registryApiUrl);
@@ -74,11 +108,11 @@ describe("Storage API tests", () => {
     });
 
     afterEach(() => {
+        authDecisionCallLogs = [];
         if ((<sinon.SinonStub>console.error).restore) {
             (<sinon.SinonStub>console.error).restore();
         }
         registryScope.done();
-        authApiScope.done();
     });
 
     function mockAuthorization(
@@ -150,16 +184,6 @@ describe("Storage API tests", () => {
             expect(bucketExists).to.be.true;
         });
 
-        it("while not an admin should return 401", () => {
-            return mockAuthorization(
-                false,
-                jwtSecret,
-                request(app)
-                    .put("/v0/" + dummyBucket)
-                    .expect(401, "Not authorized.")
-            );
-        });
-
         it("should return 201 if bucket already exists", () => {
             return mockAuthorization(
                 true,
@@ -176,14 +200,54 @@ describe("Storage API tests", () => {
     describe("Upload via POST", () => {
         const csvContent = fs.readFileSync("src/test/test_csv_1.csv", "utf-8");
 
-        it("should result in all attached files being present in minio", async () => {
+        it("should result in the upload file being present in minio", async () => {
+            registryScope
+                .get(
+                    "/records/inFull/magda-ds-eb747545-c298-46a6-904f-4b711a4eb319"
+                )
+                .reply(200, {
+                    id: "magda-ds-eb747545-c298-46a6-904f-4b711a4eb319",
+                    aspects: {
+                        test1: {}
+                    }
+                })
+                .persist();
+
+            await mockAuthorization(
+                true,
+                jwtSecret,
+                request(app)
+                    .post(
+                        "/v0/upload/" +
+                            bucketName +
+                            "?recordId=magda-ds-eb747545-c298-46a6-904f-4b711a4eb319"
+                    )
+                    .attach("text", "src/test/test_csv_1.csv")
+                    .accept("csv")
+                    .expect(200)
+            );
+
+            expect(authDecisionCallLogs.length).gte(1);
+            authDecisionCallLogs.forEach((item) => {
+                // should include record context data
+                expect(item?.config?.input?.object?.record?.id).to.equal(
+                    "magda-ds-eb747545-c298-46a6-904f-4b711a4eb319"
+                );
+
+                // should include file meta data
+                expect(
+                    item?.config?.input?.storage?.object?.bucketName
+                ).to.equal(bucketName);
+                expect(item?.config?.input?.storage?.object?.name).to.equal(
+                    "test_csv_1.csv"
+                );
+            });
+
             await mockAuthorization(
                 true,
                 jwtSecret,
                 request(app)
                     .post("/v0/upload/" + bucketName)
-                    .attach("text", "src/test/test_csv_1.csv")
-                    .accept("csv")
                     .attach("image", bananadance, "bananadance.gif")
                     .accept("gif")
                     .expect(200)
@@ -232,18 +296,6 @@ describe("Storage API tests", () => {
             );
         });
 
-        it("Should fail with 401 if the user is not an admin", () => {
-            return mockAuthorization(
-                false,
-                jwtSecret,
-                request(app)
-                    .post("/v0/upload/" + bucketName)
-                    .field("originalname", "test-browser-upload-no-admin")
-                    .attach("image", "src/test/test_image.jpg")
-                    .expect(401, "Not authorized.")
-            );
-        });
-
         it("should fail with 400 if it contains no files", () => {
             return mockAuthorization(
                 true,
@@ -278,7 +330,7 @@ describe("Storage API tests", () => {
             );
         });
 
-        it("should return 500 if we do something incompatible with minio", () => {
+        it("should return 400 if we do something incompatible with minio", () => {
             // Here we PUT a complete null body with no details, something that's
             // only likely to happen through postman or curl. Minio / node's stream
             // api won't allow this, so we can test that we're catching that error
@@ -290,20 +342,7 @@ describe("Storage API tests", () => {
                     .put("/v0/" + bucketName + "/download-test-file-2")
                     .set("Content-Length", "0")
                     .send()
-                    .expect(500)
-            );
-        });
-
-        it("without being an admin, should return 401", () => {
-            return mockAuthorization(
-                false,
-                jwtSecret,
-                request(app)
-                    .put("/v0/" + bucketName + "/upload-test-file-non-admin")
-                    .set("Accept", "application/json")
-                    .set("Content-Type", "text/plain")
-                    .send("LALALALALALALALALA")
-                    .expect(401, "Not authorized.")
+                    .expect(400)
             );
         });
     });
@@ -374,6 +413,7 @@ describe("Storage API tests", () => {
                         request(app)
                             .get("/v0/" + bucketName + "/binary-content-gif")
                             .set("Accept", "image/gif")
+                            .responseType("blob")
                             .expect(200)
                             .expect(bananadance)
                             .expect("Content-Type", "image/gif")
@@ -460,7 +500,6 @@ describe("Storage API tests", () => {
                         )
                         .set("Accept", "image/jpg")
                         .expect(200)
-                        .expect(img)
                         .expect("Content-Type", "image/jpg")
                 );
             });
@@ -486,7 +525,7 @@ describe("Storage API tests", () => {
                         request(app)
                             .delete("/v0/" + bucketName + "/delete-test-file-1")
                             .expect(200)
-                            .expect({ message: "File deleted successfully" })
+                            .expect({ deleted: true })
                     ).then((_res) => {
                         return request(app)
                             .get("/v0/" + bucketName + "/delete-test-file-1")
@@ -522,7 +561,7 @@ describe("Storage API tests", () => {
                                     "/path/path/path/delete-test-file-1"
                             )
                             .expect(200)
-                            .expect({ message: "File deleted successfully" })
+                            .expect({ deleted: true })
                     ).then((_res) => {
                         return request(app)
                             .get("/v0/" + bucketName + "/delete-test-file-1")
@@ -550,7 +589,7 @@ describe("Storage API tests", () => {
                         request(app)
                             .delete("/v0/" + bucketName + "/delete-test-file-2")
                             .expect(200)
-                            .expect({ message: "File deleted successfully" })
+                            .expect({ deleted: true })
                     ).then((_res) => {
                         return request(app)
                             .get("/v0/" + bucketName + "/delete-test-file-2")
@@ -573,198 +612,37 @@ describe("Storage API tests", () => {
                 );
             });
         });
-    });
 
-    describe("with record auth", () => {
-        describe("with a browser upload", () => {
-            doAuthTests(uploadFile);
-        });
-
-        describe("with a PUT", () => {
-            doAuthTests(putFile);
-        });
-
-        async function putFile(
-            expectedCode: number = 200,
-            recordId: string = "storage-test-dataset"
-        ) {
-            let req = request(app)
-                .put("/v0/" + bucketName + "/file.gif")
-                .set("Accept", "image/gif")
-                .set("Content-Type", "image/gif");
-
-            if (recordId) {
-                req.query({ recordId });
-            }
-
+        it("should response 200 when deletes not exists file", async () => {
             await mockAuthorization(
                 true,
                 jwtSecret,
-                req.send(bananadance).expect(expectedCode)
-            );
-        }
-
-        async function uploadFile(
-            expectedCode: number = 200,
-            recordId: string = "storage-test-dataset"
-        ) {
-            let req = request(app)
-                .post("/v0/upload/" + bucketName)
-                .attach("image", bananadance, "file.gif")
-                .accept("gif");
-
-            if (recordId) {
-                req.query({ recordId });
-            }
-
-            await mockAuthorization(true, jwtSecret, req.expect(expectedCode));
-        }
-
-        function expectRegistryGetWithCredentials(expectedCode: number = 200) {
-            registryScope
-                .matchHeader("X-Magda-Session", (value) => {
-                    const verifiedJwt = jwt.verify(value, jwtSecret);
-
-                    return verifiedJwt.userId === USER_ID;
-                })
-                .get("/records/storage-test-dataset")
-                .reply(expectedCode, {
-                    id: "storage-test-dataset"
-                });
-        }
-
-        /**
-         * Performs tests that use record auth
-         *
-         * @param addFile A function that adds a file (could be via upload or PUT)
-         */
-        function doAuthTests(
-            addFile: (expectedCode?: number, recordId?: string) => Promise<void>
-        ) {
-            it("GET should return a file if the user can access its associated record", async () => {
-                // Add the file
-                expectRegistryGetWithCredentials();
-                await addFile();
-
-                // Download the file
-                expectRegistryGetWithCredentials();
-                await injectUserId(
-                    jwtSecret,
-                    request(app)
-                        .get("/v0/" + bucketName + "/file.gif")
-                        .expect(200)
-                        .expect(bananadance)
-                        .expect("Content-Type", "image/gif")
-                );
-            });
-
-            it("GET should return a file if the user can access its associated record, with an id that requires url encoding/decoding", async () => {
-                // Add the file
-                const expectRegistryCall = () => {
-                    registryScope
-                        .matchHeader("X-Magda-Session", (value) => {
-                            const verifiedJwt = jwt.verify(value, jwtSecret);
-
-                            return verifiedJwt.userId === USER_ID;
-                        })
-                        .get(
-                            "/records/ds-act-https%3A%2F%2Fwww.data.act.gov.au%2Fapi%2Fviews%2Fgkvf-4ewf"
-                        )
-                        .reply(200, {
-                            id:
-                                "ds-act-https://www.data.act.gov.au/api/views/gkvf-4ewf"
-                        });
-                };
-
-                expectRegistryCall();
-
-                await addFile(
-                    200,
-                    "ds-act-https%3A%2F%2Fwww.data.act.gov.au%2Fapi%2Fviews%2Fgkvf-4ewf"
-                );
-
-                // Download the file
-                expectRegistryCall();
-
-                await injectUserId(
-                    jwtSecret,
-                    request(app)
-                        .get("/v0/" + bucketName + "/file.gif")
-                        .expect(200)
-                        .expect(bananadance)
-                        .expect("Content-Type", "image/gif")
-                );
-            });
-
-            it("should return 404 if requesting the associated record with the users' id returns 404", async () => {
-                // Add the file
-                expectRegistryGetWithCredentials();
-                await addFile();
-
-                // Download the file
-                expectRegistryGetWithCredentials(404);
-                await injectUserId(
-                    jwtSecret,
-                    request(app)
-                        .get("/v0/" + bucketName + "/file.gif")
-                        .expect(404)
-                );
-            });
-
-            it("should return 500 if an error occurs in the registry", async () => {
-                sinon.stub(console, "error");
-
-                // Add the file
-                expectRegistryGetWithCredentials(200);
-                await addFile();
-
-                // Download the file
-                expectRegistryGetWithCredentials(500);
-                await injectUserId(
-                    jwtSecret,
-                    request(app)
-                        .get("/v0/" + bucketName + "/file.gif")
-                        .expect(500)
-                );
-            });
-
-            it("without any link to a record id, should work even for an anonymous user", async () => {
-                // Add the file
-                await addFile(200, null);
-
-                // Download the file
-                await request(app)
-                    .get("/v0/" + bucketName + "/file.gif")
+                request(app)
+                    .put("/v0/" + bucketName + "/delete-test-file-1")
+                    .set("Accept", "application/json")
+                    .set("Content-Type", "text/plain")
+                    .send("Testing delete")
                     .expect(200)
-                    .expect(bananadance)
-                    .expect("Content-Type", "image/gif");
-            });
+            );
+            await mockAuthorization(
+                true,
+                jwtSecret,
+                request(app)
+                    .delete("/v0/" + bucketName + "/delete-test-file-1")
+                    .expect(200)
+                    .expect({ deleted: true })
+            );
+            await request(app)
+                .get("/v0/" + bucketName + "/delete-test-file-1")
+                .set("Accept", "application/json")
+                .set("Accept", "text/plain")
+                .expect(404);
 
-            it("should return 400 if the user tries to associate a file with a non-existent or unauthorized record", async () => {
-                registryScope
-                    .matchHeader("X-Magda-Session", (value) => {
-                        const verifiedJwt = jwt.verify(value, jwtSecret);
-
-                        return verifiedJwt.userId === USER_ID;
-                    })
-                    .get("/records/storage-test-dataset")
-                    .reply(404);
-
-                await addFile(400);
-            });
-
-            it("should return 400 if the user tries to associate a file with a non-existent or unauthorized record", async () => {
-                registryScope
-                    .matchHeader("X-Magda-Session", (value) => {
-                        const verifiedJwt = jwt.verify(value, jwtSecret);
-
-                        return verifiedJwt.userId === USER_ID;
-                    })
-                    .get("/records/storage-test-dataset")
-                    .reply(404);
-
-                await addFile(400);
-            });
-        }
+            // delete again should response 200 with `deleted` field set to `false`
+            await request(app)
+                .delete("/v0/" + bucketName + "/delete-test-file-1")
+                .expect(200)
+                .expect({ deleted: false });
+        });
     });
 });

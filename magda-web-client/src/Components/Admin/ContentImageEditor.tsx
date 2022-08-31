@@ -49,7 +49,7 @@ class ContentImageEditor extends Component<any, any> {
                         maxWidth: "367px",
                         cursor: "pointer"
                     }}
-                    onError={e => {
+                    onError={(e) => {
                         this.updateState({
                             imageAlt: hasEditPermissions
                                 ? "CLICK TO SET"

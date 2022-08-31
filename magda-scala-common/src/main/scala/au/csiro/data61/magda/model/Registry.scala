@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.model
 
 import java.time.{OffsetDateTime, ZoneOffset}
-
 import akka.event.LoggingAdapter
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime, Periodicity}
 import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols, _}
@@ -10,6 +9,7 @@ import enumeratum.values.{IntEnum, IntEnumEntry}
 import io.swagger.annotations.{ApiModel, ApiModelProperty}
 import spray.json.lenses.JsonLenses._
 import spray.json._
+import gnieh.diffson.sprayJson._
 
 import scala.annotation.meta.field
 import scala.util.{Failure, Success, Try}
@@ -110,11 +110,6 @@ object Registry
         dataType = "object"
       ) aspects: Map[String, JsObject],
       @(ApiModelProperty @field)(
-        value = "The read authorization policy id of a record",
-        required = false,
-        allowEmptyValue = true
-      ) authnReadPolicyId: Option[String],
-      @(ApiModelProperty @field)(
         value = "A tag representing the action by the source of this record " +
           "(e.g. an id for a individual crawl of a data portal).",
         required = false,
@@ -184,13 +179,18 @@ object Registry
       lastEvent: Option[Long] = None,
       url: String,
       eventTypes: Set[EventType],
-      isWaitingForResponse: Option[Boolean],
+      isWaitingForResponse: Option[Boolean] = None,
       config: WebHookConfig,
       enabled: Boolean = true,
       lastRetryTime: Option[OffsetDateTime] = None,
       retryCount: Int = 0,
       isRunning: Option[Boolean] = None,
-      isProcessing: Option[Boolean] = None
+      isProcessing: Option[Boolean] = None,
+      ownerId: Option[String] = None,
+      creatorId: Option[String] = None,
+      editorId: Option[String] = None,
+      createTime: Option[OffsetDateTime] = None,
+      editTime: Option[OffsetDateTime] = None
   )
 
   case class WebHookConfig(
@@ -260,6 +260,14 @@ object Registry
       ) lastEventIdReceived: Long
   )
 
+  case class PatchRecordsRequest(recordIds: List[String], jsonPath: JsonPatch)
+  case class PutRecordsAspectRequest(recordIds: List[String], data: JsObject)
+  case class DeleteRecordsAspectArrayItemsRequest(
+      recordIds: List[String],
+      jsonPath: String,
+      items: List[JsValue]
+  )
+
   object RegistryConstants {
     val aspects = List("dcat-dataset-strings")
 
@@ -272,7 +280,7 @@ object Registry
       "dataset-format",
       "publishing",
       "spatial-coverage",
-      "dataset-access-control",
+      "access-control",
       "access",
       "provenance"
     )
@@ -287,12 +295,12 @@ object Registry
         .get
   }
 
-  implicit val recordFormat = jsonFormat6(Registry.Record)
+  implicit val recordFormat = jsonFormat5(Registry.Record)
   implicit val registryEventFormat = jsonFormat6(Registry.RegistryEvent)
   implicit val aspectFormat = jsonFormat3(Registry.AspectDefinition)
   implicit val webHookPayloadFormat = jsonFormat6(Registry.WebHookPayload)
   implicit val webHookConfigFormat = jsonFormat6(Registry.WebHookConfig)
-  implicit val webHookFormat = jsonFormat13(Registry.WebHook)
+  implicit val webHookFormat = jsonFormat18(Registry.WebHook)
   implicit val registryRecordsResponseFormat = jsonFormat3(
     Registry.RegistryRecordsResponse.apply
   )

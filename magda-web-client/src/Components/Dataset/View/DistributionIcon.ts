@@ -17,7 +17,7 @@ const dataFormatCategories = [
     "tabular"
 ];
 dataFormatCategories.forEach((item) => {
-    formatIcons[item] = require(`assets/data-types/${item}.svg`);
+    formatIcons[item] = require(`assets/data-types/${item}.svg`).default;
 });
 const CategoryDetermineConfigItems = [
     {

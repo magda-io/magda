@@ -1,9 +1,0 @@
-{
-    "id": "esri-record",
-    "name": "This record can only be viewed by esri member groups.",
-    "aspects": {
-        "esri-access-control": {
-            "groups": ["G1", "G2"]
-        }
-    }
-}

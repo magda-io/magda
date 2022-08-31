@@ -11,8 +11,8 @@ export default class HeaderNavigationAdminPage extends Component {
             <ContentAdminPage
                 title="Header Navigation"
                 itemTitle="Header Navigation"
-                generateNewId={id => `header/navigation/${Date.now()}`}
-                titleFromItem={item =>
+                generateNewId={(id) => `header/navigation/${Date.now()}`}
+                titleFromItem={(item) =>
                     (item.content.default && item.content.default.label) ||
                     "[Authentication]"
                 }
@@ -43,8 +43,8 @@ export default class HeaderNavigationAdminPage extends Component {
                 }
             });
         };
-        const save = field => {
-            return value => {
+        const save = (field) => {
+            return (value) => {
                 onChange({
                     default: Object.assign({}, item.content.default, {
                         [field]: value
@@ -52,7 +52,7 @@ export default class HeaderNavigationAdminPage extends Component {
                 });
             };
         };
-        const type = Object.keys(item.content).filter(i => i !== "order")[0];
+        const type = Object.keys(item.content).filter((i) => i !== "order")[0];
         const value = item.content[type];
         return (
             <div>
@@ -65,7 +65,7 @@ export default class HeaderNavigationAdminPage extends Component {
                             auth: "Authentication"
                         })}
                         value={type}
-                        onChange={v =>
+                        onChange={(v) =>
                             v === "auth" ? saveAuth() : saveDefault()
                         }
                     />

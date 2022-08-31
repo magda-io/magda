@@ -2,756 +2,866 @@ import _ from "lodash";
 import {} from "mocha";
 import { expect } from "chai";
 import express from "express";
-import sinon from "sinon";
 import nock from "nock";
-import jsc from "magda-typescript-common/src/test/jsverify";
-import * as helpers from "./helpers";
 import request from "supertest";
-
 import buildApiRouter from "../buildApiRouter";
-import { stateArb } from "./arbitraries";
+import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient";
+import AuthDecision, {
+    UnconditionalTrueDecision,
+    UnconditionalFalseDecision
+} from "magda-typescript-common/src/opa/AuthDecision";
+import buildConnectorCronJobManifest from "../buildConnectorCronJobManifest";
+import { Connector } from "../k8sApi";
+import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import * as k8s from "@kubernetes/client-node";
 
 describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
     const namespace = "THISISANAMESPACE";
     let app: express.Express;
     let k8sApiScope: nock.Scope;
-    const jwtSecret = "secret";
+    const registryApiUrl = "http://registry.example.com";
+    const authApiUrl = "http://admin.example.com";
+
+    function buildExpressApp(
+        authDecisionOrOperationUri: AuthDecision | string
+    ) {
+        const apiRouter = buildApiRouter({
+            dockerRepo: "dockerRepo",
+            authApiUrl,
+            imageTag: "imageTag",
+            registryApiUrl: registryApiUrl,
+            pullPolicy: "pullPolicy",
+            namespace,
+            jwtSecret: "secret",
+            userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
+            tenantId: 0,
+            authDecisionClient: createMockAuthDecisionQueryClient(
+                typeof authDecisionOrOperationUri === "string"
+                    ? async (
+                          config: AuthDecisionReqConfig,
+                          jwtToken?: string
+                      ) =>
+                          config?.operationUri === authDecisionOrOperationUri
+                              ? UnconditionalTrueDecision
+                              : UnconditionalFalseDecision
+                    : authDecisionOrOperationUri
+            ),
+            testMode: true
+        });
+
+        app = express();
+        app.use(require("body-parser").json());
+        app.use(apiRouter);
+
+        return app;
+    }
 
     const beforeEachInner = () => {
-        k8sApiScope = nock("https://kubernetes.example.com");
-        app = buildExpressApp();
+        k8sApiScope = nock("http://mock-k8s-api.com");
+        nock.disableNetConnect();
+        nock.enableNetConnect("127.0.0.1");
     };
 
     beforeEach(beforeEachInner);
 
     const afterEachInner = () => {
         k8sApiScope.done();
+        nock.enableNetConnect();
         nock.cleanAll();
     };
 
     afterEach(afterEachInner);
 
     describe("GET /connectors", () => {
-        it("should show information about everything recorded in the connector-config map, along with associated jobs if they exist", () => {
-            return jsc.assert(
-                jsc.forall(stateArb, (state) => {
-                    beforeEachInner();
-                    helpers.mockConnectorConfig(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        state
-                    );
-                    helpers.mockJobs(k8sApiScope, 200, namespace, state);
-
-                    return helpers
-                        .getConnectors(app, jwtSecret)
-                        .then((res) => {
-                            expect(res.status).to.equal(200);
-
-                            const withConfig = _.filter(
-                                state,
-                                (value, key) => !_.isUndefined(value.config)
-                            );
-
-                            expect(res.body.length).to.equal(withConfig.length);
-
-                            res.body.forEach((connectorRes: any) => {
-                                const id = connectorRes.id;
-
-                                const correspondingState = state[id];
-                                expect(correspondingState).not.to.be.undefined;
-
-                                expect(connectorRes.name).to.equal(
-                                    correspondingState.config.name
-                                );
-                                expect(connectorRes.sourceUrl).to.equal(
-                                    correspondingState.config.sourceUrl
-                                );
-                                expect(connectorRes.type).to.equal(
-                                    correspondingState.config.type
-                                );
-
-                                expect(
-                                    _.isUndefined(connectorRes.job)
-                                ).to.equal(
-                                    _.isUndefined(correspondingState.job)
-                                );
-
-                                if (!_.isUndefined(correspondingState.job)) {
-                                    expect(connectorRes.job.name).to.equal(
-                                        `connector-${id}`
-                                    );
-                                    expect(
-                                        connectorRes.job.completionTime
-                                    ).to.equal(
-                                        correspondingState.job.completionTime
-                                    );
-                                    expect(connectorRes.job.startTime).to.equal(
-                                        correspondingState.job.startTime
-                                    );
-                                }
-                            });
-
-                            afterEachInner();
+        function setupK8sApiMock() {
+            k8sApiScope
+                .get(`/apis/batch/v1/namespaces/${namespace}/cronjobs`)
+                .reply(200, {
+                    items: [
+                        buildConnectorCronJobManifest({
+                            id: "c1",
+                            namespace,
+                            registryApiUrl,
+                            tenantId: 0,
+                            defaultUserId: "xxxxxx1",
+                            schedule: "0 14 * * 6",
+                            dockerImageString: "docker.io/dkkd:v1"
+                        }),
+                        buildConnectorCronJobManifest({
+                            id: "c2",
+                            namespace,
+                            registryApiUrl,
+                            tenantId: 0,
+                            defaultUserId: "xxxxxx2",
+                            schedule: "0 14 * * 7",
+                            dockerImageString: "docker.io/dkkd:v1"
                         })
-                        .then(() => true)
-                        .catch((e) => {
-                            console.error(e);
-                            afterEachInner();
-                            throw e;
-                        });
-                })
-            );
-        });
-
-        describe("should display status", () => {
-            ["active", "failed", "succeeded"].forEach((status) =>
-                it(`${status} when ${status}`, () => {
-                    helpers.mockConnectorConfig(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        helpers.getStateForStatus(status)
-                    );
-                    helpers.mockJobs(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        helpers.getStateForStatus(status)
-                    );
-                    return assertStatus(status);
-                })
-            );
-
-            ["", "blah", null].forEach((status) =>
-                it(`inactive for '${status}'`, () => {
-                    helpers.mockConnectorConfig(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        helpers.getStateForStatus(status)
-                    );
-                    helpers.mockJobs(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        helpers.getStateForStatus(status)
-                    );
-                    return assertStatus("inactive");
-                })
-            );
-
-            function assertStatus(status: string) {
-                return helpers.getConnectors(app, jwtSecret).then((res) => {
-                    expect(res.body[0].job.status).to.equal(status);
+                    ]
                 });
-            }
-        });
-
-        silenceErrorLogs(() => {
-            describe("should reply 401 for", () => {
-                it("an unauthenticated user", () => {
-                    return request(app)
-                        .get("/connectors")
-                        .then((res) => {
-                            expect(res.status).to.equal(401);
-                        });
-                });
-
-                it("an authenticated user who isn't an admin", () => {
-                    return helpers
-                        .getConnectors(app, jwtSecret, false)
-                        .then((res) => {
-                            expect(res.status).to.equal(401);
-                        });
-                });
-            });
-
-            describe("should return 500 for", () => {
-                const state = helpers.getBasicState();
-
-                it("a failure to get jobs", () => {
-                    helpers.mockConnectorConfig(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        state
-                    );
-                    helpers.mockJobs(k8sApiScope, 500, namespace);
-                });
-
-                it("a failure to get connector config", () => {
-                    helpers.mockConnectorConfig(k8sApiScope, 500, namespace);
-                    helpers.mockJobs(k8sApiScope, 200, namespace, state);
-                });
-
-                it("a failure to get both", () => {
-                    helpers.mockConnectorConfig(k8sApiScope, 500, namespace);
-                    helpers.mockJobs(k8sApiScope, 500, namespace);
-                });
-
-                afterEach(() => {
-                    return helpers.getConnectors(app, jwtSecret).then((res) => {
-                        expect(res.status).to.equal(500);
-                    });
-                });
-            });
-        });
-    });
-
-    describe("PUT /connectors/:id", () => {
-        const name = "test";
-
-        const connectorConfig = {
-            who: "cares"
-        };
-
-        it("should put a new entry in the k8s connector-config configmap", () => {
-            const expectedConfigMap = {
-                [`${name}.json`]: JSON.stringify(connectorConfig, null, 2)
-            };
 
             k8sApiScope
-                .patch(
-                    `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
-                    {
-                        data: expectedConfigMap
+                .get(`/api/v1/namespaces/${namespace}/configmaps/connector-c1`)
+                .reply(200, {
+                    data: {
+                        "config.json": `{"extras": {"data":"test-data-c1"}}`
                     }
-                )
-                .reply(200, expectedConfigMap);
-
-            return helpers
-                .putConnector(app, name, connectorConfig, jwtSecret)
-                .then((res) => {
-                    expect(res.status).to.equal(200);
-
-                    k8sApiScope.done();
                 });
+            k8sApiScope
+                .get(`/api/v1/namespaces/${namespace}/configmaps/connector-c2`)
+                .reply(200, {
+                    data: {
+                        "config.json": `{"extras": {"data":"test-data-c2"}}`
+                    }
+                });
+        }
+
+        it("should make correct API call to batch & core API to retrieve cronJob & configMap info of all connectors", async () => {
+            buildExpressApp("object/connector/read");
+            setupK8sApiMock();
+
+            const res = await request(app).get("/connectors").expect(200);
+            const connectors = res.body as Connector[];
+
+            expect(connectors.length).to.equal(2);
+            expect(connectors[0].id).to.equal("c1");
+            expect(connectors[1].id).to.equal("c2");
+            expect(connectors[0].cronJob.metadata.name).to.equal(
+                "connector-c1"
+            );
+            expect(connectors[1].cronJob.metadata.name).to.equal(
+                "connector-c2"
+            );
+            expect(connectors[0].configData.extras.data).to.equal(
+                "test-data-c1"
+            );
+            expect(connectors[1].configData.extras.data).to.equal(
+                "test-data-c2"
+            );
+            expect(connectors[0].schedule).to.equal("0 14 * * 6");
+            expect(connectors[1].schedule).to.equal("0 14 * * 7");
+
+            k8sApiScope.done();
         });
 
-        silenceErrorLogs(() => {
-            it("should return 500 if k8s call doesn't work", () => {
-                k8sApiScope
-                    .patch(
-                        `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
-                        () => true
-                    )
-                    .reply(500, "Oh noes");
-
-                return helpers
-                    .putConnector(app, name, connectorConfig, jwtSecret)
-                    .then((res) => {
-                        expect(res.status).to.equal(500);
-
-                        k8sApiScope.done();
-                    });
-            });
-
-            describe("should reply 401 for", () => {
-                it("an unauthenticated user", () => {
-                    return request(app)
-                        .put(`/connectors/${name}`)
-                        .send(connectorConfig)
-                        .then((res) => {
-                            expect(res.status).to.equal(401);
-                        });
-                });
-
-                it("an authenticated user who isn't an admin", () => {
-                    return helpers
-                        .putConnector(
-                            app,
-                            name,
-                            connectorConfig,
-                            jwtSecret,
-                            false
-                        )
-                        .then((res) => {
-                            expect(res.status).to.equal(401);
-                        });
-                });
-            });
+        it("should response 403 when user has no permission to access", async () => {
+            app = buildExpressApp("object/connector/never-match-operation");
+            await request(app).get("/connectors").expect(403);
         });
     });
 
-    describe("DELETE /connectors/:id", () => {
-        const name = "test";
-
-        describe("should remove the targeted entry from the connector-config configmap", () => {
-            it("when the corresponding job isn't present", () => {
-                const expectedConfigMap: any = {
-                    [`${name}.json`]: null
-                };
-
-                k8sApiScope
-                    .patch(
-                        `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
-                        {
-                            data: expectedConfigMap
-                        }
-                    )
-                    .reply(200, expectedConfigMap);
-
-                helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
-
-                return helpers
-                    .deleteConnector(app, name, jwtSecret)
-                    .then((res) => {
-                        expect(res.status).to.equal(200);
-
-                        k8sApiScope.done();
-                    });
-            });
-
-            it("when the corresponding job is present, and delete the corresponding job first", () => {
-                const expectedConfigMap: any = {
-                    [`${name}.json`]: null
-                };
-
-                helpers.mockJobStatus(
-                    k8sApiScope,
+    describe("GET /connectors/:id", () => {
+        function setupK8sApiMock() {
+            k8sApiScope
+                .get(
+                    `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                )
+                .reply(
                     200,
-                    name,
-                    namespace,
-                    helpers.getBasicState(name)
+                    buildConnectorCronJobManifest({
+                        id: "c1",
+                        namespace,
+                        registryApiUrl,
+                        tenantId: 0,
+                        defaultUserId: "xxxxxx1",
+                        schedule: "0 14 * * 6",
+                        dockerImageString: "docker.io/dkkd:v1"
+                    })
                 );
-                helpers.mockDeleteJob(k8sApiScope, 200, name, namespace);
-                k8sApiScope
-                    .patch(
-                        `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
-                        {
-                            data: expectedConfigMap
-                        }
-                    )
-                    .reply(200, expectedConfigMap);
 
-                return helpers
-                    .deleteConnector(app, name, jwtSecret)
-                    .then((res) => {
-                        expect(res.status).to.equal(200);
+            k8sApiScope
+                .get(`/api/v1/namespaces/${namespace}/configmaps/connector-c1`)
+                .reply(200, {
+                    data: {
+                        "config.json": `{"extras": {"data":"test-data-c1"}}`
+                    }
+                });
+        }
 
-                        k8sApiScope.done();
-                    });
-            });
+        it("should make correct API call to batch & core API to retrieve cronJob & configMap info of the connector", async () => {
+            buildExpressApp("object/connector/read");
+            setupK8sApiMock();
+
+            const res = await request(app).get("/connectors/c1").expect(200);
+            const connector = res.body as Connector;
+
+            expect(connector.id).to.equal("c1");
+            expect(connector.cronJob.metadata.name).to.equal("connector-c1");
+            expect(connector.configData.extras.data).to.equal("test-data-c1");
+            expect(connector.schedule).to.equal("0 14 * * 6");
+
+            k8sApiScope.done();
         });
 
-        silenceErrorLogs(() => {
-            describe("should return 500", () => {
-                it("when patch config map call doesn't work", () => {
-                    helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
-                    k8sApiScope
-                        .patch(
-                            `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
-                            () => true
-                        )
-                        .reply(500, "Oh noes");
-
-                    return helpers
-                        .deleteConnector(app, name, jwtSecret)
-                        .then((res) => {
-                            expect(res.status).to.equal(500);
-
-                            k8sApiScope.done();
-                        });
-                });
-
-                it("when get jobs status call doesn't work", () => {
-                    helpers.mockJobStatus(k8sApiScope, 500, name, namespace);
-                    k8sApiScope
-                        .patch(
-                            `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
-                            () => true
-                        )
-                        .optionally()
-                        .reply(200, {});
-
-                    return helpers
-                        .deleteConnector(app, name, jwtSecret)
-                        .then((res) => {
-                            expect(res.status).to.equal(500);
-                            k8sApiScope.done();
-                        });
-                });
-
-                it("when delete job call doesn't work", () => {
-                    helpers.mockJobStatus(
-                        k8sApiScope,
-                        200,
-                        name,
-                        namespace,
-                        helpers.getBasicState(name)
-                    );
-                    helpers.mockDeleteJob(k8sApiScope, 500, name, namespace);
-                    k8sApiScope
-                        .patch(
-                            `/api/v1/namespaces/${namespace}/configmaps/connector-config`,
-                            () => true
-                        )
-                        .optionally()
-                        .reply(200, {});
-
-                    return helpers
-                        .deleteConnector(app, name, jwtSecret)
-                        .then((res) => {
-                            expect(res.status).to.equal(500);
-
-                            k8sApiScope.done();
-                        });
-                });
-            });
-
-            describe("should reply 401 for", () => {
-                it("an unauthenticated user", () => {
-                    return request(app)
-                        .delete(`/connectors/${name}`)
-                        .then((res) => {
-                            expect(res.status).to.equal(401);
-                        });
-                });
-
-                it("an authenticated user who isn't an admin", () => {
-                    return helpers
-                        .deleteConnector(app, name, jwtSecret, false)
-                        .then((res) => {
-                            expect(res.status).to.equal(401);
-                        });
-                });
-            });
+        it("should response 403 when user has no permission to access", async () => {
+            app = buildExpressApp("object/connector/never-match-operation");
+            await request(app).get("/connectors/c1").expect(403);
         });
     });
 
     describe("POST /connectors/:id/start", () => {
-        const name = "test";
-
-        it("should create a new job with values in the config map", () => {
-            const tag = "latest";
-            const app = buildExpressApp(tag);
-            const connectorState = helpers.getStateForStatus("active", name);
-            helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
-            helpers.mockConnectorConfig(
-                k8sApiScope,
-                200,
+        function setupK8sApiMock() {
+            const cronJob = buildConnectorCronJobManifest({
+                id: "c1",
                 namespace,
-                connectorState
-            );
-            helpers.mockCreateJob(k8sApiScope, 200, namespace, (body: any) => {
-                const metadataMatch = (metadata: any) =>
-                    metadata.name === `connector-${name}` &&
-                    metadata.magdaMinion === true;
-
-                const jobMetadataMatches = metadataMatch(body.metadata);
-                const podMetadataMatches = metadataMatch(
-                    body.spec.template.metadata
-                );
-
-                const container = body.spec.template.spec.containers[0];
-                const imageMatches =
-                    container.image === `dockerRepo/type:${tag}`;
-                const commandMatches =
-                    container.command[5] === "http://registry.example.com";
-                const pullPolicyMatches =
-                    container.imagePullPolicy === "pullPolicy";
-
-                const configMountMatches =
-                    body.spec.template.spec.volumes[0].configMap.items[0]
-                        .key === `${name}.json`;
-
-                return (
-                    jobMetadataMatches &&
-                    podMetadataMatches &&
-                    imageMatches &&
-                    commandMatches &&
-                    pullPolicyMatches &&
-                    configMountMatches
-                );
+                registryApiUrl,
+                tenantId: 0,
+                defaultUserId: "xxxxxx1",
+                schedule: "0 14 * * 6",
+                dockerImageString: "docker.io/dkkd:v1"
             });
 
-            return helpers
-                .startConnector(app, name, jwtSecret, true)
-                .then((res) => {
-                    expect(res.status).to.equal(200);
+            k8sApiScope
+                .patch(
+                    `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                )
+                .reply(function (this: any, uri, requestBody) {
+                    expect(this.req.headers["content-type"]).to.equal(
+                        "application/merge-patch+json"
+                    );
+                    expect(JSON.parse(requestBody).spec.suspend).to.equal(
+                        false
+                    );
+                    return cronJob;
                 });
+        }
+
+        it("should make correct API call to set `suspend` field of cronjob manifest", async () => {
+            buildExpressApp("object/connector/update");
+            setupK8sApiMock();
+
+            const res = await request(app)
+                .post("/connectors/c1/start")
+                .expect(200);
+            expect(res.body.result).to.equal(true);
+            k8sApiScope.done();
         });
 
-        it("should delete an existing job if one exists", () => {
-            const connectorState = helpers.getStateForStatus("active", name);
-            helpers.mockJobStatus(
-                k8sApiScope,
-                200,
-                name,
-                namespace,
-                helpers.getBasicState(name)
-            );
-            helpers.mockDeleteJob(k8sApiScope, 200, name, namespace);
-            helpers.mockConnectorConfig(
-                k8sApiScope,
-                200,
-                namespace,
-                connectorState
-            );
-            helpers.mockCreateJob(k8sApiScope, 200, namespace);
-            return helpers
-                .startConnector(app, name, jwtSecret, true)
-                .then((res) => {
-                    expect(res.status).to.equal(200);
-                });
-        });
-
-        silenceErrorLogs(() => {
-            describe("should return 500", () => {
-                it("if getting existing job status fails", () => {
-                    helpers.mockJobStatus(k8sApiScope, 500, name, namespace);
-                    helpers.mockConnectorConfig(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        helpers.getStateForStatus("active", name),
-                        true
-                    );
-                    helpers.mockCreateJob(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        () => true,
-                        true
-                    );
-
-                    return helpers
-                        .startConnector(app, name, jwtSecret, true)
-                        .then((res) => {
-                            expect(res.status).to.equal(500);
-                        });
-                });
-
-                it("if getting connector config fails", () => {
-                    helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
-                    helpers.mockConnectorConfig(
-                        k8sApiScope,
-                        500,
-                        namespace,
-                        null
-                    );
-                    helpers.mockCreateJob(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        () => true,
-                        true
-                    );
-
-                    return helpers
-                        .startConnector(app, name, jwtSecret, true)
-                        .then((res) => {
-                            expect(res.status).to.equal(500);
-                        });
-                });
-
-                it("if deleting existing job fails", () => {
-                    const connectorState = helpers.getStateForStatus(
-                        "active",
-                        name
-                    );
-                    helpers.mockJobStatus(
-                        k8sApiScope,
-                        200,
-                        name,
-                        namespace,
-                        connectorState
-                    );
-                    helpers.mockDeleteJob(k8sApiScope, 500, name, namespace);
-                    helpers.mockConnectorConfig(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        connectorState,
-                        true
-                    );
-                    helpers.mockCreateJob(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        () => true,
-                        true
-                    );
-
-                    return helpers
-                        .startConnector(app, name, jwtSecret, true)
-                        .then((res) => {
-                            expect(res.status).to.equal(500);
-                        });
-                });
-
-                it("if creating existing job fails", () => {
-                    const connectorState = helpers.getStateForStatus(
-                        "active",
-                        name
-                    );
-                    helpers.mockJobStatus(
-                        k8sApiScope,
-                        200,
-                        name,
-                        namespace,
-                        connectorState
-                    );
-                    helpers.mockDeleteJob(k8sApiScope, 200, name, namespace);
-                    helpers.mockConnectorConfig(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        connectorState
-                    );
-                    helpers.mockCreateJob(
-                        k8sApiScope,
-                        500,
-                        namespace,
-                        () => true
-                    );
-
-                    return helpers
-                        .startConnector(app, name, jwtSecret, true)
-                        .then((res) => {
-                            expect(res.status).to.equal(500);
-                        });
-                });
-            });
-
-            describe("should reply 404 for", () => {
-                it("no config available for passed id", () => {
-                    const connectorState = helpers.getStateForStatus(
-                        "active",
-                        "otherJob"
-                    );
-                    helpers.mockJobStatus(k8sApiScope, 404, name, namespace);
-                    helpers.mockConnectorConfig(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        connectorState
-                    );
-                    helpers.mockCreateJob(
-                        k8sApiScope,
-                        200,
-                        namespace,
-                        () => true,
-                        true
-                    );
-
-                    return helpers
-                        .startConnector(app, name, jwtSecret, true)
-                        .then((res) => {
-                            expect(res.status).to.equal(404);
-                        });
-                });
-            });
-
-            describe("should reply 401 for", () => {
-                it("an unauthenticated user", () => {
-                    return request(app)
-                        .post(`/connectors/${name}/start`)
-                        .then((res) => {
-                            expect(res.status).to.equal(401);
-                        });
-                });
-
-                it("an authenticated user who isn't an admin", () => {
-                    return helpers
-                        .startConnector(app, name, jwtSecret, false)
-                        .then((res) => {
-                            expect(res.status).to.equal(401);
-                        });
-                });
-            });
+        it("should response 403 when user has no permission to access", async () => {
+            app = buildExpressApp("object/connector/never-match-operation");
+            await request(app).post("/connectors/c1/start").expect(403);
         });
     });
 
     describe("POST /connectors/:id/stop", () => {
-        const name = "test";
-
-        it("should stop a currently running job", () => {
-            helpers.mockDeleteJob(k8sApiScope, 200, name, namespace);
-
-            return helpers.stopConnector(app, name, jwtSecret).then((res) => {
-                expect(res.status).to.equal(204);
+        function setupK8sApiMock() {
+            const cronJob = buildConnectorCronJobManifest({
+                id: "c1",
+                namespace,
+                registryApiUrl,
+                tenantId: 0,
+                defaultUserId: "xxxxxx1",
+                schedule: "0 14 * * 6",
+                dockerImageString: "docker.io/dkkd:v1"
             });
+
+            k8sApiScope
+                .patch(
+                    `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                )
+                .reply(function (this: any, uri, requestBody) {
+                    expect(this.req.headers["content-type"]).to.equal(
+                        "application/merge-patch+json"
+                    );
+                    expect(JSON.parse(requestBody).spec.suspend).to.equal(true);
+                    return cronJob;
+                });
+        }
+
+        it("should make correct API call to set `suspend` field of cronjob manifest", async () => {
+            buildExpressApp("object/connector/update");
+            setupK8sApiMock();
+
+            const res = await request(app)
+                .post("/connectors/c1/stop")
+                .expect(200);
+            expect(res.body.result).to.equal(true);
+            k8sApiScope.done();
         });
 
-        silenceErrorLogs(() => {
-            it("should return 404 for a non-running job", () => {
-                helpers.mockDeleteJob(k8sApiScope, 404, name, namespace);
-
-                return helpers
-                    .stopConnector(app, name, jwtSecret)
-                    .then((res) => {
-                        expect(res.status).to.equal(404);
-                    });
-            });
-
-            it("should return 500 if the kubernetes delete job fails", () => {
-                helpers.mockDeleteJob(k8sApiScope, 500, name, namespace);
-
-                return helpers
-                    .stopConnector(app, name, jwtSecret)
-                    .then((res) => {
-                        expect(res.status).to.equal(500);
-                    });
-            });
-
-            describe("should reply 401 for", () => {
-                it("an unauthenticated user", () => {
-                    return request(app)
-                        .post(`/connectors/${name}/stop`)
-                        .then((res) => {
-                            expect(res.status).to.equal(401);
-                        });
-                });
-
-                it("an authenticated user who isn't an admin", () => {
-                    return helpers
-                        .stopConnector(app, name, jwtSecret, false)
-                        .then((res) => {
-                            expect(res.status).to.equal(401);
-                        });
-                });
-            });
+        it("should response 403 when user has no permission to access", async () => {
+            app = buildExpressApp("object/connector/never-match-operation");
+            await request(app).post("/connectors/c1/stop").expect(403);
         });
     });
 
-    function silenceErrorLogs(inner: () => void) {
-        describe("(with silent console.error or console.warn)", () => {
-            beforeEach(() => {
-                sinon.stub(console, "error").callsFake(() => {});
-                sinon.stub(console, "warn").callsFake(() => {});
+    describe("POST /connectors", () => {
+        function setupK8sApiMock(
+            noExistingConfigMap: boolean = true,
+            noExistingCronJob: boolean = true
+        ) {
+            const cronJob = buildConnectorCronJobManifest({
+                id: "c1",
+                namespace,
+                registryApiUrl,
+                tenantId: 0,
+                defaultUserId: "xxxxxx1",
+                schedule: "0 14 * * 6",
+                dockerImageString: "docker.io/dkkd:v1"
             });
 
-            afterEach(() => {
-                (console.error as any).restore();
-                (console.warn as any).restore();
+            if (noExistingCronJob) {
+                k8sApiScope
+                    .get(
+                        `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                    )
+                    .reply(404, "not found");
+            } else {
+                k8sApiScope
+                    .get(
+                        `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                    )
+                    .reply(200, cronJob);
+            }
+
+            if (noExistingConfigMap) {
+                k8sApiScope
+                    .get(
+                        `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
+                    )
+                    .reply(404, "not found");
+            } else {
+                k8sApiScope
+                    .get(
+                        `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
+                    )
+                    .reply(200, {
+                        id: "c1",
+                        name: "test connector"
+                    });
+            }
+        }
+
+        it("should respond 400 when connector already exist", async () => {
+            buildExpressApp("object/connector/create");
+
+            k8sApiScope
+                .get(
+                    `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                )
+                .reply(
+                    200,
+                    buildConnectorCronJobManifest({
+                        id: "c1",
+                        namespace,
+                        registryApiUrl,
+                        tenantId: 0,
+                        defaultUserId: "xxxxxx1",
+                        schedule: "0 14 * * 6",
+                        dockerImageString: "docker.io/dkkd:v1"
+                    })
+                );
+
+            await request(app)
+                .post("/connectors")
+                .send({
+                    id: "c1",
+                    name: "test connector",
+                    dockerImageString:
+                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99,
+                    schedule: "0 14 * * 6"
+                })
+                .expect(400);
+
+            k8sApiScope.done();
+        });
+
+        it("should respond 400 when `schedule` field is not supplied", async () => {
+            buildExpressApp("object/connector/create");
+
+            k8sApiScope
+                .get(
+                    `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                )
+                .reply(404);
+
+            const res = await request(app)
+                .post("/connectors")
+                .send({
+                    id: "c1",
+                    name: "test connector",
+                    dockerImageString:
+                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99
+                })
+                .expect(400);
+
+            expect(res.text.indexOf("schedule") !== -1).to.equal(true);
+
+            k8sApiScope.done();
+        });
+
+        it("should respond 400 when insufficient docker image info is supplied", async () => {
+            buildExpressApp("object/connector/create");
+
+            k8sApiScope
+                .get(
+                    `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                )
+                .reply(404);
+
+            const res = await request(app)
+                .post("/connectors")
+                .send({
+                    id: "c1",
+                    name: "test connector",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99,
+                    schedule: "0 14 * * 6"
+                })
+                .expect(400);
+
+            expect(res.text).to.equal(
+                "Either `dockerImageString` or all `dockerImageName`, `dockerRepo` and `dockerImageTag` fields are required."
+            );
+
+            k8sApiScope.done();
+        });
+
+        it("should create connector with post configMap request when configmap doesn't exist", async () => {
+            buildExpressApp("object/connector/create");
+            setupK8sApiMock();
+
+            k8sApiScope
+                .post(`/api/v1/namespaces/${namespace}/configmaps`)
+                .reply(function (this: any, uri, requestBody) {
+                    expect(this.req.headers["content-type"]).to.equal(
+                        "application/json"
+                    );
+                    expect(
+                        JSON.parse((requestBody as any).data["config.json"])
+                    ).to.deep.equal({
+                        id: "c1",
+                        name: "test connector",
+                        sourceUrl: "http://data-source.com",
+                        pageSize: 99,
+                        schedule: "0 14 * * 6"
+                    });
+                    const requestConfigMap: k8s.V1ConfigMap = requestBody as any;
+                    k8sApiScope
+                        .get(
+                            `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
+                        )
+                        .reply(200, requestConfigMap);
+                    return requestConfigMap;
+                });
+
+            k8sApiScope
+                .post(`/apis/batch/v1/namespaces/${namespace}/cronjobs`)
+                .reply(function (this: any, uri, requestBody) {
+                    expect(this.req.headers["content-type"]).to.equal(
+                        "application/json"
+                    );
+                    const requestCronJob: k8s.V1CronJob = requestBody as any;
+                    expect(requestCronJob.spec.schedule).to.equal("0 14 * * 6");
+                    expect(requestCronJob.metadata.name).to.equal(
+                        "connector-c1"
+                    );
+                    expect(
+                        requestCronJob.metadata.labels[
+                            "app.kubernetes.io/managed-by"
+                        ]
+                    ).to.equal("Magda");
+                    k8sApiScope
+                        .get(
+                            `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                        )
+                        .reply(200, requestCronJob);
+                    return requestCronJob;
+                });
+
+            const res = await request(app)
+                .post("/connectors")
+                .send({
+                    id: "c1",
+                    name: "test connector",
+                    dockerImageString:
+                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99,
+                    schedule: "0 14 * * 6"
+                })
+                .expect(200);
+
+            expect(res.body.id).to.equal("c1");
+            k8sApiScope.done();
+        });
+
+        it("should create connector with patch configMap request when configmap exists", async () => {
+            buildExpressApp("object/connector/create");
+            setupK8sApiMock(false);
+
+            k8sApiScope
+                .patch(
+                    `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
+                )
+                .reply(function (this: any, uri, requestBody) {
+                    expect(this.req.headers["content-type"]).to.equal(
+                        "application/merge-patch+json"
+                    );
+                    expect(
+                        JSON.parse(JSON.parse(requestBody).data["config.json"])
+                    ).to.deep.equal({
+                        id: "c1",
+                        name: "test connector",
+                        sourceUrl: "http://data-source.com",
+                        pageSize: 99,
+                        schedule: "0 14 * * 6"
+                    });
+                    const requestConfigMap: k8s.V1ConfigMap = requestBody as any;
+                    k8sApiScope
+                        .get(
+                            `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
+                        )
+                        .reply(200, requestConfigMap);
+                    return requestConfigMap;
+                });
+
+            k8sApiScope
+                .post(`/apis/batch/v1/namespaces/${namespace}/cronjobs`)
+                .reply(function (this: any, uri, requestBody) {
+                    expect(this.req.headers["content-type"]).to.equal(
+                        "application/json"
+                    );
+                    const requestCronJob: k8s.V1CronJob = requestBody as any;
+                    expect(requestCronJob.spec.schedule).to.equal("0 14 * * 6");
+                    expect(requestCronJob.metadata.name).to.equal(
+                        "connector-c1"
+                    );
+                    expect(
+                        requestCronJob.metadata.labels[
+                            "app.kubernetes.io/managed-by"
+                        ]
+                    ).to.equal("Magda");
+                    k8sApiScope
+                        .get(
+                            `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                        )
+                        .reply(200, requestCronJob);
+                    return requestCronJob;
+                });
+
+            const res = await request(app)
+                .post("/connectors")
+                .send({
+                    id: "c1",
+                    name: "test connector",
+                    dockerImageString:
+                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99,
+                    schedule: "0 14 * * 6"
+                })
+                .expect(200);
+
+            expect(res.body.id).to.equal("c1");
+            k8sApiScope.done();
+        });
+
+        it("should response 403 when user has no permission to access", async () => {
+            app = buildExpressApp("object/connector/never-match-operation");
+            await request(app)
+                .post("/connectors")
+                .send({
+                    id: "c1",
+                    name: "test connector",
+                    dockerImageString:
+                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99,
+                    schedule: "0 14 * * 6"
+                })
+                .expect(403);
+        });
+    });
+
+    describe("PUT /connectors/:id", () => {
+        function setupK8sApiMock(managedBy: string = "Magda") {
+            const cronJob = buildConnectorCronJobManifest({
+                id: "c1",
+                namespace,
+                registryApiUrl,
+                tenantId: 0,
+                defaultUserId: "xxxxxx1",
+                schedule: "0 14 * * 6",
+                dockerImageString: "docker.io/dkkd:v1"
             });
 
-            inner();
+            cronJob.metadata.labels["app.kubernetes.io/managed-by"] = managedBy;
+
+            k8sApiScope
+                .get(
+                    `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                )
+                .reply(200, cronJob);
+
+            const configMap = new k8s.V1ConfigMap();
+            configMap.data = {
+                "config.json": JSON.stringify({
+                    id: "c1",
+                    name: "test connector",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99
+                })
+            };
+
+            k8sApiScope
+                .get(`/api/v1/namespaces/${namespace}/configmaps/connector-c1`)
+                .reply(200, configMap);
+        }
+
+        it("should respond 400 when connector is managed by Helm", async () => {
+            buildExpressApp("object/connector/update");
+            setupK8sApiMock("Helm");
+
+            const res = await request(app)
+                .put("/connectors/c1")
+                .send({
+                    id: "c1",
+                    name: "test connector",
+                    dockerImageString:
+                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99,
+                    schedule: "0 14 * * 6"
+                })
+                .expect(400);
+
+            expect(res.text).to.equal(
+                "Cannot update a connector that is managed as part of the deployed Helm chart."
+            );
+            k8sApiScope.done();
         });
-    }
 
-    function buildExpressApp(imageTag: string = "imageTag") {
-        const apiRouter = buildApiRouter({
-            dockerRepo: "dockerRepo",
-            authApiUrl: "http://admin.example.com",
-            imageTag,
-            kubernetesApiType: "test",
-            registryApiUrl: "http://registry.example.com",
-            pullPolicy: "pullPolicy",
-            namespace,
-            jwtSecret: "secret",
-            userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
-            tenantId: 0
+        it("should only patch configmap when `schedule` field is not supplied", async () => {
+            buildExpressApp("object/connector/update");
+            setupK8sApiMock("Magda");
+
+            k8sApiScope
+                .patch(
+                    `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
+                )
+                .reply(function (this: any, uri, requestBody) {
+                    expect(this.req.headers["content-type"]).to.equal(
+                        "application/merge-patch+json"
+                    );
+                    expect(
+                        JSON.parse(JSON.parse(requestBody).data["config.json"])
+                    ).to.deep.include({
+                        id: "c1",
+                        name: "test connector",
+                        sourceUrl: "http://data-source.com",
+                        pageSize: 99
+                    });
+                    const requestConfigMap: k8s.V1ConfigMap = requestBody as any;
+                    k8sApiScope
+                        .get(
+                            `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
+                        )
+                        .reply(200, requestConfigMap);
+
+                    k8sApiScope
+                        .get(
+                            `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                        )
+                        .reply(
+                            200,
+                            buildConnectorCronJobManifest({
+                                id: "c1",
+                                namespace,
+                                registryApiUrl,
+                                tenantId: 0,
+                                defaultUserId: "xxxxxx1",
+                                schedule: "0 14 * * 6",
+                                dockerImageString: "docker.io/dkkd:v1"
+                            })
+                        );
+                    return requestConfigMap;
+                });
+
+            await request(app)
+                .put("/connectors/c1")
+                .send({
+                    id: "c1",
+                    name: "test connector",
+                    dockerImageString:
+                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99
+                })
+                .expect(200);
+
+            k8sApiScope.done();
         });
 
-        const app = express();
-        app.use(require("body-parser").json());
-        app.use(apiRouter);
+        it("should patch cronJob as well when `schedule` field is supplied", async () => {
+            buildExpressApp("object/connector/update");
+            setupK8sApiMock("Magda");
 
-        return app;
-    }
+            k8sApiScope
+                .patch(
+                    `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
+                )
+                .reply(function (this: any, uri, requestBody) {
+                    expect(this.req.headers["content-type"]).to.equal(
+                        "application/merge-patch+json"
+                    );
+                    expect(
+                        JSON.parse(JSON.parse(requestBody).data["config.json"])
+                    ).to.deep.include({
+                        id: "c1",
+                        name: "test connector",
+                        sourceUrl: "http://data-source.com",
+                        pageSize: 99,
+                        schedule: "0 14 * * 6"
+                    });
+                    const requestConfigMap: k8s.V1ConfigMap = requestBody as any;
+                    k8sApiScope
+                        .get(
+                            `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
+                        )
+                        .reply(200, requestConfigMap);
+                    return requestConfigMap;
+                });
+
+            k8sApiScope
+                .patch(
+                    `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                )
+                .reply(function (this: any, uri, requestBody) {
+                    expect(this.req.headers["content-type"]).to.equal(
+                        "application/merge-patch+json"
+                    );
+                    const requestCronJob: k8s.V1CronJob = JSON.parse(
+                        requestBody
+                    );
+                    expect(requestCronJob.spec.schedule).to.equal("0 14 * * 6");
+                    k8sApiScope
+                        .get(
+                            `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                        )
+                        .reply(
+                            200,
+                            buildConnectorCronJobManifest({
+                                id: "c1",
+                                namespace,
+                                registryApiUrl,
+                                tenantId: 0,
+                                defaultUserId: "xxxxxx1",
+                                schedule: "0 14 * * 6",
+                                dockerImageString: "docker.io/dkkd:v1"
+                            })
+                        );
+                    return requestCronJob;
+                });
+
+            await request(app)
+                .put("/connectors/c1")
+                .send({
+                    id: "c1",
+                    name: "test connector",
+                    dockerImageString:
+                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99,
+                    schedule: "0 14 * * 6"
+                })
+                .expect(200);
+
+            k8sApiScope.done();
+        });
+
+        it("should response 403 when user has no permission to access", async () => {
+            app = buildExpressApp("object/connector/never-match-operation");
+            await request(app)
+                .put("/connectors/c1")
+                .send({
+                    id: "c1",
+                    name: "test connector",
+                    dockerImageString:
+                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99,
+                    schedule: "0 14 * * 6"
+                })
+                .expect(403);
+        });
+    });
+
+    describe("DELETE /connectors/:id", () => {
+        function setupK8sApiMock(managedBy: string = "Magda") {
+            const cronJob = buildConnectorCronJobManifest({
+                id: "c1",
+                namespace,
+                registryApiUrl,
+                tenantId: 0,
+                defaultUserId: "xxxxxx1",
+                schedule: "0 14 * * 6",
+                dockerImageString: "docker.io/dkkd:v1"
+            });
+
+            cronJob.metadata.labels["app.kubernetes.io/managed-by"] = managedBy;
+
+            k8sApiScope
+                .get(
+                    `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                )
+                .reply(200, cronJob);
+
+            const configMap = new k8s.V1ConfigMap();
+            configMap.data = {
+                "config.json": JSON.stringify({
+                    id: "c1",
+                    name: "test connector",
+                    sourceUrl: "http://data-source.com",
+                    pageSize: 99
+                })
+            };
+
+            k8sApiScope
+                .get(`/api/v1/namespaces/${namespace}/configmaps/connector-c1`)
+                .reply(200, configMap);
+        }
+
+        it("should respond 400 when connector is managed by Helm", async () => {
+            buildExpressApp("object/connector/delete");
+            setupK8sApiMock("Helm");
+
+            const res = await request(app).delete("/connectors/c1").expect(400);
+
+            expect(res.text).to.equal(
+                "Cannot delete a connector that is managed as part of the deployed Helm chart."
+            );
+            k8sApiScope.done();
+        });
+
+        it("should request to delete cronjob & configmap correctly", async () => {
+            buildExpressApp("object/connector/delete");
+            setupK8sApiMock();
+
+            k8sApiScope
+                .delete(
+                    `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
+                )
+                .reply(200, {});
+            k8sApiScope
+                .delete(
+                    `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
+                )
+                .reply(200, {});
+
+            const res = await request(app).delete("/connectors/c1").expect(200);
+
+            expect(res.body.result).to.equal(true);
+            k8sApiScope.done();
+        });
+
+        it("should response 403 when user has no permission to access", async () => {
+            app = buildExpressApp("object/connector/never-match-operation");
+            await request(app).delete("/connectors/c1").expect(403);
+        });
+    });
 });

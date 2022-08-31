@@ -9,6 +9,14 @@ export {
 } from "@magda/typescript-common/dist/AsyncPage";
 export { default as coerceJson } from "@magda/typescript-common/dist/coerceJson";
 export { default as request } from "@magda/typescript-common/dist/request";
+export { default as fetchRequest } from "@magda/typescript-common/dist/fetchRequest";
+export {
+    getDefaultRequestInitOptions,
+    setDefaultRequestInitOptions
+} from "@magda/typescript-common/dist/fetchRequest";
+export { default as getRequest } from "@magda/typescript-common/dist/getRequest";
+export { default as getRequestNoCache } from "@magda/typescript-common/dist/getRequestNoCache";
+export { default as createNoCacheFetchOptions } from "@magda/typescript-common/dist/createNoCacheFetchOptions";
 export { default as retry } from "@magda/typescript-common/dist/retry";
 export { default as retryBackoff } from "@magda/typescript-common/dist/retryBackoff";
 export { default as runLater } from "@magda/typescript-common/dist/runLater";

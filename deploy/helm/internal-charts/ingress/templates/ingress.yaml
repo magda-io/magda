@@ -8,8 +8,8 @@ metadata:
     {{- if .Values.ipName }}
     kubernetes.io/ingress.global-static-ip-name: {{ .Values.ipName }}
     {{- end }}
-    nginx.ingress.kubernetes.io/client-body-buffer-size: 10M
-    nginx.ingress.kubernetes.io/proxy-body-size: 10M
+    nginx.ingress.kubernetes.io/client-body-buffer-size: {{ .Values.clientBodyBufferSize | default "10M" | quote }}
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.proxyBodySize | default "10M" | quote }}
   name: ingress
 spec:
   {{- if .Values.enableTls }}
