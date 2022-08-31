@@ -4,11 +4,12 @@
 
 - #3397 Only allow users to edit datasets that are created by Magda
 - #3398 Allow the "auto-fetch metadata" button to be turned off via Helm Config
-- Improve login redirection logic & UI access validation logic
-- Make legacy admin home only available to admin role users
+- Improved login redirection logic & UI access validation logic
+- Made legacy admin home only available to admin role users
 - Fixed orgUnit setting UI section request incorrect operationUri
-- Replace "magda" keyword with language var or more generic term
-- Update the default footer copyright data61 logo
+- Replaced "magda" keyword with language var or more generic term
+- Updated the default footer copyright data61 logo
+- Upgraded connect-pg-simple to 6.2.1
 
 ## v2.0.0
 
