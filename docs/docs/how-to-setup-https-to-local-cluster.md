@@ -101,6 +101,8 @@ To make test domain `minikube.data.gov.au` accessible locally, you also need to 
 192.168.64.1    minikube.data.gov.au
 ```
 
+> Please note: When you use minikube with [docker driver](https://minikube.sigs.k8s.io/docs/drivers/) (e.g. on an Apple M1 machine), you won't be able to access the ingress exposed services via minikube IP. You need to run `minikube tunnel` to make the service avaiable via local ip `127.0.0.1` instead. You will also need to map `minikube.data.gov.au` to IP `127.0.0.1` instead in `/etc/hosts`.
+
 Before access your test domain, you also need to make your local machine trust the self-signed certificate issued by local issuer.
 
 Generally, you can:
