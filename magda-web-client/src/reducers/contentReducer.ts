@@ -16,6 +16,16 @@ type ContentState = {
     isFetched: boolean;
     error?: number;
     content: Array<any>;
+    desktopTagLine: any;
+    mobileTagLine: any;
+    lozenge: any;
+    backgroundImageUrls: any;
+    stories: any;
+    headerNavigation: any;
+    footerSmallNavs: any;
+    footerMediumNavs: any;
+    footerCopyRightItems: any;
+    configuration: any;
 };
 
 type ContentAction = {

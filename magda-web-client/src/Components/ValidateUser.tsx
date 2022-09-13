@@ -1,11 +1,9 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useMemo } from "react";
 import { Redirect, useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { User } from "reducers/userManagementReducer";
-import { useAsync } from "react-async-hook";
+import { useSelector } from "react-redux";
+import { User, UserManagementState } from "reducers/userManagementReducer";
 import Loader from "rsuite/Loader";
-import { whoami } from "api-clients/AuthApis";
-import { completedSignOut } from "../actions/userManagementActions";
+import { StateType } from "reducers/reducer";
 
 type CheckUserFuncType = (user: User) => boolean;
 
@@ -21,12 +19,10 @@ type PropsType = {
     };
     children?: JSX.Element;
 };
-
 const defaultUserChecker = (user: User) => !!user?.id;
 const exemptPaths = ["/sign-in-redirect", "/account"];
 
 const ValidateUser: FunctionComponent<PropsType> = (props) => {
-    const dispatch = useDispatch();
     const checkUserFunc = props?.checkUserFunc
         ? props.checkUserFunc
         : defaultUserChecker;
@@ -34,26 +30,27 @@ const ValidateUser: FunctionComponent<PropsType> = (props) => {
     const location = useLocation();
     const { pathname } = location;
 
+    const userMgtData = useSelector<StateType, UserManagementState>(
+        (state) => state.userManagement
+    );
+
     const {
         result: checkResult,
         loading: isWhoAmILoading,
         error: whoAmIError
-    } = useAsync(
-        async (checkUserFunc: CheckUserFuncType, pathname: string) => {
-            try {
-                const userData = await whoami();
-                const result = checkUserFunc(userData);
-                if (!result) {
-                    dispatch(completedSignOut());
-                }
-                return result;
-            } catch (e) {
-                dispatch(completedSignOut());
-                throw e;
-            }
-        },
-        [checkUserFunc, pathname]
-    );
+    } = useMemo(() => {
+        try {
+            const userData = userMgtData.user;
+            const result = checkUserFunc(userData);
+            return {
+                result,
+                loading: userMgtData.isFetchingWhoAmI,
+                error: userMgtData.whoAmIError
+            };
+        } catch (e) {
+            return { result: undefined, loading: false, error: e };
+        }
+    }, [userMgtData, pathname, checkUserFunc]);
 
     if (isWhoAmILoading) {
         return (
