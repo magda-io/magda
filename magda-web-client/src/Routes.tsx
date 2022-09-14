@@ -22,6 +22,7 @@ import { makeAsync } from "Components/AsyncComponent";
 import { config } from "./config";
 
 import RequireAdmin from "./Components/RequireAdmin";
+import LandingPage from "./Components/LandingPage";
 
 const AdminPage = makeAsync(() =>
     import("Components/Admin/AdminPage").then((module) => module.default)
@@ -96,7 +97,8 @@ const SettingsRoutes = makeAsync(() =>
 const Routes = () => {
     return (
         <Switch>
-            <Route exact path="/" component={HomePage} />
+            <Route path="/" exact component={LandingPage} />
+            <Route path="/home" exact component={HomePage} />
             <Route path="/settings(/)*(.)*" component={SettingsRoutes} />
             <Route
                 exact

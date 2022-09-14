@@ -29,7 +29,7 @@ class AccountNavbar extends React.Component<PropsType & RouteComponentProps> {
                     .concat(["auth", "logout"])
             )
             .search({
-                redirect: window.location.href
+                redirect: config.baseExternalUrl
             })
             .toString();
         return false;

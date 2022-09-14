@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v2.0.2
+
+- Use global state instead in ValidateUser
+- Periodically refresh login status (Interval configurable via web-server helm chart)
+- Allow setting landingPage uri for anonymousUser and authenticatedUser
+- Logout action will redirect user to LandingPage
+
 ## v2.0.1
 
 - #3397 Only allow users to edit datasets that are created by Magda

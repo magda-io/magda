@@ -5,15 +5,17 @@ import { Dispatch, GetState } from "../types";
 import { FacetAction } from "../helpers/datasetSearch";
 import { fetchContent } from "actions/contentActions";
 
-export function requestWhoAmI() {
+export function requestWhoAmI(setLoading: boolean = true) {
     return async (dispatch: Dispatch, getState: GetState) => {
         if (getState().userManagement.isFetchingWhoAmI) {
             return;
         }
 
-        dispatch({
-            type: actionTypes.REQUEST_WHO_AM_I
-        });
+        if (setLoading) {
+            dispatch({
+                type: actionTypes.REQUEST_WHO_AM_I
+            });
+        }
 
         await fetch(config.authApiUrl + "users/whoami", {
             ...config.credentialsFetchOptions,

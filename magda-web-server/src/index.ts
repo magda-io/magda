@@ -308,6 +308,22 @@ const argv = yargs
     .option("defaultDatasetBucket", {
         describe: "Default bucket for storing datasets",
         type: "string"
+    })
+    .option("anonymousUserLandingPage", {
+        describe: "Specify the landing page uri for anonymous users",
+        default: "/home",
+        type: "string"
+    })
+    .option("authenticatedUserLandingPage", {
+        describe: "Specify the landing page uri for authenticated users",
+        default: "/home",
+        type: "string"
+    })
+    .option("authStatusRefreshInterval", {
+        describe:
+            "The interval of UI refresh / refetch user auth status data. Default to 5 mins.",
+        default: 300000,
+        type: "number"
     }).argv;
 
 // set default timezone
@@ -447,7 +463,10 @@ const webServerConfig = {
     previewMapFormatPerference: argv.previewMapFormatPerference,
     showContactButtonForNoContactPointDataset:
         argv.showContactButtonForNoContactPointDataset,
-    defaultDatasetBucket: argv.defaultDatasetBucket
+    defaultDatasetBucket: argv.defaultDatasetBucket,
+    anonymousUserLandingPage: argv.anonymousUserLandingPage,
+    authenticatedUserLandingPage: argv.authenticatedUserLandingPage,
+    authStatusRefreshInterval: argv.authStatusRefreshInterval
 };
 
 app.get("/server-config.js", function (req, res) {

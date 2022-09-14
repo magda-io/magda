@@ -12,10 +12,10 @@ import Lozenge, {
 import Stories from "Components/Home/Stories";
 import { StoryDataType } from "./StoryBox";
 import { Small, Medium } from "Components/Common/Responsive";
-import { Location } from "history";
 import MediaQuery from "react-responsive";
 import { User } from "reducers/userManagementReducer";
 import { getPluginHeader, HeaderNavItem } from "externalPluginComponents";
+import { StateType } from "reducers/reducer";
 
 const HeaderPlugin = getPluginHeader();
 
@@ -70,20 +70,19 @@ const getBgImg = (backgroundImageUrls) => {
     );
 };
 
-type PropsType = {
+interface IStateProps {
     backgroundImageUrls: string;
     mobileTagLine: string;
     desktopTagLine: string;
     lozenge: LozengePropsType;
     stories?: StoryDataType[];
-    location: Location;
     headerNavItems: HeaderNavItem[];
     isFetchingWhoAmI: boolean;
     whoAmIError: Error | null;
     user: User;
-};
+}
 
-class HomePage extends React.Component<PropsType & RouteComponentProps> {
+class HomePage extends React.Component<IStateProps & RouteComponentProps> {
     getMainContent() {
         if (this?.props?.isFetchingWhoAmI === true) {
             return null;
@@ -153,14 +152,14 @@ class HomePage extends React.Component<PropsType & RouteComponentProps> {
     }
 }
 
-function mapStateToProps(state) {
+function mapStateToProps(state: StateType) {
     const {
         desktopTagLine,
         mobileTagLine,
         lozenge,
         backgroundImageUrls,
         stories,
-        headerNavItems: headerNavigation
+        headerNavigation
     } = state.content;
 
     const { isFetchingWhoAmI, user, whoAmIError } = state.userManagement;
@@ -179,4 +178,6 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null)(withRouter(HomePage));
+export default connect<IStateProps, {}, {}, StateType>(mapStateToProps as any)(
+    withRouter(HomePage)
+);

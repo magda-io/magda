@@ -239,3 +239,12 @@ showContactButtonForNoContactPointDataset: false
 # -- Default bucket used to store datasets data files.
 # If no value is provided `global.defaultDatasetBucket` will be used.
 defaultDatasetBucket:
+
+# -- Specify the landing page uri for anonymous users. 
+anonymousUserLandingPage: "/home"
+
+# -- Specify the landing page uri for authenticated users
+authenticatedUserLandingPage: "/home"
+
+# -- The interval of UI refresh / refetch user auth status data. Default to 5 mins.
+authStatusRefreshInterval: 300000
