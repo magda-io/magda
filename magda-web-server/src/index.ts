@@ -537,7 +537,8 @@ const topLevelRoutes = [
     "organisations",
     "suggest",
     "error",
-    "settings"
+    "settings",
+    "home"
 ];
 
 topLevelRoutes.forEach((topLevelRoute) => {
