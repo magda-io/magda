@@ -13,6 +13,9 @@ Kubernetes: `>= 1.14.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | adminApiBaseUrl | string | `nil` |  |
+| anonymousUserLandingPage | string | `"/home"` | Specify the landing page uri for anonymous users.  |
+| authStatusRefreshInterval | int | `300000` | The interval of UI refresh / refetch user auth status data. Default to 5 mins. |
+| authenticatedUserLandingPage | string | `"/home"` | Specify the landing page uri for authenticated users |
 | automaticPreviewMaxFileSize | int | `2097152` |  |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |

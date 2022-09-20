@@ -129,6 +129,9 @@ const serverConfig: {
     previewMapFormatPerference?: RawPreviewMapFormatPerferenceItem[];
     showContactButtonForNoContactPointDataset?: boolean;
     defaultDatasetBucket?: string;
+    anonymousUserLandingPage?: string;
+    authenticatedUserLandingPage?: string;
+    authStatusRefreshInterval?: number;
 } = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
@@ -430,7 +433,21 @@ export const config = {
         : baseUrl + "api/v0/openfaas/",
     ckanExportServers,
     defaultCkanServer,
-    homePageUrl: serverConfig?.homePageUrl ? serverConfig.homePageUrl : "/"
+    homePageUrl: serverConfig?.homePageUrl ? serverConfig.homePageUrl : "/",
+    anonymousUserLandingPage: serverConfig?.anonymousUserLandingPage
+        ? serverConfig.anonymousUserLandingPage
+        : "/home",
+    authenticatedUserLandingPage: serverConfig?.authenticatedUserLandingPage
+        ? serverConfig.authenticatedUserLandingPage
+        : "/home",
+    /**
+     * How long before reload the current user's auth data in the background.
+     * Useful to transit UI to correct status when user leave browser open without interaction for long time.
+     * Default: 5 mins
+     */
+    authStatusRefreshInterval: serverConfig?.authStatusRefreshInterval
+        ? serverConfig.authStatusRefreshInterval
+        : 300000
 };
 
 export type Config = typeof config;

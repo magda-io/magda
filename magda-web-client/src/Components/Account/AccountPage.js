@@ -94,7 +94,7 @@ class Account extends React.Component {
                     )}
                     {this.props.user.id &&
                     !this.props?.location?.state?.signingOff ? (
-                        <Redirect to="/settings/account" />
+                        <Redirect to="/" />
                     ) : null}
                 </div>
             </MagdaDocumentTitle>
