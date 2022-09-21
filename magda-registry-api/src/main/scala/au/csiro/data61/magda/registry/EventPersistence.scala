@@ -198,7 +198,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     val theFilters = (filters ++ List(tenantFilter)).filter(_.isDefined)
 
     val eventTypesFilter =
-      if (eventTypes.isEmpty) sqls"1=1"
+      if (eventTypes.isEmpty) sqls"true"
       else
         SQLSyntax.joinWithOr(
           eventTypes
@@ -207,27 +207,22 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
             .toArray: _*
         )
 
-    val linkAspects = recordPersistence.buildReferenceMap(aspectIds)
-
     /*
-      TODO:
-      The code block below doesn't seems achieve `dereference` (i.e. includes all events of linked records) and more likely redundant logic
-      The actual dereference logic is currently done via method `getRecordReferencedIds` and passing ids & aspect filters through `recordSelector` of this method
-      The code was left here because it was used by `web hook actor` which is the key part of the system.
-      It currently has no functionality impact to the current `dereference` function (as we will skip it by filtering aspect via `recordSelector`).
-      We probably should be look at it again once we got better understanding of its impact (or/and more test cases around it)
+      Logic below (`dereferenceSelectors`) is to include all events of ANY records that are referenced by any records in one of their aspects.
+      e.g. a distribution record might be referenced by a dataset record in 'dataset-distributions' aspect
      */
+    val linkAspects = recordPersistence.buildReferenceMap(aspectIds)
     val dereferenceSelectors: Set[SQLSyntax] =
       linkAspects.toSet[(String, PropertyWithLink)].map {
         case (aspectId, propertyWithLink) =>
           if (propertyWithLink.isArray) {
-            sqls"""$aspectId IN (select aspectId
-                         from RecordAspects
-                         where RecordAspects.data->${propertyWithLink.propertyName} @> (Events.data->'recordId')::jsonb)"""
+            sqls"""EXISTS (select 1 from RecordAspects
+                         where aspectId = $aspectId AND
+                         (RecordAspects.data->${propertyWithLink.propertyName})::jsonb @> (Events.data->'recordId')::jsonb)"""
           } else {
-            sqls"""$aspectId IN (select aspectId
-                         from RecordAspects
-                         where RecordAspects.data->>${propertyWithLink.propertyName} = Events.data->>'recordId')"""
+            sqls"""EXISTS (select 1 from RecordAspects
+                         where aspectId = $aspectId AND
+                         RecordAspects.data->>${propertyWithLink.propertyName} = Events.data->>'recordId')"""
           }
       }
 

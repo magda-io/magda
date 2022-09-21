@@ -535,20 +535,43 @@ class DefaultRecordPersistence(config: Config)
     } else {
       val dereferenceSelectors = linkAspects.map {
         case (aspectId, propertyWithLink) =>
-          SQLSyntax
-            .exists(
-              sqls"select 1 from RecordAspects".where(
-                SQLSyntax.toAndConditionOpt(
-                  Some(sqls"RecordAspects.recordId=Records.recordId"),
-                  Some(sqls"aspectId=$aspectId"),
-                  SQLUtils
-                    .tenantIdToWhereClause(tenantId, "recordaspects.tenantid"),
-                  Some(
-                    sqls"jsonb_exists_any(data->${propertyWithLink.propertyName}, ARRAY[$ids])"
+          if (propertyWithLink.isArray) {
+            SQLSyntax
+              .exists(
+                sqls"select 1 from RecordAspects".where(
+                  SQLSyntax.toAndConditionOpt(
+                    Some(sqls"RecordAspects.recordId=Records.recordId"),
+                    Some(sqls"aspectId=$aspectId"),
+                    SQLUtils
+                      .tenantIdToWhereClause(
+                        tenantId,
+                        "recordaspects.tenantid"
+                      ),
+                    Some(
+                      sqls"((data->${propertyWithLink.propertyName})::jsonb ?| ARRAY[$ids])"
+                    )
                   )
                 )
               )
-            )
+          } else {
+            SQLSyntax
+              .exists(
+                sqls"select 1 from RecordAspects".where(
+                  SQLSyntax.toAndConditionOpt(
+                    Some(sqls"RecordAspects.recordId=Records.recordId"),
+                    Some(sqls"aspectId=$aspectId"),
+                    SQLUtils
+                      .tenantIdToWhereClause(
+                        tenantId,
+                        "recordaspects.tenantid"
+                      ),
+                    Some(
+                      sqls"(data->>${propertyWithLink.propertyName} = $ids)"
+                    )
+                  )
+                )
+              )
+          }
 
       }
 
