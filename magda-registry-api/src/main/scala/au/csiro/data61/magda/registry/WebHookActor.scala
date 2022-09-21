@@ -499,7 +499,7 @@ object WebHookActor {
                   aspectIds =
                     (webHook.config.aspects ++ webHook.config.optionalAspects).flatten.toSet,
                   eventTypes = webHook.eventTypes,
-                  dereference = Some(true)
+                  dereference = webHook.config.dereference
                 )
               }
 
