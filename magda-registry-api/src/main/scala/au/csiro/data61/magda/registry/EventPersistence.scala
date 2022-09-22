@@ -234,6 +234,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     /*
       Logic below (`dereferenceSelectors`) is to include all events of ANY records that are referenced by any records in one of their aspects.
       e.g. a distribution record might be referenced by a dataset record in 'dataset-distributions' aspect
+      we should avoid using deference feature for any webhook implementation (e.g. minions) in future and eventually remove this feature completely for simpler (and more robust) design / protocol.
      */
     val dereferenceSelectors: Set[SQLSyntax] =
       if (dereference.getOrElse(false)) {
