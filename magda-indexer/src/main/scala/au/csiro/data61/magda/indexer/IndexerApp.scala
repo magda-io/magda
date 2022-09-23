@@ -74,6 +74,20 @@ object IndexerApp extends App {
       .toMillis milliseconds
   )
 
+  logger.info(
+    "akka.http.server.request-timeout: {}",
+    config
+      .getDuration("akka.http.server.request-timeout")
+      .toMillis milliseconds
+  )
+
+  logger.info(
+    "akka.http.server.idle-timeout: {}",
+    config
+      .getDuration("akka.http.server.idle-timeout")
+      .toMillis milliseconds
+  )
+
   val shutdown = CoordinatedShutdown(system)
   shutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "http-unbind") {
     () =>

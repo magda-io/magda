@@ -6,6 +6,8 @@
 - Periodically refresh login status (Interval configurable via web-server helm chart)
 - Allow setting landingPage uri for anonymousUser and authenticatedUser
 - Logout action will redirect user to LandingPage
+- #3406 Improve registry webHook processing SQL performance
+- Increase indexer default http request / idle timeout to 90s / 120s and make them configurable via the indexer helm chart
 
 ## v2.0.1
 

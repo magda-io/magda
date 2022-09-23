@@ -12,6 +12,8 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| akka.http.server.idleTimeout | string | `"120s"` | The time after which an idle connection will be automatically closed. Set to `infinite` to completely disable idle connection timeouts. |
+| akka.http.server.requestTimeout | string | `"90s"` | Defines the default time period within which the application has to produce an HttpResponse for any given HttpRequest it received. The timeout begins to run when the *end* of the request has been received, so even potentially long uploads can have a short timeout. Set to `infinite` to completely disable request timeout checking. Make sure this timeout is smaller than the idle-timeout, otherwise, the idle-timeout will kick in first and reset the TCP connection without a response. If this setting is not `infinite` the HTTP server layer attaches a `Timeout-Access` header to the request, which enables programmatic customization of the timeout period and timeout response for each request individually. |
 | autoReIndex.enable | bool | `true` | Whether turn on the cronjob to trigger reindex. `publisher` & `format` indices might contains obsolete records which require the triming / reindex process to be removed. |
 | autoReIndex.schedule | string | "0 15 * * 0": 15:00PM UTC timezone (1:00AM in AEST Sydney timezone) on every Sunday | auto reindex cronjob schedule string. specified using unix-cron format (in UTC timezone by default). |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
