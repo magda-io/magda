@@ -298,7 +298,10 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       } else {
         orderBy.asc
       }
-
+    val offsetClause = start match {
+      case None    => SQLSyntax.empty
+      case Some(v) => sqls"offset ${v}"
+    }
     val results =
       sql"""select
             eventId,
@@ -310,7 +313,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
           from Events
           $whereClause
           ${orderByClause}
-          offset ${start.getOrElse(0)}
+          ${offsetClause}
           limit ${limitValue + 1}"""
         .map(rs => {
           (
