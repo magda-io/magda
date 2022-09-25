@@ -268,14 +268,10 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       acknowledgement: WebHookAcknowledgement
   )(implicit session: DBSession): Try[WebHookAcknowledgementResponse] = {
     Try {
-      val setActive = acknowledgement.active match {
-        case Some(active) =>
-          if (active) {
-            sqls", active=${active}, lastretrytime=null, retrycount=0"
-          } else {
-            sqls", active=${active}"
-          }
-        case None => sqls""
+      val setActive = acknowledgement.active.getOrElse(true) match {
+        case true =>
+          sqls", active=true, lastretrytime=null, retrycount=0"
+        case false => sqls", active=false"
       }
 
       if (acknowledgement.succeeded) {

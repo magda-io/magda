@@ -762,7 +762,7 @@ class HooksService(
     *   `Webhook Notification Recipient` normally only want to set this field when the previous processing was failed and want registry pause the notification delivery for a while.
     *   Please note: an inactive web hook will be waken up after certain amount of time (By default: 1 hour). This can be configured by registry `webhooks.retryInterval` option.
     *   When the parameter is `true`, the registry will: 1> set webhook to active (if not active already) 2> clear all running statics (e.g. `retrycount`)
-    *   However, registry will not attempt to enable the webhook if it's disabled in database previously.
+    *   However, registry will not attempt to enable the webhook if it's disabled (`enable`=false) in database previously.
     *   The default value of this field is `true`.
     *
     * @apiParamExample {json} Successful Acknowledgement Request Body Example

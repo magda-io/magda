@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v2.0.2
+## v2.1.0
 
 - Use global state instead in ValidateUser
 - Periodically refresh login status (Interval configurable via web-server helm chart)
@@ -8,6 +8,8 @@
 - Logout action will redirect user to LandingPage
 - #3406 Improve registry webHook processing SQL performance
 - Increase indexer default http request / idle timeout to 90s / 120s and make them configurable via the indexer helm chart
+- `/registry/hooks/{id}/ack` endpoint will assume `active` field is `true` when not specified.
+- `/registry/hooks/{id}/ack` endpoint will reset webhook retryCount when `active` field is `true`.
 
 ## v2.0.1
 
