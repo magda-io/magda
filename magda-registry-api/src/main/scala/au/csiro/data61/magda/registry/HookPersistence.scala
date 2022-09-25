@@ -238,7 +238,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       val userIdSql = userId.map(id => sqls"${id}::UUID").getOrElse(sqls"NULL")
       sql"""insert into WebHooks (webHookId, name, active, lastevent, url, config, enabled, ownerId, creatorId, editorId)
           values (
-            ${hook.id.get},
+            ${id},
             ${hook.name},
             ${hook.active},
             (select eventId from Events order by eventId desc limit 1),
@@ -259,6 +259,18 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             editTime = CURRENT_TIMESTAMP
           """.update
         .apply()
+
+      sql"delete from WebHookEvents where webHookId=${id}".update.apply()
+
+      val batchParameters = hook.eventTypes
+        .map(
+          eventType => Seq('webhookId -> id, 'eventTypeId -> eventType.value)
+        )
+        .toSeq
+      sql"""insert into WebHookEvents (webhookId, eventTypeId) values ({webhookId}, {eventTypeId})"""
+        .batchByName(batchParameters: _*)
+        .apply()
+
       Success(hook)
     }
   }

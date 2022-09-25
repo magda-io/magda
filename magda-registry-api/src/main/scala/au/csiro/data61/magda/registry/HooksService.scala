@@ -257,17 +257,17 @@ class HooksService(
     *   according to the aspects list provided here in the webhook notification payload.
     * @apiParam (Request Body JSON) {String[]} [config.optionalAspects] When `includeRecords` = `true`, registry will also include additional (optional) aspect data in the relevant record data
     *   in the webhook notification payload.
-    * @apiParam (Request Body JSON) {Number[]} eventTypes specify a list of event types that the webhook's interested in. Possible values are:
+    * @apiParam (Request Body JSON) {String[]} eventTypes specify a list of event types that the webhook's interested in. Possible values are:
     *   <ul>
-    *     <li>`0`: "CreateRecord"</li>
-    *     <li>`1`: "CreateAspectDefinition"</li>
-    *     <li>`2`: "CreateRecordAspect"</li>
-    *     <li>`3`: "PatchRecord"</li>
-    *     <li>`4`: "PatchAspectDefinition"</li>
-    *     <li>`5`: "PatchRecordAspect"</li>
-    *     <li>`6`: "DeleteRecord"</li>
-    *     <li>`7`: "DeleteAspectDefinition"</li>
-    *     <li>`8`: "DeleteRecordAspect"</li>
+    *     <li>"CreateRecord"</li>
+    *     <li>"CreateAspectDefinition"</li>
+    *     <li>"CreateRecordAspect"</li>
+    *     <li>"PatchRecord"</li>
+    *     <li>"PatchAspectDefinition"</li>
+    *     <li>"PatchRecordAspect"</li>
+    *     <li>"DeleteRecord"</li>
+    *     <li>"DeleteAspectDefinition"</li>
+    *     <li>"DeleteRecordAspect"</li>
     *   </ul>
     *   If you are not interested in the raw events in the webhook notification payload (e.g. you set `webhook.config.includeEvents`=`false` to turn it off), you can supply empty array [] here.
     *
@@ -278,7 +278,7 @@ class HooksService(
     *    "active": true,
     *    "url": "string",
     *    "eventTypes": [
-    *      0
+    *      "PatchRecordAspect"
     *    ],
     *    "config": {
     *      "aspects": [
@@ -518,17 +518,17 @@ class HooksService(
     *   according to the aspects list provided here in the webhook notification payload.
     * @apiParam (Request Body JSON) {String[]} [config.optionalAspects] When `includeRecords` = `true`, registry will also include additional (optional) aspect data in the relevant record data
     *   in the webhook notification payload.
-    * @apiParam (Request Body JSON) {Number[]} eventTypes specify a list of event types that the webhook's interested in. Possible values are:
+    * @apiParam (Request Body JSON) {String[]} eventTypes specify a list of event types that the webhook's interested in. Possible values are:
     *   <ul>
-    *     <li>`0`: "CreateRecord"</li>
-    *     <li>`1`: "CreateAspectDefinition"</li>
-    *     <li>`2`: "CreateRecordAspect"</li>
-    *     <li>`3`: "PatchRecord"</li>
-    *     <li>`4`: "PatchAspectDefinition"</li>
-    *     <li>`5`: "PatchRecordAspect"</li>
-    *     <li>`6`: "DeleteRecord"</li>
-    *     <li>`7`: "DeleteAspectDefinition"</li>
-    *     <li>`8`: "DeleteRecordAspect"</li>
+    *     <li>"CreateRecord"</li>
+    *     <li>"CreateAspectDefinition"</li>
+    *     <li>"CreateRecordAspect"</li>
+    *     <li>"PatchRecord"</li>
+    *     <li>"PatchAspectDefinition"</li>
+    *     <li>"PatchRecordAspect"</li>
+    *     <li>"DeleteRecord"</li>
+    *     <li>"DeleteAspectDefinition"</li>
+    *     <li>"DeleteRecordAspect"</li>
     *   </ul>
     *   If you are not interested in the raw events in the webhook notification payload (e.g. you set `webhook.config.includeEvents`=`false` to turn it off), you can supply empty array [] here.
     *
@@ -539,7 +539,7 @@ class HooksService(
     *    "active": true,
     *    "url": "string",
     *    "eventTypes": [
-    *      0
+    *      "PatchRecordAspect"
     *    ],
     *    "config": {
     *      "aspects": [

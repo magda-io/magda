@@ -11,6 +11,8 @@
 - `/registry/hooks/{id}/ack` endpoint will assume `active` field is `true` when not specified.
 - `/registry/hooks/{id}/ack` endpoint will reset webhook retryCount when `active` field is `true`.
 - #3410 Allow additional webhook options to be configured via minion options
+- Fix `PUT` `/v0/registry/hooks/{id}`: didn't update webhook registered eventTypes properly
+- Update create / update webhook API document re: required eventType data type
 
 ## v2.0.1
 
