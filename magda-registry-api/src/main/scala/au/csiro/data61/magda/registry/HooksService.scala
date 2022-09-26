@@ -763,7 +763,7 @@ class HooksService(
     *   Please note: an inactive web hook will be waken up after certain amount of time (By default: 1 hour). This can be configured by registry `webhooks.retryInterval` option.
     *   When the parameter is `true`, the registry will: 1> set webhook to active (if not active already) 2> clear all running statics (e.g. `retrycount`)
     *   However, registry will not attempt to enable the webhook if it's disabled (`enable`=false) in database previously.
-    *   The default value of this field is `true`.
+    *   When `succeeded`=`true`, we will assume the value of `active` is true` when it's not specified.
     *
     * @apiParamExample {json} Successful Acknowledgement Request Body Example
     *  {

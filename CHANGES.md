@@ -8,7 +8,7 @@
 - Logout action will redirect user to LandingPage
 - #3406 Improve registry webHook processing SQL performance
 - Increase indexer default http request / idle timeout to 90s / 120s and make them configurable via the indexer helm chart
-- `/registry/hooks/{id}/ack` endpoint will assume `active` field is `true` when not specified.
+- `/registry/hooks/{id}/ack` endpoint will assume `active` field is `true` when `active` is not specified and `succeeded` = `true`.
 - `/registry/hooks/{id}/ack` endpoint will reset webhook retryCount when `active` field is `true`.
 - #3410 Allow additional webhook options to be configured via minion options
 - Fix `PUT` `/v0/registry/hooks/{id}`: didn't update webhook registered eventTypes properly
