@@ -13,6 +13,7 @@
 - #3410 Allow additional webhook options to be configured via minion options
 - Fix `PUT` `/v0/registry/hooks/{id}`: didn't update webhook registered eventTypes properly
 - Update create / update webhook API document re: required eventType data type
+- The resume webhook action on minion's starting up should set the webhook to `active` (and consequently, reset the retryCount)
 
 ## v2.0.1
 
