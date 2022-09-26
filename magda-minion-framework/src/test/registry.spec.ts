@@ -122,7 +122,8 @@ baseSpec(
                         `/hooks/${encodeURIComponentWithApost(hook.id)}/ack`,
                         {
                             succeeded: false,
-                            lastEventIdReceived: null
+                            lastEventIdReceived: null,
+                            active: true
                         },
                         {
                             reqheaders: reqHeaders(jwtSecret, userId)
