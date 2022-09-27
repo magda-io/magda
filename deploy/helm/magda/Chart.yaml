@@ -56,8 +56,8 @@ dependencies:
 
   - name: magda-minion-visualization
     alias: minion-visualization
-    version: "1.0.0"
-    repository: https://charts.magda.io
+    version: "2.0.0"
+    repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - minions
       - minion-visualization
