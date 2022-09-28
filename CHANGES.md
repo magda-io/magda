@@ -15,6 +15,8 @@
 - Update create / update webhook API document re: required eventType data type
 - The resume webhook action on minion's starting up should set the webhook to `active` (and consequently, reset the retryCount)
 - Upgrade magda-minion-visualization to 2.0.0
+- Upgrade magda-ckan-connector to 2.0.0
+- Related to #3355, upgrade API version of all CronJob in `magda-core` to batch/v1 (for k8s 1.25 support)
 
 ## v2.0.1
 

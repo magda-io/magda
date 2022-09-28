@@ -168,7 +168,7 @@ files.forEach(function (connectorConfigFile) {
     );
 
     const cron = {
-        apiVersion: "batch/v1beta1",
+        apiVersion: "batch/v1",
         kind: "CronJob",
         metadata: {
             name: "connector-" + basename
