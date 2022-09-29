@@ -83,7 +83,7 @@ helm repo add magda-io https://charts.magda.io
 kubectl create namespace magda
 
 # install Magda version v2.0.1 to namespace "magda", turn off openfass function and expose the service via loadBalancer
-helm upgrade --namespace magda --install --version 2.0.1 --timeout 9999s --set global.openfaas.enabled=false,magda-core.gateway.service.type=LoadBalancer magda magda-io/magda
+helm upgrade --namespace magda --install --version 2.0.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda magda-io/magda
 ```
 
 You can find out the load balancer IP and access it:
