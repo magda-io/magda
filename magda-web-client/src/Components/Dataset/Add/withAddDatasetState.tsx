@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { RouterProps, withRouter } from "react-router-dom";
+import { RouteChildrenProps, withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 
 import { loadState, State } from "./DatasetAddCommon";
@@ -15,7 +15,7 @@ const Paragraph = Placeholder.Paragraph;
 
 /* eslint-disable react-hooks/rules-of-hooks */
 
-type Props = { initialState: State; user: User } & RouterProps;
+type Props = { initialState: State; user: User } & RouteChildrenProps<any>;
 
 function mapStateToProps(state: any) {
     return {
@@ -59,9 +59,13 @@ const loadingArea = (
     </>
 );
 
-export default <T extends Props>(Component: React.ComponentType<T>) => {
-    const withAddDatasetState = (props: T) => {
+const withAddDatasetState = <T extends Props>(
+    Component: React.ComponentType<T>
+) => {
+    const WithAddDatasetStateComp = (props: T) => {
         const missingOperations = hasMetaDataCreationToolAccess(props.user);
+        const datasetId = props?.match?.params?.datasetId;
+        const userId = props?.user?.id;
         const isDisabled =
             !config.featureFlags.previewAddDataset && missingOperations?.length;
 
@@ -75,7 +79,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                 const datasetState = await loadState(datasetId, user);
                 updateData(datasetState);
             },
-            [isDisabled, (props as any).match.params.datasetId, props.user]
+            [isDisabled, datasetId, userId]
         );
 
         if ((props as any).isFetchingWhoAmI) {
@@ -106,7 +110,9 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
         }
     };
 
-    return connect(mapStateToProps)(withRouter(withAddDatasetState as any));
+    return connect(mapStateToProps)(withRouter(WithAddDatasetStateComp as any));
 };
+
+export default withAddDatasetState;
 
 /* eslint-enable react-hooks/rules-of-hooks */

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { RouterProps, withRouter } from "react-router-dom";
+import { RouteChildrenProps, withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { useAsync } from "react-async-hook";
 import { State, rawDatasetDataToState } from "../Add/DatasetAddCommon";
@@ -18,7 +18,7 @@ import { resetFileUploadMarkers } from "../Add/Pages/AddFiles/uploadFile";
 const Paragraph = Placeholder.Paragraph;
 
 /* eslint-disable react-hooks/rules-of-hooks */
-type Props = { initialState: State; user: User } & RouterProps;
+type Props = { initialState: State; user: User } & RouteChildrenProps<any>;
 
 function mapStateToProps(state: any) {
     return {
@@ -62,10 +62,14 @@ const loadingArea = (
     </>
 );
 
-export default <T extends Props>(Component: React.ComponentType<T>) => {
-    const withEditDatasetState = (props: T) => {
+const withEditDatasetState = <T extends Props>(
+    Component: React.ComponentType<T>
+) => {
+    const withEditDatasetStateComp = (props: T) => {
         const [state, updateData] = useState<State | undefined>(undefined);
         const missingOperations = hasMetaDataCreationToolAccess(props.user);
+        const datasetId = props?.match?.params?.datasetId;
+        const userId = props?.user?.id;
         const isDisabled =
             !config.featureFlags.previewAddDataset && missingOperations?.length;
 
@@ -87,7 +91,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
 
                 updateData(loadedStateData);
             },
-            [isDisabled, (props as any).match.params.datasetId, props.user]
+            [isDisabled, datasetId, userId]
         );
 
         if ((props as any).isFetchingWhoAmI) {
@@ -118,7 +122,9 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
         }
     };
 
-    return connect(mapStateToProps)(withRouter(withEditDatasetState as any));
+    return connect(mapStateToProps)(
+        withRouter(withEditDatasetStateComp as any)
+    );
 };
-
+export default withEditDatasetState;
 /* eslint-enable react-hooks/rules-of-hooks */

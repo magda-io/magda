@@ -17,6 +17,7 @@
 - Upgrade magda-minion-visualization to 2.0.0
 - Upgrade magda-ckan-connector to 2.0.0
 - Related to #3355, upgrade API version of all CronJob in `magda-core` to batch/v1 (for k8s 1.25 support)
+- Metadata Editor: avoid dataset editor UI refresh when refresh the user state data
 
 ## v2.0.1
 
