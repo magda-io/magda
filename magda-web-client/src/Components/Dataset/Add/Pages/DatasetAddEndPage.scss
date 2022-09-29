@@ -18,6 +18,15 @@
 .end-preview-page-2 {
     text-align: center;
     padding-top: 1rem;
+    .data-management-image-icon {
+        font-size: 50px;
+        position: absolute;
+        left: 40px;
+    }
+    .button-text {
+        text-decoration: none;
+        font-size: 22px;
+    }
 }
 
 .draft-image-icon {

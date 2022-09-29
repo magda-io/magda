@@ -22,6 +22,7 @@
 - Metadata Editor: make sure orgUnitDropDown controls are only clearable when they are not compulsory fields
 - Fixed: Registry Record Aspect Panel UI pagination issue
 - Metadata Editor: when publishing dataset for the first time, the `hasEverPublished` field should be set to `true`
+- Metadata Editor: UI adjustments on dataset published message page
 
 ## v2.0.1
 
