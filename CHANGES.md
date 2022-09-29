@@ -20,6 +20,7 @@
 - Metadata Editor: avoid dataset editor UI refresh when refresh the user state data
 - Metadata Editor: make all orgUnitDropDown controls clearable configurable
 - Metadata Editor: make sure orgUnitDropDown controls are only clearable when they are not compulsory fields
+- Fixed: Registry Record Aspect Panel UI pagination issue
 
 ## v2.0.1
 

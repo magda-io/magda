@@ -831,7 +831,7 @@ export type QueryRecordAspectsReturnValueType = RecordAspectRecord[] | string[];
 export async function queryRecordAspects<T = QueryRecordAspectsReturnValueType>(
     params: QueryRecordAspectsParams
 ): Promise<T> {
-    const { noCache, recordId, ...queryParams } = params
+    const { noCache, recordId, offset, ...queryParams } = params
         ? params
         : ({} as QueryRecordAspectsParams);
     if (!recordId?.trim()) {
@@ -843,7 +843,7 @@ export async function queryRecordAspects<T = QueryRecordAspectsReturnValueType>(
         getAbsoluteUrl(
             `records/${encodeURIComponent(recordId)}/aspects`,
             config.registryReadOnlyApiUrl,
-            queryParams
+            { ...queryParams, start: offset, offset: undefined }
         ),
         noCache
     );
