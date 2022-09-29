@@ -17,7 +17,7 @@ import OrgUnitDropDown from "../../OrgUnitDropDown";
 import YesNoReveal from "../../YesNoReveal";
 
 import ValidationRequiredLabel from "../../ValidationRequiredLabel";
-
+import { shouldValidate } from "../../ValidationManager";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 
 import "./DatasetAddPeoplePage.scss";
@@ -80,6 +80,11 @@ export default function DatasetAddPeoplePage({
                             onChange={editPublishing("custodianOrgUnitId")}
                             validationFieldPath="$.datasetPublishing.custodianOrgUnitId"
                             validationFieldLabel="Data Custodian"
+                            cleanable={
+                                !shouldValidate(
+                                    "$.datasetPublishing.custodianOrgUnitId"
+                                )
+                            }
                         />
                     </div>
                 </div>
@@ -96,6 +101,11 @@ export default function DatasetAddPeoplePage({
                             onChange={editPublishing("managingOrgUnitId")}
                             validationFieldPath="$.datasetPublishing.managingOrgUnitId"
                             validationFieldLabel="Managing Team"
+                            isClearable={
+                                !shouldValidate(
+                                    "$.datasetPublishing.managingOrgUnitId"
+                                )
+                            }
                         />
                     </div>
                 </div>

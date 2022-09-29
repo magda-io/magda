@@ -14,6 +14,7 @@ import { ItemDataType } from "rsuite/esm/@types/common";
 import { User } from "reducers/userManagementReducer";
 import ServerError from "@magda/typescript-common/dist/ServerError";
 import { useValidation, onInputFocusOut } from "./ValidationManager";
+import { MdOutlineClear } from "react-icons/md";
 import "./OrgUnitDropDown.scss";
 
 interface ItemType extends ItemDataType {
@@ -32,6 +33,7 @@ interface PropsType {
     onChange: (orgUnitId?: string) => void;
     validationFieldPath?: string;
     validationFieldLabel?: string;
+    cleanable?: boolean;
 }
 
 const OrgUnitDropDown: FunctionComponent<PropsType> = (props) => {
@@ -41,6 +43,8 @@ const OrgUnitDropDown: FunctionComponent<PropsType> = (props) => {
         validationFieldPath,
         validationFieldLabel
     } = props;
+    const cleanable =
+        typeof props.cleanable === "boolean" ? props.cleanable : true;
     const [
         isValidationError,
         validationErrorMessage,
@@ -52,6 +56,7 @@ const OrgUnitDropDown: FunctionComponent<PropsType> = (props) => {
     const userData = useSelector<any, User>(
         (state) => state?.userManagement?.user
     );
+    const [hasSelected, setHasSelected] = useState<boolean>(false);
     const [data, setData] = useState<ItemType[]>([]);
     const { result, loading, error, execute } = useAsync(async () => {
         try {
@@ -112,7 +117,10 @@ const OrgUnitDropDown: FunctionComponent<PropsType> = (props) => {
         );
     } else {
         return (
-            <div ref={validationCtlRef}>
+            <div
+                className="org-unit-drop-down-container"
+                ref={validationCtlRef}
+            >
                 {isValidationError ? (
                     <div>
                         <span className="au-error-text">
@@ -120,6 +128,17 @@ const OrgUnitDropDown: FunctionComponent<PropsType> = (props) => {
                         </span>
                     </div>
                 ) : null}
+                {hasSelected || !orgUnitId || !cleanable ? null : (
+                    <div className="clear-button-container">
+                        <MdOutlineClear
+                            className="clear-button"
+                            onClick={() => {
+                                onChangeCallback(undefined);
+                                onInputFocusOut(validationFieldPath);
+                            }}
+                        />
+                    </div>
+                )}
                 <TreePicker
                     className={`org-unit-drop-down ${
                         isValidationError ? "has-validation-error" : ""
@@ -137,10 +156,11 @@ const OrgUnitDropDown: FunctionComponent<PropsType> = (props) => {
                             : "Please Select"
                     }
                     onSelect={(activeNode, value, event) => {
+                        setHasSelected(true);
                         onChangeCallback(value as string);
                         onInputFocusOut(validationFieldPath);
                     }}
-                    cleanable={true}
+                    cleanable={cleanable}
                     onClean={() => {
                         onChangeCallback(undefined);
                         onInputFocusOut(validationFieldPath);

@@ -18,6 +18,8 @@
 - Upgrade magda-ckan-connector to 2.0.0
 - Related to #3355, upgrade API version of all CronJob in `magda-core` to batch/v1 (for k8s 1.25 support)
 - Metadata Editor: avoid dataset editor UI refresh when refresh the user state data
+- Metadata Editor: make all orgUnitDropDown controls clearable configurable
+- Metadata Editor: make sure orgUnitDropDown controls are only clearable when they are not compulsory fields
 
 ## v2.0.1
 
