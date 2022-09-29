@@ -184,6 +184,7 @@ export type Provenance = {
 
 export type DatasetPublishing = {
     state?: string;
+    hasEverPublished?: boolean;
     level?: string;
     custodianOrgUnitId?: string;
     managingOrgUnitId?: string;
@@ -342,7 +343,7 @@ type Access = {
 function getInternalDatasetSourceAspectData() {
     return {
         id: "magda",
-        name: "This Magda metadata creation tool",
+        name: "Magda metadata creation tool",
         type: "internal",
         url: config.baseExternalUrl
     };
@@ -736,6 +737,7 @@ export function createBlankState(user: User): State {
         datasetPublishing: {
             state: "draft",
             level: "custodian",
+            hasEverPublished: false,
             contactPointDisplay: "organization"
         },
         spatialCoverage: {
