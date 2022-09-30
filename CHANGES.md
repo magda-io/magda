@@ -23,6 +23,7 @@
 - Fixed: Registry Record Aspect Panel UI pagination issue
 - Metadata Editor: when publishing dataset for the first time, the `hasEverPublished` field should be set to `true`
 - Metadata Editor: UI adjustments on dataset published message page
+- #3394 Make sure scala pods can be gracefully terminated within 15 seconds
 
 ## v2.0.1
 
