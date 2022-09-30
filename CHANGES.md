@@ -24,6 +24,7 @@
 - Metadata Editor: when publishing dataset for the first time, the `hasEverPublished` field should be set to `true`
 - Metadata Editor: UI adjustments on dataset published message page
 - #3394 Make sure scala pods can be gracefully terminated within 15 seconds
+- #3402 Allow access group users to have read permission to the access group itself
 
 ## v2.0.1
 

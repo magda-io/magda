@@ -45,6 +45,16 @@
             "minLength": 36,
             "maxLength": 36
         },
+        "extraControlPermissionIds": {
+            "title": "Extra Access Group Record Control Permission ID",
+            "description": "A list of permissions that grant extra permissions to the group users. e.g. read only access to the access group record itself.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 36,
+                "maxLength": 36
+            }
+        },
         "roleId": {
             "title": "Access Group Role ID",
             "description": "The ID of the role record that is auto-created with the access-group creation. This role will be used to grant the access group permission (specified by `permissionId`) to all users who are added to this access group.",
