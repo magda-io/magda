@@ -15,15 +15,15 @@ A complete solution for managing, publishing and discovering government data, pr
 | Repository | Name | Version |
 |------------|------|---------|
 | file://../magda-core | magda-core | 2.0.1 |
-| https://charts.magda.io | ckan-connector-functions(magda-ckan-connector) | 1.3.0 |
 | https://charts.magda.io | magda-function-esri-url-processor | 1.1.0 |
 | https://charts.magda.io | magda-function-history-report | 1.1.0 |
 | https://charts.magda.io | minion-broken-link(magda-minion-broken-link) | 1.0.0 |
 | https://charts.magda.io | magda-minion-ckan-exporter | 1.0.0 |
 | https://charts.magda.io | minion-format(magda-minion-format) | 1.1.2 |
 | https://charts.magda.io | minion-linked-data-rating(magda-minion-linked-data-rating) | 1.1.0 |
-| https://charts.magda.io | minion-visualization(magda-minion-visualization) | 1.0.0 |
 | https://charts.magda.io | openfaas | 5.5.5-magda.2 |
+| oci://ghcr.io/magda-io/charts | ckan-connector-functions(magda-ckan-connector) | 2.0.0 |
+| oci://ghcr.io/magda-io/charts | minion-visualization(magda-minion-visualization) | 2.0.0 |
 
 ## Values
 

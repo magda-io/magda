@@ -69,9 +69,9 @@ dependencies:
       - minion-ckan-exporter
 
   - name: magda-ckan-connector
-    version: "1.3.0"
+    version: "2.0.0"
     alias: ckan-connector-functions
-    repository: https://charts.magda.io
+    repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
       - url-processors
