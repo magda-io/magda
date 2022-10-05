@@ -66,20 +66,25 @@ const withAddDatasetState = <T extends Props>(
         const missingOperations = hasMetaDataCreationToolAccess(props.user);
         const datasetId = props?.match?.params?.datasetId;
         const userId = props?.user?.id;
+        const orgUnitId = props?.user?.orgUnitId;
         const isDisabled =
             !config.featureFlags.previewAddDataset && missingOperations?.length;
 
         const [state, updateData] = useState<State | undefined>(undefined);
         const { loading, error } = useAsync(
-            async (isDisabled, datasetId, user) => {
+            async (isDisabled, datasetId, userId, orgUnitId) => {
                 if (isDisabled || !datasetId) {
                     return;
                 }
+                const user: any = {
+                    id: userId,
+                    orgUnitId
+                };
                 resetFileUploadMarkers();
                 const datasetState = await loadState(datasetId, user);
                 updateData(datasetState);
             },
-            [isDisabled, datasetId, userId]
+            [isDisabled, datasetId, userId, orgUnitId]
         );
 
         if ((props as any).isFetchingWhoAmI) {

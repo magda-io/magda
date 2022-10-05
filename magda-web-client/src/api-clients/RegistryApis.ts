@@ -968,6 +968,20 @@ export async function updateAspectOfDatasetAndDistributions<T = any>(
     }
 
     const datasetDistributionIds = await getDistributionIds(datasetId);
+    return await updateRecordsAspect(
+        [datasetId, ...datasetDistributionIds],
+        aspectId,
+        aspectData,
+        merge
+    );
+}
+
+export async function updateRecordsAspect(
+    recordIds: string[],
+    aspectId: string,
+    aspectData: any,
+    merge: boolean = true
+): Promise<number[]> {
     const url = getAbsoluteUrl(
         `records/aspects/${encodeURIComponent(aspectId)}`,
         config.registryFullApiUrl,
@@ -975,7 +989,7 @@ export async function updateAspectOfDatasetAndDistributions<T = any>(
     );
 
     return await request<number[]>("PUT", url, {
-        recordIds: [datasetId, ...datasetDistributionIds],
+        recordIds,
         data: aspectData
     });
 }

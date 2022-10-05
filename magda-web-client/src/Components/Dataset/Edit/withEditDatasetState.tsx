@@ -70,14 +70,19 @@ const withEditDatasetState = <T extends Props>(
         const missingOperations = hasMetaDataCreationToolAccess(props.user);
         const datasetId = props?.match?.params?.datasetId;
         const userId = props?.user?.id;
+        const orgUnitId = props?.user?.orgUnitId;
         const isDisabled =
             !config.featureFlags.previewAddDataset && missingOperations?.length;
 
         const { loading, error } = useAsync(
-            async (isDisabled, datasetId, user) => {
+            async (isDisabled, datasetId, userId, orgUnitId) => {
                 if (isDisabled || !datasetId) {
                     return;
                 }
+                const user: any = {
+                    id: userId,
+                    orgUnitId
+                };
                 resetFileUploadMarkers();
                 // --- turn off cache
                 // --- edit flow will also save draft after file is uploaded to storage api
@@ -91,7 +96,7 @@ const withEditDatasetState = <T extends Props>(
 
                 updateData(loadedStateData);
             },
-            [isDisabled, datasetId, userId]
+            [isDisabled, datasetId, userId, orgUnitId]
         );
 
         if ((props as any).isFetchingWhoAmI) {
