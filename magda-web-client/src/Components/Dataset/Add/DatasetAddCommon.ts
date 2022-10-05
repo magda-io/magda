@@ -352,8 +352,10 @@ function getInternalDatasetSourceAspectData() {
 
 function getAccessControlAspectData(state: State) {
     const { dataset, datasetPublishing } = state;
-    let orgUnitId: string | undefined;
-    if (
+    let orgUnitId: string | null | undefined = null;
+    if (datasetPublishing?.level === "organization") {
+        orgUnitId = null;
+    } else if (
         datasetPublishing?.level === "custodian" &&
         datasetPublishing?.custodianOrgUnitId
     ) {
@@ -376,8 +378,8 @@ function getAccessControlAspectData(state: State) {
             ? dataset.ownerId
             : dataset.editingUserId
             ? dataset.editingUserId
-            : undefined,
-        orgUnitId: orgUnitId ? orgUnitId : undefined
+            : null,
+        orgUnitId: orgUnitId ? orgUnitId : null
     };
 }
 
