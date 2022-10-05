@@ -1,13 +1,11 @@
-import "./DatasetAddEndPage.scss";
-
 import React from "react";
-import { Link } from "react-router-dom";
 
+import { useHistory } from "react-router-dom";
 import giantTickIcon from "assets/giant-tick.svg";
 import draftIcon from "assets/format-active.svg";
-import printIcon from "assets/print.svg";
+import { BsServer } from "react-icons/bs";
 
-import CommonLink from "Components/Common/CommonLink";
+import "./DatasetAddEndPage.scss";
 
 type Props = {
     datasetId: string;
@@ -21,11 +19,12 @@ export default function DatasetAddEndPage(props: Props) {
     const { datasetId, publishStatus } = props;
     const datasetPage = "/dataset/" + datasetId + "/details";
     const isEdit = typeof props?.isEdit === "undefined" ? false : props.isEdit;
+    const history = useHistory();
     let viewDatasetText;
     if (publishStatus === "draft") {
-        viewDatasetText = "View your dataset";
+        viewDatasetText = "Dataset Page";
     } else {
-        viewDatasetText = "View your dataset";
+        viewDatasetText = "Dataset Page";
     }
 
     let allDoneText: string;
@@ -47,46 +46,44 @@ export default function DatasetAddEndPage(props: Props) {
                 </div>
                 <div className="end-preview-container-2">
                     <h2 className="end-preview-subheading">{allDoneText}</h2>
-                    <p className="dataset-status-txt">
-                        You can view the status of your datasets from{" "}
-                        <CommonLink
-                            href={`/settings/datasets/${
-                                publishStatus === "published"
-                                    ? "published"
-                                    : "draft"
-                            }`}
-                        >
-                            "datasets management"
-                        </CommonLink>
-                        .
-                    </p>
                 </div>
             </div>
             <div className="col-sm-12 end-preview-page-2">
                 <div>
-                    <Link to={datasetPage}>
-                        <div className="au-btn next-button end-preview-button draft-dataset-btn">
-                            <img
-                                className="draft-image-icon"
-                                src={draftIcon}
-                                alt="dataset icon"
-                            />
-                            <span className="draft-dataset-txt">
-                                {" "}
-                                {viewDatasetText}{" "}
-                            </span>
-                        </div>
-                    </Link>
+                    <div
+                        className="au-btn next-button end-preview-button data-management-btn"
+                        onClick={() => {
+                            history.push(
+                                `/settings/datasets/${
+                                    publishStatus === "published"
+                                        ? "published"
+                                        : "draft"
+                                }`
+                            );
+                        }}
+                    >
+                        <BsServer
+                            className="data-management-image-icon"
+                            title="Go to data management"
+                        />
+                        <span className="button-text">
+                            {" "}
+                            {"Data Management"}{" "}
+                        </span>
+                    </div>
                 </div>
                 <div>
-                    <Link to={datasetPage + "?print=true"}>
-                        <div className="au-btn next-button end-preview-button print-metadata-btn">
-                            <img className="print-icon" src={printIcon} />
-                            <span className="print-metadata-txt">
-                                Print a copy of your metadata
-                            </span>
-                        </div>
-                    </Link>
+                    <div
+                        className="au-btn next-button end-preview-button draft-dataset-btn"
+                        onClick={() => history.push(datasetPage)}
+                    >
+                        <img
+                            className="draft-image-icon"
+                            src={draftIcon}
+                            alt="Go to dataset page"
+                        />
+                        <span className="button-text"> {viewDatasetText} </span>
+                    </div>
                 </div>
             </div>
         </div>

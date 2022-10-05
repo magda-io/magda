@@ -2438,6 +2438,29 @@ class WebHookProcessingSpec
             val hook = responseAs[WebHook]
             hook.active shouldEqual false
           }
+
+          // will re-process event with ID of 2 as the hook will be set to active
+          // We will assume active = true when succeeded=true & active not specified
+          Post(
+            "/v0/hooks/test/ack",
+            WebHookAcknowledgement(
+              succeeded = true,
+              lastEventIdReceived = Some(1)
+            )
+          ) ~> addUserId() ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          Util.waitUntilAllDone()
+          payloads.length shouldEqual 1
+
+          Get("/v0/hooks/test") ~> param
+            .api(Full)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val hook = responseAs[WebHook]
+            hook.active shouldEqual true
+          }
         }
       }
 

@@ -382,7 +382,8 @@ class NewDataset extends React.Component<Props, State> {
                 isPublishing: true,
                 datasetPublishing: {
                     ...state.datasetPublishing,
-                    state: "published"
+                    state: "published",
+                    hasEverPublished: true
                 }
             }));
 
@@ -392,7 +393,8 @@ class NewDataset extends React.Component<Props, State> {
                     ...this.state,
                     datasetPublishing: {
                         ...this.state.datasetPublishing,
-                        state: "published"
+                        state: "published",
+                        hasEverPublished: true
                     }
                 },
                 this.setState.bind(this)

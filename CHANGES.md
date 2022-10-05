@@ -1,11 +1,30 @@
 # CHANGELOG
 
-## v2.0.2
+## v2.1.0
 
 - Use global state instead in ValidateUser
 - Periodically refresh login status (Interval configurable via web-server helm chart)
 - Allow setting landingPage uri for anonymousUser and authenticatedUser
 - Logout action will redirect user to LandingPage
+- #3406 Improve registry webHook processing SQL performance
+- Increase indexer default http request / idle timeout to 90s / 120s and make them configurable via the indexer helm chart
+- `/registry/hooks/{id}/ack` endpoint will assume `active` field is `true` when `active` is not specified and `succeeded` = `true`.
+- `/registry/hooks/{id}/ack` endpoint will reset webhook retryCount when `active` field is `true`.
+- #3410 Allow additional webhook options to be configured via minion options
+- Fix `PUT` `/v0/registry/hooks/{id}`: didn't update webhook registered eventTypes properly
+- Update create / update webhook API document re: required eventType data type
+- The resume webhook action on minion's starting up should set the webhook to `active` (and consequently, reset the retryCount)
+- Upgrade magda-minion-visualization to 2.0.0
+- Upgrade magda-ckan-connector to 2.0.0
+- Related to #3355, upgrade API version of all CronJob in `magda-core` to batch/v1 (for k8s 1.25 support)
+- Metadata Editor: avoid dataset editor UI refresh when refresh the user state data
+- Metadata Editor: make all orgUnitDropDown controls clearable configurable
+- Metadata Editor: make sure orgUnitDropDown controls are only clearable when they are not compulsory fields
+- Fixed: Registry Record Aspect Panel UI pagination issue
+- Metadata Editor: when publishing dataset for the first time, the `hasEverPublished` field should be set to `true`
+- Metadata Editor: UI adjustments on dataset published message page
+- #3394 Make sure scala pods can be gracefully terminated within 15 seconds
+- #3402 Allow access group users to have read permission to the access group itself
 
 ## v2.0.1
 

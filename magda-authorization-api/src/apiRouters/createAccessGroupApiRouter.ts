@@ -281,11 +281,13 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             editTime: timestamp,
                             editBy: userId,
                             permissionId: "",
-                            roleId: ""
+                            roleId: "",
+                            extraControlPermissionIds: [] as string[]
                         },
                         "access-control": {
                             ownerId: agData.ownerId,
-                            orgUnitId: agData.orgUnitId
+                            orgUnitId: agData.orgUnitId,
+                            preAuthorisedPermissionIds: [] as string[]
                         }
                     }
                 };
@@ -293,16 +295,56 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 try {
                     await client.query("BEGIN");
 
+                    // this permission determined the access that all group users have to all datasets in the group
+                    // this permission is a `preAuthorised` permission and will be added to `access-control` aspect, `preAuthorisedPermissionIds` field of all datasets in the group
+                    // see https://github.com/magda-io/magda/issues/3269
                     const permissionRecord = await database.createPermission(
                         {
-                            name: "auto-created for access group",
-                            description:
-                                "auto-created for access group " + recordId,
+                            name: "System managed for access group",
+                            description: `Auto-created access group item permission for access group ${recordId}.`,
                             resourceUri: agData.resourceUri,
                             operationUris: agData.operationUris,
                             userOwnershipConstraint: false,
                             orgUnitOwnershipConstraint: false,
                             preAuthorisedConstraint: true,
+                            createBy: userId ? userId : null,
+                            ownerId: userId ? userId : null
+                        },
+                        client
+                    );
+
+                    // this permission allow the user (who're in the group) to be able to read the access group information
+                    // this permission is a `preAuthorised` permission.
+                    // And it will be added to `access-control` aspect, `preAuthorisedPermissionIds` field of the access group that is to be created
+                    // see https://github.com/magda-io/magda/issues/3402
+                    const accessGroupRecordPermissionRecord = await database.createPermission(
+                        {
+                            name: "System managed for access group",
+                            description: `Auto-created access group record permission for access group ${recordId}.`,
+                            resourceUri: "object/record",
+                            operationUris: ["object/record/read"],
+                            userOwnershipConstraint: false,
+                            orgUnitOwnershipConstraint: false,
+                            preAuthorisedConstraint: true,
+                            createBy: userId ? userId : null,
+                            ownerId: userId ? userId : null
+                        },
+                        client
+                    );
+
+                    // this permission currently only used by UI as a short-cut to determine which user has access to access group UI
+                    // Actually access group access is controlled by uri `object/record` see:
+                    // - https://github.com/magda-io/magda/issues/3402
+                    // - https://github.com/magda-io/magda/issues/3269
+                    const accessGroupPermissionRecord = await database.createPermission(
+                        {
+                            name: "System managed for access group",
+                            description: `Auto-created access group UI permission for access group ${recordId}.`,
+                            resourceUri: "object/accessGroup",
+                            operationUris: ["object/accessGroup/read"],
+                            userOwnershipConstraint: false,
+                            orgUnitOwnershipConstraint: false,
+                            preAuthorisedConstraint: false,
                             createBy: userId ? userId : null,
                             ownerId: userId ? userId : null
                         },
@@ -333,20 +375,32 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         ]
                     );
 
-                    // add permission to the role
-                    await createTableRecord(
-                        client,
-                        "role_permissions",
-                        {
-                            role_id: role.id,
-                            permission_id: permissionRecord.id
-                        },
-                        ["role_id", "permission_id"]
+                    // add 3 permissions to the role
+                    await client.query(
+                        ...sqls`INSERT INTO role_permissions (role_id, permission_id)
+                        VALUES 
+                        (${role.id}, ${permissionRecord.id}),
+                        (${role.id}, ${accessGroupRecordPermissionRecord.id}),
+                        (${role.id}, ${accessGroupPermissionRecord.id})`.toQuery()
                     );
 
                     agRecord.aspects["access-group-details"].permissionId =
                         permissionRecord.id;
                     agRecord.aspects["access-group-details"].roleId = role.id;
+                    agRecord.aspects[
+                        "access-group-details"
+                    ].extraControlPermissionIds = [
+                        accessGroupRecordPermissionRecord.id,
+                        accessGroupPermissionRecord.id
+                    ];
+
+                    // make sure group users have read access to access group information
+                    // `accessGroupRecordPermissionRecord` is a preAuthorised permission tha requires explicit grant.
+                    agRecord.aspects[
+                        "access-control"
+                    ].preAuthorisedPermissionIds.push(
+                        accessGroupRecordPermissionRecord.id
+                    );
 
                     const recordCreationResult = await registryClient.creatRecord(
                         agRecord as any
@@ -732,6 +786,13 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     accessGroupRecord?.aspects?.["access-group-details"]?.[
                         "roleId"
                     ];
+
+                const extraControlPermissionIds = accessGroupRecord?.aspects?.[
+                    "access-group-details"
+                ]?.["extraControlPermissionIds"].filter((pid: string) =>
+                    isUuid(pid)
+                );
+
                 if (!isUuid(permissionId)) {
                     throw new ServerError(
                         "The access group permission id is not a valid UUID",
@@ -772,8 +833,37 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 try {
                     await client.query("BEGIN");
 
+                    // remove the access group role from all users
+                    await client.query(
+                        ...sqls`DELETE FROM user_roles WHERE role_id=${roleId}`.toQuery()
+                    );
+
                     await database.deleteRole(roleId, client);
-                    await database.deletePermission(permissionId, client);
+
+                    // delete possible other permissions that are controlled by access group
+                    // `extraControlPermissionIds` is a new field since v2.1.0. Thus, we need to consider the situation where it's empty.
+                    const permissionIds = [
+                        permissionId,
+                        ...(extraControlPermissionIds?.length
+                            ? extraControlPermissionIds
+                            : [])
+                    ];
+
+                    await client.query(
+                        ...sqls`DELETE FROM role_permissions WHERE ${sqls`permission_id`.in(
+                            permissionIds
+                        )}`.toQuery()
+                    );
+                    await client.query(
+                        ...sqls`DELETE FROM permission_operations WHERE ${sqls`permission_id`.in(
+                            permissionIds
+                        )}`.toQuery()
+                    );
+                    await client.query(
+                        ...sqls`DELETE FROM permissions WHERE ${sqls`id`.in(
+                            permissionIds
+                        )}`.toQuery()
+                    );
 
                     const deleteResult = await registryClient.deleteRecord(
                         groupId

@@ -831,7 +831,7 @@ export type QueryRecordAspectsReturnValueType = RecordAspectRecord[] | string[];
 export async function queryRecordAspects<T = QueryRecordAspectsReturnValueType>(
     params: QueryRecordAspectsParams
 ): Promise<T> {
-    const { noCache, recordId, ...queryParams } = params
+    const { noCache, recordId, offset, ...queryParams } = params
         ? params
         : ({} as QueryRecordAspectsParams);
     if (!recordId?.trim()) {
@@ -843,7 +843,7 @@ export async function queryRecordAspects<T = QueryRecordAspectsReturnValueType>(
         getAbsoluteUrl(
             `records/${encodeURIComponent(recordId)}/aspects`,
             config.registryReadOnlyApiUrl,
-            queryParams
+            { ...queryParams, start: offset, offset: undefined }
         ),
         noCache
     );
@@ -968,6 +968,20 @@ export async function updateAspectOfDatasetAndDistributions<T = any>(
     }
 
     const datasetDistributionIds = await getDistributionIds(datasetId);
+    return await updateRecordsAspect(
+        [datasetId, ...datasetDistributionIds],
+        aspectId,
+        aspectData,
+        merge
+    );
+}
+
+export async function updateRecordsAspect(
+    recordIds: string[],
+    aspectId: string,
+    aspectData: any,
+    merge: boolean = true
+): Promise<number[]> {
     const url = getAbsoluteUrl(
         `records/aspects/${encodeURIComponent(aspectId)}`,
         config.registryFullApiUrl,
@@ -975,7 +989,7 @@ export async function updateAspectOfDatasetAndDistributions<T = any>(
     );
 
     return await request<number[]>("PUT", url, {
-        recordIds: [datasetId, ...datasetDistributionIds],
+        recordIds,
         data: aspectData
     });
 }

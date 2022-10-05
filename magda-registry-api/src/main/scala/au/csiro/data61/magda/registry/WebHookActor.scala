@@ -492,14 +492,14 @@ object WebHookActor {
             } else {
               val eventPage = DB readOnly { implicit session =>
                 eventPersistence.getEvents(
-                  webHook.lastEvent,
-                  None,
-                  Some(config.getInt("webhooks.eventPageSize")),
-                  None,
-                  None,
-                  (webHook.config.aspects ++ webHook.config.optionalAspects).flatten.toSet,
-                  webHook.eventTypes,
-                  AllTenantsId
+                  tenantId = AllTenantsId,
+                  authDecision = UnconditionalTrueDecision,
+                  pageToken = webHook.lastEvent,
+                  limit = Some(config.getInt("webhooks.eventPageSize")),
+                  aspectIds =
+                    (webHook.config.aspects ++ webHook.config.optionalAspects).flatten.toSet,
+                  eventTypes = webHook.eventTypes,
+                  dereference = webHook.config.dereference
                 )
               }
 

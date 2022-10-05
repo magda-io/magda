@@ -16,9 +16,10 @@ import { onInputFocusOut, useValidation } from "../../ValidationManager";
 type Props = {
     orgUnitId?: string;
     custodianOrgUnitId?: string;
-    onChange: (orgUnitId: string) => void;
+    onChange: (orgUnitId?: string) => void;
     validationFieldPath?: string;
     validationFieldLabel?: string;
+    isClearable?: boolean;
 };
 
 const getOrgUnitName = async (id?: string) => {
@@ -45,7 +46,8 @@ const OrgUnitDropdown: FunctionComponent<Props> = (props) => {
         custodianOrgUnitId,
         onChange: onChangeCallback,
         validationFieldPath,
-        validationFieldLabel
+        validationFieldLabel,
+        isClearable
     } = props;
     const [
         isValidationError,
@@ -135,6 +137,9 @@ const OrgUnitDropdown: FunctionComponent<Props> = (props) => {
                     className="react-select"
                     isMulti={false}
                     isSearchable={true}
+                    isClearable={
+                        typeof isClearable === "boolean" ? isClearable : true
+                    }
                     onChange={(rawValue, action) => {
                         const value = rawValue as
                             | { value: string }
@@ -142,6 +147,9 @@ const OrgUnitDropdown: FunctionComponent<Props> = (props) => {
                             | null;
                         if (value) {
                             onChangeCallback(value.value);
+                            onInputFocusOut(validationFieldPath);
+                        } else if (value === null) {
+                            onChangeCallback(undefined);
                             onInputFocusOut(validationFieldPath);
                         }
                     }}

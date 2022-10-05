@@ -189,21 +189,22 @@ class RecordHistoryService(
                       tenantId = tenantId,
                       // we have checked the permission so passing `UnconditionalTrueDecision` here
                       authDecision = UnconditionalTrueDecision,
-                      recordId = id,
                       pageToken = pageToken,
                       start = start,
                       limit = limit,
+                      recordId = id,
                       aspectIds = aspectIdSet,
                       reversePageTokenOrder = reversePageTokenOrder
                     )
                   } else {
                     eventPersistence.getEvents(
-                      aspectIds = aspectIdSet,
-                      recordId = Some(id),
+                      tenantId = tenantId,
+                      authDecision = UnconditionalTrueDecision,
                       pageToken = pageToken,
                       start = start,
                       limit = limit,
-                      tenantId = tenantId,
+                      recordId = Some(id),
+                      aspectIds = aspectIdSet,
                       reversePageTokenOrder = reversePageTokenOrder
                     )
                   }

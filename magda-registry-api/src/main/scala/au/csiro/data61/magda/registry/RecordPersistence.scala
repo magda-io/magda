@@ -518,6 +518,21 @@ class DefaultRecordPersistence(config: Config)
       )
   }
 
+  /**
+    * Given a list of record ids (`ids`) return any records that have an aspect (e.g. `dataset-distributions`) references any of the record ids (`ids`).
+    * The aspect that we found a matched record id must be one of aspect supplied in either `aspectIds` or `optionalAspectIds`.
+    * Before return the records as the result, we should also filter out any records whose id matches one of id in `idsToExclude` parameter (if supplied)
+    *
+    * @param tenantId
+    * @param authDecision
+    * @param ids
+    * @param idsToExclude
+    * @param aspectIds
+    * @param optionalAspectIds
+    * @param dereference
+    * @param session
+    * @return
+    */
   def getRecordsLinkingToRecordIds(
       tenantId: TenantId,
       authDecision: AuthDecision,
@@ -535,20 +550,43 @@ class DefaultRecordPersistence(config: Config)
     } else {
       val dereferenceSelectors = linkAspects.map {
         case (aspectId, propertyWithLink) =>
-          SQLSyntax
-            .exists(
-              sqls"select 1 from RecordAspects".where(
-                SQLSyntax.toAndConditionOpt(
-                  Some(sqls"RecordAspects.recordId=Records.recordId"),
-                  Some(sqls"aspectId=$aspectId"),
-                  SQLUtils
-                    .tenantIdToWhereClause(tenantId, "recordaspects.tenantid"),
-                  Some(
-                    sqls"jsonb_exists_any(data->${propertyWithLink.propertyName}, ARRAY[$ids])"
+          if (propertyWithLink.isArray) {
+            SQLSyntax
+              .exists(
+                sqls"select 1 from RecordAspects".where(
+                  SQLSyntax.toAndConditionOpt(
+                    Some(sqls"RecordAspects.recordId=Records.recordId"),
+                    Some(sqls"aspectId=$aspectId"),
+                    SQLUtils
+                      .tenantIdToWhereClause(
+                        tenantId,
+                        "recordaspects.tenantid"
+                      ),
+                    Some(
+                      sqls"((data->${propertyWithLink.propertyName})::jsonb ${sqls"??|"} ARRAY[$ids])"
+                    )
                   )
                 )
               )
-            )
+          } else {
+            SQLSyntax
+              .exists(
+                sqls"select 1 from RecordAspects".where(
+                  SQLSyntax.toAndConditionOpt(
+                    Some(sqls"RecordAspects.recordId=Records.recordId"),
+                    Some(sqls"aspectId=$aspectId"),
+                    SQLUtils
+                      .tenantIdToWhereClause(
+                        tenantId,
+                        "recordaspects.tenantid"
+                      ),
+                    Some(
+                      sqls"(data->>${propertyWithLink.propertyName} IN ($ids))"
+                    )
+                  )
+                )
+              )
+          }
 
       }
 

@@ -17,7 +17,8 @@ import {
     updateRecordAspect,
     patchRecord,
     tagRecordVersionEventId,
-    VersionItem
+    VersionItem,
+    updateAspectOfDatasetAndDistributions
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
@@ -184,6 +185,7 @@ export type Provenance = {
 
 export type DatasetPublishing = {
     state?: string;
+    hasEverPublished?: boolean;
     level?: string;
     custodianOrgUnitId?: string;
     managingOrgUnitId?: string;
@@ -342,21 +344,42 @@ type Access = {
 function getInternalDatasetSourceAspectData() {
     return {
         id: "magda",
-        name: "This Magda metadata creation tool",
+        name: "Magda metadata creation tool",
         type: "internal",
         url: config.baseExternalUrl
     };
 }
 
 function getAccessControlAspectData(state: State) {
-    const { dataset } = state;
+    const { dataset, datasetPublishing } = state;
+    let orgUnitId: string | null | undefined = null;
+    if (datasetPublishing?.level === "organization") {
+        orgUnitId = null;
+    } else if (
+        datasetPublishing?.level === "custodian" &&
+        datasetPublishing?.custodianOrgUnitId
+    ) {
+        orgUnitId = datasetPublishing.custodianOrgUnitId;
+    } else if (
+        datasetPublishing?.level === "team" &&
+        datasetPublishing?.managingOrgUnitId
+    ) {
+        orgUnitId = datasetPublishing.managingOrgUnitId;
+    } else if (
+        datasetPublishing?.level === "creatorOrgUnit" &&
+        dataset?.editingUserId
+    ) {
+        orgUnitId = dataset.editingUserId;
+    } else {
+        orgUnitId = dataset?.owningOrgUnitId;
+    }
     return {
         ownerId: dataset.ownerId
             ? dataset.ownerId
             : dataset.editingUserId
             ? dataset.editingUserId
-            : undefined,
-        orgUnitId: dataset.owningOrgUnitId ? dataset.owningOrgUnitId : undefined
+            : null,
+        orgUnitId: orgUnitId ? orgUnitId : null
     };
 }
 
@@ -736,6 +759,7 @@ export function createBlankState(user: User): State {
         datasetPublishing: {
             state: "draft",
             level: "custodian",
+            hasEverPublished: false,
             contactPointDisplay: "organization"
         },
         spatialCoverage: {
@@ -1372,7 +1396,7 @@ export async function createDatasetFromState(
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
     tagVersion: boolean = false
-) {
+): Promise<[Record, number]> {
     const distributionRecords = await convertStateToDistributionRecords(state);
 
     const datasetRecord = await convertStateToDatasetRecord(
@@ -1392,7 +1416,13 @@ export async function updateDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>,
     tagVersion: boolean = false
 ) {
-    const distributionRecords = await convertStateToDistributionRecords(state);
+    const distributionRecords = (
+        await convertStateToDistributionRecords(state)
+    ).map((dist) => {
+        // remove `access-control` aspect, as we will apply it separately to avoid overwriting existing fields
+        dist.aspects["access-control"] = undefined as any;
+        return dist;
+    });
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
         distributionRecords,
@@ -1400,7 +1430,28 @@ export async function updateDatasetFromState(
         setState,
         true
     );
-    return await updateDataset(datasetRecord, distributionRecords, tagVersion);
+    const accessControlAspect = datasetRecord?.aspects?.["access-control"];
+    // remove `access-control` aspect, as we will apply it separately to avoid overwriting existing fields
+    datasetRecord.aspects["access-control"] = undefined;
+
+    const result = await updateDataset(
+        datasetRecord,
+        distributionRecords,
+        tagVersion
+    );
+
+    if (!accessControlAspect) {
+        return result;
+    }
+
+    const eventIds = await updateAspectOfDatasetAndDistributions(
+        datasetId,
+        "access-control",
+        accessControlAspect,
+        true
+    );
+
+    return [result[0], eventIds[0]] as [Record, number];
 }
 
 type FailedFileInfo = {
