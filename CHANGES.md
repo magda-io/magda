@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.1.1
+
+- Metadata Editor: improve the default empty value handling for `access-control` aspect `orgUnitId` field
+
 ## v2.1.0
 
 - Use global state instead in ValidateUser
