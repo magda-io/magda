@@ -710,14 +710,14 @@ test_allow_pre_authorised_constraint_permission_user_permission_is_pre_authorise
     }
 }
 
-test_allow_null_orgUnitId {
+test_allow_empty_string_orgUnitId {
     allow with input as {
         "operationUri": "object/dataset/published/read",
         "object": {
             "dataset": {
                 "access-control": {
                     "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
-                    "orgUnitId": null
+                    "orgUnitId": ""
                 },
                 "publishing": {
                     "state": "published"
@@ -791,14 +791,14 @@ test_allow_undefined_orgUnitId {
     }
 }
 
-test_allow_null_orgUnitId_any_publishing_status {
+test_allow_empty_string_orgUnitId_any_publishing_status {
     allow with input as {
         "operationUri": "object/dataset/*/read",
         "object": {
             "dataset": {
                 "access-control": {
                     "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
-                    "orgUnitId": null
+                    "orgUnitId": ""
                 },
                 "publishing": {
                     "state": "published"
