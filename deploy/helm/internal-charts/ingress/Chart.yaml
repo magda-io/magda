@@ -1,7 +1,7 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: ingress
-version: 2.1.0
+version: 2.1.1-alpha.0
 kubeVersion: ">= 1.19.0-0"
 annotations:
   magdaModuleType: "core"
