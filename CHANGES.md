@@ -2,7 +2,7 @@
 
 ## v2.1.1
 
-- Metadata Editor: improve the default empty value handling for `access-control` aspect `orgUnitId` field
+- #3412 Metadata Editor: improve the default empty value handling for `access-control` aspect `orgUnitId` field
 
 ## v2.1.0
 
