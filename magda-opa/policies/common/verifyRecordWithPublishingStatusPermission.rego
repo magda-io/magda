@@ -4,6 +4,7 @@ import data.common.breakdownOperationUri
 import data.common.getResourceTypeFromResourceUri
 import data.common.verifyPublishingStatus
 import data.common.verifyRecordPermission
+import data.common.isEmpty
 
 # when resource type contains no wildcard type "*", e.g.  object.dataset.published
 # generic record access control rules applies (via verifyRecordPermission)
@@ -101,6 +102,27 @@ verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName
 	verifyPublishingStatus(inputObjectRefName, permissionResourceType)
 
 	not input.object[inputObjectRefName]["access-control"].orgUnitId
+}
+
+verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName) {
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
+
+	resourceType == "*"
+
+	input.user.permissions[i].userOwnershipConstraint = false
+	input.user.permissions[i].orgUnitOwnershipConstraint = true
+	input.user.permissions[i].preAuthorisedConstraint = false
+
+	permissionResourceType := getResourceTypeFromResourceUri(input.user.permissions[i].resourceUri)
+	operationUri := concat("/", [resourceUriPrefix, permissionResourceType, operationType])
+	resourceUri := concat("/", [resourceUriPrefix, permissionResourceType])
+
+	input.user.permissions[i].resourceUri = resourceUri
+	input.user.permissions[i].operations[_].uri = operationUri
+
+	verifyPublishingStatus(inputObjectRefName, permissionResourceType)
+
+	isEmpty(input.object[inputObjectRefName]["access-control"].orgUnitId)
 }
 
 # if find a permission with pre-authorised constraint

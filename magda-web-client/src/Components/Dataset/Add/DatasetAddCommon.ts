@@ -352,9 +352,9 @@ function getInternalDatasetSourceAspectData() {
 
 function getAccessControlAspectData(state: State) {
     const { dataset, datasetPublishing } = state;
-    let orgUnitId: string | null | undefined = null;
+    let orgUnitId: string | undefined;
     if (datasetPublishing?.level === "organization") {
-        orgUnitId = null;
+        orgUnitId = "";
     } else if (
         datasetPublishing?.level === "custodian" &&
         datasetPublishing?.custodianOrgUnitId
@@ -370,16 +370,20 @@ function getAccessControlAspectData(state: State) {
         dataset?.editingUserId
     ) {
         orgUnitId = dataset.editingUserId;
-    } else {
-        orgUnitId = dataset?.owningOrgUnitId;
+    } else if (
+        datasetPublishing?.level === "selectedOrgUnit" &&
+        dataset?.owningOrgUnitId
+    ) {
+        orgUnitId = dataset.owningOrgUnitId;
     }
+
     return {
         ownerId: dataset.ownerId
             ? dataset.ownerId
             : dataset.editingUserId
             ? dataset.editingUserId
-            : null,
-        orgUnitId: orgUnitId ? orgUnitId : null
+            : undefined,
+        orgUnitId: typeof orgUnitId === "string" ? orgUnitId : undefined
     };
 }
 
