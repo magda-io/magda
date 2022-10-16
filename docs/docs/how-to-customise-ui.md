@@ -74,6 +74,16 @@ Job scss-compiler-8fzgn7okpp7frvh has been deleted!
 
 > Due to the default cache setting, you might need to clean / disable browser cache in order to see the changes immediately.
 
+## Customise UI styling via extra stylesheet file
+
+Magda allows you to introduce extra HTML content to the page via Magda's content API `includeHtml` key.
+
+You can utilise this key to load extra stylesheet files that overwrites existing style.
+
+You can either update the `includeHtml` key content via content API (requires Admin permission) or modify it from the content DB directly.
+
+> Please note: This option is only for introducing extra stylesheets or JS plugins rather than introducing new HTML UI elements directly. If you need to modify existing UI elements, please use `External UI Plugin Components`.
+
 ## Customise Frontend Logic with External UI Plugin Components
 
 SCSS variables allows you to control the style of the default UI. However, there are cases where you want to implement fully customised frontend logic that may even involves APIs calls etc.
