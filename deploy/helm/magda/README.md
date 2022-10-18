@@ -17,12 +17,12 @@ A complete solution for managing, publishing and discovering government data, pr
 | file://../magda-core | magda-core | 2.1.1 |
 | https://charts.magda.io | magda-function-esri-url-processor | 1.1.0 |
 | https://charts.magda.io | magda-function-history-report | 1.1.0 |
-| https://charts.magda.io | minion-broken-link(magda-minion-broken-link) | 1.0.0 |
-| https://charts.magda.io | magda-minion-ckan-exporter | 1.0.0 |
-| https://charts.magda.io | minion-format(magda-minion-format) | 1.1.2 |
-| https://charts.magda.io | minion-linked-data-rating(magda-minion-linked-data-rating) | 1.1.0 |
 | https://charts.magda.io | openfaas | 5.5.5-magda.2 |
 | oci://ghcr.io/magda-io/charts | ckan-connector-functions(magda-ckan-connector) | 2.0.0 |
+| oci://ghcr.io/magda-io/charts | minion-broken-link(magda-minion-broken-link) | 2.0.0-alpha.0 |
+| oci://ghcr.io/magda-io/charts | magda-minion-ckan-exporter | 2.0.0-alpha.0 |
+| oci://ghcr.io/magda-io/charts | minion-format(magda-minion-format) | 2.0.0-alpha.0 |
+| oci://ghcr.io/magda-io/charts | minion-linked-data-rating(magda-minion-linked-data-rating) | 2.0.0-alpha.0 |
 | oci://ghcr.io/magda-io/charts | minion-visualization(magda-minion-visualization) | 2.0.0 |
 
 ## Values

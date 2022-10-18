@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.2.0
+
+- Upgrade default connectors & minions version (to v2.0.0)
+
 ## v2.1.1
 
 - #3412 Metadata Editor: improve the default empty value handling for `access-control` aspect `orgUnitId` field
