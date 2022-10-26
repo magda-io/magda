@@ -1,4 +1,4 @@
-# Magda
+# Magda test
 
 [![GitHub release](https://img.shields.io/github/release/magda-io/magda.svg)](https://github.com/magda-io/magda/releases)
 [![pipeline status](https://gitlab.com/magda-data/magda/badges/master/pipeline.svg)](https://gitlab.com/magda-data/magda/commits/master)
