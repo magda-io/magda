@@ -314,8 +314,7 @@ object Conversions {
       accessURL = dcatStrings.extract[String]('accessURL.?),
       downloadURL = urlString,
       byteSize = dcatStrings
-        .extract[Int]('byteSize.?)
-        .flatMap(bs => Try(bs.toInt).toOption),
+        .extract[Long]('byteSize.?),
       mediaType = Distribution.parseMediaType(mediaTypeString, None, None),
       format = betterFormatString match {
         case Some(format) => Some(format)
