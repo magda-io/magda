@@ -10,24 +10,24 @@ dependencies:
   version: 1.1.0
 - name: magda-minion-broken-link
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0-alpha.0
+  version: 2.0.0
 - name: magda-minion-format
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0-alpha.0
+  version: 2.0.0
 - name: magda-minion-linked-data-rating
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0-alpha.0
+  version: 2.0.0
 - name: magda-minion-visualization
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
 - name: magda-minion-ckan-exporter
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0-alpha.0
+  version: 2.0.0
 - name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
 - name: magda-function-esri-url-processor
   repository: https://charts.magda.io
   version: 1.1.0
-digest: sha256:f3c74ebb70f939a7b4b75ea2a4b405e6094c582df8db92c6a782e03a82e51ac6
-generated: "2022-10-18T15:48:05.759806+11:00"
+digest: sha256:4824ca7a1ebdfe540eae2bdd595d0755b33f5f054496d260017dca119a13b22d
+generated: "2022-10-31T16:09:38.289968+11:00"
