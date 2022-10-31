@@ -14,6 +14,7 @@ import CommonLink from "Components/Common/CommonLink";
 import { getFormatIcon, determineFormatIcon } from "./DistributionIcon";
 import { licenseLevel } from "constants/DatasetConstants";
 import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
+import humanFileSize from "helpers/humanFileSize";
 
 export type PropType = {
     dataset: Dataset;
@@ -118,6 +119,11 @@ class DistributionRow extends Component<PropType> {
                                 className="distribution-row-link-license"
                                 itemProp="license"
                             >
+                                {typeof distribution?.byteSize === "number"
+                                    ? `${humanFileSize(
+                                          distribution.byteSize
+                                      )} | `
+                                    : null}
                                 {(distribution.license &&
                                     licenseLevel[distribution.license]) ||
                                     distribution.license}

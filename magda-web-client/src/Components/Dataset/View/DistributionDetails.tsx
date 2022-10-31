@@ -60,7 +60,7 @@ class DistributionDetails extends Component<{
         );
         const accessText = distribution.accessURL && (
             <div key={"accessText"}>
-                This dataset can be accessed from: <br />{" "}
+                This data file or API can be accessed from: <br />{" "}
                 <CommonLink className="url" href={distribution.accessURL}>
                     {distribution.accessURL}
                 </CommonLink>
@@ -80,7 +80,7 @@ class DistributionDetails extends Component<{
                     ]);
                     return (
                         <React.Fragment>
-                            <div className="heading">Access Notes: </div>
+                            <h3 className="section-heading">Access Notes:</h3>
                             <div className="access-notes">
                                 {accessNotesPrefix &&
                                     accessNotesPrefix.length && (

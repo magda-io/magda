@@ -53,6 +53,7 @@ export type dcatDistributionStrings = {
     description: string;
     title: string;
     useStorageApi?: boolean;
+    byteSize: number;
 };
 
 export type DcatDatasetStrings = {
@@ -229,6 +230,7 @@ export type ParsedDistribution = {
         preAuthorisedPermissionIds: string[];
     };
     version?: VersionAspectData;
+    byteSize?: number;
 };
 
 export type ParsedProvenance = {
@@ -479,7 +481,8 @@ export function parseDistribution(
         ckanResource: aspects["ckan-resource"],
         accessControl,
         publishingState: publishing["state"],
-        version: aspects["version"]
+        version: aspects["version"],
+        byteSize: info?.byteSize
     };
 }
 
@@ -611,7 +614,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             compatiblePreviews,
             visualizationInfo: visualizationInfo ? visualizationInfo : null,
             sourceDetails: distributionAspects["source"],
-            ckanResource: distributionAspects["ckan-resource"]
+            ckanResource: distributionAspects["ckan-resource"],
+            byteSize: info?.byteSize
         };
     });
     return {
