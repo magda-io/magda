@@ -6,6 +6,7 @@
 - Fixed indexer error: distribution/byteSize field should be in `long` type to support possible larger numbers
 - Upgraded indexer weekly reindexer trigger container to node14
 - Distribution page UI minor improvements: display file size (when available) & adjust margins between information blocks
+- Improve the error message for `false` unconditional decision.
 
 ## v2.1.1
 

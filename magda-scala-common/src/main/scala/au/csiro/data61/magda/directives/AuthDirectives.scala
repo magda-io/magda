@@ -106,7 +106,7 @@ object AuthDirectives {
           } else {
             complete(
               Forbidden,
-              s"you are not permitted to perform `${operationUri}`: no unconditional decision can be made."
+              s"you are not permitted to perform `${operationUri}`."
             )
           }
         }
