@@ -42,5 +42,5 @@ jobs:
           SELECTED_VERSION: ${{ inputs.version }}
         run: |
           VERSION_NUM=$(echo ${SELECTED_VERSION} | cut -b 2-)
-          yarn set-version ${VERSION_NUM}
+          yarn set-version -y ${VERSION_NUM}
           git push
