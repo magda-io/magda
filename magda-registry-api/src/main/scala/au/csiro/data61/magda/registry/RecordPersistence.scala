@@ -148,7 +148,8 @@ trait RecordPersistence {
       id: String,
       newRecord: Record,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
+      forceSkipAspectValidation: Boolean = false,
+      merge: Boolean = false
   )(implicit session: DBSession): Try[(Record, Long)]
 
   def patchRecordById(
@@ -770,7 +771,8 @@ class DefaultRecordPersistence(config: Config)
       id: String,
       newRecord: Record,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
+      forceSkipAspectValidation: Boolean = false,
+      merge: Boolean = false
   )(implicit session: DBSession): Try[(Record, Long)] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
@@ -867,7 +869,8 @@ class DefaultRecordPersistence(config: Config)
                 aspectId,
                 data,
                 userId,
-                true
+                forceSkipAspectValidation = true,
+                merge
               )
               .map(result => ((aspectId, result._1), result._2))
         }

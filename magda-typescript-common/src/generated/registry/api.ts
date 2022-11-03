@@ -2723,12 +2723,14 @@ export class RecordsApi {
      * @param id ID of the record to be fetched.
      * @param record The record to save.
      * @param xMagdaSession Magda internal session id
+     * @param merge Whether merge the supplied aspect data to existing aspect data or replace it
      */
     public putById(
         xMagdaTenantId: number,
         id: string,
         record: Record,
-        xMagdaSession: string
+        xMagdaSession: string,
+        merge?: boolean
     ): Promise<{ response: http.IncomingMessage; body: Record }> {
         const localVarPath =
             this.basePath +
@@ -2763,6 +2765,10 @@ export class RecordsApi {
             throw new Error(
                 "Required parameter xMagdaSession was null or undefined when calling putById."
             );
+        }
+
+        if (merge !== undefined) {
+            queryParameters["merge"] = merge;
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;

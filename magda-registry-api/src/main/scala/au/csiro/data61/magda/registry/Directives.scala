@@ -196,6 +196,7 @@ object Directives extends Protocols with SprayJsonSupport {
       authApiClient: AuthApiClient,
       recordId: String,
       newRecordOrJsonPath: Either[Record, JsonPatch],
+      merge: Boolean = false,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
     (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
@@ -214,7 +215,29 @@ object Directives extends Protocols with SprayJsonSupport {
             session
           ).map { currentRecordData =>
             val recordContextDataAfterUpdate = newRecordOrJsonPath match {
-              case Left(newRecord) => recordToContextData(newRecord)
+              case Left(newRecord) =>
+                val newRecordJsonWithoutAspects =
+                  recordToContextData(newRecord.copy(aspects = Map()))
+                var mergedRecordFields = JsonUtils
+                  .merge(currentRecordData, newRecordJsonWithoutAspects)
+                  .asJsObject
+                  .fields
+                newRecord.aspects.foreach { aspect =>
+                  val aspectName = aspect._1
+                  val aspectData = if (merge) {
+                    JsonUtils
+                      .merge(
+                        currentRecordData.fields
+                          .get(aspectName)
+                          .getOrElse(JsObject()),
+                        aspect._2
+                      )
+                  } else {
+                    aspect._2.asInstanceOf[JsValue]
+                  }
+                  mergedRecordFields += (aspectName -> aspectData)
+                }
+                JsObject(mergedRecordFields)
               case Right(recordJsonPath) =>
                 applyJsonPathToRecordContextData(
                   currentRecordData,
