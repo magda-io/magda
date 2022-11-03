@@ -72,7 +72,7 @@ spec:
           httpGet:
             path: /v0/status/ready
             port: 6101
-          initialDelaySeconds: 10
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 10
 {{- end }}

@@ -26,6 +26,7 @@ import {
 } from "api-clients/RegistryApis";
 import RecordVersionList from "./RecordVersionList";
 import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
+import humanFileSize from "helpers/humanFileSize";
 import "./DatasetPage.scss";
 
 interface PropsType {
@@ -107,6 +108,12 @@ const DistributionPageMainContent: FunctionComponent<{
                 )}
             </div>
             <div className="distribution-format">{distribution.format}</div>
+            {typeof distribution?.byteSize === "number" ? (
+                <span className="distribution-size">
+                    <span className="separator hidden-sm">&nbsp;/&nbsp;</span>
+                    {humanFileSize(distribution.byteSize)}
+                </span>
+            ) : null}
             {defined(distribution.license) && (
                 <span className="distribution-license">
                     <span className="separator hidden-sm">&nbsp;/&nbsp;</span>

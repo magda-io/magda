@@ -8,7 +8,7 @@ home: "https://github.com/magda-io/magda"
 sources: [ "https://github.com/magda-io/magda" ]
 dependencies:
   - name: magda-core
-    version: 2.1.1
+    version: "2.1.1"
     repository: file://../magda-core
 
   - name: openfaas
@@ -32,24 +32,24 @@ dependencies:
 
   - name: magda-minion-broken-link
     alias: minion-broken-link
-    version: "1.0.0"
-    repository: https://charts.magda.io
+    version: "2.0.0"
+    repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - minions
       - minion-broken-link
 
   - name: magda-minion-format
     alias: minion-format
-    version: "1.1.2"
-    repository: https://charts.magda.io
+    version: "2.0.0"
+    repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - minions
       - minion-format
 
   - name: magda-minion-linked-data-rating
     alias: minion-linked-data-rating
-    version: "1.1.0"
-    repository: https://charts.magda.io
+    version: "2.0.0"
+    repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - minions
       - minion-linked-data-rating
@@ -63,8 +63,8 @@ dependencies:
       - minion-visualization
 
   - name: magda-minion-ckan-exporter
-    version: "1.0.0"
-    repository: https://charts.magda.io
+    version: "2.0.0"
+    repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - minion-ckan-exporter
 

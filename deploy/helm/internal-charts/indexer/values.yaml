@@ -8,7 +8,7 @@ image:
 reindexJobImage: 
   name: "node"
   repository: "docker.io"
-  tag: "12-alpine"
+  tag: "14-alpine"
   pullPolicy: IfNotPresent
   pullSecrets: false
 
