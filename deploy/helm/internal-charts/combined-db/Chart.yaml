@@ -1,12 +1,12 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: combined-db
-version: 2.1.1
+version: 2.2.0-alpha.0
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
 dependencies:
   - name: magda-postgres
-    version: "2.1.1"
+    version: "2.2.0-alpha.0"
     repository: "file://../magda-postgres"
     condition: global.useCombinedDb
