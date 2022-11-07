@@ -1,7 +1,7 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: indexer
-version: 2.1.1
+version: 2.2.0-alpha.0
 kubeVersion: ">= 1.21.0"
 annotations:
   magdaModuleType: "core"
