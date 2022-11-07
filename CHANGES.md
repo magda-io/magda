@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v2.1.2
+## v2.2.0
 
 - Upgrade default connectors & minions version (to v2.0.0)
 - Fixed indexer error: distribution/byteSize field should be in `long` type to support possible larger numbers
