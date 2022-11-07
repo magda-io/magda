@@ -1420,13 +1420,7 @@ export async function updateDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>,
     tagVersion: boolean = false
 ) {
-    const distributionRecords = (
-        await convertStateToDistributionRecords(state)
-    ).map((dist) => {
-        // remove `access-control` aspect, as we will apply it separately to avoid overwriting existing fields
-        dist.aspects["access-control"] = undefined as any;
-        return dist;
-    });
+    const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
         distributionRecords,
@@ -1434,28 +1428,13 @@ export async function updateDatasetFromState(
         setState,
         true
     );
-    const accessControlAspect = datasetRecord?.aspects?.["access-control"];
-    // remove `access-control` aspect, as we will apply it separately to avoid overwriting existing fields
-    datasetRecord.aspects["access-control"] = undefined;
 
-    const result = await updateDataset(
+    return await updateDataset(
         datasetRecord,
         distributionRecords,
-        tagVersion
-    );
-
-    if (!accessControlAspect) {
-        return result;
-    }
-
-    const eventIds = await updateAspectOfDatasetAndDistributions(
-        datasetId,
-        "access-control",
-        accessControlAspect,
+        tagVersion,
         true
     );
-
-    return [result[0], eventIds[0]] as [Record, number];
 }
 
 type FailedFileInfo = {

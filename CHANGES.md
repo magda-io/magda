@@ -7,7 +7,8 @@
 - Upgraded indexer weekly reindexer trigger container to node14
 - Distribution page UI minor improvements: display file size (when available) & adjust margins between information blocks
 - Improve the error message for `false` unconditional decision.
-- #3420 add merge option support to PUT record API
+- #3420 add `merge` option support to PUT record API
+- #3421 Improve dataset updating UI logic using `merge` option of the PUT record API
 
 ## v2.1.1
 
