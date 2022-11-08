@@ -310,6 +310,7 @@ class RecordsService(
     * @apiDescription Modifies a record. Aspects included in the request are created or updated, but missing aspects are not removed.
     *
     * @apiParam (path) {string} id ID of the record to be fetched.
+    * @apiParam (query) {boolean} [merge] Whether merge with existing aspect data or replace it. Default: `false`
     * @apiParam (body) {json} record The record to save.
     * @apiParamExample {json} Request-Example
     * {
@@ -369,6 +370,14 @@ class RecordsService(
         value = "The record to save."
       ),
       new ApiImplicitParam(
+        name = "merge",
+        required = false,
+        dataType = "boolean",
+        paramType = "query",
+        value =
+          "Whether merge the supplied aspect data to existing aspect data or replace it"
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Session",
         required = true,
         dataType = "String",
@@ -382,49 +391,56 @@ class RecordsService(
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[Record]) { recordIn =>
-            requireRecordUpdateOrCreateWhenNonExistPermission(
-              authClient,
-              recordIn.id,
-              Left(recordIn)
-            ) {
-              val result = DB localTx { implicit session =>
-                recordPersistence.putRecordById(
-                  tenantId,
-                  id,
-                  recordIn,
-                  userId
-                ) match {
-                  case Success(result) =>
-                    complete(
-                      StatusCodes.OK,
-                      List(RawHeader("x-magda-event-id", result._2.toString)),
-                      result._1
-                    )
-                  // If the exception is from validation then reveal the message to the caller,
-                  // otherwise log it and return something generic.
-                  case Failure(exception: ValidationException) =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(
-                        "Encountered an error - " + exception.getMessage
+            parameters(
+              'merge.as[Boolean].?
+            ) { merge =>
+              requireRecordUpdateOrCreateWhenNonExistPermission(
+                authClient,
+                recordIn.id,
+                Left(recordIn),
+                merge.getOrElse(false)
+              ) {
+                val result = DB localTx { implicit session =>
+                  recordPersistence.putRecordById(
+                    tenantId,
+                    id,
+                    recordIn,
+                    userId,
+                    forceSkipAspectValidation = false,
+                    merge.getOrElse(false)
+                  ) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        List(RawHeader("x-magda-event-id", result._2.toString)),
+                        result._1
                       )
-                    )
-                  case Failure(exception) =>
-                    logger.error(
-                      exception,
-                      "Encountered an exception when putting a record"
-                    )
-                    complete(
-                      StatusCodes.InternalServerError,
-                      ApiError("Encountered an error")
-                    )
+                    // If the exception is from validation then reveal the message to the caller,
+                    // otherwise log it and return something generic.
+                    case Failure(exception: ValidationException) =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(
+                          "Encountered an error - " + exception.getMessage
+                        )
+                      )
+                    case Failure(exception) =>
+                      logger.error(
+                        exception,
+                        "Encountered an exception when putting a record"
+                      )
+                      complete(
+                        StatusCodes.InternalServerError,
+                        ApiError("Encountered an error")
+                      )
+                  }
                 }
+                webHookActor ! WebHookActor.Process(
+                  ignoreWaitingForResponse = false,
+                  Some(recordIn.aspects.keys.toList)
+                )
+                result
               }
-              webHookActor ! WebHookActor.Process(
-                ignoreWaitingForResponse = false,
-                Some(recordIn.aspects.keys.toList)
-              )
-              result
             }
           }
         }
