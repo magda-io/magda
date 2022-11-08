@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from "uuid";
-
 import { ContactPointDisplayOption } from "constants/DatasetConstants";
 import {
     fetchOrganization,
@@ -15,10 +14,8 @@ import {
     getInitialVersionAspectData,
     VersionAspectData,
     updateRecordAspect,
-    patchRecord,
     tagRecordVersionEventId,
-    VersionItem,
-    updateAspectOfDatasetAndDistributions
+    VersionItem
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
@@ -29,7 +26,6 @@ import defer from "helpers/defer";
 import { ReactStateUpdaterType } from "helpers/promisifySetState";
 import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownloadUrl";
 import deleteFile from "./Pages/AddFiles/deleteFile";
-import escapeJsonPatchPointer from "helpers/escapeJsonPatchPath";
 import uniq from "lodash/uniq";
 import {
     indexDatasetById,
@@ -1336,8 +1332,8 @@ async function convertStateToDistributionRecords(state: State) {
 
 /**
  * Update ckan export aspect status acccording to UI status.
- * We use JSON Patch request to avoid edging cases.
- * Without using patch API, all content of the `export aspect` will always be replaced and all fields (including important backend runtime fields) will also be overwritten.
+ * We use PUT request with `merge` = true to avoid edging cases.
+ * Without using the `merge` option, all content of the `export aspect` will always be replaced and all fields (including important backend runtime fields) will also be overwritten.
  * If during this time (between the last time of UI retrieving the `export aspect data` and the time when the export aspect update request sent by UI arrives at registry api), backend minion updates some the important runtime fields.
  * Those fields' value will be overwritten with outdated value.
  *
@@ -1351,48 +1347,24 @@ async function updateCkanExportStatus(datasetId: string, state: State) {
 
     // Other fields are all runtime status fields that are only allowed to be altered by minions.
     // Any attempts to update those from frontend will more or less create edging cases (see comment above).
-
-    const exportDataPointer = `/aspects/ckan-export/${escapeJsonPatchPointer(
-        config.defaultCkanServer
-    )}`;
-
     const uiStatus = state?.datasetPublishing?.publishAsOpenData?.dga
         ? true
         : false;
 
     await ensureAspectExists("ckan-export");
 
-    // Here is a trick based my tests on the [JsonPatch implementation](https://github.com/gnieh/diffson) used in our scala code base:
-    // `add` operation will always work (as long as the aspect exists).
-    // If the field is already there, `add` will just `replace` the value
-    try {
-        await patchRecord(datasetId, [
-            {
-                op: "add",
-                path: `${exportDataPointer}/status`,
-                value: uiStatus ? "retain" : "withdraw"
-            },
-            {
-                op: "add",
-                path: `${exportDataPointer}/exportRequired`,
-                value: true
+    await updateRecordAspect(
+        datasetId,
+        "ckan-export",
+        {
+            [config.defaultCkanServer]: {
+                status: uiStatus ? "retain" : "withdraw",
+                exportRequired: true
             }
-        ]);
-    } catch (e) {
-        if (e instanceof ServerError && e.statusCode === 400) {
-            // 400 means Bad request. Only chance it could happend would be aspect doesn't exist at all
-            // we will create aspect instead
-            // Update Record Aspect API will actually create the aspect when it doesn't exist
-            await updateRecordAspect(datasetId, "ckan-export", {
-                [config.defaultCkanServer]: {
-                    status: uiStatus ? "retain" : "withdraw",
-                    exportRequired: true
-                }
-            });
-        } else {
-            throw e;
-        }
-    }
+        },
+        // turned on merge option so the PUT request will remove other fields not included in the request
+        true
+    );
 }
 
 export async function createDatasetFromState(
