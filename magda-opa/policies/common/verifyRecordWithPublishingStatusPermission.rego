@@ -82,10 +82,12 @@ verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName
 }
 
 # if find a permission with org unit ownership constraint, plus dataset have NOT been assigned org unit
-# e.g. anonymous users can access all datasets that not belongs to an org unit
+# e.g. anonymous users can access (`read` permission only) all datasets that not belongs to an org unit
 verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName) {
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
+	# we only want to allow this special permission grant for "read" operation (issue: #3426)
+	operationType == "read"
 	resourceType == "*"
 
 	input.user.permissions[i].userOwnershipConstraint = false
@@ -107,6 +109,8 @@ verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName
 verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName) {
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
+    # we only want to allow this special permission grant for "read" operation (issue: #3426)
+	operationType == "read"
 	resourceType == "*"
 
 	input.user.permissions[i].userOwnershipConstraint = false

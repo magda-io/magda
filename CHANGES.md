@@ -10,6 +10,7 @@
 - #3420 add `merge` option support to PUT record API
 - #3421 Improve dataset updating UI logic using `merge` option of the PUT record API
 - Avoid sending unnecessary `aspects` field as the part of the context data created by RegistryExternalInterface
+- #3426 People with orgUnit constraint permission should only be able to perform read operation on datasets not assigned to an orgUnit
 
 ## v2.1.1
 
