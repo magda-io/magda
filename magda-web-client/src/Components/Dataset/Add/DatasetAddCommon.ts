@@ -363,9 +363,9 @@ function getAccessControlAspectData(state: State) {
         orgUnitId = datasetPublishing.managingOrgUnitId;
     } else if (
         datasetPublishing?.level === "creatorOrgUnit" &&
-        dataset?.editingUserId
+        dataset?.owningOrgUnitId
     ) {
-        orgUnitId = dataset.editingUserId;
+        orgUnitId = dataset.owningOrgUnitId;
     } else if (
         datasetPublishing?.level === "selectedOrgUnit" &&
         dataset?.owningOrgUnitId
