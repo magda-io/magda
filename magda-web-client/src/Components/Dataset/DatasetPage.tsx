@@ -20,6 +20,7 @@ import SecClassification, {
 import CommonLink from "Components/Common/CommonLink";
 import CurrencyAlert from "./CurrencyAlert";
 import DatasetEditButton from "./DatasetEditButton";
+import DatasetBackToListButton from "./DatasetBackToListButton";
 import DatasetLikeButtonOriginal from "../Dataset/DatasetLikeButton";
 import {
     getPluginDatasetEditButton,
@@ -244,6 +245,11 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                         hasEditPermissions={hasEditPermissions}
                                     />
                                 )}
+
+                                <DatasetBackToListButton
+                                    dataset={dataset}
+                                    hasEditPermissions={hasEditPermissions}
+                                />
 
                                 {config?.featureFlags?.datasetLikeButton ? (
                                     <DatasetLikeButton dataset={dataset} />
