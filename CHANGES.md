@@ -12,6 +12,7 @@
 - Avoid sending unnecessary `aspects` field as the part of the context data created by RegistryExternalInterface
 - #3426 People with orgUnit constraint permission should only be able to perform read operation on datasets not assigned to an orgUnit
 - #3424 Set the default order by field for APIs
+- #3427 Dataset Editor: offer more details via error message box when encounter insufficient permission error
 
 ## v2.1.1
 
