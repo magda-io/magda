@@ -11,6 +11,7 @@
 - #3421 Improve dataset updating UI logic using `merge` option of the PUT record API
 - Avoid sending unnecessary `aspects` field as the part of the context data created by RegistryExternalInterface
 - #3426 People with orgUnit constraint permission should only be able to perform read operation on datasets not assigned to an orgUnit
+- #3424 Set the default order by field for APIs
 
 ## v2.1.1
 

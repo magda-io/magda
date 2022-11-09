@@ -74,7 +74,10 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                             : (req?.query?.offset as string),
                         limit: returnCount
                             ? undefined
-                            : (req?.query?.limit as string)
+                            : (req?.query?.limit as string),
+                        orderBy: returnCount
+                            ? undefined
+                            : sqls`resources.uri ASC`
                     }
                 );
                 if (returnCount) {
@@ -434,7 +437,10 @@ export default function createResourceApiRouter(options: ApiRouterOptions) {
                             : (req?.query?.offset as string),
                         limit: returnCount
                             ? undefined
-                            : (req?.query?.limit as string)
+                            : (req?.query?.limit as string),
+                        orderBy: returnCount
+                            ? undefined
+                            : sqls`operations.uri ASC`
                     }
                 );
                 if (returnCount) {
