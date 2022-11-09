@@ -7,7 +7,13 @@
 - Upgraded indexer weekly reindexer trigger container to node14
 - Distribution page UI minor improvements: display file size (when available) & adjust margins between information blocks
 - Improve the error message for `false` unconditional decision.
-- #3420 add merge option support to PUT record API
+- #3420 add `merge` option support to PUT record API
+- #3421 Improve dataset updating UI logic using `merge` option of the PUT record API
+- Avoid sending unnecessary `aspects` field as the part of the context data created by RegistryExternalInterface
+- #3426 People with orgUnit constraint permission should only be able to perform read operation on datasets not assigned to an orgUnit
+- #3424 Set the default order by field for APIs
+- #3427 Dataset Editor: offer more details via error message box when encounter insufficient permission error
+- #3425 offer a button on dataset page to take the user back to data management tab
 
 ## v2.1.1
 

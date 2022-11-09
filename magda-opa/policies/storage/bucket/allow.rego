@@ -3,6 +3,7 @@ package storage.bucket
 import data.common.hasNoConstraintPermission
 import data.common.hasOrgUnitConstaintPermission
 import data.common.hasOwnerConstraintPermission
+import data.common.breakdownOperationUri
 import data.common.isEmpty
 
 default allow = false
@@ -29,16 +30,18 @@ allow {
 	input.user.managingOrgUnitIds[_] = input.storage.bucket.orgUnitId
 }
 
+# or when a user has org unit ownership constraint permission, he also can access (read only) all buckets with NO org unit assigned
 allow {
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+    operationType == "read"
 	hasOrgUnitConstaintPermission(input.operationUri)
-
-	# or when a user has org unit ownership constraint permission, he also can access all buckets with NO org unit assigned
 	not input.storage.bucket.orgUnitId
 }
 
+# or when a user has org unit ownership constraint permission, he also can access (read only) all buckets with NO org unit assigned
 allow {
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+    operationType == "read"
 	hasOrgUnitConstaintPermission(input.operationUri)
-
-	# or when a user has org unit ownership constraint permission, he also can access all buckets with NO org unit assigned
 	isEmpty(input.storage.bucket.orgUnitId)
 }

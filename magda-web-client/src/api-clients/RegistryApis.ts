@@ -655,7 +655,8 @@ export async function createDataset(
 export async function updateDataset(
     inputDataset: Record,
     inputDistributions: Record[],
-    tagDistributionVersion: boolean = false
+    tagDistributionVersion: boolean = false,
+    merge: boolean = false
 ): Promise<[Record, number]> {
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
     const aspectPromises = getRecordsAspectIds(
@@ -669,7 +670,9 @@ export async function updateDataset(
         if (await doesRecordExist(distribution.id)) {
             [distRecord, headers] = await request(
                 "PUT",
-                `${config.registryFullApiUrl}records/${distribution.id}`,
+                `${config.registryFullApiUrl}records/${distribution.id}${
+                    merge ? "?merge=true" : ""
+                }`,
                 distribution,
                 "application/json",
                 true
@@ -692,7 +695,9 @@ export async function updateDataset(
     }
     const [json, headers] = await request<Record>(
         "PUT",
-        `${config.registryFullApiUrl}records/${inputDataset.id}`,
+        `${config.registryFullApiUrl}records/${inputDataset.id}${
+            merge ? "?merge=true" : ""
+        }`,
         inputDataset,
         "application/json",
         true

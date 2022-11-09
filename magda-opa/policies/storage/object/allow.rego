@@ -28,15 +28,19 @@ allow {
     input.user.managingOrgUnitIds[_] = input.storage.object.orgUnitId
 }
 
+# or when a user has org unit ownership constraint permission, he also can access (read only) all objects with NO org unit assigned
 allow {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+    operationType == "read"
     hasOrgUnitConstaintPermission(input.operationUri)
-    # or when a user has org unit ownership constraint permission, he also can access all objects with NO org unit assigned
     not input.storage.object.orgUnitId
 }
 
+# or when a user has org unit ownership constraint permission, he also can access (read only) all objects with NO org unit assigned
 allow {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+    operationType == "read"
     hasOrgUnitConstaintPermission(input.operationUri)
-    # or when a user has org unit ownership constraint permission, he also can access all objects with NO org unit assigned
     isEmpty(input.storage.object.orgUnitId)
 }
 
