@@ -1,6 +1,6 @@
 name: set-version
 
-run-name: Set version ${{ inputs.version }}
+run-name: Set version ${{ inputs.version }} on branch ${{ github.ref_name }}
 
 on:
   workflow_dispatch:
