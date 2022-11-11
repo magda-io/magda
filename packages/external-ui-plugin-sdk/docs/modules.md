@@ -7,54 +7,97 @@
 ### Interfaces
 
 - [CommonPropsType](interfaces/CommonPropsType.md)
+- [CopyRightItem](interfaces/CopyRightItem.md)
+- [FooterNavLink](interfaces/FooterNavLink.md)
+- [FooterNavLinkGroup](interfaces/FooterNavLinkGroup.md)
+- [HeaderComponentProps](interfaces/HeaderComponentProps.md)
+- [HeaderNavItem](interfaces/HeaderNavItem.md)
 
-### Type Aliases
+### External UI Plugin Component Types Type Aliases
 
-- [CopyRightItem](modules.md#copyrightitem)
-- [DatasetEditButtonComponentPropsType](modules.md#dataseteditbuttoncomponentpropstype)
 - [DatasetEditButtonComponentType](modules.md#dataseteditbuttoncomponenttype)
-- [DatasetLikeButtonComponentPropsType](modules.md#datasetlikebuttoncomponentpropstype)
 - [DatasetLikeButtonComponentType](modules.md#datasetlikebuttoncomponenttype)
-- [ExternalCompontType](modules.md#externalcomponttype)
-- [ExternalDatasetEditButtonCompontType](modules.md#externaldataseteditbuttoncomponttype)
-- [ExternalDatasetLikeButtonCompontType](modules.md#externaldatasetlikebuttoncomponttype)
-- [ExternalExtraVisualisationSectionCompontType](modules.md#externalextravisualisationsectioncomponttype)
-- [ExternalFooterCompontType](modules.md#externalfootercomponttype)
-- [ExternalHeaderCompontType](modules.md#externalheadercomponttype)
-- [ExtraVisualisationSectionComponentPropsType](modules.md#extravisualisationsectioncomponentpropstype)
 - [ExtraVisualisationSectionComponentType](modules.md#extravisualisationsectioncomponenttype)
-- [FooterComponentPropsType](modules.md#footercomponentpropstype)
 - [FooterComponentType](modules.md#footercomponenttype)
-- [FooterNavLink](modules.md#footernavlink)
-- [FooterNavLinkGroup](modules.md#footernavlinkgroup)
-- [HeaderComponentProps](modules.md#headercomponentprops)
-- [HeaderCompontType](modules.md#headercomponttype)
-- [HeaderNavItem](modules.md#headernavitem)
+- [HeaderComponentType](modules.md#headercomponenttype)
+
+### Other Type Aliases
+
+- [DatasetEditButtonComponentPropsType](modules.md#dataseteditbuttoncomponentpropstype)
+- [DatasetLikeButtonComponentPropsType](modules.md#datasetlikebuttoncomponentpropstype)
+- [ExtraVisualisationSectionComponentPropsType](modules.md#extravisualisationsectioncomponentpropstype)
+- [FooterComponentPropsType](modules.md#footercomponentpropstype)
 
 ### Variables
 
 - [PREFIX](modules.md#prefix)
 
-## Type Aliases
+## External UI Plugin Component Types Type Aliases
 
-### CopyRightItem
+### DatasetEditButtonComponentType
 
-Ƭ **CopyRightItem**: `Object`
+Ƭ **DatasetEditButtonComponentType**: `ComponentType`<[`DatasetEditButtonComponentPropsType`](modules.md#dataseteditbuttoncomponentpropstype)\>
 
-#### Type declaration
-
-| Name          | Type     |
-| :------------ | :------- |
-| `href`        | `string` |
-| `htmlContent` | `string` |
-| `logoSrc`     | `string` |
-| `order`       | `number` |
+Dataset page `Edit Dataset` button external plugin component type
 
 #### Defined in
 
-index.d.ts:194
+index.d.ts:229
 
 ---
+
+### DatasetLikeButtonComponentType
+
+Ƭ **DatasetLikeButtonComponentType**: `ComponentType`<[`DatasetLikeButtonComponentPropsType`](modules.md#datasetlikebuttoncomponentpropstype)\>
+
+Search Result page `Like Button` external plugin component type
+Please note: the `Like Button` on search result page is hidden unless a plugin component is supplied.
+
+#### Defined in
+
+index.d.ts:242
+
+---
+
+### ExtraVisualisationSectionComponentType
+
+Ƭ **ExtraVisualisationSectionComponentType**: `ComponentType`<[`ExtraVisualisationSectionComponentPropsType`](modules.md#extravisualisationsectioncomponentpropstype)\>
+
+Visualisation Section external plugin component type.
+This plugin will be mounted on dataset or distribution page.
+More info & example please refer to repo: [magda-ui-plugin-component-dap-thumbnail-viewer](https://github.com/magda-io/magda-ui-plugin-component-dap-thumbnail-viewer)
+
+#### Defined in
+
+index.d.ts:266
+
+---
+
+### FooterComponentType
+
+Ƭ **FooterComponentType**: `ComponentType`<[`FooterComponentPropsType`](modules.md#footercomponentpropstype)\>
+
+Footer external plugin component type
+
+#### Defined in
+
+index.d.ts:286
+
+---
+
+### HeaderComponentType
+
+Ƭ **HeaderComponentType**: `ComponentType`<[`HeaderComponentProps`](interfaces/HeaderComponentProps.md)\>
+
+Header external plugin component type
+
+#### Defined in
+
+index.d.ts:320
+
+---
+
+## Other Type Aliases
 
 ### DatasetEditButtonComponentPropsType
 
@@ -68,17 +111,7 @@ index.d.ts:194
 
 #### Defined in
 
-index.d.ts:210
-
----
-
-### DatasetEditButtonComponentType
-
-Ƭ **DatasetEditButtonComponentType**: `ComponentType`<[`DatasetEditButtonComponentPropsType`](modules.md#dataseteditbuttoncomponentpropstype)\>
-
-#### Defined in
-
-index.d.ts:214
+index.d.ts:221
 
 ---
 
@@ -94,83 +127,7 @@ index.d.ts:214
 
 #### Defined in
 
-index.d.ts:218
-
----
-
-### DatasetLikeButtonComponentType
-
-Ƭ **DatasetLikeButtonComponentType**: `ComponentType`<[`DatasetLikeButtonComponentPropsType`](modules.md#datasetlikebuttoncomponentpropstype)\>
-
-#### Defined in
-
-index.d.ts:222
-
----
-
-### ExternalCompontType
-
-Ƭ **ExternalCompontType**<`T`\>: `ComponentType`<`T` & [`CommonPropsType`](interfaces/CommonPropsType.md)\>
-
-#### Type parameters
-
-| Name |
-| :--- |
-| `T`  |
-
-#### Defined in
-
-index.d.ts:235
-
----
-
-### ExternalDatasetEditButtonCompontType
-
-Ƭ **ExternalDatasetEditButtonCompontType**: [`ExternalCompontType`](modules.md#externalcomponttype)<[`DatasetEditButtonComponentType`](modules.md#dataseteditbuttoncomponenttype)\>
-
-#### Defined in
-
-index.d.ts:237
-
----
-
-### ExternalDatasetLikeButtonCompontType
-
-Ƭ **ExternalDatasetLikeButtonCompontType**: [`ExternalCompontType`](modules.md#externalcomponttype)<[`DatasetLikeButtonComponentType`](modules.md#datasetlikebuttoncomponenttype)\>
-
-#### Defined in
-
-index.d.ts:241
-
----
-
-### ExternalExtraVisualisationSectionCompontType
-
-Ƭ **ExternalExtraVisualisationSectionCompontType**: [`ExternalCompontType`](modules.md#externalcomponttype)<[`ExtraVisualisationSectionComponentType`](modules.md#extravisualisationsectioncomponenttype)\>
-
-#### Defined in
-
-index.d.ts:245
-
----
-
-### ExternalFooterCompontType
-
-Ƭ **ExternalFooterCompontType**: [`ExternalCompontType`](modules.md#externalcomponttype)<[`FooterComponentPropsType`](modules.md#footercomponentpropstype)\>
-
-#### Defined in
-
-index.d.ts:249
-
----
-
-### ExternalHeaderCompontType
-
-Ƭ **ExternalHeaderCompontType**: [`ExternalCompontType`](modules.md#externalcomponttype)<[`HeaderComponentProps`](modules.md#headercomponentprops)\>
-
-#### Defined in
-
-index.d.ts:253
+index.d.ts:233
 
 ---
 
@@ -187,17 +144,7 @@ index.d.ts:253
 
 #### Defined in
 
-index.d.ts:257
-
----
-
-### ExtraVisualisationSectionComponentType
-
-Ƭ **ExtraVisualisationSectionComponentType**: `ComponentType`<[`ExtraVisualisationSectionComponentPropsType`](modules.md#extravisualisationsectioncomponentpropstype)\>
-
-#### Defined in
-
-index.d.ts:262
+index.d.ts:255
 
 ---
 
@@ -207,110 +154,16 @@ index.d.ts:262
 
 #### Type declaration
 
-| Name                   | Type                                                    |
-| :--------------------- | :------------------------------------------------------ |
-| `footerCopyRightItems` | [`CopyRightItem`](modules.md#copyrightitem)[]           |
-| `footerMediumNavs`     | [`FooterNavLinkGroup`](modules.md#footernavlinkgroup)[] |
-| `footerSmallNavs`      | [`FooterNavLinkGroup`](modules.md#footernavlinkgroup)[] |
-| `noTopMargin`          | `boolean`                                               |
+| Name                   | Type                                                       |
+| :--------------------- | :--------------------------------------------------------- |
+| `footerCopyRightItems` | [`CopyRightItem`](interfaces/CopyRightItem.md)[]           |
+| `footerMediumNavs`     | [`FooterNavLinkGroup`](interfaces/FooterNavLinkGroup.md)[] |
+| `footerSmallNavs`      | [`FooterNavLinkGroup`](interfaces/FooterNavLinkGroup.md)[] |
+| `noTopMargin`          | `boolean`                                                  |
 
 #### Defined in
 
-index.d.ts:271
-
----
-
-### FooterComponentType
-
-Ƭ **FooterComponentType**: `ComponentType`<[`FooterComponentPropsType`](modules.md#footercomponentpropstype)\>
-
-#### Defined in
-
-index.d.ts:278
-
----
-
-### FooterNavLink
-
-Ƭ **FooterNavLink**: `Object`
-
-#### Type declaration
-
-| Name    | Type     |
-| :------ | :------- |
-| `href`  | `string` |
-| `label` | `string` |
-| `order` | `number` |
-
-#### Defined in
-
-index.d.ts:280
-
----
-
-### FooterNavLinkGroup
-
-Ƭ **FooterNavLinkGroup**: `Object`
-
-#### Type declaration
-
-| Name    | Type                                          |
-| :------ | :-------------------------------------------- |
-| `label` | `string`                                      |
-| `links` | [`FooterNavLink`](modules.md#footernavlink)[] |
-| `order` | `number`                                      |
-
-#### Defined in
-
-index.d.ts:286
-
----
-
-### HeaderComponentProps
-
-Ƭ **HeaderComponentProps**: `Object`
-
-#### Type declaration
-
-| Name             | Type                                          |
-| :--------------- | :-------------------------------------------- |
-| `headerNavItems` | [`HeaderNavItem`](modules.md#headernavitem)[] |
-
-#### Defined in
-
-index.d.ts:292
-
----
-
-### HeaderCompontType
-
-Ƭ **HeaderCompontType**: `ComponentType`<[`HeaderComponentProps`](modules.md#headercomponentprops)\>
-
-#### Defined in
-
-index.d.ts:296
-
----
-
-### HeaderNavItem
-
-Ƭ **HeaderNavItem**: `Object`
-
-#### Type declaration
-
-| Name              | Type                                                                              |
-| :---------------- | :-------------------------------------------------------------------------------- |
-| `auth?`           | {}                                                                                |
-| `default?`        | { `href`: `string` ; `label`: `string` ; `rel?`: `string` ; `target?`: `string` } |
-| `default.href`    | `string`                                                                          |
-| `default.label`   | `string`                                                                          |
-| `default.rel?`    | `string`                                                                          |
-| `default.target?` | `string`                                                                          |
-| `order`           | `number`                                                                          |
-
-#### Defined in
-
-index.d.ts:298
+index.d.ts:275
 
 ## Variables
 
@@ -320,4 +173,4 @@ index.d.ts:298
 
 #### Defined in
 
-index.d.ts:421
+index.d.ts:451

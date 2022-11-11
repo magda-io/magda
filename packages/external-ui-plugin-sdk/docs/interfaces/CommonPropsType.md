@@ -2,6 +2,14 @@
 
 # Interface: CommonPropsType
 
+The common properties that all external UI plugins will receive.
+
+**`Export`**
+
+**`Interface`**
+
+CommonPropsType
+
 ## Table of contents
 
 ### Properties
@@ -24,10 +32,9 @@
 • **config**: `ConfigDataType`
 
 The `config` field contains all frontend config data fields.
-External UI plugin developer might be interested in `config.extraConfigData` field,
-as external UI plugin related config data can be supplied via
-[web-server](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server) helm chart
-`extraConfigData` field and serves as an interface to config external UI plugin at deployment time.
+External UI plugin developer might be interested in `config.extraConfigData` field.
+`config.extraConfigData` field serves as an interface to config external UI plugin at deployment time.
+External UI plugin related config data can be supplied via [web-server](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server) helm chart.
 
 **`Memberof`**
 
@@ -35,7 +42,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:61
+index.d.ts:66
 
 ---
 
@@ -68,7 +75,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:113
+index.d.ts:118
 
 ---
 
@@ -85,7 +92,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:70
+index.d.ts:75
 
 ---
 
@@ -101,7 +108,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:36
+index.d.ts:42
 
 ---
 
@@ -118,7 +125,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:79
+index.d.ts:84
 
 ---
 
@@ -135,7 +142,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:88
+index.d.ts:93
 
 ---
 
@@ -159,7 +166,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:95
+index.d.ts:100
 
 ---
 
@@ -184,7 +191,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:103
+index.d.ts:108
 
 ---
 
@@ -200,7 +207,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:44
+index.d.ts:50
 
 ---
 
@@ -212,4 +219,4 @@ When it's not `null`, this fields contains the error thrown by the user profile 
 
 #### Defined in
 
-index.d.ts:49
+index.d.ts:55

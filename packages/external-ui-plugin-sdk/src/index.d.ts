@@ -1,24 +1,18 @@
 export {
     PREFIX,
     CommonPropsType,
-    ExternalCompontType,
     HeaderNavItem,
     HeaderComponentProps,
-    HeaderCompontType,
-    ExternalHeaderCompontType,
+    HeaderComponentType,
     CopyRightItem,
     FooterNavLink,
     FooterNavLinkGroup,
     FooterComponentPropsType,
     FooterComponentType,
-    ExternalFooterCompontType,
     DatasetEditButtonComponentPropsType,
     DatasetEditButtonComponentType,
-    ExternalDatasetEditButtonCompontType,
     DatasetLikeButtonComponentPropsType,
     DatasetLikeButtonComponentType,
-    ExternalDatasetLikeButtonCompontType,
     ExtraVisualisationSectionComponentPropsType,
-    ExtraVisualisationSectionComponentType,
-    ExternalExtraVisualisationSectionCompontType
+    ExtraVisualisationSectionComponentType
 } from "@magda/web-client/src/externalPluginComponents";
