@@ -6,8 +6,8 @@ import {
     Record,
     VersionAspectData,
     CurrencyData
-} from "api-clients/RegistryApis";
-import { config } from "config";
+} from "../api-clients/RegistryApis";
+import { config } from "../config";
 
 export type RecordAction = {
     json?: any;

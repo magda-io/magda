@@ -3,7 +3,7 @@ import browser from "browser-detect";
 import { config } from "../../config";
 import "./DataPreviewMapOpenInNationalMapButton.scss";
 import { BrowserDetectInfo } from "browser-detect/dist/types/browser-detect.interface";
-import { ParsedDistribution } from "helpers/record";
+import { ParsedDistribution } from "../../helpers/record";
 import URI from "urijs";
 
 type PropsType = {

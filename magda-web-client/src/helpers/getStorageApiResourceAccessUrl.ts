@@ -1,4 +1,4 @@
-import { config, DATASETS_BUCKET } from "config";
+import { config, DATASETS_BUCKET } from "../config";
 import urijs from "urijs";
 
 export default function getStorageApiResourceAccessUrl(resourceUrl: string) {

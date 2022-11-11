@@ -2,8 +2,8 @@ import { config } from "../config";
 import fetch from "isomorphic-fetch";
 import { actionTypes } from "../constants/ActionTypes";
 import { Action } from "../types";
-import request from "helpers/request";
-import createNoCacheFetchOptions from "api-clients/createNoCacheFetchOptions";
+import request from "../helpers/request";
+import createNoCacheFetchOptions from "../api-clients/createNoCacheFetchOptions";
 
 export function requestContent(): Action {
     return {

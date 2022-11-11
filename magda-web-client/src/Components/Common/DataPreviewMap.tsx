@@ -6,19 +6,19 @@ import {
     config,
     DATASETS_BUCKET,
     RawPreviewMapFormatPerferenceItem
-} from "config";
+} from "../../config";
 import { Medium, Small } from "./Responsive";
-import Spinner from "Components/Common/Spinner";
-import { ParsedDistribution } from "helpers/record";
+import Spinner from "./Spinner";
+import { ParsedDistribution } from "../../helpers/record";
 import sortBy from "lodash/sortBy";
 import {
     checkFileForPreview,
     FileSizeCheckStatus,
     FileSizeCheckResult
-} from "helpers/DistributionPreviewUtils";
+} from "../../helpers/DistributionPreviewUtils";
 import DataPreviewSizeWarning from "./DataPreviewSizeWarning";
 import urijs from "urijs";
-import isStorageApiUrl from "helpers/isStorageApiUrl";
+import isStorageApiUrl from "../../helpers/isStorageApiUrl";
 import { useAsync } from "react-async-hook";
 import fetch from "isomorphic-fetch";
 import xml2json from "../../helpers/xml2json";

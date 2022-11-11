@@ -94,6 +94,8 @@ For more information of how to create / config `External UI Plugin Components`, 
 
 Not all built-in Magda components can be replaced by an `External UI Plugin Component`. We currently support replacing `header` & `footer` components to cover most common use cases. We might also adding support of other components in future. For full list of replacable components, please refer to [this definition file](https://github.com/magda-io/magda/blob/master/magda-web-client/src/externalPluginComponents.ts).
 
+> Please note: all key data structure & typescript types have been published as NPM package [@magda/external-ui-plugin-sdk](https://www.npmjs.com/package/@magda/external-ui-plugin-sdk).
+
 ## Complete replace default Magda UI
 
 The default Magda UI is a single page application that is built on [Magda backend APIs](https://dev.magda.io/api/v0/apidocs/index.html).

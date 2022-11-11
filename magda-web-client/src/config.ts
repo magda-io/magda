@@ -67,7 +67,7 @@ export interface RawPreviewMapFormatPerferenceItem {
     urlRegex?: string;
 }
 
-const serverConfig: {
+export interface ConfigDataType {
     image?: {
         pullPolicy?: string;
         repository?: string;
@@ -132,7 +132,9 @@ const serverConfig: {
     anonymousUserLandingPage?: string;
     authenticatedUserLandingPage?: string;
     authStatusRefreshInterval?: number;
-} = window.magda_server_config || {};
+}
+
+const serverConfig: ConfigDataType = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
 const START_DATE_REGEX = "(start|st).*(date|dt|year|decade)";
@@ -213,7 +215,7 @@ const baseExternalUrl = serverConfig.baseExternalUrl
     : urijs().segment([]).search("").fragment("").toString();
 
 // when UI domain is different from backend domain, we set credentials: "include"
-const credentialsFetchOptions: RequestInit = !isBackendSameOrigin
+export const credentialsFetchOptions: RequestInit = !isBackendSameOrigin
     ? {
           credentials: "include"
       }

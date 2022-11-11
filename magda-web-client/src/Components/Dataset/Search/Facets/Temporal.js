@@ -1,12 +1,12 @@
+import React, { Component } from "react";
 import {
     setDateFrom,
     setDateTo,
     resetDateFrom,
     resetDateTo
-} from "actions/datasetSearchActions";
+} from "../../../../actions/datasetSearchActions";
 import { connect } from "react-redux";
-import defined from "helpers/defined";
-import React, { Component } from "react";
+import defined from "../../../../helpers/defined";
 import TemporalWrapper from "./TemporalWrapper";
 
 class Temporal extends Component {

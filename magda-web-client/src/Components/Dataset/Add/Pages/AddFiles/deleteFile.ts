@@ -1,7 +1,7 @@
-import { config } from "config";
-import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
+import { config } from "../../../../../config";
+import getStorageApiResourceAccessUrl from "../../../../../helpers/getStorageApiResourceAccessUrl";
 import { Distribution } from "../../DatasetAddCommon";
-import UserVisibleError from "helpers/UserVisibleError";
+import UserVisibleError from "../../../../../helpers/UserVisibleError";
 
 /**
  * Deletes the file belonging to a distribution

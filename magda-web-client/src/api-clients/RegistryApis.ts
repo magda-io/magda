@@ -1,9 +1,9 @@
-import { config } from "config";
-import request from "helpers/request";
-import getRequest from "helpers/getRequest";
+import { config } from "../config";
+import request from "../helpers/request";
+import getRequest from "../helpers/getRequest";
 import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
-import { Publisher } from "helpers/record";
-import { RawDataset } from "helpers/record";
+import { Publisher } from "../helpers/record";
+import { RawDataset } from "../helpers/record";
 import ServerError from "@magda/typescript-common/dist/ServerError";
 import flatMap from "lodash/flatMap";
 
@@ -783,16 +783,16 @@ export async function patchRecord<T = any>(
  */
 export async function tagRecordVersionEventId(record: Record, eventId: number) {
     if (!record?.aspects?.["version"] || !eventId) {
-        return;
+        return null;
     }
     const versionData = record.aspects["version"] as VersionAspectData;
     const currentVersion =
         versionData?.versions?.[versionData?.currentVersionNumber];
     if (!currentVersion) {
-        return;
+        return null;
     }
     if (currentVersion.eventId) {
-        return;
+        return null;
     }
     versionData.versions[versionData.currentVersionNumber].eventId = eventId;
 

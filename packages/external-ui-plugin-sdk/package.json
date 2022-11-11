@@ -1,0 +1,38 @@
+{
+  "name": "@magda/external-ui-plugin-sdk",
+  "description": "MAGDA external UI plugin SDK",
+  "version": "2.2.0-alpha.1",
+  "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
+    "build": "api-extractor run -l",
+    "release": "npm publish || echo \"Skip releasing npm package @magda/external-ui-plugin-sdk.\""
+  },
+  "author": "Jacky Jiang",
+  "license": "Apache-2.0",
+  "main": "",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/magda-io/magda.git",
+    "directory": "packages/external-ui-plugin-sdk"
+  },
+  "devDependencies": {
+    "@magda/web-client": "^2.2.0-alpha.1",
+    "typescript": "~4.2.4"
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "npmPackage": true,
+      "useCommonLib": true
+    }
+  },
+  "keywords": [
+    "Magda",
+    "External UI Plugin",
+    "SDK"
+  ],
+  "files": [
+    "dist"
+  ]
+}

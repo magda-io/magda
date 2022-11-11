@@ -14,6 +14,7 @@
 - #3424 Set the default order by field for APIs
 - #3427 Dataset Editor: offer more details via error message box when encounter insufficient permission error
 - #3425 offer a button on dataset page to take the user back to data management tab
+- Started to publish @magda/external-ui-plugin-sdk NPM package
 
 ## v2.1.1
 

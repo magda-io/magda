@@ -1,6 +1,6 @@
-import { config } from "config";
-import getProxiedResourceUrl from "helpers/getProxiedResourceUrl";
-import isStorageApiUrl from "helpers/isStorageApiUrl";
+import { config } from "../config";
+import getProxiedResourceUrl from "../helpers/getProxiedResourceUrl";
+import isStorageApiUrl from "../helpers/isStorageApiUrl";
 import { ParsedDistribution } from "./record";
 
 /**

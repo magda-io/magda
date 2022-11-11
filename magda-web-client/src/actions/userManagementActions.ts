@@ -3,7 +3,7 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { Dispatch, GetState } from "../types";
 import { FacetAction } from "../helpers/datasetSearch";
-import { fetchContent } from "actions/contentActions";
+import { fetchContent } from "./contentActions";
 
 export function requestWhoAmI(setLoading: boolean = true) {
     return async (dispatch: Dispatch, getState: GetState) => {

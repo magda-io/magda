@@ -1,4 +1,4 @@
-import { config } from "config";
+import { config } from "../config";
 import fetch from "isomorphic-fetch";
 import ServerError from "@magda/typescript-common/dist/ServerError";
 
