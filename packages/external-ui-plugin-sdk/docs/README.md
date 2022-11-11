@@ -1,3 +1,5 @@
+@magda/external-ui-plugin-sdk / [Exports](modules.md)
+
 ### MAGDA External UI Plugin SDK
 
 Magda allows you to build / bundle React UI components with your own logic and supply the customised UI components to Magda at the time of deployment (via [Helm chart config](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server)) to replace the functionality of existing UI components. For those custom built UI components, we call External UI Plugin Components.

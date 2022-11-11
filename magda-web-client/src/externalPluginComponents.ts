@@ -35,10 +35,9 @@ export interface CommonPropsType {
 
     /**
      * The `config` field contains all frontend config data fields.
-     * External UI plugin developer might be interested in `config.extraConfigData` field,
-     * as external UI plugin related config data can be supplied via
-     * [web-server](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server) helm chart
-     * `extraConfigData` field and serves as an interface to config external UI plugin at deployment time.
+     * External UI plugin developer might be interested in `config.extraConfigData` field.
+     * `config.extraConfigData` field serves as an interface to config external UI plugin at deployment time.
+     * External UI plugin related config data can be supplied via [web-server](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server) helm chart.
      *
      * @type {ConfigDataType}
      * @memberof CommonPropsType

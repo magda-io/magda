@@ -5,6 +5,7 @@
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "api-extractor run -l",
+    "docs": "which typedoc; if [ $? -eq 1 ]; then echo \"Error: typedoc is required.\";else typedoc;fi",
     "release": "npm publish || echo \"Skip releasing npm package @magda/external-ui-plugin-sdk.\""
   },
   "author": "Jacky Jiang",
