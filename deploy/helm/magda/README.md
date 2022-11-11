@@ -1,6 +1,6 @@
 # magda
 
-![Version: 2.2.0-alpha.1](https://img.shields.io/badge/Version-2.2.0--alpha.1-informational?style=flat-square)
+![Version: 2.2.0-alpha.2](https://img.shields.io/badge/Version-2.2.0--alpha.2-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes the magda default deployment.
 
@@ -14,7 +14,7 @@ A complete solution for managing, publishing and discovering government data, pr
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-core | magda-core | 2.2.0-alpha.1 |
+| file://../magda-core | magda-core | 2.2.0-alpha.2 |
 | https://charts.magda.io | magda-function-esri-url-processor | 1.1.0 |
 | https://charts.magda.io | magda-function-history-report | 1.1.0 |
 | https://charts.magda.io | openfaas | 5.5.5-magda.2 |
