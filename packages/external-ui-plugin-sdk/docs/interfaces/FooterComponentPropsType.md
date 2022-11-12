@@ -1,8 +1,8 @@
-[@magda/external-ui-plugin-sdk](../README.md) / [Exports](../modules.md) / HeaderComponentProps
+[@magda/external-ui-plugin-sdk](../README.md) / [Exports](../modules.md) / FooterComponentPropsType
 
-# Interface: HeaderComponentProps
+# Interface: FooterComponentPropsType
 
-The properties that Header Plugin Component will receive.
+The properties that Footer Plugin Component will receive.
 
 **`Export`**
 
@@ -14,23 +14,26 @@ FooterComponentPropsType
 
 - [`CommonPropsType`](CommonPropsType.md)
 
-  ↳ **`HeaderComponentProps`**
+  ↳ **`FooterComponentPropsType`**
 
 ## Table of contents
 
 ### Properties
 
-- [config](HeaderComponentProps.md#config)
-- [fetchContent](HeaderComponentProps.md#fetchcontent)
-- [headerNavItems](HeaderComponentProps.md#headernavitems)
-- [history](HeaderComponentProps.md#history)
-- [isFetchingWhoAmI](HeaderComponentProps.md#isfetchingwhoami)
-- [location](HeaderComponentProps.md#location)
-- [match](HeaderComponentProps.md#match)
-- [requestSignOut](HeaderComponentProps.md#requestsignout)
-- [requestWhoAmI](HeaderComponentProps.md#requestwhoami)
-- [user](HeaderComponentProps.md#user)
-- [whoAmIError](HeaderComponentProps.md#whoamierror)
+- [config](FooterComponentPropsType.md#config)
+- [fetchContent](FooterComponentPropsType.md#fetchcontent)
+- [footerCopyRightItems](FooterComponentPropsType.md#footercopyrightitems)
+- [footerMediumNavs](FooterComponentPropsType.md#footermediumnavs)
+- [footerSmallNavs](FooterComponentPropsType.md#footersmallnavs)
+- [history](FooterComponentPropsType.md#history)
+- [isFetchingWhoAmI](FooterComponentPropsType.md#isfetchingwhoami)
+- [location](FooterComponentPropsType.md#location)
+- [match](FooterComponentPropsType.md#match)
+- [noTopMargin](FooterComponentPropsType.md#notopmargin)
+- [requestSignOut](FooterComponentPropsType.md#requestsignout)
+- [requestWhoAmI](FooterComponentPropsType.md#requestwhoami)
+- [user](FooterComponentPropsType.md#user)
+- [whoAmIError](FooterComponentPropsType.md#whoamierror)
 
 ## Properties
 
@@ -94,13 +97,33 @@ index.d.ts:119
 
 ---
 
-### headerNavItems
+### footerCopyRightItems
 
-• **headerNavItems**: [`HeaderNavItem`](HeaderNavItem.md)[]
+• **footerCopyRightItems**: [`CopyRightItem`](CopyRightItem.md)[]
 
 #### Defined in
 
-index.d.ts:580
+index.d.ts:539
+
+---
+
+### footerMediumNavs
+
+• **footerMediumNavs**: [`FooterNavLinkGroup`](FooterNavLinkGroup.md)[]
+
+#### Defined in
+
+index.d.ts:537
+
+---
+
+### footerSmallNavs
+
+• **footerSmallNavs**: [`FooterNavLinkGroup`](FooterNavLinkGroup.md)[]
+
+#### Defined in
+
+index.d.ts:538
 
 ---
 
@@ -184,6 +207,16 @@ CommonPropsType
 #### Defined in
 
 index.d.ts:94
+
+---
+
+### noTopMargin
+
+• **noTopMargin**: `boolean`
+
+#### Defined in
+
+index.d.ts:536
 
 ---
 

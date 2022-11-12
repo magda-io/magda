@@ -9,6 +9,10 @@
 - [CommonPropsType](interfaces/CommonPropsType.md)
 - [ConfigDataType](interfaces/ConfigDataType.md)
 - [CopyRightItem](interfaces/CopyRightItem.md)
+- [DatasetEditButtonComponentPropsType](interfaces/DatasetEditButtonComponentPropsType.md)
+- [DatasetLikeButtonComponentPropsType](interfaces/DatasetLikeButtonComponentPropsType.md)
+- [ExtraVisualisationSectionComponentPropsType](interfaces/ExtraVisualisationSectionComponentPropsType.md)
+- [FooterComponentPropsType](interfaces/FooterComponentPropsType.md)
 - [FooterNavLink](interfaces/FooterNavLink.md)
 - [FooterNavLinkGroup](interfaces/FooterNavLinkGroup.md)
 - [HeaderComponentProps](interfaces/HeaderComponentProps.md)
@@ -22,13 +26,6 @@
 - [FooterComponentType](modules.md#footercomponenttype)
 - [HeaderComponentType](modules.md#headercomponenttype)
 
-### Other Type Aliases
-
-- [DatasetEditButtonComponentPropsType](modules.md#dataseteditbuttoncomponentpropstype)
-- [DatasetLikeButtonComponentPropsType](modules.md#datasetlikebuttoncomponentpropstype)
-- [ExtraVisualisationSectionComponentPropsType](modules.md#extravisualisationsectioncomponentpropstype)
-- [FooterComponentPropsType](modules.md#footercomponentpropstype)
-
 ### Variables
 
 - [PREFIX](modules.md#prefix)
@@ -37,22 +34,9 @@
 
 ### DatasetEditButtonComponentType
 
-Ƭ **DatasetEditButtonComponentType**: `ComponentType`<[`DatasetEditButtonComponentPropsType`](modules.md#dataseteditbuttoncomponentpropstype)\>
+Ƭ **DatasetEditButtonComponentType**: `ComponentType`<[`DatasetEditButtonComponentPropsType`](interfaces/DatasetEditButtonComponentPropsType.md)\>
 
 Dataset page `Edit Dataset` button external plugin component type
-
-#### Defined in
-
-index.d.ts:436
-
----
-
-### DatasetLikeButtonComponentType
-
-Ƭ **DatasetLikeButtonComponentType**: `ComponentType`<[`DatasetLikeButtonComponentPropsType`](modules.md#datasetlikebuttoncomponentpropstype)\>
-
-Search Result page `Like Button` external plugin component type
-Please note: the `Like Button` on search result page is hidden unless a plugin component is supplied.
 
 #### Defined in
 
@@ -60,9 +44,22 @@ index.d.ts:449
 
 ---
 
+### DatasetLikeButtonComponentType
+
+Ƭ **DatasetLikeButtonComponentType**: `ComponentType`<[`DatasetLikeButtonComponentPropsType`](interfaces/DatasetLikeButtonComponentPropsType.md)\>
+
+Search Result page `Like Button` external plugin component type
+Please note: the `Like Button` on search result page is hidden unless a plugin component is supplied.
+
+#### Defined in
+
+index.d.ts:469
+
+---
+
 ### ExtraVisualisationSectionComponentType
 
-Ƭ **ExtraVisualisationSectionComponentType**: `ComponentType`<[`ExtraVisualisationSectionComponentPropsType`](modules.md#extravisualisationsectioncomponentpropstype)\>
+Ƭ **ExtraVisualisationSectionComponentType**: `ComponentType`<[`ExtraVisualisationSectionComponentPropsType`](interfaces/ExtraVisualisationSectionComponentPropsType.md)\>
 
 Visualisation Section external plugin component type.
 This plugin will be mounted on dataset or distribution page.
@@ -70,19 +67,19 @@ More info & example please refer to repo: [magda-ui-plugin-component-dap-thumbna
 
 #### Defined in
 
-index.d.ts:473
+index.d.ts:501
 
 ---
 
 ### FooterComponentType
 
-Ƭ **FooterComponentType**: `ComponentType`<[`FooterComponentPropsType`](modules.md#footercomponentpropstype)\>
+Ƭ **FooterComponentType**: `ComponentType`<[`FooterComponentPropsType`](interfaces/FooterComponentPropsType.md)\>
 
 Footer external plugin component type
 
 #### Defined in
 
-index.d.ts:511
+index.d.ts:546
 
 ---
 
@@ -94,77 +91,7 @@ Header external plugin component type
 
 #### Defined in
 
-index.d.ts:545
-
----
-
-## Other Type Aliases
-
-### DatasetEditButtonComponentPropsType
-
-Ƭ **DatasetEditButtonComponentPropsType**: `Object`
-
-#### Type declaration
-
-| Name      | Type            |
-| :-------- | :-------------- |
-| `dataset` | `ParsedDataset` |
-
-#### Defined in
-
-index.d.ts:428
-
----
-
-### DatasetLikeButtonComponentPropsType
-
-Ƭ **DatasetLikeButtonComponentPropsType**: `Object`
-
-#### Type declaration
-
-| Name      | Type            |
-| :-------- | :-------------- |
-| `dataset` | `ParsedDataset` |
-
-#### Defined in
-
-index.d.ts:440
-
----
-
-### ExtraVisualisationSectionComponentPropsType
-
-Ƭ **ExtraVisualisationSectionComponentPropsType**: `Object`
-
-#### Type declaration
-
-| Name              | Type            |
-| :---------------- | :-------------- |
-| `dataset`         | `ParsedDataset` |
-| `distributionId?` | `string`        |
-
-#### Defined in
-
-index.d.ts:462
-
----
-
-### FooterComponentPropsType
-
-Ƭ **FooterComponentPropsType**: `Object`
-
-#### Type declaration
-
-| Name                   | Type                                                       |
-| :--------------------- | :--------------------------------------------------------- |
-| `footerCopyRightItems` | [`CopyRightItem`](interfaces/CopyRightItem.md)[]           |
-| `footerMediumNavs`     | [`FooterNavLinkGroup`](interfaces/FooterNavLinkGroup.md)[] |
-| `footerSmallNavs`      | [`FooterNavLinkGroup`](interfaces/FooterNavLinkGroup.md)[] |
-| `noTopMargin`          | `boolean`                                                  |
-
-#### Defined in
-
-index.d.ts:500
+index.d.ts:587
 
 ## Variables
 
@@ -172,6 +99,14 @@ index.d.ts:500
 
 • `Const` **PREFIX**: `"MagdaPluginComponent"`
 
+The constant define the prefix that is used to create the global scope variable name, to which the external UI plugin bundle should export to.
+e.g. The Header Component should bundled & export to global scope variable `MagdaPluginComponentHeader`.
+
+> Since Magda v2.2.0, users can load more than one "Extra Visualisation Section" type Magda UI Plugin Components.
+> To allow this, the component is required to be packaged as a library and exported to global scope `MagdaPluginComponentExtraVisualisationSections.xxxx`.
+> Here, `MagdaPluginComponentExtraVisualisationSections` should be an object with key `xxxx` set to the plugin component.
+> e.g. the DAP thumbnail viewer plugin choose to export itself to `MagdaPluginComponentExtraVisualisationSections.DAPThumbnailViewer`.
+
 #### Defined in
 
-index.d.ts:676
+index.d.ts:726

@@ -1,8 +1,8 @@
-[@magda/external-ui-plugin-sdk](../README.md) / [Exports](../modules.md) / HeaderComponentProps
+[@magda/external-ui-plugin-sdk](../README.md) / [Exports](../modules.md) / DatasetLikeButtonComponentPropsType
 
-# Interface: HeaderComponentProps
+# Interface: DatasetLikeButtonComponentPropsType
 
-The properties that Header Plugin Component will receive.
+The properties that DatasetLikeButton Plugin Component will receive.
 
 **`Export`**
 
@@ -14,23 +14,23 @@ FooterComponentPropsType
 
 - [`CommonPropsType`](CommonPropsType.md)
 
-  ↳ **`HeaderComponentProps`**
+  ↳ **`DatasetLikeButtonComponentPropsType`**
 
 ## Table of contents
 
 ### Properties
 
-- [config](HeaderComponentProps.md#config)
-- [fetchContent](HeaderComponentProps.md#fetchcontent)
-- [headerNavItems](HeaderComponentProps.md#headernavitems)
-- [history](HeaderComponentProps.md#history)
-- [isFetchingWhoAmI](HeaderComponentProps.md#isfetchingwhoami)
-- [location](HeaderComponentProps.md#location)
-- [match](HeaderComponentProps.md#match)
-- [requestSignOut](HeaderComponentProps.md#requestsignout)
-- [requestWhoAmI](HeaderComponentProps.md#requestwhoami)
-- [user](HeaderComponentProps.md#user)
-- [whoAmIError](HeaderComponentProps.md#whoamierror)
+- [config](DatasetLikeButtonComponentPropsType.md#config)
+- [dataset](DatasetLikeButtonComponentPropsType.md#dataset)
+- [fetchContent](DatasetLikeButtonComponentPropsType.md#fetchcontent)
+- [history](DatasetLikeButtonComponentPropsType.md#history)
+- [isFetchingWhoAmI](DatasetLikeButtonComponentPropsType.md#isfetchingwhoami)
+- [location](DatasetLikeButtonComponentPropsType.md#location)
+- [match](DatasetLikeButtonComponentPropsType.md#match)
+- [requestSignOut](DatasetLikeButtonComponentPropsType.md#requestsignout)
+- [requestWhoAmI](DatasetLikeButtonComponentPropsType.md#requestwhoami)
+- [user](DatasetLikeButtonComponentPropsType.md#user)
+- [whoAmIError](DatasetLikeButtonComponentPropsType.md#whoamierror)
 
 ## Properties
 
@@ -54,6 +54,16 @@ CommonPropsType
 #### Defined in
 
 index.d.ts:67
+
+---
+
+### dataset
+
+• **dataset**: `ParsedDataset`
+
+#### Defined in
+
+index.d.ts:461
 
 ---
 
@@ -91,16 +101,6 @@ CommonPropsType
 #### Defined in
 
 index.d.ts:119
-
----
-
-### headerNavItems
-
-• **headerNavItems**: [`HeaderNavItem`](HeaderNavItem.md)[]
-
-#### Defined in
-
-index.d.ts:580
 
 ---
 

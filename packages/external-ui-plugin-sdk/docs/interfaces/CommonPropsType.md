@@ -10,6 +10,20 @@ The common properties that all external UI plugins will receive.
 
 CommonPropsType
 
+## Hierarchy
+
+- **`CommonPropsType`**
+
+  ↳ [`DatasetEditButtonComponentPropsType`](DatasetEditButtonComponentPropsType.md)
+
+  ↳ [`DatasetLikeButtonComponentPropsType`](DatasetLikeButtonComponentPropsType.md)
+
+  ↳ [`ExtraVisualisationSectionComponentPropsType`](ExtraVisualisationSectionComponentPropsType.md)
+
+  ↳ [`FooterComponentPropsType`](FooterComponentPropsType.md)
+
+  ↳ [`HeaderComponentProps`](HeaderComponentProps.md)
+
 ## Table of contents
 
 ### Properties

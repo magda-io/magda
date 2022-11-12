@@ -26,7 +26,7 @@ HeaderNavItem
 
 #### Defined in
 
-index.d.ts:560
+index.d.ts:602
 
 ---
 
@@ -45,7 +45,7 @@ index.d.ts:560
 
 #### Defined in
 
-index.d.ts:554
+index.d.ts:596
 
 ---
 
@@ -55,4 +55,4 @@ index.d.ts:554
 
 #### Defined in
 
-index.d.ts:561
+index.d.ts:603

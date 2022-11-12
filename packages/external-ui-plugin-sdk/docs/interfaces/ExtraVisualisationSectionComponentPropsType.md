@@ -1,8 +1,8 @@
-[@magda/external-ui-plugin-sdk](../README.md) / [Exports](../modules.md) / HeaderComponentProps
+[@magda/external-ui-plugin-sdk](../README.md) / [Exports](../modules.md) / ExtraVisualisationSectionComponentPropsType
 
-# Interface: HeaderComponentProps
+# Interface: ExtraVisualisationSectionComponentPropsType
 
-The properties that Header Plugin Component will receive.
+The properties that ExtraVisualisationSection Plugin Component will receive.
 
 **`Export`**
 
@@ -14,23 +14,24 @@ FooterComponentPropsType
 
 - [`CommonPropsType`](CommonPropsType.md)
 
-  ↳ **`HeaderComponentProps`**
+  ↳ **`ExtraVisualisationSectionComponentPropsType`**
 
 ## Table of contents
 
 ### Properties
 
-- [config](HeaderComponentProps.md#config)
-- [fetchContent](HeaderComponentProps.md#fetchcontent)
-- [headerNavItems](HeaderComponentProps.md#headernavitems)
-- [history](HeaderComponentProps.md#history)
-- [isFetchingWhoAmI](HeaderComponentProps.md#isfetchingwhoami)
-- [location](HeaderComponentProps.md#location)
-- [match](HeaderComponentProps.md#match)
-- [requestSignOut](HeaderComponentProps.md#requestsignout)
-- [requestWhoAmI](HeaderComponentProps.md#requestwhoami)
-- [user](HeaderComponentProps.md#user)
-- [whoAmIError](HeaderComponentProps.md#whoamierror)
+- [config](ExtraVisualisationSectionComponentPropsType.md#config)
+- [dataset](ExtraVisualisationSectionComponentPropsType.md#dataset)
+- [distributionId](ExtraVisualisationSectionComponentPropsType.md#distributionid)
+- [fetchContent](ExtraVisualisationSectionComponentPropsType.md#fetchcontent)
+- [history](ExtraVisualisationSectionComponentPropsType.md#history)
+- [isFetchingWhoAmI](ExtraVisualisationSectionComponentPropsType.md#isfetchingwhoami)
+- [location](ExtraVisualisationSectionComponentPropsType.md#location)
+- [match](ExtraVisualisationSectionComponentPropsType.md#match)
+- [requestSignOut](ExtraVisualisationSectionComponentPropsType.md#requestsignout)
+- [requestWhoAmI](ExtraVisualisationSectionComponentPropsType.md#requestwhoami)
+- [user](ExtraVisualisationSectionComponentPropsType.md#user)
+- [whoAmIError](ExtraVisualisationSectionComponentPropsType.md#whoamierror)
 
 ## Properties
 
@@ -54,6 +55,26 @@ CommonPropsType
 #### Defined in
 
 index.d.ts:67
+
+---
+
+### dataset
+
+• **dataset**: `ParsedDataset`
+
+#### Defined in
+
+index.d.ts:491
+
+---
+
+### distributionId
+
+• `Optional` **distributionId**: `string`
+
+#### Defined in
+
+index.d.ts:492
 
 ---
 
@@ -91,16 +112,6 @@ CommonPropsType
 #### Defined in
 
 index.d.ts:119
-
----
-
-### headerNavItems
-
-• **headerNavItems**: [`HeaderNavItem`](HeaderNavItem.md)[]
-
-#### Defined in
-
-index.d.ts:580
 
 ---
 

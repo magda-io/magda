@@ -103,7 +103,7 @@ index.d.ts:285
 
 ### adminApiUrl
 
-• `Optional` **adminApiUrl**: `string`
+• **adminApiUrl**: `string`
 
 #### Defined in
 
@@ -113,11 +113,11 @@ index.d.ts:286
 
 ### anonymousUserLandingPage
 
-• `Optional` **anonymousUserLandingPage**: `string`
+• **anonymousUserLandingPage**: `string`
 
 #### Defined in
 
-index.d.ts:393
+index.d.ts:399
 
 ---
 
@@ -141,7 +141,7 @@ index.d.ts:177
 
 ### authApiUrl
 
-• `Optional` **authApiUrl**: `string`
+• **authApiUrl**: `string`
 
 The authorisation API base URL endpoint.
 Its value is either populated from config data retrieved from the server (i.e. `authApiBaseUrl` field).
@@ -160,7 +160,7 @@ index.d.ts:188
 
 ### authPluginRedirectUrl
 
-• `Optional` **authPluginRedirectUrl**: `string`
+• **authPluginRedirectUrl**: `string`
 
 The default redirection url for all auth plugins once the authentication process is completed.
 
@@ -188,17 +188,17 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:403
+index.d.ts:409
 
 ---
 
 ### authenticatedUserLandingPage
 
-• `Optional` **authenticatedUserLandingPage**: `string`
+• **authenticatedUserLandingPage**: `string`
 
 #### Defined in
 
-index.d.ts:394
+index.d.ts:400
 
 ---
 
@@ -214,13 +214,13 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:323
+index.d.ts:329
 
 ---
 
 ### baseExternalUrl
 
-• `Optional` **baseExternalUrl**: `string`
+• **baseExternalUrl**: `string`
 
 Similar to `baseUrl`. But this field includes the external access domain of the application.
 You might want to use its value in use cases e.g. generating external accessible links.
@@ -237,7 +237,7 @@ index.d.ts:214
 
 ### baseUrl
 
-• `Optional` **baseUrl**: `string`
+• **baseUrl**: `string`
 
 The base URL path of all APIs (e.g. '/');
 The value of the field might either from config data retrieved from the server or the URL to a default "fallback" dev API server url for testing.
@@ -254,7 +254,7 @@ index.d.ts:197
 
 ### boundingBox
 
-• `Optional` **boundingBox**: `Object`
+• **boundingBox**: `Object`
 
 Default boundingBox for map preview module
 
@@ -273,7 +273,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:369
+index.d.ts:375
 
 ---
 
@@ -291,7 +291,7 @@ index.d.ts:369
 
 #### Defined in
 
-index.d.ts:343
+index.d.ts:349
 
 ---
 
@@ -305,7 +305,7 @@ index.d.ts:343
 
 #### Defined in
 
-index.d.ts:331
+index.d.ts:337
 
 ---
 
@@ -329,7 +329,7 @@ index.d.ts:244
 
 ### contentApiURL
 
-• `Optional` **contentApiURL**: `string`
+• **contentApiURL**: `string`
 
 The content API base URL endpoint.
 Its value is either populated from config data retrieved from the server (i.e. `contentApiBaseUrl` field).
@@ -348,7 +348,7 @@ index.d.ts:255
 
 ### contentUrl
 
-• `Optional` **contentUrl**: `string`
+• **contentUrl**: `string`
 
 The API URL to retrieve all default content items (e.g. header & footer items etc.).
 The value of this field is created from field `contentApiURL`.
@@ -375,7 +375,7 @@ index.d.ts:273
 
 ### correspondenceApiUrl
 
-• `Optional` **correspondenceApiUrl**: `string`
+• **correspondenceApiUrl**: `string`
 
 #### Defined in
 
@@ -408,7 +408,7 @@ index.d.ts:151
 
 #### Defined in
 
-index.d.ts:315
+index.d.ts:321
 
 ---
 
@@ -418,17 +418,17 @@ index.d.ts:315
 
 #### Defined in
 
-index.d.ts:328
+index.d.ts:334
 
 ---
 
 ### dateConfig
 
-• `Optional` **dateConfig**: `DateConfig`
+• **dateConfig**: `DateConfig`
 
 #### Defined in
 
-index.d.ts:325
+index.d.ts:331
 
 ---
 
@@ -438,7 +438,7 @@ index.d.ts:325
 
 #### Defined in
 
-index.d.ts:334
+index.d.ts:340
 
 ---
 
@@ -448,7 +448,7 @@ index.d.ts:334
 
 #### Defined in
 
-index.d.ts:314
+index.d.ts:320
 
 ---
 
@@ -458,7 +458,7 @@ index.d.ts:314
 
 #### Defined in
 
-index.d.ts:392
+index.d.ts:398
 
 ---
 
@@ -468,7 +468,7 @@ index.d.ts:392
 
 #### Defined in
 
-index.d.ts:313
+index.d.ts:319
 
 ---
 
@@ -478,7 +478,7 @@ index.d.ts:313
 
 #### Defined in
 
-index.d.ts:335
+index.d.ts:341
 
 ---
 
@@ -498,7 +498,7 @@ index.d.ts:290
 
 #### Defined in
 
-index.d.ts:338
+index.d.ts:344
 
 ---
 
@@ -508,7 +508,7 @@ index.d.ts:338
 
 #### Defined in
 
-index.d.ts:339
+index.d.ts:345
 
 ---
 
@@ -518,7 +518,7 @@ index.d.ts:339
 
 #### Defined in
 
-index.d.ts:337
+index.d.ts:343
 
 ---
 
@@ -528,7 +528,7 @@ index.d.ts:337
 
 #### Defined in
 
-index.d.ts:336
+index.d.ts:342
 
 ---
 
@@ -538,7 +538,7 @@ index.d.ts:336
 
 #### Defined in
 
-index.d.ts:341
+index.d.ts:347
 
 ---
 
@@ -548,7 +548,7 @@ index.d.ts:341
 
 #### Defined in
 
-index.d.ts:340
+index.d.ts:346
 
 ---
 
@@ -568,7 +568,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:387
+index.d.ts:393
 
 ---
 
@@ -578,7 +578,7 @@ index.d.ts:387
 
 #### Defined in
 
-index.d.ts:348
+index.d.ts:354
 
 ---
 
@@ -601,7 +601,7 @@ index.d.ts:299
 
 ### featureFlags
 
-• `Optional` **featureFlags**: `Partial`<`Record`<`FeatureFlagType`, `boolean`\>\>
+• **featureFlags**: `Partial`<`Record`<`FeatureFlagType`, `boolean`\>\>
 
 A set of feature flags to turn on/of a list of features.
 
@@ -637,7 +637,7 @@ index.d.ts:284
 
 #### Defined in
 
-index.d.ts:349
+index.d.ts:355
 
 ---
 
@@ -647,7 +647,7 @@ index.d.ts:349
 
 #### Defined in
 
-index.d.ts:350
+index.d.ts:356
 
 ---
 
@@ -657,7 +657,7 @@ index.d.ts:350
 
 #### Defined in
 
-index.d.ts:342
+index.d.ts:348
 
 ---
 
@@ -701,7 +701,7 @@ index.d.ts:266
 
 #### Defined in
 
-index.d.ts:329
+index.d.ts:335
 
 ---
 
@@ -711,7 +711,7 @@ index.d.ts:329
 
 #### Defined in
 
-index.d.ts:324
+index.d.ts:330
 
 ---
 
@@ -727,7 +727,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:357
+index.d.ts:363
 
 ---
 
@@ -737,7 +737,7 @@ index.d.ts:357
 
 #### Defined in
 
-index.d.ts:326
+index.d.ts:332
 
 ---
 
@@ -747,7 +747,7 @@ index.d.ts:326
 
 #### Defined in
 
-index.d.ts:327
+index.d.ts:333
 
 ---
 
@@ -757,7 +757,7 @@ index.d.ts:327
 
 #### Defined in
 
-index.d.ts:376
+index.d.ts:382
 
 ---
 
@@ -767,7 +767,7 @@ index.d.ts:376
 
 #### Defined in
 
-index.d.ts:377
+index.d.ts:383
 
 ---
 
@@ -777,7 +777,7 @@ index.d.ts:377
 
 #### Defined in
 
-index.d.ts:330
+index.d.ts:336
 
 ---
 
@@ -797,7 +797,7 @@ index.d.ts:265
 
 #### Defined in
 
-index.d.ts:390
+index.d.ts:396
 
 ---
 
@@ -843,7 +843,7 @@ index.d.ts:268
 
 ### registryFullApiUrl
 
-• `Optional` **registryFullApiUrl**: `string`
+• **registryFullApiUrl**: `string`
 
 #### Defined in
 
@@ -853,7 +853,7 @@ index.d.ts:270
 
 ### registryReadOnlyApiUrl
 
-• `Optional` **registryReadOnlyApiUrl**: `string`
+• **registryReadOnlyApiUrl**: `string`
 
 #### Defined in
 
@@ -883,7 +883,7 @@ index.d.ts:271
 
 ### searchApiUrl
 
-• `Optional` **searchApiUrl**: `string`
+• **searchApiUrl**: `string`
 
 #### Defined in
 
@@ -897,7 +897,7 @@ index.d.ts:272
 
 #### Defined in
 
-index.d.ts:391
+index.d.ts:397
 
 ---
 
@@ -929,7 +929,7 @@ index.d.ts:275
 
 ### storageApiUrl
 
-• `Optional` **storageApiUrl**: `string`
+• **storageApiUrl**: `string`
 
 #### Defined in
 
@@ -943,13 +943,13 @@ index.d.ts:276
 
 #### Defined in
 
-index.d.ts:375
+index.d.ts:381
 
 ---
 
 ### uiBaseUrl
 
-• `Optional` **uiBaseUrl**: `string`
+• **uiBaseUrl**: `string`
 
 The base url path where the web client will be served at.
 E.g. when `uiBaseUrl`=`/`, the web client will served at `https://example.com/`.
@@ -969,11 +969,17 @@ index.d.ts:226
 
 ### useMagdaStorageByDefault
 
-• `Optional` **useMagdaStorageByDefault**: `boolean`
+• **useMagdaStorageByDefault**: `boolean`
+
+Whether or not the "use magda storage" option should be pre-selected on dataset editor UI.
+
+**`Memberof`**
+
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:311
+index.d.ts:317
 
 ---
 
@@ -983,4 +989,4 @@ index.d.ts:311
 
 #### Defined in
 
-index.d.ts:312
+index.d.ts:318

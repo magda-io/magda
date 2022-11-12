@@ -9,6 +9,14 @@ import { fetchContent } from "./actions/contentActions";
 import { config, ConfigDataType } from "./config";
 import { ParsedDataset } from "./helpers/record";
 
+/**
+ * The constant define the prefix that is used to create the global scope variable name, to which the external UI plugin bundle should export to.
+ * e.g. The Header Component should bundled & export to global scope variable `MagdaPluginComponentHeader`.
+ * > Since Magda v2.2.0, users can load more than one "Extra Visualisation Section" type Magda UI Plugin Components.
+ * To allow this, the component is required to be packaged as a library and exported to global scope `MagdaPluginComponentExtraVisualisationSections.xxxx`.
+ * Here, `MagdaPluginComponentExtraVisualisationSections` should be an object with key `xxxx` set to the plugin component.
+ * e.g. the DAP thumbnail viewer plugin choose to export itself to `MagdaPluginComponentExtraVisualisationSections.DAPThumbnailViewer`.
+ */
 export const PREFIX = "MagdaPluginComponent";
 
 /**
@@ -103,11 +111,10 @@ export interface CommonPropsType {
     fetchContent: (noCache?: boolean) => Promise<void>;
 }
 
-/**
- * Generic external plugin component type
- * @category External UI Plugin Component Types
- */
-export type ExternalComponentType<T> = ComponentType<T & CommonPropsType>;
+type InternalInterfaceProps<FullComponentProps> = Omit<
+    FullComponentProps,
+    keyof CommonPropsType
+>;
 
 const mapStateToProps = (state) => {
     const { userManagement, isFetchingWhoAmI, whoAmIError } = state;
@@ -131,11 +138,20 @@ const mapDispatchToProps = (dispatch) => {
     );
 };
 
-export function getComponent<T>(name: string): ComponentType<T> | null {
+/**
+ * Used internally to locate the plugin component & create HOC with common properties prefilled.
+ *
+ * @export
+ * @template T The type includes all plugin component properties including common properties.
+ * @param {string} name
+ * @return {*}  {(ComponentType<InternalInterfaceProps<T>> | null)}
+ */
+export function getComponent<T>(
+    name: string
+): ComponentType<InternalInterfaceProps<T>> | null {
     const fullComponentName = `${PREFIX}${name}`;
-    const ExternalComponent: ExternalComponentType<T> = window?.[
-        fullComponentName
-    ]?.default
+    const ExternalComponent: ComponentType<T> = window?.[fullComponentName]
+        ?.default
         ? window[fullComponentName].default
         : window?.[fullComponentName]
         ? window[fullComponentName]
@@ -147,7 +163,7 @@ export function getComponent<T>(name: string): ComponentType<T> | null {
 
     return (withRouter(
         connect(mapStateToProps, mapDispatchToProps)(ExternalComponent as any)
-    ) as unknown) as ComponentType<T>;
+    ) as unknown) as ComponentType<InternalInterfaceProps<T>>;
 }
 
 /**
@@ -167,7 +183,14 @@ export interface HeaderNavItem {
     order: number;
 }
 
-export interface HeaderComponentProps {
+/**
+ * The properties that Header Plugin Component will receive.
+ *
+ * @export
+ * @interface FooterComponentPropsType
+ * @extends {CommonPropsType}
+ */
+export interface HeaderComponentProps extends CommonPropsType {
     headerNavItems: HeaderNavItem[];
 }
 
@@ -176,11 +199,10 @@ export interface HeaderComponentProps {
  * @category External UI Plugin Component Types
  */
 export type HeaderComponentType = ComponentType<HeaderComponentProps>;
-export type ExternalHeaderComponentType = ExternalComponentType<
-    HeaderComponentProps
->;
 
-export function getPluginHeader(): HeaderComponentType | null {
+export function getPluginHeader(): ComponentType<
+    InternalInterfaceProps<HeaderComponentProps>
+> | null {
     return getComponent<HeaderComponentProps>("Header");
 }
 
@@ -221,29 +243,42 @@ export interface FooterNavLinkGroup {
     order: number;
 }
 
-export type FooterComponentPropsType = {
+/**
+ * The properties that Footer Plugin Component will receive.
+ *
+ * @export
+ * @interface FooterComponentPropsType
+ * @extends {CommonPropsType}
+ */
+export interface FooterComponentPropsType extends CommonPropsType {
     noTopMargin: boolean;
     footerMediumNavs: FooterNavLinkGroup[];
     footerSmallNavs: FooterNavLinkGroup[];
     footerCopyRightItems: CopyRightItem[];
-};
+}
 
 /**
  * Footer external plugin component type
  * @category External UI Plugin Component Types
  */
 export type FooterComponentType = ComponentType<FooterComponentPropsType>;
-export type ExternalFooterComponentType = ExternalComponentType<
-    FooterComponentPropsType
->;
 
-export function getPluginFooter(): FooterComponentType | null {
+export function getPluginFooter(): ComponentType<
+    InternalInterfaceProps<FooterComponentPropsType>
+> | null {
     return getComponent<FooterComponentPropsType>("Footer");
 }
 
-export type DatasetEditButtonComponentPropsType = {
+/**
+ * The properties that DatasetEditButton Plugin Component will receive.
+ *
+ * @export
+ * @interface FooterComponentPropsType
+ * @extends {CommonPropsType}
+ */
+export interface DatasetEditButtonComponentPropsType extends CommonPropsType {
     dataset: ParsedDataset;
-};
+}
 
 /**
  * Dataset page `Edit Dataset` button external plugin component type
@@ -252,19 +287,25 @@ export type DatasetEditButtonComponentPropsType = {
 export type DatasetEditButtonComponentType = ComponentType<
     DatasetEditButtonComponentPropsType
 >;
-export type ExternalDatasetEditButtonComponentType = ExternalComponentType<
-    DatasetEditButtonComponentType
->;
 
-export function getPluginDatasetEditButton(): DatasetEditButtonComponentType | null {
+export function getPluginDatasetEditButton(): ComponentType<
+    InternalInterfaceProps<DatasetEditButtonComponentPropsType>
+> | null {
     return getComponent<DatasetEditButtonComponentPropsType>(
         "DatasetEditButton"
     );
 }
 
-export type DatasetLikeButtonComponentPropsType = {
+/**
+ * The properties that DatasetLikeButton Plugin Component will receive.
+ *
+ * @export
+ * @interface FooterComponentPropsType
+ * @extends {CommonPropsType}
+ */
+export interface DatasetLikeButtonComponentPropsType extends CommonPropsType {
     dataset: ParsedDataset;
-};
+}
 
 /**
  * Search Result page `Like Button` external plugin component type
@@ -274,20 +315,27 @@ export type DatasetLikeButtonComponentPropsType = {
 export type DatasetLikeButtonComponentType = ComponentType<
     DatasetLikeButtonComponentPropsType
 >;
-export type ExternalDatasetLikeButtonComponentType = ExternalComponentType<
-    DatasetLikeButtonComponentType
->;
 
-export function getPluginDatasetLikeButton(): DatasetLikeButtonComponentType | null {
+export function getPluginDatasetLikeButton(): ComponentType<
+    InternalInterfaceProps<DatasetLikeButtonComponentPropsType>
+> | null {
     return getComponent<DatasetLikeButtonComponentPropsType>(
         "DatasetLikeButton"
     );
 }
 
-export type ExtraVisualisationSectionComponentPropsType = {
+/**
+ * The properties that ExtraVisualisationSection Plugin Component will receive.
+ *
+ * @export
+ * @interface FooterComponentPropsType
+ * @extends {CommonPropsType}
+ */
+export interface ExtraVisualisationSectionComponentPropsType
+    extends CommonPropsType {
     dataset: ParsedDataset;
     distributionId?: string;
-};
+}
 
 /**
  * Visualisation Section external plugin component type.
@@ -298,11 +346,10 @@ export type ExtraVisualisationSectionComponentPropsType = {
 export type ExtraVisualisationSectionComponentType = ComponentType<
     ExtraVisualisationSectionComponentPropsType
 >;
-export type ExternalExtraVisualisationSectionComponentType = ExternalComponentType<
-    ExtraVisualisationSectionComponentType
->;
 
-export function getPluginExtraVisualisationSection(): ExtraVisualisationSectionComponentType | null {
+export function getPluginExtraVisualisationSection(): ComponentType<
+    InternalInterfaceProps<ExtraVisualisationSectionComponentPropsType>
+> | null {
     return getComponent<ExtraVisualisationSectionComponentPropsType>(
         "ExtraVisualisationSection"
     );

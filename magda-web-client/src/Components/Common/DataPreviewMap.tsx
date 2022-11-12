@@ -73,8 +73,8 @@ function getDataSourcePreference(): PreviewMapFormatPerferenceItem[] {
         return DATA_SOURCE_PREFERENCE;
     }
     const preferenceList: RawPreviewMapFormatPerferenceItem[] = config
-        ?.previewMapFormatPerference?.map
-        ? config?.previewMapFormatPerference
+        ?.previewMapFormatPerference?.length
+        ? config.previewMapFormatPerference
         : DEFAULT_DATA_SOURCE_PREFERENCE;
 
     DATA_SOURCE_PREFERENCE = preferenceList.map((item) => {

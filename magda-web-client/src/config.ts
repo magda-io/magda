@@ -141,7 +141,7 @@ export interface ConfigDataType {
      * @type {string}
      * @memberof ConfigDataType
      */
-    authApiUrl?: string;
+    authApiUrl: string;
 
     /**
      * The base URL path of all APIs (e.g. '/');
@@ -150,7 +150,7 @@ export interface ConfigDataType {
      * @type {string}
      * @memberof ConfigDataType
      */
-    baseUrl?: string;
+    baseUrl: string;
 
     /**
      * The default redirection url for all auth plugins once the authentication process is completed.
@@ -158,7 +158,7 @@ export interface ConfigDataType {
      * @type {string}
      * @memberof ConfigDataType
      */
-    authPluginRedirectUrl?: string;
+    authPluginRedirectUrl: string;
 
     /**
      * Similar to `baseUrl`. But this field includes the external access domain of the application.
@@ -167,7 +167,7 @@ export interface ConfigDataType {
      * @type {string}
      * @memberof ConfigDataType
      */
-    baseExternalUrl?: string;
+    baseExternalUrl: string;
 
     /**
      * The base url path where the web client will be served at.
@@ -179,7 +179,7 @@ export interface ConfigDataType {
      * @type {string}
      * @memberof ConfigDataType
      */
-    uiBaseUrl?: string;
+    uiBaseUrl: string;
 
     /**
      * Whether or not the notification banner should be shown.
@@ -208,7 +208,7 @@ export interface ConfigDataType {
      * @type {string}
      * @memberof ConfigDataType
      */
-    contentApiURL?: string;
+    contentApiURL: string;
 
     /**
      * The API URL to retrieve all default content items (e.g. header & footer items etc.).
@@ -217,19 +217,19 @@ export interface ConfigDataType {
      * @type {string}
      * @memberof ConfigDataType
      */
-    contentUrl?: string;
+    contentUrl: string;
     previewMapBaseUrl?: string;
     indexerApiBaseUrl?: string;
     registryApiBaseUrl?: string;
     registryApiReadOnlyBaseUrl?: string;
-    registryReadOnlyApiUrl?: string;
-    registryFullApiUrl?: string;
+    registryReadOnlyApiUrl: string;
+    registryFullApiUrl: string;
     searchApiBaseUrl?: string;
-    searchApiUrl?: string;
+    searchApiUrl: string;
     correspondenceApiBaseUrl?: string;
-    correspondenceApiUrl?: string;
+    correspondenceApiUrl: string;
     storageApiBaseUrl?: string;
-    storageApiUrl?: string;
+    storageApiUrl: string;
 
     /**
      * Google Analytics ID
@@ -239,7 +239,7 @@ export interface ConfigDataType {
      */
     gapiIds?: Array<string>;
     adminApiBaseUrl?: string;
-    adminApiUrl?: string;
+    adminApiUrl: string;
     previewMapUrl?: string;
     proxyUrl?: string;
     rssUrl?: string;
@@ -262,9 +262,15 @@ export interface ConfigDataType {
      *     }}
      * @memberof ConfigDataType
      */
-    featureFlags?: FeatureFlagsConfigType;
+    featureFlags: FeatureFlagsConfigType;
 
-    useMagdaStorageByDefault?: boolean;
+    /**
+     * Whether or not the "use magda storage" option should be pre-selected on dataset editor UI.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    useMagdaStorageByDefault: boolean;
     vocabularyApiEndpoints: string[];
     defaultOrganizationId?: string;
     defaultContactEmail?: string;
@@ -278,7 +284,7 @@ export interface ConfigDataType {
      */
     automaticPreviewMaxFileSize: number;
     mandatoryFields: ValidationFieldList;
-    dateConfig?: DateConfig;
+    dateConfig: DateConfig;
     noManualKeywords?: boolean;
     noManualThemes?: boolean;
     datasetThemes?: string[];
@@ -322,7 +328,7 @@ export interface ConfigDataType {
      *     }}
      * @memberof ConfigDataType
      */
-    boundingBox?: {
+    boundingBox: {
         west: number;
         south: number;
         east: number;
@@ -346,8 +352,8 @@ export interface ConfigDataType {
     previewMapFormatPerference?: RawPreviewMapFormatPerferenceItem[];
     showContactButtonForNoContactPointDataset?: boolean;
     defaultDatasetBucket?: string;
-    anonymousUserLandingPage?: string;
-    authenticatedUserLandingPage?: string;
+    anonymousUserLandingPage: string;
+    authenticatedUserLandingPage: string;
     /**
      * How long before reload the current user's auth data in the background.
      * Useful to transit UI to correct status when user leave browser open without interaction for long time.
