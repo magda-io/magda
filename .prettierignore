@@ -1,5 +1,6 @@
 deploy
 magda-web-client/src/pancake
+magda-web-client/public/assets/libs
 .gitlab-ci.yml
 .travis.yml
 *.html

@@ -23,7 +23,6 @@
   },
   "peerDependencies": {
     "@types/react": "^16.8.17",
-    "@types/history": "^4.7.11",
     "@types/react-router-dom": "^5.3.3"
   },
   "magda": {
