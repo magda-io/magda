@@ -16,3 +16,4 @@ export {
     ExtraVisualisationSectionComponentPropsType,
     ExtraVisualisationSectionComponentType
 } from "@magda/web-client/src/externalPluginComponents";
+export { ConfigDataType } from "@magda/web-client/src/config";

@@ -16,4 +16,4 @@
 
 #### Defined in
 
-index.d.ts:313
+index.d.ts:538

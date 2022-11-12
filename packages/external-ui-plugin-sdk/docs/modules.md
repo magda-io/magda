@@ -7,6 +7,7 @@
 ### Interfaces
 
 - [CommonPropsType](interfaces/CommonPropsType.md)
+- [ConfigDataType](interfaces/ConfigDataType.md)
 - [CopyRightItem](interfaces/CopyRightItem.md)
 - [FooterNavLink](interfaces/FooterNavLink.md)
 - [FooterNavLinkGroup](interfaces/FooterNavLinkGroup.md)
@@ -42,7 +43,7 @@ Dataset page `Edit Dataset` button external plugin component type
 
 #### Defined in
 
-index.d.ts:229
+index.d.ts:436
 
 ---
 
@@ -55,7 +56,7 @@ Please note: the `Like Button` on search result page is hidden unless a plugin c
 
 #### Defined in
 
-index.d.ts:242
+index.d.ts:449
 
 ---
 
@@ -69,7 +70,7 @@ More info & example please refer to repo: [magda-ui-plugin-component-dap-thumbna
 
 #### Defined in
 
-index.d.ts:266
+index.d.ts:473
 
 ---
 
@@ -81,7 +82,7 @@ Footer external plugin component type
 
 #### Defined in
 
-index.d.ts:286
+index.d.ts:511
 
 ---
 
@@ -93,7 +94,7 @@ Header external plugin component type
 
 #### Defined in
 
-index.d.ts:320
+index.d.ts:545
 
 ---
 
@@ -111,7 +112,7 @@ index.d.ts:320
 
 #### Defined in
 
-index.d.ts:221
+index.d.ts:428
 
 ---
 
@@ -127,7 +128,7 @@ index.d.ts:221
 
 #### Defined in
 
-index.d.ts:233
+index.d.ts:440
 
 ---
 
@@ -144,7 +145,7 @@ index.d.ts:233
 
 #### Defined in
 
-index.d.ts:255
+index.d.ts:462
 
 ---
 
@@ -163,7 +164,7 @@ index.d.ts:255
 
 #### Defined in
 
-index.d.ts:275
+index.d.ts:500
 
 ## Variables
 
@@ -173,4 +174,4 @@ index.d.ts:275
 
 #### Defined in
 
-index.d.ts:451
+index.d.ts:676

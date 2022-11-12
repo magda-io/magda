@@ -7,6 +7,7 @@ import urijs from "urijs";
 import removePathPrefix from "./helpers/removePathPrefix";
 import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
 import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient";
+import { Component } from "react";
 
 export const ADMIN_ROLE_ID = ADMIN_USERS_ROLE_ID;
 
@@ -42,7 +43,7 @@ const defaultDateFormats: string[] = [
 // Dev server
 const fallbackApiHost = "https://dev.magda.io/";
 
-const DEV_FEATURE_FLAGS = {
+const DEV_FEATURE_FLAGS: FeatureFlagsConfigType = {
     cataloguing: true,
     publishToDga: false,
     previewAddDataset: false,
@@ -51,6 +52,17 @@ const DEV_FEATURE_FLAGS = {
     datasetLikeButton: false,
     enableAutoMetadataFetchButton: true
 };
+
+export type FeatureFlagType =
+    | "cataloguing"
+    | "publishToDga"
+    | "previewAddDataset"
+    | "datasetApprovalWorkflowOn"
+    | "useStorageApi"
+    | "datasetLikeButton"
+    | "enableAutoMetadataFetchButton";
+
+export type FeatureFlagsConfigType = Partial<Record<FeatureFlagType, boolean>>;
 
 interface DateConfig {
     dateFormats: string[];
@@ -67,38 +79,203 @@ export interface RawPreviewMapFormatPerferenceItem {
     urlRegex?: string;
 }
 
+export interface FacetConfigItem {
+    id: string;
+    component: Component<any>;
+    showExplanation?: boolean;
+    name?: string;
+}
+
+/**
+ * Magda frontend application configuration data structure.
+ * This config data is only configurable at time of the deployment via [Magda web-server Helm Chart](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server).
+ * At the beginning of starting up, the frontend application will retrieve this config data from the web server.
+ *
+ * @export
+ * @interface ConfigDataType
+ */
 export interface ConfigDataType {
+    /**
+     * Although the field name `credentialsFetchOptions`, the field allow you to config all [fetch requests](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) sent by the frontend application.
+     * The most common settings is [credentials field](https://developer.mozilla.org/en-US/docs/Web/API/Request/Request#credentials).
+     * Its default value is `"credentials": "same-origin"`. When running the web client locally for debugging purpose, you might want to set it to `"credentials": "include"`.
+     * This will allow `credentials` (e.g. cookie) to be shared with remote dev testing API server.
+     *
+     * @type {RequestInit}
+     * @memberof ConfigDataType
+     */
+    credentialsFetchOptions: RequestInit;
+
+    /**
+     * The docker image information of the web server that serves all frontend resources of the application.
+     *
+     * @type {{
+     *         pullPolicy?: string;
+     *         repository?: string;
+     *         tag?: string;
+     *     }}
+     * @memberof ConfigDataType
+     */
     image?: {
         pullPolicy?: string;
         repository?: string;
         tag?: string;
     };
+
+    /**
+     * The authorisation API base URL supplied by server side.
+     * The value of this field will be used to populate field `authApiUrl`.
+     * When this value is not available (e.g. run web client locally), `authApiUrl` will be set to the authorisation API url of a default ("fallback") dev API server.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     authApiBaseUrl?: string;
+
+    /**
+     * The authorisation API base URL endpoint.
+     * Its value is either populated from config data retrieved from the server (i.e. `authApiBaseUrl` field).
+     * Or a default value that points to "fallback" dev API server.
+     * Frontend app use this value of this field to construct the full URLs to access all different content APIs.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    authApiUrl?: string;
+
+    /**
+     * The base URL path of all APIs (e.g. '/');
+     * The value of the field might either from config data retrieved from the server or the URL to a default "fallback" dev API server url for testing.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     baseUrl?: string;
+
+    /**
+     * The default redirection url for all auth plugins once the authentication process is completed.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     authPluginRedirectUrl?: string;
+
+    /**
+     * Similar to `baseUrl`. But this field includes the external access domain of the application.
+     * You might want to use its value in use cases e.g. generating external accessible links.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     baseExternalUrl?: string;
+
+    /**
+     * The base url path where the web client will be served at.
+     * E.g.  when `uiBaseUrl`=`/`, the web client will served at `https://example.com/`.
+     * When `uiBaseUrl`=`/abc/def`, the web client will served at `https://example.com/abc/def`.
+     * Please note: this field only reflect where the wbe client / frontend application is served at.
+     * It doesn't reflect where all APIs are served. To find out it, the value `baseUrl` field should be used.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     uiBaseUrl?: string;
+
+    /**
+     * Whether or not the notification banner should be shown.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
     showNotificationBanner?: boolean;
+
+    /**
+     * The content API base URL supplied by server side.
+     * The value of this field will be used to populate field `contentApiURL`.
+     * When this value is not available (e.g. run web client locally), `contentApiURL` will be set to the content API url of a default ("fallback") dev API server.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     contentApiBaseUrl?: string;
+
+    /**
+     * The content API base URL endpoint.
+     * Its value is either populated from config data retrieved from the server (i.e. `contentApiBaseUrl` field).
+     * Or a default value that points to "fallback" dev API server.
+     * Frontend app use this value of this field to construct the full URLs to access all different content APIs.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    contentApiURL?: string;
+
+    /**
+     * The API URL to retrieve all default content items (e.g. header & footer items etc.).
+     * The value of this field is created from field `contentApiURL`.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    contentUrl?: string;
     previewMapBaseUrl?: string;
     indexerApiBaseUrl?: string;
     registryApiBaseUrl?: string;
     registryApiReadOnlyBaseUrl?: string;
+    registryReadOnlyApiUrl?: string;
+    registryFullApiUrl?: string;
     searchApiBaseUrl?: string;
+    searchApiUrl?: string;
     correspondenceApiBaseUrl?: string;
+    correspondenceApiUrl?: string;
     storageApiBaseUrl?: string;
+    storageApiUrl?: string;
+
+    /**
+     * Google Analytics ID
+     *
+     * @type {Array<string>}
+     * @memberof ConfigDataType
+     */
     gapiIds?: Array<string>;
     adminApiBaseUrl?: string;
+    adminApiUrl?: string;
+    previewMapUrl?: string;
+    proxyUrl?: string;
+    rssUrl?: string;
     disableAuthenticationFeatures?: boolean;
+
+    /**
+     * The url of fallback dev API server for testing.
+     * It will only be used when the web client is run locally.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     fallbackUrl?: string;
-    featureFlags?: {
-        [id: string]: boolean;
-    };
+
+    /**
+     * A set of feature flags to turn on/of a list of features.
+     *
+     * @type {{
+     *         [id: string]: boolean;
+     *     }}
+     * @memberof ConfigDataType
+     */
+    featureFlags?: FeatureFlagsConfigType;
+
     useMagdaStorageByDefault?: boolean;
     vocabularyApiEndpoints: string[];
     defaultOrganizationId?: string;
     defaultContactEmail?: string;
     custodianOrgLevel: number;
+
+    /**
+     * The maximum size that a file can be in order to be automatically previewed by the ui as a map, graph or table.
+     *
+     * @type {number}
+     * @memberof ConfigDataType
+     */
     automaticPreviewMaxFileSize: number;
     mandatoryFields: ValidationFieldList;
     dateConfig?: DateConfig;
@@ -119,11 +296,51 @@ export interface ConfigDataType {
     externalUIComponents?: string[];
     externalCssFiles?: string[];
     homePageUrl?: string;
+    breakpoints?: {
+        small: number;
+        medium: number;
+        large: number;
+    };
+    facets?: FacetConfigItem[];
+    headerLogoUrl?: string;
+    headerMobileLogoUrl?: string;
+    /**
+     * A list of month name to be used in the application
+     *
+     * @type {string[]}
+     * @memberof ConfigDataType
+     */
+    months?: string[];
+    /**
+     * Default boundingBox for map preview module
+     *
+     * @type {{
+     *         west: number;
+     *         south: number;
+     *         east: number;
+     *         north: number;
+     *     }}
+     * @memberof ConfigDataType
+     */
+    boundingBox?: {
+        west: number;
+        south: number;
+        east: number;
+        north: number;
+    };
     supportExternalTerriaMapV7?: boolean;
     openInExternalTerriaMapButtonText?: string;
     openInExternalTerriaMapTargetUrl?: string;
+
+    /**
+     * extraConfigData is mainly for config data passing to external UI plugins
+     *
+     * @type {{
+     *         [key: string]: any;
+     *     }}
+     * @memberof ConfigDataType
+     */
     extraConfigData?: {
-        // extraConfigData is mainly for config data passing to external UI plugins
         [key: string]: any;
     };
     previewMapFormatPerference?: RawPreviewMapFormatPerferenceItem[];
@@ -131,6 +348,14 @@ export interface ConfigDataType {
     defaultDatasetBucket?: string;
     anonymousUserLandingPage?: string;
     authenticatedUserLandingPage?: string;
+    /**
+     * How long before reload the current user's auth data in the background.
+     * Useful to transit UI to correct status when user leave browser open without interaction for long time.
+     * Default: 5 mins
+     *
+     * @type {number}
+     * @memberof ConfigDataType
+     */
     authStatusRefreshInterval?: number;
 }
 
@@ -284,7 +509,7 @@ function getProxyUrl() {
     return uri.segment("proxy").toString() + "/";
 }
 
-export const config = {
+export const config: ConfigDataType = {
     ...serverConfig,
     credentialsFetchOptions: credentialsFetchOptions,
     showNotificationBanner: !!serverConfig.showNotificationBanner,
@@ -376,8 +601,6 @@ export const config = {
     custodianOrgLevel: serverConfig.custodianOrgLevel
         ? serverConfig.custodianOrgLevel
         : 2,
-    // The maximum size that a file can be in order to be automatically previewed
-    // by the ui as a map, graph or table.
     automaticPreviewMaxFileSize: serverConfig.automaticPreviewMaxFileSize
         ? serverConfig.automaticPreviewMaxFileSize
         : 2097152,
@@ -442,11 +665,6 @@ export const config = {
     authenticatedUserLandingPage: serverConfig?.authenticatedUserLandingPage
         ? serverConfig.authenticatedUserLandingPage
         : "/home",
-    /**
-     * How long before reload the current user's auth data in the background.
-     * Useful to transit UI to correct status when user leave browser open without interaction for long time.
-     * Default: 5 mins
-     */
     authStatusRefreshInterval: serverConfig?.authStatusRefreshInterval
         ? serverConfig.authStatusRefreshInterval
         : 300000

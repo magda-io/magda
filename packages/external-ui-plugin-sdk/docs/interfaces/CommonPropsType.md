@@ -29,7 +29,7 @@ CommonPropsType
 
 ### config
 
-• **config**: `ConfigDataType`
+• **config**: [`ConfigDataType`](ConfigDataType.md)
 
 The `config` field contains all frontend config data fields.
 External UI plugin developer might be interested in `config.extraConfigData` field.
@@ -42,7 +42,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:66
+index.d.ts:67
 
 ---
 
@@ -75,7 +75,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:118
+index.d.ts:119
 
 ---
 
@@ -92,7 +92,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:75
+index.d.ts:76
 
 ---
 
@@ -108,7 +108,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:42
+index.d.ts:43
 
 ---
 
@@ -125,7 +125,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:84
+index.d.ts:85
 
 ---
 
@@ -142,7 +142,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:93
+index.d.ts:94
 
 ---
 
@@ -166,7 +166,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:100
+index.d.ts:101
 
 ---
 
@@ -191,7 +191,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:108
+index.d.ts:109
 
 ---
 
@@ -207,7 +207,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:50
+index.d.ts:51
 
 ---
 
@@ -219,4 +219,4 @@ When it's not `null`, this fields contains the error thrown by the user profile 
 
 #### Defined in
 
-index.d.ts:55
+index.d.ts:56
