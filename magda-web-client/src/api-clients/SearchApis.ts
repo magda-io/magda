@@ -42,7 +42,7 @@ export function searchPublishers(
     }?query=${query}&start=${
         (start - 1) * searchResultsPerPage
     }&limit=${searchResultsPerPage}`;
-    return fetch(url, config.credentialsFetchOptions).then((response) => {
+    return fetch(url, config.commonFetchRequestOptions).then((response) => {
         if (!response.ok) {
             let statusText = response.statusText;
             // response.statusText are different in different browser, therefore we unify them here
@@ -86,7 +86,7 @@ export function autocompletePublishers(
             `facets/publisher/options?generalQuery=${encodeURIComponent(
                 generalQuery.q || "*"
             )}&${generalQueryString}&facetQuery=${term}`,
-        config.credentialsFetchOptions
+        config.commonFetchRequestOptions
     ).then((response) => {
         if (!response.ok) {
             throw new Error(response.statusText);
@@ -112,7 +112,7 @@ export async function autoCompleteAccessLocation(
         term
     )}&size=${size}`;
 
-    const response = await fetch(url, config.credentialsFetchOptions);
+    const response = await fetch(url, config.commonFetchRequestOptions);
     try {
         const resData: AutoCompleteResult = await response.json();
         if (resData.errorMessage) {
@@ -132,15 +132,17 @@ export async function autoCompleteAccessLocation(
 export function searchDatasets(queryObject: Query): Promise<DataSearchJson> {
     let url: string =
         config.searchApiUrl + `datasets?${buildSearchQueryString(queryObject)}`;
-    return fetch(url, config.credentialsFetchOptions).then((response: any) => {
-        if (response.status === 200) {
-            return response.json();
+    return fetch(url, config.commonFetchRequestOptions).then(
+        (response: any) => {
+            if (response.status === 200) {
+                return response.json();
+            }
+            let errorMessage = response.statusText;
+            if (!errorMessage)
+                errorMessage = "Failed to retrieve network resource.";
+            throw new Error(errorMessage);
         }
-        let errorMessage = response.statusText;
-        if (!errorMessage)
-            errorMessage = "Failed to retrieve network resource.";
-        throw new Error(errorMessage);
-    });
+    );
 }
 
 export type SearchRegionOptions = {

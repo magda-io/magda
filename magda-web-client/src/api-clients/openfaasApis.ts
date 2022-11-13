@@ -54,7 +54,7 @@ export async function getOpenfaasFunctions(
 ): Promise<OpenfaasFunction[]> {
     const res = await fetch(
         `${config.openfaasBaseUrl}/system/functions`,
-        config.credentialsFetchOptions
+        config.commonFetchRequestOptions
     );
     if (!res.ok) {
         if (res.status === 401) {
@@ -153,7 +153,7 @@ export async function invokeOpenfaasFunction<T = any>(
     funcInput?: OpenfaasFunctionInputType
 ): Promise<T> {
     const fecthReqOption: RequestInit = {
-        ...config.credentialsFetchOptions,
+        ...config.commonFetchRequestOptions,
         method: "post"
     };
 

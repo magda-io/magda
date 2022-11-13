@@ -25,7 +25,7 @@ export default async function deleteFile(distToDelete: Distribution) {
         const res = await fetch(
             getStorageApiResourceAccessUrl(distToDelete.downloadURL!),
             {
-                ...config.credentialsFetchOptions,
+                ...config.commonFetchRequestOptions,
                 method: "DELETE"
             }
         );

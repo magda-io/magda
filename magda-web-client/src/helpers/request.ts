@@ -41,7 +41,7 @@ export default async function request<T = any, CT = string>(
     returnHeaders: boolean = false,
     extraRequestOptions: RequestInit = {}
 ): Promise<[T, Headers] | T> {
-    const fetchOptions = Object.assign({}, config.credentialsFetchOptions, {
+    const fetchOptions = Object.assign({}, config.commonFetchRequestOptions, {
         method,
         ...extraRequestOptions
     });

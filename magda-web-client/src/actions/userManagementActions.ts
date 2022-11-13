@@ -18,7 +18,7 @@ export function requestWhoAmI(setLoading: boolean = true) {
         }
 
         await fetch(config.authApiUrl + "users/whoami", {
-            ...config.credentialsFetchOptions,
+            ...config.commonFetchRequestOptions,
             credentials: "include"
         })
             .then(async (response) => {
@@ -71,7 +71,7 @@ export function requestSignOut() {
             });
 
             const response = await fetch(config.baseUrl + "auth/logout", {
-                ...config.credentialsFetchOptions,
+                ...config.commonFetchRequestOptions,
                 credentials: "include"
             });
 

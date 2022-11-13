@@ -50,7 +50,7 @@ export default async function uploadFile(
 
         try {
             const res = await fetch(fetchUrl, {
-                ...config.credentialsFetchOptions,
+                ...config.commonFetchRequestOptions,
                 method: "POST",
                 body: formData
             });

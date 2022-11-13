@@ -31,7 +31,7 @@ export function fetchNewsfromRss() {
             return false;
         }
         const url = config.rssUrl as string;
-        fetch(url, config.credentialsFetchOptions)
+        fetch(url, config.commonFetchRequestOptions)
             .then((response) => {
                 if (response.status === 200) {
                     return response.text();

@@ -29,7 +29,7 @@ export function fetchRegionMapping() {
         dispatch(requestRegionMapping());
         return fetch(
             config.searchApiUrl + "region-types",
-            config.credentialsFetchOptions
+            config.commonFetchRequestOptions
         )
             .then((response) => {
                 if (response.status === 200) {

@@ -55,7 +55,7 @@ export default class RequestFormLogic extends React.Component {
                 )}/question`;
         }
         fetch(url, {
-            ...config.credentialsFetchOptions,
+            ...config.commonFetchRequestOptions,
             method: "POST",
             headers: {
                 "Content-type": "application/json",

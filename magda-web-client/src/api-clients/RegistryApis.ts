@@ -122,8 +122,8 @@ export function fetchOrganization(
     return fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
-            : config.credentialsFetchOptions
+            ? createNoCacheFetchOptions(config.commonFetchRequestOptions)
+            : config.commonFetchRequestOptions
     ).then((response) => {
         if (!response.ok) {
             let statusText = response.statusText;
@@ -282,8 +282,8 @@ export async function fetchRecord<T = RawDataset>(
     const response = await fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
-            : config.credentialsFetchOptions
+            ? createNoCacheFetchOptions(config.commonFetchRequestOptions)
+            : config.commonFetchRequestOptions
     );
 
     if (!response.ok) {
@@ -318,8 +318,8 @@ export async function fetchRecordAspect<T = any>(
     const res = await fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
-            : config.credentialsFetchOptions
+            ? createNoCacheFetchOptions(config.commonFetchRequestOptions)
+            : config.commonFetchRequestOptions
     );
 
     if (!res.ok) {
@@ -345,8 +345,8 @@ export async function fetchHistoricalRecord<T = RawDataset>(
     const response = await fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
-            : config.credentialsFetchOptions
+            ? createNoCacheFetchOptions(config.commonFetchRequestOptions)
+            : config.commonFetchRequestOptions
     );
 
     if (!response.ok) {
@@ -459,8 +459,8 @@ export async function fetchRecords({
     const response = await fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
-            : config.credentialsFetchOptions
+            ? createNoCacheFetchOptions(config.commonFetchRequestOptions)
+            : config.commonFetchRequestOptions
     );
 
     if (!response.ok) {
@@ -520,8 +520,8 @@ export async function fetchRecordsCount({
     const response = await fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
-            : config.credentialsFetchOptions
+            ? createNoCacheFetchOptions(config.commonFetchRequestOptions)
+            : config.commonFetchRequestOptions
     );
 
     if (!response.ok) {

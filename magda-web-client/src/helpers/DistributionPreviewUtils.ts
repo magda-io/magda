@@ -36,7 +36,7 @@ export async function getFileLength(file: ParsedDistribution | string) {
         const res = await fetch(proxyUrl, {
             method: "HEAD",
             ...(isStorageApiUrl(sourceUrl)
-                ? config.credentialsFetchOptions
+                ? config.commonFetchRequestOptions
                 : {})
         });
 

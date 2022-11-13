@@ -96,15 +96,15 @@ export interface FacetConfigItem {
  */
 export interface ConfigDataType {
     /**
-     * Although the field name `credentialsFetchOptions`, the field allow you to config all [fetch requests](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) sent by the frontend application.
-     * The most common settings is [credentials field](https://developer.mozilla.org/en-US/docs/Web/API/Request/Request#credentials).
+     * This field allow you to config the common settings of all [fetch requests](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) sent by the frontend application.
+     * One common use case is to set [credentials field](https://developer.mozilla.org/en-US/docs/Web/API/Request/Request#credentials).
      * Its default value is `"credentials": "same-origin"`. When running the web client locally for debugging purpose, you might want to set it to `"credentials": "include"`.
      * This will allow `credentials` (e.g. cookie) to be shared with remote dev testing API server.
      *
      * @type {RequestInit}
      * @memberof ConfigDataType
      */
-    credentialsFetchOptions: RequestInit;
+    commonFetchRequestOptions: RequestInit;
 
     /**
      * The docker image information of the web server that serves all frontend resources of the application.
@@ -446,7 +446,7 @@ const baseExternalUrl = serverConfig.baseExternalUrl
     : urijs().segment([]).search("").fragment("").toString();
 
 // when UI domain is different from backend domain, we set credentials: "include"
-export const credentialsFetchOptions: RequestInit = !isBackendSameOrigin
+export const commonFetchRequestOptions: RequestInit = !isBackendSameOrigin
     ? {
           credentials: "include"
       }
@@ -454,7 +454,7 @@ export const credentialsFetchOptions: RequestInit = !isBackendSameOrigin
           credentials: "same-origin"
       };
 
-AuthDecisionQueryClient.fetchOptions = { ...credentialsFetchOptions };
+AuthDecisionQueryClient.fetchOptions = { ...commonFetchRequestOptions };
 
 const contentApiURL =
     serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";
@@ -517,7 +517,7 @@ function getProxyUrl() {
 
 export const config: ConfigDataType = {
     ...serverConfig,
-    credentialsFetchOptions: credentialsFetchOptions,
+    commonFetchRequestOptions: commonFetchRequestOptions,
     showNotificationBanner: !!serverConfig.showNotificationBanner,
     baseUrl,
     baseExternalUrl,

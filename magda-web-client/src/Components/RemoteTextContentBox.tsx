@@ -39,7 +39,7 @@ const RemoteTextContentBox = (props: Props) => {
                 isLoading: false
             }));
         }
-        fetch(props.url, config.credentialsFetchOptions)
+        fetch(props.url, config.commonFetchRequestOptions)
             .then((response) => {
                 if (response.status === 200) {
                     return response.json();

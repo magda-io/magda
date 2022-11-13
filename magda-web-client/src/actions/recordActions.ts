@@ -176,7 +176,7 @@ export function modifyRecordAspect(
 
         const patch = [{ op: "add", path: `/${field}`, value }];
 
-        let options = Object.assign({}, config.credentialsFetchOptions, {
+        let options = Object.assign({}, config.commonFetchRequestOptions, {
             method: "PATCH",
             body: JSON.stringify(patch),
             headers: {

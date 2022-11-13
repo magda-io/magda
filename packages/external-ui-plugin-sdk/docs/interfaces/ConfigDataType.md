@@ -30,12 +30,12 @@ ConfigDataType
 - [boundingBox](ConfigDataType.md#boundingbox)
 - [breakpoints](ConfigDataType.md#breakpoints)
 - [ckanExportServers](ConfigDataType.md#ckanexportservers)
+- [commonFetchRequestOptions](ConfigDataType.md#commonfetchrequestoptions)
 - [contentApiBaseUrl](ConfigDataType.md#contentapibaseurl)
 - [contentApiURL](ConfigDataType.md#contentapiurl)
 - [contentUrl](ConfigDataType.md#contenturl)
 - [correspondenceApiBaseUrl](ConfigDataType.md#correspondenceapibaseurl)
 - [correspondenceApiUrl](ConfigDataType.md#correspondenceapiurl)
-- [credentialsFetchOptions](ConfigDataType.md#credentialsfetchoptions)
 - [custodianOrgLevel](ConfigDataType.md#custodianorglevel)
 - [datasetThemes](ConfigDataType.md#datasetthemes)
 - [dateConfig](ConfigDataType.md#dateconfig)
@@ -309,6 +309,25 @@ index.d.ts:337
 
 ---
 
+### commonFetchRequestOptions
+
+• **commonFetchRequestOptions**: `RequestInit`
+
+This field allow you to config the common settings of all [fetch requests](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) sent by the frontend application.
+One common use case is to set [credentials field](https://developer.mozilla.org/en-US/docs/Web/API/Request/Request#credentials).
+Its default value is `"credentials": "same-origin"`. When running the web client locally for debugging purpose, you might want to set it to `"credentials": "include"`.
+This will allow `credentials` (e.g. cookie) to be shared with remote dev testing API server.
+
+**`Memberof`**
+
+ConfigDataType
+
+#### Defined in
+
+index.d.ts:151
+
+---
+
 ### contentApiBaseUrl
 
 • `Optional` **contentApiBaseUrl**: `string`
@@ -380,25 +399,6 @@ index.d.ts:273
 #### Defined in
 
 index.d.ts:274
-
----
-
-### credentialsFetchOptions
-
-• **credentialsFetchOptions**: `RequestInit`
-
-Although the field name `credentialsFetchOptions`, the field allow you to config all [fetch requests](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) sent by the frontend application.
-The most common settings is [credentials field](https://developer.mozilla.org/en-US/docs/Web/API/Request/Request#credentials).
-Its default value is `"credentials": "same-origin"`. When running the web client locally for debugging purpose, you might want to set it to `"credentials": "include"`.
-This will allow `credentials` (e.g. cookie) to be shared with remote dev testing API server.
-
-**`Memberof`**
-
-ConfigDataType
-
-#### Defined in
-
-index.d.ts:151
 
 ---
 

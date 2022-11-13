@@ -34,8 +34,8 @@ export function fetchContent(noCache: boolean = false) {
         await fetch(
             config.contentUrl,
             noCache
-                ? createNoCacheFetchOptions(config.credentialsFetchOptions)
-                : config.credentialsFetchOptions
+                ? createNoCacheFetchOptions(config.commonFetchRequestOptions)
+                : config.commonFetchRequestOptions
         )
             .then((response) => {
                 if (response.status === 200) {
