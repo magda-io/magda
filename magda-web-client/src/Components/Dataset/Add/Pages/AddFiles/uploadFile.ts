@@ -30,7 +30,7 @@ export default async function uploadFile(
         const formData = new FormData();
         formData.append(processedfileName, file, processedfileName);
 
-        const fetchUri = urijs(config.storageApiUrl);
+        const fetchUri = urijs(config.storageApiBaseUrl);
         const fetchUrl = fetchUri
             .segmentCoded([
                 ...fetchUri.segmentCoded(),

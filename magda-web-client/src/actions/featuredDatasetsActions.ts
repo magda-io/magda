@@ -31,7 +31,7 @@ export function fetchFeaturedDatasetsFromRegistry(ids: Array<string>): any {
         dispatch(requestDatasets(ids));
         const fetches = ids.map((id) =>
             fetch(
-                config.registryReadOnlyApiUrl +
+                config.registryApiReadOnlyBaseUrl +
                     `records/${encodeURIComponent(
                         id
                     )}?aspect=dcat-dataset-strings&optionalAspect=dataset-publisher&optionalAspect=source&dereference=true`,

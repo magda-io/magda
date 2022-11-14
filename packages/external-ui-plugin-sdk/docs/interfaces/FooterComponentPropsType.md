@@ -103,7 +103,7 @@ index.d.ts:119
 
 #### Defined in
 
-index.d.ts:539
+index.d.ts:860
 
 ---
 
@@ -113,7 +113,7 @@ index.d.ts:539
 
 #### Defined in
 
-index.d.ts:537
+index.d.ts:858
 
 ---
 
@@ -123,7 +123,7 @@ index.d.ts:537
 
 #### Defined in
 
-index.d.ts:538
+index.d.ts:859
 
 ---
 
@@ -216,7 +216,7 @@ index.d.ts:94
 
 #### Defined in
 
-index.d.ts:536
+index.d.ts:857
 
 ---
 

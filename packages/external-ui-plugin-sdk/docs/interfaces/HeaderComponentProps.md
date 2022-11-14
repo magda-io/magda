@@ -100,7 +100,7 @@ index.d.ts:119
 
 #### Defined in
 
-index.d.ts:580
+index.d.ts:901
 
 ---
 

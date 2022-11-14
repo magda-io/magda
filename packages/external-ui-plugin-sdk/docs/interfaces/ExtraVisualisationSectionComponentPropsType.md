@@ -64,7 +64,7 @@ index.d.ts:67
 
 #### Defined in
 
-index.d.ts:491
+index.d.ts:812
 
 ---
 
@@ -74,7 +74,7 @@ index.d.ts:491
 
 #### Defined in
 
-index.d.ts:492
+index.d.ts:813
 
 ---
 

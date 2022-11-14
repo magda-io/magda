@@ -17,7 +17,7 @@ export function requestWhoAmI(setLoading: boolean = true) {
             });
         }
 
-        await fetch(config.authApiUrl + "users/whoami", {
+        await fetch(config.authApiBaseUrl + "users/whoami", {
             ...config.commonFetchRequestOptions,
             credentials: "include"
         })

@@ -5,6 +5,7 @@
 Magda frontend application configuration data structure.
 This config data is only configurable at time of the deployment via [Magda web-server Helm Chart](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server).
 At the beginning of starting up, the frontend application will retrieve this config data from the web server.
+For default values, please refer to [Magda web-server Helm Chart Doc](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server).
 
 **`Export`**
 
@@ -17,10 +18,8 @@ ConfigDataType
 ### Properties
 
 - [adminApiBaseUrl](ConfigDataType.md#adminapibaseurl)
-- [adminApiUrl](ConfigDataType.md#adminapiurl)
 - [anonymousUserLandingPage](ConfigDataType.md#anonymoususerlandingpage)
 - [authApiBaseUrl](ConfigDataType.md#authapibaseurl)
-- [authApiUrl](ConfigDataType.md#authapiurl)
 - [authPluginRedirectUrl](ConfigDataType.md#authpluginredirecturl)
 - [authStatusRefreshInterval](ConfigDataType.md#authstatusrefreshinterval)
 - [authenticatedUserLandingPage](ConfigDataType.md#authenticateduserlandingpage)
@@ -32,10 +31,8 @@ ConfigDataType
 - [ckanExportServers](ConfigDataType.md#ckanexportservers)
 - [commonFetchRequestOptions](ConfigDataType.md#commonfetchrequestoptions)
 - [contentApiBaseUrl](ConfigDataType.md#contentapibaseurl)
-- [contentApiURL](ConfigDataType.md#contentapiurl)
 - [contentUrl](ConfigDataType.md#contenturl)
 - [correspondenceApiBaseUrl](ConfigDataType.md#correspondenceapibaseurl)
-- [correspondenceApiUrl](ConfigDataType.md#correspondenceapiurl)
 - [custodianOrgLevel](ConfigDataType.md#custodianorglevel)
 - [datasetThemes](ConfigDataType.md#datasetthemes)
 - [dateConfig](ConfigDataType.md#dateconfig)
@@ -71,19 +68,14 @@ ConfigDataType
 - [openfaasBaseUrl](ConfigDataType.md#openfaasbaseurl)
 - [previewMapBaseUrl](ConfigDataType.md#previewmapbaseurl)
 - [previewMapFormatPerference](ConfigDataType.md#previewmapformatperference)
-- [previewMapUrl](ConfigDataType.md#previewmapurl)
 - [proxyUrl](ConfigDataType.md#proxyurl)
 - [registryApiBaseUrl](ConfigDataType.md#registryapibaseurl)
 - [registryApiReadOnlyBaseUrl](ConfigDataType.md#registryapireadonlybaseurl)
-- [registryFullApiUrl](ConfigDataType.md#registryfullapiurl)
-- [registryReadOnlyApiUrl](ConfigDataType.md#registryreadonlyapiurl)
 - [rssUrl](ConfigDataType.md#rssurl)
 - [searchApiBaseUrl](ConfigDataType.md#searchapibaseurl)
-- [searchApiUrl](ConfigDataType.md#searchapiurl)
 - [showContactButtonForNoContactPointDataset](ConfigDataType.md#showcontactbuttonfornocontactpointdataset)
 - [showNotificationBanner](ConfigDataType.md#shownotificationbanner)
 - [storageApiBaseUrl](ConfigDataType.md#storageapibaseurl)
-- [storageApiUrl](ConfigDataType.md#storageapiurl)
 - [supportExternalTerriaMapV7](ConfigDataType.md#supportexternalterriamapv7)
 - [uiBaseUrl](ConfigDataType.md#uibaseurl)
 - [useMagdaStorageByDefault](ConfigDataType.md#usemagdastoragebydefault)
@@ -93,21 +85,18 @@ ConfigDataType
 
 ### adminApiBaseUrl
 
-• `Optional` **adminApiBaseUrl**: `string`
+• **adminApiBaseUrl**: `string`
+
+The admin API base URL config value that is supplied by the web server.
+When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+
+**`Memberof`**
+
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:285
-
----
-
-### adminApiUrl
-
-• **adminApiUrl**: `string`
-
-#### Defined in
-
-index.d.ts:286
+index.d.ts:328
 
 ---
 
@@ -115,19 +104,25 @@ index.d.ts:286
 
 • **anonymousUserLandingPage**: `string`
 
+The landing page URL for anonymous users.
+By default, it's "/home". You might want to set to "/account", if your system is not open to public users.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:399
+index.d.ts:711
 
 ---
 
 ### authApiBaseUrl
 
-• `Optional` **authApiBaseUrl**: `string`
+• **authApiBaseUrl**: `string`
 
-The authorisation API base URL supplied by server side.
-The value of this field will be used to populate field `authApiUrl`.
-When this value is not available (e.g. run web client locally), `authApiUrl` will be set to the authorisation API url of a default ("fallback") dev API server.
+The authorisation API base URL config value that is supplied by the web server.
+When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
 
 **`Memberof`**
 
@@ -136,25 +131,6 @@ ConfigDataType
 #### Defined in
 
 index.d.ts:177
-
----
-
-### authApiUrl
-
-• **authApiUrl**: `string`
-
-The authorisation API base URL endpoint.
-Its value is either populated from config data retrieved from the server (i.e. `authApiBaseUrl` field).
-Or a default value that points to "fallback" dev API server.
-Frontend app use this value of this field to construct the full URLs to access all different content APIs.
-
-**`Memberof`**
-
-ConfigDataType
-
-#### Defined in
-
-index.d.ts:188
 
 ---
 
@@ -170,7 +146,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:205
+index.d.ts:194
 
 ---
 
@@ -188,7 +164,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:409
+index.d.ts:730
 
 ---
 
@@ -196,9 +172,16 @@ index.d.ts:409
 
 • **authenticatedUserLandingPage**: `string`
 
+The landing page URL for authenticated users.
+By default, it's "/home".
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:400
+index.d.ts:720
 
 ---
 
@@ -214,7 +197,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:329
+index.d.ts:432
 
 ---
 
@@ -222,8 +205,8 @@ index.d.ts:329
 
 • **baseExternalUrl**: `string`
 
-Similar to `baseUrl`. But this field includes the external access domain of the application.
-You might want to use its value in use cases e.g. generating external accessible links.
+Similar to `baseUrl`. But this field always includes the external access domain of the application.
+You might want to use its value in use cases e.g. generating external accessible links for email content.
 
 **`Memberof`**
 
@@ -231,7 +214,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:214
+index.d.ts:203
 
 ---
 
@@ -240,7 +223,7 @@ index.d.ts:214
 • **baseUrl**: `string`
 
 The base URL path of all APIs (e.g. '/');
-The value of the field might either from config data retrieved from the server or the URL to a default "fallback" dev API server url for testing.
+The value of the field might be either from config data retrieved from the server or (when run web client locally) the hardcoded URL to a default "fallback" dev API server url for testing.
 
 **`Memberof`**
 
@@ -248,7 +231,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:197
+index.d.ts:186
 
 ---
 
@@ -273,13 +256,19 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:375
+index.d.ts:633
 
 ---
 
 ### breakpoints
 
 • `Optional` **breakpoints**: `Object`
+
+The responsive UI break points.
+
+**`Memberof`**
+
+ConfigDataType
 
 #### Type declaration
 
@@ -291,7 +280,7 @@ index.d.ts:375
 
 #### Defined in
 
-index.d.ts:349
+index.d.ts:585
 
 ---
 
@@ -299,13 +288,21 @@ index.d.ts:349
 
 • **ckanExportServers**: `Object`
 
+Config for optional dataset auto-sync to ckan feature.
+Only available when [magda-minion-ckan-exporter](https://github.com/magda-io/magda-minion-ckan-exporter) is deployed and feature flag `publishToDga` is `true`.
+This feature is still in beta.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Index signature
 
 ▪ [ckanServerUrl: `string`]: `boolean`
 
 #### Defined in
 
-index.d.ts:337
+index.d.ts:493
 
 ---
 
@@ -324,36 +321,16 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:151
+index.d.ts:152
 
 ---
 
 ### contentApiBaseUrl
 
-• `Optional` **contentApiBaseUrl**: `string`
+• **contentApiBaseUrl**: `string`
 
-The content API base URL supplied by server side.
-The value of this field will be used to populate field `contentApiURL`.
-When this value is not available (e.g. run web client locally), `contentApiURL` will be set to the content API url of a default ("fallback") dev API server.
-
-**`Memberof`**
-
-ConfigDataType
-
-#### Defined in
-
-index.d.ts:244
-
----
-
-### contentApiURL
-
-• **contentApiURL**: `string`
-
-The content API base URL endpoint.
-Its value is either populated from config data retrieved from the server (i.e. `contentApiBaseUrl` field).
-Or a default value that points to "fallback" dev API server.
-Frontend app use this value of this field to construct the full URLs to access all different content APIs.
+The content API base URL config value that is supplied by the web server.
+When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
 
 **`Memberof`**
 
@@ -361,7 +338,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:255
+index.d.ts:232
 
 ---
 
@@ -369,8 +346,9 @@ index.d.ts:255
 
 • **contentUrl**: `string`
 
-The API URL to retrieve all default content items (e.g. header & footer items etc.).
-The value of this field is created from field `contentApiURL`.
+The API endpoint URL to retrieve all default content items (e.g. header & footer items etc.).
+The value of this field is created from field `contentApiBaseUrl`.
+It includes all required query parameters in the URL and serves as a pre-configured short cut to retrieve all default content items for a user.
 
 **`Memberof`**
 
@@ -378,7 +356,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:264
+index.d.ts:242
 
 ---
 
@@ -386,19 +364,16 @@ index.d.ts:264
 
 • `Optional` **correspondenceApiBaseUrl**: `string`
 
-#### Defined in
+The correspondence API base URL config value that is supplied by the web server.
+When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
 
-index.d.ts:273
+**`Memberof`**
 
----
-
-### correspondenceApiUrl
-
-• **correspondenceApiUrl**: `string`
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:274
+index.d.ts:310
 
 ---
 
@@ -406,9 +381,15 @@ index.d.ts:274
 
 • **custodianOrgLevel**: `number`
 
+deprecated. Not used anymore. To be removed in future.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:321
+index.d.ts:424
 
 ---
 
@@ -416,9 +397,15 @@ index.d.ts:321
 
 • `Optional` **datasetThemes**: `string`[]
 
+Predefined dataset theme list used in the dataset editor.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:334
+index.d.ts:472
 
 ---
 
@@ -426,9 +413,15 @@ index.d.ts:334
 
 • **dateConfig**: `DateConfig`
 
+The date format config used in dataset editor auto date information extraction.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:331
+index.d.ts:448
 
 ---
 
@@ -436,9 +429,16 @@ index.d.ts:331
 
 • **defaultCkanServer**: `string`
 
+The default CKAN server for the optional dataset auto-sync to ckan feature.
+see config field `ckanExportServers`.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:340
+index.d.ts:504
 
 ---
 
@@ -446,9 +446,15 @@ index.d.ts:340
 
 • `Optional` **defaultContactEmail**: `string`
 
+Default email to forward users' inquiry.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:320
+index.d.ts:416
 
 ---
 
@@ -456,9 +462,15 @@ index.d.ts:320
 
 • `Optional` **defaultDatasetBucket**: `string`
 
+The default storage bucket that storage API should use.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:398
+index.d.ts:702
 
 ---
 
@@ -466,9 +478,15 @@ index.d.ts:398
 
 • `Optional` **defaultOrganizationId**: `string`
 
+Default Organization ID for dataset editor UI.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:319
+index.d.ts:408
 
 ---
 
@@ -476,19 +494,32 @@ index.d.ts:319
 
 • `Optional` **defaultTimeZone**: `string`
 
+The default timezone used in the application.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:341
+index.d.ts:512
 
 ---
 
 ### disableAuthenticationFeatures
 
-• `Optional` **disableAuthenticationFeatures**: `boolean`
+• **disableAuthenticationFeatures**: `boolean`
+
+When set to `true`, the user account related links & buttons will be removed.
+Default to `false`.
+
+**`Memberof`**
+
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:290
+index.d.ts:354
 
 ---
 
@@ -496,9 +527,16 @@ index.d.ts:290
 
 • `Optional` **discourseIntegrationDatasetPage**: `boolean`
 
+For the optional discourse site integration feature.
+Indicate whether show the discourse comment area on dataset page.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:344
+index.d.ts:539
 
 ---
 
@@ -506,9 +544,16 @@ index.d.ts:344
 
 • `Optional` **discourseIntegrationDistributionPage**: `boolean`
 
+For the optional discourse site integration feature.
+Indicate whether show the discourse comment area on distribution page.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:345
+index.d.ts:548
 
 ---
 
@@ -516,9 +561,17 @@ index.d.ts:345
 
 • `Optional` **discourseSiteUrl**: `string`
 
+The discourse site url.
+For the optional discourse site integration feature.
+When its value is empty, the feature will be disabled.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:343
+index.d.ts:530
 
 ---
 
@@ -526,9 +579,15 @@ index.d.ts:343
 
 • `Optional` **enableCrawlerViews**: `boolean`
 
+Indicate whether or not the crawler web view is enabled on [Magda web-server](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server) to provide search engine optimized views.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:342
+index.d.ts:520
 
 ---
 
@@ -536,9 +595,15 @@ index.d.ts:342
 
 • `Optional` **externalCssFiles**: `string`[]
 
+A list of optional external CSS files to overwrite the looking of the site.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:347
+index.d.ts:564
 
 ---
 
@@ -546,9 +611,15 @@ index.d.ts:347
 
 • `Optional` **externalUIComponents**: `string`[]
 
+A list of optional external UI component plugins bundle URLs.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:346
+index.d.ts:556
 
 ---
 
@@ -568,7 +639,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:393
+index.d.ts:674
 
 ---
 
@@ -576,9 +647,15 @@ index.d.ts:393
 
 • `Optional` **facets**: `FacetConfigItem`[]
 
+Search panel facet config.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:354
+index.d.ts:597
 
 ---
 
@@ -595,7 +672,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:299
+index.d.ts:363
 
 ---
 
@@ -611,7 +688,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:309
+index.d.ts:373
 
 ---
 
@@ -627,7 +704,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:284
+index.d.ts:336
 
 ---
 
@@ -635,9 +712,15 @@ index.d.ts:284
 
 • `Optional` **headerLogoUrl**: `string`
 
+Header logo URL.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:355
+index.d.ts:605
 
 ---
 
@@ -645,9 +728,15 @@ index.d.ts:355
 
 • `Optional` **headerMobileLogoUrl**: `string`
 
+Header logo URL for mobile view.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:356
+index.d.ts:613
 
 ---
 
@@ -655,9 +744,16 @@ index.d.ts:356
 
 • `Optional` **homePageUrl**: `string`
 
+The url used when user click `home` link or header logo.
+Default to "/"
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:348
+index.d.ts:573
 
 ---
 
@@ -681,17 +777,24 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:163
+index.d.ts:164
 
 ---
 
 ### indexerApiBaseUrl
 
-• `Optional` **indexerApiBaseUrl**: `string`
+• **indexerApiBaseUrl**: `string`
+
+The indexer API base URL config value that is supplied by the web server.
+When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+
+**`Memberof`**
+
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:266
+index.d.ts:269
 
 ---
 
@@ -699,9 +802,15 @@ index.d.ts:266
 
 • `Optional` **keywordsBlackList**: `string`[]
 
+A list of keywords that should never be generated by the auto keyword generation module in the dataset editor UI.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:335
+index.d.ts:400
 
 ---
 
@@ -709,9 +818,15 @@ index.d.ts:335
 
 • **mandatoryFields**: `ValidationFieldList`
 
+List all mandatory fields in dataset editor.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:330
+index.d.ts:440
 
 ---
 
@@ -727,7 +842,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:363
+index.d.ts:621
 
 ---
 
@@ -735,9 +850,15 @@ index.d.ts:363
 
 • `Optional` **noManualKeywords**: `boolean`
 
+Whether or not allow user to input manual keywords in the dataset editor.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:332
+index.d.ts:456
 
 ---
 
@@ -745,9 +866,15 @@ index.d.ts:332
 
 • `Optional` **noManualThemes**: `boolean`
 
+Whether or not allow user to input manual themes in the dataset editor.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:333
+index.d.ts:464
 
 ---
 
@@ -755,9 +882,17 @@ index.d.ts:333
 
 • `Optional` **openInExternalTerriaMapButtonText**: `string`
 
+The the "Open in XXXX" over the map preview module button text label.
+By default, it's set to "Open in National Map".
+But you can set to other value in case you want to send data to your own terria map.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:382
+index.d.ts:656
 
 ---
 
@@ -765,9 +900,15 @@ index.d.ts:382
 
 • `Optional` **openInExternalTerriaMapTargetUrl**: `string`
 
+The target terria map URL that the "Open in XXXX" over the map preview module button should send data to.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:383
+index.d.ts:664
 
 ---
 
@@ -775,19 +916,33 @@ index.d.ts:383
 
 • `Optional` **openfaasBaseUrl**: `string`
 
+The openfaas API base URL config value that is supplied by the web server.
+When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:336
+index.d.ts:481
 
 ---
 
 ### previewMapBaseUrl
 
-• `Optional` **previewMapBaseUrl**: `string`
+• **previewMapBaseUrl**: `string`
+
+The map preview module base access URL config value that is supplied by the web server.
+When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+
+**`Memberof`**
+
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:265
+index.d.ts:251
 
 ---
 
@@ -795,69 +950,72 @@ index.d.ts:265
 
 • `Optional` **previewMapFormatPerference**: `RawPreviewMapFormatPerferenceItem`[]
 
-#### Defined in
+A format preference list for the map preview module.
+It controls, on dataset page, when more than one formats are available, which format data file / API will be used for best user experience.
 
-index.d.ts:396
+**`Memberof`**
 
----
-
-### previewMapUrl
-
-• `Optional` **previewMapUrl**: `string`
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:287
+index.d.ts:685
 
 ---
 
 ### proxyUrl
 
-• `Optional` **proxyUrl**: `string`
+• **proxyUrl**: `string`
+
+The CORS resource proxy url. Mainly used by map preview module to load CORS resources from whitelist domains.
+Its value is generated from `previewMapBaseUrl`.
+
+**`Memberof`**
+
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:288
+index.d.ts:260
 
 ---
 
 ### registryApiBaseUrl
 
-• `Optional` **registryApiBaseUrl**: `string`
+• **registryApiBaseUrl**: `string`
+
+The registry API base URL config value that is supplied by the web server.
+When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+Please note: this registry API endpoint can handle both read & write requests.
+Since v0.0.59, readonly (HTTP GET) requests that are sent to this endpoint externally will be auto-forward to the readonly endpoint `registryApiReadOnlyBaseUrl`.
+However, for performance consideration (as gateway doesn't need to check HTTP method), `registryApiReadOnlyBaseUrl` should still be the preferred endpoint for readonly requests.
+
+**`Memberof`**
+
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:267
+index.d.ts:281
 
 ---
 
 ### registryApiReadOnlyBaseUrl
 
-• `Optional` **registryApiReadOnlyBaseUrl**: `string`
+• **registryApiReadOnlyBaseUrl**: `string`
+
+The registry readonly API base URL config value that is supplied by the web server.
+When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+Please note: this registry API endpoint can only handle both read requests only.
+The readonly registry API endpoint can scale horizontally easily. Thus, should be the preferred endpoint for serving readonly requests.
+
+**`Memberof`**
+
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:268
-
----
-
-### registryFullApiUrl
-
-• **registryFullApiUrl**: `string`
-
-#### Defined in
-
-index.d.ts:270
-
----
-
-### registryReadOnlyApiUrl
-
-• **registryReadOnlyApiUrl**: `string`
-
-#### Defined in
-
-index.d.ts:269
+index.d.ts:292
 
 ---
 
@@ -865,29 +1023,33 @@ index.d.ts:269
 
 • `Optional` **rssUrl**: `string`
 
+remote RSS news endpoint.
+This config field is deprecated & to be removed in future.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:289
+index.d.ts:345
 
 ---
 
 ### searchApiBaseUrl
 
-• `Optional` **searchApiBaseUrl**: `string`
+• **searchApiBaseUrl**: `string`
+
+The search API base URL config value that is supplied by the web server.
+When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+
+**`Memberof`**
+
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:271
-
----
-
-### searchApiUrl
-
-• **searchApiUrl**: `string`
-
-#### Defined in
-
-index.d.ts:272
+index.d.ts:301
 
 ---
 
@@ -895,9 +1057,16 @@ index.d.ts:272
 
 • `Optional` **showContactButtonForNoContactPointDataset**: `boolean`
 
+Whether or not show the contact button when the contact information of the dataset is not available.
+When set to `true`, the inquiries will be sent to the default contact email.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:397
+index.d.ts:694
 
 ---
 
@@ -913,27 +1082,24 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:234
+index.d.ts:223
 
 ---
 
 ### storageApiBaseUrl
 
-• `Optional` **storageApiBaseUrl**: `string`
+• **storageApiBaseUrl**: `string`
+
+The storage API base URL config value that is supplied by the web server.
+When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+
+**`Memberof`**
+
+ConfigDataType
 
 #### Defined in
 
-index.d.ts:275
-
----
-
-### storageApiUrl
-
-• **storageApiUrl**: `string`
-
-#### Defined in
-
-index.d.ts:276
+index.d.ts:319
 
 ---
 
@@ -941,9 +1107,15 @@ index.d.ts:276
 
 • `Optional` **supportExternalTerriaMapV7**: `boolean`
 
+Whether the "Open in XXXX" button over the map preview module should support terria map v7 config format.
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:381
+index.d.ts:646
 
 ---
 
@@ -963,7 +1135,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:226
+index.d.ts:215
 
 ---
 
@@ -971,7 +1143,7 @@ index.d.ts:226
 
 • **useMagdaStorageByDefault**: `boolean`
 
-Whether or not the "use magda storage" option should be pre-selected on dataset editor UI.
+Whether or not the "use Magda storage" option should be pre-selected on dataset editor UI.
 
 **`Memberof`**
 
@@ -979,7 +1151,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:317
+index.d.ts:381
 
 ---
 
@@ -987,6 +1159,16 @@ index.d.ts:317
 
 • **vocabularyApiEndpoints**: `string`[]
 
+A list of vocabulary api endpoints that are used to validate the auto-generated keywords in dataset editor UI.
+By default, it's set to:
+
+- "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json",
+- "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
+
+**`Memberof`**
+
+ConfigDataType
+
 #### Defined in
 
-index.d.ts:318
+index.d.ts:392

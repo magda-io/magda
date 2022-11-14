@@ -4,7 +4,7 @@ import GenericError from "../helpers/GenericError";
 import { config } from "../config";
 import request from "helpers/request";
 
-const contentBaseUrl = `${config.contentApiURL}page/`;
+const contentBaseUrl = `${config.contentApiBaseUrl}page/`;
 
 export function fetchStaticPage(pageName) {
     return async (dispatch, getState) => {

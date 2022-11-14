@@ -114,7 +114,7 @@ export function fetchOrganization(
     noCache: boolean = false
 ): Promise<Publisher> {
     let url: string =
-        config.registryReadOnlyApiUrl +
+        config.registryApiReadOnlyBaseUrl +
         `records/${encodeURIComponent(
             publisherId
         )}?aspect=organization-details`;
@@ -159,7 +159,7 @@ export async function ensureAspectExists(id: string, jsonSchema?: any) {
     // if (!aspectJsonSchemaSavingCache[id]) {
     //     aspectJsonSchemaSavingCache[id] = request(
     //         "PUT",
-    //         `${config.registryFullApiUrl}aspects/${id}`,
+    //         `${config.registryApiBaseUrl}aspects/${id}`,
     //         {
     //             id,
     //             name: jsonSchema.title,
@@ -274,7 +274,7 @@ export async function fetchRecord<T = RawDataset>(
     }
 
     const url =
-        config.registryReadOnlyApiUrl +
+        config.registryApiReadOnlyBaseUrl +
         `records/${encodeURIComponent(id)}${
             parameters.length ? `?${parameters.join("&")}` : ""
         }`;
@@ -312,7 +312,7 @@ export async function fetchRecordAspect<T = any>(
     noCache: boolean = false
 ): Promise<T> {
     const url =
-        config.registryReadOnlyApiUrl +
+        config.registryApiReadOnlyBaseUrl +
         `records/${datasetId}/aspects/${aspectId}`;
 
     const res = await fetch(
@@ -339,7 +339,7 @@ export async function fetchHistoricalRecord<T = RawDataset>(
     }
 
     const url =
-        config.registryReadOnlyApiUrl +
+        config.registryApiReadOnlyBaseUrl +
         `records/${encodeURIComponent(id)}/history/${eventId}`;
 
     const response = await fetch(
@@ -453,7 +453,7 @@ export async function fetchRecords({
     }
 
     const url =
-        config.registryReadOnlyApiUrl +
+        config.registryApiReadOnlyBaseUrl +
         `records${parameters.length ? `?${parameters.join("&")}` : ""}`;
 
     const response = await fetch(
@@ -514,7 +514,7 @@ export async function fetchRecordsCount({
     }
 
     const url =
-        config.registryReadOnlyApiUrl +
+        config.registryApiReadOnlyBaseUrl +
         `records/count${parameters.length ? `?${parameters.join("&")}` : ""}`;
 
     const response = await fetch(
@@ -542,7 +542,7 @@ export async function deleteRecordAspect(
 ): Promise<[boolean, number]> {
     const [res, headers] = await request<{ deleted: boolean }>(
         "DELETE",
-        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`,
+        `${config.registryApiBaseUrl}records/${recordId}/aspects/${aspectId}`,
         undefined,
         undefined,
         true
@@ -555,7 +555,7 @@ export async function deleteRecord(
 ): Promise<[boolean, number]> {
     const [res, headers] = await request<{ deleted: boolean }>(
         "DELETE",
-        `${config.registryFullApiUrl}records/${recordId}`,
+        `${config.registryApiBaseUrl}records/${recordId}`,
         undefined,
         undefined,
         true
@@ -587,7 +587,7 @@ export async function createRecord(
 ): Promise<[Record, number]> {
     const [res, headers] = await request<Record>(
         "POST",
-        `${config.registryFullApiUrl}records`,
+        `${config.registryApiBaseUrl}records`,
         inputRecord,
         "application/json",
         true
@@ -629,7 +629,7 @@ export async function createDataset(
     for (const distribution of inputDistributions) {
         const [distRecord, headers] = await request<Record>(
             "POST",
-            `${config.registryFullApiUrl}records`,
+            `${config.registryApiBaseUrl}records`,
             distribution,
             "application/json",
             true
@@ -643,7 +643,7 @@ export async function createDataset(
     }
     const [json, headers] = await request<Record>(
         "POST",
-        `${config.registryFullApiUrl}records`,
+        `${config.registryApiBaseUrl}records`,
         inputDataset,
         "application/json",
         true
@@ -670,7 +670,7 @@ export async function updateDataset(
         if (await doesRecordExist(distribution.id)) {
             [distRecord, headers] = await request(
                 "PUT",
-                `${config.registryFullApiUrl}records/${distribution.id}${
+                `${config.registryApiBaseUrl}records/${distribution.id}${
                     merge ? "?merge=true" : ""
                 }`,
                 distribution,
@@ -680,7 +680,7 @@ export async function updateDataset(
         } else {
             [distRecord, headers] = await request(
                 "POST",
-                `${config.registryFullApiUrl}records`,
+                `${config.registryApiBaseUrl}records`,
                 distribution,
                 "application/json",
                 true
@@ -695,7 +695,7 @@ export async function updateDataset(
     }
     const [json, headers] = await request<Record>(
         "PUT",
-        `${config.registryFullApiUrl}records/${inputDataset.id}${
+        `${config.registryApiBaseUrl}records/${inputDataset.id}${
             merge ? "?merge=true" : ""
         }`,
         inputDataset,
@@ -730,7 +730,7 @@ export async function updateRecordAspect<T = any>(
 
     const [json, headers] = await request<T>(
         "PUT",
-        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}${
+        `${config.registryApiBaseUrl}records/${recordId}/aspects/${aspectId}${
             merge ? "?merge=true" : ""
         }`,
         aspectData,
@@ -763,7 +763,7 @@ export async function patchRecord<T = any>(
 ): Promise<[T, number]> {
     const [json, headers] = await request<T>(
         "PATCH",
-        `${config.registryFullApiUrl}records/${recordId}`,
+        `${config.registryApiBaseUrl}records/${recordId}`,
         jsonPath,
         "application/json",
         true
@@ -803,7 +803,7 @@ export async function fetchRecordById(recordId: string, noCache = false) {
     return await getRequest<Record>(
         getAbsoluteUrl(
             `records/${encodeURIComponent(recordId)}`,
-            config.registryReadOnlyApiUrl
+            config.registryApiReadOnlyBaseUrl
         ),
         noCache
     );
@@ -847,7 +847,7 @@ export async function queryRecordAspects<T = QueryRecordAspectsReturnValueType>(
     return await getRequest<T>(
         getAbsoluteUrl(
             `records/${encodeURIComponent(recordId)}/aspects`,
-            config.registryReadOnlyApiUrl,
+            config.registryApiReadOnlyBaseUrl,
             { ...queryParams, start: offset, offset: undefined }
         ),
         noCache
@@ -870,7 +870,7 @@ export async function queryRecordAspectsCount(
         const res = await getRequest<{ count: number }>(
             getAbsoluteUrl(
                 `records/${encodeURIComponent(recordId)}/aspects/count`,
-                config.registryReadOnlyApiUrl,
+                config.registryApiReadOnlyBaseUrl,
                 queryParams
             ),
             noCache
@@ -904,7 +904,7 @@ export async function getRecordAspect<T = any>(
             `records/${encodeURIComponent(
                 recordId
             )}/aspects/${encodeURIComponent(aspectId)}`,
-            config.registryReadOnlyApiUrl
+            config.registryApiReadOnlyBaseUrl
         ),
         noCache
     );
@@ -920,7 +920,7 @@ export type AspectDefRecord = {
 
 export async function getAspectDefs(noCache = false) {
     return await getRequest<AspectDefRecord[]>(
-        getAbsoluteUrl("aspects", config.registryReadOnlyApiUrl),
+        getAbsoluteUrl("aspects", config.registryApiReadOnlyBaseUrl),
         noCache
     );
 }
@@ -989,7 +989,7 @@ export async function updateRecordsAspect(
 ): Promise<number[]> {
     const url = getAbsoluteUrl(
         `records/aspects/${encodeURIComponent(aspectId)}`,
-        config.registryFullApiUrl,
+        config.registryApiBaseUrl,
         { merge }
     );
 

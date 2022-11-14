@@ -40,7 +40,7 @@ Dataset page `Edit Dataset` button external plugin component type
 
 #### Defined in
 
-index.d.ts:449
+index.d.ts:770
 
 ---
 
@@ -53,7 +53,7 @@ Please note: the `Like Button` on search result page is hidden unless a plugin c
 
 #### Defined in
 
-index.d.ts:469
+index.d.ts:790
 
 ---
 
@@ -67,7 +67,7 @@ More info & example please refer to repo: [magda-ui-plugin-component-dap-thumbna
 
 #### Defined in
 
-index.d.ts:501
+index.d.ts:822
 
 ---
 
@@ -79,7 +79,7 @@ Footer external plugin component type
 
 #### Defined in
 
-index.d.ts:546
+index.d.ts:867
 
 ---
 
@@ -91,7 +91,7 @@ Header external plugin component type
 
 #### Defined in
 
-index.d.ts:587
+index.d.ts:908
 
 ## Variables
 
@@ -109,4 +109,4 @@ e.g. The Header Component should bundled & export to global scope variable `Magd
 
 #### Defined in
 
-index.d.ts:726
+index.d.ts:1047

@@ -29,7 +29,7 @@ export function fetchRegionSearchResults(facetQuery: string) {
     return (dispatch: Dispatch) => {
         dispatch(requestRegions(facetQuery));
         return fetch(
-            config.searchApiUrl + `regions?query=${facetQuery}`,
+            config.searchApiBaseUrl + `regions?query=${facetQuery}`,
             config.commonFetchRequestOptions
         )
             .then((response) => {

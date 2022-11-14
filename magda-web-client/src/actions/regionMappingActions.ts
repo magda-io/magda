@@ -28,7 +28,7 @@ export function fetchRegionMapping() {
     return (dispatch: Function) => {
         dispatch(requestRegionMapping());
         return fetch(
-            config.searchApiUrl + "region-types",
+            config.searchApiBaseUrl + "region-types",
             config.commonFetchRequestOptions
         )
             .then((response) => {

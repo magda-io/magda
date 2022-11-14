@@ -152,7 +152,7 @@ class MagdaContentAPIBackend {
      * @param {*} langNsCombos Combination of language and namespaces to retrieve.
      */
     static async getStrings(langNsCombos) {
-        const baseUrl = config.contentApiURL + "/all?inline=true&";
+        const baseUrl = config.contentApiBaseUrl + "/all?inline=true&";
         const ids = langNsCombos.map(
             ({ language, namespace }) => `id=lang/${language}/${namespace}/*`
         );

@@ -51,7 +51,7 @@ export function fetchFormatSearchResults(
             });
 
             const url: string =
-                config.searchApiUrl +
+                config.searchApiBaseUrl +
                 `facets/format/options?generalQuery=${encodeURIComponent(
                     generalQuery.q || "*"
                 )}&${generalQueryString}&facetQuery=${facetQuery}`;

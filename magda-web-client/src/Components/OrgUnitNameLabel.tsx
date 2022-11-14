@@ -17,7 +17,7 @@ const OrgUnitNameLabel: FunctionComponent<{ id?: string }> = (props) => {
             }
             const data = await request<any>(
                 "GET",
-                config.authApiUrl + `orgUnits/${id}`
+                config.authApiBaseUrl + `orgUnits/${id}`
             );
             return data?.name ? data.name : "Unknown Unit";
         },

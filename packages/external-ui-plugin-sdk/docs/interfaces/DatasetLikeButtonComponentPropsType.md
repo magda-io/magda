@@ -63,7 +63,7 @@ index.d.ts:67
 
 #### Defined in
 
-index.d.ts:461
+index.d.ts:782
 
 ---
 

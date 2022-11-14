@@ -99,7 +99,7 @@ export function fetchPublishersIfNeeded(start: number, query: string): any {
 function fetchPublisher(id) {
     return (dispatch: Function) => {
         dispatch(requestPublisher());
-        const url = `${config.registryReadOnlyApiUrl}records/${id}?aspect=organization-details`;
+        const url = `${config.registryApiReadOnlyBaseUrl}records/${id}?aspect=organization-details`;
 
         return fetch(url, config.commonFetchRequestOptions)
             .then((response) => {

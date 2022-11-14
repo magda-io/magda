@@ -433,7 +433,7 @@ class DataPreviewMapTerria extends Component<
             name: selectedDistribution.title,
             type: "magda-item",
             url: config.baseUrl,
-            storageApiUrl: config.storageApiUrl,
+            storageApiUrl: config.storageApiBaseUrl,
             distributionId: selectedDistribution.identifier,
             // --- default internal storage bucket name
             defaultBucket: DATASETS_BUCKET,
@@ -556,7 +556,7 @@ class DataPreviewMapTerria extends Component<
                         height="420px"
                         frameBorder="0"
                         src={
-                            config.previewMapUrl +
+                            config.previewMapBaseUrl +
                             "#mode=preview&hideExplorerPanel=1"
                         }
                         ref={this.iframeRef}

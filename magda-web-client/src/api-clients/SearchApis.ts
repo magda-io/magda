@@ -38,7 +38,7 @@ export function searchPublishers(
     searchResultsPerPage: number = 10
 ): Promise<SearchApiResult> {
     const url = `${
-        config.searchApiUrl + "organisations"
+        config.searchApiBaseUrl + "organisations"
     }?query=${query}&start=${
         (start - 1) * searchResultsPerPage
     }&limit=${searchResultsPerPage}`;
@@ -82,7 +82,7 @@ export function autocompletePublishers(
     });
 
     return fetch(
-        config.searchApiUrl +
+        config.searchApiBaseUrl +
             `facets/publisher/options?generalQuery=${encodeURIComponent(
                 generalQuery.q || "*"
             )}&${generalQueryString}&facetQuery=${term}`,
@@ -107,7 +107,7 @@ export async function autoCompleteAccessLocation(
     size: number = 8
 ): Promise<string[]> {
     const url = `${
-        config.searchApiUrl + "autoComplete"
+        config.searchApiBaseUrl + "autoComplete"
     }?field=accessNotes.location&input=${encodeURIComponent(
         term
     )}&size=${size}`;
@@ -131,7 +131,8 @@ export async function autoCompleteAccessLocation(
 
 export function searchDatasets(queryObject: Query): Promise<DataSearchJson> {
     let url: string =
-        config.searchApiUrl + `datasets?${buildSearchQueryString(queryObject)}`;
+        config.searchApiBaseUrl +
+        `datasets?${buildSearchQueryString(queryObject)}`;
     return fetch(url, config.commonFetchRequestOptions).then(
         (response: any) => {
             if (response.status === 200) {
@@ -177,7 +178,7 @@ export type Region = {
 export async function getRegions(
     options: SearchRegionOptions
 ): Promise<Region[]> {
-    const uri = urijs(`${config.searchApiUrl}regions`);
+    const uri = urijs(`${config.searchApiBaseUrl}regions`);
     const res = await fetch(uri.search(options as any).toString());
     if (!res.ok) {
         const bodyText = await res.text();

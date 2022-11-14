@@ -16,6 +16,7 @@
 - #3425 offer a button on dataset page to take the user back to data management tab
 - Started to publish @magda/external-ui-plugin-sdk NPM package
 - Upgrade react-router-dom to 5.3.4
+- Refactored the frontend config object to remove duplicated config fields & added comments
 
 ## v2.1.1
 

@@ -24,7 +24,7 @@ export async function listOrgUnits(
         delete queryParams["leafNodesOnly"];
     }
     return await getRequest<OrgUnitWithRelationship[]>(
-        getAbsoluteUrl(`orgunits`, config.authApiUrl, queryParams)
+        getAbsoluteUrl(`orgunits`, config.authApiBaseUrl, queryParams)
     );
 }
 
@@ -50,7 +50,7 @@ export async function listOrgUnitsAtLevel(
     return await getRequest<OrgUnitWithRelationship[]>(
         getAbsoluteUrl(
             `orgunits/bylevel/${encodeURIComponent(orgLevel)}`,
-            config.authApiUrl,
+            config.authApiBaseUrl,
             relationshipOrgUnitId ? { relationshipOrgUnitId } : undefined
         )
     );
@@ -71,7 +71,7 @@ export async function getOrgUnitById(
         getRequest<OrgUnit>(
             getAbsoluteUrl(
                 `orgunits/${encodeURIComponent(id)}`,
-                config.authApiUrl
+                config.authApiBaseUrl
             ),
             noCache
         )
@@ -80,7 +80,7 @@ export async function getOrgUnitById(
 
 export async function getRootNode(noCache = false) {
     return getRequest<OrgUnit>(
-        getAbsoluteUrl(`orgunits/root`, config.authApiUrl),
+        getAbsoluteUrl(`orgunits/root`, config.authApiBaseUrl),
         noCache
     );
 }
@@ -102,7 +102,7 @@ export async function getImmediateChildren(nodeId: string, noCache = false) {
     return getRequest<OrgUnit[]>(
         getAbsoluteUrl(
             `orgunits/${encodeURIComponent(nodeId)}/children/immediate`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         noCache
     );
@@ -120,7 +120,7 @@ export async function moveSubTree(nodeId: string, parentNodeId: string) {
             `orgunits/${encodeURIComponent(nodeId)}/move/${encodeURIComponent(
                 parentNodeId
             )}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
 }
@@ -138,7 +138,7 @@ export async function insertNode(
         "POST",
         getAbsoluteUrl(
             `orgunits/${encodeURIComponent(parentNodeId)}/insert`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         node
     );
@@ -157,7 +157,7 @@ export async function updateNode(
         "PUT",
         getAbsoluteUrl(
             `orgunits/${encodeURIComponent(nodeId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         node
     );
@@ -173,7 +173,7 @@ export async function deleteNode(nodeId: string) {
         "DELETE",
         getAbsoluteUrl(
             `orgunits/${encodeURIComponent(nodeId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
 }
@@ -188,7 +188,7 @@ export async function deleteSubTree(nodeId: string) {
         "DELETE",
         getAbsoluteUrl(
             `orgunits/${encodeURIComponent(nodeId)}/subtree`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
 }
@@ -209,7 +209,7 @@ export async function getTopDownPathBetween(
             `orgunits/${encodeURIComponent(
                 higherNodeId
             )}/topDownPathTo/${encodeURIComponent(lowerNodeId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         noCache
     );
