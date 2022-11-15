@@ -125,6 +125,7 @@
     "react-file-drop": "^0.2.7",
     "react-ga": "^2.5.3",
     "react-i18next": "^8.1.0",
+    "react-is": "^18.2.0",
     "react-json-tree": "^0.10.9",
     "react-leaflet": "^2.2.1",
     "react-list-drag-and-drop": "^0.9.0",

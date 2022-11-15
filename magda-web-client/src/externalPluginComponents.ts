@@ -1,4 +1,5 @@
 import { ComponentType } from "react";
+import * as ReactIs from "react-is";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import { withRouter, match } from "react-router-dom";
@@ -15,7 +16,7 @@ import { ParsedDataset } from "./helpers/record";
  * > Since Magda v2.2.0, users can load more than one "Extra Visualisation Section" type Magda UI Plugin Components.
  * To allow this, the component is required to be packaged as a library and exported to global scope `MagdaPluginComponentExtraVisualisationSections.xxxx`.
  * Here, `MagdaPluginComponentExtraVisualisationSections` should be an object with key `xxxx` set to the plugin component.
- * e.g. the DAP thumbnail viewer plugin choose to export itself to `MagdaPluginComponentExtraVisualisationSections.DAPThumbnailViewer`.
+ * e.g. the [DAP thumbnail viewer plugin](https://github.com/magda-io/magda-ui-plugin-component-dap-thumbnail-viewer) choose to export itself to `MagdaPluginComponentExtraVisualisationSections.DAPThumbnailViewer`.
  */
 export const PREFIX = "MagdaPluginComponent";
 
@@ -109,6 +110,17 @@ export interface CommonPropsType {
      * @memberof CommonPropsType
      */
     fetchContent: (noCache?: boolean) => Promise<void>;
+
+    /**
+     * An optional property contains a list of names of plugin components who are mounted to replace a built-in component.
+     * Only available for component types that supports more than one plugins to be mounted.
+     * e.g. `ExtraVisualisationSection` plugin components.
+     * When more than one components are mounted to replace a built-in component, each of the plugin component will receive this property.
+     *
+     * @type {string[]}
+     * @memberof CommonPropsType
+     */
+    loadedPluginNames?: string[];
 }
 
 type InternalInterfaceProps<FullComponentProps> = Omit<
@@ -138,6 +150,25 @@ const mapDispatchToProps = (dispatch) => {
     );
 };
 
+function isValidElementType(c: any): boolean {
+    if (!c || typeof c === "string") {
+        return false;
+    }
+    return ReactIs.isValidElementType(c);
+}
+
+export function getComponentByRef<T>(
+    componentRef: any
+): ComponentType<InternalInterfaceProps<T>> | null {
+    if (!componentRef || !isValidElementType(componentRef)) {
+        return null;
+    }
+
+    return (withRouter(
+        connect(mapStateToProps, mapDispatchToProps)(componentRef as any)
+    ) as unknown) as ComponentType<InternalInterfaceProps<T>>;
+}
+
 /**
  * Used internally to locate the plugin component & create HOC with common properties prefilled.
  *
@@ -157,13 +188,36 @@ export function getComponent<T>(
         ? window[fullComponentName]
         : null;
 
-    if (!ExternalComponent) {
+    return getComponentByRef<T>(ExternalComponent);
+}
+
+export function getMultipleComponent<T>(
+    name: string
+): ComponentType<InternalInterfaceProps<T>> | null {
+    const exportScope = getComponent<T>(name);
+    if (!exportScope) {
         return null;
     }
-
-    return (withRouter(
-        connect(mapStateToProps, mapDispatchToProps)(ExternalComponent as any)
-    ) as unknown) as ComponentType<InternalInterfaceProps<T>>;
+    if (isValidElementType(exportScope)) {
+        return exportScope;
+    }
+    const multipleExportScope = `${PREFIX}${name}`;
+    const extraPluginName = [] as string[];
+    const components: ComponentType<InternalInterfaceProps<T>>[] = [];
+    if (typeof exportScope === "object") {
+        const keys = Object.keys(exportScope);
+        if (!keys?.length) {
+            return null;
+        }
+        keys.forEach((key) => {
+            const subExportScope = getComponentByRef<T>(name);
+            if (!subExportScope) {
+                return null;
+            }
+            if (isValidElementType()) {
+            }
+        });
+    }
 }
 
 /**
@@ -349,8 +403,4 @@ export type ExtraVisualisationSectionComponentType = ComponentType<
 
 export function getPluginExtraVisualisationSection(): ComponentType<
     InternalInterfaceProps<ExtraVisualisationSectionComponentPropsType>
-> | null {
-    return getComponent<ExtraVisualisationSectionComponentPropsType>(
-        "ExtraVisualisationSection"
-    );
-}
+> | null {}
