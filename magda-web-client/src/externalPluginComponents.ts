@@ -1,4 +1,4 @@
-import { ComponentType } from "react";
+import React, { ComponentType, FunctionComponent } from "react";
 import * as ReactIs from "react-is";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
@@ -191,33 +191,75 @@ export function getComponent<T>(
     return getComponentByRef<T>(ExternalComponent);
 }
 
+const wrapComponentWithProps = <T, TP>(
+    component: ComponentType<T>,
+    overwriteProps: TP
+): FunctionComponent<Omit<T, keyof TP>> => (props) => {
+    const { children, ...restProps } = props;
+    return React.createElement(
+        component,
+        ({
+            ...(restProps ? restProps : {}),
+            ...overwriteProps
+        } as unknown) as T,
+        children
+    );
+};
+
 export function getMultipleComponent<T>(
     name: string
-): ComponentType<InternalInterfaceProps<T>> | null {
-    const exportScope = getComponent<T>(name);
-    if (!exportScope) {
+): ComponentType<InternalInterfaceProps<T>>[] | null {
+    const exportedScopeName = `${PREFIX}${name}`;
+    const exportedValue: any = window?.[exportedScopeName]?.default
+        ? window[exportedScopeName].default
+        : window?.[exportedScopeName]
+        ? window[exportedScopeName]
+        : null;
+
+    if (!exportedValue) {
         return null;
     }
-    if (isValidElementType(exportScope)) {
-        return exportScope;
+    const signleComponent = getComponentByRef<T>(exportedValue);
+
+    if (signleComponent) {
+        return [signleComponent];
     }
-    const multipleExportScope = `${PREFIX}${name}`;
-    const extraPluginName = [] as string[];
-    const components: ComponentType<InternalInterfaceProps<T>>[] = [];
-    if (typeof exportScope === "object") {
-        const keys = Object.keys(exportScope);
-        if (!keys?.length) {
-            return null;
+
+    /**
+     * multiple plugin component exported scope must be an object hash
+     * i.e.
+     * {
+     *    [key: string]: ComponentType<T>
+     * }
+     */
+    if (typeof exportedValue !== "object") {
+        return null;
+    }
+
+    const extraPluginNames = [] as string[];
+    const pluginComponents: ComponentType<InternalInterfaceProps<T>>[] = [];
+    const keys = Object.keys(exportedValue);
+    if (!keys?.length) {
+        return null;
+    }
+    keys.forEach((key) => {
+        const pluginComponent = getComponentByRef<T>(
+            exportedValue[key]
+        ) as ComponentType<InternalInterfaceProps<T>>;
+        if (pluginComponent) {
+            extraPluginNames.push(key);
+            pluginComponents.push(pluginComponent);
         }
-        keys.forEach((key) => {
-            const subExportScope = getComponentByRef<T>(name);
-            if (!subExportScope) {
-                return null;
-            }
-            if (isValidElementType()) {
-            }
-        });
-    }
+    });
+    const wrappedPluginComponents = pluginComponents.map((item) =>
+        wrapComponentWithProps(item, {
+            loadedPluginNames: extraPluginNames
+        })
+    );
+
+    return wrappedPluginComponents as ComponentType<
+        InternalInterfaceProps<T>
+    >[];
 }
 
 /**
@@ -401,6 +443,10 @@ export type ExtraVisualisationSectionComponentType = ComponentType<
     ExtraVisualisationSectionComponentPropsType
 >;
 
-export function getPluginExtraVisualisationSection(): ComponentType<
-    InternalInterfaceProps<ExtraVisualisationSectionComponentPropsType>
-> | null {}
+export function getPluginExtraVisualisationSections():
+    | ComponentType<
+          InternalInterfaceProps<ExtraVisualisationSectionComponentPropsType>
+      >[]
+    | null {
+    return getMultipleComponent("ExtraVisualisationSection");
+}
