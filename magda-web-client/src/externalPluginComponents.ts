@@ -14,9 +14,9 @@ import { ParsedDataset } from "./helpers/record";
  * The constant define the prefix that is used to create the global scope variable name, to which the external UI plugin bundle should export to.
  * e.g. The Header Component should bundled & export to global scope variable `MagdaPluginComponentHeader`.
  * > Since Magda v2.2.0, users can load more than one "Extra Visualisation Section" type Magda UI Plugin Components.
- * To allow this, the component is required to be packaged as a library and exported to global scope `MagdaPluginComponentExtraVisualisationSections.xxxx`.
- * Here, `MagdaPluginComponentExtraVisualisationSections` should be an object with key `xxxx` set to the plugin component.
- * e.g. the [DAP thumbnail viewer plugin](https://github.com/magda-io/magda-ui-plugin-component-dap-thumbnail-viewer) choose to export itself to `MagdaPluginComponentExtraVisualisationSections.DAPThumbnailViewer`.
+ * To allow this, the component is required to be packaged as a library and exported to global scope `MagdaPluginComponentExtraVisualisationSection.xxxx`.
+ * Here, `MagdaPluginComponentExtraVisualisationSection` should be an object with key `xxxx` set to the plugin component.
+ * e.g. the [DAP image gallery plugin](https://github.com/magda-io/magda-ui-plugin-component-dap-image-gallery) choose to export itself to `MagdaPluginComponentExtraVisualisationSection.DAPImageGallery`.
  */
 export const PREFIX = "MagdaPluginComponent";
 
@@ -447,7 +447,7 @@ export interface ExtraVisualisationSectionComponentPropsType
 /**
  * Visualisation Section external plugin component type.
  * This plugin will be mounted on dataset or distribution page.
- * More info & example please refer to repo: [magda-ui-plugin-component-dap-thumbnail-viewer](https://github.com/magda-io/magda-ui-plugin-component-dap-thumbnail-viewer)
+ * More info & example please refer to repo: [magda-ui-plugin-component-dap-image-gallery](https://github.com/magda-io/magda-ui-plugin-component-dap-image-gallery)
  * @category External UI Plugin Component Types
  */
 export type ExtraVisualisationSectionComponentType = ComponentType<

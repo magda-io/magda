@@ -27,6 +27,7 @@ FooterComponentPropsType
 - [footerSmallNavs](FooterComponentPropsType.md#footersmallnavs)
 - [history](FooterComponentPropsType.md#history)
 - [isFetchingWhoAmI](FooterComponentPropsType.md#isfetchingwhoami)
+- [loadedPluginNames](FooterComponentPropsType.md#loadedpluginnames)
 - [location](FooterComponentPropsType.md#location)
 - [match](FooterComponentPropsType.md#match)
 - [noTopMargin](FooterComponentPropsType.md#notopmargin)
@@ -103,7 +104,7 @@ index.d.ts:119
 
 #### Defined in
 
-index.d.ts:860
+index.d.ts:871
 
 ---
 
@@ -113,7 +114,7 @@ index.d.ts:860
 
 #### Defined in
 
-index.d.ts:858
+index.d.ts:869
 
 ---
 
@@ -123,7 +124,7 @@ index.d.ts:858
 
 #### Defined in
 
-index.d.ts:859
+index.d.ts:870
 
 ---
 
@@ -165,6 +166,29 @@ CommonPropsType
 #### Defined in
 
 index.d.ts:43
+
+---
+
+### loadedPluginNames
+
+• `Optional` **loadedPluginNames**: `string`[]
+
+An optional property contains a list of names of plugin components who are mounted to replace a built-in component.
+Only available for component types that supports more than one plugins to be mounted.
+e.g. `ExtraVisualisationSection` plugin components.
+When more than one components are mounted to replace a built-in component, each of the plugin component will receive this property.
+
+**`Memberof`**
+
+CommonPropsType
+
+#### Inherited from
+
+[CommonPropsType](CommonPropsType.md).[loadedPluginNames](CommonPropsType.md#loadedpluginnames)
+
+#### Defined in
+
+index.d.ts:130
 
 ---
 
@@ -216,7 +240,7 @@ index.d.ts:94
 
 #### Defined in
 
-index.d.ts:857
+index.d.ts:868
 
 ---
 

@@ -27,7 +27,7 @@ CopyRightItem
 
 #### Defined in
 
-index.d.ts:740
+index.d.ts:751
 
 ---
 
@@ -37,7 +37,7 @@ index.d.ts:740
 
 #### Defined in
 
-index.d.ts:741
+index.d.ts:752
 
 ---
 
@@ -47,7 +47,7 @@ index.d.ts:741
 
 #### Defined in
 
-index.d.ts:742
+index.d.ts:753
 
 ---
 
@@ -57,4 +57,4 @@ index.d.ts:742
 
 #### Defined in
 
-index.d.ts:743
+index.d.ts:754

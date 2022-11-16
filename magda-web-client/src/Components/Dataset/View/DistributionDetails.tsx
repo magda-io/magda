@@ -144,6 +144,9 @@ class DistributionDetails extends Component<{
                                       <ExtraVisualisationSection
                                           key={idx}
                                           dataset={this.props.dataset}
+                                          distributionId={
+                                              distribution.identifier!
+                                          }
                                       />
                                   )
                               )

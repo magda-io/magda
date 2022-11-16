@@ -25,6 +25,7 @@ FooterComponentPropsType
 - [headerNavItems](HeaderComponentProps.md#headernavitems)
 - [history](HeaderComponentProps.md#history)
 - [isFetchingWhoAmI](HeaderComponentProps.md#isfetchingwhoami)
+- [loadedPluginNames](HeaderComponentProps.md#loadedpluginnames)
 - [location](HeaderComponentProps.md#location)
 - [match](HeaderComponentProps.md#match)
 - [requestSignOut](HeaderComponentProps.md#requestsignout)
@@ -100,7 +101,7 @@ index.d.ts:119
 
 #### Defined in
 
-index.d.ts:901
+index.d.ts:912
 
 ---
 
@@ -142,6 +143,29 @@ CommonPropsType
 #### Defined in
 
 index.d.ts:43
+
+---
+
+### loadedPluginNames
+
+• `Optional` **loadedPluginNames**: `string`[]
+
+An optional property contains a list of names of plugin components who are mounted to replace a built-in component.
+Only available for component types that supports more than one plugins to be mounted.
+e.g. `ExtraVisualisationSection` plugin components.
+When more than one components are mounted to replace a built-in component, each of the plugin component will receive this property.
+
+**`Memberof`**
+
+CommonPropsType
+
+#### Inherited from
+
+[CommonPropsType](CommonPropsType.md).[loadedPluginNames](CommonPropsType.md#loadedpluginnames)
+
+#### Defined in
+
+index.d.ts:130
 
 ---
 

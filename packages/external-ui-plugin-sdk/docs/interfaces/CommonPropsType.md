@@ -32,6 +32,7 @@ CommonPropsType
 - [fetchContent](CommonPropsType.md#fetchcontent)
 - [history](CommonPropsType.md#history)
 - [isFetchingWhoAmI](CommonPropsType.md#isfetchingwhoami)
+- [loadedPluginNames](CommonPropsType.md#loadedpluginnames)
 - [location](CommonPropsType.md#location)
 - [match](CommonPropsType.md#match)
 - [requestSignOut](CommonPropsType.md#requestsignout)
@@ -123,6 +124,25 @@ CommonPropsType
 #### Defined in
 
 index.d.ts:43
+
+---
+
+### loadedPluginNames
+
+• `Optional` **loadedPluginNames**: `string`[]
+
+An optional property contains a list of names of plugin components who are mounted to replace a built-in component.
+Only available for component types that supports more than one plugins to be mounted.
+e.g. `ExtraVisualisationSection` plugin components.
+When more than one components are mounted to replace a built-in component, each of the plugin component will receive this property.
+
+**`Memberof`**
+
+CommonPropsType
+
+#### Defined in
+
+index.d.ts:130
 
 ---
 

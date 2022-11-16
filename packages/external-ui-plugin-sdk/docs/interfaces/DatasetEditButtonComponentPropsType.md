@@ -25,6 +25,7 @@ FooterComponentPropsType
 - [fetchContent](DatasetEditButtonComponentPropsType.md#fetchcontent)
 - [history](DatasetEditButtonComponentPropsType.md#history)
 - [isFetchingWhoAmI](DatasetEditButtonComponentPropsType.md#isfetchingwhoami)
+- [loadedPluginNames](DatasetEditButtonComponentPropsType.md#loadedpluginnames)
 - [location](DatasetEditButtonComponentPropsType.md#location)
 - [match](DatasetEditButtonComponentPropsType.md#match)
 - [requestSignOut](DatasetEditButtonComponentPropsType.md#requestsignout)
@@ -63,7 +64,7 @@ index.d.ts:67
 
 #### Defined in
 
-index.d.ts:763
+index.d.ts:774
 
 ---
 
@@ -142,6 +143,29 @@ CommonPropsType
 #### Defined in
 
 index.d.ts:43
+
+---
+
+### loadedPluginNames
+
+• `Optional` **loadedPluginNames**: `string`[]
+
+An optional property contains a list of names of plugin components who are mounted to replace a built-in component.
+Only available for component types that supports more than one plugins to be mounted.
+e.g. `ExtraVisualisationSection` plugin components.
+When more than one components are mounted to replace a built-in component, each of the plugin component will receive this property.
+
+**`Memberof`**
+
+CommonPropsType
+
+#### Inherited from
+
+[CommonPropsType](CommonPropsType.md).[loadedPluginNames](CommonPropsType.md#loadedpluginnames)
+
+#### Defined in
+
+index.d.ts:130
 
 ---
 

@@ -40,7 +40,7 @@ Dataset page `Edit Dataset` button external plugin component type
 
 #### Defined in
 
-index.d.ts:770
+index.d.ts:781
 
 ---
 
@@ -53,7 +53,7 @@ Please note: the `Like Button` on search result page is hidden unless a plugin c
 
 #### Defined in
 
-index.d.ts:790
+index.d.ts:801
 
 ---
 
@@ -63,11 +63,11 @@ index.d.ts:790
 
 Visualisation Section external plugin component type.
 This plugin will be mounted on dataset or distribution page.
-More info & example please refer to repo: [magda-ui-plugin-component-dap-thumbnail-viewer](https://github.com/magda-io/magda-ui-plugin-component-dap-thumbnail-viewer)
+More info & example please refer to repo: [magda-ui-plugin-component-dap-image-gallery](https://github.com/magda-io/magda-ui-plugin-component-dap-image-gallery)
 
 #### Defined in
 
-index.d.ts:822
+index.d.ts:833
 
 ---
 
@@ -79,7 +79,7 @@ Footer external plugin component type
 
 #### Defined in
 
-index.d.ts:867
+index.d.ts:878
 
 ---
 
@@ -91,7 +91,7 @@ Header external plugin component type
 
 #### Defined in
 
-index.d.ts:908
+index.d.ts:919
 
 ## Variables
 
@@ -103,10 +103,10 @@ The constant define the prefix that is used to create the global scope variable 
 e.g. The Header Component should bundled & export to global scope variable `MagdaPluginComponentHeader`.
 
 > Since Magda v2.2.0, users can load more than one "Extra Visualisation Section" type Magda UI Plugin Components.
-> To allow this, the component is required to be packaged as a library and exported to global scope `MagdaPluginComponentExtraVisualisationSections.xxxx`.
-> Here, `MagdaPluginComponentExtraVisualisationSections` should be an object with key `xxxx` set to the plugin component.
-> e.g. the DAP thumbnail viewer plugin choose to export itself to `MagdaPluginComponentExtraVisualisationSections.DAPThumbnailViewer`.
+> To allow this, the component is required to be packaged as a library and exported to global scope `MagdaPluginComponentExtraVisualisationSection.xxxx`.
+> Here, `MagdaPluginComponentExtraVisualisationSection` should be an object with key `xxxx` set to the plugin component.
+> e.g. the [DAP image gallery plugin](https://github.com/magda-io/magda-ui-plugin-component-dap-image-gallery) choose to export itself to `MagdaPluginComponentExtraVisualisationSection.DAPImageGallery`.
 
 #### Defined in
 
-index.d.ts:1047
+index.d.ts:1058
