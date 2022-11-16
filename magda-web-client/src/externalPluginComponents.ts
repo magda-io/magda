@@ -160,12 +160,23 @@ function isValidElementType(c: any): boolean {
 export function getComponentByRef<T>(
     componentRef: any
 ): ComponentType<InternalInterfaceProps<T>> | null {
-    if (!componentRef || !isValidElementType(componentRef)) {
+    if (!componentRef) {
+        return null;
+    }
+
+    const component =
+        componentRef?.default && isValidElementType(componentRef.default)
+            ? componentRef.default
+            : isValidElementType(componentRef)
+            ? componentRef
+            : null;
+
+    if (!component) {
         return null;
     }
 
     return (withRouter(
-        connect(mapStateToProps, mapDispatchToProps)(componentRef as any)
+        connect(mapStateToProps, mapDispatchToProps)(component as any)
     ) as unknown) as ComponentType<InternalInterfaceProps<T>>;
 }
 
@@ -206,7 +217,7 @@ const wrapComponentWithProps = <T, TP>(
     );
 };
 
-export function getMultipleComponent<T>(
+export function getMultipleComponents<T>(
     name: string
 ): ComponentType<InternalInterfaceProps<T>>[] | null {
     const exportedScopeName = `${PREFIX}${name}`;
@@ -448,5 +459,5 @@ export function getPluginExtraVisualisationSections():
           InternalInterfaceProps<ExtraVisualisationSectionComponentPropsType>
       >[]
     | null {
-    return getMultipleComponent("ExtraVisualisationSection");
+    return getMultipleComponents("ExtraVisualisationSection");
 }
