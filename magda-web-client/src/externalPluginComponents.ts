@@ -11,8 +11,19 @@ import { config, ConfigDataType } from "./config";
 import { ParsedDataset } from "./helpers/record";
 
 /**
- * The constant define the prefix that is used to create the global scope variable name, to which the external UI plugin bundle should export to.
+ * The constant define the prefix that is used to create the global scope variable name `MagdaPluginComponentxxxx`, to which the external UI plugin bundle should export to.
+ * Here, `xxxx` is the plugin UI component type name
  * e.g. The Header Component should bundled & export to global scope variable `MagdaPluginComponentHeader`.
+ *
+ * The currently support all type names are:
+ * - Header
+ * - Footer
+ * - DatasetEditButton
+ * - DatasetLikeButton
+ * - ExtraVisualisationSection
+ *
+ * Please refer to `External UI Plugin Component Types Type Aliases` section for functionality of each plugin UI component type.
+ *
  * > Since Magda v2.2.0, users can load more than one "Extra Visualisation Section" type Magda UI Plugin Components.
  * To allow this, the component is required to be packaged as a library and exported to global scope `MagdaPluginComponentExtraVisualisationSection.xxxx`.
  * Here, `MagdaPluginComponentExtraVisualisationSection` should be an object with key `xxxx` set to the plugin component.
