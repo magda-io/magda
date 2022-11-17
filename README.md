@@ -92,11 +92,17 @@ You can find out the load balancer IP and access it:
 echo $(kubectl get svc --namespace magda gateway --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
 ```
 
-If you are interested in playing more, you can also have a look at this tutorial repo:
+If you are interested in playing more, you might find useful docs from [here](./docs/docs/). Particularly:
+
+- [Magda Charts Docs Index](./docs/docs/helm-charts-docs-index.md)
+- [How to create a local testing user](./docs/docs/how-to-create-local-users.md)
+- [How to set a user as admin user](./docs/docs/how-to-set-user-as-admin-user.md)
+
+You might also want to have a look at this tutorial repo:
 
 https://github.com/magda-io/magda-brown-bag
 
-Or find out more on: https://magda.io/docs/building-and-running if you are interested in development.
+Or find out more on: https://magda.io/docs/building-and-running if you are interested in the development or play with the code.
 
 ## To build and run from source
 
