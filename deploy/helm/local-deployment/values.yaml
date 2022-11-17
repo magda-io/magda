@@ -3,6 +3,28 @@ magda:
     registry-api:
       # turn off schema validation for dev site deployment until we fixed existing connectors schema mismatch issues.
       validateJsonSchema: false
+    web-server:
+      externalUIComponents:
+      - "https://github.com/magda-io/magda-ui-plugin-component-dap-image-gallery/releases/download/v1.0.0/DAPImageGallery.js"
+      - "https://github.com/magda-io/magda-ui-plugin-component-open-3d-dataset/releases/download/v2.0.0/Open3dDatasetSection.js"
+      extraConfigData:
+        "3dDatasetDigitalTwinInstances":
+        - sourceDataDomain: "nsw.gov.au"
+          url: "https://nsw.digitaltwin.terria.io/"
+    gateway:
+      csp:
+        browserSniff: false
+        directives:
+          scriptSrc:
+          - "'self'"
+          - "'unsafe-inline'"
+          - github.com
+          - "blob:"
+          objectSrc:
+          - "'none'"
+          workerSrc:
+          - "'self'"
+          - "blob:"
 
 # auth plugin for google
 magda-auth-google:
