@@ -98,7 +98,7 @@ ConfigDataType
 
 index.d.ts:339
 
----
+___
 
 ### anonymousUserLandingPage
 
@@ -115,7 +115,7 @@ ConfigDataType
 
 index.d.ts:722
 
----
+___
 
 ### authApiBaseUrl
 
@@ -132,7 +132,7 @@ ConfigDataType
 
 index.d.ts:188
 
----
+___
 
 ### authPluginRedirectUrl
 
@@ -148,7 +148,7 @@ ConfigDataType
 
 index.d.ts:205
 
----
+___
 
 ### authStatusRefreshInterval
 
@@ -166,7 +166,7 @@ ConfigDataType
 
 index.d.ts:741
 
----
+___
 
 ### authenticatedUserLandingPage
 
@@ -183,7 +183,7 @@ ConfigDataType
 
 index.d.ts:731
 
----
+___
 
 ### automaticPreviewMaxFileSize
 
@@ -199,7 +199,7 @@ ConfigDataType
 
 index.d.ts:443
 
----
+___
 
 ### baseExternalUrl
 
@@ -216,7 +216,7 @@ ConfigDataType
 
 index.d.ts:214
 
----
+___
 
 ### baseUrl
 
@@ -233,7 +233,7 @@ ConfigDataType
 
 index.d.ts:197
 
----
+___
 
 ### boundingBox
 
@@ -247,18 +247,18 @@ ConfigDataType
 
 #### Type declaration
 
-| Name    | Type     |
-| :------ | :------- |
-| `east`  | `number` |
+| Name | Type |
+| :------ | :------ |
+| `east` | `number` |
 | `north` | `number` |
 | `south` | `number` |
-| `west`  | `number` |
+| `west` | `number` |
 
 #### Defined in
 
 index.d.ts:644
 
----
+___
 
 ### breakpoints
 
@@ -272,17 +272,17 @@ ConfigDataType
 
 #### Type declaration
 
-| Name     | Type     |
-| :------- | :------- |
-| `large`  | `number` |
+| Name | Type |
+| :------ | :------ |
+| `large` | `number` |
 | `medium` | `number` |
-| `small`  | `number` |
+| `small` | `number` |
 
 #### Defined in
 
 index.d.ts:596
 
----
+___
 
 ### ckanExportServers
 
@@ -304,7 +304,7 @@ ConfigDataType
 
 index.d.ts:504
 
----
+___
 
 ### commonFetchRequestOptions
 
@@ -323,7 +323,7 @@ ConfigDataType
 
 index.d.ts:163
 
----
+___
 
 ### contentApiBaseUrl
 
@@ -340,7 +340,7 @@ ConfigDataType
 
 index.d.ts:243
 
----
+___
 
 ### contentUrl
 
@@ -358,7 +358,7 @@ ConfigDataType
 
 index.d.ts:253
 
----
+___
 
 ### correspondenceApiBaseUrl
 
@@ -375,7 +375,7 @@ ConfigDataType
 
 index.d.ts:321
 
----
+___
 
 ### custodianOrgLevel
 
@@ -391,7 +391,7 @@ ConfigDataType
 
 index.d.ts:435
 
----
+___
 
 ### datasetThemes
 
@@ -407,7 +407,7 @@ ConfigDataType
 
 index.d.ts:483
 
----
+___
 
 ### dateConfig
 
@@ -423,7 +423,7 @@ ConfigDataType
 
 index.d.ts:459
 
----
+___
 
 ### defaultCkanServer
 
@@ -440,7 +440,7 @@ ConfigDataType
 
 index.d.ts:515
 
----
+___
 
 ### defaultContactEmail
 
@@ -456,7 +456,7 @@ ConfigDataType
 
 index.d.ts:427
 
----
+___
 
 ### defaultDatasetBucket
 
@@ -472,7 +472,7 @@ ConfigDataType
 
 index.d.ts:713
 
----
+___
 
 ### defaultOrganizationId
 
@@ -488,7 +488,7 @@ ConfigDataType
 
 index.d.ts:419
 
----
+___
 
 ### defaultTimeZone
 
@@ -504,7 +504,7 @@ ConfigDataType
 
 index.d.ts:523
 
----
+___
 
 ### disableAuthenticationFeatures
 
@@ -521,7 +521,7 @@ ConfigDataType
 
 index.d.ts:365
 
----
+___
 
 ### discourseIntegrationDatasetPage
 
@@ -538,7 +538,7 @@ ConfigDataType
 
 index.d.ts:550
 
----
+___
 
 ### discourseIntegrationDistributionPage
 
@@ -555,7 +555,7 @@ ConfigDataType
 
 index.d.ts:559
 
----
+___
 
 ### discourseSiteUrl
 
@@ -573,7 +573,7 @@ ConfigDataType
 
 index.d.ts:541
 
----
+___
 
 ### enableCrawlerViews
 
@@ -589,7 +589,7 @@ ConfigDataType
 
 index.d.ts:531
 
----
+___
 
 ### externalCssFiles
 
@@ -605,7 +605,7 @@ ConfigDataType
 
 index.d.ts:575
 
----
+___
 
 ### externalUIComponents
 
@@ -621,7 +621,7 @@ ConfigDataType
 
 index.d.ts:567
 
----
+___
 
 ### extraConfigData
 
@@ -641,7 +641,7 @@ ConfigDataType
 
 index.d.ts:685
 
----
+___
 
 ### facets
 
@@ -657,7 +657,7 @@ ConfigDataType
 
 index.d.ts:608
 
----
+___
 
 ### fallbackUrl
 
@@ -674,7 +674,7 @@ ConfigDataType
 
 index.d.ts:374
 
----
+___
 
 ### featureFlags
 
@@ -690,7 +690,7 @@ ConfigDataType
 
 index.d.ts:384
 
----
+___
 
 ### gapiIds
 
@@ -706,7 +706,7 @@ ConfigDataType
 
 index.d.ts:347
 
----
+___
 
 ### headerLogoUrl
 
@@ -722,7 +722,7 @@ ConfigDataType
 
 index.d.ts:616
 
----
+___
 
 ### headerMobileLogoUrl
 
@@ -738,7 +738,7 @@ ConfigDataType
 
 index.d.ts:624
 
----
+___
 
 ### homePageUrl
 
@@ -755,7 +755,7 @@ ConfigDataType
 
 index.d.ts:584
 
----
+___
 
 ### image
 
@@ -769,17 +769,17 @@ ConfigDataType
 
 #### Type declaration
 
-| Name          | Type     |
-| :------------ | :------- |
+| Name | Type |
+| :------ | :------ |
 | `pullPolicy?` | `string` |
 | `repository?` | `string` |
-| `tag?`        | `string` |
+| `tag?` | `string` |
 
 #### Defined in
 
 index.d.ts:175
 
----
+___
 
 ### indexerApiBaseUrl
 
@@ -796,7 +796,7 @@ ConfigDataType
 
 index.d.ts:280
 
----
+___
 
 ### keywordsBlackList
 
@@ -812,7 +812,7 @@ ConfigDataType
 
 index.d.ts:411
 
----
+___
 
 ### mandatoryFields
 
@@ -828,7 +828,7 @@ ConfigDataType
 
 index.d.ts:451
 
----
+___
 
 ### months
 
@@ -844,7 +844,7 @@ ConfigDataType
 
 index.d.ts:632
 
----
+___
 
 ### noManualKeywords
 
@@ -860,7 +860,7 @@ ConfigDataType
 
 index.d.ts:467
 
----
+___
 
 ### noManualThemes
 
@@ -876,7 +876,7 @@ ConfigDataType
 
 index.d.ts:475
 
----
+___
 
 ### openInExternalTerriaMapButtonText
 
@@ -894,7 +894,7 @@ ConfigDataType
 
 index.d.ts:667
 
----
+___
 
 ### openInExternalTerriaMapTargetUrl
 
@@ -910,7 +910,7 @@ ConfigDataType
 
 index.d.ts:675
 
----
+___
 
 ### openfaasBaseUrl
 
@@ -927,7 +927,7 @@ ConfigDataType
 
 index.d.ts:492
 
----
+___
 
 ### previewMapBaseUrl
 
@@ -944,7 +944,7 @@ ConfigDataType
 
 index.d.ts:262
 
----
+___
 
 ### previewMapFormatPerference
 
@@ -961,7 +961,7 @@ ConfigDataType
 
 index.d.ts:696
 
----
+___
 
 ### proxyUrl
 
@@ -978,7 +978,7 @@ ConfigDataType
 
 index.d.ts:271
 
----
+___
 
 ### registryApiBaseUrl
 
@@ -998,7 +998,7 @@ ConfigDataType
 
 index.d.ts:292
 
----
+___
 
 ### registryApiReadOnlyBaseUrl
 
@@ -1017,7 +1017,7 @@ ConfigDataType
 
 index.d.ts:303
 
----
+___
 
 ### rssUrl
 
@@ -1034,7 +1034,7 @@ ConfigDataType
 
 index.d.ts:356
 
----
+___
 
 ### searchApiBaseUrl
 
@@ -1051,7 +1051,7 @@ ConfigDataType
 
 index.d.ts:312
 
----
+___
 
 ### showContactButtonForNoContactPointDataset
 
@@ -1068,7 +1068,7 @@ ConfigDataType
 
 index.d.ts:705
 
----
+___
 
 ### showNotificationBanner
 
@@ -1084,7 +1084,7 @@ ConfigDataType
 
 index.d.ts:234
 
----
+___
 
 ### storageApiBaseUrl
 
@@ -1101,7 +1101,7 @@ ConfigDataType
 
 index.d.ts:330
 
----
+___
 
 ### supportExternalTerriaMapV7
 
@@ -1117,14 +1117,14 @@ ConfigDataType
 
 index.d.ts:657
 
----
+___
 
 ### uiBaseUrl
 
 • **uiBaseUrl**: `string`
 
 The base url path where the web client will be served at.
-E.g. when `uiBaseUrl`=`/`, the web client will served at `https://example.com/`.
+E.g.  when `uiBaseUrl`=`/`, the web client will served at `https://example.com/`.
 When `uiBaseUrl`=`/abc/def`, the web client will served at `https://example.com/abc/def`.
 Please note: this field only reflect where the wbe client / frontend application is served at.
 It doesn't reflect where all APIs are served. To find out it, the value `baseUrl` field should be used.
@@ -1137,7 +1137,7 @@ ConfigDataType
 
 index.d.ts:226
 
----
+___
 
 ### useMagdaStorageByDefault
 
@@ -1153,7 +1153,7 @@ ConfigDataType
 
 index.d.ts:392
 
----
+___
 
 ### vocabularyApiEndpoints
 
@@ -1161,7 +1161,6 @@ index.d.ts:392
 
 A list of vocabulary api endpoints that are used to validate the auto-generated keywords in dataset editor UI.
 By default, it's set to:
-
 - "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json",
 - "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
 

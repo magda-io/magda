@@ -4,3 +4,4 @@ magda-web-client/public/assets/libs
 .gitlab-ci.yml
 .travis.yml
 *.html
+packages/external-ui-plugin-sdk/docs

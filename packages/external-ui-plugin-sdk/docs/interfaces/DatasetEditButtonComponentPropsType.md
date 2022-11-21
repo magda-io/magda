@@ -56,7 +56,7 @@ CommonPropsType
 
 index.d.ts:67
 
----
+___
 
 ### dataset
 
@@ -66,7 +66,7 @@ index.d.ts:67
 
 index.d.ts:774
 
----
+___
 
 ### fetchContent
 
@@ -87,8 +87,8 @@ CommonPropsType
 
 ##### Parameters
 
-| Name       | Type      |
-| :--------- | :-------- |
+| Name | Type |
+| :------ | :------ |
 | `noCache?` | `boolean` |
 
 ##### Returns
@@ -103,7 +103,7 @@ CommonPropsType
 
 index.d.ts:119
 
----
+___
 
 ### history
 
@@ -124,7 +124,7 @@ CommonPropsType
 
 index.d.ts:76
 
----
+___
 
 ### isFetchingWhoAmI
 
@@ -144,7 +144,7 @@ CommonPropsType
 
 index.d.ts:43
 
----
+___
 
 ### loadedPluginNames
 
@@ -167,7 +167,7 @@ CommonPropsType
 
 index.d.ts:130
 
----
+___
 
 ### location
 
@@ -188,7 +188,7 @@ CommonPropsType
 
 index.d.ts:85
 
----
+___
 
 ### match
 
@@ -209,7 +209,7 @@ CommonPropsType
 
 index.d.ts:94
 
----
+___
 
 ### requestSignOut
 
@@ -237,7 +237,7 @@ CommonPropsType
 
 index.d.ts:101
 
----
+___
 
 ### requestWhoAmI
 
@@ -266,7 +266,7 @@ CommonPropsType
 
 index.d.ts:109
 
----
+___
 
 ### user
 
@@ -286,7 +286,7 @@ CommonPropsType
 
 index.d.ts:51
 
----
+___
 
 ### whoAmIError
 

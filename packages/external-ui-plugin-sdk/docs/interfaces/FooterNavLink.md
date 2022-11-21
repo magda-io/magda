@@ -28,7 +28,7 @@ FooterNavLink
 
 index.d.ts:887
 
----
+___
 
 ### label
 
@@ -38,7 +38,7 @@ index.d.ts:887
 
 index.d.ts:888
 
----
+___
 
 ### order
 

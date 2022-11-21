@@ -42,7 +42,7 @@ Dataset page `Edit Dataset` button external plugin component type
 
 index.d.ts:781
 
----
+___
 
 ### DatasetLikeButtonComponentType
 
@@ -55,7 +55,7 @@ Please note: the `Like Button` on search result page is hidden unless a plugin c
 
 index.d.ts:801
 
----
+___
 
 ### ExtraVisualisationSectionComponentType
 
@@ -69,7 +69,7 @@ More info & example please refer to repo: [magda-ui-plugin-component-dap-image-g
 
 index.d.ts:833
 
----
+___
 
 ### FooterComponentType
 
@@ -81,7 +81,7 @@ Footer external plugin component type
 
 index.d.ts:878
 
----
+___
 
 ### HeaderComponentType
 
@@ -97,14 +97,13 @@ index.d.ts:919
 
 ### PREFIX
 
-• `Const` **PREFIX**: `"MagdaPluginComponent"`
+• `Const` **PREFIX**: ``"MagdaPluginComponent"``
 
 The constant define the prefix that is used to create the global scope variable name `MagdaPluginComponentxxxx`, to which the external UI plugin bundle should export to.
 Here, `xxxx` is the plugin UI component type name
 e.g. The Header Component should bundled & export to global scope variable `MagdaPluginComponentHeader`.
 
 The currently support all type names are:
-
 - Header
 - Footer
 - DatasetEditButton
@@ -114,10 +113,10 @@ The currently support all type names are:
 Please refer to `External UI Plugin Component Types Type Aliases` section for functionality of each plugin UI component type.
 
 > Since Magda v2.2.0, users can load more than one "Extra Visualisation Section" type Magda UI Plugin Components.
-> To allow this, the component is required to be packaged as a library and exported to global scope `MagdaPluginComponentExtraVisualisationSection.xxxx`.
-> Here, `MagdaPluginComponentExtraVisualisationSection` should be an object with key `xxxx` set to the plugin component.
-> e.g. the [DAP image gallery plugin](https://github.com/magda-io/magda-ui-plugin-component-dap-image-gallery) choose to export itself to `MagdaPluginComponentExtraVisualisationSection.DAPImageGallery`.
+To allow this, the component is required to be packaged as a library and exported to global scope `MagdaPluginComponentExtraVisualisationSection.xxxx`.
+Here, `MagdaPluginComponentExtraVisualisationSection` should be an object with key `xxxx` set to the plugin component.
+e.g. the [DAP image gallery plugin](https://github.com/magda-io/magda-ui-plugin-component-dap-image-gallery) choose to export itself to `MagdaPluginComponentExtraVisualisationSection.DAPImageGallery`.
 
 #### Defined in
 
-index.d.ts:1069
+index.d.ts:1070

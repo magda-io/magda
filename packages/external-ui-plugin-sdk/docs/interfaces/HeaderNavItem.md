@@ -28,7 +28,7 @@ HeaderNavItem
 
 index.d.ts:934
 
----
+___
 
 ### default
 
@@ -36,18 +36,18 @@ index.d.ts:934
 
 #### Type declaration
 
-| Name      | Type     |
-| :-------- | :------- |
-| `href`    | `string` |
-| `label`   | `string` |
-| `rel?`    | `string` |
+| Name | Type |
+| :------ | :------ |
+| `href` | `string` |
+| `label` | `string` |
+| `rel?` | `string` |
 | `target?` | `string` |
 
 #### Defined in
 
 index.d.ts:928
 
----
+___
 
 ### order
 

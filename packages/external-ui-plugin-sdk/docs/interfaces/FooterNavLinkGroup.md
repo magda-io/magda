@@ -28,7 +28,7 @@ FooterNavLinkGroup
 
 index.d.ts:899
 
----
+___
 
 ### links
 
@@ -38,7 +38,7 @@ index.d.ts:899
 
 index.d.ts:900
 
----
+___
 
 ### order
 

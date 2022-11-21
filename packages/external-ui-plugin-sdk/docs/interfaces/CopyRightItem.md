@@ -29,7 +29,7 @@ CopyRightItem
 
 index.d.ts:751
 
----
+___
 
 ### htmlContent
 
@@ -39,7 +39,7 @@ index.d.ts:751
 
 index.d.ts:752
 
----
+___
 
 ### logoSrc
 
@@ -49,7 +49,7 @@ index.d.ts:752
 
 index.d.ts:753
 
----
+___
 
 ### order
 
