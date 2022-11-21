@@ -14,6 +14,12 @@
 - #3424 Set the default order by field for APIs
 - #3427 Dataset Editor: offer more details via error message box when encounter insufficient permission error
 - #3425 offer a button on dataset page to take the user back to data management tab
+- Started to publish @magda/external-ui-plugin-sdk NPM package
+- Upgrade react-router-dom to 5.3.4
+- Refactored the frontend config object to remove duplicated config fields & added comments
+- #3428 Allow multiple "Extra Visualisation Section" type UI Plugin Components to be mounted
+- Upgraded CSW connector to v2.0.1
+- #3431 Display dataset level licence information when the dataset has no distribution.
 
 ## v2.1.1
 

@@ -11,7 +11,7 @@ export type OptionType = Region;
 const loadOptions = (props: PropsType) => async (inputValue) => {
     const queryStr = inputValue.trim();
     const res = await fetch(
-        `${config.searchApiUrl}regions?type=COUNTRY${
+        `${config.searchApiBaseUrl}regions?type=COUNTRY${
             queryStr ? `&query=${encodeURIComponent(queryStr)}` : ""
         }`
     );

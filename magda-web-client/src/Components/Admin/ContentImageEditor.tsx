@@ -42,7 +42,7 @@ class ContentImageEditor extends Component<any, any> {
         return (
             <React.Fragment>
                 <img
-                    src={config.contentApiURL + imageItemId}
+                    src={config.contentApiBaseUrl + imageItemId}
                     alt={imageAlt}
                     style={{
                         maxHeight: "70px",

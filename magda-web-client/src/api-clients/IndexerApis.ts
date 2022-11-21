@@ -1,6 +1,6 @@
-import { config } from "config";
+import { config } from "../config";
 import fetch from "isomorphic-fetch";
-import request from "helpers/request";
+import request from "../helpers/request";
 import ServerError from "@magda/typescript-common/dist/ServerError";
 
 /**

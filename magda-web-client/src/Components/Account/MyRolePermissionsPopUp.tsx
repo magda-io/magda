@@ -14,7 +14,7 @@ import List from "rsuite/List";
 import { MdInfoOutline } from "react-icons/md";
 import "./MyRolePermissionsPopUp.scss";
 import { User, Role } from "reducers/userManagementReducer";
-import { RolePermissionRecord } from "api-clients/AuthApis";
+import { Permission as RolePermissionRecord } from "@magda/typescript-common/dist/authorization-api/model";
 import Pagination from "rsuite/Pagination";
 import { RowDataType } from "rsuite-table";
 import { CamelCasedProperties } from "type-fest";

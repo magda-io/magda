@@ -6,8 +6,8 @@ import {
     Record,
     VersionAspectData,
     CurrencyData
-} from "api-clients/RegistryApis";
-import { config } from "config";
+} from "../api-clients/RegistryApis";
+import { config } from "../config";
 
 export type RecordAction = {
     json?: any;
@@ -281,6 +281,7 @@ export type ParsedDataset = {
     };
     ckanExport?: CkanExportAspectType;
     access: Access;
+    defaultLicense?: string;
 };
 
 export const emptyPublisher: Publisher = {
@@ -652,6 +653,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         accrualPeriodicityRecurrenceRule:
             datasetInfo["accrualPeriodicityRecurrenceRule"] || "",
         ckanExport,
-        access: aspects["access"]
+        access: aspects["access"],
+        defaultLicense: datasetInfo?.defaultLicense
     };
 }

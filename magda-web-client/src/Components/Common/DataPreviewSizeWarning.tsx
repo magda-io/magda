@@ -1,10 +1,10 @@
 import React from "react";
-import AUpageAlert from "pancake/react/page-alerts";
-import humanFileSize from "helpers/humanFileSize";
+import AUpageAlert from "../../pancake/react/page-alerts";
+import humanFileSize from "../../helpers/humanFileSize";
 import {
     FileSizeCheckStatus,
     FileSizeCheckResult
-} from "helpers/DistributionPreviewUtils";
+} from "../../helpers/DistributionPreviewUtils";
 import "./DataPreviewSizeWarning.scss";
 
 export default function DataPreviewSizeWarning({

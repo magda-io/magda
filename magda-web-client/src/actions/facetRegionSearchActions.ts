@@ -29,8 +29,8 @@ export function fetchRegionSearchResults(facetQuery: string) {
     return (dispatch: Dispatch) => {
         dispatch(requestRegions(facetQuery));
         return fetch(
-            config.searchApiUrl + `regions?query=${facetQuery}`,
-            config.credentialsFetchOptions
+            config.searchApiBaseUrl + `regions?query=${facetQuery}`,
+            config.commonFetchRequestOptions
         )
             .then((response) => {
                 if (response.status === 200) {

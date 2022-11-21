@@ -109,7 +109,7 @@ function parseContent(content) {
             highlights[id].backgroundImageUrls =
                 highlights[id].backgroundImageUrls || [];
             highlights[id].backgroundImageUrls.push(
-                `${config.contentApiURL}/${item.id}.bin`
+                `${config.contentApiBaseUrl}/${item.id}.bin`
             );
         } else if (item.id.indexOf("home/stories/") === 0) {
             const id = item.id.substr("home/stories/".length);
@@ -118,7 +118,7 @@ function parseContent(content) {
         } else if (item.id.indexOf("home/story-images/") === 0) {
             const id = item.id.substr("home/story-images/".length);
             stories[id] = stories[id] || { id };
-            stories[id].image = `${config.contentApiURL}/${item.id}.bin`;
+            stories[id].image = `${config.contentApiBaseUrl}/${item.id}.bin`;
         } else if (item.id.indexOf("header/navigation/") === 0) {
             headerNavigation.push(item.content);
         } else if (item.id.indexOf("config/") === 0) {

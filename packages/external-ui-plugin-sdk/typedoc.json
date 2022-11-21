@@ -1,0 +1,8 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": ["./dist/index.d.ts"],
+    "out": "docs",
+    "tsconfig": "tsconfig.typedoc.json",
+    "plugin": ["typedoc-plugin-markdown"],
+    "githubPages": false
+}

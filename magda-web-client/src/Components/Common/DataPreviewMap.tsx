@@ -6,19 +6,19 @@ import {
     config,
     DATASETS_BUCKET,
     RawPreviewMapFormatPerferenceItem
-} from "config";
+} from "../../config";
 import { Medium, Small } from "./Responsive";
-import Spinner from "Components/Common/Spinner";
-import { ParsedDistribution } from "helpers/record";
+import Spinner from "./Spinner";
+import { ParsedDistribution } from "../../helpers/record";
 import sortBy from "lodash/sortBy";
 import {
     checkFileForPreview,
     FileSizeCheckStatus,
     FileSizeCheckResult
-} from "helpers/DistributionPreviewUtils";
+} from "../../helpers/DistributionPreviewUtils";
 import DataPreviewSizeWarning from "./DataPreviewSizeWarning";
 import urijs from "urijs";
-import isStorageApiUrl from "helpers/isStorageApiUrl";
+import isStorageApiUrl from "../../helpers/isStorageApiUrl";
 import { useAsync } from "react-async-hook";
 import fetch from "isomorphic-fetch";
 import xml2json from "../../helpers/xml2json";
@@ -73,8 +73,8 @@ function getDataSourcePreference(): PreviewMapFormatPerferenceItem[] {
         return DATA_SOURCE_PREFERENCE;
     }
     const preferenceList: RawPreviewMapFormatPerferenceItem[] = config
-        ?.previewMapFormatPerference?.map
-        ? config?.previewMapFormatPerference
+        ?.previewMapFormatPerference?.length
+        ? config.previewMapFormatPerference
         : DEFAULT_DATA_SOURCE_PREFERENCE;
 
     DATA_SOURCE_PREFERENCE = preferenceList.map((item) => {
@@ -433,7 +433,7 @@ class DataPreviewMapTerria extends Component<
             name: selectedDistribution.title,
             type: "magda-item",
             url: config.baseUrl,
-            storageApiUrl: config.storageApiUrl,
+            storageApiUrl: config.storageApiBaseUrl,
             distributionId: selectedDistribution.identifier,
             // --- default internal storage bucket name
             defaultBucket: DATASETS_BUCKET,
@@ -556,7 +556,7 @@ class DataPreviewMapTerria extends Component<
                         height="420px"
                         frameBorder="0"
                         src={
-                            config.previewMapUrl +
+                            config.previewMapBaseUrl +
                             "#mode=preview&hideExplorerPanel=1"
                         }
                         ref={this.iframeRef}

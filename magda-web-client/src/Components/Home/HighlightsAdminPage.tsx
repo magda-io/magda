@@ -110,9 +110,11 @@ export default class HighlightsAdminPage extends React.Component<any, any> {
             <tr>
                 <td>
                     <img
-                        src={`${config.contentApiURL}home/highlight-images/${
-                            item.id
-                        }/${item.images[Math.min(1, item.images.length - 1)]}`}
+                        src={`${
+                            config.contentApiBaseUrl
+                        }home/highlight-images/${item.id}/${
+                            item.images[Math.min(1, item.images.length - 1)]
+                        }`}
                         alt="Highlight"
                         style={{
                             maxWidth: "367px",

@@ -7,6 +7,7 @@ import urijs from "urijs";
 import removePathPrefix from "./helpers/removePathPrefix";
 import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
 import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient";
+import { Component } from "react";
 
 export const ADMIN_ROLE_ID = ADMIN_USERS_ROLE_ID;
 
@@ -42,7 +43,7 @@ const defaultDateFormats: string[] = [
 // Dev server
 const fallbackApiHost = "https://dev.magda.io/";
 
-const DEV_FEATURE_FLAGS = {
+const DEV_FEATURE_FLAGS: FeatureFlagsConfigType = {
     cataloguing: true,
     publishToDga: false,
     previewAddDataset: false,
@@ -51,6 +52,17 @@ const DEV_FEATURE_FLAGS = {
     datasetLikeButton: false,
     enableAutoMetadataFetchButton: true
 };
+
+export type FeatureFlagType =
+    | "cataloguing"
+    | "publishToDga"
+    | "previewAddDataset"
+    | "datasetApprovalWorkflowOn"
+    | "useStorageApi"
+    | "datasetLikeButton"
+    | "enableAutoMetadataFetchButton";
+
+export type FeatureFlagsConfigType = Partial<Record<FeatureFlagType, boolean>>;
 
 interface DateConfig {
     dateFormats: string[];
@@ -67,72 +79,614 @@ export interface RawPreviewMapFormatPerferenceItem {
     urlRegex?: string;
 }
 
-const serverConfig: {
+export interface FacetConfigItem {
+    id: string;
+    component: Component<any>;
+    showExplanation?: boolean;
+    name?: string;
+}
+
+/**
+ * Magda frontend application configuration data structure.
+ * This config data is only configurable at time of the deployment via [Magda web-server Helm Chart](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server).
+ * At the beginning of starting up, the frontend application will retrieve this config data from the web server.
+ * For default values, please refer to [Magda web-server Helm Chart Doc](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server).
+ *
+ * @export
+ * @interface ConfigDataType
+ */
+export interface ConfigDataType {
+    /**
+     * This field allow you to config the common settings of all [fetch requests](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) sent by the frontend application.
+     * One common use case is to set [credentials field](https://developer.mozilla.org/en-US/docs/Web/API/Request/Request#credentials).
+     * Its default value is `"credentials": "same-origin"`. When running the web client locally for debugging purpose, you might want to set it to `"credentials": "include"`.
+     * This will allow `credentials` (e.g. cookie) to be shared with remote dev testing API server.
+     *
+     * @type {RequestInit}
+     * @memberof ConfigDataType
+     */
+    commonFetchRequestOptions: RequestInit;
+
+    /**
+     * The docker image information of the web server that serves all frontend resources of the application.
+     *
+     * @type {{
+     *         pullPolicy?: string;
+     *         repository?: string;
+     *         tag?: string;
+     *     }}
+     * @memberof ConfigDataType
+     */
     image?: {
         pullPolicy?: string;
         repository?: string;
         tag?: string;
     };
-    authApiBaseUrl?: string;
-    baseUrl?: string;
-    authPluginRedirectUrl?: string;
-    baseExternalUrl?: string;
-    uiBaseUrl?: string;
+
+    /**
+     * The authorisation API base URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    authApiBaseUrl: string;
+
+    /**
+     * The base URL path of all APIs (e.g. '/');
+     * The value of the field might be either from config data retrieved from the server or (when run web client locally) the hardcoded URL to a default "fallback" dev API server url for testing.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    baseUrl: string;
+
+    /**
+     * The default redirection url for all auth plugins once the authentication process is completed.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    authPluginRedirectUrl: string;
+
+    /**
+     * Similar to `baseUrl`. But this field always includes the external access domain of the application.
+     * You might want to use its value in use cases e.g. generating external accessible links for email content.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    baseExternalUrl: string;
+
+    /**
+     * The base url path where the web client will be served at.
+     * E.g.  when `uiBaseUrl`=`/`, the web client will served at `https://example.com/`.
+     * When `uiBaseUrl`=`/abc/def`, the web client will served at `https://example.com/abc/def`.
+     * Please note: this field only reflect where the wbe client / frontend application is served at.
+     * It doesn't reflect where all APIs are served. To find out it, the value `baseUrl` field should be used.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    uiBaseUrl: string;
+
+    /**
+     * Whether or not the notification banner should be shown.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
     showNotificationBanner?: boolean;
-    contentApiBaseUrl?: string;
-    previewMapBaseUrl?: string;
-    indexerApiBaseUrl?: string;
-    registryApiBaseUrl?: string;
-    registryApiReadOnlyBaseUrl?: string;
-    searchApiBaseUrl?: string;
+
+    /**
+     * The content API base URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    contentApiBaseUrl: string;
+
+    /**
+     * The API endpoint URL to retrieve all default content items (e.g. header & footer items etc.).
+     * The value of this field is created from field `contentApiBaseUrl`.
+     * It includes all required query parameters in the URL and serves as a pre-configured short cut to retrieve all default content items for a user.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    contentUrl: string;
+
+    /**
+     * The map preview module base access URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    previewMapBaseUrl: string;
+
+    /**
+     * The CORS resource proxy url. Mainly used by map preview module to load CORS resources from whitelist domains.
+     * Its value is generated from `previewMapBaseUrl`.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    proxyUrl: string;
+
+    /**
+     * The indexer API base URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    indexerApiBaseUrl: string;
+
+    /**
+     * The registry API base URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     * Please note: this registry API endpoint can handle both read & write requests.
+     * Since v0.0.59, readonly (HTTP GET) requests that are sent to this endpoint externally will be auto-forward to the readonly endpoint `registryApiReadOnlyBaseUrl`.
+     * However, for performance consideration (as gateway doesn't need to check HTTP method), `registryApiReadOnlyBaseUrl` should still be the preferred endpoint for readonly requests.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    registryApiBaseUrl: string;
+
+    /**
+     * The registry readonly API base URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     * Please note: this registry API endpoint can only handle both read requests only.
+     * The readonly registry API endpoint can scale horizontally easily. Thus, should be the preferred endpoint for serving readonly requests.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    registryApiReadOnlyBaseUrl: string;
+
+    /**
+     * The search API base URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    searchApiBaseUrl: string;
+
+    /**
+     * The correspondence API base URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     correspondenceApiBaseUrl?: string;
-    storageApiBaseUrl?: string;
+
+    /**
+     * The storage API base URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    storageApiBaseUrl: string;
+
+    /**
+     * The admin API base URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    adminApiBaseUrl: string;
+
+    /**
+     * Google Analytics ID
+     *
+     * @type {Array<string>}
+     * @memberof ConfigDataType
+     */
     gapiIds?: Array<string>;
-    adminApiBaseUrl?: string;
-    disableAuthenticationFeatures?: boolean;
+
+    /**
+     * remote RSS news endpoint.
+     * This config field is deprecated & to be removed in future.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    rssUrl?: string;
+
+    /**
+     * When set to `true`, the user account related links & buttons will be removed.
+     * Default to `false`.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    disableAuthenticationFeatures: boolean;
+
+    /**
+     * The url of fallback dev API server for testing.
+     * It will only be used when the web client is run locally.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     fallbackUrl?: string;
-    featureFlags?: {
-        [id: string]: boolean;
-    };
-    useMagdaStorageByDefault?: boolean;
+
+    /**
+     * A set of feature flags to turn on/of a list of features.
+     *
+     * @type {{
+     *         [id: string]: boolean;
+     *     }}
+     * @memberof ConfigDataType
+     */
+    featureFlags: FeatureFlagsConfigType;
+
+    /**
+     * Whether or not the "use Magda storage" option should be pre-selected on dataset editor UI.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    useMagdaStorageByDefault: boolean;
+
+    /**
+     * A list of vocabulary api endpoints that are used to validate the auto-generated keywords in dataset editor UI.
+     * By default, it's set to:
+     * - "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json",
+     * - "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
+     *
+     * @type {string[]}
+     * @memberof ConfigDataType
+     */
     vocabularyApiEndpoints: string[];
-    defaultOrganizationId?: string;
-    defaultContactEmail?: string;
-    custodianOrgLevel: number;
-    automaticPreviewMaxFileSize: number;
-    mandatoryFields: ValidationFieldList;
-    dateConfig?: DateConfig;
-    noManualKeywords?: boolean;
-    noManualThemes?: boolean;
-    datasetThemes?: string[];
+
+    /**
+     * A list of keywords that should never be generated by the auto keyword generation module in the dataset editor UI.
+     *
+     * @type {string[]}
+     * @memberof ConfigDataType
+     */
     keywordsBlackList?: string[];
+
+    /**
+     * Default Organization ID for dataset editor UI.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    defaultOrganizationId?: string;
+
+    /**
+     * Default email to forward users' inquiry.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    defaultContactEmail?: string;
+
+    /**
+     * deprecated. Not used anymore. To be removed in future.
+     *
+     * @type {number}
+     * @memberof ConfigDataType
+     */
+    custodianOrgLevel: number;
+
+    /**
+     * The maximum size that a file can be in order to be automatically previewed by the ui as a map, graph or table.
+     *
+     * @type {number}
+     * @memberof ConfigDataType
+     */
+    automaticPreviewMaxFileSize: number;
+
+    /**
+     * List all mandatory fields in dataset editor.
+     *
+     * @type {ValidationFieldList}
+     * @memberof ConfigDataType
+     */
+    mandatoryFields: ValidationFieldList;
+
+    /**
+     * The date format config used in dataset editor auto date information extraction.
+     *
+     * @type {DateConfig}
+     * @memberof ConfigDataType
+     */
+    dateConfig: DateConfig;
+
+    /**
+     * Whether or not allow user to input manual keywords in the dataset editor.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    noManualKeywords?: boolean;
+
+    /**
+     * Whether or not allow user to input manual themes in the dataset editor.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    noManualThemes?: boolean;
+
+    /**
+     * Predefined dataset theme list used in the dataset editor.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    datasetThemes?: string[];
+
+    /**
+     * The openfaas API base URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     openfaasBaseUrl?: string;
+
+    /**
+     * Config for optional dataset auto-sync to ckan feature.
+     * Only available when [magda-minion-ckan-exporter](https://github.com/magda-io/magda-minion-ckan-exporter) is deployed and feature flag `publishToDga` is `true`.
+     * This feature is still in beta.
+     *
+     * @type {{
+     *         [ckanServerUrl: string]: boolean;
+     *     }}
+     * @memberof ConfigDataType
+     */
     ckanExportServers: {
         [ckanServerUrl: string]: boolean;
     };
+
+    /**
+     * The default CKAN server for the optional dataset auto-sync to ckan feature.
+     * see config field `ckanExportServers`.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     defaultCkanServer: string;
+
+    /**
+     * The default timezone used in the application.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     defaultTimeZone?: string;
+
+    /**
+     * Indicate whether or not the crawler web view is enabled on [Magda web-server](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/web-server) to provide search engine optimized views.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
     enableCrawlerViews?: boolean;
+
+    /**
+     * The discourse site url.
+     * For the optional discourse site integration feature.
+     * When its value is empty, the feature will be disabled.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     discourseSiteUrl?: string;
+
+    /**
+     * For the optional discourse site integration feature.
+     * Indicate whether show the discourse comment area on dataset page.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
     discourseIntegrationDatasetPage?: boolean;
+
+    /**
+     * For the optional discourse site integration feature.
+     * Indicate whether show the discourse comment area on distribution page.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
     discourseIntegrationDistributionPage?: boolean;
+
+    /**
+     * A list of optional external UI component plugins bundle URLs.
+     *
+     * @type {string[]}
+     * @memberof ConfigDataType
+     */
     externalUIComponents?: string[];
+
+    /**
+     * A list of optional external CSS files to overwrite the looking of the site.
+     *
+     * @type {string[]}
+     * @memberof ConfigDataType
+     */
     externalCssFiles?: string[];
+
+    /**
+     * The url used when user click `home` link or header logo.
+     * Default to "/"
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     homePageUrl?: string;
+
+    /**
+     * The responsive UI break points.
+     *
+     * @type {{
+     *         small: number;
+     *         medium: number;
+     *         large: number;
+     *     }}
+     * @memberof ConfigDataType
+     */
+    breakpoints?: {
+        small: number;
+        medium: number;
+        large: number;
+    };
+
+    /**
+     * Search panel facet config.
+     *
+     * @type {FacetConfigItem[]}
+     * @memberof ConfigDataType
+     */
+    facets?: FacetConfigItem[];
+
+    /**
+     * Header logo URL.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    headerLogoUrl?: string;
+
+    /**
+     * Header logo URL for mobile view.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    headerMobileLogoUrl?: string;
+
+    /**
+     * A list of month name to be used in the application
+     *
+     * @type {string[]}
+     * @memberof ConfigDataType
+     */
+    months?: string[];
+    /**
+     * Default boundingBox for map preview module
+     *
+     * @type {{
+     *         west: number;
+     *         south: number;
+     *         east: number;
+     *         north: number;
+     *     }}
+     * @memberof ConfigDataType
+     */
+    boundingBox: {
+        west: number;
+        south: number;
+        east: number;
+        north: number;
+    };
+
+    /**
+     * Whether the "Open in XXXX" button over the map preview module should support terria map v7 config format.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
     supportExternalTerriaMapV7?: boolean;
+
+    /**
+     * The the "Open in XXXX" over the map preview module button text label.
+     * By default, it's set to "Open in National Map".
+     * But you can set to other value in case you want to send data to your own terria map.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     openInExternalTerriaMapButtonText?: string;
+
+    /**
+     * The target terria map URL that the "Open in XXXX" over the map preview module button should send data to.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     openInExternalTerriaMapTargetUrl?: string;
+
+    /**
+     * extraConfigData is mainly for config data passing to external UI plugins
+     *
+     * @type {{
+     *         [key: string]: any;
+     *     }}
+     * @memberof ConfigDataType
+     */
     extraConfigData?: {
-        // extraConfigData is mainly for config data passing to external UI plugins
         [key: string]: any;
     };
+
+    /**
+     * A format preference list for the map preview module.
+     * It controls, on dataset page, when more than one formats are available, which format data file / API will be used for best user experience.
+     *
+     * @type {RawPreviewMapFormatPerferenceItem[]}
+     * @memberof ConfigDataType
+     */
     previewMapFormatPerference?: RawPreviewMapFormatPerferenceItem[];
+
+    /**
+     * Whether or not show the contact button when the contact information of the dataset is not available.
+     * When set to `true`, the inquiries will be sent to the default contact email.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
     showContactButtonForNoContactPointDataset?: boolean;
+
+    /**
+     * The default storage bucket that storage API should use.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
     defaultDatasetBucket?: string;
-    anonymousUserLandingPage?: string;
-    authenticatedUserLandingPage?: string;
+
+    /**
+     * The landing page URL for anonymous users.
+     * By default, it's "/home". You might want to set to "/account", if your system is not open to public users.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    anonymousUserLandingPage: string;
+
+    /**
+     * The landing page URL for authenticated users.
+     * By default, it's "/home".
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    authenticatedUserLandingPage: string;
+
+    /**
+     * How long before reload the current user's auth data in the background.
+     * Useful to transit UI to correct status when user leave browser open without interaction for long time.
+     * Default: 5 mins
+     *
+     * @type {number}
+     * @memberof ConfigDataType
+     */
     authStatusRefreshInterval?: number;
-} = window.magda_server_config || {};
+}
+
+const serverConfig: ConfigDataType = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
 const START_DATE_REGEX = "(start|st).*(date|dt|year|decade)";
@@ -191,13 +745,7 @@ export const isBackendSameOrigin =
         ? true
         : false;
 
-const registryReadOnlyApiUrl =
-    serverConfig.registryApiReadOnlyBaseUrl ||
-    fallbackApiHost + "api/v0/registry-read-only/";
-const registryFullApiUrl =
-    serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
-
-const previewMapUrl =
+const previewMapBaseUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
 const proxyUrl = getProxyUrl();
 
@@ -213,7 +761,7 @@ const baseExternalUrl = serverConfig.baseExternalUrl
     : urijs().segment([]).search("").fragment("").toString();
 
 // when UI domain is different from backend domain, we set credentials: "include"
-const credentialsFetchOptions: RequestInit = !isBackendSameOrigin
+export const commonFetchRequestOptions: RequestInit = !isBackendSameOrigin
     ? {
           credentials: "include"
       }
@@ -221,9 +769,9 @@ const credentialsFetchOptions: RequestInit = !isBackendSameOrigin
           credentials: "same-origin"
       };
 
-AuthDecisionQueryClient.fetchOptions = { ...credentialsFetchOptions };
+AuthDecisionQueryClient.fetchOptions = { ...commonFetchRequestOptions };
 
-const contentApiURL =
+const contentApiBaseUrl =
     serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";
 
 const vocabularyApiEndpoints =
@@ -272,19 +820,19 @@ function getFullUrlIfNotEmpty(relativeUrl: string | undefined) {
  */
 function getProxyUrl() {
     const uri =
-        previewMapUrl.indexOf("http") === 0
-            ? urijs(previewMapUrl)
+        previewMapBaseUrl.indexOf("http") === 0
+            ? urijs(previewMapBaseUrl)
             : urijs(window.location.href)
                   .search("")
                   .fragment("")
-                  .segment([previewMapUrl]);
+                  .segment([previewMapBaseUrl]);
 
     return uri.segment("proxy").toString() + "/";
 }
 
-export const config = {
+export const config: ConfigDataType = {
     ...serverConfig,
-    credentialsFetchOptions: credentialsFetchOptions,
+    commonFetchRequestOptions: commonFetchRequestOptions,
     showNotificationBanner: !!serverConfig.showNotificationBanner,
     baseUrl,
     baseExternalUrl,
@@ -292,17 +840,21 @@ export const config = {
     authPluginRedirectUrl: serverConfig.authPluginRedirectUrl
         ? serverConfig.authPluginRedirectUrl
         : "/sign-in-redirect",
-    contentApiURL,
-    searchApiUrl:
+    contentApiBaseUrl,
+    searchApiBaseUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
     indexerApiBaseUrl:
         serverConfig?.indexerApiBaseUrl || fallbackApiHost + "api/v0/indexer/",
-    registryReadOnlyApiUrl: registryReadOnlyApiUrl,
-    registryFullApiUrl: registryFullApiUrl,
-    adminApiUrl:
+    registryApiReadOnlyBaseUrl:
+        serverConfig.registryApiReadOnlyBaseUrl ||
+        fallbackApiHost + "api/v0/registry-read-only/",
+    registryApiBaseUrl:
+        serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/",
+    adminApiBaseUrl:
         serverConfig.adminApiBaseUrl || fallbackApiHost + "api/v0/admin/",
-    authApiUrl: serverConfig.authApiBaseUrl || fallbackApiHost + "api/v0/auth/",
-    correspondenceApiUrl:
+    authApiBaseUrl:
+        serverConfig.authApiBaseUrl || fallbackApiHost + "api/v0/auth/",
+    correspondenceApiBaseUrl:
         serverConfig.correspondenceApiBaseUrl ||
         fallbackApiHost + "api/v0/correspondence/",
     // before modify the logic of generating storageApiUrl, be sure you've tested the following scenarios:
@@ -310,13 +862,13 @@ export const config = {
     // - ui is mounted at non-root path (via web-server.uiBaseUrl)
     // - UI only in cluster deployment
     // - UI only local test server
-    storageApiUrl: serverConfig.storageApiBaseUrl
+    storageApiBaseUrl: serverConfig.storageApiBaseUrl
         ? (getFullUrlIfNotEmpty(
               removePathPrefix(serverConfig.storageApiBaseUrl, baseUrl)
           ) as string)
         : fallbackApiHost + "api/v0/storage/",
-    previewMapUrl: previewMapUrl,
-    proxyUrl: proxyUrl,
+    previewMapBaseUrl,
+    proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
     disableAuthenticationFeatures:
         serverConfig.disableAuthenticationFeatures || false,
@@ -336,9 +888,9 @@ export const config = {
         { id: "format", component: Format },
         { id: "temporal", component: Temporal }
     ],
-    headerLogoUrl: `${contentApiURL}header/logo`,
-    headerMobileLogoUrl: `${contentApiURL}header/logo-mobile`,
-    contentUrl: `${contentApiURL}all?id=home/*&id=footer/*&id=config/*&id=header/*&inline=true`,
+    headerLogoUrl: `${contentApiBaseUrl}header/logo`,
+    headerMobileLogoUrl: `${contentApiBaseUrl}header/logo-mobile`,
+    contentUrl: `${contentApiBaseUrl}all?id=home/*&id=footer/*&id=config/*&id=header/*&inline=true`,
     fallbackUrl: serverConfig.fallbackUrl,
     months: [
         "Jan",
@@ -374,8 +926,6 @@ export const config = {
     custodianOrgLevel: serverConfig.custodianOrgLevel
         ? serverConfig.custodianOrgLevel
         : 2,
-    // The maximum size that a file can be in order to be automatically previewed
-    // by the ui as a map, graph or table.
     automaticPreviewMaxFileSize: serverConfig.automaticPreviewMaxFileSize
         ? serverConfig.automaticPreviewMaxFileSize
         : 2097152,
@@ -440,11 +990,6 @@ export const config = {
     authenticatedUserLandingPage: serverConfig?.authenticatedUserLandingPage
         ? serverConfig.authenticatedUserLandingPage
         : "/home",
-    /**
-     * How long before reload the current user's auth data in the background.
-     * Useful to transit UI to correct status when user leave browser open without interaction for long time.
-     * Default: 5 mins
-     */
     authStatusRefreshInterval: serverConfig?.authStatusRefreshInterval
         ? serverConfig.authStatusRefreshInterval
         : 300000

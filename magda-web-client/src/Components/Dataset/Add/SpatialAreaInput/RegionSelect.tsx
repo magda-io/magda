@@ -11,7 +11,7 @@ const loadOptions = (props: PropsType) => async (inputValue) => {
     if (!props.steRegion) return [];
     const queryStr = inputValue.trim();
     const res = await fetch(
-        `${config.searchApiUrl}regions?type=SA4${
+        `${config.searchApiBaseUrl}regions?type=SA4${
             props.steRegion && props.steRegion.regionId
                 ? `&lv2Id=${encodeURIComponent(props.steRegion.regionId)}`
                 : ""

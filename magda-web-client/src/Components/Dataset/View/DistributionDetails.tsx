@@ -10,9 +10,9 @@ import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessU
 import "./DatasetDetails.scss";
 import { config } from "config";
 import DiscourseComments from "Components/Dataset/View/DiscourseComments";
-import { getPluginExtraVisualisationSection } from "../../../externalPluginComponents";
+import { getPluginExtraVisualisationSections } from "../../../externalPluginComponents";
 
-const ExtraVisualisationSection = getPluginExtraVisualisationSection();
+const extraVisualisationSections = getPluginExtraVisualisationSections();
 
 class DistributionDetails extends Component<{
     dataset: ParsedDataset;
@@ -138,12 +138,19 @@ class DistributionDetails extends Component<{
                             distribution={this.props.distribution}
                         />
                         <DataPreviewMap distributions={[distribution]} />
-                        {ExtraVisualisationSection ? (
-                            <ExtraVisualisationSection
-                                dataset={dataset}
-                                distributionId={distribution.identifier}
-                            />
-                        ) : null}
+                        {extraVisualisationSections?.length
+                            ? extraVisualisationSections.map(
+                                  (ExtraVisualisationSection, idx) => (
+                                      <ExtraVisualisationSection
+                                          key={idx}
+                                          dataset={this.props.dataset}
+                                          distributionId={
+                                              distribution.identifier!
+                                          }
+                                      />
+                                  )
+                              )
+                            : null}
                     </div>
                 )}
 

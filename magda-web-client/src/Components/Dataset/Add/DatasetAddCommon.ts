@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { ContactPointDisplayOption } from "constants/DatasetConstants";
+import { ContactPointDisplayOption } from "../../../constants/DatasetConstants";
 import {
     fetchOrganization,
     fetchRecordWithNoCache,
@@ -16,21 +16,25 @@ import {
     updateRecordAspect,
     tagRecordVersionEventId,
     VersionItem
-} from "api-clients/RegistryApis";
-import { config } from "config";
-import { User } from "reducers/userManagementReducer";
-import { RawDataset, DatasetDraft, RawDistribution } from "helpers/record";
-import { autocompletePublishers } from "api-clients/SearchApis";
+} from "../../../api-clients/RegistryApis";
+import { config } from "../../../config";
+import { User } from "../../../reducers/userManagementReducer";
+import {
+    RawDataset,
+    DatasetDraft,
+    RawDistribution
+} from "../../../helpers/record";
+import { autocompletePublishers } from "../../../api-clients/SearchApis";
 import ServerError from "@magda/typescript-common/dist/ServerError";
-import defer from "helpers/defer";
-import { ReactStateUpdaterType } from "helpers/promisifySetState";
+import defer from "../../../helpers/defer";
+import { ReactStateUpdaterType } from "../../../helpers/promisifySetState";
 import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownloadUrl";
 import deleteFile from "./Pages/AddFiles/deleteFile";
 import uniq from "lodash/uniq";
 import {
     indexDatasetById,
     deleteDatasetIndexById
-} from "api-clients/IndexerApis";
+} from "../../../api-clients/IndexerApis";
 
 export type Distribution = {
     title: string;
@@ -541,7 +545,7 @@ async function convertToDatasetAutoCompleteData(
             return result;
         }
     }
-    return;
+    return undefined;
 }
 
 async function populateProvenanceAspect(data: RawDataset, state: State) {
@@ -1100,7 +1104,7 @@ export async function preProcessDatasetAutocompleteChoices(
     | undefined
 > {
     if (!choices?.length) {
-        return;
+        return undefined;
     }
     const result: {
         id?: string[];
@@ -1125,7 +1129,7 @@ export async function preProcessDatasetAutocompleteChoices(
         });
     }
     if (!result.length) {
-        return;
+        return undefined;
     }
     return result;
 }

@@ -140,6 +140,17 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                             />
                                         </Medium>
                                     </div>
+
+                                    {!dataset?.distributions?.length &&
+                                    dataset?.defaultLicense ? (
+                                        <div className="dataset-license-box">
+                                            <div className="description-heading">
+                                                Licence:
+                                            </div>
+                                            <div>{dataset.defaultLicense}</div>
+                                        </div>
+                                    ) : null}
+
                                     {dataset.hasQuality ? (
                                         <div className="quality-rating-box">
                                             <QualityIndicator

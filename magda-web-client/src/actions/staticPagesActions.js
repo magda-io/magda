@@ -4,7 +4,7 @@ import GenericError from "../helpers/GenericError";
 import { config } from "../config";
 import request from "helpers/request";
 
-const contentBaseUrl = `${config.contentApiURL}page/`;
+const contentBaseUrl = `${config.contentApiBaseUrl}page/`;
 
 export function fetchStaticPage(pageName) {
     return async (dispatch, getState) => {
@@ -22,7 +22,7 @@ export function fetchStaticPage(pageName) {
 
             const url = contentBaseUrl + pageName + ".json";
 
-            const response = await fetch(url, config.credentialsFetchOptions);
+            const response = await fetch(url, config.commonFetchRequestOptions);
             if (response.status !== 200)
                 throw new GenericError(
                     `Failed to load data. Status code: ${response.status}`,

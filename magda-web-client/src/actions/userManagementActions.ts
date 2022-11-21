@@ -3,7 +3,7 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { Dispatch, GetState } from "../types";
 import { FacetAction } from "../helpers/datasetSearch";
-import { fetchContent } from "actions/contentActions";
+import { fetchContent } from "./contentActions";
 
 export function requestWhoAmI(setLoading: boolean = true) {
     return async (dispatch: Dispatch, getState: GetState) => {
@@ -17,8 +17,8 @@ export function requestWhoAmI(setLoading: boolean = true) {
             });
         }
 
-        await fetch(config.authApiUrl + "users/whoami", {
-            ...config.credentialsFetchOptions,
+        await fetch(config.authApiBaseUrl + "users/whoami", {
+            ...config.commonFetchRequestOptions,
             credentials: "include"
         })
             .then(async (response) => {
@@ -71,7 +71,7 @@ export function requestSignOut() {
             });
 
             const response = await fetch(config.baseUrl + "auth/logout", {
-                ...config.credentialsFetchOptions,
+                ...config.commonFetchRequestOptions,
                 credentials: "include"
             });
 
