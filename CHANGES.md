@@ -17,6 +17,7 @@
 - Started to publish @magda/external-ui-plugin-sdk NPM package
 - Upgrade react-router-dom to 5.3.4
 - Refactored the frontend config object to remove duplicated config fields & added comments
+- Upgraded CSW connector to v2.0.1
 
 ## v2.1.1
 
