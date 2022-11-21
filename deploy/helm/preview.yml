@@ -55,7 +55,9 @@ magda:
           - "'unsafe-inline'"
           - www.google-analytics.com
           - browser-update.org
+          # the following two domains are for downloading Magda UI plugins from github release
           - github.com
+          - objects.githubusercontent.com
           - "blob:"
 
     combined-db:
