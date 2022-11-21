@@ -18,6 +18,7 @@
 - Upgrade react-router-dom to 5.3.4
 - Refactored the frontend config object to remove duplicated config fields & added comments
 - Upgraded CSW connector to v2.0.1
+- #3431 Display dataset level licence information when the dataset has no distribution.
 
 ## v2.1.1
 
