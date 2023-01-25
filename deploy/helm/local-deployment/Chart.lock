@@ -3,17 +3,17 @@ dependencies:
   repository: file://../magda
   version: 2.2.0-alpha.1
 - name: magda-auth-google
-  repository: https://charts.magda.io
-  version: 1.2.3
+  repository: oci://ghcr.io/magda-io/charts
+  version: 2.0.0-alpha.0
 - name: magda-auth-internal
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
 - name: magda-auth-arcgis
-  repository: https://charts.magda.io
-  version: 1.2.3
+  repository: oci://ghcr.io/magda-io/charts
+  version: 2.0.0-alpha.0
 - name: magda-auth-facebook
-  repository: https://charts.magda.io
-  version: 1.0.0
+  repository: oci://ghcr.io/magda-io/charts
+  version: 2.0.0-alpha.0
 - name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
@@ -110,5 +110,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
-digest: sha256:e40a52364032295b4214a7a50a99e38c8068526bdb07708a24141a46ef16258f
-generated: "2022-12-23T16:20:59.893698+11:00"
+digest: sha256:1b867ece92a7fee2549c94dbc7ddf353e42aafefc247706dae3d2aa246903b11
+generated: "2023-01-25T12:14:26.065837+11:00"

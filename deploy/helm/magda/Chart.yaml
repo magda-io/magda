@@ -12,8 +12,8 @@ dependencies:
     repository: file://../magda-core
 
   - name: openfaas
-    version: 5.5.5-magda.2
-    repository: https://charts.magda.io
+    version: "5.5.5-magda.2"
+    repository: "oci://ghcr.io/magda-io/charts"
     # Users should turn on / off openfaas via this condition var `global.openfaas.enabled` rather than `tags`
     # Due to a limitation of helm, the value of tags is not available in chart template.
     # All openfaas dependents should check this field to decide deployment logic (`tags` unfortunately not available to ).
@@ -24,8 +24,8 @@ dependencies:
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
   - name: magda-function-history-report
-    version: "1.1.0"
-    repository: https://charts.magda.io
+    version: "2.0.0-alpha.0"
+    repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
       - magda-function-history-report
@@ -78,8 +78,8 @@ dependencies:
       - ckan-connector-functions
 
   - name: magda-function-esri-url-processor
-    version: "1.1.0"
-    repository: https://charts.magda.io
+    version: "2.0.0-alpha.0"
+    repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
       - url-processors

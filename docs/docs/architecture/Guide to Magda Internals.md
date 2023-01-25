@@ -652,6 +652,8 @@ Magda's Kubernetes configuration is fairly complex - it's distributed as a numbe
 
 The charts maintained by the Magda team are automatically pushed to an S3 bucket by the build process, and that S3 bucket is accessible publically at https://charts.magda.io. Maintaining the structure of files etc in that bucket is automatically done by the `helm` tool that runs as part fo the build job. Helm releases run whenever a tag is pushed with the pattern `v*.*.*`.
 
+> Since v2.0.0, we use [Github Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) as our official Helm Chart & Docker Image release registry.
+
 ## Docker
 
 Distributing the actual code and runtimes is done via Docker images. These are pushed to the `data61` organisation on [DockerHub](https://hub.docker.com/) whenever a tag is pushed with the pattern `v*.*.*`.
