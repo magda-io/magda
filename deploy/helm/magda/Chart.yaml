@@ -24,7 +24,7 @@ dependencies:
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
   - name: magda-function-history-report
-    version: "2.0.0-alpha.0"
+    version: "2.0.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
@@ -78,7 +78,7 @@ dependencies:
       - ckan-connector-functions
 
   - name: magda-function-esri-url-processor
-    version: "2.0.0-alpha.0"
+    version: "2.0.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
