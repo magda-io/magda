@@ -231,7 +231,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                     contactPoint={dataset.contactPoint}
                                 />
                                 {isAdmin ? (
-                                    <div className="download-history-report-button">
+                                    <div className="download-history-report-button-form">
                                         <form
                                             method="post"
                                             target="__blank"
@@ -243,7 +243,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                         >
                                             <input
                                                 type="submit"
-                                                className="au-btn au-btn--secondary"
+                                                className="au-btn au-btn--secondary download-history-report-button"
                                                 value="Download History Report"
                                             />
                                         </form>
