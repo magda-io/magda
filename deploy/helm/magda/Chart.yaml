@@ -3,12 +3,12 @@ name: "magda"
 description: "A complete solution for managing, publishing and discovering
   government data, private and open. This chart includes the magda default
   deployment."
-version: "2.2.0-alpha.1"
+version: "2.2.1"
 home: "https://github.com/magda-io/magda"
 sources: [ "https://github.com/magda-io/magda" ]
 dependencies:
   - name: magda-core
-    version: "2.2.0-alpha.1"
+    version: "2.2.1"
     repository: file://../magda-core
 
   - name: openfaas
