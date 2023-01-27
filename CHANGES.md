@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v2.2.1
+
+- #3436 Fixed Download the history report Button triggers 404 error
+- #3435 Upgrade outdated non-core modules
+
 ## v2.2.0
 
 - Upgrade default connectors & minions version (to v2.0.0)
