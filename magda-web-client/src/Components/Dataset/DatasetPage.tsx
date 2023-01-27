@@ -231,18 +231,22 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                     contactPoint={dataset.contactPoint}
                                 />
                                 {isAdmin ? (
-                                    <div className="download-history-report-button">
-                                        <CommonLink
-                                            href={`${
+                                    <div className="download-history-report-button-form">
+                                        <form
+                                            method="post"
+                                            target="__blank"
+                                            action={`${
                                                 config.openfaasBaseUrl
                                             }function/magda-function-history-report?recordId=${encodeURIComponent(
                                                 dataset.identifier!
                                             )}`}
-                                            className="au-btn au-btn--secondary"
-                                            target="__blank"
                                         >
-                                            Download History Report
-                                        </CommonLink>
+                                            <input
+                                                type="submit"
+                                                className="au-btn au-btn--secondary download-history-report-button"
+                                                value="Download History Report"
+                                            />
+                                        </form>
                                     </div>
                                 ) : null}
 
