@@ -17,6 +17,7 @@ tags:
   ingress: true
   priorities: false
   connectors: false
+  connector-dga: true
 
 magda:
   openfaas:
@@ -148,3 +149,12 @@ magda-auth-arcgis:
 
 magda-auth-facebook:
   clientId: "173073926555600"
+
+
+connector-dga:
+  config:
+    id: ditrdca
+    name: "DITRDCA"
+    sourceUrl: "https://catalogue-uat.data.infrastructure.gov.au/"
+    pageSize: 100
+    ignoreHarvestSources: ["None"]
