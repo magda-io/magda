@@ -2,8 +2,8 @@ apiVersion: v2
 name: magda-postgres
 description: "A helm wrapper chart that provides in-kubernetes postgreSQL for Magda."
 type: application
-kubeVersion: ">= 1.14.0-0"
-version: "2.0.1"
+kubeVersion: ">= 1.21.0"
+version: "2.2.1"
 annotations:
   magdaModuleType: "core"
 dependencies:

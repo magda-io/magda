@@ -4,6 +4,7 @@ import data.common.hasNoConstraintPermission
 import data.common.hasOwnerConstraintPermission
 import data.common.hasOrgUnitConstaintPermission
 import data.common.hasPreAuthConstaintPermission
+import data.common.isEmpty
 
 
 # if find a permission with no any constraints
@@ -27,11 +28,20 @@ verifyRecordPermission(inputOperationUri, inputObjectRefName) {
     input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["access-control"].orgUnitId
 }
 
-# or when a user has org unit ownership constraint permission, he also can access all records with NO org unit assigned
+# or when a user has org unit ownership constraint permission, he also can access (read permission only) all records with NO org unit assigned
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
+    operationType == "read"
     hasOrgUnitConstaintPermission(inputOperationUri)
-
+    # unfortunately, we can't use isEmpty to handle undefined value 
     not input.object[inputObjectRefName]["access-control"].orgUnitId
+}
+
+verifyRecordPermission(inputOperationUri, inputObjectRefName) {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
+    operationType == "read"
+    hasOrgUnitConstaintPermission(inputOperationUri)
+    isEmpty(input.object[inputObjectRefName]["access-control"].orgUnitId)
 }
 
 # if find a permission with pre-authorised constraint

@@ -1,4 +1,4 @@
-import { config } from "config";
+import { config } from "../config";
 import isStorageApiUrl from "./isStorageApiUrl";
 import getStorageApiResourceAccessUrl from "./getStorageApiResourceAccessUrl";
 

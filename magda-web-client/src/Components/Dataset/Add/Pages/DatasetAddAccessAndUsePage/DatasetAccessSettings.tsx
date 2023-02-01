@@ -100,7 +100,9 @@ const DatasetAccessSettings: FunctionComponent<PropsType> = (props) => {
         return (
             <div className="question-who-can-see-dataset">
                 <h4 className="with-icon">
-                    <span>Who can see the dataset once it is published?</span>
+                    <span>
+                        Who can see the dataset once it is published? (*)
+                    </span>
                 </h4>
                 <div className="input-area">
                     <ToolTip>

@@ -203,7 +203,7 @@ class RegistryExternalInterface(
                 case JsObject(v) => v.toSeq
                 case _           => Seq()
               }
-              JsObject((rawJsData.fields - "aspect") ++ aspects)
+              JsObject((rawJsData.fields - "aspects") ++ aspects)
             }
           case _ =>
             Unmarshal(response.entity).to[String].flatMap(onError(response))

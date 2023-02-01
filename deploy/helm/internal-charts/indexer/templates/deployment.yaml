@@ -62,6 +62,12 @@ spec:
 {{- end }}
             "-DelasticSearch.shardCount={{ .Values.elasticsearch.shards }}",
             "-DelasticSearch.replicaCount={{ .Values.elasticsearch.replicas }}",
+{{- if .Values.akka.http.server.requestTimeout }}
+            "-Dakka.http.server.request-timeout={{ .Values.akka.http.server.requestTimeout }}",
+{{- end }}
+{{- if .Values.akka.http.server.idleTimeout }}
+            "-Dakka.http.server.idle-timeout={{ .Values.akka.http.server.idleTimeout }}",
+{{- end }}
             "-Dauth.userId={{ .Values.global.defaultAdminUserId }}"
         ]
         volumeMounts:

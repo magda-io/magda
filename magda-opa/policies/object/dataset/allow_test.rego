@@ -709,3 +709,327 @@ test_allow_pre_authorised_constraint_permission_user_permission_is_pre_authorise
         }
     }
 }
+
+test_allow_empty_string_orgUnitId {
+    allow with input as {
+        "operationUri": "object/dataset/published/read",
+        "object": {
+            "dataset": {
+                "access-control": {
+                    "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
+                    "orgUnitId": ""
+                },
+                "publishing": {
+                    "state": "published"
+                }
+            }
+        },
+        "user": {
+            "displayName": "Jacky Jiang",
+            "email": "t83714@gmail.com",
+            "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
+            "managingOrgUnitIds": ["90a9dce4-91af-44e2-a2f4-9ddccb3f4c5f"],
+            "permissions": [
+                {
+                    "id": "e5ce2fc4-9f38-4f52-8190-b770ed2074e6",
+                    "name": "View Published Dataset",
+                    "operations": [
+                        {
+                            "id": "f1e2af3e-5d98-4081-a4ff-7016f43002fa",
+                            "name": "Read Publish Dataset",
+                            "uri": "object/dataset/published/read"
+                        }
+                    ],
+                    "orgUnitOwnershipConstraint": true,
+                    "preAuthorisedConstraint": false,
+                    "resourceId": "ef3b767f-d06b-46f4-9302-031ae5004275",
+                    "resourceUri": "object/dataset/published",
+                    "userOwnershipConstraint": false
+                }
+            ]
+        }
+    }
+}
+
+test_not_allow_empty_string_orgUnitId_non_read_operation {
+    not allow with input as {
+        "operationUri": "object/dataset/published/update",
+        "object": {
+            "dataset": {
+                "access-control": {
+                    "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
+                    "orgUnitId": ""
+                },
+                "publishing": {
+                    "state": "published"
+                }
+            }
+        },
+        "user": {
+            "displayName": "Jacky Jiang",
+            "email": "t83714@gmail.com",
+            "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
+            "managingOrgUnitIds": ["90a9dce4-91af-44e2-a2f4-9ddccb3f4c5f"],
+            "permissions": [
+                {
+                    "id": "e5ce2fc4-9f38-4f52-8190-b770ed2074e6",
+                    "name": "View Published Dataset",
+                    "operations": [
+                        {
+                            "id": "f1e2af3e-5d98-4081-a4ff-7016f43002fa",
+                            "name": "Read Publish Dataset",
+                            "uri": "object/dataset/published/read"
+                        }
+                    ],
+                    "orgUnitOwnershipConstraint": true,
+                    "preAuthorisedConstraint": false,
+                    "resourceId": "ef3b767f-d06b-46f4-9302-031ae5004275",
+                    "resourceUri": "object/dataset/published",
+                    "userOwnershipConstraint": false
+                }
+            ]
+        }
+    }
+}
+
+test_allow_undefined_orgUnitId {
+    allow with input as {
+        "operationUri": "object/dataset/published/read",
+        "object": {
+            "dataset": {
+                "access-control": {
+                    "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"
+                },
+                "publishing": {
+                    "state": "published"
+                }
+            }
+        },
+        "user": {
+            "displayName": "Jacky Jiang",
+            "email": "t83714@gmail.com",
+            "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
+            "managingOrgUnitIds": ["90a9dce4-91af-44e2-a2f4-9ddccb3f4c5f"],
+            "permissions": [
+                {
+                    "id": "e5ce2fc4-9f38-4f52-8190-b770ed2074e6",
+                    "name": "View Published Dataset",
+                    "operations": [
+                        {
+                            "id": "f1e2af3e-5d98-4081-a4ff-7016f43002fa",
+                            "name": "Read Publish Dataset",
+                            "uri": "object/dataset/published/read"
+                        }
+                    ],
+                    "orgUnitOwnershipConstraint": true,
+                    "preAuthorisedConstraint": false,
+                    "resourceId": "ef3b767f-d06b-46f4-9302-031ae5004275",
+                    "resourceUri": "object/dataset/published",
+                    "userOwnershipConstraint": false
+                }
+            ]
+        }
+    }
+}
+
+test_not_allow_undefined_orgUnitId_non_read {
+    not allow with input as {
+        "operationUri": "object/dataset/published/update",
+        "object": {
+            "dataset": {
+                "access-control": {
+                    "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"
+                },
+                "publishing": {
+                    "state": "published"
+                }
+            }
+        },
+        "user": {
+            "displayName": "Jacky Jiang",
+            "email": "t83714@gmail.com",
+            "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
+            "managingOrgUnitIds": ["90a9dce4-91af-44e2-a2f4-9ddccb3f4c5f"],
+            "permissions": [
+                {
+                    "id": "e5ce2fc4-9f38-4f52-8190-b770ed2074e6",
+                    "name": "View Published Dataset",
+                    "operations": [
+                        {
+                            "id": "f1e2af3e-5d98-4081-a4ff-7016f43002fa",
+                            "name": "Read Publish Dataset",
+                            "uri": "object/dataset/published/read"
+                        }
+                    ],
+                    "orgUnitOwnershipConstraint": true,
+                    "preAuthorisedConstraint": false,
+                    "resourceId": "ef3b767f-d06b-46f4-9302-031ae5004275",
+                    "resourceUri": "object/dataset/published",
+                    "userOwnershipConstraint": false
+                }
+            ]
+        }
+    }
+}
+
+test_allow_empty_string_orgUnitId_any_publishing_status {
+    allow with input as {
+        "operationUri": "object/dataset/*/read",
+        "object": {
+            "dataset": {
+                "access-control": {
+                    "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
+                    "orgUnitId": ""
+                },
+                "publishing": {
+                    "state": "published"
+                }
+            }
+        },
+        "user": {
+            "displayName": "Jacky Jiang",
+            "email": "t83714@gmail.com",
+            "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
+            "managingOrgUnitIds": ["90a9dce4-91af-44e2-a2f4-9ddccb3f4c5f"],
+            "permissions": [
+                {
+                    "id": "e5ce2fc4-9f38-4f52-8190-b770ed2074e6",
+                    "name": "View Published Dataset",
+                    "operations": [
+                        {
+                            "id": "f1e2af3e-5d98-4081-a4ff-7016f43002fa",
+                            "name": "Read Publish Dataset",
+                            "uri": "object/dataset/published/read"
+                        }
+                    ],
+                    "orgUnitOwnershipConstraint": true,
+                    "preAuthorisedConstraint": false,
+                    "resourceId": "ef3b767f-d06b-46f4-9302-031ae5004275",
+                    "resourceUri": "object/dataset/published",
+                    "userOwnershipConstraint": false
+                }
+            ]
+        }
+    }
+}
+
+test_not_allow_empty_string_orgUnitId_any_publishing_status_non_read {
+    not allow with input as {
+        "operationUri": "object/dataset/*/update",
+        "object": {
+            "dataset": {
+                "access-control": {
+                    "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
+                    "orgUnitId": ""
+                },
+                "publishing": {
+                    "state": "published"
+                }
+            }
+        },
+        "user": {
+            "displayName": "Jacky Jiang",
+            "email": "t83714@gmail.com",
+            "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
+            "managingOrgUnitIds": ["90a9dce4-91af-44e2-a2f4-9ddccb3f4c5f"],
+            "permissions": [
+                {
+                    "id": "e5ce2fc4-9f38-4f52-8190-b770ed2074e6",
+                    "name": "View Published Dataset",
+                    "operations": [
+                        {
+                            "id": "f1e2af3e-5d98-4081-a4ff-7016f43002fa",
+                            "name": "Read Publish Dataset",
+                            "uri": "object/dataset/published/read"
+                        }
+                    ],
+                    "orgUnitOwnershipConstraint": true,
+                    "preAuthorisedConstraint": false,
+                    "resourceId": "ef3b767f-d06b-46f4-9302-031ae5004275",
+                    "resourceUri": "object/dataset/published",
+                    "userOwnershipConstraint": false
+                }
+            ]
+        }
+    }
+}
+
+test_allow_undefined_orgUnitId_any_publishing_status {
+    allow with input as {
+        "operationUri": "object/dataset/*/read",
+        "object": {
+            "dataset": {
+                "access-control": {
+                    "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"
+                },
+                "publishing": {
+                    "state": "published"
+                }
+            }
+        },
+        "user": {
+            "displayName": "Jacky Jiang",
+            "email": "t83714@gmail.com",
+            "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
+            "managingOrgUnitIds": ["90a9dce4-91af-44e2-a2f4-9ddccb3f4c5f"],
+            "permissions": [
+                {
+                    "id": "e5ce2fc4-9f38-4f52-8190-b770ed2074e6",
+                    "name": "View Published Dataset",
+                    "operations": [
+                        {
+                            "id": "f1e2af3e-5d98-4081-a4ff-7016f43002fa",
+                            "name": "Read Publish Dataset",
+                            "uri": "object/dataset/published/read"
+                        }
+                    ],
+                    "orgUnitOwnershipConstraint": true,
+                    "preAuthorisedConstraint": false,
+                    "resourceId": "ef3b767f-d06b-46f4-9302-031ae5004275",
+                    "resourceUri": "object/dataset/published",
+                    "userOwnershipConstraint": false
+                }
+            ]
+        }
+    }
+}
+
+test_not_allow_undefined_orgUnitId_any_publishing_status_non_read {
+    not allow with input as {
+        "operationUri": "object/dataset/*/delete",
+        "object": {
+            "dataset": {
+                "access-control": {
+                    "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"
+                },
+                "publishing": {
+                    "state": "published"
+                }
+            }
+        },
+        "user": {
+            "displayName": "Jacky Jiang",
+            "email": "t83714@gmail.com",
+            "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
+            "managingOrgUnitIds": ["90a9dce4-91af-44e2-a2f4-9ddccb3f4c5f"],
+            "permissions": [
+                {
+                    "id": "e5ce2fc4-9f38-4f52-8190-b770ed2074e6",
+                    "name": "View Published Dataset",
+                    "operations": [
+                        {
+                            "id": "f1e2af3e-5d98-4081-a4ff-7016f43002fa",
+                            "name": "Read Publish Dataset",
+                            "uri": "object/dataset/published/read"
+                        }
+                    ],
+                    "orgUnitOwnershipConstraint": true,
+                    "preAuthorisedConstraint": false,
+                    "resourceId": "ef3b767f-d06b-46f4-9302-031ae5004275",
+                    "resourceUri": "object/dataset/published",
+                    "userOwnershipConstraint": false
+                }
+            ]
+        }
+    }
+}

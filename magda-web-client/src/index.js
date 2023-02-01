@@ -15,7 +15,7 @@ import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
 import "./i18n";
 import { config } from "./config";
-const { uiBaseUrl } = config;
+const { uiBaseUrl, authStatusRefreshInterval } = config;
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const store = createStore(
@@ -29,6 +29,10 @@ const store = createStore(
 );
 
 store.dispatch(requestWhoAmI());
+
+setInterval(() => {
+    store.dispatch(requestWhoAmI(false));
+}, authStatusRefreshInterval);
 
 class GAListener extends React.Component {
     static contextTypes = {

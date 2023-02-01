@@ -4,6 +4,7 @@ import data.common.breakdownOperationUri
 import data.common.getResourceTypeFromResourceUri
 import data.common.verifyPublishingStatus
 import data.common.verifyRecordPermission
+import data.common.isEmpty
 
 # when resource type contains no wildcard type "*", e.g.  object.dataset.published
 # generic record access control rules applies (via verifyRecordPermission)
@@ -81,10 +82,12 @@ verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName
 }
 
 # if find a permission with org unit ownership constraint, plus dataset have NOT been assigned org unit
-# e.g. anonymous users can access all datasets that not belongs to an org unit
+# e.g. anonymous users can access (`read` permission only) all datasets that not belongs to an org unit
 verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName) {
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
+	# we only want to allow this special permission grant for "read" operation (issue: #3426)
+	operationType == "read"
 	resourceType == "*"
 
 	input.user.permissions[i].userOwnershipConstraint = false
@@ -101,6 +104,29 @@ verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName
 	verifyPublishingStatus(inputObjectRefName, permissionResourceType)
 
 	not input.object[inputObjectRefName]["access-control"].orgUnitId
+}
+
+verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName) {
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
+
+    # we only want to allow this special permission grant for "read" operation (issue: #3426)
+	operationType == "read"
+	resourceType == "*"
+
+	input.user.permissions[i].userOwnershipConstraint = false
+	input.user.permissions[i].orgUnitOwnershipConstraint = true
+	input.user.permissions[i].preAuthorisedConstraint = false
+
+	permissionResourceType := getResourceTypeFromResourceUri(input.user.permissions[i].resourceUri)
+	operationUri := concat("/", [resourceUriPrefix, permissionResourceType, operationType])
+	resourceUri := concat("/", [resourceUriPrefix, permissionResourceType])
+
+	input.user.permissions[i].resourceUri = resourceUri
+	input.user.permissions[i].operations[_].uri = operationUri
+
+	verifyPublishingStatus(inputObjectRefName, permissionResourceType)
+
+	isEmpty(input.object[inputObjectRefName]["access-control"].orgUnitId)
 }
 
 # if find a permission with pre-authorised constraint

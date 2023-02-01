@@ -58,7 +58,7 @@ class AppContainer extends React.Component {
                         {/** turn off top margin for home page only */}
                         <Route
                             exact
-                            path="/"
+                            path="/home"
                             render={() =>
                                 ExternalFooterComponent ? (
                                     <ExternalFooterComponent

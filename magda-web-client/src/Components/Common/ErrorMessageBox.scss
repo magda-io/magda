@@ -3,4 +3,10 @@
         margin-top: 10px;
         margin-bottom: 10px;
     }
+    .tooltip-container {
+        .tooltip {
+            padding-left: 0px !important;
+            left: 0px;
+        }
+    }
 }

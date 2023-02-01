@@ -158,7 +158,7 @@ export function modifyRecordAspect(
     return async (dispatch: Function) => {
         id = encodeURIComponent(id);
         aspect = encodeURIComponent(aspect);
-        let url = config.registryFullApiUrl + `records/${id}/aspects/${aspect}`;
+        let url = config.registryApiBaseUrl + `records/${id}/aspects/${aspect}`;
 
         if (field.indexOf("/") !== -1) {
             let body = await fetch(url);
@@ -176,7 +176,7 @@ export function modifyRecordAspect(
 
         const patch = [{ op: "add", path: `/${field}`, value }];
 
-        let options = Object.assign({}, config.credentialsFetchOptions, {
+        let options = Object.assign({}, config.commonFetchRequestOptions, {
             method: "PATCH",
             body: JSON.stringify(patch),
             headers: {
@@ -234,13 +234,13 @@ export function createRecord(
             for (const distribution of inputDistributions) {
                 await request(
                     "POST",
-                    `${config.registryFullApiUrl}records`,
+                    `${config.registryApiBaseUrl}records`,
                     distribution
                 );
             }
             const json = await request(
                 "POST",
-                `${config.registryFullApiUrl}records`,
+                `${config.registryApiBaseUrl}records`,
                 inputDataset
             );
             return dispatch(receiveNewDataset(json));

@@ -3976,6 +3976,58 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
+      it("can add a new record when `merge`=true") { implicit param =>
+        val record = Record("testId", "testName", Map(), Some("source-tag"))
+        Put("/v0/records/testId?merge=true", record) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("x-magda-event-id").map(_.value()),
+            TENANT_1
+          )
+        }
+
+        Get("/v0/records") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+
+          val recordsPage = responseAs[RecordsPage[Record]]
+          recordsPage.records.length shouldEqual 1
+          recordsPage.records.head shouldEqual record.copy(
+            tenantId = Some(TENANT_1)
+          )
+        }
+
+        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+
+          val eventsPage = responseAs[EventsPage]
+          eventsPage.events.length shouldEqual 1
+          eventsPage.events(0).userId shouldEqual Some(USER_ID)
+          eventsPage.events(0).eventType shouldEqual EventType.CreateRecord
+          eventsPage
+            .events(0)
+            .data
+            .fields("recordId")
+            .convertTo[String] shouldEqual record.id
+        }
+
+        Get("/v0/records") ~> addTenantIdHeader(TENANT_2) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val recordsPage = responseAs[RecordsPage[Record]]
+          recordsPage.records.length shouldEqual 0
+        }
+      }
+
       it("can update an existing record") { implicit param =>
         val record =
           Record(
@@ -4261,6 +4313,62 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
+      it("can add an aspect when `merge` = true") { implicit param =>
+        val aspectDefinition = AspectDefinition("test", "test", None)
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val record = Record(
+          "testId",
+          "testName",
+          Map(),
+          Some("blah")
+        )
+
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("x-magda-event-id").map(_.value()),
+            TENANT_1
+          )
+        }
+
+        val updated = record.copy(
+          aspects = Map(
+            "test" -> JsObject(
+              "foo2" -> JsString("bar2")
+            )
+          )
+        )
+
+        Put("/v0/records/testId?merge=true", updated) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual updated.copy(tenantId = Some(TENANT_1))
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("x-magda-event-id").map(_.value()),
+            TENANT_1
+          )
+        }
+
+        Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual updated.copy(tenantId = Some(TENANT_1))
+        }
+      }
+
       it("can modify an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
         Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
@@ -4291,6 +4399,71 @@ class RecordsServiceSpec extends ApiSpec {
           aspects = Map("test" -> JsObject("foo" -> JsString("baz")))
         )
         Put("/v0/records/testId", updated) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual updated.copy(tenantId = Some(TENANT_1))
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("x-magda-event-id").map(_.value()),
+            TENANT_1
+          )
+        }
+
+        Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual updated.copy(tenantId = Some(TENANT_1))
+        }
+      }
+
+      it(
+        "should update an aspect without losing existing fields when `merge`=true"
+      ) { implicit param =>
+        val aspectDefinition = AspectDefinition("test", "test", None)
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val record = Record(
+          "testId",
+          "testName",
+          Map(
+            "test" -> JsObject(
+              "field1" -> JsString("123"),
+              "field2" -> JsString("456")
+            )
+          ),
+          Some("blah")
+        )
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("x-magda-event-id").map(_.value()),
+            TENANT_1
+          )
+        }
+
+        val updates = record.copy(
+          aspects = Map("test" -> JsObject("field2" -> JsString("abc")))
+        )
+        val updated = record.copy(
+          aspects = Map(
+            "test" -> JsObject(
+              "field1" -> JsString("123"),
+              "field2" -> JsString("abc")
+            )
+          )
+        )
+        Put("/v0/records/testId?merge=true", updates) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK

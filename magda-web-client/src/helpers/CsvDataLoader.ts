@@ -95,7 +95,7 @@ class CsvDataLoader {
 
         const csvRes = await fetch(
             proxyUrl,
-            isStorageApiUrl(this.url) ? config.credentialsFetchOptions : {}
+            isStorageApiUrl(this.url) ? config.commonFetchRequestOptions : {}
         );
 
         if (!csvRes.ok) {

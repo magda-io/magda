@@ -20,6 +20,7 @@ import SecClassification, {
 import CommonLink from "Components/Common/CommonLink";
 import CurrencyAlert from "./CurrencyAlert";
 import DatasetEditButton from "./DatasetEditButton";
+import DatasetBackToListButton from "./DatasetBackToListButton";
 import DatasetLikeButtonOriginal from "../Dataset/DatasetLikeButton";
 import {
     getPluginDatasetEditButton,
@@ -139,6 +140,17 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                             />
                                         </Medium>
                                     </div>
+
+                                    {!dataset?.distributions?.length &&
+                                    dataset?.defaultLicense ? (
+                                        <div className="dataset-license-box">
+                                            <div className="description-heading">
+                                                Licence:
+                                            </div>
+                                            <div>{dataset.defaultLicense}</div>
+                                        </div>
+                                    ) : null}
+
                                     {dataset.hasQuality ? (
                                         <div className="quality-rating-box">
                                             <QualityIndicator
@@ -219,18 +231,22 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                     contactPoint={dataset.contactPoint}
                                 />
                                 {isAdmin ? (
-                                    <div className="download-history-report-button">
-                                        <CommonLink
-                                            href={`${
+                                    <div className="download-history-report-button-form">
+                                        <form
+                                            method="post"
+                                            target="__blank"
+                                            action={`${
                                                 config.openfaasBaseUrl
                                             }function/magda-function-history-report?recordId=${encodeURIComponent(
                                                 dataset.identifier!
                                             )}`}
-                                            className="au-btn au-btn--secondary"
-                                            target="__blank"
                                         >
-                                            Download History Report
-                                        </CommonLink>
+                                            <input
+                                                type="submit"
+                                                className="au-btn au-btn--secondary download-history-report-button"
+                                                value="Download History Report"
+                                            />
+                                        </form>
                                     </div>
                                 ) : null}
 
@@ -244,6 +260,11 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                         hasEditPermissions={hasEditPermissions}
                                     />
                                 )}
+
+                                <DatasetBackToListButton
+                                    dataset={dataset}
+                                    hasEditPermissions={hasEditPermissions}
+                                />
 
                                 {config?.featureFlags?.datasetLikeButton ? (
                                     <DatasetLikeButton dataset={dataset} />

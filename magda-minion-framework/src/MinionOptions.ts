@@ -24,4 +24,8 @@ export default interface MinionOptions {
     concurrency?: number;
     // no.of records the crawller fetchs per request
     crawlerRecordFetchNumber?: number;
+    includeEvents?: boolean;
+    includeRecords?: boolean;
+    includeAspectDefinitions?: boolean;
+    dereference?: boolean;
 }

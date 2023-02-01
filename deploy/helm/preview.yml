@@ -54,12 +54,12 @@ magda:
           scriptSrc:
           - "'self'"
           - "'unsafe-inline'"
-          - "blob:"
+          - www.google-analytics.com
           - browser-update.org
           - data.gov.au
+          - "blob:"
           objectSrc:
           - "'none'"
-          reportUri: https://sdga.report-uri.com/r/d/csp/enforce
 
     combined-db:
       magda-postgres:

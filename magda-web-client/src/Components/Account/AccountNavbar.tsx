@@ -13,7 +13,7 @@ type PropsType = {
 class AccountNavbar extends React.Component<PropsType & RouteComponentProps> {
     signOut(event: SyntheticEvent) {
         event.preventDefault();
-        const authApiUri = urijs(config.authApiUrl);
+        const authApiUri = urijs(config.authApiBaseUrl);
         const authApiSeqments = authApiUri
             .segmentCoded()
             .filter((item) => !!item);
@@ -29,7 +29,7 @@ class AccountNavbar extends React.Component<PropsType & RouteComponentProps> {
                     .concat(["auth", "logout"])
             )
             .search({
-                redirect: window.location.href
+                redirect: config.baseExternalUrl
             })
             .toString();
         return false;

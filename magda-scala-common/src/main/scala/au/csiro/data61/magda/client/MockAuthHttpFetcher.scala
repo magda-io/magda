@@ -41,6 +41,9 @@ class MockAuthHttpFetcher(implicit ec: ExecutionContext)
   def callTimesByOperationUri(operationUri: String) =
     authCallLog.filter(_._2 == operationUri).length
 
+  def getAuthCallLogsByOperationUri(operationUri: String) =
+    authCallLog.filter(_._2 == operationUri)
+
   /**
     * a list of pre-setup authDecisions.
     * Can add / update authDecision for an operationUri via `setAuthDecision` method

@@ -1,5 +1,61 @@
 # CHANGELOG
 
+## v2.2.1
+
+- #3436 Fixed Download the history report Button triggers 404 error
+- #3435 Upgrade outdated non-core modules
+
+## v2.2.0
+
+- Upgrade default connectors & minions version (to v2.0.0)
+- Fixed indexer error: distribution/byteSize field should be in `long` type to support possible larger numbers
+- Upgraded indexer weekly reindexer trigger container to node14
+- Distribution page UI minor improvements: display file size (when available) & adjust margins between information blocks
+- Improve the error message for `false` unconditional decision.
+- #3420 add `merge` option support to PUT record API
+- #3421 Improve dataset updating UI logic using `merge` option of the PUT record API
+- Avoid sending unnecessary `aspects` field as the part of the context data created by RegistryExternalInterface
+- #3426 People with orgUnit constraint permission should only be able to perform read operation on datasets not assigned to an orgUnit
+- #3424 Set the default order by field for APIs
+- #3427 Dataset Editor: offer more details via error message box when encounter insufficient permission error
+- #3425 offer a button on dataset page to take the user back to data management tab
+- Started to publish @magda/external-ui-plugin-sdk NPM package
+- Upgrade react-router-dom to 5.3.4
+- Refactored the frontend config object to remove duplicated config fields & added comments
+- #3428 Allow multiple "Extra Visualisation Section" type UI Plugin Components to be mounted
+- Upgraded CSW connector to v2.0.1
+- #3431 Display dataset level licence information when the dataset has no distribution.
+
+## v2.1.1
+
+- #3412 Metadata Editor: improve the default empty value handling for `access-control` aspect `orgUnitId` field
+
+## v2.1.0
+
+- Use global state instead in ValidateUser
+- Periodically refresh login status (Interval configurable via web-server helm chart)
+- Allow setting landingPage uri for anonymousUser and authenticatedUser
+- Logout action will redirect user to LandingPage
+- #3406 Improve registry webHook processing SQL performance
+- Increase indexer default http request / idle timeout to 90s / 120s and make them configurable via the indexer helm chart
+- `/registry/hooks/{id}/ack` endpoint will assume `active` field is `true` when `active` is not specified and `succeeded` = `true`.
+- `/registry/hooks/{id}/ack` endpoint will reset webhook retryCount when `active` field is `true`.
+- #3410 Allow additional webhook options to be configured via minion options
+- Fix `PUT` `/v0/registry/hooks/{id}`: didn't update webhook registered eventTypes properly
+- Update create / update webhook API document re: required eventType data type
+- The resume webhook action on minion's starting up should set the webhook to `active` (and consequently, reset the retryCount)
+- Upgrade magda-minion-visualization to 2.0.0
+- Upgrade magda-ckan-connector to 2.0.0
+- Related to #3355, upgrade API version of all CronJob in `magda-core` to batch/v1 (for k8s 1.25 support)
+- Metadata Editor: avoid dataset editor UI refresh when refresh the user state data
+- Metadata Editor: make all orgUnitDropDown controls clearable configurable
+- Metadata Editor: make sure orgUnitDropDown controls are only clearable when they are not compulsory fields
+- Fixed: Registry Record Aspect Panel UI pagination issue
+- Metadata Editor: when publishing dataset for the first time, the `hasEverPublished` field should be set to `true`
+- Metadata Editor: UI adjustments on dataset published message page
+- #3394 Make sure scala pods can be gracefully terminated within 15 seconds
+- #3402 Allow access group users to have read permission to the access group itself
+
 ## v2.0.1
 
 - #3397 Only allow users to edit datasets that are created by Magda

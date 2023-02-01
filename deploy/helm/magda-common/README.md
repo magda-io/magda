@@ -1,6 +1,6 @@
 # magda-common
 
-![Version: 2.0.1](https://img.shields.io/badge/Version-2.0.1-informational?style=flat-square) ![Type: library](https://img.shields.io/badge/Type-library-informational?style=flat-square)
+![Version: 2.2.1](https://img.shields.io/badge/Version-2.2.1-informational?style=flat-square) ![Type: library](https://img.shields.io/badge/Type-library-informational?style=flat-square)
 
 A Library Helm Chart for sharing common Magda logic between charts.
 This chart is not deployable by itself.
@@ -10,8 +10,8 @@ e.g.:
 ```yaml
 dependencies:
   - name: magda-common
-    version: "1.0.0-alpha.0"
-    repository: "https://charts.magda.io"
+    version: "2.1.1"
+    repository: "oci://ghcr.io/magda-io/charts"
 ```
 
 ## Source Code

@@ -112,13 +112,14 @@
     padding: 0.8rem 1rem;
 }
 
-.download-history-report-button {
-    a {
+.download-history-report-button-form {
+    input.download-history-report-button {
         margin-top: 20px;
         display: block;
         width: 100%;
         padding: 0.8rem 1rem;
         text-align: center;
+        border-width: 3px !important;
     }
 }
 
@@ -181,6 +182,12 @@
         display: inline;
         padding-left: 8px;
         padding-right: 8px;
+    }
+}
+
+.record--distribution {
+    .description-box {
+        margin-top: 20px;
     }
 }
 

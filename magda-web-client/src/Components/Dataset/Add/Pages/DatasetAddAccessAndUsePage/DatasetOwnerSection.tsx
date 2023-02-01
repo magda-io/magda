@@ -93,7 +93,7 @@ const DatasetOwnerSection: FunctionComponent<PropsType> = (props) => {
             ) : (
                 <>
                     <h4 className="with-icon">
-                        <span>Who is the dataset owner?</span>
+                        <span>Who is the dataset owner? (*)</span>
                     </h4>
                     <div className="input-area">
                         <ToolTip>
@@ -107,6 +107,7 @@ const DatasetOwnerSection: FunctionComponent<PropsType> = (props) => {
                             </Message>
                         ) : (
                             <SelectPicker
+                                cleanable={false}
                                 placeholder={placeholderText}
                                 disabled={shouldDisabled}
                                 onChange={props.onChange}

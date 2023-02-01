@@ -1,10 +1,10 @@
-import { config, ADMIN_ROLE_ID } from "config";
-import request from "helpers/request";
-import getRequest from "helpers/getRequest";
+import { config, ADMIN_ROLE_ID } from "../config";
+import request from "../helpers/request";
+import getRequest from "../helpers/getRequest";
 import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
 import { AuthPluginConfig } from "@magda/gateway/src/createAuthPluginRouter";
 import urijs from "urijs";
-import { User, Role } from "reducers/userManagementReducer";
+import { User, Role } from "../reducers/userManagementReducer";
 import {
     PermissionRecord,
     CreateRolePermissionInputData,
@@ -67,7 +67,7 @@ export function convertAuthPluginApiUrl(
 
 export async function getUsers(): Promise<User[]> {
     return await getRequest<User[]>(
-        getAbsoluteUrl("users/all", config.authApiUrl),
+        getAbsoluteUrl("users/all", config.authApiBaseUrl),
         true
     );
 }
@@ -79,7 +79,7 @@ export async function getUserById(
     return await getRequest<User>(
         getAbsoluteUrl(
             `users/${encodeURIComponent(userId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         noCache
     );
@@ -99,7 +99,7 @@ export async function updateUser(
         "PUT",
         getAbsoluteUrl(
             "users/" + encodeURIComponent(userId),
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         updates,
         "application/json"
@@ -110,7 +110,7 @@ export async function getUserRoles(userId: string): Promise<Role[]> {
     return await getRequest<Role[]>(
         getAbsoluteUrl(
             `user/${encodeURIComponent(userId)}/roles`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         true
     );
@@ -138,7 +138,7 @@ export async function addUserRoles(
         "post",
         getAbsoluteUrl(
             `users/${encodeURIComponent(userId)}/roles`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         roleIds
     );
@@ -165,7 +165,7 @@ export async function deleteUserRoles(
         "delete",
         getAbsoluteUrl(
             `users/${encodeURIComponent(userId)}/roles`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         roleIds
     );
@@ -184,7 +184,7 @@ export async function setAdmin(userId: string, isAdmin: boolean) {
     const user = await getRequest<User>(
         getAbsoluteUrl(
             `users/${encodeURIComponent(userId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         true
     );
@@ -246,7 +246,7 @@ export async function queryUsers(
         : ({} as QueryUsersParams);
 
     return await getRequest<UserRecord[]>(
-        getAbsoluteUrl(`users`, config.authApiUrl, queryParams),
+        getAbsoluteUrl(`users`, config.authApiBaseUrl, queryParams),
         noCache
     );
 }
@@ -261,7 +261,7 @@ export async function queryUsersCount(
         : ({} as QueryUsersCountParams);
 
     const res = await getRequest<{ count: number }>(
-        getAbsoluteUrl(`users/count`, config.authApiUrl, queryParams),
+        getAbsoluteUrl(`users/count`, config.authApiBaseUrl, queryParams),
         noCache
     );
     return res?.count ? res.count : 0;
@@ -299,7 +299,7 @@ export async function queryRoles(
         : ({} as QueryRolesParams);
 
     return await getRequest<RoleRecord[]>(
-        getAbsoluteUrl(`roles`, config.authApiUrl, queryParams),
+        getAbsoluteUrl(`roles`, config.authApiBaseUrl, queryParams),
         noCache
     );
 }
@@ -314,7 +314,7 @@ export async function queryRolesCount(
         : ({} as QueryRolesCountParams);
 
     const res = await getRequest<{ count: number }>(
-        getAbsoluteUrl(`roles/count`, config.authApiUrl, queryParams),
+        getAbsoluteUrl(`roles/count`, config.authApiBaseUrl, queryParams),
         noCache
     );
     return res?.count ? res.count : 0;
@@ -327,7 +327,7 @@ export async function getRoleById(
     return await getRequest<RoleRecord>(
         getAbsoluteUrl(
             `roles/${encodeURIComponent(roleId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         noCache
     );
@@ -336,7 +336,7 @@ export async function getRoleById(
 export async function createRole(role: Partial<RoleRecord>) {
     return await request<RoleRecord>(
         "POST",
-        getAbsoluteUrl(`roles`, config.authApiUrl),
+        getAbsoluteUrl(`roles`, config.authApiBaseUrl),
         role
     );
 }
@@ -346,7 +346,7 @@ export async function updateRole(roleId: string, role: Partial<RoleRecord>) {
         "PUT",
         getAbsoluteUrl(
             `roles/${encodeURIComponent(roleId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         role
     );
@@ -355,14 +355,17 @@ export async function updateRole(roleId: string, role: Partial<RoleRecord>) {
 export async function deleteRole(roleId: string) {
     await request(
         "DELETE",
-        getAbsoluteUrl(`roles/${encodeURIComponent(roleId)}`, config.authApiUrl)
+        getAbsoluteUrl(
+            `roles/${encodeURIComponent(roleId)}`,
+            config.authApiBaseUrl
+        )
     );
 }
 
 export async function whoami() {
     return await request<User>(
         "GET",
-        getAbsoluteUrl(`users/whoami`, config.authApiUrl)
+        getAbsoluteUrl(`users/whoami`, config.authApiBaseUrl)
     );
 }
 
@@ -382,7 +385,7 @@ export async function queryResources(
         ? params
         : ({} as QueryRolesParams);
     return await getRequest<ResourceRecord[]>(
-        getAbsoluteUrl(`resources`, config.authApiUrl, queryParams),
+        getAbsoluteUrl(`resources`, config.authApiBaseUrl, queryParams),
         noCache
     );
 }
@@ -399,7 +402,7 @@ export async function queryResourcesCount(
         ? params
         : ({} as QueryResourcesCountParams);
     const res = await getRequest<{ count: number }>(
-        getAbsoluteUrl(`resources/count`, config.authApiUrl, queryParams),
+        getAbsoluteUrl(`resources/count`, config.authApiBaseUrl, queryParams),
         noCache
     );
     return res?.count ? res.count : 0;
@@ -409,7 +412,7 @@ export async function getResourceById(resId: string, noCache: boolean = false) {
     return await getRequest<ResourceRecord>(
         getAbsoluteUrl(
             `resources/${encodeURIComponent(resId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         noCache
     );
@@ -420,7 +423,7 @@ export async function getResourceByUri(
     noCache: boolean = false
 ) {
     return await getRequest<ResourceRecord>(
-        getAbsoluteUrl(`resources/byUri/${resUri}`, config.authApiUrl),
+        getAbsoluteUrl(`resources/byUri/${resUri}`, config.authApiBaseUrl),
         noCache
     );
 }
@@ -428,7 +431,7 @@ export async function getResourceByUri(
 export async function createResource(resource: Partial<ResourceRecord>) {
     return await request<ResourceRecord>(
         "POST",
-        getAbsoluteUrl("resources", config.authApiUrl),
+        getAbsoluteUrl("resources", config.authApiBaseUrl),
         resource
     );
 }
@@ -441,7 +444,7 @@ export async function updateResource(
         "PUT",
         getAbsoluteUrl(
             `resources/${encodeURIComponent(resourceId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         resource
     );
@@ -452,7 +455,7 @@ export async function deleteResource(resourceId: string) {
         "DELETE",
         getAbsoluteUrl(
             `resources/${encodeURIComponent(resourceId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
 }
@@ -475,7 +478,7 @@ export async function queryResOperations(
     return await getRequest<OperationRecord[]>(
         getAbsoluteUrl(
             `resources/${encodeURIComponent(resId)}/operations`,
-            config.authApiUrl,
+            config.authApiBaseUrl,
             queryParams
         ),
         noCache
@@ -497,7 +500,7 @@ export async function queryResOperationsCount(
     const res = await getRequest<{ count: number }>(
         getAbsoluteUrl(
             `resources/${encodeURIComponent(resId)}/operations/count`,
-            config.authApiUrl,
+            config.authApiBaseUrl,
             queryParams
         ),
         noCache
@@ -512,7 +515,7 @@ export async function getResOperationsById(
     return await getRequest<OperationRecord>(
         getAbsoluteUrl(
             `operations/${encodeURIComponent(resOperationId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         noCache
     );
@@ -526,7 +529,7 @@ export async function createOperation(
         "POST",
         getAbsoluteUrl(
             `resources/${encodeURIComponent(resourceId)}/operations`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         operation
     );
@@ -540,7 +543,7 @@ export async function updateOperation(
         "PUT",
         getAbsoluteUrl(
             `operations/${encodeURIComponent(operationId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         operation
     );
@@ -551,7 +554,7 @@ export async function deleteOperation(operationId: string) {
         "DELETE",
         getAbsoluteUrl(
             `operations/${encodeURIComponent(operationId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
 }
@@ -579,7 +582,7 @@ export async function queryRolePermissions(
     return await getRequest<RolePermissionRecord[]>(
         getAbsoluteUrl(
             `roles/${encodeURIComponent(resId)}/permissions`,
-            config.authApiUrl,
+            config.authApiBaseUrl,
             queryParams
         ),
         noCache
@@ -601,7 +604,7 @@ export async function queryRolePermissionsCount(
     const res = await getRequest<{ count: number }>(
         getAbsoluteUrl(
             `roles/${encodeURIComponent(resId)}/permissions/count`,
-            config.authApiUrl,
+            config.authApiBaseUrl,
             queryParams
         ),
         noCache
@@ -629,7 +632,7 @@ export async function createRolePermission(
         "POST",
         getAbsoluteUrl(
             `roles/${encodeURIComponent(roleId)}/permissions`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         permissionData
     );
@@ -661,7 +664,7 @@ export async function updateRolePermission(
             `roles/${encodeURIComponent(
                 roleId
             )}/permissions/${encodeURIComponent(permissionId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         permissionData
     );
@@ -683,7 +686,7 @@ export async function deleteRolePermission(
             `roles/${encodeURIComponent(
                 roleId
             )}/permissions/${encodeURIComponent(permissionId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
 }
@@ -698,7 +701,7 @@ export async function getPermissionById(
     return await getRequest<RolePermissionRecord>(
         getAbsoluteUrl(
             `permissions/${encodeURIComponent(permissionId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         noCache
     );
@@ -722,7 +725,7 @@ export async function getUserApiKeys(userId: string, noCache: boolean = true) {
     return await getRequest<APIKeyRecord[]>(
         getAbsoluteUrl(
             `users/${encodeURIComponent(userId)}/apiKeys`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         noCache
     );
@@ -741,7 +744,7 @@ export async function getUserApiKeyById(
             `users/${encodeURIComponent(userId)}/apiKeys/${encodeURIComponent(
                 apiKeyId
             )}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         noCache
     );
@@ -756,7 +759,7 @@ export async function createUserApiKey(userId: string, expiryTime?: Date) {
         "post",
         getAbsoluteUrl(
             `users/${encodeURIComponent(userId)}/apiKeys`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         { expiryTime }
     );
@@ -782,7 +785,7 @@ export async function updateUserApiKey(
             `users/${encodeURIComponent(userId)}/apiKeys/${encodeURIComponent(
                 apiKeyId
             )}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         data
     );
@@ -801,7 +804,7 @@ export async function deleteUserApiKey(userId: string, apiKeyId: string) {
             `users/${encodeURIComponent(userId)}/apiKeys/${encodeURIComponent(
                 apiKeyId
             )}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
 }
@@ -833,7 +836,7 @@ export async function getAccessGroupById(
     const accessGroupRecord = await getRequest<Record>(
         getAbsoluteUrl(
             `records/${encodeURIComponent(groupId)}`,
-            config.registryReadOnlyApiUrl,
+            config.registryApiReadOnlyBaseUrl,
             {
                 optionalAspect: ["access-group-details", "access-control"],
                 dereference: false
@@ -876,7 +879,7 @@ export async function createAccessGroup(
 ): Promise<AccessGroup> {
     const accessGroupRecord = await request<AccessGroup>(
         "post",
-        getAbsoluteUrl(`accessGroups`, config.authApiUrl),
+        getAbsoluteUrl(`accessGroups`, config.authApiBaseUrl),
         groupData
     );
     return accessGroupRecord;
@@ -892,7 +895,7 @@ export async function updateAccessGroup(
         "put",
         getAbsoluteUrl(
             `accessGroups/${encodeURIComponent(groupId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         ),
         groupData
     );
@@ -907,7 +910,7 @@ export async function deleteAccessGroup(groupId: string) {
         "delete",
         getAbsoluteUrl(
             `accessGroups/${encodeURIComponent(groupId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
     return result.result;
@@ -929,7 +932,7 @@ export async function addDatasetToAccessGroup(
             `accessGroups/${encodeURIComponent(
                 groupId
             )}/datasets/${encodeURIComponent(datasetId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
     return result.result;
@@ -951,7 +954,7 @@ export async function removeDatasetToAccessGroup(
             `accessGroups/${encodeURIComponent(
                 groupId
             )}/datasets/${encodeURIComponent(datasetId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
     return result.result;
@@ -970,7 +973,7 @@ export async function addUserToAccessGroup(userId: string, groupId: string) {
             `accessGroups/${encodeURIComponent(
                 groupId
             )}/users/${encodeURIComponent(userId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
     return result.result;
@@ -989,7 +992,7 @@ export async function removeUserToAccessGroup(userId: string, groupId: string) {
             `accessGroups/${encodeURIComponent(
                 groupId
             )}/users/${encodeURIComponent(userId)}`,
-            config.authApiUrl
+            config.authApiBaseUrl
         )
     );
     return result.result;
@@ -1006,7 +1009,7 @@ export async function queryRoleUsers(
     return await getRequest<UserRecord[]>(
         getAbsoluteUrl(
             `roles/${encodeURIComponent(roleId)}/users`,
-            config.authApiUrl,
+            config.authApiBaseUrl,
             queryParams
         ),
         noCache
@@ -1024,7 +1027,7 @@ export async function queryRoleUsersCount(
     const res = await getRequest<{ count: number }>(
         getAbsoluteUrl(
             `roles/${encodeURIComponent(roleId)}/users/count`,
-            config.authApiUrl,
+            config.authApiBaseUrl,
             queryParams
         ),
         noCache

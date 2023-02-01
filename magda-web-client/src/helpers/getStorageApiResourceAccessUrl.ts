@@ -1,4 +1,4 @@
-import { config, DATASETS_BUCKET } from "config";
+import { config, DATASETS_BUCKET } from "../config";
 import urijs from "urijs";
 
 export default function getStorageApiResourceAccessUrl(resourceUrl: string) {
@@ -9,7 +9,7 @@ export default function getStorageApiResourceAccessUrl(resourceUrl: string) {
     if (uri.protocol() === "magda" && uri.hostname() === "storage-api") {
         // --- convert [pseudo storage api resource URL](https://github.com/magda-io/magda/issues/3000) to http access url
         const [datasetId, distributionId, fileName] = uri.segmentCoded();
-        const accessUri = urijs(config.storageApiUrl);
+        const accessUri = urijs(config.storageApiBaseUrl);
         const segments = [
             ...accessUri.segmentCoded(),
             DATASETS_BUCKET,

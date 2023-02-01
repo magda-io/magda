@@ -1,0 +1,30 @@
+{
+    "extends": "../../tsconfig-global.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "strictNullChecks": false,
+        "target": "es2015",
+        "allowJs": false,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "module": "esnext",
+        "resolveJsonModule": true,
+        "noEmit": false,
+        "noEmitOnError": false,
+        "moduleResolution": "node",
+        "noImplicitAny": false,
+        "sourceMap": false,
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "baseUrl": "src",
+        "composite": false,
+        "noFallthroughCasesInSwitch": true,
+        "noUnusedLocals": false,
+        "jsx": "react"
+    },
+    "include": ["./src"],
+    "exclude": ["**/node_modules/**/*"]
+}

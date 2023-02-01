@@ -277,7 +277,7 @@ export default async function processFile(
                 await doUpload();
             } catch (e) {
                 try {
-                    const fetchUri = urijs(config.storageApiUrl);
+                    const fetchUri = urijs(config.storageApiBaseUrl);
                     const fetchUrl = fetchUri
                         .segmentCoded([
                             ...fetchUri.segmentCoded(),
@@ -288,7 +288,7 @@ export default async function processFile(
                         ])
                         .toString();
                     const res = await fetch(fetchUrl, {
-                        ...config.credentialsFetchOptions,
+                        ...config.commonFetchRequestOptions,
                         method: "DELETE"
                     });
 

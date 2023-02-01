@@ -238,7 +238,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       val userIdSql = userId.map(id => sqls"${id}::UUID").getOrElse(sqls"NULL")
       sql"""insert into WebHooks (webHookId, name, active, lastevent, url, config, enabled, ownerId, creatorId, editorId)
           values (
-            ${hook.id.get},
+            ${id},
             ${hook.name},
             ${hook.active},
             (select eventId from Events order by eventId desc limit 1),
@@ -259,6 +259,18 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             editTime = CURRENT_TIMESTAMP
           """.update
         .apply()
+
+      sql"delete from WebHookEvents where webHookId=${id}".update.apply()
+
+      val batchParameters = hook.eventTypes
+        .map(
+          eventType => Seq('webhookId -> id, 'eventTypeId -> eventType.value)
+        )
+        .toSeq
+      sql"""insert into WebHookEvents (webhookId, eventTypeId) values ({webhookId}, {eventTypeId})"""
+        .batchByName(batchParameters: _*)
+        .apply()
+
       Success(hook)
     }
   }
@@ -268,10 +280,17 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       acknowledgement: WebHookAcknowledgement
   )(implicit session: DBSession): Try[WebHookAcknowledgementResponse] = {
     Try {
-      val setActive = acknowledgement.active match {
-        case Some(active) => sqls", active=${active}"
-        case None         => sqls""
-      }
+      val setActive =
+        (if (acknowledgement.active.isEmpty && acknowledgement.succeeded) {
+           Some(true)
+         } else {
+           acknowledgement.active
+         }) match {
+          case Some(true) =>
+            sqls", active=true, lastretrytime=null, retrycount=0"
+          case Some(false) => sqls", active=false"
+          case None        => sqls""
+        }
 
       if (acknowledgement.succeeded) {
         acknowledgement.lastEventIdReceived match {

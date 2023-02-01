@@ -1,6 +1,6 @@
 # web-server
 
-![Version: 2.0.1](https://img.shields.io/badge/Version-2.0.1-informational?style=flat-square)
+![Version: 2.2.1](https://img.shields.io/badge/Version-2.2.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -13,6 +13,9 @@ Kubernetes: `>= 1.14.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | adminApiBaseUrl | string | `nil` |  |
+| anonymousUserLandingPage | string | `"/home"` | Specify the landing page uri for anonymous users.  |
+| authStatusRefreshInterval | int | `300000` | The interval of UI refresh / refetch user auth status data. Default to 5 mins. |
+| authenticatedUserLandingPage | string | `"/home"` | Specify the landing page uri for authenticated users |
 | automaticPreviewMaxFileSize | int | `2097152` |  |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |

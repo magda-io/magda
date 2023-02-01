@@ -1535,10 +1535,22 @@ class RecordServiceAuthSpec extends ApiSpec {
 
       describe("When there is an existing record:") {
 
-        val record = Record("testId", "testName", Map(), Some("blah"))
+        val record = Record(
+          "testId",
+          "testName",
+          Map("test" -> JsObject("field1" -> JsString("value1"))),
+          Some("blah")
+        )
 
         endpointStandardAuthTestCase(
-          Put(s"/v0/records/testId", record.copy(name = "testName modified")),
+          Put(
+            s"/v0/records/testId",
+            record.copy(
+              name = "testName modified",
+              // modify `test` aspect to replace all existing aspect data and add `field2`
+              aspects = Map("test" -> JsObject("field2" -> JsString("value2")))
+            )
+          ),
           List("object/record/update"),
           hasPermissionCheck = param => {
             status shouldEqual StatusCodes.OK
@@ -1549,16 +1561,66 @@ class RecordServiceAuthSpec extends ApiSpec {
             param.authFetcher
               .callTimesByOperationUri("object/record/update") shouldBe 2
 
+            val updateAuthCallLogs = param.authFetcher
+              .getAuthCallLogsByOperationUri("object/record/update")
+            val firstCallInput = updateAuthCallLogs(0)._3.get.asJsObject
+            val secondCallInput = updateAuthCallLogs(1)._3.get.asJsObject
+
+            // this is the record in "after update" context data
+            // we try to make sure the user has access to the data before & after the updates
+            val recordInFirstCallContextData = firstCallInput.fields
+              .get("object")
+              .get
+              .asJsObject
+              .fields
+              .get("record")
+              .get
+              .asJsObject
+
+            // as it's replace operation, the after update aspect should contain `field2` only
+            recordInFirstCallContextData.fields
+              .get("name")
+              .get shouldEqual JsString("testName modified")
+            recordInFirstCallContextData.fields
+              .get("test")
+              .get shouldEqual JsObject(
+              "field2" -> JsString("value2")
+            )
+
+            // this is the record in "before update" context data
+            // we try to make sure the user has access to the data before & after the updates
+            val recordInSecondCallContextData = secondCallInput.fields
+              .get("object")
+              .get
+              .asJsObject
+              .fields
+              .get("record")
+              .get
+              .asJsObject
+
+            recordInSecondCallContextData.fields
+              .get("name")
+              .get shouldEqual JsString("testName")
+            recordInSecondCallContextData.fields
+              .get("test")
+              .get shouldEqual JsObject("field1" -> JsString("value1"))
+
             param.authFetcher.setAuthDecision(
               "object/record/read",
               UnconditionalTrueDecision
             )
 
-            Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_1) ~> param
+            Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param
               .api(Full)
               .routes ~> check {
               status shouldEqual StatusCodes.OK
-              responseAs[Record].name shouldEqual "testName modified"
+              val record = responseAs[Record]
+              record.name shouldEqual "testName modified"
+              record.aspects.get("test").get shouldEqual JsObject(
+                "field2" -> JsString("value2")
+              )
             }
 
             param.authFetcher
@@ -1570,6 +1632,145 @@ class RecordServiceAuthSpec extends ApiSpec {
               .callTimesByOperationUri("object/record/update") shouldBe 1
           },
           beforeRequest = param => {
+            // create test aspect
+            val aspectDefinition = AspectDefinition("test", "test", None)
+            param.authFetcher.setAuthDecision(
+              "object/aspect/create",
+              UnconditionalTrueDecision
+            )
+            Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+            // create record before modify it
+            param.authFetcher.setAuthDecision(
+              "object/record/create",
+              UnconditionalTrueDecision
+            )
+            Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+            param.authFetcher.resetMock()
+          },
+          requireUserId = true
+        )
+
+      }
+
+      describe("When there is an existing record & `merge` = true:") {
+
+        val record = Record(
+          "testId",
+          "testName",
+          Map("test" -> JsObject("field1" -> JsString("value1"))),
+          Some("blah")
+        )
+
+        endpointStandardAuthTestCase(
+          Put(
+            s"/v0/records/testId?merge=true",
+            record.copy(
+              name = "testName modified",
+              // modify `test` aspect to add `field2` without touching `field1`
+              aspects = Map("test" -> JsObject("field2" -> JsString("value2")))
+            )
+          ),
+          List("object/record/update"),
+          hasPermissionCheck = param => {
+            status shouldEqual StatusCodes.OK
+            responseAs[Record].id shouldEqual record.id
+
+            // endpoint will query policy engine re: "object/records/update" twice
+            // as we want to make sure the user has access to both before-update & after-update record
+            param.authFetcher
+              .callTimesByOperationUri("object/record/update") shouldBe 2
+
+            val updateAuthCallLogs = param.authFetcher
+              .getAuthCallLogsByOperationUri("object/record/update")
+            val firstCallInput = updateAuthCallLogs(0)._3.get.asJsObject
+            val secondCallInput = updateAuthCallLogs(1)._3.get.asJsObject
+
+            // this is the record in "after update" context data
+            // we try to make sure the user has access to the data before & after the updates
+            val recordInFirstCallContextData = firstCallInput.fields
+              .get("object")
+              .get
+              .asJsObject
+              .fields
+              .get("record")
+              .get
+              .asJsObject
+
+            recordInFirstCallContextData.fields
+              .get("name")
+              .get shouldEqual JsString("testName modified")
+            recordInFirstCallContextData.fields
+              .get("test")
+              .get shouldEqual JsObject(
+              "field1" -> JsString("value1"),
+              "field2" -> JsString("value2")
+            )
+
+            // this is the record in "before update" context data
+            // we try to make sure the user has access to the data before & after the updates
+            val recordInSecondCallContextData = secondCallInput.fields
+              .get("object")
+              .get
+              .asJsObject
+              .fields
+              .get("record")
+              .get
+              .asJsObject
+
+            recordInSecondCallContextData.fields
+              .get("name")
+              .get shouldEqual JsString("testName")
+            recordInSecondCallContextData.fields
+              .get("test")
+              .get shouldEqual JsObject("field1" -> JsString("value1"))
+
+            param.authFetcher.setAuthDecision(
+              "object/record/read",
+              UnconditionalTrueDecision
+            )
+
+            Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param
+              .api(Full)
+              .routes ~> check {
+              status shouldEqual StatusCodes.OK
+              val record = responseAs[Record]
+              record.name shouldEqual "testName modified"
+              record.aspects.get("test").get shouldEqual JsObject(
+                "field1" -> JsString("value1"),
+                "field2" -> JsString("value2")
+              )
+            }
+
+            param.authFetcher
+              .callTimesByOperationUri("object/record/read") shouldBe 1
+          },
+          noPermissionCheck = param => {
+            status shouldEqual StatusCodes.Forbidden
+            param.authFetcher
+              .callTimesByOperationUri("object/record/update") shouldBe 1
+          },
+          beforeRequest = param => {
+            // create test aspect
+            val aspectDefinition = AspectDefinition("test", "test", None)
+            param.authFetcher.setAuthDecision(
+              "object/aspect/create",
+              UnconditionalTrueDecision
+            )
+            Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
             // create record before modify it
             param.authFetcher.setAuthDecision(
               "object/record/create",

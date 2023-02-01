@@ -1,4 +1,4 @@
-import { config } from "config";
+import { config } from "../../../config";
 import { State } from "./DatasetAddCommon";
 import JsonPath from "jsonpath";
 import {
@@ -9,7 +9,7 @@ import {
     MutableRefObject
 } from "react";
 import uniq from "lodash/uniq";
-import defer from "helpers/defer";
+import defer from "../../../helpers/defer";
 
 /**
  * A global module to manage / coordinate validation workflow.

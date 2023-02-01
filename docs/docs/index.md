@@ -16,6 +16,7 @@
 - [How to create local users](/docs/how-to-create-local-users)
 - [How to setup HTTPS access to Local Dev Cluster](/docs/how-to-setup-https-to-local-cluster)
 - [How to Customise Magda UI](/docs/how-to-customise-ui)
+- [Plugin UI Component SDK Doc](https://github.com/magda-io/magda/tree/master/packages/external-ui-plugin-sdk/docs/modules.md)
 - [How to build your own connectors / minions](/docs/how-to-build-your-own-connectors-minions)
 - [Authentication Plugin Spec Document](/docs/authentication-plugin-spec)
 - [How to recover with continuous archive backup](/docs/how-to-recover-with-continuous-archive-backup)

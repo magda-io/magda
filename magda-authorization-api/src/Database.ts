@@ -1195,7 +1195,7 @@ export default class Database {
                 let operationUris = options.operationUris;
                 operationUris = operationUris
                     .filter((item) => !!item)
-                    .map((item) => `${item}`.trim().toLowerCase())
+                    .map((item) => `${item}`.trim())
                     .filter((item) => !!item);
                 if (!operationUris.length) {
                     throw new ServerError(
@@ -1403,7 +1403,7 @@ export default class Database {
                 } else {
                     operationUris = operationUris
                         .filter((item) => !!item)
-                        .map((item) => `${item}`.trim().toLowerCase())
+                        .map((item) => `${item}`.trim())
                         .filter((item) => !!item);
                     if (!operationUris.length) {
                         throw new ServerError(

@@ -3,6 +3,9 @@ import { connect } from "react-redux";
 import { config } from "config";
 import FileDeletionError from "helpers/FileDeletionError";
 import ServerError from "@magda/typescript-common/dist/ServerError";
+import TooltipWrapper from "Components/Common/TooltipWrapper";
+import helpIcon from "assets/help.svg";
+import "./ErrorMessageBox.scss";
 
 type PropsType = {
     /**
@@ -126,13 +129,36 @@ const ErrorMessageBox: FunctionComponent<PropsType> = (props) => {
                 );
             case 401: //--- 401 reuse the same error message for 403
             case 403:
+                const message = error.message;
                 return (
                     <div className="error-message-box au-body au-page-alerts au-page-alerts--error server-error">
                         <div>
                             <span>
                                 The operation failed due to insufficient
-                                permissions - please check your account
-                                permissions and try again.
+                                permissions
+                            </span>
+                            {message ? (
+                                <span className="tooltip-container">
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <TooltipWrapper
+                                        className="tooltip no-print"
+                                        launcher={() => (
+                                            <div className="tooltip-launcher-icon help-icon">
+                                                <img
+                                                    src={helpIcon}
+                                                    alt="More information on this error, click for more information"
+                                                />
+                                            </div>
+                                        )}
+                                        innerElementClassName="inner"
+                                    >
+                                        {() => message}
+                                    </TooltipWrapper>
+                                </span>
+                            ) : null}
+                            <span>
+                                - please check your account permissions and try
+                                again.
                             </span>
                         </div>
                     </div>

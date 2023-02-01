@@ -270,7 +270,10 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                             : (req?.query?.offset as string),
                         limit: returnCount
                             ? undefined
-                            : (req?.query?.limit as string)
+                            : (req?.query?.limit as string),
+                        orderBy: returnCount
+                            ? undefined
+                            : sqls`permissions.create_time DESC`
                     }
                 );
                 if (returnCount) {
@@ -851,7 +854,10 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                             : (req?.query?.offset as string),
                         limit: returnCount
                             ? undefined
-                            : (req?.query?.limit as string)
+                            : (req?.query?.limit as string),
+                        orderBy: returnCount
+                            ? undefined
+                            : sqls`roles.name, roles.create_time ASC`
                     }
                 );
                 if (returnCount) {

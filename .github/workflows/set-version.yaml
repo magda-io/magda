@@ -1,0 +1,46 @@
+name: set-version
+
+run-name: Set version ${{ inputs.version }} on branch ${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Please input the new version number. e.g. `v2.0.0-alpha.0` with leading `v`"
+        required: true
+        type: string
+
+jobs:
+  log-the-inputs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Version validation
+        env:
+          SELECTED_VERSION: ${{ inputs.version }}
+        run: |
+          SEMVER_REGEX="^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(\\-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
+          [[ "${SELECTED_VERSION}" =~ $SEMVER_REGEX ]] || { echo "Invalid version number '$SELECTED_VERSION'. Should be e.g. 'v2.0.0-alpha.0' with leading 'v'." ; exit 1; }
+
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 14
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          cache: "yarn"
+
+      - name: Install Utilities
+        run: yarn install
+
+      - name: Setup Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Set version
+        env:
+          SELECTED_VERSION: ${{ inputs.version }}
+        run: |
+          VERSION_NUM=$(echo ${SELECTED_VERSION} | cut -b 2-)
+          yarn set-version -y ${VERSION_NUM}
+          git push

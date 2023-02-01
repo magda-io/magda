@@ -18,6 +18,19 @@
         box-shadow: 0 0 0 1px #2684ff;
     }
 }
+.org-unit-drop-down-container {
+    .clear-button-container {
+        position: relative;
+        .clear-button {
+            position: absolute;
+            z-index: 99;
+            right: 40px;
+            top: 13px;
+            cursor: pointer;
+            color: #8e8e93;
+        }
+    }
+}
 .org-unit-drop-down.has-validation-error {
     .rs-picker-toggle {
         border-color: #d60000;
