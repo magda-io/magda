@@ -8,6 +8,7 @@ import spray.json._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.util.SQLUtils
 import scalikejdbc.interpolation.SQLSyntax
 
 import java.time.OffsetDateTime
