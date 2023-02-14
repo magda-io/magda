@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.2.2
+
+- #3439: the orgUnitId of access-control aspect minLength should be 0
+
 ## v2.2.1
 
 - #3436 Fixed Download the history report Button triggers 404 error
