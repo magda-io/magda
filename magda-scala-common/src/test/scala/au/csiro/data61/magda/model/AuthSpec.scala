@@ -12,10 +12,12 @@ class AuthSpec extends FunSpec with Matchers with AuthProtocols {
   implicit val system = ActorSystem()
   val logger = akka.event.Logging.getLogger(system, getClass)
 
-  def normalise(str: String) =str.replaceAll("\\n", " ").replaceAll("\\s", "")
+  def normalise(str: String) = str.replaceAll("\\n", " ").replaceAll("\\s", "")
 
   describe("AuthDecision toSQL") {
-    it("should add round brackets for AspectQueryGroup's statements that contains `and` or `or` and newline correctly") {
+    it(
+      "should add round brackets for AspectQueryGroup's statements that contains `and` or `or` and newline correctly"
+    ) {
       val jsonResSource: BufferedSource = fromFile(
         "magda-typescript-common/src/test/sampleAuthDecisions/generalRecordQuery.json"
       )
