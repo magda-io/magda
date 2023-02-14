@@ -6,7 +6,13 @@ metadata:
     pod: "gateway"
 data:
   # When the config map is mounted as a volume, these will be created as files.
-  routes.json: {{ .Values.routes | default .Values.defaultRoutes | mustToRawJson | quote }}
+  {{- $runtimeRoutes := dict }}
+  {{- if .Values.additionalRoutes | empty | not }}
+  {{- $runtimeRoutes = mergeOverwrite (deepCopy .Values.defaultRoutes) .Values.additionalRoutes }}
+  {{- else }}
+  {{- $runtimeRoutes = .Values.routes | default .Values.defaultRoutes }}
+  {{- end }}
+  routes.json: {{ $runtimeRoutes | mustToRawJson | quote }}
   webRoutes.json: {{ .Values.webRoutes | default dict | mustToRawJson | quote }}
   helmet.json: {{ .Values.helmet | default dict | mustToRawJson | quote }}
   cors.json: {{ .Values.cors | default dict | mustToRawJson | quote }}
