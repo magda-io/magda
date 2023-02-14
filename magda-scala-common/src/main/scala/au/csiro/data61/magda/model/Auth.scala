@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.model
 
 import au.csiro.data61.magda.model.Registry.Record
+import au.csiro.data61.magda.util.SQLUtils
 import spray.json.{
   DefaultJsonProtocol,
   JsArray,
@@ -15,7 +16,7 @@ import spray.json.{
 }
 import scalikejdbc.interpolation.SQLSyntax
 import com.sksamuel.elastic4s.http.ElasticDsl
-import com.sksamuel.elastic4s.searches.queries.matches.{MatchAllQuery}
+import com.sksamuel.elastic4s.searches.queries.matches.MatchAllQuery
 import com.sksamuel.elastic4s.searches.queries.{Query => EsDslQuery}
 
 import scala.collection.SortedSet
@@ -282,7 +283,7 @@ object Auth {
     def toSql(
         config: AspectQueryToSqlConfig = AspectQueryToSqlConfig()
     ): Option[SQLSyntax] =
-      SQLSyntax
+      SQLUtils
         .toOrConditionOpt(
           this
             .toAspectQueryGroups(config.prefixes)

@@ -3,6 +3,7 @@
 ## v2.2.2
 
 - #3439: the orgUnitId of access-control aspect minLength should be 0
+- #3440: ScalikeJDBC toOrConditionOpt or toAndConditionOpt may fail to generate round brackets correctly
 
 ## v2.2.1
 
