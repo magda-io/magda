@@ -12,6 +12,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| additionalRoutes | object | {} | a list of additional routes that should be avaialble under `/api/v0/` path. Different from `routes` config field, routes supplied via this field will merge with `defaultRoutes` (default system API routes). Therefore, users doesn't have to specify all default system API routes in this field in order to keep all system API routes working. When users supply value via this config field, any value supplied via `routes` field will be ignored. |
 | authPlugins | list | `[]` | a list of authentication plugin config item.  Each authentication plugin config item can contain the following fields: <ul> <li>`key`: (string) the unique key of the auth plugin. Allowed characters: [a-zA-Z0-9\-] </li> <li>`baseUrl`: (string) the `baseUrl` where gateway proxy request to. </li> </ul> More info on authentication plugin see [Authentication Plugin Specification](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md) |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |
