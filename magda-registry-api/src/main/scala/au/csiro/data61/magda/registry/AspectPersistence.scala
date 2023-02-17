@@ -37,7 +37,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       .tenantIdToWhereClause(tenantId, "tenantid")
 
     sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
-      .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"
+      .where(SQLUtils.toAndConditionOpt(whereClauseParts: _*))}"
       .map(rowToAspect)
       .list
       .apply()
@@ -62,7 +62,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
     )
 
     sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
-      .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"
+      .where(SQLUtils.toAndConditionOpt(whereClauseParts: _*))}"
       .map(rowToAspect)
       .single
       .apply()
@@ -90,7 +90,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       )
 
       sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
-        .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"
+        .where(SQLUtils.toAndConditionOpt(whereClauseParts: _*))}"
         .map(rowToAspect)
         .list
         .apply()

@@ -557,9 +557,9 @@ class AuthApiClientSpec
         groupSqlList.length shouldBe 1
         groupSqlList.head.isDefined shouldBe true
         groupSqlList.head.get.value.trim.stripLineEndingWhitespaces shouldBe
-          """exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid")) and  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+          """exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid")) and ( exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
             |             COALESCE((data #>> string_to_array(?, ','))::TEXT = ?::TEXT, false)
-            |          )
+            |          ))
             |""".trim.stripMargin.stripLineEndingWhitespaces
         groupSqlList.head.get.parameters shouldBe Seq(
           "dcat-dataset-strings",

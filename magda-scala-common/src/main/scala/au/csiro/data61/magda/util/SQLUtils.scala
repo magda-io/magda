@@ -7,8 +7,34 @@ import au.csiro.data61.magda.model.TenantId.{
   TenantId
 }
 import scalikejdbc._
+import scalikejdbc.interpolation.SQLSyntax
+import scalikejdbc.interpolation.SQLSyntax.{join}
+
+import java.util.Locale.ENGLISH
 
 object SQLUtils {
+
+  def toOrConditionOpt(conditions: Option[SQLSyntax]*): Option[SQLSyntax] = {
+    val cs: Seq[SQLSyntax] = conditions.flatten
+    if (cs.isEmpty) None else Some(joinWithOr(cs: _*))
+  }
+
+  def toAndConditionOpt(conditions: Option[SQLSyntax]*): Option[SQLSyntax] = {
+    val cs: Seq[SQLSyntax] = conditions.flatten
+    if (cs.isEmpty) None else Some(joinWithAnd(cs: _*))
+  }
+
+  def joinWithAnd(parts: SQLSyntax*): SQLSyntax =
+    join(parts.map(p => if (hasAndOr(p)) sqls"(${p})" else p), sqls"and")
+
+  def joinWithOr(parts: SQLSyntax*): SQLSyntax =
+    join(parts.map(p => if (hasAndOr(p)) sqls"(${p})" else p), sqls"or")
+
+  def hasAndOr(s: SQLSyntax): Boolean = {
+    val statement = s.value.toLowerCase(ENGLISH)
+    statement.matches("(?s).+\\s+and\\s+.+") ||
+    statement.matches("(?s).+\\s+or\\s+.+")
+  }
 
   def getTableColumnName(
       columnName: String,
@@ -76,12 +102,10 @@ object SQLUtils {
         if (innerTenantId == MAGDA_ADMIN_PORTAL_ID) {
           // Assume that null values are the same as 0. Why not just set a default in the DB?
           // Because it'll take a whole day to process the migration.
-          SQLSyntax
-            .toOrConditionOpt(
-              buildSqlQuery(sqls"IS NULL"),
-              buildSqlQuery(sqls"= $innerTenantId")
-            )
-            .map(SQLSyntax.roundBracket(_))
+          toOrConditionOpt(
+            buildSqlQuery(sqls"IS NULL"),
+            buildSqlQuery(sqls"= $innerTenantId")
+          ).map(SQLSyntax.roundBracket(_))
         } else {
           buildSqlQuery(sqls"= ${innerTenantId}")
         }

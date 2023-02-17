@@ -8,6 +8,7 @@ import spray.json._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.util.SQLUtils
 import scalikejdbc.interpolation.SQLSyntax
 
 import java.time.OffsetDateTime
@@ -49,7 +50,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             editorId,
             editTime
           from WebHooks ${SQLSyntax
-      .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"""
+      .where(SQLUtils.toAndConditionOpt(whereClauseParts: _*))}"""
       .map(rowToHook)
       .list
       .apply()
@@ -92,7 +93,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             editTime
           from WebHooks
           ${SQLSyntax
-      .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"""
+      .where(SQLUtils.toAndConditionOpt(whereClauseParts: _*))}"""
       .map(rowToHook)
       .single
       .apply()

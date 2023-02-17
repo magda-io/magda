@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v2.2.2
+
+- #3439: the orgUnitId of access-control aspect minLength should be 0
+- #3440: ScalikeJDBC toOrConditionOpt or toAndConditionOpt may fail to generate round brackets correctly
+- #3438: Gateway Chart should support an extra "additionalRoutes" field
+- #3442: Admin api pod probe timeoutSeconds is set too short
+
 ## v2.2.1
 
 - #3436 Fixed Download the history report Button triggers 404 error

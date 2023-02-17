@@ -745,16 +745,16 @@ class AspectQuerySpec extends FunSpec with Matchers {
       )
       val sql = qs.toSql()
       sql.isDefined shouldBe true
-      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+      sql.get.value.stripLineEndingWhitespaces shouldBe """( exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
                                                           |           COALESCE(
                                                           |              (
                                                           |                (data::JSONB #> string_to_array(?, ','))::JSONB
                                                           |              ) @> to_json(?)::JSONB,
                                                           |              FALSE
                                                           |            )
-                                                          |        ) and  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |        )) and ( exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
                                                           |           (data #> string_to_array(?, ',')) IS NOT NULL
-                                                          |        )""".stripMargin.stripLineEndingWhitespaces
+                                                          |        ))""".stripMargin.stripLineEndingWhitespaces
       // we attempt to retrieve the first element and test whether it is NULL
       sql.get.parameters shouldBe List(
         "testaspect1",
@@ -781,16 +781,16 @@ class AspectQuerySpec extends FunSpec with Matchers {
       )
       val sql = qs.toSql()
       sql.isDefined shouldBe true
-      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+      sql.get.value.stripLineEndingWhitespaces shouldBe """( exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
                                                           |           COALESCE(
                                                           |              (
                                                           |                (data::JSONB #> string_to_array(?, ','))::JSONB
                                                           |              ) @> to_json(?)::JSONB,
                                                           |              FALSE
                                                           |            )
-                                                          |        ) or  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |        )) or ( exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
                                                           |           (data #> string_to_array(?, ',')) IS NOT NULL
-                                                          |        )""".stripMargin.stripLineEndingWhitespaces
+                                                          |        ))""".stripMargin.stripLineEndingWhitespaces
       // we attempt to retrieve the first element and test whether it is NULL
       sql.get.parameters shouldBe List(
         "testaspect1",
@@ -859,16 +859,16 @@ class AspectQuerySpec extends FunSpec with Matchers {
       )
       val sql = qs.toSql()
       sql.isDefined shouldBe true
-      sql.get.value.stripLineEndingWhitespaces shouldBe """NOT ( exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+      sql.get.value.stripLineEndingWhitespaces shouldBe """NOT (( exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
                                                           |           COALESCE(
                                                           |              (
                                                           |                (data::JSONB #> string_to_array(?, ','))::JSONB
                                                           |              ) @> to_json(?)::JSONB,
                                                           |              FALSE
                                                           |            )
-                                                          |        ) and  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |        )) and ( exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
                                                           |           (data #> string_to_array(?, ',')) IS NOT NULL
-                                                          |        ))""".stripMargin.stripLineEndingWhitespaces
+                                                          |        )))""".stripMargin.stripLineEndingWhitespaces
       // we attempt to retrieve the first element and test whether it is NULL
       sql.get.parameters shouldBe List(
         "testaspect1",
