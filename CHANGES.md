@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.2.3
+
+- Fixed an issue that zendesk integration feedback form might not always be opened via footer link
+
 ## v2.2.2
 
 - #3439: the orgUnitId of access-control aspect minLength should be 0
