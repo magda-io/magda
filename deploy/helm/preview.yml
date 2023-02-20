@@ -157,4 +157,4 @@ connector-dga:
     name: "DITRDCA"
     sourceUrl: "https://catalogue-uat.data.infrastructure.gov.au/"
     pageSize: 100
-    ignoreHarvestSources: ["None"]
+    ignoreHarvestSources: ["No"]
