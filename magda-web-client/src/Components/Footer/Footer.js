@@ -14,11 +14,19 @@ function FooterLink({ link }) {
     } else if (link.href === "feedback") {
         return (
             <a
-                href="javascript:void(0);"
-                onClick={() => {
-                    zE(function () {
-                        zE.activate();
-                    });
+                href="#feedback"
+                onClick={(e) => {
+                    e.preventDefault();
+                    try {
+                        if (typeof zE === "undefined") {
+                            throw new Error("zendesk widget not installed.");
+                        }
+                        zE(function () {
+                            zE.activate();
+                        });
+                    } catch (e) {
+                        console.error("Failed to launch support widget: " + e);
+                    }
                     return false;
                 }}
             >
@@ -48,6 +56,7 @@ function FooterLink({ link }) {
 }
 
 function FooterNavs({ footerNavs }) {
+    console.log(footerNavs);
     return footerNavs.map((item) => (
         <nav
             className="au-footer__navigation col-md-3 col-sm-6 col-xs-6"
