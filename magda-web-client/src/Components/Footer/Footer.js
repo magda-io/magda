@@ -14,7 +14,7 @@ function FooterLink({ link }) {
     } else if (link.href === "feedback") {
         return (
             <a
-                href="#feedback"
+                href="javascript:void(0);"
                 onClick={() => {
                     zE(function () {
                         zE.activate();

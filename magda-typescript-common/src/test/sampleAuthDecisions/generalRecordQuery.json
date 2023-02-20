@@ -1,0 +1,809 @@
+{
+    "hasResidualRules": true,
+    "unknowns": ["input.object"],
+    "residualRules": [
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-dataset-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-dataset-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        { "isRef": false, "value": "" },
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-dataset-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-dataset-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        { "isRef": false, "value": "" },
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-dataset-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-dataset-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        { "isRef": false, "value": "" },
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-dataset-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-dataset-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        { "isRef": false, "value": "" },
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-distribution-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-distribution-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        { "isRef": false, "value": "" },
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-distribution-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-distribution-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        { "isRef": false, "value": "" },
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-distribution-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-distribution-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        { "isRef": false, "value": "" },
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-distribution-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-distribution-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        { "isRef": false, "value": "published" }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        { "isRef": false, "value": "" },
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.organization-details"
+                        }
+                    ]
+                },
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.organization-details"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        { "isRef": false, "value": "" },
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": true,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        { "isRef": false, "value": "" },
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.access-control.orgUnitId"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "hasWarns": false
+}

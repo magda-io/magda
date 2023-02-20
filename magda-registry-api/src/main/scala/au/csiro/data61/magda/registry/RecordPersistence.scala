@@ -356,15 +356,11 @@ class DefaultRecordPersistence(config: Config)
     val andConditions =
       AspectQueryGroup(aspectQueries, joinWithAnd = true)
         .toSql(config)
-        // SQLSyntax.toAndConditionOpt fails to check the statement with and / or & newlines
-        // thus we manually add roundBracket here
-        .map(SQLSyntax.roundBracket(_))
     val orConditions =
       AspectQueryGroup(aspectOrQueries, joinWithAnd = false)
         .toSql(config)
-        .map(SQLSyntax.roundBracket(_))
 
-    SQLSyntax
+    SQLUtils
       .toAndConditionOpt(andConditions, orConditions)
       .map(SQLSyntax.roundBracket(_))
   }
@@ -449,7 +445,7 @@ class DefaultRecordPersistence(config: Config)
     val whereClauseParts = Seq(idWhereClause) :+ authDecisionCondition :+ SQLUtils
       .tenantIdToWhereClause(tenantId)
 
-    sql"SELECT * FROM records ${SQLSyntax.where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))} LIMIT 1"
+    sql"SELECT * FROM records ${SQLSyntax.where(SQLUtils.toAndConditionOpt(whereClauseParts: _*))} LIMIT 1"
       .map { rs =>
         val aspects =
           sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${id}"""
@@ -555,7 +551,7 @@ class DefaultRecordPersistence(config: Config)
             SQLSyntax
               .exists(
                 sqls"select 1 from RecordAspects".where(
-                  SQLSyntax.toAndConditionOpt(
+                  SQLUtils.toAndConditionOpt(
                     Some(sqls"RecordAspects.recordId=Records.recordId"),
                     Some(sqls"aspectId=$aspectId"),
                     SQLUtils
@@ -573,7 +569,7 @@ class DefaultRecordPersistence(config: Config)
             SQLSyntax
               .exists(
                 sqls"select 1 from RecordAspects".where(
-                  SQLSyntax.toAndConditionOpt(
+                  SQLUtils.toAndConditionOpt(
                     Some(sqls"RecordAspects.recordId=Records.recordId"),
                     Some(sqls"aspectId=$aspectId"),
                     SQLUtils
@@ -631,7 +627,7 @@ class DefaultRecordPersistence(config: Config)
           inner join Aspects using (aspectId, tenantId)
           inner join Records using (recordId, tenantId)
           ${SQLSyntax.where(
-      SQLSyntax.toAndConditionOpt(
+      SQLUtils.toAndConditionOpt(
         Some(
           sqls"(ras.recordId, ras.aspectId)=($recordId, $aspectId)"
         ),
@@ -665,7 +661,7 @@ class DefaultRecordPersistence(config: Config)
     sql"""SELECT ${selectFields}
          FROM RecordAspects
          ${SQLSyntax.where(
-      SQLSyntax.toAndConditionOpt(
+      SQLUtils.toAndConditionOpt(
         Some(
           sqls"recordId = $recordId"
         ),
@@ -710,7 +706,7 @@ class DefaultRecordPersistence(config: Config)
     sql"""SELECT COUNT(*) as count
          FROM RecordAspects
          ${SQLSyntax.where(
-      SQLSyntax.toAndConditionOpt(
+      SQLUtils.toAndConditionOpt(
         Some(
           sqls"recordId = $recordId"
         ),
@@ -743,7 +739,7 @@ class DefaultRecordPersistence(config: Config)
     )
 
     val whereClause = SQLSyntax.where(
-      SQLSyntax.toAndConditionOpt(
+      SQLUtils.toAndConditionOpt(
         (recordSelector.toSeq :+ aspectWhereClauses :+ authQueryConditions :+ recordsFilteredByTenantClause): _*
       )
     )
@@ -1774,7 +1770,7 @@ class DefaultRecordPersistence(config: Config)
                    Records.name as recordName,
                    (select array_agg(aspectId) from RecordAspects ${SQLSyntax
         .where(
-          SQLSyntax.toAndConditionOpt(
+          SQLUtils.toAndConditionOpt(
             Some(sqls"recordId = Records.recordId"),
             SQLUtils
               .tenantIdToWhereClause(tenantId, "tenantid")
@@ -1782,7 +1778,7 @@ class DefaultRecordPersistence(config: Config)
         )}) as aspects,
                    Records.tenantId as tenantId
             from Records
-            ${SQLSyntax.where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}
+            ${SQLSyntax.where(SQLUtils.toAndConditionOpt(whereClauseParts: _*))}
             ${orderBy}
             offset ${start.getOrElse(0)}
             limit ${limit + 1}"""
@@ -1898,7 +1894,7 @@ class DefaultRecordPersistence(config: Config)
                      Records.sourcetag as sourceTag
               from Records
               ${SQLSyntax.where(
-        SQLSyntax.toAndConditionOpt(whereClauseParts: _*)
+        SQLUtils.toAndConditionOpt(whereClauseParts: _*)
       )}
             ) as $tempName
             ${if (aspectIds.nonEmpty) sqls"$nonNullAspectsWhereClause"
@@ -1955,7 +1951,7 @@ class DefaultRecordPersistence(config: Config)
         tenantIdSqlRef = "ras_tbl.tenantid"
       )
       val whereClauses = SQLSyntax.where(
-        SQLSyntax.toAndConditionOpt(
+        SQLUtils.toAndConditionOpt(
           aspectIdsWhereClause,
           SQLUtils.tenantIdToWhereClause(tenantId, "ras_tbl.tenantid"),
           authDecision.toSql(config),
@@ -1971,7 +1967,7 @@ class DefaultRecordPersistence(config: Config)
         getSqlFromAspectQueries(aspectQueries.toSeq, aspectOrQueries.toSeq)
 
       val whereClauses = SQLSyntax.where(
-        SQLSyntax.toAndConditionOpt(
+        SQLUtils.toAndConditionOpt(
           aspectIdsWhereClause,
           SQLUtils.tenantIdToWhereClause(tenantId),
           authDecision.toSql(),
@@ -2123,7 +2119,7 @@ class DefaultRecordPersistence(config: Config)
     val authDecisionCondition = authDecision.toSql()
 
     val accessControlConditions =
-      SQLSyntax.toAndConditionOpt(authDecisionCondition, tenantFilterCondition)
+      SQLUtils.toAndConditionOpt(authDecisionCondition, tenantFilterCondition)
     val accessControlConditionsWhere = SQLSyntax.where(accessControlConditions)
 
     val referenceDetails =
@@ -2236,7 +2232,7 @@ class DefaultRecordPersistence(config: Config)
                 sqls"""SELECT jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], 'null'::jsonb)"""
 
               val recordWhereClause = SQLSyntax.where(
-                SQLSyntax.toAndConditionOpt(
+                SQLUtils.toAndConditionOpt(
                   authDecisionCondition,
                   tenantFilterCondition,
                   Some(sqls"Records.tenantId=RecordAspects.tenantId"),
@@ -2278,7 +2274,7 @@ class DefaultRecordPersistence(config: Config)
       recordIdSqlRef = recordIdSqlRef,
       tenantIdSqlRef = tenantIdSqlRef
     )
-    SQLSyntax.toAndConditionOpt(
+    SQLUtils.toAndConditionOpt(
       aspectIds.toSeq
         .map(
           aspectId =>

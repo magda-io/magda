@@ -176,7 +176,7 @@ sealed trait AspectQuery {
         tenantIdSqlRef
       )})"
     val fullAspectCondition =
-      SQLSyntax.toAndConditionOpt(Some(aspectLookupCondition), aspectQuerySql)
+      SQLUtils.toAndConditionOpt(Some(aspectLookupCondition), aspectQuerySql)
     val sqlAspectQueries =
       sqls"SELECT 1 FROM recordaspects".where(fullAspectCondition)
     if (negated) {
@@ -461,7 +461,7 @@ case class AspectQueryWithValue(
       } else {
         val recordQuery =
           sqls"SELECT 1 FROM records as record_tbl_sub_query_ref".where(
-            SQLSyntax.toAndConditionOpt(
+            SQLUtils.toAndConditionOpt(
               Some(
                 sqls"(recordid, tenantid)=(${SQLUtils
                   .escapeIdentifier(recordIdSqlRef)}, ${SQLUtils.escapeIdentifier(tenantIdSqlRef)})"
@@ -745,7 +745,7 @@ case class AspectQueryGroup(
         Some(SQLUtils.SQL_FALSE)
       } else {
         Some(
-          SQLSyntax
+          SQLUtils
             .toAndConditionOpt(
               queries.map {
                 // unconditional true can be skipped in AND
@@ -766,7 +766,7 @@ case class AspectQueryGroup(
         Some(SQLUtils.SQL_TRUE)
       } else {
         Some(
-          SQLSyntax
+          SQLUtils
             .toOrConditionOpt(
               queries.map {
                 // unconditional false can be skipped in OR

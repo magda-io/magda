@@ -43,16 +43,16 @@ spec:
           httpGet:
             path: /v0/status/live
             port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 10
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 60
         readinessProbe:
           httpGet:
             path: /v0/status/ready
             port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 10
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 60
 {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}

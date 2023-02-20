@@ -13,7 +13,7 @@
         "orgUnitId": {
             "title": "the id of the organisation that the dataset belongs to",
             "type": "string",
-            "minLength": 36,
+            "minLength": 0,
             "maxLength": 36
         },
         "preAuthorisedPermissionIds": {

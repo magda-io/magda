@@ -1,12 +1,12 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: registry-db
-version: 2.2.1
+version: 2.2.2
 kubeVersion: ">= 1.21.0"
 annotations:
   magdaModuleType: "core"
 dependencies:
   - name: magda-postgres
-    version: "2.2.1"
+    version: "2.2.2"
     repository: "file://../magda-postgres"
     condition: global.useInK8sDbInstance.registry-db

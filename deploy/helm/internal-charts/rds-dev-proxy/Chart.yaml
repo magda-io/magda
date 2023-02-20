@@ -1,7 +1,7 @@
 apiVersion: v2
 name: rds-dev-proxy
 description: A RDS proxy for dev / debugging purpose
-version: 2.2.1
+version: 2.2.2
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
