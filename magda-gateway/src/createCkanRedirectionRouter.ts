@@ -4,6 +4,12 @@ import _ from "lodash";
 import Registry from "magda-typescript-common/src/registry/RegistryClient";
 import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
 import { escapeRegExp } from "lodash";
+import NodeCache from "node-cache";
+
+const registryQueryCache = new NodeCache({
+    stdTTL: 15 * 60,
+    maxKeys: 5000
+});
 
 export type CkanRedirectionRouterOptions = {
     ckanRedirectionDomain: string;
@@ -162,11 +168,31 @@ export default function buildCkanRedirectionRouter({
         );
     });
 
+    function getQueryRegistryRecordApiCacheKey(
+        aspectQuery: string[],
+        aspect: string[],
+        limit: number = 1
+    ) {
+        return JSON.stringify({
+            aspectQuery,
+            aspect,
+            limit
+        });
+    }
+
     async function queryRegistryRecordApi(
         aspectQuery: string[],
         aspect: string[],
         limit: number = 1
     ) {
+        const cacheKey = getQueryRegistryRecordApiCacheKey(
+            aspectQuery,
+            aspect,
+            limit
+        );
+        if (registryQueryCache.has(cacheKey)) {
+            return registryQueryCache.get(cacheKey);
+        }
         const queryParameters: any = {
             limit
         };
@@ -188,6 +214,7 @@ export default function buildCkanRedirectionRouter({
             )
         );
 
+        registryQueryCache.set(cacheKey, records);
         return records;
     }
 

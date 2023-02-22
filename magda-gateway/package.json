@@ -75,6 +75,7 @@
     "chai-as-promised": "^7.1.1",
     "mocha": "^3.4.2",
     "nock": "https://github.com/magda-io/nock.git#master",
+    "node-cache": "^5.1.2",
     "randomstring": "^1.1.5",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
