@@ -3,7 +3,7 @@ name: magda-postgres
 description: "A helm wrapper chart that provides in-kubernetes postgreSQL for Magda."
 type: application
 kubeVersion: ">= 1.21.0"
-version: "2.2.3-alpha.0"
+version: "2.2.3-alpha.2"
 annotations:
   magdaModuleType: "core"
 dependencies:
