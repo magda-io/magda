@@ -3,6 +3,7 @@
 ## v2.2.3
 
 - Fixed an issue that zendesk integration feedback form might not always be opened via footer link
+- #3449: Gateway ckanRedirection module performance improvement
 
 ## v2.2.2
 
