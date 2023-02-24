@@ -4,6 +4,7 @@
 
 - Fixed an issue that zendesk integration feedback form might not always be opened via footer link
 - #3449: Gateway ckanRedirection module performance improvement
+- related to #3448: make web server module to use read only registry node for site map generation
 
 ## v2.2.2
 

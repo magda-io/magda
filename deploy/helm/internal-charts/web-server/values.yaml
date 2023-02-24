@@ -46,7 +46,7 @@ useLocalStyleSheet: false
 
 contentApiBaseUrlInternal: "http://content-api/v0/"
 
-registryApiBaseUrlInternal: "http://registry-api/v0"
+registryApiBaseUrlInternal: "http://registry-api-read-only/v0"
 
 adminApiBaseUrl:
 
