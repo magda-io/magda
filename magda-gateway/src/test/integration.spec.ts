@@ -120,6 +120,8 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
             defaultCacheControl: "public, max-age=60",
             openfaasGatewayUrl: undefined,
             authPluginConfigJson: [],
+            registryQueryCacheStdTTL: 600,
+            registryQueryCacheMaxKeys: 500,
             ...config
         });
 

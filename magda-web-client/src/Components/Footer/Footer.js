@@ -56,7 +56,6 @@ function FooterLink({ link }) {
 }
 
 function FooterNavs({ footerNavs }) {
-    console.log(footerNavs);
     return footerNavs.map((item) => (
         <nav
             className="au-footer__navigation col-md-3 col-sm-6 col-xs-6"
