@@ -59,6 +59,12 @@ spec:
 {{- if .Values.enableCkanRedirection }}
             "--enableCkanRedirection", {{ .Values.enableCkanRedirection | quote }},
 {{- end }}
+{{- if .Values.registryQueryCacheStdTTL }}
+            "--registryQueryCacheStdTTL", {{ .Values.registryQueryCacheStdTTL | quote }},
+{{- end }}
+{{- if .Values.registryQueryCacheMaxKeys }}
+            "--registryQueryCacheMaxKeys", {{ .Values.registryQueryCacheMaxKeys | quote }},
+{{- end }}
             "--proxyRoutesJson", "/etc/config/routes.json",
             "--webProxyRoutesJson", "/etc/config/webRoutes.json",
             "--helmetJson", "/etc/config/helmet.json",

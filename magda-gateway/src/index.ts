@@ -139,6 +139,18 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: ""
         })
+        .option("registryQueryCacheStdTTL", {
+            describe:
+                "the standard ttl as number in seconds for every generated cache element in the registryQueryCache.",
+            type: "number",
+            default: 600
+        })
+        .option("registryQueryCacheMaxKeys", {
+            describe:
+                "specifies a maximum amount of keys that can be stored in the registryQueryCache.",
+            type: "number",
+            default: 500
+        })
         .option("enableWebAccessControl", {
             describe:
                 "Whether users are required to enter a username & password to access the magda web interface",

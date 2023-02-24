@@ -34,6 +34,14 @@ enableWebAccessControl: false
 # that is specified by config option `ckanRedirectionDomain` and `ckanRedirectionPath`.
 enableCkanRedirection: false
 
+# -- (number) The standard ttl as number in seconds for every generated cache element in the registryQueryCache.
+# By default, it will be set to 600 seconds if leave blank.
+registryQueryCacheStdTTL:
+
+# -- (number) Specifies a maximum amount of keys that can be stored in the registryQueryCache.
+# By default, it will be set to 500 seconds if leave blank.
+registryQueryCacheMaxKeys:
+
 # -- CKAN redirection target CKAN instance domain. See `enableCkanRedirection` for more details.
 ckanRedirectionDomain:
 

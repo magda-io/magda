@@ -74,6 +74,8 @@ export type Config = {
     magdaAdminPortalName?: string;
     proxyTimeout?: string;
     skipAuth?: boolean;
+    registryQueryCacheMaxKeys: number;
+    registryQueryCacheStdTTL: number;
 };
 
 export default function buildApp(app: express.Application, config: Config) {
@@ -225,7 +227,9 @@ export default function buildApp(app: express.Application, config: Config) {
                     ckanRedirectionDomain: config.ckanRedirectionDomain,
                     ckanRedirectionPath: config.ckanRedirectionPath,
                     registryApiBaseUrlInternal: routes.registry.to,
-                    tenantId: 0 // FIXME: Rather than being hard-coded to the default tenant, the CKAN router needs to figure out the correct tenant.
+                    tenantId: 0, // FIXME: Rather than being hard-coded to the default tenant, the CKAN router needs to figure out the correct tenant.,
+                    cacheStdTTL: config.registryQueryCacheStdTTL,
+                    cacheMaxKeys: config.registryQueryCacheMaxKeys
                 })
             );
         }

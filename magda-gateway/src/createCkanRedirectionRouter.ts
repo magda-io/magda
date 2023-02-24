@@ -6,16 +6,13 @@ import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable"
 import { escapeRegExp } from "lodash";
 import NodeCache from "node-cache";
 
-const registryQueryCache = new NodeCache({
-    stdTTL: 15 * 60,
-    maxKeys: 5000
-});
-
 export type CkanRedirectionRouterOptions = {
     ckanRedirectionDomain: string;
     ckanRedirectionPath: string;
     registryApiBaseUrlInternal: string;
     tenantId: number;
+    cacheStdTTL: number;
+    cacheMaxKeys: number;
 };
 
 export type genericUrlRedirectConfig =
@@ -82,8 +79,14 @@ export default function buildCkanRedirectionRouter({
     ckanRedirectionDomain,
     ckanRedirectionPath,
     registryApiBaseUrlInternal,
-    tenantId
+    tenantId,
+    cacheStdTTL,
+    cacheMaxKeys
 }: CkanRedirectionRouterOptions): express.Router {
+    const registryQueryCache = new NodeCache({
+        stdTTL: cacheStdTTL,
+        maxKeys: cacheMaxKeys
+    });
     const router = express.Router();
     const registry = new Registry({
         baseUrl: registryApiBaseUrlInternal,
@@ -214,7 +217,12 @@ export default function buildCkanRedirectionRouter({
             )
         );
 
-        registryQueryCache.set(cacheKey, records);
+        try {
+            registryQueryCache.set(cacheKey, records);
+        } catch (e) {
+            console.log("Failed to save registryQueryCache: " + e);
+        }
+
         return records;
     }
 
