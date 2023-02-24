@@ -471,4 +471,92 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
             await app.put("/xxx").expect(200, resText2);
         });
     });
+
+    describe("ckanRedirectionRouter setup", () => {
+        it("should use read only registry API endpoint when available", async () => {
+            const app = setupTestApp({
+                enableCkanRedirection: true,
+                proxyRoutesJson: {
+                    registry: {
+                        to: "http://registry-full.com",
+                        auth: true,
+                        statusCheck: false,
+                        methods: [
+                            {
+                                method: "get",
+                                target: "http://registry-readonly.com"
+                            }
+                        ]
+                    }
+                },
+                enableWebAccessControl: false
+            });
+
+            const registryReadOnly = nock("http://registry-readonly.com")
+                .get("/records")
+                .query(true)
+                .reply(
+                    200,
+                    `{
+                    hasMore: false,
+                    records: []
+                }`
+                );
+
+            const registryFull = nock("http://registry-full.com")
+                .get("/records")
+                .query(true)
+                .reply(
+                    200,
+                    `{
+                    hasMore: false,
+                    records: []
+                }`
+                );
+
+            await app
+                .get("/dataset/pg_skafsd0_f___00120141210_11a")
+                .expect(303);
+
+            expect(registryFull.isDone()).to.be.false;
+            expect(registryReadOnly.isDone()).to.be.true;
+        });
+
+        it("should use full registry API endpoint when read only node is not available", async () => {
+            const app = setupTestApp({
+                enableCkanRedirection: true,
+                proxyRoutesJson: {
+                    registry: {
+                        to: "http://registry-full.com",
+                        auth: true,
+                        statusCheck: false
+                    }
+                },
+                enableWebAccessControl: false
+            });
+
+            const registryReadOnly = nock("http://registry-readonly.com")
+                .get("/records")
+                .query(true)
+                .reply(200, {
+                    hasMore: false,
+                    records: []
+                });
+
+            const registryFull = nock("http://registry-full.com")
+                .get("/records")
+                .query(true)
+                .reply(200, {
+                    hasMore: false,
+                    records: []
+                });
+
+            await app
+                .get("/dataset/pg_skafsd0_f___00120141210_11a")
+                .expect(303);
+
+            expect(registryFull.isDone()).to.be.true;
+            expect(registryReadOnly.isDone()).to.be.false;
+        });
+    });
 });
