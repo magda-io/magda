@@ -39,7 +39,9 @@ describe("ckanRedirectionRouter router", () => {
             ckanRedirectionDomain,
             ckanRedirectionPath,
             registryApiBaseUrlInternal: registryUrl,
-            tenantId: 1
+            tenantId: 1,
+            cacheMaxKeys: 500,
+            cacheStdTTL: 600
         });
         app = express();
         app.use(router);
