@@ -52,7 +52,7 @@ Kubernetes: `>= 1.14.0-0`
 | image.name | string | `"magda-gateway"` |  |
 | proxyTimeout | int | nil (120 seconds default value will be used by upstream lib internally) | How long time (in seconds) before upstream service must complete request in order to avoid request timeout error. If not set, the request will time out after 120 seconds. |
 | registryQueryCacheMaxKeys | number | `nil` | Specifies a maximum amount of keys that can be stored in the registryQueryCache. By default, it will be set to 500 seconds if leave blank. |
-| registryQueryCacheStdTTL | number | `nil` | The standard ttl as number in seconds for every generated cache element in the registryQueryCache. By default, it will be set to 600 seconds if leave blank. |
+| registryQueryCacheStdTTL | number | `nil` | The standard ttl as number in seconds for every generated cache element in the registryQueryCache. To disable the cache, set this value to `0`. By default, it will be set to 600 seconds if leave blank. |
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"40Mi"` |  |

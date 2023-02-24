@@ -59,7 +59,7 @@ spec:
 {{- if .Values.enableCkanRedirection }}
             "--enableCkanRedirection", {{ .Values.enableCkanRedirection | quote }},
 {{- end }}
-{{- if .Values.registryQueryCacheStdTTL }}
+{{- if not (kindIs "invalid" .Values.registryQueryCacheStdTTL) }}
             "--registryQueryCacheStdTTL", {{ .Values.registryQueryCacheStdTTL | quote }},
 {{- end }}
 {{- if .Values.registryQueryCacheMaxKeys }}

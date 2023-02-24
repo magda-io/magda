@@ -83,10 +83,13 @@ export default function buildCkanRedirectionRouter({
     cacheStdTTL,
     cacheMaxKeys
 }: CkanRedirectionRouterOptions): express.Router {
-    const registryQueryCache = new NodeCache({
-        stdTTL: cacheStdTTL,
-        maxKeys: cacheMaxKeys
-    });
+    const registryQueryCache =
+        cacheMaxKeys === 0 // turn off the cache when cacheMaxKeys==0
+            ? null
+            : new NodeCache({
+                  stdTTL: cacheStdTTL,
+                  maxKeys: cacheMaxKeys
+              });
     const router = express.Router();
     const registry = new Registry({
         baseUrl: registryApiBaseUrlInternal,
@@ -193,7 +196,7 @@ export default function buildCkanRedirectionRouter({
             aspect,
             limit
         );
-        if (registryQueryCache.has(cacheKey)) {
+        if (registryQueryCache?.has(cacheKey)) {
             return registryQueryCache.get(cacheKey);
         }
         const queryParameters: any = {
@@ -218,7 +221,7 @@ export default function buildCkanRedirectionRouter({
         );
 
         try {
-            registryQueryCache.set(cacheKey, records);
+            registryQueryCache?.set(cacheKey, records);
         } catch (e) {
             console.log("Failed to save registryQueryCache: " + e);
         }

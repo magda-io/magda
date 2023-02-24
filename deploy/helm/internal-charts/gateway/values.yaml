@@ -35,6 +35,7 @@ enableWebAccessControl: false
 enableCkanRedirection: false
 
 # -- (number) The standard ttl as number in seconds for every generated cache element in the registryQueryCache.
+# To disable the cache, set this value to `0`.
 # By default, it will be set to 600 seconds if leave blank.
 registryQueryCacheStdTTL:
 

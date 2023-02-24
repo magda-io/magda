@@ -147,7 +147,7 @@ const argv = addJwtSecretFromEnvVar(
         })
         .option("registryQueryCacheMaxKeys", {
             describe:
-                "specifies a maximum amount of keys that can be stored in the registryQueryCache.",
+                "specifies a maximum amount of keys that can be stored in the registryQueryCache. To disable the cache, set this value to `0`.",
             type: "number",
             default: 500
         })
