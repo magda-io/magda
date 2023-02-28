@@ -10,7 +10,16 @@ export default {
         },
         registry: {
             to: "http://localhost:6101/v0",
-            auth: true
+            auth: true,
+            methods: [
+                { method: "get", target: "http://localhost:6101/v0" },
+                { method: "head", target: "http://localhost:6101/v0" },
+                { method: "options", target: "http://localhost:6101/v0" },
+                { method: "post", target: "http://localhost:6101/v0" },
+                { method: "put", target: "http://localhost:6101/v0" },
+                { method: "patch", target: "http://localhost:6101/v0" },
+                { method: "delete", target: "http://localhost:6101/v0" }
+            ]
         },
         "registry-read-only": {
             to: "http://localhost:6101/v0",

@@ -40,7 +40,9 @@ const defaultAppOptions = {
     web: "https://127.0.0.1",
     tenantUrl: "http://tenant",
     defaultCacheControl: "DEFAULT CACHE CONTROL",
-    authPluginConfigJson: [] as AuthPluginBasicConfig[]
+    authPluginConfigJson: [] as AuthPluginBasicConfig[],
+    registryQueryCacheStdTTL: 600,
+    registryQueryCacheMaxKeys: 500
 };
 
 describe("Test createHttpsRedirectionMiddleware", () => {
