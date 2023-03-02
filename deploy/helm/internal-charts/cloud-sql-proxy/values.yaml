@@ -2,7 +2,7 @@ global: {}
 image:
   name: gce-proxy
   repository: gcr.io/cloudsql-docker
-  tag: "1.11"
+  tag: "1.33.2-alpine"
   pullPolicy: IfNotPresent
   pullSecrets: false
 
@@ -52,8 +52,8 @@ skipFailedInstanceConfig: false
 # -- This is to log non-error output to standard out instead of standard error. 
 # For example, if you don't want connection related messages to log as errors, set this flag to true.
 # Available from docker image 1.23.0
-# @default -- false
-logDebugStdout: false
+# @default -- true
+logDebugStdout: true
 
 # -- Writes all logging output as JSON with the following keys: level, ts, caller, msg.
 # Available from docker image 1.23.0
