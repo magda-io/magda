@@ -324,6 +324,12 @@ const argv = yargs
             "The interval of UI refresh / refetch user auth status data. Default to 5 mins.",
         default: 300000,
         type: "number"
+    })
+    .option("sitemapCacheSeconds", {
+        describe:
+            "No. of seconds that sitemap result will be cached. By default, 86400 i.e. 1 day.",
+        default: 86400,
+        type: "number"
     }).argv;
 
 // set default timezone
@@ -600,7 +606,8 @@ app.use(
             baseUrl: argv.registryApiBaseUrlInternal,
             maxRetries: 0,
             tenantId: MAGDA_ADMIN_PORTAL_ID
-        })
+        }),
+        cacheSeconds: argv.sitemapCacheSeconds
     })
 );
 
