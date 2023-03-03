@@ -560,13 +560,6 @@ app.get("/page/*", async function (req, res) {
     res.send(await getIndexFileContentZeroArgs());
 });
 
-// app.get("/admin", function(req, res) {
-//     res.sendFile(path.join(adminBuild, "index.html"));
-// });
-// app.get("/admin/*", function(req, res) {
-//     res.sendFile(path.join(adminBuild, "index.html"));
-// });
-
 if (argv.devProxy) {
     app.get("/api/*", function (req, res) {
         console.log(argv.devProxy + req.params[0]);
@@ -591,7 +584,7 @@ Crawl-delay: 100
 Disallow: /auth
 Disallow: /search
 
-Sitemap: ${baseExternalUrl}/sitemap.xml
+Sitemap: ${baseExternalUrl ? baseExternalUrl : "/"}sitemap.xml
 `;
 
 app.use("/robots.txt", (_, res) => {
