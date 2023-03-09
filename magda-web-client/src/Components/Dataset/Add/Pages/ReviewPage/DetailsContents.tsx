@@ -167,7 +167,7 @@ function useGetSpatialData(spatialCoverage: SpatialCoverage) {
     ]);
 }
 
-const DetailsContents: FunctionComponent<PropsType> = props => {
+const DetailsContents: FunctionComponent<PropsType> = (props) => {
     const {
         dataset,
         currency,
@@ -217,7 +217,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                 <div className="col-sm-9 content-box single-line">
                     {dataset?.languages
                         ? dataset.languages
-                              .map(item => codelists.languages[item])
+                              .map((item) => codelists.languages[item])
                               .join("; ")
                         : codelists.NO_VALUE_LABEL}
                 </div>
@@ -341,7 +341,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                         content={
                             currency?.supersededBy?.length
                                 ? currency.supersededBy
-                                      .map(item =>
+                                      .map((item) =>
                                           item?.name
                                               ? `- ${item.name}`
                                               : "- Unknown Name Dataset"
@@ -433,7 +433,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                         temporalCoverage?.intervals?.length
                             ? temporalCoverage.intervals
                                   .map(
-                                      item =>
+                                      (item) =>
                                           `- *Start*: &nbsp;${
                                               item?.start
                                                   ? moment(item.start).format(

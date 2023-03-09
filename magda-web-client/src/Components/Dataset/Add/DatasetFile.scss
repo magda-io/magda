@@ -28,9 +28,17 @@
             width: 26px;
             height: 26px;
             border: none;
-            right: 95px;
-            top: 15px;
+            right: 75px;
+            top: 2px;
             padding: 1px 0px 0px 0px;
+        }
+        .dataset-file-delete-button {
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .dataset-file-delete-button:hover {
+            border: 1px solid #c0bebe;
+            border-radius: 4px;
         }
         .file-icon-area {
             float: left;
@@ -46,6 +54,15 @@
         }
         .file-info {
             float: left;
+            .dataset-file-delete-button {
+                border: 1px solid transparent;
+                border-radius: 4px;
+            }
+
+            .dataset-file-delete-button:hover {
+                border: 1px solid #c0bebe;
+                border-radius: 4px;
+            }
             .file-name-size {
                 font-size: 15px;
                 font-weight: normal;

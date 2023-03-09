@@ -15,10 +15,18 @@ function FooterLink({ link }) {
         return (
             <a
                 href="#feedback"
-                onClick={() => {
-                    zE(function () {
-                        zE.activate();
-                    });
+                onClick={(e) => {
+                    e.preventDefault();
+                    try {
+                        if (typeof zE === "undefined") {
+                            throw new Error("zendesk widget not installed.");
+                        }
+                        zE(function () {
+                            zE.activate();
+                        });
+                    } catch (e) {
+                        console.error("Failed to launch support widget: " + e);
+                    }
                     return false;
                 }}
             >

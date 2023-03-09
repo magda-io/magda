@@ -3,7 +3,7 @@ import browser from "browser-detect";
 import { config } from "../../config";
 import "./DataPreviewMapOpenInNationalMapButton.scss";
 import { BrowserDetectInfo } from "browser-detect/dist/types/browser-detect.interface";
-import { ParsedDistribution } from "helpers/record";
+import { ParsedDistribution } from "../../helpers/record";
 import URI from "urijs";
 
 type PropsType = {
@@ -30,17 +30,29 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
         // support v7 turned on or not IE 11
         this.shouldRender =
             config?.supportExternalTerriaMapV7 === true ||
-            !(this.browser.name === "ie" && this.browser?.versionNumber! < 12);
+            !(
+                this.browser.name === "ie" &&
+                this.browser?.versionNumber &&
+                this.browser.versionNumber < 12
+            );
     }
 
     componentDidMount() {
-        if (this.browser.name === "ie" && this.browser?.versionNumber! < 12)
+        if (
+            this.browser.name === "ie" &&
+            this.browser?.versionNumber &&
+            this.browser?.versionNumber < 12
+        )
             return;
         window.addEventListener("message", this.onPopUpMessageReceived);
     }
 
     componentWillUnmount() {
-        if (this.browser.name === "ie" && this.browser?.versionNumber! < 12)
+        if (
+            this.browser.name === "ie" &&
+            this.browser?.versionNumber &&
+            this.browser.versionNumber < 12
+        )
             return;
         window.removeEventListener("message", this.onPopUpMessageReceived);
     }
@@ -142,7 +154,11 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
         const targetUrl = config?.openInExternalTerriaMapTargetUrl
             ? config.openInExternalTerriaMapTargetUrl
             : DEFAULT_TARGET_URL;
-        if (this.browser.name === "ie" && this.browser?.versionNumber! < 12) {
+        if (
+            this.browser.name === "ie" &&
+            this.browser?.versionNumber &&
+            this.browser.versionNumber < 12
+        ) {
             window.open(
                 `${targetUrl}#start=` +
                     encodeURIComponent(

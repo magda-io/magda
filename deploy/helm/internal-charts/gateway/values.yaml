@@ -34,10 +34,19 @@ enableWebAccessControl: false
 # that is specified by config option `ckanRedirectionDomain` and `ckanRedirectionPath`.
 enableCkanRedirection: false
 
-# -- CKAN redirection target CKAN instance domain. See `enableCkanRedirection` for more details.
+# -- (number) The standard ttl as number in seconds for every generated cache element in the registryQueryCache.
+# To disable the cache, set this value to `0`.
+# By default, it will be set to 600 seconds if leave blank.
+registryQueryCacheStdTTL:
+
+# -- (number) Specifies a maximum amount of keys that can be stored in the registryQueryCache.
+# By default, it will be set to 500 seconds if leave blank.
+registryQueryCacheMaxKeys:
+
+# -- CKAN redirection target CKAN instance domain (e.g. `data.gov.au`). See `enableCkanRedirection` for more details.
 ckanRedirectionDomain:
 
-# -- CKAN redirection target CKAN instance path. See `enableCkanRedirection` for more details.
+# -- CKAN redirection target CKAN instance path (e.g. `/data`). See `enableCkanRedirection` for more details.
 ckanRedirectionPath:
 
 
@@ -67,6 +76,13 @@ resources:
 # If empty, the value of `defaultRoutes` will be used. See below.
 # @default -- {}
 routes: {}
+
+# -- a list of additional routes that should be avaialble under `/api/v0/` path.
+# Different from `routes` config field, routes supplied via this field will merge with `defaultRoutes` (default system API routes).
+# Therefore, users doesn't have to specify all default system API routes in this field in order to keep all system API routes working.
+# When users supply value via this config field, any value supplied via `routes` field will be ignored.
+# @default -- {}
+additionalRoutes: {}
 
 # -- Default routes list here are available under `/api/v0/` path.
 # See [Proxy Target Definition](#proxy-target-definition) section below for route format.
@@ -125,6 +141,12 @@ defaultRoutes:
     redirectTrailingSlash: true
   tenant:
     to: http://tenant-api/v0
+    auth: true
+  "indexer/reindex":
+    to: http://indexer/v0/reindex
+    auth: true
+  "indexer/dataset":
+    to: http://indexer/v0/dataset
     auth: true
 
 # -- extra web routes.
@@ -197,3 +219,7 @@ defaultCacheControl: "public, max-age=60"
 # If not set, the request will time out after 120 seconds.
 # @default -- nil (120 seconds default value will be used by upstream lib internally)
 proxyTimeout: 
+
+# -- when set to true, API will not query policy engine for auth decision but assume it's always permitted. 
+# It's for debugging only.
+skipAuth: false

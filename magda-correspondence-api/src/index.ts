@@ -1,7 +1,7 @@
 import express from "express";
 import yargs from "yargs";
 import path from "path";
-
+import { createHttpTerminator } from "http-terminator";
 import RegistryClient from "magda-typescript-common/src/registry/RegistryClient";
 import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
 import createApiRouter from "./createApiRouter";
@@ -115,8 +115,19 @@ contentDirMapper
         );
         console.log("Sync default email templates to content API completed!");
         const listenPort = argv.listenPort;
-        app.listen(listenPort);
+        const server = app.listen(listenPort);
+        const httpTerminator = createHttpTerminator({
+            server
+        });
         console.log("Listening on " + listenPort);
+
+        process.on("SIGTERM", () => {
+            console.log("SIGTERM signal received: closing HTTP server");
+            httpTerminator.terminate().then(() => {
+                console.log("HTTP server closed");
+                process.exit(0);
+            });
+        });
     })
     .catch((err) => {
         console.error(
@@ -152,6 +163,7 @@ app.use(
 process.on(
     "unhandledRejection",
     (reason: {} | null | undefined, promise: Promise<any>) => {
+        console.error("Unhandled rejection:");
         console.error(reason);
     }
 );

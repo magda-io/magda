@@ -137,7 +137,7 @@ export function fetchPreviewData(distribution) {
             case "xml":
                 fetch(
                     getProxiedResourceUrl(url),
-                    isStorageApiUrl(url) ? config.credentialsFetchOptions : {}
+                    isStorageApiUrl(url) ? config.commonFetchRequestOptions : {}
                 )
                     .then((response) => {
                         if (response.status !== 200) {
@@ -168,7 +168,7 @@ export function fetchPreviewData(distribution) {
             case "json":
                 fetch(
                     getProxiedResourceUrl(url),
-                    isStorageApiUrl(url) ? config.credentialsFetchOptions : {}
+                    isStorageApiUrl(url) ? config.commonFetchRequestOptions : {}
                 )
                     .then((response) => {
                         if (response.status !== 200) {
@@ -205,7 +205,7 @@ export function fetchPreviewData(distribution) {
             case "txt":
                 fetch(
                     getProxiedResourceUrl(url),
-                    isStorageApiUrl(url) ? config.credentialsFetchOptions : {}
+                    isStorageApiUrl(url) ? config.commonFetchRequestOptions : {}
                 )
                     .then((response) => {
                         if (response.status !== 200) {
@@ -272,7 +272,7 @@ export function fetchPreviewData(distribution) {
             case "rss":
                 fetch(
                     getProxiedResourceUrl(url),
-                    isStorageApiUrl(url) ? config.credentialsFetchOptions : {}
+                    isStorageApiUrl(url) ? config.commonFetchRequestOptions : {}
                 )
                     .then((response) => {
                         if (response.status !== 200) {

@@ -1,0 +1,25 @@
+@import "_variables";
+
+.setting-page-main-container {
+    .breadcrumb {
+        font-size: 18px;
+        font-weight: 600;
+        color: lighten($AU-color-foreground-text, 30%);
+        padding-left: 2px;
+        padding-bottom: 10px;
+    }
+
+    .breadcrumb-item {
+        padding-right: 0px;
+        cursor: pointer;
+        a {
+            text-decoration: none;
+        }
+    }
+
+    .breadcrumb-separator {
+        padding-left: 10px;
+        padding-right: 10px;
+        font-size: 14px;
+    }
+}

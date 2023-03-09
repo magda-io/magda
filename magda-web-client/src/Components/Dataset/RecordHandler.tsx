@@ -26,6 +26,10 @@ import { ParsedDataset, ParsedDistribution } from "helpers/record";
 import { FetchError } from "types";
 import DatasetPage from "./DatasetPage";
 import DistributionPage from "./DistributionPage";
+import { findPermissionGap, hasPermission } from "helpers/accessControlUtils";
+import { User } from "reducers/userManagementReducer";
+import { StateType } from "reducers/reducer";
+import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
 
 interface RecordHandlerPropsType
     extends RouteComponentProps<{
@@ -43,11 +47,53 @@ interface RecordHandlerPropsType
     isAdmin: boolean;
 }
 
-interface StateType {
+interface CompStateType {
     addMargin: boolean;
 }
 
-class RecordHandler extends React.Component<RecordHandlerPropsType, StateType> {
+function CheckUserHasEditPermissions(isDraft, user?: User) {
+    if (!config?.featureFlags?.cataloguing) {
+        return false;
+    }
+
+    if (config?.featureFlags?.previewAddDataset) {
+        return false;
+    }
+
+    if (
+        findPermissionGap(
+            ["object/dataset/draft/read", "object/dataset/published/read"],
+            user
+        )?.length
+    ) {
+        return false;
+    }
+
+    // user should has either draft create or update permission
+    if (
+        isDraft &&
+        !hasPermission("object/dataset/draft/create", user) &&
+        !hasPermission("object/dataset/draft/update", user)
+    ) {
+        return false;
+    }
+
+    // user should has either published create or update permission
+    if (
+        !isDraft &&
+        !hasPermission("object/dataset/published/create", user) &&
+        !hasPermission("object/dataset/published/update", user)
+    ) {
+        return false;
+    }
+
+    return true;
+}
+
+class RecordHandler extends React.Component<
+    RecordHandlerPropsType,
+    CompStateType
+> {
     constructor(props) {
         super(props);
         this.state = {
@@ -300,7 +346,7 @@ class RecordHandler extends React.Component<RecordHandlerPropsType, StateType> {
     }
 }
 
-function mapStateToProps(state) {
+function mapStateToProps(state: StateType) {
     const record = state.record;
     const dataset = record.dataset;
     const distribution = record.distribution;
@@ -309,15 +355,16 @@ function mapStateToProps(state) {
     const datasetFetchError = record.datasetFetchError;
     const distributionFetchError = record.distributionFetchError;
 
-    // for now, assume that if the user is admin, they can edit the data
-    const hasEditPermissions =
-        (config.featureFlags.cataloguing &&
-            state.userManagement &&
-            state.userManagement.user &&
-            state.userManagement.user.isAdmin) ||
-        config.featureFlags.previewAddDataset;
-
-    const isAdmin = state?.userManagement?.user?.isAdmin ? true : false;
+    const hasEditPermissions = CheckUserHasEditPermissions(
+        dataset?.publishingState === "draft" ? true : false,
+        state?.userManagement?.user
+    );
+    const isAdmin =
+        typeof state?.userManagement?.user?.roles?.find(
+            (r) => r.id === ADMIN_USERS_ROLE_ID
+        ) !== "undefined"
+            ? true
+            : false;
 
     return {
         dataset,
@@ -326,7 +373,6 @@ function mapStateToProps(state) {
         distributionIsFetching,
         distributionFetchError,
         datasetFetchError,
-        strings: state.content.strings,
         hasEditPermissions: hasEditPermissions ? true : false,
         isAdmin
     };

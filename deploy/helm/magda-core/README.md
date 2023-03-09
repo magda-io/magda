@@ -1,6 +1,6 @@
 # magda-core
 
-![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square)
+![Version: 2.2.3-alpha.0](https://img.shields.io/badge/Version-2.2.3--alpha.0-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes all core magda modules.
 
@@ -14,32 +14,31 @@ A complete solution for managing, publishing and discovering government data, pr
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../internal-charts/admin-api | admin-api | 1.2.2-alpha.0 |
-| file://../internal-charts/apidocs-server | apidocs-server | 1.2.2-alpha.0 |
-| file://../internal-charts/authorization-api | authorization-api | 1.2.2-alpha.0 |
-| file://../internal-charts/authorization-db | authorization-db | 1.2.2-alpha.0 |
-| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 1.2.2-alpha.0 |
-| file://../internal-charts/combined-db | combined-db | 1.2.2-alpha.0 |
-| file://../internal-charts/content-api | content-api | 1.2.2-alpha.0 |
-| file://../internal-charts/content-db | content-db | 1.2.2-alpha.0 |
-| file://../internal-charts/correspondence-api | correspondence-api | 1.2.2-alpha.0 |
-| file://../internal-charts/elasticsearch | elasticsearch | 1.2.2-alpha.0 |
-| file://../internal-charts/gateway | gateway | 1.2.2-alpha.0 |
-| file://../internal-charts/indexer | indexer | 1.2.2-alpha.0 |
-| file://../internal-charts/ingress | ingress | 1.2.2-alpha.0 |
-| file://../internal-charts/opa | opa | 1.2.2-alpha.0 |
-| file://../internal-charts/priorities | priorities | 1.2.2-alpha.0 |
-| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 1.2.2-alpha.0 |
-| file://../internal-charts/registry-api | registry-api | 1.2.2-alpha.0 |
-| file://../internal-charts/registry-db | registry-db | 1.2.2-alpha.0 |
-| file://../internal-charts/search-api-node | search-api-node | 1.2.2-alpha.0 |
-| file://../internal-charts/search-api | search-api | 1.2.2-alpha.0 |
-| file://../internal-charts/session-db | session-db | 1.2.2-alpha.0 |
-| file://../internal-charts/storage-api | storage-api | 1.2.2-alpha.0 |
-| file://../internal-charts/tenant-api | tenant-api | 1.2.2-alpha.0 |
-| file://../internal-charts/tenant-db | tenant-db | 1.2.2-alpha.0 |
-| file://../internal-charts/web-server | web-server | 1.2.2-alpha.0 |
-| file://../magda-common | magda-common | 1.2.2-alpha.0 |
+| file://../internal-charts/admin-api | admin-api | 2.2.3-alpha.0 |
+| file://../internal-charts/apidocs-server | apidocs-server | 2.2.3-alpha.0 |
+| file://../internal-charts/authorization-api | authorization-api | 2.2.3-alpha.0 |
+| file://../internal-charts/authorization-db | authorization-db | 2.2.3-alpha.0 |
+| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 2.2.3-alpha.0 |
+| file://../internal-charts/combined-db | combined-db | 2.2.3-alpha.0 |
+| file://../internal-charts/content-api | content-api | 2.2.3-alpha.0 |
+| file://../internal-charts/content-db | content-db | 2.2.3-alpha.0 |
+| file://../internal-charts/correspondence-api | correspondence-api | 2.2.3-alpha.0 |
+| file://../internal-charts/elasticsearch | elasticsearch | 2.2.3-alpha.0 |
+| file://../internal-charts/gateway | gateway | 2.2.3-alpha.0 |
+| file://../internal-charts/indexer | indexer | 2.2.3-alpha.0 |
+| file://../internal-charts/ingress | ingress | 2.2.3-alpha.0 |
+| file://../internal-charts/priorities | priorities | 2.2.3-alpha.0 |
+| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 2.2.3-alpha.0 |
+| file://../internal-charts/registry-api | registry-api | 2.2.3-alpha.0 |
+| file://../internal-charts/registry-db | registry-db | 2.2.3-alpha.0 |
+| file://../internal-charts/search-api-node | search-api-node | 2.2.3-alpha.0 |
+| file://../internal-charts/search-api | search-api | 2.2.3-alpha.0 |
+| file://../internal-charts/session-db | session-db | 2.2.3-alpha.0 |
+| file://../internal-charts/storage-api | storage-api | 2.2.3-alpha.0 |
+| file://../internal-charts/tenant-api | tenant-api | 2.2.3-alpha.0 |
+| file://../internal-charts/tenant-db | tenant-db | 2.2.3-alpha.0 |
+| file://../internal-charts/web-server | web-server | 2.2.3-alpha.0 |
+| file://../magda-common | magda-common | 2.2.3-alpha.0 |
 | https://charts.magda.io | preview-map(magda-preview-map) | 1.1.0 |
 
 ## Values
@@ -52,6 +51,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | global.awsRdsEndpoint | string | `nil` | AWS RDS DB instance access endpoint. e.g. xxxx.xxxx.ap-southeast-2.rds.amazonaws.com. Compulsory if `useAwsRdsDb` = true |
 | global.defaultAdminUserId | string | `"00000000-0000-4000-8000-000000000000"` |  |
 | global.defaultDatasetBucket | string | `"magda-datasets"` | The name of the bucket to store datasets in by default |
+| global.enableLivenessProbes | bool | `false` | Whether or not enabled livenessProbes on all services |
 | global.enableMultiTenants | bool | `false` |  |
 | global.enablePriorityClass | bool | `false` | whether enable magda priority class.  When `true`, Magda will create priorityClassName from "magda-10" to "magda-0" where "magda-10" indicates the highest priority.  At this moment, "magda-10" is only allocated to gateway. Please note: When you use in-k8s postgreSQL, you need to manually set the priority class for db instance to `magda-9`  as it currently has no priority class set by default.  Other components will be auto-assigned appropriate priority class when `enablePriorityClass` is on. |
 | global.exposeNodePorts | bool | `false` |  |
@@ -84,7 +84,6 @@ A complete solution for managing, publishing and discovering government data, pr
 | tags.gateway | bool | `false` | turn on / off [gateway](../internal-charts/gateway/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.indexer | bool | `false` | turn on / off [indexer](../internal-charts/indexer/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.ingress | bool | `false` | turn on / off [ingress](../internal-charts/ingress/README.md) |
-| tags.opa | bool | `false` | turn on / off [opa](../internal-charts/opa/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.preview-map | bool | `false` | turn on / off [preview-map](https://github.com/magda-io/magda-preview-map) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.priorities | bool | `true` | whether or not deploy Magda defined PriorityClass. Useful to schedule different payload on different nodes. |
 | tags.rds-dev-proxy | bool | `false` | turn on / off [rds-dev-proxy](../internal-charts/rds-dev-proxy/README.md) It's only for accessing AWS RDS db for admin / testing purposes within the k8s cluster. |

@@ -4,7 +4,7 @@ import URI from "urijs";
 import yargs from "yargs";
 import morgan from "morgan";
 import request from "magda-typescript-common/src/request";
-
+import { createHttpTerminator } from "http-terminator";
 import Registry from "magda-typescript-common/src/registry/RegistryClient";
 import coerceJson from "magda-typescript-common/src/coerceJson";
 import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
@@ -102,6 +102,11 @@ const argv = yargs
             "The base URL of the MAGDA Registry API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("indexerApiBaseUrl", {
+        describe:
+            "The base URL of the MAGDA Indexer API.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("registryApiReadOnlyBaseUrl", {
         describe:
             "The base URL of the MAGDA Registry API for use for read-only operations.  If not specified, the URL is built from the apiBaseUrl.",
@@ -153,6 +158,11 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("requestOpts"),
         default: "{}"
+    })
+    .option("useMagdaStorageByDefault", {
+        describe: "Whether use magda to store dataset data files by default",
+        type: "boolean",
+        default: true
     })
     .option("vocabularyApiEndpoints", {
         describe: "A list of Vocabulary API Endpoints",
@@ -298,6 +308,22 @@ const argv = yargs
     .option("defaultDatasetBucket", {
         describe: "Default bucket for storing datasets",
         type: "string"
+    })
+    .option("anonymousUserLandingPage", {
+        describe: "Specify the landing page uri for anonymous users",
+        default: "/home",
+        type: "string"
+    })
+    .option("authenticatedUserLandingPage", {
+        describe: "Specify the landing page uri for authenticated users",
+        default: "/home",
+        type: "string"
+    })
+    .option("authStatusRefreshInterval", {
+        describe:
+            "The interval of UI refresh / refetch user auth status data. Default to 5 mins.",
+        default: 300000,
+        type: "number"
     }).argv;
 
 // set default timezone
@@ -364,6 +390,10 @@ const webServerConfig = {
         argv.searchApiBaseUrl ||
             new URI(apiBaseUrl).segment("v0").segment("search").toString()
     ),
+    indexerApiBaseUrl: addTrailingSlash(
+        argv.indexerApiBaseUrl ||
+            new URI(apiBaseUrl).segment("v0").segment("indexer").toString()
+    ),
     registryApiBaseUrl: addTrailingSlash(
         argv.registryApiBaseUrl ||
             new URI(apiBaseUrl).segment("v0").segment("registry").toString()
@@ -406,6 +436,7 @@ const webServerConfig = {
     gapiIds: argv.gapiIds,
     showNotificationBanner: argv.showNotificationBanner,
     featureFlags: argv.featureFlags || {},
+    useMagdaStorageByDefault: argv.useMagdaStorageByDefault,
     vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[],
     defaultOrganizationId: argv.defaultOrganizationId,
     defaultContactEmail: argv.defaultContactEmail,
@@ -432,7 +463,10 @@ const webServerConfig = {
     previewMapFormatPerference: argv.previewMapFormatPerference,
     showContactButtonForNoContactPointDataset:
         argv.showContactButtonForNoContactPointDataset,
-    defaultDatasetBucket: argv.defaultDatasetBucket
+    defaultDatasetBucket: argv.defaultDatasetBucket,
+    anonymousUserLandingPage: argv.anonymousUserLandingPage,
+    authenticatedUserLandingPage: argv.authenticatedUserLandingPage,
+    authStatusRefreshInterval: argv.authStatusRefreshInterval
 };
 
 app.get("/server-config.js", function (req, res) {
@@ -502,7 +536,9 @@ const topLevelRoutes = [
     "publishers", // Renamed to "/organisations" but we still want to redirect it in the web client
     "organisations",
     "suggest",
-    "error"
+    "error",
+    "settings",
+    "home"
 ];
 
 topLevelRoutes.forEach((topLevelRoute) => {
@@ -584,7 +620,10 @@ app.use("/", function (req, res) {
     res.redirect(303, redirectUri.toString());
 });
 
-app.listen(argv.listenPort);
+const server = app.listen(argv.listenPort);
+const httpTerminator = createHttpTerminator({
+    server
+});
 console.log("Listening on port " + argv.listenPort);
 
 process.on(
@@ -593,3 +632,11 @@ process.on(
         console.error(reason);
     }
 );
+
+process.on("SIGTERM", () => {
+    console.log("SIGTERM signal received: closing HTTP server");
+    httpTerminator.terminate().then(() => {
+        console.log("HTTP server closed");
+        process.exit(0);
+    });
+});

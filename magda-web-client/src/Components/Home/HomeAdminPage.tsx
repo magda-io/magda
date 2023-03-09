@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router";
+import { withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 
 import ContentImageEditor from "Components/Admin/ContentImageEditor";
@@ -13,8 +13,8 @@ import AdminHeader from "Components/Admin/AdminHeader";
 class HomeAdminPage extends Component<any, any> {
     render() {
         const { hasEditPermissions, content } = this.props;
-        const save = field => {
-            return async value => {
+        const save = (field) => {
+            return async (value) => {
                 await writeContent(field, value, "application/json");
             };
         };

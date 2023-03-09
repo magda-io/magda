@@ -16,6 +16,8 @@ import baseSpec from "./baseSpec";
 import Crawler from "../Crawler";
 import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
 
+const DEFAULT_CRAWLER_RECORD_FETCH_NUMBER = 198;
+
 baseSpec(
     "Crawler",
     (
@@ -86,7 +88,8 @@ baseSpec(
                     tenantUrl,
                     jwtSecret,
                     userId,
-                    listenPort: listenPort()
+                    listenPort: listenPort(),
+                    crawlerRecordFetchNumber: DEFAULT_CRAWLER_RECORD_FETCH_NUMBER
                 }),
                 id: "id",
                 aspects: [],
@@ -155,8 +158,7 @@ baseSpec(
                             name: "",
                             aspects: {},
                             sourceTag: "",
-                            tenantId: MAGDA_ADMIN_PORTAL_ID,
-                            authnReadPolicyId: undefined
+                            tenantId: MAGDA_ADMIN_PORTAL_ID
                         })
                     );
                     return { recordsTestTable, registryRecords };
@@ -183,8 +185,10 @@ baseSpec(
                         ? parseInt(params.pageToken as string, 10)
                         : 0;
                     const limit = parseInt(params.limit as string, 10);
-                    if (limit < 1)
+                    expect(limit).to.equal(DEFAULT_CRAWLER_RECORD_FETCH_NUMBER);
+                    if (limit < 1) {
                         throw new Error("Invalid limit param received!");
+                    }
                     if (pageIdx >= this.registryRecords.length)
                         return [
                             200,
@@ -241,8 +245,7 @@ baseSpec(
                             name: "",
                             aspects: {},
                             sourceTag: "",
-                            tenantId: MAGDA_ADMIN_PORTAL_ID,
-                            authnReadPolicyId: undefined
+                            tenantId: MAGDA_ADMIN_PORTAL_ID
                         }));
                     return {
                         totalCrawledRecordsNumber,

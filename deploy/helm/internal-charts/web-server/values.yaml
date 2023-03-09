@@ -46,7 +46,7 @@ useLocalStyleSheet: false
 
 contentApiBaseUrlInternal: "http://content-api/v0/"
 
-registryApiBaseUrlInternal: "http://registry-api/v0"
+registryApiBaseUrlInternal: "http://registry-api-read-only/v0"
 
 adminApiBaseUrl:
 
@@ -68,23 +68,29 @@ discourseIntegrationDistributionPage: true
 featureFlags:
   # featureFlags.cataloguing -- turn on / off metadata creation tool. 
   # If this option is `false`, user won't be able to access the dataset add / edit UI 
-  cataloguing: false
+  cataloguing: true
   # featureFlags.previewAddDataset -- turn on / off the preview mode of metadata creation tool.
   # Under preview mode, user can play with the metadata creation tool without requiring admin permission.
   # No data will be saved under this mode.
   previewAddDataset: false
-  # featureFlags.publishToDga -- turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance
+  # featureFlags.publishToDga -- turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance.
+  # this is an experimental feature and requires the deployment of [magda-minion-ckan-exporter](https://github.com/magda-io/magda-minion-ckan-exporter)
   publishToDga: false
-  # featureFlags.placeholderWorkflowsOn -- turn on / off some metadata creation tool questions that are still under development
-  placeholderWorkflowsOn: false
   # featureFlags.datasetApprovalWorkflowOn -- turn on / off dataset approval note step
-  datasetApprovalWorkflowOn: true
+  datasetApprovalWorkflowOn: false
   # featureFlags.useStorageApi -- turn on / off the UI option to use Magda internal storage for file storage.
   useStorageApi: true
   # featureFlags.datasetLikeButton -- turn on / off like / Dislike button. 
   # At this moment, `like / Dislike button` component is a place holder only for allowing plugin external UI plugin component.
   datasetLikeButton: false
+  # featureFlags.enableAutoMetadataFetchButton -- turn on / off the auto metadata fetch button.
+  # Users are still able to add an "API / dataset URL" via "Manually enter metadata" button
+  enableAutoMetadataFetchButton: true
 
+# -- Whether use Magda to store dataset data files by default
+# When use Magda's metadata creation tool to create a dataset, user can choose to upload data files to Magda's storage (via storage API).
+# Or managing the metadata only. When `featureFlags.useStorageApi` is set to `false`, this option has no effect.
+useMagdaStorageByDefault: true
 
 # The base url where the UI serves at. If not specify (or empty string), it assumes the UI serves at '/'.
 # it should have a leading slash, but no trailing slash
@@ -230,6 +236,15 @@ previewMapFormatPerference:
 # For datasets without contact point info, the inquiry will be sent to the default recipient provided by `global.defaultContactEmail`.
 showContactButtonForNoContactPointDataset: false
 
-# -- Default bucket used to store datasets.
+# -- Default bucket used to store datasets data files.
 # If no value is provided `global.defaultDatasetBucket` will be used.
 defaultDatasetBucket:
+
+# -- Specify the landing page uri for anonymous users. 
+anonymousUserLandingPage: "/home"
+
+# -- Specify the landing page uri for authenticated users
+authenticatedUserLandingPage: "/home"
+
+# -- The interval of UI refresh / refetch user auth status data. Default to 5 mins.
+authStatusRefreshInterval: 300000

@@ -1,6 +1,6 @@
 {
   "name": "@magda/migrator-content-db",
-  "version": "1.2.2-alpha.0",
+  "version": "2.2.3-alpha.0",
   "description": "The MAGDA database for storing content data.",
   "license": "Apache-2.0",
   "scripts": {
@@ -11,13 +11,13 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-migrator-content-db",
+      "name": "magda-migrator-content-db",
       "include": "Dockerfile sql"
     }
   },
   "devDependencies": {
-    "@magda/db-migrator": "^1.2.2-alpha.0",
-    "@magda/scripts": "^1.2.2-alpha.0"
+    "@magda/db-migrator": "^2.2.3-alpha.0",
+    "@magda/scripts": "^2.2.3-alpha.0"
   },
   "magda": {
     "categories": {

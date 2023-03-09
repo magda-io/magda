@@ -1,23 +1,19 @@
 import React, { SyntheticEvent } from "react";
 import { connect } from "react-redux";
-import { NavLink, withRouter } from "react-router-dom";
-import { Location, History } from "history";
+import { NavLink, withRouter, RouteComponentProps } from "react-router-dom";
 import { User } from "reducers/userManagementReducer";
 import { config } from "../../config";
 import urijs from "urijs";
 
 type PropsType = {
     user: User;
-    history: History;
-    location: Location;
     skipLink: boolean;
 };
 
-class AccountNavbar extends React.Component<PropsType> {
+class AccountNavbar extends React.Component<PropsType & RouteComponentProps> {
     signOut(event: SyntheticEvent) {
         event.preventDefault();
-        console.log(config);
-        const authApiUri = urijs(config.authApiUrl);
+        const authApiUri = urijs(config.authApiBaseUrl);
         const authApiSeqments = authApiUri
             .segmentCoded()
             .filter((item) => !!item);
@@ -33,7 +29,7 @@ class AccountNavbar extends React.Component<PropsType> {
                     .concat(["auth", "logout"])
             )
             .search({
-                redirect: window.location.href
+                redirect: config.baseExternalUrl
             })
             .toString();
         return false;
@@ -43,24 +39,15 @@ class AccountNavbar extends React.Component<PropsType> {
         const menu: JSX.Element[] = [];
         if (this.props?.user?.id) {
             menu.push(
-                <li key="/account" id={this.props.skipLink ? "nav" : undefined}>
-                    <NavLink to={`/account`}>
-                        <span>{this.props.user.displayName}</span>
+                <li
+                    key="/settings/account"
+                    id={this.props.skipLink ? "nav" : undefined}
+                >
+                    <NavLink to={`/settings/account`}>
+                        <span>Settings</span>
                     </NavLink>
                 </li>
             );
-            if (this.props.user.isAdmin) {
-                menu.push(
-                    <li
-                        key="/admin"
-                        id={this.props.skipLink ? "nav" : undefined}
-                    >
-                        <NavLink to={`/admin`}>
-                            <span>Admin</span>
-                        </NavLink>
-                    </li>
-                );
-            }
             menu.push(
                 <li key="/signOut">
                     <a href="#logout" onClick={this.signOut.bind(this)}>

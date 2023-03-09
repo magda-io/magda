@@ -1,7 +1,7 @@
-import { config } from "config";
-import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
+import { config } from "../../../../../config";
+import getStorageApiResourceAccessUrl from "../../../../../helpers/getStorageApiResourceAccessUrl";
 import { Distribution } from "../../DatasetAddCommon";
-import UserVisibleError from "helpers/UserVisibleError";
+import UserVisibleError from "../../../../../helpers/UserVisibleError";
 
 /**
  * Deletes the file belonging to a distribution
@@ -25,7 +25,7 @@ export default async function deleteFile(distToDelete: Distribution) {
         const res = await fetch(
             getStorageApiResourceAccessUrl(distToDelete.downloadURL!),
             {
-                ...config.credentialsFetchOptions,
+                ...config.commonFetchRequestOptions,
                 method: "DELETE"
             }
         );
@@ -40,8 +40,8 @@ export default async function deleteFile(distToDelete: Distribution) {
             }`
         );
         throw new UserVisibleError(
-            `Failed to remove file ${distToDelete.title} from Magda's storage. If you removed this ` +
-                `file because it shouldn't be stored on Magda, please contact ${
+            `Failed to remove file ${distToDelete.title} from the system's storage. If you removed this ` +
+                `file because it shouldn't be stored on the system, please contact ${
                     config.defaultContactEmail
                         ? config.defaultContactEmail
                         : "Administrator"

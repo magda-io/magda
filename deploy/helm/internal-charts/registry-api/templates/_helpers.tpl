@@ -54,8 +54,6 @@ spec:
             "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .root.Values.global.logLevel | lower }}",
             "-Dauthorization.skip={{ .root.Values.skipAuthorization | default false }}",
             "-Dauthorization.skipOpaQuery={{ .root.Values.skipOpa | default false }}",
-            "-Dopa.baseUrl=http://authorization-api/v0/opa",
-            "-Dopa.recordPolicyId={{ .root.Values.recordPolicyId | default "object.registry.record.public" }}",
             "-Drole={{ .role }}",
             "-DvalidateJsonSchema={{ .root.Values.validateJsonSchema | default false }}",
             "-Dakka.http.server.request-timeout={{ .deploymentConfig.requestTimeout }}",
@@ -74,7 +72,7 @@ spec:
           httpGet:
             path: /v0/status/ready
             port: 6101
-          initialDelaySeconds: 10
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 10
 {{- end }}

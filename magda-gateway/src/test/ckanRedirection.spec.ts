@@ -17,6 +17,22 @@ import resCkanDatasetQuery from "./sampleRegistryResponses/ckanDatasetQuery.json
 import resCkanOrganizationQuery from "./sampleRegistryResponses/ckanOrganizationQuery.json";
 import resCkanResource from "./sampleRegistryResponses/ckanResource.json";
 
+function checkRedirectionDetails(location: string | RegExp) {
+    return (res: supertest.Response) => {
+        if (_.isRegExp(location)) {
+            expect(location.test(res.header["location"])).to.equal(true);
+        } else {
+            expect(res.header["location"]).to.equal(location);
+        }
+    };
+}
+
+function checkStatusCode(statusCode: number = 308) {
+    return (res: supertest.Response) => {
+        expect(res.status).to.equal(statusCode);
+    };
+}
+
 describe("ckanRedirectionRouter router", () => {
     const ckanRedirectionDomain = "ckan.data.gov.au";
     const ckanRedirectionPath = "";
@@ -39,7 +55,9 @@ describe("ckanRedirectionRouter router", () => {
             ckanRedirectionDomain,
             ckanRedirectionPath,
             registryApiBaseUrlInternal: registryUrl,
-            tenantId: 1
+            tenantId: 1,
+            cacheMaxKeys: 500,
+            cacheStdTTL: 600
         });
         app = express();
         app.use(router);
@@ -474,22 +492,6 @@ describe("ckanRedirectionRouter router", () => {
             });
     }
 
-    function checkRedirectionDetails(location: string | RegExp) {
-        return (res: supertest.Response) => {
-            if (_.isRegExp(location)) {
-                expect(location.test(res.header["location"])).to.equal(true);
-            } else {
-                expect(res.header["location"]).to.equal(location);
-            }
-        };
-    }
-
-    function checkStatusCode(statusCode: number = 308) {
-        return (res: supertest.Response) => {
-            expect(res.status).to.equal(statusCode);
-        };
-    }
-
     function testCkanDomainChangeOnly(
         targetUrlOrUrls: string | string[],
         statusCode: number = 308,
@@ -569,4 +571,177 @@ describe("ckanRedirectionRouter router", () => {
             }
         });
     }
+});
+
+describe("ckanRedirectionRouter router cache", () => {
+    const ckanRedirectionDomain = "ckan.data.gov.au";
+    const ckanRedirectionPath = "";
+
+    let app: express.Application;
+    const registryUrl = "http://registry.example.com";
+    let registryScope: nock.Scope;
+    let registryQueryCount: number = 0;
+
+    function setupRegistryApiForCkanDatasetQuery() {
+        registryQueryCount = 0;
+        const errorResponse = `{
+            "hasMore": false,
+            "records": [ ]
+        }`;
+
+        const okCkanDatasetResponse = resCkanDatasetQuery;
+
+        registryScope
+            .persist()
+            .get("/records")
+            .query(true)
+            .reply(200, function (uri: string) {
+                registryQueryCount++;
+                const uriObj = URI(uri);
+                const query = uriObj.search(true);
+                if (!query || !query.aspectQuery) return errorResponse;
+                const [path, value] = (query.aspectQuery as string).split(":");
+                if (
+                    path === "ckan-dataset.name" &&
+                    value === "pg_skafsd0_f___00120141210_11a"
+                ) {
+                    return okCkanDatasetResponse;
+                } else if (
+                    path === "ckan-dataset.id" &&
+                    value === "8beb4387-ec03-46f9-8048-3ad76c0416c8"
+                ) {
+                    return okCkanDatasetResponse;
+                } else {
+                    return errorResponse;
+                }
+            });
+    }
+
+    before(() => {
+        registryScope = nock(registryUrl);
+        setupRegistryApiForCkanDatasetQuery();
+    });
+
+    after(() => {
+        nock.cleanAll();
+    });
+
+    beforeEach(() => {
+        app = express();
+        registryQueryCount = 0;
+    });
+
+    afterEach(() => {
+        if ((<sinon.SinonStub>console.error).restore) {
+            (<sinon.SinonStub>console.error).restore();
+        }
+    });
+
+    function setCkanRedirectRouter(
+        cacheMaxKeys: number = 500,
+        cacheStdTTL: number = 600
+    ) {
+        const router = createCkanRedirectionRouter({
+            ckanRedirectionDomain,
+            ckanRedirectionPath,
+            registryApiBaseUrlInternal: registryUrl,
+            tenantId: 1,
+            cacheMaxKeys,
+            cacheStdTTL
+        });
+        app.use(router);
+    }
+
+    it("should query registry only once for multiple requests to the same URL", async () => {
+        setCkanRedirectRouter();
+        for (let i = 0; i < 3; i++) {
+            await supertest(app)
+                .get("/dataset/pg_skafsd0_f___00120141210_11a")
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        }
+        expect(registryQueryCount).to.equal(1);
+    });
+
+    it("should query registry once for every request to the same URL", async () => {
+        // set cacheMaxKeys = 0 to disable the cache
+        setCkanRedirectRouter(0);
+        for (let i = 0; i < 3; i++) {
+            await supertest(app)
+                .get("/dataset/pg_skafsd0_f___00120141210_11a")
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        }
+        expect(registryQueryCount).to.equal(3);
+    });
+
+    it("should query registry more than once for different requests to different URLs when cacheMaxKeys = 1", async () => {
+        setCkanRedirectRouter(1);
+        await supertest(app)
+            .get("/dataset/pg_skafsd0_f___00120141210_11a")
+            .expect(303)
+            .expect(
+                checkRedirectionDetails(
+                    "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                )
+            );
+        await supertest(app) // this request will not be cached
+            .get("/dataset/8beb4387-ec03-46f9-8048-3ad76c0416c8")
+            .expect(303)
+            .expect(
+                checkRedirectionDetails(
+                    "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                )
+            );
+        for (let i = 0; i < 3; i++) {
+            await supertest(app)
+                .get("/dataset/8beb4387-ec03-46f9-8048-3ad76c0416c8")
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        }
+        expect(registryQueryCount).to.equal(5);
+    });
+
+    it("should query registry 2 times for different requests to different URLs when cacheMaxKeys = 2", async () => {
+        setCkanRedirectRouter(2);
+        await supertest(app)
+            .get("/dataset/pg_skafsd0_f___00120141210_11a")
+            .expect(303)
+            .expect(
+                checkRedirectionDetails(
+                    "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                )
+            );
+        await supertest(app) // this request will not be cached
+            .get("/dataset/8beb4387-ec03-46f9-8048-3ad76c0416c8")
+            .expect(303)
+            .expect(
+                checkRedirectionDetails(
+                    "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                )
+            );
+        for (let i = 0; i < 3; i++) {
+            await supertest(app)
+                .get("/dataset/8beb4387-ec03-46f9-8048-3ad76c0416c8")
+                .expect(303)
+                .expect(
+                    checkRedirectionDetails(
+                        "/dataset/ds-dga-8beb4387-ec03-46f9-8048-3ad76c0416c8/details"
+                    )
+                );
+        }
+        expect(registryQueryCount).to.equal(2);
+    });
 });

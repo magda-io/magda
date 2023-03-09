@@ -18,7 +18,7 @@ type RecordResult = {
     datasetIsFetching: boolean;
     distributionIsFetching: boolean;
     datasetFetchError?: FetchError;
-    distributionFetchError?: number;
+    distributionFetchError?: FetchError;
     dataset?: ParsedDataset;
     distribution?: ParsedDistribution;
     raw?: Object;

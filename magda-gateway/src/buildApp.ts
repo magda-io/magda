@@ -24,10 +24,12 @@ import { ProxyTarget, DetailedProxyTarget } from "./createGenericProxyRouter";
 import setupTenantMode from "./setupTenantMode";
 import createPool from "./createPool";
 import { AuthPluginBasicConfig } from "./createAuthPluginRouter";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 
 type Route = {
     to: string;
     auth?: boolean;
+    methods?: { method: string; target: string }[];
 };
 
 type Routes = {
@@ -69,10 +71,12 @@ export type Config = {
     tenantUrl?: string;
     enableMultiTenants?: boolean;
     openfaasGatewayUrl?: string;
-    openfaasAllowAdminOnly?: boolean;
     defaultCacheControl?: string;
     magdaAdminPortalName?: string;
     proxyTimeout?: string;
+    skipAuth?: boolean;
+    registryQueryCacheMaxKeys: number;
+    registryQueryCacheStdTTL: number;
 };
 
 export default function buildApp(app: express.Application, config: Config) {
@@ -108,6 +112,14 @@ export default function buildApp(app: express.Application, config: Config) {
         externalUrl: config.externalUrl,
         appBasePath: baseUrl
     });
+
+    const skipAuth = config.skipAuth === true ? true : false;
+    const authDecisionClient = new AuthDecisionQueryClient(
+        config.authorizationApi,
+        skipAuth
+    );
+
+    console.log(`SkipAuth: ${skipAuth}`);
 
     // Log everything
     app.use(require("morgan")("combined"));
@@ -187,9 +199,7 @@ export default function buildApp(app: express.Application, config: Config) {
             "/api/v0/openfaas",
             createOpenfaasGatewayProxy({
                 gatewayUrl: config.openfaasGatewayUrl,
-                allowAdminOnly: config.openfaasAllowAdminOnly,
-                baseAuthUrl: config.authorizationApi,
-                jwtSecret: config.jwtSecret,
+                authClient: authDecisionClient,
                 apiRouterOptions
             })
         );
@@ -213,12 +223,19 @@ export default function buildApp(app: express.Application, config: Config) {
                 "Cannot locate routes.registry for ckan redirection!"
             );
         } else {
+            const registryReadOnlyApi = routes.registry?.methods?.find(
+                (item) => item.method.toLowerCase() === "get"
+            )?.target;
             mainRouter.use(
                 createCkanRedirectionRouter({
                     ckanRedirectionDomain: config.ckanRedirectionDomain,
                     ckanRedirectionPath: config.ckanRedirectionPath,
-                    registryApiBaseUrlInternal: routes.registry.to,
-                    tenantId: 0 // FIXME: Rather than being hard-coded to the default tenant, the CKAN router needs to figure out the correct tenant.
+                    registryApiBaseUrlInternal: registryReadOnlyApi
+                        ? registryReadOnlyApi
+                        : routes.registry?.to,
+                    tenantId: 0, // FIXME: Rather than being hard-coded to the default tenant, the CKAN router needs to figure out the correct tenant.,
+                    cacheStdTTL: config.registryQueryCacheStdTTL,
+                    cacheMaxKeys: config.registryQueryCacheMaxKeys
                 })
             );
         }

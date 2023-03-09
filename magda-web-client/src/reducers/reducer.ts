@@ -41,4 +41,25 @@ const reducer = combineReducers({
     topBanner
 });
 
+export type StateType = {
+    regionMapping: ReturnType<typeof regionMapping>;
+    datasetSearch: ReturnType<typeof datasetSearch>;
+    facetPublisherSearch: ReturnType<typeof facetPublisherSearch>;
+    facetRegionSearch: ReturnType<typeof facetRegionSearch>;
+    facetFormatSearch: ReturnType<typeof facetFormatSearch>;
+    record: ReturnType<typeof record>;
+    publisher: ReturnType<typeof publisher>;
+    userManagement: ReturnType<typeof userManagement>;
+    featuredDatasets: ReturnType<typeof featuredDatasets>;
+    featuredPublishers: ReturnType<typeof featuredPublishers>;
+    news: ReturnType<typeof news>;
+    content: ReturnType<typeof content>;
+    stats: ReturnType<typeof stats>;
+    previewData: ReturnType<typeof previewData>;
+    topNotification: ReturnType<typeof topNotification>;
+    staticPages: ReturnType<typeof staticPagesReducer>;
+    homepageStories: ReturnType<typeof homepageStories>;
+    topBanner: ReturnType<typeof topBanner>;
+};
+
 export default reducer;

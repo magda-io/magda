@@ -2,8 +2,8 @@
     "aspects": {
         "information-security": {},
         "spatial-coverage": {},
-        "dataset-access-control": {
-            "orgUnitOwnerId": "b16cd237-7ce6-4352-a59c-9e05dc65ba78"
+        "access-control": {
+            "orgUnitId": "b16cd237-7ce6-4352-a59c-9e05dc65ba78"
         },
         "dcat-dataset-strings": {
             "defaultLicense": "world",
@@ -314,7 +314,6 @@
                             "title": "Magda Marketecture.drawio"
                         }
                     },
-                    "authnReadPolicyId": "object.registry.record.public",
                     "id": "magda-dist-e3a22423-17e9-4e0a-9e3b-7063d9ded5a3",
                     "name": "Magda Marketecture.drawio"
                 }

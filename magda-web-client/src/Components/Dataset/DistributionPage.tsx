@@ -1,13 +1,6 @@
 import React, { FunctionComponent } from "react";
 import AUpageAlert from "pancake/react/page-alerts";
-import {
-    Link,
-    Route,
-    Switch,
-    Redirect,
-    withRouter,
-    RouteComponentProps
-} from "react-router-dom";
+import { Link, Route, Switch, Redirect, withRouter } from "react-router-dom";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import defined from "helpers/defined";
 import { gapi } from "analytics/ga";
@@ -33,16 +26,18 @@ import {
 } from "api-clients/RegistryApis";
 import RecordVersionList from "./RecordVersionList";
 import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
-import { Location } from "history";
+import humanFileSize from "helpers/humanFileSize";
 import "./DatasetPage.scss";
 
-interface PropsType extends RouteComponentProps {
+interface PropsType {
+    history: History;
     datasetId: string;
     distributionId: string;
     dataset: ParsedDataset;
     distribution: ParsedDistribution;
-    breadcrumbs: (JSX.Element | null)[];
+    breadcrumbs: JSX.Element | null;
     searchText: string;
+    location: Location;
 }
 
 const getVersionFromLocation = (location: Location): number | undefined => {
@@ -113,6 +108,12 @@ const DistributionPageMainContent: FunctionComponent<{
                 )}
             </div>
             <div className="distribution-format">{distribution.format}</div>
+            {typeof distribution?.byteSize === "number" ? (
+                <span className="distribution-size">
+                    <span className="separator hidden-sm">&nbsp;/&nbsp;</span>
+                    {humanFileSize(distribution.byteSize)}
+                </span>
+            ) : null}
             {defined(distribution.license) && (
                 <span className="distribution-license">
                     <span className="separator hidden-sm">&nbsp;/&nbsp;</span>
@@ -331,4 +332,4 @@ const DistributionPage: FunctionComponent<PropsType> = (props) => {
     );
 };
 
-export default withRouter(DistributionPage);
+export default withRouter(DistributionPage as any) as any;

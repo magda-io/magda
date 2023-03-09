@@ -8,7 +8,6 @@ import getPageNumber from "helpers/getPageNumber";
 import ProgressBar from "Components/Common/ProgressBar";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import queryString from "query-string";
-import PropTypes from "prop-types";
 import debounce from "lodash/debounce";
 import Pagination from "Components/Common/Pagination";
 import "./OrganisationsPage.scss";
@@ -17,6 +16,7 @@ import { Medium } from "Components/Common/Responsive";
 import { withRouter } from "react-router-dom";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
+import redirect from "helpers/redirect";
 
 class OrganisationsPage extends Component {
     constructor(props) {
@@ -66,19 +66,16 @@ class OrganisationsPage extends Component {
             typeof query.q === "undefined" &&
             typeof query.page === "undefined"
         ) {
-            this.props.history.push({
-                pathname: "/organisations"
-            });
+            redirect(this.props.history, "/organisations");
         } else {
-            this.props.history.push({
-                pathname: "/organisations",
-                search: queryString.stringify(
-                    Object.assign(
-                        queryString.parse(this.props.location.search),
-                        query
-                    )
+            redirect(
+                this.props.history,
+                "/organisations",
+                Object.assign(
+                    queryString.parse(this.props.location.search),
+                    query
                 )
-            });
+            );
         }
     }
 
@@ -308,10 +305,11 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-OrganisationsPage.contextTypes = {
-    router: PropTypes.object.isRequired
-};
+const PublishersViewerWithRouter = withRouter((props) => (
+    <OrganisationsPage {...props} />
+));
 
-export default withRouter(
-    connect(mapStateToProps, mapDispatchToProps)(OrganisationsPage)
-);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(PublishersViewerWithRouter);

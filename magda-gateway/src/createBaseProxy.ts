@@ -1,6 +1,7 @@
 import httpProxy from "http-proxy";
 import express from "express";
 import { IncomingHttpHeaders } from "http";
+import getNoCacheHeaders from "magda-typescript-common/src/express/getNoCacheHeaders";
 
 import groupBy = require("lodash/groupBy");
 
@@ -152,23 +153,15 @@ export default function createBaseProxy(
         ) {
             // when incoming request specifically ask for a no-cache response
             // we set the following header to make sure not only CDN will not cache it but also web browser will not cache it
-            setHeaderValue(
-                proxyRes.headers,
-                "Cache-Control",
-                "max-age=0, no-cache, must-revalidate, proxy-revalidate"
-            );
-            setHeaderValue(
-                proxyRes.headers,
-                "Expires",
-                "Thu, 01 Jan 1970 00:00:00 GMT"
-            );
-            setHeaderValue(
-                proxyRes.headers,
-                "Last-Modified",
-                // toGMTString is deprecated but `Last-Modified` requires that format:
-                // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Last-Modified
-                // A test case will be added to make sure we know when the function is not available at runtime
-                (new Date() as any)["toGMTString"]()
+            const noCacheHeaders = getNoCacheHeaders();
+            (Object.keys(noCacheHeaders) as Array<
+                keyof typeof noCacheHeaders
+            >).forEach((headerName) =>
+                setHeaderValue(
+                    proxyRes.headers,
+                    headerName,
+                    noCacheHeaders[headerName]
+                )
             );
         } else if (
             // Add a default cache time of 60 seconds on GETs so the CDN can cache in times of high load.

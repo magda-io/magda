@@ -8,9 +8,9 @@ Please note: the `Chart.yaml` above references `magda` as a local directory in o
 
 ```yaml
 dependencies:
-    - name: magda
-      repository: https://charts.magda.io
-      version: 0.0.57
+  - name: magda
+    repository: "oci://ghcr.io/magda-io/charts"
+    version: "2.2.0"
 ```
 
 > PS. You can also choose to depend on [magda-core](https://github.com/magda-io/magda/tree/master/deploy/helm/magda-core) chart that includes only core modules of magda.
@@ -19,10 +19,10 @@ dependencies:
 
 In order to deploy a connector or minion with `magda`, you need to:
 
--   Build the docker image of the connector / minion and publish it to the docker registry that you use for your deployment (e.g. [docker hub](https://hub.docker.com/)).
--   Create a [helm chart](https://helm.sh/docs/topics/charts/) for your connector / minion.
-    -   You can publish your helm chart to a helm chart repository
-    -   Or you can deploy using local helm chart files by using a file reference, like `file://[path to your chart]`
+- Build the docker image of the connector / minion and publish it to the docker registry that you use for your deployment (e.g. [docker hub](https://hub.docker.com/)).
+- Create a [helm chart](https://helm.sh/docs/topics/charts/) for your connector / minion.
+  - You can publish your helm chart to a helm chart repository
+  - Or you can deploy using local helm chart files by using a file reference, like `file://[path to your chart]`
 
 You can find an example setup in our [connector repositories](https://github.com/magda-io?utf8=%E2%9C%93&q=magda+connector) & [minions repositories](https://github.com/magda-io?utf8=%E2%9C%93&q=magda-minion).
 
@@ -44,14 +44,14 @@ git push origin gh-pages
 
 2. Add the following information to the Github repository secret settings section:
 
-    - `GITHUB_ACCESS_TOKEN`: Github person access token
-    - `DOCKER_HUB_PASSWORD`: Your Docker Hub Account Password.
+   - `GITHUB_ACCESS_TOKEN`: Github person access token
+   - `DOCKER_HUB_PASSWORD`: Your Docker Hub Account Password.
 
 3. Watch the script run. It will:
-    - Build & push docker image to docker hub - you can control the docker image name with `config.docker.name` field of your package.json ( here is [a sample config](https://github.com/magda-io/magda-ckan-connector/blob/4b08982718efa4af63470ed7bbf48db912a1b50a/package.json#L61) )
-    - Package & push helm chart to Github Page (`gh-pages` branch of your Github repository). Your helm repo access url will be:
-        - `https://<user>.github.io/<repository>`
-        - Or `https://<organization>.github.io/<repository>`
+   - Build & push docker image to docker hub - you can control the docker image name with `config.docker.name` field of your package.json ( here is [a sample config](https://github.com/magda-io/magda-ckan-connector/blob/4b08982718efa4af63470ed7bbf48db912a1b50a/package.json#L61) )
+   - Package & push helm chart to Github Page (`gh-pages` branch of your Github repository). Your helm repo access url will be:
+     - `https://<user>.github.io/<repository>`
+     - Or `https://<organization>.github.io/<repository>`
 
 ### Develop a Magda Connector
 
@@ -59,10 +59,10 @@ Connectors are responsible for fetching metadata from external systems and conve
 
 Magda has published a list of NPM packages to make developing new connectors on NodeJS easier. They are:
 
--   [@magda/connector-sdk](https://www.npmjs.com/package/@magda/connector-sdk)
--   [@magda/connector-test-utils](https://www.npmjs.com/package/@magda/connector-test-utils)
--   [@magda/utils](https://www.npmjs.com/package/@magda/utils)
--   [@magda/scripts](https://www.npmjs.com/package/@magda/scripts): includes docker image building utilities
+- [@magda/connector-sdk](https://www.npmjs.com/package/@magda/connector-sdk)
+- [@magda/connector-test-utils](https://www.npmjs.com/package/@magda/connector-test-utils)
+- [@magda/utils](https://www.npmjs.com/package/@magda/utils)
+- [@magda/scripts](https://www.npmjs.com/package/@magda/scripts): includes docker image building utilities
 
 Most of the existing connectors are written in Javascript and are inherited from the [JSON Connector](https://www.npmjs.com/package/@magda/connector-sdk#jsonconnector) and [JSON Transformer](https://www.npmjs.com/package/@magda/connector-sdk#jsontransformer) base implementations.
 
@@ -80,10 +80,10 @@ A minion is a Magda service that listens for new records or changes to existing 
 
 Magda has published NPM packages to make developing new NodeJS-based minions easier. They are available at:
 
--   [@magda/minion-sdk](https://www.npmjs.com/package/@magda/minion-sdk)
--   [@magda/registry-aspects](https://www.npmjs.com/package/@magda/registry-aspects): all Magda built-in aspect definitions
--   [@magda/utils](https://www.npmjs.com/package/@magda/utils)
--   [@magda/scripts](https://www.npmjs.com/package/@magda/scripts): includes docker image building utilities
+- [@magda/minion-sdk](https://www.npmjs.com/package/@magda/minion-sdk)
+- [@magda/registry-aspects](https://www.npmjs.com/package/@magda/registry-aspects): all Magda built-in aspect definitions
+- [@magda/utils](https://www.npmjs.com/package/@magda/utils)
+- [@magda/scripts](https://www.npmjs.com/package/@magda/scripts): includes docker image building utilities
 
 Here is a simple example of a minion:
 
@@ -95,28 +95,28 @@ const MINION_ID = "minion-format";
 const argv = commonYargs(6311, "http://localhost:6311");
 
 const aspectDefinition = {
-    id: "dataset-format",
-    name: "Details about the format of the distribution",
-    jsonSchema: require("@magda/registry-aspects/dataset-format.schema.json")
+  id: "dataset-format",
+  name: "Details about the format of the distribution",
+  jsonSchema: require("@magda/registry-aspects/dataset-format.schema.json")
 };
 
 // --- will be called when changes are made to records in magda registry
 async function onRecordFound(record, authorizedRegistryClient) {
-    // --- adding logic of based on the current record data, create / update extra data and save back to registry via `authorizedRegistryClient`
+  // --- adding logic of based on the current record data, create / update extra data and save back to registry via `authorizedRegistryClient`
 }
 
 minion({
-    argv,
-    // --- monitor `dcat-distribution-strings` aspect
-    aspects: ["dcat-distribution-strings"],
-    async: true,
-    id: MINION_ID,
-    onRecordFound,
-    optionalAspects: [],
-    writeAspectDefs: [aspectDefinition]
+  argv,
+  // --- monitor `dcat-distribution-strings` aspect
+  aspects: ["dcat-distribution-strings"],
+  async: true,
+  id: MINION_ID,
+  onRecordFound,
+  optionalAspects: [],
+  writeAspectDefs: [aspectDefinition]
 }).catch((e: Error) => {
-    console.error("Error: " + e.message, e);
-    process.exit(1);
+  console.error("Error: " + e.message, e);
+  process.exit(1);
 });
 ```
 

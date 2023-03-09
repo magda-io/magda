@@ -1,0 +1,8 @@
+controller:
+  config:
+    client-body-buffer-size: "100m"
+    proxy-body-size: "100m"
+  extraArgs: 
+    default-ssl-certificate: "default/magda-cert-tls"
+  service:
+    loadBalancerIP: "35.201.203.227"

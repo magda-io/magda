@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 import java.time.OffsetDateTime
-
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import au.csiro.data61.magda.api.model.{
@@ -11,6 +10,7 @@ import au.csiro.data61.magda.api.model.{
   SearchResult
 }
 import au.csiro.data61.magda.api.{FilterValue, Query, Specified, Unspecified}
+import au.csiro.data61.magda.model.Auth.AuthDecision
 import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
 import au.csiro.data61.magda.model.misc._
@@ -63,6 +63,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 ) extends SearchQueryer {
   private val logger = system.log
 
+  val debugMode = config.hasPath("searchApi.debug") && config.getBoolean(
+    "searchApi.debug"
+  )
+
   val clientFuture: Future[ElasticClient] = clientProvider.getClient.recover {
     case t: Throwable =>
       logger.error(
@@ -73,8 +77,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       throw t
   }
 
-  val opaQueryer = new OpaQueryer
-
   val DATASETS_LANGUAGE_FIELDS = Seq(
     ("title", 50f),
     ("description", 2f),
@@ -84,7 +86,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   )
 
   val NON_LANGUAGE_FIELDS = Seq(
-    "_id",
+    "identifier",
     "catalog",
     "accrualPeriodicity",
     "contactPoint.identifier",
@@ -96,7 +98,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   )
 
   override def search(
-      jwtToken: Option[String],
+      authDecision: AuthDecision,
       inputQuery: Query,
       start: Long,
       limit: Int,
@@ -105,25 +107,27 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   ) = {
     val inputRegionsList = inputQuery.regions.toList
 
-    val publishingStatusQueryFuture =
-      opaQueryer.publishingStateQuery(inputQuery.publishingState, jwtToken)
+    val authQuery: QueryDefinition =
+      authDecision.toEsDsl().getOrElse(MatchAllQuery())
 
     clientFuture.flatMap { implicit client =>
       val fullRegionsFutures = inputRegionsList.map(resolveFullRegion)
       val fullRegionsFuture = Future.sequence(fullRegionsFutures)
       augmentWithBoostRegions(inputQuery)
-        .zip(publishingStatusQueryFuture)
         .flatMap {
-          case (queryWithBoostRegions, publishingStatusQuery) =>
+          case queryWithBoostRegions =>
             val query = buildQueryWithAggregations(
               tenantId,
+              authQuery,
               queryWithBoostRegions,
-              publishingStatusQuery,
               start,
               limit,
               MatchAll,
               requestedFacetSize
             )
+            if (debugMode) {
+              logger.info(client.show(query))
+            }
             Future
               .sequence(
                 Seq(
@@ -173,12 +177,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   override def autoCompleteQuery(
-      jwtToken: Option[String],
+      authDecision: AuthDecision,
       field: String,
       input: Option[String],
       size: Option[Int],
       tenantId: TenantId
   ): Future[AutoCompleteQueryResult] = {
+
+    val authQuery = authDecision.toEsDsl().getOrElse(MatchAllQuery())
 
     val inputString: String = input.getOrElse("").trim
 
@@ -194,11 +200,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       )
     else {
 
-      // --- by default, autoComplete using all dataset user has access to
-      // --- modify the filter (currently, empty Set()) to restrict to only draft (or published) datasets only
-      val publishingStatusQueryFuture =
-        opaQueryer.publishingStateQuery(Set(), jwtToken)
-
       val sizeLimit: Int =
         if (size.isEmpty) 10
         else if (size.get < 1) 1
@@ -206,48 +207,46 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         else size.get
 
       clientFuture.flatMap { implicit client =>
-        publishingStatusQueryFuture.flatMap { publishingStatusQuery =>
-          val filterQuery = boolQuery().must(
-            Seq(
-              tenantId.getEsQuery(),
-              publishingStatusQuery,
-              matchQuery(s"${field}.autoComplete", inputString)
-            )
+        val filterQuery = boolQuery().must(
+          Seq(
+            tenantId.getEsQuery(),
+            authQuery,
+            matchQuery(s"${field}.autoComplete", inputString)
           )
+        )
 
-          val aggs = termsAggregation("suggestions")
-            .field(s"${field}.keyword")
-            .size(sizeLimit)
+        val aggs = termsAggregation("suggestions")
+          .field(s"${field}.keyword")
+          .size(sizeLimit)
 
-          val query = ElasticDsl
-            .search(indices.getIndex(config, Indices.DataSetsIndex))
-            .size(0) // --- disable hits data from response as we only need aggregation
-            .query(filterQuery)
-            .aggregations(aggs)
+        val query = ElasticDsl
+          .search(indices.getIndex(config, Indices.DataSetsIndex))
+          .size(0) // --- disable hits data from response as we only need aggregation
+          .query(filterQuery)
+          .aggregations(aggs)
 
-          client
-            .execute(query)
-            .flatMap {
-              case results: RequestSuccess[SearchResponse] =>
-                Future.successful(results.result)
-              case IllegalArgumentException(e) => throw e
-              case ESGenericException(e)       => throw e
-            }
-            .map { result =>
-              val aggs = result.aggregations
-              val items = aggs.dataAsMap
-                .get("suggestions")
-                .flatMap(AggUtils.toAgg(_))
-                .toSeq
-                .flatMap(_.dataAsMap.get("buckets").toSeq)
-                .flatMap(_.asInstanceOf[Seq[Map[String, Any]]].map { m =>
-                  val agg = Aggregations(m)
-                  agg.data("key").toString
-                })
+        client
+          .execute(query)
+          .flatMap {
+            case results: RequestSuccess[SearchResponse] =>
+              Future.successful(results.result)
+            case IllegalArgumentException(e) => throw e
+            case ESGenericException(e)       => throw e
+          }
+          .map { result =>
+            val aggs = result.aggregations
+            val items = aggs.dataAsMap
+              .get("suggestions")
+              .flatMap(AggUtils.toAgg(_))
+              .toSeq
+              .flatMap(_.dataAsMap.get("buckets").toSeq)
+              .flatMap(_.asInstanceOf[Seq[Map[String, Any]]].map { m =>
+                val agg = Aggregations(m)
+                agg.data("key").toString
+              })
 
-              AutoCompleteQueryResult(inputString, items)
-            }
-        }
+            AutoCompleteQueryResult(inputString, items)
+          }
       } recover {
         case RootCause(illegalArgument: IllegalArgumentException) =>
           logger.error(illegalArgument, "Exception when searching")
@@ -412,8 +411,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   /** Builds an elastic search query out of the passed general magda Query */
   def buildQuery(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       start: Long,
       limit: Int,
       strategy: SearchStrategy
@@ -422,14 +421,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       .search(indices.getIndex(config, Indices.DataSetsIndex))
       .limit(limit)
       .start(start.toInt)
-      .query(buildEsQuery(tenantId, query, publishingStatusQuery, strategy))
+      .query(buildEsQuery(tenantId, authQuery, query, strategy))
   }
 
   /** Same as {@link #buildQuery} but also adds aggregations */
   def buildQueryWithAggregations(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       start: Long,
       limit: Int,
       strategy: SearchStrategy,
@@ -437,16 +436,16 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   ) =
     addAggregations(
       tenantId,
+      authQuery,
       buildQuery(
         tenantId,
+        authQuery,
         query,
-        publishingStatusQuery,
         start,
         limit,
         strategy
       ),
       query,
-      publishingStatusQuery,
       strategy,
       facetSize
     ).sourceExclude("accessControl") // --- do not include accessControl metadata
@@ -463,9 +462,9 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   /** Adds standard aggregations to an elasticsearch query */
   def addAggregations(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       searchDef: SearchRequest,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       strategy: SearchStrategy,
       facetSize: Int
   ) = {
@@ -475,8 +474,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           facetType =>
             aggsForFacetType(
               tenantId,
+              authQuery,
               query,
-              publishingStatusQuery,
               facetType,
               strategy,
               idealFacetSize(facetType, query, facetSize)
@@ -493,8 +492,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   /** Gets all applicable ES aggregations for the passed FacetType, given a Query */
   def aggsForFacetType(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       facetType: FacetType,
       strategy: SearchStrategy,
       facetSize: Int
@@ -507,8 +506,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         .subAggregations(
           alternativesAggregation(
             tenantId,
+            authQuery,
             query,
-            publishingStatusQuery,
             facetDef,
             strategy,
             facetSize
@@ -526,8 +525,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     */
   def alternativesAggregation(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       facetDef: FacetDefinition,
       strategy: SearchStrategy,
       facetSize: Int
@@ -538,7 +537,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         must(
           Seq(
             tenantIdTermQuery,
-            publishingStatusQuery,
+            authQuery,
             queryToQueryDef(facetDef.removeFromQuery(query), strategy, true)
           )
         )
@@ -557,8 +556,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   private def buildEsQuery(
       tenantId: TenantId,
+      authQuery: QueryDefinition,
       query: Query,
-      publishingStatusQuery: QueryDefinition,
       strategy: SearchStrategy
   ): QueryDefinition = {
     val geomScorerQuery = setToOption(query.boostRegions)(
@@ -586,13 +585,12 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
     val tenantTermQuery = tenantId.getEsQuery()
 
-    val q: QueryDefinition = queryToQueryDef(query, strategy)
     functionScoreQuery()
       .query(
         must(
           Seq(
             tenantTermQuery,
-            publishingStatusQuery,
+            authQuery,
             queryToQueryDef(query, strategy)
           )
         )
@@ -691,6 +689,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           Some(queryDef)
         }
       },
+      publishingStateQuery(query.publishingState),
       setToOption(query.publishers)(
         seq => should(seq.map(publisherQuery(strategy))).boost(2)
       ),
@@ -734,7 +733,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   override def searchFacets(
-      jwtToken: Option[String],
+      authDecision: AuthDecision,
       facetType: FacetType,
       facetQuery: Option[String],
       generalQuery: Query,
@@ -743,8 +742,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       tenantId: TenantId
   ): Future[FacetSearchResult] = {
     val facetDef = facetDefForType(facetType)
-    val publishingStatusQueryFuture =
-      opaQueryer.publishingStateQuery(generalQuery.publishingState, jwtToken)
+    val authQuery = authDecision.toEsDsl().getOrElse(MatchAllQuery())
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
@@ -787,50 +785,49 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
                 // Do a datasets query WITHOUT filtering for this facet and  with an aggregation for each of the hits we
                 // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
-                publishingStatusQueryFuture.flatMap { publishingStatusQuery =>
-                  client.execute {
-                    buildQuery(
-                      tenantId,
-                      facetDef.removeFromQuery(generalQuery),
-                      publishingStatusQuery,
-                      0,
-                      0,
-                      MatchAll
-                    ).aggs(filters)
-                  } map {
-                    case ESGenericException(e) => throw e
-                    case results: RequestSuccess[SearchResponse] =>
-                      val aggregations = results.result.aggregations.data.map {
-                        case (name: String, value: Map[String, Any]) =>
-                          val decodedName = decodeAggName(name)
-                          (
-                            decodedName,
-                            new FacetOption(
-                              identifier = None,
-                              value = decodedName,
-                              hitCount = value
-                                .get("doc_count")
-                                .map(_.toString.toLong)
-                                .getOrElse(0L)
-                            )
+                client.execute {
+                  buildQuery(
+                    tenantId,
+                    authQuery,
+                    facetDef.removeFromQuery(generalQuery),
+                    0,
+                    0,
+                    MatchAll
+                  ).aggs(filters)
+                } map {
+                  case ESGenericException(e) => throw e
+                  case results: RequestSuccess[SearchResponse] =>
+                    val aggregations = results.result.aggregations.data.map {
+                      case (name: String, value: Map[String, Any]) =>
+                        val decodedName = decodeAggName(name)
+                        (
+                          decodedName,
+                          new FacetOption(
+                            identifier = None,
+                            value = decodedName,
+                            hitCount = value
+                              .get("doc_count")
+                              .map(_.toString.toLong)
+                              .getOrElse(0L)
                           )
-                      }
+                        )
+                    }
 
-                      val options = (hits
-                        .map {
-                          case (hitName, identifier) =>
-                            aggregations(hitName).copy(identifier = identifier)
-                        })
-                        .sortBy(-_.hitCount)
-                        .drop(start)
-                        .take(limit)
+                    val options = (hits
+                      .map {
+                        case (hitName, identifier) =>
+                          aggregations(hitName).copy(identifier = identifier)
+                      })
+                      .sortBy(-_.hitCount)
+                      .drop(start)
+                      .take(limit)
 
-                      FacetSearchResult(
-                        hitCount = results.result.totalHits,
-                        options = options
-                      )
-                  }
+                    FacetSearchResult(
+                      hitCount = results.result.totalHits,
+                      options = options
+                    )
                 }
+
             }
         }
     }

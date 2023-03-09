@@ -25,6 +25,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import au.csiro.data61.magda.model.TenantId.AllTenantsId
+import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
 
 object WebHookActor {
   case class Process(
@@ -67,7 +68,7 @@ object WebHookActor {
 
   private def queryForAllWebHooks(): List[WebHook] = {
     DB readOnly { implicit session =>
-      HookPersistence.getAll(session)
+      HookPersistence.getAll(UnconditionalTrueDecision)
     }
   }
 
@@ -326,7 +327,7 @@ object WebHookActor {
       log.info("Start to retry all inactive webhooks...")
 
       val hooks = DB readOnly { implicit session =>
-        HookPersistence.getAll(session).filter(_.enabled)
+        HookPersistence.getAll(UnconditionalTrueDecision).filter(_.enabled)
       }
 
       val hookIds = hooks
@@ -372,7 +373,7 @@ object WebHookActor {
 
         DB localTx { implicit session =>
           hookIds.foreach(hookId => {
-            HookPersistence.retry(session, hookId)
+            HookPersistence.retry(hookId, None)
             log.info(s"   Added new hook $hookId to DB.")
           })
         }
@@ -445,7 +446,7 @@ object WebHookActor {
 
     def getWebhook: WebHook =
       DB readOnly { implicit session =>
-        HookPersistence.getById(session, id) match {
+        HookPersistence.getById(id, UnconditionalTrueDecision) match {
           case None =>
             throw new RuntimeException(s"No WebHook with ID $id was found.")
           case Some(webHook) => webHook
@@ -491,14 +492,14 @@ object WebHookActor {
             } else {
               val eventPage = DB readOnly { implicit session =>
                 eventPersistence.getEvents(
-                  webHook.lastEvent,
-                  None,
-                  Some(config.getInt("webhooks.eventPageSize")),
-                  None,
-                  None,
-                  (webHook.config.aspects ++ webHook.config.optionalAspects).flatten.toSet,
-                  webHook.eventTypes,
-                  AllTenantsId
+                  tenantId = AllTenantsId,
+                  authDecision = UnconditionalTrueDecision,
+                  pageToken = webHook.lastEvent,
+                  limit = Some(config.getInt("webhooks.eventPageSize")),
+                  aspectIds =
+                    (webHook.config.aspects ++ webHook.config.optionalAspects).flatten.toSet,
+                  eventTypes = webHook.eventTypes,
+                  dereference = webHook.config.dereference
                 )
               }
 

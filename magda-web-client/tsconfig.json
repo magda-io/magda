@@ -1,4 +1,28 @@
 {
-    "extends": "./tsconfig-build.json",
-    "compilerOptions": {}
+    "extends": "../tsconfig-global.json",
+    "compilerOptions": {
+        "target": "es2015",
+        "allowJs": false,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "module": "esnext",
+        "resolveJsonModule": true,
+        "noEmit": true,
+        "noEmitOnError": false,
+        "moduleResolution": "node",
+        "noImplicitAny": false,
+        "sourceMap": false,
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "baseUrl": "src",
+        "composite": false,
+        "noFallthroughCasesInSwitch": true,
+        "noUnusedLocals": false,
+        "jsx": "react"
+    },
+    "include": ["src"],
+    "exclude": ["**/node_modules/**/*"]
 }

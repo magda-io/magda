@@ -1,11 +1,39 @@
 import { expect } from "chai";
 import OpaCompileResponseParser from "../OpaCompileResponseParser";
-import testData from "./sampleOpaResponse.json";
-import testDataSimple from "./sampleOpaResponseSimple.json";
-import testDataUnconditionalTrue from "./sampleOpaResponseUnconditionalTrue.json";
-import testDataUnconditionalTrueWithDefaultRule from "./sampleOpaResponseUnconditionalTrueWithDefaultRule.json";
-import testDataEsriPolicyWithDefaultRule from "./sampleOpaResponseWithDefaultRule.json";
+import testData from "./sampleOpaResponses/content.json";
+import testDataSimple from "./sampleOpaResponses/simple.json";
+import testDataUnconditionalTrue from "./sampleOpaResponses/unconditionalTrue.json";
+import testDataUnconditionalTrueWithDefaultRule from "./sampleOpaResponses/unconditionalTrueWithDefaultRule.json";
+import testDataEsriPolicyWithDefaultRule from "./sampleOpaResponses/withDefaultRule.json";
+import testDataUnconditionalNotMacthed from "./sampleOpaResponses/unconditionalNotMacthed.json";
+import testDataUnconditionalNotMacthedWithExtraRefs from "./sampleOpaResponses/unconditionalNotMacthedWithExtraRefs.json";
+import testDataUnconditionalFalseSimple from "./sampleOpaResponses/unconditionalFalseSimple.json";
+import testDataUnconditionalTrueSimple from "./sampleOpaResponses/unconditionalTrueSimple.json";
+import testDataDatasetPermissionWithOrgUnitConstraint from "./sampleOpaResponses/datasetPermissionWithOrgUnitConstraint.json";
+import testDataSingleTermAspectRef from "./sampleOpaResponses/singleTermAspectRef.json";
+import testExtraLargeResponse from "./sampleOpaResponses/extraLargeResponse.json";
 import "mocha";
+
+describe("Test extra large opa response", () => {
+    it("should process extra large opa response in timely manager", function () {
+        // this test case should be completed in less than 3000ms
+        // should be around 600ms locally but we set for 3000ms in case it get slower in CI (we use highmem instance)
+        this.timeout(3000);
+        console.time("process-extra-large-opa-response-time");
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(JSON.stringify(testExtraLargeResponse));
+        console.log(
+            "no.of original rules vs filtered rules: ",
+            parser.originalRules.length,
+            parser.rules.length
+        );
+        parser.evaluate();
+        //console.log(parser.evaluateAsHumanReadableString());
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+        console.timeEnd("process-extra-large-opa-response-time");
+    });
+});
 
 /**
  * Although equivalent, depends on how you write your policy,
@@ -169,5 +197,227 @@ describe("Test OpaCompileResultParser with esri policy that contains default rul
         const result = parser.evaluateAsHumanReadableString();
         expect(parser.hasWarns).to.be.equal(false);
         expect(result).to.be.equal("true");
+    });
+});
+
+describe("Test OpaCompileResultParser with unconditional not matched (no rule in query is matched) response", function () {
+    it("Parse sample response with no errors", function () {
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(
+            JSON.stringify(testDataUnconditionalNotMacthed)
+        );
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+
+    it("Should evalute query from parse result correctly", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalNotMacthed));
+        const result = parser.evaluate();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.isCompleteEvaluated).to.be.equal(true);
+        expect(result.value).to.be.undefined;
+    });
+
+    it("Should generate correct human readable string", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalNotMacthed));
+        const result = parser.evaluateAsHumanReadableString();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result).to.be.equal("undefined");
+    });
+});
+
+describe("Test OpaCompileResultParser with unconditional not matched (no rule in query is matched) with extra refs response", function () {
+    it("Parse sample response with no errors", function () {
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(
+            JSON.stringify(testDataUnconditionalNotMacthedWithExtraRefs)
+        );
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+
+    it("Should evalute query from parse result correctly", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(
+            JSON.stringify(testDataUnconditionalNotMacthedWithExtraRefs)
+        );
+        const result = parser.evaluate();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.isCompleteEvaluated).to.be.equal(true);
+        expect(result.value).to.be.undefined;
+    });
+
+    it("Should generate correct human readable string", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(
+            JSON.stringify(testDataUnconditionalNotMacthedWithExtraRefs)
+        );
+        const result = parser.evaluateAsHumanReadableString();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result).to.be.equal("undefined");
+    });
+});
+
+describe("Test OpaCompileResultParser with unconditional true (simple response)", function () {
+    it("Parse sample response with no errors", function () {
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(
+            JSON.stringify(testDataUnconditionalTrueSimple)
+        );
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+
+    it("Should evalute query from parse result correctly", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalTrueSimple));
+        const result = parser.evaluate();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.isCompleteEvaluated).to.be.equal(true);
+        expect(result.value).to.be.equal(true);
+    });
+
+    it("Should generate correct human readable string", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalTrueSimple));
+        const result = parser.evaluateAsHumanReadableString();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result).to.be.equal("true");
+    });
+});
+
+describe("Test OpaCompileResultParser with unconditional false (simple response)", function () {
+    it("Parse sample response with no errors", function () {
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(
+            JSON.stringify(testDataUnconditionalFalseSimple)
+        );
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+
+    it("Should evalute query from parse result correctly", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalFalseSimple));
+        const result = parser.evaluate();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.isCompleteEvaluated).to.be.equal(true);
+        expect(result.value).to.be.equal(false);
+    });
+
+    it("Should generate correct human readable string", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalFalseSimple));
+        const result = parser.evaluateAsHumanReadableString();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result).to.be.equal("false");
+    });
+});
+
+describe("Test OpaCompileResultParser with datasetPermissionWithOrgUnitConstraint", function () {
+    it("Parse sample response with no errors", function () {
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(
+            JSON.stringify(testDataDatasetPermissionWithOrgUnitConstraint)
+        );
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+
+    it("Should evalute query from parse result correctly", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(
+            JSON.stringify(testDataDatasetPermissionWithOrgUnitConstraint)
+        );
+        const result = parser.evaluate();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.isCompleteEvaluated).to.be.equal(false);
+        expect(result.residualRules).to.be.an("array");
+        expect(result.residualRules.length).to.be.equal(2);
+        expect(result.residualRules[0].isCompleteEvaluated).to.be.equal(false);
+        expect(result.residualRules[0].expressions.length).to.be.equal(2);
+        expect(result.residualRules[0].expressions[0].terms.length).to.be.equal(
+            3
+        );
+        expect(
+            result.residualRules[0].expressions[0].toHumanReadableString()
+        ).to.be.equal('input.object.dataset.publishingState = "published"');
+        expect(result.residualRules[0].expressions[1].terms.length).to.be.equal(
+            3
+        );
+        expect(
+            result.residualRules[0].expressions[1].toHumanReadableString()
+        ).to.be.equal(
+            '"5447fcb1-74ec-451c-b6ef-007aa736a346" = input.object.dataset.accessControl.orgUnitId'
+        );
+    });
+
+    it("Should generate correct human readable string", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(
+            JSON.stringify(testDataDatasetPermissionWithOrgUnitConstraint)
+        );
+        const result = parser.evaluateAsHumanReadableString();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result).to.be.equal(
+            `( input.object.dataset.publishingState = "published" AND \n"5447fcb1-74ec-451c-b6ef-007aa736a346" = input.object.dataset.accessControl.orgUnitId )\nOR\n( input.object.dataset.publishingState = "published" AND \n"b749759e-6e6a-44c0-87ab-4590744187cf" = input.object.dataset.accessControl.orgUnitId )`
+        );
+    });
+});
+
+describe("Test OpaCompileResultParser with testDataSingleTermAspectRef", function () {
+    it("Parse sample response with no errors", function () {
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(JSON.stringify(testDataSingleTermAspectRef));
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+
+    it("Should evalute query from parse result and output concise format correctly", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataSingleTermAspectRef));
+        const result = parser.evaluate();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.isCompleteEvaluated).to.be.equal(false);
+        expect(result.residualRules).to.be.an("array");
+        expect(result.residualRules.length).to.be.equal(1);
+        expect(result.residualRules[0].isCompleteEvaluated).to.be.equal(false);
+        const conciseRules = result.residualRules.map((item) =>
+            item.toConciseData()
+        );
+        expect(conciseRules[0].expressions.length).to.be.equal(2);
+        const exp1 = conciseRules[0].expressions[0];
+        expect(exp1.negated).to.be.equal(false);
+        expect(exp1.operator).to.be.null;
+        expect(exp1.operands.length).to.equal(1);
+        expect(exp1.operands[0]).to.deep.equal({
+            isRef: true,
+            value: "input.object.record.dcat-dataset-strings"
+        });
+
+        const exp2 = conciseRules[0].expressions[1];
+        expect(exp2.negated).to.be.equal(false);
+        expect(exp2.operator).to.be.equal("=");
+        expect(exp2.operands.length).to.equal(2);
+        expect(exp2.operands[0]).to.deep.equal({
+            isRef: true,
+            value: "input.object.record.publishing.state"
+        });
+        expect(exp2.operands[1]).to.deep.equal({
+            isRef: false,
+            value: "published"
+        });
+    });
+
+    it("Should generate correct human readable string", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataSingleTermAspectRef));
+        const result = parser.evaluateAsHumanReadableString();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result).to.be.equal(
+            `input.object.record.dcat-dataset-strings AND \ninput.object.record.publishing.state = "published"`
+        );
     });
 });

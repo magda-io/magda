@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-
-import { ContactPointDisplayOption } from "constants/DatasetConstants";
+import { ContactPointDisplayOption } from "../../../constants/DatasetConstants";
 import {
     fetchOrganization,
     fetchRecordWithNoCache,
@@ -15,21 +14,27 @@ import {
     getInitialVersionAspectData,
     VersionAspectData,
     updateRecordAspect,
-    patchRecord,
     tagRecordVersionEventId,
     VersionItem
-} from "api-clients/RegistryApis";
-import { config } from "config";
-import { User } from "reducers/userManagementReducer";
-import { RawDataset, DatasetDraft } from "helpers/record";
-import { autocompletePublishers } from "api-clients/SearchApis";
-import ServerError from "./Errors/ServerError";
-import defer from "helpers/defer";
-import { ReactStateUpdaterType } from "helpers/promisifySetState";
+} from "../../../api-clients/RegistryApis";
+import { config } from "../../../config";
+import { User } from "../../../reducers/userManagementReducer";
+import {
+    RawDataset,
+    DatasetDraft,
+    RawDistribution
+} from "../../../helpers/record";
+import { autocompletePublishers } from "../../../api-clients/SearchApis";
+import ServerError from "@magda/typescript-common/dist/ServerError";
+import defer from "../../../helpers/defer";
+import { ReactStateUpdaterType } from "../../../helpers/promisifySetState";
 import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownloadUrl";
 import deleteFile from "./Pages/AddFiles/deleteFile";
-import escapeJsonPatchPointer from "helpers/escapeJsonPatchPath";
 import uniq from "lodash/uniq";
+import {
+    indexDatasetById,
+    deleteDatasetIndexById
+} from "../../../api-clients/IndexerApis";
 
 export type Distribution = {
     title: string;
@@ -165,12 +170,9 @@ export type Dataset = {
     ownerId?: string; // --- actual owner of the dataset; Initially set to same as `editingUserId` but can be changed to different user.
     editingUserId?: string; // --- always populate with current logged-in user id (if available)
     owningOrgUnitId?: string;
-    custodianOrgUnitId?: string;
     contactPointDisplay?: string;
     landingPage?: string;
     importance?: string;
-    accessLevel?: string;
-    accessNotesTemp?: string;
 };
 
 export type Provenance = {
@@ -182,8 +184,11 @@ export type Provenance = {
 };
 
 export type DatasetPublishing = {
-    state: string;
-    level: string;
+    state?: string;
+    hasEverPublished?: boolean;
+    level?: string;
+    custodianOrgUnitId?: string;
+    managingOrgUnitId?: string;
     notesToApprover?: string;
     contactPointDisplay?: ContactPointDisplayOption;
     publishAsOpenData?: {
@@ -270,7 +275,7 @@ export type DatasetStateUpdaterType = ReactStateUpdaterType<State>;
 export const getDistributionDeleteCallback = (
     datasetStateUpdater: DatasetStateUpdaterType
 ) => (distId: string) =>
-    new Promise((resolve, reject) => {
+    new Promise<void>((resolve, reject) => {
         datasetStateUpdater(
             (state) => ({
                 ...state,
@@ -285,7 +290,7 @@ export const getDistributionDeleteCallback = (
 export const getDistributionAddCallback = (
     datasetStateUpdater: DatasetStateUpdaterType
 ) => (dist: Distribution) =>
-    new Promise((resolve, reject) => {
+    new Promise<void>((resolve, reject) => {
         datasetStateUpdater(
             (state) => ({
                 ...state,
@@ -301,7 +306,7 @@ export const getDistributionUpdateCallback = (
     distId: string,
     dist: ((prevState: Readonly<Distribution>) => Distribution) | Distribution
 ) =>
-    new Promise((resolve, reject) => {
+    new Promise<void>((resolve, reject) => {
         datasetStateUpdater((state) => {
             try {
                 return {
@@ -336,28 +341,49 @@ type Access = {
     notes?: string;
 };
 
-const DEFAULT_POLICY_ID = "object.registry.record.owner_only";
-const PUBLISHED_DATASET_POLICY_ID = "object.registry.record.public";
-
 function getInternalDatasetSourceAspectData() {
     return {
         id: "magda",
-        name: "This Magda metadata creation tool",
+        name: "Magda metadata creation tool",
         type: "internal",
         url: config.baseExternalUrl
     };
 }
 
 function getAccessControlAspectData(state: State) {
-    const { dataset } = state;
+    const { dataset, datasetPublishing } = state;
+    let orgUnitId: string | undefined;
+    if (datasetPublishing?.level === "organization") {
+        orgUnitId = "";
+    } else if (
+        datasetPublishing?.level === "custodian" &&
+        datasetPublishing?.custodianOrgUnitId
+    ) {
+        orgUnitId = datasetPublishing.custodianOrgUnitId;
+    } else if (
+        datasetPublishing?.level === "team" &&
+        datasetPublishing?.managingOrgUnitId
+    ) {
+        orgUnitId = datasetPublishing.managingOrgUnitId;
+    } else if (
+        datasetPublishing?.level === "creatorOrgUnit" &&
+        dataset?.owningOrgUnitId
+    ) {
+        orgUnitId = dataset.owningOrgUnitId;
+    } else if (
+        datasetPublishing?.level === "selectedOrgUnit" &&
+        dataset?.owningOrgUnitId
+    ) {
+        orgUnitId = dataset.owningOrgUnitId;
+    }
+
     return {
-        ownerId: dataset.editingUserId ? dataset.editingUserId : undefined,
-        orgUnitOwnerId: dataset.owningOrgUnitId
-            ? dataset.owningOrgUnitId
+        ownerId: dataset.ownerId
+            ? dataset.ownerId
+            : dataset.editingUserId
+            ? dataset.editingUserId
             : undefined,
-        custodianOrgUnitId: dataset.custodianOrgUnitId
-            ? dataset.custodianOrgUnitId
-            : undefined
+        orgUnitId: typeof orgUnitId === "string" ? orgUnitId : undefined
     };
 }
 
@@ -436,19 +462,13 @@ function populateDcatDatasetStringAspect(data: RawDataset, state: State) {
         state.dataset.defaultLicense = datasetDcatString?.defaultLicense;
     }
 
-    if (data.aspects?.["dataset-access-control"]?.ownerId) {
-        state.dataset.ownerId =
-            data.aspects?.["dataset-access-control"]?.ownerId;
+    if (data.aspects?.["access-control"]?.ownerId) {
+        state.dataset.ownerId = data.aspects?.["access-control"]?.ownerId;
     }
 
-    if (data.aspects?.["dataset-access-control"]?.orgUnitOwnerId) {
+    if (data.aspects?.["access-control"]?.orgUnitId) {
         state.dataset.owningOrgUnitId =
-            data.aspects?.["dataset-access-control"]?.orgUnitOwnerId;
-    }
-
-    if (data.aspects?.["dataset-access-control"]?.custodianOrgUnitId) {
-        state.dataset.custodianOrgUnitId =
-            data.aspects?.["dataset-access-control"]?.custodianOrgUnitId;
+            data.aspects?.["access-control"]?.orgUnitId;
     }
 }
 
@@ -525,7 +545,7 @@ async function convertToDatasetAutoCompleteData(
             return result;
         }
     }
-    return;
+    return undefined;
 }
 
 async function populateProvenanceAspect(data: RawDataset, state: State) {
@@ -742,8 +762,9 @@ export function createBlankState(user: User): State {
         },
         datasetPublishing: {
             state: "draft",
-            level: "agency",
-            contactPointDisplay: "team"
+            level: "custodian",
+            hasEverPublished: false,
+            contactPointDisplay: "organization"
         },
         spatialCoverage: {
             // Australia, Mainland
@@ -753,7 +774,7 @@ export function createBlankState(user: User): State {
             intervals: []
         },
         datasetAccess: {
-            useStorageApi: false
+            useStorageApi: config.useMagdaStorageByDefault
         },
         informationSecurity: {},
         provenance: {},
@@ -815,7 +836,7 @@ export async function loadStateFromRegistry(
         // --- we turned off cache here
         record = await fetchRecordWithNoCache(id, ["dataset-draft"], [], false);
     } catch (e) {
-        if (e! instanceof ServerError || e.statusCode !== 404) {
+        if (!(e instanceof ServerError) || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create blank status if can't find an existing one
             throw e;
         }
@@ -893,13 +914,18 @@ export async function saveStateToRegistry(state: State, id: string) {
     try {
         // --- we turned off cache here
         // --- we won't check `dataset-draft` aspect as it's possible a dataset record with no dataset-draft exist (e.g. edit flow)
-        record = await fetchRecordWithNoCache(id, [], [], false);
+        record = await fetchRecordWithNoCache(id, [], ["publishing"], false);
     } catch (e) {
-        if (e! instanceof ServerError || e.statusCode !== 404) {
+        if (!(e instanceof ServerError) || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create one if can't find an existing one
             throw e;
         }
     }
+
+    const isDraft = record?.aspects?.["publishing"]?.state
+        ? record.aspects["publishing"].state === "draft"
+        : // when publishing aspect not exist assume it's published dataset
+          false;
 
     let datasetDcatString;
 
@@ -924,26 +950,42 @@ export async function saveStateToRegistry(state: State, id: string) {
         }
     };
 
+    const dcatDatasetStrinsAspectData = {
+        ...datasetDcatString,
+        title: datasetDcatString?.title ? datasetDcatString.title : "",
+        description: datasetDcatString?.description
+            ? datasetDcatString.description
+            : "",
+        themes: datasetDcatString?.themes ? datasetDcatString.themes : [],
+        keywords: datasetDcatString?.keywords ? datasetDcatString.keywords : []
+    };
+
     if (!record) {
         // --- dataset record not exist
         await createDataset(
             {
                 id,
                 name: "",
-                authnReadPolicyId: DEFAULT_POLICY_ID,
                 aspects: {
                     publishing: getPublishingAspectData(state),
-                    "dataset-access-control": getAccessControlAspectData(state),
-                    source: getInternalDatasetSourceAspectData()
+                    "access-control": getAccessControlAspectData(state),
+                    source: getInternalDatasetSourceAspectData(),
+                    "dcat-dataset-strings": dcatDatasetStrinsAspectData,
+                    "dataset-draft": datasetDraftAspectData
                 }
             },
             []
         );
-
-        // --- if `dataset-draft` not exist, the API will create the aspect data instead
-        await updateRecordAspect(id, "dataset-draft", datasetDraftAspectData);
     } else {
         await updateRecordAspect(id, "dataset-draft", datasetDraftAspectData);
+        if (isDraft) {
+            // for published dataset in editing mode, we don't want to update `dcat-dataset-strings` till published
+            await updateRecordAspect(
+                id,
+                "dcat-dataset-strings",
+                dcatDatasetStrinsAspectData
+            );
+        }
     }
 
     return id;
@@ -998,15 +1040,36 @@ async function ensureBlankDatasetIsSavedToRegistry(
         // --- if the dataset not exist in registry, save it now
         // --- the dataset should have the same visibility as the current one
         // --- but always be a draft one
+
+        let datasetDcatString;
+
+        try {
+            datasetDcatString = buildDcatDatasetStrings(state.dataset);
+        } catch (e) {
+            datasetDcatString = {};
+        }
+
+        const dcatDatasetStrinsAspectData = {
+            ...datasetDcatString,
+            title: datasetDcatString?.title ? datasetDcatString.title : "",
+            description: datasetDcatString?.description
+                ? datasetDcatString.description
+                : "",
+            themes: datasetDcatString?.themes ? datasetDcatString.themes : [],
+            keywords: datasetDcatString?.keywords
+                ? datasetDcatString.keywords
+                : []
+        };
+
         await createDataset(
             {
                 id,
                 name,
-                authnReadPolicyId: DEFAULT_POLICY_ID,
                 aspects: {
                     publishing: getPublishingAspectData(state),
-                    "dataset-access-control": getAccessControlAspectData(state),
-                    source: getInternalDatasetSourceAspectData()
+                    "access-control": getAccessControlAspectData(state),
+                    source: getInternalDatasetSourceAspectData(),
+                    "dcat-dataset-strings": dcatDatasetStrinsAspectData
                 }
             },
             []
@@ -1041,7 +1104,7 @@ export async function preProcessDatasetAutocompleteChoices(
     | undefined
 > {
     if (!choices?.length) {
-        return;
+        return undefined;
     }
     const result: {
         id?: string[];
@@ -1066,7 +1129,7 @@ export async function preProcessDatasetAutocompleteChoices(
         });
     }
     if (!result.length) {
-        return;
+        return undefined;
     }
     return result;
 }
@@ -1137,8 +1200,7 @@ async function convertStateToDatasetRecord(
     distributionRecords: Record[],
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    isUpdate: boolean = false,
-    authnReadPolicyId?: string
+    isUpdate: boolean = false
 ): Promise<Record> {
     const {
         dataset,
@@ -1165,14 +1227,9 @@ async function convertStateToDatasetRecord(
         }));
     }
 
-    const authPolicy = authnReadPolicyId
-        ? authnReadPolicyId
-        : DEFAULT_POLICY_ID;
-
     const inputDataset = {
         id: datasetId,
         name: dataset.title,
-        authnReadPolicyId: authPolicy,
         aspects: {
             publishing: getPublishingAspectData(state),
             "dcat-dataset-strings": buildDcatDatasetStrings(dataset),
@@ -1183,7 +1240,7 @@ async function convertStateToDatasetRecord(
             },
             access: datasetAccess,
             "information-security": informationSecurity,
-            "dataset-access-control": getAccessControlAspectData(state),
+            "access-control": getAccessControlAspectData(state),
             currency: {
                 ...currency,
                 supersededBy:
@@ -1234,15 +1291,9 @@ async function convertStateToDatasetRecord(
     return inputDataset;
 }
 
-async function convertStateToDistributionRecords(
-    state: State,
-    authnReadPolicyId?: string
-) {
+async function convertStateToDistributionRecords(state: State) {
     const { dataset, distributions, licenseLevel } = state;
 
-    const authPolicy = authnReadPolicyId
-        ? authnReadPolicyId
-        : DEFAULT_POLICY_ID;
     const distributionRecords = distributions.map((distribution) => {
         const aspect =
             licenseLevel === "dataset"
@@ -1252,7 +1303,7 @@ async function convertStateToDistributionRecords(
                   }
                 : distribution;
 
-        // --- version property should be created as a seperate version aspect
+        // --- version property should be created as a separate version aspect
         // --- rather than part of `dcat-distribution-strings`
         aspect.version = undefined;
 
@@ -1261,6 +1312,10 @@ async function convertStateToDistributionRecords(
             name: distribution.title,
             aspects: {
                 "dcat-distribution-strings": aspect,
+                "access-control": getAccessControlAspectData(state),
+                "information-security": state.informationSecurity,
+                publishing: getPublishingAspectData(state),
+                source: getInternalDatasetSourceAspectData(),
                 // --- set distribution initial version if not exist
                 // --- the version will be bumped when it's superseded by a new file / distribution
                 version: distribution?.version
@@ -1272,8 +1327,7 @@ async function convertStateToDistributionRecords(
                               ? distribution.downloadURL
                               : undefined
                       )
-            },
-            authnReadPolicyId: authPolicy
+            }
         };
     });
 
@@ -1282,8 +1336,8 @@ async function convertStateToDistributionRecords(
 
 /**
  * Update ckan export aspect status acccording to UI status.
- * We use JSON Patch request to avoid edging cases.
- * Without using patch API, all content of the `export aspect` will always be replaced and all fields (including important backend runtime fields) will also be overwritten.
+ * We use PUT request with `merge` = true to avoid edging cases.
+ * Without using the `merge` option, all content of the `export aspect` will always be replaced and all fields (including important backend runtime fields) will also be overwritten.
  * If during this time (between the last time of UI retrieving the `export aspect data` and the time when the export aspect update request sent by UI arrives at registry api), backend minion updates some the important runtime fields.
  * Those fields' value will be overwritten with outdated value.
  *
@@ -1297,69 +1351,40 @@ async function updateCkanExportStatus(datasetId: string, state: State) {
 
     // Other fields are all runtime status fields that are only allowed to be altered by minions.
     // Any attempts to update those from frontend will more or less create edging cases (see comment above).
-
-    const exportDataPointer = `/aspects/ckan-export/${escapeJsonPatchPointer(
-        config.defaultCkanServer
-    )}`;
-
     const uiStatus = state?.datasetPublishing?.publishAsOpenData?.dga
         ? true
         : false;
 
     await ensureAspectExists("ckan-export");
 
-    // Here is a trick based my tests on the [JsonPatch implementation](https://github.com/gnieh/diffson) used in our scala code base:
-    // `add` operation will always work (as long as the aspect exists).
-    // If the field is already there, `add` will just `replace` the value
-    try {
-        await patchRecord(datasetId, [
-            {
-                op: "add",
-                path: `${exportDataPointer}/status`,
-                value: uiStatus ? "retain" : "withdraw"
-            },
-            {
-                op: "add",
-                path: `${exportDataPointer}/exportRequired`,
-                value: true
+    await updateRecordAspect(
+        datasetId,
+        "ckan-export",
+        {
+            [config.defaultCkanServer]: {
+                status: uiStatus ? "retain" : "withdraw",
+                exportRequired: true
             }
-        ]);
-    } catch (e) {
-        if (e instanceof ServerError && e.statusCode === 400) {
-            // 400 means Bad request. Only chance it could happend would be aspect doesn't exist at all
-            // we will create aspect instead
-            // Update Record Aspect API will actually create the aspect when it doesn't exist
-            await updateRecordAspect(datasetId, "ckan-export", {
-                [config.defaultCkanServer]: {
-                    status: uiStatus ? "retain" : "withdraw",
-                    exportRequired: true
-                }
-            });
-        } else {
-            throw e;
-        }
-    }
+        },
+        // turned on merge option so the PUT request will remove other fields not included in the request
+        true
+    );
 }
 
 export async function createDatasetFromState(
     datasetId: string,
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    authnReadPolicyId?: string,
     tagVersion: boolean = false
-) {
-    const distributionRecords = await convertStateToDistributionRecords(
-        state,
-        authnReadPolicyId
-    );
+): Promise<[Record, number]> {
+    const distributionRecords = await convertStateToDistributionRecords(state);
 
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
         distributionRecords,
         state,
         setState,
-        false,
-        authnReadPolicyId
+        false
     );
 
     return await createDataset(datasetRecord, distributionRecords, tagVersion);
@@ -1369,22 +1394,23 @@ export async function updateDatasetFromState(
     datasetId: string,
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    authnReadPolicyId?: string,
     tagVersion: boolean = false
 ) {
-    const distributionRecords = await convertStateToDistributionRecords(
-        state,
-        authnReadPolicyId
-    );
+    const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
         distributionRecords,
         state,
         setState,
-        true,
-        authnReadPolicyId
+        true
     );
-    return await updateDataset(datasetRecord, distributionRecords, tagVersion);
+
+    return await updateDataset(
+        datasetRecord,
+        distributionRecords,
+        tagVersion,
+        true
+    );
 }
 
 type FailedFileInfo = {
@@ -1532,7 +1558,6 @@ export async function submitDatasetFromState(
             datasetId,
             state,
             setState,
-            PUBLISHED_DATASET_POLICY_ID,
             true
         );
     } else {
@@ -1540,7 +1565,6 @@ export async function submitDatasetFromState(
             datasetId,
             state,
             setState,
-            PUBLISHED_DATASET_POLICY_ID,
             true
         );
     }
@@ -1566,8 +1590,181 @@ export async function submitDatasetFromState(
 
     await cleanUpDistributions(state);
 
-    return await cleanUpOrphanFiles(
+    const failedFileInfo = await cleanUpOrphanFiles(
         state.uploadedFileUrls,
         state.distributions
     );
+
+    try {
+        const indexResult = await indexDatasetById(datasetId);
+        if (indexResult?.failureReasons?.length) {
+            console.error(
+                `Failed to index dataset ${datasetId}: `,
+                indexResult
+            );
+            throw new ServerError(
+                `Failed to index dataset ${datasetId} for search engine: ${indexResult.failureReasons.join(
+                    "; "
+                )}`,
+                500
+            );
+        } else if (indexResult?.warnReasons?.length) {
+            console.warn(
+                `Warnings when index dataset ${datasetId}: `,
+                indexResult
+            );
+        }
+    } catch (e) {
+        if (e instanceof Error) {
+            e.message = `Failed to index dataset ${datasetId} for search engine: ${e.message}`;
+        }
+        console.error(
+            `Failed to index dataset ${datasetId} for search engine: `,
+            e
+        );
+        throw e;
+    }
+
+    return failedFileInfo;
+}
+
+export async function deleteFileByUrl(
+    fileUrl: string
+): Promise<{ title: string; id?: string; error: string } | undefined> {
+    let distId, fileName;
+
+    try {
+        const result = getDistInfoFromDownloadUrl(fileUrl);
+        fileName = result.fileName;
+    } catch (e) {
+        return { title: fileUrl, error: "" + e };
+    }
+
+    try {
+        await deleteFile({
+            title: fileName,
+            downloadURL: fileUrl
+        } as Distribution);
+        return undefined;
+    } catch (e) {
+        console.error(e);
+        return { id: distId, title: fileName, error: "" + e };
+    }
+}
+
+export type FileOperationFailureReasonType = {
+    id?: string;
+    title: string;
+    error: string;
+};
+
+export type DatasetDeletionResultType = {
+    hasError: boolean;
+    deletedFiles: string[];
+    failedDeletedFiles: string[];
+    failureReasons: FileOperationFailureReasonType[];
+};
+
+export async function deleteDataset(
+    datasetId: string
+): Promise<DatasetDeletionResultType> {
+    const deletedFiles: string[] = [];
+    const failedDeletedFiles: string[] = [];
+    const failureReasons: FileOperationFailureReasonType[] = [];
+
+    const datasetStateData = await loadStateFromRegistry(datasetId, {} as User);
+    let datasetData: RawDataset;
+    try {
+        datasetData = await fetchRecordWithNoCache(datasetId, [
+            "dcat-distribution-strings",
+            "dataset-distributions",
+            "version"
+        ]);
+    } catch (e) {
+        if (e instanceof ServerError && e.statusCode === 404) {
+            return {
+                hasError: false,
+                deletedFiles,
+                failedDeletedFiles,
+                failureReasons
+            };
+        } else {
+            throw e;
+        }
+    }
+
+    const distributions = datasetData.aspects[
+        "distributions"
+    ] as RawDistribution[];
+
+    if (distributions?.length) {
+        for (const dist of distributions) {
+            const distInfo = dist.aspects["dcat-distribution-strings"];
+            const version = dist.aspects["version"];
+            if (distInfo?.useStorageApi && distInfo?.downloadURL) {
+                if (
+                    deletedFiles
+                        .concat(failedDeletedFiles)
+                        .indexOf(distInfo.downloadURL) === -1
+                ) {
+                    const result = await deleteFileByUrl(distInfo.downloadURL);
+                    if (result) {
+                        failureReasons.push(result);
+                        failedDeletedFiles.push(distInfo.downloadURL);
+                    } else {
+                        deletedFiles.push(distInfo.downloadURL);
+                    }
+                }
+            }
+            if (version?.versions?.length) {
+                for (const versionInfo of version.versions) {
+                    if (
+                        versionInfo?.internalDataFileUrl &&
+                        deletedFiles
+                            .concat(failedDeletedFiles)
+                            .indexOf(versionInfo.internalDataFileUrl) === -1
+                    ) {
+                        const result = await deleteFileByUrl(
+                            versionInfo.internalDataFileUrl
+                        );
+                        if (result) {
+                            failureReasons.push(result);
+                            failedDeletedFiles.push(
+                                versionInfo.internalDataFileUrl
+                            );
+                        } else {
+                            deletedFiles.push(versionInfo.internalDataFileUrl);
+                        }
+                    }
+                }
+            }
+            await deleteRecord(dist.id);
+        }
+    }
+
+    if (datasetStateData?.uploadedFileUrls?.length) {
+        for (const fileUrl of datasetStateData.uploadedFileUrls) {
+            if (
+                deletedFiles.concat(failedDeletedFiles).indexOf(fileUrl) === -1
+            ) {
+                const result = await deleteFileByUrl(fileUrl);
+                if (result) {
+                    failureReasons.push(result);
+                    failedDeletedFiles.push(fileUrl);
+                } else {
+                    deletedFiles.push(fileUrl);
+                }
+            }
+        }
+    }
+
+    await deleteDatasetIndexById(datasetId);
+    await deleteRecord(datasetId);
+
+    return {
+        hasError: failedDeletedFiles?.length ? true : false,
+        deletedFiles,
+        failedDeletedFiles,
+        failureReasons
+    };
 }

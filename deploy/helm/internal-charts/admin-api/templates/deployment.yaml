@@ -32,25 +32,27 @@ spec:
             "--registryApiUrl", "http://registry-api/v0",
             "--imageTag", {{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }},
             "--pullPolicy", {{ .Values.global.image.pullPolicy }},
-            "--kubernetesApiType", "cluster",
             "--userId", {{ .Values.global.defaultAdminUserId | quote }},
-            "--namespace", {{ .Values.namespace | default .Release.Namespace }}
+{{- if .Values.skipAuth }}
+            "--skipAuth", "true",
+{{- end }}
+            "--namespace", {{ .Values.namespace | default .Release.Namespace | quote }}
         ]
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
             path: /v0/status/live
             port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 10
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 60
         readinessProbe:
           httpGet:
             path: /v0/status/ready
             port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 10
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 60
 {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}

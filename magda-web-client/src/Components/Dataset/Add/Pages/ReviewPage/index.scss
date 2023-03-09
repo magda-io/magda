@@ -30,6 +30,17 @@
         .collapse-item:not(:last-child) {
             margin-bottom: 50px;
         }
+
+        .publishing-status-section {
+            margin-bottom: 50px;
+            .heading {
+                font-size: 1.25rem;
+                line-height: 1.2;
+                font-weight: 400;
+                color: black;
+                margin-right: 20px;
+            }
+        }
     }
 
     .collapse-box-body {

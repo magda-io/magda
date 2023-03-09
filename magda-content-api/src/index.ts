@@ -1,9 +1,11 @@
 import express from "express";
 import yargs from "yargs";
-
+import { createHttpTerminator } from "http-terminator";
 import createApiRouter from "./createApiRouter";
 import Database from "./Database";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import { SQLSyntax } from "sql-syntax";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -35,16 +37,35 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:6104/v0"
         })
-        .option("opaUrl", {
-            describe: "The base URL of the opa API",
-            type: "string",
-            default: "http://localhost:6104/v0/opa/"
+        .option("skipAuth", {
+            describe:
+                "When set to true, API will not query policy engine for auth decision but assume it's always permitted. It's for debugging only.",
+            type: "boolean",
+            default: process.env.SKIP_AUTH == "true" ? true : false
+        })
+        .option("debug", {
+            describe:
+                "When set to true, print verbose debug info (e.g. SQL statements) to log.",
+            type: "boolean",
+            default: process.env.DEBUG == "true" ? true : false
         })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
         }).argv
 );
+
+const skipAuth = argv.skipAuth === true ? true : false;
+const authDecisionClient = new AuthDecisionQueryClient(
+    argv.authApiUrl,
+    skipAuth
+);
+console.log(`SkipAuth: ${skipAuth}`);
+
+if (argv.debug === true) {
+    console.log("DEBUG mode is ON!");
+    SQLSyntax.isDebugMode = true;
+}
 
 // Create a new Express application.
 var app = express();
@@ -54,17 +75,20 @@ app.use(
     "/v0",
     createApiRouter({
         authApiUrl: argv.authApiUrl,
+        authDecisionClient,
         jwtSecret: argv.jwtSecret,
         database: new Database({
             dbHost: argv.dbHost,
             dbPort: argv.dbPort,
-            dbName: argv.dbName,
-            opaUrl: argv.opaUrl
+            dbName: argv.dbName
         })
     })
 );
 
-app.listen(argv.listenPort);
+const server = app.listen(argv.listenPort);
+const httpTerminator = createHttpTerminator({
+    server
+});
 console.log("Contents API started on port " + argv.listenPort);
 
 process.on(
@@ -74,3 +98,11 @@ process.on(
         console.error(reason);
     }
 );
+
+process.on("SIGTERM", () => {
+    console.log("SIGTERM signal received: closing HTTP server");
+    httpTerminator.terminate().then(() => {
+        console.log("HTTP server closed");
+        process.exit(0);
+    });
+});

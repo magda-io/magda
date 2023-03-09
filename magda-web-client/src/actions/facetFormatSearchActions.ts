@@ -51,12 +51,12 @@ export function fetchFormatSearchResults(
             });
 
             const url: string =
-                config.searchApiUrl +
+                config.searchApiBaseUrl +
                 `facets/format/options?generalQuery=${encodeURIComponent(
                     generalQuery.q || "*"
                 )}&${generalQueryString}&facetQuery=${facetQuery}`;
 
-            return fetch(url, config.credentialsFetchOptions)
+            return fetch(url, config.commonFetchRequestOptions)
                 .then((response) => {
                     if (response.status === 200) {
                         return response.json();

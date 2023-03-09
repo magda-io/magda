@@ -1,12 +1,17 @@
 import React, { FunctionComponent } from "react";
 import ToolTip from "Components/Common/TooltipWrapper";
 import { ParsedDataset } from "helpers/record";
-import { withRouter, RouteComponentProps } from "react-router-dom";
+import { withRouter, match } from "react-router-dom";
+import { Location, History } from "history";
+import redirect from "helpers/redirect";
 
-interface PropsType extends RouteComponentProps {
+type PropsType = {
     dataset: ParsedDataset;
+    history: History;
+    location: Location;
     hasEditPermissions: boolean;
-}
+    match: match;
+};
 
 const DatasetEditButton: FunctionComponent<PropsType> = (props) => {
     const { dataset, hasEditPermissions } = props;
@@ -28,9 +33,12 @@ const DatasetEditButton: FunctionComponent<PropsType> = (props) => {
                 className="au-btn au-btn--secondary ask-question-button"
                 disabled={!isDatasetEditable}
                 onClick={() => {
-                    props.history.push({
-                        pathname: `/dataset/edit/${dataset.identifier}`
-                    });
+                    redirect(
+                        props.history,
+                        `/dataset/edit/${encodeURIComponent(
+                            dataset.identifier as string
+                        )}`
+                    );
                 }}
             >
                 Edit the Dataset{" "}

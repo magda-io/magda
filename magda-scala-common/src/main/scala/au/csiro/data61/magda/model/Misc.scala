@@ -77,7 +77,7 @@ package misc {
 
   case class AccessControl(
       ownerId: Option[String] = None,
-      orgUnitOwnerId: Option[String] = None,
+      orgUnitId: Option[String] = None,
       preAuthorisedPermissionIds: Option[Seq[String]] = None
   )
 
@@ -343,7 +343,7 @@ package misc {
       rights: Option[String] = None,
       accessURL: Option[String] = None,
       downloadURL: Option[String] = None,
-      byteSize: Option[Int] = None,
+      byteSize: Option[Long] = None,
       mediaType: Option[MediaType] = None,
       source: Option[DataSouce] = None,
       format: Option[String] = None

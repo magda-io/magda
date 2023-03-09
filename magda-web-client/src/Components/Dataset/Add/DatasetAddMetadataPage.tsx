@@ -1,5 +1,5 @@
 import React from "react";
-import { withRouter } from "react-router";
+import { withRouter, match } from "react-router-dom";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
@@ -45,6 +45,8 @@ import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
 import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
+import redirect from "helpers/redirect";
+import Loader from "rsuite/Loader";
 
 type Props = {
     initialState: State;
@@ -58,6 +60,8 @@ type Props = {
     history: any;
     user: User;
     isBackToReview: boolean;
+    match: match;
+    location: any;
 };
 
 class NewDataset extends React.Component<Props, State> {
@@ -109,7 +113,13 @@ class NewDataset extends React.Component<Props, State> {
             />
         ),
         this.renderSubmitPage.bind(this),
-        () => <ReviewPage stateData={this.state} />,
+        () => (
+            <ReviewPage
+                stateData={this.state}
+                editStateWithUpdater={this.setState.bind(this)}
+                isEditView={false}
+            />
+        ),
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
             : () => (
@@ -267,9 +277,12 @@ class NewDataset extends React.Component<Props, State> {
                                         className="au-btn au-btn--secondary save-button"
                                         onClick={this.saveAndExit.bind(this)}
                                     >
-                                        Save and exit
+                                        Save and exit without publishing
                                     </AsyncButton>
                                 )}
+                                {this.state.isPublishing ? (
+                                    <Loader content="Submit dataset, please wait..." />
+                                ) : null}
                             </div>
                         </div>
                     </>
@@ -289,12 +302,10 @@ class NewDataset extends React.Component<Props, State> {
 
             if (config?.featureFlags?.previewAddDataset) {
                 // --- still redirect to dataset list page in preview wmdoe
-                this.props.history.push(`/dataset/list`);
+                redirect(this.props.history, `/dataset/list`);
             } else {
-                // --- redirect to home page for my dataset section
-                // --- set nocache flag so that the my dataset section know to disable cache when query registry
-                // --- otherwise, the recent created dataset may not be list in my dataset
-                this.props.history.push(`/?nocache`);
+                // redirect to datasets management
+                redirect(this.props.history, `/settings/datasets/draft`);
             }
         } catch (e) {
             this.props.createNewDatasetError(e);
@@ -318,8 +329,12 @@ class NewDataset extends React.Component<Props, State> {
             await this.resetError();
             if (ValidationManager.validateAll()) {
                 await saveState(this.state, this.props.datasetId);
-                this.props.history.push(
-                    "/dataset/add/metadata/" + this.props.datasetId + "/" + step
+                redirect(
+                    this.props.history,
+                    "/dataset/add/metadata/" +
+                        encodeURIComponent(this.props.datasetId) +
+                        "/" +
+                        step
                 );
             }
         } catch (e) {
@@ -367,7 +382,8 @@ class NewDataset extends React.Component<Props, State> {
                 isPublishing: true,
                 datasetPublishing: {
                     ...state.datasetPublishing,
-                    state: "published"
+                    state: "published",
+                    hasEverPublished: true
                 }
             }));
 
@@ -377,7 +393,8 @@ class NewDataset extends React.Component<Props, State> {
                     ...this.state,
                     datasetPublishing: {
                         ...this.state.datasetPublishing,
-                        state: "published"
+                        state: "published",
+                        hasEverPublished: true
                     }
                 },
                 this.setState.bind(this)
@@ -386,8 +403,10 @@ class NewDataset extends React.Component<Props, State> {
             if (result.length) {
                 throw new FileDeletionError(result);
             }
-
-            this.props.history.push(`/dataset/add/metadata/${datasetId}/6`);
+            redirect(
+                this.props.history,
+                `/dataset/add/metadata/${encodeURIComponent(datasetId)}/6`
+            );
         } catch (e) {
             this.setState({
                 isPublishing: false
@@ -426,5 +445,5 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 export default withAddDatasetState(
-    withRouter(connect(mapStateToProps, mapDispatchToProps)(NewDataset)) as any
+    connect(mapStateToProps, mapDispatchToProps)(withRouter(NewDataset))
 );

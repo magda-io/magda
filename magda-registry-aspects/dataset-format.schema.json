@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "Aspect containing the format of a distribution, and the probability that it's correct",
+    "title": "Dataset Format Aspect",
+    "description": "Aspect containing the format of a distribution, and the probability that it's correct",
     "type": "object",
     "properties": {
         "format": {

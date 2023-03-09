@@ -149,7 +149,7 @@ export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
     static create<V>(
         singleEditor: Editor<V>,
         createNewValue: () => V,
-        canBeAdded: (value: V) => boolean = value => !!value,
+        canBeAdded: (value: V) => boolean = (value) => !!value,
         addOnChange: boolean = false,
         renderAbove: boolean = true
     ): Editor<V[]> {

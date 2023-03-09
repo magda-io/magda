@@ -11,6 +11,7 @@ export type MinionArguments = {
     enableMultiTenant: boolean;
     tenantUrl: string;
     retries: string | number;
+    crawlerRecordFetchNumber?: string | number;
 };
 
 /**

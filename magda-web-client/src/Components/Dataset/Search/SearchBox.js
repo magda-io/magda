@@ -1,7 +1,6 @@
 import "./SearchBox.scss";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import propTypes from "prop-types";
 import debounce from "lodash/debounce";
 import defined from "helpers/defined";
 import React, { Component } from "react";
@@ -13,6 +12,7 @@ import { Small } from "Components/Common/Responsive";
 import stripFiltersFromQuery from "./stripFiltersFromQuery";
 import { withRouter } from "react-router-dom";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
+import redirect from "helpers/redirect";
 
 class SearchBox extends Component {
     constructor(props) {
@@ -105,15 +105,11 @@ class SearchBox extends Component {
      * eg: {'q': 'water'}
      */
     updateQuery(query) {
-        this.props.history.push({
-            pathname: "/search",
-            search: queryString.stringify(
-                Object.assign(
-                    queryString.parse(this.props.location.search),
-                    query
-                )
-            )
-        });
+        redirect(
+            this.props.history,
+            "/search",
+            Object.assign(queryString.parse(this.props.location.search), query)
+        );
     }
 
     /**
@@ -226,10 +222,6 @@ class SearchBox extends Component {
     }
 }
 
-SearchBox.contextTypes = {
-    router: propTypes.object.isRequired
-};
-
 const mapStateToProps = (state, ownProps) => {
     let { datasetSearch } = state;
     return {
@@ -246,6 +238,9 @@ const mapDispatchToProps = (dispatch) =>
         dispatch
     );
 
-export default withRouter(
-    connect(mapStateToProps, mapDispatchToProps)(SearchBox)
-);
+const SearchBoxWithRouter = withRouter((props) => <SearchBox {...props} />);
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(SearchBoxWithRouter);

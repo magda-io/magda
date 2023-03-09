@@ -14,9 +14,8 @@ import { StoryDataType } from "./StoryBox";
 import { Small, Medium } from "Components/Common/Responsive";
 import MediaQuery from "react-responsive";
 import { User } from "reducers/userManagementReducer";
-import MyDatasetSection from "./MyDatasetSection";
 import { getPluginHeader, HeaderNavItem } from "externalPluginComponents";
-import { config } from "../../config";
+import { StateType } from "reducers/reducer";
 
 const HeaderPlugin = getPluginHeader();
 
@@ -71,7 +70,7 @@ const getBgImg = (backgroundImageUrls) => {
     );
 };
 
-interface PropsType extends RouteComponentProps {
+interface IStateProps {
     backgroundImageUrls: string;
     mobileTagLine: string;
     desktopTagLine: string;
@@ -83,7 +82,7 @@ interface PropsType extends RouteComponentProps {
     user: User;
 }
 
-class HomePage extends React.Component<PropsType> {
+class HomePage extends React.Component<IStateProps & RouteComponentProps> {
     getMainContent() {
         if (this?.props?.isFetchingWhoAmI === true) {
             return null;
@@ -112,38 +111,7 @@ class HomePage extends React.Component<PropsType> {
         ) {
             return null;
         }
-        if (this?.props?.user?.id) {
-            if (config?.featureFlags?.cataloguing) {
-                // --- my dataset section should only show for desktop due to the size of the design
-                // --- on mobile should still stories as before
-                return (
-                    <Small>
-                        <Stories stories={this.props.stories} />
-                    </Small>
-                );
-            } else {
-                return <Stories stories={this.props.stories} />;
-            }
-        } else {
-            return <Stories stories={this.props.stories} />;
-        }
-    }
-
-    getMyDatasetSection() {
-        if (
-            this?.props?.isFetchingWhoAmI === true ||
-            !this?.props?.user?.id ||
-            !config?.featureFlags?.cataloguing
-        ) {
-            return null;
-        } else {
-            // --- my dataset section should only show for desktop due to the size of the design
-            return (
-                <Medium>
-                    <MyDatasetSection userId={this.props.user.id} />
-                </Medium>
-            );
-        }
+        return <Stories stories={this.props.stories} />;
     }
 
     render() {
@@ -179,20 +147,19 @@ class HomePage extends React.Component<PropsType> {
                     )}
                     {this.getStories()}
                 </div>
-                {this.getMyDatasetSection()}
             </div>
         );
     }
 }
 
-function mapStateToProps(state) {
+function mapStateToProps(state: StateType) {
     const {
         desktopTagLine,
         mobileTagLine,
         lozenge,
         backgroundImageUrls,
         stories,
-        headerNavItems: headerNavigation
+        headerNavigation
     } = state.content;
 
     const { isFetchingWhoAmI, user, whoAmIError } = state.userManagement;
@@ -211,4 +178,6 @@ function mapStateToProps(state) {
     };
 }
 
-export default withRouter(connect(mapStateToProps, null)(HomePage));
+export default connect<IStateProps, {}, {}, StateType>(mapStateToProps as any)(
+    withRouter(HomePage)
+);

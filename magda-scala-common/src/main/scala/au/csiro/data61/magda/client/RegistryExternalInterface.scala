@@ -3,7 +3,6 @@ package au.csiro.data61.magda.client
 import java.io.IOException
 import java.net.URL
 import java.time.ZoneOffset
-
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -20,8 +19,11 @@ import com.typesafe.config.Config
 import io.jsonwebtoken.Jwts
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.jsonwebtoken.SignatureAlgorithm
+
 import java.{util => ju}
+import au.csiro.data61.magda.util.StringUtils._
+import spray.json.{JsObject, JsString, JsValue}
+import au.csiro.data61.magda.ServerError
 
 trait RegistryInterface {
 
@@ -112,14 +114,14 @@ class RegistryExternalInterface(
   val optionalAspectQueryString =
     RegistryConstants.optionalAspects.map("optionalAspect=" + _).mkString("&")
   val baseApiPath = "/v0"
-  val recordsQueryStrong = s"?$aspectQueryString&$optionalAspectQueryString"
-  val baseRecordsPath = s"${baseApiPath}/records$recordsQueryStrong"
+  val recordsQueryString = s"?$aspectQueryString&$optionalAspectQueryString"
+  val baseRecordsPath = s"${baseApiPath}/records$recordsQueryString"
 
   def onError(response: HttpResponse)(entity: String) = {
     val error =
-      s"Registry request failed with status code ${response.status} and entity $entity"
-    logger.error(error)
-    Future.failed(new IOException(error))
+      ServerError(s"Registry request failed: ${entity}", response.status)
+    logger.error(s"${error}")
+    Future.failed(error)
   }
 
   def getDataSetsToken(
@@ -147,6 +149,61 @@ class RegistryExternalInterface(
                     }
                   )
                 )
+            }
+          case _ =>
+            Unmarshal(response.entity).to[String].flatMap(onError(response))
+        }
+      }
+  }
+
+  def getRecordInFull(id: String): Future[Record] = {
+    readOnlyFetcher
+      .get(
+        path = s"/v0/records/inFull/${id.toUrlSegment}",
+        headers = Seq(systemIdHeader, authHeader)
+      )
+      .flatMap { response =>
+        response.status match {
+          case OK =>
+            Unmarshal(response.entity).to[Record]
+          case _ =>
+            Unmarshal(response.entity).to[String].flatMap(onError(response))
+        }
+      }
+  }
+
+  def getRecordById(id: String): Future[Record] = {
+    readOnlyFetcher
+      .get(
+        path =
+          s"${baseApiPath}/records/${id.toUrlSegment}${recordsQueryString}&dereference=true",
+        headers = Seq(systemIdHeader, authHeader)
+      )
+      .flatMap { response =>
+        response.status match {
+          case OK =>
+            Unmarshal(response.entity).to[Record]
+          case _ =>
+            Unmarshal(response.entity).to[String].flatMap(onError(response))
+        }
+      }
+  }
+
+  def getRecordAuthContextData(id: String): Future[JsObject] = {
+    readOnlyFetcher
+      .get(
+        path = s"/v0/records/inFull/${id.toUrlSegment}",
+        headers = Seq(systemIdHeader, authHeader)
+      )
+      .flatMap { response =>
+        response.status match {
+          case OK =>
+            Unmarshal(response.entity).to[JsObject].map { rawJsData =>
+              val aspects = rawJsData.fields.get("aspects").toSeq.flatMap {
+                case JsObject(v) => v.toSeq
+                case _           => Seq()
+              }
+              JsObject((rawJsData.fields - "aspects") ++ aspects)
             }
           case _ =>
             Unmarshal(response.entity).to[String].flatMap(onError(response))

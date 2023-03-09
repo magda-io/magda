@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import queryString from "query-string";
 import { ReactComponent as RemovePassiveIcon } from "assets/remove-passive.svg";
+import redirect from "helpers/redirect";
 
 const ClearAllButton = ({ location, history, dispatch }) => {
     const query = queryString.parse(location.search);
@@ -23,12 +24,8 @@ const ClearAllButton = ({ location, history, dispatch }) => {
                         className="btn-facet au-btn au-btn--secondary"
                         onClick={() => {
                             const query = queryString.parse(location.search);
-                            const qStr = queryString.stringify({
+                            redirect(history, "/search", {
                                 q: query.q ? query.q : ""
-                            });
-                            history.push({
-                                pathname: "/search",
-                                search: `?${qStr}`
                             });
                         }}
                     >

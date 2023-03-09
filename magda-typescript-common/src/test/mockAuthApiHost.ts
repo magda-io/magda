@@ -106,7 +106,7 @@ export default class mockAuthApiHost {
             });
 
         this.scope
-            .get(/\/private\/users\/[^\/]+/)
+            .get(/\/public\/users\/[^\/]+/)
             .reply(function (this: any, uri, requestBody) {
                 const req = thisObj.mockReq(this.req, "userId");
                 try {
@@ -130,31 +130,7 @@ export default class mockAuthApiHost {
             });
 
         this.scope
-            .get(/\/public\/users\/[^\/]+/)
-            .reply(function (this: any, uri, requestBody) {
-                const req = thisObj.mockReq(this.req, "userId");
-                try {
-                    const userId = req.params.userId;
-                    if (!userId) return [500, "Missing userId parameter"];
-
-                    const records = mockUserDataStore
-                        .getRecordByUserId(userId)
-                        .map((record) => ({
-                            id: record.id,
-                            photoURL: record.photoURL,
-                            displayName: record.displayName,
-                            isAdmin: record.isAdmin
-                        }));
-                    if (!records.length) return [404, "cannot locate record"];
-
-                    return [200, JSON.stringify(records[0])];
-                } catch (e) {
-                    return [500, e.message];
-                }
-            });
-
-        this.scope
-            .post("/private/users")
+            .post("/public/users")
             .reply(function (this: any, uri, requestBody) {
                 const req = thisObj.mockReq(this.req);
                 try {

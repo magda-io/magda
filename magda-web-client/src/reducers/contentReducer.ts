@@ -1,5 +1,6 @@
-import { FetchError } from "../types";
 import { config, defaultConfiguration } from "../config";
+import { actionTypes } from "../constants/ActionTypes";
+import { FetchError } from "../types";
 
 const initialData: ContentState = Object.assign(
     {
@@ -15,6 +16,16 @@ type ContentState = {
     isFetched: boolean;
     error?: number;
     content: Array<any>;
+    desktopTagLine: any;
+    mobileTagLine: any;
+    lozenge: any;
+    backgroundImageUrls: any;
+    stories: any;
+    headerNavigation: any;
+    footerSmallNavs: any;
+    footerMediumNavs: any;
+    footerCopyRightItems: any;
+    configuration: any;
 };
 
 type ContentAction = {
@@ -28,7 +39,7 @@ const contentReducer = (
     action: ContentAction
 ) => {
     switch (action.type) {
-        case "REQUEST_CONTENT":
+        case actionTypes.REQUEST_CONTENT:
             return Object.assign(
                 {},
                 state,
@@ -39,7 +50,7 @@ const contentReducer = (
                 },
                 parseContent([])
             );
-        case "REQUEST_CONTENT_ERROR":
+        case actionTypes.REQUEST_CONTENT_ERROR:
             return Object.assign(
                 {},
                 state,
@@ -50,7 +61,7 @@ const contentReducer = (
                 },
                 parseContent([])
             );
-        case "RECEIVE_CONTENT":
+        case actionTypes.RECEIVE_CONTENT:
             return Object.assign(
                 {},
                 state,
@@ -98,7 +109,7 @@ function parseContent(content) {
             highlights[id].backgroundImageUrls =
                 highlights[id].backgroundImageUrls || [];
             highlights[id].backgroundImageUrls.push(
-                `${config.contentApiURL}/${item.id}.bin`
+                `${config.contentApiBaseUrl}/${item.id}.bin`
             );
         } else if (item.id.indexOf("home/stories/") === 0) {
             const id = item.id.substr("home/stories/".length);
@@ -107,7 +118,7 @@ function parseContent(content) {
         } else if (item.id.indexOf("home/story-images/") === 0) {
             const id = item.id.substr("home/story-images/".length);
             stories[id] = stories[id] || { id };
-            stories[id].image = `${config.contentApiURL}/${item.id}.bin`;
+            stories[id].image = `${config.contentApiBaseUrl}/${item.id}.bin`;
         } else if (item.id.indexOf("header/navigation/") === 0) {
             headerNavigation.push(item.content);
         } else if (item.id.indexOf("config/") === 0) {

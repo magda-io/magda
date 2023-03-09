@@ -2,7 +2,7 @@ import yargs from "yargs";
 import _ from "lodash";
 import express from "express";
 import buildApp from "./buildApp";
-
+import { createHttpTerminator } from "http-terminator";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
 
 const coerceJson = (path?: string) => path && require(path);
@@ -87,6 +87,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:6104/v0"
         })
+        .option("skipAuth", {
+            describe:
+                "When set to true, API will not query policy engine for auth decision but assume it's always permitted. It's for debugging only.",
+            type: "boolean",
+            default: process.env.SKIP_AUTH == "true" ? true : false
+        })
         .option("web", {
             describe: "The base URL of the web site.",
             type: "string",
@@ -132,6 +138,18 @@ const argv = addJwtSecretFromEnvVar(
                 "The target path for redirecting ckan Urls. If not specified, default value `` will be used.",
             type: "string",
             default: ""
+        })
+        .option("registryQueryCacheStdTTL", {
+            describe:
+                "the standard ttl as number in seconds for every generated cache element in the registryQueryCache.",
+            type: "number",
+            default: 600
+        })
+        .option("registryQueryCacheMaxKeys", {
+            describe:
+                "specifies a maximum amount of keys that can be stored in the registryQueryCache. To disable the cache, set this value to `0`.",
+            type: "number",
+            default: 500
         })
         .option("enableWebAccessControl", {
             describe:
@@ -190,12 +208,6 @@ const argv = addJwtSecretFromEnvVar(
             describe: "Internal openfaas gateway url",
             type: "string"
         })
-        .option("openfaasAllowAdminOnly", {
-            describe:
-                "Whether only allow admin users to access openfaas gateway.",
-            type: "boolean",
-            default: false
-        })
         .option("defaultCacheControl", {
             describe:
                 "A default value to put in the cache-control header of GET responses",
@@ -211,7 +223,10 @@ const argv = addJwtSecretFromEnvVar(
 // Create a new Express application.
 const app = express();
 buildApp(app, argv as any);
-app.listen(argv.listenPort);
+const server = app.listen(argv.listenPort);
+const httpTerminator = createHttpTerminator({
+    server
+});
 console.log("Listening on port " + argv.listenPort);
 
 process.on(
@@ -221,3 +236,11 @@ process.on(
         console.error(reason);
     }
 );
+
+process.on("SIGTERM", () => {
+    console.log("SIGTERM signal received: closing HTTP server");
+    httpTerminator.terminate().then(() => {
+        console.log("HTTP server closed");
+        process.exit(0);
+    });
+});

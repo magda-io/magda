@@ -7,18 +7,54 @@ import PeopleAndProduction from "./PeopleAndProduction";
 import AccessAndUse from "./AccessAndUse";
 import ApproverNote from "./ApproverNote";
 
-import { State } from "../../DatasetAddCommon";
+import { DatasetStateUpdaterType, State } from "../../DatasetAddCommon";
 import { config } from "config";
+import Toggle from "rsuite/Toggle";
 
 type PropsType = {
+    isEditView: boolean;
     stateData: State;
+    editStateWithUpdater: DatasetStateUpdaterType;
 };
 
 export default function DatasetAddEndPage(props: PropsType) {
+    const { stateData, editStateWithUpdater, isEditView } = props;
     return (
         <div className="row review-page">
             <div className="col-sm-12">
                 <h2>Review before you submit</h2>
+                {isEditView ? (
+                    <div className="publishing-status-section">
+                        <span className="heading">
+                            Dataset Publishing Status:
+                        </span>
+                        <Toggle
+                            size="lg"
+                            checkedChildren="Published"
+                            unCheckedChildren="Draft"
+                            checked={
+                                !stateData?.datasetPublishing?.state ||
+                                stateData.datasetPublishing.state ===
+                                    "published"
+                                    ? true
+                                    : false
+                            }
+                            onChange={async (checked) => {
+                                const publishingStatus = checked
+                                    ? "published"
+                                    : "draft";
+                                editStateWithUpdater((state) => ({
+                                    ...state,
+                                    datasetPublishing: {
+                                        ...state.datasetPublishing,
+                                        state: publishingStatus
+                                    }
+                                }));
+                                return checked;
+                            }}
+                        />
+                    </div>
+                ) : null}
                 <div className="top-tooltip">
                     <ToolTip>
                         To keep this page short, we’re defaulted to show your

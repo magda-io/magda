@@ -2,7 +2,7 @@
 import logger from "redux-logger";
 import "./index.scss";
 import { BrowserRouter, Route, withRouter } from "react-router-dom";
-
+import { requestWhoAmI } from "./actions/userManagementActions";
 import thunkMiddleware from "redux-thunk";
 import React from "react";
 import ReactDOM from "react-dom";
@@ -15,7 +15,7 @@ import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
 import "./i18n";
 import { config } from "./config";
-const { uiBaseUrl } = config;
+const { uiBaseUrl, authStatusRefreshInterval } = config;
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const store = createStore(
@@ -28,7 +28,13 @@ const store = createStore(
     )
 );
 
-class GAListenerComponent extends React.Component {
+store.dispatch(requestWhoAmI());
+
+setInterval(() => {
+    store.dispatch(requestWhoAmI(false));
+}, authStatusRefreshInterval);
+
+class GAListener extends React.Component {
     static contextTypes = {
         router: PropTypes.object
     };
@@ -48,7 +54,7 @@ class GAListenerComponent extends React.Component {
     }
 }
 
-const GAListener = withRouter(GAListenerComponent);
+const GAListenerWithRouter = withRouter(GAListener);
 
 ReactDOM.render(
     <Provider store={store}>
@@ -60,11 +66,11 @@ ReactDOM.render(
                     : uiBaseUrl
             }
         >
-            <GAListener>
+            <GAListenerWithRouter>
                 <ScrollToTop>
                     <Route path="/" component={AppContainer} />
                 </ScrollToTop>
-            </GAListener>
+            </GAListenerWithRouter>
         </BrowserRouter>
     </Provider>,
     document.getElementById("root")

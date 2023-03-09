@@ -1,5 +1,5 @@
 import React from "react";
-import { withRouter, RouteComponentProps } from "react-router";
+import { withRouter } from "react-router-dom";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 import AsyncButton from "Components/Common/AsyncButton";
 import ToolTip from "Components/Dataset/Add/ToolTip";
@@ -40,8 +40,10 @@ import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
 import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
+import redirect from "helpers/redirect";
+import Loader from "rsuite/Loader";
 
-interface Props extends RouteComponentProps {
+type Props = {
     initialState: State;
     createNewDatasetReset: Function;
     createNewDatasetError: Function;
@@ -51,9 +53,12 @@ interface Props extends RouteComponentProps {
     step: number;
     datasetId: string;
     isNewDataset: boolean;
+    history: any;
+    location: any;
+    match: any;
     user: User;
     isBackToReview: boolean;
-}
+};
 
 class EditDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
@@ -105,7 +110,13 @@ class EditDataset extends React.Component<Props, State> {
             />
         ),
         this.renderSubmitPage.bind(this),
-        () => <ReviewPage stateData={this.state} />,
+        () => (
+            <ReviewPage
+                stateData={this.state}
+                editStateWithUpdater={this.setState.bind(this)}
+                isEditView={true}
+            />
+        ),
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
             : () => (
@@ -252,9 +263,12 @@ class EditDataset extends React.Component<Props, State> {
                                             )
                                         }
                                     >
-                                        Review &amp; Publish
+                                        Review &amp; Submit
                                     </AsyncButton>
                                 )}
+                                {this.state.isPublishing ? (
+                                    <Loader content="Submit dataset, please wait..." />
+                                ) : null}
                             </div>
                         </div>
                     </>
@@ -283,8 +297,11 @@ class EditDataset extends React.Component<Props, State> {
              */
             await this.resetError();
             if (ValidationManager.validateAll()) {
-                this.props.history.push(
-                    `/dataset/edit/${this.props.datasetId}/${step}`
+                redirect(
+                    this.props.history,
+                    `/dataset/edit/${encodeURIComponent(
+                        this.props.datasetId
+                    )}/${step}`
                 );
             }
         } catch (e) {
@@ -338,8 +355,10 @@ class EditDataset extends React.Component<Props, State> {
             if (result.length) {
                 throw new FileDeletionError(result);
             }
-
-            this.props.history.push(`/dataset/edit/${this.props.datasetId}/6`);
+            redirect(
+                this.props.history,
+                `/dataset/edit/${encodeURIComponent(this.props.datasetId)}/6`
+            );
         } catch (e) {
             this.setState({
                 isPublishing: false
@@ -378,5 +397,5 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 export default withEditDatasetState(
-    withRouter(connect(mapStateToProps, mapDispatchToProps)(EditDataset)) as any
+    connect(mapStateToProps, mapDispatchToProps)(withRouter(EditDataset))
 );

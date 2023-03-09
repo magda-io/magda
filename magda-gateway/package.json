@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "1.2.2-alpha.0",
+  "version": "2.2.3-alpha.0",
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
@@ -16,11 +16,11 @@
     "test": "PGUSER=postgres mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "dependencies": {
-    "@magda/tenant-api": "^1.2.2-alpha.0",
-    "@magda/typescript-common": "^1.2.2-alpha.0",
+    "@magda/tenant-api": "^2.2.3-alpha.0",
+    "@magda/typescript-common": "^2.2.3-alpha.0",
     "body-parser": "^1.13.2",
     "compression": "^1.7.2",
-    "connect-pg-simple": "^6.0.1",
+    "connect-pg-simple": "^6.2.1",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.3",
     "escape-string-regexp": "^1.0.5",
@@ -29,6 +29,7 @@
     "express-session": "^1.17.1",
     "helmet": "^3.12.0",
     "http-proxy": "^1.16.2",
+    "http-terminator": "^3.2.0",
     "is-uuid": "^1.0.2",
     "isomorphic-fetch": "^2.2.1",
     "jsonwebtoken": "^8.4.0",
@@ -36,16 +37,17 @@
     "lodash": "^4.17.4",
     "morgan": "^1.6.1",
     "passport": "^0.2.2",
-    "pg": "^6.4.0",
+    "pg": "^8.7.3",
     "read-pkg-up": "^3.0.0",
     "request": "^2.88.0",
+    "node-cache": "^5.1.2",
     "tsmonad": "^0.7.2",
     "urijs": "^1.19.11",
     "uuid": "^8.2.0",
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^1.2.2-alpha.0",
+    "@magda/scripts": "^2.2.3-alpha.0",
     "@types/chai": "^4.0.1",
     "@types/compression": "^0.0.36",
     "@types/cookie": "^0.3.3",
@@ -60,7 +62,7 @@
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
     "@types/passport": "^1.0.3",
-    "@types/pg": "^6.1.41",
+    "@types/pg": "^8.6.5",
     "@types/q": "^1.5.2",
     "@types/randomstring": "^1.1.6",
     "@types/read-pkg-up": "^3.0.1",
@@ -77,11 +79,11 @@
     "randomstring": "^1.1.5",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
-    "typescript": "^3.7.2"
+    "typescript": "~4.2.4"
   },
   "config": {
     "docker": {
-      "name": "data61/magda-gateway",
+      "name": "magda-gateway",
       "include": "node_modules dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",

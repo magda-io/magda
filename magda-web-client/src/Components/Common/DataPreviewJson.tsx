@@ -51,7 +51,7 @@ class DataPreviewJson extends Component<
         });
         return fetch(
             getProxiedResourceUrl(url),
-            isStorageApiUrl(url) ? config.credentialsFetchOptions : {}
+            isStorageApiUrl(url) ? config.commonFetchRequestOptions : {}
         )
             .then((response) => {
                 if (!response.ok) {

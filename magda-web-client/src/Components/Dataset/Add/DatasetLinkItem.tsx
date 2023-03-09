@@ -28,6 +28,7 @@ type Props = {
 
 type ProcessingProps = {
     distribution: Distribution;
+    deleteDistribution?: () => void;
 };
 
 type EditViewProps = {
@@ -38,6 +39,7 @@ type EditViewProps = {
     ) => void;
     editMode: boolean;
     setEditMode: (editMode: boolean) => void;
+    deleteDistribution?: () => void;
 };
 
 type CompleteViewProps = {
@@ -99,7 +101,7 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
 };
 
 const DatasetLinkItemProcessing = (props: ProcessingProps) => {
-    const distribution = props.distribution;
+    const { distribution, deleteDistribution } = props;
 
     const progress = distribution._progress ? distribution._progress : 0;
     let width = Math.ceil((progress / 100) * 330);
@@ -109,6 +111,15 @@ const DatasetLinkItemProcessing = (props: ProcessingProps) => {
 
     return (
         <div className="processing-item">
+            {deleteDistribution ? (
+                <button
+                    className={`delete-button au-btn au-btn--secondary`}
+                    arial-label="Delete distribution metadata"
+                    onClick={() => deleteDistribution()}
+                >
+                    <img src={dismissIcon} alt="delete button" />
+                </button>
+            ) : null}
             <div className="distribution-in-progress">
                 <div className="distribution-icon-area">
                     <img
@@ -158,7 +169,8 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
         setEditMode,
         editMode,
         distribution,
-        editDistribution
+        editDistribution,
+        deleteDistribution
     } = props;
 
     const editFormat = (newValue: string | undefined) =>
@@ -185,6 +197,15 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
 
     return (
         <div className="dataset-link-item-edit">
+            {deleteDistribution ? (
+                <button
+                    className={`delete-button au-btn au-btn--secondary`}
+                    arial-label="Delete distribution metadata"
+                    onClick={() => deleteDistribution()}
+                >
+                    <img src={dismissIcon} alt="delete button" />
+                </button>
+            ) : null}
             <button
                 className={`au-btn link-item-save-button`}
                 arial-label="Save changes"
@@ -290,7 +311,10 @@ const DatasetLinkItem = (props: Props) => {
                     props.className ? props.className : ""
                 } ${!canEdit && !canDelete ? "read-only" : ""}`}
             >
-                <DatasetLinkItemProcessing distribution={props.distribution} />
+                <DatasetLinkItemProcessing
+                    distribution={props.distribution}
+                    deleteDistribution={props.onDelete}
+                />
             </div>
         );
     } else if (editMode && canEdit) {
@@ -306,6 +330,7 @@ const DatasetLinkItem = (props: Props) => {
                     editDistribution={props.onChange!}
                     setEditMode={setEditMode}
                     editMode={editMode}
+                    deleteDistribution={props.onDelete}
                 />
             </div>
         );

@@ -1,10 +1,12 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 import java.time.OffsetDateTime
-
 import com.sksamuel.elastic4s.searches.ScoreMode
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.searches.queries.{Query => QueryDefinition}
+import com.sksamuel.elastic4s.searches.queries.{
+  BoolQuery,
+  Query => QueryDefinition
+}
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import com.sksamuel.elastic4s.searches.queries.geo.{
   PreindexedShape,
@@ -61,6 +63,29 @@ object Queries {
             .minimumShouldMatch("1")
       })
       .scoreMode(ScoreMode.Avg)
+
+  def publishingStateQuery(
+      publishingStateValue: Set[FilterValue[String]]
+  ): Option[QueryDefinition] = {
+    val filteredValue = publishingStateValue
+      .map(value => {
+        value match {
+          case Specified(inner) => inner
+          case Unspecified()    => ""
+        }
+      })
+      .filter(_ != "")
+      .toSeq
+    if (filteredValue.exists(_ == "*") || filteredValue.isEmpty) {
+      None
+    } else {
+      Some(
+        BoolQuery()
+          .should(filteredValue.map(TermQuery("publishingState", _)))
+          .minimumShouldMatch(1)
+      )
+    }
+  }
 
   def formatQuery(
       strategy: SearchStrategy

@@ -1,16 +1,17 @@
 import React from "react";
 import { Route } from "react-router-dom";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 
 import RouteNotFound from "Components/Error/RouteNotFoundPage";
 import Loading from "Components/Common/Loading";
 import withHeader from "Components/Header/withHeader";
+import { StateType } from "reducers/reducer";
 
-type Props = {
-    loading: boolean;
-};
+function FallbackRouteHandler() {
+    const loading = useSelector<StateType, boolean>(
+        (state) => !state?.content?.isFetched
+    );
 
-function FallbackRouteHandler({ loading }: Props) {
     return loading ? (
         <Loading />
     ) : (
@@ -21,11 +22,4 @@ function FallbackRouteHandler({ loading }: Props) {
     );
 }
 
-const mapStateToProps = state => {
-    const loading = !state.content.isFetched;
-    return {
-        loading
-    };
-};
-
-export default connect(mapStateToProps)(FallbackRouteHandler);
+export default FallbackRouteHandler;

@@ -1,6 +1,6 @@
-import { config } from "config";
-import getProxiedResourceUrl from "helpers/getProxiedResourceUrl";
-import isStorageApiUrl from "helpers/isStorageApiUrl";
+import { config } from "../config";
+import getProxiedResourceUrl from "../helpers/getProxiedResourceUrl";
+import isStorageApiUrl from "../helpers/isStorageApiUrl";
 import { ParsedDistribution } from "./record";
 
 /**
@@ -36,7 +36,7 @@ export async function getFileLength(file: ParsedDistribution | string) {
         const res = await fetch(proxyUrl, {
             method: "HEAD",
             ...(isStorageApiUrl(sourceUrl)
-                ? config.credentialsFetchOptions
+                ? config.commonFetchRequestOptions
                 : {})
         });
 

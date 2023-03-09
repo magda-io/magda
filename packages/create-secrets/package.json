@@ -1,7 +1,7 @@
 {
   "name": "@magda/create-secrets",
   "description": "MAGDA Create Secrets Tool",
-  "version": "1.2.2-alpha.0",
+  "version": "2.2.3-alpha.0",
   "bin": {
     "create-secrets": "./bin/create-secrets.js"
   },
@@ -14,7 +14,7 @@
   "license": "Apache-2.0",
   "main": "bin/create-secrets.js",
   "devDependencies": {
-    "@magda/scripts": "^1.2.2-alpha.0",
+    "@magda/scripts": "^2.2.3-alpha.0",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
   },
@@ -26,7 +26,7 @@
     }
   },
   "engines": {
-    "node": ">=10.0.0 <13.0.0"
+    "node": ">=14.0.0"
   },
   "keywords": [
     "Magda",

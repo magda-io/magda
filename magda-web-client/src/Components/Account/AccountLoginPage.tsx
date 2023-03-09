@@ -6,7 +6,6 @@ import { config, isBackendSameOrigin } from "config";
 import { useAsync } from "react-async-hook";
 import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml";
 import QrCodeLoginArea from "./QrCodeLoginArea";
-import { withRouter } from "react-router-dom";
 
 const { baseUrl, baseExternalUrl, authPluginRedirectUrl } = config;
 
@@ -23,11 +22,30 @@ function getDefaultLoginFormProvider(
     return null;
 }
 
-const makeLoginUrl = (authConfig: AuthPluginConfig) => {
+const makeLoginUrl = (authConfig: AuthPluginConfig, redirectTo?: string) => {
     // auth plugins share the same gateway helm chart config [authPluginRedirectUrl](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/gateway)
     // We don't need to supply redirection url here unless
     // - the UI is served from different origin (domains) from backend.
     // - And the configured redirect URL is not an absolute url
+    if (redirectTo) {
+        if (
+            isBackendSameOrigin ||
+            redirectTo.toLowerCase().indexOf("http") === 0
+        ) {
+            return `${baseUrl}auth/login/plugin/${
+                authConfig.key
+            }?redirect=${encodeURIComponent(redirectTo)}`;
+        } else {
+            return `${baseUrl}auth/login/plugin/${
+                authConfig.key
+            }?redirect=${encodeURIComponent(
+                baseExternalUrl +
+                    (redirectTo[0] === "/"
+                        ? redirectTo.substring(1)
+                        : redirectTo)
+            )}`;
+        }
+    }
     if (
         isBackendSameOrigin ||
         authPluginRedirectUrl.toLowerCase().indexOf("http") === 0
@@ -39,7 +57,7 @@ const makeLoginUrl = (authConfig: AuthPluginConfig) => {
         }?redirect=${encodeURIComponent(
             baseExternalUrl +
                 (authPluginRedirectUrl[0] === "/"
-                    ? authPluginRedirectUrl.substr(1)
+                    ? authPluginRedirectUrl.substring(1)
                     : authPluginRedirectUrl)
         )}`;
     }
@@ -138,8 +156,9 @@ const LoginFormArea: FunctionComponent<LoginFormPropsType> = (props) => {
     );
 };
 
-type LoginOptionList = {
+type LoginOptionListPropsType = {
     authConfigItems: AuthPluginConfig[] | undefined;
+    redirectTo?: string;
 };
 
 const isPasswordAuthItem = (config: AuthPluginConfig): boolean => {
@@ -153,7 +172,12 @@ const isPasswordAuthItem = (config: AuthPluginConfig): boolean => {
 const getSortingStringFromAuthConfig = (config: AuthPluginConfig): string =>
     config.name;
 
-function AccountLoginPage(props) {
+export type PropsType = {
+    signInError?: string;
+    redirectTo?: string;
+};
+
+const AccountLoginPage: FunctionComponent<PropsType> = (props) => {
     const {
         result: authConfigItems,
         loading: isAuthPluginsLoading,
@@ -208,7 +232,9 @@ function AccountLoginPage(props) {
         setSelectedAuthConfig
     ] = useState<AuthPluginConfig | null>(null);
 
-    const LoginOptionList: FunctionComponent<LoginOptionList> = (props) => {
+    const LoginOptionList: FunctionComponent<LoginOptionListPropsType> = (
+        props
+    ) => {
         const { authConfigItems } = props;
 
         if (!authConfigItems?.length) {
@@ -239,7 +265,7 @@ function AccountLoginPage(props) {
                     ) {
                         return (
                             <li key={idx} className="login__provider">
-                                <a href={makeLoginUrl(item)}>
+                                <a href={makeLoginUrl(item, props.redirectTo)}>
                                     <img
                                         src={convertAuthPluginApiUrl(
                                             item.key,
@@ -342,13 +368,16 @@ function AccountLoginPage(props) {
             {!isAuthPluginsLoading ? (
                 <div className="col-sm-6 col-md-5">
                     <h2>Sign In / Register Providers</h2>
-                    <LoginOptionList authConfigItems={authConfigItems} />
+                    <LoginOptionList
+                        authConfigItems={authConfigItems}
+                        redirectTo={props.redirectTo}
+                    />
                 </div>
             ) : null}
 
             {renderSelectedAuthConfig()}
         </div>
     );
-}
+};
 
-export default withRouter(AccountLoginPage);
+export default AccountLoginPage;

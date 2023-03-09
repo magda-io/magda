@@ -7,7 +7,12 @@ import spray.json._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
 import akka.NotUsed
-import au.csiro.data61.magda.opa.OpaTypes.OpaQuery
+import au.csiro.data61.magda.model.AspectQueryToSqlConfig
+import au.csiro.data61.magda.model.Auth.{
+  AuthDecision,
+  UnconditionalTrueDecision
+}
+import au.csiro.data61.magda.util.SQLUtils
 
 trait EventPersistence {
 
@@ -28,6 +33,8 @@ trait EventPersistence {
   def getLatestEventId(implicit session: DBSession): Option[Long]
 
   def getEvents(
+      tenantId: TenantId,
+      authDecision: AuthDecision,
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -35,28 +42,30 @@ trait EventPersistence {
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId
+      reversePageTokenOrder: Option[Boolean] = None,
+      dereference: Option[Boolean] = None
   )(implicit session: DBSession): EventsPage
 
   def getRecordReferencedIds(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       recordId: String,
-      aspectIds: Seq[String] = Seq(),
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
+      aspectIds: Seq[String] = Seq()
   )(implicit session: DBSession): Seq[String]
 
   def getEventsWithDereference(
       // without specify recordId, we don't need to `dereference` as we would be searching all records event anyway
       // thus, recordId is compulsory here
-      recordId: String,
+      tenantId: TenantId,
+      authDecision: AuthDecision,
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
       lastEventId: Option[Long] = None,
+      recordId: String,
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId,
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): EventsPage
 }
 
@@ -65,6 +74,8 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     with DiffsonProtocol
     with EventPersistence {
   val eventStreamPageSize = 1000
+  val maxResultCount = 1000
+  val defaultResultCount = 100
 
   def streamEventsSince(
       sinceEventId: Long,
@@ -76,12 +87,13 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       .unfold(sinceEventId)(offset => {
         val events = DB readOnly { implicit session =>
           getEvents(
+            tenantId = tenantId,
+            authDecision = UnconditionalTrueDecision,
             pageToken = Some(offset),
             start = None,
             limit = Some(eventStreamPageSize),
             recordId = recordId,
-            aspectIds = aspectIds,
-            tenantId = tenantId
+            aspectIds = aspectIds
           )
         }
         events.events.lastOption.map(last => (last.id.get, events))
@@ -100,13 +112,14 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       .unfold(0L)(offset => {
         val events = DB readOnly { implicit session =>
           getEvents(
+            tenantId = tenantId,
+            authDecision = UnconditionalTrueDecision,
             pageToken = Some(offset),
             start = None,
             limit = Some(eventStreamPageSize),
             lastEventId = Some(lastEventId),
             recordId = recordId,
-            aspectIds = aspectIds,
-            tenantId = tenantId
+            aspectIds = aspectIds
           )
         }
         events.events.lastOption.map(last => (last.id.get, events))
@@ -130,6 +143,9 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     * event service for all web hooks, such as indexer and minions.
     *
     * @param session an implicit DB session
+    * @param tenantId The returned events will be filtered by this tenant ID.
+    *                 If it is a system ID, events belonging to all tenants are included (no tenant filtering).
+    * @param authDecision auth decision
     * @param pageToken The ID of event must be greater than the specified value. Optional and default to None.
     * @param start Specify the number of initial events to be dropped. Optional and default to None.
     * @param limit Specify the max number of events to be returned. Optional and default to None.
@@ -137,11 +153,13 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     * @param recordId The data recordId field of event must equal to this value. Optional and default to None.
     * @param aspectIds The data aspectId field of event must equal to one of the specified values. Optional and default to empty Set.
     * @param eventTypes The type of event must equal to one of the specified values. Optional and default to empty Set.
-    * @param tenantId The returned events will be filtered by this tenant ID.
-    *                 If it is a system ID, events belonging to all tenants are included (no tenant filtering).
+    * @param reversePageTokenOrder When set to Some(true), the function will list events from newest ones to oldest ones
+    * @param dereference whether include events of all referenced records including the records that might not directly related to selected records
     * @return EventsPage containing events that meet the specified requirements
     */
   def getEvents(
+      tenantId: TenantId,
+      authDecision: AuthDecision,
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -149,9 +167,12 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId
+      reversePageTokenOrder: Option[Boolean] = None,
+      dereference: Option[Boolean] = None
   )(implicit session: DBSession): EventsPage = {
     getEventsWithRecordSelector(
+      tenantId = tenantId,
+      authDecision = authDecision,
       pageToken = pageToken,
       start = start,
       limit = limit,
@@ -159,11 +180,14 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       recordId = recordId,
       aspectIds = aspectIds,
       eventTypes = eventTypes,
-      tenantId = tenantId
+      reversePageTokenOrder = reversePageTokenOrder,
+      dereference = dereference
     )
   }
 
   private def getEventsWithRecordSelector(
+      tenantId: TenantId,
+      authDecision: AuthDecision,
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -171,21 +195,34 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId,
-      recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
+      recordSelector: Iterable[Option[SQLSyntax]] = Iterable(),
+      maxLimit: Option[Int] = None,
+      reversePageTokenOrder: Option[Boolean] = None,
+      dereference: Option[Boolean] = None
   )(implicit session: DBSession): EventsPage = {
 
     val filters: Seq[Option[SQLSyntax]] = Seq(
-      pageToken.map(v => sqls"eventId > $v"),
+      pageToken.map(
+        v =>
+          if (reversePageTokenOrder.getOrElse(false)) sqls"eventId < $v"
+          else sqls"eventId > $v"
+      ),
       lastEventId.map(v => sqls"eventId <= $v"),
       recordId.map(v => sqls"data->>'recordId' = $v")
     ) ++ recordSelector
 
-    val tenantFilter = Some(SQLUtil.tenantIdToWhereClause(tenantId))
-    val theFilters = (filters ++ List(tenantFilter)).filter(_.isDefined)
+    val tenantFilter = SQLUtils.tenantIdToWhereClause(tenantId, "tenantid")
+    val authDecisionCondition = authDecision.toSql(
+      AspectQueryToSqlConfig(
+        prefixes = Set("input.object.event"),
+        genericQuery = true
+      )
+    )
+    val theFilters =
+      (filters ++ List(tenantFilter, authDecisionCondition)).filter(_.isDefined)
 
     val eventTypesFilter =
-      if (eventTypes.isEmpty) sqls"1=1"
+      if (eventTypes.isEmpty) sqls"true"
       else
         SQLSyntax.joinWithOr(
           eventTypes
@@ -194,28 +231,28 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
             .toArray: _*
         )
 
-    val linkAspects = recordPersistence.buildReferenceMap(aspectIds)
-
     /*
-      TODO:
-      The code block below doesn't seems achieve `dereference` (i.e. includes all events of linked records) and more likely redundant logic
-      The actual dereference logic is currently done via method `getRecordReferencedIds` and passing ids & aspect filters through `recordSelector` of this method
-      The code was left here because it was used by `web hook actor` which is the key part of the system.
-      It currently has no functionality impact to the current `dereference` function (as we will skip it by filtering aspect via `recordSelector`).
-      We probably should be look at it again once we got better understanding of its impact (or/and more test cases around it)
+      Logic below (`dereferenceSelectors`) is to include all events of ANY records that are referenced by any records in one of their aspects.
+      e.g. a distribution record might be referenced by a dataset record in 'dataset-distributions' aspect
+      we should avoid using deference feature for any webhook implementation (e.g. minions) in future and eventually remove this feature completely for simpler (and more robust) design / protocol.
      */
     val dereferenceSelectors: Set[SQLSyntax] =
-      linkAspects.toSet[(String, PropertyWithLink)].map {
-        case (aspectId, propertyWithLink) =>
-          if (propertyWithLink.isArray) {
-            sqls"""$aspectId IN (select aspectId
-                         from RecordAspects
-                         where RecordAspects.data->${propertyWithLink.propertyName} @> (Events.data->'recordId')::jsonb)"""
-          } else {
-            sqls"""$aspectId IN (select aspectId
-                         from RecordAspects
-                         where RecordAspects.data->>${propertyWithLink.propertyName} = Events.data->>'recordId')"""
-          }
+      if (dereference.getOrElse(false)) {
+        val linkAspects = recordPersistence.buildReferenceMap(aspectIds)
+        linkAspects.toSet[(String, PropertyWithLink)].map {
+          case (aspectId, propertyWithLink) =>
+            if (propertyWithLink.isArray) {
+              sqls"""EXISTS (select 1 from RecordAspects
+                         where aspectId = $aspectId AND
+                         (RecordAspects.data->${propertyWithLink.propertyName})::jsonb @> (Events.data->'recordId')::jsonb)"""
+            } else {
+              sqls"""EXISTS (select 1 from RecordAspects
+                         where aspectId = $aspectId AND
+                         RecordAspects.data->>${propertyWithLink.propertyName} = Events.data->>'recordId')"""
+            }
+        }
+      } else {
+        Set()
       }
 
     val aspectsSql =
@@ -244,8 +281,28 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
         .and(eventTypesFilter)
     )
 
-    var lastEventIdInPage: Option[Long] = None
-    val events =
+    val limitValue = limit
+      .map(l => Math.min(l, maxLimit.getOrElse(maxResultCount)))
+      .getOrElse(defaultResultCount)
+
+    /* for some reason if you LIMIT 1 and ORDER BY eventId, postgres chooses a weird query plan, so use eventTime in that case*/
+    val orderBy = SQLSyntax.orderBy(
+      if (limit != Some(1)) sqls"eventId" else sqls"eventTime"
+    )
+    val orderByClause =
+      if (reversePageTokenOrder
+            .getOrElse(
+              false
+            )) {
+        orderBy.desc
+      } else {
+        orderBy.asc
+      }
+    val offsetClause = start match {
+      case None    => SQLSyntax.empty
+      case Some(v) => sqls"offset ${v}"
+    }
+    val results =
       sql"""select
             eventId,
             eventTime,
@@ -255,22 +312,27 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
             tenantId
           from Events
           $whereClause
-      ${/* for some reason if you LIMIT 1 and ORDER BY eventId, postgres chooses a weird query plan, so use eventTime in that case*/ sqls""}
-          order by ${if (limit != Some(1)) sqls"eventId" else sqls"eventTime"} asc
-          offset ${start.getOrElse(0)}
-          limit ${limit.getOrElse(1000)}"""
+          ${orderByClause}
+          ${offsetClause}
+          limit ${limitValue + 1}"""
         .map(rs => {
-          // Side-effectily track the sequence number of the very last result.
-          lastEventIdInPage = Some(rs.long("eventId"))
-          rowToEvent(rs)
+          (
+            rs.long("eventId"),
+            rowToEvent(rs)
+          )
         })
         .list
         .apply()
 
+    val hasMore = results.length > limitValue
+    val trimmed = results.take(limitValue)
+    val lastSequence = if (hasMore) Some(trimmed.last._1) else None
+    val pageResults = trimmed.map(_._2)
+
     EventsPage(
-      lastEventIdInPage.isDefined,
-      lastEventIdInPage.map(_.toString),
-      events
+      hasMore,
+      lastSequence.map(_.toString),
+      pageResults
     )
   }
 
@@ -278,19 +340,21 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     * get Ids of all records that are or were linked to the specified record
     *
     * @param tenantId TenantId
+    * @param authDecision auth decision
     * @param recordId the id of the record whose lined records should be queried for
     * @param aspectIds optional; if specified, only links are defined by specified aspects will be considered
-    * @param opaRecordQueries opaRecordQueries
     * @param session DB session
     * @return Seq[String] A list record id
     */
   def getRecordReferencedIds(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       recordId: String,
-      aspectIds: Seq[String] = Seq(),
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
+      aspectIds: Seq[String] = Seq()
   )(implicit session: DBSession): Seq[String] = {
-    val tenantFilter = SQLUtil.tenantIdToWhereClause(tenantId)
+    val tenantFilter = SQLUtils
+      .tenantIdToWhereClause(tenantId, "tenantid")
+      .getOrElse(SQLSyntax.empty)
 
     // --- pick all aspects of the specified record mentioned in the events till now
     val mentionedAspects = if (aspectIds.size == 0) {
@@ -371,11 +435,9 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       } else {
         // We need to filter out any records that the current user has no access
         // We do this via `recordPersistence.getValidRecordIds`
-        // when `opaRecordQueries` is None, `recordPersistence.getValidRecordIds` will simply return `linkedRecordIds` directly
-        // as there is no need to check as user should have access to all records (likely an admin)
         recordPersistence.getValidRecordIds(
           tenantId,
-          opaRecordQueries,
+          authDecision,
           linkedRecordIds
         )
       }
@@ -395,28 +457,29 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     * @param aspectIds
     * @param eventTypes
     * @param tenantId
-    * @param opaRecordQueries
+    * @param authDecision
     * @param session
     * @return
     */
   def getEventsWithDereference(
-      recordId: String,
+      tenantId: TenantId,
+      authDecision: AuthDecision,
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
       lastEventId: Option[Long] = None,
+      recordId: String,
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId,
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
+      reversePageTokenOrder: Option[Boolean] = None
   )(implicit session: DBSession): EventsPage = {
 
     val recordIds =
       getRecordReferencedIds(
         tenantId,
+        authDecision,
         recordId,
-        aspectIds.toSeq,
-        opaRecordQueries
+        aspectIds.toSeq
       ) :+ recordId
 
     val aspectIdSql =
@@ -439,12 +502,13 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     }
 
     getEventsWithRecordSelector(
+      tenantId = tenantId,
+      authDecision = authDecision,
       aspectIds = Set(),
       recordId = None,
       pageToken = pageToken,
       start = start,
       limit = limit,
-      tenantId = tenantId,
       recordSelector = Seq(
         Some(
           SQLSyntax.in(
@@ -452,7 +516,8 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
             recordIds
           )
         )
-      ) ++ aspectFilters
+      ) ++ aspectFilters,
+      reversePageTokenOrder = reversePageTokenOrder
     )
   }
 

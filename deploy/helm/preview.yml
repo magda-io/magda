@@ -2,13 +2,14 @@ global:
   rollingUpdate:
     maxUnavailable: 1000
   image:
-    repository: "registry.gitlab.com/magda-data/magda/data61"
+    repository: "registry.gitlab.com/magda-data/magda"
     pullSecrets: "regcred"
     pullPolicy: Always
   exposeNodePorts: false
   enablePriorityClass: false
   defaultContactEmail: "magda-test@googlegroups.com"
   enableMultiTenants: false
+  enableLivenessProbes: true
 
 tags:
   all: true
@@ -26,6 +27,8 @@ magda:
       ingressClass: nginx
       enableTls: true
       useDefaultCertificate: true
+      clientBodyBufferSize: 500M
+      proxyBodySize: 500M
     gateway:
       enableAuthEndpoint: true
       enableHttpsRedirection: true
@@ -50,10 +53,12 @@ magda:
           scriptSrc:
           - "'self'"
           - "'unsafe-inline'"
+          - www.google-analytics.com
           - browser-update.org
-          objectSrc:
-          - "'none'"
-          reportUri: https://sdga.report-uri.com/r/d/csp/enforce
+          # the following two domains are for downloading Magda UI plugins from github release
+          - github.com
+          - objects.githubusercontent.com
+          - "blob:"
 
     combined-db:
       magda-postgres:
@@ -66,7 +71,7 @@ magda:
         postgresql:
           image: 
             registry: "registry.gitlab.com"
-            repository: "magda-data/magda/data61/magda-postgres"
+            repository: "magda-data/magda/magda-postgres"
             pullPolicy: "Always"
             pullSecrets: 
               - "regcred"
@@ -108,15 +113,21 @@ magda:
       fallbackUrl: "https://data.gov.au"
       featureFlags:
         cataloguing: true
-        publishToDga: true
-        placeholderWorkflowsOn: false
-        datasetApprovalWorkflowOn: true
+        publishToDga: false
+        datasetApprovalWorkflowOn: false
         useStorageApi: true
       vocabularyApiEndpoints:
         - "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json"
         - "https://vocabs.ands.org.au/repository/api/lda/neii/australian-landscape-water-balance/version-1/concept.json"
         - "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
       showContactButtonForNoContactPointDataset: true
+      externalUIComponents:
+      - "https://github.com/magda-io/magda-ui-plugin-component-dap-image-gallery/releases/download/v1.0.0/DAPImageGallery.js"
+      - "https://github.com/magda-io/magda-ui-plugin-component-open-3d-dataset/releases/download/v2.0.0/Open3dDatasetSection.js"
+      extraConfigData:
+        "3dDatasetDigitalTwinInstances":
+        - sourceDataDomain: "nsw.gov.au"
+          url: "https://nsw.digitaltwin.terria.io/"
 
     correspondence-api:
       alwaysSendToDefaultRecipient: true

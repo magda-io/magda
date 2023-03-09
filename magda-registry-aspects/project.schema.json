@@ -1,6 +1,7 @@
 {
     "$schema": "http://json-schema.org/hyper-schema#",
-    "title": "Aspect for capturing the basic details of a project",
+    "title": "Project Information Aspect",
+    "description": "Aspect for capturing the basic details of a project",
     "type": "object",
     "properties": {
         "description": {

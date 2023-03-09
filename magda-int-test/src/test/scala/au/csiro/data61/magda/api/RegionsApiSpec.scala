@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.api
 
 import java.net.URL
-
 import akka.event.Logging
 import au.csiro.data61.magda.api.model.{Protocols, RegionSearchResult}
 import au.csiro.data61.magda.search.elasticsearch._
@@ -20,6 +19,7 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.model.Registry.{
   MAGDA_ADMIN_PORTAL_ID,
   MAGDA_TENANT_ID_HEADER
@@ -40,7 +40,8 @@ class RegionsApiSpec
   implicit val clientProvider = new DefaultClientProvider
 
   val searchQueryer = new ElasticSearchQueryer(fakeIndices)
-  val api = new SearchApi(searchQueryer)(config, logger)
+  val authApiClient = new AuthApiClient()
+  val api = new SearchApi(authApiClient, searchQueryer)(config, logger)
 
   override def client(): ElasticClient = clientProvider.getClient().await
 

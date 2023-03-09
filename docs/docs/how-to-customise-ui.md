@@ -74,6 +74,16 @@ Job scss-compiler-8fzgn7okpp7frvh has been deleted!
 
 > Due to the default cache setting, you might need to clean / disable browser cache in order to see the changes immediately.
 
+## Customise UI styling via extra stylesheet file
+
+Magda allows you to introduce extra HTML content to the page via Magda's content API `includeHtml` key.
+
+You can utilise this key to load extra stylesheet files that overwrites existing style.
+
+You can either update the `includeHtml` key content via content API (requires Admin permission) or modify it from the content DB directly.
+
+> Please note: This option is only for introducing extra stylesheets or JS plugins rather than introducing new HTML UI elements directly. If you need to modify existing UI elements, please use `External UI Plugin Components`.
+
 ## Customise Frontend Logic with External UI Plugin Components
 
 SCSS variables allows you to control the style of the default UI. However, there are cases where you want to implement fully customised frontend logic that may even involves APIs calls etc.
@@ -83,6 +93,8 @@ In order to achieve that, Magda allows you to build / bundle React UI components
 For more information of how to create / config `External UI Plugin Components`, please refer to [magda-plugin-ui-component-examples repo](https://github.com/magda-io/magda-plugin-ui-component-examples).
 
 Not all built-in Magda components can be replaced by an `External UI Plugin Component`. We currently support replacing `header` & `footer` components to cover most common use cases. We might also adding support of other components in future. For full list of replacable components, please refer to [this definition file](https://github.com/magda-io/magda/blob/master/magda-web-client/src/externalPluginComponents.ts).
+
+> Please note: all key data structure & typescript types have been published as NPM package [@magda/external-ui-plugin-sdk](https://www.npmjs.com/package/@magda/external-ui-plugin-sdk).
 
 ## Complete replace default Magda UI
 

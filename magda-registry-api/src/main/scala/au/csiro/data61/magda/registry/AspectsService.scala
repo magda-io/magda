@@ -6,17 +6,21 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
-import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.{
-  requiresTenantId,
-  requiresSpecifiedTenantId
+import au.csiro.data61.magda.directives.AuthDirectives.{
+  requirePermission,
+  requireUserId
 }
+import au.csiro.data61.magda.directives.TenantDirectives.requiresSpecifiedTenantId
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.registry.Directives.requireAspectUpdateOrCreateWhenNonExistPermission
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
+import org.postgresql.util.PSQLException
+
 import javax.ws.rs.Path
 import scalikejdbc._
+import spray.json.JsObject
 
 import scala.util.{Failure, Success}
 
@@ -86,23 +90,47 @@ class AspectsService(
   )
   def create: Route = post {
     pathEnd {
-      requireIsAdmin(authClient)(system, config) { user =>
+      requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[AspectDefinition]) { aspect =>
-            val theResult = DB localTx { session =>
-              AspectPersistence
-                .create(aspect, tenantId, user.id)(session) match {
-                case Success(result) =>
-                  complete(result)
-                case Failure(exception) =>
-                  complete(
-                    StatusCodes.BadRequest,
-                    ApiError(exception.getMessage)
-                  )
+            requirePermission(
+              authClient,
+              "object/aspect/create",
+              input =
+                Some(JsObject("object" -> JsObject("aspect" -> aspect.toJson)))
+            ) {
+              val theResult = DB localTx { session =>
+                AspectPersistence
+                  .create(aspect, tenantId, userId)(session) match {
+                  case Success(result) =>
+                    complete(result)
+                  case Failure(e: PSQLException) if e.getSQLState == "23505" =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(s"Duplicated aspect id supplied: ${aspect.id}")
+                    )
+                  case Failure(e: RuntimeException) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(e.getMessage)
+                    )
+                  case Failure(e: PSQLException) if e.getSQLState == "22001" =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(
+                        s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+                      )
+                    )
+                  case Failure(exception) =>
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError(exception.getMessage)
+                    )
+                }
               }
+              webHookActor ! WebHookActor.Process()
+              theResult
             }
-            webHookActor ! WebHookActor.Process()
-            theResult
           }
         }
       }
@@ -179,24 +207,49 @@ class AspectsService(
   def putById: Route = put {
     path(Segment) { id: String =>
       {
-        requireIsAdmin(authClient)(system, config) { user =>
+        requireUserId { userId =>
           requiresSpecifiedTenantId { tenantId =>
             entity(as[AspectDefinition]) { aspect =>
-              val theResult = DB localTx { session =>
-                AspectPersistence.putById(id, aspect, tenantId, user.id)(
-                  session
-                ) match {
-                  case Success(result) =>
-                    complete(result)
-                  case Failure(exception) =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(exception.getMessage)
-                    )
+              requireAspectUpdateOrCreateWhenNonExistPermission(
+                authClient,
+                id,
+                Left(aspect)
+              ) {
+                val theResult = DB localTx { session =>
+                  AspectPersistence.putById(id, aspect, tenantId, userId)(
+                    session
+                  ) match {
+                    case Success(result) =>
+                      complete(result)
+                    case Failure(e: PSQLException)
+                        if e.getSQLState == "23505" =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(s"Duplicated aspect id supplied: ${id}")
+                      )
+                    case Failure(e: PSQLException)
+                        if e.getSQLState == "22001" =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(
+                          s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+                        )
+                      )
+                    case Failure(e: RuntimeException) =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(e.getMessage)
+                      )
+                    case Failure(exception) =>
+                      complete(
+                        StatusCodes.InternalServerError,
+                        ApiError(exception.getMessage)
+                      )
+                  }
                 }
+                webHookActor ! WebHookActor.Process()
+                theResult
               }
-              webHookActor ! WebHookActor.Process()
-              theResult
             }
           }
         }
@@ -273,23 +326,41 @@ class AspectsService(
   )
   def patchById: Route = patch {
     path(Segment) { id: String =>
-      requireIsAdmin(authClient)(system, config) { user =>
+      requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[JsonPatch]) { aspectPatch =>
-            val theResult = DB localTx { session =>
-              AspectPersistence
-                .patchById(id, aspectPatch, tenantId, user.id)(session) match {
-                case Success(result) =>
-                  complete(result)
-                case Failure(exception) =>
-                  complete(
-                    StatusCodes.BadRequest,
-                    ApiError(exception.getMessage)
-                  )
+            requireAspectUpdateOrCreateWhenNonExistPermission(
+              authClient,
+              id,
+              Right(aspectPatch)
+            ) {
+              val theResult = DB localTx { session =>
+                AspectPersistence
+                  .patchById(id, aspectPatch, tenantId, userId)(session) match {
+                  case Success(result) =>
+                    complete(result)
+                  case Failure(e: PSQLException) if e.getSQLState == "22001" =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(
+                        s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+                      )
+                    )
+                  case Failure(e: RuntimeException) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(e.getMessage)
+                    )
+                  case Failure(exception) =>
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError(exception.getMessage)
+                    )
+                }
               }
+              webHookActor ! WebHookActor.Process()
+              theResult
             }
-            webHookActor ! WebHookActor.Process()
-            theResult
           }
         }
       }

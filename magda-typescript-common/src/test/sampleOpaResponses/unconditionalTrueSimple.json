@@ -1,0 +1,48 @@
+{
+    "result": {
+        "queries": [
+            [],
+            [
+                {
+                    "index": 0,
+                    "terms": [
+                        {
+                            "type": "ref",
+                            "value": [
+                                {
+                                    "type": "var",
+                                    "value": "gte"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "number",
+                            "value": 4
+                        },
+                        {
+                            "type": "ref",
+                            "value": [
+                                {
+                                    "type": "var",
+                                    "value": "data"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "reports"
+                                },
+                                {
+                                    "type": "var",
+                                    "value": "$02"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "clearance_level"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        ]
+    }
+}

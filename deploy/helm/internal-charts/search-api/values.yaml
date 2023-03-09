@@ -22,6 +22,9 @@ resources:
   limits:
     cpu: 200m
 
+# -- when set to true, search API will print verbose debug info (e.g. ES DSL query) to log
+debug: false
+
 # -- Manually set dataset index version.
 # If not specify, default version will be used.
 # you want to manually set this setting when upgrade to a Magda version that involves dataset index version changes.

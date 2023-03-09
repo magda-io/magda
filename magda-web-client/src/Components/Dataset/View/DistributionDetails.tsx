@@ -10,9 +10,9 @@ import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessU
 import "./DatasetDetails.scss";
 import { config } from "config";
 import DiscourseComments from "Components/Dataset/View/DiscourseComments";
-import { getPluginExtraVisualisationSection } from "../../../externalPluginComponents";
+import { getPluginExtraVisualisationSections } from "../../../externalPluginComponents";
 
-const ExtraVisualisationSection = getPluginExtraVisualisationSection();
+const extraVisualisationSections = getPluginExtraVisualisationSections();
 
 class DistributionDetails extends Component<{
     dataset: ParsedDataset;
@@ -60,7 +60,7 @@ class DistributionDetails extends Component<{
         );
         const accessText = distribution.accessURL && (
             <div key={"accessText"}>
-                This dataset can be accessed from: <br />{" "}
+                This data file or API can be accessed from: <br />{" "}
                 <CommonLink className="url" href={distribution.accessURL}>
                     {distribution.accessURL}
                 </CommonLink>
@@ -80,7 +80,7 @@ class DistributionDetails extends Component<{
                     ]);
                     return (
                         <React.Fragment>
-                            <div className="heading">Access Notes: </div>
+                            <h3 className="section-heading">Access Notes:</h3>
                             <div className="access-notes">
                                 {accessNotesPrefix &&
                                     accessNotesPrefix.length && (
@@ -138,12 +138,19 @@ class DistributionDetails extends Component<{
                             distribution={this.props.distribution}
                         />
                         <DataPreviewMap distributions={[distribution]} />
-                        {ExtraVisualisationSection ? (
-                            <ExtraVisualisationSection
-                                dataset={dataset}
-                                distributionId={distribution.identifier}
-                            />
-                        ) : null}
+                        {extraVisualisationSections?.length
+                            ? extraVisualisationSections.map(
+                                  (ExtraVisualisationSection, idx) => (
+                                      <ExtraVisualisationSection
+                                          key={idx}
+                                          dataset={this.props.dataset}
+                                          distributionId={
+                                              distribution.identifier!
+                                          }
+                                      />
+                                  )
+                              )
+                            : null}
                     </div>
                 )}
 

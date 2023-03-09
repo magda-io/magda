@@ -30,3 +30,7 @@ rbac:
 
 # -- the k8s namespace contains job object. When empty, will use `.Release.Namespace`
 namespace: 
+
+# -- when set to true, API will not query policy engine for auth decision but assume it's always permitted. 
+# It's for debugging only.
+skipAuth: false

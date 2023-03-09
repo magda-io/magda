@@ -15,6 +15,7 @@ import fakeArgv from "./fakeArgv";
 import MinionOptions from "../MinionOptions";
 import minion from "../index";
 import baseSpec from "./baseSpec";
+import { expect } from "chai";
 
 const aspectArb = jsc.record({
     id: jsc.string,
@@ -78,7 +79,10 @@ baseSpec(
                 registryScope
                     .put(
                         `/hooks/${encodeURIComponentWithApost(hook.id)}`,
-                        hook,
+                        (body: any) => {
+                            expect(hook).to.deep.include(body);
+                            return true;
+                        },
                         {
                             reqheaders: reqHeaders(jwtSecret, userId)
                         }
@@ -118,7 +122,8 @@ baseSpec(
                         `/hooks/${encodeURIComponentWithApost(hook.id)}/ack`,
                         {
                             succeeded: false,
-                            lastEventIdReceived: null
+                            lastEventIdReceived: null,
+                            active: true
                         },
                         {
                             reqheaders: reqHeaders(jwtSecret, userId)
@@ -259,6 +264,11 @@ function buildWebHook(
         lastRetryTime: null,
         retryCount: 0,
         isRunning: null,
-        isProcessing: null
+        isProcessing: null,
+        ownerId: undefined,
+        createTime: undefined,
+        creatorId: undefined,
+        editTime: undefined,
+        editorId: undefined
     };
 }

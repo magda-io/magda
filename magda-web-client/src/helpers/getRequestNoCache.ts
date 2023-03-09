@@ -1,5 +1,5 @@
 import request from "./request";
-import createNoCacheFetchOptions from "api-clients/createNoCacheFetchOptions";
+import createNoCacheFetchOptions from "../api-clients/createNoCacheFetchOptions";
 
 export default async function getRequestNoCache<T = any, CT = string>(
     url: string,

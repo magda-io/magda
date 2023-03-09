@@ -1,6 +1,6 @@
 # gateway
 
-![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square)
+![Version: 2.2.3-alpha.0](https://img.shields.io/badge/Version-2.2.3--alpha.0-informational?style=flat-square)
 
 The Gateway Component of Magda that routes incoming requets to other magda components.
 
@@ -12,13 +12,14 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| additionalRoutes | object | {} | a list of additional routes that should be avaialble under `/api/v0/` path. Different from `routes` config field, routes supplied via this field will merge with `defaultRoutes` (default system API routes). Therefore, users doesn't have to specify all default system API routes in this field in order to keep all system API routes working. When users supply value via this config field, any value supplied via `routes` field will be ignored. |
 | authPlugins | list | `[]` | a list of authentication plugin config item.  Each authentication plugin config item can contain the following fields: <ul> <li>`key`: (string) the unique key of the auth plugin. Allowed characters: [a-zA-Z0-9\-] </li> <li>`baseUrl`: (string) the `baseUrl` where gateway proxy request to. </li> </ul> More info on authentication plugin see [Authentication Plugin Specification](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md) |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
-| ckanRedirectionDomain | string | `nil` | CKAN redirection target CKAN instance domain. See `enableCkanRedirection` for more details. |
-| ckanRedirectionPath | string | `nil` | CKAN redirection target CKAN instance path. See `enableCkanRedirection` for more details. |
+| ckanRedirectionDomain | string | `nil` | CKAN redirection target CKAN instance domain (e.g. `data.gov.au`). See `enableCkanRedirection` for more details. |
+| ckanRedirectionPath | string | `nil` | CKAN redirection target CKAN instance path (e.g. `/data`). See `enableCkanRedirection` for more details. |
 | cookie | object | default value see `Description` | Session cookie settings. <br/> More info: https://github.com/expressjs/session#cookie <br/> Supported options are:<br/> <ul> <li>`expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.</li> <li>`httpOnly`: Default: true.</li> <li>`maxAge`: Default: 7 * 60 * 60 * 1000 (7 hours)</li> <li>`path`: Default: '/'.</li> <li>`sameSite`: Default: lax </li> <li>`secure`: Default: "auto" </li> </ul> |
 | cors.exposedHeaders[0] | string | `"Content-Range"` |  |
 | cors.exposedHeaders[1] | string | `"X-Content-Range"` |  |
@@ -50,6 +51,8 @@ Kubernetes: `>= 1.14.0-0`
 | helmet.frameguard | bool | `false` |  |
 | image.name | string | `"magda-gateway"` |  |
 | proxyTimeout | int | nil (120 seconds default value will be used by upstream lib internally) | How long time (in seconds) before upstream service must complete request in order to avoid request timeout error. If not set, the request will time out after 120 seconds. |
+| registryQueryCacheMaxKeys | number | `nil` | Specifies a maximum amount of keys that can be stored in the registryQueryCache. By default, it will be set to 500 seconds if leave blank. |
+| registryQueryCacheStdTTL | number | `nil` | The standard ttl as number in seconds for every generated cache element in the registryQueryCache. To disable the cache, set this value to `0`. By default, it will be set to 600 seconds if leave blank. |
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"40Mi"` |  |
@@ -57,6 +60,7 @@ Kubernetes: `>= 1.14.0-0`
 | service.externalPort | int | `80` |  |
 | service.internalPort | int | `80` |  |
 | service.type | string | `"NodePort"` |  |
+| skipAuth | bool | `false` | when set to true, API will not query policy engine for auth decision but assume it's always permitted.  It's for debugging only. |
 | web | string | `"http://web"` | Default web route.  This is the last route of the proxy. Main UI should be served from here. |
 | webRoutes | object | `{"preview-map":"http://preview-map:6110"}` | extra web routes. See [Proxy Target Definition](#proxy-target-definition) section below for route format. |
 
@@ -132,5 +136,11 @@ defaultRoutes:
     redirectTrailingSlash: true
   tenant:
     to: http://tenant-api/v0
+    auth: true
+  "indexer/reindex":
+    to: http://indexer/v0/reindex
+    auth: true
+  "indexer/dataset":
+    to: http://indexer/v0/dataset
     auth: true
 ```

@@ -1,6 +1,6 @@
 {
   "name": "@magda/db-migrator",
-  "version": "1.2.2-alpha.0",
+  "version": "2.2.3-alpha.0",
   "description": "A base Docker image for PostgreSQL with Flyway for schema migrations.",
   "scripts": {
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
@@ -12,12 +12,12 @@
   "license": "Apache-2.0",
   "config": {
     "docker": {
-      "name": "data61/magda-db-migrator",
+      "name": "magda-db-migrator",
       "include": "Dockerfile flyway-commandline-4.2.0-linux-x64.tar.gz migrate.sh"
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^1.2.2-alpha.0"
+    "@magda/scripts": "^2.2.3-alpha.0"
   },
   "magda": {
     "categories": {

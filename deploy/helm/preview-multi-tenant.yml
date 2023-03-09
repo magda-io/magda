@@ -2,7 +2,7 @@ global:
   rollingUpdate:
     maxUnavailable: 1000
   image:
-    repository: "registry.gitlab.com/magda-data/magda/data61"
+    repository: "registry.gitlab.com/magda-data/magda"
     pullSecrets: "regcred"
     pullPolicy: Always
   exposeNodePorts: false
@@ -26,6 +26,8 @@ magda:
       ingressClass: nginx
       enableTls: true
       useDefaultCertificate: true
+      clientBodyBufferSize: 500M
+      proxyBodySize: 500M
 
     registry-api:
       skipAuthorization: false
@@ -76,7 +78,7 @@ magda:
         postgresql:
           image: 
             registry: "registry.gitlab.com"
-            repository: "magda-data/magda/data61/magda-postgres"
+            repository: "magda-data/magda/magda-postgres"
             pullPolicy: "Always"
             pullSecrets: 
               - "regcred"
@@ -118,9 +120,8 @@ magda:
       fallbackUrl: "https://data.gov.au"
       featureFlags:
         cataloguing: true
-        publishToDga: true
-        placeholderWorkflowsOn: false
-        datasetApprovalWorkflowOn: true
+        publishToDga: false
+        datasetApprovalWorkflowOn: false
         useStorageApi: true
 
     correspondence-api:

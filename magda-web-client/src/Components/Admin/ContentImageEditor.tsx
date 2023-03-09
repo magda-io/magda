@@ -42,14 +42,14 @@ class ContentImageEditor extends Component<any, any> {
         return (
             <React.Fragment>
                 <img
-                    src={config.contentApiURL + imageItemId}
+                    src={config.contentApiBaseUrl + imageItemId}
                     alt={imageAlt}
                     style={{
                         maxHeight: "70px",
                         maxWidth: "367px",
                         cursor: "pointer"
                     }}
-                    onError={e => {
+                    onError={(e) => {
                         this.updateState({
                             imageAlt: hasEditPermissions
                                 ? "CLICK TO SET"

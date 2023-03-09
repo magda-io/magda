@@ -1,4 +1,6 @@
 import { Action } from "../types";
+import { Permission } from "@magda/typescript-common/dist/authorization-api/model";
+import { ANONYMOUS_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
 
 export type Role = {
     id: string;
@@ -13,10 +15,25 @@ export type User = {
     email: string;
     photoURL: string;
     source: string;
+    sourceId?: string;
     isAdmin: boolean;
     roles: Role[];
-    permissions: any[];
+    permissions: Permission[];
     orgUnitId?: string;
+    orgUnit?: OrgUnit;
+    managingOrgUnitIds?: string[];
+};
+
+export type OrgUnit = {
+    id: string;
+    name: string;
+    description: string;
+    left?: number;
+    right?: number;
+    create_by?: string;
+    create_time?: string;
+    edit_by?: string;
+    edit_time?: string;
 };
 
 const defaultUserInfo: User = {
@@ -28,7 +45,7 @@ const defaultUserInfo: User = {
     isAdmin: false,
     roles: [
         {
-            id: "00000000-0000-0001-0000-000000000000",
+            id: ANONYMOUS_USERS_ROLE_ID,
             name: "Anonymous Users",
             description: "Default role for unauthenticated users",
             permissionIds: []
@@ -37,7 +54,7 @@ const defaultUserInfo: User = {
     permissions: []
 };
 
-type UserManagementState = {
+export type UserManagementState = {
     user: User;
     isFetchingWhoAmI: boolean;
     whoAmIError: Error | null;
@@ -52,7 +69,7 @@ const initialData: UserManagementState = {
 const userManagementMapping = (
     state: UserManagementState = initialData,
     action: Action
-) => {
+): UserManagementState => {
     switch (action.type) {
         case "REQUEST_WHO_AM_I":
             return Object.assign({}, state, {

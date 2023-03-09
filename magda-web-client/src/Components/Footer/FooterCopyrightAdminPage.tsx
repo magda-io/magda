@@ -4,7 +4,7 @@ import ContentAdminPage from "Components/Admin/ContentAdminPage";
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
 import { base64ImageEditor } from "Components/Editing/Editors/imageEditor";
-import { withRouter } from "react-router";
+import { withRouter } from "react-router-dom";
 
 class StoriesAdminPage extends Component<any, any> {
     render() {
@@ -13,8 +13,8 @@ class StoriesAdminPage extends Component<any, any> {
             <ContentAdminPage
                 title="Footer Copyright"
                 itemTitle="Copyright"
-                generateNewId={id => `${pathPrefix}/${Date.now()}`}
-                titleFromItem={item =>
+                generateNewId={(id) => `${pathPrefix}/${Date.now()}`}
+                titleFromItem={(item) =>
                     item.content.logoAlt || item.content.htmlContent
                 }
                 pattern={`${pathPrefix}/*`}
@@ -31,8 +31,8 @@ class StoriesAdminPage extends Component<any, any> {
         );
     }
     edit(item, onChange) {
-        const save = field => {
-            return value => {
+        const save = (field) => {
+            return (value) => {
                 onChange(
                     Object.assign({}, item.content, {
                         [field]: value

@@ -1,12 +1,161 @@
 # CHANGELOG
 
+## v2.2.3
+
+- Fixed an issue that zendesk integration feedback form might not always be opened via footer link
+- #3449: Gateway ckanRedirection module performance improvement
+- related to #3448: make web server module to use read only registry node for site map generation
+
+## v2.2.2
+
+- #3439: the orgUnitId of access-control aspect minLength should be 0
+- #3440: ScalikeJDBC toOrConditionOpt or toAndConditionOpt may fail to generate round brackets correctly
+- #3438: Gateway Chart should support an extra "additionalRoutes" field
+- #3442: Admin api pod probe timeoutSeconds is set too short
+
+## v2.2.1
+
+- #3436 Fixed Download the history report Button triggers 404 error
+- #3435 Upgrade outdated non-core modules
+
+## v2.2.0
+
+- Upgrade default connectors & minions version (to v2.0.0)
+- Fixed indexer error: distribution/byteSize field should be in `long` type to support possible larger numbers
+- Upgraded indexer weekly reindexer trigger container to node14
+- Distribution page UI minor improvements: display file size (when available) & adjust margins between information blocks
+- Improve the error message for `false` unconditional decision.
+- #3420 add `merge` option support to PUT record API
+- #3421 Improve dataset updating UI logic using `merge` option of the PUT record API
+- Avoid sending unnecessary `aspects` field as the part of the context data created by RegistryExternalInterface
+- #3426 People with orgUnit constraint permission should only be able to perform read operation on datasets not assigned to an orgUnit
+- #3424 Set the default order by field for APIs
+- #3427 Dataset Editor: offer more details via error message box when encounter insufficient permission error
+- #3425 offer a button on dataset page to take the user back to data management tab
+- Started to publish @magda/external-ui-plugin-sdk NPM package
+- Upgrade react-router-dom to 5.3.4
+- Refactored the frontend config object to remove duplicated config fields & added comments
+- #3428 Allow multiple "Extra Visualisation Section" type UI Plugin Components to be mounted
+- Upgraded CSW connector to v2.0.1
+- #3431 Display dataset level licence information when the dataset has no distribution.
+
+## v2.1.1
+
+- #3412 Metadata Editor: improve the default empty value handling for `access-control` aspect `orgUnitId` field
+
+## v2.1.0
+
+- Use global state instead in ValidateUser
+- Periodically refresh login status (Interval configurable via web-server helm chart)
+- Allow setting landingPage uri for anonymousUser and authenticatedUser
+- Logout action will redirect user to LandingPage
+- #3406 Improve registry webHook processing SQL performance
+- Increase indexer default http request / idle timeout to 90s / 120s and make them configurable via the indexer helm chart
+- `/registry/hooks/{id}/ack` endpoint will assume `active` field is `true` when `active` is not specified and `succeeded` = `true`.
+- `/registry/hooks/{id}/ack` endpoint will reset webhook retryCount when `active` field is `true`.
+- #3410 Allow additional webhook options to be configured via minion options
+- Fix `PUT` `/v0/registry/hooks/{id}`: didn't update webhook registered eventTypes properly
+- Update create / update webhook API document re: required eventType data type
+- The resume webhook action on minion's starting up should set the webhook to `active` (and consequently, reset the retryCount)
+- Upgrade magda-minion-visualization to 2.0.0
+- Upgrade magda-ckan-connector to 2.0.0
+- Related to #3355, upgrade API version of all CronJob in `magda-core` to batch/v1 (for k8s 1.25 support)
+- Metadata Editor: avoid dataset editor UI refresh when refresh the user state data
+- Metadata Editor: make all orgUnitDropDown controls clearable configurable
+- Metadata Editor: make sure orgUnitDropDown controls are only clearable when they are not compulsory fields
+- Fixed: Registry Record Aspect Panel UI pagination issue
+- Metadata Editor: when publishing dataset for the first time, the `hasEverPublished` field should be set to `true`
+- Metadata Editor: UI adjustments on dataset published message page
+- #3394 Make sure scala pods can be gracefully terminated within 15 seconds
+- #3402 Allow access group users to have read permission to the access group itself
+
+## v2.0.1
+
+- #3397 Only allow users to edit datasets that are created by Magda
+- #3398 Allow the "auto-fetch metadata" button to be turned off via Helm Config
+- Improved login redirection logic & UI access validation logic
+- Made legacy admin home only available to admin role users
+- Fixed orgUnit setting UI section request incorrect operationUri
+- Replaced "magda" keyword with language var or more generic term
+- Updated the default footer copyright data61 logo
+- Upgraded connect-pg-simple to 6.2.1
+
+## v2.0.0
+
+- #3231 Upgraded to Open Policy Agent v0.33.x
+- #3253 Add New /auth/opa/decision Endpoint
+- move pre-defined role ids into a single contants file in magda-typescript-common
+- related #3250: Rewrote the OPA AST parser for better evaluation & reference handling
+- related #3250: Added common policy entry point: entrypoint/allow.rego
+- #3303 rename `dataset-access-control` aspect to `access-control` aspect
+- #3256 Unified policy for secure both registry records & Elasticsearch datasets
+- #3304 Implement authorisation enforcement for all registry API services according to the more generic auth model defined in #3256
+- #3306 Added admin web UI for auth management
+- Added new APIs for managing auth objects
+- #3308 Policy enforcement on auth objects APIs
+- Add `records/:id/aspects` & `records/:id/aspects/count` APIs to registry
+- related #3250: Rewrite decision enforcement logic for search API
+- #3326 Build OPA docker image with builtin policies & Run OPA as a side car
+- #3330 Fine-tune Metadata creation tool workflow for the new auth model
+- #3332 Policy Enforcement on Storage API using new auth model
+- #3333 Rename access-control aspect orgUnitOwnerId field to orgUnitId
+- #3335 Reshape Storage API (in progress)
+- #3340 OPA AST parser takes too long to evaluate large response
+- Increase registry default request timeout to 60s (from 30s)
+- Bump Dataset index version to 49 & publishers index version to 7
+- Fixed registry API generated ts client patchRecord API response type
+- add `allowAutoCrawlOnStartingUp` option to indexer
+- add `/v0/status/live` & `/v0/status/ready` endpoint to indexer
+- Related to #3315, introduce `ServiceRunner` to launch an integrated test & dev environment
+- #3315 rewrite auth related integration tests and execute tests using `ServiceRunner` rather than mini k8s cluster `kind`
+- #3345 Add dataset index / delete by ID API endpoints to indexer
+- Add `debug` switch to registry API, search API & Auth API
+- Related to #3331, remove any logic related to obsolete `authnReadPolicyId` record field
+- Related to #3331, remove obsolete policy files `object/registry/*`
+- Added APIs for managing API keys
+- #3345 Add adhoc dataset indexing APIs, secure with new auth model and expose via Gateway with other indexer APIs
+- "My dataset section": Add Dataset deletion function & performance improvement
+- Fixed: helm chart version update script incorrectly skip updating dependencies version when `versionUpdateExclude` config in package.json is empty
+- Fixed: incorrect scss-compiler-config data might be generated if non-default docker image config is used.
+- #3360: Recategorize auth object related API docs & more auth object related APIs for convenient of future UI development.
+- Fixed: `set-scss-vars` script will use proper imagePullSecrets to generate the UI CSS update job
+- Allow the `no cache` behaviour of `whoami` & `getUserById` api to be turned off
+- #3269 Backend support for Access Group
+- #3366 New Registry API capability: new filter operator, merge mode, group operations and more
+- Add `target` & `rel` fields to footer link item schema
+- Make sure dataset creation tool always create `dcat-dataset-strings` aspect for draft datasets
+- Add `reversePageTokenOrder` parameter to registry APIs `GET /records`, `GET /records/summary` & `GET /records/:recordId/history`
+- #3163 Fixed Registry history API incorrectly reports more event available on the last page
+- #3383 Registry get records API didn't group aspectOrQuery correctly
+- Upgrade to Node 14
+- Upgrade bcrypt to 5.0.1
+- Fixed auth policy: make sure datasets without `publishing` aspect will be considered published
+- #3348 secure openfaas gateway with new auth model & update API docs
+- #3317 Use multi-stage builds to build magda-scss-compile
+- #3337 Release docker images & helm charts to Github container registry as well
+- #3349 secure content API with new auth model
+- #3350 secure admin API (managing connectors) with new auth model
+- #3351 Secure tenant API with new auth model
+- Related to #3331, remove legacy middlewares
+- #3352 Remove usage of MUST_BE_ADMIN middleware in auth API
+- #3380 Support Graceful Pod Shutdown
+- Upgrade to typescript 4.2.4 & api-extractor 7.15.2
+- Upgrade react-scripts to 4.0.3 & craco to 6.4.5
+- Make region index initial creation execute in the background without blocking indexer
+- #3343 Consolidate admin/settings UI functionalities
+- #3395 Allow users to change the publishing status of published dataset
+- Fixed metadata creation tool / editor cache handling issue & workflow improvements.
+
 ## 1.3.1
 
 - #3367 Fixed Content API header item schema target field type
 - #3369 Content API Get by id API didn't response content in correct mime type
 - #3371 Content API Get by id API generate one more unnecessary DB query
+- #3363: Update postgres helm chart repo url
 - Upgrade openfaas helm chart to 5.5.5-magda.2 to be compatible with k8s 1.22
 - #3362 explicitly mark pods using emptyDir as safe to evict for cluster-autoscaler
+- minion SDK: allow crawlerRecordFetchNumber to be changed via runtime config e.g. env var
+- Use format-minion v1.1.2
 
 ## 1.3.0
 
@@ -170,6 +319,7 @@
 - Upgraded format-minion to v1.0.1
 - #3198 Indexer will by default auto reindex / trim obsolete publisher / format weekly
 - #3201 Fixed indexer might throw an error and interrupt crawling process upon invalid data
+- #3343 Consolidate admin/settings UI functionalities into "Settings" area
 
 ## 0.0.59
 

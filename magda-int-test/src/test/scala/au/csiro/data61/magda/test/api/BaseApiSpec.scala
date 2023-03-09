@@ -4,7 +4,6 @@ import java.net.URL
 import java.util.Properties
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import akka.stream.scaladsl.Source
@@ -29,7 +28,6 @@ import com.sksamuel.elastic4s.http.{
   RequestSuccess
 }
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
-import org.elasticsearch.cluster.health.ClusterHealthStatus
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
 import spray.json.JsObject
 
@@ -128,7 +126,8 @@ trait BaseApiSpec
         }
         .await(90 seconds) match {
         case r: RequestSuccess[ClusterHealthResponse] =>
-          r.result.status != ClusterHealthStatus.RED
+          val status = r.result.status.toLowerCase
+          status != "red"
         case f: RequestFailure => false
       }
     }
@@ -142,7 +141,8 @@ trait BaseApiSpec
         }
         .await(90 seconds) match {
         case r: RequestSuccess[ClusterHealthResponse] =>
-          r.result.status != ClusterHealthStatus.RED && r.result.status != ClusterHealthStatus.YELLOW
+          val status = r.result.status.toLowerCase
+          status != "red" && status != "yellow"
         case f: RequestFailure => false
       }
     }

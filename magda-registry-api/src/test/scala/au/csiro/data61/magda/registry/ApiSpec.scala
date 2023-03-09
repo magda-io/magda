@@ -1,16 +1,12 @@
 package au.csiro.data61.magda.registry
 
-import scala.collection.JavaConversions._
-
 import org.flywaydb.core.Flyway
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.Matchers
 import org.scalatest.fixture.FunSpec
 import org.slf4j.LoggerFactory
-
 import com.typesafe.config.Config
-import io.jsonwebtoken.Jwts;
-
+import io.jsonwebtoken.Jwts
 import akka.actor.ActorRef
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.marshalling.Marshal
@@ -22,9 +18,14 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.model._
 import au.csiro.data61.magda.Authentication
 import au.csiro.data61.magda.client.AuthApiClient
-import au.csiro.data61.magda.client.HttpFetcher
-import au.csiro.data61.magda.model.Auth.AuthProtocols
-import au.csiro.data61.magda.model.Auth.User
+import au.csiro.data61.magda.client.{HttpFetcher, MockAuthHttpFetcher}
+import au.csiro.data61.magda.model.Auth.{
+  AuthDecision,
+  AuthProtocols,
+  UnconditionalFalseDecision,
+  UnconditionalTrueDecision,
+  User
+}
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import scalikejdbc._
@@ -32,13 +33,25 @@ import scalikejdbc.config.DBs
 import scalikejdbc.config.EnvPrefix
 import scalikejdbc.config.TypesafeConfig
 import scalikejdbc.config.TypesafeConfigReader
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.pattern.gracefulStop
 import au.csiro.data61.magda.model.Registry._
 import io.jsonwebtoken.SignatureAlgorithm
+
 import java.{util => ju}
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
+
+import scala.collection.JavaConverters._
+import io.lemonlabs.uri.{QueryString, Url, UrlPath}
+import spray.json.JsValue
+
+case class AuthDecisionSetupConfig(
+    authDecision: AuthDecision,
+    operationUri: Option[String] = None,
+    expectCallCount: Option[Int] = None
+)
 
 abstract class ApiSpec
     extends FunSpec
@@ -76,6 +89,16 @@ abstract class ApiSpec
     addTenantIdHeader(MAGDA_SYSTEM_ID)
   }
 
+  def addUserId(userId: Option[String] = None): RawHeader = {
+    val jws = Authentication.signToken(
+      Jwts
+        .builder()
+        .claim("userId", userId.getOrElse(USER_ID)),
+      system.log
+    )
+    RawHeader("X-Magda-Session", jws)
+  }
+
   // Any positive numbers
   val TENANT_1: BigInt = 1
   val TENANT_2: BigInt = 2
@@ -93,7 +116,7 @@ abstract class ApiSpec
   flyway.setSchemas("test")
   flyway.setLocations("classpath:/sql")
   flyway.setPlaceholders(
-    Map("clientUserName" -> "client", "clientPassword" -> "password")
+    Map("clientUserName" -> "client", "clientPassword" -> "password").asJava
   )
 
   override def testConfigSource =
@@ -110,7 +133,8 @@ abstract class ApiSpec
     """.stripMargin
 
   override def withFixture(test: OneArgTest) = {
-    val authHttpFetcher = mock[HttpFetcher]
+    val authHttpFetcher = new MockAuthHttpFetcher
+    val httpFetcher = mock[HttpFetcher]
 
     //    webHookActorProbe.expectMsg(1 millis, WebHookActor.Process(true))
 
@@ -155,25 +179,14 @@ abstract class ApiSpec
         materializer
       )
 
-    def asNonAdmin(req: HttpRequest): HttpRequest = {
-      expectAdminCheck(authHttpFetcher, false)
-      asUser(req)
-    }
-
-    def asAdmin(req: HttpRequest): HttpRequest = {
-      expectAdminCheck(authHttpFetcher, true)
-      asUser(req)
-    }
-
     try {
       super.withFixture(
         test.toNoArgTest(
           FixtureParam(
             api,
             actor,
-            asAdmin,
-            asNonAdmin,
             authHttpFetcher,
+            httpFetcher,
             authClient
           )
         )
@@ -181,78 +194,6 @@ abstract class ApiSpec
     } finally {
       //      Await.result(system.terminate(), 30 seconds)
       Await.result(gracefulStop(actor, 30 seconds), 30 seconds)
-    }
-  }
-
-  def asUser(req: HttpRequest): HttpRequest = {
-    val jws = Authentication.signToken(
-      Jwts
-        .builder()
-        .claim("userId", USER_ID),
-      system.log
-    )
-    req.withHeaders(new RawHeader("X-Magda-Session", jws))
-  }
-
-  def expectAdminCheck(
-      httpFetcher: HttpFetcher,
-      isAdmin: Boolean,
-      userId: String = USER_ID
-  ) {
-    val resFuture = Marshal(User(userId, isAdmin))
-      .to[ResponseEntity]
-      .map(user => HttpResponse(status = 200, entity = user))
-
-    (httpFetcher.get _)
-      .expects(s"/v0/public/users/$userId", *)
-      .returns(resFuture)
-  }
-
-  def checkMustBeAdmin(role: Role)(fn: => HttpRequest) {
-    describe("should only work when logged in as admin") {
-      it("rejects with credentials missing if not signed in") { param =>
-        fn ~> param.api(role).routes ~> check {
-          expectCredentialsMissingRejection()
-        }
-      }
-
-      it("rejects with credentials rejected if credentials are bad") { param =>
-        fn.withHeaders(RawHeader("X-Magda-Session", "aergiajreog")) ~> param
-          .api(role)
-          .routes ~> check {
-          expectCredentialsRejectedRejection()
-        }
-      }
-
-      it("rejects with AuthorizationFailedRejection if not admin") { param =>
-        param.asNonAdmin(fn) ~> param.api(role).routes ~> check {
-          expectUnauthorizedRejection()
-        }
-      }
-    }
-
-    def expectCredentialsMissingRejection() = {
-      rejection match {
-        case AuthenticationFailedRejection(
-            AuthenticationFailedRejection.CredentialsMissing,
-            _
-            )  => // success
-        case _ => fail()
-      }
-    }
-
-    def expectCredentialsRejectedRejection() = {
-      rejection match {
-        case AuthenticationFailedRejection(
-            AuthenticationFailedRejection.CredentialsRejected,
-            _
-            )  => // success
-        case _ => fail(s"Rejection was $rejection")
-      }
-    }
-
-    def expectUnauthorizedRejection() = {
-      rejection shouldEqual AuthorizationFailedRejection
     }
   }
 
@@ -278,10 +219,120 @@ abstract class ApiSpec
   case class FixtureParam(
       api: Role => Api,
       webHookActor: ActorRef,
-      asAdmin: HttpRequest => HttpRequest,
-      asNonAdmin: HttpRequest => HttpRequest,
-      authFetcher: HttpFetcher,
+      authFetcher: MockAuthHttpFetcher,
+      httpFetcher: HttpFetcher,
       authClient: RegistryAuthApiClient
   )
+
+  def endpointStandardAuthTestCase(
+      request: HttpRequest,
+      requiredOperationUris: List[String],
+      hasPermissionCheck: FixtureParam => Unit,
+      noPermissionCheck: FixtureParam => Unit,
+      beforeRequest: FixtureParam => Unit = (param: FixtureParam) => Unit,
+      requireUserId: Boolean = false,
+      skipPolicyRetrieveAndProcessCheck: Boolean = false
+  ) = {
+
+    val req = request ~> addTenantIdHeader(
+      TENANT_1
+    )
+    val reqWithUserId = req ~> addUserId()
+
+    it("should respond 200 when user has permission") { param =>
+      beforeRequest(param)
+      // preset UnconditionalTrueDecision auth decision for required operation uris
+      requiredOperationUris.foreach(
+        operationUri =>
+          param.authFetcher.setAuthDecision(
+            operationUri,
+            UnconditionalTrueDecision
+          )
+      )
+
+      (if (requireUserId) reqWithUserId else req) ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param
+        .api(Full)
+        .routes ~> check {
+        hasPermissionCheck(param)
+      }
+    }
+
+    it(
+      "should respond non-200 code (e.g. 403 or 404 depends on API) when user has no permission"
+    ) { param =>
+      beforeRequest(param)
+      // preset UnconditionalFalseDecision auth decision for required operation uris
+      requiredOperationUris.foreach(
+        operationUri =>
+          param.authFetcher.setAuthDecision(
+            operationUri,
+            UnconditionalFalseDecision
+          )
+      )
+      (if (requireUserId) reqWithUserId else req) ~> param
+        .api(Full)
+        .routes ~> check {
+        noPermissionCheck(param)
+      }
+    }
+
+    if (!skipPolicyRetrieveAndProcessCheck) {
+      it(
+        "should respond 500 when failed to retrieve auth decision from policy engine"
+      ) { param =>
+        beforeRequest(param)
+
+        param.authFetcher
+          .setResponse(StatusCodes.InternalServerError, "Something wrong.")
+
+        (if (requireUserId) reqWithUserId else req) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.InternalServerError
+        }
+      }
+
+      it(
+        "should respond 500 when failed to process auth decision from policy engine"
+      ) { param =>
+        beforeRequest(param)
+
+        param.authFetcher.setError(new Exception("something wrong"))
+
+        (if (requireUserId) reqWithUserId else req) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.InternalServerError
+        }
+      }
+    }
+
+    if (requireUserId) {
+      it(
+        "should respond 403 (Forbidden) for anonymous users / can't locate user id"
+      ) { param =>
+        // this test case assume the request passed in doesn't contain JWT token / userId
+        beforeRequest(param)
+
+        // preset UnconditionalTrueDecision auth decision for required operation uris
+        requiredOperationUris.foreach(
+          operationUri =>
+            param.authFetcher.setAuthDecision(
+              operationUri,
+              UnconditionalTrueDecision
+            )
+        )
+
+        req ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.Forbidden
+        }
+      }
+    }
+
+  }
 
 }

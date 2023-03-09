@@ -1,6 +1,6 @@
 # ingress
 
-![Version: 1.2.2-alpha.0](https://img.shields.io/badge/Version-1.2.2--alpha.0-informational?style=flat-square)
+![Version: 2.2.3-alpha.0](https://img.shields.io/badge/Version-2.2.3--alpha.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -12,7 +12,9 @@ Kubernetes: `>= 1.19.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| clientBodyBufferSize | string | `"100M"` | HTTP post request body size limit. You might want to increase this limit for larger file upload. |
 | enableTls | bool | `false` |  |
+| proxyBodySize | string | `"100M"` | Proxy body size limit. You might want to increase this limit for larger file upload. |
 | useDefaultCertificate | bool | `false` |  |
 
 ----------------------------------------------

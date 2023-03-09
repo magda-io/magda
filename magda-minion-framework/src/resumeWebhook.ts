@@ -10,7 +10,12 @@ export default async function resumeWebhook(
 ) {
     console.info(`Attempting to resume webhook ${options.id}`);
 
-    const resumeResult = await registry.resumeHook(options.id);
+    const resumeResult = await registry.resumeHook(
+        options.id,
+        false,
+        null,
+        true
+    );
 
     if (resumeResult instanceof Error) {
         throw resumeResult;

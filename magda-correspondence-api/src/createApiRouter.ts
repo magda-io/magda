@@ -14,6 +14,7 @@ import { SMTPMailer } from "./SMTPMailer";
 import { DatasetMessage } from "./model";
 import renderTemplate, { Templates } from "./renderTemplate";
 import EmailTemplateRender from "./EmailTemplateRender";
+import ServerError from "magda-typescript-common/src/ServerError";
 
 const EMAIL_REGEX = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 
@@ -260,7 +261,10 @@ function handlePromise(
                 .json({ ...(extraData ? extraData : {}), status: "OK" })
         )
         .catch((e) => {
-            if (_.get(e, "e.response.statusCode") === 404) {
+            if (
+                _.get(e, "e.response.statusCode") === 404 ||
+                e?.statusCode === 404
+            ) {
                 console.error(
                     "Attempted to send correspondence for non-existent dataset " +
                         datasetId
@@ -275,6 +279,12 @@ function handlePromise(
         })
         .catch((e) => {
             console.error(e);
-            response.status(500).json({ status: "Failure" });
+            if (e instanceof ServerError) {
+                response
+                    .status(e.statusCode)
+                    .json({ status: "Failure", message: e.message });
+            } else {
+                response.status(500).json({ status: "Failure" });
+            }
         });
 }

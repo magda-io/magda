@@ -4,12 +4,15 @@ import _ from "lodash";
 import Registry from "magda-typescript-common/src/registry/RegistryClient";
 import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
 import { escapeRegExp } from "lodash";
+import NodeCache from "node-cache";
 
 export type CkanRedirectionRouterOptions = {
     ckanRedirectionDomain: string;
     ckanRedirectionPath: string;
     registryApiBaseUrlInternal: string;
     tenantId: number;
+    cacheStdTTL: number;
+    cacheMaxKeys: number;
 };
 
 export type genericUrlRedirectConfig =
@@ -76,8 +79,17 @@ export default function buildCkanRedirectionRouter({
     ckanRedirectionDomain,
     ckanRedirectionPath,
     registryApiBaseUrlInternal,
-    tenantId
+    tenantId,
+    cacheStdTTL,
+    cacheMaxKeys
 }: CkanRedirectionRouterOptions): express.Router {
+    const registryQueryCache =
+        cacheMaxKeys === 0 // turn off the cache when cacheMaxKeys==0
+            ? null
+            : new NodeCache({
+                  stdTTL: cacheStdTTL,
+                  maxKeys: cacheMaxKeys
+              });
     const router = express.Router();
     const registry = new Registry({
         baseUrl: registryApiBaseUrlInternal,
@@ -162,11 +174,31 @@ export default function buildCkanRedirectionRouter({
         );
     });
 
+    function getQueryRegistryRecordApiCacheKey(
+        aspectQuery: string[],
+        aspect: string[],
+        limit: number
+    ) {
+        return JSON.stringify({
+            aspectQuery,
+            aspect,
+            limit
+        });
+    }
+
     async function queryRegistryRecordApi(
         aspectQuery: string[],
         aspect: string[],
-        limit: number = 1
+        limit: number = undefined
     ) {
+        const cacheKey = getQueryRegistryRecordApiCacheKey(
+            aspectQuery,
+            aspect,
+            limit
+        );
+        if (registryQueryCache?.has(cacheKey)) {
+            return registryQueryCache.get(cacheKey);
+        }
         const queryParameters: any = {
             limit
         };
@@ -188,6 +220,12 @@ export default function buildCkanRedirectionRouter({
             )
         );
 
+        try {
+            registryQueryCache?.set(cacheKey, records);
+        } catch (e) {
+            console.log("Failed to save registryQueryCache: " + e);
+        }
+
         return records;
     }
 
@@ -196,7 +234,7 @@ export default function buildCkanRedirectionRouter({
         aspectName: string,
         retrieveAspectContent: boolean = true,
         retrieveAspects: string[] = [],
-        limit: number = 1
+        limit: number = undefined
     ): Promise<any[]> {
         const query = `${aspectName}.${
             uuidRegEx.test(ckanIdOrName) ? "id" : "name"
@@ -232,7 +270,7 @@ export default function buildCkanRedirectionRouter({
         ckanIdOrName: string,
         aspectName: string
     ) {
-        const records = await queryCkanAspect(ckanIdOrName, aspectName, false);
+        const records = await queryCkanAspect(ckanIdOrName, aspectName);
         if (!records || !records.length || !records[0]["id"]) {
             return null;
         } else {

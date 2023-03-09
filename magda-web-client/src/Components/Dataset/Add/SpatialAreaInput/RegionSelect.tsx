@@ -7,11 +7,11 @@ import RegionSelectStyles from "./RegionSelectStyles";
 
 import { Region } from "helpers/datasetSearch";
 
-const loadOptions = (props: PropsType) => async inputValue => {
+const loadOptions = (props: PropsType) => async (inputValue) => {
     if (!props.steRegion) return [];
     const queryStr = inputValue.trim();
     const res = await fetch(
-        `${config.searchApiUrl}regions?type=SA4${
+        `${config.searchApiBaseUrl}regions?type=SA4${
             props.steRegion && props.steRegion.regionId
                 ? `&lv2Id=${encodeURIComponent(props.steRegion.regionId)}`
                 : ""
@@ -26,7 +26,7 @@ const loadOptions = (props: PropsType) => async inputValue => {
     }
     if (props.regionId && !props.value) {
         // --- set initial prepopulated value
-        data.regions.forEach(region => {
+        data.regions.forEach((region) => {
             if (region.regionId === props.regionId) {
                 typeof props.onChange === "function" &&
                     props.onChange(region, true);
@@ -47,7 +47,7 @@ interface PropsType {
     ) => void;
 }
 
-const RegionSelect: FunctionComponent<PropsType> = props => {
+const RegionSelect: FunctionComponent<PropsType> = (props) => {
     const { countryRegion, steRegion } = props;
 
     let placeHolderText = "Please select region...";
@@ -76,12 +76,12 @@ const RegionSelect: FunctionComponent<PropsType> = props => {
                 defaultOptions
                 value={props.value}
                 loadOptions={loadOptions(props)}
-                getOptionLabel={option => option.regionName as string}
-                getOptionValue={option => option.regionId as string}
+                getOptionLabel={(option) => option.regionName as string}
+                getOptionValue={(option) => option.regionId as string}
                 styles={RegionSelectStyles}
                 placeholder={placeHolderText}
                 isDisabled={isDisabled}
-                onChange={option =>
+                onChange={(option) =>
                     typeof props.onChange === "function" &&
                     props.onChange(option)
                 }

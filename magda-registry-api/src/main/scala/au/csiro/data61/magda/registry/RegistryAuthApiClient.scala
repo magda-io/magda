@@ -2,7 +2,6 @@ package au.csiro.data61.magda.registry
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import au.csiro.data61.magda.opa.OpaTypes._
 import com.typesafe.config.Config
 import scalikejdbc.DB
 import scala.util.{Failure, Success, Try}
@@ -30,7 +29,7 @@ class RegistryAuthApiClient(
     this(
       HttpFetcher(
         new URL(config.getString("authApi.baseUrl"))
-      )
+      )(system, materializer, executor)
     )(
       config,
       system,

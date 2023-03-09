@@ -5,59 +5,60 @@ import {
     Operation,
     WebHookAcknowledgementResponse,
     MultipleDeleteResult,
-    EventsPage
+    EventsPage,
+    DeleteResult
 } from "../generated/registry/api";
-import RegistryClient, { RegistryOptions } from "./RegistryClient";
+import RegistryClient, {
+    RegistryOptions,
+    toServerError
+} from "./RegistryClient";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
-import createServiceError from "../createServiceError";
 import buildJwt from "../session/buildJwt";
 import { IncomingMessage } from "http";
 import { Maybe } from "tsmonad";
+import ServerError from "../ServerError";
 
-export interface AuthorizedRegistryUserIdAndJwtSecretOptions
-    extends RegistryOptions {
-    userId: string;
-    jwtSecret: string;
-    jwt?: never;
+// when none of jwt, userId or jwtSecret is provided, the request is deemed to be issued by anonymous users
+export interface AuthorizedRegistryOptions extends RegistryOptions {
+    jwt?: string;
+    userId?: string;
+    jwtSecret?: string;
 }
-
-export interface AuthorizedRegistryJwtOptions extends RegistryOptions {
-    jwt: string;
-    userId?: never;
-    jwtSecret?: never;
-}
-
-export type AuthorizedRegistryOptions =
-    | AuthorizedRegistryUserIdAndJwtSecretOptions
-    | AuthorizedRegistryJwtOptions;
 
 export default class AuthorizedRegistryClient extends RegistryClient {
-    protected jwt: string;
+    protected jwt: string = undefined;
 
     constructor(options: AuthorizedRegistryOptions) {
+        super(options);
+
         if (options.tenantId === undefined || options.tenantId === null) {
             throw Error("A tenant id must be defined.");
         }
 
-        if (!options.jwt) {
-            if (!options.userId || !options.jwtSecret) {
-                throw Error(
-                    "Either jwt or userId and jwtSecret must have values."
-                );
-            }
+        if (options?.userId && !options.jwtSecret) {
+            throw Error("jwtSecret must be supplied when userId is supplied.");
         }
 
-        super(options);
-        this.jwt = options.jwt
-            ? options.jwt
-            : buildJwt(options.jwtSecret, options.userId);
+        if (!options?.userId && options.jwtSecret) {
+            throw Error("userId must be supplied when jwtSecret is supplied.");
+        }
+
+        if (options?.userId && options.jwtSecret) {
+            this.jwt = buildJwt(options.jwtSecret, options.userId);
+        } else if (options?.jwt) {
+            this.jwt = options.jwt;
+        }
+    }
+
+    async getAspectDefinition(aspectId: string): Promise<AspectDefinition> {
+        return await super.getAspectDefinition(aspectId, this.jwt);
     }
 
     putAspectDefinition(
         aspectDefinition: AspectDefinition,
         tenantId: number = this.tenantId
-    ): Promise<AspectDefinition | Error> {
+    ): Promise<AspectDefinition | ServerError> {
         const operation = () =>
             this.aspectDefinitionsApi.putById(
                 tenantId,
@@ -79,10 +80,10 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("putAspectDefinition"));
     }
 
-    postHook(hook: WebHook): Promise<WebHook | Error> {
+    postHook(hook: WebHook): Promise<WebHook | ServerError> {
         const operation = () => this.webHooksApi.create(hook, this.jwt);
 
         return retry(
@@ -99,10 +100,10 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("postHook"));
     }
 
-    putHook(hook: WebHook): Promise<WebHook | Error> {
+    putHook(hook: WebHook): Promise<WebHook | ServerError> {
         const operation = () =>
             this.webHooksApi.putById(
                 encodeURIComponent(hook.id),
@@ -123,10 +124,10 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("putHook"));
     }
 
-    getHook(hookId: string): Promise<Maybe<WebHook> | Error> {
+    getHook(hookId: string): Promise<Maybe<WebHook> | ServerError> {
         const operation = () =>
             this.webHooksApi
                 .getById(encodeURIComponent(hookId), this.jwt)
@@ -136,11 +137,9 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                         if (e.response && e.response.statusCode === 404) {
                             return Maybe.nothing();
                         } else {
-                            throw new Error(
-                                "Failed to get hook, status was " +
-                                    (e.response && e.response.statusCode) +
-                                    "\n" +
-                                    e.message
+                            throw new ServerError(
+                                "Failed to get hook: " + e.message,
+                                e?.response?.statusCode
                             );
                         }
                     }
@@ -158,11 +157,11 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                             retriesLeft
                         )
                     )
-            ).catch(createServiceError)
+            ).catch(toServerError("getHook"))
         );
     }
 
-    getHooks(): Promise<WebHook[] | Error> {
+    getHooks(): Promise<WebHook[] | ServerError> {
         const operation = () => () => this.webHooksApi.getAll(this.jwt);
         return <any>retry(
             operation(),
@@ -174,7 +173,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getHooks"));
     }
 
     resumeHook(
@@ -182,7 +181,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         succeeded: boolean = false,
         lastEventIdReceived: string = null,
         active?: boolean
-    ): Promise<WebHookAcknowledgementResponse | Error> {
+    ): Promise<WebHookAcknowledgementResponse | ServerError> {
         const operation = () =>
             this.webHooksApi.ack(
                 encodeURIComponent(webhookId),
@@ -204,13 +203,36 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("resumeHook"));
+    }
+
+    creatRecord(
+        record: Record,
+        tenantId: number = this.tenantId
+    ): Promise<Record | ServerError> {
+        const operation = () =>
+            this.recordsApi.create(tenantId, record, this.jwt);
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to create registry record with ID "${record.id}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("createRecord"));
     }
 
     putRecord(
         record: Record,
         tenantId: number = this.tenantId
-    ): Promise<Record | Error> {
+    ): Promise<Record | ServerError> {
         const operation = () =>
             this.recordsApi.putById(
                 tenantId,
@@ -232,20 +254,177 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("putRecord"));
+    }
+
+    patchRecord(
+        recordId: string,
+        recordPatch: Operation[],
+        tenantId: number = this.tenantId
+    ): Promise<Record | ServerError> {
+        const operation = () =>
+            this.recordsApi.patchById(
+                tenantId,
+                encodeURIComponent(recordId),
+                recordPatch,
+                this.jwt
+            );
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to PATCH data registry record with ID "${recordId}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("patchRecord"));
+    }
+
+    patchRecords(
+        recordIds: string[],
+        recordPatch: Operation[],
+        tenantId: number = this.tenantId
+    ): Promise<string[] | ServerError> {
+        const operation = () =>
+            this.recordsApi.patchRecords(
+                tenantId,
+                { recordIds, jsonPath: recordPatch as any },
+                this.jwt
+            );
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to PATCH registry records with ID "${recordIds.join(
+                            ", "
+                        )}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("patchRecords"));
     }
 
     putRecordAspect(
         recordId: string,
         aspectId: string,
         aspect: any,
+        merge: boolean = false,
         tenantId: number = this.tenantId
-    ): Promise<Record | Error> {
+    ): Promise<any | ServerError> {
         const operation = () =>
             this.recordAspectsApi.putById(
                 encodeURIComponent(recordId),
                 aspectId,
                 aspect,
+                this.jwt,
+                tenantId,
+                merge
+            );
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to PUT data registry aspect ${aspectId} for record with ID "${recordId}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("putRecordAspect"));
+    }
+
+    putRecordsAspect(
+        recordIds: string[],
+        aspectId: string,
+        aspectData: any,
+        merge: boolean = false,
+        tenantId: number = this.tenantId
+    ): Promise<string[] | ServerError> {
+        const operation = () =>
+            this.recordsApi.putRecordsAspect(
+                tenantId,
+                aspectId,
+                { recordIds, data: aspectData },
+                this.jwt,
+                merge
+            );
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to PUT aspect ${aspectId} for records with ID: "${recordIds.join(
+                            ","
+                        )}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("putRecordsAspect"));
+    }
+
+    deleteRecordsAspectArrayItems(
+        recordIds: string[],
+        aspectId: string,
+        jsonPath: string,
+        items: (string | number)[],
+        tenantId: number = this.tenantId
+    ): Promise<string[] | ServerError> {
+        const operation = () =>
+            this.recordsApi.deleteRecordsAspectArrayItems(
+                tenantId,
+                aspectId,
+                { recordIds, jsonPath, items },
+                this.jwt
+            );
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to deleteRecordsAspectArrayItems at jsonPath "${jsonPath}" aspect ${aspectId} for records with ID: "${recordIds.join(
+                            ","
+                        )}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("deleteRecordsAspectArrayItems"));
+    }
+
+    deleteRecordAspect(
+        recordId: string,
+        aspectId: string,
+        tenantId: number = this.tenantId
+    ): Promise<DeleteResult | ServerError> {
+        const operation = () =>
+            this.recordAspectsApi.deleteById(
+                encodeURIComponent(recordId),
+                aspectId,
                 this.jwt,
                 tenantId
             );
@@ -263,7 +442,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("putRecordAspect"));
     }
 
     patchRecordAspect(
@@ -271,7 +450,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         aspectId: string,
         aspectPatch: Operation[],
         tenantId: number = this.tenantId
-    ): Promise<Record | Error> {
+    ): Promise<Record | ServerError> {
         const operation = () =>
             this.recordAspectsApi.patchById(
                 encodeURIComponent(recordId),
@@ -294,14 +473,14 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                 )
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("patchRecordAspect"));
     }
 
     deleteBySource(
         sourceTagToPreserve: string,
         sourceId: string,
         tenantId: number = this.tenantId
-    ): Promise<MultipleDeleteResult | "Processing" | Error> {
+    ): Promise<MultipleDeleteResult | "Processing" | ServerError> {
         const operation = () =>
             this.recordsApi
                 .trimBySourceTag(
@@ -318,7 +497,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     }
                 });
 
-        return retry<MultipleDeleteResult | "Processing" | Error>(
+        return retry<MultipleDeleteResult | "Processing" | ServerError>(
             operation,
             this.secondsBetweenRetries,
             this.maxRetries,
@@ -330,7 +509,30 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                         retriesLeft
                     )
                 )
-        ).catch(createServiceError);
+        ).catch(toServerError("deleteBySource"));
+    }
+
+    deleteRecord(
+        id: string,
+        tenantId: number = this.tenantId
+    ): Promise<DeleteResult | ServerError> {
+        const operation = () =>
+            this.recordsApi.deleteById(tenantId, id, this.jwt);
+        return retry(
+            operation,
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        `Failed to DELETE registry record with ID "${id}".`,
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("deletetRecord"));
     }
 
     getRecordHistory(
@@ -338,7 +540,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         pageToken?: string,
         start?: number,
         limit?: number
-    ): Promise<EventsPage | Error> {
+    ): Promise<EventsPage | ServerError> {
         const operation = (id: string) => () =>
             this.recordHistoryApi.history(
                 this.tenantId,
@@ -361,6 +563,6 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             }
         )
             .then((result) => result.body)
-            .catch(createServiceError);
+            .catch(toServerError("getRecordHistory"));
     }
 }

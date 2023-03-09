@@ -2,7 +2,8 @@ import { config } from "../config";
 import fetch from "isomorphic-fetch";
 import { actionTypes } from "../constants/ActionTypes";
 import { Action } from "../types";
-import request from "helpers/request";
+import request from "../helpers/request";
+import createNoCacheFetchOptions from "../api-clients/createNoCacheFetchOptions";
 
 export function requestContent(): Action {
     return {
@@ -24,13 +25,18 @@ export function requestContentError(error: any): Action {
     };
 }
 
-export function fetchContent() {
+export function fetchContent(noCache: boolean = false) {
     return async (dispatch: Function, getState: Function) => {
         // check if we need to fetch
         if (getState().content.isFetching) {
             return;
         }
-        await fetch(config.contentUrl, config.credentialsFetchOptions)
+        await fetch(
+            config.contentUrl,
+            noCache
+                ? createNoCacheFetchOptions(config.commonFetchRequestOptions)
+                : config.commonFetchRequestOptions
+        )
             .then((response) => {
                 if (response.status === 200) {
                     return response.json();
@@ -52,7 +58,7 @@ export function fetchContent() {
 }
 
 export async function createContent(contentId, content) {
-    const contentIdUrl = config.contentApiURL + contentId;
+    const contentIdUrl = config.contentApiBaseUrl + contentId;
     try {
         await request("GET", contentIdUrl);
     } catch (e) {
@@ -62,30 +68,30 @@ export async function createContent(contentId, content) {
 
 export async function listContent(...contentIdPattern) {
     const contentIdUrl =
-        config.contentApiURL +
+        config.contentApiBaseUrl +
         "all?inline=true&" +
         contentIdPattern.map((id) => `id=${id}`).join("&");
     return request("GET", contentIdUrl);
 }
 
 export async function deleteContent(contentId) {
-    const contentIdUrl = config.contentApiURL + contentId;
+    const contentIdUrl = config.contentApiBaseUrl + contentId;
     return request("DELETE", contentIdUrl);
 }
 
 export async function readContent(contentId) {
-    const contentIdUrl = config.contentApiURL + contentId + ".json";
+    const contentIdUrl = config.contentApiBaseUrl + contentId + ".json";
     return request("GET", contentIdUrl);
 }
 
 export async function updateContent(contentId, patch) {
-    const contentIdUrl = config.contentApiURL + contentId;
+    const contentIdUrl = config.contentApiBaseUrl + contentId;
     let content = await readContent(contentId);
     Object.assign(content, patch);
     await request("PUT", contentIdUrl, content, "application/json");
 }
 
 export async function writeContent(contentId, content, mime) {
-    const contentIdUrl = config.contentApiURL + contentId;
+    const contentIdUrl = config.contentApiBaseUrl + contentId;
     await request("PUT", contentIdUrl, content, mime);
 }

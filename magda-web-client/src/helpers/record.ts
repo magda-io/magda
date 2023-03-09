@@ -6,8 +6,8 @@ import {
     Record,
     VersionAspectData,
     CurrencyData
-} from "api-clients/RegistryApis";
-import { config } from "config";
+} from "../api-clients/RegistryApis";
+import { config } from "../config";
 
 export type RecordAction = {
     json?: any;
@@ -52,6 +52,8 @@ export type dcatDistributionStrings = {
     license: string;
     description: string;
     title: string;
+    useStorageApi?: boolean;
+    byteSize: number;
 };
 
 export type DcatDatasetStrings = {
@@ -162,6 +164,22 @@ export type DatasetDraft = {
     };
 };
 
+export type PublishingAspect = {
+    custodianOrgUnitId?: string;
+    managingOrgUnitId?: string;
+    state?: "draft" | "published" | "archived";
+    level?:
+        | "organization"
+        | "custodian"
+        | "team"
+        | "creatorOrgUnit"
+        | "selectedOrgUnit";
+    contactPointDisplay?: "team" | "organization" | "custodian";
+    publishAsOpenData?: {
+        [key: string]: any;
+    };
+};
+
 export type RawDataset = {
     id: string;
     name: string;
@@ -183,6 +201,7 @@ export type RawDataset = {
         version?: VersionAspectData;
         "dataset-draft"?: DatasetDraft;
         currency?: CurrencyData;
+        publishing?: PublishingAspect;
     };
 };
 
@@ -204,7 +223,14 @@ export type ParsedDistribution = {
     visualizationInfo: any;
     sourceDetails: any;
     ckanResource: any;
+    publishingState?: string;
+    accessControl?: {
+        ownerId: string;
+        orgUnitId: string;
+        preAuthorisedPermissionIds: string[];
+    };
     version?: VersionAspectData;
+    byteSize?: number;
 };
 
 export type ParsedProvenance = {
@@ -250,11 +276,12 @@ export type ParsedDataset = {
     informationSecurity?: ParsedInformationSecurity;
     accessControl?: {
         ownerId: string;
-        orgUnitOwnerId: string;
+        orgUnitId: string;
         preAuthorisedPermissionIds: string[];
     };
     ckanExport?: CkanExportAspectType;
     access: Access;
+    defaultLicense?: string;
 };
 
 export const emptyPublisher: Publisher = {
@@ -405,6 +432,8 @@ export function parseDistribution(
     const downloadURL = info.downloadURL;
     const accessURL = info.accessURL;
     const accessNotes = info.accessNotes;
+    const accessControl = aspects["access-control"];
+    const publishing = aspects["publishing"] || {};
     const updatedDate = info.modified && getDateString(info.modified);
     const license = info.license || "Licence restrictions unknown";
     const description = info.description || "No description provided";
@@ -451,7 +480,10 @@ export function parseDistribution(
         compatiblePreviews,
         sourceDetails: aspects["source"],
         ckanResource: aspects["ckan-resource"],
-        version: aspects["version"]
+        accessControl,
+        publishingState: publishing["state"],
+        version: aspects["version"],
+        byteSize: info?.byteSize
     };
 }
 
@@ -480,7 +512,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         ? Object.assign({}, defaultDatasetAspects, dataset["aspects"])
         : defaultDatasetAspects;
     const identifier = dataset && dataset.id;
-    const accessControl = aspects["dataset-access-control"];
+    const accessControl = aspects["access-control"];
     const datasetInfo = aspects["dcat-dataset-strings"];
     const distribution = aspects["dataset-distributions"];
     const temporalCoverage = aspects["temporal-coverage"] || { intervals: [] };
@@ -583,7 +615,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             compatiblePreviews,
             visualizationInfo: visualizationInfo ? visualizationInfo : null,
             sourceDetails: distributionAspects["source"],
-            ckanResource: distributionAspects["ckan-resource"]
+            ckanResource: distributionAspects["ckan-resource"],
+            byteSize: info?.byteSize
         };
     });
     return {
@@ -620,6 +653,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         accrualPeriodicityRecurrenceRule:
             datasetInfo["accrualPeriodicityRecurrenceRule"] || "",
         ckanExport,
-        access: aspects["access"]
+        access: aspects["access"],
+        defaultLicense: datasetInfo?.defaultLicense
     };
 }

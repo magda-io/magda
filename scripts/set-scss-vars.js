@@ -48,9 +48,14 @@ async function run(programOptions) {
     const env = getEnvByClusterType(programOptions.isMinikube === true);
     checkIfKubectlValid(env);
     checkNamespace(env, namespace);
-    const image = createConfigMap(env, namespace, COMPILER_CONFIG_MAP_NAME, {
-        [COMPILER_CONFIG_MAP_KEY]: JSON.stringify(vars)
-    });
+    const [image, pullSecrets] = createConfigMap(
+        env,
+        namespace,
+        COMPILER_CONFIG_MAP_NAME,
+        {
+            [COMPILER_CONFIG_MAP_KEY]: JSON.stringify(vars)
+        }
+    );
     console.log(
         chalk.green(
             `Successfully created config \`${COMPILER_CONFIG_MAP_NAME}\` in namespace \`${namespace}\`.`
@@ -59,7 +64,7 @@ async function run(programOptions) {
     console.log(
         chalk.yellow(`Creating updating job in namespace \`${namespace}\`...`)
     );
-    const jobId = createJob(env, namespace, image);
+    const jobId = createJob(env, namespace, image, pullSecrets);
     console.log(
         chalk.green(
             `Job \`${jobId}\` in namespace \`${namespace}\` has been created.`
@@ -192,11 +197,21 @@ function createConfigMap(env, namespace, configMapName, data) {
         input: configContent,
         env: env
     });
-    return configObj.data.image;
+
+    let pullSecrets;
+    if (configObj.data.pullSecrets) {
+        try {
+            pullSecrets = JSON.parse(configObj.data.pullSecrets);
+        } catch (e) {
+            console.log("No valid pullSecrets info found from configMap.");
+        }
+    }
+
+    return [configObj.data.image, pullSecrets];
 }
 
-function buildJobTemplateObject(namespace, jobId, image) {
-    return {
+function buildJobTemplateObject(namespace, jobId, image, pullSecrets) {
+    const manifest = {
         kind: "Job",
         apiVersion: "batch/v1",
         metadata: {
@@ -257,11 +272,19 @@ function buildJobTemplateObject(namespace, jobId, image) {
             }
         }
     };
+    if (pullSecrets && pullSecrets.length) {
+        manifest.spec.template.spec.imagePullSecrets = pullSecrets.map(
+            (item) => ({
+                name: item
+            })
+        );
+    }
+    return manifest;
 }
 
-function createJob(env, namespace, image) {
+function createJob(env, namespace, image, pullSecrets) {
     const jobId = uniqid("scss-compiler-");
-    const jobObj = buildJobTemplateObject(namespace, jobId, image);
+    const jobObj = buildJobTemplateObject(namespace, jobId, image, pullSecrets);
 
     const configContent = JSON.stringify(jobObj);
 

@@ -71,6 +71,6 @@ function queryToString(paramName, paramValue) {
 }
 
 function queryToLocation(regionId, regiontype) {
-    if (!defined(regionId) || !defined(regiontype)) return;
+    if (!defined(regionId) || !defined(regiontype)) return undefined;
     return `${regiontype}:${regionId}`;
 }

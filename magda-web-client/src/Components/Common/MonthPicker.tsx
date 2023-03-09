@@ -61,7 +61,7 @@ export function MonthPicker(props: Props) {
                                         ? props.default.getFullYear().toString()
                                         : ""
                                 }
-                                onChange={event =>
+                                onChange={(event) =>
                                     onYearChange(event.target.value)
                                 }
                                 value={props.year || ""}

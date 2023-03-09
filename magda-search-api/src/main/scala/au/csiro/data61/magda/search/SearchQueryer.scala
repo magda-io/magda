@@ -2,11 +2,12 @@ package au.csiro.data61.magda.search
 
 import au.csiro.data61.magda.api.Query
 import au.csiro.data61.magda.api.model.{
-  RegionSearchResult,
-  SearchResult,
+  AutoCompleteQueryResult,
   OrganisationsSearchResult,
-  AutoCompleteQueryResult
+  RegionSearchResult,
+  SearchResult
 }
+import au.csiro.data61.magda.model.Auth.AuthDecision
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.TenantId._
 
@@ -15,7 +16,7 @@ import scala.concurrent.Future
 trait SearchQueryer {
 
   def search(
-      jwtToken: Option[String],
+      authDecision: AuthDecision,
       query: Query,
       start: Long,
       limit: Int,
@@ -24,7 +25,7 @@ trait SearchQueryer {
   ): Future[SearchResult]
 
   def autoCompleteQuery(
-      jwtToken: Option[String],
+      authDecision: AuthDecision,
       field: String,
       inputString: Option[String],
       size: Option[Int],
@@ -32,7 +33,7 @@ trait SearchQueryer {
   ): Future[AutoCompleteQueryResult]
 
   def searchFacets(
-      jwtToken: Option[String],
+      authDecision: AuthDecision,
       facetType: FacetType,
       facetQuery: Option[String],
       generalQuery: Query,

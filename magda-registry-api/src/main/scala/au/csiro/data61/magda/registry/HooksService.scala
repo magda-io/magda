@@ -16,14 +16,25 @@ import au.csiro.data61.magda.model.Registry.{
   WebHookAcknowledgement,
   WebHookAcknowledgementResponse
 }
-import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 
 import scala.util.{Failure, Success}
 import com.typesafe.config.Config
-import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
+import au.csiro.data61.magda.directives.AuthDirectives.{
+  requirePermission,
+  requireUnconditionalAuthDecision,
+  requireUserId,
+  withAuthDecision
+}
+import au.csiro.data61.magda.registry.Directives.{
+  requireWebhookPermission,
+  requireWebhookUpdateOrCreateWhenNonExistPermission
+}
+import org.postgresql.util.PSQLException
+import spray.json.JsObject
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 
 @Path("/hooks")
 @io.swagger.annotations.Api(value = "web hooks", produces = "application/json")
@@ -32,7 +43,8 @@ class HooksService(
     webHookActor: ActorRef,
     authClient: AuthApiClient,
     system: ActorSystem,
-    materializer: Materializer
+    materializer: Materializer,
+    authApiClient: RegistryAuthApiClient
 ) extends Protocols
     with SprayJsonSupport {
 
@@ -97,24 +109,29 @@ class HooksService(
   )
   def getAll = get {
     pathEnd {
-      complete {
-        val hooks = DB readOnly { session =>
-          HookPersistence.getAll(session)
-        }
+      withAuthDecision(
+        authApiClient,
+        AuthDecisionReqConfig("object/webhook/read")
+      ) { authDecision =>
+        complete {
+          val hooks = DB readOnly { implicit session =>
+            HookPersistence.getAll(authDecision)
+          }
 
-        implicit val timeout = Timeout(30 seconds)
+          implicit val timeout = Timeout(30 seconds)
 
-        hooks.map { hook =>
-          val status = Await
-            .result(
-              webHookActor ? WebHookActor.GetStatus(hook.id.get),
-              30 seconds
+          hooks.map { hook =>
+            val status = Await
+              .result(
+                webHookActor ? WebHookActor.GetStatus(hook.id.get),
+                30 seconds
+              )
+              .asInstanceOf[WebHookActor.Status]
+            hook.copy(
+              isRunning = Some(!status.isProcessing.isEmpty),
+              isProcessing = Some(status.isProcessing.getOrElse(false))
             )
-            .asInstanceOf[WebHookActor.Status]
-          hook.copy(
-            isRunning = Some(!status.isProcessing.isEmpty),
-            isProcessing = Some(status.isProcessing.getOrElse(false))
-          )
+          }
         }
       }
     }
@@ -240,17 +257,17 @@ class HooksService(
     *   according to the aspects list provided here in the webhook notification payload.
     * @apiParam (Request Body JSON) {String[]} [config.optionalAspects] When `includeRecords` = `true`, registry will also include additional (optional) aspect data in the relevant record data
     *   in the webhook notification payload.
-    * @apiParam (Request Body JSON) {Number[]} eventTypes specify a list of event types that the webhook's interested in. Possible values are:
+    * @apiParam (Request Body JSON) {String[]} eventTypes specify a list of event types that the webhook's interested in. Possible values are:
     *   <ul>
-    *     <li>`0`: "CreateRecord"</li>
-    *     <li>`1`: "CreateAspectDefinition"</li>
-    *     <li>`2`: "CreateRecordAspect"</li>
-    *     <li>`3`: "PatchRecord"</li>
-    *     <li>`4`: "PatchAspectDefinition"</li>
-    *     <li>`5`: "PatchRecordAspect"</li>
-    *     <li>`6`: "DeleteRecord"</li>
-    *     <li>`7`: "DeleteAspectDefinition"</li>
-    *     <li>`8`: "DeleteRecordAspect"</li>
+    *     <li>"CreateRecord"</li>
+    *     <li>"CreateAspectDefinition"</li>
+    *     <li>"CreateRecordAspect"</li>
+    *     <li>"PatchRecord"</li>
+    *     <li>"PatchAspectDefinition"</li>
+    *     <li>"PatchRecordAspect"</li>
+    *     <li>"DeleteRecord"</li>
+    *     <li>"DeleteAspectDefinition"</li>
+    *     <li>"DeleteRecordAspect"</li>
     *   </ul>
     *   If you are not interested in the raw events in the webhook notification payload (e.g. you set `webhook.config.includeEvents`=`false` to turn it off), you can supply empty array [] here.
     *
@@ -261,7 +278,7 @@ class HooksService(
     *    "active": true,
     *    "url": "string",
     *    "eventTypes": [
-    *      0
+    *      "PatchRecordAspect"
     *    ],
     *    "config": {
     *      "aspects": [
@@ -336,16 +353,38 @@ class HooksService(
   )
   def create = post {
     pathEnd {
-      entity(as[WebHook]) { hook =>
-        val result = DB localTx { session =>
-          HookPersistence.create(session, hook) match {
-            case Success(theResult) => complete(theResult)
-            case Failure(exception) =>
-              complete(StatusCodes.BadRequest, ApiError(exception.getMessage))
+      requireUserId { userId =>
+        entity(as[WebHook]) { hook =>
+          requirePermission(
+            authApiClient,
+            "object/webhook/create",
+            input = Some(
+              JsObject(
+                "object" -> JsObject(
+                  "webhook" -> hook.toJson
+                )
+              )
+            )
+          ) {
+            val result = DB localTx { implicit session =>
+              HookPersistence.create(hook, Some(userId)) match {
+                case Success(theResult) => complete(theResult)
+                case Failure(e: PSQLException) if e.getSQLState == "23505" =>
+                  complete(
+                    StatusCodes.BadRequest,
+                    ApiError(s"Duplicated webhook id supplied: ${hook.id}")
+                  )
+                case Failure(exception) =>
+                  complete(
+                    StatusCodes.BadRequest,
+                    ApiError(exception.getMessage)
+                  )
+              }
+            }
+            webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess()
+            result
           }
         }
-        webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess()
-        result
       }
     }
   }
@@ -416,9 +455,12 @@ class HooksService(
   )
   def getById = get {
     path(Segment) { (id: String) =>
-      {
-        DB readOnly { session =>
-          HookPersistence.getById(session, id)
+      withAuthDecision(
+        authApiClient,
+        AuthDecisionReqConfig("object/webhook/read")
+      ) { authDecision =>
+        DB readOnly { implicit session =>
+          HookPersistence.getById(id, authDecision)
         } match {
           case Some(hook) =>
             implicit val timeout = Timeout(30 seconds)
@@ -476,17 +518,17 @@ class HooksService(
     *   according to the aspects list provided here in the webhook notification payload.
     * @apiParam (Request Body JSON) {String[]} [config.optionalAspects] When `includeRecords` = `true`, registry will also include additional (optional) aspect data in the relevant record data
     *   in the webhook notification payload.
-    * @apiParam (Request Body JSON) {Number[]} eventTypes specify a list of event types that the webhook's interested in. Possible values are:
+    * @apiParam (Request Body JSON) {String[]} eventTypes specify a list of event types that the webhook's interested in. Possible values are:
     *   <ul>
-    *     <li>`0`: "CreateRecord"</li>
-    *     <li>`1`: "CreateAspectDefinition"</li>
-    *     <li>`2`: "CreateRecordAspect"</li>
-    *     <li>`3`: "PatchRecord"</li>
-    *     <li>`4`: "PatchAspectDefinition"</li>
-    *     <li>`5`: "PatchRecordAspect"</li>
-    *     <li>`6`: "DeleteRecord"</li>
-    *     <li>`7`: "DeleteAspectDefinition"</li>
-    *     <li>`8`: "DeleteRecordAspect"</li>
+    *     <li>"CreateRecord"</li>
+    *     <li>"CreateAspectDefinition"</li>
+    *     <li>"CreateRecordAspect"</li>
+    *     <li>"PatchRecord"</li>
+    *     <li>"PatchAspectDefinition"</li>
+    *     <li>"PatchRecordAspect"</li>
+    *     <li>"DeleteRecord"</li>
+    *     <li>"DeleteAspectDefinition"</li>
+    *     <li>"DeleteRecordAspect"</li>
     *   </ul>
     *   If you are not interested in the raw events in the webhook notification payload (e.g. you set `webhook.config.includeEvents`=`false` to turn it off), you can supply empty array [] here.
     *
@@ -497,7 +539,7 @@ class HooksService(
     *    "active": true,
     *    "url": "string",
     *    "eventTypes": [
-    *      0
+    *      "PatchRecordAspect"
     *    ],
     *    "config": {
     *      "aspects": [
@@ -582,36 +624,42 @@ class HooksService(
   )
   def putById: Route = put {
     path(Segment) { id: String =>
-      {
+      requireUserId { userId =>
         entity(as[WebHook]) { hook =>
-          val result = DB localTx { session =>
-            HookPersistence.putById(session, id, hook) match {
-              case Success(theResult) => complete(theResult)
-              case Failure(exception) =>
-                complete(
-                  StatusCodes.BadRequest,
-                  ApiError(exception.getMessage)
-                )
+          requireWebhookUpdateOrCreateWhenNonExistPermission(
+            authClient,
+            id,
+            hook
+          ) {
+            val result = DB localTx { implicit session =>
+              HookPersistence.putById(id, hook, Some(userId)) match {
+                case Success(theResult) => complete(theResult)
+                case Failure(exception) =>
+                  complete(
+                    StatusCodes.BadRequest,
+                    ApiError(exception.getMessage)
+                  )
+              }
             }
-          }
 
-          // The current restart logic for a subscriber has two steps:
-          // 1) It will first update its web hook in the registry by making a PUT request
-          //    to the registry, which is handled by putById function (this function) of this class.
-          //    By sending message WebHookActor.InvalidateWebhookCache to the WebHookActor, it will
-          //    not trigger any event processing.
-          // 2) The subscriber will then make a POST request to the endpoint hooks/{hookid}/ack,
-          //    which will be handled by the ack function of this class. However, the act function
-          //    will send message WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id))
-          //    to the WebHookActor, which may trigger event processing.
-          //
-          // TODO: If the following message WebHookActor.InvalidateWebhookCache is replaced by
-          // WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id)), a subscriber
-          // restart logic can be simplified: The above step 2) can be removed.
-          // However, if replacing the message without changing a subscriber's restart logic, it
-          // may trigger duplicate event processing.
-          webHookActor ! WebHookActor.InvalidateWebhookCache
-          result
+            // The current restart logic for a subscriber has two steps:
+            // 1) It will first update its web hook in the registry by making a PUT request
+            //    to the registry, which is handled by putById function (this function) of this class.
+            //    By sending message WebHookActor.InvalidateWebhookCache to the WebHookActor, it will
+            //    not trigger any event processing.
+            // 2) The subscriber will then make a POST request to the endpoint hooks/{hookid}/ack,
+            //    which will be handled by the ack function of this class. However, the act function
+            //    will send message WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id))
+            //    to the WebHookActor, which may trigger event processing.
+            //
+            // TODO: If the following message WebHookActor.InvalidateWebhookCache is replaced by
+            // WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id)), a subscriber
+            // restart logic can be simplified: The above step 2) can be removed.
+            // However, if replacing the message without changing a subscriber's restart logic, it
+            // may trigger duplicate event processing.
+            webHookActor ! WebHookActor.InvalidateWebhookCache
+            result
+          }
         }
       }
     }
@@ -670,9 +718,20 @@ class HooksService(
   )
   def deleteById = delete {
     path(Segment) { (hookId: String) =>
-      {
-        val result = DB localTx { session =>
-          HookPersistence.delete(session, hookId) match {
+      requireWebhookPermission(
+        authClient,
+        "object/webhook/delete",
+        hookId,
+        onRecordNotFound = Some(() => {
+          // when record not found, only user has unconditional permission can confirm the hook is deleted
+          requireUnconditionalAuthDecision(
+            authClient,
+            AuthDecisionReqConfig("object/webhook/delete")
+          ) & pass
+        })
+      ) {
+        val result = DB localTx { implicit session =>
+          HookPersistence.delete(hookId) match {
             case Success(result) =>
               complete(DeleteResult(result))
             case Failure(exception) =>
@@ -702,6 +761,9 @@ class HooksService(
     * @apiParam (Request Body JSON) {Boolean} [active] Should the status of webhook be changed to `active` or `inactive`.
     *   `Webhook Notification Recipient` normally only want to set this field when the previous processing was failed and want registry pause the notification delivery for a while.
     *   Please note: an inactive web hook will be waken up after certain amount of time (By default: 1 hour). This can be configured by registry `webhooks.retryInterval` option.
+    *   When the parameter is `true`, the registry will: 1> set webhook to active (if not active already) 2> clear all running statics (e.g. `retrycount`)
+    *   However, registry will not attempt to enable the webhook if it's disabled (`enable`=false) in database previously.
+    *   When `succeeded`=`true`, we will assume the value of `active` is true` when it's not specified.
     *
     * @apiParamExample {json} Successful Acknowledgement Request Body Example
     *  {
@@ -758,31 +820,31 @@ class HooksService(
   )
   def ack: Route = post {
     path(Segment / "ack") { id: String =>
-      entity(as[WebHookAcknowledgement]) { acknowledgement =>
-        val result = DB localTx { session =>
-          HookPersistence
-            .acknowledgeRaisedHook(session, id, acknowledgement) match {
-            case Success(theResult) => complete(theResult)
-            case Failure(exception) =>
-              complete(StatusCodes.BadRequest, ApiError(exception.getMessage))
+      requireWebhookPermission(authClient, "object/webhook/ack", id) {
+        entity(as[WebHookAcknowledgement]) { acknowledgement =>
+          val result = DB localTx { implicit session =>
+            HookPersistence
+              .acknowledgeRaisedHook(id, acknowledgement) match {
+              case Success(theResult) => complete(theResult)
+              case Failure(exception) =>
+                complete(StatusCodes.BadRequest, ApiError(exception.getMessage))
+            }
           }
-        }
 
-        webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess(
-          webHookId = Some(id)
-        )
-        result
+          webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess(
+            webHookId = Some(id)
+          )
+          result
+        }
       }
     }
   }
 
   def route: Route =
-    requireIsAdmin(authClient)(system, config) { _ =>
-      getAll ~
-        create ~
-        getById ~
-        putById ~
-        deleteById ~
-        ack
-    }
+    getAll ~
+      create ~
+      getById ~
+      putById ~
+      deleteById ~
+      ack
 }

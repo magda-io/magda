@@ -31,6 +31,9 @@ object TestActorSystem {
       maxRetryTimeout = 30000
       serverUrl = "elasticsearch://localhost:9201"
     }
+    authorization {
+      skipOpaQuery = true
+    }
     opa {
       baseUrl = "http://localhost:8888/v0/opa/"
       testSessionId = "general-search-api-tests"

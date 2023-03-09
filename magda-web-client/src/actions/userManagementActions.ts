@@ -3,20 +3,22 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { Dispatch, GetState } from "../types";
 import { FacetAction } from "../helpers/datasetSearch";
-import { fetchContent } from "actions/contentActions";
+import { fetchContent } from "./contentActions";
 
-export function requestWhoAmI() {
+export function requestWhoAmI(setLoading: boolean = true) {
     return async (dispatch: Dispatch, getState: GetState) => {
         if (getState().userManagement.isFetchingWhoAmI) {
             return;
         }
 
-        dispatch({
-            type: actionTypes.REQUEST_WHO_AM_I
-        });
+        if (setLoading) {
+            dispatch({
+                type: actionTypes.REQUEST_WHO_AM_I
+            });
+        }
 
-        await fetch(config.authApiUrl + "users/whoami", {
-            ...config.credentialsFetchOptions,
+        await fetch(config.authApiBaseUrl + "users/whoami", {
+            ...config.commonFetchRequestOptions,
             credentials: "include"
         })
             .then(async (response) => {
@@ -69,7 +71,7 @@ export function requestSignOut() {
             });
 
             const response = await fetch(config.baseUrl + "auth/logout", {
-                ...config.credentialsFetchOptions,
+                ...config.commonFetchRequestOptions,
                 credentials: "include"
             });
 
@@ -85,8 +87,8 @@ export function requestSignOut() {
             }
 
             await Promise.all([
-                dispatch(fetchContent),
-                dispatch(requestWhoAmI)
+                dispatch(fetchContent(true)),
+                dispatch(requestWhoAmI())
             ]);
         } catch (e) {
             // --- notify user with a simply alert box

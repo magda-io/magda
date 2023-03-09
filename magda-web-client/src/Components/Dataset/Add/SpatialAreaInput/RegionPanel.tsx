@@ -35,7 +35,7 @@ interface PropsType {
 
 export type OptionType = Region;
 
-const initialState = props => ({
+const initialState = (props) => ({
     countryRegion: props.countryRegion,
     territoryOrSteRegion: props.territoryOrSteRegion,
     sa4Region: props.sa4Region,
@@ -49,7 +49,7 @@ const DEFAULT_BBOX = {
     east: config.boundingBox.east
 };
 
-const RegionPanel: FunctionComponent<PropsType> = props => {
+const RegionPanel: FunctionComponent<PropsType> = (props) => {
     const [state, setState] = useState<StateType>(initialState(props));
     const onChange: (state: StateType, props: PropsType) => void = (
         state,
@@ -118,7 +118,7 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                         value={state.countryRegion}
                         regionId={props.countryId}
                         onChange={(option, notResetOtherRegions) =>
-                            setState(state => {
+                            setState((state) => {
                                 notResetOtherRegions = !!notResetOtherRegions;
                                 const newState = {
                                     ...state,
@@ -150,7 +150,7 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                                 regionId={props.territoryOrSteId}
                                 countryRegion={state.countryRegion}
                                 onChange={(option, notResetOtherRegions) =>
-                                    setState(state => {
+                                    setState((state) => {
                                         notResetOtherRegions = notResetOtherRegions
                                             ? true
                                             : false;
@@ -184,7 +184,7 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                                 regionId={props.territoryOrSteId}
                                 countryRegion={state.countryRegion}
                                 onChange={(option, notResetOtherRegions) =>
-                                    setState(state => {
+                                    setState((state) => {
                                         notResetOtherRegions = notResetOtherRegions
                                             ? true
                                             : false;
@@ -214,7 +214,7 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                                 countryRegion={state.countryRegion}
                                 steRegion={state.territoryOrSteRegion}
                                 onChange={(option, notResetOtherRegions) =>
-                                    setState(state => {
+                                    setState((state) => {
                                         const newState = {
                                             ...state,
                                             sa4Region: option
@@ -242,8 +242,8 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                                 countryRegion={state.countryRegion}
                                 steRegion={state.territoryOrSteRegion}
                                 sa4Region={state.sa4Region}
-                                onChange={option =>
-                                    setState(state => {
+                                onChange={(option) =>
+                                    setState((state) => {
                                         const newState = {
                                             ...state,
                                             sa3Region: option

@@ -7,9 +7,21 @@ export default function buildWebhookConfig(
     return {
         aspects: options.aspects,
         optionalAspects: options.optionalAspects,
-        includeEvents: false,
-        includeRecords: true,
-        includeAspectDefinitions: false,
-        dereference: true
+        includeEvents:
+            typeof options.includeEvents === "boolean"
+                ? options.includeEvents
+                : false,
+        includeRecords:
+            typeof options.includeRecords === "boolean"
+                ? options.includeRecords
+                : true,
+        includeAspectDefinitions:
+            typeof options.includeAspectDefinitions === "boolean"
+                ? options.includeAspectDefinitions
+                : false,
+        dereference:
+            typeof options.dereference === "boolean"
+                ? options.dereference
+                : true
     };
 }

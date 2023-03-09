@@ -1,6 +1,6 @@
 {
   "name": "@magda/storage-api",
-  "version": "1.2.2-alpha.0",
+  "version": "2.2.3-alpha.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
@@ -13,43 +13,38 @@
     "prettier": "prettier --write \"**/*\"",
     "retag-and-push": "retag-and-push",
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
-    "test-local": "MINIO_HOST=localhost MINIO_PORT=9000 MINIO_ACCESS_KEY=minio MINIO_SECRET_KEY=minio123 yarn run test"
+    "test-local": "MINIO_HOST=localhost MINIO_PORT=9000 MINIO_ACCESS_KEY=minio MINIO_SECRET_KEY=minio123 yarn run test",
+    "minio-dev": "docker-compose up",
+    "minio-dev-stop": "docker-compose down"
   },
   "dependencies": {
-    "@google-cloud/storage": "^4.1.0",
-    "@magda/typescript-common": "^1.2.2-alpha.0",
-    "@types/cross-spawn": "^6.0.1",
-    "@types/minio": "^7.0.4",
-    "@types/superagent": "^4.1.4",
-    "@types/xmldom": "^0.1.29",
+    "@magda/typescript-common": "^2.2.3-alpha.0",
     "express": "^4.17.1",
     "express-multipart-file-parser": "^0.1.2",
-    "lru-cache": "^5.1.1",
-    "minio": "^7.0.12",
+    "http-terminator": "^3.2.0",
+    "minio": "^7.0.26",
     "urijs": "^1.19.11",
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^1.2.2-alpha.0",
-    "@types/cross-spawn": "^6.0.1",
+    "@magda/scripts": "^2.2.3-alpha.0",
     "@types/express": "^4.17.6",
-    "@types/lru-cache": "^5.1.0",
-    "@types/minio": "^7.0.4",
-    "@types/urijs": "^1.19.11",
+    "@types/minio": "^7.0.12",
+    "@types/urijs": "^1.19.19",
     "@types/yargs": "^12.0.8",
     "nodemon": "^1.19.4",
-    "prettier": "^1.19.1",
     "run-typescript-in-nodemon": "^1.0.0",
-    "ts-node": "^8.5.2",
-    "typescript": "^3.7.0"
+    "ts-node": "^8.9.2",
+    "typescript": "~4.2.4"
   },
   "config": {
     "docker": {
-      "name": "data61/magda-storage-api",
+      "name": "magda-storage-api",
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",
-    "SESSION_SECRET": "keyboard cat"
+    "SESSION_SECRET": "keyboard cat",
+    "userId": "00000000-0000-4000-8000-000000000000"
   },
   "magda": {
     "language": "typescript",
