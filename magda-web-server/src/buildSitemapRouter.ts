@@ -2,7 +2,12 @@ import express from "express";
 import Registry from "magda-typescript-common/src/registry/RegistryClient";
 import URI from "urijs";
 import ServerError from "magda-typescript-common/src/ServerError";
-import { SitemapStream, SitemapIndexStream, ErrorLevel } from "sitemap";
+import {
+    SitemapStream,
+    SitemapIndexStream,
+    streamToPromise,
+    ErrorLevel
+} from "sitemap";
 
 const DATASET_REQUIRED_ASPECTS = ["dcat-dataset-strings"];
 
@@ -43,12 +48,8 @@ export default function buildSitemapRouter({
 
     app.get("/sitemap.xml", async (req, res) => {
         try {
-            res.set("Content-Type", "application/xml");
-
             const smis = new SitemapIndexStream({ level: ErrorLevel.WARN });
-            smis.pipe(res).on("error", (e) => {
-                throw e;
-            });
+            const dataPromise = streamToPromise(smis);
             smis.write({
                 url: baseExternalUri
                     .clone()
@@ -76,6 +77,10 @@ export default function buildSitemapRouter({
                 });
             });
             smis.end();
+            const data = await dataPromise;
+            res.status(200)
+                .set("Content-Type", "application/xml")
+                .send(data.toString());
         } catch (e) {
             res.status(500)
                 .set("Content-Type", "text/plain")
@@ -83,22 +88,23 @@ export default function buildSitemapRouter({
         }
     });
 
-    app.get("/sitemap/main.xml", (req, res) => {
+    app.get("/sitemap/main.xml", async (req, res) => {
         try {
-            res.set("Content-Type", "application/xml");
             // For now we just put the homepage in here, seeing as everything except the datasets should be reachable
             // from either the home page or the datasets pages.
             const sms = new SitemapStream({
                 level: ErrorLevel.WARN
             });
-            sms.pipe(res).on("error", (e) => {
-                throw e;
-            });
+            const dataPromise = streamToPromise(sms);
             sms.write({
                 url: baseExternalUri.toString(),
                 changefreq: "daily"
             });
             sms.end();
+            const data = await dataPromise;
+            res.status(200)
+                .set("Content-Type", "application/xml")
+                .send(data.toString());
         } catch (e) {
             res.status(500)
                 .set("Content-Type", "text/plain")
@@ -108,13 +114,10 @@ export default function buildSitemapRouter({
 
     app.get("/sitemap/dataset/afterToken/:afterToken.xml", async (req, res) => {
         try {
-            res.set("Content-Type", "application/xml");
             const sms = new SitemapStream({
                 level: ErrorLevel.WARN
             });
-            sms.pipe(res).on("error", (e) => {
-                throw e;
-            });
+            const dataPromise = streamToPromise(sms);
 
             const afterToken: string = req.params.afterToken;
             const result = await registry.getRecords(
@@ -139,6 +142,10 @@ export default function buildSitemapRouter({
                 })
             );
             sms.end();
+            const data = await dataPromise;
+            res.status(200)
+                .set("Content-Type", "application/xml")
+                .send(data.toString());
         } catch (e) {
             res.status(500)
                 .set("Content-Type", "text/plain")
