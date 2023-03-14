@@ -8,6 +8,7 @@ import { parseString } from "xml2js";
 import buildSitemapRouter from "../buildSitemapRouter";
 import { promisify } from "typed-promisify";
 import Registry from "magda-typescript-common/src/registry/RegistryClient";
+import delay from "magda-typescript-common/src/delay";
 
 const noOptionsParseString = (
     string: string,
@@ -28,6 +29,9 @@ describe("sitemap router", () => {
     let registryScope: nock.Scope;
 
     beforeEach(() => {
+        nock.disableNetConnect();
+        // Allow localhost connections so we can test local routes and mock servers.
+        nock.enableNetConnect("127.0.0.1");
         router = buildSitemapRouter({
             baseExternalUrl,
             registry,
@@ -37,12 +41,59 @@ describe("sitemap router", () => {
     });
 
     afterEach(() => {
+        nock.cleanAll();
+        nock.enableNetConnect();
         if ((<sinon.SinonStub>console.error).restore) {
             (<sinon.SinonStub>console.error).restore();
         }
     });
 
     describe("/sitemap.xml", () => {
+        it("should only query registry for once within cacheSeconds", async () => {
+            const tokens = [0, 100, 200];
+            let requestTimes = 0;
+
+            registryScope
+                .get("/records/pagetokens?aspect=dcat-dataset-strings")
+                .reply(200, () => {
+                    requestTimes++;
+                    return JSON.stringify(tokens);
+                })
+                .persist();
+            await supertest(router).get("/sitemap.xml").expect(200);
+            await supertest(router).get("/sitemap.xml").expect(200);
+
+            expect(requestTimes).to.equal(1);
+        });
+
+        it("should query registry twice with two requests beyond cacheSeconds time window", async function (this) {
+            this.timeout(5000);
+            const tokens = [0, 100, 200];
+            let requestTimes = 0;
+
+            registryScope
+                .get("/records/pagetokens?aspect=dcat-dataset-strings")
+                .reply(200, () => {
+                    requestTimes++;
+                    return JSON.stringify(tokens);
+                })
+                .persist();
+
+            const app = buildSitemapRouter({
+                baseExternalUrl,
+                registry,
+                cacheSeconds: 1 //-- set cache time to 1s
+            });
+
+            await supertest(app).get("/sitemap.xml").expect(200);
+            // --- delay 2s
+            await delay(1500);
+            await supertest(app).get("/sitemap.xml").expect(200);
+            await supertest(app).get("/sitemap.xml").expect(200);
+
+            expect(requestTimes).to.equal(2);
+        });
+
         it("should reflect page tokens from registry", () => {
             const tokens = [0, 100, 200];
 

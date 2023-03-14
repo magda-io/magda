@@ -28,13 +28,16 @@ export default function buildSitemapRouter({
     const app = express();
     const baseExternalUri = new URI(baseExternalUrl);
 
+    pageTokens = null;
+    pageTokenQueryTime = null;
+
     async function getPageTokens() {
         const now = new Date().getTime();
         if (
             pageTokens &&
             pageTokenQueryTime &&
             typeof pageTokenQueryTime === "number" &&
-            now <= pageTokenQueryTime + cacheSeconds
+            now <= pageTokenQueryTime + cacheSeconds * 1000
         ) {
             return pageTokens;
         }
@@ -82,9 +85,9 @@ export default function buildSitemapRouter({
                 .set("Content-Type", "application/xml")
                 .send(data.toString());
         } catch (e) {
-            res.status(500)
-                .set("Content-Type", "text/plain")
-                .send(`Error when processing "/sitemap.xml": ${e}`);
+            const msg = `Error when processing "/sitemap.xml": ${e}`;
+            console.error(msg);
+            res.status(500).set("Content-Type", "text/plain").send(msg);
         }
     });
 
@@ -106,9 +109,8 @@ export default function buildSitemapRouter({
                 .set("Content-Type", "application/xml")
                 .send(data.toString());
         } catch (e) {
-            res.status(500)
-                .set("Content-Type", "text/plain")
-                .send(`Error when processing "/sitemap/main.xml": ${e}`);
+            const msg = `Error when processing "/sitemap/main.xml": ${e}`;
+            res.status(500).set("Content-Type", "text/plain").send(msg);
         }
     });
 
@@ -147,11 +149,8 @@ export default function buildSitemapRouter({
                 .set("Content-Type", "application/xml")
                 .send(data.toString());
         } catch (e) {
-            res.status(500)
-                .set("Content-Type", "text/plain")
-                .send(
-                    `Error when processing "/sitemap/dataset/afterToken/${req.params.afterToken}.xml": ${e}`
-                );
+            const msg = `Error when processing "/sitemap/dataset/afterToken/${req.params.afterToken}.xml": ${e}`;
+            res.status(500).set("Content-Type", "text/plain").send(msg);
         }
     });
 
