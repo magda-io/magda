@@ -248,3 +248,6 @@ authenticatedUserLandingPage: "/home"
 
 # -- The interval of UI refresh / refetch user auth status data. Default to 5 mins.
 authStatusRefreshInterval: 300000
+
+# -- No. of seconds that sitemap result will be cached. By default, 86400 i.e. 1 day.
+sitemapCacheSeconds: 86400
