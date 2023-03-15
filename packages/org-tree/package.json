@@ -1,7 +1,7 @@
 {
   "name": "@magda/org-tree",
   "description": "MAGDA Organizational Hierarchy Management Utilities",
-  "version": "2.2.3-alpha.0",
+  "version": "2.2.3-alpha.3",
   "bin": {
     "org-tree": "./bin/org-tree/org-tree.js"
   },
@@ -14,9 +14,9 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/authorization-api": "^2.2.3-alpha.0",
-    "@magda/scripts": "^2.2.3-alpha.0",
-    "@magda/typescript-common": "^2.2.3-alpha.0",
+    "@magda/authorization-api": "^2.2.3-alpha.3",
+    "@magda/scripts": "^2.2.3-alpha.3",
+    "@magda/typescript-common": "^2.2.3-alpha.3",
     "fs-extra": "^2.1.2",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
