@@ -1,6 +1,6 @@
 {
   "name": "@magda/authorization-api",
-  "version": "2.2.3-alpha.0",
+  "version": "2.2.3",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
@@ -14,7 +14,7 @@
     "retag-and-push": "retag-and-push"
   },
   "dependencies": {
-    "@magda/typescript-common": "^2.2.3-alpha.0",
+    "@magda/typescript-common": "^2.2.3",
     "bcrypt": "^5.0.1",
     "body-parser": "^1.18.3",
     "express": "^4.17.1",
@@ -33,7 +33,7 @@
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^2.2.3-alpha.0",
+    "@magda/scripts": "^2.2.3",
     "@types/bcrypt": "^3.0.0",
     "@types/chai": "^4.1.2",
     "@types/chai-as-promised": "^7.1.0",
