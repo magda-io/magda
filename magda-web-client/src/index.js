@@ -46,7 +46,11 @@ class GAListener extends React.Component {
 
     sendPageView(location) {
         // Send pageview event to the initialised tracker(s).
-        gapi.pageview(location.pathname);
+        gapi.send({
+            hitType: "pageview",
+            page: location.pathname,
+            location: window.location.href
+        });
     }
 
     render() {
