@@ -129,7 +129,6 @@ magda:
         - sourceDataDomain: "nsw.gov.au"
           url: "https://nsw.digitaltwin.terria.io/"
       gapiIds:
-        - UA-92539508-6
         - G-3LGQ7FWH1B
 
     correspondence-api:
