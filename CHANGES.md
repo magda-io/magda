@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.2.4
+
+- #3452 Add support of [Google Analytics 4](https://support.google.com/analytics/answer/10089681?hl=en) using [react-ga4](https://www.npmjs.com/package/react-ga4)
+
 ## v2.2.3
 
 - Fixed an issue that zendesk integration feedback form might not always be opened via footer link
