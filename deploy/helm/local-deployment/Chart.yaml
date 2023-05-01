@@ -62,14 +62,14 @@ dependencies:
       - connectors
       - connector-actmapi
   - name: magda-csw-connector
-    version: "2.0.1"
+    version: "2.0.2-alpha.0"
     alias: connector-aims
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-aims
   - name: magda-csw-connector
-    version: "2.0.1"
+    version: "2.0.2-alpha.0"
     alias: connector-aodn
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -125,7 +125,7 @@ dependencies:
       - connectors
       - connector-environment
   - name: magda-csw-connector
-    version: "2.0.1"
+    version: "2.0.2-alpha.0"
     alias: connector-ga
     repository: "oci://ghcr.io/magda-io/charts"
     tags:

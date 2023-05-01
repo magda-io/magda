@@ -43,7 +43,9 @@ connector-aims:
   config:
     id: aims
     name: Australian Institute of Marine Science
-    sourceUrl: https://geo.aims.gov.au/geonetwork/srv/eng/csw
+    sourceUrl: https://geonetwork.apps.aims.gov.au/geonetwork/srv/eng/csw
+    outputSchema: http://standards.iso.org/iso/19115/-3/mdb/2.0
+    typeNames: mdb:MD_Metadata
     pageSize: 100
 
 connector-aodn:
@@ -51,6 +53,8 @@ connector-aodn:
     id: aodn
     name: Australian Oceans Data Network
     sourceUrl: https://catalogue.aodn.org.au/geonetwork/srv/eng/csw
+    outputSchema: http://standards.iso.org/iso/19115/-3/mdb/2.0
+    typeNames: mdb:MD_Metadata
     pageSize: 100
 
 connector-bom:
@@ -100,6 +104,7 @@ connector-ga:
     name: Geoscience Australia
     sourceUrl: https://ecat.ga.gov.au/geonetwork/srv/eng/csw
     outputSchema: http://standards.iso.org/iso/19115/-3/mdb/1.0
+    typeNames: mdb:MD_Metadata
     pageSize: 100
 
 connector-logan:
