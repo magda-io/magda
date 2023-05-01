@@ -17,6 +17,9 @@ tags:
   ingress: true
   priorities: false
   connectors: false
+  connector-ga: true
+  connector-aims: true
+  connector-aodn: true
 
 magda:
   openfaas:
