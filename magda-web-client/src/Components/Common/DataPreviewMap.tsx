@@ -113,6 +113,51 @@ type BestDist = {
     index: number;
 };
 
+function normalizeWmsWfsUrl(dist: ParsedDistribution): ParsedDistribution {
+    const { format, downloadURL, accessURL } = dist;
+    if (!format || typeof format !== "string") {
+        return dist;
+    }
+    const stdFormatStr = format.trim().toLowerCase();
+    if (stdFormatStr !== "wms" && stdFormatStr !== "wfs") {
+        return dist;
+    }
+    const isWms = stdFormatStr === "wms" ? true : false;
+    const dataUrl = downloadURL ? downloadURL : accessURL;
+    if (!dataUrl || typeof dataUrl !== "string") {
+        return dist;
+    }
+    if (dataUrl.match(/\W*SceneServer\W*/i)) {
+        // when url contains `SceneServer`, it will not be valid WFS / WMS url.
+        // some upstream crawler might incorrectly produce this
+        return dist;
+    }
+
+    const dataUri = urijs(dataUrl);
+    const queries = dataUri.search(true);
+    const request = queries?.request ? queries?.request : queries?.REQUEST;
+    const service = queries?.service ? queries?.service : queries?.SERVICE;
+    if (!request) {
+        queries.REQUEST = queries.request = "GetCapabilities";
+    }
+    if (service) {
+        queries.SERVICE = queries.service = isWms ? "WMS" : "WFS";
+    }
+
+    const normalisedDataUrl = dataUri.search(queries).toString();
+    const newDist = { ...dist };
+
+    if (normalisedDataUrl !== dataUrl) {
+        if (downloadURL) {
+            newDist.downloadURL = normalisedDataUrl;
+        } else {
+            newDist.accessURL = normalisedDataUrl;
+        }
+    }
+
+    return newDist;
+}
+
 // React 16.3 advice for replacing prop -> state updates for computations
 /**
  * Determines the best distribution to try to use for mapping
@@ -157,7 +202,11 @@ const determineBestDistribution: (
     if (sorted.length === 0) {
         return null;
     } else {
-        return sorted[0];
+        const { dist, index } = sorted[0];
+        return {
+            dist: normalizeWmsWfsUrl(dist),
+            index
+        };
     }
 });
 
@@ -166,9 +215,57 @@ type WmsWfsGroupItemType = {
     title: string;
 };
 
+function nameExist(name: string, namelist: WmsWfsGroupItemType[]): boolean {
+    return (
+        namelist.findIndex(
+            (item: WmsWfsGroupItemType) => item.name === name
+        ) !== -1
+    );
+}
+
+function getQueryParameterValueWithPossibleKeys(
+    query: Record<string, any>,
+    keys: string[]
+) {
+    if (!query) {
+        return undefined;
+    }
+    for (const key in keys) {
+        if (typeof query?.[key] !== "undefined") {
+            return query[key];
+        }
+    }
+    return undefined;
+}
+
+// try `layers` `LAYERS` `layer` `LAYER` `layerName`
+function getWmsLayers(query: Record<string, any>) {
+    return getQueryParameterValueWithPossibleKeys(query, [
+        "layers",
+        "LAYERS",
+        "layer",
+        "LAYER",
+        "layerName"
+    ]);
+}
+
+//try `typeNames` `TYPENAMES` `typeName` `typename` `TYPENAME`
+function getWfsTypeNames(query: Record<string, any>) {
+    return getQueryParameterValueWithPossibleKeys(query, [
+        "typeNames",
+        "TYPENAMES",
+        "typeName",
+        "typename",
+        "TYPENAME"
+    ]);
+}
+
 async function fetchWmsWfsItemList(
-    url?: string,
-    format?: string
+    url: string | undefined,
+    format: string | undefined,
+    distName: string | undefined,
+    selectedWmsWfsGroupItemName: string,
+    setSelectedWmsWfsGroupItemName: React.Dispatch<React.SetStateAction<string>>
 ): Promise<WmsWfsGroupItemType[]> {
     if (!url || typeof url !== "string") {
         return [];
@@ -197,12 +294,13 @@ async function fetchWmsWfsItemList(
         }
         const resText = await res.text();
         const jsonData = xml2json(resText.trim());
+        let itemList: WmsWfsGroupItemType[];
         if (isWms) {
             if (!jsonData?.Capability?.Layer?.Layer?.length) {
                 // even only one layer, we will return [] as no need to render layer selection dropdown
                 return [];
             }
-            return jsonData.Capability.Layer.Layer.map((item) => ({
+            itemList = jsonData.Capability.Layer.Layer.map((item) => ({
                 name: item?.Name ? item.Name : "",
                 title: item?.Title ? item.Title : ""
             })).filter((item) => !!item.name);
@@ -211,11 +309,44 @@ async function fetchWmsWfsItemList(
                 // even only one layer, we will return [] as no need to render layer selection dropdown
                 return [];
             }
-            return jsonData.FeatureTypeList.FeatureType.map((item) => ({
+            itemList = jsonData.FeatureTypeList.FeatureType.map((item) => ({
                 name: item?.Name ? item.Name : "",
                 title: item?.Title ? item.Title : ""
             })).filter((item) => !!item.name);
         }
+
+        if (!selectedWmsWfsGroupItemName) {
+            const dataUri = urijs(url);
+            const queries = dataUri.search(true);
+
+            if (isWms) {
+                let selectedLayer = getWmsLayers(queries);
+                if (
+                    !selectedLayer &&
+                    distName &&
+                    nameExist(distName, itemList)
+                ) {
+                    selectedLayer = distName;
+                }
+                if (selectedLayer) {
+                    setSelectedWmsWfsGroupItemName(selectedLayer);
+                }
+            } else {
+                let selectedTypeName = getWfsTypeNames(queries);
+                if (
+                    !selectedTypeName &&
+                    distName &&
+                    nameExist(distName, itemList)
+                ) {
+                    selectedTypeName = distName;
+                }
+                if (selectedTypeName) {
+                    setSelectedWmsWfsGroupItemName(selectedTypeName);
+                }
+            }
+        }
+
+        return itemList;
     } catch (e) {
         return [];
     }
@@ -242,10 +373,18 @@ export default function DataPreviewMapWrapper(props: {
         ? bestDist.dist.downloadURL
         : bestDist?.dist?.accessURL;
 
-    const { result: wmsWfsGroupItems } = useAsync(fetchWmsWfsItemList, [
-        dataUrl,
-        format
-    ]);
+    const distName = bestDist?.dist?.title;
+
+    const { result: wmsWfsGroupItems, loading } = useAsync(
+        fetchWmsWfsItemList,
+        [
+            dataUrl,
+            format,
+            distName,
+            selectedWmsWfsGroupItemName,
+            setSelectedWmsWfsGroupItemName
+        ]
+    );
 
     if (!bestDist) {
         return null;
@@ -290,26 +429,32 @@ export default function DataPreviewMapWrapper(props: {
                         />
                     </div>
                 ) : null}
-                <Small>
-                    <DataPreviewMapOpenInNationalMapButton
-                        distribution={bestDist.dist}
-                        style={{
-                            position: "relative",
-                            top: "10px",
-                            visibility: "visible"
-                        }}
-                        buttonText="View in NationalMap"
-                    />
-                </Small>
-                <Medium>
-                    <DataPreviewMap
-                        bestDist={bestDist}
-                        selectedWmsWfsGroupItemName={
-                            selectedWmsWfsGroupItemName
-                        }
-                        isWms={isWms}
-                    />
-                </Medium>
+                {loading ? (
+                    <Spinner />
+                ) : (
+                    <>
+                        <Small>
+                            <DataPreviewMapOpenInNationalMapButton
+                                distribution={bestDist.dist}
+                                style={{
+                                    position: "relative",
+                                    top: "10px",
+                                    visibility: "visible"
+                                }}
+                                buttonText="View in NationalMap"
+                            />
+                        </Small>
+                        <Medium>
+                            <DataPreviewMap
+                                bestDist={bestDist}
+                                selectedWmsWfsGroupItemName={
+                                    selectedWmsWfsGroupItemName
+                                }
+                                isWms={isWms}
+                            />
+                        </Medium>
+                    </>
+                )}
             </div>
         );
     }

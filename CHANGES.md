@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.2.4
+
+- #3458: fixed Map Preview freeze when process (ill-formatted) CSIRO Marlin GeoServer WMS URLs
+
 ## v2.2.3
 
 - Fixed an issue that zendesk integration feedback form might not always be opened via footer link
