@@ -10,9 +10,15 @@ const trackers = gapiIds.map((trackingId) => ({
     }
 }));
 
-// Initialize Google Analytics with tracker provided to web-server
-ReactGA.initialize(trackers, {
-    testMode: false
-});
+if (trackers?.length) {
+    // Initialize Google Analytics with tracker provided to web-server
+    ReactGA.initialize(trackers, {
+        testMode: false
+    });
+} else {
+    console.log(
+        "Google Analytics tracking has been disabled as there is no trackingId has been supplied via `web-server` helm chart config `gapiIds`."
+    );
+}
 
 export const gapi = ReactGA;
