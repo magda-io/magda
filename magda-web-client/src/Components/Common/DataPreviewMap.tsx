@@ -328,6 +328,9 @@ async function fetchWmsWfsItemList(
                 ) {
                     selectedLayer = distName;
                 }
+                if (!selectedLayer && itemList?.length) {
+                    selectedLayer = itemList[0].name;
+                }
                 if (selectedLayer) {
                     setSelectedWmsWfsGroupItemName(selectedLayer);
                 }
@@ -339,6 +342,9 @@ async function fetchWmsWfsItemList(
                     nameExist(distName, itemList)
                 ) {
                     selectedTypeName = distName;
+                }
+                if (!selectedTypeName && itemList?.length) {
+                    selectedTypeName = itemList[0].name;
                 }
                 if (selectedTypeName) {
                     setSelectedWmsWfsGroupItemName(selectedTypeName);
