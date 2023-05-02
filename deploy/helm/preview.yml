@@ -56,12 +56,18 @@ magda:
           scriptSrc:
           - "'self'"
           - "'unsafe-inline'"
-          - www.google-analytics.com
-          - browser-update.org
+          - https://*.googletagmanager.com
           # the following two domains are for downloading Magda UI plugins from github release
           - github.com
           - objects.githubusercontent.com
           - "blob:"
+          img-src:
+          - https://*.google-analytics.com
+          - https://*.googletagmanager.com
+          connect-src: 
+          - https://*.google-analytics.com
+          - https://*.analytics.google.com
+          - https://*.googletagmanager.com
 
     combined-db:
       magda-postgres:
