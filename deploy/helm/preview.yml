@@ -131,6 +131,8 @@ magda:
         "3dDatasetDigitalTwinInstances":
         - sourceDataDomain: "nsw.gov.au"
           url: "https://nsw.digitaltwin.terria.io/"
+      gapiIds:
+        - G-3LGQ7FWH1B
 
     correspondence-api:
       alwaysSendToDefaultRecipient: true

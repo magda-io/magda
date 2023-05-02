@@ -3,6 +3,7 @@
 ## v2.2.4
 
 - #3458: fixed Map Preview freeze when process (ill-formatted) CSIRO Marlin GeoServer WMS URLs
+- #3452 Add support of [Google Analytics 4](https://support.google.com/analytics/answer/10089681?hl=en) using [react-ga4](https://www.npmjs.com/package/react-ga4)
 
 ## v2.2.3
 
