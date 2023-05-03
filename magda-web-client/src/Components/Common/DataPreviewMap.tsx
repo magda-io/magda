@@ -24,6 +24,7 @@ import fetch from "isomorphic-fetch";
 import xml2json from "../../helpers/xml2json";
 import ReactSelect from "react-select";
 import CustomStyles from "../Common/react-select/ReactSelectStyles";
+import getAutoProxiedUrl from "../../helpers/getAutoProxiedUrl";
 
 const DEFAULT_DATA_SOURCE_PREFERENCE: RawPreviewMapFormatPerferenceItem[] = [
     {
@@ -262,10 +263,7 @@ function getWfsTypeNames(query: Record<string, any>) {
 
 async function fetchWmsWfsItemList(
     url: string | undefined,
-    format: string | undefined,
-    distName: string | undefined,
-    selectedWmsWfsGroupItemName: string,
-    setSelectedWmsWfsGroupItemName: React.Dispatch<React.SetStateAction<string>>
+    format: string | undefined
 ): Promise<WmsWfsGroupItemType[]> {
     if (!url || typeof url !== "string") {
         return [];
@@ -287,20 +285,19 @@ async function fetchWmsWfsItemList(
     const isWms = stdFormatStr === "wms" ? true : false;
 
     try {
-        const requestUrl = `${config.proxyUrl}_1d/${url}`;
+        const requestUrl = await getAutoProxiedUrl(url);
         const res = await fetch(requestUrl);
         if (!res.ok) {
             return [];
         }
         const resText = await res.text();
         const jsonData = xml2json(resText.trim());
-        let itemList: WmsWfsGroupItemType[];
         if (isWms) {
             if (!jsonData?.Capability?.Layer?.Layer?.length) {
                 // even only one layer, we will return [] as no need to render layer selection dropdown
                 return [];
             }
-            itemList = jsonData.Capability.Layer.Layer.map((item) => ({
+            return jsonData.Capability.Layer.Layer.map((item) => ({
                 name: item?.Name ? item.Name : "",
                 title: item?.Title ? item.Title : ""
             })).filter((item) => !!item.name);
@@ -309,52 +306,70 @@ async function fetchWmsWfsItemList(
                 // even only one layer, we will return [] as no need to render layer selection dropdown
                 return [];
             }
-            itemList = jsonData.FeatureTypeList.FeatureType.map((item) => ({
+            return jsonData.FeatureTypeList.FeatureType.map((item) => ({
                 name: item?.Name ? item.Name : "",
                 title: item?.Title ? item.Title : ""
             })).filter((item) => !!item.name);
         }
-
-        if (!selectedWmsWfsGroupItemName) {
-            const dataUri = urijs(url);
-            const queries = dataUri.search(true);
-
-            if (isWms) {
-                let selectedLayer = getWmsLayers(queries);
-                if (
-                    !selectedLayer &&
-                    distName &&
-                    nameExist(distName, itemList)
-                ) {
-                    selectedLayer = distName;
-                }
-                if (!selectedLayer && itemList?.length) {
-                    selectedLayer = itemList[0].name;
-                }
-                if (selectedLayer) {
-                    setSelectedWmsWfsGroupItemName(selectedLayer);
-                }
-            } else {
-                let selectedTypeName = getWfsTypeNames(queries);
-                if (
-                    !selectedTypeName &&
-                    distName &&
-                    nameExist(distName, itemList)
-                ) {
-                    selectedTypeName = distName;
-                }
-                if (!selectedTypeName && itemList?.length) {
-                    selectedTypeName = itemList[0].name;
-                }
-                if (selectedTypeName) {
-                    setSelectedWmsWfsGroupItemName(selectedTypeName);
-                }
-            }
-        }
-
-        return itemList;
     } catch (e) {
         return [];
+    }
+}
+
+function setDefaultWmsWmfLayerTypeName(
+    url: string | undefined,
+    format: string | undefined,
+    distName: string | undefined,
+    itemList: WmsWfsGroupItemType[] | undefined,
+    selectedWmsWfsGroupItemName: string,
+    setSelectedWmsWfsGroupItemName: React.Dispatch<React.SetStateAction<string>>
+) {
+    if (!selectedWmsWfsGroupItemName) {
+        const dataUri = urijs(url);
+        const queries = dataUri.search(true);
+
+        if (!url || typeof url !== "string") {
+            return;
+        }
+        if (!format || typeof format !== "string") {
+            return;
+        }
+        const stdFormatStr = format.trim().toLowerCase();
+        if (stdFormatStr !== "wms" && stdFormatStr !== "wfs") {
+            return;
+        }
+
+        const isWms = stdFormatStr === "wms" ? true : false;
+
+        itemList = itemList?.length ? itemList : [];
+
+        if (isWms) {
+            let selectedLayer = getWmsLayers(queries);
+            if (!selectedLayer && distName && nameExist(distName, itemList)) {
+                selectedLayer = distName;
+            }
+            if (!selectedLayer && itemList?.length) {
+                selectedLayer = itemList[0].name;
+            }
+            if (selectedLayer) {
+                setSelectedWmsWfsGroupItemName(selectedLayer);
+            }
+        } else {
+            let selectedTypeName = getWfsTypeNames(queries);
+            if (
+                !selectedTypeName &&
+                distName &&
+                nameExist(distName, itemList)
+            ) {
+                selectedTypeName = distName;
+            }
+            if (!selectedTypeName && itemList?.length) {
+                selectedTypeName = itemList[0].name;
+            }
+            if (selectedTypeName) {
+                setSelectedWmsWfsGroupItemName(selectedTypeName);
+            }
+        }
     }
 }
 
@@ -383,14 +398,26 @@ export default function DataPreviewMapWrapper(props: {
 
     const { result: wmsWfsGroupItems, loading } = useAsync(
         fetchWmsWfsItemList,
-        [
+        [dataUrl, format]
+    );
+
+    useEffect(() => {
+        setDefaultWmsWmfLayerTypeName(
             dataUrl,
             format,
             distName,
+            wmsWfsGroupItems,
             selectedWmsWfsGroupItemName,
             setSelectedWmsWfsGroupItemName
-        ]
-    );
+        );
+    }, [
+        dataUrl,
+        format,
+        distName,
+        wmsWfsGroupItems,
+        selectedWmsWfsGroupItemName,
+        setSelectedWmsWfsGroupItemName
+    ]);
 
     if (!bestDist) {
         return null;
