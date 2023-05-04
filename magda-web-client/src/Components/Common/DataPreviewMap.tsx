@@ -325,9 +325,6 @@ function setDefaultWmsWmfLayerTypeName(
     setSelectedWmsWfsGroupItemName: React.Dispatch<React.SetStateAction<string>>
 ) {
     if (!selectedWmsWfsGroupItemName) {
-        const dataUri = urijs(url);
-        const queries = dataUri.search(true);
-
         if (!url || typeof url !== "string") {
             return;
         }
@@ -342,6 +339,9 @@ function setDefaultWmsWmfLayerTypeName(
         const isWms = stdFormatStr === "wms" ? true : false;
 
         itemList = itemList?.length ? itemList : [];
+
+        const dataUri = urijs(url);
+        const queries = dataUri.search(true);
 
         if (isWms) {
             let selectedLayer = getWmsLayers(queries);
