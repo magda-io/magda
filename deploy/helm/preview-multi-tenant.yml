@@ -58,14 +58,10 @@ magda:
         directives:
           scriptSrc:
           - "'self'"
-          - "'unsafe-inline'"
-          - "*.dev.magda.io"
-          - "https://cdn.polyfill.io"
-          - "https://dev.virtualearth.net"
-          - browser-update.org
-          objectSrc:
-          - "'none'"
-          reportUri: https://sdga.report-uri.com/r/d/csp/enforce
+          - https://*.googletagmanager.com
+          # the following two domains are for downloading Magda UI plugins from github release
+          - github.com
+          - objects.githubusercontent.com
 
     combined-db:
       magda-postgres:
