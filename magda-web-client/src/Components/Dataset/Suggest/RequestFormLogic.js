@@ -46,10 +46,10 @@ export default class RequestFormLogic extends React.Component {
         var url = "";
         //check to see the type of request. This will change the api url accordingly
         if (this.props.requestType === "request") {
-            url = config.correspondenceApiUrl + "send/dataset/request";
+            url = config.correspondenceApiBaseUrl + "send/dataset/request";
         } else {
             url =
-                config.correspondenceApiUrl +
+                config.correspondenceApiBaseUrl +
                 `send/dataset/${encodeURIComponent(
                     this.props.datasetId
                 )}/question`;

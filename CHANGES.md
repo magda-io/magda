@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.2.4
+
+- Fixed an config field issue that could prevent inquiry form from functioning
+
 ## v2.2.3
 
 - Fixed an issue that zendesk integration feedback form might not always be opened via footer link
