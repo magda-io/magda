@@ -1,6 +1,6 @@
 {
   "name": "@magda/elastic-search",
-  "version": "2.2.3-alpha.0",
+  "version": "2.2.3",
   "description": "MAGDA's custom elasticsearch docker image.",
   "scripts": {
     "dev": "docker-compose up",
@@ -70,7 +70,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^2.2.3-alpha.0"
+    "@magda/scripts": "^2.2.3"
   },
   "magda": {
     "categories": {
