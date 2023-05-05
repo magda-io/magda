@@ -16,10 +16,7 @@ tags:
   correspondence-api: true
   ingress: true
   priorities: false
-  connectors: false
-  connector-ga: true
-  connector-aims: true
-  connector-aodn: true
+  connectors: true
 
 magda:
   openfaas:
