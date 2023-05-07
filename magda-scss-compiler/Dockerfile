@@ -1,4 +1,4 @@
-FROM node:14 AS build
+FROM node:14
 ADD component/setup.sh /setup.sh
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app

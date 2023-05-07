@@ -1,6 +1,6 @@
 # gateway
 
-![Version: 2.2.3](https://img.shields.io/badge/Version-2.2.3-informational?style=flat-square)
+![Version: 2.2.4-alpha.1](https://img.shields.io/badge/Version-2.2.4--alpha.1-informational?style=flat-square)
 
 The Gateway Component of Magda that routes incoming requets to other magda components.
 
@@ -27,12 +27,11 @@ Kubernetes: `>= 1.14.0-0`
 | cors.exposedHeaders[3] | string | `"Content-Length"` |  |
 | cors.exposedHeaders[4] | string | `"x-magda-event-id"` |  |
 | csp.browserSniff | bool | `false` |  |
+| csp.directives.frame-ancestors[0] | string | `"'self'"` |  |
 | csp.directives.objectSrc[0] | string | `"'none'"` |  |
 | csp.directives.scriptSrc[0] | string | `"'self'"` |  |
 | csp.directives.scriptSrc[1] | string | `"'unsafe-inline'"` |  |
-| csp.directives.scriptSrc[2] | string | `"blob:"` |  |
-| csp.directives.scriptSrc[3] | string | `"browser-update.org"` |  |
-| csp.directives.scriptSrc[4] | string | `"www.google-analytics.com"` |  |
+| csp.directives.scriptSrc[2] | string | `"https://*.googletagmanager.com"` |  |
 | csp.directives.workerSrc[0] | string | `"'self'"` |  |
 | csp.directives.workerSrc[1] | string | `"blob:"` |  |
 | defaultCacheControl | string | `"public, max-age=60"` | If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable. |

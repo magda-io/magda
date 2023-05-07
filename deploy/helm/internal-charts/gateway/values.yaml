@@ -176,15 +176,15 @@ csp:
   directives:
     scriptSrc:
     - "'self'"
-    - "'unsafe-inline'"
-    - "blob:"
-    - browser-update.org
-    - www.google-analytics.com
+    - "'unsafe-inline'" 
+    - https://*.googletagmanager.com
     objectSrc:
     - "'none'"
     workerSrc:
     - "'self'"
     - "blob:"
+    frame-ancestors:
+    - "'self'"
 
 cors:
   exposedHeaders:

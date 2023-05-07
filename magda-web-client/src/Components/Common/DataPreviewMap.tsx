@@ -24,6 +24,7 @@ import fetch from "isomorphic-fetch";
 import xml2json from "../../helpers/xml2json";
 import ReactSelect from "react-select";
 import CustomStyles from "../Common/react-select/ReactSelectStyles";
+import getAutoProxiedUrl from "../../helpers/getAutoProxiedUrl";
 
 const DEFAULT_DATA_SOURCE_PREFERENCE: RawPreviewMapFormatPerferenceItem[] = [
     {
@@ -113,6 +114,51 @@ type BestDist = {
     index: number;
 };
 
+function normalizeWmsWfsUrl(dist: ParsedDistribution): ParsedDistribution {
+    const { format, downloadURL, accessURL } = dist;
+    if (!format || typeof format !== "string") {
+        return dist;
+    }
+    const stdFormatStr = format.trim().toLowerCase();
+    if (stdFormatStr !== "wms" && stdFormatStr !== "wfs") {
+        return dist;
+    }
+    const isWms = stdFormatStr === "wms" ? true : false;
+    const dataUrl = downloadURL ? downloadURL : accessURL;
+    if (!dataUrl || typeof dataUrl !== "string") {
+        return dist;
+    }
+    if (dataUrl.match(/\W*SceneServer\W*/i)) {
+        // when url contains `SceneServer`, it will not be valid WFS / WMS url.
+        // some upstream crawler might incorrectly produce this
+        return dist;
+    }
+
+    const dataUri = urijs(dataUrl);
+    const queries = dataUri.search(true);
+    const request = queries?.request ? queries?.request : queries?.REQUEST;
+    const service = queries?.service ? queries?.service : queries?.SERVICE;
+    if (!request) {
+        queries.REQUEST = queries.request = "GetCapabilities";
+    }
+    if (service) {
+        queries.SERVICE = queries.service = isWms ? "WMS" : "WFS";
+    }
+
+    const normalisedDataUrl = dataUri.search(queries).toString();
+    const newDist = { ...dist };
+
+    if (normalisedDataUrl !== dataUrl) {
+        if (downloadURL) {
+            newDist.downloadURL = normalisedDataUrl;
+        } else {
+            newDist.accessURL = normalisedDataUrl;
+        }
+    }
+
+    return newDist;
+}
+
 // React 16.3 advice for replacing prop -> state updates for computations
 /**
  * Determines the best distribution to try to use for mapping
@@ -157,7 +203,11 @@ const determineBestDistribution: (
     if (sorted.length === 0) {
         return null;
     } else {
-        return sorted[0];
+        const { dist, index } = sorted[0];
+        return {
+            dist: normalizeWmsWfsUrl(dist),
+            index
+        };
     }
 });
 
@@ -166,9 +216,54 @@ type WmsWfsGroupItemType = {
     title: string;
 };
 
+function nameExist(name: string, namelist: WmsWfsGroupItemType[]): boolean {
+    return (
+        namelist.findIndex(
+            (item: WmsWfsGroupItemType) => item.name === name
+        ) !== -1
+    );
+}
+
+function getQueryParameterValueWithPossibleKeys(
+    query: Record<string, any>,
+    keys: string[]
+) {
+    if (!query) {
+        return undefined;
+    }
+    for (const key in keys) {
+        if (typeof query?.[key] !== "undefined") {
+            return query[key];
+        }
+    }
+    return undefined;
+}
+
+// try `layers` `LAYERS` `layer` `LAYER` `layerName`
+function getWmsLayers(query: Record<string, any>) {
+    return getQueryParameterValueWithPossibleKeys(query, [
+        "layers",
+        "LAYERS",
+        "layer",
+        "LAYER",
+        "layerName"
+    ]);
+}
+
+//try `typeNames` `TYPENAMES` `typeName` `typename` `TYPENAME`
+function getWfsTypeNames(query: Record<string, any>) {
+    return getQueryParameterValueWithPossibleKeys(query, [
+        "typeNames",
+        "TYPENAMES",
+        "typeName",
+        "typename",
+        "TYPENAME"
+    ]);
+}
+
 async function fetchWmsWfsItemList(
-    url?: string,
-    format?: string
+    url: string | undefined,
+    format: string | undefined
 ): Promise<WmsWfsGroupItemType[]> {
     if (!url || typeof url !== "string") {
         return [];
@@ -190,7 +285,7 @@ async function fetchWmsWfsItemList(
     const isWms = stdFormatStr === "wms" ? true : false;
 
     try {
-        const requestUrl = `${config.proxyUrl}_1d/${url}`;
+        const requestUrl = await getAutoProxiedUrl(url);
         const res = await fetch(requestUrl);
         if (!res.ok) {
             return [];
@@ -221,6 +316,63 @@ async function fetchWmsWfsItemList(
     }
 }
 
+function setDefaultWmsWmfLayerTypeName(
+    url: string | undefined,
+    format: string | undefined,
+    distName: string | undefined,
+    itemList: WmsWfsGroupItemType[] | undefined,
+    selectedWmsWfsGroupItemName: string,
+    setSelectedWmsWfsGroupItemName: React.Dispatch<React.SetStateAction<string>>
+) {
+    if (!selectedWmsWfsGroupItemName) {
+        if (!url || typeof url !== "string") {
+            return;
+        }
+        if (!format || typeof format !== "string") {
+            return;
+        }
+        const stdFormatStr = format.trim().toLowerCase();
+        if (stdFormatStr !== "wms" && stdFormatStr !== "wfs") {
+            return;
+        }
+
+        const isWms = stdFormatStr === "wms" ? true : false;
+
+        itemList = itemList?.length ? itemList : [];
+
+        const dataUri = urijs(url);
+        const queries = dataUri.search(true);
+
+        if (isWms) {
+            let selectedLayer = getWmsLayers(queries);
+            if (!selectedLayer && distName && nameExist(distName, itemList)) {
+                selectedLayer = distName;
+            }
+            if (!selectedLayer && itemList?.length) {
+                selectedLayer = itemList[0].name;
+            }
+            if (selectedLayer) {
+                setSelectedWmsWfsGroupItemName(selectedLayer);
+            }
+        } else {
+            let selectedTypeName = getWfsTypeNames(queries);
+            if (
+                !selectedTypeName &&
+                distName &&
+                nameExist(distName, itemList)
+            ) {
+                selectedTypeName = distName;
+            }
+            if (!selectedTypeName && itemList?.length) {
+                selectedTypeName = itemList[0].name;
+            }
+            if (selectedTypeName) {
+                setSelectedWmsWfsGroupItemName(selectedTypeName);
+            }
+        }
+    }
+}
+
 export default function DataPreviewMapWrapper(props: {
     distributions: ParsedDistribution[];
 }) {
@@ -242,9 +394,29 @@ export default function DataPreviewMapWrapper(props: {
         ? bestDist.dist.downloadURL
         : bestDist?.dist?.accessURL;
 
-    const { result: wmsWfsGroupItems } = useAsync(fetchWmsWfsItemList, [
+    const distName = bestDist?.dist?.title;
+
+    const { result: wmsWfsGroupItems, loading } = useAsync(
+        fetchWmsWfsItemList,
+        [dataUrl, format]
+    );
+
+    useEffect(() => {
+        setDefaultWmsWmfLayerTypeName(
+            dataUrl,
+            format,
+            distName,
+            wmsWfsGroupItems,
+            selectedWmsWfsGroupItemName,
+            setSelectedWmsWfsGroupItemName
+        );
+    }, [
         dataUrl,
-        format
+        format,
+        distName,
+        wmsWfsGroupItems,
+        selectedWmsWfsGroupItemName,
+        setSelectedWmsWfsGroupItemName
     ]);
 
     if (!bestDist) {
@@ -290,26 +462,32 @@ export default function DataPreviewMapWrapper(props: {
                         />
                     </div>
                 ) : null}
-                <Small>
-                    <DataPreviewMapOpenInNationalMapButton
-                        distribution={bestDist.dist}
-                        style={{
-                            position: "relative",
-                            top: "10px",
-                            visibility: "visible"
-                        }}
-                        buttonText="View in NationalMap"
-                    />
-                </Small>
-                <Medium>
-                    <DataPreviewMap
-                        bestDist={bestDist}
-                        selectedWmsWfsGroupItemName={
-                            selectedWmsWfsGroupItemName
-                        }
-                        isWms={isWms}
-                    />
-                </Medium>
+                {loading ? (
+                    <Spinner />
+                ) : (
+                    <>
+                        <Small>
+                            <DataPreviewMapOpenInNationalMapButton
+                                distribution={bestDist.dist}
+                                style={{
+                                    position: "relative",
+                                    top: "10px",
+                                    visibility: "visible"
+                                }}
+                                buttonText="View in NationalMap"
+                            />
+                        </Small>
+                        <Medium>
+                            <DataPreviewMap
+                                bestDist={bestDist}
+                                selectedWmsWfsGroupItemName={
+                                    selectedWmsWfsGroupItemName
+                                }
+                                isWms={isWms}
+                            />
+                        </Medium>
+                    </>
+                )}
             </div>
         );
     }

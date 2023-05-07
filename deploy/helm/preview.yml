@@ -16,7 +16,7 @@ tags:
   correspondence-api: true
   ingress: true
   priorities: false
-  connectors: false
+  connectors: true
 
 magda:
   openfaas:
@@ -52,13 +52,10 @@ magda:
         directives:
           scriptSrc:
           - "'self'"
-          - "'unsafe-inline'"
-          - www.google-analytics.com
-          - browser-update.org
+          - https://*.googletagmanager.com
           # the following two domains are for downloading Magda UI plugins from github release
           - github.com
           - objects.githubusercontent.com
-          - "blob:"
 
     combined-db:
       magda-postgres:
@@ -130,6 +127,31 @@ magda:
           url: "https://nsw.digitaltwin.terria.io/"
       gapiIds:
         - G-3LGQ7FWH1B
+
+    preview-map:
+      serverConfig:
+        allowProxyFor:
+        - nicta.com.au
+        - gov.au
+        - csiro.au
+        - arcgis.com
+        - argo.jcommops.org
+        - www.abc.net.au
+        - geoserver.aurin.org.au
+        - mapsengine.google.com
+        - s3-ap-southeast-2.amazonaws.com
+        - adelaidecitycouncil.com
+        - www.dptiapps.com.au
+        - geoserver-123.aodn.org.au
+        - geoserver.imos.org.au
+        - nci.org.au
+        - static.nationalmap.nicta.com.au
+        - githubusercontent.com
+        - gov
+        - gov.uk
+        - gov.nz
+        - sample.aero3dpro.com.au
+        - maps.eatlas.org.au
 
     correspondence-api:
       alwaysSendToDefaultRecipient: true

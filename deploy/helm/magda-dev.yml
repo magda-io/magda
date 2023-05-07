@@ -70,13 +70,10 @@ magda:
         directives:
           scriptSrc:
           - "'self'"
-          - "'unsafe-inline'"
-          - www.google-analytics.com
-          - browser-update.org
+          - https://*.googletagmanager.com
           # the following two domains are for downloading Magda UI plugins from github release
           - github.com
           - objects.githubusercontent.com
-          - "blob:"
 
     combined-db:
       magda-postgres:
@@ -162,6 +159,8 @@ magda:
         "3dDatasetDigitalTwinInstances":
         - sourceDataDomain: "nsw.gov.au"
           url: "https://nsw.digitaltwin.terria.io/"
+      gapiIds:
+        - G-3LGQ7FWH1B
 
     correspondence-api:
       alwaysSendToDefaultRecipient: true

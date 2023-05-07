@@ -39,18 +39,23 @@ connector-actmapi:
     name: ACT Government ACTMAPi
     sourceUrl: https://actmapi-actgov.opendata.arcgis.com/api/feed/dcat-us/1.1.json
 
-connector-aims:
-  config:
-    id: aims
-    name: Australian Institute of Marine Science
-    sourceUrl: https://geo.aims.gov.au/geonetwork/srv/eng/csw
-    pageSize: 100
+# aodn includes most aims datasets
+# connector-aims:
+#   config:
+#     id: aims
+#     name: Australian Institute of Marine Science
+#     sourceUrl: https://geonetwork.apps.aims.gov.au/geonetwork/srv/eng/csw
+#     outputSchema: http://standards.iso.org/iso/19115/-3/mdb/2.0
+#     typeNames: mdb:MD_Metadata
+#     pageSize: 100
 
 connector-aodn:
   config:
     id: aodn
     name: Australian Oceans Data Network
     sourceUrl: https://catalogue.aodn.org.au/geonetwork/srv/eng/csw
+    outputSchema: http://standards.iso.org/iso/19115/-3/mdb/2.0
+    typeNames: mdb:MD_Metadata
     pageSize: 100
 
 connector-bom:
@@ -100,6 +105,7 @@ connector-ga:
     name: Geoscience Australia
     sourceUrl: https://ecat.ga.gov.au/geonetwork/srv/eng/csw
     outputSchema: http://standards.iso.org/iso/19115/-3/mdb/1.0
+    typeNames: mdb:MD_Metadata
     pageSize: 100
 
 connector-logan:
