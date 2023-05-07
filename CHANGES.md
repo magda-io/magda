@@ -7,6 +7,7 @@
 - #3452 Add support of [Google Analytics 4](https://support.google.com/analytics/answer/10089681?hl=en) using [react-ga4](https://www.npmjs.com/package/react-ga4)
 - Upgrade CSW connector to [v2.0.2](https://github.com/magda-io/magda-csw-connector/releases/tag/v2.0.2) in order to capture landing page info from some sources.
 - Cache node-saas build for arm64 to speed up CI pipeline
+- Turned on format & rating minion for Magda chart by default
 
 ## v2.2.3
 
