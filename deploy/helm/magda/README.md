@@ -56,8 +56,8 @@ A complete solution for managing, publishing and discovering government data, pr
 | tags.connectors | bool | `false` |  |
 | tags.minion-broken-link | bool | `false` |  |
 | tags.minion-ckan-exporter | bool | `false` |  |
-| tags.minion-format | bool | `false` |  |
-| tags.minion-linked-data-rating | bool | `false` |  |
+| tags.minion-format | bool | `true` |  |
+| tags.minion-linked-data-rating | bool | `true` |  |
 | tags.minion-visualization | bool | `false` |  |
 
 ----------------------------------------------
