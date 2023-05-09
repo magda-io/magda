@@ -3,7 +3,7 @@
 - [How to build and run](/docs/building-and-running)
 - [Migration & Upgrade Documents](/docs/migration)
 - [Deploy Magda with helm charts release](https://github.com/magda-io/magda-config)
-- [Magda Helm Chart Reference](/docs/helm-charts-docs-index)
+- [Magda Helm Chart Reference](./helm-charts-docs-index.md)
 - [How to deploy Magda on Google Cloud GKE](/docs/deploying-for-production-on-gke)
 - [How to deploy Magda on Amazon AWS EKS](/docs/deploy-to-aws)
 - [How to deploy Magda on Microsoft Azure Cloud AKS](/docs/deploy-to-azure)
