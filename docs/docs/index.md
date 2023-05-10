@@ -1,7 +1,7 @@
 # Magda Documentation
 
 - [How to build and run](./building-and-running.md)
-- [Migration & Upgrade Documents](./migration.md)
+- [Migration & Upgrade Documents](./migration/)
 - [Deploy Magda with helm charts release](https://github.com/magda-io/magda-config)
 - [Magda Helm Chart Reference](./helm-charts-docs-index.md)
 - [How to deploy Magda on Google Cloud GKE](./deploying-for-production-on-gke.md)
