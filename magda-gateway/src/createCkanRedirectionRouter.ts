@@ -177,7 +177,7 @@ export default function buildCkanRedirectionRouter({
     function getQueryRegistryRecordApiCacheKey(
         aspectQuery: string[],
         aspect: string[],
-        limit: number = 1
+        limit: number
     ) {
         return JSON.stringify({
             aspectQuery,
@@ -189,7 +189,7 @@ export default function buildCkanRedirectionRouter({
     async function queryRegistryRecordApi(
         aspectQuery: string[],
         aspect: string[],
-        limit: number = 1
+        limit: number = undefined
     ) {
         const cacheKey = getQueryRegistryRecordApiCacheKey(
             aspectQuery,
@@ -234,7 +234,7 @@ export default function buildCkanRedirectionRouter({
         aspectName: string,
         retrieveAspectContent: boolean = true,
         retrieveAspects: string[] = [],
-        limit: number = 1
+        limit: number = undefined
     ): Promise<any[]> {
         const query = `${aspectName}.${
             uuidRegEx.test(ckanIdOrName) ? "id" : "name"
@@ -270,7 +270,7 @@ export default function buildCkanRedirectionRouter({
         ckanIdOrName: string,
         aspectName: string
     ) {
-        const records = await queryCkanAspect(ckanIdOrName, aspectName, false);
+        const records = await queryCkanAspect(ckanIdOrName, aspectName);
         if (!records || !records.length || !records[0]["id"]) {
             return null;
         } else {

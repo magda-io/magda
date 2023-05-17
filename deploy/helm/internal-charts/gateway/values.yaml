@@ -43,10 +43,10 @@ registryQueryCacheStdTTL:
 # By default, it will be set to 500 seconds if leave blank.
 registryQueryCacheMaxKeys:
 
-# -- CKAN redirection target CKAN instance domain. See `enableCkanRedirection` for more details.
+# -- CKAN redirection target CKAN instance domain (e.g. `data.gov.au`). See `enableCkanRedirection` for more details.
 ckanRedirectionDomain:
 
-# -- CKAN redirection target CKAN instance path. See `enableCkanRedirection` for more details.
+# -- CKAN redirection target CKAN instance path (e.g. `/data`). See `enableCkanRedirection` for more details.
 ckanRedirectionPath:
 
 
@@ -176,15 +176,15 @@ csp:
   directives:
     scriptSrc:
     - "'self'"
-    - "'unsafe-inline'"
-    - "blob:"
-    - browser-update.org
-    - www.google-analytics.com
+    - "'unsafe-inline'" 
+    - https://*.googletagmanager.com
     objectSrc:
     - "'none'"
     workerSrc:
     - "'self'"
     - "blob:"
+    frame-ancestors:
+    - "'self'"
 
 cors:
   exposedHeaders:

@@ -1,7 +1,7 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: tenant-api
-version: 2.2.3-alpha.0
+version: 2.2.4-alpha.1
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"

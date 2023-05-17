@@ -1,6 +1,6 @@
 # gateway
 
-![Version: 2.2.3-alpha.0](https://img.shields.io/badge/Version-2.2.3--alpha.0-informational?style=flat-square)
+![Version: 2.2.4-alpha.1](https://img.shields.io/badge/Version-2.2.4--alpha.1-informational?style=flat-square)
 
 The Gateway Component of Magda that routes incoming requets to other magda components.
 
@@ -18,8 +18,8 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
-| ckanRedirectionDomain | string | `nil` | CKAN redirection target CKAN instance domain. See `enableCkanRedirection` for more details. |
-| ckanRedirectionPath | string | `nil` | CKAN redirection target CKAN instance path. See `enableCkanRedirection` for more details. |
+| ckanRedirectionDomain | string | `nil` | CKAN redirection target CKAN instance domain (e.g. `data.gov.au`). See `enableCkanRedirection` for more details. |
+| ckanRedirectionPath | string | `nil` | CKAN redirection target CKAN instance path (e.g. `/data`). See `enableCkanRedirection` for more details. |
 | cookie | object | default value see `Description` | Session cookie settings. <br/> More info: https://github.com/expressjs/session#cookie <br/> Supported options are:<br/> <ul> <li>`expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.</li> <li>`httpOnly`: Default: true.</li> <li>`maxAge`: Default: 7 * 60 * 60 * 1000 (7 hours)</li> <li>`path`: Default: '/'.</li> <li>`sameSite`: Default: lax </li> <li>`secure`: Default: "auto" </li> </ul> |
 | cors.exposedHeaders[0] | string | `"Content-Range"` |  |
 | cors.exposedHeaders[1] | string | `"X-Content-Range"` |  |
@@ -27,12 +27,11 @@ Kubernetes: `>= 1.14.0-0`
 | cors.exposedHeaders[3] | string | `"Content-Length"` |  |
 | cors.exposedHeaders[4] | string | `"x-magda-event-id"` |  |
 | csp.browserSniff | bool | `false` |  |
+| csp.directives.frame-ancestors[0] | string | `"'self'"` |  |
 | csp.directives.objectSrc[0] | string | `"'none'"` |  |
 | csp.directives.scriptSrc[0] | string | `"'self'"` |  |
 | csp.directives.scriptSrc[1] | string | `"'unsafe-inline'"` |  |
-| csp.directives.scriptSrc[2] | string | `"blob:"` |  |
-| csp.directives.scriptSrc[3] | string | `"browser-update.org"` |  |
-| csp.directives.scriptSrc[4] | string | `"www.google-analytics.com"` |  |
+| csp.directives.scriptSrc[2] | string | `"https://*.googletagmanager.com"` |  |
 | csp.directives.workerSrc[0] | string | `"'self'"` |  |
 | csp.directives.workerSrc[1] | string | `"blob:"` |  |
 | defaultCacheControl | string | `"public, max-age=60"` | If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable. |

@@ -1,6 +1,6 @@
 # cloud-sql-proxy
 
-![Version: 2.2.3-alpha.0](https://img.shields.io/badge/Version-2.2.3--alpha.0-informational?style=flat-square) ![AppVersion: 1.11](https://img.shields.io/badge/AppVersion-1.11-informational?style=flat-square)
+![Version: 2.2.4-alpha.1](https://img.shields.io/badge/Version-2.2.4--alpha.1-informational?style=flat-square) ![AppVersion: 1.11](https://img.shields.io/badge/AppVersion-1.11-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -62,9 +62,9 @@ kubectl -n [Magda Deploy Namespace] create secret generic cloudsql-instance-cred
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.pullSecrets | bool | `false` |  |
 | image.repository | string | `"gcr.io/cloudsql-docker"` |  |
-| image.tag | string | `"1.11"` |  |
+| image.tag | string | `"1.33.2-alpine"` |  |
 | ipAddressTypes | string | PUBLIC,PRIVATE | A comma-delimited list of preferred IP types for connecting to an instance.  For example, setting this to PRIVATE will force the proxy to connect to instances using an instance's associated private IP. Available from docker image 1.23.0 |
-| logDebugStdout | bool | false | This is to log non-error output to standard out instead of standard error.  For example, if you don't want connection related messages to log as errors, set this flag to true. Available from docker image 1.23.0 |
+| logDebugStdout | bool | true | This is to log non-error output to standard out instead of standard error.  For example, if you don't want connection related messages to log as errors, set this flag to true. Available from docker image 1.23.0 |
 | maxConnections | int | 0 (no limit). | If provided, the maximum number of connections to establish before refusing new connections.  Available from docker image 1.23.0 |
 | replicas | string | `nil` | no. of replicas required for the deployment. If not set, k8s will assume `1` but allows HPA (autoscaler) alters it. @default 1 |
 | resources.requests.cpu | string | `"50m"` |  |

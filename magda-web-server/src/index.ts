@@ -324,6 +324,12 @@ const argv = yargs
             "The interval of UI refresh / refetch user auth status data. Default to 5 mins.",
         default: 300000,
         type: "number"
+    })
+    .option("sitemapCacheSeconds", {
+        describe:
+            "No. of seconds that sitemap result will be cached. By default, 86400 i.e. 1 day.",
+        default: 86400,
+        type: "number"
     }).argv;
 
 // set default timezone
@@ -554,13 +560,6 @@ app.get("/page/*", async function (req, res) {
     res.send(await getIndexFileContentZeroArgs());
 });
 
-// app.get("/admin", function(req, res) {
-//     res.sendFile(path.join(adminBuild, "index.html"));
-// });
-// app.get("/admin/*", function(req, res) {
-//     res.sendFile(path.join(adminBuild, "index.html"));
-// });
-
 if (argv.devProxy) {
     app.get("/api/*", function (req, res) {
         console.log(argv.devProxy + req.params[0]);
@@ -585,7 +584,7 @@ Crawl-delay: 100
 Disallow: /auth
 Disallow: /search
 
-Sitemap: ${baseExternalUrl}/sitemap.xml
+Sitemap: ${baseExternalUrl ? baseExternalUrl : "/"}sitemap.xml
 `;
 
 app.use("/robots.txt", (_, res) => {
@@ -600,7 +599,8 @@ app.use(
             baseUrl: argv.registryApiBaseUrlInternal,
             maxRetries: 0,
             tenantId: MAGDA_ADMIN_PORTAL_ID
-        })
+        }),
+        cacheSeconds: argv.sitemapCacheSeconds
     })
 );
 

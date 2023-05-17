@@ -2,9 +2,9 @@ tags:
   all: true
   connectors: false
   minion-broken-link: false
-  minion-linked-data-rating: false
+  minion-linked-data-rating: true
   minion-visualization: false
-  minion-format: false
+  minion-format: true
   minion-ckan-exporter: false
 
 global:

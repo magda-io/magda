@@ -1,6 +1,6 @@
 # magda
 
-![Version: 2.2.3-alpha.0](https://img.shields.io/badge/Version-2.2.3--alpha.0-informational?style=flat-square)
+![Version: 2.2.4-alpha.1](https://img.shields.io/badge/Version-2.2.4--alpha.1-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes the magda default deployment.
 
@@ -14,7 +14,7 @@ A complete solution for managing, publishing and discovering government data, pr
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-core | magda-core | 2.2.3-alpha.0 |
+| file://../magda-core | magda-core | 2.2.4-alpha.1 |
 | oci://ghcr.io/magda-io/charts | ckan-connector-functions(magda-ckan-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-function-esri-url-processor | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-function-history-report | 2.0.0 |
@@ -56,8 +56,8 @@ A complete solution for managing, publishing and discovering government data, pr
 | tags.connectors | bool | `false` |  |
 | tags.minion-broken-link | bool | `false` |  |
 | tags.minion-ckan-exporter | bool | `false` |  |
-| tags.minion-format | bool | `false` |  |
-| tags.minion-linked-data-rating | bool | `false` |  |
+| tags.minion-format | bool | `true` |  |
+| tags.minion-linked-data-rating | bool | `true` |  |
 | tags.minion-visualization | bool | `false` |  |
 
 ----------------------------------------------
