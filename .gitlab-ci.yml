@@ -721,7 +721,7 @@ dockerize:dockerExtensions:
   only:
     - branches
   except:
-    - master
+    - main
   dependencies:
     - buildtest:helm-charts
   cache:
@@ -798,7 +798,7 @@ Stop Preview: &stopPreview
   only:
     - branches
   except:
-    - master
+    - main
   dependencies: []
   cache:
     paths: []
@@ -815,10 +815,10 @@ Stop Preview: &stopPreview
     - helm --namespace $CI_COMMIT_REF_SLUG del $CI_COMMIT_REF_SLUG
     - kubectl delete namespace $CI_COMMIT_REF_SLUG
 
-Deploy Master To Dev:
+Deploy Main Branch To Dev:
   stage: deploy-dev
   only:
-    - master
+    - main
   cache: {}
   needs:
     - buildtest:helm-charts
@@ -853,7 +853,7 @@ pre-release:check-release-version:
     - if: $CI_COMMIT_TAG =~ /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
       variables:
         SKIP_CHECK: "false"
-    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "main"
       variables:
         SKIP_CHECK: "true"
     - if: $CI_COMMIT_BRANCH == "next"
@@ -883,9 +883,9 @@ Release-to-Docker-Hub-Github-Container:
     - if: $CI_COMMIT_TAG =~ /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
       variables:
         RELEASE_LATEST_TAG: "true"
-    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "main"
       variables:
-        RELEASE_MASTER_TAG: "true"
+        RELEASE_MAIN_TAG: "true"
     - if: $CI_COMMIT_BRANCH == "next"
       variables:
         RELEASE_NEXT_TAG: "true"
@@ -919,9 +919,9 @@ Release-to-Docker-Hub-Github-Container:
         yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=latest --copyFromRegistry=true
       fi
     - |
-      if [ "$RELEASE_MASTER_TAG" == "true" ]; then
-        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=master --copyFromRegistry=true
-        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=master --copyFromRegistry=true
+      if [ "$RELEASE_MAIN_TAG" == "true" ]; then
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=main --copyFromRegistry=true
+        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=main --copyFromRegistry=true
       fi
     - |
       if [ "$RELEASE_NEXT_TAG" == "true" ]; then
