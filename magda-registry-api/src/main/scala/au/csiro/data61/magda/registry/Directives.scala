@@ -57,54 +57,52 @@ object Directives extends Protocols with SprayJsonSupport {
       session: DBSession
   ): Future[JsObject] = {
     Future {
-      blocking {
-        var recordJsFields: Map[String, JsValue] = Map()
-        var fetchedRecordId: String = ""
+      var recordJsFields: Map[String, JsValue] = Map()
+      var fetchedRecordId: String = ""
 
-        sql"SELECT * FROM records WHERE recordid=${recordId} ${tenantId match {
-          case SpecifiedTenantId(tenantId) => sqls" AND tenantid=${tenantId}"
-          case _                           => SQLSyntax.empty
-        }} LIMIT 1"
-          .foreach { rs =>
-            // JDBC treat column name case insensitive
-            fetchedRecordId = rs.string("recordId")
-            recordJsFields += ("id" -> JsString(fetchedRecordId))
-            recordJsFields += ("name" -> JsString(rs.string("name")))
-            recordJsFields += ("lastUpdate" -> JsNumber(
-              rs.bigInt("lastupdate")
-            ))
-            rs.stringOpt("sourceTag")
-              .foreach(
-                item => recordJsFields += ("sourceTag" -> JsString(item))
-              )
-            rs.stringOpt("tenantId")
-              .foreach(
-                item => recordJsFields += ("tenantId" -> JsNumber(item))
-              )
-          }
-
-        if (recordJsFields.isEmpty) {
-          throw NoRecordFoundException(recordId)
+      sql"SELECT * FROM records WHERE recordid=${recordId} ${tenantId match {
+        case SpecifiedTenantId(tenantId) => sqls" AND tenantid=${tenantId}"
+        case _                           => SQLSyntax.empty
+      }} LIMIT 1"
+        .foreach { rs =>
+          // JDBC treat column name case insensitive
+          fetchedRecordId = rs.string("recordId")
+          recordJsFields += ("id" -> JsString(fetchedRecordId))
+          recordJsFields += ("name" -> JsString(rs.string("name")))
+          recordJsFields += ("lastUpdate" -> JsNumber(
+            rs.bigInt("lastupdate")
+          ))
+          rs.stringOpt("sourceTag")
+            .foreach(
+              item => recordJsFields += ("sourceTag" -> JsString(item))
+            )
+          rs.stringOpt("tenantId")
+            .foreach(
+              item => recordJsFields += ("tenantId" -> JsNumber(item))
+            )
         }
 
-        sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${recordId}"""
-          .foreach { rs =>
-            val aspectId = rs.string("aspectid")
-            Try(JsonParser(rs.string("data")).asJsObject) match {
-              case Success(data) => recordJsFields += (aspectId -> data)
-              case Failure(e) =>
-                logger.warning(
-                  "Failed to parse aspect Json data while prepare policy evaluation context data. recordId: {} aspectId: {}",
-                  recordId,
-                  aspectId
-                )
-                throw e
-            }
-          }
-
-        JsObject(recordJsFields)
+      if (recordJsFields.isEmpty) {
+        throw NoRecordFoundException(recordId)
       }
-    }
+
+      sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${recordId}"""
+        .foreach { rs =>
+          val aspectId = rs.string("aspectid")
+          Try(JsonParser(rs.string("data")).asJsObject) match {
+            case Success(data) => recordJsFields += (aspectId -> data)
+            case Failure(e) =>
+              logger.warning(
+                "Failed to parse aspect Json data while prepare policy evaluation context data. recordId: {} aspectId: {}",
+                recordId,
+                aspectId
+              )
+              throw e
+          }
+        }
+
+      JsObject(recordJsFields)
+    }(ec)
   }
 
   /**
@@ -124,30 +122,29 @@ object Directives extends Protocols with SprayJsonSupport {
       onRecordNotFound: Option[() => Directive0] = None,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+    (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
-        val requestExeCtx = t._2
         val log = t._1
-        val requestActorSystem = t._3
-        val tenantId = t._4
+        val requestActorSystem = t._2
+        val tenantId = t._3
 
         implicit val blockingExeCtx =
           requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
 
-        (withExecutionContext(blockingExeCtx) & onComplete(
+        onComplete(
           createRecordContextData(recordId, tenantId)(
             blockingExeCtx,
             log,
             session
           )
-        )).tflatMap {
+        ).tflatMap {
           case Tuple1(Success(recordData)) =>
             requirePermission(
               authApiClient,
               operationUri,
               input =
                 Some(JsObject("object" -> JsObject("record" -> recordData)))
-            ) & withExecutionContext(requestExeCtx) & pass // switch back to akka dispatcher
+            )
           case Tuple1(Failure(e: NoRecordFoundException)) =>
             if (onRecordNotFound.isDefined) {
               onRecordNotFound.get()
@@ -199,12 +196,11 @@ object Directives extends Protocols with SprayJsonSupport {
       merge: Boolean = false,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+    (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
-        val requestExeCtx = t._2
         val log = t._1
-        val requestActorSystem = t._3
-        val tenantId = t._4
+        val requestActorSystem = t._2
+        val tenantId = t._3
 
         implicit val blockingExeCtx =
           requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
@@ -274,7 +270,7 @@ object Directives extends Protocols with SprayJsonSupport {
                   )
                 )
               )
-            ) & withExecutionContext(requestExeCtx) & pass
+            )
           case Failure(_: NoRecordFoundException) =>
             newRecordOrJsonPath match {
               case Left(newRecord) =>
@@ -290,7 +286,7 @@ object Directives extends Protocols with SprayJsonSupport {
                       )
                     )
                   )
-                ) & withExecutionContext(requestExeCtx) & pass
+                )
               case Right(_) =>
                 // When record Json Patch was passed (i.e. a patch request),
                 // there is no way to create the record when it doesn't exist (as we don't know the current data)
@@ -339,12 +335,11 @@ object Directives extends Protocols with SprayJsonSupport {
       merge: Boolean = false,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+    (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
-        val requestExeCtx = t._2
         val log = t._1
-        val requestActorSystem = t._3
-        val tenantId = t._4
+        val requestActorSystem = t._2
+        val tenantId = t._3
 
         implicit val blockingExeCtx =
           requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
@@ -406,7 +401,7 @@ object Directives extends Protocols with SprayJsonSupport {
                   )
                 )
               )
-            ) & withExecutionContext(requestExeCtx) & pass
+            )
           case Failure(_: NoRecordFoundException) =>
             // There is no way to construct full record context data for auth decision without the original record
             // we will send out BadRequest response immediately
@@ -450,12 +445,11 @@ object Directives extends Protocols with SprayJsonSupport {
       aspectId: String,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+    (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
-        val requestExeCtx = t._2
         val log = t._1
-        val requestActorSystem = t._3
-        val tenantId = t._4
+        val requestActorSystem = t._2
+        val tenantId = t._3
 
         implicit val blockingExeCtx =
           requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
@@ -491,13 +485,13 @@ object Directives extends Protocols with SprayJsonSupport {
                   )
                 )
               )
-            ) & withExecutionContext(requestExeCtx) & pass
+            )
           case Failure(_: NoRecordFoundException) =>
             // when record cannot found, only user has unconditional record update access can proceed to this API (and potentially know the aspect has been already deleted)
             requireUnconditionalAuthDecision(
               authApiClient,
               AuthDecisionReqConfig("object/record/update")
-            ) & withExecutionContext(requestExeCtx) & pass
+            )
           case Failure(e: Throwable) =>
             log.error(
               "Failed to create record context data for auth decision. record ID: {}. Error: {}",
@@ -574,12 +568,11 @@ object Directives extends Protocols with SprayJsonSupport {
       aspectId: String,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+    (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
-        val requestExeCtx = t._2
         val log = t._1
-        val requestActorSystem = t._3
-        val tenantId = t._4
+        val requestActorSystem = t._2
+        val tenantId = t._3
 
         implicit val blockingExeCtx =
           requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
@@ -593,7 +586,7 @@ object Directives extends Protocols with SprayJsonSupport {
               operationUri,
               input =
                 Some(JsObject("object" -> JsObject("aspect" -> aspectData)))
-            ) & withExecutionContext(requestExeCtx) & pass // switch back to akka dispatcher
+            )
           case Tuple1(Failure(e)) =>
             log.error(
               "Failed to create aspect context data for auth decision. aspect ID: {}. Error: {}",
@@ -627,12 +620,11 @@ object Directives extends Protocols with SprayJsonSupport {
       newAspectOrJsonPatch: Either[AspectDefinition, JsonPatch],
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+    (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
-        val requestExeCtx = t._2
         val log = t._1
-        val requestActorSystem = t._3
-        val tenantId = t._4
+        val requestActorSystem = t._2
+        val tenantId = t._3
 
         implicit val blockingExeCtx =
           requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
@@ -661,7 +653,7 @@ object Directives extends Protocols with SprayJsonSupport {
                   "object" -> JsObject("aspect" -> aspectDataAfterUpdate)
                 )
               )
-            ) & withExecutionContext(requestExeCtx) & pass
+            )
           case Failure(exception: NoRecordFoundException) =>
             newAspectOrJsonPatch match {
               case Left(newAspectData) =>
@@ -673,7 +665,7 @@ object Directives extends Protocols with SprayJsonSupport {
                       "object" -> JsObject("aspect" -> newAspectData.toJson)
                     )
                   )
-                ) & withExecutionContext(requestExeCtx) & pass
+                )
               case Right(_) =>
                 // When aspect Json Patch was passed (i.e. a patch request),
                 // there is no way to create the aspect when it doesn't exist (as we don't know the current data)
@@ -714,17 +706,15 @@ object Directives extends Protocols with SprayJsonSupport {
       webhookId: String
   )(implicit ec: ExecutionContext, session: DBSession): Future[JsObject] = {
     Future {
-      blocking {
-        val hookData = HookPersistence
-          .getById(webhookId, UnconditionalTrueDecision)
-          .map(_.toJson.asJsObject)
-        if (hookData.isEmpty) {
-          throw NoRecordFoundException(webhookId)
-        } else {
-          hookData.get
-        }
+      val hookData = HookPersistence
+        .getById(webhookId, UnconditionalTrueDecision)
+        .map(_.toJson.asJsObject)
+      if (hookData.isEmpty) {
+        throw NoRecordFoundException(webhookId)
+      } else {
+        hookData.get
       }
-    }
+    }(ec)
   }
 
   /**
@@ -744,10 +734,9 @@ object Directives extends Protocols with SprayJsonSupport {
       onRecordNotFound: Option[() => Directive0] = None,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem).tflatMap { t =>
-      val requestExeCtx = t._2
+    (extractLog & extractActorSystem).tflatMap { t =>
       val log = t._1
-      val requestActorSystem = t._3
+      val requestActorSystem = t._2
 
       implicit val blockingExeCtx =
         requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
@@ -760,7 +749,7 @@ object Directives extends Protocols with SprayJsonSupport {
             authApiClient,
             operationUri,
             input = Some(JsObject("object" -> JsObject("webhook" -> hookData)))
-          ) & withExecutionContext(requestExeCtx) & pass // switch back to akka dispatcher
+          )
         case Tuple1(Failure(e: NoRecordFoundException)) =>
           if (onRecordNotFound.isDefined) {
             onRecordNotFound.get()
@@ -805,10 +794,9 @@ object Directives extends Protocols with SprayJsonSupport {
       newWebhook: WebHook,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem).tflatMap { t =>
-      val requestExeCtx = t._2
+    (extractLog & extractActorSystem).tflatMap { t =>
       val log = t._1
-      val requestActorSystem = t._3
+      val requestActorSystem = t._2
 
       implicit val blockingExeCtx =
         requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
@@ -832,7 +820,7 @@ object Directives extends Protocols with SprayJsonSupport {
                 )
               )
             )
-          ) & withExecutionContext(requestExeCtx) & pass
+          )
         case Failure(e: NoRecordFoundException) =>
           requirePermission(
             authApiClient,
@@ -844,7 +832,7 @@ object Directives extends Protocols with SprayJsonSupport {
                 )
               )
             )
-          ) & withExecutionContext(requestExeCtx) & pass
+          )
         case Failure(e: Throwable) =>
           log.error(
             "Failed to create webhook context data for auth decision. webhook ID: {}. Error: {}",
