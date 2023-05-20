@@ -1,21 +1,34 @@
 package au.csiro.data61.magda.client
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.util.Try
-import akka.actor.ActorSystem
+import scala.concurrent.{Future, Promise}
+import akka.actor.{ActorSystem, Scheduler}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.HttpResponse
 import akka.stream.Materializer
-import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.util.Http.getPort
+
 import java.net.URL
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
+import scala.concurrent.duration.MILLISECONDS
 import akka.http.scaladsl.model.HttpHeader
+import akka.pattern.after
+import com.typesafe.config.ConfigFactory
+import au.csiro.data61.magda.AppConfig
+
+import scala.util.{Failure, Success}
+import akka.stream.{OverflowStrategy, QueueOfferResult}
+import akka.stream.scaladsl._
+
+import scala.concurrent.duration.FiniteDuration
+import scala.util.control.NonFatal
+import scala.util.Random
 
 trait HttpFetcher {
   def get(path: String, headers: Seq[HttpHeader] = Seq()): Future[HttpResponse]
@@ -43,19 +56,55 @@ trait MockHttpFetcher extends HttpFetcher {
   def callCount: Unit
 }
 
-class HttpFetcherImpl(baseUrl: URL)(
+class HttpFetcherImpl(
+    baseUrl: URL,
+    requestProcessingQueue: SourceQueueWithComplete[
+      (HttpRequest, Promise[HttpResponse])
+    ]
+)(
     implicit val system: ActorSystem,
     val materializer: Materializer,
     val ec: ExecutionContext
 ) extends HttpFetcher {
-  lazy val connectionFlow
-      : Flow[(HttpRequest, Int), (Try[HttpResponse], Int), _] = {
-    val host = baseUrl.getHost
-    val port = getPort(baseUrl)
 
-    baseUrl.getProtocol match {
-      case "http"  => Http().cachedHostConnectionPool[Int](host, port)
-      case "https" => Http().cachedHostConnectionPoolHttps[Int](host, port)
+  private val config = ConfigFactory.parseResources("common.conf").resolve()
+  private val maxRetries: Int =
+    config.getInt("akka.http.host-connection-pool.max-retries")
+
+  private val retryBackoff = Duration.fromNanos(
+    config
+      .getDuration(
+        "akka.http.host-connection-pool.base-connection-backoff",
+        TimeUnit.NANOSECONDS
+      )
+  )
+
+  private val maxRetryBackoff = Duration.fromNanos(
+    config
+      .getDuration(
+        "akka.http.host-connection-pool.max-connection-backoff",
+        TimeUnit.NANOSECONDS
+      )
+  )
+
+  private def queueRequest(request: HttpRequest): Future[HttpResponse] = {
+    val responsePromise = Promise[HttpResponse]()
+    requestProcessingQueue.offer(request -> responsePromise).flatMap {
+      case QueueOfferResult.Enqueued => responsePromise.future
+      case QueueOfferResult.Dropped =>
+        Future
+          .failed(
+            new RuntimeException(
+              s"HTTP request queue to ${baseUrl.toString} overflowed. Try again later."
+            )
+          )
+      case QueueOfferResult.Failure(ex) => Future.failed(ex)
+      case QueueOfferResult.QueueClosed =>
+        Future.failed(
+          new RuntimeException(
+            s"HTTP request queue to ${baseUrl.toString} was closed (pool shut down) while running the request. Try again later."
+          )
+        )
     }
   }
 
@@ -68,8 +117,47 @@ class HttpFetcherImpl(baseUrl: URL)(
     val request = RequestBuilding
       .Get(url)
       .withHeaders(scala.collection.immutable.Seq.concat(headers))
-    Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
-      case (response, _) => response.get
+    queueRequest(request)
+    // according to [here](https://doc.akka.io/docs/akka-http/current/client-side/host-level.html#retrying-a-request)
+    // only POST, PATCH and CONNECT will not be retried. Thus, PUT will be auto retried.
+  }
+
+  def retryFailedConnection[T](
+      attempt: () => Future[T],
+      attempts: Int,
+      delay: FiniteDuration
+  )(
+      implicit ec: ExecutionContext,
+      scheduler: Scheduler
+  ): Future[T] = {
+    try {
+      if (attempts > 0) {
+        attempt().recoverWith {
+          case error: Throwable
+              // We have to do this as UnexpectedConnectionClosureException is a private class
+              // https://github.com/akka/akka-http/issues/768
+              if error.getMessage.contains(
+                "The http server closed the connection unexpectedly"
+              ) =>
+            val currentDelay = delay + Duration(
+              (Random.nextFloat() * retryBackoff.toMillis).round,
+              MILLISECONDS
+            )
+
+            val actualDelay = if (maxRetryBackoff.lt(currentDelay)) {
+              maxRetryBackoff
+            } else {
+              currentDelay
+            }
+            after(delay, scheduler) {
+              retryFailedConnection(attempt, attempts - 1, actualDelay)
+            }
+        }
+      } else {
+        attempt()
+      }
+    } catch {
+      case NonFatal(error) => Future.failed(error)
     }
   }
 
@@ -78,6 +166,25 @@ class HttpFetcherImpl(baseUrl: URL)(
       payload: T,
       headers: Seq[HttpHeader] = Seq(),
       autoRetryConnection: Boolean = false
+  )(
+      implicit m: ToEntityMarshaller[T]
+  ): Future[HttpResponse] = {
+    val attempt = () => doPost(path, payload, headers)
+
+    if (autoRetryConnection) {
+      retryFailedConnection(attempt, maxRetries, retryBackoff)(
+        ec,
+        system.scheduler
+      )
+    } else {
+      attempt()
+    }
+  }
+
+  def doPost[T](
+      path: String,
+      payload: T,
+      headers: Seq[HttpHeader] = Seq()
   )(
       implicit m: ToEntityMarshaller[T]
   ): Future[HttpResponse] = {
@@ -91,33 +198,7 @@ class HttpFetcherImpl(baseUrl: URL)(
     val request = RequestBuilding
       .Post(url, payload)
       .withHeaders(scala.collection.immutable.Seq.concat(headers))
-    val result =
-      Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
-        case (response, _) => response.get
-      }
-
-    if (!autoRetryConnection) {
-      result
-    } else {
-      // Retry the request for racing condition
-      // https://github.com/magda-io/magda/issues/3251
-      result.recoverWith {
-        case error: Throwable
-            // We have to do this as UnexpectedConnectionClosureException is a private class
-            // https://github.com/akka/akka-http/issues/768
-            if error.getMessage.contains(
-              "The http server closed the connection unexpectedly"
-            ) =>
-          Source
-            .single((request, 0))
-            .via(connectionFlow)
-            .runWith(Sink.head)
-            .map {
-              case (response, _) => response.get
-            }
-      }
-    }
-
+    queueRequest(request)
   }
 
   def put[T](
@@ -125,6 +206,25 @@ class HttpFetcherImpl(baseUrl: URL)(
       payload: T,
       headers: Seq[HttpHeader] = Seq(),
       autoRetryConnection: Boolean = false
+  )(
+      implicit m: ToEntityMarshaller[T]
+  ): Future[HttpResponse] = {
+    val attempt = () => doPut(path, payload, headers)
+
+    if (autoRetryConnection) {
+      retryFailedConnection(attempt, maxRetries, retryBackoff)(
+        ec,
+        system.scheduler
+      )
+    } else {
+      attempt()
+    }
+  }
+
+  def doPut[T](
+      path: String,
+      payload: T,
+      headers: Seq[HttpHeader] = Seq()
   )(
       implicit m: ToEntityMarshaller[T]
   ): Future[HttpResponse] = {
@@ -138,32 +238,7 @@ class HttpFetcherImpl(baseUrl: URL)(
     val request = RequestBuilding
       .Put(url, payload)
       .withHeaders(scala.collection.immutable.Seq.concat(headers))
-    val result =
-      Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
-        case (response, _) => response.get
-      }
-
-    if (!autoRetryConnection) {
-      result
-    } else {
-      // Retry the request for racing condition
-      // https://github.com/magda-io/magda/issues/3251
-      result.recoverWith {
-        case error: Throwable
-            // We have to do this as UnexpectedConnectionClosureException is a private class
-            // https://github.com/akka/akka-http/issues/768
-            if error.getMessage.contains(
-              "The http server closed the connection unexpectedly"
-            ) =>
-          Source
-            .single((request, 0))
-            .via(connectionFlow)
-            .runWith(Sink.head)
-            .map {
-              case (response, _) => response.get
-            }
-      }
-    }
+    queueRequest(request)
   }
 
   def delete[T](path: String, payload: T, headers: Seq[HttpHeader] = Seq())(
@@ -179,9 +254,7 @@ class HttpFetcherImpl(baseUrl: URL)(
     val request = RequestBuilding
       .Delete(url, payload)
       .withHeaders(scala.collection.immutable.Seq.concat(headers))
-    Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
-      case (response, _) => response.get
-    }
+    queueRequest(request)
   }
 
   def head[T](path: String, payload: T, headers: Seq[HttpHeader] = Seq())(
@@ -197,17 +270,61 @@ class HttpFetcherImpl(baseUrl: URL)(
     val request = RequestBuilding
       .Head(url, payload)
       .withHeaders(scala.collection.immutable.Seq.concat(headers))
-    Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
-      case (response, _) => response.get
-    }
+    queueRequest(request)
   }
 }
 
 object HttpFetcher {
 
+  private val queueSize: Int =
+    AppConfig.conf().getInt("akka.http.host-connection-pool.max-open-requests")
+
+  /**
+    * use the string of `host|port|protocol` as key to store request processing queue of each host
+    */
+  private var queueMap = Map.empty[String, SourceQueueWithComplete[
+    (HttpRequest, Promise[HttpResponse])
+  ]]
+
   def apply(baseUrl: URL)(
       implicit system: ActorSystem,
       materializer: Materializer,
       ec: ExecutionContext
-  ) = new HttpFetcherImpl(baseUrl)
+  ) = {
+    val host = baseUrl.getHost
+    val port = getPort(baseUrl)
+    val protocol = baseUrl.getProtocol
+
+    val hostQueueKey = s"${host}|${port}|${protocol}"
+
+    val requestProcessingQueue: SourceQueueWithComplete[
+      (HttpRequest, Promise[HttpResponse])
+    ] = queueMap.get(hostQueueKey) match {
+      case Some(q) => q
+      case None =>
+        val poolClientFlow = protocol match {
+          case "http" =>
+            Http().cachedHostConnectionPool[Promise[HttpResponse]](host, port)
+          case "https" =>
+            Http()
+              .cachedHostConnectionPoolHttps[Promise[HttpResponse]](host, port)
+        }
+        val queue = Source
+          .queue[(HttpRequest, Promise[HttpResponse])](
+            queueSize,
+            // drop oldest request
+            OverflowStrategy.dropHead
+          )
+          .via(poolClientFlow)
+          .to(Sink.foreach({
+            case ((Success(resp), p)) => p.success(resp)
+            case ((Failure(e), p))    => p.failure(e)
+          }))
+          .run()
+        queueMap += (hostQueueKey -> queue)
+        queue
+    }
+
+    new HttpFetcherImpl(baseUrl, requestProcessingQueue)
+  }
 }
