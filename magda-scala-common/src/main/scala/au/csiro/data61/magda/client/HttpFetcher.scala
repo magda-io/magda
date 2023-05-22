@@ -67,7 +67,7 @@ class HttpFetcherImpl(
     val ec: ExecutionContext
 ) extends HttpFetcher {
 
-  private val config = ConfigFactory.parseResources("common.conf").resolve()
+  private val config = AppConfig.conf()
   private val maxRetries: Int =
     config.getInt("akka.http.host-connection-pool.max-retries")
 
