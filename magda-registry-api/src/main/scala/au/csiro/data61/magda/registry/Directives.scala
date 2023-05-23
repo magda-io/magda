@@ -102,7 +102,7 @@ object Directives extends Protocols with SprayJsonSupport {
         }
 
       JsObject(recordJsFields)
-    }(ec)
+    }
   }
 
   /**
@@ -519,36 +519,35 @@ object Directives extends Protocols with SprayJsonSupport {
       tenantId: TenantId
   )(implicit ec: ExecutionContext, session: DBSession): Future[JsObject] = {
     Future {
-      blocking {
-        var aspectJsFields: Map[String, JsValue] = Map()
-        sql"SELECT * FROM aspects WHERE aspectid=${aspectId} ${tenantId match {
-          case SpecifiedTenantId(tenantId) => sqls" AND tenantid=${tenantId}"
-          case _                           => SQLSyntax.empty
-        }} LIMIT 1"
-          .foreach { rs =>
-            // JDBC treat column name case insensitive
-            aspectJsFields += ("id" -> JsString(rs.string("aspectId")))
-            aspectJsFields += ("name" -> JsString(rs.string("name")))
-            aspectJsFields += ("lastUpdate" -> JsNumber(
-              rs.bigInt("lastupdate")
-            ))
+      var aspectJsFields: Map[String, JsValue] = Map()
+      sql"SELECT * FROM aspects WHERE aspectid=${aspectId} ${tenantId match {
+        case SpecifiedTenantId(tenantId) => sqls" AND tenantid=${tenantId}"
+        case _                           => SQLSyntax.empty
+      }} LIMIT 1"
+        .foreach { rs =>
+          // JDBC treat column name case insensitive
+          aspectJsFields += ("id" -> JsString(rs.string("aspectId")))
+          aspectJsFields += ("name" -> JsString(rs.string("name")))
+          aspectJsFields += ("lastUpdate" -> JsNumber(
+            rs.bigInt("lastupdate")
+          ))
 
-            rs.bigIntOpt("tenantId")
-              .foreach(id => aspectJsFields += ("tenantId" -> JsNumber(id)))
+          rs.bigIntOpt("tenantId")
+            .foreach(id => aspectJsFields += ("tenantId" -> JsNumber(id)))
 
-            val jsonSchema = Try {
-              JsonParser(rs.string("jsonschema"))
-            }.getOrElse(JsNull)
+          val jsonSchema = Try {
+            JsonParser(rs.string("jsonschema"))
+          }.getOrElse(JsNull)
 
-            aspectJsFields += ("jsonSchema" -> jsonSchema)
-          }
-
-        if (aspectJsFields.isEmpty) {
-          throw NoRecordFoundException(aspectId)
+          aspectJsFields += ("jsonSchema" -> jsonSchema)
         }
 
-        JsObject(aspectJsFields)
+      if (aspectJsFields.isEmpty) {
+        throw NoRecordFoundException(aspectId)
       }
+
+      JsObject(aspectJsFields)
+
     }
   }
 
@@ -714,7 +713,7 @@ object Directives extends Protocols with SprayJsonSupport {
       } else {
         hookData.get
       }
-    }(ec)
+    }
   }
 
   /**
