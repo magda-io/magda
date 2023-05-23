@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.2.5
+
+- #3463: Fixed Registry API performance issues related to host connection pool & blocking DB IO
+
 ## v2.2.4
 
 - #3458: fixed Map Preview freeze when process (ill-formatted) CSIRO Marlin GeoServer WMS URLs
