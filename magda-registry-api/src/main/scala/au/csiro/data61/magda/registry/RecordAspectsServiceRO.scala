@@ -14,6 +14,8 @@ import javax.ws.rs.Path
 import scalikejdbc.DB
 import au.csiro.data61.magda.model.Auth.{UnconditionalTrueDecision}
 import au.csiro.data61.magda.registry.Directives.requireRecordPermission
+import au.csiro.data61.magda.directives.RouteDirectives.completeBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
 
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(
@@ -106,22 +108,24 @@ class RecordAspectsServiceRO(
             "object/record/read",
             recordId
           ) {
-            DB readOnly { implicit session =>
-              recordPersistence
-                .getRecordAspectById(
-                  tenantId,
-                  UnconditionalTrueDecision,
-                  recordId,
-                  aspectId
-                ) match {
-                case Some(recordAspect) => complete(recordAspect)
-                case _ =>
-                  complete(
-                    StatusCodes.NotFound,
-                    ApiError(
-                      "No record or aspect exists with the given IDs."
+            withBlockingTask {
+              DB readOnly { implicit session =>
+                recordPersistence
+                  .getRecordAspectById(
+                    tenantId,
+                    UnconditionalTrueDecision,
+                    recordId,
+                    aspectId
+                  ) match {
+                  case Some(recordAspect) => complete(recordAspect)
+                  case _ =>
+                    complete(
+                      StatusCodes.NotFound,
+                      ApiError(
+                        "No record or aspect exists with the given IDs."
+                      )
                     )
-                  )
+                }
               }
             }
           }
@@ -244,7 +248,7 @@ class RecordAspectsServiceRO(
             "object/record/read",
             recordId
           ) {
-            complete(DB readOnly { implicit session =>
+            completeBlockingTask(DB readOnly { implicit session =>
               recordPersistence
                 .getRecordAspects(
                   tenantId,
@@ -337,7 +341,7 @@ class RecordAspectsServiceRO(
             "object/record/read",
             recordId
           ) {
-            complete(DB readOnly { implicit session =>
+            completeBlockingTask(DB readOnly { implicit session =>
               CountResponse(
                 recordPersistence
                   .getRecordAspectsCount(

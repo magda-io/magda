@@ -36,6 +36,8 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
+import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
 class RecordsService(
@@ -139,23 +141,26 @@ class RecordsService(
           )
         ) {
           requiresSpecifiedTenantId { tenantId =>
-            val theResult = DB localTx { implicit session =>
-              recordPersistence.deleteRecord(tenantId, recordId, userId) match {
-                case Success(result) =>
-                  complete(
-                    StatusCodes.OK,
-                    List(RawHeader("x-magda-event-id", result._2.toString)),
-                    DeleteResult(result._1)
-                  )
-                case Failure(exception) =>
-                  complete(
-                    StatusCodes.BadRequest,
-                    ApiError(exception.getMessage)
-                  )
+            withBlockingTask {
+              val theResult = DB localTx { implicit session =>
+                recordPersistence
+                  .deleteRecord(tenantId, recordId, userId) match {
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(RawHeader("x-magda-event-id", result._2.toString)),
+                      DeleteResult(result._1)
+                    )
+                  case Failure(exception) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(exception.getMessage)
+                    )
+                }
               }
+              webHookActor ! WebHookActor.Process()
+              theResult
             }
-            webHookActor ! WebHookActor.Process()
-            theResult
           }
         }
       }
@@ -251,50 +256,56 @@ class RecordsService(
           requiresSpecifiedTenantId { tenantId =>
             parameters('sourceTagToPreserve, 'sourceId) {
               (sourceTagToPreserve, sourceId) =>
-                val deleteFuture = Future {
-                  // --- DB session needs to be created within the `Future`
-                  // --- as the `Future` will keep running after timeout and require active DB session
-                  DB localTx { implicit session =>
-                    recordPersistence.trimRecordsBySource(
-                      tenantId,
-                      sourceTagToPreserve,
-                      sourceId,
-                      userId,
-                      Some(logger)
-                    )
-                  }
-                } map { result =>
-                  webHookActor ! WebHookActor.Process()
-                  result
-                }
-
-                val deleteResult = try {
-                  Await.result(
-                    deleteFuture,
-                    config
-                      .getLong("trimBySourceTagTimeoutThreshold") milliseconds
+                extractActorSystem { routeActor =>
+                  implicit val blockingExeCtx = routeActor.dispatchers.lookup(
+                    "long-running-db-operation-dispatcher"
                   )
-                } catch {
-                  case e: Throwable => Failure(e)
-                }
-
-                deleteResult match {
-                  case Success(result) => complete(MultipleDeleteResult(result))
-                  case Failure(_: TimeoutException) =>
-                    complete(StatusCodes.Accepted)
-                  case Failure(exception) =>
-                    logger.error(
-                      exception,
-                      "An error occurred while trimming with sourceTagToPreserve $1 sourceId $2",
-                      sourceTagToPreserve,
-                      sourceId
-                    )
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(
-                        "An error occurred while processing your request."
+                  val deleteFuture = Future {
+                    // --- DB session needs to be created within the `Future`
+                    // --- as the `Future` will keep running after timeout and require active DB session
+                    DB localTx { implicit session =>
+                      recordPersistence.trimRecordsBySource(
+                        tenantId,
+                        sourceTagToPreserve,
+                        sourceId,
+                        userId,
+                        Some(logger)
                       )
+                    }
+                  } map { result =>
+                    webHookActor ! WebHookActor.Process()
+                    result
+                  }
+
+                  val deleteResult = try {
+                    Await.result(
+                      deleteFuture,
+                      config
+                        .getLong("trimBySourceTagTimeoutThreshold") milliseconds
                     )
+                  } catch {
+                    case e: Throwable => Failure(e)
+                  }
+
+                  deleteResult match {
+                    case Success(result) =>
+                      complete(MultipleDeleteResult(result))
+                    case Failure(_: TimeoutException) =>
+                      complete(StatusCodes.Accepted)
+                    case Failure(exception) =>
+                      logger.error(
+                        exception,
+                        "An error occurred while trimming with sourceTagToPreserve $1 sourceId $2",
+                        sourceTagToPreserve,
+                        sourceId
+                      )
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(
+                          "An error occurred while processing your request."
+                        )
+                      )
+                  }
                 }
             }
           }
@@ -400,46 +411,50 @@ class RecordsService(
                 Left(recordIn),
                 merge.getOrElse(false)
               ) {
-                val result = DB localTx { implicit session =>
-                  recordPersistence.putRecordById(
-                    tenantId,
-                    id,
-                    recordIn,
-                    userId,
-                    forceSkipAspectValidation = false,
-                    merge.getOrElse(false)
-                  ) match {
-                    case Success(result) =>
-                      complete(
-                        StatusCodes.OK,
-                        List(RawHeader("x-magda-event-id", result._2.toString)),
-                        result._1
-                      )
-                    // If the exception is from validation then reveal the message to the caller,
-                    // otherwise log it and return something generic.
-                    case Failure(exception: ValidationException) =>
-                      complete(
-                        StatusCodes.BadRequest,
-                        ApiError(
-                          "Encountered an error - " + exception.getMessage
+                withBlockingTask {
+                  val result = DB localTx { implicit session =>
+                    recordPersistence.putRecordById(
+                      tenantId,
+                      id,
+                      recordIn,
+                      userId,
+                      forceSkipAspectValidation = false,
+                      merge.getOrElse(false)
+                    ) match {
+                      case Success(result) =>
+                        complete(
+                          StatusCodes.OK,
+                          List(
+                            RawHeader("x-magda-event-id", result._2.toString)
+                          ),
+                          result._1
                         )
-                      )
-                    case Failure(exception) =>
-                      logger.error(
-                        exception,
-                        "Encountered an exception when putting a record"
-                      )
-                      complete(
-                        StatusCodes.InternalServerError,
-                        ApiError("Encountered an error")
-                      )
+                      // If the exception is from validation then reveal the message to the caller,
+                      // otherwise log it and return something generic.
+                      case Failure(exception: ValidationException) =>
+                        complete(
+                          StatusCodes.BadRequest,
+                          ApiError(
+                            "Encountered an error - " + exception.getMessage
+                          )
+                        )
+                      case Failure(exception) =>
+                        logger.error(
+                          exception,
+                          "Encountered an exception when putting a record"
+                        )
+                        complete(
+                          StatusCodes.InternalServerError,
+                          ApiError("Encountered an error")
+                        )
+                    }
                   }
+                  webHookActor ! WebHookActor.Process(
+                    ignoreWaitingForResponse = false,
+                    Some(recordIn.aspects.keys.toList)
+                  )
+                  result
                 }
-                webHookActor ! WebHookActor.Process(
-                  ignoreWaitingForResponse = false,
-                  Some(recordIn.aspects.keys.toList)
-                )
-                result
               }
             }
           }
@@ -550,35 +565,37 @@ class RecordsService(
               id,
               Right(recordPatch)
             ) {
-              val theResult = DB localTx { implicit session =>
-                recordPersistence.patchRecordById(
-                  tenantId,
-                  id,
-                  recordPatch,
-                  userId
-                ) match {
-                  case Success(result) =>
-                    complete(
-                      StatusCodes.OK,
-                      List(RawHeader("x-magda-event-id", result._2.toString)),
-                      result._1
-                    )
-                  case Failure(exception) =>
-                    logger.error(
-                      exception,
-                      "Exception encountered while PATCHing record {} with {}",
-                      id,
-                      recordPatch.toJson.prettyPrint
-                    )
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(exception.getMessage)
-                    )
+              withBlockingTask {
+                val theResult = DB localTx { implicit session =>
+                  recordPersistence.patchRecordById(
+                    tenantId,
+                    id,
+                    recordPatch,
+                    userId
+                  ) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        List(RawHeader("x-magda-event-id", result._2.toString)),
+                        result._1
+                      )
+                    case Failure(exception) =>
+                      logger.error(
+                        exception,
+                        "Exception encountered while PATCHing record {} with {}",
+                        id,
+                        recordPatch.toJson.prettyPrint
+                      )
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(exception.getMessage)
+                      )
+                  }
                 }
+                webHookActor ! WebHookActor
+                  .Process()
+                theResult
               }
-              webHookActor ! WebHookActor
-                .Process()
-              theResult
             }
           }
         }
@@ -676,34 +693,36 @@ class RecordsService(
             authClient,
             AuthDecisionReqConfig("object/record/update")
           ) { authDecision =>
-            val result = DB localTx { implicit session =>
-              recordPersistence.patchRecords(
-                tenantId,
-                authDecision,
-                requestData.recordIds,
-                requestData.jsonPath,
-                userId
-              ) match {
-                case Success(result) =>
-                  complete(
-                    StatusCodes.OK,
-                    result
-                  )
-                case Failure(ServerError(msg, statusCode)) =>
-                  complete(
-                    statusCode,
-                    ApiError(msg)
-                  )
-                case Failure(e) =>
-                  complete(
-                    StatusCodes.InternalServerError,
-                    ApiError(e.getMessage)
-                  )
+            withBlockingTask {
+              val result = DB localTx { implicit session =>
+                recordPersistence.patchRecords(
+                  tenantId,
+                  authDecision,
+                  requestData.recordIds,
+                  requestData.jsonPath,
+                  userId
+                ) match {
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      result
+                    )
+                  case Failure(ServerError(msg, statusCode)) =>
+                    complete(
+                      statusCode,
+                      ApiError(msg)
+                    )
+                  case Failure(e) =>
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError(e.getMessage)
+                    )
+                }
               }
+              webHookActor ! WebHookActor
+                .Process()
+              result
             }
-            webHookActor ! WebHookActor
-              .Process()
-            result
           }
         }
       }
@@ -800,37 +819,39 @@ class RecordsService(
                 authClient,
                 AuthDecisionReqConfig("object/record/update")
               ) { authDecision =>
-                val result = DB localTx { implicit session =>
-                  recordPersistence.putRecordsAspectById(
-                    tenantId,
-                    authDecision,
-                    requestData.recordIds,
-                    aspectId,
-                    requestData.data,
-                    userId,
-                    false,
-                    merge.getOrElse(false)
-                  ) match {
-                    case Success(result) =>
-                      complete(
-                        StatusCodes.OK,
-                        result
-                      )
-                    case Failure(ServerError(msg, statusCode)) =>
-                      complete(
-                        statusCode,
-                        ApiError(msg)
-                      )
-                    case Failure(e) =>
-                      complete(
-                        StatusCodes.InternalServerError,
-                        ApiError(e.getMessage)
-                      )
+                withBlockingTask {
+                  val result = DB localTx { implicit session =>
+                    recordPersistence.putRecordsAspectById(
+                      tenantId,
+                      authDecision,
+                      requestData.recordIds,
+                      aspectId,
+                      requestData.data,
+                      userId,
+                      false,
+                      merge.getOrElse(false)
+                    ) match {
+                      case Success(result) =>
+                        complete(
+                          StatusCodes.OK,
+                          result
+                        )
+                      case Failure(ServerError(msg, statusCode)) =>
+                        complete(
+                          statusCode,
+                          ApiError(msg)
+                        )
+                      case Failure(e) =>
+                        complete(
+                          StatusCodes.InternalServerError,
+                          ApiError(e.getMessage)
+                        )
+                    }
                   }
+                  webHookActor ! WebHookActor
+                    .Process()
+                  result
                 }
-                webHookActor ! WebHookActor
-                  .Process()
-                result
               }
             }
           }
@@ -920,36 +941,38 @@ class RecordsService(
               authClient,
               AuthDecisionReqConfig("object/record/update")
             ) { authDecision =>
-              val result = DB localTx { implicit session =>
-                recordPersistence.deleteRecordsAspectArrayItems(
-                  tenantId,
-                  authDecision,
-                  requestData.recordIds,
-                  aspectId,
-                  requestData.jsonPath,
-                  requestData.items,
-                  userId
-                ) match {
-                  case Success(result) =>
-                    complete(
-                      StatusCodes.OK,
-                      result
-                    )
-                  case Failure(ServerError(msg, statusCode)) =>
-                    complete(
-                      statusCode,
-                      ApiError(msg)
-                    )
-                  case Failure(e) =>
-                    complete(
-                      StatusCodes.InternalServerError,
-                      ApiError(e.getMessage)
-                    )
+              withBlockingTask {
+                val result = DB localTx { implicit session =>
+                  recordPersistence.deleteRecordsAspectArrayItems(
+                    tenantId,
+                    authDecision,
+                    requestData.recordIds,
+                    aspectId,
+                    requestData.jsonPath,
+                    requestData.items,
+                    userId
+                  ) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        result
+                      )
+                    case Failure(ServerError(msg, statusCode)) =>
+                      complete(
+                        statusCode,
+                        ApiError(msg)
+                      )
+                    case Failure(e) =>
+                      complete(
+                        StatusCodes.InternalServerError,
+                        ApiError(e.getMessage)
+                      )
+                  }
                 }
+                webHookActor ! WebHookActor
+                  .Process()
+                result
               }
-              webHookActor ! WebHookActor
-                .Process()
-              result
             }
           }
         }
@@ -1045,29 +1068,31 @@ class RecordsService(
                 )
               )
             ) {
-              val result = DB localTx { implicit session =>
-                recordPersistence
-                  .createRecord(tenantId, record, userId) match {
-                  case Success(theResult) =>
-                    complete(
-                      StatusCodes.OK,
-                      List(
-                        RawHeader("x-magda-event-id", theResult._2.toString)
-                      ),
-                      theResult._1
-                    )
-                  case Failure(exception) =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(exception.getMessage)
-                    )
+              withBlockingTask {
+                val result = DB localTx { implicit session =>
+                  recordPersistence
+                    .createRecord(tenantId, record, userId) match {
+                    case Success(theResult) =>
+                      complete(
+                        StatusCodes.OK,
+                        List(
+                          RawHeader("x-magda-event-id", theResult._2.toString)
+                        ),
+                        theResult._1
+                      )
+                    case Failure(exception) =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(exception.getMessage)
+                      )
+                  }
                 }
+                webHookActor ! WebHookActor.Process(
+                  ignoreWaitingForResponse = false,
+                  Some(record.aspects.keys.toList)
+                )
+                result
               }
-              webHookActor ! WebHookActor.Process(
-                ignoreWaitingForResponse = false,
-                Some(record.aspects.keys.toList)
-              )
-              result
             }
           }
         }

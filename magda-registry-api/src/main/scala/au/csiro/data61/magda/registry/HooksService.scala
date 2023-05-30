@@ -36,6 +36,9 @@ import spray.json.JsObject
 import scala.concurrent.duration._
 import scala.concurrent.Await
 
+import au.csiro.data61.magda.directives.RouteDirectives.completeBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+
 @Path("/hooks")
 @io.swagger.annotations.Api(value = "web hooks", produces = "application/json")
 class HooksService(
@@ -113,7 +116,7 @@ class HooksService(
         authApiClient,
         AuthDecisionReqConfig("object/webhook/read")
       ) { authDecision =>
-        complete {
+        completeBlockingTask {
           val hooks = DB readOnly { implicit session =>
             HookPersistence.getAll(authDecision)
           }
@@ -366,23 +369,25 @@ class HooksService(
               )
             )
           ) {
-            val result = DB localTx { implicit session =>
-              HookPersistence.create(hook, Some(userId)) match {
-                case Success(theResult) => complete(theResult)
-                case Failure(e: PSQLException) if e.getSQLState == "23505" =>
-                  complete(
-                    StatusCodes.BadRequest,
-                    ApiError(s"Duplicated webhook id supplied: ${hook.id}")
-                  )
-                case Failure(exception) =>
-                  complete(
-                    StatusCodes.BadRequest,
-                    ApiError(exception.getMessage)
-                  )
+            withBlockingTask {
+              val result = DB localTx { implicit session =>
+                HookPersistence.create(hook, Some(userId)) match {
+                  case Success(theResult) => complete(theResult)
+                  case Failure(e: PSQLException) if e.getSQLState == "23505" =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(s"Duplicated webhook id supplied: ${hook.id}")
+                    )
+                  case Failure(exception) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(exception.getMessage)
+                    )
+                }
               }
+              webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess()
+              result
             }
-            webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess()
-            result
           }
         }
       }
@@ -459,31 +464,33 @@ class HooksService(
         authApiClient,
         AuthDecisionReqConfig("object/webhook/read")
       ) { authDecision =>
-        DB readOnly { implicit session =>
-          HookPersistence.getById(id, authDecision)
-        } match {
-          case Some(hook) =>
-            implicit val timeout = Timeout(30 seconds)
+        withBlockingTask {
+          DB readOnly { implicit session =>
+            HookPersistence.getById(id, authDecision)
+          } match {
+            case Some(hook) =>
+              implicit val timeout = Timeout(30 seconds)
 
-            val status = Await
-              .result(
-                webHookActor ? WebHookActor.GetStatus(hook.id.get),
-                30 seconds
+              val status = Await
+                .result(
+                  webHookActor ? WebHookActor.GetStatus(hook.id.get),
+                  30 seconds
+                )
+                .asInstanceOf[WebHookActor.Status]
+
+              complete(
+                hook.copy(
+                  isRunning = Some(!status.isProcessing.isEmpty),
+                  isProcessing = Some(status.isProcessing.getOrElse(false))
+                )
               )
-              .asInstanceOf[WebHookActor.Status]
 
-            complete(
-              hook.copy(
-                isRunning = Some(!status.isProcessing.isEmpty),
-                isProcessing = Some(status.isProcessing.getOrElse(false))
+            case None =>
+              complete(
+                StatusCodes.NotFound,
+                ApiError("No web hook exists with that ID.")
               )
-            )
-
-          case None =>
-            complete(
-              StatusCodes.NotFound,
-              ApiError("No web hook exists with that ID.")
-            )
+          }
         }
       }
     }
@@ -631,34 +638,36 @@ class HooksService(
             id,
             hook
           ) {
-            val result = DB localTx { implicit session =>
-              HookPersistence.putById(id, hook, Some(userId)) match {
-                case Success(theResult) => complete(theResult)
-                case Failure(exception) =>
-                  complete(
-                    StatusCodes.BadRequest,
-                    ApiError(exception.getMessage)
-                  )
+            withBlockingTask {
+              val result = DB localTx { implicit session =>
+                HookPersistence.putById(id, hook, Some(userId)) match {
+                  case Success(theResult) => complete(theResult)
+                  case Failure(exception) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(exception.getMessage)
+                    )
+                }
               }
-            }
 
-            // The current restart logic for a subscriber has two steps:
-            // 1) It will first update its web hook in the registry by making a PUT request
-            //    to the registry, which is handled by putById function (this function) of this class.
-            //    By sending message WebHookActor.InvalidateWebhookCache to the WebHookActor, it will
-            //    not trigger any event processing.
-            // 2) The subscriber will then make a POST request to the endpoint hooks/{hookid}/ack,
-            //    which will be handled by the ack function of this class. However, the act function
-            //    will send message WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id))
-            //    to the WebHookActor, which may trigger event processing.
-            //
-            // TODO: If the following message WebHookActor.InvalidateWebhookCache is replaced by
-            // WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id)), a subscriber
-            // restart logic can be simplified: The above step 2) can be removed.
-            // However, if replacing the message without changing a subscriber's restart logic, it
-            // may trigger duplicate event processing.
-            webHookActor ! WebHookActor.InvalidateWebhookCache
-            result
+              // The current restart logic for a subscriber has two steps:
+              // 1) It will first update its web hook in the registry by making a PUT request
+              //    to the registry, which is handled by putById function (this function) of this class.
+              //    By sending message WebHookActor.InvalidateWebhookCache to the WebHookActor, it will
+              //    not trigger any event processing.
+              // 2) The subscriber will then make a POST request to the endpoint hooks/{hookid}/ack,
+              //    which will be handled by the ack function of this class. However, the act function
+              //    will send message WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id))
+              //    to the WebHookActor, which may trigger event processing.
+              //
+              // TODO: If the following message WebHookActor.InvalidateWebhookCache is replaced by
+              // WebHookActor.InvalidateWebHookCacheThenProcess(webHookId = Some(id)), a subscriber
+              // restart logic can be simplified: The above step 2) can be removed.
+              // However, if replacing the message without changing a subscriber's restart logic, it
+              // may trigger duplicate event processing.
+              webHookActor ! WebHookActor.InvalidateWebhookCache
+              result
+            }
           }
         }
       }
@@ -730,16 +739,18 @@ class HooksService(
           ) & pass
         })
       ) {
-        val result = DB localTx { implicit session =>
-          HookPersistence.delete(hookId) match {
-            case Success(result) =>
-              complete(DeleteResult(result))
-            case Failure(exception) =>
-              complete(StatusCodes.BadRequest, ApiError(exception.getMessage))
+        withBlockingTask {
+          val result = DB localTx { implicit session =>
+            HookPersistence.delete(hookId) match {
+              case Success(result) =>
+                complete(DeleteResult(result))
+              case Failure(exception) =>
+                complete(StatusCodes.BadRequest, ApiError(exception.getMessage))
+            }
           }
+          webHookActor ! WebHookActor.InvalidateWebhookCache
+          result
         }
-        webHookActor ! WebHookActor.InvalidateWebhookCache
-        result
       }
     }
   }
@@ -822,19 +833,24 @@ class HooksService(
     path(Segment / "ack") { id: String =>
       requireWebhookPermission(authClient, "object/webhook/ack", id) {
         entity(as[WebHookAcknowledgement]) { acknowledgement =>
-          val result = DB localTx { implicit session =>
-            HookPersistence
-              .acknowledgeRaisedHook(id, acknowledgement) match {
-              case Success(theResult) => complete(theResult)
-              case Failure(exception) =>
-                complete(StatusCodes.BadRequest, ApiError(exception.getMessage))
+          withBlockingTask {
+            val result = DB localTx { implicit session =>
+              HookPersistence
+                .acknowledgeRaisedHook(id, acknowledgement) match {
+                case Success(theResult) => complete(theResult)
+                case Failure(exception) =>
+                  complete(
+                    StatusCodes.BadRequest,
+                    ApiError(exception.getMessage)
+                  )
+              }
             }
-          }
 
-          webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess(
-            webHookId = Some(id)
-          )
-          result
+            webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess(
+              webHookId = Some(id)
+            )
+            result
+          }
         }
       }
     }

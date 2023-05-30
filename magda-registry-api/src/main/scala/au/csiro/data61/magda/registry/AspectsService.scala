@@ -24,6 +24,8 @@ import spray.json.JsObject
 
 import scala.util.{Failure, Success}
 
+import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+
 class AspectsService(
     config: Config,
     authClient: AuthApiClient,
@@ -99,37 +101,41 @@ class AspectsService(
               input =
                 Some(JsObject("object" -> JsObject("aspect" -> aspect.toJson)))
             ) {
-              val theResult = DB localTx { session =>
-                AspectPersistence
-                  .create(aspect, tenantId, userId)(session) match {
-                  case Success(result) =>
-                    complete(result)
-                  case Failure(e: PSQLException) if e.getSQLState == "23505" =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(s"Duplicated aspect id supplied: ${aspect.id}")
-                    )
-                  case Failure(e: RuntimeException) =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(e.getMessage)
-                    )
-                  case Failure(e: PSQLException) if e.getSQLState == "22001" =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(
-                        s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+              withBlockingTask {
+                val theResult = DB localTx { session =>
+                  AspectPersistence
+                    .create(aspect, tenantId, userId)(session) match {
+                    case Success(result) =>
+                      complete(result)
+                    case Failure(e: PSQLException)
+                        if e.getSQLState == "23505" =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(s"Duplicated aspect id supplied: ${aspect.id}")
                       )
-                    )
-                  case Failure(exception) =>
-                    complete(
-                      StatusCodes.InternalServerError,
-                      ApiError(exception.getMessage)
-                    )
+                    case Failure(e: RuntimeException) =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(e.getMessage)
+                      )
+                    case Failure(e: PSQLException)
+                        if e.getSQLState == "22001" =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(
+                          s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+                        )
+                      )
+                    case Failure(exception) =>
+                      complete(
+                        StatusCodes.InternalServerError,
+                        ApiError(exception.getMessage)
+                      )
+                  }
                 }
+                webHookActor ! WebHookActor.Process()
+                theResult
               }
-              webHookActor ! WebHookActor.Process()
-              theResult
             }
           }
         }
@@ -215,40 +221,42 @@ class AspectsService(
                 id,
                 Left(aspect)
               ) {
-                val theResult = DB localTx { session =>
-                  AspectPersistence.putById(id, aspect, tenantId, userId)(
-                    session
-                  ) match {
-                    case Success(result) =>
-                      complete(result)
-                    case Failure(e: PSQLException)
-                        if e.getSQLState == "23505" =>
-                      complete(
-                        StatusCodes.BadRequest,
-                        ApiError(s"Duplicated aspect id supplied: ${id}")
-                      )
-                    case Failure(e: PSQLException)
-                        if e.getSQLState == "22001" =>
-                      complete(
-                        StatusCodes.BadRequest,
-                        ApiError(
-                          s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+                withBlockingTask {
+                  val theResult = DB localTx { session =>
+                    AspectPersistence.putById(id, aspect, tenantId, userId)(
+                      session
+                    ) match {
+                      case Success(result) =>
+                        complete(result)
+                      case Failure(e: PSQLException)
+                          if e.getSQLState == "23505" =>
+                        complete(
+                          StatusCodes.BadRequest,
+                          ApiError(s"Duplicated aspect id supplied: ${id}")
                         )
-                      )
-                    case Failure(e: RuntimeException) =>
-                      complete(
-                        StatusCodes.BadRequest,
-                        ApiError(e.getMessage)
-                      )
-                    case Failure(exception) =>
-                      complete(
-                        StatusCodes.InternalServerError,
-                        ApiError(exception.getMessage)
-                      )
+                      case Failure(e: PSQLException)
+                          if e.getSQLState == "22001" =>
+                        complete(
+                          StatusCodes.BadRequest,
+                          ApiError(
+                            s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+                          )
+                        )
+                      case Failure(e: RuntimeException) =>
+                        complete(
+                          StatusCodes.BadRequest,
+                          ApiError(e.getMessage)
+                        )
+                      case Failure(exception) =>
+                        complete(
+                          StatusCodes.InternalServerError,
+                          ApiError(exception.getMessage)
+                        )
+                    }
                   }
+                  webHookActor ! WebHookActor.Process()
+                  theResult
                 }
-                webHookActor ! WebHookActor.Process()
-                theResult
               }
             }
           }
@@ -334,32 +342,35 @@ class AspectsService(
               id,
               Right(aspectPatch)
             ) {
-              val theResult = DB localTx { session =>
-                AspectPersistence
-                  .patchById(id, aspectPatch, tenantId, userId)(session) match {
-                  case Success(result) =>
-                    complete(result)
-                  case Failure(e: PSQLException) if e.getSQLState == "22001" =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(
-                        s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+              withBlockingTask {
+                val theResult = DB localTx { session =>
+                  AspectPersistence
+                    .patchById(id, aspectPatch, tenantId, userId)(session) match {
+                    case Success(result) =>
+                      complete(result)
+                    case Failure(e: PSQLException)
+                        if e.getSQLState == "22001" =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(
+                          s"Supplied aspect name or id field is over the max. allowed size (100 characters)."
+                        )
                       )
-                    )
-                  case Failure(e: RuntimeException) =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(e.getMessage)
-                    )
-                  case Failure(exception) =>
-                    complete(
-                      StatusCodes.InternalServerError,
-                      ApiError(exception.getMessage)
-                    )
+                    case Failure(e: RuntimeException) =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(e.getMessage)
+                      )
+                    case Failure(exception) =>
+                      complete(
+                        StatusCodes.InternalServerError,
+                        ApiError(exception.getMessage)
+                      )
+                  }
                 }
+                webHookActor ! WebHookActor.Process()
+                theResult
               }
-              webHookActor ! WebHookActor.Process()
-              theResult
             }
           }
         }

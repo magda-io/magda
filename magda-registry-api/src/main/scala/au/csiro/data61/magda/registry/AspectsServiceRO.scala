@@ -15,6 +15,8 @@ import io.swagger.annotations._
 
 import javax.ws.rs.Path
 import scalikejdbc._
+import au.csiro.data61.magda.directives.RouteDirectives.completeBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
 
 /**
   * @apiGroup Registry Aspects
@@ -77,7 +79,7 @@ class AspectsServiceRO(
       withAuthDecision(authClient, AuthDecisionReqConfig("object/aspect/read")) {
         authDecision =>
           requiresTenantId { tenantId =>
-            complete {
+            completeBlockingTask {
               DB readOnly { session =>
                 AspectPersistence.getAll(tenantId, authDecision)(session)
               }
@@ -144,15 +146,17 @@ class AspectsServiceRO(
       withAuthDecision(authClient, AuthDecisionReqConfig("object/aspect/read")) {
         authDecision =>
           requiresTenantId { tenantId =>
-            DB readOnly { session =>
-              AspectPersistence
-                .getById(id, tenantId, authDecision)(session) match {
-                case Some(aspect) => complete(aspect)
-                case None =>
-                  complete(
-                    StatusCodes.NotFound,
-                    ApiError("No aspect exists with that ID.")
-                  )
+            withBlockingTask {
+              DB readOnly { session =>
+                AspectPersistence
+                  .getById(id, tenantId, authDecision)(session) match {
+                  case Some(aspect) => complete(aspect)
+                  case None =>
+                    complete(
+                      StatusCodes.NotFound,
+                      ApiError("No aspect exists with that ID.")
+                    )
+                }
               }
             }
           }
