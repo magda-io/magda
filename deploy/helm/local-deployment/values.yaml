@@ -89,7 +89,7 @@ connector-marlin:
   config:
     id: marlin
     name: CSIRO Marlin
-    sourceUrl: http://www.marlin.csiro.au/geonetwork/srv/eng/csw
+    sourceUrl: https://marlin.csiro.au/geonetwork/srv/eng/csw
     pageSize: 50
 
 connector-environment:
