@@ -3,6 +3,7 @@
 ## v2.2.5
 
 - #3463: Fixed Registry API performance issues related to host connection pool & blocking DB IO
+- #3467: Allow to disable scss-compiler job via helm chart config
 
 ## v2.2.4
 
