@@ -23,7 +23,7 @@ dependencies:
       - magda-auth-internal
 
   - name: magda-auth-arcgis
-    version: "2.0.0"
+    version: "2.0.1"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
