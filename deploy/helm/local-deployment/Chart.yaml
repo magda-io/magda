@@ -9,7 +9,7 @@ dependencies:
     repository: "file://../magda"
 
   - name: magda-auth-google
-    version: "2.0.0"
+    version: "2.0.1"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
