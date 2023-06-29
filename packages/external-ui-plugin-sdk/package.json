@@ -1,7 +1,7 @@
 {
   "name": "@magda/external-ui-plugin-sdk",
   "description": "MAGDA external UI plugin SDK",
-  "version": "2.2.4",
+  "version": "2.2.5-alpha.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "api-extractor run -l",
@@ -18,7 +18,7 @@
     "directory": "packages/external-ui-plugin-sdk"
   },
   "devDependencies": {
-    "@magda/web-client": "^2.2.4",
+    "@magda/web-client": "^2.2.5-alpha.0",
     "typescript": "~4.2.4"
   },
   "peerDependencies": {
