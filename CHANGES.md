@@ -4,6 +4,7 @@
 
 - #3463: Fixed Registry API performance issues related to host connection pool & blocking DB IO
 - #3467: Allow to disable scss-compiler job via helm chart config
+- Upgrade CI deployment google & arcgis auth plugin to v2.0.1
 
 ## v2.2.4
 
