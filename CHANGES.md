@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.3.2
+
+- to support k8s v1.25, replace batch/v1beta1 API with batch/v1
+
 ## 1.3.1
 
 - #3367 Fixed Content API header item schema target field type
