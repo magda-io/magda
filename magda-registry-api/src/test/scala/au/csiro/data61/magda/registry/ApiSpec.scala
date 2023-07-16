@@ -148,15 +148,6 @@ abstract class ApiSpec
         materializer
       )
 
-    case class DBsWithEnvSpecificConfig(configToUse: Config)
-        extends DBs
-        with TypesafeConfigReader
-        with TypesafeConfig
-        with EnvPrefix {
-
-      override val config = configToUse
-    }
-
     DBsWithEnvSpecificConfig(testConfig).setupAll()
 
     DB localTx { implicit session =>
