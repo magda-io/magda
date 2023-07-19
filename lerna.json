@@ -8,7 +8,7 @@
     "scripts/",
     "packages/*"
   ],
-  "version": "2.2.5-alpha.0",
+  "version": "2.2.5-alpha.1",
   "hoist": [
     "tsmonad",
     "urijs",
