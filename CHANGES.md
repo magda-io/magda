@@ -5,6 +5,7 @@
 - #3463: Fixed Registry API performance issues related to host connection pool & blocking DB IO
 - #3467: Allow to disable scss-compiler job via helm chart config
 - Upgrade CI deployment google & arcgis auth plugin to v2.0.1
+- #3473: Allow to specify service account for cloud sql proxy pod
 
 ## v2.2.4
 

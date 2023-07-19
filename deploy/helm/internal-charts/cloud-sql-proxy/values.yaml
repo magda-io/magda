@@ -11,6 +11,13 @@ image:
 # @default 1
 replicas:
 
+# -- the k8s service account (KSA) used to run the pod.
+# if the KSA has proper IAM binding to map to a proper GCP service account (GSA), 
+# the cloud SQL proxy can connect to cloud SQL without GSA credential.
+# To make this work, `enableIamLogin` must be `true`
+# By default, no k8s will be set for the pod.
+serviceAccountName: 
+
 autoscaler:
   enabled: false
   minReplicas: 1
@@ -35,8 +42,10 @@ maxConnections: 0
 # -- A comma-delimited list of preferred IP types for connecting to an instance. 
 # For example, setting this to PRIVATE will force the proxy to connect to instances using an instance's associated private IP.
 # Available from docker image 1.23.0
+# Options: a list of strings separated by ',', e.g. 'PUBLIC,PRIVATE'
+# Default to 'PUBLIC,PRIVATE'
 # @default -- PUBLIC,PRIVATE
-ipAddressTypes: ""
+ipAddressTypes: 
 
 # -- How long (in seconds) to wait for connections to close before shutting down the proxy.
 # Available from docker image 1.23.0
