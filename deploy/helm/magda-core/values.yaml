@@ -39,10 +39,16 @@ global:
 
   # -- whether to use Google Cloud SQL database. 
   # When this option is on, all other database type e.g. `useCombinedDb` & `useAwsRdsDb` must be turned off.
+  # When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret,
+  # you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true).
+  # Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true )
   useCloudSql: false
   
   # -- whether to use AWS RDS DB config. 
   # When this option is on, all other database type e.g. `useCombinedDb` & `useCloudSql` must be turned off.
+  # When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret,
+  # you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true).
+  # Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true )
   useAwsRdsDb: false
   
   # -- AWS RDS DB instance access endpoint. e.g. xxxx.xxxx.ap-southeast-2.rds.amazonaws.com.
