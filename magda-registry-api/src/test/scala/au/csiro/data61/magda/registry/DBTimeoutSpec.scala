@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.registry
 
 import au.csiro.data61.magda.AppConfig
-import akka.pattern.gracefulStop
 import com.typesafe.config.{Config, ConfigFactory}
 import org.postgresql.util.PSQLException
 import org.scalatest.{BeforeAndAfterEach, FunSpecLike, Matchers}
@@ -108,6 +107,46 @@ class DBTimeoutSpec extends FunSpecLike with Matchers with BeforeAndAfterEach {
       val duration = (System.nanoTime - before) / 1e9d
       duration should (be >= 5.0)
       duration should (be < 5.5)
+    }
+  }
+
+  it(
+    "should timeout after 1 seconds when `db-query.global-timeout` is set to 5s and session level timeout set to 1s"
+  ) {
+    setupEnv(createConfig("2s", "1s"))
+    getStatementTimeout() shouldBe Some("2s")
+    DB localTx { implicit session =>
+      session.queryTimeout(1)
+      withClue("should spend sleep at least 0.9s without timeout") {
+        val before = System.nanoTime
+        val res =
+          sql"SELECT pg_sleep(0.9)"
+            .map(rs => rs)
+            .single
+            .apply()
+        val duration = (System.nanoTime - before) / 1e9d
+        res.nonEmpty shouldEqual true
+        duration should (be >= 0.9)
+        duration should (be < 1.2)
+      }
+    }
+    getStatementTimeout() shouldBe Some("2s")
+    DB localTx { implicit session =>
+      session.queryTimeout(1)
+      val before = System.nanoTime
+      try {
+        sql"SELECT pg_sleep(2)"
+          .map(rs => rs)
+          .single
+          .apply()
+        fail("should throw timeout exception but didn't")
+      } catch {
+        case e: PSQLException =>
+          e.toString should include("canceling statement due to user request")
+      }
+      val duration = (System.nanoTime - before) / 1e9d
+      duration should (be >= 1.0)
+      duration should (be < 1.9)
     }
   }
 
