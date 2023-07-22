@@ -5,47 +5,31 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.Matchers
 import org.scalatest.fixture.FunSpec
 import org.slf4j.LoggerFactory
-import com.typesafe.config.Config
 import io.jsonwebtoken.Jwts
 import akka.actor.ActorRef
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.server.AuthenticationFailedRejection
-import akka.http.scaladsl.server.AuthorizationFailedRejection
 import akka.http.scaladsl.server.MethodRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.model._
 import au.csiro.data61.magda.Authentication
-import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.client.{HttpFetcher, MockAuthHttpFetcher}
 import au.csiro.data61.magda.model.Auth.{
   AuthDecision,
   AuthProtocols,
   UnconditionalFalseDecision,
-  UnconditionalTrueDecision,
-  User
+  UnconditionalTrueDecision
 }
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import scalikejdbc._
-import scalikejdbc.config.DBs
-import scalikejdbc.config.EnvPrefix
-import scalikejdbc.config.TypesafeConfig
-import scalikejdbc.config.TypesafeConfigReader
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.pattern.gracefulStop
 import au.csiro.data61.magda.model.Registry._
-import io.jsonwebtoken.SignatureAlgorithm
-
-import java.{util => ju}
-import akka.http.scaladsl.marshalling.ToEntityMarshaller
 
 import scala.collection.JavaConverters._
-import io.lemonlabs.uri.{QueryString, Url, UrlPath}
-import spray.json.JsValue
 
 case class AuthDecisionSetupConfig(
     authDecision: AuthDecision,
