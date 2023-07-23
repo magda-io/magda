@@ -88,4 +88,4 @@ appConfig:
     # Useful when running locally - DO NOT TURN ON IN PRODUCTION 
     skipOpaQuery: false
   # -- Whether registry api should validate incoming JSON data
-  validateJsonSchema: false
+  validateJsonSchema: true

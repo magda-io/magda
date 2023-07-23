@@ -84,12 +84,16 @@ spec:
 {{- $scalikejdbc := get $appConfigDictInVal "scalikejdbc" | default dict }}
 {{- $scalikejdbcGlobal := get $scalikejdbc "global" | default dict }}
 {{- $loggingSQLAndTime := get $scalikejdbcGlobal "loggingSQLAndTime" | default dict }}
-{{- if not (hasKey $loggingSQLAndTime "loglevel") }}
-{{- $_ := set $loggingSQLAndTime "loglevel" (get .Values.global "loglevel" | default "INFO") }}
+{{- if not (hasKey $loggingSQLAndTime "logLevel") }}
+{{- $_ := set $loggingSQLAndTime "logLevel" (get .Values.global "logLevel" | default "INFO") }}
+{{- $_ := set $scalikejdbcGlobal "loggingSQLAndTime" $loggingSQLAndTime }}
+{{- $_ := set $scalikejdbc "global" $scalikejdbcGlobal }}
+{{- $_ := set $appConfigDictInVal "scalikejdbc" $scalikejdbc }}
 {{- end }}
 {{- $akka := get $appConfigDictInVal "akka" | default dict }}
 {{- if not (hasKey $akka "loglevel") }}
-{{- $_ := set $akka "loglevel" (get .Values.global "loglevel" | default "INFO") }}
+{{- $_ := set $akka "loglevel" (get .Values.global "logLevel" | default "INFO") }}
+{{- $_ := set $appConfigDictInVal "akka" $akka }}
 {{- end }}
 {{- $appConfigDict := dict }}
 {{- $dbCfg := .Values.db | default dict }}
