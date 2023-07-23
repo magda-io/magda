@@ -15,6 +15,8 @@ spec:
       service: {{ .name }}
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include "magda.registry-api.appConfig" .root | sha256sum | quote }}
       labels:
         service: {{ .name }}
     spec:
@@ -35,31 +37,13 @@ spec:
         imagePullPolicy: {{ include "magda.imagePullPolicy" .root | quote }}
         ports:
         - containerPort: 6101
-        command: [
-            "bin/magda-registry-api",
-            "-Dhttp.port=6101",
-            "-Dhttp.externalUrl.v0={{ .root.Values.global.externalUrl }}/api/v0/registry",
-            "-Ddb.default.url=jdbc:postgresql://registry-db/postgres",
-{{- if .root.Values.db.poolInitialSize }}
-            "-Ddb.default.poolInitialSize={{ .root.Values.db.poolInitialSize }}",
-{{- end }}
-{{- if .root.Values.db.poolMaxSize }}
-            "-Ddb.default.poolMaxSize={{ .root.Values.db.poolMaxSize }}",
-{{- end }}
-{{- if .root.Values.db.poolConnectionTimeoutMillis }}
-            "-Ddb.default.poolConnectionTimeoutMillis={{ .root.Values.db.poolConnectionTimeoutMillis }}",
-{{- end }}
-            "-Dakka.loglevel={{ .root.Values.logLevel | default .root.Values.global.logLevel }}",
-            "-DauthApi.baseUrl=http://authorization-api",
-            "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .root.Values.global.logLevel | lower }}",
-            "-Dauthorization.skip={{ .root.Values.skipAuthorization | default false }}",
-            "-Dauthorization.skipOpaQuery={{ .root.Values.skipOpa | default false }}",
-            "-Drole={{ .role }}",
-            "-DvalidateJsonSchema={{ .root.Values.validateJsonSchema | default false }}",
-            "-Dakka.http.server.request-timeout={{ .deploymentConfig.requestTimeout }}",
-            "-Dakka.http.server.idle-timeout={{ .deploymentConfig.idleTimeout }}",
-            "-Dscalikejdbc.global.loggingSQLAndTime.enabled={{ .root.Values.printSQlInConsole | default false }}"
-        ]
+        command:
+        - "bin/magda-registry-api"
+        - "-Dconfig.file=/etc/config/deploy-application.conf"
+        - "-Drole={{ .role }}"
+        - "-Dakka.http.server.request-timeout={{ .deploymentConfig.requestTimeout }}"
+        - "-Dakka.http.server.idle-timeout={{ .deploymentConfig.idleTimeout }}"
+        - "-Dhttp.externalUrl.v0={{ .root.Values.global.externalUrl }}/api/v0/registry"
 {{- if .root.Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
@@ -78,4 +62,53 @@ spec:
 {{- end }}
         resources:
 {{ .deploymentConfig.resources | default .root.Values.resources | toYaml | indent 10 }}
+        volumeMounts:
+        - name: app-config-volume
+          mountPath: /etc/config
+      volumes:
+      - name: app-config-volume
+        configMap:
+          name: registry-api-app-conf
 {{- end }}
+        
+{{/*
+  Generate the raw app-conf.json from global and local values.
+  It will also consider older version config format for best backward compatibility effort.
+  Usage:
+    web.json: {{ include "magda.registry-api.appConfig" . | quote }}
+    OR
+    checksum/config: {{ include "registry-api.appConfig" . | sha256sum }}
+*/}}
+{{- define "magda.registry-api.appConfig" -}}
+{{- $appConfigDictInVal := (get .Values "appConfig") | default dict | mustDeepCopy }}
+{{- $scalikejdbc := get $appConfigDictInVal "scalikejdbc" | default dict }}
+{{- $scalikejdbcGlobal := get $scalikejdbc "global" | default dict }}
+{{- $loggingSQLAndTime := get $scalikejdbcGlobal "loggingSQLAndTime" | default dict }}
+{{- if not (hasKey $loggingSQLAndTime "loglevel") }}
+{{- $_ := set $loggingSQLAndTime "loglevel" (get .Values.global "loglevel" | default "INFO") }}
+{{- end }}
+{{- $akka := get $appConfigDictInVal "akka" | default dict }}
+{{- if not (hasKey $akka "loglevel") }}
+{{- $_ := set $akka "loglevel" (get .Values.global "loglevel" | default "INFO") }}
+{{- end }}
+{{- $appConfigDict := dict }}
+{{- $dbCfg := .Values.db | default dict }}
+{{- if $dbCfg | empty | not }}
+  {{- $dbDefaultCfg := dict }}
+  {{- if hasKey $dbCfg "poolInitialSize" }}
+  {{- $_ := set $dbDefaultCfg "poolInitialSize" (get $dbCfg "poolInitialSize") }}
+  {{- end }}
+  {{- if hasKey $dbCfg "poolMaxSize" }}
+  {{- $_ := set $dbDefaultCfg "poolMaxSize" (get $dbCfg "poolMaxSize") }}
+  {{- end }}
+  {{- if hasKey $dbCfg "poolConnectionTimeoutMillis" }}
+  {{- $_ := set $dbDefaultCfg "poolConnectionTimeoutMillis" (get $dbCfg "poolConnectionTimeoutMillis") }}
+  {{- end }}
+  {{- $_ := set $appConfigDict "db" (dict "default" $dbDefaultCfg) }}
+{{- end }}
+{{- $appConfigDict := mergeOverwrite dict $appConfigDictInVal (deepCopy $appConfigDict) }}
+{{- if hasKey .Values "validateJsonSchema" }}
+{{- $_ := set $appConfigDict "validateJsonSchema" .Values.validateJsonSchema }}
+{{- end }}
+{{- mustToRawJson $appConfigDict }}
+{{- end -}}
