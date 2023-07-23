@@ -75,7 +75,7 @@ spec:
   Generate the raw app-conf.json from global and local values.
   It will also consider older version config format for best backward compatibility effort.
   Usage:
-    web.json: {{ include "magda.registry-api.appConfig" . | quote }}
+    deploy-application.conf: {{ include "magda.registry-api.appConfig" . | quote }}
     OR
     checksum/config: {{ include "registry-api.appConfig" . | sha256sum }}
 */}}
@@ -110,7 +110,7 @@ spec:
   {{- end }}
   {{- $_ := set $appConfigDict "db" (dict "default" $dbDefaultCfg) }}
 {{- end }}
-{{- $appConfigDict := mergeOverwrite dict $appConfigDictInVal (deepCopy $appConfigDict) }}
+{{- $appConfigDict = mergeOverwrite dict $appConfigDictInVal (deepCopy $appConfigDict) }}
 {{- if hasKey .Values "validateJsonSchema" }}
 {{- $_ := set $appConfigDict "validateJsonSchema" .Values.validateJsonSchema }}
 {{- end }}

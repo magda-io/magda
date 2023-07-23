@@ -50,3 +50,15 @@ publishersIndexVersion:
 # As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built.
 formatsIndexVersion:
 
+# -- application config. Allow to configure any application config fields.
+# For all available configuration fields and their default values, please refer to [application.conf](https://github.com/magda-io/magda/blob/main/magda-search-api/src/main/resources/application.conf)
+# This config field is available since v2.2.5
+# Although can be set via `.Values.appConfig` as well, the following config fields will override the config set via `.Values.appConfig`:
+# `.Values.debug`, `.Values.datasetsIndexVersion`, `.Values.regionsIndexVersion`, `.Values.publishersIndexVersion`, `.Values.formatsIndexVersion`,
+appConfig:
+  http: 
+    port: 6102
+  elasticSearch:
+    serverUrl: elasticsearch://elasticsearch:9200
+  authApi:
+    baseUrl: http://authorization-api

@@ -12,6 +12,8 @@ spec:
       service: search-api
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include "magda.search-api.appConfig" . | sha256sum | quote }}
       labels:
         service: search-api
     spec:
@@ -27,10 +29,7 @@ spec:
         - containerPort: 6102
         command:
           - "bin/magda-search-api"
-          - "-Dhttp.port=6102"
-          - "-Dakka.loglevel={{ .Values.global.logLevel }}"
-          - "-DauthApi.baseUrl=http://authorization-api"
-          - "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9200"
+          - "-Dconfig.file=/etc/config/deploy-application.conf"
 {{- if .Values.debug }}
           - "-DsearchApi.debug=true"
 {{- end }}
@@ -64,3 +63,10 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
+        volumeMounts:
+        - name: app-config-volume
+          mountPath: /etc/config
+      volumes:
+      - name: app-config-volume
+        configMap:
+          name: search-api-app-conf

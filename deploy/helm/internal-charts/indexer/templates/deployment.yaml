@@ -12,6 +12,8 @@ spec:
       service: indexer
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include "magda.indexer.appConfig" . | sha256sum | quote }}
       labels:
         service: indexer
     spec:
@@ -44,36 +46,43 @@ spec:
         imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         ports:
         - containerPort: 6103
-        command: [
-            "bin/magda-indexer",
-            "-Dhttp.port=6103",
-            "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
-            "-Dregistry.baseUrl=http://registry-api",
-            "-Dregistry.readOnlyBaseUrl=http://registry-api-read-only",
-            "-DauthApi.baseUrl=http://authorization-api",
-            "-Dindexer.readSnapshots={{ .Values.readSnapshots }}",
-            "-Dindexer.makeSnapshots={{ .Values.makeSnapshots }}",
-            "-Dakka.loglevel={{ .Values.global.logLevel }}",
-            "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9200",
+        command: 
+        - "bin/magda-indexer"
+        - "-Dconfig.file=/etc/config/deploy-application.conf"
+{{- if hasKey .Values.elasticsearch "readSnapshots" }}
+        - "-Dindexer.readSnapshots={{ .Values.readSnapshots }}"
+{{- end }}
+{{- if hasKey .Values.elasticsearch "makeSnapshots" }}
+        - "-Dindexer.makeSnapshots={{ .Values.makeSnapshots }}"
+{{- end }}
 {{- if .Values.elasticsearch.useGcsSnapshots }}
-            "-DelasticSearch.snapshotRepo.type=gcs",
-            "-DelasticSearch.snapshotRepo.types.gcs.bucket={{ .Values.elasticsearch.gcsSnapshotBucket }}",
-            "-DelasticSearch.snapshotRepo.types.gcs.client={{ .Values.elasticsearch.gcsSnapshotClient }}",
+        - "-DelasticSearch.snapshotRepo.type=gcs"
+        - "-DelasticSearch.snapshotRepo.types.gcs.bucket={{ .Values.elasticsearch.gcsSnapshotBucket }}"
+        - "-DelasticSearch.snapshotRepo.types.gcs.client={{ .Values.elasticsearch.gcsSnapshotClient }}"
 {{- end }}
-            "-DelasticSearch.shardCount={{ .Values.elasticsearch.shards }}",
-            "-DelasticSearch.replicaCount={{ .Values.elasticsearch.replicas }}",
-{{- if .Values.akka.http.server.requestTimeout }}
-            "-Dakka.http.server.request-timeout={{ .Values.akka.http.server.requestTimeout }}",
+{{- if hasKey (get .Values "elasticsearch" | default dict) "shards" }}
+        - "-DelasticSearch.shardCount={{ .Values.elasticsearch.shards }}"
 {{- end }}
-{{- if .Values.akka.http.server.idleTimeout }}
-            "-Dakka.http.server.idle-timeout={{ .Values.akka.http.server.idleTimeout }}",
+{{- if hasKey (get .Values "elasticsearch" | default dict) "replicas" }}
+        - "-DelasticSearch.replicaCount={{ .Values.elasticsearch.replicas }}"
 {{- end }}
-            "-Dauth.userId={{ .Values.global.defaultAdminUserId }}"
-        ]
+{{- $akkaVal := (get .Values "akka") | default dict }}
+{{- if (dig "http" "server" "requestTimeout" false $akkaVal) | empty | not }}
+        - "-Dakka.http.server.request-timeout={{ .Values.akka.http.server.requestTimeout }}"
+{{- end }}
+{{- if (dig "http" "server" "idleTimeout" false $akkaVal) | empty | not }}
+        - "-Dakka.http.server.idle-timeout={{ .Values.akka.http.server.idleTimeout }}"
+{{- end }}
+        - "-Dauth.userId={{ .Values.global.defaultAdminUserId | required ".global.defaultAdminUserId is required" }}"
         volumeMounts:
         - mountPath: /usr/regions
           name: regions
+        - name: app-config-volume
+          mountPath: /etc/config
       volumes:
       - name: regions
         hostPath:
           path: /var/regions
+      - name: app-config-volume
+        configMap:
+          name: indexer-app-conf
