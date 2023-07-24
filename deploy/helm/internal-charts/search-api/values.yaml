@@ -62,3 +62,6 @@ appConfig:
     serverUrl: elasticsearch://elasticsearch:9200
   authApi:
     baseUrl: http://authorization-api
+  # -- whether print out full config data at application starting up
+  # for debug purpose only
+  printFullConfig: false

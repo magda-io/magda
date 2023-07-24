@@ -89,3 +89,6 @@ appConfig:
     skipOpaQuery: false
   # -- Whether registry api should validate incoming JSON data
   validateJsonSchema: true
+  # -- whether print out full config data at application starting up
+  # for debug purpose only
+  printFullConfig: false
