@@ -1,3 +1,4 @@
+global: {}
 image: 
   name: "magda-registry-api"
   # repository: 
@@ -17,7 +18,6 @@ autoscaler:
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
 livenessProbe: {}
-db: {}
 resources: 
   requests:
     cpu: 250m
@@ -51,16 +51,6 @@ deployments:
     # Make sure `idleTimeout` is longer than `requestTimeout`
     idleTimeout: 60s
 
-# -- Whether registry api should validate incoming JSON data
-validateJsonSchema: true
-
-# -- Skip authorization on registry API.
-# Useful when running locally - DO NOT TURN ON IN PRODUCTION 
-skipAuthorization: false
-
-# -- Whether print all SQL in console. For DEBUG only
-printSQlInConsole: false
-
 aspectDefinitionMigrator:
   enabled: true
   backoffLimit: 6
@@ -70,3 +60,35 @@ aspectDefinitionMigrator:
     # tag: 
     # pullPolicy: 
     # pullSecrets: 
+
+# -- application config. Allow to configure any application config fields.
+# For all available configuration fields and their default values, please refer to [application.conf](https://github.com/magda-io/magda/blob/main/magda-registry-api/src/main/resources/application.conf)
+# This config field is available since v2.2.5
+# Previous versions supported config fields: `.Values.validateJsonSchema`, `.Values.db.poolInitialSize`, `.Values.db.poolMaxSize` and 
+# `.Values.db.poolConnectionTimeoutMillis` are still supported for backward compatible reason (although deprecated).
+# When exist, values from those obsolete config fields will override relevant fields in `.Values.appConfig`.
+# Obsolete config fields: `.Values.logLevel`, `.Values.skipAuthorization` and `.Values.printSQlInConsole` are not supported anymore.
+# Please config using alternative fields via `.Values.appConfig` instead.
+appConfig:
+  http: 
+    port: 6101
+  db:
+    default:
+      url: jdbc:postgresql://registry-db/postgres
+  authApi:
+    baseUrl: http://authorization-api
+  scalikejdbc:
+    global:
+      loggingSQLAndTime:
+        # -- Whether print all SQL in console. For DEBUG only
+        enabled: false
+  authorization:
+    # -- Skip asking authorization decisions from policy engine.
+    # `UnconditionalTrueDecision` will be always returned for this case
+    # Useful when running locally - DO NOT TURN ON IN PRODUCTION 
+    skipOpaQuery: false
+  # -- Whether registry api should validate incoming JSON data
+  validateJsonSchema: true
+  # -- whether print out full config data at application starting up
+  # for debug purpose only
+  printFullConfig: false

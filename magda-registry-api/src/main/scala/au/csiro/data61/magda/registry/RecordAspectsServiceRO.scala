@@ -31,6 +31,13 @@ class RecordAspectsServiceRO(
 ) extends Protocols
     with SprayJsonSupport {
 
+  private val defaultQueryTimeout = config
+    .getDuration(
+      "db-query.default-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
+
   /**
     * @apiGroup Registry Record Aspects
     * @api {get} /v0/registry/records/{recordId}/aspects/{aspectId} Get a record aspect by ID
@@ -110,6 +117,7 @@ class RecordAspectsServiceRO(
           ) {
             withBlockingTask {
               DB readOnly { implicit session =>
+                session.queryTimeout(this.defaultQueryTimeout)
                 recordPersistence
                   .getRecordAspectById(
                     tenantId,
@@ -249,6 +257,7 @@ class RecordAspectsServiceRO(
             recordId
           ) {
             completeBlockingTask(DB readOnly { implicit session =>
+              session.queryTimeout(this.defaultQueryTimeout)
               recordPersistence
                 .getRecordAspects(
                   tenantId,
@@ -342,6 +351,7 @@ class RecordAspectsServiceRO(
             recordId
           ) {
             completeBlockingTask(DB readOnly { implicit session =>
+              session.queryTimeout(this.defaultQueryTimeout)
               CountResponse(
                 recordPersistence
                   .getRecordAspectsCount(

@@ -72,6 +72,13 @@ class RecordHistoryService(
 ) extends Protocols
     with SprayJsonSupport {
 
+  private val defaultQueryTimeout = config
+    .getDuration(
+      "db-query.default-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
+
   implicit private val ec: ExecutionContext = system.dispatcher
 
   val route =
@@ -185,6 +192,7 @@ class RecordHistoryService(
             ) {
               completeBlockingTask(
                 DB readOnly { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   val aspectIdSet = aspects.toSet
 
                   if (dereference.getOrElse(false)) {
@@ -307,6 +315,7 @@ class RecordHistoryService(
                 )
                 withExecutionContext(blockingExeCtx) {
                   DB readOnly { implicit session =>
+                    session.queryTimeout(this.defaultQueryTimeout)
                     val events = eventPersistence.streamEventsUpTo(
                       version.toLong,
                       recordId = Some(id),

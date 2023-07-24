@@ -38,6 +38,13 @@ class RecordsServiceRO(
   private val logger = Logging(system, getClass)
   implicit private val ec: ExecutionContext = system.dispatcher
 
+  private val defaultQueryTimeout = config
+    .getDuration(
+      "db-query.default-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
+
   /**
     * @apiGroup Registry Record Service
     * @api {get} /v0/registry/records Get a list of all records
@@ -323,6 +330,7 @@ class RecordsServiceRO(
               } else {
                 completeBlockingTask {
                   DB localTx { implicit session =>
+                    session.queryTimeout(this.defaultQueryTimeout)
                     recordPersistence.getAllWithAspects(
                       tenantId,
                       authDecision,
@@ -465,6 +473,7 @@ class RecordsServiceRO(
           ) { (pageToken, start, limit, reversePageTokenOrder) =>
             completeBlockingTask {
               DB readOnly { implicit session =>
+                session.queryTimeout(this.defaultQueryTimeout)
                 recordPersistence
                   .getAll(
                     tenantId,
@@ -633,6 +642,7 @@ class RecordsServiceRO(
 
               completeBlockingTask {
                 DB readOnly { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   CountResponse(
                     recordPersistence
                       .getCount(
@@ -721,6 +731,7 @@ class RecordsServiceRO(
             parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
               completeBlockingTask {
                 DB readOnly { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   "0" :: recordPersistence
                     .getPageTokens(
                       tenantId,
@@ -839,6 +850,7 @@ class RecordsServiceRO(
             (aspects, optionalAspects, dereference) =>
               withBlockingTask {
                 DB readOnly { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   recordPersistence.getByIdWithAspects(
                     tenantId,
                     authDecision,
@@ -935,6 +947,7 @@ class RecordsServiceRO(
         ) { authDecision =>
           withBlockingTask {
             DB readOnly { implicit session =>
+              session.queryTimeout(this.defaultQueryTimeout)
               recordPersistence
                 .getById(tenantId, authDecision, id) match {
                 case Some(record) => complete(record)
@@ -1021,6 +1034,7 @@ class RecordsServiceRO(
         ) { authDecision =>
           withBlockingTask {
             DB readOnly { implicit session =>
+              session.queryTimeout(this.defaultQueryTimeout)
               recordPersistence
                 .getCompleteRecordById(tenantId, authDecision, id) match {
                 case Some(record) => complete(record)

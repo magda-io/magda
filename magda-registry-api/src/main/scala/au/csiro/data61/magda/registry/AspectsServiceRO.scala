@@ -49,6 +49,13 @@ class AspectsServiceRO(
 ) extends Protocols
     with SprayJsonSupport {
 
+  private val defaultQueryTimeout = config
+    .getDuration(
+      "db-query.default-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
+
   @ApiOperation(
     value = "Get a list of all aspects",
     nickname = "getAll",
@@ -81,6 +88,7 @@ class AspectsServiceRO(
           requiresTenantId { tenantId =>
             completeBlockingTask {
               DB readOnly { session =>
+                session.queryTimeout(this.defaultQueryTimeout)
                 AspectPersistence.getAll(tenantId, authDecision)(session)
               }
             }
@@ -148,6 +156,7 @@ class AspectsServiceRO(
           requiresTenantId { tenantId =>
             withBlockingTask {
               DB readOnly { session =>
+                session.queryTimeout(this.defaultQueryTimeout)
                 AspectPersistence
                   .getById(id, tenantId, authDecision)(session) match {
                   case Some(aspect) => complete(aspect)

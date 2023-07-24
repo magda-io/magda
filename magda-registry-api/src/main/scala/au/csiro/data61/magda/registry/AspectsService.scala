@@ -34,6 +34,13 @@ class AspectsService(
     materializer: Materializer
 ) extends AspectsServiceRO(config, authClient, system, materializer) {
 
+  private val defaultQueryTimeout = config
+    .getDuration(
+      "db-query.default-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
+
   /**
     * @apiGroup Registry Aspects
     * @api {post} /v0/registry/aspects Create a new aspect
@@ -103,6 +110,7 @@ class AspectsService(
             ) {
               withBlockingTask {
                 val theResult = DB localTx { session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   AspectPersistence
                     .create(aspect, tenantId, userId)(session) match {
                     case Success(result) =>
@@ -223,6 +231,7 @@ class AspectsService(
               ) {
                 withBlockingTask {
                   val theResult = DB localTx { session =>
+                    session.queryTimeout(this.defaultQueryTimeout)
                     AspectPersistence.putById(id, aspect, tenantId, userId)(
                       session
                     ) match {
@@ -344,6 +353,7 @@ class AspectsService(
             ) {
               withBlockingTask {
                 val theResult = DB localTx { session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   AspectPersistence
                     .patchById(id, aspectPatch, tenantId, userId)(session) match {
                     case Success(result) =>

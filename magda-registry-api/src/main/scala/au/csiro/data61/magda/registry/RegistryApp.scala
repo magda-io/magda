@@ -26,12 +26,13 @@ import scalikejdbc.config.TypesafeConfig
 import scalikejdbc.config.TypesafeConfigReader
 import scalikejdbc.config.EnvPrefix
 import scalikejdbc.config.DBs
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigValueFactory}
 import scalikejdbc.LoggingSQLAndTimeSettings
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.DurationLong
 import scala.util.{Failure, Success, Try}
+import au.csiro.data61.magda.util.UrlUtils
 
 object RegistryApp extends App {
 
@@ -78,15 +79,6 @@ object RegistryApp extends App {
     case Success(v) => v
     case Failure(e) => "None"
   })
-
-  case class DBsWithEnvSpecificConfig(configToUse: Config)
-      extends DBs
-      with TypesafeConfigReader
-      with TypesafeConfig
-      with EnvPrefix {
-
-    override val config: Config = configToUse
-  }
 
   DBsWithEnvSpecificConfig(config).setupAll()
 

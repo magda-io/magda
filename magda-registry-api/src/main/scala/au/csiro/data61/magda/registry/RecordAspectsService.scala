@@ -47,6 +47,13 @@ class RecordAspectsService(
       recordPersistence
     ) {
 
+  private val defaultQueryTimeout = config
+    .getDuration(
+      "db-query.default-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
+
   /**
     * @apiGroup Registry Record Aspects
     * @api {put} /v0/registry/records/{recordId}/aspects/{aspectId} Modify a record aspect by ID
@@ -160,6 +167,7 @@ class RecordAspectsService(
                 ) {
                   withBlockingTask {
                     val theResult = DB localTx { session =>
+                      session.queryTimeout(this.defaultQueryTimeout)
                       recordPersistence.putRecordAspectById(
                         tenantId,
                         recordId,
@@ -269,6 +277,7 @@ class RecordAspectsService(
             requiresSpecifiedTenantId { tenantId =>
               withBlockingTask {
                 val theResult = DB localTx { session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   recordPersistence.deleteRecordAspect(
                     tenantId,
                     recordId,
@@ -392,6 +401,7 @@ class RecordAspectsService(
               ) {
                 withBlockingTask {
                   val theResult = DB localTx { session =>
+                    session.queryTimeout(this.defaultQueryTimeout)
                     recordPersistence.patchRecordAspectById(
                       tenantId,
                       recordId,

@@ -59,6 +59,20 @@ class RecordsService(
   val logger = Logging(system, getClass)
   implicit val ec: ExecutionContext = system.dispatcher
 
+  private val defaultQueryTimeout = config
+    .getDuration(
+      "db-query.default-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
+
+  private val longQueryTimeout = config
+    .getDuration(
+      "db-query.long-query-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
+
   /**
     * @apiGroup Registry Record Service
     * @api {delete} /v0/registry/records/{recordId} Delete a record
@@ -143,6 +157,7 @@ class RecordsService(
           requiresSpecifiedTenantId { tenantId =>
             withBlockingTask {
               val theResult = DB localTx { implicit session =>
+                session.queryTimeout(this.defaultQueryTimeout)
                 recordPersistence
                   .deleteRecord(tenantId, recordId, userId) match {
                   case Success(result) =>
@@ -264,6 +279,7 @@ class RecordsService(
                     // --- DB session needs to be created within the `Future`
                     // --- as the `Future` will keep running after timeout and require active DB session
                     DB localTx { implicit session =>
+                      session.queryTimeout(this.longQueryTimeout)
                       recordPersistence.trimRecordsBySource(
                         tenantId,
                         sourceTagToPreserve,
@@ -413,6 +429,7 @@ class RecordsService(
               ) {
                 withBlockingTask {
                   val result = DB localTx { implicit session =>
+                    session.queryTimeout(this.defaultQueryTimeout)
                     recordPersistence.putRecordById(
                       tenantId,
                       id,
@@ -567,6 +584,7 @@ class RecordsService(
             ) {
               withBlockingTask {
                 val theResult = DB localTx { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   recordPersistence.patchRecordById(
                     tenantId,
                     id,
@@ -695,6 +713,7 @@ class RecordsService(
           ) { authDecision =>
             withBlockingTask {
               val result = DB localTx { implicit session =>
+                session.queryTimeout(this.defaultQueryTimeout)
                 recordPersistence.patchRecords(
                   tenantId,
                   authDecision,
@@ -821,6 +840,7 @@ class RecordsService(
               ) { authDecision =>
                 withBlockingTask {
                   val result = DB localTx { implicit session =>
+                    session.queryTimeout(this.defaultQueryTimeout)
                     recordPersistence.putRecordsAspectById(
                       tenantId,
                       authDecision,
@@ -943,6 +963,7 @@ class RecordsService(
             ) { authDecision =>
               withBlockingTask {
                 val result = DB localTx { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   recordPersistence.deleteRecordsAspectArrayItems(
                     tenantId,
                     authDecision,
@@ -1070,6 +1091,7 @@ class RecordsService(
             ) {
               withBlockingTask {
                 val result = DB localTx { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   recordPersistence
                     .createRecord(tenantId, record, userId) match {
                     case Success(theResult) =>
