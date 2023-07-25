@@ -39,6 +39,25 @@ verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName
     verifyPublishingStatus(inputObjectRefName, permissionResourceType)
 }
 
+# if find a permission allows exemption
+verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName) {
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
+
+	resourceType == "*"
+
+	input.user.permissions[i].allowExemption = true
+
+	permissionResourceType := getResourceTypeFromResourceUri(input.user.permissions[i].resourceUri)
+	operationUri := concat("/", [resourceUriPrefix, permissionResourceType, operationType])
+	resourceUri := concat("/", [resourceUriPrefix, permissionResourceType])
+
+	input.user.permissions[i].resourceUri = resourceUri
+	input.user.permissions[i].operations[_].uri = operationUri
+
+    verifyPublishingStatus(inputObjectRefName, permissionResourceType)
+	input.object[inputObjectRefName]["access-control"].constraintExemption = true
+}
+
 # if find a permission with user ownership constraint
 verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName) {
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
