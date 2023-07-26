@@ -40,6 +40,7 @@ import { generateAPIKey, createApiKeyHash } from "./apiKeyUtils";
 import isArray from "lodash/isArray";
 import uniq from "lodash/uniq";
 import isEmpty from "lodash/isEmpty";
+import getBoolValWithDefault from "magda-typescript-common/src/getBoolValWithDefault";
 
 export interface DatabaseOptions {
     dbHost: string;
@@ -73,6 +74,7 @@ export interface CreatePermissionOptions {
     userOwnershipConstraint?: boolean;
     orgUnitOwnershipConstraint?: boolean;
     preAuthorisedConstraint?: boolean;
+    allowExemption?: boolean;
     resourceId?: string;
     resourceUri?: string;
     operationIds?: string[];
@@ -87,6 +89,7 @@ export interface UpdatePermissionOptions {
     userOwnershipConstraint?: boolean;
     orgUnitOwnershipConstraint?: boolean;
     preAuthorisedConstraint?: boolean;
+    allowExemption?: boolean;
     resourceId?: string;
     resourceUri?: string;
     operationIds?: string[];
@@ -193,6 +196,7 @@ export default class Database {
                 p.user_ownership_constraint,
                 p.org_unit_ownership_constraint,
                 p.pre_authorised_constraint,
+                p.allow_exemption,
                 op.id AS operation_id,
                 op.uri AS operation_uri,
                 op.name AS operation_name
@@ -433,6 +437,7 @@ export default class Database {
             p.user_ownership_constraint,
             p.org_unit_ownership_constraint,
             p.pre_authorised_constraint,
+            p.allow_exemption,
             op.id AS operation_id,
             op.uri AS operation_uri,
             op.name AS operation_name
@@ -1122,6 +1127,7 @@ export default class Database {
                 userOwnershipConstraint,
                 orgUnitOwnershipConstraint,
                 preAuthorisedConstraint,
+                allowExemption,
                 resourceId,
                 operationIds,
                 ownerId,
@@ -1150,18 +1156,17 @@ export default class Database {
             }
 
             description = description ? "" + description : "";
-            userOwnershipConstraint =
-                typeof userOwnershipConstraint == "boolean"
-                    ? userOwnershipConstraint
-                    : false;
-            orgUnitOwnershipConstraint =
-                typeof orgUnitOwnershipConstraint == "boolean"
-                    ? orgUnitOwnershipConstraint
-                    : false;
-            preAuthorisedConstraint =
-                typeof preAuthorisedConstraint == "boolean"
-                    ? preAuthorisedConstraint
-                    : false;
+            userOwnershipConstraint = getBoolValWithDefault(
+                userOwnershipConstraint
+            );
+            orgUnitOwnershipConstraint = getBoolValWithDefault(
+                orgUnitOwnershipConstraint
+            );
+            preAuthorisedConstraint = getBoolValWithDefault(
+                preAuthorisedConstraint
+            );
+            allowExemption = getBoolValWithDefault(allowExemption);
+
             let resource: ResourceRecord;
             if (options?.resourceUri) {
                 resource = await this.getResourceByUri(
@@ -1260,7 +1265,8 @@ export default class Database {
                 resource_id: resourceId,
                 user_ownership_constraint: userOwnershipConstraint,
                 org_unit_ownership_constraint: orgUnitOwnershipConstraint,
-                pre_authorised_constraint: preAuthorisedConstraint
+                pre_authorised_constraint: preAuthorisedConstraint,
+                allow_exemption: allowExemption
             } as any;
 
             if (ownerId) {
@@ -1284,6 +1290,7 @@ export default class Database {
                         "user_ownership_constraint",
                         "org_unit_ownership_constraint",
                         "pre_authorised_constraint",
+                        "allow_exemption",
                         "description",
                         "create_by",
                         "owner_id",
@@ -1346,6 +1353,7 @@ export default class Database {
                 userOwnershipConstraint,
                 orgUnitOwnershipConstraint,
                 preAuthorisedConstraint,
+                allowExemption,
                 resourceId,
                 resourceUri,
                 operationIds,
@@ -1490,6 +1498,10 @@ export default class Database {
                 ] = preAuthorisedConstraint;
             }
 
+            if (typeof allowExemption === "boolean") {
+                permissionData["allow_exemption"] = allowExemption;
+            }
+
             if (ownerId === null || isUuid(ownerId)) {
                 permissionData["owner_id"] = ownerId;
             } else if (ownerId && !isUuid(ownerId)) {
@@ -1521,6 +1533,7 @@ export default class Database {
                         "user_ownership_constraint",
                         "org_unit_ownership_constraint",
                         "pre_authorised_constraint",
+                        "allow_exemption",
                         "description",
                         "owner_id",
                         "edit_by",

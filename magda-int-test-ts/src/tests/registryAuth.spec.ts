@@ -180,6 +180,17 @@ describe("registry auth integration tests", () => {
         );
 
         testUserDatasetAccess(
+            // only because anonymous user has no access to draft dataset by default
+            "should not allow an anonymous user to access the draft dataset for which constraintExemption is on",
+            false,
+            {
+                constraintExemption: true
+            },
+            ANONYMOUS_USERS_ROLE_ID,
+            undefined
+        );
+
+        testUserDatasetAccess(
             "should not allow an anonymous user to access the draft dataset that is assigned to `Section B`",
             false,
             {
@@ -187,6 +198,20 @@ describe("registry auth integration tests", () => {
                 // as we don't know the actual id of orgUnit yet during test cases creation time,
                 // we choose to supply the orgName instead and convert it to orgUnitId in `testUserDatasetAccess`
                 orgUnitName: "Section B"
+            },
+            ANONYMOUS_USERS_ROLE_ID,
+            undefined
+        );
+
+        testUserDatasetAccess(
+            "should not allow an anonymous user to access the draft dataset that is assigned to `Section B` (plus constraintExemption is on for the dataset)",
+            false,
+            {
+                // access-control aspect doesn't support `orgUnitName` field
+                // as we don't know the actual id of orgUnit yet during test cases creation time,
+                // we choose to supply the orgName instead and convert it to orgUnitId in `testUserDatasetAccess`
+                orgUnitName: "Section B",
+                constraintExemption: true
             },
             ANONYMOUS_USERS_ROLE_ID,
             undefined
@@ -201,10 +226,31 @@ describe("registry auth integration tests", () => {
         );
 
         testUserDatasetAccess(
+            "should not allow an authenticated user to access the draft dataset that for which constraintExemption is on",
+            false,
+            {
+                constraintExemption: true
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            undefined
+        );
+
+        testUserDatasetAccess(
             "should not allow an authenticated user to access the draft dataset that is assigned to `Section B`",
             false,
             {
                 orgUnitName: "Section B"
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            undefined
+        );
+
+        testUserDatasetAccess(
+            "should not allow an authenticated user to access the draft dataset that is assigned to `Section B` (plus constraintExemption is on for the dataset)",
+            false,
+            {
+                orgUnitName: "Section B",
+                constraintExemption: true
             },
             AUTHENTICATED_USERS_ROLE_ID,
             undefined
@@ -221,6 +267,17 @@ describe("registry auth integration tests", () => {
         );
 
         testUserDatasetAccess(
+            "should not allow an authenticated user that is assigned to `Section B` to access the draft dataset that is assigned to `Section B` (plus constraintExemption is on for the dataset)",
+            false,
+            {
+                orgUnitName: "Section B",
+                constraintExemption: true
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            "Section B"
+        );
+
+        testUserDatasetAccess(
             "should not allow an authenticated user that is assigned to `Branch B` to access the draft dataset that is assigned to `Section B`",
             false,
             {
@@ -231,10 +288,32 @@ describe("registry auth integration tests", () => {
         );
 
         testUserDatasetAccess(
+            "should not allow an authenticated user that is assigned to `Branch B` to access the draft dataset that is assigned to `Section B` (plus constraintExemption is on for the dataset)",
+            false,
+            {
+                orgUnitName: "Section B",
+                constraintExemption: true
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            "Branch B"
+        );
+
+        testUserDatasetAccess(
             "should not allow an authenticated user that is assigned to `Branch A` to access the draft dataset that is assigned to `Section B`",
             false,
             {
                 orgUnitName: "Section B"
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            "Branch A"
+        );
+
+        testUserDatasetAccess(
+            "should not allow an authenticated user that is assigned to `Branch A` to access the draft dataset that is assigned to `Section B` (plus constraintExemption is on for the dataset)",
+            false,
+            {
+                orgUnitName: "Section B",
+                constraintExemption: true
             },
             AUTHENTICATED_USERS_ROLE_ID,
             "Branch A"
@@ -279,8 +358,29 @@ describe("registry auth integration tests", () => {
         );
 
         testUserDatasetAccess(
+            "should allow another data steward that is assigned to `Branch A` to access the draft dataset that is assigned to `Section B` but `constraintExemption` = true",
+            true,
+            {
+                orgUnitName: "Section B",
+                constraintExemption: true
+            },
+            DATA_STEWARDS_ROLE_ID,
+            "Branch A"
+        );
+
+        testUserDatasetAccess(
             "should not allow another data steward that is assigned to `Section C` to access the draft dataset that is assigned to `Section B`",
             false,
+            {
+                orgUnitName: "Section B"
+            },
+            DATA_STEWARDS_ROLE_ID,
+            "Section C"
+        );
+
+        testUserDatasetAccess(
+            "should allow another data steward that is assigned to `Section C` to access the draft dataset that is assigned to `Section B` but `constraintExemption` = true",
+            true,
             {
                 orgUnitName: "Section B"
             },
@@ -714,6 +814,109 @@ describe("registry auth integration tests", () => {
 
             expect(result).to.not.be.an.instanceof(Error);
             expect(unionToThrowable(result).id).to.equal(datasetId);
+        });
+
+        it("should allow an anonymous user with constrain permission's allowExemption = true to access dataset with `constraintExemption` = true", async () => {
+            const testUser = await authApiClient.createUser({
+                displayName: "anonymous User",
+                email: "",
+                source: "",
+                sourceId: "",
+                orgUnitId: ""
+            });
+
+            const altAnonymousRole = await authApiClient.createRole(
+                "test alternative anonymous users role"
+            );
+            const altPermission = await authApiClient.createRolePermission(
+                altAnonymousRole.id,
+                {
+                    name: "record read permission",
+                    description: "",
+                    resource_id: (
+                        await authApiClient.getResourceByUri("object/record")
+                    ).id,
+                    user_ownership_constraint: true,
+                    org_unit_ownership_constraint: true,
+                    pre_authorised_constraint: true,
+                    allow_exemption: true,
+                    operationIds: [
+                        (
+                            await authApiClient.getOperationByUri(
+                                "object/record/read"
+                            )
+                        ).id
+                    ]
+                }
+            );
+
+            const testUserId = testUser.id;
+
+            const datasetId1 = await createTestDatasetByUser(
+                DEFAULT_ADMIN_USER_ID,
+                undefined,
+                {
+                    ownerId: DEFAULT_ADMIN_USER_ID,
+                    orgUnitId: await getOrgUnitIdByName("Branch A"),
+                    constraintExemption: false
+                }
+            );
+
+            const datasetId2 = await createTestDatasetByUser(
+                DEFAULT_ADMIN_USER_ID,
+                undefined,
+                {
+                    ownerId: DEFAULT_ADMIN_USER_ID,
+                    orgUnitId: await getOrgUnitIdByName("Branch A")
+                }
+            );
+
+            const datasetId3 = await createTestDatasetByUser(
+                DEFAULT_ADMIN_USER_ID,
+                undefined,
+                {
+                    ownerId: DEFAULT_ADMIN_USER_ID,
+                    orgUnitId: await getOrgUnitIdByName("Branch A"),
+                    constraintExemption: true
+                }
+            );
+
+            // cannot access the dataset with `constraintExemption`=false
+            let result = await getRegistryClient(testUserId).getRecord(
+                datasetId1
+            );
+            expect(result).to.be.an.instanceof(ServerError);
+            expect((result as ServerError).statusCode).to.equal(404);
+
+            // cannot access the dataset with `constraintExemption` not set
+            result = await getRegistryClient(testUserId).getRecord(datasetId2);
+            expect(result).to.be.an.instanceof(ServerError);
+            expect((result as ServerError).statusCode).to.equal(404);
+
+            // can access the dataset now with `constraintExemption`=true
+            result = await getRegistryClient(testUserId).getRecord(datasetId3);
+            expect(result).to.not.be.an.instanceof(Error);
+            expect(unionToThrowable(result).id).to.equal(datasetId2);
+
+            // --- remove the allow_exemption flag
+            await authApiClient.updatePermission(altPermission.id, {
+                allow_exemption: false
+            });
+
+            // cannot access the dataset with `constraintExemption`=false
+            result = await getRegistryClient(testUserId).getRecord(datasetId1);
+            expect(result).to.be.an.instanceof(ServerError);
+            expect((result as ServerError).statusCode).to.equal(404);
+
+            // cannot access the dataset with `constraintExemption` not set
+            result = await getRegistryClient(testUserId).getRecord(datasetId2);
+            expect(result).to.be.an.instanceof(ServerError);
+            expect((result as ServerError).statusCode).to.equal(404);
+
+            // can NOT access the dataset now with `constraintExemption`=true now (as allow_exemption flag of the permission has been removed)
+            result = await getRegistryClient(testUserId).getRecord(datasetId3);
+            expect(result).to.not.be.an.instanceof(Error);
+            expect(unionToThrowable(result).id).to.equal(datasetId2);
         });
     });
 });

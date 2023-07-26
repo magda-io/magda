@@ -312,6 +312,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *        user_ownership_constraint: true,
      *        org_unit_ownership_constraint: false,
      *        pre_authorised_constraint: false,
+     *        allow_exemption: false,
      *        operations: [{
      *          id: "xxxxx-xxx-xxx-xxxx",
      *          name: "Read Draft Dataset",
@@ -494,6 +495,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *       "user_ownership_constraint": false,
      *       "org_unit_ownership_constraint": true,
      *       "pre_authorised_constraint" : false,
+     *       "allow_exemption": false,
      *       "description": "a test permission",
      *       "resource_id": "477d0720-aeda-47bd-8fc9-65badb851f46",
      *       "operationIds": ["739b5a83-291d-4420-a0eb-8fbeb2b5c186", "e64241f7-1660-4a6c-9bd9-07f716cf9156"]
@@ -506,6 +508,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *       "user_ownership_constraint": false,
      *       "org_unit_ownership_constraint": true,
      *       "pre_authorised_constraint" : false,
+     *       "allow_exemption": false,
      *       "description": "a test permission",
      *       "resource_id": "477d0720-aeda-47bd-8fc9-65badb851f46",
      *       "owner_id": "3535fdad-1804-4614-a9ce-ce196e880238",
@@ -551,7 +554,8 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                     resource_id,
                     user_ownership_constraint,
                     org_unit_ownership_constraint,
-                    pre_authorised_constraint
+                    pre_authorised_constraint,
+                    allow_exemption
                 } = req.body;
 
                 const client = await pool.connect();
@@ -566,6 +570,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                             userOwnershipConstraint: user_ownership_constraint,
                             orgUnitOwnershipConstraint: org_unit_ownership_constraint,
                             preAuthorisedConstraint: pre_authorised_constraint,
+                            allowExemption: allow_exemption,
                             resourceId: resource_id
                         },
                         client
@@ -611,6 +616,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *       "user_ownership_constraint": true,
      *       "org_unit_ownership_constraint": false,
      *       "pre_authorised_constraint": false,
+     *       "allow_exemption": false,
      *       "operationIds": ["8d4b99f3-c0c0-46e6-9832-330d14abad00", "7c2013bd-eee6-40f1-83ef-920600d21db3"]
      *     }
      *
@@ -623,6 +629,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *      "user_ownership_constraint": true,
      *      "org_unit_ownership_constraint": false,
      *      "pre_authorised_constraint": false,
+     *      "allow_exemption": false,
      *      "owner_id": "78b37c9b-a59a-4da1-9b84-ac48dff43a1a",
      *      "create_by": "78b37c9b-a59a-4da1-9b84-ac48dff43a1a",
      *      "create_time": "2022-06-03 02:28:34.794547+00",
@@ -701,7 +708,8 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                         resource_id,
                         user_ownership_constraint,
                         org_unit_ownership_constraint,
-                        pre_authorised_constraint
+                        pre_authorised_constraint,
+                        allow_exemption
                     } = req.body;
 
                     const permissionRecord = await database.updatePermission(
@@ -713,6 +721,7 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
                             userOwnershipConstraint: user_ownership_constraint,
                             orgUnitOwnershipConstraint: org_unit_ownership_constraint,
                             preAuthorisedConstraint: pre_authorised_constraint,
+                            allowExemption: allow_exemption,
                             resourceId: resource_id
                         },
                         client

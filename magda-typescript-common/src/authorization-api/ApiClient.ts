@@ -8,6 +8,7 @@ import {
     OrgUnit,
     OrgUnitRecord,
     CreateRolePermissionInputData,
+    UpdateRolePermissionInputData,
     PermissionRecord,
     OperationRecord,
     ResourceRecord
@@ -471,6 +472,24 @@ export default class ApiClient {
             uri.toString(),
             this.getMergeRequestInitOption({
                 method: "post",
+                body: JSON.stringify(permissionData)
+            })
+        );
+        return await this.processJsonResponse<PermissionRecord>(res);
+    }
+
+    async updatePermission(
+        id: string,
+        permissionData: UpdateRolePermissionInputData
+    ): Promise<PermissionRecord> {
+        if (!permissionData || !Object.keys(permissionData).length) {
+            throw new Error("Empty data supplied to update permission!");
+        }
+        const uri = urijs(`${this.baseUrl}public/permissions`);
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption({
+                method: "put",
                 body: JSON.stringify(permissionData)
             })
         );

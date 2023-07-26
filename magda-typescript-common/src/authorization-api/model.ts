@@ -109,6 +109,7 @@ export interface Permission {
     createTime?: Date;
     editBy?: string;
     editTime?: Date;
+    allowExemption: boolean;
 }
 
 export interface PermissionRecord {
@@ -124,6 +125,7 @@ export interface PermissionRecord {
     create_by: string;
     edit_time: string;
     edit_by: string;
+    allow_exemption: boolean;
 }
 
 export interface CreateRolePermissionInputData
@@ -135,9 +137,14 @@ export interface CreateRolePermissionInputData
         | "create_time"
         | "edit_by"
         | "edit_time"
+        | "allow_exemption"
     > {
     operationIds: string[];
+    allow_exemption?: boolean;
 }
+
+export interface UpdateRolePermissionInputData
+    extends Partial<CreateRolePermissionInputData> {}
 
 export type OperationRecord = {
     id: string;
