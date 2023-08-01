@@ -9,7 +9,6 @@ import {
     getUserId
 } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import { searchTableRecord } from "magda-typescript-common/src/SQLUtils";
-import getBoolValWithDefault from "magda-typescript-common/src/getBoolValWithDefault";
 import ServerError from "magda-typescript-common/src/ServerError";
 import { sqls } from "sql-syntax";
 
