@@ -55,7 +55,7 @@ function testUserDatasetAccess(
     datasetAccessControlAspect: AccessControlAspect & {
         orgUnitName?: string;
     },
-    testUserRoleId: string,
+    testUserRoleIdOrIds: string | string[],
     testUserOrgUnitName?: string,
     datasetData?: Record
 ) {
@@ -113,7 +113,7 @@ function testUserDatasetAccess(
         }
 
         let testUser2RegistryClient: RegistryApiClient;
-        if (testUserRoleId === ANONYMOUS_USERS_ROLE_ID) {
+        if (testUserRoleIdOrIds === ANONYMOUS_USERS_ROLE_ID) {
             testUser2RegistryClient = getRegistryClient();
         } else {
             const testUser2Data: CreateUserData = {
@@ -133,7 +133,12 @@ function testUserDatasetAccess(
 
             const testUser2 = await authApiClient.createUser(testUser2Data);
 
-            await authApiClient.addUserRoles(testUser2.id, [testUserRoleId]);
+            await authApiClient.addUserRoles(
+                testUser2.id,
+                typeof testUserRoleIdOrIds === "string"
+                    ? [testUserRoleIdOrIds]
+                    : testUserRoleIdOrIds
+            );
 
             testUser2RegistryClient = getRegistryClient(testUser2.id);
         }
@@ -180,6 +185,27 @@ describe("registry auth integration tests", () => {
         );
 
         testUserDatasetAccess(
+            // anonymous user has also access to published dataset that's not assigned to any org unit
+            // this is a legacy behaviour created to support the "public" semantics before the introduction of `constraintExemption`
+            "should allow an anonymous user to access the published dataset that is not assigned to any orgUnit",
+            true,
+            {},
+            ANONYMOUS_USERS_ROLE_ID,
+            undefined,
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
+        );
+
+        testUserDatasetAccess(
             // only because anonymous user has no access to draft dataset by default
             "should not allow an anonymous user to access the draft dataset for which constraintExemption is on",
             false,
@@ -188,6 +214,73 @@ describe("registry auth integration tests", () => {
             },
             ANONYMOUS_USERS_ROLE_ID,
             undefined
+        );
+
+        testUserDatasetAccess(
+            // anonymous user has access to public published dataset by default
+            "should allow an anonymous user to access the draft dataset for which constraintExemption is on",
+            true,
+            {
+                constraintExemption: true,
+                orgUnitName: "Section B"
+            },
+            ANONYMOUS_USERS_ROLE_ID,
+            undefined,
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
+        );
+
+        testUserDatasetAccess(
+            // anonymous user has access to public published dataset by default
+            // but this record has been assigned to an org unit and the record doesn't have constraintExemption = "true"
+            "should not allow an anonymous user to access the draft dataset for which constraintExemption is on",
+            false,
+            {
+                orgUnitName: "Section B"
+            },
+            ANONYMOUS_USERS_ROLE_ID,
+            undefined,
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
+        );
+
+        testUserDatasetAccess(
+            // anonymous user has also access to published dataset that's not assigned to any org unit
+            // this is a legacy behaviour created to support the "public" semantics before the introduction of `constraintExemption`
+            "should allow an anonymous user to access the draft dataset for which constraintExemption is on",
+            true,
+            {},
+            ANONYMOUS_USERS_ROLE_ID,
+            undefined,
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
         );
 
         testUserDatasetAccess(
@@ -201,6 +294,31 @@ describe("registry auth integration tests", () => {
             },
             ANONYMOUS_USERS_ROLE_ID,
             undefined
+        );
+
+        testUserDatasetAccess(
+            "should allow an anonymous user to access the published dataset that is assigned to `Section B` with constraintExemption on",
+            true,
+            {
+                // access-control aspect doesn't support `orgUnitName` field
+                // as we don't know the actual id of orgUnit yet during test cases creation time,
+                // we choose to supply the orgName instead and convert it to orgUnitId in `testUserDatasetAccess`
+                orgUnitName: "Section B",
+                constraintExemption: true
+            },
+            ANONYMOUS_USERS_ROLE_ID,
+            undefined,
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
         );
 
         testUserDatasetAccess(
@@ -226,6 +344,26 @@ describe("registry auth integration tests", () => {
         );
 
         testUserDatasetAccess(
+            // this is a legacy behaviour created to support the "public" semantics before the introduction of `constraintExemption`
+            "should allow an authenticated user to access the published dataset that is not assigned to any orgUnit",
+            true,
+            {},
+            AUTHENTICATED_USERS_ROLE_ID,
+            undefined,
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
+        );
+
+        testUserDatasetAccess(
             "should not allow an authenticated user to access the draft dataset that for which constraintExemption is on",
             false,
             {
@@ -233,6 +371,27 @@ describe("registry auth integration tests", () => {
             },
             AUTHENTICATED_USERS_ROLE_ID,
             undefined
+        );
+
+        testUserDatasetAccess(
+            "should allow an authenticated user to access the published dataset that for which constraintExemption is on",
+            true,
+            {
+                constraintExemption: true
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            undefined,
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
         );
 
         testUserDatasetAccess(
@@ -257,6 +416,28 @@ describe("registry auth integration tests", () => {
         );
 
         testUserDatasetAccess(
+            "should allow an authenticated user to access the published dataset that is assigned to `Section B` (plus constraintExemption is on for the dataset)",
+            true,
+            {
+                orgUnitName: "Section B",
+                constraintExemption: true
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            undefined,
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
+        );
+
+        testUserDatasetAccess(
             "should not allow an authenticated user that is assigned to `Section B` to access the draft dataset that is assigned to `Section B`",
             false,
             {
@@ -264,6 +445,27 @@ describe("registry auth integration tests", () => {
             },
             AUTHENTICATED_USERS_ROLE_ID,
             "Section B"
+        );
+
+        testUserDatasetAccess(
+            "should allow an authenticated user that is assigned to `Section B` to access the published dataset that is assigned to `Section B`",
+            true,
+            {
+                orgUnitName: "Section B"
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            "Section B",
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
         );
 
         testUserDatasetAccess(
@@ -278,6 +480,28 @@ describe("registry auth integration tests", () => {
         );
 
         testUserDatasetAccess(
+            "should allow an authenticated user that is assigned to `Section B` to access the published dataset that is assigned to `Section B` (plus constraintExemption is on for the dataset)",
+            true,
+            {
+                orgUnitName: "Section B",
+                constraintExemption: true
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            "Section B",
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
+        );
+
+        testUserDatasetAccess(
             "should not allow an authenticated user that is assigned to `Branch B` to access the draft dataset that is assigned to `Section B`",
             false,
             {
@@ -285,6 +509,27 @@ describe("registry auth integration tests", () => {
             },
             AUTHENTICATED_USERS_ROLE_ID,
             "Branch B"
+        );
+
+        testUserDatasetAccess(
+            "should allow an authenticated user that is assigned to `Branch B` to access the published dataset that is assigned to `Section B`",
+            true,
+            {
+                orgUnitName: "Section B"
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            "Branch B",
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
         );
 
         testUserDatasetAccess(
@@ -296,6 +541,28 @@ describe("registry auth integration tests", () => {
             },
             AUTHENTICATED_USERS_ROLE_ID,
             "Branch B"
+        );
+
+        testUserDatasetAccess(
+            "should allow an authenticated user that is assigned to `Branch B` to access the published dataset that is assigned to `Section B` (plus constraintExemption is on for the dataset)",
+            true,
+            {
+                orgUnitName: "Section B",
+                constraintExemption: true
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            "Branch B",
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
         );
 
         testUserDatasetAccess(
@@ -320,10 +587,32 @@ describe("registry auth integration tests", () => {
         );
 
         testUserDatasetAccess(
+            "should allow an authenticated user that is assigned to `Branch A` to access the published dataset that is assigned to `Section B` (plus constraintExemption is on for the dataset)",
+            true,
+            {
+                orgUnitName: "Section B",
+                constraintExemption: true
+            },
+            AUTHENTICATED_USERS_ROLE_ID,
+            "Branch A",
+            {
+                id: "",
+                name: "",
+                aspects: {
+                    publishing: {
+                        state: "published"
+                    }
+                },
+                sourceTag: "",
+                tenantId: 0
+            }
+        );
+
+        testUserDatasetAccess(
             "should allow another data steward that is not assigned to any orgUnit to access the draft dataset that is not assigned to any orgUnit",
             true,
             {},
-            DATA_STEWARDS_ROLE_ID,
+            [DATA_STEWARDS_ROLE_ID, AUTHENTICATED_USERS_ROLE_ID],
             undefined
         );
 
@@ -333,7 +622,7 @@ describe("registry auth integration tests", () => {
             {
                 orgUnitName: "Section B"
             },
-            DATA_STEWARDS_ROLE_ID,
+            [DATA_STEWARDS_ROLE_ID, AUTHENTICATED_USERS_ROLE_ID],
             "Section B"
         );
 
@@ -343,7 +632,7 @@ describe("registry auth integration tests", () => {
             {
                 orgUnitName: "Section B"
             },
-            DATA_STEWARDS_ROLE_ID,
+            [DATA_STEWARDS_ROLE_ID, AUTHENTICATED_USERS_ROLE_ID],
             "Branch B"
         );
 
@@ -353,7 +642,7 @@ describe("registry auth integration tests", () => {
             {
                 orgUnitName: "Section B"
             },
-            DATA_STEWARDS_ROLE_ID,
+            [DATA_STEWARDS_ROLE_ID, AUTHENTICATED_USERS_ROLE_ID],
             "Branch A"
         );
 
@@ -364,7 +653,7 @@ describe("registry auth integration tests", () => {
                 orgUnitName: "Section B",
                 constraintExemption: true
             },
-            DATA_STEWARDS_ROLE_ID,
+            [DATA_STEWARDS_ROLE_ID, AUTHENTICATED_USERS_ROLE_ID],
             "Branch A"
         );
 
@@ -374,7 +663,7 @@ describe("registry auth integration tests", () => {
             {
                 orgUnitName: "Section B"
             },
-            DATA_STEWARDS_ROLE_ID,
+            [DATA_STEWARDS_ROLE_ID, AUTHENTICATED_USERS_ROLE_ID],
             "Section C"
         );
 
@@ -382,9 +671,10 @@ describe("registry auth integration tests", () => {
             "should allow another data steward that is assigned to `Section C` to access the draft dataset that is assigned to `Section B` but `constraintExemption` = true",
             true,
             {
-                orgUnitName: "Section B"
+                orgUnitName: "Section B",
+                constraintExemption: true
             },
-            DATA_STEWARDS_ROLE_ID,
+            [DATA_STEWARDS_ROLE_ID, AUTHENTICATED_USERS_ROLE_ID],
             "Section C"
         );
 
@@ -819,7 +1109,7 @@ describe("registry auth integration tests", () => {
         it("should allow an anonymous user with constrain permission's allowExemption = true to access dataset with `constraintExemption` = true", async () => {
             const testUser = await authApiClient.createUser({
                 displayName: "anonymous User",
-                email: "",
+                email: "xxx@xx.com",
                 source: "",
                 sourceId: "",
                 orgUnitId: ""
