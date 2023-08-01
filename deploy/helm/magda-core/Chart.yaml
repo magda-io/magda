@@ -3,77 +3,77 @@ name: "magda-core"
 description: "A complete solution for managing, publishing and discovering
   government data, private and open. This chart includes all core magda
   modules."
-version: "2.2.5-alpha.0"
+version: "2.2.5"
 home: "https://github.com/magda-io/magda"
 sources: [ "https://github.com/magda-io/magda" ]
 annotations:
   magdaModuleType: "core"
 dependencies:
   - name: magda-common
-    version: "2.2.5-alpha.0"
+    version: "2.2.5"
     repository: "file://../magda-common"
   - name: apidocs-server
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/apidocs-server
     tags:
       - all
       - apidocs-server
   - name: authorization-api
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/authorization-api
     tags:
       - all
       - authorization-api
   - name: authorization-db
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/authorization-db
     tags:
       - all
       - authorization-db
   - name: cloud-sql-proxy
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/cloud-sql-proxy
     tags:
       - all
       - cloud-sql-proxy
   - name: combined-db
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/combined-db
     tags:
       - all
       - combined-db
   - name: content-api
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/content-api
     tags:
       - all
       - content-api
   - name: content-db
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/content-db
     tags:
       - all
       - content-db
   - name: correspondence-api
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/correspondence-api
     tags:
       # To enable correspondence-api, please manually set `tags.correspondence-api` to true
       - correspondence-api
   - name: elasticsearch
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/elasticsearch
     tags:
       - all
       - elasticsearch
   - name: gateway
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/gateway
     tags:
       - all
       - gateway
   - name: indexer
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/indexer
     tags:
       - all
@@ -86,61 +86,61 @@ dependencies:
       - all
       - preview-map
   - name: registry-api
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/registry-api
     tags:
       - all
       - registry-api
   - name: registry-db
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/registry-db
     tags:
       - all
       - registry-db
   - name: search-api
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/search-api
     tags:
       - all
       - search-api
   - name: search-api-node
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/search-api-node
     tags:
       - search-api-node
   - name: session-db
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/session-db
     tags:
       - all
       - session-db
   - name: web-server
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/web-server
     tags:
       - all
       - web-server
   - name: admin-api
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/admin-api
     tags:
       - all
       - admin-api
   - name: storage-api
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/storage-api
     tags:
       - all
       - storage-api
   - name: tenant-api
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/tenant-api
     condition: global.enableMultiTenants
     tags:
       - all
       - tenant-api
   - name: tenant-db
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/tenant-db
     condition: global.enableMultiTenants
     tags:
@@ -148,17 +148,17 @@ dependencies:
       - tenant-db
   # K8s misc
   - name: priorities
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/priorities
     tags:
       - priorities
   - name: ingress
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/ingress
     tags:
       - ingress
   - name: rds-dev-proxy
-    version: 2.2.5-alpha.0
+    version: 2.2.5
     repository: file://../internal-charts/rds-dev-proxy
     tags:
       - rds-dev-proxy
