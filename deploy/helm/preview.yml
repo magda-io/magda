@@ -23,6 +23,27 @@ magda:
     operator: 
       createCRD: false
   magda-core:
+
+    registry-api:
+      db:
+        poolInitialSize: 6
+      deployments:
+        readOnly:
+          enable: true
+      appConfig:
+        db-query:
+          global-timeout: 16m
+          default-timeout: 91s
+        printFullConfig: true
+
+    search-api:
+      datasetsIndexVersion: 48
+      regionsIndexVersion: 24
+      appConfig:  
+        printFullConfig: true
+        elasticSearch:
+          maxRetryTimeout: 40000
+      
     ingress:
       ingressClass: nginx
       enableTls: true
@@ -41,6 +62,8 @@ magda:
         baseUrl: http://magda-auth-arcgis
       - key: facebook
         baseUrl: http://magda-auth-facebook
+      - key: oidc
+        baseUrl: http://magda-auth-oidc
       autoscaler:
         enabled: false
       helmet:
@@ -105,6 +128,10 @@ magda:
         useGcsSnapshots: true
         gcsSnapshotBucket: "magda-es-snapshots-dev"
         gcsSnapshotClient: "default"
+      appConfig:  
+        printFullConfig: true
+        crawler:
+          streamControllerSourceBufferSize: 110
 
     web-server:
       fallbackUrl: "https://data.gov.au"

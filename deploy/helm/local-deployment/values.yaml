@@ -19,6 +19,10 @@ magda-auth-arcgis:
 magda-auth-facebook:
   clientId: "173073926555600"
 
+magda-auth-oidc:
+  issuer: "https://dev-abl6o888klaahobo.us.auth0.com"
+  clientId: "O0R7GLzRxWJqzGwfUrYHfcMZTNAELgfh"
+
 connector-dga:
   config:
     id: dga

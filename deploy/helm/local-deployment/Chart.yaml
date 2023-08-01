@@ -36,6 +36,13 @@ dependencies:
       - all
       - magda-auth-facebook
 
+  - name: magda-auth-oidc
+    version: "2.0.0-alpha.0"
+    repository: "oci://ghcr.io/magda-io/charts"
+    tags:
+      - all
+      - magda-auth-oidc
+
   ## Data.gov.au connector to provide some initial data. Remove this if you
   ## don't want any data.gov.au connector
   - name: magda-ckan-connector
