@@ -37,7 +37,7 @@ dependencies:
       - magda-auth-facebook
 
   - name: magda-auth-oidc
-    version: "2.0.0-alpha.0"
+    version: "2.0.1"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
