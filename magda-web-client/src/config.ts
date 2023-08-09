@@ -459,6 +459,8 @@ export interface ConfigDataType {
      */
     defaultCkanServer: string;
 
+    chatBotApiBaseUrl?: string;
+
     /**
      * The default timezone used in the application.
      *
@@ -992,7 +994,10 @@ export const config: ConfigDataType = {
         : "/home",
     authStatusRefreshInterval: serverConfig?.authStatusRefreshInterval
         ? serverConfig.authStatusRefreshInterval
-        : 300000
+        : 300000,
+    chatBotApiBaseUrl: serverConfig?.chatBotApiBaseUrl
+        ? serverConfig.chatBotApiBaseUrl
+        : "/chatbot"
 };
 
 export type Config = typeof config;

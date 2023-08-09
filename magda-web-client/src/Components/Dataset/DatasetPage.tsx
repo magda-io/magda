@@ -34,6 +34,7 @@ import {
 } from "externalPluginComponents";
 import ucwords from "ucwords";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
+import ChatBox from "Components/ChatBox";
 
 const ExternalDatasetEditButton = getPluginDatasetEditButton();
 const ExternalDatasetLikeButton = getPluginDatasetLikeButton();
@@ -229,6 +230,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                     addMargin ? "form-margin" : ""
                                 }`}
                             >
+                                <ChatBox />
                                 <DatasetPageSuggestForm
                                     title={dataset.title}
                                     toggleMargin={setAddMargin}

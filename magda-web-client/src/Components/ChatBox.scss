@@ -1,0 +1,63 @@
+.magda-chat-box-main-container {
+    .launch-button {
+        position: fixed;
+        bottom: 100px;
+        right: 50px;
+        z-index: 10;
+        .rs-btn-icon {
+            padding: 12px 8px 8px 28px;
+        }
+        .heading {
+            font-weight: bold;
+        }
+        svg {
+            position: absolute;
+            left: 8px;
+            top: 15px;
+        }
+    }
+}
+.magda-chat-box-message-area-body {
+    height: 99%;
+    .message-area {
+        margin-top: 40px;
+        height: 690px;
+        .rs-list {
+            height: 690px;
+            overflow-y: scroll;
+            .rs-list-item {
+                margin-top: 10px;
+                margin-bottom: 10px;
+                width: 390px;
+                padding-top: 5px;
+                padding-bottom: 5px;
+                padding-left: 10px;
+                padding-right: 5px;
+                pre {
+                    text-wrap: wrap;
+                }
+            }
+            .rs-list-item.bot-message {
+                float: left;
+                border-radius: 10px;
+                border: none;
+                background-color: #e7e7e7;
+            }
+
+            .rs-list-item.user-message {
+                float: right;
+                border-radius: 10px;
+                border: none;
+                background-color: var(--rs-btn-primary-bg);
+                color: #ffffff;
+            }
+        }
+    }
+    .message-input {
+        margin-top: 20px;
+    }
+    .send-button {
+        margin-top: 10px;
+        float: right;
+    }
+}
