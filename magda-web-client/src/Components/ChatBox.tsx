@@ -6,7 +6,8 @@ import {
     Input,
     Panel,
     IconButton,
-    List
+    List,
+    Loader
 } from "rsuite";
 import Notification from "rsuite/Notification";
 import toaster from "rsuite/toaster";
@@ -61,6 +62,10 @@ const ChatBox: FunctionComponent = () => {
             setMessages([
                 ...messages,
                 {
+                    type: "user",
+                    content: sendOutText
+                },
+                {
                     type: "bot",
                     content: botMessage
                 }
@@ -90,6 +95,9 @@ const ChatBox: FunctionComponent = () => {
             </ButtonToolbar>
             <Drawer open={open} onClose={() => setOpen(false)}>
                 <Drawer.Body className="magda-chat-box-message-area-body">
+                    {sendMessage.loading && (
+                        <Loader backdrop content="loading..." vertical />
+                    )}
                     <Panel
                         header="Chat with Magda"
                         bordered
