@@ -45,13 +45,6 @@ dependencies:
     tags:
       - connectors
       - connector-dga
-  - name: magda-csw-connector
-    version: "2.0.2"
-    alias: connector-environment
-    repository: "oci://ghcr.io/magda-io/charts"
-    tags:
-      - connectors
-      - connector-environment
   - name: magda-project-open-data-connector
     version: "2.0.0"
     alias: connector-dcceew

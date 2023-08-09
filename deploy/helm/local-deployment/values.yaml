@@ -27,13 +27,6 @@ connector-dga:
     pageSize: 100
     ignoreHarvestSources: ["*"]
 
-connector-environment:
-  config:
-    id: environment
-    name: Department of the Environment and Energy
-    sourceUrl: http://www.environment.gov.au/fed/csw
-    pageSize: 100
-
 connector-dcceew:
   config:
     id: dcceew
