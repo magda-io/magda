@@ -120,10 +120,16 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
     }
 
     async function appendUserInfoToInput(req: express.Request) {
-        const userInfo: User = await database.getCurrentUserInfo(
-            req,
-            jwtSecret
-        );
+        let userInfo: User;
+
+        try {
+            userInfo = await database.getCurrentUserInfo(req, jwtSecret);
+        } catch (e) {
+            console.error(
+                `Failed to get current user info for decision making: ${e}`
+            );
+            userInfo = await database.getDefaultAnonymousUserInfo();
+        }
 
         let reqData: any = {};
         const contentType = req.get("content-type");

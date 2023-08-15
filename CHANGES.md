@@ -7,6 +7,7 @@
 - Move format `ESRI FEATURESERVER` under `csv-geo-au` in the default map preview format perference list
 - Fixed: registry records editor UI doesn't encode long record ID correctly
 - Provides HTTP header name information on user api key creation screen
+- #3477: decision endpoint should make decision based on anonymous user's data when the user doesn't exist
 
 ## v2.2.5
 
