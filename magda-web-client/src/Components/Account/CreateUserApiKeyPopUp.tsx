@@ -150,6 +150,21 @@ const CreateUserApiKeyPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                 <span>{apiKeyCreationResult?.key}</span>
                             </List.Item>
                         </List>
+                        <br />
+                        <Message showIcon type="info">
+                            You can add the following HTTP headers to your
+                            requests to perform API calls on behalf of yourself:
+                        </Message>
+                        <List bordered>
+                            <List.Item>
+                                <span>X-Magda-API-Key-Id</span>:{" "}
+                                <span>{apiKeyCreationResult?.id}</span>
+                            </List.Item>
+                            <List.Item>
+                                <span>X-Magda-API-Key</span>:{" "}
+                                <span>{apiKeyCreationResult?.key}</span>
+                            </List.Item>
+                        </List>
                     </>
                 ) : (
                     <>

@@ -6,6 +6,7 @@
 - #3478 Added the support of the new preview-map-settings aspect
 - Move format `ESRI FEATURESERVER` under `csv-geo-au` in the default map preview format perference list
 - Fixed: registry records editor UI doesn't encode long record ID correctly
+- Provides HTTP header name information on user api key creation screen
 
 ## v2.2.5
 
