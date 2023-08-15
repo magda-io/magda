@@ -43,6 +43,11 @@ export type sourceAspect = {
     };
 };
 
+export type previewMapSettingsAspect = {
+    enable?: boolean;
+    format?: string;
+};
+
 export type dcatDistributionStrings = {
     format: string;
     downloadURL: string;
@@ -126,6 +131,7 @@ export type RawDistribution = {
             wellFormed: boolean;
             compatiblePreviews: CompatiblePreviews;
         };
+        "preview-map-settings"?: previewMapSettingsAspect;
         "spatial-coverage": {
             bbox?: number[];
         };
@@ -202,6 +208,7 @@ export type RawDataset = {
         "dataset-draft"?: DatasetDraft;
         currency?: CurrencyData;
         publishing?: PublishingAspect;
+        "preview-map-settings"?: previewMapSettingsAspect;
     };
 };
 
@@ -231,6 +238,7 @@ export type ParsedDistribution = {
     };
     version?: VersionAspectData;
     byteSize?: number;
+    rawData: RawDistribution;
 };
 
 export type ParsedProvenance = {
@@ -282,6 +290,7 @@ export type ParsedDataset = {
     ckanExport?: CkanExportAspectType;
     access: Access;
     defaultLicense?: string;
+    rawData: RawDataset;
 };
 
 export const emptyPublisher: Publisher = {
@@ -483,7 +492,8 @@ export function parseDistribution(
         accessControl,
         publishingState: publishing["state"],
         version: aspects["version"],
-        byteSize: info?.byteSize
+        byteSize: info?.byteSize,
+        rawData: record as RawDistribution
     };
 }
 
@@ -616,7 +626,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             visualizationInfo: visualizationInfo ? visualizationInfo : null,
             sourceDetails: distributionAspects["source"],
             ckanResource: distributionAspects["ckan-resource"],
-            byteSize: info?.byteSize
+            byteSize: info?.byteSize,
+            rawData: d
         };
     });
     return {
@@ -654,6 +665,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             datasetInfo["accrualPeriodicityRecurrenceRule"] || "",
         ckanExport,
         access: aspects["access"],
-        defaultLicense: datasetInfo?.defaultLicense
+        defaultLicense: datasetInfo?.defaultLicense,
+        rawData: dataset as RawDataset
     };
 }

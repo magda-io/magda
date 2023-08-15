@@ -245,7 +245,8 @@ export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
     "information-security",
     "currency",
     "ckan-export",
-    "version"
+    "version",
+    "preview-map-settings"
 ];
 
 export const DEFAULT_COMPULSORY_FETCH_ASPECT_LIST = ["dcat-dataset-strings"];
@@ -313,7 +314,9 @@ export async function fetchRecordAspect<T = any>(
 ): Promise<T> {
     const url =
         config.registryApiReadOnlyBaseUrl +
-        `records/${datasetId}/aspects/${aspectId}`;
+        `records/${encodeURIComponent(datasetId)}/aspects/${encodeURIComponent(
+            aspectId
+        )}`;
 
     const res = await fetch(
         url,
@@ -542,7 +545,9 @@ export async function deleteRecordAspect(
 ): Promise<[boolean, number]> {
     const [res, headers] = await request<{ deleted: boolean }>(
         "DELETE",
-        `${config.registryApiBaseUrl}records/${recordId}/aspects/${aspectId}`,
+        `${config.registryApiBaseUrl}records/${encodeURIComponent(
+            recordId
+        )}/aspects/${encodeURIComponent(aspectId)}`,
         undefined,
         undefined,
         true
@@ -555,7 +560,7 @@ export async function deleteRecord(
 ): Promise<[boolean, number]> {
     const [res, headers] = await request<{ deleted: boolean }>(
         "DELETE",
-        `${config.registryApiBaseUrl}records/${recordId}`,
+        `${config.registryApiBaseUrl}records/${encodeURIComponent(recordId)}`,
         undefined,
         undefined,
         true
@@ -730,7 +735,9 @@ export async function updateRecordAspect<T = any>(
 
     const [json, headers] = await request<T>(
         "PUT",
-        `${config.registryApiBaseUrl}records/${recordId}/aspects/${aspectId}${
+        `${config.registryApiBaseUrl}records/${encodeURIComponent(
+            recordId
+        )}/aspects/${encodeURIComponent(aspectId)}${
             merge ? "?merge=true" : ""
         }`,
         aspectData,
@@ -763,7 +770,7 @@ export async function patchRecord<T = any>(
 ): Promise<[T, number]> {
     const [json, headers] = await request<T>(
         "PATCH",
-        `${config.registryApiBaseUrl}records/${recordId}`,
+        `${config.registryApiBaseUrl}records/${encodeURIComponent(recordId)}`,
         jsonPath,
         "application/json",
         true

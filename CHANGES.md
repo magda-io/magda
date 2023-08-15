@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v2.2.6
+
+- Upgrade magda-format-minion to v2.0.1
+- #3478 Added the support of the new preview-map-settings aspect
+- Move format `ESRI FEATURESERVER` under `csv-geo-au` in the default map preview format perference list
+- Fixed: registry records editor UI doesn't encode long record ID correctly
+
 ## v2.2.5
 
 - #3463: Fixed Registry API performance issues related to host connection pool & blocking DB IO
