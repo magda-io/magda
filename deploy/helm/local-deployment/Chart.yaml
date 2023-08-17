@@ -29,6 +29,10 @@ dependencies:
       - all
       - magda-auth-arcgis
 
+  - name: magda-auth-oidc
+    version: "2.0.2"
+    repository: "oci://ghcr.io/magda-io/charts"
+
   - name: magda-auth-facebook
     version: "2.0.0"
     repository: "oci://ghcr.io/magda-io/charts"

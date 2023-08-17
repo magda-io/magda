@@ -18,6 +18,10 @@ tags:
   priorities: false
   connectors: true
 
+magda-auth-oidc:
+  issuer: "https://dev-ykd4wvboo8khm8mg.au.auth0.com/"
+  clientId: "VY2TXKd7y8CkuOjWFOFM30i4RC55YWSm"
+
 magda:
   openfaas:
     operator: 
@@ -41,6 +45,8 @@ magda:
         baseUrl: http://magda-auth-arcgis
       - key: facebook
         baseUrl: http://magda-auth-facebook
+      - key: oidc
+        baseUrl: http://magda-auth-oidc
       autoscaler:
         enabled: false
       helmet:
