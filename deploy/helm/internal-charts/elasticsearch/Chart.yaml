@@ -1,7 +1,7 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: elasticsearch
-version: 2.2.5-alpha.0
+version: 2.2.6
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
