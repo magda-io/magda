@@ -13,7 +13,7 @@ dependencies:
   version: 2.0.1
 - name: magda-auth-oidc
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.2
+  version: 2.0.3
 - name: magda-auth-facebook
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
@@ -23,5 +23,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
-digest: sha256:811ac07711b268f50d33d6b3dc549bd20181dbbff1fb8c1c5ac3cd491d3ec35d
-generated: "2023-08-18T00:42:21.730731+10:00"
+digest: sha256:687fa678fe81397aefb7179f1ebd9fd166fbd3c9a21010cccdb1bc8cc8a1c4ba
+generated: "2023-08-18T18:25:53.154496+10:00"

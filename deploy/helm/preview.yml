@@ -21,6 +21,7 @@ tags:
 magda-auth-oidc:
   issuer: "https://dev-ykd4wvboo8khm8mg.au.auth0.com/"
   clientId: "VY2TXKd7y8CkuOjWFOFM30i4RC55YWSm"
+  autoMapOrg: true
 
 magda:
   openfaas:
