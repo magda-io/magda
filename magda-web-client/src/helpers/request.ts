@@ -41,20 +41,33 @@ export default async function request<T = any, CT = string>(
     returnHeaders: boolean = false,
     extraRequestOptions: RequestInit = {}
 ): Promise<[T, Headers] | T> {
-    const fetchOptions = Object.assign({}, config.commonFetchRequestOptions, {
-        method,
-        ...extraRequestOptions
+    const baseFetchOptions = {
+        ...config.commonFetchRequestOptions,
+        ...extraRequestOptions,
+        ...(extraRequestOptions?.headers
+            ? {
+                  headers: {
+                      ...config.commonFetchRequestOptions.headers,
+                      ...extraRequestOptions.headers
+                  }
+              }
+            : {})
+    };
+    const fetchOptions = Object.assign({}, baseFetchOptions, {
+        method
     });
     if (body !== undefined) {
         if (contentType === "application/json") {
             fetchOptions.body = JSON.stringify(body);
             fetchOptions.headers = {
+                ...(fetchOptions?.headers ? fetchOptions.headers : {}),
                 "Content-type": "application/json"
             };
         } else {
             fetchOptions.body = body;
             if (typeof contentType === "string") {
                 fetchOptions.headers = {
+                    ...(fetchOptions?.headers ? fetchOptions.headers : {}),
                     "Content-type": contentType
                 };
             }

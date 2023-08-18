@@ -29,7 +29,10 @@ export default class DatasetPagePreview extends Component {
                     dataset={this.props.dataset}
                     distribution={this.getDistributionForVis(distributions)}
                 />
-                <DataPreviewMap distributions={distributions} />
+                <DataPreviewMap
+                    dataset={this.props.dataset}
+                    distributions={distributions}
+                />
                 {extraVisualisationSections?.length
                     ? extraVisualisationSections.map(
                           (ExtraVisualisationSection, idx) => (

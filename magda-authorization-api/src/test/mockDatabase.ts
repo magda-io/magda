@@ -12,6 +12,7 @@ import Database from "../Database";
 import NestedSetModelQueryer, { NodeRecord } from "../NestedSetModelQueryer";
 import pg from "pg";
 import mockApiKeyStore from "./mockApiKeyStore";
+import { defaultAnonymousUserInfo } from "../Database";
 
 export default class MockDatabase {
     getUser(id: string): Promise<Maybe<User>> {
@@ -77,6 +78,19 @@ export default class MockDatabase {
 
     check() {}
 
+    async getDefaultAnonymousUserInfo(): Promise<User> {
+        const user = { ...defaultAnonymousUserInfo };
+        try {
+            user.permissions = await this.getRolePermissions(user.roles[0].id);
+            user.roles[0].permissionIds = user.permissions.map(
+                (item) => item.id
+            );
+            return user;
+        } catch (e) {
+            return user;
+        }
+    }
+
     async getCurrentUserInfo(req: any, jwtSecret: string): Promise<User> {
         const db = sinon.createStubInstance(Database);
         db.getUserPermissions.callsFake(this.getUserPermissions);
@@ -84,7 +98,9 @@ export default class MockDatabase {
         db.getUserRoles.callsFake(this.getUserRoles);
         db.getUser.callsFake(this.getUser);
         db.getCurrentUserInfo.callThrough();
-        db.getDefaultAnonymousUserInfo.callThrough();
+        db.getDefaultAnonymousUserInfo.callsFake(
+            this.getDefaultAnonymousUserInfo
+        );
         return await db.getCurrentUserInfo(req, jwtSecret);
     }
 

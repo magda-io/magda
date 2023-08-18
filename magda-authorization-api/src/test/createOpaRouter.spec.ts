@@ -17,6 +17,7 @@ import Database from "../Database";
 import mockApiKeyStore from "./mockApiKeyStore";
 import { ANONYMOUS_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants";
 import testDataSimple from "magda-typescript-common/src/test/sampleOpaResponses/simple.json";
+import buildJwt from "magda-typescript-common/src/session/buildJwt";
 
 describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
@@ -101,10 +102,6 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
         return app;
     }
-
-    /*function setMockRequestSession(req: Request, userId: string) {
-        return req.set("X-Magda-Session", buildJwt(argv.jwtSecret, userId));
-    }*/
 
     describe("Test `/decision`", () => {
         it("should return 400 status code if not specify operation uri", async () => {
@@ -486,6 +483,82 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
             expect(query.pretty).to.be.equal("true");
             expect(scope.isDone()).to.be.equal(true);
+        });
+
+        it("should making decisions using the correct users info based on singed JWT token carried in request header", async () => {
+            let data: any;
+
+            mockUserDataStore.reset();
+
+            const user = mockUserDataStore.createRecord({
+                displayName: "test user",
+                photoURL: "",
+                isAdmin: false,
+                email: "xxx@email123.com",
+                source: "source_1",
+                sourceId: "source_id_1"
+            });
+
+            const scope = createOpaNockScope((queryParams, requestData) => {
+                data = requestData;
+            });
+            const req = request(app)
+                .get(`/decision/object/any-object/any-operation`)
+                .set("X-Magda-Session", buildJwt(argv.jwtSecret, user.id));
+
+            const res = await req;
+            // should be no error and return 200 status code
+            expect(res.ok).to.be.equal(true);
+            expect(res.body.hasResidualRules).to.be.equal(false);
+            expect(res.body.result).to.be.equal(false);
+            expect(scope.isDone()).to.be.equal(true);
+            expect(data.input.user.id).to.equal(user.id);
+            expect(data.input.user.email).to.equal(user.email);
+            expect(data.input.operationUri).to.equal(
+                "object/any-object/any-operation"
+            );
+            expect(data.input.resourceUri).to.equal("object/any-object");
+            expect(data.input.timestamp).to.be.within(
+                Date.now() - 20000,
+                Date.now() + 20000
+            );
+        });
+
+        it("should making decisions using anonymous users info when failed to retrieve the user info (user doesn't exist)", async () => {
+            let data: any;
+
+            mockUserDataStore.reset();
+
+            const scope = createOpaNockScope((queryParams, requestData) => {
+                data = requestData;
+            });
+            const req = request(app)
+                .get(`/decision/object/any-object/any-operation`)
+                .set(
+                    "X-Magda-Session",
+                    buildJwt(
+                        argv.jwtSecret,
+                        "ddd4a2ca-c536-45a9-8bee-eea21c630e4b"
+                    )
+                );
+
+            const res = await req;
+            // should be no error and return 200 status code
+            expect(res.ok).to.be.equal(true);
+            expect(res.body.hasResidualRules).to.be.equal(false);
+            expect(res.body.result).to.be.equal(false);
+            expect(scope.isDone()).to.be.equal(true);
+            expect(
+                data.input.user.roles?.map((item: any) => item.id)
+            ).to.have.members([ANONYMOUS_USERS_ROLE_ID]);
+            expect(data.input.operationUri).to.equal(
+                "object/any-object/any-operation"
+            );
+            expect(data.input.resourceUri).to.equal("object/any-object");
+            expect(data.input.timestamp).to.be.within(
+                Date.now() - 20000,
+                Date.now() + 20000
+            );
         });
     });
 

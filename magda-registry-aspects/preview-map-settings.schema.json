@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Preview Map Settings",
+    "description": "Provides extra preview map configuration options at dataset/distribution level.",
+    "type": "object",
+    "properties": {
+        "enable": {
+            "title": "Whether the preview map UI feature should be enabled for the attached dataset/distribution.",
+            "type": "boolean",
+            "default": true
+        },
+        "format": {
+            "title": "Only available for distribution records. It can be used to override the format string of the distribution.",
+            "type": "string"
+        }
+    }
+}
