@@ -1,6 +1,6 @@
 # search-api
 
-![Version: 2.2.4-alpha.1](https://img.shields.io/badge/Version-2.2.4--alpha.1-informational?style=flat-square)
+![Version: 2.2.6](https://img.shields.io/badge/Version-2.2.6-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -12,6 +12,8 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| appConfig | object | `{"authApi":{"baseUrl":"http://authorization-api"},"elasticSearch":{"serverUrl":"elasticsearch://elasticsearch:9200"},"http":{"port":6102},"printFullConfig":false}` | application config. Allow to configure any application config fields. For all available configuration fields and their default values, please refer to [application.conf](https://github.com/magda-io/magda/blob/main/magda-search-api/src/main/resources/application.conf) This config field is available since v2.2.5 Although can be set via `.Values.appConfig` as well, the following config fields will override the config set via `.Values.appConfig`: `.Values.debug`, `.Values.datasetsIndexVersion`, `.Values.regionsIndexVersion`, `.Values.publishersIndexVersion`, `.Values.formatsIndexVersion`, |
+| appConfig.printFullConfig | bool | `false` | whether print out full config data at application starting up for debug purpose only |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |

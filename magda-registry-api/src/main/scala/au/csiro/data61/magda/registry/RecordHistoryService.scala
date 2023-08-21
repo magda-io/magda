@@ -24,6 +24,9 @@ import scalikejdbc.interpolation.SQLSyntax
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
+import au.csiro.data61.magda.directives.RouteDirectives.completeBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+
 /**
   * @apiGroup Registry Record History
   * @api {get} /v0/registry/records/{recordId}/history Get a list of all events affecting this record
@@ -68,6 +71,13 @@ class RecordHistoryService(
     eventPersistence: EventPersistence
 ) extends Protocols
     with SprayJsonSupport {
+
+  private val defaultQueryTimeout = config
+    .getDuration(
+      "db-query.default-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
 
   implicit private val ec: ExecutionContext = system.dispatcher
 
@@ -180,8 +190,9 @@ class RecordHistoryService(
               authApiClient,
               id
             ) {
-              complete(
+              completeBlockingTask(
                 DB readOnly { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   val aspectIdSet = aspects.toSet
 
                   if (dereference.getOrElse(false)) {
@@ -298,30 +309,38 @@ class RecordHistoryService(
         requiresTenantId { tenantId =>
           parameters('aspect.*, 'optionalAspect.*) {
             (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
-              DB readOnly { implicit session =>
-                val events = eventPersistence.streamEventsUpTo(
-                  version.toLong,
-                  recordId = Some(id),
-                  tenantId = tenantId
+              extractActorSystem { routeActor =>
+                implicit val blockingExeCtx = routeActor.dispatchers.lookup(
+                  "registry-event-versioning-dispatcher"
                 )
-                val recordSource =
-                  recordPersistence.reconstructRecordFromEvents(
-                    id,
-                    events,
-                    aspects,
-                    optionalAspects
-                  )
-                val sink = Sink.head[Option[Record]]
-                val future = recordSource.runWith(sink)(materializer)
-                Await.result[Option[Record]](future, 5 seconds) match {
-                  case Some(record) => complete(record)
-                  case None =>
-                    complete(
-                      StatusCodes.NotFound,
-                      ApiError(
-                        "No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."
-                      )
+                withExecutionContext(blockingExeCtx) {
+                  DB readOnly { implicit session =>
+                    session.queryTimeout(this.defaultQueryTimeout)
+                    val events = eventPersistence.streamEventsUpTo(
+                      version.toLong,
+                      recordId = Some(id),
+                      tenantId = tenantId
                     )
+                    val recordSource =
+                      recordPersistence.reconstructRecordFromEvents(
+                        id,
+                        events,
+                        aspects,
+                        optionalAspects
+                      )
+                    val sink = Sink.head[Option[Record]]
+                    val future = recordSource.runWith(sink)(materializer)
+                    Await.result[Option[Record]](future, 5 seconds) match {
+                      case Some(record) => complete(record)
+                      case None =>
+                        complete(
+                          StatusCodes.NotFound,
+                          ApiError(
+                            "No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."
+                          )
+                        )
+                    }
+                  }
                 }
               }
           }

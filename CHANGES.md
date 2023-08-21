@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## v2.2.6
+
+- Upgrade magda-format-minion to v2.0.1
+- #3478 Added the support of the new preview-map-settings aspect
+- Move format `ESRI FEATURESERVER` under `csv-geo-au` in the default map preview format perference list
+- Fixed: registry records editor UI doesn't encode long record ID correctly
+- Provides HTTP header name information on user api key creation screen
+- #3477: decision endpoint should make decision based on anonymous user's data when the user doesn't exist
+
+## v2.2.5
+
+- #3463: Fixed Registry API performance issues related to host connection pool & blocking DB IO
+- #3467: Allow to disable scss-compiler job via helm chart config
+- Upgrade CI deployment google & arcgis auth plugin to v2.0.1
+- #3464: Allow set config for any config fields via helm chart `appConfig` field for all scala services
+- #3466: Allow setting global SQL statement timeout for registry API
+- #3473: Allow to specify service account for cloud sql proxy pod
+
 ## v2.2.4
 
 - #3458: fixed Map Preview freeze when process (ill-formatted) CSIRO Marlin GeoServer WMS URLs

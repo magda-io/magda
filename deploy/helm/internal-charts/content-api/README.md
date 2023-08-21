@@ -1,6 +1,6 @@
 # content-api
 
-![Version: 2.2.4-alpha.1](https://img.shields.io/badge/Version-2.2.4--alpha.1-informational?style=flat-square)
+![Version: 2.2.6](https://img.shields.io/badge/Version-2.2.6-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -20,6 +20,7 @@ Kubernetes: `>= 1.14.0-0`
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"docker.io/data61"` |  |
+| enableScssCompilerJob | bool | `true` | whether or not to enable the SCSS Compiler Job that's triggered on every deployment. This job will make sure latest CSS is compiled from latest SCSS and available from the content API. |
 | image.name | string | `"magda-content-api"` |  |
 | initScssCompilerBackoffLimit | int | `6` | No. of retries before the job is considered as failed. Failed Pods associated with the Job are recreated by the Job controller with an exponential back-off delay (10s, 20s, 40s ...) capped at six minutes. |
 | resources.limits.cpu | string | `"50m"` |  |

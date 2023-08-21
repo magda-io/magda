@@ -1,6 +1,6 @@
 # magda-core
 
-![Version: 2.2.4-alpha.1](https://img.shields.io/badge/Version-2.2.4--alpha.1-informational?style=flat-square)
+![Version: 2.2.6](https://img.shields.io/badge/Version-2.2.6-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes all core magda modules.
 
@@ -14,31 +14,31 @@ A complete solution for managing, publishing and discovering government data, pr
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../internal-charts/admin-api | admin-api | 2.2.4-alpha.1 |
-| file://../internal-charts/apidocs-server | apidocs-server | 2.2.4-alpha.1 |
-| file://../internal-charts/authorization-api | authorization-api | 2.2.4-alpha.1 |
-| file://../internal-charts/authorization-db | authorization-db | 2.2.4-alpha.1 |
-| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 2.2.4-alpha.1 |
-| file://../internal-charts/combined-db | combined-db | 2.2.4-alpha.1 |
-| file://../internal-charts/content-api | content-api | 2.2.4-alpha.1 |
-| file://../internal-charts/content-db | content-db | 2.2.4-alpha.1 |
-| file://../internal-charts/correspondence-api | correspondence-api | 2.2.4-alpha.1 |
-| file://../internal-charts/elasticsearch | elasticsearch | 2.2.4-alpha.1 |
-| file://../internal-charts/gateway | gateway | 2.2.4-alpha.1 |
-| file://../internal-charts/indexer | indexer | 2.2.4-alpha.1 |
-| file://../internal-charts/ingress | ingress | 2.2.4-alpha.1 |
-| file://../internal-charts/priorities | priorities | 2.2.4-alpha.1 |
-| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 2.2.4-alpha.1 |
-| file://../internal-charts/registry-api | registry-api | 2.2.4-alpha.1 |
-| file://../internal-charts/registry-db | registry-db | 2.2.4-alpha.1 |
-| file://../internal-charts/search-api-node | search-api-node | 2.2.4-alpha.1 |
-| file://../internal-charts/search-api | search-api | 2.2.4-alpha.1 |
-| file://../internal-charts/session-db | session-db | 2.2.4-alpha.1 |
-| file://../internal-charts/storage-api | storage-api | 2.2.4-alpha.1 |
-| file://../internal-charts/tenant-api | tenant-api | 2.2.4-alpha.1 |
-| file://../internal-charts/tenant-db | tenant-db | 2.2.4-alpha.1 |
-| file://../internal-charts/web-server | web-server | 2.2.4-alpha.1 |
-| file://../magda-common | magda-common | 2.2.4-alpha.1 |
+| file://../internal-charts/admin-api | admin-api | 2.2.6 |
+| file://../internal-charts/apidocs-server | apidocs-server | 2.2.6 |
+| file://../internal-charts/authorization-api | authorization-api | 2.2.6 |
+| file://../internal-charts/authorization-db | authorization-db | 2.2.6 |
+| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 2.2.6 |
+| file://../internal-charts/combined-db | combined-db | 2.2.6 |
+| file://../internal-charts/content-api | content-api | 2.2.6 |
+| file://../internal-charts/content-db | content-db | 2.2.6 |
+| file://../internal-charts/correspondence-api | correspondence-api | 2.2.6 |
+| file://../internal-charts/elasticsearch | elasticsearch | 2.2.6 |
+| file://../internal-charts/gateway | gateway | 2.2.6 |
+| file://../internal-charts/indexer | indexer | 2.2.6 |
+| file://../internal-charts/ingress | ingress | 2.2.6 |
+| file://../internal-charts/priorities | priorities | 2.2.6 |
+| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 2.2.6 |
+| file://../internal-charts/registry-api | registry-api | 2.2.6 |
+| file://../internal-charts/registry-db | registry-db | 2.2.6 |
+| file://../internal-charts/search-api-node | search-api-node | 2.2.6 |
+| file://../internal-charts/search-api | search-api | 2.2.6 |
+| file://../internal-charts/session-db | session-db | 2.2.6 |
+| file://../internal-charts/storage-api | storage-api | 2.2.6 |
+| file://../internal-charts/tenant-api | tenant-api | 2.2.6 |
+| file://../internal-charts/tenant-db | tenant-db | 2.2.6 |
+| file://../internal-charts/web-server | web-server | 2.2.6 |
+| file://../magda-common | magda-common | 2.2.6 |
 | https://charts.magda.io | preview-map(magda-preview-map) | 1.1.2 |
 
 ## Values
@@ -65,8 +65,8 @@ A complete solution for managing, publishing and discovering government data, pr
 | global.postgresql.existingSecret | string | `"db-main-account-secret"` | the secret that contains privileged PostgreSQL account password. The password will be loaded from key "postgresql-password" of the secret data. Previously (before v1.0.0), we used to load the password from "cloudsql-db-credentials" secret `password` field when use cloud provider DB services. Since v1.0.0, our helm chart can auto-create the secret and copy the content of "cloudsql-db-credentials" secret when: <ul>   <li> "autoCreateSecret" is set to true</li>   <li> "cloudsql-db-credentials" exists </li> </ul> for backward compatibility purposes. |
 | global.postgresql.postgresqlUsername | string | `"postgres"` | PostgreSQL username For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`. It's recommended use superuser `postgres` for both in-k8s PostgreSQL or cloud provider DB services (e.g. CloudSQL or AWS RDS). This user will only be used for DB schema migrators to cerate DB schema and restricted DB accounts that are used by Magda internal services to access DB. If you have to use a user account rather than `postgres`, the user account needs to have sufficient permissions to run all DB migration scripts ([e.g. here](https://github.com/magda-io/magda/tree/master/magda-migrator-registry-db/sql)). Note: Until the ticket #3126 is fixed, using a DB username rather than `postgres` will trigger an error when content DB migrate runs. |
 | global.rollingUpdate.maxUnavailable | int | `0` |  |
-| global.useAwsRdsDb | bool | `false` | whether to use AWS RDS DB config.  When this option is on, all other database type e.g. `useCombinedDb` & `useCloudSql` must be turned off. |
-| global.useCloudSql | bool | `false` | whether to use Google Cloud SQL database.  When this option is on, all other database type e.g. `useCombinedDb` & `useAwsRdsDb` must be turned off. |
+| global.useAwsRdsDb | bool | `false` | whether to use AWS RDS DB config.  When this option is on, all other database type e.g. `useCombinedDb` & `useCloudSql` must be turned off. When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret, you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true). Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true ) |
+| global.useCloudSql | bool | `false` | whether to use Google Cloud SQL database.  When this option is on, all other database type e.g. `useCombinedDb` & `useAwsRdsDb` must be turned off. When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret, you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true). Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true ) |
 | global.useCombinedDb | bool | `true` |  |
 | global.useInK8sDbInstance | object | `{"authorization-db":false,"content-db":false,"registry-db":false,"session-db":false,"tenant-db":false}` | When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database. Please note: you must set `useCombinedDb` = false before set any of the field to `true`. Otherwise, all db requests will still be forwarded to the combined DB instance other than each individual database instance. |
 | tags | object | see default value of each individual tag below. | (object) Control on/ off of each modules.  To turn on/off openfaas, please set value to `global.openfaas.enabled` |

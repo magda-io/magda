@@ -25,6 +25,8 @@ import spray.json.JsObject
 
 import scala.util.{Failure, Success}
 
+import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(
   value = "record aspects",
@@ -44,6 +46,13 @@ class RecordAspectsService(
       config,
       recordPersistence
     ) {
+
+  private val defaultQueryTimeout = config
+    .getDuration(
+      "db-query.default-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
 
   /**
     * @apiGroup Registry Record Aspects
@@ -156,37 +165,40 @@ class RecordAspectsService(
                   Left(aspect),
                   merge.getOrElse(false)
                 ) {
-                  val theResult = DB localTx { session =>
-                    recordPersistence.putRecordAspectById(
-                      tenantId,
-                      recordId,
-                      aspectId,
-                      aspect,
-                      userId,
-                      false,
-                      merge.getOrElse(false)
-                    )(session) match {
-                      case Success(result) =>
-                        complete(
-                          StatusCodes.OK,
-                          List(
-                            RawHeader("x-magda-event-id", result._2.toString)
-                          ),
-                          result._1
-                        )
-                      case Failure(exception) =>
-                        complete(
-                          StatusCodes.BadRequest,
-                          ApiError(exception.getMessage)
-                        )
+                  withBlockingTask {
+                    val theResult = DB localTx { session =>
+                      session.queryTimeout(this.defaultQueryTimeout)
+                      recordPersistence.putRecordAspectById(
+                        tenantId,
+                        recordId,
+                        aspectId,
+                        aspect,
+                        userId,
+                        false,
+                        merge.getOrElse(false)
+                      )(session) match {
+                        case Success(result) =>
+                          complete(
+                            StatusCodes.OK,
+                            List(
+                              RawHeader("x-magda-event-id", result._2.toString)
+                            ),
+                            result._1
+                          )
+                        case Failure(exception) =>
+                          complete(
+                            StatusCodes.BadRequest,
+                            ApiError(exception.getMessage)
+                          )
+                      }
                     }
+                    webHookActor ! WebHookActor
+                      .Process(
+                        ignoreWaitingForResponse = false,
+                        Some(List(aspectId))
+                      )
+                    theResult
                   }
-                  webHookActor ! WebHookActor
-                    .Process(
-                      ignoreWaitingForResponse = false,
-                      Some(List(aspectId))
-                    )
-                  theResult
                 }
               }
             }
@@ -263,28 +275,31 @@ class RecordAspectsService(
           // we will not implement aspect level auth for now
           requireDeleteRecordAspectPermission(authClient, recordId, aspectId) {
             requiresSpecifiedTenantId { tenantId =>
-              val theResult = DB localTx { session =>
-                recordPersistence.deleteRecordAspect(
-                  tenantId,
-                  recordId,
-                  aspectId,
-                  userId
-                )(session) match {
-                  case Success(result) =>
-                    complete(
-                      StatusCodes.OK,
-                      List(RawHeader("x-magda-event-id", result._2.toString)),
-                      DeleteResult(result._1)
-                    )
-                  case Failure(exception) =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(exception.getMessage)
-                    )
+              withBlockingTask {
+                val theResult = DB localTx { session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
+                  recordPersistence.deleteRecordAspect(
+                    tenantId,
+                    recordId,
+                    aspectId,
+                    userId
+                  )(session) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        List(RawHeader("x-magda-event-id", result._2.toString)),
+                        DeleteResult(result._1)
+                      )
+                    case Failure(exception) =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(exception.getMessage)
+                      )
+                  }
                 }
+                webHookActor ! WebHookActor.Process()
+                theResult
               }
-              webHookActor ! WebHookActor.Process()
-              theResult
             }
           }
         }
@@ -384,29 +399,34 @@ class RecordAspectsService(
                 aspectId,
                 Right(aspectPatch)
               ) {
-                val theResult = DB localTx { session =>
-                  recordPersistence.patchRecordAspectById(
-                    tenantId,
-                    recordId,
-                    aspectId,
-                    aspectPatch,
-                    userId
-                  )(session) match {
-                    case Success(result) =>
-                      complete(
-                        StatusCodes.OK,
-                        List(RawHeader("x-magda-event-id", result._2.toString)),
-                        result._1
-                      )
-                    case Failure(exception) =>
-                      complete(
-                        StatusCodes.BadRequest,
-                        ApiError(exception.getMessage)
-                      )
+                withBlockingTask {
+                  val theResult = DB localTx { session =>
+                    session.queryTimeout(this.defaultQueryTimeout)
+                    recordPersistence.patchRecordAspectById(
+                      tenantId,
+                      recordId,
+                      aspectId,
+                      aspectPatch,
+                      userId
+                    )(session) match {
+                      case Success(result) =>
+                        complete(
+                          StatusCodes.OK,
+                          List(
+                            RawHeader("x-magda-event-id", result._2.toString)
+                          ),
+                          result._1
+                        )
+                      case Failure(exception) =>
+                        complete(
+                          StatusCodes.BadRequest,
+                          ApiError(exception.getMessage)
+                        )
+                    }
                   }
+                  webHookActor ! WebHookActor.Process()
+                  theResult
                 }
-                webHookActor ! WebHookActor.Process()
-                theResult
               }
             }
           }

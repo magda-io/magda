@@ -18,6 +18,8 @@ import scalikejdbc.DB
 import au.csiro.data61.magda.client.{AuthDecisionReqConfig}
 import au.csiro.data61.magda.model.AspectQuery
 import scalikejdbc.interpolation.SQLSyntax
+import au.csiro.data61.magda.directives.RouteDirectives.completeBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
 
 import scala.concurrent.ExecutionContext
 
@@ -35,6 +37,13 @@ class RecordsServiceRO(
 
   private val logger = Logging(system, getClass)
   implicit private val ec: ExecutionContext = system.dispatcher
+
+  private val defaultQueryTimeout = config
+    .getDuration(
+      "db-query.default-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
 
   /**
     * @apiGroup Registry Record Service
@@ -319,8 +328,9 @@ class RecordsServiceRO(
                   )
                 )
               } else {
-                complete {
-                  DB readOnly { implicit session =>
+                completeBlockingTask {
+                  DB localTx { implicit session =>
+                    session.queryTimeout(this.defaultQueryTimeout)
                     recordPersistence.getAllWithAspects(
                       tenantId,
                       authDecision,
@@ -461,8 +471,9 @@ class RecordsServiceRO(
             'limit.as[Int].?,
             'reversePageTokenOrder.as[Boolean].?
           ) { (pageToken, start, limit, reversePageTokenOrder) =>
-            complete {
+            completeBlockingTask {
               DB readOnly { implicit session =>
+                session.queryTimeout(this.defaultQueryTimeout)
                 recordPersistence
                   .getAll(
                     tenantId,
@@ -629,8 +640,9 @@ class RecordsServiceRO(
               val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
               val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
 
-              complete {
+              completeBlockingTask {
                 DB readOnly { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   CountResponse(
                     recordPersistence
                       .getCount(
@@ -717,8 +729,9 @@ class RecordsServiceRO(
           ) { authDecision =>
             import scalikejdbc._
             parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
-              complete {
+              completeBlockingTask {
                 DB readOnly { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
                   "0" :: recordPersistence
                     .getPageTokens(
                       tenantId,
@@ -835,23 +848,26 @@ class RecordsServiceRO(
         ) { authDecision =>
           parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) {
             (aspects, optionalAspects, dereference) =>
-              DB readOnly { implicit session =>
-                recordPersistence.getByIdWithAspects(
-                  tenantId,
-                  authDecision,
-                  id,
-                  aspects,
-                  optionalAspects,
-                  dereference
-                ) match {
-                  case Some(record) => complete(record)
-                  case None =>
-                    complete(
-                      StatusCodes.NotFound,
-                      ApiError(
-                        "No record exists with that ID or it does not have the required aspects."
+              withBlockingTask {
+                DB readOnly { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
+                  recordPersistence.getByIdWithAspects(
+                    tenantId,
+                    authDecision,
+                    id,
+                    aspects,
+                    optionalAspects,
+                    dereference
+                  ) match {
+                    case Some(record) => complete(record)
+                    case None =>
+                      complete(
+                        StatusCodes.NotFound,
+                        ApiError(
+                          "No record exists with that ID or it does not have the required aspects."
+                        )
                       )
-                    )
+                  }
                 }
               }
           }
@@ -929,15 +945,18 @@ class RecordsServiceRO(
           authApiClient,
           AuthDecisionReqConfig("object/record/read")
         ) { authDecision =>
-          DB readOnly { implicit session =>
-            recordPersistence
-              .getById(tenantId, authDecision, id) match {
-              case Some(record) => complete(record)
-              case None =>
-                complete(
-                  StatusCodes.NotFound,
-                  ApiError("No record exists with that ID.")
-                )
+          withBlockingTask {
+            DB readOnly { implicit session =>
+              session.queryTimeout(this.defaultQueryTimeout)
+              recordPersistence
+                .getById(tenantId, authDecision, id) match {
+                case Some(record) => complete(record)
+                case None =>
+                  complete(
+                    StatusCodes.NotFound,
+                    ApiError("No record exists with that ID.")
+                  )
+              }
             }
           }
         }
@@ -1013,15 +1032,18 @@ class RecordsServiceRO(
           authApiClient,
           AuthDecisionReqConfig("object/record/read")
         ) { authDecision =>
-          DB readOnly { implicit session =>
-            recordPersistence
-              .getCompleteRecordById(tenantId, authDecision, id) match {
-              case Some(record) => complete(record)
-              case None =>
-                complete(
-                  StatusCodes.NotFound,
-                  ApiError("No record exists with that ID.")
-                )
+          withBlockingTask {
+            DB readOnly { implicit session =>
+              session.queryTimeout(this.defaultQueryTimeout)
+              recordPersistence
+                .getCompleteRecordById(tenantId, authDecision, id) match {
+                case Some(record) => complete(record)
+                case None =>
+                  complete(
+                    StatusCodes.NotFound,
+                    ApiError("No record exists with that ID.")
+                  )
+              }
             }
           }
         }

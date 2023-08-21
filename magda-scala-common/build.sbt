@@ -38,7 +38,7 @@ libraryDependencies ++= {
     "org.scalatest"                %% "scalatest"            % scalaTestV % Test,
     "com.typesafe.akka"            %% "akka-stream-testkit"  % akkaV % Test,
     "com.typesafe.akka"            %% "akka-http-testkit"    % akkaHttpV % Test,
-    "io.lemonlabs"                 %% "scala-uri"            % "3.6.0",
+    "io.lemonlabs"                 %% "scala-uri"            % "4.0.3",
     "org.scalamock"                %% "scalamock"            % "5.1.0" % Test,
     "org.scalikejdbc"              %% "scalikejdbc"          % "3.0.0-RC3",
     "org.json4s"                   %  "json4s-native_2.12"   % "4.0.5",

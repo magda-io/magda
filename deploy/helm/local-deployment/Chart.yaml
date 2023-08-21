@@ -1,15 +1,15 @@
 apiVersion: v2
 name: "magda-local-deployment"
 description: ""
-version: "2.2.4-alpha.1"
+version: "2.2.6"
 kubeVersion: ">= 1.14.0-0"
 dependencies:
   - name: magda
-    version: 2.2.4-alpha.1
+    version: 2.2.6
     repository: "file://../magda"
 
   - name: magda-auth-google
-    version: "2.0.0"
+    version: "2.0.1"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
@@ -23,7 +23,7 @@ dependencies:
       - magda-auth-internal
 
   - name: magda-auth-arcgis
-    version: "2.0.0"
+    version: "2.0.1"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all

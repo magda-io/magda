@@ -1,4 +1,9 @@
-import React, { Component, useEffect, useState } from "react";
+import React, {
+    Component,
+    FunctionComponent,
+    useEffect,
+    useState
+} from "react";
 import memoize from "memoize-one";
 import "./DataPreviewMap.scss";
 import DataPreviewMapOpenInNationalMapButton from "./DataPreviewMapOpenInNationalMapButton";
@@ -9,7 +14,7 @@ import {
 } from "../../config";
 import { Medium, Small } from "./Responsive";
 import Spinner from "./Spinner";
-import { ParsedDistribution } from "../../helpers/record";
+import { ParsedDataset, ParsedDistribution } from "../../helpers/record";
 import sortBy from "lodash/sortBy";
 import {
     checkFileForPreview,
@@ -373,9 +378,9 @@ function setDefaultWmsWmfLayerTypeName(
     }
 }
 
-export default function DataPreviewMapWrapper(props: {
+const DataPreviewMapWrapper: FunctionComponent<{
     distributions: ParsedDistribution[];
-}) {
+}> = (props) => {
     const [
         selectedWmsWfsGroupItemName,
         setSelectedWmsWfsGroupItemName
@@ -478,7 +483,7 @@ export default function DataPreviewMapWrapper(props: {
                             />
                         </Small>
                         <Medium>
-                            <DataPreviewMap
+                            <DataPreviewMapWithSizeCheck
                                 bestDist={bestDist}
                                 selectedWmsWfsGroupItemName={
                                     selectedWmsWfsGroupItemName
@@ -491,9 +496,9 @@ export default function DataPreviewMapWrapper(props: {
             </div>
         );
     }
-}
+};
 
-function DataPreviewMap(props: {
+function DataPreviewMapWithSizeCheck(props: {
     bestDist: BestDist;
     selectedWmsWfsGroupItemName: string;
     isWms: boolean;
@@ -752,3 +757,22 @@ class DataPreviewMapTerria extends Component<
         );
     }
 }
+
+const DataPreviewMap: FunctionComponent<{
+    distributions: ParsedDistribution[];
+    dataset?: ParsedDataset;
+}> = ({ dataset, distributions }) => {
+    if (dataset?.rawData?.aspects?.["preview-map-settings"]?.enable === false) {
+        return null;
+    }
+    const enabledDists = distributions.filter(
+        (dist) =>
+            dist?.rawData?.aspects?.["preview-map-settings"]?.enable !== false
+    );
+    if (!enabledDists?.length) {
+        return null;
+    }
+    return <DataPreviewMapWrapper distributions={enabledDists} />;
+};
+
+export default DataPreviewMap;
