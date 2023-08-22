@@ -37,7 +37,7 @@ import {
 import ServerError from "magda-typescript-common/src/ServerError";
 import { SYSTEM_ROLES } from "magda-typescript-common/src/authorization-api/constants";
 import { generateAPIKey, createApiKeyHash } from "./apiKeyUtils";
-import isArray from "lodash/isArray";
+import isArray from "magda-typescript-common/src/util/isArray";
 import uniq from "lodash/uniq";
 import isEmpty from "lodash/isEmpty";
 import getBoolValWithDefault from "magda-typescript-common/src/getBoolValWithDefault";
@@ -1236,7 +1236,7 @@ export default class Database {
                         400
                     );
                 }
-                if (!operationIds.length) {
+                if (!operationIds?.length) {
                     throw new ServerError(
                         "Supplied `operationIds` must not be empty array",
                         400
@@ -1251,7 +1251,7 @@ export default class Database {
             )}) AND resource_id = ${resource.id}`.toQuery()
                 );
 
-                if (result?.rows?.[0]?.["count"] !== operationIds.length) {
+                if (result?.rows?.[0]?.["count"] !== operationIds?.length) {
                     throw new Error(
                         `Not all provided operation ids are valid and belong to the resource ${resource.uri}`
                     );
@@ -1550,7 +1550,7 @@ export default class Database {
                     );
                 }
 
-                if (operationIds.length) {
+                if (operationIds?.length) {
                     const values = (operationIds as string[]).map(
                         (item) => sqls`(${id},${item})`
                     );

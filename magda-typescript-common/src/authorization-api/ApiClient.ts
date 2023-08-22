@@ -485,7 +485,9 @@ export default class ApiClient {
         if (!permissionData || !Object.keys(permissionData).length) {
             throw new Error("Empty data supplied to update permission!");
         }
-        const uri = urijs(`${this.baseUrl}public/permissions`);
+        const uri = urijs(
+            `${this.baseUrl}public/permissions/${encodeURIComponent(id)}`
+        );
         const res = await fetch(
             uri.toString(),
             this.getMergeRequestInitOption({

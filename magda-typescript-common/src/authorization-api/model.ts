@@ -139,7 +139,9 @@ export interface CreateRolePermissionInputData
         | "edit_time"
         | "allow_exemption"
     > {
-    operationIds: string[];
+    operationIds?: string[];
+    operationUri?: string[];
+    resourceUri?: string;
     allow_exemption?: boolean;
 }
 

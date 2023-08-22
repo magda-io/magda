@@ -498,7 +498,11 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *       "allow_exemption": false,
      *       "description": "a test permission",
      *       "resource_id": "477d0720-aeda-47bd-8fc9-65badb851f46",
+     *       // alternatively, you can supply resourceUri instead of resourceId
+     *       // "resourceUri": "object/dataset/draft",
      *       "operationIds": ["739b5a83-291d-4420-a0eb-8fbeb2b5c186", "e64241f7-1660-4a6c-9bd9-07f716cf9156"]
+     *       // alternatively, you can supply operationUris instead of operationIds
+     *       // "operationUris": ["object/dataset/draft/read", "object/dataset/draft/write"]
      *     }
      *
      * @apiSuccessExample {json} 200
@@ -613,11 +617,15 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *       "name": "xxxxx",
      *       "description": "xxsdsd",
      *       "resource_id": "1c0889aa-6d4f-4492-9a6f-1ecc4765e8d6",
+     *       // alternatively, you can supply resourceUri instead of resourceId
+     *       // "resourceUri": "object/dataset/draft",
      *       "user_ownership_constraint": true,
      *       "org_unit_ownership_constraint": false,
      *       "pre_authorised_constraint": false,
      *       "allow_exemption": false,
-     *       "operationIds": ["8d4b99f3-c0c0-46e6-9832-330d14abad00", "7c2013bd-eee6-40f1-83ef-920600d21db3"]
+     *       "operationIds": ["8d4b99f3-c0c0-46e6-9832-330d14abad00", "7c2013bd-eee6-40f1-83ef-920600d21db3"],
+     *       // alternatively, you can supply operationUris instead of operationIds
+     *       // "operationUris": ["object/dataset/draft/read", "object/dataset/draft/write"]
      *     }
      *
      * @apiSuccessExample {json} 200
