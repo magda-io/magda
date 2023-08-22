@@ -123,7 +123,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 49,
+    version = 50,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       var createIdxReq =

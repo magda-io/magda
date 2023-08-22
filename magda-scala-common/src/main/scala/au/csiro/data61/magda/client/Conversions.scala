@@ -79,6 +79,12 @@ object Conversions {
               case Some(JsString(orgUnitId)) => Some(orgUnitId)
               case _                         => None
             },
+            constraintExemption =
+              accessControlData.get("constraintExemption") match {
+                case Some(JsBoolean(constraintExemption)) =>
+                  Some(constraintExemption)
+                case _ => None
+              },
             preAuthorisedPermissionIds =
               accessControlData.get("preAuthorisedPermissionIds") match {
                 case Some(JsArray(preAuthorisedPermissionIds)) =>
