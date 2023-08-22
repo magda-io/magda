@@ -42,6 +42,7 @@ sealed trait AspectQuery {
     "access-control" -> Map(
       "orgUnitId" -> "accessControl.orgUnitId",
       "ownerId" -> "accessControl.ownerId",
+      "constraintExemption" -> "accessControl.constraintExemption",
       "preAuthorisedPermissionIds" -> "accessControl.preAuthorisedPermissionIds"
     ),
     "dcat-dataset-strings" -> Map(

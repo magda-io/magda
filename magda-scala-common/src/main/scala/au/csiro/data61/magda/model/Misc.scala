@@ -78,6 +78,7 @@ package misc {
   case class AccessControl(
       ownerId: Option[String] = None,
       orgUnitId: Option[String] = None,
+      constraintExemption: Option[Boolean] = None,
       preAuthorisedPermissionIds: Option[Seq[String]] = None
   )
 
@@ -656,7 +657,7 @@ package misc {
     )
 
     implicit val accessControlFormat: RootJsonFormat[AccessControl] =
-      jsonFormat3(AccessControl.apply)
+      jsonFormat4(AccessControl.apply)
 
     implicit val datasetAccessNotesFormat: RootJsonFormat[DataSetAccessNotes] =
       jsonFormat2(DataSetAccessNotes.apply)
