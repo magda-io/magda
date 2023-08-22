@@ -55,7 +55,7 @@ function testUserDatasetAccess(
     datasetAccessControlAspect: AccessControlAspect & {
         orgUnitName?: string;
     },
-    testUserRoleIdOrIds: string | string[],
+    testUserRoleIdOrIds: string | string[] | (() => string | string[]),
     testUserOrgUnitName?: string,
     datasetData?: Record
 ) {
@@ -133,6 +133,10 @@ function testUserDatasetAccess(
 
             const testUser2 = await authApiClient.createUser(testUser2Data);
 
+            if (typeof testUserRoleIdOrIds === "function") {
+                // solve scope issue while passing role id
+                testUserRoleIdOrIds = testUserRoleIdOrIds();
+            }
             await authApiClient.addUserRoles(
                 testUser2.id,
                 typeof testUserRoleIdOrIds === "string"
@@ -173,9 +177,6 @@ describe("registry auth integration tests", () => {
             await serviceRunner.create();
             await createOrgUnits(authApiClient);
 
-            const resource = await authApiClient.getResourceByUri(
-                "object/dataset/draft"
-            );
             let role = await authApiClient.createRole(
                 "Role with constrainted draft dataset access but no allow exemption"
             );
@@ -183,18 +184,12 @@ describe("registry auth integration tests", () => {
             await authApiClient.createRolePermission(role.id, {
                 name: "test permission",
                 description: "",
-                operationIds: [
-                    (
-                        await authApiClient.getOperationByUri(
-                            "object/dataset/draft/read"
-                        )
-                    ).id.toString()
-                ],
+                operationUris: ["object/dataset/draft/read"],
                 allow_exemption: true,
                 org_unit_ownership_constraint: true,
                 user_ownership_constraint: true,
                 pre_authorised_constraint: false,
-                resource_id: resource.id
+                resourceUri: "object/dataset/draft"
             });
 
             role = await authApiClient.createRole(
@@ -204,18 +199,12 @@ describe("registry auth integration tests", () => {
             await authApiClient.createRolePermission(role.id, {
                 name: "test permission",
                 description: "",
-                operationIds: [
-                    (
-                        await authApiClient.getOperationByUri(
-                            "object/dataset/draft/read"
-                        )
-                    ).id.toString()
-                ],
+                operationUris: ["object/dataset/draft/read"],
                 allow_exemption: false,
                 org_unit_ownership_constraint: true,
                 user_ownership_constraint: true,
                 pre_authorised_constraint: false,
-                resource_id: resource.id
+                resourceUri: "object/dataset/draft"
             });
         });
 
@@ -711,7 +700,7 @@ describe("registry auth integration tests", () => {
         );
 
         testUserDatasetAccess(
-            "should allow another data steward that is assigned to `Branch A` to access the draft dataset that is assigned to `Section B` but `constraintExemption` = true",
+            "should not allow another data steward that is assigned to `Branch A` to access the draft dataset that is assigned to `Section B` but `constraintExemption` = true",
             // data steward has restrcited access to draft dataset and NOT allow exemption
             false,
             {
@@ -722,9 +711,36 @@ describe("registry auth integration tests", () => {
             "Branch A"
         );
 
-        console.log(
-            roleWithConstraintedDraftDatasetAccessAllowExemption,
-            roleWithConstraintedDraftDatasetAccessNotAllowExemption
+        testUserDatasetAccess(
+            "should not allow another roleWithConstraintedDraftDatasetAccessAllowExemption that is assigned to `Branch A` to access the draft dataset that is assigned to `Section B`",
+            false,
+            {
+                orgUnitName: "Section B"
+            },
+            () => roleWithConstraintedDraftDatasetAccessAllowExemption,
+            "Branch A"
+        );
+
+        testUserDatasetAccess(
+            "should allow another roleWithConstraintedDraftDatasetAccessAllowExemption is assigned to `Branch A` to access the draft dataset that is assigned to `Section B` but `constraintExemption` = true",
+            true,
+            {
+                orgUnitName: "Section B",
+                constraintExemption: true
+            },
+            () => roleWithConstraintedDraftDatasetAccessAllowExemption,
+            "Branch A"
+        );
+
+        testUserDatasetAccess(
+            "should not allow another roleWithConstraintedDraftDatasetAccessNotAllowExemption is assigned to `Branch A` to access the draft dataset that is assigned to `Section B` but `constraintExemption` = true",
+            false,
+            {
+                orgUnitName: "Section B",
+                constraintExemption: true
+            },
+            () => roleWithConstraintedDraftDatasetAccessNotAllowExemption,
+            "Branch A"
         );
 
         testUserDatasetAccess(

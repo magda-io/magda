@@ -451,9 +451,11 @@ export default class ApiClient {
         if (!isUuid(roleId)) {
             throw new ServerError(`roleId: ${roleId} is not a valid UUID.`);
         }
-        const uri = urijs(`${this.baseUrl}public/roles`)
-            .segmentCoded(roleId)
-            .segmentCoded("permissions");
+        const uri = urijs(
+            `${this.baseUrl}public/roles/${encodeURIComponent(
+                roleId
+            )}/permissions`
+        );
         const res = await fetch(
             uri.toString(),
             this.getMergeRequestInitOption({
