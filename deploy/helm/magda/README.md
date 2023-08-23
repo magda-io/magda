@@ -1,6 +1,6 @@
 # magda
 
-![Version: 2.2.5-alpha.0](https://img.shields.io/badge/Version-2.2.5--alpha.0-informational?style=flat-square)
+![Version: 2.2.6](https://img.shields.io/badge/Version-2.2.6-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes the magda default deployment.
 
@@ -14,13 +14,13 @@ A complete solution for managing, publishing and discovering government data, pr
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-core | magda-core | 2.2.5-alpha.0 |
+| file://../magda-core | magda-core | 2.2.6 |
 | oci://ghcr.io/magda-io/charts | ckan-connector-functions(magda-ckan-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-function-esri-url-processor | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-function-history-report | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | minion-broken-link(magda-minion-broken-link) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-minion-ckan-exporter | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | minion-format(magda-minion-format) | 2.0.0 |
+| oci://ghcr.io/magda-io/charts | minion-format(magda-minion-format) | 2.0.1 |
 | oci://ghcr.io/magda-io/charts | minion-linked-data-rating(magda-minion-linked-data-rating) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | minion-visualization(magda-minion-visualization) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | openfaas | 5.5.5-magda.2 |

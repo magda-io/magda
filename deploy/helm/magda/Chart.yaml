@@ -3,12 +3,12 @@ name: "magda"
 description: "A complete solution for managing, publishing and discovering
   government data, private and open. This chart includes the magda default
   deployment."
-version: "2.2.5-alpha.0"
+version: "2.2.6"
 home: "https://github.com/magda-io/magda"
 sources: [ "https://github.com/magda-io/magda" ]
 dependencies:
   - name: magda-core
-    version: "2.2.5-alpha.0"
+    version: "2.2.6"
     repository: file://../magda-core
 
   - name: openfaas
@@ -40,7 +40,7 @@ dependencies:
 
   - name: magda-minion-format
     alias: minion-format
-    version: "2.0.0"
+    version: "2.0.1"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - minions

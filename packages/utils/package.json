@@ -1,7 +1,7 @@
 {
   "name": "@magda/utils",
   "description": "MAGDA Common Utils",
-  "version": "2.2.5-alpha.0",
+  "version": "2.2.6",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "compile": "webpack && webpack --env.target=web",
@@ -14,7 +14,7 @@
   "main": "dist/index.js",
   "browser": "dist/index-web.js",
   "devDependencies": {
-    "@magda/typescript-common": "^2.2.5-alpha.0",
+    "@magda/typescript-common": "^2.2.6",
     "@microsoft/api-extractor": "~7.15.2",
     "ts-loader": "^6.2.1",
     "typescript": "~4.2.4",

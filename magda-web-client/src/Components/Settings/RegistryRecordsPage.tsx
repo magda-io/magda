@@ -33,7 +33,11 @@ type PropsType = {
 };
 
 const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
-    const recordId = props?.match?.params?.recordId;
+    // the recordId is encoded in url and were retrieved via `props.match.params.recordId` as it is,
+    // so we need to decode it
+    const recordId = props?.match?.params?.recordId
+        ? decodeURIComponent(props.match.params.recordId)
+        : undefined;
     const [inputRecordId, setInputRecordId] = useState<string>("");
     const recordFormRef = useRef<RecordFormPopUpRefType>(null);
 
