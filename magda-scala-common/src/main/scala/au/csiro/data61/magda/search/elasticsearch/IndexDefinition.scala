@@ -184,6 +184,12 @@ object IndexDefinition extends DefaultJsonProtocol {
                     textField("keyword_lowercase")
                       .analyzer("quote")
                       .fielddata(true)
+                  ),
+                  objectField("accessControl").fields(
+                    keywordField("ownerId"),
+                    keywordField("orgUnitId"),
+                    booleanField("constraintExemption"),
+                    keywordField("preAuthorisedPermissionIds")
                   )
                 ),
                 objectField("spatial").fields(magdaGeoShapeField("geoJson")),

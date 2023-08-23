@@ -347,7 +347,8 @@ package misc {
       byteSize: Option[Long] = None,
       mediaType: Option[MediaType] = None,
       source: Option[DataSouce] = None,
-      format: Option[String] = None
+      format: Option[String] = None,
+      accessControl: Option[AccessControl] = None
   )
 
   object Distribution {
@@ -639,8 +640,6 @@ package misc {
     val apiRegionFormat = new RegionFormat(apiBoundingBoxFormat)
     val esRegionFormat = new RegionFormat(EsBoundingBoxFormat)
 
-    implicit val distributionFormat: RootJsonFormat[Distribution] =
-      jsonFormat13(Distribution.apply)
     implicit val locationFormat: RootJsonFormat[Location] = jsonFormat2(
       Location.apply
     )
@@ -662,12 +661,87 @@ package misc {
     implicit val datasetAccessNotesFormat: RootJsonFormat[DataSetAccessNotes] =
       jsonFormat2(DataSetAccessNotes.apply)
 
+    def convertOptionField[T: JsonReader](
+        fieldName: String,
+        jsData: JsValue
+    ): Option[T] = {
+      val jsObject = jsData.asJsObject
+      jsObject
+        .getFields(fieldName)
+        .headOption
+        .flatMap(
+          fieldData =>
+            fieldData match {
+              case JsNull => None
+              case _      => Some(fieldData.convertTo[T])
+            }
+        )
+    }
+
+    def convertCollectionField[T: JsonReader](
+        fieldName: String,
+        json: JsValue
+    ): Seq[T] = json match {
+      case JsObject(jsData) =>
+        jsData.get(fieldName) match {
+          case Some(JsArray(items)) => items.map(_.convertTo[T])
+          case _                    => Seq()
+        }
+      case _ => Seq()
+    }
+
+    /**
+      * Manually implement RootJsonFormat to avoid Null pointer exception
+      */
+    implicit object distributionFormat extends RootJsonFormat[Distribution] {
+      override def write(dist: Distribution): JsValue = {
+        var jsFields: Map[String, JsValue] = Map(
+          "identifier" -> dist.identifier.toJson,
+          "title" -> dist.title.toJson,
+          "description" -> dist.description.toJson,
+          "issued" -> dist.issued.toJson,
+          "modified" -> dist.modified.toJson,
+          "license" -> dist.license.toJson,
+          "rights" -> dist.rights.toJson,
+          "accessURL" -> dist.accessURL.toJson,
+          "downloadURL" -> dist.downloadURL.toJson,
+          "byteSize" -> dist.byteSize.toJson,
+          "mediaType" -> dist.mediaType.toJson,
+          "source" -> dist.source.toJson,
+          "format" -> dist.format.toJson
+        )
+        if (!dist.accessControl.isEmpty) {
+          jsFields += ("accessControl" -> dist.accessControl.toJson)
+        }
+        JsObject(
+          jsFields
+        )
+      }
+
+      override def read(json: JsValue): Distribution = Distribution(
+        identifier = convertOptionField[String]("identifier", json),
+        title = Protocols.convertField[String]("title", json),
+        description = convertOptionField[String]("description", json),
+        issued = convertOptionField[OffsetDateTime]("issued", json),
+        modified = convertOptionField[OffsetDateTime]("modified", json),
+        license = convertOptionField[License]("license", json),
+        rights = convertOptionField[String]("rights", json),
+        accessURL = convertOptionField[String]("accessURL", json),
+        downloadURL = convertOptionField[String]("downloadURL", json),
+        byteSize = convertOptionField[Long]("byteSize", json),
+        mediaType = convertOptionField[MediaType]("mediaType", json),
+        source = convertOptionField[DataSouce]("source", json),
+        format = convertOptionField[String]("format", json),
+        accessControl = convertOptionField[AccessControl]("accessControl", json)
+      )
+    }
+
     /**
       * Manually implement RootJsonFormat to overcome the limit of 22 parameters
       */
     implicit object dataSetFormat extends RootJsonFormat[DataSet] {
-      override def write(dataSet: DataSet): JsValue =
-        JsObject(
+      override def write(dataSet: DataSet): JsValue = {
+        var jsFields: Map[String, JsValue] = Map(
           "identifier" -> dataSet.identifier.toJson,
           "tenantId" -> dataSet.tenantId.toJson,
           "title" -> dataSet.title.toJson,
@@ -694,37 +768,14 @@ package misc {
           "source" -> dataSet.source.toJson,
           "score" -> dataSet.score.toJson,
           "publishingState" -> dataSet.publishingState.toJson,
-          "accessControl" -> dataSet.accessControl.toJson,
           "accessNotes" -> dataSet.accessNotes.toJson
         )
-
-      def convertOptionField[T: JsonReader](
-          fieldName: String,
-          jsData: JsValue
-      ): Option[T] = {
-        val jsObject = jsData.asJsObject
-        jsObject
-          .getFields(fieldName)
-          .headOption
-          .flatMap(
-            fieldData =>
-              fieldData match {
-                case JsNull => None
-                case _      => Some(fieldData.convertTo[T])
-              }
-          )
-      }
-
-      def convertCollectionField[T: JsonReader](
-          fieldName: String,
-          json: JsValue
-      ): Seq[T] = json match {
-        case JsObject(jsData) =>
-          jsData.get(fieldName) match {
-            case Some(JsArray(items)) => items.map(_.convertTo[T])
-            case _                    => Seq()
-          }
-        case _ => Seq()
+        if (!dataSet.accessControl.isEmpty) {
+          jsFields += ("accessControl" -> dataSet.accessControl.toJson)
+        }
+        JsObject(
+          jsFields
+        )
       }
 
       override def read(json: JsValue): DataSet = {

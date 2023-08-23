@@ -12,7 +12,8 @@ import {
     createOrgUnits,
     getRegistryClient as getRegistryClientWithJwtSecret,
     getOrgUnitIdByName as getOrgUnitIdByNameWithAuthApiClient,
-    createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret
+    createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret,
+    createTestDistributionByUser as createTestDistributionByUserWithAuthApiClientJwtSecret
 } from "./testUtils";
 import urijs from "urijs";
 import buildJwt from "magda-typescript-common/src/session/buildJwt";
@@ -31,6 +32,11 @@ const authApiClient = new AuthApiClient(
 const getRegistryClient = partial(getRegistryClientWithJwtSecret, jwtSecret);
 const createTestDatasetByUser = partial(
     createTestDatasetByUserWithAuthApiClientJwtSecret,
+    authApiClient,
+    jwtSecret
+);
+const createTestDistributionByUser = partial(
+    createTestDistributionByUserWithAuthApiClientJwtSecret,
     authApiClient,
     jwtSecret
 );
@@ -93,6 +99,67 @@ describe("search api auth integration tests", function (this) {
     after(async function (this) {
         this.timeout(ENV_SETUP_TIME_OUT);
         await serviceRunner.destroy();
+    });
+
+    it("should index accessControl aspect for both datasets & distributions", async () => {
+        const sectionAId = await getOrgUnitIdByName("Section A");
+        const sectionBId = await getOrgUnitIdByName("Section B");
+        const sectionCId = await getOrgUnitIdByName("Section C");
+        const testUser = await authApiClient.createUser({
+            displayName: "Test User",
+            email: "testuser@test.com",
+            source: "internal",
+            sourceId: uuidV4()
+        });
+        const testUserId = testUser.id;
+        console.log(testUserId);
+
+        const dist1 = await createTestDistributionByUser(
+            DEFAULT_ADMIN_USER_ID,
+            {
+                orgUnitId: sectionBId
+            }
+        );
+        const dist2 = await createTestDistributionByUser(
+            DEFAULT_ADMIN_USER_ID,
+            {
+                orgUnitId: sectionCId
+            }
+        );
+        const datasetId = await createTestDatasetByUser(
+            DEFAULT_ADMIN_USER_ID,
+            {
+                aspects: {
+                    "dcat-dataset-strings": {
+                        title: "test dataset"
+                    },
+                    "dataset-distributions": {
+                        distributions: [dist1, dist2]
+                    }
+                }
+            } as any,
+            {
+                orgUnitId: sectionAId
+            }
+        );
+
+        let indexResult = await Try(indexerApiClient.indexDataset(datasetId));
+        expect(indexResult.error).to.not.be.an.instanceof(Error);
+        expect(indexResult.value?.successes).to.equal(1);
+
+        // admin user should be able to see it
+        let r = await Try(getDataset(datasetId, DEFAULT_ADMIN_USER_ID));
+        expect(r.error).to.not.be.an.instanceof(Error);
+        expect(r.value.hitCount).to.equal(1);
+        expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);
+        // search api should removed accessControl aspect informaiton from the dataset
+        expect(r.value?.dataSets?.[0]?.accessControl).to.be.undefined;
+        expect(r.value?.dataSets?.[0]?.distributions?.length).to.to.equal(2);
+        const dists = r.value.dataSets[0].distributions;
+        // search api should removed accessControl aspect informaiton from the distributions
+        dists.forEach(
+            (dist: any) => expect(dist?.accessControl).to.be.undefined
+        );
     });
 
     it("should allow anonymous users & users with only authenticated users role to access published public datasets that are not assigned to any orgUnits", async () => {
