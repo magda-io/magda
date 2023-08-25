@@ -1,3 +1,4 @@
+import { AccessControlAspect } from "../registry/model";
 declare global {
     namespace Express {
         /**
@@ -175,11 +176,7 @@ export interface UserToken {
  * i.e. set `input.user` to unknown then calculate residual rules via partial evaluation.
  */
 export interface AccessControlMetaData {
-    accessControl?: {
-        ownerId?: string;
-        orgUnitId?: string;
-        preAuthorisedPermissionIds?: string[];
-    };
+    accessControl?: AccessControlAspect;
 }
 
 export interface CreateAccessGroupRequestBodyType {
