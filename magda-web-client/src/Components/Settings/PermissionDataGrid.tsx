@@ -266,6 +266,14 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
                             )}
                         </Cell>
                     </Column>
+                    <Column width={120} resizable>
+                        <HeaderCell>Allow Exemption</HeaderCell>
+                        <Cell align="center">
+                            {(rowData: RolePermissionRecord) => (
+                                <CheckBoxIcon value={rowData.allow_exemption} />
+                            )}
+                        </Cell>
+                    </Column>
                     <Column width={120} fixed="right">
                         <HeaderCell align="center">Action</HeaderCell>
                         <Cell
