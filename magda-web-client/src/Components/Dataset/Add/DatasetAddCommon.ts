@@ -173,6 +173,7 @@ export type Dataset = {
     contactPointDisplay?: string;
     landingPage?: string;
     importance?: string;
+    constraintExemption: boolean;
 };
 
 export type Provenance = {
@@ -383,7 +384,8 @@ function getAccessControlAspectData(state: State) {
             : dataset.editingUserId
             ? dataset.editingUserId
             : undefined,
-        orgUnitId: typeof orgUnitId === "string" ? orgUnitId : undefined
+        orgUnitId: typeof orgUnitId === "string" ? orgUnitId : undefined,
+        constraintExemption: state.dataset.constraintExemption
     };
 }
 
@@ -469,6 +471,14 @@ function populateDcatDatasetStringAspect(data: RawDataset, state: State) {
     if (data.aspects?.["access-control"]?.orgUnitId) {
         state.dataset.owningOrgUnitId =
             data.aspects?.["access-control"]?.orgUnitId;
+    }
+
+    if (
+        typeof data.aspects?.["access-control"]?.constraintExemption ===
+        "boolean"
+    ) {
+        state.dataset.constraintExemption =
+            data.aspects["access-control"].constraintExemption;
     }
 }
 
@@ -758,7 +768,8 @@ export function createBlankState(user: User): State {
             editingUserId: user ? user.id : undefined,
             defaultLicense: "No License",
             issued: new Date(),
-            modified: new Date()
+            modified: new Date(),
+            constraintExemption: false
         },
         datasetPublishing: {
             state: "draft",

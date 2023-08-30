@@ -172,10 +172,14 @@ function convertConfigFieldItem(field: string): string {
             return "$.distributions[*].license";
         case "dataset.publisher":
             return "$.dataset.publisher";
+        case "dataset.constraintExemption":
+            return "$.dataset.constraintExemption";
         case "publishing.custodianOrgUnitId":
             return "$.datasetPublishing.custodianOrgUnitId";
         case "publishing.managingOrgUnitId":
             return "$.datasetPublishing.managingOrgUnitId";
+        case "publishing.level":
+            return "$.datasetPublishing.level";
         case "licenseLevel":
             return "$.licenseLevel";
         case "informationSecurity.classification":

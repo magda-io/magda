@@ -21,6 +21,7 @@ type Props = {
     innerElementClassName?: string;
     /** The tooltip content itself, as higher-order function that provides a function to dismiss the tooltip */
     children: (dismiss: () => void) => React.ReactNode;
+    innerElementStyles?: React.CSSProperties;
 };
 
 type State = {
@@ -116,7 +117,12 @@ class TooltipWrapper extends React.Component<Props, State> {
                         this.props.innerElementClassName || ""
                     }`}
                     ref={this.tooltipTextElementRef}
-                    style={{ marginLeft: "-" + this.state.offset + "px" }}
+                    style={{
+                        marginLeft: "-" + this.state.offset + "px",
+                        ...(this.props?.innerElementStyles
+                            ? this.props.innerElementStyles
+                            : {})
+                    }}
                 >
                     {this.props.children(this.dismiss)}
                 </span>

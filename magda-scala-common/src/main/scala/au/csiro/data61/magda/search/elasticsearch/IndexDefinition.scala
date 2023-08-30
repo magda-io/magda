@@ -123,7 +123,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 49,
+    version = 50,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       var createIdxReq =
@@ -184,6 +184,12 @@ object IndexDefinition extends DefaultJsonProtocol {
                     textField("keyword_lowercase")
                       .analyzer("quote")
                       .fielddata(true)
+                  ),
+                  objectField("accessControl").fields(
+                    keywordField("ownerId"),
+                    keywordField("orgUnitId"),
+                    booleanField("constraintExemption"),
+                    keywordField("preAuthorisedPermissionIds")
                   )
                 ),
                 objectField("spatial").fields(magdaGeoShapeField("geoJson")),
@@ -211,6 +217,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 objectField("accessControl").fields(
                   keywordField("ownerId"),
                   keywordField("orgUnitId"),
+                  booleanField("constraintExemption"),
                   keywordField("preAuthorisedPermissionIds")
                 ),
                 keywordField("years"),

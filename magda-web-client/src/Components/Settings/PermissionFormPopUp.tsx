@@ -3,7 +3,8 @@ import React, {
     useState,
     forwardRef,
     useImperativeHandle,
-    useRef
+    useRef,
+    useCallback
 } from "react";
 import Modal from "rsuite/Modal";
 import Button from "rsuite/Button";
@@ -21,6 +22,7 @@ import "./PermissionFormPopUp.scss";
 import Form from "rsuite/Form";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
+import Toggle from "rsuite/Toggle";
 import { ItemDataType } from "rsuite/esm/@types/common";
 import {
     getPermissionById,
@@ -110,6 +112,21 @@ const constraintTooltip = (
     </Popover>
 );
 
+const constraintExemptionTooltip = (
+    <Popover style={{ width: "500px" }}>
+        <p>
+            Users might set some resources as "public" (via supported resources'
+            `access-control.constraintExemption`) to allow users with
+            "restricted" permissions to access the resources regardless of their
+            current scope & the constraints of the permission granted to them.
+            <br />
+            This option allows system admin to specify whether the permission's
+            restrctions / constraints can be ignored when access those "public"
+            resources.
+        </p>
+    </Popover>
+);
+
 const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     props,
     ref
@@ -122,6 +139,18 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     const onCompleteRef = useRef<SubmitCompleteHandlerType>();
     const [dataReloadToken, setdataReloadToken] = useState<string>("");
     const selectedResourceId = permission?.resource_id;
+
+    const toggleAllowExemption = useCallback(
+        () =>
+            setPermission(
+                (p) =>
+                    ({
+                        ...p,
+                        allow_exemption: !p?.allow_exemption
+                    } as any)
+            ),
+        []
+    );
 
     useImperativeHandle(ref, () => ({
         open: (
@@ -243,7 +272,8 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                 pre_authorised_constraint: permission.pre_authorised_constraint
                     ? true
                     : false,
-                operationIds: permission.operationIds
+                operationIds: permission.operationIds,
+                allow_exemption: permission.allow_exemption ? true : false
             };
             if (isCreateForm) {
                 const newPermission = await createRolePermission(
@@ -454,6 +484,29 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                         Pre-Authorised Constraint
                                     </Checkbox>
                                 </Form.Control>
+                            </Form.Group>
+                            <Form.Group controlId="ctrl-constraint-exemption">
+                                <span>
+                                    Allow Exemption?{" "}
+                                    <Whisper
+                                        placement="top"
+                                        controlId="ctrl-constraint-exemption-tooltip-hover"
+                                        trigger="hover"
+                                        speaker={constraintExemptionTooltip}
+                                    >
+                                        <span>
+                                            <MdInfoOutline />
+                                        </span>
+                                    </Whisper>
+                                </span>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <Toggle
+                                    size="lg"
+                                    checkedChildren="Yes"
+                                    unCheckedChildren="No"
+                                    checked={permission?.allow_exemption}
+                                    onChange={toggleAllowExemption}
+                                />
                             </Form.Group>
                             <Form.Group controlId="ctrl-description">
                                 <Form.ControlLabel>

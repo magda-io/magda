@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.3.0
+
+- #3455: Permission constraint exemption at resource level
+
 ## v2.2.6
 
 - Upgrade magda-format-minion to v2.0.1

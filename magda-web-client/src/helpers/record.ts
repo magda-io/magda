@@ -8,6 +8,7 @@ import {
     CurrencyData
 } from "../api-clients/RegistryApis";
 import { config } from "../config";
+import { AccessControlAspect } from "@magda/typescript-common/dist/registry/model";
 
 export type RecordAction = {
     json?: any;
@@ -139,6 +140,7 @@ export type RawDistribution = {
             state?: string;
         };
         version?: VersionAspectData;
+        "access-control"?: AccessControlAspect;
     };
 };
 
@@ -209,6 +211,7 @@ export type RawDataset = {
         currency?: CurrencyData;
         publishing?: PublishingAspect;
         "preview-map-settings"?: previewMapSettingsAspect;
+        "access-control"?: AccessControlAspect;
     };
 };
 
@@ -231,11 +234,7 @@ export type ParsedDistribution = {
     sourceDetails: any;
     ckanResource: any;
     publishingState?: string;
-    accessControl?: {
-        ownerId: string;
-        orgUnitId: string;
-        preAuthorisedPermissionIds: string[];
-    };
+    accessControl?: AccessControlAspect;
     version?: VersionAspectData;
     byteSize?: number;
     rawData: RawDistribution;
@@ -282,11 +281,7 @@ export type ParsedDataset = {
     temporalExtent?: any;
     accessLevel?: string;
     informationSecurity?: ParsedInformationSecurity;
-    accessControl?: {
-        ownerId: string;
-        orgUnitId: string;
-        preAuthorisedPermissionIds: string[];
-    };
+    accessControl?: AccessControlAspect;
     ckanExport?: CkanExportAspectType;
     access: Access;
     defaultLicense?: string;

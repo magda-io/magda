@@ -448,7 +448,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       query,
       strategy,
       facetSize
-    ).sourceExclude("accessControl") // --- do not include accessControl metadata
+    ).sourceExclude("accessControl", "distributions.accessControl") // --- do not include accessControl metadata
 
   /** Builds an empty dummy searchresult that conveys some kind of error message to the user. */
   def failureSearchResult(query: Query, message: String) =

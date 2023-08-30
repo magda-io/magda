@@ -24,6 +24,10 @@
                 "minLength": 36,
                 "maxLength": 36
             }
+        },
+        "constraintExemption": {
+            "description": "whether permission constraint should be exempted when access this resource",
+            "type": "boolean"
         }
     }
 }

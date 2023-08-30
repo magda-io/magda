@@ -4,12 +4,16 @@ import ServiceRunner from "../ServiceRunner";
 import partial from "lodash/partial";
 import { v4 as uuidV4 } from "uuid";
 import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
-import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
+import {
+    AUTHENTICATED_USERS_ROLE_ID,
+    DEFAULT_ADMIN_USER_ID
+} from "magda-typescript-common/src/authorization-api/constants";
 import {
     createOrgUnits,
     getRegistryClient as getRegistryClientWithJwtSecret,
     getOrgUnitIdByName as getOrgUnitIdByNameWithAuthApiClient,
-    createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret
+    createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret,
+    createTestDistributionByUser as createTestDistributionByUserWithAuthApiClientJwtSecret
 } from "./testUtils";
 import urijs from "urijs";
 import buildJwt from "magda-typescript-common/src/session/buildJwt";
@@ -28,6 +32,11 @@ const authApiClient = new AuthApiClient(
 const getRegistryClient = partial(getRegistryClientWithJwtSecret, jwtSecret);
 const createTestDatasetByUser = partial(
     createTestDatasetByUserWithAuthApiClientJwtSecret,
+    authApiClient,
+    jwtSecret
+);
+const createTestDistributionByUser = partial(
+    createTestDistributionByUserWithAuthApiClientJwtSecret,
     authApiClient,
     jwtSecret
 );
@@ -90,6 +99,67 @@ describe("search api auth integration tests", function (this) {
     after(async function (this) {
         this.timeout(ENV_SETUP_TIME_OUT);
         await serviceRunner.destroy();
+    });
+
+    it("should index accessControl aspect for both datasets & distributions", async () => {
+        const sectionAId = await getOrgUnitIdByName("Section A");
+        const sectionBId = await getOrgUnitIdByName("Section B");
+        const sectionCId = await getOrgUnitIdByName("Section C");
+        const testUser = await authApiClient.createUser({
+            displayName: "Test User",
+            email: "testuser@test.com",
+            source: "internal",
+            sourceId: uuidV4()
+        });
+        const testUserId = testUser.id;
+        console.log(testUserId);
+
+        const dist1 = await createTestDistributionByUser(
+            DEFAULT_ADMIN_USER_ID,
+            {
+                orgUnitId: sectionBId
+            }
+        );
+        const dist2 = await createTestDistributionByUser(
+            DEFAULT_ADMIN_USER_ID,
+            {
+                orgUnitId: sectionCId
+            }
+        );
+        const datasetId = await createTestDatasetByUser(
+            DEFAULT_ADMIN_USER_ID,
+            {
+                aspects: {
+                    "dcat-dataset-strings": {
+                        title: "test dataset"
+                    },
+                    "dataset-distributions": {
+                        distributions: [dist1, dist2]
+                    }
+                }
+            } as any,
+            {
+                orgUnitId: sectionAId
+            }
+        );
+
+        let indexResult = await Try(indexerApiClient.indexDataset(datasetId));
+        expect(indexResult.error).to.not.be.an.instanceof(Error);
+        expect(indexResult.value?.successes).to.equal(1);
+
+        // admin user should be able to see it
+        let r = await Try(getDataset(datasetId, DEFAULT_ADMIN_USER_ID));
+        expect(r.error).to.not.be.an.instanceof(Error);
+        expect(r.value.hitCount).to.equal(1);
+        expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);
+        // search api should removed accessControl aspect informaiton from the dataset
+        expect(r.value?.dataSets?.[0]?.accessControl).to.be.undefined;
+        expect(r.value?.dataSets?.[0]?.distributions?.length).to.to.equal(2);
+        const dists = r.value.dataSets[0].distributions;
+        // search api should removed accessControl aspect informaiton from the distributions
+        dists.forEach(
+            (dist: any) => expect(dist?.accessControl).to.be.undefined
+        );
     });
 
     it("should allow anonymous users & users with only authenticated users role to access published public datasets that are not assigned to any orgUnits", async () => {
@@ -220,6 +290,114 @@ describe("search api auth integration tests", function (this) {
             orgUnitId: branchBId
         });
         r = await Try(getDataset(datasetId, testUser2.id));
+        expect(r.error).to.not.be.an.instanceof(Error);
+        expect(r.value.hitCount).to.equal(1);
+        expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);
+    });
+
+    it("should allow anonymous users & users with only authenticated users role to access published datasets that are assigned to an orgUnit with constraintExemption", async () => {
+        const sectionBId = await getOrgUnitIdByName("Section B");
+
+        // create a published dataset
+        const datasetId = await createTestDatasetByUser(
+            DEFAULT_ADMIN_USER_ID,
+            {
+                aspects: {
+                    "dcat-dataset-strings": {
+                        title: "test dataset"
+                    },
+                    publishing: {
+                        state: "published"
+                    }
+                }
+            } as any,
+            {
+                orgUnitId: sectionBId,
+                constraintExemption: true
+            }
+        );
+
+        let indexResult = await Try(indexerApiClient.indexDataset(datasetId));
+        expect(indexResult.error).to.not.be.an.instanceof(Error);
+        expect(indexResult.value?.successes).to.equal(1);
+
+        // admin user should be able to see it
+        let r = await Try(getDataset(datasetId, DEFAULT_ADMIN_USER_ID));
+        expect(r.error).to.not.be.an.instanceof(Error);
+        expect(r.value.hitCount).to.equal(1);
+        expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);
+
+        // anonymous users can see it now as it has `constraintExemption` enabled (even through assigned to an org unit)
+        r = await Try(getDataset(datasetId));
+        expect(r.error).to.not.be.an.instanceof(Error);
+        expect(r.value.hitCount).to.equal(1);
+        expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);
+
+        // user with only authenticated users role can see it now as it has `constraintExemption` enabled (even through assigned to an org unit)
+        const testUser = await authApiClient.createUser({
+            displayName: "Test User",
+            email: "testuser@test.com",
+            source: "internal",
+            sourceId: uuidV4()
+        });
+        r = await Try(getDataset(datasetId, testUser.id));
+        expect(r.error).to.not.be.an.instanceof(Error);
+        expect(r.value.hitCount).to.equal(1);
+        expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);
+
+        // a user assigned to Branch B (a parent node of Section B) can see this dataset
+        const branchBId = await getOrgUnitIdByName("Branch B");
+        const testUser2 = await authApiClient.createUser({
+            displayName: "Test User 2",
+            email: "testuser@test.com",
+            source: "internal",
+            sourceId: uuidV4(),
+            orgUnitId: branchBId
+        });
+        r = await Try(getDataset(datasetId, testUser2.id));
+        expect(r.error).to.not.be.an.instanceof(Error);
+        expect(r.value.hitCount).to.equal(1);
+        expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);
+
+        // a user assigned to Branch A can't see this dataset when permission allowExemption = false
+        const branchAId = await getOrgUnitIdByName("Branch A");
+        const testUser3 = await authApiClient.createUser({
+            displayName: "Test User 3",
+            email: "testuser@test.com",
+            source: "internal",
+            sourceId: uuidV4(),
+            orgUnitId: branchAId
+        });
+        await authApiClient.deleteUserRoles(testUser3.id, [
+            AUTHENTICATED_USERS_ROLE_ID
+        ]);
+        const role = await authApiClient.createRole(
+            "a test role has the permission to read published datasets"
+        );
+        const permission = await authApiClient.createRolePermission(role.id, {
+            name:
+                "a test permission has the permission to read published datasets",
+            description:
+                "a test permission has the permission to read published datasets",
+            resourceUri: "object/dataset/published",
+            operationUris: ["object/dataset/published/read"],
+            allow_exemption: false,
+            user_ownership_constraint: true,
+            org_unit_ownership_constraint: true,
+            pre_authorised_constraint: false
+        });
+        await authApiClient.addUserRoles(testUser3.id, [role.id]);
+
+        r = await Try(getDataset(datasetId, testUser3.id));
+        expect(r.error).to.not.be.an.instanceof(Error);
+        // cann't see the dataset as allow_exemption = false
+        expect(r.value.hitCount).to.equal(0);
+
+        // can see dataset now once allow_exemption = true
+        await authApiClient.updatePermission(permission.id, {
+            allow_exemption: true
+        });
+        r = await Try(getDataset(datasetId, testUser3.id));
         expect(r.error).to.not.be.an.instanceof(Error);
         expect(r.value.hitCount).to.equal(1);
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);

@@ -159,6 +159,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *        userOwnershipConstraint: true,
      *        orgUnitOwnershipConstraint: false,
      *        preAuthorisedConstraint: false,
+     *        allowExemption: false,
      *        operations: [{
      *          id: "xxxxx-xxx-xxx-xxxx",
      *          name: "Read Draft Dataset",

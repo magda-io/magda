@@ -79,6 +79,12 @@ object Conversions {
               case Some(JsString(orgUnitId)) => Some(orgUnitId)
               case _                         => None
             },
+            constraintExemption =
+              accessControlData.get("constraintExemption") match {
+                case Some(JsBoolean(constraintExemption)) =>
+                  Some(constraintExemption)
+                case _ => None
+              },
             preAuthorisedPermissionIds =
               accessControlData.get("preAuthorisedPermissionIds") match {
                 case Some(JsArray(preAuthorisedPermissionIds)) =>
@@ -299,6 +305,38 @@ object Conversions {
     val descriptionString = dcatStrings.extract[String]('description.?)
     val betterFormatString = datasetFormatAspect.extract[String]('format.?)
 
+    val accessControl = distributionRecord.aspects.get("access-control") match {
+      case Some(JsObject(accessControlData)) =>
+        Some(
+          AccessControl(
+            ownerId = accessControlData.get("ownerId") match {
+              case Some(JsString(ownerId)) => Some(ownerId)
+              case _                       => None
+            },
+            orgUnitId = accessControlData.get("orgUnitId") match {
+              case Some(JsString(orgUnitId)) => Some(orgUnitId)
+              case _                         => None
+            },
+            constraintExemption =
+              accessControlData.get("constraintExemption") match {
+                case Some(JsBoolean(constraintExemption)) =>
+                  Some(constraintExemption)
+                case _ => None
+              },
+            preAuthorisedPermissionIds =
+              accessControlData.get("preAuthorisedPermissionIds") match {
+                case Some(JsArray(preAuthorisedPermissionIds)) =>
+                  Some(preAuthorisedPermissionIds.toArray.flatMap {
+                    case JsString(permissionId) => Some(permissionId)
+                    case _                      => None
+                  })
+                case _ => None
+              }
+          )
+        )
+      case _ => None
+    }
+
     Distribution(
       identifier = Some(distributionRecord.id),
       title = dcatStrings
@@ -322,7 +360,8 @@ object Conversions {
       },
       source = distributionRecord.aspects
         .get("source")
-        .flatMap(v => tryConvertValue(v.convertTo[DataSouce]))
+        .flatMap(v => tryConvertValue(v.convertTo[DataSouce])),
+      accessControl = accessControl
     )
   }
 

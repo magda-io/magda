@@ -8,6 +8,7 @@ import {
     OrgUnit,
     OrgUnitRecord,
     CreateRolePermissionInputData,
+    UpdateRolePermissionInputData,
     PermissionRecord,
     OperationRecord,
     ResourceRecord
@@ -450,9 +451,11 @@ export default class ApiClient {
         if (!isUuid(roleId)) {
             throw new ServerError(`roleId: ${roleId} is not a valid UUID.`);
         }
-        const uri = urijs(`${this.baseUrl}public/roles`)
-            .segmentCoded(roleId)
-            .segmentCoded("permissions");
+        const uri = urijs(
+            `${this.baseUrl}public/roles/${encodeURIComponent(
+                roleId
+            )}/permissions`
+        );
         const res = await fetch(
             uri.toString(),
             this.getMergeRequestInitOption({
@@ -471,6 +474,26 @@ export default class ApiClient {
             uri.toString(),
             this.getMergeRequestInitOption({
                 method: "post",
+                body: JSON.stringify(permissionData)
+            })
+        );
+        return await this.processJsonResponse<PermissionRecord>(res);
+    }
+
+    async updatePermission(
+        id: string,
+        permissionData: UpdateRolePermissionInputData
+    ): Promise<PermissionRecord> {
+        if (!permissionData || !Object.keys(permissionData).length) {
+            throw new Error("Empty data supplied to update permission!");
+        }
+        const uri = urijs(
+            `${this.baseUrl}public/permissions/${encodeURIComponent(id)}`
+        );
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption({
+                method: "put",
                 body: JSON.stringify(permissionData)
             })
         );
