@@ -10,6 +10,8 @@ global:
   defaultContactEmail: "magda-test@googlegroups.com"
   enableMultiTenants: false
   enableLivenessProbes: true
+  useCombinedDb: false
+  useCloudSql: true
 
 tags:
   all: true
@@ -17,12 +19,15 @@ tags:
   ingress: true
   priorities: false
   connectors: true
+  combined-db: true
 
 magda:
   openfaas:
     operator: 
       createCRD: false
   magda-core:
+    cloud-sql-proxy:
+      instanceConnectionName: terriajs:australia-southeast1:test-db
     ingress:
       ingressClass: nginx
       enableTls: true
