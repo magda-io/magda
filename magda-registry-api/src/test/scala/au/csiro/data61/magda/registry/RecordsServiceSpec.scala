@@ -9,6 +9,7 @@ import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc.DBSession
 import spray.json._
+import au.csiro.data61.magda.util.StringUtils.ExtraStringHelperFunctions
 
 import scala.util.Success
 
@@ -41,8 +42,165 @@ class RecordsServiceSpec extends ApiSpec {
     )
   )
 
+  def insertAspectDef(
+      aspectId: String,
+      tenantId: BigInt = TENANT_1
+  )(implicit param: FixtureParam) {
+    Post("/v0/aspects", AspectDefinition(aspectId, aspectId, None)) ~> addUserId() ~> addTenantIdHeader(
+      tenantId
+    ) ~> param.api(Full).routes ~> check {
+      status shouldEqual StatusCodes.OK
+    }
+  }
+
+  def createRecord(
+      record: Record,
+      tenantId: BigInt = TENANT_1
+  )(implicit param: FixtureParam) {
+    Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
+      tenantId
+    ) ~> param.api(Full).routes ~> check {
+      status shouldEqual StatusCodes.OK
+    }
+  }
+
   def readOnlyTests(role: Role) {
     describe("GET") {
+
+      describe("full text search") {
+
+        def testFullTextSearch(
+            searchText: String,
+            expectedRecordIds: List[String],
+            tenantId: BigInt = TENANT_1
+        )(implicit param: FixtureParam): Unit = {
+          val searchTextQueryStr = searchText.toQueryStringVal
+          Get(s"/v0/records?q=${searchTextQueryStr}") ~> addTenantIdHeader(
+            tenantId
+          ) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val resData = responseAs[RecordsPage[Record]]
+            resData.records.length shouldBe expectedRecordIds.length
+            resData.records.map(_.id) should contain theSameElementsAs expectedRecordIds
+          }
+
+          Get(s"/v0/records/count?q=${searchTextQueryStr}") ~> addTenantIdHeader(
+            tenantId
+          ) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val resData = responseAs[RegistryCountResponse]
+            resData.count shouldBe expectedRecordIds.length
+          }
+
+          Get(s"/v0/records/summary?q=${searchTextQueryStr}") ~> addTenantIdHeader(
+            tenantId
+          ) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val resData = responseAs[RecordsPage[RecordSummary]]
+            resData.records.length shouldBe expectedRecordIds.length
+            resData.records.map(_.id) should contain theSameElementsAs expectedRecordIds
+          }
+        }
+
+        it("should find records by keywords in aspect data") { implicit param =>
+          val aspectId1 = "testaspect1"
+          val aspectId2 = "testaspect2"
+          val aspectId3 = "testaspect3"
+
+          val recordId1 = "2b0389e1-3b1a-4286-8b79-cef36a7e9ed1"
+          val recordId2 = "b645ced0-3337-4299-ac67-dd6effce0766"
+          val recordId3 = "37434918-fa59-40be-8307-7e9e4bb8f1ef"
+
+          insertAspectDef(aspectId1)
+          insertAspectDef(aspectId2)
+          insertAspectDef(aspectId3)
+
+          createRecord(
+            Record(
+              recordId1,
+              recordId1,
+              Map(
+                aspectId1 -> JsObject(
+                  "keyword1" -> JsObject(
+                    "keyword2" -> JsString("this is keyword3 bla")
+                  )
+                ),
+                aspectId2 -> JsObject(
+                  "keyword2" -> JsString("this is keyword1 xxx bla")
+                )
+              )
+            )
+          )
+
+          createRecord(
+            Record(
+              recordId2,
+              recordId2,
+              Map(
+                aspectId2 -> JsObject(
+                  "keyword3" -> JsString("this is keyword1 bla")
+                ),
+                aspectId3 -> JsObject(
+                  "keyword3" -> JsObject(
+                    "keyword1" -> JsString("this is keyword2 bla")
+                  )
+                )
+              )
+            )
+          )
+
+          createRecord(
+            Record(
+              recordId3,
+              recordId3,
+              Map(
+                aspectId1 -> JsObject(),
+                aspectId3 -> JsObject(
+                  "xyz" -> JsString("we have both keyword2 & keyword3")
+                )
+              )
+            )
+          )
+          // search keyword keyword3 should only get recordId1 & recordId3
+          // please note: record2 is not in result event it has "keyword3" of one of object key
+          testFullTextSearch("keyword3", List(recordId1, recordId3))
+
+          testFullTextSearch("keyword1", List(recordId1, recordId2))
+
+          testFullTextSearch("keyword2", List(recordId2, recordId3))
+
+          //should find record contains both keyword2 and keyword3
+          testFullTextSearch("keyword2 keyword3", List(recordId3))
+
+          //should find record contains phrase "keyword1 bla"
+          // only recordId2 will match it
+          // record1 has "keyword1 xxx bla" doesn't match "keyword1 bla"
+          testFullTextSearch("\"keyword1 bla\"", List(recordId2))
+
+          // without double quote, "keyword1 bla" will search records contains both "keyword1" & "bla"
+          testFullTextSearch("keyword1 bla", List(recordId1, recordId2))
+
+          // can search by record Id
+          // p.s. when id is shorter (e.g. not uuid), it's possible match more than one record
+          // it's because the recordId are index & search at token level (rather than as keyword or as a whole)
+          testFullTextSearch(recordId1, List(recordId1))
+          testFullTextSearch(recordId2, List(recordId2))
+          testFullTextSearch(recordId3, List(recordId3))
+
+          // can search by aspectId
+          // record2 has no aspect2
+          // it's possible match more than records when aspectId is in format like `test-aspect-1`
+          // same as above --- as it will be tokenized to `test` `aspect` `1`
+          testFullTextSearch(aspectId1, List(recordId1, recordId3))
+        }
+      }
+
       it("starts with no records defined") { param =>
         val recordId = "foo"
         val record = Record(recordId, "foo", Map(), Some("blah"))
@@ -178,6 +336,27 @@ class RecordsServiceSpec extends ApiSpec {
         val aspectId1 = "test1"
         val aspectId2 = "test2"
         val aspectId3 = "test3"
+
+        def insertAspectDefs(param: FixtureParam, tenantId: BigInt) {
+          val aspectDefinition1 = AspectDefinition(aspectId1, "test1", None)
+          Post("/v0/aspects", aspectDefinition1) ~> addUserId() ~> addTenantIdHeader(
+            tenantId
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          val aspectDefinition2 = AspectDefinition(aspectId2, "test2", None)
+          Post("/v0/aspects", aspectDefinition2) ~> addUserId() ~> addTenantIdHeader(
+            tenantId
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          val aspectDefinition3 = AspectDefinition(aspectId3, "test3", None)
+          Post("/v0/aspects", aspectDefinition3) ~> addUserId() ~> addTenantIdHeader(
+            tenantId
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+        }
 
         it(
           "/records/summary/{id} returns a summary with id, name, and aspect ids for which the record has data in the aspect"
@@ -339,27 +518,6 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             val recordsSummary = responseAs[RecordsPage[RecordSummary]]
             recordsSummary.records.length shouldEqual 6
-          }
-        }
-
-        def insertAspectDefs(param: FixtureParam, tenantId: BigInt) {
-          val aspectDefinition1 = AspectDefinition(aspectId1, "test1", None)
-          Post("/v0/aspects", aspectDefinition1) ~> addUserId() ~> addTenantIdHeader(
-            tenantId
-          ) ~> param.api(Full).routes ~> check {
-            status shouldEqual StatusCodes.OK
-          }
-          val aspectDefinition2 = AspectDefinition(aspectId2, "test2", None)
-          Post("/v0/aspects", aspectDefinition2) ~> addUserId() ~> addTenantIdHeader(
-            tenantId
-          ) ~> param.api(Full).routes ~> check {
-            status shouldEqual StatusCodes.OK
-          }
-          val aspectDefinition3 = AspectDefinition(aspectId3, "test3", None)
-          Post("/v0/aspects", aspectDefinition3) ~> addUserId() ~> addTenantIdHeader(
-            tenantId
-          ) ~> param.api(Full).routes ~> check {
-            status shouldEqual StatusCodes.OK
           }
         }
       }
