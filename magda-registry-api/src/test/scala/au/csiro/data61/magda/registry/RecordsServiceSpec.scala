@@ -109,13 +109,13 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         it("should find records by keywords in aspect data") { implicit param =>
-          val aspectId1 = "testaspect1"
-          val aspectId2 = "testaspect2"
-          val aspectId3 = "testaspect3"
+          val aspectId1 = "test-aspect-1"
+          val aspectId2 = "test-aspect-2"
+          val aspectId3 = "test-aspect-3"
 
-          val recordId1 = "2b0389e1-3b1a-4286-8b79-cef36a7e9ed1"
-          val recordId2 = "b645ced0-3337-4299-ac67-dd6effce0766"
-          val recordId3 = "37434918-fa59-40be-8307-7e9e4bb8f1ef"
+          val recordId1 = "test-record-1"
+          val recordId2 = "test-record-2"
+          val recordId3 = "test-record-3"
 
           insertAspectDef(aspectId1)
           insertAspectDef(aspectId2)
@@ -187,17 +187,14 @@ class RecordsServiceSpec extends ApiSpec {
           testFullTextSearch("keyword1 bla", List(recordId1, recordId2))
 
           // can search by record Id
-          // p.s. when id is shorter (e.g. not uuid), it's possible match more than one record
-          // it's because the recordId are index & search at token level (rather than as keyword or as a whole)
           testFullTextSearch(recordId1, List(recordId1))
           testFullTextSearch(recordId2, List(recordId2))
           testFullTextSearch(recordId3, List(recordId3))
 
           // can search by aspectId
-          // record2 has no aspect2
-          // it's possible match more than records when aspectId is in format like `test-aspect-1`
-          // same as above --- as it will be tokenized to `test` `aspect` `1`
           testFullTextSearch(aspectId1, List(recordId1, recordId3))
+          testFullTextSearch(aspectId2, List(recordId1, recordId2))
+          testFullTextSearch(aspectId3, List(recordId2, recordId3))
         }
       }
 

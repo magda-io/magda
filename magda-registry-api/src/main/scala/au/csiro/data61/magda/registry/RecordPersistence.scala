@@ -1831,10 +1831,10 @@ class DefaultRecordPersistence(config: Config)
         val fullTextSearchCondition =
           sqls"""
             (
-             to_tsvector(${textSearchConfigName}::regconfig, recordid) ||
-             to_tsvector(${textSearchConfigName}::regconfig, aspectid) ||
-             jsonb_to_tsvector(${textSearchConfigName}::regconfig, data, '["string"]')
-            ) @@ websearch_to_tsquery(${textSearchConfigName}::regconfig, ${queryText.trim})
+              jsonb_to_tsvector(${textSearchConfigName}::regconfig, data, '["string"]') @@ websearch_to_tsquery(${textSearchConfigName}::regconfig, ${queryText.trim})
+              OR recordid = ${queryText.trim}
+              OR aspectid = ${queryText.trim}
+            )
               """
         val whereConditions = SQLUtils.toAndConditionOpt(
           Some(aspectLookupCondition),
