@@ -7,5 +7,5 @@ annotations:
   magdaModuleType: "core"
 dependencies:
   - name: minio
-    version: 7.1.2
-    repository: https://helm.min.io
+    version: "7.1.2"
+    repository: ghcr.io/magda-io/charts
