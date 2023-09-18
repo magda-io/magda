@@ -10,7 +10,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| ghcr.io/magda-io/charts | minio | 7.1.2 |
+| oci://ghcr.io/magda-io/charts | minio | 7.1.2 |
 
 ## Values
 

@@ -8,4 +8,4 @@ annotations:
 dependencies:
   - name: minio
     version: "7.1.2"
-    repository: ghcr.io/magda-io/charts
+    repository: oci://ghcr.io/magda-io/charts
