@@ -1,6 +1,6 @@
 # magda-core
 
-![Version: 2.3.0](https://img.shields.io/badge/Version-2.3.0-informational?style=flat-square)
+![Version: 2.3.1](https://img.shields.io/badge/Version-2.3.1-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes all core magda modules.
 
@@ -14,31 +14,31 @@ A complete solution for managing, publishing and discovering government data, pr
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../internal-charts/admin-api | admin-api | 2.3.0 |
-| file://../internal-charts/apidocs-server | apidocs-server | 2.3.0 |
-| file://../internal-charts/authorization-api | authorization-api | 2.3.0 |
-| file://../internal-charts/authorization-db | authorization-db | 2.3.0 |
-| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 2.3.0 |
-| file://../internal-charts/combined-db | combined-db | 2.3.0 |
-| file://../internal-charts/content-api | content-api | 2.3.0 |
-| file://../internal-charts/content-db | content-db | 2.3.0 |
-| file://../internal-charts/correspondence-api | correspondence-api | 2.3.0 |
-| file://../internal-charts/elasticsearch | elasticsearch | 2.3.0 |
-| file://../internal-charts/gateway | gateway | 2.3.0 |
-| file://../internal-charts/indexer | indexer | 2.3.0 |
-| file://../internal-charts/ingress | ingress | 2.3.0 |
-| file://../internal-charts/priorities | priorities | 2.3.0 |
-| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 2.3.0 |
-| file://../internal-charts/registry-api | registry-api | 2.3.0 |
-| file://../internal-charts/registry-db | registry-db | 2.3.0 |
-| file://../internal-charts/search-api-node | search-api-node | 2.3.0 |
-| file://../internal-charts/search-api | search-api | 2.3.0 |
-| file://../internal-charts/session-db | session-db | 2.3.0 |
-| file://../internal-charts/storage-api | storage-api | 2.3.0 |
-| file://../internal-charts/tenant-api | tenant-api | 2.3.0 |
-| file://../internal-charts/tenant-db | tenant-db | 2.3.0 |
-| file://../internal-charts/web-server | web-server | 2.3.0 |
-| file://../magda-common | magda-common | 2.3.0 |
+| file://../internal-charts/admin-api | admin-api | 2.3.1 |
+| file://../internal-charts/apidocs-server | apidocs-server | 2.3.1 |
+| file://../internal-charts/authorization-api | authorization-api | 2.3.1 |
+| file://../internal-charts/authorization-db | authorization-db | 2.3.1 |
+| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 2.3.1 |
+| file://../internal-charts/combined-db | combined-db | 2.3.1 |
+| file://../internal-charts/content-api | content-api | 2.3.1 |
+| file://../internal-charts/content-db | content-db | 2.3.1 |
+| file://../internal-charts/correspondence-api | correspondence-api | 2.3.1 |
+| file://../internal-charts/elasticsearch | elasticsearch | 2.3.1 |
+| file://../internal-charts/gateway | gateway | 2.3.1 |
+| file://../internal-charts/indexer | indexer | 2.3.1 |
+| file://../internal-charts/ingress | ingress | 2.3.1 |
+| file://../internal-charts/priorities | priorities | 2.3.1 |
+| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 2.3.1 |
+| file://../internal-charts/registry-api | registry-api | 2.3.1 |
+| file://../internal-charts/registry-db | registry-db | 2.3.1 |
+| file://../internal-charts/search-api-node | search-api-node | 2.3.1 |
+| file://../internal-charts/search-api | search-api | 2.3.1 |
+| file://../internal-charts/session-db | session-db | 2.3.1 |
+| file://../internal-charts/storage-api | storage-api | 2.3.1 |
+| file://../internal-charts/tenant-api | tenant-api | 2.3.1 |
+| file://../internal-charts/tenant-db | tenant-db | 2.3.1 |
+| file://../internal-charts/web-server | web-server | 2.3.1 |
+| file://../magda-common | magda-common | 2.3.1 |
 | https://charts.magda.io | preview-map(magda-preview-map) | 1.1.2 |
 
 ## Values
@@ -62,7 +62,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | global.logLevel | string | `"INFO"` |  |
 | global.namespace | string | `"default"` |  |
 | global.postgresql.autoCreateSecret | bool | `true` | When `true`, secret with name specified by `existingSecret` will be auto-created. When in-k8s PostgreSQL instance is used, the secret will be filled with auto-generated random password. Otherwise, the secret will only be auto created when "cloudsql-db-credentials" secret exist. And its content, for this case, will be copied from "cloudsql-db-credentials" secret, `password` field for backward compatibility purposes. Please note: when the secret (specified by `existingSecret`) exists, the auto-create feature will leave the password unchanged. |
-| global.postgresql.existingSecret | string | `"db-main-account-secret"` | the secret that contains privileged PostgreSQL account password. The password will be loaded from key "postgresql-password" of the secret data. Previously (before v1.0.0), we used to load the password from "cloudsql-db-credentials" secret `password` field when use cloud provider DB services. Since v1.0.0, our helm chart can auto-create the secret and copy the content of "cloudsql-db-credentials" secret when: <ul>   <li> "autoCreateSecret" is set to true</li>   <li> "cloudsql-db-credentials" exists </li> </ul> for backward compatibility purposes. |
+| global.postgresql.existingSecret | string | `"db-main-account-secret"` | the secret that contains privileged PostgreSQL account password. The password will be loaded from key "postgresql-password" of the secret data. Previously (before v1.0.0), we used to load the password from "cloudsql-db-credentials" secret `password` field when use cloud provider DB services. Since v1.0.0, our helm chart can auto-create the secret and copy the content of "cloudsql-db-credentials" secret when: <ul>   <li> "autoCreateSecret" is set to true</li>   <li> "cloudsql-db-credentials" exists </li> </ul> for backward compatibility purposes. <br/><br/> Please note: when supplying the secret manually, it's recommend to set `"helm.sh/resource-policy": keep` annotation on the secret to avoid the secret being removed by Helm.<br/><br/> e.g. you can set the annotation of the secret with the following command:  `kubectl annotate --namespace [install namespace] secret db-main-account-secret 'helm.sh/resource-policy'=keep` |
 | global.postgresql.postgresqlUsername | string | `"postgres"` | PostgreSQL username For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`. It's recommended use superuser `postgres` for both in-k8s PostgreSQL or cloud provider DB services (e.g. CloudSQL or AWS RDS). This user will only be used for DB schema migrators to cerate DB schema and restricted DB accounts that are used by Magda internal services to access DB. If you have to use a user account rather than `postgres`, the user account needs to have sufficient permissions to run all DB migration scripts ([e.g. here](https://github.com/magda-io/magda/tree/master/magda-migrator-registry-db/sql)). Note: Until the ticket #3126 is fixed, using a DB username rather than `postgres` will trigger an error when content DB migrate runs. |
 | global.rollingUpdate.maxUnavailable | int | `0` |  |
 | global.useAwsRdsDb | bool | `false` | whether to use AWS RDS DB config.  When this option is on, all other database type e.g. `useCombinedDb` & `useCloudSql` must be turned off. When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret, you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true). Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true ) |
@@ -76,7 +76,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | tags.authorization-api | bool | `false` | turn on / off [authorization-api](../internal-charts/authorization-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.authorization-db | bool | `false` | turn on / off [authorization-db](../internal-charts/authorization-db/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.cloud-sql-proxy | bool | `false` | turn on / off [cloud-sql-proxy](../internal-charts/cloud-sql-proxy/README.md) |
-| tags.combined-db | bool | `false` | turn on / off [combined-db](../internal-charts/combined-db/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.combined-db | bool | `false` | turn on / off [combined-db](../internal-charts/combined-db/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. Please not: unless you attempt to run logical DBs over seperate physical DBs (via `global.useInK8sDbInstance.xxx`),  you should always enable this module (even when you use cloud based DB service e.g. AWS RDS or Google Cloud SQL). |
 | tags.content-api | bool | `false` | turn on / off [content-api](../internal-charts/content-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.content-db | bool | `false` | turn on / off [content-db](../internal-charts/content-db/README.md) |
 | tags.correspondence-api | bool | `false` | turn on / off [content-db](../internal-charts/correspondence-api/README.md) |

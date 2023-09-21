@@ -16,7 +16,10 @@ global:
     #   <li> "autoCreateSecret" is set to true</li>
     #   <li> "cloudsql-db-credentials" exists </li>
     # </ul>
-    # for backward compatibility purposes.
+    # for backward compatibility purposes. <br/><br/>
+    # Please note: when supplying the secret manually, it's recommend to set `"helm.sh/resource-policy": keep` annotation on the secret to avoid the secret being removed by Helm.<br/><br/>
+    # e.g. you can set the annotation of the secret with the following command: 
+    # `kubectl annotate --namespace [install namespace] secret db-main-account-secret 'helm.sh/resource-policy'=keep`
     existingSecret: "db-main-account-secret"
 
     # -- When `true`, secret with name specified by `existingSecret` will be auto-created.
@@ -147,6 +150,8 @@ tags:
   
   # tags.combined-db -- turn on / off [combined-db](../internal-charts/combined-db/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
+  # Please not: unless you attempt to run logical DBs over seperate physical DBs (via `global.useInK8sDbInstance.xxx`), 
+  # you should always enable this module (even when you use cloud based DB service e.g. AWS RDS or Google Cloud SQL).
   combined-db: false
   
   # tags.content-api -- turn on / off [content-api](../internal-charts/content-api/README.md)

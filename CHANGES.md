@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.3.1
+
+- Use Magda forked version minio to support auth to GCS bucket using GCS [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
+
 ## v2.3.0
 
 - #3455: Permission constraint exemption at resource level

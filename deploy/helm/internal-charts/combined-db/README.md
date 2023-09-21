@@ -1,8 +1,10 @@
 # combined-db
 
-![Version: 2.3.0](https://img.shields.io/badge/Version-2.3.0-informational?style=flat-square)
+![Version: 2.3.1](https://img.shields.io/badge/Version-2.3.1-informational?style=flat-square)
 
-A Helm chart for Kubernetes
+The combined database target module for Magda.
+Unless you attempt to run logical DBs over seperate physical DBs (via `global.useInK8sDbInstance.xxx`),
+you should always enable this module (even when you use cloud based DB service e.g. AWS RDS or Google Cloud SQL).
 
 ## Requirements
 
@@ -10,7 +12,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-postgres | magda-postgres | 2.3.0 |
+| file://../magda-postgres | magda-postgres | 2.3.1 |
 
 ## Values
 
