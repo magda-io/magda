@@ -1825,15 +1825,20 @@ class DefaultRecordPersistence(config: Config)
       if (queryText.trim.isEmpty) {
         None
       } else {
+        // the text search config is required to be inline for PG to generate correct query plan
+        // the value is from internal config file should be safe
+        val textSearchConfigSql =
+          SQLSyntax.createUnsafely(s"'${textSearchConfigName}'")
         val aspectLookupCondition =
           sqls"(recordid, tenantid)=(${SQLSyntax.createUnsafely(recordIdSqlRef)}, ${SQLSyntax
             .createUnsafely(tenantIdSqlRef)})"
+        val trimedQueryText = queryText.trim
         val fullTextSearchCondition =
           sqls"""
             (
-              jsonb_to_tsvector(${textSearchConfigName}::regconfig, data, '["string"]') @@ websearch_to_tsquery(${textSearchConfigName}::regconfig, ${queryText.trim})
-              OR recordid = ${queryText.trim}
-              OR aspectid = ${queryText.trim}
+              jsonb_to_tsvector(${textSearchConfigSql}::regconfig, data, '["string"]') @@ websearch_to_tsquery(${textSearchConfigSql}::regconfig, ${trimedQueryText})
+              OR recordid = ${trimedQueryText}
+              OR aspectid = ${trimedQueryText}
             )
               """
         val whereConditions = SQLUtils.toAndConditionOpt(
@@ -1842,7 +1847,10 @@ class DefaultRecordPersistence(config: Config)
         )
         Some(
           SQLSyntax
-            .exists(sqls"SELECT 1 FROM recordaspects".where(whereConditions))
+            .exists(
+              sqls"SELECT 1 FROM recordaspects"
+                .where(whereConditions)
+            )
         )
       }
     }
