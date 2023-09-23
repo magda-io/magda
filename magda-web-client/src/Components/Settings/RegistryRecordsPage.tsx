@@ -10,17 +10,22 @@ import { fetchRecordById } from "../../api-clients/RegistryApis";
 import Loader from "rsuite/Loader";
 import Placeholder from "rsuite/Placeholder";
 import Notification from "rsuite/Notification";
-import { toaster } from "rsuite";
-import Form from "rsuite/Form";
-import Button from "rsuite/Button";
+import toaster from "rsuite/toaster";
 import ButtonToolbar from "rsuite/ButtonToolbar";
+import IconButton from "rsuite/IconButton";
+import Input from "rsuite/Input";
+import InputGroup from "rsuite/InputGroup";
 import Panel from "rsuite/Panel";
+import Nav from "rsuite/Nav";
+import { BsSearch, BsPlusCircleFill } from "react-icons/bs";
 import { Location, History } from "history";
 import RecordFormPopUp, {
     RefType as RecordFormPopUpRefType
 } from "./RecordFormPopUp";
 import RegistryRecordInfoPanel from "./RegistryRecordInfoPanel";
 import RegistryRecordAspectsPanel from "./RegistryRecordAspectsPanel";
+import RegistryRecordsPageSearchButton from "./RegistryRecordsPageSearchButton";
+import RegistryRecordsDataGrid from "./RegistryRecordsDataGrid";
 
 const Paragraph = Placeholder.Paragraph;
 
@@ -33,6 +38,11 @@ type PropsType = {
 };
 
 const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
+    const [query, setQuery] = React.useState<string>("");
+    const [recordListRefreshToken, setRecordListRefreshToken] = useState<
+        string
+    >("");
+
     // the recordId is encoded in url and were retrieved via `props.match.params.recordId` as it is,
     // so we need to decode it
     const recordId = props?.match?.params?.recordId
@@ -138,42 +148,34 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
                         <RegistryRecordAspectsPanel recordId={record.id} />
                     </>
                 ) : (
-                    <Panel className="open-record-panel" bordered>
-                        <Form fluid>
-                            <Form.Group controlId="record-id">
-                                <Form.ControlLabel>
-                                    Record ID:
-                                </Form.ControlLabel>
-                                <Form.Control
-                                    name="recordId"
-                                    placeholder="To open a record, please input the record ID..."
-                                    value={inputRecordId}
-                                    onChange={setInputRecordId}
-                                    onKeyDown={(event) => {
-                                        if (event.keyCode === 13) {
-                                            openRecordHandler();
-                                        }
+                    <div className="record-start-area">
+                        <div className="action-area">
+                            <ButtonToolbar>
+                                <RegistryRecordsPageSearchButton
+                                    executeSearch={(query) => {
+                                        setQuery(query);
+                                        setRecordListRefreshToken(
+                                            Math.random() + ""
+                                        );
                                     }}
                                 />
-                            </Form.Group>
-                            <Form.Group>
-                                <ButtonToolbar>
-                                    <Button
-                                        appearance="primary"
-                                        onClick={openRecordHandler}
-                                    >
-                                        Open Record
-                                    </Button>
-                                    <Button
-                                        appearance="primary"
-                                        onClick={createRecordHandler}
-                                    >
-                                        Create Record
-                                    </Button>
-                                </ButtonToolbar>
-                            </Form.Group>
-                        </Form>
-                    </Panel>
+                                <IconButton
+                                    className="rs-btn-icon-fix"
+                                    appearance="primary"
+                                    onClick={createRecordHandler}
+                                    icon={<BsPlusCircleFill />}
+                                >
+                                    Create Record
+                                </IconButton>
+                            </ButtonToolbar>
+                        </div>
+                        <Panel className="record-list-area" bordered>
+                            <RegistryRecordsDataGrid
+                                query={query}
+                                externalRefreshToken={recordListRefreshToken}
+                            />
+                        </Panel>
+                    </div>
                 )}
             </div>
         </div>
