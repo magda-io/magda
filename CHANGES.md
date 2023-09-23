@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.3.2
+
+- #3485: New feature for registry records manager: able to search record by keywords & added records list view
+
 ## v2.3.1
 
 - Use Magda forked version minio to support auth to GCS bucket using GCS [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
