@@ -3,6 +3,7 @@
 ## v2.3.2
 
 - #3485: New feature for registry records manager: able to search record by keywords & added records list view
+- Display organizational unit ID info in the user general info panel
 
 ## v2.3.1
 
