@@ -1,6 +1,6 @@
 {
   "name": "@magda/migrator-tenant-db",
-  "version": "2.3.2",
+  "version": "2.3.2-alpha.0",
   "description": "The MAGDA database for storing tenant data.",
   "license": "Apache-2.0",
   "scripts": {
@@ -16,8 +16,8 @@
     }
   },
   "devDependencies": {
-    "@magda/db-migrator": "^2.3.2",
-    "@magda/scripts": "^2.3.2"
+    "@magda/db-migrator": "^2.3.2-alpha.0",
+    "@magda/scripts": "^2.3.2-alpha.0"
   },
   "magda": {
     "categories": {
