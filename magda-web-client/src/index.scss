@@ -301,3 +301,55 @@ h4 {
     display: table;
     clear: both;
 }
+
+.tab-collections-container {
+    width: 100%;
+
+    .rs-nav-horizontal {
+        white-space: normal;
+    }
+
+    .rs-nav-item {
+        padding-left: 33px;
+        margin-left: 1px;
+        margin-top: 1px;
+        svg {
+            position: absolute;
+            left: 10px;
+            top: 12px;
+        }
+    }
+
+    .rs-nav-item:not(.rs-nav-item-active) {
+        border: 1px solid var(--rs-navs-tab-border) !important;
+        background-color: var(--rs-bg-card) !important;
+        color: var(--rs-navs-selected) !important;
+    }
+
+    .rs-nav-item.rs-nav-item-active {
+        border: none !important;
+        background-color: var(--rs-navs-bg-hover) !important;
+        color: var(--rs-navs-text-hover) !important;
+    }
+
+    a {
+        text-decoration: none;
+        &:focus {
+            outline: none !important;
+        }
+    }
+
+    .tab-collections-body {
+        border: 1px solid #e7e7e7;
+        border-radius: 3px;
+        padding: 10px;
+    }
+}
+
+.rs-btn-icon-fix {
+    svg {
+        position: absolute;
+        left: 20px;
+        top: 10px;
+    }
+}

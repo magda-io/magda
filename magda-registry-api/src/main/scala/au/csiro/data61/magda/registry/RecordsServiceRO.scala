@@ -49,6 +49,23 @@ class RecordsServiceRO(
     * @apiGroup Registry Record Service
     * @api {get} /v0/registry/records Get a list of all records
     * @apiDescription Get a list of all records
+    * @apiParam (query) {string[]} q Full text search querytext. You can supply keywords or phrases for full text search against all possible fields of all aspect data.
+    *
+    *  The full text search querytext leverages [websearch_to_tsquery](https://www.postgresql.org/docs/13/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES) to parse user querytext into a valid text search query.
+    *  The following syntax is supported:
+    *  - unquoted text: text not inside quote marks will be converted to terms separated by & operators, as if processed by plainto_tsquery.
+    *  - "quoted text": text inside quote marks will be converted to terms separated by <-> operators, as if processed by phraseto_tsquery.
+    *  - OR: the word “or” will be converted to the | operator.
+    *  - -: a dash will be converted to the ! operator.
+    *
+    *  Other punctuation is ignored. tsquery operators, weight labels, or prefix-match labels in its input will not be recognized.
+    *
+    *  For simple usage, you can simply supply keywords that you want the search result (i.e. record) matched.
+    *
+    *  The full text search function will cover all field values in all aspect data, plus record id and aspect id.
+    *
+    *  Please note: the record name field on records table will not be covered for the performance reason.
+    *
     * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
     * @apiParam (query) {string[]} optionalAspect The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter. These aspects will be included in a record if available, but a record will be included even if it is missing these aspects.
     * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
@@ -267,6 +284,14 @@ class RecordsServiceRO(
           "When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned."
       ),
       new ApiImplicitParam(
+        name = "q",
+        required = false,
+        dataType = "string",
+        paramType = "query",
+        allowMultiple = false,
+        value = "full text search query"
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -301,7 +326,8 @@ class RecordsServiceRO(
             'orderBy.as[String].?,
             'orderByDir.as[String].?,
             'orderNullFirst.as[Boolean].?,
-            'reversePageTokenOrder.as[Boolean].?
+            'reversePageTokenOrder.as[Boolean].?,
+            'q.as[String].?
           ) {
             (
                 aspects,
@@ -315,7 +341,8 @@ class RecordsServiceRO(
                 orderBy,
                 orderByDir,
                 orderNullFirst,
-                reversePageTokenOrder
+                reversePageTokenOrder,
+                q
             ) =>
               val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
               val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
@@ -365,7 +392,8 @@ class RecordsServiceRO(
                           )
                         case _ => None
                       },
-                      reversePageTokenOrder = reversePageTokenOrder
+                      reversePageTokenOrder = reversePageTokenOrder,
+                      fullTextSearchText = q
                     )
                   }
                 }
@@ -380,6 +408,23 @@ class RecordsServiceRO(
     * @apiGroup Registry Record Service
     * @api {get} /v0/registry/records/summary Get a list of all records as summaries
     * @apiDescription Get a list of all records as summaries
+    * @apiParam (query) {string[]} q Full text search querytext. You can supply keywords or phrases for full text search against all possible fields of all aspect data.
+    *
+    *  The full text search querytext leverages [websearch_to_tsquery](https://www.postgresql.org/docs/13/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES) to parse user querytext into a valid text search query.
+    *  The following syntax is supported:
+    *  - unquoted text: text not inside quote marks will be converted to terms separated by & operators, as if processed by plainto_tsquery.
+    *  - "quoted text": text inside quote marks will be converted to terms separated by <-> operators, as if processed by phraseto_tsquery.
+    *  - OR: the word “or” will be converted to the | operator.
+    *  - -: a dash will be converted to the ! operator.
+    *
+    *  Other punctuation is ignored. tsquery operators, weight labels, or prefix-match labels in its input will not be recognized.
+    *
+    *  For simple usage, you can simply supply keywords that you want the search result (i.e. record) matched.
+    *
+    *  The full text search function will cover all field values in all aspect data, plus record id and aspect id.
+    *
+    *  Please note: the record name field on records table will not be covered for the performance reason.
+    *
     * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
     * @apiParam (query) {boolean} reversePageTokenOrder When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned.
     * @apiParam (query) {number} start The index of the first record to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
@@ -393,6 +438,7 @@ class RecordsServiceRO(
     *            "id": "string",
     *            "name": "string",
     *            "aspects": [
+    *              "string",
     *              "string"
     *            ]
     *        }
@@ -443,6 +489,14 @@ class RecordsServiceRO(
           "When pagination via pageToken, by default, records with smaller pageToken (i.e. older records) will be returned first. When this parameter is set to `true`, higher pageToken records (newer records) will be returned."
       ),
       new ApiImplicitParam(
+        name = "q",
+        required = false,
+        dataType = "string",
+        paramType = "query",
+        allowMultiple = false,
+        value = "full text search query"
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -469,8 +523,9 @@ class RecordsServiceRO(
             'pageToken.?,
             'start.as[Int].?,
             'limit.as[Int].?,
-            'reversePageTokenOrder.as[Boolean].?
-          ) { (pageToken, start, limit, reversePageTokenOrder) =>
+            'reversePageTokenOrder.as[Boolean].?,
+            'q.as[String].?
+          ) { (pageToken, start, limit, reversePageTokenOrder, q) =>
             completeBlockingTask {
               DB readOnly { implicit session =>
                 session.queryTimeout(this.defaultQueryTimeout)
@@ -481,7 +536,8 @@ class RecordsServiceRO(
                     pageToken,
                     start,
                     limit,
-                    reversePageTokenOrder
+                    reversePageTokenOrder,
+                    fullTextSearchText = q
                   )
               }
             }
@@ -495,6 +551,23 @@ class RecordsServiceRO(
     * @apiGroup Registry Record Service
     * @api {get} /v0/registry/records/count Get the count of records matching the parameters
     * @apiDescription Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
+    * @apiParam (query) {string[]} q Full text search querytext. You can supply keywords or phrases for full text search against all possible fields of all aspect data.
+    *
+    *  The full text search querytext leverages [websearch_to_tsquery](https://www.postgresql.org/docs/13/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES) to parse user querytext into a valid text search query.
+    *  The following syntax is supported:
+    *  - unquoted text: text not inside quote marks will be converted to terms separated by & operators, as if processed by plainto_tsquery.
+    *  - "quoted text": text inside quote marks will be converted to terms separated by <-> operators, as if processed by phraseto_tsquery.
+    *  - OR: the word “or” will be converted to the | operator.
+    *  - -: a dash will be converted to the ! operator.
+    *
+    *  Other punctuation is ignored. tsquery operators, weight labels, or prefix-match labels in its input will not be recognized.
+    *
+    *  For simple usage, you can simply supply keywords that you want the search result (i.e. record) matched.
+    *
+    *  The full text search function will cover all field values in all aspect data, plus record id and aspect id.
+    *
+    *  Please note: the record name field on records table will not be covered for the performance reason.
+    *
     * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
     * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON.
     *
@@ -613,6 +686,14 @@ class RecordsServiceRO(
           "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. Queries passing via this parameter will be grouped with OR logic."
       ),
       new ApiImplicitParam(
+        name = "q",
+        required = false,
+        dataType = "string",
+        paramType = "query",
+        allowMultiple = false,
+        value = "full text search query"
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -635,26 +716,31 @@ class RecordsServiceRO(
           authApiClient,
           AuthDecisionReqConfig("object/record/read")
         ) { authDecision =>
-          parameters('aspect.*, 'aspectQuery.*, 'aspectOrQuery.*) {
-            (aspects, aspectQueries, aspectOrQueries) =>
-              val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
-              val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
+          parameters(
+            'aspect.*,
+            'aspectQuery.*,
+            'aspectOrQuery.*,
+            'q.as[String].?
+          ) { (aspects, aspectQueries, aspectOrQueries, q) =>
+            val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+            val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
 
-              completeBlockingTask {
-                DB readOnly { implicit session =>
-                  session.queryTimeout(this.defaultQueryTimeout)
-                  CountResponse(
-                    recordPersistence
-                      .getCount(
-                        tenantId,
-                        authDecision,
-                        aspects,
-                        parsedAspectQueries,
-                        parsedAspectOrQueries
-                      )
-                  )
-                }
+            completeBlockingTask {
+              DB readOnly { implicit session =>
+                session.queryTimeout(this.defaultQueryTimeout)
+                CountResponse(
+                  recordPersistence
+                    .getCount(
+                      tenantId,
+                      authDecision,
+                      aspects,
+                      parsedAspectQueries,
+                      parsedAspectOrQueries,
+                      fullTextSearchText = q
+                    )
+                )
               }
+            }
           }
         }
       }

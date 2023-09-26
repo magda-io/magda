@@ -486,6 +486,66 @@ export async function fetchRecords({
     }
 }
 
+interface RecordSummaryPage {
+    records: RecordSummary[];
+    hasMore: boolean;
+    nextPageToken?: string;
+}
+
+export async function fetchRecordsSummary(
+    query: string,
+    pageToken: string,
+    limit: number,
+    reversePageTokenOrder: boolean = false,
+    noCache: boolean = false
+): Promise<RecordSummaryPage> {
+    const parameters: string[] = [];
+
+    const queryStr = typeof query === "string" ? query.trim() : "";
+    if (queryStr) {
+        parameters.push("q=" + encodeURIComponent(queryStr));
+    }
+    if (pageToken) {
+        parameters.push("pageToken=" + pageToken);
+    }
+    if (limit) {
+        parameters.push("limit=" + limit);
+    }
+    if (reversePageTokenOrder) {
+        parameters.push("reversePageTokenOrder=true");
+    }
+
+    const url =
+        config.registryApiReadOnlyBaseUrl +
+        `records/summary${parameters.length ? `?${parameters.join("&")}` : ""}`;
+
+    const response = await fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.commonFetchRequestOptions)
+            : config.commonFetchRequestOptions
+    );
+
+    if (!response.ok) {
+        let statusText = response.statusText;
+        throw new ServerError(statusText, response.status);
+    }
+    const data = await response.json();
+    if (data?.records?.length > 0) {
+        return {
+            records: data.records,
+            hasMore: data.hasMore,
+            nextPageToken: data.nextPageToken
+        };
+    } else {
+        return {
+            records: [],
+            hasMore: false,
+            nextPageToken: ""
+        };
+    }
+}
+
 export type FetchRecordsCountOptions = {
     aspectQueries?: AspectQuery[];
     aspects?: string[];
@@ -585,6 +645,12 @@ export type Record = {
     id: string;
     name: string;
     aspects: { [aspectId: string]: any };
+};
+
+export type RecordSummary = {
+    id: string;
+    name: string;
+    aspects: string[];
 };
 
 export async function createRecord(

@@ -3,4 +3,18 @@
         margin-top: 20px;
         text-align: center;
     }
+    .search-form-area,
+    .create-form-area {
+        margin-top: 20px;
+        button {
+            margin-top: 20px;
+        }
+    }
+    .record-list-area {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+}
+.registry-records-search-popover {
+    width: 500px;
 }

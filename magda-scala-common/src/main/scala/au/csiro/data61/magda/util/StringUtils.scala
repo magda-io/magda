@@ -4,7 +4,7 @@ import io.lemonlabs.uri.encoding
 
 object StringUtils {
   val urlSegmentEncoder = encoding.percentEncode -- ('-', '.', '_', '~', '!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=', ':', '@')
-  val urlQsValEncoder = encoding.percentEncode -- ('/', ':', '@', '-', '.', '_', '~', '!', '$', '\'', '(', ')', '*', '+', ',', ';')
+  val urlQsValEncoder = encoding.percentEncode ++ (' ') -- ('/', ':', '@', '-', '.', '_', '~', '!', '$', '\'', '(', ')', '*', '+', ',', ';')
 
   implicit class ExtraStringHelperFunctions(val s: String) {
     def stripLineEndingWhitespaces = s.replaceAll("""(?m)(\s)+$""", "")
