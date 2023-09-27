@@ -167,6 +167,18 @@ magda:
       smtpHostname: "smtp.mailgun.org"
       smtpPort: 2525
 
+    registry-api:
+      autoscaler:
+        ## whether to enable autoscaling
+        enabled: true
+        ## The minimum number of replicas to have
+        minReplicas: 1
+        ## The maximum number of replicas to have
+        maxReplicas: 2
+      deployments:
+        readOnly:
+          enable: true
+
 # auth plugin for google
 magda-auth-google:
   googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
