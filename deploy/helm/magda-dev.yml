@@ -4,7 +4,7 @@ global:
   externalUrl: https://dev.magda.io
   image:
     repository: "registry.gitlab.com/magda-data/magda"
-    tag: "master"
+    tag: "main"
     pullSecrets: "regcred"
     pullPolicy: Always
   rollingUpdate:
@@ -88,7 +88,7 @@ magda:
           image: 
             registry: "registry.gitlab.com"
             repository: "magda-data/magda/magda-postgres"
-            tag: "master"
+            tag: "main"
             pullPolicy: "Always"
             pullSecrets: 
               - "regcred"
