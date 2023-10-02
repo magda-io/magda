@@ -3,4 +3,4 @@
 CREATE INDEX recordsaspects_data_distributions_gin_with_aspect_cond_idx
     ON recordaspects USING gin
     ((data -> 'distributions'::text))
-    WHERE data -> 'aspectId'::text = 'dataset-distributions';
+    WHERE aspectid = 'dataset-distributions';
