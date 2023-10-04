@@ -4,6 +4,7 @@
 
 - #3485: New feature for registry records manager: able to search record by keywords & added records list view
 - Display organizational unit ID info in the user general info panel
+- #3100: Conenctor SDK: Allow runtime filter code to be supply to connectors via Helm config
 
 ## v2.3.1
 

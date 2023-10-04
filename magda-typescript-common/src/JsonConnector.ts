@@ -16,6 +16,11 @@ import process from "process";
 import { v4 as uuidv4 } from "uuid";
 import _ from "lodash";
 
+export type RecordFilterFunctionType = (
+    jsonData: any,
+    type: "Dataset" | "Distribution" | "Organization"
+) => boolean;
+
 /**
  * A base class for connectors for most any JSON-based catalog source.
  */
@@ -26,6 +31,7 @@ export default class JsonConnector {
     public readonly maxConcurrency: number;
     public readonly sourceTag?: string;
     public readonly configData?: JsonConnectorConfig;
+    private readonly recordFilterFunction: RecordFilterFunctionType;
 
     constructor({
         source,
@@ -40,6 +46,20 @@ export default class JsonConnector {
         this.maxConcurrency = maxConcurrency;
         this.sourceTag = sourceTag;
         this.configData = this.readConfigData();
+        this.recordFilterFunction = this.createRecordFilterFunction();
+    }
+
+    createRecordFilterFunction(): RecordFilterFunctionType {
+        if (!this.configData?.customJsFilterCode) {
+            return () => true;
+        }
+        const code = this.configData.customJsFilterCode;
+        const filterFunction = new Function(
+            "jsonData",
+            "type",
+            code
+        ) as RecordFilterFunctionType;
+        return filterFunction;
     }
 
     readConfigData(): JsonConnectorConfig {
@@ -63,6 +83,9 @@ export default class JsonConnector {
                     if (this.source.presetRecordAspects) {
                         configData.presetRecordAspects = this.source.presetRecordAspects;
                     }
+                    if (this.source?.customJsFilterCode) {
+                        configData.customJsFilterCode = this.source?.customJsFilterCode;
+                    }
                 } else {
                     configData = {
                         id: argv.id as string,
@@ -73,6 +96,9 @@ export default class JsonConnector {
                     }
                     if (argv.presetRecordAspects) {
                         configData.presetRecordAspects = argv.presetRecordAspects as JsonConnectorConfigPresetAspect[];
+                    }
+                    if (argv.customJsFilterCode) {
+                        configData.customJsFilterCode = argv.customJsFilterCode as string;
                     }
                 }
             } else {
@@ -186,6 +212,15 @@ export default class JsonConnector {
                     if (!organization) {
                         return;
                     }
+                    if (
+                        this.recordFilterFunction(
+                            organization,
+                            "Organization"
+                        ) === false
+                    ) {
+                        result.organizationsSkiped++;
+                        return;
+                    }
                     const recordOrError = await this.createOrganization(
                         organization
                     );
@@ -215,12 +250,25 @@ export default class JsonConnector {
 
         const datasets = this.source.getJsonDatasets();
         await forEachAsync(datasets, this.maxConcurrency, async (dataset) => {
+            if (this.recordFilterFunction(dataset, "Dataset") === false) {
+                result.datasetsSkiped++;
+                return;
+            }
             const record = this.transformer.datasetJsonToRecord(dataset);
 
             const distributions = this.source.getJsonDistributions(dataset);
             if (distributions) {
                 const distributionIds: ConnectorRecordId[] = [];
                 await forEachAsync(distributions, 1, async (distribution) => {
+                    if (
+                        this.recordFilterFunction(
+                            distribution,
+                            "Distribution"
+                        ) === false
+                    ) {
+                        result.distributionsSkiped++;
+                        return;
+                    }
                     const recordOrError = await this.createDistribution(
                         distribution,
                         dataset
@@ -279,24 +327,32 @@ export default class JsonConnector {
                         publisher,
                         this.source.id
                     );
-
                     if (publisherId) {
-                        const recordOrError = await this.createOrganization(
-                            publisher
-                        );
-                        if (recordOrError instanceof Error) {
-                            result.organizationFailures.push(
-                                new RecordCreationFailure(
-                                    publisherId,
-                                    undefined,
-                                    recordOrError
-                                )
-                            );
+                        if (
+                            this.recordFilterFunction(
+                                publisher,
+                                "Organization"
+                            ) === false
+                        ) {
+                            result.distributionsSkiped++;
                         } else {
-                            record.aspects["dataset-publisher"] = {
-                                publisher: publisherId.toString()
-                            };
-                            ++result.organizationsConnected;
+                            const recordOrError = await this.createOrganization(
+                                publisher
+                            );
+                            if (recordOrError instanceof Error) {
+                                result.organizationFailures.push(
+                                    new RecordCreationFailure(
+                                        publisherId,
+                                        undefined,
+                                        recordOrError
+                                    )
+                                );
+                            } else {
+                                record.aspects["dataset-publisher"] = {
+                                    publisher: publisherId.toString()
+                                };
+                                ++result.organizationsConnected;
+                            }
                         }
                     }
                 }
@@ -616,6 +672,12 @@ export interface ConnectorSource {
     readonly presetRecordAspects?: JsonConnectorConfigPresetAspect[];
 
     /**
+     * This field is not compulsory and JsonConnector will try to locate its value from commandline parameters
+     * before use ConnectorSource.customJsFilterCode as backup --- more for test cases
+     */
+    readonly customJsFilterCode?: string;
+
+    /**
      * Get all of the datasets as pages of objects.
      *
      * @returns {AsyncPage<any[]>} A page of datasets.
@@ -761,7 +823,13 @@ export interface JsonConnectorConfig {
     ignoreHarvestSources?: string[];
     allowedOrganisationNames?: string[];
     ignoreOrganisationNames?: string[];
-
     extras?: JsonConnectorConfigExtraMetaData;
     presetRecordAspects?: JsonConnectorConfigPresetAspect[];
+    /**
+     * Custom JS code to filter out records
+     * The the following variables are available in scope:
+     * - jsonData: the original record json data before transformation
+     * - type: a string represent the type of the record. e.g. "Organization" | "Dataset" | "Distribution"
+     */
+    customJsFilterCode?: string;
 }
