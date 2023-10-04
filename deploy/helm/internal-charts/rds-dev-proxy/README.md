@@ -1,6 +1,6 @@
 # rds-dev-proxy
 
-![Version: 2.3.1](https://img.shields.io/badge/Version-2.3.1-informational?style=flat-square)
+![Version: 2.3.2-alpha.1](https://img.shields.io/badge/Version-2.3.2--alpha.1-informational?style=flat-square)
 
 A RDS proxy for dev / debugging purpose
 
