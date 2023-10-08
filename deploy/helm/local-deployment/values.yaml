@@ -209,6 +209,12 @@ connector-wa:
     name: Western Australia Government
     sourceUrl: https://catalogue.data.wa.gov.au/
     pageSize: 25
+    customJsFilterCode: |
+      if(type === "Dataset") {
+        return jsonData["access_level"]=="open" ? true : false;
+      } else {
+        return true;
+      }
 
 connector-dap:
   config:
