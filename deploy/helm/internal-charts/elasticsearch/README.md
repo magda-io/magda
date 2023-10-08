@@ -1,6 +1,6 @@
 # elasticsearch
 
-![Version: 2.3.1](https://img.shields.io/badge/Version-2.3.1-informational?style=flat-square)
+![Version: 2.3.2-alpha.2](https://img.shields.io/badge/Version-2.3.2--alpha.2-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
