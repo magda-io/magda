@@ -1,6 +1,6 @@
 # storage-api
 
-![Version: 2.2.6](https://img.shields.io/badge/Version-2.2.6-informational?style=flat-square)
+![Version: 2.3.1](https://img.shields.io/badge/Version-2.3.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -10,7 +10,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://helm.min.io | minio | 7.1.2 |
+| oci://ghcr.io/magda-io/charts | minio | 7.1.2 |
 
 ## Values
 
@@ -82,6 +82,57 @@ storage-api:
 ```
 
 To pass the GCS credentials (json file of service account key), you need to add the key `gcs_key.json` to secret named `storage-secrets`.  The content of the ``gcs_key.json` key should be your GCS JSON key file.
+
+> You can also leverage Google [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) feature to achieve no key / secret authentication to GCS by setting `storage-api.minio.gcsgateway.authKsa` to `true`.
+> Workload Identity allows pods in your GKE clusters to impersonate Identity and Access Management (IAM) service accounts (GSA) to access Google Cloud services (e.g. GCS).
+
+To achieve that your need to:
+- Create a GSA (GCP Service Account) and grant it sufficient permissions by assign a custom role or built-in roles.
+  - Please note: you will need "list buckets" permission to make the default minio UI work. But you don't have to grant this permission if you don't use the UI.
+- Make sure workload identity is enabled for your cluster and node pools
+  - Refer to the Workload Identity doc link above
+- Create two way bindings from minio KSA (k8s service account) to GSA and GSA to minio KSA
+  - By default, the minio KSA name is `magda-minio`
+  - You can create the two way binding with commands:
+
+```bash
+# Link KSA to GSA in GCP
+# you need to set env var `PROJECT_ID` before run it
+# here we assume `magda-namespace` is the magda deployment namespace and `magda-minio` is the minio KSA name
+# You should replace `[GCP service account full email]` with the actual GSA full email address
+gcloud iam service-accounts add-iam-policy-binding \
+    --project $PROJECT_ID \
+    --role roles/iam.workloadIdentityUser \
+    --member "serviceAccount:$PROJECT_ID.svc.id.goog[magda-namespace/magda-minio]" \
+    [GCP service account full email]
+```
+
+```bash
+# Link KSA to GSA in Kubernetes
+# here we assume `magda-namespace` is the magda deployment namespace and `magda-minio` is the minio KSA name
+# You should replace `[GCP service account full email]` with the actual GSA full email address
+kubectl annotate serviceaccount --namespace=magda-namespace magda-minio \
+    "iam.gke.io/gcp-service-account=[GCP service account full email]"
+```
+
+And your helm config should be:
+
+```yaml
+storage-api:
+  minioRegion: "xxxxx" # e.g. australia-southeast1
+  minio:
+    persistence:
+      # turn off in-cluster storage
+      enabled: false
+    gcsgateway:
+      enabled: true
+      # turn on auth via KSA / Google Workload Identity
+      authKsa: true
+      # Number of parallel instances
+      replicas: 1
+      # Google cloud project-id
+      projectId: ""
+```
 
 #### use azure blob as storage target
 

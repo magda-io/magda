@@ -228,7 +228,8 @@ export default class RegistryClient {
         orderBy?: string,
         orderByDir?: string,
         orderNullFirst?: boolean,
-        reversePageTokenOrder?: boolean
+        reversePageTokenOrder?: boolean,
+        q?: string
     ): Promise<RecordsPage<I> | ServerError> {
         const operation = (pageToken: string) => () =>
             this.recordsApi.getAll(
@@ -245,6 +246,7 @@ export default class RegistryClient {
                 orderByDir,
                 orderNullFirst,
                 reversePageTokenOrder,
+                q,
                 this.jwt
             );
         return <any>retry(

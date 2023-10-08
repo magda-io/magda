@@ -2,6 +2,7 @@ export interface AccessControlAspect {
     ownerId?: string;
     orgUnitId?: string;
     preAuthorisedPermissionIds?: string[];
+    constraintExemption?: boolean;
 }
 
 export interface JsonPatch {

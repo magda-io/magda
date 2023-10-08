@@ -12,6 +12,12 @@ verifyRecordPermission(inputOperationUri, inputObjectRefName) {
     hasNoConstraintPermission(inputOperationUri)
 }
 
+# if find a permission allow exemption and resource set constraint exemption
+verifyRecordPermission(inputOperationUri, inputObjectRefName) {
+    hasPermissionAllowExemption(inputOperationUri)
+    input.object[inputObjectRefName]["access-control"].constraintExemption = true
+}
+
 # if find a permission with user ownership constraint
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
     hasOwnerConstraintPermission(inputOperationUri)

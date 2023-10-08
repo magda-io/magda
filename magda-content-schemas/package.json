@@ -1,6 +1,6 @@
 {
   "name": "@magda/content-schemas",
-  "version": "2.2.6",
+  "version": "2.3.1",
   "description": "Common schemas for use with the content api.",
   "scripts": {},
   "author": "",

@@ -136,6 +136,7 @@ export async function createTestDatasetByUser(
 
     if (accessControlAspect) {
         recordData.aspects["access-control"] = {
+            ownerId: userId,
             ...accessControlAspect
         };
     } else {

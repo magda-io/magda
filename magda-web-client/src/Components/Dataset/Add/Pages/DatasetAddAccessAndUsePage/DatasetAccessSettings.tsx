@@ -12,17 +12,20 @@ import { toaster } from "rsuite";
 import OrgUnitDropDown from "../../OrgUnitDropDown";
 import Placeholder from "rsuite/Placeholder";
 import Loader from "rsuite/Loader";
+import TooltipWrapper from "Components/Common/TooltipWrapper";
+import helpIcon from "assets/help.svg";
 import getAccessLevelDesc from "./getAccessLevelDesc";
-
-const Paragraph = Placeholder.Paragraph;
+import Toggle from "rsuite/Toggle";
 
 type PropsType = {
     accessLevel?: string;
     orgUnitId?: string;
     custodianOrgUnitId?: string;
     managingOrgUnitId?: string;
+    constraintExemption: boolean;
     editAccessLevel: (newValue: any) => void;
     editOrgUnitId: (newValue: any) => void;
+    editConstraintExemption: (newValue: boolean) => void;
 };
 
 const DatasetAccessSettings: FunctionComponent<PropsType> = (props) => {
@@ -30,10 +33,12 @@ const DatasetAccessSettings: FunctionComponent<PropsType> = (props) => {
         (state) => state?.userManagement?.user?.orgUnit
     );
     const {
+        constraintExemption,
         custodianOrgUnitId,
         managingOrgUnitId,
         editAccessLevel,
-        editOrgUnitId
+        editOrgUnitId,
+        editConstraintExemption
     } = props;
 
     const { result, loading, error } = useAsync(
@@ -66,9 +71,7 @@ const DatasetAccessSettings: FunctionComponent<PropsType> = (props) => {
 
     const { custodianOrgUnit, managingOrgUnit } = (result ? result : {}) as any;
 
-    const options: Record<string, any> = {
-        organization: getAccessLevelDesc("organization")
-    };
+    const options: Record<string, any> = {};
 
     if (custodianOrgUnit?.id) {
         options["custodian"] = getAccessLevelDesc(
@@ -92,9 +95,10 @@ const DatasetAccessSettings: FunctionComponent<PropsType> = (props) => {
 
     if (loading) {
         return (
-            <Paragraph rows={8}>
+            <div style={{ position: "relative" }}>
+                <Placeholder.Paragraph rows={8} />
                 <Loader center content="loading" />
-            </Paragraph>
+            </div>
         );
     } else {
         return (
@@ -105,32 +109,24 @@ const DatasetAccessSettings: FunctionComponent<PropsType> = (props) => {
                     </span>
                 </h4>
                 <div className="input-area">
-                    <ToolTip>
-                        We recommend you publish your data to everyone in your
-                        organisation to help prevent data silos.
-                    </ToolTip>
-                    <div>
-                        <AlwaysEditor
-                            value={props?.accessLevel}
-                            onChange={(value) => {
-                                editAccessLevel(value);
-                                if (value === "organization") {
-                                    editOrgUnitId(undefined);
-                                } else if (value === "custodian") {
-                                    editOrgUnitId(custodianOrgUnitId);
-                                } else if (value === "team") {
-                                    editOrgUnitId(managingOrgUnitId);
-                                } else if (value === "creatorOrgUnit") {
-                                    editOrgUnitId(userOrgUnit?.id);
-                                }
-                            }}
-                            editor={codelistRadioEditor(
-                                "dataset-publishing-access-level",
-                                options,
-                                false
-                            )}
-                        />
-                    </div>
+                    <AlwaysEditor
+                        value={props?.accessLevel}
+                        onChange={(value) => {
+                            editAccessLevel(value);
+                            if (value === "custodian") {
+                                editOrgUnitId(custodianOrgUnitId);
+                            } else if (value === "team") {
+                                editOrgUnitId(managingOrgUnitId);
+                            } else if (value === "creatorOrgUnit") {
+                                editOrgUnitId(userOrgUnit?.id);
+                            }
+                        }}
+                        editor={codelistRadioEditor(
+                            "dataset-publishing-access-level",
+                            options,
+                            false
+                        )}
+                    />
                 </div>
                 {props?.accessLevel === "selectedOrgUnit" ? (
                     <>
@@ -146,6 +142,77 @@ const DatasetAccessSettings: FunctionComponent<PropsType> = (props) => {
                         />
                     </>
                 ) : null}
+                <h4>
+                    <span>Mark your dataset as a "public" dataset? (*)</span>
+
+                    <span className="tooltip-container">
+                        <TooltipWrapper
+                            className="tooltip no-print"
+                            launcher={() => (
+                                <div className="tooltip-launcher-icon help-icon">
+                                    <img
+                                        src={helpIcon}
+                                        alt="More information on this option, click for more information"
+                                    />
+                                </div>
+                            )}
+                            innerElementClassName="inner"
+                            innerElementStyles={{
+                                textAlign: "left",
+                                zIndex: 1000
+                            }}
+                        >
+                            {() => (
+                                <>
+                                    Please note: <br />
+                                    <br />
+                                    This option will publish your dataset as a
+                                    "public" dataset. <br />
+                                    <br />
+                                    i.e. everyone has "published dataset read"
+                                    permission (with/without any constraints)
+                                    will be able to see your dataset. <br />
+                                    <br />
+                                    e.g. People who are only allowed to see
+                                    datasets within their own organization can
+                                    now see your dataset even if your dataset
+                                    doesn't belong to their organization.
+                                    <br />
+                                    <br />
+                                    The system administrator can still restrict
+                                    the access to the "public" dataset for
+                                    people with certain roles (e.g. anonymous
+                                    users) by explicitly setting
+                                    "allow_exemption" field of the "published
+                                    dataset read" permission to `false` to
+                                    prevent any constraints from being exempted.
+                                    <br />
+                                    <br />
+                                    In this way, people who are only allowed to
+                                    see datasets within their own organization
+                                    won't be able to see your "public" dataset
+                                    unless the "public" dataset does belong to
+                                    their organization.
+                                </>
+                            )}
+                        </TooltipWrapper>
+                    </span>
+                </h4>
+                <div className="input-area">
+                    <ToolTip>
+                        We recommend you mark your data as a "public" dataset to
+                        help prevent data silos.
+                    </ToolTip>
+                    <div>
+                        <Toggle
+                            size="lg"
+                            checkedChildren="Public dataset"
+                            unCheckedChildren="Non-public dataset"
+                            checked={constraintExemption}
+                            onChange={editConstraintExemption}
+                        />
+                    </div>
+                </div>
             </div>
         );
     }

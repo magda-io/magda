@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## v2.3.2
+
+- #3485: New feature for registry records manager: able to search record by keywords & added records list view
+- Display organizational unit ID info in the user general info panel
+- #3100: Conenctor SDK: Allow runtime filter code to be supply to connectors via Helm config
+- Fixed an issue with docker build utiliy
+
+## v2.3.1
+
+- Use Magda forked version minio to support auth to GCS bucket using GCS [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
+
+## v2.3.0
+
+- #3455: Permission constraint exemption at resource level
+
 ## v2.2.6
 
 - Upgrade magda-format-minion to v2.0.1

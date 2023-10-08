@@ -1,11 +1,11 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: storage-api
-version: 2.2.6
+version: 2.3.1
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
 dependencies:
   - name: minio
-    version: 7.1.2
-    repository: https://helm.min.io
+    version: "7.1.2"
+    repository: oci://ghcr.io/magda-io/charts

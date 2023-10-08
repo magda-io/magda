@@ -45,7 +45,8 @@ trait RecordPersistence {
       pageToken: Option[String],
       start: Option[Int],
       limit: Option[Int],
-      reversePageTokenOrder: Option[Boolean] = None
+      reversePageTokenOrder: Option[Boolean] = None,
+      fullTextSearchText: Option[String] = None
   )(implicit session: DBSession): RecordsPage[RecordSummary]
 
   def getAllWithAspects(
@@ -60,7 +61,8 @@ trait RecordPersistence {
       aspectQueries: Iterable[AspectQuery] = Nil,
       aspectOrQueries: Iterable[AspectQuery] = Nil,
       orderBy: Option[OrderByDef] = None,
-      reversePageTokenOrder: Option[Boolean] = None
+      reversePageTokenOrder: Option[Boolean] = None,
+      fullTextSearchText: Option[String] = None
   )(implicit session: DBSession): RecordsPage[Record]
 
   def getCount(
@@ -68,7 +70,8 @@ trait RecordPersistence {
       authDecision: AuthDecision,
       aspectIds: Iterable[String],
       aspectQueries: Iterable[AspectQuery] = Nil,
-      aspectOrQueries: Iterable[AspectQuery] = Nil
+      aspectOrQueries: Iterable[AspectQuery] = Nil,
+      fullTextSearchText: Option[String] = None
   )(implicit session: DBSession): Long
 
   def getById(
@@ -331,7 +334,8 @@ class DefaultRecordPersistence(config: Config)
       pageToken: Option[String],
       start: Option[Int],
       limit: Option[Int],
-      reversePageTokenOrder: Option[Boolean] = None
+      reversePageTokenOrder: Option[Boolean] = None,
+      fullTextSearchText: Option[String] = None
   )(implicit session: DBSession): RecordsPage[RecordSummary] = {
     this.getSummaries(
       tenantId,
@@ -339,7 +343,8 @@ class DefaultRecordPersistence(config: Config)
       pageToken,
       start,
       limit,
-      reversePageTokenOrder = reversePageTokenOrder
+      reversePageTokenOrder = reversePageTokenOrder,
+      fullTextSearchText = fullTextSearchText
     )
   }
 
@@ -377,7 +382,8 @@ class DefaultRecordPersistence(config: Config)
       aspectQueries: Iterable[AspectQuery] = Nil,
       aspectOrQueries: Iterable[AspectQuery] = Nil,
       orderBy: Option[OrderByDef] = None,
-      reversePageTokenOrder: Option[Boolean] = None
+      reversePageTokenOrder: Option[Boolean] = None,
+      fullTextSearchText: Option[String] = None
   )(implicit session: DBSession): RecordsPage[Record] = {
 
     // --- make sure if orderBy is used, the involved aspectId is, at least, included in optionalAspectIds
@@ -402,7 +408,8 @@ class DefaultRecordPersistence(config: Config)
       selectors,
       orderBy,
       None,
-      reversePageTokenOrder = reversePageTokenOrder
+      reversePageTokenOrder = reversePageTokenOrder,
+      fullTextSearchText = fullTextSearchText
     )
   }
 
@@ -411,7 +418,8 @@ class DefaultRecordPersistence(config: Config)
       authDecision: AuthDecision,
       aspectIds: Iterable[String],
       aspectQueries: Iterable[AspectQuery] = Nil,
-      aspectOrQueries: Iterable[AspectQuery] = Nil
+      aspectOrQueries: Iterable[AspectQuery] = Nil,
+      fullTextSearchText: Option[String] = None
   )(implicit session: DBSession): Long = {
 
     this.getCountInner(
@@ -419,7 +427,8 @@ class DefaultRecordPersistence(config: Config)
       authDecision,
       aspectIds,
       aspectQueries,
-      aspectOrQueries
+      aspectOrQueries,
+      fullTextSearchText
     )
   }
 
@@ -1734,9 +1743,6 @@ class DefaultRecordPersistence(config: Config)
     }
   }
 
-  // The current implementation assumes this API is not used by the system tenant.
-  // Is this what we want?
-  // See ticket https://github.com/magda-io/magda/issues/2359
   private def getSummaries(
       tenantId: TenantId,
       authDecision: AuthDecision,
@@ -1744,12 +1750,14 @@ class DefaultRecordPersistence(config: Config)
       start: Option[Int],
       rawLimit: Option[Int],
       recordId: Option[String] = None,
-      reversePageTokenOrder: Option[Boolean] = None
+      reversePageTokenOrder: Option[Boolean] = None,
+      fullTextSearchText: Option[String] = None
   )(implicit session: DBSession): RecordsPage[RecordSummary] = {
     val idWhereClause = recordId.map(id => sqls"Records.recordId=$id")
     val authDecisionCondition = authDecision.toSql()
+    val fullTextSearchClause = createFullTextSearchQuery(fullTextSearchText)
 
-    val whereClauseParts = Seq(idWhereClause) :+ authDecisionCondition :+ SQLUtils
+    val whereClauseParts = Seq(idWhereClause) :+ authDecisionCondition :+ fullTextSearchClause :+ SQLUtils
       .tenantIdToWhereClause(tenantId) :+ pageToken
       .map(
         token =>
@@ -1800,6 +1808,53 @@ class DefaultRecordPersistence(config: Config)
     )
   }
 
+  private val textSearchConfigName =
+    (if (config.hasPath("db-query.text-search-config")) {
+       val settingVal = config.getString("db-query.text-search-config").trim
+       if (settingVal.isEmpty) None else Some(settingVal)
+     } else {
+       None
+     }).getOrElse("english")
+
+  private def createFullTextSearchQuery(
+      fullTextSearchText: Option[String],
+      recordIdSqlRef: String = "records.recordid",
+      tenantIdSqlRef: String = "records.tenantid"
+  ): Option[SQLSyntax] =
+    fullTextSearchText.flatMap { queryText =>
+      if (queryText.trim.isEmpty) {
+        None
+      } else {
+        // the text search config is required to be inline for PG to generate correct query plan
+        // the value is from internal config file should be safe
+        val textSearchConfigSql =
+          SQLSyntax.createUnsafely(s"'${textSearchConfigName}'")
+        val aspectLookupCondition =
+          sqls"(recordid, tenantid)=(${SQLSyntax.createUnsafely(recordIdSqlRef)}, ${SQLSyntax
+            .createUnsafely(tenantIdSqlRef)})"
+        val trimedQueryText = queryText.trim
+        val fullTextSearchCondition =
+          sqls"""
+            (
+              jsonb_to_tsvector(${textSearchConfigSql}::regconfig, data, '["string"]') @@ websearch_to_tsquery(${textSearchConfigSql}::regconfig, ${trimedQueryText})
+              OR recordid = ${trimedQueryText}
+              OR aspectid = ${trimedQueryText}
+            )
+              """
+        val whereConditions = SQLUtils.toAndConditionOpt(
+          Some(aspectLookupCondition),
+          Some(fullTextSearchCondition)
+        )
+        Some(
+          SQLSyntax
+            .exists(
+              sqls"SELECT 1 FROM recordaspects"
+                .where(whereConditions)
+            )
+        )
+      }
+    }
+
   private def getRecords(
       tenantId: TenantId,
       authDecision: AuthDecision,
@@ -1812,7 +1867,8 @@ class DefaultRecordPersistence(config: Config)
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable(),
       orderBy: Option[OrderByDef] = None,
       maxLimit: Option[Int] = None,
-      reversePageTokenOrder: Option[Boolean] = None
+      reversePageTokenOrder: Option[Boolean] = None,
+      fullTextSearchText: Option[String] = None
   )(implicit session: DBSession): RecordsPage[Record] = {
 
     if (orderBy.isDefined && pageToken.isDefined) {
@@ -1835,8 +1891,11 @@ class DefaultRecordPersistence(config: Config)
       aspectIds
     )
 
+    val fullTextSearchClauses =
+      createFullTextSearchQuery(fullTextSearchText)
+
     val whereClauseParts: Seq[Option[SQLSyntax]] =
-      theRecordSelector.toSeq :+ aspectWhereClauses :+ authQueryConditions :+ pageToken
+      theRecordSelector.toSeq :+ aspectWhereClauses :+ authQueryConditions :+ fullTextSearchClauses :+ pageToken
         .map(
           token =>
             if (reversePageTokenOrder.getOrElse(false))
@@ -1927,7 +1986,8 @@ class DefaultRecordPersistence(config: Config)
       authDecision: AuthDecision,
       aspectIds: Iterable[String],
       aspectQueries: Iterable[AspectQuery] = Nil,
-      aspectOrQueries: Iterable[AspectQuery] = Nil
+      aspectOrQueries: Iterable[AspectQuery] = Nil,
+      fullTextSearchText: Option[String] = None
   )(implicit session: DBSession): Long = {
 
     val statement = if (aspectIds.size == 1) {
@@ -1950,12 +2010,20 @@ class DefaultRecordPersistence(config: Config)
         recordIdSqlRef = "ras_tbl.recordid",
         tenantIdSqlRef = "ras_tbl.tenantid"
       )
+
+      val fullTextSearchClause = createFullTextSearchQuery(
+        fullTextSearchText,
+        recordIdSqlRef = "ras_tbl.recordid",
+        tenantIdSqlRef = "ras_tbl.tenantid"
+      )
+
       val whereClauses = SQLSyntax.where(
         SQLUtils.toAndConditionOpt(
           aspectIdsWhereClause,
           SQLUtils.tenantIdToWhereClause(tenantId, "ras_tbl.tenantid"),
           authDecision.toSql(config),
-          aspectQueriesClause
+          aspectQueriesClause,
+          fullTextSearchClause
         )
       )
       sql"select count(*) from RecordAspects as ras_tbl ${whereClauses}"
@@ -1966,12 +2034,17 @@ class DefaultRecordPersistence(config: Config)
       val aspectQueriesClause =
         getSqlFromAspectQueries(aspectQueries.toSeq, aspectOrQueries.toSeq)
 
+      val fullTextSearchClause = createFullTextSearchQuery(
+        fullTextSearchText
+      )
+
       val whereClauses = SQLSyntax.where(
         SQLUtils.toAndConditionOpt(
           aspectIdsWhereClause,
           SQLUtils.tenantIdToWhereClause(tenantId),
           authDecision.toSql(),
-          aspectQueriesClause
+          aspectQueriesClause,
+          fullTextSearchClause
         )
       )
       sql"select count(*) from Records ${whereClauses}"

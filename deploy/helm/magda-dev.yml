@@ -4,7 +4,7 @@ global:
   externalUrl: https://dev.magda.io
   image:
     repository: "registry.gitlab.com/magda-data/magda"
-    tag: "master"
+    tag: "main"
     pullSecrets: "regcred"
     pullPolicy: Always
   rollingUpdate:
@@ -88,7 +88,7 @@ magda:
           image: 
             registry: "registry.gitlab.com"
             repository: "magda-data/magda/magda-postgres"
-            tag: "master"
+            tag: "main"
             pullPolicy: "Always"
             pullSecrets: 
               - "regcred"
@@ -166,6 +166,18 @@ magda:
       alwaysSendToDefaultRecipient: true
       smtpHostname: "smtp.mailgun.org"
       smtpPort: 2525
+
+    registry-api:
+      autoscaler:
+        ## whether to enable autoscaling
+        enabled: true
+        ## The minimum number of replicas to have
+        minReplicas: 1
+        ## The maximum number of replicas to have
+        maxReplicas: 2
+      deployments:
+        readOnly:
+          enable: true
 
 # auth plugin for google
 magda-auth-google:

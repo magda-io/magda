@@ -1,3 +1,4 @@
+import { AccessControlAspect } from "../registry/model";
 declare global {
     namespace Express {
         /**
@@ -109,6 +110,7 @@ export interface Permission {
     createTime?: Date;
     editBy?: string;
     editTime?: Date;
+    allowExemption: boolean;
 }
 
 export interface PermissionRecord {
@@ -124,6 +126,7 @@ export interface PermissionRecord {
     create_by: string;
     edit_time: string;
     edit_by: string;
+    allow_exemption: boolean;
 }
 
 export interface CreateRolePermissionInputData
@@ -135,9 +138,18 @@ export interface CreateRolePermissionInputData
         | "create_time"
         | "edit_by"
         | "edit_time"
+        | "allow_exemption"
+        | "resource_id"
     > {
-    operationIds: string[];
+    operationIds?: string[];
+    operationUris?: string[];
+    resource_id?: string;
+    resourceUri?: string;
+    allow_exemption?: boolean;
 }
+
+export interface UpdateRolePermissionInputData
+    extends Partial<CreateRolePermissionInputData> {}
 
 export type OperationRecord = {
     id: string;
@@ -164,11 +176,7 @@ export interface UserToken {
  * i.e. set `input.user` to unknown then calculate residual rules via partial evaluation.
  */
 export interface AccessControlMetaData {
-    accessControl?: {
-        ownerId?: string;
-        orgUnitId?: string;
-        preAuthorisedPermissionIds?: string[];
-    };
+    accessControl?: AccessControlAspect;
 }
 
 export interface CreateAccessGroupRequestBodyType {

@@ -85,6 +85,18 @@ magda:
             limits:
               cpu: 2000m
 
+    registry-api:
+      autoscaler:
+        ## whether to enable autoscaling
+        enabled: true
+        ## The minimum number of replicas to have
+        minReplicas: 1
+        ## The maximum number of replicas to have
+        maxReplicas: 2
+      deployments:
+        readOnly:
+          enable: true
+
     elasticsearch:
       data:
         heapSize: 500m

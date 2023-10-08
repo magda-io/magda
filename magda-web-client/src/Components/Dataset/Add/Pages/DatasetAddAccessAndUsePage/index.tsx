@@ -230,10 +230,14 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 <DatasetAccessSettings
                     editAccessLevel={editDatasetPublishing("level")}
                     editOrgUnitId={editDataset("owningOrgUnitId")}
+                    editConstraintExemption={editDataset("constraintExemption")}
                     accessLevel={datasetPublishing?.level}
                     orgUnitId={dataset?.owningOrgUnitId}
                     custodianOrgUnitId={datasetPublishing?.custodianOrgUnitId}
                     managingOrgUnitId={datasetPublishing?.managingOrgUnitId}
+                    constraintExemption={
+                        props.stateData.dataset.constraintExemption
+                    }
                 />
 
                 {props.isEditView ? (

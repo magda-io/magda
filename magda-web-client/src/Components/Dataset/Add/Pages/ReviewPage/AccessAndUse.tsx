@@ -98,6 +98,19 @@ const AccessAndUse: FunctionComponent<PropsType> = (props) => {
 
             <CollapseItem className="row" alwaysShow={true}>
                 <div className="col-sm-3">
+                    <div className="title-box">
+                        Mark your dataset as a "public" dataset
+                        <ValidationRequiredLabel validationFieldPath="$.dataset.constraintExemption" />
+                        ?
+                    </div>
+                </div>
+                <div className="col-sm-9 content-box single-line">
+                    {dataset?.constraintExemption ? "Yes" : "No"}
+                </div>
+            </CollapseItem>
+
+            <CollapseItem className="row" alwaysShow={true}>
+                <div className="col-sm-3">
                     <div className="title-box">License restrictions(*):</div>
                 </div>
                 <div className="col-sm-9 content-box single-line">

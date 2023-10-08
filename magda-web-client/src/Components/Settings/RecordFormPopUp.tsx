@@ -59,6 +59,12 @@ const RecordFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                 if (selectRecordId === recordId) {
                     setRecordReloadToken(`${Math.random()}`);
                 }
+            } else {
+                // reset form for create action
+                setRecordId(undefined);
+                setRecord({
+                    id: uuid()
+                });
             }
             setIsOpen(true);
         },
@@ -67,11 +73,7 @@ const RecordFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
 
     const { loading, error } = useAsync(
         async (recordId?: string, recordReloadToken?: string) => {
-            if (!recordId) {
-                setRecord({
-                    id: uuid()
-                });
-            } else {
+            if (recordId) {
                 const record = await fetchRecordById(recordId as string);
                 setRecord(record);
             }

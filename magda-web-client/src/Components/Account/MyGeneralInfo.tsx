@@ -106,6 +106,12 @@ const MyGeneralInfo: FunctionComponent<PropsType> = (props) => {
                                 <OrgUnitNameLabel id={userInfo?.orgUnitId} />
                             </td>
                         </tr>
+                        {userInfo?.orgUnitId ? (
+                            <tr>
+                                <td>Organizational Unit ID:</td>
+                                <td>{userInfo.orgUnitId}</td>
+                            </tr>
+                        ) : null}
                         <tr>
                             <td>Identity Provider:</td>
                             <td>
