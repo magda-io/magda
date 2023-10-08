@@ -18,6 +18,7 @@ tags:
   priorities: false
   connectors: false
   connector-dga: true
+  connector-wa: true
 
 magda:
   openfaas:
