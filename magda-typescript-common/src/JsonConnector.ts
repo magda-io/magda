@@ -790,6 +790,8 @@ export type JsonConnectorConfigExtraMetaData = {
 /**
  * Any aspects that will be `preset` on any records created by the connector
  *
+ * id: aspect Id
+ *
  * opType: operation type; Describe how to add the aspect to the record
  * - MERGE_LEFT: merge `presetAspect` with records aspects.
  *   i.e. `presetAspect` will be overwritten by records aspects data if any
