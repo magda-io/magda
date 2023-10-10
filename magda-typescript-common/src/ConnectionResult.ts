@@ -8,6 +8,12 @@ export default class ConnectionResult {
     public distributionsConnected = 0;
     public recordsTrimmed = 0;
     public trimStillProcessing = false;
+    // skipped organizations due to user supplied record filter function
+    public organizationsSkiped = 0;
+    // skipped dataset records due to user supplied record filter function
+    public datasetsSkiped = 0;
+    // skipped distribution records due to user supplied record filter function
+    public distributionsSkiped = 0;
 
     public aspectDefinitionFailures = Array<AspectCreationFailure>();
     public organizationFailures = Array<RecordCreationFailure>();
@@ -26,6 +32,9 @@ export default class ConnectionResult {
             "Distributions Connected: " + this.distributionsConnected + "\n";
         result +=
             "Organizations Connected: " + this.organizationsConnected + "\n";
+        result += "Datasets Skipped: " + this.datasetsSkiped + "\n";
+        result += "Distributions Skipped: " + this.distributionsSkiped + "\n";
+        result += "Organizations Skipped: " + this.organizationsSkiped + "\n";
         result += "Records Trimmed: " + this.recordsTrimmed + "\n";
         if (this.trimStillProcessing) {
             result += "(trim still processing) \n";
@@ -68,6 +77,9 @@ export default class ConnectionResult {
             total.organizationsConnected += result.organizationsConnected;
             total.datasetsConnected += result.datasetsConnected;
             total.distributionsConnected += result.distributionsConnected;
+            total.organizationsSkiped += result.organizationsSkiped;
+            total.datasetsSkiped += result.datasetsSkiped;
+            total.distributionsSkiped += result.distributionsSkiped;
             total.recordsTrimmed += result.recordsTrimmed;
             total.trimStillProcessing =
                 result.trimStillProcessing || total.trimStillProcessing;

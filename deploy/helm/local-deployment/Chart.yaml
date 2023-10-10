@@ -39,7 +39,7 @@ dependencies:
   ## Data.gov.au connector to provide some initial data. Remove this if you
   ## don't want any data.gov.au connector
   - name: magda-ckan-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-dga
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -84,14 +84,14 @@ dependencies:
       - connectors
       - connector-bom
   - name: magda-ckan-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-aurin
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-aurin
   - name: magda-ckan-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-brisbane
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -175,7 +175,7 @@ dependencies:
       - connectors
       - connector-neii
   - name: magda-ckan-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-nsw
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -189,14 +189,14 @@ dependencies:
       - connectors
       - connector-sdinsw
   - name: magda-ckan-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-qld
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-qld
   - name: magda-ckan-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-sa
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -224,14 +224,14 @@ dependencies:
       - connectors
       - connector-tern
   - name: magda-ckan-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-vic
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-vic
   - name: magda-ckan-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-wa
     repository: "oci://ghcr.io/magda-io/charts"
     tags:

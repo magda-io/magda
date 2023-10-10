@@ -16,7 +16,7 @@ dependencies:
   version: 2.0.0
 - name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
 - name: magda-project-open-data-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
@@ -31,10 +31,10 @@ dependencies:
   version: 2.0.2
 - name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
 - name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
 - name: magda-project-open-data-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
@@ -63,12 +63,6 @@ dependencies:
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.2
 - name: magda-project-open-data-connector
-  repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
-- name: magda-csw-connector
-  repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.2
-- name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
 - name: magda-csw-connector
@@ -76,10 +70,16 @@ dependencies:
   version: 2.0.2
 - name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
+- name: magda-csw-connector
+  repository: oci://ghcr.io/magda-io/charts
+  version: 2.0.2
 - name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
+- name: magda-ckan-connector
+  repository: oci://ghcr.io/magda-io/charts
+  version: 2.1.0
 - name: magda-project-open-data-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
@@ -91,10 +91,10 @@ dependencies:
   version: 2.0.2
 - name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
 - name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
 - name: magda-dap-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
@@ -107,5 +107,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
-digest: sha256:d12191a7e01bf2ee1a4f1cede30f097b9a878085754b3ec1fe70b71cd569b3bd
-generated: "2023-09-18T06:52:15.337997451Z"
+digest: sha256:aa184b8f83a42bc2d2367ec0616ed6d08243c88e71129878d951fbd46ee3adc6
+generated: "2023-10-09T10:30:47.868965+11:00"
