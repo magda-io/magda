@@ -264,7 +264,7 @@ function updateDockerFile(sourceDir, destDir) {
     const replacedDockerFileContents = dockerFileContents
         // Add a repository if this is a magda image
         .replace(
-            /FROM .*(magda-[^:\s]+)(:[^\s]+)/,
+            /FROM .*(magda-[^:\s\/]+)(:[^\s]+)/,
             "FROM " + repository + "$1" + (tags[0] ? ":" + tags[0] : "$2")
         );
 
