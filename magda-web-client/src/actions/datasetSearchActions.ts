@@ -2,13 +2,14 @@ import buildSearchQueryString, {
     Query
 } from "../helpers/buildSearchQueryString";
 import { actionTypes } from "../constants/ActionTypes";
-import { FetchError, Dispatch } from "../types";
+import { FetchError } from "../types";
 import {
     DataSearchJson,
     FacetAction,
     SearchAction
 } from "../helpers/datasetSearch";
 import { searchDatasets } from "api-clients/SearchApis";
+import * as userManagementActions from "./userManagementActions";
 
 export function requestResults(
     queryObject: any,
@@ -46,10 +47,13 @@ export function resetDatasetSearch(): SearchAction {
 }
 
 export function fetchSearchResults(queryObject: Query) {
-    return (dispatch: Dispatch) => {
+    return (dispatch, getState) => {
+        const state = getState();
+        const noCache = !!state?.userManagement?.requireDatasetCacheReset;
         const queryString = buildSearchQueryString(queryObject);
         dispatch(requestResults(queryObject, queryString));
-        searchDatasets(queryObject)
+        dispatch(userManagementActions.hasResetDatasetCache());
+        searchDatasets(queryObject, noCache)
             .then((json) => dispatch(receiveResults(queryString, json)))
             .catch((error) =>
                 dispatch(

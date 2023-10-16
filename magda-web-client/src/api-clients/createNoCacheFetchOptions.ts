@@ -4,6 +4,8 @@ export default function createNoCacheFetchOptions(
     const options = { ...fetchOptions };
     if (!options.headers) {
         options.headers = {};
+    } else {
+        options.headers = { ...options.headers };
     }
     options.headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
     options.headers["Pragma"] = "no-cache";

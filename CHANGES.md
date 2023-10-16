@@ -7,6 +7,7 @@
 - Improved Registry event processing performance
 - #3100: Conenctor SDK: Allow runtime filter code to be supply to connectors via Helm config
 - Fixed an issue with docker build utiliy
+- #3408: auto reset search dataset result cache when login status changes
 
 ## v2.3.1
 
