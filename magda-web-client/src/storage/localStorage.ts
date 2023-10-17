@@ -38,7 +38,7 @@ export function retrieveLocalData<T>(key: string, defaultValue: T): T {
  * @param {*} value The value to set - will be JSON.stringified.
  * @param {*} defaultValue Returned if localStorage isn't available on window
  */
-export function setLocalData(key, value, defaultValue) {
+export function setLocalData(key, value, defaultValue: any = undefined) {
     if (noLocalStorage) {
         return defaultValue;
     }

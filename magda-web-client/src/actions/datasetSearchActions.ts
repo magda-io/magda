@@ -58,7 +58,7 @@ export function fetchSearchResults(queryObject: Query) {
             : "";
         const noCache = magdaSearchDatasetUserId !== currentUserId;
         if (noCache) {
-            setLocalData("magdaSearchDatasetUserId", currentUserId, "");
+            setLocalData("magdaSearchDatasetUserId", currentUserId);
         }
         const queryString = buildSearchQueryString(queryObject);
         dispatch(requestResults(queryObject, queryString));
