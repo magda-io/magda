@@ -13,11 +13,9 @@ import Notification from "rsuite/Notification";
 import toaster from "rsuite/toaster";
 import ButtonToolbar from "rsuite/ButtonToolbar";
 import IconButton from "rsuite/IconButton";
-import Input from "rsuite/Input";
-import InputGroup from "rsuite/InputGroup";
+import Message from "rsuite/Message";
 import Panel from "rsuite/Panel";
-import Nav from "rsuite/Nav";
-import { BsSearch, BsPlusCircleFill } from "react-icons/bs";
+import { BsPlusCircleFill } from "react-icons/bs";
 import { Location, History } from "history";
 import RecordFormPopUp, {
     RefType as RecordFormPopUpRefType
@@ -26,6 +24,7 @@ import RegistryRecordInfoPanel from "./RegistryRecordInfoPanel";
 import RegistryRecordAspectsPanel from "./RegistryRecordAspectsPanel";
 import RegistryRecordsPageSearchButton from "./RegistryRecordsPageSearchButton";
 import RegistryRecordsDataGrid from "./RegistryRecordsDataGrid";
+import inPopUpMode from "helpers/inPopUpMode";
 
 const Paragraph = Placeholder.Paragraph;
 
@@ -38,6 +37,7 @@ type PropsType = {
 };
 
 const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
+    const isPopUp = inPopUpMode();
     const [query, setQuery] = React.useState<string>("");
     const [recordListRefreshToken, setRecordListRefreshToken] = useState<
         string
@@ -54,7 +54,11 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
     //change this value to force the record data to be reloaded
     const [recordReloadToken, setRecordReloadToken] = useState<string>("");
 
-    const { result: record, loading: recordLoading } = useAsync(
+    const {
+        result: record,
+        loading: recordLoading,
+        error: recordError
+    } = useAsync(
         async (recordId, recordReloadToken) => {
             // we don't directly use recordReloadToken for fetch record logic
             // But adding it to params list will give us a trigger that can be used
@@ -94,34 +98,14 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
         });
     };
 
-    const openRecordHandler = () => {
-        if (typeof inputRecordId !== "string" || !inputRecordId.trim()) {
-            toaster.push(
-                <Notification
-                    type={"error"}
-                    closable={true}
-                    header="Error"
-                >{`Please input record ID to open the record.`}</Notification>,
-                {
-                    placement: "topEnd"
-                }
-            );
-            return;
-        }
-        if (recordId === inputRecordId) {
-            setRecordReloadToken(`${Math.random()}`);
-        } else {
-            redirect(
-                props.history as History,
-                "/settings/records/" + encodeURIComponent(inputRecordId)
-            );
-        }
-    };
-
     return (
         <div className="flex-main-container setting-page-main-container registry-records-page">
-            <SideNavigation />
-            <div className="main-content-container">
+            {!isPopUp && <SideNavigation />}
+            <div
+                className={`main-content-container${
+                    isPopUp ? " is-pop-up" : ""
+                }`}
+            >
                 <Breadcrumb
                     items={[
                         { to: "/settings/records", title: "Registry Records" },
@@ -147,6 +131,10 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
                         <RegistryRecordInfoPanel record={record} />
                         <RegistryRecordAspectsPanel recordId={record.id} />
                     </>
+                ) : isPopUp && recordError ? (
+                    <Message showIcon type="error" header="Error">
+                        {recordError + ""}
+                    </Message>
                 ) : (
                     <div className="record-start-area">
                         <div className="action-area">
