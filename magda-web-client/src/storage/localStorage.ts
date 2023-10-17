@@ -12,14 +12,16 @@ const noLocalStorage = (() => {
  * @param {string} key The key to look for.
  * @param {*} defaultValue Returned if localStorage isn't available on window
  */
-export function retrieveLocalData(key, defaultValue) {
+export function retrieveLocalData<T>(key: string, defaultValue: T): T {
     if (noLocalStorage) {
         return defaultValue;
     }
     if (!key || typeof key !== "string")
         throw new Error("Invalid key parameter!");
     try {
-        return JSON.parse(window.localStorage.getItem(key)) || defaultValue;
+        const itemData = window?.localStorage?.getItem(key);
+        if (typeof itemData !== "string") return defaultValue;
+        return JSON.parse(itemData) || defaultValue;
     } catch (e) {
         console.error(
             `Failed to retrieve search save data '${key}' from local storage: ${e.message}`,
@@ -66,8 +68,8 @@ export function prependToLocalStorageArray(
     limit = Number.MAX_SAFE_INTEGER,
     defaultValue = []
 ) {
-    let items = retrieveLocalData(key, defaultValue);
-    items = items.filter((item) => item.data.q !== value.data.q);
+    let items = retrieveLocalData(key, defaultValue) as any[];
+    items = items.filter((item: any) => item.data.q !== value.data.q);
     items.unshift(value);
     if (limit && limit >= 1) {
         items = items.slice(0, limit);
@@ -84,7 +86,7 @@ export function prependToLocalStorageArray(
  */
 export function deleteFromLocalStorageArray(key, index, defaultValue = []) {
     if (noLocalStorage) return defaultValue;
-    let items = retrieveLocalData(key);
+    let items = retrieveLocalData(key, []);
     items.splice(index, 1);
     try {
         window.localStorage.setItem(key, JSON.stringify(items));

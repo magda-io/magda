@@ -9,7 +9,7 @@ import {
     SearchAction
 } from "../helpers/datasetSearch";
 import { searchDatasets } from "api-clients/SearchApis";
-import * as userManagementActions from "./userManagementActions";
+import { retrieveLocalData, setLocalData } from "storage/localStorage";
 
 export function requestResults(
     queryObject: any,
@@ -49,10 +49,19 @@ export function resetDatasetSearch(): SearchAction {
 export function fetchSearchResults(queryObject: Query) {
     return (dispatch, getState) => {
         const state = getState();
-        const noCache = !!state?.userManagement?.requireDatasetCacheReset;
+        const magdaSearchDatasetUserId = retrieveLocalData(
+            "magdaSearchDatasetUserId",
+            ""
+        );
+        const currentUserId = state?.userManagement?.user?.id
+            ? state.userManagement.user.id
+            : "";
+        const noCache = magdaSearchDatasetUserId !== currentUserId;
+        if (noCache) {
+            setLocalData("magdaSearchDatasetUserId", currentUserId, "");
+        }
         const queryString = buildSearchQueryString(queryObject);
         dispatch(requestResults(queryObject, queryString));
-        dispatch(userManagementActions.hasResetDatasetCache());
         searchDatasets(queryObject, noCache)
             .then((json) => dispatch(receiveResults(queryString, json)))
             .catch((error) =>

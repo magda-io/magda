@@ -57,14 +57,12 @@ const defaultUserInfo: User = {
 export type UserManagementState = {
     user: User;
     isFetchingWhoAmI: boolean;
-    requireDatasetCacheReset: boolean;
     whoAmIError: Error | null;
 };
 
 const initialData: UserManagementState = {
     user: { ...defaultUserInfo },
     isFetchingWhoAmI: false,
-    requireDatasetCacheReset: false,
     whoAmIError: null
 };
 
@@ -79,25 +77,14 @@ const userManagementMapping = (
                 whoAmIError: null
             });
         case "RECEIVE_WHO_AM_I_USER_INFO":
-            return Object.assign(
-                {},
-                state,
-
-                {
-                    isFetchingWhoAmI: false,
-                    whoAmIError: null,
-                    user: action.user
-                },
-                state?.user?.id === action.user?.id
-                    ? {}
-                    : {
-                          requireDatasetCacheReset: true
-                      }
-            );
+            return Object.assign({}, state, {
+                isFetchingWhoAmI: false,
+                whoAmIError: null,
+                user: action.user
+            });
         case "RECEIVE_WHO_AM_I_ERROR":
             return Object.assign({}, state, {
                 isFetchingWhoAmI: false,
-                requireDatasetCacheReset: true,
                 whoAmIError: action.err,
                 user: { ...defaultUserInfo }
             });
@@ -108,18 +95,12 @@ const userManagementMapping = (
         case "COMPLETED_SIGN_OUT":
             return Object.assign({}, state, {
                 isSigningOut: false,
-                requireDatasetCacheReset: true,
                 user: { ...defaultUserInfo }
             });
         case "SIGN_OUT_ERROR":
             return Object.assign({}, state, {
                 isSigningOut: false,
-                requireDatasetCacheReset: true,
                 signOutError: action.error
-            });
-        case "HAS_RESET_DATASET_CACHE":
-            return Object.assign({}, state, {
-                requireDatasetCacheReset: false
             });
         default:
             return state;

@@ -111,9 +111,3 @@ export function signOutError(error: any): FacetAction {
         error: error
     };
 }
-
-export function hasResetDatasetCache() {
-    return {
-        type: actionTypes.HAS_RESET_DATASET_CACHE
-    };
-}
