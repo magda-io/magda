@@ -8,6 +8,7 @@
 - #3100: Conenctor SDK: Allow runtime filter code to be supply to connectors via Helm config
 - Fixed an issue with docker build utiliy
 - #3408: auto reset search dataset result cache when login status changes
+- Allow users to open datasets & distributions in "Raw Record Editor" when the user has edit permission
 
 ## v2.3.1
 
