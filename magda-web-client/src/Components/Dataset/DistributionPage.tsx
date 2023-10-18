@@ -28,6 +28,7 @@ import RecordVersionList from "./RecordVersionList";
 import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
 import humanFileSize from "helpers/humanFileSize";
 import "./DatasetPage.scss";
+import openRegistryRecordEditor from "helpers/openRegistryRecordEditor";
 
 interface PropsType {
     history: History;
@@ -38,6 +39,7 @@ interface PropsType {
     breadcrumbs: JSX.Element | null;
     searchText: string;
     location: Location;
+    hasEditPermissions: boolean;
 }
 
 const getVersionFromLocation = (location: Location): number | undefined => {
@@ -62,6 +64,7 @@ const DistributionPageMainContent: FunctionComponent<{
     searchText: string;
     versionData?: VersionAspectData;
     selectedVersion?: number;
+    hasEditPermissions: boolean;
 }> = (props) => {
     const { distribution, dataset } = props;
 
@@ -173,6 +176,16 @@ const DistributionPageMainContent: FunctionComponent<{
                     Download
                 </CommonLink>
             ) : null}{" "}
+            {props.hasEditPermissions ? (
+                <button
+                    className="au-btn au-btn--primary"
+                    onClick={() =>
+                        openRegistryRecordEditor(distribution.identifier!)
+                    }
+                >
+                    Open Raw Record Editor
+                </button>
+            ) : null}
             {distribution.ckanResource &&
                 distribution.ckanResource.datastore_active && (
                     <CommonLink
@@ -321,6 +334,9 @@ const DistributionPage: FunctionComponent<PropsType> = (props) => {
                                         requestVersion === null
                                             ? undefined
                                             : requestVersion
+                                    }
+                                    hasEditPermissions={
+                                        props.hasEditPermissions
                                     }
                                 />
                             );

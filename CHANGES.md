@@ -4,8 +4,11 @@
 
 - #3485: New feature for registry records manager: able to search record by keywords & added records list view
 - Display organizational unit ID info in the user general info panel
+- Improved Registry event processing performance
 - #3100: Conenctor SDK: Allow runtime filter code to be supply to connectors via Helm config
 - Fixed an issue with docker build utiliy
+- #3408: auto reset search dataset result cache when login status changes
+- Allow users to open datasets & distributions in "Raw Record Editor" when the user has edit permission
 
 ## v2.3.1
 

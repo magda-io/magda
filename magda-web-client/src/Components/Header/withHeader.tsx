@@ -8,6 +8,7 @@ import AddDatasetProgressMeter, {
     ExternalProps as AddDatasetProgressMeterProps
 } from "Components/Common/AddDatasetProgressMeter";
 import { getPluginHeader, HeaderNavItem } from "externalPluginComponents";
+import inPopUpMode from "helpers/inPopUpMode";
 
 import "./withHeader.scss";
 
@@ -71,22 +72,23 @@ const withHeader = (
         allProps: AllProps
     ) => {
         const { headerNavItems, ...props } = allProps;
+        const isPopUp = inPopUpMode();
         return (
             <div className="other-page">
-                {HeaderPlugin ? (
+                {isPopUp ? null : HeaderPlugin ? (
                     <HeaderPlugin headerNavItems={allProps.headerNavItems} />
                 ) : (
                     <Header />
                 )}
 
-                {includeSearchBox && (
+                {!isPopUp && includeSearchBox && (
                     <SearchBoxSwitcher
                         location={props.location}
                         theme="none-home"
                     />
                 )}
 
-                {includeDatasetPageProgressMeter && (
+                {!isPopUp && includeDatasetPageProgressMeter && (
                     <AddDatasetProgressMeter
                         {...addDatasetProgressMeterProps}
                     />

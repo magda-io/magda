@@ -5,6 +5,7 @@ import buildSearchQueryString, {
     Query
 } from "../helpers/buildSearchQueryString";
 import { DataSearchJson } from "../helpers/datasetSearch";
+import createNoCacheFetchOptions from "./createNoCacheFetchOptions";
 import urijs from "urijs";
 
 type SearchApiResult = {
@@ -129,21 +130,27 @@ export async function autoCompleteAccessLocation(
     }
 }
 
-export function searchDatasets(queryObject: Query): Promise<DataSearchJson> {
-    let url: string =
+export function searchDatasets(
+    queryObject: Query,
+    noCache: boolean = false
+): Promise<DataSearchJson> {
+    const url: string =
         config.searchApiBaseUrl +
         `datasets?${buildSearchQueryString(queryObject)}`;
-    return fetch(url, config.commonFetchRequestOptions).then(
-        (response: any) => {
-            if (response.status === 200) {
-                return response.json();
-            }
-            let errorMessage = response.statusText;
-            if (!errorMessage)
-                errorMessage = "Failed to retrieve network resource.";
-            throw new Error(errorMessage);
+    return fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.commonFetchRequestOptions)
+            : config.commonFetchRequestOptions
+    ).then((response: any) => {
+        if (response.status === 200) {
+            return response.json();
         }
-    );
+        let errorMessage = response.statusText;
+        if (!errorMessage)
+            errorMessage = "Failed to retrieve network resource.";
+        throw new Error(errorMessage);
+    });
 }
 
 export type SearchRegionOptions = {

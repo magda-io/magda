@@ -13,13 +13,10 @@ import Notification from "./Components/Common/Notification";
 import { hideTopNotification } from "./actions/topNotificationAction";
 
 import Routes from "./Routes";
-
 import { Medium } from "./Components/Common/Responsive";
-
 import { Route, Switch } from "react-router-dom";
-
 import { getPluginFooter } from "./externalPluginComponents";
-
+import inPopUpMode from "./helpers/inPopUpMode";
 import "./AppContainer.scss";
 
 const ExternalFooterComponent = getPluginFooter();
@@ -31,6 +28,7 @@ class AppContainer extends React.Component {
     }
 
     render() {
+        const isPopUp = inPopUpMode();
         return (
             <MagdaDocumentTitle>
                 <div className="au-grid wrapper">
@@ -54,71 +52,73 @@ class AppContainer extends React.Component {
                         <Routes />
                     </div>
 
-                    <Switch>
-                        {/** turn off top margin for home page only */}
-                        <Route
-                            exact
-                            path="/home"
-                            render={() =>
-                                ExternalFooterComponent ? (
-                                    <ExternalFooterComponent
-                                        noTopMargin={true}
-                                        footerMediumNavs={
-                                            this.props.footerMediumNavs
-                                        }
-                                        footerSmallNavs={
-                                            this.props.footerSmallNavs
-                                        }
-                                        footerCopyRightItems={
-                                            this.props.footerCopyRightItems
-                                        }
-                                    />
-                                ) : (
-                                    <Footer noTopMargin={true} />
-                                )
-                            }
-                        />
-                        <Route
-                            path="/settings(/)*(.)*"
-                            render={() =>
-                                ExternalFooterComponent ? (
-                                    <ExternalFooterComponent
-                                        footerMediumNavs={
-                                            this.props.footerMediumNavs
-                                        }
-                                        footerSmallNavs={
-                                            this.props.footerSmallNavs
-                                        }
-                                        footerCopyRightItems={
-                                            this.props.footerCopyRightItems
-                                        }
-                                    />
-                                ) : (
-                                    <Footer noTopMargin={true} />
-                                )
-                            }
-                        />
-                        <Route
-                            path="/*"
-                            render={() =>
-                                ExternalFooterComponent ? (
-                                    <ExternalFooterComponent
-                                        footerMediumNavs={
-                                            this.props.footerMediumNavs
-                                        }
-                                        footerSmallNavs={
-                                            this.props.footerSmallNavs
-                                        }
-                                        footerCopyRightItems={
-                                            this.props.footerCopyRightItems
-                                        }
-                                    />
-                                ) : (
-                                    <Footer />
-                                )
-                            }
-                        />
-                    </Switch>
+                    {!isPopUp && (
+                        <Switch>
+                            {/** turn off top margin for home page only */}
+                            <Route
+                                exact
+                                path="/home"
+                                render={() =>
+                                    ExternalFooterComponent ? (
+                                        <ExternalFooterComponent
+                                            noTopMargin={true}
+                                            footerMediumNavs={
+                                                this.props.footerMediumNavs
+                                            }
+                                            footerSmallNavs={
+                                                this.props.footerSmallNavs
+                                            }
+                                            footerCopyRightItems={
+                                                this.props.footerCopyRightItems
+                                            }
+                                        />
+                                    ) : (
+                                        <Footer noTopMargin={true} />
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/settings(/)*(.)*"
+                                render={() =>
+                                    ExternalFooterComponent ? (
+                                        <ExternalFooterComponent
+                                            footerMediumNavs={
+                                                this.props.footerMediumNavs
+                                            }
+                                            footerSmallNavs={
+                                                this.props.footerSmallNavs
+                                            }
+                                            footerCopyRightItems={
+                                                this.props.footerCopyRightItems
+                                            }
+                                        />
+                                    ) : (
+                                        <Footer noTopMargin={true} />
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/*"
+                                render={() =>
+                                    ExternalFooterComponent ? (
+                                        <ExternalFooterComponent
+                                            footerMediumNavs={
+                                                this.props.footerMediumNavs
+                                            }
+                                            footerSmallNavs={
+                                                this.props.footerSmallNavs
+                                            }
+                                            footerCopyRightItems={
+                                                this.props.footerCopyRightItems
+                                            }
+                                        />
+                                    ) : (
+                                        <Footer />
+                                    )
+                                }
+                            />
+                        </Switch>
+                    )}
 
                     {this.props.topNotification.visible ? (
                         <Notification

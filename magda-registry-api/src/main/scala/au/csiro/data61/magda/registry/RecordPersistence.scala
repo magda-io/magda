@@ -1772,8 +1772,25 @@ class DefaultRecordPersistence(config: Config)
         sqls"order by sequence DESC"
       else sqls"order by sequence"
 
+    /**
+      * Why we need to "fence" the query?
+      * select * from (
+      *   select xxx,xx from xxx where xxx
+      *   order by xx
+      * ) as tmp_tab order by xx offset xxx limit xxx
+      *
+      * When both order by & (limit or offset) involved might make planner
+      * give up using full text index and choose to use sequence idx for filtering & sorting
+      *
+      * The "fence" make it always use full text index and sort by key sequence
+      * sort by key sequence could be very expense but in real world they are much less expensive than full text search.
+      * Our records table's frequent update nature might also contribute to it (planer won't get accurate cost estimate)
+      * vacuum analyze won't help either
+      *
+      */
     val result =
-      sql"""select Records.sequence as sequence,
+      sql"""select * from (
+              select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
                    (select array_agg(aspectId) from RecordAspects ${SQLSyntax
@@ -1787,6 +1804,7 @@ class DefaultRecordPersistence(config: Config)
                    Records.tenantId as tenantId
             from Records
             ${SQLSyntax.where(SQLUtils.toAndConditionOpt(whereClauseParts: _*))}
+            ${orderBy}) as tmp_results
             ${orderBy}
             offset ${start.getOrElse(0)}
             limit ${limit + 1}"""

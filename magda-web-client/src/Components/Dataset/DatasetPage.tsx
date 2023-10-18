@@ -28,6 +28,7 @@ import {
 } from "externalPluginComponents";
 import ucwords from "ucwords";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
+import openRegistryRecordEditor from "helpers/openRegistryRecordEditor";
 
 const ExternalDatasetEditButton = getPluginDatasetEditButton();
 const ExternalDatasetLikeButton = getPluginDatasetLikeButton();
@@ -260,6 +261,19 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                         hasEditPermissions={hasEditPermissions}
                                     />
                                 )}
+
+                                {hasEditPermissions ? (
+                                    <button
+                                        className="au-btn au-btn--secondary ask-question-button"
+                                        onClick={() =>
+                                            openRegistryRecordEditor(
+                                                dataset.identifier!
+                                            )
+                                        }
+                                    >
+                                        Open in Raw Record Editor{" "}
+                                    </button>
+                                ) : null}
 
                                 <DatasetBackToListButton
                                     dataset={dataset}

@@ -233,6 +233,7 @@ class RecordHandler extends React.Component<
                         distribution={this.props.distribution}
                         breadcrumbs={this.getBreadcrumbs()}
                         searchText={searchText}
+                        hasEditPermissions={hasEditPermissions}
                     />
                 );
             } else {
