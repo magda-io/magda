@@ -42,7 +42,7 @@ cd magda
 helm init
 ```
 
-The deployment of combined-db statefulset may fail on Windows because of ACL. It complains that specified PGDATA at /var/pvc/data has wrong ownership.   Work-around → https://sea-region.github.com/magda-io/magda/issues/1866 provided by maxious.
+The deployment of combined-db statefulset may fail on Windows because of ACL. It complains that specified PGDATA at /var/pvc/data has wrong ownership.   Work-around → [https://sea-region.github.com/magda-io/magda/issues/1866](https://github.com/magda-io/magda/issues/1866#issuecomment-441156643) provided by maxious.
 
 27. (Skip this step.) Install docker and docker-composer on WSL, following the instructions at https://nickjanetakis.com/blog/setting-up-docker-for-windows-and-wsl-to-work-flawlessly.
 28. Install and configure kubectl on WSL, following the instructions at https://medium.com/@XanderGrzy/developing-for-docker-kubernetes-with-windows-wsl-9d6814759e9f
