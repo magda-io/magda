@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.3.3
+
+- #3495: fixed gateway might throw unhandled ERR_HTTP_HEADERS_SENT errors when proxy requests
+
 ## v2.3.2
 
 - #3485: New feature for registry records manager: able to search record by keywords & added records list view
