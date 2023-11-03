@@ -166,7 +166,7 @@ class RecordAspectsService(
                   merge.getOrElse(false)
                 ) {
                   withBlockingTask {
-                    val theResult = DB localTx { session =>
+                    val theResult = DB localTx { implicit session =>
                       session.queryTimeout(this.defaultQueryTimeout)
                       recordPersistence.putRecordAspectById(
                         tenantId,
@@ -176,7 +176,7 @@ class RecordAspectsService(
                         userId,
                         false,
                         merge.getOrElse(false)
-                      )(session) match {
+                      ) match {
                         case Success(result) =>
                           complete(
                             StatusCodes.OK,
@@ -276,14 +276,14 @@ class RecordAspectsService(
           requireDeleteRecordAspectPermission(authClient, recordId, aspectId) {
             requiresSpecifiedTenantId { tenantId =>
               withBlockingTask {
-                val theResult = DB localTx { session =>
+                val theResult = DB localTx { implicit session =>
                   session.queryTimeout(this.defaultQueryTimeout)
                   recordPersistence.deleteRecordAspect(
                     tenantId,
                     recordId,
                     aspectId,
                     userId
-                  )(session) match {
+                  ) match {
                     case Success(result) =>
                       complete(
                         StatusCodes.OK,
@@ -400,7 +400,7 @@ class RecordAspectsService(
                 Right(aspectPatch)
               ) {
                 withBlockingTask {
-                  val theResult = DB localTx { session =>
+                  val theResult = DB localTx { implicit session =>
                     session.queryTimeout(this.defaultQueryTimeout)
                     recordPersistence.patchRecordAspectById(
                       tenantId,
@@ -408,7 +408,7 @@ class RecordAspectsService(
                       aspectId,
                       aspectPatch,
                       userId
-                    )(session) match {
+                    ) match {
                       case Success(result) =>
                         complete(
                           StatusCodes.OK,

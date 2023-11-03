@@ -10,7 +10,7 @@ import akka.http.scaladsl.model.StatusCodes.{
   InternalServerError
 }
 import akka.event.LoggingAdapter
-import scalikejdbc.{DBSession, ReadOnlyAutoSession}
+import scalikejdbc.{DBSession}
 import spray.json.{JsNull, JsNumber, JsObject, JsString, JsValue, JsonParser}
 import gnieh.diffson.sprayJson.JsonPatch
 
@@ -53,53 +53,56 @@ object Directives extends Protocols with SprayJsonSupport {
       tenantId: TenantId
   )(
       implicit ec: ExecutionContext,
-      logger: LoggingAdapter,
-      session: DBSession
+      logger: LoggingAdapter
   ): Future[JsObject] = {
     Future {
       var recordJsFields: Map[String, JsValue] = Map()
       var fetchedRecordId: String = ""
 
-      sql"SELECT * FROM records WHERE recordid=${recordId} ${tenantId match {
-        case SpecifiedTenantId(tenantId) => sqls" AND tenantid=${tenantId}"
-        case _                           => SQLSyntax.empty
-      }} LIMIT 1"
-        .foreach { rs =>
-          // JDBC treat column name case insensitive
-          fetchedRecordId = rs.string("recordId")
-          recordJsFields += ("id" -> JsString(fetchedRecordId))
-          recordJsFields += ("name" -> JsString(rs.string("name")))
-          recordJsFields += ("lastUpdate" -> JsNumber(
-            rs.bigInt("lastupdate")
-          ))
-          rs.stringOpt("sourceTag")
-            .foreach(
-              item => recordJsFields += ("sourceTag" -> JsString(item))
-            )
-          rs.stringOpt("tenantId")
-            .foreach(
-              item => recordJsFields += ("tenantId" -> JsNumber(item))
-            )
-        }
+      DB readOnly { implicit session =>
+        sql"SELECT * FROM records WHERE recordid=${recordId} ${tenantId match {
+          case SpecifiedTenantId(tenantId) => sqls" AND tenantid=${tenantId}"
+          case _                           => SQLSyntax.empty
+        }} LIMIT 1"
+          .foreach { rs =>
+            // JDBC treat column name case insensitive
+            fetchedRecordId = rs.string("recordId")
+            recordJsFields += ("id" -> JsString(fetchedRecordId))
+            recordJsFields += ("name" -> JsString(rs.string("name")))
+            recordJsFields += ("lastUpdate" -> JsNumber(
+              rs.bigInt("lastupdate")
+            ))
+            rs.stringOpt("sourceTag")
+              .foreach(
+                item => recordJsFields += ("sourceTag" -> JsString(item))
+              )
+            rs.stringOpt("tenantId")
+              .foreach(
+                item => recordJsFields += ("tenantId" -> JsNumber(item))
+              )
+          }
+      }
 
       if (recordJsFields.isEmpty) {
         throw NoRecordFoundException(recordId)
       }
 
-      sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${recordId}"""
-        .foreach { rs =>
-          val aspectId = rs.string("aspectid")
-          Try(JsonParser(rs.string("data")).asJsObject) match {
-            case Success(data) => recordJsFields += (aspectId -> data)
-            case Failure(e) =>
-              logger.warning(
-                "Failed to parse aspect Json data while prepare policy evaluation context data. recordId: {} aspectId: {}",
-                recordId,
-                aspectId
-              )
-              throw e
+      DB readOnly { implicit session =>
+        sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${recordId}"""
+          .foreach { rs =>
+            val aspectId = rs.string("aspectid")
+            Try(JsonParser(rs.string("data")).asJsObject) match {
+              case Success(data) => recordJsFields += (aspectId -> data)
+              case Failure(e) =>
+                logger.warning(
+                  "Failed to parse aspect Json data while prepare policy evaluation context data. recordId: {} aspectId: {}",
+                  recordId,
+                  aspectId
+                )
+                throw e
+            }
           }
-        }
+      }
 
       JsObject(recordJsFields)
     }
@@ -119,8 +122,7 @@ object Directives extends Protocols with SprayJsonSupport {
       authApiClient: AuthApiClient,
       operationUri: String,
       recordId: String,
-      onRecordNotFound: Option[() => Directive0] = None,
-      session: DBSession = ReadOnlyAutoSession
+      onRecordNotFound: Option[() => Directive0] = None
   ): Directive0 =
     (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
@@ -134,8 +136,7 @@ object Directives extends Protocols with SprayJsonSupport {
         onComplete(
           createRecordContextData(recordId, tenantId)(
             blockingExeCtx,
-            log,
-            session
+            log
           )
         ).tflatMap {
           case Tuple1(Success(recordData)) =>
@@ -193,8 +194,7 @@ object Directives extends Protocols with SprayJsonSupport {
       authApiClient: AuthApiClient,
       recordId: String,
       newRecordOrJsonPath: Either[Record, JsonPatch],
-      merge: Boolean = false,
-      session: DBSession = ReadOnlyAutoSession
+      merge: Boolean = false
   ): Directive0 =
     (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
@@ -207,8 +207,7 @@ object Directives extends Protocols with SprayJsonSupport {
         onComplete(
           createRecordContextData(recordId, tenantId)(
             blockingExeCtx,
-            log,
-            session
+            log
           ).map { currentRecordData =>
             val recordContextDataAfterUpdate = newRecordOrJsonPath match {
               case Left(newRecord) =>
@@ -332,8 +331,7 @@ object Directives extends Protocols with SprayJsonSupport {
       recordId: String,
       aspectId: String,
       newAspectOrAspectJsonPath: Either[JsObject, JsonPatch],
-      merge: Boolean = false,
-      session: DBSession = ReadOnlyAutoSession
+      merge: Boolean = false
   ): Directive0 =
     (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
@@ -347,8 +345,7 @@ object Directives extends Protocols with SprayJsonSupport {
         onComplete(
           createRecordContextData(recordId, tenantId)(
             blockingExeCtx,
-            log,
-            session
+            log
           ).map { currentRecordData =>
             val recordContextDataAfterUpdate = newAspectOrAspectJsonPath match {
               case Left(newAspect) =>
@@ -442,8 +439,7 @@ object Directives extends Protocols with SprayJsonSupport {
   def requireDeleteRecordAspectPermission(
       authApiClient: AuthApiClient,
       recordId: String,
-      aspectId: String,
-      session: DBSession = ReadOnlyAutoSession
+      aspectId: String
   ): Directive0 =
     (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
@@ -457,8 +453,7 @@ object Directives extends Protocols with SprayJsonSupport {
         onComplete(
           createRecordContextData(recordId, tenantId)(
             blockingExeCtx,
-            log,
-            session
+            log
           ).map { currentRecordData =>
             val recordContextDataAfterUpdate =
               JsObject(currentRecordData.fields - aspectId)
@@ -517,30 +512,32 @@ object Directives extends Protocols with SprayJsonSupport {
   private def createAspectContextData(
       aspectId: String,
       tenantId: TenantId
-  )(implicit ec: ExecutionContext, session: DBSession): Future[JsObject] = {
+  )(implicit ec: ExecutionContext): Future[JsObject] = {
     Future {
       var aspectJsFields: Map[String, JsValue] = Map()
-      sql"SELECT * FROM aspects WHERE aspectid=${aspectId} ${tenantId match {
-        case SpecifiedTenantId(tenantId) => sqls" AND tenantid=${tenantId}"
-        case _                           => SQLSyntax.empty
-      }} LIMIT 1"
-        .foreach { rs =>
-          // JDBC treat column name case insensitive
-          aspectJsFields += ("id" -> JsString(rs.string("aspectId")))
-          aspectJsFields += ("name" -> JsString(rs.string("name")))
-          aspectJsFields += ("lastUpdate" -> JsNumber(
-            rs.bigInt("lastupdate")
-          ))
+      DB readOnly { implicit session =>
+        sql"SELECT * FROM aspects WHERE aspectid=${aspectId} ${tenantId match {
+          case SpecifiedTenantId(tenantId) => sqls" AND tenantid=${tenantId}"
+          case _                           => SQLSyntax.empty
+        }} LIMIT 1"
+          .foreach { rs =>
+            // JDBC treat column name case insensitive
+            aspectJsFields += ("id" -> JsString(rs.string("aspectId")))
+            aspectJsFields += ("name" -> JsString(rs.string("name")))
+            aspectJsFields += ("lastUpdate" -> JsNumber(
+              rs.bigInt("lastupdate")
+            ))
 
-          rs.bigIntOpt("tenantId")
-            .foreach(id => aspectJsFields += ("tenantId" -> JsNumber(id)))
+            rs.bigIntOpt("tenantId")
+              .foreach(id => aspectJsFields += ("tenantId" -> JsNumber(id)))
 
-          val jsonSchema = Try {
-            JsonParser(rs.string("jsonschema"))
-          }.getOrElse(JsNull)
+            val jsonSchema = Try {
+              JsonParser(rs.string("jsonschema"))
+            }.getOrElse(JsNull)
 
-          aspectJsFields += ("jsonSchema" -> jsonSchema)
-        }
+            aspectJsFields += ("jsonSchema" -> jsonSchema)
+          }
+      }
 
       if (aspectJsFields.isEmpty) {
         throw NoRecordFoundException(aspectId)
@@ -564,8 +561,7 @@ object Directives extends Protocols with SprayJsonSupport {
   def requireAspectPermission(
       authApiClient: AuthApiClient,
       operationUri: String,
-      aspectId: String,
-      session: DBSession = ReadOnlyAutoSession
+      aspectId: String
   ): Directive0 =
     (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
@@ -577,7 +573,7 @@ object Directives extends Protocols with SprayJsonSupport {
           requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
 
         (withExecutionContext(blockingExeCtx) & onComplete(
-          createAspectContextData(aspectId, tenantId)(blockingExeCtx, session)
+          createAspectContextData(aspectId, tenantId)(blockingExeCtx)
         )).tflatMap {
           case Tuple1(Success(aspectData)) =>
             requirePermission(
@@ -616,8 +612,7 @@ object Directives extends Protocols with SprayJsonSupport {
   def requireAspectUpdateOrCreateWhenNonExistPermission(
       authApiClient: AuthApiClient,
       aspectId: String,
-      newAspectOrJsonPatch: Either[AspectDefinition, JsonPatch],
-      session: DBSession = ReadOnlyAutoSession
+      newAspectOrJsonPatch: Either[AspectDefinition, JsonPatch]
   ): Directive0 =
     (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
@@ -628,7 +623,7 @@ object Directives extends Protocols with SprayJsonSupport {
         implicit val blockingExeCtx =
           requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
         onComplete(
-          createAspectContextData(aspectId, tenantId)(blockingExeCtx, session)
+          createAspectContextData(aspectId, tenantId)(blockingExeCtx)
             .map { currentAspectData =>
               val aspectDataAfterUpdate = newAspectOrJsonPatch match {
                 case Left(newAspectData)   => newAspectData.toJson.asJsObject
@@ -703,11 +698,13 @@ object Directives extends Protocols with SprayJsonSupport {
     */
   private def createWebhookContextData(
       webhookId: String
-  )(implicit ec: ExecutionContext, session: DBSession): Future[JsObject] = {
+  )(implicit ec: ExecutionContext): Future[JsObject] = {
     Future {
-      val hookData = HookPersistence
-        .getById(webhookId, UnconditionalTrueDecision)
-        .map(_.toJson.asJsObject)
+      val hookData = DB readOnly { implicit session =>
+        HookPersistence
+          .getById(webhookId, UnconditionalTrueDecision)
+          .map(_.toJson.asJsObject)
+      }
       if (hookData.isEmpty) {
         throw NoRecordFoundException(webhookId)
       } else {
@@ -730,8 +727,7 @@ object Directives extends Protocols with SprayJsonSupport {
       authApiClient: AuthApiClient,
       operationUri: String,
       webhookId: String,
-      onRecordNotFound: Option[() => Directive0] = None,
-      session: DBSession = ReadOnlyAutoSession
+      onRecordNotFound: Option[() => Directive0] = None
   ): Directive0 =
     (extractLog & extractActorSystem).tflatMap { t =>
       val log = t._1
@@ -741,7 +737,7 @@ object Directives extends Protocols with SprayJsonSupport {
         requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
 
       (withExecutionContext(blockingExeCtx) & onComplete(
-        createWebhookContextData(webhookId)(blockingExeCtx, session)
+        createWebhookContextData(webhookId)(blockingExeCtx)
       )).tflatMap {
         case Tuple1(Success(hookData)) =>
           requirePermission(
@@ -790,8 +786,7 @@ object Directives extends Protocols with SprayJsonSupport {
   def requireWebhookUpdateOrCreateWhenNonExistPermission(
       authApiClient: AuthApiClient,
       webhookId: String,
-      newWebhook: WebHook,
-      session: DBSession = ReadOnlyAutoSession
+      newWebhook: WebHook
   ): Directive0 =
     (extractLog & extractActorSystem).tflatMap { t =>
       val log = t._1
@@ -800,7 +795,7 @@ object Directives extends Protocols with SprayJsonSupport {
       implicit val blockingExeCtx =
         requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
       onComplete(
-        createWebhookContextData(webhookId)(blockingExeCtx, session)
+        createWebhookContextData(webhookId)(blockingExeCtx)
       ).flatMap {
         case Success(currentWebHookData) =>
           requirePermission(
@@ -859,8 +854,7 @@ object Directives extends Protocols with SprayJsonSupport {
     */
   def requireRecordEventReadPermission(
       authApiClient: AuthApiClient,
-      recordId: String,
-      session: DBSession = ReadOnlyAutoSession
+      recordId: String
   ): Directive0 =
     withAuthDecision(authApiClient, AuthDecisionReqConfig("object/event/read"))
       .flatMap { authDecision =>
@@ -883,8 +877,7 @@ object Directives extends Protocols with SprayJsonSupport {
                     s"An error occurred while creating webhook context data for auth decision."
                   )
                 )
-            ),
-            session
+            )
           )
         }
       }

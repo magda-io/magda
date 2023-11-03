@@ -10,4 +10,9 @@ object CommonDirectives {
     withExecutionContext(blockingExeCtx)
   }
 
+  def withBlockingTaskIn(dispatcherId: String): Directive0 = extractActorSystem.tflatMap { t =>
+    val blockingExeCtx = t._1.dispatchers.lookup(dispatcherId)
+    withExecutionContext(blockingExeCtx)
+  }
+
 }

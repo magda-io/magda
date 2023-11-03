@@ -36,7 +36,10 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
-import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.{
+  withBlockingTask,
+  withBlockingTaskIn
+}
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -271,10 +274,7 @@ class RecordsService(
           requiresSpecifiedTenantId { tenantId =>
             parameters('sourceTagToPreserve, 'sourceId) {
               (sourceTagToPreserve, sourceId) =>
-                extractActorSystem { routeActor =>
-                  implicit val blockingExeCtx = routeActor.dispatchers.lookup(
-                    "long-running-db-operation-dispatcher"
-                  )
+                withBlockingTaskIn("long-running-db-operation-dispatcher") {
                   val deleteFuture = Future {
                     // --- DB session needs to be created within the `Future`
                     // --- as the `Future` will keep running after timeout and require active DB session
@@ -322,6 +322,7 @@ class RecordsService(
                         )
                       )
                   }
+
                 }
             }
           }

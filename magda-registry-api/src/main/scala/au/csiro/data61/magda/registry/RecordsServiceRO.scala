@@ -356,7 +356,7 @@ class RecordsServiceRO(
                 )
               } else {
                 completeBlockingTask {
-                  DB localTx { implicit session =>
+                  DB readOnly { implicit session =>
                     session.queryTimeout(this.defaultQueryTimeout)
                     recordPersistence.getAllWithAspects(
                       tenantId,
