@@ -3,6 +3,7 @@
 ## v2.3.3
 
 - #3495: fixed gateway might throw unhandled ERR_HTTP_HEADERS_SENT errors when proxy requests
+- #3492: fixed webhook actors shouldn't use default dispatcher even with default config & code refactoring
 
 ## v2.3.2
 

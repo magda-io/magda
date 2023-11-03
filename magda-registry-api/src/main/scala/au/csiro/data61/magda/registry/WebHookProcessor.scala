@@ -26,12 +26,13 @@ import au.csiro.data61.magda.model.TenantId.AllTenantsId
 class WebHookProcessor(
     actorSystem: ActorSystem,
     val publicUrl: Uri,
-    recordPersistence: RecordPersistence,
-    implicit val executionContext: ExecutionContext
+    recordPersistence: RecordPersistence
+)(
+    implicit val executionContext: ExecutionContext,
+    implicit val materializer: ActorMaterializer
 ) extends Protocols {
+
   private val http = Http(actorSystem)
-  private implicit val materializer: ActorMaterializer =
-    ActorMaterializer()(actorSystem)
 
   private def getTenantRecordIdsMap(
       events: List[RegistryEvent]

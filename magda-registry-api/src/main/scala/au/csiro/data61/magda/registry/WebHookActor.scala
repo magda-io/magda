@@ -4,7 +4,6 @@ import java.time.OffsetDateTime
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-
 import akka.actor.{
   Actor,
   ActorContext,
@@ -22,7 +21,7 @@ import com.typesafe.config.Config
 import scalikejdbc.DB
 
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Future}
 import scala.util.control.NonFatal
 import au.csiro.data61.magda.model.TenantId.AllTenantsId
 import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
@@ -98,11 +97,10 @@ object WebHookActor {
       extends Actor
       with ActorLogging {
 
-    // The message processing in "receive" has blocking code. Use a dedicate dispatcher.
-    // See https://doc.akka.io/docs/akka/2.5/dispatchers.html
-    implicit val executionContext: ExecutionContext =
-      context.system.dispatchers.lookup("webhooks.AllWebHooksActor-dispatcher")
-    private implicit val scheduler: Scheduler = this.context.system.scheduler
+    // use actor default dispatcher
+    // we have configured actor in /WebHookActor/** scope to use separate pool `webhooks.AllWebHooksActor-dispatcher`
+    implicit val executionContext = context.dispatcher
+    private implicit val scheduler: Scheduler = context.system.scheduler
 
     import akka.pattern.after
     private def retry[T](
@@ -428,19 +426,24 @@ object WebHookActor {
   )(implicit val config: Config)
       extends Actor
       with ActorLogging {
+
+    case object WakeUp
+
+    implicit val materializer: ActorMaterializer = ActorMaterializer()
+    implicit val ec = context.dispatcher
+
     val recordPersistence = new DefaultRecordPersistence(config)
     val eventPersistence = new DefaultEventPersistence(recordPersistence)
-    case object WakeUp
-    import context.dispatcher
+
     private val SOURCE_QUEUE_BUFFER_SIZE =
       config.getInt("webhooks.SingleWebHookActorSourceQueueSize")
+
     private val processor = new WebHookProcessor(
       context.system,
       registryApiBaseUrl,
-      recordPersistence,
-      context.dispatcher
+      recordPersistence
     )
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
+
     private var isProcessing: Boolean = false
     private var currentQueueLength = 0
 
