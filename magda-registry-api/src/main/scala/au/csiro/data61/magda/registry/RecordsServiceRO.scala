@@ -19,8 +19,7 @@ import au.csiro.data61.magda.client.{AuthDecisionReqConfig}
 import au.csiro.data61.magda.model.AspectQuery
 import scalikejdbc.interpolation.SQLSyntax
 import au.csiro.data61.magda.directives.RouteDirectives.completeBlockingTask
-import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
-
+import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
 import scala.concurrent.ExecutionContext
 
 @Path("/records")
@@ -934,7 +933,7 @@ class RecordsServiceRO(
         ) { authDecision =>
           parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) {
             (aspects, optionalAspects, dereference) =>
-              withBlockingTask {
+              onCompleteBlockingTask {
                 DB readOnly { implicit session =>
                   session.queryTimeout(this.defaultQueryTimeout)
                   recordPersistence.getByIdWithAspects(
@@ -1031,7 +1030,7 @@ class RecordsServiceRO(
           authApiClient,
           AuthDecisionReqConfig("object/record/read")
         ) { authDecision =>
-          withBlockingTask {
+          onCompleteBlockingTask {
             DB readOnly { implicit session =>
               session.queryTimeout(this.defaultQueryTimeout)
               recordPersistence
@@ -1118,7 +1117,7 @@ class RecordsServiceRO(
           authApiClient,
           AuthDecisionReqConfig("object/record/read")
         ) { authDecision =>
-          withBlockingTask {
+          onCompleteBlockingTask {
             DB readOnly { implicit session =>
               session.queryTimeout(this.defaultQueryTimeout)
               recordPersistence

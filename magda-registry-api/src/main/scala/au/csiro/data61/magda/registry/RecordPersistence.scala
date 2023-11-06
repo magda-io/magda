@@ -4,7 +4,7 @@ import java.sql.SQLException
 import akka.NotUsed
 import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.ServerError
+import au.csiro.data61.magda.{ServerError, ServerSqlError}
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
 import gnieh.diffson._
@@ -13,7 +13,6 @@ import scalikejdbc._
 import spray.json._
 import spray.json.lenses.JsonLenses._
 import org.everit.json.schema.ValidationException
-import au.csiro.data61.magda.client.AuthOperations
 import au.csiro.data61.magda.model.Auth.{
   AuthDecision,
   UnconditionalTrueDecision
@@ -152,16 +151,18 @@ trait RecordPersistence {
       newRecord: Record,
       userId: String,
       forceSkipAspectValidation: Boolean = false,
-      merge: Boolean = false
-  )(implicit session: DBSession): Try[(Record, Long)]
+      merge: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Record, Long)]
 
   def patchRecordById(
       tenantId: SpecifiedTenantId,
       id: String,
       recordPatch: JsonPatch,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[(Record, Long)]
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Record, Long)]
 
   def patchRecords(
       tenantId: SpecifiedTenantId,
@@ -169,8 +170,9 @@ trait RecordPersistence {
       recordIds: Seq[String],
       recordPatch: JsonPatch,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[Seq[Long]]
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[Seq[Long]]
 
   def patchRecordAspectById(
       tenantId: SpecifiedTenantId,
@@ -178,8 +180,9 @@ trait RecordPersistence {
       aspectId: String,
       aspectPatch: JsonPatch,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[(JsObject, Long)]
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(JsObject, Long)]
 
   def putRecordsAspectById(
       tenantId: SpecifiedTenantId,
@@ -189,8 +192,9 @@ trait RecordPersistence {
       newAspect: JsObject,
       userId: String,
       forceSkipAspectValidation: Boolean = false,
-      merge: Boolean = false
-  )(implicit session: DBSession): Try[Seq[Long]]
+      merge: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[Seq[Long]]
 
   def putRecordAspectById(
       tenantId: SpecifiedTenantId,
@@ -199,21 +203,24 @@ trait RecordPersistence {
       newAspect: JsObject,
       userId: String,
       forceSkipAspectValidation: Boolean = false,
-      merge: Boolean = false
-  )(implicit session: DBSession): Try[(JsObject, Long)]
+      merge: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(JsObject, Long)]
 
   def createRecord(
       tenantId: SpecifiedTenantId,
       record: Record,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[(Record, Long)]
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Record, Long)]
 
   def deleteRecord(
       tenantId: SpecifiedTenantId,
       recordId: String,
-      userId: String
-  )(implicit session: DBSession): Try[(Boolean, Long)]
+      userId: String,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Boolean, Long)]
 
   def deleteRecordAspectArrayItems(
       tenantId: SpecifiedTenantId,
@@ -222,8 +229,9 @@ trait RecordPersistence {
       jsonPath: String,
       jsonItems: Seq[JsValue],
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[(Boolean, Long)]
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Boolean, Long)]
 
   def deleteRecordsAspectArrayItems(
       tenantId: SpecifiedTenantId,
@@ -233,16 +241,18 @@ trait RecordPersistence {
       jsonPath: String,
       jsonItems: Seq[JsValue],
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[Seq[Long]]
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[Seq[Long]]
 
   def trimRecordsBySource(
       tenantId: SpecifiedTenantId,
       sourceTagToPreserve: String,
       sourceId: String,
       userId: String,
-      logger: Option[LoggingAdapter] = None
-  )(implicit session: DBSession): Try[Long]
+      logger: Option[LoggingAdapter] = None,
+      dbConnection: Option[DBConnection] = None
+  ): Try[Long]
 
   def createRecordAspect(
       tenantId: SpecifiedTenantId,
@@ -250,15 +260,17 @@ trait RecordPersistence {
       aspectId: String,
       aspect: JsObject,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[(JsObject, Long)]
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(JsObject, Long)]
 
   def deleteRecordAspect(
       tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String,
-      userId: String
-  )(implicit session: DBSession): Try[(Boolean, Long)]
+      userId: String,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Boolean, Long)]
 
   def reconstructRecordFromEvents(
       id: String,
@@ -293,6 +305,13 @@ class DefaultRecordPersistence(config: Config)
   val aspectValidator = new AspectValidator(config, this)
   val maxResultCount = 1000
   val defaultResultCount = 100
+
+  private val longQueryTimeout = config
+    .getDuration(
+      "db-query.long-query-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
 
   /**
     * Given a list of recordIds, filter out any record that the current user has not access and return the rest of ids
@@ -777,132 +796,149 @@ class DefaultRecordPersistence(config: Config)
       newRecord: Record,
       userId: String,
       forceSkipAspectValidation: Boolean = false,
-      merge: Boolean = false
-  )(implicit session: DBSession): Try[(Record, Long)] = {
-    val newRecordWithoutAspects = newRecord.copy(aspects = Map())
+      merge: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Record, Long)] = {
 
-    for {
-      _ <- if (id == newRecord.id) Success(newRecord)
-      else
-        Failure(
-          new ValidationException(
-            "The provided ID does not match the record's ID."
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      val newRecordWithoutAspects = newRecord.copy(aspects = Map())
+      val validationStep = Try {
+        if (id == newRecord.id) Success(newRecord)
+        else
+          Failure(
+            new ValidationException(
+              "The provided ID does not match the record's ID."
+            )
           )
-        )
-
-      // --- validate aspects data against json schema
-      _ <- Try {
-        if (!forceSkipAspectValidation)
-          aspectValidator.validateAspects(newRecord.aspects, tenantId)(
-            session
-          )
+      } map { _ =>
+        if (!forceSkipAspectValidation) {
+          aspectValidator.validateAspects(newRecord.aspects, tenantId)
+        }
       }
 
-      (oldRecordWithoutAspects, eventId) <- this.getByIdWithAspects(
-        tenantId,
-        UnconditionalTrueDecision,
-        id,
-        None,
-        None
-      ) match {
-        case Some(record) => Success((record, None))
-        // Possibility of a race condition here. The record doesn't exist, so we try to create it.
-        // But someone else could have created it in the meantime. So if our create fails, try one
-        // more time to get an existing one. We use a nested transaction so that, if the create fails,
-        // we don't end up with an extraneous record creation event in the database.
-        case None =>
-          DB.localTx { nested =>
-            // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
-            // --- as the aspect data has been validated (unless not required) in the beginning of current method
-            createRecord(tenantId, newRecord, userId, true)(nested).map {
-              result =>
-                // --- result._1: record result._2: eventId
-                (result._1.copy(aspects = Map()), Some(result._2))
-            }
-          } match {
-            case Success(result) => Success(result)
-            case Failure(e) =>
-              this.getByIdWithAspects(
+      val ensureRecordStep = validationStep.flatMap { _ =>
+        // no need to check whether record exists for racing condition
+        // we attempt to create first to make sure the record is there
+        createRecord(tenantId, newRecord, userId, true, dbConnection).map {
+          result =>
+            // --- result._1: record result._2: eventId
+            (result._1.copy(aspects = Map()), Some(result._2))
+        } recoverWith {
+          case e: ServerSqlError if e.constraintViolation =>
+            Try {
+              getByIdWithAspects(
                 tenantId,
                 UnconditionalTrueDecision,
                 id,
                 None,
                 None
-              ) match {
-                case Some(record) => Success((record, None))
-                case None         => Failure(e)
-              }
-          }
-      }
-      recordPatch <- Try {
-        // Diff the old record and the new one, ignoring aspects
-        val oldRecordJson = oldRecordWithoutAspects.toJson
-        val newRecordJson = newRecordWithoutAspects.toJson
-
-        val diff = JsonDiff.diff(oldRecordJson, newRecordJson, remember = false)
-
-        diff
-      }
-
-      // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
-      // --- as the aspect data has been validated (unless not required) in the beginning of current method
-      result <- patchRecordById(
-        tenantId,
-        id,
-        recordPatch,
-        userId,
-        true
-      ) match {
-        case Failure(e) => Failure(e)
-        case Success((record, currentEventId)) =>
-          if (eventId.isDefined) {
-            Success((record, Math.max(currentEventId, eventId.get)))
-          } else {
-            Success((record, currentEventId))
-          }
-      }
-
-      (patchedAspects, latestEventId) <- newRecord.aspects
-        .map {
-          case (aspectId, data) =>
-            // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
-            // --- as the aspect data has been validated (unless not required) in the beginning of current method
-            this
-              .putRecordAspectById(
-                tenantId,
-                id,
-                aspectId,
-                data,
-                userId,
-                forceSkipAspectValidation = true,
-                merge
               )
-              .map(result => ((aspectId, result._1), result._2))
-        }
-        .foldLeft(Try((List[(String, JsObject)](), result._2)))((res, item) => {
-          res match {
-            case Failure(e) => Failure(e)
-            case Success((aspects, lastestEventId)) =>
-              item match {
-                case Failure(e) => Failure(e)
-                case Success(((aspectId, aspectData), currentEventId)) =>
-                  Success(
-                    (
-                      (aspectId, aspectData) :: aspects,
-                      Math.max(currentEventId, lastestEventId)
-                    )
+            } map { record =>
+              if (record.isEmpty) {
+                throw ServerSqlError(
+                  e.sqlException,
+                  Some(
+                    s"Encounter constraintViolation but cannot locate the record with id: ${id}"
                   )
+                )
+              } else {
+                (record.get, None)
               }
+            }
+          case e: Throwable => throw e
+        }
+      }
+
+      val updateRecordStep = ensureRecordStep
+        .flatMap { result =>
+          val oldRecordWithoutAspects = result._1
+          val createRecordEventId = result._2
+          Try {
+            // Diff the old record and the new one, ignoring aspects
+            val oldRecordJson = oldRecordWithoutAspects.toJson
+            val newRecordJson = newRecordWithoutAspects.toJson
+
+            val diff =
+              JsonDiff.diff(oldRecordJson, newRecordJson, remember = false)
+            diff
+          } flatMap { recordPatch =>
+            patchRecordById(
+              tenantId,
+              id,
+              recordPatch,
+              userId,
+              true,
+              dbConnection
+            ) map {
+              case (record, currentEventId) =>
+                (
+                  record,
+                  Math.max(
+                    currentEventId,
+                    createRecordEventId.getOrElse(currentEventId)
+                  )
+                )
+            }
           }
-        })
-    } yield
-      (
-        result._1.copy(
-          aspects = patchedAspects.toMap,
-          sourceTag = newRecord.sourceTag
-        ),
-        latestEventId
-      )
+        }
+
+      val updateAspectsStep = updateRecordStep
+        .flatMap { result =>
+          val patchedRecord = result._1
+          val recordEventId = result._2
+          newRecord.aspects
+            .map {
+              case (aspectId, data) =>
+                // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+                // --- as the aspect data has been validated (unless not required) in the beginning of current method
+                putRecordAspectById(
+                  tenantId,
+                  id,
+                  aspectId,
+                  data,
+                  userId,
+                  forceSkipAspectValidation = true,
+                  merge,
+                  dbConnection
+                ).map(result => ((aspectId, result._1), result._2))
+            }
+            .foldLeft(Try((List[(String, JsObject)](), recordEventId)))(
+              (res, item) => {
+                res match {
+                  case Failure(e) => Failure(e)
+                  case Success((aspects, lastestEventId)) =>
+                    item match {
+                      case Failure(e) => Failure(e)
+                      case Success(((aspectId, aspectData), currentEventId)) =>
+                        Success(
+                          (
+                            (aspectId, aspectData) :: aspects,
+                            Math.max(currentEventId, lastestEventId)
+                          )
+                        )
+                    }
+                }
+              }
+            )
+            .map { result =>
+              (result._1, result._2, patchedRecord)
+            }
+        }
+
+      updateAspectsStep.map { result =>
+        val patchedRecord = result._3
+        val patchedAspects = result._1
+        val latestEventId = result._2
+        (
+          patchedRecord.copy(
+            aspects = patchedAspects.toMap,
+            sourceTag = newRecord.sourceTag
+          ),
+          latestEventId
+        )
+      }
+    }
+
   }
 
   def patchRecordById(
@@ -910,134 +946,142 @@ class DefaultRecordPersistence(config: Config)
       id: String,
       recordPatch: JsonPatch,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[(Record, Long)] = {
-    for {
-      record <- this.getByIdWithAspects(
-        tenantId,
-        UnconditionalTrueDecision,
-        id,
-        None,
-        None
-      ) match {
-        case Some(record) => Success(record)
-        case None =>
-          Failure(new RuntimeException("No record exists with that ID."))
-      }
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Record, Long)] = {
 
-      // --- validate Aspect data against JSON schema
-      // --- Check at the beginning to make sure no data is saved unless everything is valid
-      _ <- Try {
-        if (!forceSkipAspectValidation)
-          aspectValidator.validateWithRecordPatch(recordPatch, id, tenantId)(
-            session
-          )
-      }
-
-      recordOnlyPatch <- Success(
-        recordPatch.filter(
-          op =>
-            op.path match {
-              case "aspects" / _ => false
-              case _             => true
-            }
-        )
-      )
-      patchedRecord <- Try {
-        recordOnlyPatch(record)
-      }
-
-      _ <- if (id == patchedRecord.id) Success(patchedRecord)
-      else
-        Failure(
-          new RuntimeException("The patch must not change the record's ID.")
-        )
-      _ <- Try {
-        // Sourcetag should not generate an event so updating it is done separately
-        if (record.sourceTag != patchedRecord.sourceTag) {
-          sql"""update Records set sourcetag = ${patchedRecord.sourceTag} where (recordId, tenantId) = ($id, ${tenantId.tenantId})""".update
-            .apply()
-        }
-      }
-      eventId <- Try {
-        // only update / generate event if name have changed. Id can't change, aspect changes are handled separately
-        if (record.name != patchedRecord.name) {
-          val event =
-            PatchRecordEvent(id, tenantId.tenantId, recordOnlyPatch).toJson.compactPrint
-          val eventId =
-            sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $event::json)"
-              .updateAndReturnGeneratedKey()
-              .apply()
-          sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId
-                  where (recordId, tenantId) = ($id, ${tenantId.tenantId})""".update
-            .apply()
-
-          Some(eventId)
-        } else {
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      for {
+        record <- this.getByIdWithAspects(
+          tenantId,
+          UnconditionalTrueDecision,
+          id,
+          None,
           None
+        ) match {
+          case Some(record) => Success(record)
+          case None =>
+            Failure(new RuntimeException("No record exists with that ID."))
         }
-      }
 
-      // --- We have validate the Json Patch in the beginning. Thus, any aspect operations below should skip the validation
-      (aspectResults, latestEventId) <- processRecordPatchOperationsOnAspects(
-        recordPatch,
-        (aspectId: String, aspectData: JsObject) =>
-          putRecordAspectById(
-            tenantId,
-            id,
-            aspectId,
-            aspectData,
-            userId,
-            true
-          ).map(value => ((aspectId, value._1), value._2)),
-        (aspectId: String, aspectPatch: JsonPatch) =>
-          patchRecordAspectById(
-            tenantId,
-            id,
-            aspectId,
-            aspectPatch,
-            userId,
-            true
-          ).map(value => ((aspectId, value._1), value._2)),
-        (aspectId: String) =>
-          deleteRecordAspect(tenantId, id, aspectId, userId)
-            .map(value => ((aspectId, JsNull), value._2))
-      ).foldLeft(Try((List[(String, JsValue)](), Option.empty[Long])))(
-          (res, item) => {
-            res match {
-              case Failure(e) => Failure(e)
-              case Success(resValue) =>
-                item match {
-                  case Failure(e) => Failure(e)
-                  case Success((aspect, itemEventId)) =>
-                    Success((aspect :: resValue._1, resValue._2 match {
-                      case Some(eventId) => Some(Math.max(itemEventId, eventId))
-                      case _             => Some(itemEventId)
-                    }))
-                }
-            }
-          }
+        // --- validate Aspect data against JSON schema
+        // --- Check at the beginning to make sure no data is saved unless everything is valid
+        _ <- Try {
+          if (!forceSkipAspectValidation)
+            aspectValidator.validateWithRecordPatch(recordPatch, id, tenantId)(
+              session
+            )
+        }
+
+        recordOnlyPatch <- Success(
+          recordPatch.filter(
+            op =>
+              op.path match {
+                case "aspects" / _ => false
+                case _             => true
+              }
+          )
         )
-        // -- all eventId could be none: update record doesn't always generate events
-        .map(value => (value._1, value._2.getOrElse(eventId.getOrElse(0L))))
+        patchedRecord <- Try {
+          recordOnlyPatch(record)
+        }
 
-    } yield
-      (
-        Record(
-          patchedRecord.id,
-          patchedRecord.name,
-          aspectResults
-            .filter({
-              case (_, JsNull) => false // aspect was deleted
-              case _           => true
-            })
-            .map(aspect => (aspect._1, aspect._2.asJsObject))
-            .toMap,
-          sourceTag = patchedRecord.sourceTag,
-          tenantId = Some(tenantId.tenantId)
-        ),
-        latestEventId
-      )
+        _ <- if (id == patchedRecord.id) Success(patchedRecord)
+        else
+          Failure(
+            new RuntimeException("The patch must not change the record's ID.")
+          )
+        _ <- Try {
+          // Sourcetag should not generate an event so updating it is done separately
+          if (record.sourceTag != patchedRecord.sourceTag) {
+            sql"""update Records set sourcetag = ${patchedRecord.sourceTag} where (recordId, tenantId) = ($id, ${tenantId.tenantId})""".update
+              .apply()
+          }
+        }
+        eventId <- Try {
+          // only update / generate event if name have changed. Id can't change, aspect changes are handled separately
+          if (record.name != patchedRecord.name) {
+            val event =
+              PatchRecordEvent(id, tenantId.tenantId, recordOnlyPatch).toJson.compactPrint
+            val eventId =
+              sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $event::json)"
+                .updateAndReturnGeneratedKey()
+                .apply()
+            sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId
+                  where (recordId, tenantId) = ($id, ${tenantId.tenantId})""".update
+              .apply()
+
+            Some(eventId)
+          } else {
+            None
+          }
+        }
+
+        // --- We have validate the Json Patch in the beginning. Thus, any aspect operations below should skip the validation
+        (aspectResults, latestEventId) <- processRecordPatchOperationsOnAspects(
+          recordPatch,
+          (aspectId: String, aspectData: JsObject) =>
+            putRecordAspectById(
+              tenantId,
+              id,
+              aspectId,
+              aspectData,
+              userId,
+              true,
+              dbConnection = dbConnection
+            ).map(value => ((aspectId, value._1), value._2)),
+          (aspectId: String, aspectPatch: JsonPatch) =>
+            patchRecordAspectById(
+              tenantId,
+              id,
+              aspectId,
+              aspectPatch,
+              userId,
+              true,
+              dbConnection = dbConnection
+            ).map(value => ((aspectId, value._1), value._2)),
+          (aspectId: String) =>
+            deleteRecordAspect(tenantId, id, aspectId, userId)
+              .map(value => ((aspectId, JsNull), value._2))
+        ).foldLeft(Try((List[(String, JsValue)](), Option.empty[Long])))(
+            (res, item) => {
+              res match {
+                case Failure(e) => Failure(e)
+                case Success(resValue) =>
+                  item match {
+                    case Failure(e) => Failure(e)
+                    case Success((aspect, itemEventId)) =>
+                      Success((aspect :: resValue._1, resValue._2 match {
+                        case Some(eventId) =>
+                          Some(Math.max(itemEventId, eventId))
+                        case _ => Some(itemEventId)
+                      }))
+                  }
+              }
+            }
+          )
+          // -- all eventId could be none: update record doesn't always generate events
+          .map(value => (value._1, value._2.getOrElse(eventId.getOrElse(0L))))
+
+      } yield
+        (
+          Record(
+            patchedRecord.id,
+            patchedRecord.name,
+            aspectResults
+              .filter({
+                case (_, JsNull) => false // aspect was deleted
+                case _           => true
+              })
+              .map(aspect => (aspect._1, aspect._2.asJsObject))
+              .toMap,
+            sourceTag = patchedRecord.sourceTag,
+            tenantId = Some(tenantId.tenantId)
+          ),
+          latestEventId
+        )
+    }
+
   }
 
   /**
@@ -1057,54 +1101,58 @@ class DefaultRecordPersistence(config: Config)
       recordIds: Seq[String],
       recordPatch: JsonPatch,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[Seq[Long]] = {
-    Try {
-      val noEmptyIds = recordIds.filter(!_.trim.isEmpty)
-      if (noEmptyIds.isEmpty) {
-        throw ServerError(
-          "there is no non-empty ids supplied via `recordIds` parameter.",
-          400
-        )
-      }
-      val result = getRecords(
-        tenantId,
-        authDecision,
-        Seq(),
-        Seq(),
-        None,
-        None,
-        Some(noEmptyIds.length),
-        Some(false),
-        List(Some(sqls"recordId in ($noEmptyIds)")),
-        None,
-        Some(noEmptyIds.length)
-      )
-      if (result.records.length != noEmptyIds.length) {
-        throw ServerError(
-          "You don't have permission to all records requested",
-          403
-        )
-      }
-    }.flatMap { _ =>
-      recordIds
-        .map(
-          id =>
-            patchRecordById(
-              tenantId,
-              id,
-              recordPatch,
-              userId,
-              forceSkipAspectValidation
-            ).map(_._2)
-        )
-        .foldLeft(Try(Seq[Long]())) {
-          case (Success(result), Success(newItem)) => Success(result :+ newItem)
-          case (_, Failure(ex))                    => Failure(ex)
-          case (Failure(ex), _)                    => Failure(ex)
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[Seq[Long]] = {
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      Try {
+        val noEmptyIds = recordIds.filter(!_.trim.isEmpty)
+        if (noEmptyIds.isEmpty) {
+          throw ServerError(
+            "there is no non-empty ids supplied via `recordIds` parameter.",
+            400
+          )
         }
+        val result = getRecords(
+          tenantId,
+          authDecision,
+          Seq(),
+          Seq(),
+          None,
+          None,
+          Some(noEmptyIds.length),
+          Some(false),
+          List(Some(sqls"recordId in ($noEmptyIds)")),
+          None,
+          Some(noEmptyIds.length)
+        )
+        if (result.records.length != noEmptyIds.length) {
+          throw ServerError(
+            "You don't have permission to all records requested",
+            403
+          )
+        }
+      }.flatMap { _ =>
+        recordIds
+          .map(
+            id =>
+              patchRecordById(
+                tenantId,
+                id,
+                recordPatch,
+                userId,
+                forceSkipAspectValidation,
+                dbConnection = dbConnection
+              ).map(_._2)
+          )
+          .foldLeft(Try(Seq[Long]())) {
+            case (Success(result), Success(newItem)) =>
+              Success(result :+ newItem)
+            case (_, Failure(ex)) => Failure(ex)
+            case (Failure(ex), _) => Failure(ex)
+          }
+      }
     }
-
   }
 
   def patchRecordAspectById(
@@ -1113,70 +1161,73 @@ class DefaultRecordPersistence(config: Config)
       aspectId: String,
       aspectPatch: JsonPatch,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[(JsObject, Long)] = {
-    for {
-      aspect <- (this.getRecordAspectById(
-        tenantId,
-        UnconditionalTrueDecision,
-        recordId,
-        aspectId
-      ) match {
-        case Some(aspect) => Success(aspect)
-        // --- should not create a default empty aspect: empty aspect will likely be invalid if schema requires certain fields
-        case None => Success(JsObject())
-      })
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(JsObject, Long)] = {
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      for {
+        aspect <- (this.getRecordAspectById(
+          tenantId,
+          UnconditionalTrueDecision,
+          recordId,
+          aspectId
+        ) match {
+          case Some(aspect) => Success(aspect)
+          // --- should not create a default empty aspect: empty aspect will likely be invalid if schema requires certain fields
+          case None => Success(JsObject())
+        })
 
-      patchedAspect <- Try {
-        aspectPatch(aspect).asJsObject
-      }
-
-      // --- validate Aspect data against JSON schema
-      _ <- Try {
-        if (!forceSkipAspectValidation)
-          aspectValidator.validate(aspectId, patchedAspect, tenantId)(
-            session
-          )
-      }
-
-      testRecordAspectPatch <- Try {
-
-        // Diff the old record aspect and the patched one to see whether an event should be created
-        val oldAspectJson = aspect.toJson
-        val newAspectJson = patchedAspect.toJson
-
-        JsonDiff.diff(oldAspectJson, newAspectJson, remember = false)
-      }
-
-      eventId <- Try {
-        if (testRecordAspectPatch.ops.nonEmpty) {
-          val event = PatchRecordAspectEvent(
-            recordId,
-            tenantId.tenantId,
-            aspectId,
-            aspectPatch
-          ).toJson.compactPrint
-          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordAspectEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $event::json)"
-            .updateAndReturnGeneratedKey()
-            .apply()
-        } else {
-          0
+        patchedAspect <- Try {
+          aspectPatch(aspect).asJsObject
         }
-      }
 
-      _ <- Try {
-        if (testRecordAspectPatch.ops.nonEmpty) {
-          val jsonString = patchedAspect.compactPrint
-          sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data)
+        // --- validate Aspect data against JSON schema
+        _ <- Try {
+          if (!forceSkipAspectValidation)
+            aspectValidator.validate(aspectId, patchedAspect, tenantId)(
+              session
+            )
+        }
+
+        testRecordAspectPatch <- Try {
+
+          // Diff the old record aspect and the patched one to see whether an event should be created
+          val oldAspectJson = aspect.toJson
+          val newAspectJson = patchedAspect.toJson
+
+          JsonDiff.diff(oldAspectJson, newAspectJson, remember = false)
+        }
+
+        eventId <- Try {
+          if (testRecordAspectPatch.ops.nonEmpty) {
+            val event = PatchRecordAspectEvent(
+              recordId,
+              tenantId.tenantId,
+              aspectId,
+              aspectPatch
+            ).toJson.compactPrint
+            sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordAspectEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $event::json)"
+              .updateAndReturnGeneratedKey()
+              .apply()
+          } else {
+            0
+          }
+        }
+
+        _ <- Try {
+          if (testRecordAspectPatch.ops.nonEmpty) {
+            val jsonString = patchedAspect.compactPrint
+            sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data)
               values ($recordId, ${tenantId.tenantId}, $aspectId, $eventId, $jsonString::json)
               on conflict (aspectId, recordId, tenantId) do update
               set lastUpdate = $eventId, data = $jsonString::json
           """.update.apply()
-        } else {
-          0
+          } else {
+            0
+          }
         }
-      }
-    } yield (patchedAspect, eventId)
+      } yield (patchedAspect, eventId)
+    }
   }
 
   def putRecordsAspectById(
@@ -1187,56 +1238,60 @@ class DefaultRecordPersistence(config: Config)
       newAspect: JsObject,
       userId: String,
       forceSkipAspectValidation: Boolean = false,
-      merge: Boolean = false
-  )(implicit session: DBSession): Try[Seq[Long]] = {
-    Try {
-      val noEmptyIds = recordIds.filter(!_.trim.isEmpty)
-      if (noEmptyIds.isEmpty) {
-        throw ServerError(
-          "there is no non-empty ids supplied via `recordIds` parameter.",
-          400
-        )
-      }
-      val result = getRecords(
-        tenantId,
-        authDecision,
-        Seq(),
-        Seq(),
-        None,
-        None,
-        Some(noEmptyIds.length),
-        Some(false),
-        List(Some(sqls"recordId in ($noEmptyIds)")),
-        None,
-        Some(noEmptyIds.length)
-      )
-      if (result.records.length != noEmptyIds.length) {
-        throw ServerError(
-          "You don't have permission to all records requested",
-          403
-        )
-      }
-    }.flatMap { _ =>
-      recordIds
-        .map(
-          id =>
-            putRecordAspectById(
-              tenantId,
-              id,
-              aspectId,
-              newAspect,
-              userId,
-              forceSkipAspectValidation,
-              merge
-            ).map(_._2)
-        )
-        .foldLeft(Try(Seq[Long]())) {
-          case (Success(result), Success(newItem)) => Success(result :+ newItem)
-          case (_, Failure(ex))                    => Failure(ex)
-          case (Failure(ex), _)                    => Failure(ex)
+      merge: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[Seq[Long]] = {
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      Try {
+        val noEmptyIds = recordIds.filter(!_.trim.isEmpty)
+        if (noEmptyIds.isEmpty) {
+          throw ServerError(
+            "there is no non-empty ids supplied via `recordIds` parameter.",
+            400
+          )
         }
+        val result = getRecords(
+          tenantId,
+          authDecision,
+          Seq(),
+          Seq(),
+          None,
+          None,
+          Some(noEmptyIds.length),
+          Some(false),
+          List(Some(sqls"recordId in ($noEmptyIds)")),
+          None,
+          Some(noEmptyIds.length)
+        )
+        if (result.records.length != noEmptyIds.length) {
+          throw ServerError(
+            "You don't have permission to all records requested",
+            403
+          )
+        }
+      }.flatMap { _ =>
+        recordIds
+          .map(
+            id =>
+              putRecordAspectById(
+                tenantId,
+                id,
+                aspectId,
+                newAspect,
+                userId,
+                forceSkipAspectValidation,
+                merge,
+                dbConnection = dbConnection
+              ).map(_._2)
+          )
+          .foldLeft(Try(Seq[Long]())) {
+            case (Success(result), Success(newItem)) =>
+              Success(result :+ newItem)
+            case (_, Failure(ex)) => Failure(ex)
+            case (Failure(ex), _) => Failure(ex)
+          }
+      }
     }
-
   }
 
   def putRecordAspectById(
@@ -1246,194 +1301,221 @@ class DefaultRecordPersistence(config: Config)
       newAspect: JsObject,
       userId: String,
       forceSkipAspectValidation: Boolean = false,
-      merge: Boolean = false
-  )(implicit session: DBSession): Try[(JsObject, Long)] = {
-
-    (getRecordAspectById(
-      tenantId,
-      UnconditionalTrueDecision,
-      recordId,
-      aspectId
-    ) match {
-      case Some(aspect) => Success((aspect, None))
-      // Possibility of a race condition here. The aspect doesn't exist, so we try to create it.
-      // But someone else could have created it in the meantime. So if our create fails, try one
-      // more time to get an existing one. We use a nested transaction so that, if the create fails,
-      // we don't end up with an extraneous record creation event in the database.
-      case None =>
-        DB.localTx { nested =>
-          createRecordAspect(
-            tenantId,
-            recordId,
-            aspectId,
-            newAspect,
-            userId,
-            forceSkipAspectValidation
-          )(nested)
-        } match {
-          case Success((aspect, eventId)) => Success((aspect, Some(eventId)))
-          case Failure(e) =>
-            getRecordAspectById(
-              tenantId,
-              UnconditionalTrueDecision,
-              recordId,
-              aspectId
-            ) match {
-              case Some(aspect) => Success((aspect, None))
-              case None         => Failure(e)
-            }
-        }
-    }).flatMap { result =>
-      val oldAspect = result._1
-      val eventId = result._2
-      val finalAspectData = if (merge) {
-        JsonUtils.merge(oldAspect, newAspect)
-      } else {
-        newAspect
-      }
-
-      if (!forceSkipAspectValidation) {
-        // --- validate Aspect data against JSON schema
-        aspectValidator.validate(aspectId, finalAspectData, tenantId)(
-          session
-        )
-      }
-
-      // Diff the old record aspect and the new one
-      val oldAspectJson = oldAspect.toJson
-      val finalAspectDataJson = finalAspectData.toJson
-
-      val recordAspectPatch =
-        JsonDiff.diff(oldAspectJson, finalAspectDataJson, remember = false)
-
-      // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
-      // --- as the aspect data has been validated (unless not required)
-      patchRecordAspectById(
+      merge: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(JsObject, Long)] = {
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      val ensureAspectStep = createRecordAspect(
         tenantId,
         recordId,
         aspectId,
-        recordAspectPatch,
+        newAspect,
         userId,
-        true
-      ) match {
-        case Failure(e) => Failure(e)
-        case Success((aspectData, patchEventId)) =>
-          if (eventId.isDefined) {
-            Success(aspectData, Math.max(patchEventId, eventId.get))
-          } else {
-            Success(aspectData, patchEventId)
-          }
+        forceSkipAspectValidation,
+        dbConnection = dbConnection
+      ).map { result =>
+          val aspect = result._1
+          val eventId = result._2
+          (aspect, Some(eventId))
+        }
+        .recoverWith {
+          case e: ServerSqlError if e.constraintViolation =>
+            Try(
+              getRecordAspectById(
+                tenantId,
+                UnconditionalTrueDecision,
+                recordId,
+                aspectId
+              )
+            ).map { aspect =>
+              if (aspect.isEmpty) {
+                throw ServerSqlError(
+                  e.sqlException,
+                  Some(
+                    s"Encounter constraintViolation but cannot locate the aspect with id: ${aspectId} recordId: ${recordId}"
+                  )
+                )
+              } else {
+                (aspect.get, None)
+              }
+            }
+          case e: Throwable => throw e
+        }
+
+      ensureAspectStep.flatMap { result =>
+        val oldAspect = result._1
+        val eventId = result._2
+        val finalAspectData = if (merge) {
+          JsonUtils.merge(oldAspect, newAspect)
+        } else {
+          newAspect
+        }
+
+        if (!forceSkipAspectValidation) {
+          // --- validate Aspect data against JSON schema
+          aspectValidator.validate(aspectId, finalAspectData, tenantId)(
+            session
+          )
+        }
+
+        // Diff the old record aspect and the new one
+        val oldAspectJson = oldAspect.toJson
+        val finalAspectDataJson = finalAspectData.toJson
+
+        val recordAspectPatch =
+          JsonDiff.diff(oldAspectJson, finalAspectDataJson, remember = false)
+
+        // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+        // --- as the aspect data has been validated (unless not required)
+        patchRecordAspectById(
+          tenantId,
+          recordId,
+          aspectId,
+          recordAspectPatch,
+          userId,
+          true,
+          dbConnection = dbConnection
+        ) match {
+          case Failure(e) => Failure(e)
+          case Success((aspectData, patchEventId)) =>
+            if (eventId.isDefined) {
+              Success(aspectData, Math.max(patchEventId, eventId.get))
+            } else {
+              Success(aspectData, patchEventId)
+            }
+        }
       }
     }
+
   }
 
   def createRecord(
       tenantId: SpecifiedTenantId,
       record: Record,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[(Record, Long)] = {
-    for {
-
-      // --- validate aspects data against json schema
-      _ <- Try {
-        if (!forceSkipAspectValidation)
-          aspectValidator.validateAspects(record.aspects, tenantId)(
-            session
-          )
-      }
-
-      eventId <- Try {
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Record, Long)] = {
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      Try {
+        if (!forceSkipAspectValidation) {
+          // --- validate aspects data against json schema
+          aspectValidator.validateAspects(record.aspects, tenantId)
+        }
+        // process record fields
         val eventJson =
           CreateRecordEvent(
             record.id,
             tenantId.tenantId,
             record.name
           ).toJson.compactPrint
+
+        // return eventId
         sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
-      }
-      _ <- Try {
-        sql"""insert into Records (recordId, tenantId, name, lastUpdate, sourcetag) values (${record.id}, ${tenantId.tenantId}, ${record.name}, $eventId, ${record.sourceTag})""".update
-          .apply()
-      } match {
-        case Failure(e: SQLException)
-            if e.getSQLState.substring(0, 2) == "23" =>
-          Failure(
-            new RuntimeException(
-              s"Cannot create record '${record.id}' because a record with that ID already exists."
-            )
-          )
-        case anythingElse => anythingElse
-      }
-
-      // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
-      // --- as the aspect data has been validated (unless not required) in the beginning of current method
-      lastestEventId <- record.aspects
-        .map(
-          aspect =>
-            createRecordAspect(
-              tenantId,
-              record.id,
-              aspect._1,
-              aspect._2,
-              userId,
-              true
-            )(session)
-        )
-        .foldLeft(Try(eventId))((finalResult, result) => {
-          if (finalResult.isFailure) {
-            finalResult
-          } else {
-            result match {
-              case Failure(e) => Failure(e)
-              case Success((_, aspectEventId)) =>
-                Success(Math.max(finalResult.get, aspectEventId))
+      } flatMap { eventId =>
+        Try {
+          sql"""insert into Records (recordId, tenantId, name, lastUpdate, sourcetag) values (${record.id}, ${tenantId.tenantId}, ${record.name}, $eventId, ${record.sourceTag})""".update
+            .apply()
+          // pass along the eventId
+          eventId
+        } recover {
+          case e: SQLException =>
+            val error = ServerSqlError(e)
+            if (error.constraintViolation) {
+              throw error.withAltMsg(
+                s"Cannot create record '${record.id}' because a record with that ID already exists."
+              )
+            } else {
+              throw error
             }
-          }
-        })
-
-    } yield (record.copy(tenantId = Some(tenantId.tenantId)), lastestEventId)
+          case e => throw e
+        }
+      } flatMap { eventId =>
+        // --- process all record aspects
+        // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+        // --- as the aspect data has been validated (unless not required) in the beginning of current method
+        val lastestEventId = record.aspects
+          .map(
+            aspect =>
+              createRecordAspect(
+                tenantId,
+                record.id,
+                aspect._1,
+                aspect._2,
+                userId,
+                true,
+                // passing a db connection, so the function will reuse the existing transaction
+                // i.e. leave transaction handling to calling function
+                dbConnection
+              )
+          )
+          .foldLeft(Try(eventId))((finalResult, result) => {
+            if (finalResult.isFailure) {
+              finalResult
+            } else {
+              result match {
+                case Failure(e) => Failure(e)
+                case Success((_, aspectEventId)) =>
+                  Success(Math.max(finalResult.get, aspectEventId))
+              }
+            }
+          })
+        lastestEventId
+      } map { lastestEventId =>
+        (record.copy(tenantId = Some(tenantId.tenantId)), lastestEventId)
+      }
+    }
   }
 
   def deleteRecord(
       tenantId: SpecifiedTenantId,
       recordId: String,
-      userId: String
-  )(implicit session: DBSession): Try[(Boolean, Long)] = {
-    for {
-      aspects <- Try {
-        sql"select aspectId from RecordAspects where (recordId, tenantId)=($recordId, ${tenantId.tenantId})"
-          .map(rs => rs.string("aspectId"))
-          .list
-          .apply()
-      }
-      _ <- aspects
-        .map(
-          aspectId => deleteRecordAspect(tenantId, recordId, aspectId, userId)
-        )
-        .find(_.isFailure) match {
-        case Some(Failure(e)) => Failure(e)
-        case _                => Success(aspects)
-      }
-      rowsDeleted <- Try {
-        sql"""delete from Records where (recordId, tenantId)=($recordId, ${tenantId.tenantId})""".update
-          .apply()
-      }
-      eventId <- Try {
-        if (rowsDeleted > 0) {
-          // --- only generate event when the record did removed
-          val eventJson =
-            DeleteRecordEvent(recordId, tenantId.tenantId).toJson.compactPrint
-          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
+      userId: String,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Boolean, Long)] = {
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      for {
+        aspects <- Try {
+          sql"select aspectId from RecordAspects where (recordId, tenantId)=($recordId, ${tenantId.tenantId})"
+            .map(rs => rs.string("aspectId"))
+            .list
             .apply()
-        } else {
-          // --- No record has been deleted, return - as event ID
-          0L
         }
+        _ <- aspects
+          .map(
+            aspectId =>
+              deleteRecordAspect(
+                tenantId,
+                recordId,
+                aspectId,
+                userId,
+                dbConnection = dbConnection
+              )
+          )
+          .find(_.isFailure) match {
+          case Some(Failure(e)) => Failure(e)
+          case _                => Success(aspects)
+        }
+        rowsDeleted <- Try {
+          sql"""delete from Records where (recordId, tenantId)=($recordId, ${tenantId.tenantId})""".update
+            .apply()
+        }
+        eventId <- Try {
+          if (rowsDeleted > 0) {
+            // --- only generate event when the record did removed
+            val eventJson =
+              DeleteRecordEvent(recordId, tenantId.tenantId).toJson.compactPrint
+            sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
+              .apply()
+          } else {
+            // --- No record has been deleted, return - as event ID
+            0L
+          }
 
-      }
-    } yield (rowsDeleted > 0, eventId)
+        }
+      } yield (rowsDeleted > 0, eventId)
+    }
   }
 
   def deleteRecordAspectArrayItems(
@@ -1443,33 +1525,37 @@ class DefaultRecordPersistence(config: Config)
       jsonPath: String,
       jsonItems: Seq[JsValue],
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[(Boolean, Long)] = {
-    getRecordAspectById(
-      tenantId,
-      UnconditionalTrueDecision,
-      recordId,
-      aspectId
-    ).map { aspectData =>
-      val newAspectData = JsonUtils.deleteJsonArrayItemsByJsonPath(
-        aspectData,
-        jsonPath,
-        jsonItems
-      )
-      putRecordAspectById(
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Boolean, Long)] = {
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      getRecordAspectById(
         tenantId,
+        UnconditionalTrueDecision,
         recordId,
-        aspectId,
-        newAspectData.asJsObject,
-        userId,
-        forceSkipAspectValidation,
-        false
-      ).map { v =>
-        (true, v._2) // true and eventId
+        aspectId
+      ).map { aspectData =>
+        val newAspectData = JsonUtils.deleteJsonArrayItemsByJsonPath(
+          aspectData,
+          jsonPath,
+          jsonItems
+        )
+        putRecordAspectById(
+          tenantId,
+          recordId,
+          aspectId,
+          newAspectData.asJsObject,
+          userId,
+          forceSkipAspectValidation,
+          merge = false,
+          dbConnection = dbConnection
+        ).map { v =>
+          (true, v._2) // true and eventId
+        }
+      } match {
+        case Some(v) => v
+        case None    => Try(false, 0)
       }
-    } match {
-      case Some(v) => v
-      case None    => Try(false, 0)
     }
   }
 
@@ -1481,54 +1567,59 @@ class DefaultRecordPersistence(config: Config)
       jsonPath: String,
       jsonItems: Seq[JsValue],
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[Seq[Long]] = {
-    Try {
-      val noEmptyIds = recordIds.filter(!_.trim.isEmpty)
-      if (noEmptyIds.isEmpty) {
-        throw ServerError(
-          "there is no non-empty ids supplied via `recordIds` parameter.",
-          400
-        )
-      }
-      val result = getRecords(
-        tenantId,
-        authDecision,
-        Seq(),
-        Seq(),
-        None,
-        None,
-        Some(noEmptyIds.length),
-        Some(false),
-        List(Some(sqls"recordId in ($noEmptyIds)")),
-        None,
-        Some(noEmptyIds.length)
-      )
-      if (result.records.length != noEmptyIds.length) {
-        throw ServerError(
-          "You don't have permission to all records requested",
-          403
-        )
-      }
-    }.flatMap { _ =>
-      recordIds
-        .map(
-          id =>
-            deleteRecordAspectArrayItems(
-              tenantId,
-              id,
-              aspectId,
-              jsonPath,
-              jsonItems,
-              userId,
-              forceSkipAspectValidation
-            ).map(_._2)
-        )
-        .foldLeft(Try(Seq[Long]())) {
-          case (Success(result), Success(newItem)) => Success(result :+ newItem)
-          case (_, Failure(ex))                    => Failure(ex)
-          case (Failure(ex), _)                    => Failure(ex)
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[Seq[Long]] = {
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      Try {
+        val noEmptyIds = recordIds.filter(!_.trim.isEmpty)
+        if (noEmptyIds.isEmpty) {
+          throw ServerError(
+            "there is no non-empty ids supplied via `recordIds` parameter.",
+            400
+          )
         }
+        val result = getRecords(
+          tenantId,
+          authDecision,
+          Seq(),
+          Seq(),
+          None,
+          None,
+          Some(noEmptyIds.length),
+          Some(false),
+          List(Some(sqls"recordId in ($noEmptyIds)")),
+          None,
+          Some(noEmptyIds.length)
+        )
+        if (result.records.length != noEmptyIds.length) {
+          throw ServerError(
+            "You don't have permission to all records requested",
+            403
+          )
+        }
+      }.flatMap { _ =>
+        recordIds
+          .map(
+            id =>
+              deleteRecordAspectArrayItems(
+                tenantId,
+                id,
+                aspectId,
+                jsonPath,
+                jsonItems,
+                userId,
+                forceSkipAspectValidation,
+                dbConnection = dbConnection
+              ).map(_._2)
+          )
+          .foldLeft(Try(Seq[Long]())) {
+            case (Success(result), Success(newItem)) =>
+              Success(result :+ newItem)
+            case (_, Failure(ex)) => Failure(ex)
+            case (Failure(ex), _) => Failure(ex)
+          }
+      }
     }
   }
 
@@ -1537,45 +1628,59 @@ class DefaultRecordPersistence(config: Config)
       sourceTagToPreserve: String,
       sourceId: String,
       userId: String,
-      logger: Option[LoggingAdapter] = None
-  )(implicit session: DBSession): Try[Long] = {
-    val recordIds = Try {
-      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId) where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId and Records.tenantId = ${tenantId.tenantId}"
-        .map(rs => rs.string("recordId"))
-        .list
-        .apply()
-    }
+      logger: Option[LoggingAdapter] = None,
+      dbConnection: Option[DBConnection] = None
+  ): Try[Long] = {
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      // set longQueryTimeout
+      // please note, the session here is isolated.
+      // No need to reset `queryTimeout` to avoid the impact to the possible outter transaction
+      session.queryTimeout(longQueryTimeout)
+      val recordIds = Try {
+        sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId) where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId and Records.tenantId = ${tenantId.tenantId}"
+          .map(rs => rs.string("recordId"))
+          .list
+          .apply()
+      }
 
-    val result = recordIds match {
-      case Success(Nil) => Success(0L)
-      case Success(ids) =>
-        ids
-          .map(recordId => deleteRecord(tenantId, recordId, userId))
-          .foldLeft[Try[Long]](Success(0L))(
-            (trySoFar: Try[Long], thisTry: Try[(Boolean, Long)]) =>
-              (trySoFar, thisTry) match {
-                case (Success(countSoFar), Success((bool, eventId))) =>
-                  Success(countSoFar + (if (bool) 1 else 0))
-                case (Failure(err), _) => Failure(err)
-                case (_, Failure(err)) => Failure(err)
-              }
-          )
-      case Failure(err) => Failure(err)
-    }
+      val result = recordIds match {
+        case Success(Nil) => Success(0L)
+        case Success(ids) =>
+          ids
+            .map(
+              recordId =>
+                deleteRecord(
+                  tenantId,
+                  recordId,
+                  userId,
+                  dbConnection = dbConnection
+                )
+            )
+            .foldLeft[Try[Long]](Success(0L))(
+              (trySoFar: Try[Long], thisTry: Try[(Boolean, Long)]) =>
+                (trySoFar, thisTry) match {
+                  case (Success(countSoFar), Success((bool, eventId))) =>
+                    Success(countSoFar + (if (bool) 1 else 0))
+                  case (Failure(err), _) => Failure(err)
+                  case (_, Failure(err)) => Failure(err)
+                }
+            )
+        case Failure(err) => Failure(err)
+      }
 
-    result match {
-      case Success(count: Long) =>
-        if (logger.isDefined) {
-          logger.get.info(s"Trimmed $count records.")
-        }
-        Success(count)
-      case Failure(err) =>
-        if (logger.isDefined) {
-          logger.get.error(err, "Error happened when trimming records.")
-        }
-        Failure(err)
+      result match {
+        case Success(count: Long) =>
+          if (logger.isDefined) {
+            logger.get.info(s"Trimmed $count records.")
+          }
+          Success(count)
+        case Failure(err) =>
+          if (logger.isDefined) {
+            logger.get.error(err, "Error happened when trimming records.")
+          }
+          Failure(err)
+      }
     }
-
   }
 
   def createRecordAspect(
@@ -1584,61 +1689,69 @@ class DefaultRecordPersistence(config: Config)
       aspectId: String,
       aspect: JsObject,
       userId: String,
-      forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[(JsObject, Long)] = {
-    for {
+      forceSkipAspectValidation: Boolean = false,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(JsObject, Long)] = {
 
-      _ <- Try {
-        if (!forceSkipAspectValidation)
-          aspectValidator.validate(aspectId, aspect, tenantId)(session)
-      }
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      Try {
+        if (!forceSkipAspectValidation) {
+          aspectValidator.validate(aspectId, aspect, tenantId)
+        }
 
-      eventId <- Try {
         val eventJson = CreateRecordAspectEvent(
           recordId,
           tenantId.tenantId,
           aspectId,
           aspect
         ).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordAspectEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
-          .apply()
-      }
-      insertResult <- Try {
+
+        val eventId =
+          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordAspectEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
+            .apply()
         val jsonData = aspect.compactPrint
+
         sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data) values ($recordId, ${tenantId.tenantId}, $aspectId, $eventId, $jsonData::json)""".update
           .apply()
-        aspect
-      } match {
-        case Failure(e: SQLException)
-            if e.getSQLState.substring(0, 2) == "23" =>
-          Failure(
-            new RuntimeException(
+
+        val insertResult = aspect
+        (insertResult, eventId)
+      } recover {
+        case e: SQLException =>
+          val error = ServerSqlError(e)
+          if (error.constraintViolation) {
+            throw error.withAltMsg(
               s"Cannot create aspect '$aspectId' for record '$recordId' because the record or aspect does not exist, or because data already exists for that combination of record and aspect."
             )
-          )
-        case anythingElse => anythingElse
+          } else {
+            throw error
+          }
+        case e => throw e
       }
-    } yield (insertResult, eventId)
+    }
   }
 
   def deleteRecordAspect(
       tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String,
-      userId: String
-  )(implicit session: DBSession): Try[(Boolean, Long)] = {
-    for {
-      eventId <- Try {
-        val eventJson =
-          DeleteRecordAspectEvent(recordId, tenantId.tenantId, aspectId).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordAspectEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
-          .apply()
-      }
-      rowsDeleted <- Try {
-        sql"""delete from RecordAspects where (aspectId, recordId, tenantId)=($aspectId, $recordId, ${tenantId.tenantId})""".update
-          .apply()
-      }
-    } yield (rowsDeleted > 0, eventId)
+      userId: String,
+      dbConnection: Option[DBConnection] = None
+  ): Try[(Boolean, Long)] = {
+    SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+      for {
+        eventId <- Try {
+          val eventJson =
+            DeleteRecordAspectEvent(recordId, tenantId.tenantId, aspectId).toJson.compactPrint
+          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordAspectEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
+            .apply()
+        }
+        rowsDeleted <- Try {
+          sql"""delete from RecordAspects where (aspectId, recordId, tenantId)=($aspectId, $recordId, ${tenantId.tenantId})""".update
+            .apply()
+        }
+      } yield (rowsDeleted > 0, eventId)
+    }
   }
 
   def reconstructRecordFromEvents(

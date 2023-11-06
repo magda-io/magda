@@ -5847,18 +5847,15 @@ class RecordsServiceSpec extends ApiSpec {
               _: String,
               _: String,
               _: Option[LoggingAdapter]
-            )(
-              _: DBSession
             ))
-            .expects(*, *, *, *, *, *)
+            .expects(*, *, *, *, *)
             .onCall {
               (
                   _: SpecifiedTenantId,
                   _: String,
                   _: String,
                   _: String,
-                  _: Option[LoggingAdapter],
-                  _: DBSession
+                  _: Option[LoggingAdapter]
               ) =>
                 Thread.sleep(600)
                 Success(1)

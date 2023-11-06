@@ -20,19 +20,11 @@ import akka.http.scaladsl.server.{
 }
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.client.AuthApiClient
-import scalikejdbc.GlobalSettings
-import scalikejdbc.config.TypesafeConfig
-import scalikejdbc.config.TypesafeConfigReader
-import scalikejdbc.config.EnvPrefix
-import scalikejdbc.config.DBs
-import com.typesafe.config.{Config, ConfigValueFactory}
-import scalikejdbc.LoggingSQLAndTimeSettings
+import com.typesafe.config.{Config}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.DurationLong
 import scala.util.{Failure, Success, Try}
-import au.csiro.data61.magda.util.UrlUtils
 
 object RegistryApp extends App {
 

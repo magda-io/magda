@@ -8,11 +8,15 @@ import au.csiro.data61.magda.model.TenantId.{
 }
 import scalikejdbc._
 import scalikejdbc.interpolation.SQLSyntax
-import scalikejdbc.interpolation.SQLSyntax.{join}
+import scalikejdbc.interpolation.SQLSyntax.join
 
+import scala.util.Try
 import java.util.Locale.ENGLISH
+import au.csiro.data61.magda.AppConfig
 
 object SQLUtils {
+
+  private val config = AppConfig.conf()
 
   def toOrConditionOpt(conditions: Option[SQLSyntax]*): Option[SQLSyntax] = {
     val cs: Seq[SQLSyntax] = conditions.flatten
@@ -110,6 +114,63 @@ object SQLUtils {
           buildSqlQuery(sqls"= ${innerTenantId}")
         }
       case AllTenantsId => None
+    }
+  }
+
+  private val defaultQueryTimeout = config
+    .getDuration(
+      "db-query.default-timeout",
+      scala.concurrent.duration.SECONDS
+    )
+    .toInt
+
+  /**
+    * Execute a DB transaction job (txJob) with optional db connection supplied.
+    * When no db connection is supplied (None is supplied via dbConnection), we assume caller has not start a transaction yet.
+    * i.e. the caller has no intention to include this txJob as part of a bigger transaction.
+    * Thus, we will take care of transaction management here.
+    * When db connection is supplied by caller, we assume caller intends to include this txJob as part of a bigger transaction.
+    * Therefore, an existing transaction must be started and no transaction management is required here.
+    * Example:
+    *
+    * SQLUtils.withOptExistingTx(dbConnection) { implicit session =>
+    *   Try {
+    *     sql"insert into xxx (xx1, xx2, xx3, xx4) values (1, 2, 3, 4)".updateAndReturnGeneratedKey.apply()
+    *     // here `furtherDBOperation` should perform DB operation within SQLUtils.withOptExistingTx
+    *     // to make sure all DB operation involved are handled consistently
+    *     furtherDBOperation(dbConnection)
+    *   }
+    * }
+    *
+    * @param dbConnection
+    * @param txJob
+    * @tparam A
+    * @return
+    */
+  def withOptExistingTx[A](dbConnection: Option[DBConnection])(
+      txJob: DBSession => Try[A]
+  ): Try[A] = {
+    if (dbConnection.isEmpty) {
+      // db connection is not supplied
+      // we need to manage the transaction by ourselves
+      using(DB(ConnectionPool.borrow())) { db =>
+        db.begin()
+        val session = db.withinTxSession()
+        session.queryTimeout(this.defaultQueryTimeout)
+        val result = txJob(session).recover {
+          case e =>
+            db.rollbackIfActive()
+            throw e
+        }
+        db.close()
+        result
+      }
+    } else {
+      // leave the transaction management to the caller
+      // as txJob will be treated as part of a bigger transaction
+      val session = dbConnection.get.withinTxSession()
+      session.queryTimeout(this.defaultQueryTimeout)
+      txJob(session)
     }
   }
 }

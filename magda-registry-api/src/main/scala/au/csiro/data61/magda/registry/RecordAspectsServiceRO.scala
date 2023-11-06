@@ -15,7 +15,7 @@ import scalikejdbc.DB
 import au.csiro.data61.magda.model.Auth.{UnconditionalTrueDecision}
 import au.csiro.data61.magda.registry.Directives.requireRecordPermission
 import au.csiro.data61.magda.directives.RouteDirectives.completeBlockingTask
-import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
 
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(
@@ -115,7 +115,7 @@ class RecordAspectsServiceRO(
             "object/record/read",
             recordId
           ) {
-            withBlockingTask {
+            onCompleteBlockingTask {
               DB readOnly { implicit session =>
                 session.queryTimeout(this.defaultQueryTimeout)
                 recordPersistence

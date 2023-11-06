@@ -28,7 +28,6 @@ import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
 
 import javax.ws.rs.Path
-import scalikejdbc.DB
 import org.everit.json.schema.ValidationException
 import spray.json.JsObject
 
@@ -37,8 +36,8 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 import au.csiro.data61.magda.directives.CommonDirectives.{
-  withBlockingTask,
-  withBlockingTaskIn
+  onCompleteBlockingTask,
+  onCompleteBlockingTaskIn
 }
 
 @Path("/records")
@@ -61,20 +60,6 @@ class RecordsService(
     ) {
   val logger = Logging(system, getClass)
   implicit val ec: ExecutionContext = system.dispatcher
-
-  private val defaultQueryTimeout = config
-    .getDuration(
-      "db-query.default-timeout",
-      scala.concurrent.duration.SECONDS
-    )
-    .toInt
-
-  private val longQueryTimeout = config
-    .getDuration(
-      "db-query.long-query-timeout",
-      scala.concurrent.duration.SECONDS
-    )
-    .toInt
 
   /**
     * @apiGroup Registry Record Service
@@ -158,24 +143,22 @@ class RecordsService(
           )
         ) {
           requiresSpecifiedTenantId { tenantId =>
-            withBlockingTask {
-              val theResult = DB localTx { implicit session =>
-                session.queryTimeout(this.defaultQueryTimeout)
-                recordPersistence
-                  .deleteRecord(tenantId, recordId, userId) match {
-                  case Success(result) =>
-                    complete(
-                      StatusCodes.OK,
-                      List(RawHeader("x-magda-event-id", result._2.toString)),
-                      DeleteResult(result._1)
-                    )
-                  case Failure(exception) =>
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(exception.getMessage)
-                    )
-                }
+            onCompleteBlockingTask {
+              val theResult = recordPersistence
+                .deleteRecord(tenantId, recordId, userId) match {
+                case Success(result) =>
+                  complete(
+                    StatusCodes.OK,
+                    List(RawHeader("x-magda-event-id", result._2.toString)),
+                    DeleteResult(result._1)
+                  )
+                case Failure(exception) =>
+                  complete(
+                    StatusCodes.BadRequest,
+                    ApiError(exception.getMessage)
+                  )
               }
+
               webHookActor ! WebHookActor.Process()
               theResult
             }
@@ -274,20 +257,17 @@ class RecordsService(
           requiresSpecifiedTenantId { tenantId =>
             parameters('sourceTagToPreserve, 'sourceId) {
               (sourceTagToPreserve, sourceId) =>
-                withBlockingTaskIn("long-running-db-operation-dispatcher") {
+                onCompleteBlockingTaskIn("long-running-db-operation-dispatcher") {
                   val deleteFuture = Future {
                     // --- DB session needs to be created within the `Future`
                     // --- as the `Future` will keep running after timeout and require active DB session
-                    DB localTx { implicit session =>
-                      session.queryTimeout(this.longQueryTimeout)
-                      recordPersistence.trimRecordsBySource(
-                        tenantId,
-                        sourceTagToPreserve,
-                        sourceId,
-                        userId,
-                        Some(logger)
-                      )
-                    }
+                    recordPersistence.trimRecordsBySource(
+                      tenantId,
+                      sourceTagToPreserve,
+                      sourceId,
+                      userId,
+                      Some(logger)
+                    )
                   } map { result =>
                     webHookActor ! WebHookActor.Process()
                     result
@@ -428,45 +408,43 @@ class RecordsService(
                 Left(recordIn),
                 merge.getOrElse(false)
               ) {
-                withBlockingTask {
-                  val result = DB localTx { implicit session =>
-                    session.queryTimeout(this.defaultQueryTimeout)
-                    recordPersistence.putRecordById(
-                      tenantId,
-                      id,
-                      recordIn,
-                      userId,
-                      forceSkipAspectValidation = false,
-                      merge.getOrElse(false)
-                    ) match {
-                      case Success(result) =>
-                        complete(
-                          StatusCodes.OK,
-                          List(
-                            RawHeader("x-magda-event-id", result._2.toString)
-                          ),
-                          result._1
+                onCompleteBlockingTask {
+                  val result = recordPersistence.putRecordById(
+                    tenantId,
+                    id,
+                    recordIn,
+                    userId,
+                    forceSkipAspectValidation = false,
+                    merge.getOrElse(false)
+                  ) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        List(
+                          RawHeader("x-magda-event-id", result._2.toString)
+                        ),
+                        result._1
+                      )
+                    // If the exception is from validation then reveal the message to the caller,
+                    // otherwise log it and return something generic.
+                    case Failure(exception: ValidationException) =>
+                      complete(
+                        StatusCodes.BadRequest,
+                        ApiError(
+                          "Encountered an error - " + exception.getMessage
                         )
-                      // If the exception is from validation then reveal the message to the caller,
-                      // otherwise log it and return something generic.
-                      case Failure(exception: ValidationException) =>
-                        complete(
-                          StatusCodes.BadRequest,
-                          ApiError(
-                            "Encountered an error - " + exception.getMessage
-                          )
-                        )
-                      case Failure(exception) =>
-                        logger.error(
-                          exception,
-                          "Encountered an exception when putting a record"
-                        )
-                        complete(
-                          StatusCodes.InternalServerError,
-                          ApiError("Encountered an error")
-                        )
-                    }
+                      )
+                    case Failure(exception) =>
+                      logger.error(
+                        exception,
+                        "Encountered an exception when putting a record"
+                      )
+                      complete(
+                        StatusCodes.InternalServerError,
+                        ApiError("Encountered an error")
+                      )
                   }
+
                   webHookActor ! WebHookActor.Process(
                     ignoreWaitingForResponse = false,
                     Some(recordIn.aspects.keys.toList)
@@ -583,34 +561,32 @@ class RecordsService(
               id,
               Right(recordPatch)
             ) {
-              withBlockingTask {
-                val theResult = DB localTx { implicit session =>
-                  session.queryTimeout(this.defaultQueryTimeout)
-                  recordPersistence.patchRecordById(
-                    tenantId,
-                    id,
-                    recordPatch,
-                    userId
-                  ) match {
-                    case Success(result) =>
-                      complete(
-                        StatusCodes.OK,
-                        List(RawHeader("x-magda-event-id", result._2.toString)),
-                        result._1
-                      )
-                    case Failure(exception) =>
-                      logger.error(
-                        exception,
-                        "Exception encountered while PATCHing record {} with {}",
-                        id,
-                        recordPatch.toJson.prettyPrint
-                      )
-                      complete(
-                        StatusCodes.BadRequest,
-                        ApiError(exception.getMessage)
-                      )
-                  }
+              onCompleteBlockingTask {
+                val theResult = recordPersistence.patchRecordById(
+                  tenantId,
+                  id,
+                  recordPatch,
+                  userId
+                ) match {
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(RawHeader("x-magda-event-id", result._2.toString)),
+                      result._1
+                    )
+                  case Failure(exception) =>
+                    logger.error(
+                      exception,
+                      "Exception encountered while PATCHing record {} with {}",
+                      id,
+                      recordPatch.toJson.prettyPrint
+                    )
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(exception.getMessage)
+                    )
                 }
+
                 webHookActor ! WebHookActor
                   .Process()
                 theResult
@@ -712,33 +688,31 @@ class RecordsService(
             authClient,
             AuthDecisionReqConfig("object/record/update")
           ) { authDecision =>
-            withBlockingTask {
-              val result = DB localTx { implicit session =>
-                session.queryTimeout(this.defaultQueryTimeout)
-                recordPersistence.patchRecords(
-                  tenantId,
-                  authDecision,
-                  requestData.recordIds,
-                  requestData.jsonPath,
-                  userId
-                ) match {
-                  case Success(result) =>
-                    complete(
-                      StatusCodes.OK,
-                      result
-                    )
-                  case Failure(ServerError(msg, statusCode)) =>
-                    complete(
-                      statusCode,
-                      ApiError(msg)
-                    )
-                  case Failure(e) =>
-                    complete(
-                      StatusCodes.InternalServerError,
-                      ApiError(e.getMessage)
-                    )
-                }
+            onCompleteBlockingTask {
+              val result = recordPersistence.patchRecords(
+                tenantId,
+                authDecision,
+                requestData.recordIds,
+                requestData.jsonPath,
+                userId
+              ) match {
+                case Success(result) =>
+                  complete(
+                    StatusCodes.OK,
+                    result
+                  )
+                case Failure(ServerError(msg, statusCode)) =>
+                  complete(
+                    statusCode,
+                    ApiError(msg)
+                  )
+                case Failure(e) =>
+                  complete(
+                    StatusCodes.InternalServerError,
+                    ApiError(e.getMessage)
+                  )
               }
+
               webHookActor ! WebHookActor
                 .Process()
               result
@@ -839,36 +813,34 @@ class RecordsService(
                 authClient,
                 AuthDecisionReqConfig("object/record/update")
               ) { authDecision =>
-                withBlockingTask {
-                  val result = DB localTx { implicit session =>
-                    session.queryTimeout(this.defaultQueryTimeout)
-                    recordPersistence.putRecordsAspectById(
-                      tenantId,
-                      authDecision,
-                      requestData.recordIds,
-                      aspectId,
-                      requestData.data,
-                      userId,
-                      false,
-                      merge.getOrElse(false)
-                    ) match {
-                      case Success(result) =>
-                        complete(
-                          StatusCodes.OK,
-                          result
-                        )
-                      case Failure(ServerError(msg, statusCode)) =>
-                        complete(
-                          statusCode,
-                          ApiError(msg)
-                        )
-                      case Failure(e) =>
-                        complete(
-                          StatusCodes.InternalServerError,
-                          ApiError(e.getMessage)
-                        )
-                    }
+                onCompleteBlockingTask {
+                  val result = recordPersistence.putRecordsAspectById(
+                    tenantId,
+                    authDecision,
+                    requestData.recordIds,
+                    aspectId,
+                    requestData.data,
+                    userId,
+                    false,
+                    merge.getOrElse(false)
+                  ) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        result
+                      )
+                    case Failure(ServerError(msg, statusCode)) =>
+                      complete(
+                        statusCode,
+                        ApiError(msg)
+                      )
+                    case Failure(e) =>
+                      complete(
+                        StatusCodes.InternalServerError,
+                        ApiError(e.getMessage)
+                      )
                   }
+
                   webHookActor ! WebHookActor
                     .Process()
                   result
@@ -962,35 +934,33 @@ class RecordsService(
               authClient,
               AuthDecisionReqConfig("object/record/update")
             ) { authDecision =>
-              withBlockingTask {
-                val result = DB localTx { implicit session =>
-                  session.queryTimeout(this.defaultQueryTimeout)
-                  recordPersistence.deleteRecordsAspectArrayItems(
-                    tenantId,
-                    authDecision,
-                    requestData.recordIds,
-                    aspectId,
-                    requestData.jsonPath,
-                    requestData.items,
-                    userId
-                  ) match {
-                    case Success(result) =>
-                      complete(
-                        StatusCodes.OK,
-                        result
-                      )
-                    case Failure(ServerError(msg, statusCode)) =>
-                      complete(
-                        statusCode,
-                        ApiError(msg)
-                      )
-                    case Failure(e) =>
-                      complete(
-                        StatusCodes.InternalServerError,
-                        ApiError(e.getMessage)
-                      )
-                  }
+              onCompleteBlockingTask {
+                val result = recordPersistence.deleteRecordsAspectArrayItems(
+                  tenantId,
+                  authDecision,
+                  requestData.recordIds,
+                  aspectId,
+                  requestData.jsonPath,
+                  requestData.items,
+                  userId
+                ) match {
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      result
+                    )
+                  case Failure(ServerError(msg, statusCode)) =>
+                    complete(
+                      statusCode,
+                      ApiError(msg)
+                    )
+                  case Failure(e) =>
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError(e.getMessage)
+                    )
                 }
+
                 webHookActor ! WebHookActor
                   .Process()
                 result
@@ -1090,26 +1060,24 @@ class RecordsService(
                 )
               )
             ) {
-              withBlockingTask {
-                val result = DB localTx { implicit session =>
-                  session.queryTimeout(this.defaultQueryTimeout)
-                  recordPersistence
-                    .createRecord(tenantId, record, userId) match {
-                    case Success(theResult) =>
-                      complete(
-                        StatusCodes.OK,
-                        List(
-                          RawHeader("x-magda-event-id", theResult._2.toString)
-                        ),
-                        theResult._1
-                      )
-                    case Failure(exception) =>
-                      complete(
-                        StatusCodes.BadRequest,
-                        ApiError(exception.getMessage)
-                      )
-                  }
+              onCompleteBlockingTask {
+                val result = recordPersistence
+                  .createRecord(tenantId, record, userId) match {
+                  case Success(theResult) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(
+                        RawHeader("x-magda-event-id", theResult._2.toString)
+                      ),
+                      theResult._1
+                    )
+                  case Failure(exception) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(exception.getMessage)
+                    )
                 }
+
                 webHookActor ! WebHookActor.Process(
                   ignoreWaitingForResponse = false,
                   Some(record.aspects.keys.toList)
