@@ -37,7 +37,7 @@ import scala.concurrent.duration._
 import scala.concurrent.Await
 
 import au.csiro.data61.magda.directives.RouteDirectives.completeBlockingTask
-import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
 
 @Path("/hooks")
 @io.swagger.annotations.Api(value = "web hooks", produces = "application/json")
@@ -369,7 +369,7 @@ class HooksService(
               )
             )
           ) {
-            withBlockingTask {
+            onCompleteBlockingTask {
               val result = DB localTx { implicit session =>
                 HookPersistence.create(hook, Some(userId)) match {
                   case Success(theResult) => complete(theResult)
@@ -464,7 +464,7 @@ class HooksService(
         authApiClient,
         AuthDecisionReqConfig("object/webhook/read")
       ) { authDecision =>
-        withBlockingTask {
+        onCompleteBlockingTask {
           DB readOnly { implicit session =>
             HookPersistence.getById(id, authDecision)
           } match {
@@ -638,7 +638,7 @@ class HooksService(
             id,
             hook
           ) {
-            withBlockingTask {
+            onCompleteBlockingTask {
               val result = DB localTx { implicit session =>
                 HookPersistence.putById(id, hook, Some(userId)) match {
                   case Success(theResult) => complete(theResult)
@@ -739,7 +739,7 @@ class HooksService(
           ) & pass
         })
       ) {
-        withBlockingTask {
+        onCompleteBlockingTask {
           val result = DB localTx { implicit session =>
             HookPersistence.delete(hookId) match {
               case Success(result) =>
@@ -833,7 +833,7 @@ class HooksService(
     path(Segment / "ack") { id: String =>
       requireWebhookPermission(authClient, "object/webhook/ack", id) {
         entity(as[WebHookAcknowledgement]) { acknowledgement =>
-          withBlockingTask {
+          onCompleteBlockingTask {
             val result = DB localTx { implicit session =>
               HookPersistence
                 .acknowledgeRaisedHook(id, acknowledgement) match {

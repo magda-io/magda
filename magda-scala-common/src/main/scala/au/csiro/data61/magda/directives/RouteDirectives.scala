@@ -19,4 +19,12 @@ object RouteDirectives {
       complete(Future(m)(blockingExeCtx))
     })
 
+  def completeBlockingTaskIn(
+      dispatcherId: String
+  )(m: => ToResponseMarshallable): StandardRoute =
+    StandardRoute(extractActorSystem.tapply { t =>
+      val blockingExeCtx = t._1.dispatchers.lookup(dispatcherId)
+      complete(Future(m)(blockingExeCtx))
+    })
+
 }

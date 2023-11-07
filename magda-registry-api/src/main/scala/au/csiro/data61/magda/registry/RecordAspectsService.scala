@@ -25,7 +25,7 @@ import spray.json.JsObject
 
 import scala.util.{Failure, Success}
 
-import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
 
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(
@@ -165,7 +165,7 @@ class RecordAspectsService(
                   Left(aspect),
                   merge.getOrElse(false)
                 ) {
-                  withBlockingTask {
+                  onCompleteBlockingTask {
                     val theResult = DB localTx { implicit session =>
                       session.queryTimeout(this.defaultQueryTimeout)
                       recordPersistence.putRecordAspectById(
@@ -275,7 +275,7 @@ class RecordAspectsService(
           // we will not implement aspect level auth for now
           requireDeleteRecordAspectPermission(authClient, recordId, aspectId) {
             requiresSpecifiedTenantId { tenantId =>
-              withBlockingTask {
+              onCompleteBlockingTask {
                 val theResult = DB localTx { implicit session =>
                   session.queryTimeout(this.defaultQueryTimeout)
                   recordPersistence.deleteRecordAspect(
@@ -399,7 +399,7 @@ class RecordAspectsService(
                 aspectId,
                 Right(aspectPatch)
               ) {
-                withBlockingTask {
+                onCompleteBlockingTask {
                   val theResult = DB localTx { implicit session =>
                     session.queryTimeout(this.defaultQueryTimeout)
                     recordPersistence.patchRecordAspectById(

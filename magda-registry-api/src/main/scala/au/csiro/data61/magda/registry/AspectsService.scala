@@ -24,7 +24,7 @@ import spray.json.JsObject
 
 import scala.util.{Failure, Success}
 
-import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
 
 class AspectsService(
     config: Config,
@@ -108,7 +108,7 @@ class AspectsService(
               input =
                 Some(JsObject("object" -> JsObject("aspect" -> aspect.toJson)))
             ) {
-              withBlockingTask {
+              onCompleteBlockingTask {
                 val theResult = DB localTx { session =>
                   session.queryTimeout(this.defaultQueryTimeout)
                   AspectPersistence
@@ -229,7 +229,7 @@ class AspectsService(
                 id,
                 Left(aspect)
               ) {
-                withBlockingTask {
+                onCompleteBlockingTask {
                   val theResult = DB localTx { session =>
                     session.queryTimeout(this.defaultQueryTimeout)
                     AspectPersistence.putById(id, aspect, tenantId, userId)(
@@ -351,7 +351,7 @@ class AspectsService(
               id,
               Right(aspectPatch)
             ) {
-              withBlockingTask {
+              onCompleteBlockingTask {
                 val theResult = DB localTx { session =>
                   session.queryTimeout(this.defaultQueryTimeout)
                   AspectPersistence
