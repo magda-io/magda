@@ -25,7 +25,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 import au.csiro.data61.magda.directives.RouteDirectives.completeBlockingTask
-import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
 
 /**
   * @apiGroup Registry Record History
