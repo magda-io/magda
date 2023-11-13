@@ -2,12 +2,12 @@ import express from "express";
 import { Router } from "express";
 import urijs from "urijs";
 import escapeStringRegexp from "escape-string-regexp";
-
-import buildJwt from "magda-typescript-common/src/session/buildJwt";
-
 import createBaseProxy from "./createBaseProxy";
 import Authenticator from "./Authenticator";
 import { TenantMode } from "./setupTenantMode";
+import buildJwtFromReq from "magda-typescript-common/src/session/buildJwtFromReq";
+import createApiAccessControlMiddleware from "./createApiAccessControlMiddleware";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 
 export type ProxyTarget = DetailedProxyTarget | string;
 export type MethodWithProxyTaget = {
@@ -32,6 +32,7 @@ export interface GenericProxyRouterOptions {
     tenantMode: TenantMode;
     defaultCacheControl?: string;
     proxyTimeout?: number;
+    authClient: AuthDecisionQueryClient;
 }
 
 /**
@@ -68,6 +69,7 @@ export default function createGenericProxyRouter(
 
     const authenticator = options.authenticator;
     const jwtSecret = options.jwtSecret;
+    const authClient = options.authClient;
 
     const router: Router = express.Router();
 
@@ -75,7 +77,7 @@ export default function createGenericProxyRouter(
         if (jwtSecret && req.user) {
             proxyReq.setHeader(
                 "X-Magda-Session",
-                buildJwt(jwtSecret, req.user.id, { session: req.user.session })
+                buildJwtFromReq(req, jwtSecret)
             );
         }
     });
@@ -85,12 +87,24 @@ export default function createGenericProxyRouter(
         target: string,
         verbs: ProxyMethodType[] = ["all"],
         auth = false,
-        redirectTrailingSlash = false
+        redirectTrailingSlash = false,
+        accessControl = false
     ) {
-        console.log("PROXY", baseRoute, target, verbs);
+        console.log(
+            "PROXY",
+            baseRoute,
+            target,
+            verbs,
+            "auth:",
+            auth,
+            "accessControl: ",
+            accessControl,
+            "redirectTrailingSlash: ",
+            redirectTrailingSlash
+        );
         const routeRouter: any = express.Router();
 
-        if (authenticator && auth) {
+        if (authenticator && (auth || accessControl)) {
             authenticator.applyToRoute(routeRouter);
         }
 
@@ -98,6 +112,12 @@ export default function createGenericProxyRouter(
             if (typeof verb === "string") {
                 routeRouter[verb.toLowerCase()](
                     "*",
+                    createApiAccessControlMiddleware(
+                        authClient,
+                        baseRoute,
+                        jwtSecret,
+                        accessControl
+                    ),
                     (req: express.Request, res: express.Response) => {
                         proxy.web(req, res, { target });
                     }
@@ -113,6 +133,12 @@ export default function createGenericProxyRouter(
                     typeof verb?.target === "string" ? verb.target : target;
                 routeRouter[method](
                     "*",
+                    createApiAccessControlMiddleware(
+                        authClient,
+                        baseRoute,
+                        jwtSecret,
+                        accessControl
+                    ),
                     (req: express.Request, res: express.Response) => {
                         proxy.web(req, res, { target: runtimeTarget });
                     }

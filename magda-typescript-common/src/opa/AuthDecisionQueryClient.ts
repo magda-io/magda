@@ -38,6 +38,13 @@ class AuthDecisionQueryClient {
         config: AuthDecisionReqConfig,
         jwtToken?: string
     ): Promise<AuthDecision> {
+        if (this.authApiBaseUrl === "") {
+            const msg =
+                "AuthDecisionQueryClient is not configured with authApiBaseUrl!";
+            console.error(msg);
+            throw new Error(msg);
+        }
+
         if (this.skipQuery) {
             console.warn(
                 "WARNING: return unconditional true as Skip OPA (policy engine) querying option is turned on!"
