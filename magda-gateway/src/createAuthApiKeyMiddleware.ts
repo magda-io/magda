@@ -27,12 +27,26 @@ const createAuthApiKeyMiddleware = (
     next: NextFunction
 ) => {
     try {
-        const apiKey = req.header("X-Magda-API-Key");
-        const apiKeyId = req.header("X-Magda-API-Key-Id");
+        let apiKey = req.header("X-Magda-API-Key");
+        let apiKeyId = req.header("X-Magda-API-Key-Id");
 
         if (!apiKey && !apiKeyId) {
-            // --- headers not present. proceed to other middlewares
-            return next();
+            // allow supplying apikey & apiKeyId via bearer token in format: "Bearer [apiKeyId]:[apikey]"
+            const bearerToken = req
+                .header("Authorization")
+                ?.replace(/^Bearer\s+/, "");
+            if (!bearerToken) {
+                // --- no bearer token. proceed to other middlewares
+                return next();
+            }
+            const bearerTokenParts = bearerToken.split(":");
+            if (bearerTokenParts?.length === 2) {
+                apiKeyId = bearerTokenParts[0];
+                apiKey = bearerTokenParts[1];
+            } else {
+                // --- bearerToken is in invalid format. proceed to other middlewares
+                return next();
+            }
         }
 
         if (!apiKeyId || !isUUID.anyNonNil(apiKeyId)) {
