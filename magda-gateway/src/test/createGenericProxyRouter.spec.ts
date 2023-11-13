@@ -11,6 +11,10 @@ import setupTenantMode from "../setupTenantMode";
 import createGenericProxyRouter from "../createGenericProxyRouter";
 import { expect } from "chai";
 
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+
+const dummyAuthClient = sinon.createStubInstance(AuthDecisionQueryClient);
+
 describe("createGenericProxyRouter", () => {
     const defaultTenantMode = setupTenantMode({
         enableMultiTenants: false
@@ -35,7 +39,8 @@ describe("createGenericProxyRouter", () => {
             routes: {
                 "test-route": "http://test-route.com"
             },
-            tenantMode: defaultTenantMode
+            tenantMode: defaultTenantMode,
+            authClient: dummyAuthClient
         });
 
         const app = express();
@@ -73,7 +78,8 @@ describe("createGenericProxyRouter", () => {
                     methods: ["get", "post"]
                 }
             },
-            tenantMode: defaultTenantMode
+            tenantMode: defaultTenantMode,
+            authClient: dummyAuthClient
         });
 
         const app = express();
@@ -112,7 +118,8 @@ describe("createGenericProxyRouter", () => {
                     methods: ["all"]
                 }
             },
-            tenantMode: defaultTenantMode
+            tenantMode: defaultTenantMode,
+            authClient: dummyAuthClient
         });
 
         const app = express();
@@ -169,7 +176,8 @@ describe("createGenericProxyRouter", () => {
                     ]
                 }
             },
-            tenantMode: defaultTenantMode
+            tenantMode: defaultTenantMode,
+            authClient: dummyAuthClient
         });
 
         const app = express();
@@ -218,7 +226,8 @@ describe("createGenericProxyRouter", () => {
             routes: {
                 "test-route": "http://test-route.com"
             },
-            tenantMode: defaultTenantMode
+            tenantMode: defaultTenantMode,
+            authClient: dummyAuthClient
         });
 
         const app = express();
@@ -250,7 +259,8 @@ describe("createGenericProxyRouter", () => {
                     methods: ["get", "post"]
                 }
             },
-            tenantMode: defaultTenantMode
+            tenantMode: defaultTenantMode,
+            authClient: dummyAuthClient
         });
 
         const app = express();
@@ -345,7 +355,8 @@ describe("createGenericProxyRouter", () => {
                     methods: ["get", "post"]
                 }
             },
-            tenantMode: defaultTenantMode
+            tenantMode: defaultTenantMode,
+            authClient: dummyAuthClient
         });
 
         const app = express();

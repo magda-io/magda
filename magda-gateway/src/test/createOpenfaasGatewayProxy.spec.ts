@@ -100,7 +100,8 @@ describe("Test createOpenfaasGatewayProxy", () => {
                     jwtSecret,
                     tenantMode,
                     authenticator: mockAuthenticator,
-                    routes: {}
+                    routes: {},
+                    authClient: authDecisionClient
                 }
             })
         );
