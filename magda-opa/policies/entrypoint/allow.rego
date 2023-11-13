@@ -131,3 +131,15 @@ allow {
     startswith(input.operationUri, "authObject/user/")
     data.authObject.user.allow
 }
+
+allow {
+    startswith(input.operationUri, "api/indexer/")
+    data.api.indexer.allow
+}
+
+allow {
+    # allow all other api calls to generic gateway level enforcement policy based on HTTP request path & method
+    startswith(input.operationUri, "api/")
+    startswith(input.operationUri, "api/indexer/") != true
+    data.api.allow
+}
