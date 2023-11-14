@@ -32,19 +32,15 @@ class AuthDecisionQueryClient {
                 "WARNING: Skip OPA (policy engine) querying option is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
             );
         }
+        if (!this.skipQuery && !this.authApiBaseUrl) {
+            throw new Error("Auth API base URL is required");
+        }
     }
 
     async getAuthDecision(
         config: AuthDecisionReqConfig,
         jwtToken?: string
     ): Promise<AuthDecision> {
-        if (this.authApiBaseUrl === "") {
-            const msg =
-                "AuthDecisionQueryClient is not configured with authApiBaseUrl!";
-            console.error(msg);
-            throw new Error(msg);
-        }
-
         if (this.skipQuery) {
             console.warn(
                 "WARNING: return unconditional true as Skip OPA (policy engine) querying option is turned on!"
