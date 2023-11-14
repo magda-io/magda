@@ -218,7 +218,7 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
             return testResult;
         }
 
-        it("Shoud forward req to API routes with correct X-Magda-Session header", async () => {
+        it("Should forward req to API routes with correct X-Magda-Session header", async () => {
             const request = setupTestApp({
                 proxyRoutesJson: {
                     "dummy-api-endpoint": {

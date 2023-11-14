@@ -14,7 +14,7 @@ const createApiAccessControlMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    if (!!enabled) {
+    if (!enabled) {
         return next();
     }
     try {
