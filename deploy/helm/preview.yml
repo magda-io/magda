@@ -18,6 +18,16 @@ tags:
   priorities: false
   connectors: true
 
+llm-api-proxy:
+  service:
+    name: llm-api
+  routes: |
+    llmRoutes: 
+      * -> setRequestHeader("Authorization", "Bearer qizrup-dewxeb-8pUfqe") 
+        -> setPath("/v1${request.path}")
+        -> preserveHost("false")
+        -> "https://api-ai4m-p11.hostallm.com";
+
 magda:
   openfaas:
     operator: 
@@ -56,6 +66,10 @@ magda:
           # the following two domains are for downloading Magda UI plugins from github release
           - github.com
           - objects.githubusercontent.com
+      additionalRoutes:
+        llm-api:
+          to: http://llm-api
+          accessControl: true
 
     combined-db:
       magda-postgres:

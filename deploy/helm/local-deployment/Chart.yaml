@@ -8,6 +8,11 @@ dependencies:
     version: 2.3.2
     repository: "file://../magda"
 
+  - name: skipper
+    alias: llm-api-proxy
+    version: "1.0.0"
+    repository: "oci://ghcr.io/magda-io/charts"
+
   - name: magda-auth-google
     version: "2.0.1"
     repository: "oci://ghcr.io/magda-io/charts"
