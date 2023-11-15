@@ -244,7 +244,58 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
             });
         });
 
-        it("Shoud response 401 with incorrect X-Magda-API-Key", async () => {
+        it("Should forward req to API routes with API Key passing as bearer token", async () => {
+            const request = setupTestApp({
+                proxyRoutesJson: {
+                    "dummy-api-endpoint": {
+                        to: dummyApiBaseUrl,
+                        auth: true,
+                        statusCheck: false
+                    }
+                },
+                enableWebAccessControl: false
+            });
+
+            let result = await testAllMethod(
+                request,
+                {
+                    Authorization: `Bearer ${mockApiKeyId}:${mockApiKey}`
+                },
+                200
+            );
+
+            TEST_METHODS.forEach((method) => {
+                expect(result[method]).to.equal(mockApiUserToken.id);
+            });
+
+            // testing lowercase bearer
+            result = await testAllMethod(
+                request,
+                {
+                    Authorization: `bearer ${mockApiKeyId}:${mockApiKey}`
+                },
+                200
+            );
+
+            TEST_METHODS.forEach((method) => {
+                expect(result[method]).to.equal(mockApiUserToken.id);
+            });
+
+            // testing lowercase authorization
+            result = await testAllMethod(
+                request,
+                {
+                    authorization: `Bearer ${mockApiKeyId}:${mockApiKey}`
+                },
+                200
+            );
+
+            TEST_METHODS.forEach((method) => {
+                expect(result[method]).to.equal(mockApiUserToken.id);
+            });
+        });
+
+        it("Should response 401 with incorrect X-Magda-API-Key", async () => {
             const request = setupTestApp({
                 proxyRoutesJson: {
                     "dummy-api-endpoint": {
