@@ -34,7 +34,7 @@ const createAuthApiKeyMiddleware = (
             // allow supplying apikey & apiKeyId via bearer token in format: "Bearer [apiKeyId]:[apikey]"
             const bearerToken = req
                 .header("Authorization")
-                ?.replace(/^Bearer\s+/, "");
+                ?.replace(/^Bearer\s+/i, "");
             if (!bearerToken) {
                 // --- no bearer token. proceed to other middlewares
                 return next();

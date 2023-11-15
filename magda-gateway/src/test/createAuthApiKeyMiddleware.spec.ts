@@ -221,4 +221,128 @@ describe("createAuthApiKeyMiddleware", () => {
 
         expect(res.body.msg).to.equal(testMsg);
     });
+
+    it("should request auth api for verifying API key (as bearer token) correctly (GET Request)", async () => {
+        const apiKeyId = uuidv4();
+        const apiKey = "API_KEY_" + Math.random();
+        const userId = uuidv4();
+        const testMsg = "TEST_MSG_" + Math.random();
+
+        let app;
+        app = express();
+        app = buildApp(app, defaultAppOptions);
+
+        nock("http://registry-api-read-only")
+            .get("/v0/records")
+            .times(3)
+            .reply(function (this: any, uri, body) {
+                const reqUserId = getUserIdFromNockReq(
+                    this.req,
+                    defaultAppOptions.jwtSecret
+                );
+                expect(reqUserId).to.equal(userId);
+                return [200, { msg: testMsg }];
+            });
+
+        nock("http://auth-api")
+            .get("/private/users/apikey/" + apiKeyId)
+            .times(3)
+            .reply(function (this: any, uri, body) {
+                const curApiKeyHeader = this.req.headers[
+                    "X-Magda-API-Key".toLowerCase()
+                ];
+                const curApiKey = curApiKeyHeader?.length
+                    ? curApiKeyHeader[0]
+                    : curApiKeyHeader;
+
+                expect(curApiKey).to.equal(apiKey);
+
+                return [200, { id: userId }];
+            });
+
+        let res = await supertest(app)
+            .get("/api/v0/registry/records")
+            .set("Authorization", `Bearer ${apiKeyId}:${apiKey}`)
+            .expect(200);
+
+        expect(res.body.msg).to.equal(testMsg);
+
+        // testing lowercase bearer
+        res = await supertest(app)
+            .get("/api/v0/registry/records")
+            .set("Authorization", `bearer ${apiKeyId}:${apiKey}`)
+            .expect(200);
+
+        expect(res.body.msg).to.equal(testMsg);
+
+        // testing lowercase authorization
+        res = await supertest(app)
+            .get("/api/v0/registry/records")
+            .set("authorization", `bearer ${apiKeyId}:${apiKey}`)
+            .expect(200);
+
+        expect(res.body.msg).to.equal(testMsg);
+    });
+
+    it("should request auth api for verifying API key (as bearer token) correctly (POST Request)", async () => {
+        const apiKeyId = uuidv4();
+        const apiKey = "API_KEY_" + Math.random();
+        const userId = uuidv4();
+        const testMsg = "TEST_MSG_" + Math.random();
+
+        let app;
+        app = express();
+        app = buildApp(app, defaultAppOptions);
+
+        nock("http://registry-api")
+            .post("/v0/records")
+            .times(3)
+            .reply(function (this: any, uri, body) {
+                const reqUserId = getUserIdFromNockReq(
+                    this.req,
+                    defaultAppOptions.jwtSecret
+                );
+                expect(reqUserId).to.equal(userId);
+                return [200, { msg: testMsg }];
+            });
+
+        nock("http://auth-api")
+            .get("/private/users/apikey/" + apiKeyId)
+            .times(3)
+            .reply(function (this: any, uri, body) {
+                const curApiKeyHeader = this.req.headers[
+                    "X-Magda-API-Key".toLowerCase()
+                ];
+                const curApiKey = curApiKeyHeader?.length
+                    ? curApiKeyHeader[0]
+                    : curApiKeyHeader;
+
+                expect(curApiKey).to.equal(apiKey);
+
+                return [200, { id: userId }];
+            });
+
+        let res = await supertest(app)
+            .post("/api/v0/registry/records")
+            .set("Authorization", `Bearer ${apiKeyId}:${apiKey}`)
+            .expect(200);
+
+        expect(res.body.msg).to.equal(testMsg);
+
+        // testing lowercase bearer
+        res = await supertest(app)
+            .post("/api/v0/registry/records")
+            .set("Authorization", `bearer ${apiKeyId}:${apiKey}`)
+            .expect(200);
+
+        expect(res.body.msg).to.equal(testMsg);
+
+        // testing lowercase authorization
+        res = await supertest(app)
+            .post("/api/v0/registry/records")
+            .set("authorization", `bearer ${apiKeyId}:${apiKey}`)
+            .expect(200);
+
+        expect(res.body.msg).to.equal(testMsg);
+    });
 });

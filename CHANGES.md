@@ -4,6 +4,7 @@
 
 - #3495: fixed gateway might throw unhandled ERR_HTTP_HEADERS_SENT errors when proxy requests
 - #3492: fixed webhook actors shouldn't use default dispatcher even with default config & code refactoring
+- Allow passing Magda API key as bearer token via Authorization header
 
 ## v2.3.2
 
