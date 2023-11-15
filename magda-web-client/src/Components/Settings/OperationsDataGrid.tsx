@@ -113,8 +113,8 @@ const OperationsDataGrid: FunctionComponent<PropsType> = (props) => {
                         appearance="primary"
                         onClick={() => {
                             operationFormRef?.current?.open(
-                                undefined,
                                 resourceId,
+                                undefined,
                                 () => setDataReloadToken(`${Math.random()}`)
                             );
                         }}
@@ -181,8 +181,9 @@ const OperationsDataGrid: FunctionComponent<PropsType> = (props) => {
                                             icon={<MdBorderColor />}
                                             onClick={() =>
                                                 operationFormRef?.current?.open(
+                                                    (rowData as any)
+                                                        .resource_id,
                                                     (rowData as any).id,
-                                                    undefined,
                                                     () =>
                                                         setDataReloadToken(
                                                             `${Math.random()}`

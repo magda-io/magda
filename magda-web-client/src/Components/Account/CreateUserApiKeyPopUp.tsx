@@ -174,7 +174,7 @@ const CreateUserApiKeyPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                             <List.Item>
                                 <span>Authorization</span>:{" "}
                                 <span>
-                                    {apiKeyCreationResult?.id}:
+                                    Bearer {apiKeyCreationResult?.id}:
                                     {apiKeyCreationResult?.key}
                                 </span>
                             </List.Item>
