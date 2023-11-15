@@ -19,6 +19,7 @@ export interface DetailedProxyTarget {
     to: string;
     methods?: ProxyMethodType[];
     auth?: boolean;
+    accessControl?: boolean;
     redirectTrailingSlash?: boolean;
     statusCheck?: boolean;
 }
@@ -189,8 +190,9 @@ export default function createGenericProxyRouter(
                 path,
                 target.to,
                 target.methods,
-                !!target.auth,
-                target.redirectTrailingSlash
+                !!target?.auth,
+                target.redirectTrailingSlash,
+                !!target?.accessControl
             );
         });
 

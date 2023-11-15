@@ -23,7 +23,7 @@ const createApiAccessControlMiddleware = (
                 ? baseRoute + req.path.substring(1)
                 : baseRoute + req.path;
         const apiRequestMethod = req.method.toUpperCase();
-        const operationUri = `api/${
+        const operationUri = `api${
             apiRequestPath[apiRequestPath.length - 1] === "/"
                 ? apiRequestPath + apiRequestMethod
                 : apiRequestPath + "/" + apiRequestMethod

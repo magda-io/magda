@@ -11,7 +11,14 @@ import setupTenantMode from "../setupTenantMode";
 import createGenericProxyRouter from "../createGenericProxyRouter";
 import { expect } from "chai";
 
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import AuthDecisionQueryClient, {
+    AuthDecisionReqConfig
+} from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import {
+    UnconditionalFalseDecision,
+    UnconditionalTrueDecision
+} from "magda-typescript-common/src/opa/AuthDecision";
+import { getUserId } from "magda-typescript-common/src/session/GetUserId";
 
 const dummyAuthClient = sinon.createStubInstance(AuthDecisionQueryClient);
 
@@ -22,6 +29,222 @@ describe("createGenericProxyRouter", () => {
 
     afterEach(() => {
         nock.cleanAll();
+    });
+
+    it("should make session available with accessControl=true even auth=false", async () => {
+        let isApplyToRouteCalled = false;
+
+        const dummyAuthenticator = sinon.createStubInstance(Authenticator);
+
+        dummyAuthenticator.applyToRoute = () => {
+            isApplyToRouteCalled = true;
+        };
+
+        const dummyAuthClient = sinon.createStubInstance(
+            AuthDecisionQueryClient
+        );
+        dummyAuthClient.getAuthDecision = () =>
+            Promise.resolve(UnconditionalTrueDecision);
+
+        const router = createGenericProxyRouter({
+            authenticator: dummyAuthenticator,
+            jwtSecret: "xxx",
+            routes: {
+                "test-route": {
+                    to: "http://test-route.com",
+                    accessControl: true
+                }
+            },
+            tenantMode: defaultTenantMode,
+            authClient: dummyAuthClient
+        });
+
+        const app = express();
+        app.use(router);
+
+        const scope = nock("http://test-route.com").get("/").reply(200);
+
+        await supertest(app).get("/test-route").expect(200);
+        expect(scope.isDone()).to.be.true;
+
+        // auth should be turn on when accessControl is on (even auth = false)
+        expect(isApplyToRouteCalled).to.be.true;
+    });
+
+    it("should respond 403 when accessControl=true auth decision is not allowed", async () => {
+        let isApplyToRouteCalled = false;
+
+        const dummyAuthenticator = sinon.createStubInstance(Authenticator);
+
+        dummyAuthenticator.applyToRoute = () => {
+            isApplyToRouteCalled = true;
+        };
+
+        const dummyAuthClient = sinon.createStubInstance(
+            AuthDecisionQueryClient
+        );
+        dummyAuthClient.getAuthDecision = () =>
+            Promise.resolve(UnconditionalFalseDecision);
+
+        const router = createGenericProxyRouter({
+            authenticator: dummyAuthenticator,
+            jwtSecret: "xxx",
+            routes: {
+                "test-route": {
+                    to: "http://test-route.com",
+                    accessControl: true
+                }
+            },
+            tenantMode: defaultTenantMode,
+            authClient: dummyAuthClient
+        });
+
+        const app = express();
+        app.use(router);
+
+        const scope = nock("http://test-route.com").get("/").reply(200);
+
+        await supertest(app).get("/test-route").expect(403);
+        expect(scope.isDone()).to.be.false;
+
+        // auth should be turn on when accessControl is on (even auth = false)
+        expect(isApplyToRouteCalled).to.be.true;
+    });
+
+    it("should consult policy engine correctly when accessControl=true (GET request)", async () => {
+        const jwtSecret = "xxxxxxxx" + Math.random().toString();
+        const userId = Math.ceil(Math.random() * 1000).toString();
+        let isApplyToRouteCalled = false;
+
+        const dummyAuthenticator = sinon.createStubInstance(Authenticator);
+
+        dummyAuthenticator.applyToRoute = (router: express.Router) => {
+            isApplyToRouteCalled = true;
+            router.use((req, res, next) => {
+                req.user = {
+                    id: userId
+                };
+                next();
+            });
+        };
+
+        const dummyAuthClient = sinon.createStubInstance(
+            AuthDecisionQueryClient
+        );
+        let opaQueryConfig: AuthDecisionReqConfig;
+        let opaJwtTokenUserId: string | null;
+        dummyAuthClient.getAuthDecision = (
+            config: AuthDecisionReqConfig,
+            jwtToken: string
+        ) => {
+            opaQueryConfig = config;
+            opaJwtTokenUserId = getUserId(
+                {
+                    header: () => jwtToken
+                } as any,
+                jwtSecret
+            ).valueOr(null);
+            return Promise.resolve(UnconditionalTrueDecision);
+        };
+
+        const router = createGenericProxyRouter({
+            authenticator: dummyAuthenticator,
+            jwtSecret,
+            routes: {
+                "test-route": {
+                    to: "http://test-route.com",
+                    accessControl: true
+                }
+            },
+            tenantMode: defaultTenantMode,
+            authClient: dummyAuthClient
+        });
+
+        const app = express();
+        app.use(router);
+
+        const scope = nock("http://test-route.com")
+            .get("/endpoint1")
+            .reply(200);
+
+        await supertest(app).get("/test-route/endpoint1").expect(200);
+        expect(scope.isDone()).to.be.true;
+
+        expect(isApplyToRouteCalled).to.be.true;
+
+        expect(opaQueryConfig.operationUri).to.equal(
+            "api/test-route/endpoint1/GET"
+        );
+
+        expect(opaJwtTokenUserId).to.equal(userId);
+    });
+
+    it("should consult policy engine correctly when accessControl=true (POST request)", async () => {
+        const jwtSecret = "xxxxxxxx" + Math.random().toString();
+        const userId = Math.ceil(Math.random() * 1000).toString();
+        let isApplyToRouteCalled = false;
+
+        const dummyAuthenticator = sinon.createStubInstance(Authenticator);
+
+        dummyAuthenticator.applyToRoute = (router: express.Router) => {
+            isApplyToRouteCalled = true;
+            router.use((req, res, next) => {
+                req.user = {
+                    id: userId
+                };
+                next();
+            });
+        };
+
+        const dummyAuthClient = sinon.createStubInstance(
+            AuthDecisionQueryClient
+        );
+        let opaQueryConfig: AuthDecisionReqConfig;
+        let opaJwtTokenUserId: string | null;
+        dummyAuthClient.getAuthDecision = (
+            config: AuthDecisionReqConfig,
+            jwtToken: string
+        ) => {
+            opaQueryConfig = config;
+            opaJwtTokenUserId = getUserId(
+                {
+                    header: () => jwtToken
+                } as any,
+                jwtSecret
+            ).valueOr(null);
+            return Promise.resolve(UnconditionalTrueDecision);
+        };
+
+        const router = createGenericProxyRouter({
+            authenticator: dummyAuthenticator,
+            jwtSecret,
+            routes: {
+                "test-route": {
+                    to: "http://test-route.com",
+                    accessControl: true
+                }
+            },
+            tenantMode: defaultTenantMode,
+            authClient: dummyAuthClient
+        });
+
+        const app = express();
+        app.use(router);
+
+        const scope = nock("http://test-route.com")
+            .post("/records/456/all")
+            .reply(200);
+
+        await supertest(app).post("/test-route/records/456/all").expect(200);
+        expect(scope.isDone()).to.be.true;
+
+        expect(isApplyToRouteCalled).to.be.true;
+
+        expect(opaQueryConfig.operationUri).to.equal(
+            "api/test-route/records/456/all/POST"
+        );
+
+        expect(opaJwtTokenUserId).to.equal(userId);
     });
 
     it("should accept url string as target proxy definition item", async () => {
