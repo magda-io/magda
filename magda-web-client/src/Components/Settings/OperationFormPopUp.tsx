@@ -90,7 +90,7 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     const model = Schema.Model({
         uri: Schema.Types.StringType(),
         localUri: Schema.Types.StringType().pattern(
-            /^[a-zA-Z0-9-]+(\/[a-zA-Z0-9-*]+)*$/g,
+            /^[a-zA-Z0-9-*]+(\/[a-zA-Z0-9-*]+)*$/,
             "Please enter a valid format (alphanumeric characters plus `*` and `-` with `/` as segment separator)."
         ),
         hasPopulateLocalUri: Schema.Types.BooleanType(),
@@ -143,7 +143,6 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                 );
                 if (resource) {
                     setOperation((state) => {
-                        debugger;
                         const newState = {
                             ...state,
                             resourceUri: resource.uri
@@ -185,7 +184,6 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                     return;
                 }
                 setOperation((state) => {
-                    debugger;
                     const newState = {
                         ...state,
                         ...operationRecord
@@ -262,8 +260,6 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
         }
     });
 
-    console.log("operation: ", operation);
-
     return (
         <Modal
             className="update-operation-form"
@@ -277,7 +273,7 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                     {isCreateForm ? "Create Operation" : "Update Operation"}
                 </Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body style={{ minHeight: "100px" }}>
                 {loadingOperation ? (
                     <Placeholder.Paragraph rows={8}>
                         <Loader center content="loading" />
