@@ -2,6 +2,7 @@ import { OperationRecord } from "@magda/typescript-common/dist/authorization-api
 import {
     createOperation,
     getResOperationsById,
+    getResourceById,
     updateOperation
 } from "api-clients/AuthApis";
 import isEmpty from "lodash/isEmpty";
@@ -18,11 +19,11 @@ import Button from "rsuite/Button";
 import Form, { FormInstance } from "rsuite/Form";
 import Input, { InputProps } from "rsuite/Input";
 import Loader from "rsuite/Loader";
-import Message from "rsuite/Message";
 import Modal from "rsuite/Modal";
 import Placeholder from "rsuite/Placeholder";
 import Schema from "rsuite/Schema";
 import reportError from "../../helpers/reportError";
+import InputGroup from "rsuite/InputGroup";
 
 interface TextareaInputProps extends InputProps {
     rows?: number;
@@ -31,18 +32,41 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaInputProps>(
     (props, ref) => <Input {...props} as="textarea" ref={ref} />
 );
 
+interface OpUriInputProps extends InputProps {
+    resourceUri?: string;
+    loading?: boolean;
+}
+
+const OpUriInput = React.forwardRef((props: OpUriInputProps, ref) => {
+    const { resourceUri, loading, ...restProps } = props;
+    return (
+        <InputGroup style={{ width: "auto" }}>
+            <InputGroup.Addon>
+                {loading ? <Loader /> : resourceUri ? resourceUri + "/" : ""}
+            </InputGroup.Addon>
+            {loading ? null : <Input {...restProps} ref={ref as any} />}
+        </InputGroup>
+    );
+});
+
 type PropsType = {};
 
 type UpdateCompleteHandlerType = (submittedOperationId: string) => void;
 
 export type RefType = {
     open: (
+        resourceId: string,
         operationId?: string,
-        resourceId?: string,
         onComplete?: UpdateCompleteHandlerType
     ) => void;
     close: () => void;
 };
+
+interface OperationRecordUIType extends OperationRecord {
+    localUri?: string;
+    localUriHasManualInput?: boolean;
+    resourceUri?: string;
+}
 
 const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     props,
@@ -50,7 +74,9 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
 ) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [operationId, setOperationId] = useState<string>();
-    const [operation, setOperation] = useState<OperationRecord>();
+    const [operation, setOperation] = useState<Partial<OperationRecordUIType>>(
+        {}
+    );
     const [resourceId, setResourceId] = useState<string>();
     const [formError, setFormError] = useState({});
     // we might want to force reload the operation on open in avoid obsolete data.
@@ -62,12 +88,12 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     const isCreateForm = operationId ? false : true;
 
     const model = Schema.Model({
-        uri: Schema.Types.StringType()
-            .isRequired("This field is required.")
-            .pattern(
-                /^[a-zA-Z0-9]+(\/[a-zA-Z0-9]+)*$/g,
-                "Please enter a valid format."
-            ),
+        uri: Schema.Types.StringType(),
+        localUri: Schema.Types.StringType().pattern(
+            /^[a-zA-Z0-9-*]+(\/[a-zA-Z0-9-*]+)*$/,
+            "Please enter a valid format (alphanumeric characters plus `*` and `-` with `/` as segment separator)."
+        ),
+        hasPopulateLocalUri: Schema.Types.BooleanType(),
         name: Schema.Types.StringType().isRequired("This field is required."),
         description: Schema.Types.StringType()
     });
@@ -81,12 +107,14 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
 
     useImperativeHandle(ref, () => ({
         open: (
+            resourceId: string,
             operationId?: string,
-            resourceId?: string,
             onComplete?: UpdateCompleteHandlerType
         ) => {
             onCompleteRef.current = onComplete;
             operationId = operationId?.trim();
+            resourceId = resourceId?.trim();
+            setOperation({});
             setOperationId(operationId);
             setResourceId(resourceId);
             setDataReloadToken(`${Math.random()}`);
@@ -96,30 +124,86 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     }));
 
     const validateForm = (): boolean => {
-        if (formRef?.current?.check && !formRef.current.check()) {
+        if (!formRef?.current?.check?.()) {
             return false;
         }
         return true;
     };
 
-    // load operation record data to prefill the form by id
-    const {
-        loading: loadingOperation,
-        error: loadingOperationError
-    } = useAsync(
-        async (operationId?: string, dataReloadToken?: string) => {
-            if (!operationId) {
-                setOperation(undefined);
-            } else {
-                const operations = await getResOperationsById(
-                    operationId as string,
+    // load resource record data to prefill resourceUri
+    const { loading: loadingResource } = useAsync(
+        async (resourceId?: string, dataReloadToken?: string) => {
+            try {
+                if (!resourceId) {
+                    return;
+                }
+                const resource = await getResourceById(
+                    resourceId as string,
                     true
                 );
-                if (operations) {
-                    setOperation(operations);
-                } else {
-                    setOperation(undefined);
+                if (resource) {
+                    setOperation((state) => {
+                        const newState = {
+                            ...state,
+                            resourceUri: resource.uri
+                        };
+
+                        if (
+                            !newState?.localUriHasManualInput &&
+                            newState?.resourceUri &&
+                            newState?.uri
+                        ) {
+                            newState.localUri = newState.uri.replace(
+                                newState.resourceUri + "/",
+                                ""
+                            );
+                        }
+                        return newState;
+                    });
                 }
+            } catch (e) {
+                reportError(
+                    `Failed to load resource data by ID: ${resourceId} Error:${e}`
+                );
+            }
+        },
+        [resourceId, operationId, dataReloadToken]
+    );
+
+    // load required data to prefill the form by id
+    const { loading: loadingOperation } = useAsync(
+        async (operationId?: string, dataReloadToken?: string) => {
+            try {
+                if (!operationId) {
+                    return;
+                }
+                const operationRecord = await getResOperationsById<
+                    OperationRecordUIType
+                >(operationId as string, true);
+                if (!operationRecord) {
+                    return;
+                }
+                setOperation((state) => {
+                    const newState = {
+                        ...state,
+                        ...operationRecord
+                    };
+                    if (
+                        !newState?.localUriHasManualInput &&
+                        newState?.resourceUri &&
+                        newState?.uri
+                    ) {
+                        newState.localUri = newState.uri.replace(
+                            newState.resourceUri + "/",
+                            ""
+                        );
+                    }
+                    return newState;
+                });
+            } catch (e) {
+                reportError(
+                    `Failed to load operation data with ID ${operationId}: ${e}`
+                );
             }
         },
         [operationId, dataReloadToken]
@@ -127,11 +211,24 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
 
     const submitData = useAsyncCallback(async () => {
         try {
+            if (!operation?.resourceUri) {
+                throw new Error("Invalid empty resource uri!");
+            }
             const {
                 id,
                 resource_id,
+                localUri,
+                localUriHasManualInput,
+                resourceUri,
                 ...operationData
-            } = operation as OperationRecord;
+            } = operation as OperationRecordUIType;
+
+            if (!localUri) {
+                throw new Error("Invalid empty operation local uri!");
+            }
+
+            operationData.uri = resourceUri + "/" + localUri;
+
             if (operationId) {
                 await updateOperation(operationId as string, operationData);
                 setIsOpen(false);
@@ -176,16 +273,11 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                     {isCreateForm ? "Create Operation" : "Update Operation"}
                 </Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body style={{ minHeight: "100px" }}>
                 {loadingOperation ? (
                     <Placeholder.Paragraph rows={8}>
                         <Loader center content="loading" />
                     </Placeholder.Paragraph>
-                ) : loadingOperationError ? (
-                    <Message showIcon type="error" header="Error">
-                        Failed to retrieve the operation record:{" "}
-                        {`${loadingOperationError}`}
-                    </Message>
                 ) : (
                     <>
                         {submitData.loading ? (
@@ -214,8 +306,22 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                             URI:
                                         </Form.ControlLabel>
                                         <Form.Control
-                                            name="uri"
+                                            accepter={OpUriInput}
+                                            resourceUri={operation?.resourceUri}
+                                            loading={
+                                                loadingResource ||
+                                                loadingOperation
+                                            }
+                                            name="localUri"
                                             placeholder="_/_"
+                                            onChange={(v) => {
+                                                if (v?.trim?.()) {
+                                                    setOperation((state) => ({
+                                                        ...state,
+                                                        localUriHasManualInput: true
+                                                    }));
+                                                }
+                                            }}
                                         />
                                         <Form.HelpText>
                                             {`Input should be in a directory

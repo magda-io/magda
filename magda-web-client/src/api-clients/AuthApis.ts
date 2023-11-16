@@ -408,8 +408,11 @@ export async function queryResourcesCount(
     return res?.count ? res.count : 0;
 }
 
-export async function getResourceById(resId: string, noCache: boolean = false) {
-    return await getRequest<ResourceRecord>(
+export async function getResourceById<T = ResourceRecord>(
+    resId: string,
+    noCache: boolean = false
+): Promise<T> {
+    return await getRequest<T>(
         getAbsoluteUrl(
             `resources/${encodeURIComponent(resId)}`,
             config.authApiBaseUrl
@@ -418,11 +421,11 @@ export async function getResourceById(resId: string, noCache: boolean = false) {
     );
 }
 
-export async function getResourceByUri(
+export async function getResourceByUri<T = ResourceRecord>(
     resUri: string,
     noCache: boolean = false
-) {
-    return await getRequest<ResourceRecord>(
+): Promise<T> {
+    return await getRequest<T>(
         getAbsoluteUrl(`resources/byUri/${resUri}`, config.authApiBaseUrl),
         noCache
     );
@@ -508,11 +511,11 @@ export async function queryResOperationsCount(
     return res?.count ? res.count : 0;
 }
 
-export async function getResOperationsById(
+export async function getResOperationsById<T = OperationRecord>(
     resOperationId: string,
     noCache: boolean = false
-) {
-    return await getRequest<OperationRecord>(
+): Promise<T> {
+    return await getRequest<T>(
         getAbsoluteUrl(
             `operations/${encodeURIComponent(resOperationId)}`,
             config.authApiBaseUrl

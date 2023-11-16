@@ -165,6 +165,20 @@ const CreateUserApiKeyPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                 <span>{apiKeyCreationResult?.key}</span>
                             </List.Item>
                         </List>
+                        <Message showIcon type="info">
+                            You can also send Magda API key & API key ID as
+                            Bearer token in Authorization header to perform API
+                            calls on behalf of yourself:
+                        </Message>
+                        <List bordered>
+                            <List.Item>
+                                <span>Authorization</span>:{" "}
+                                <span>
+                                    Bearer {apiKeyCreationResult?.id}:
+                                    {apiKeyCreationResult?.key}
+                                </span>
+                            </List.Item>
+                        </List>
                     </>
                 ) : (
                     <>
