@@ -6,6 +6,7 @@
 - #3492: fixed webhook actors shouldn't use default dispatcher even with default config & code refactoring
 - #3493: Allow user to manage the access to gateway proxied APIs
 - Allow passing Magda API key as bearer token via Authorization header
+- Allow `*` & `-` characters in resource & operation management UI
 
 ## v2.3.2
 
