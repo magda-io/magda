@@ -6,38 +6,16 @@
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
-    "dev": "pancake && yarn build-polyfills && yarn run start",
-    "prepare": "pancake",
+    "dev": "yarn build-polyfills && yarn run start",
     "start": "craco start",
     "build2": "react-scripts build",
-    "build": "pancake && yarn build-polyfills && CI=false GENERATE_SOURCEMAP=false craco build",
+    "build": "yarn build-polyfills && CI=false GENERATE_SOURCEMAP=false craco build",
     "build-polyfills": "webpack --mode production --config polyfill-bundle.config.js",
     "test": "craco test --react-scripts ../node_modules/react-scripts",
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer 'build/static/js/*.js'"
   },
   "dependencies": {
-    "@gov.au/accordion": "^7.0.7",
-    "@gov.au/animate": "^1.0.0",
-    "@gov.au/body": "^2.1.1",
-    "@gov.au/breadcrumbs": "^3.0.4",
-    "@gov.au/buttons": "^3.0.6",
-    "@gov.au/control-input": "^3.0.1",
-    "@gov.au/core": "^3.2.0",
-    "@gov.au/cta-link": "^2.1.9",
-    "@gov.au/footer": "^3.0.3",
-    "@gov.au/grid-12": "^2.0.5",
-    "@gov.au/header": "^4.1.11",
-    "@gov.au/link-list": "^3.0.5",
-    "@gov.au/page-alerts": "^2.1.2",
-    "@gov.au/pancake": "^1.4.1",
-    "@gov.au/pancake-json": "^1.2.0",
-    "@gov.au/pancake-react": "^1.3.0",
-    "@gov.au/pancake-sass": "^2.3.7",
-    "@gov.au/select": "^2.0.10",
-    "@gov.au/skip-link": "^2.0.15",
-    "@gov.au/tags": "^3.1.6",
-    "@gov.au/text-inputs": "^2.0.11",
     "leaflet": "^0.7.7",
     "react-icons": "^4.3.1"
   },
@@ -175,49 +153,6 @@
     "ie 11",
     "chrome 41"
   ],
-  "pancake": {
-    "auto-save": true,
-    "plugins": true,
-    "ignore": [],
-    "json": {
-      "enable": true,
-      "location": "src/pancake/",
-      "name": "pancake",
-      "content": {
-        "name": true,
-        "version": true,
-        "dependencies": true,
-        "path": true,
-        "settings": true
-      }
-    },
-    "css": {
-      "minified": true,
-      "modules": false,
-      "browsers": [
-        "last 2 versions",
-        "ie 8",
-        "ie 9",
-        "ie 10"
-      ],
-      "location": "src/pancake/css/",
-      "name": false
-    },
-    "sass": {
-      "modules": true,
-      "location": "src/pancake/sass/",
-      "name": "pancake.scss"
-    },
-    "js": {
-      "minified": true,
-      "modules": false,
-      "location": "src/pancake/js/",
-      "name": "pancake.min.js"
-    },
-    "react": {
-      "location": "src/pancake/react/"
-    }
-  },
   "config": {
     "docker": {
       "include": "node_modules build package.json"

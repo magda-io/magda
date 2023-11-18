@@ -25,7 +25,6 @@
     "pretty-quick": "^2.0.1",
     "rimraf": "^3.0.0",
     "ts-module-alias-transformer": "^1.0.4",
-    "@gov.au/pancake-sass": "^2.3.7",
     "typescript": "~4.2.4",
     "type-fest": "~2.18.0"
   },
@@ -44,52 +43,9 @@
     "create-secrets": "create-secrets",
     "start-opa": "opa run deploy/helm/internal-charts/opa/policies",
     "test-opa": "opa test deploy/helm/internal-charts/opa/policies -v",
-    "clean": "rm -rf pancake magda-web-client/src/pancake; rm -rf ./node_modules; for dir in magda-*; do echo \"Removing node_modules from $dir\"; rm -rf $dir/node_modules; done",
+    "clean": "rm -rf ./node_modules; for dir in magda-*; do echo \"Removing node_modules from $dir\"; rm -rf $dir/node_modules; done",
     "update-all-charts": "cd deploy && yarn update-all-charts && cd ..",
     "set-version": "lerna version --no-push --force-publish"
-  },
-  "pancake": {
-    "auto-save": true,
-    "plugins": true,
-    "ignore": [],
-    "json": {
-      "enable": false,
-      "location": "pancake/",
-      "name": "pancake",
-      "content": {
-        "name": true,
-        "version": true,
-        "dependencies": true,
-        "path": true,
-        "settings": true
-      }
-    },
-    "css": {
-      "minified": true,
-      "modules": false,
-      "browsers": [
-        "last 2 versions",
-        "ie 8",
-        "ie 9",
-        "ie 10"
-      ],
-      "location": "pancake/css/",
-      "name": "pancake.min.css"
-    },
-    "sass": {
-      "modules": false,
-      "location": "pancake/sass/",
-      "name": "pancake.scss"
-    },
-    "js": {
-      "minified": true,
-      "modules": false,
-      "location": "pancake/js/",
-      "name": "pancake.min.js"
-    },
-    "react": {
-      "location": "pancake/react/"
-    }
   },
   "husky": {
     "hooks": {
