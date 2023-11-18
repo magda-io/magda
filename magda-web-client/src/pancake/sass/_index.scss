@@ -1,0 +1,583 @@
+/**
+ * Sass versioning
+ *
+ * @description  Version your scss modules and test them at compile time
+ * @author       @dominikwilkowski
+ * @website      https://dominikwilkowski.github.io/sass-versioning/sassdoc/
+ * @repository   https://github.com/dominikwilkowski/sass-versioning
+ * @license      https://raw.githubusercontent.com/dominikwilkowski/sass-versioning/master/LICENSE GPL-3.0
+ */
+
+/// Logic for adding versioning to the global list `$versioning-glob-dependencies`
+///
+/// @param  {String}  $name          Name of the module adding this dependency
+/// @param  {String}  $version       Version of the module adding this dependency
+/// @param  {List}    $dependencies  Dependencies of this module
+///
+/// @example scss
+/// 	$name: "accordion";
+/// 	$version: "1.0.0";
+/// 	$dependencies: (
+/// 		("core", "2.0.0"),
+/// 		("grid", "1.0.0"),
+/// 	);
+///
+/// 	@include versioning-add( $name, $version, $dependencies );
+///
+/// @output The variable `$versioning-glob-dependencies` will be populated with the items that have been passed
+///
+/// @group Main
+///
+/// @access public
+@mixin versioning-add( $name, $version, $dependencies ) {
+	//checking types
+	@if type-of( $name ) != "string" {
+		@error "The first attribute of the versioning-add mixin needs to be a string. It's currently a #{ type-of( $name ) }";
+	}
+
+	@if type-of( $version ) != "string" {
+		@error "The second attribute of the versioning-add mixin needs to be a string. It's currently a #{ type-of( $name ) }";
+	}
+
+	@if not valid( $version ) {
+		@error "The version '#{ $version }'' is not a valid semver version."
+	}
+
+	@if type-of( $dependencies ) != "list" {
+		@error "The third attribute of the versioning-add mixin needs to be a string. It's currently a #{ type-of( $name ) }";
+	}
+
+	//adding to global var
+	$versioning-glob-dependencies: () !default;
+	$item: (
+		( $name, $version, $dependencies )
+	);
+
+	$versioning-glob-dependencies: append( $versioning-glob-dependencies, $item ) !global;
+}
+
+
+/// Logic for removing a single dependency from our list if that dependency e.g. doesn’t have a sass presence
+///
+/// @param  {String}  $name  Name of the module adding this dependency
+///
+/// @example scss
+/// 	@include versioning-remove( 'animation' );
+///
+/// @output The variable `$versioning-glob-dependencies` will be stripped off our dependency
+///
+/// @group Main
+///
+/// @access public
+@mixin versioning-remove( $remove ) {
+	$versioning-glob-dependencies-new: ();
+
+	//iterate over our dependencies
+	@for $i from 1 through length( $versioning-glob-dependencies ) {
+		$item: nth( $versioning-glob-dependencies, $i );
+		$name: "#{nth( $item, 1 )}";
+		$version: "#{nth( $item, 2 )}";
+		$dependencies: nth( $item, 3 );
+		$dependencies-new: ();
+
+		@if( length( $dependencies ) > 0 ) {
+			@for $o from 1 through length( $dependencies ) {
+				$dependency: nth( $dependencies, $o );
+
+				@if length( $dependency ) > 1 {
+					$dependency-name: nth($dependency, 1);
+
+					//only add the dependency if it’s not the one we’re trying to remove
+					@if $dependency-name != $remove {
+						$dependencies-new: append( $dependencies-new, $dependency );
+					}
+				}
+			}
+		}
+
+		//adding the whole pack into the list
+		$item-new: (
+			( $name, $version, $dependencies-new )
+		);
+
+		$versioning-glob-dependencies-new: append( $versioning-glob-dependencies-new, $item-new );
+	}
+
+	//now overwriting the new list with the old one
+	$versioning-glob-dependencies: $versioning-glob-dependencies-new !global;
+}
+
+
+/// Testing if all dependencies inside `$versioning-glob-dependencies` are satisfied
+///
+/// @example scss
+/// 	@include versioning-check();
+///
+/// @group Main
+///
+/// @access public
+@mixin versioning-check() {
+
+	//iterating over each module inside $versioning-glob-dependencies
+	@for $i from 1 through length( $versioning-glob-dependencies ) {
+		$item: nth( $versioning-glob-dependencies, $i );
+		$name: "#{nth( $item, 1 )}";
+		$version: "#{nth( $item, 2 )}";
+		$dependencies: nth( $item, 3 );
+
+		//iterating over the dependencies of this module
+		@if( length( $dependencies ) > 0 ) {
+			@for $o from 1 through length( $dependencies ) {
+				$dependency: nth( $dependencies, $o );
+
+				//does this module even have dependencies?
+				@if length( $dependency ) > 1 {
+					$_found: false; //we have to assume the worst
+					$dependency-name: nth($dependency, 1);
+					$dependency-version: nth($dependency, 2);
+
+					//iterate over all dependencies again to check if we have what is required
+					@for $o from 1 through length( $versioning-glob-dependencies ) {
+						$check-item: nth( $versioning-glob-dependencies, $o );
+						$check-name: "#{nth( $check-item, 1 )}";
+						$check-version: "#{nth( $check-item, 2 )}";
+
+						//we found the item we depend on
+						@if $check-name == $dependency-name {
+							$_found: true; //ok we found the module
+
+							//this is the version we need
+							//let's convert our version string into integer for each section major, minor and patch
+							$dependency-major: major( $dependency-version );
+							$dependency-minor: minor( $dependency-version );
+							$dependency-patch: patch( $dependency-version );
+
+							//this is the version we found to have in our module list installed
+							//let's convert our version string into integer for each section major, minor and patch
+							$check-major: major( $check-version );
+							$check-minor: minor( $check-version );
+							$check-patch: patch( $check-version );
+
+							//handling errors
+							//[dependency-major](required version) > [check-major](version that is present)
+							@if
+								$dependency-major != $check-major or
+								$dependency-major == $check-major and $dependency-minor > $check-minor or
+								$dependency-major == $check-major and $dependency-patch > $check-patch
+							{
+								@error 'The module "#{$name}" requires "#{$dependency-name}" v#{$dependency-version}. But "#{$check-name}" v#{$check-version} included.'
+							}
+						}
+					}
+
+					@if $_found == false {
+						@error 'The module "#{$name}" requires "#{$dependency-name}" v#{$dependency-version}. But the dependency is missing entirely';
+					}
+				}
+			}
+
+		}
+	}
+}/// Remove leading `v` or `=` from $version, as well as spaces
+/// @param {String} $version
+/// @return {String}
+/// @example scss
+///   $version: clean('v1.2.3');
+///   -> '1.2.3'
+@function clean($version) {
+  $version: _trim($version);
+
+  @if index('v' '=', str-slice($version, 1, 1)) {
+    @return clean(str-slice($version, 2));
+  }
+
+  @return $version;
+}
+/// Pass in a comparison string, and it will call the corresponding function.
+/// @param {String} $v1
+/// @param {String} $comparator
+/// @param {String} $v2
+/// @return {Boolean}
+/// @example scss
+///   $cmp: cmp('1.2.3', '==', '0.1.2');
+///   -> false
+///   $cmp: cmp('1.2.3', '===', '0.1.2');
+///   -> false
+///   $cmp: cmp('1.2.3', '>', '0.1.2');
+///   -> true
+///   $cmp: cmp('1.2.3', '>=', '0.1.2');
+///   -> true
+///   $cmp: cmp('1.2.3', '!=', '0.1.2');
+///   -> true
+///   $cmp: cmp('1.2.3', '!==', '0.1.2');
+///   -> true
+///   $cmp: cmp('1.2.3', '<', '0.1.2');
+///   -> false
+///   $cmp: cmp('1.2.3', '<=', '0.1.2');
+///   -> false
+@function cmp($v1, $comparator, $v2) {
+  @if ($comparator == '===') {
+    @return ($v1 == $v2);
+  }
+
+  @if ($comparator == '!==') {
+    @return ($v1 != $v2);
+  }
+
+  $mapping: (
+    '==': 'eq',
+    '!=': 'neq',
+    '>': 'gt',
+    '>=': 'gte',
+    '<': 'lt',
+    '<=': 'lte',
+  );
+
+  @return call(map-get($mapping, $comparator), $v1, $v2);
+}
+/// Return whether the first version is equal to the second
+/// @param {String} $v1
+/// @param {String} $v2
+/// @return {Boolean}
+/// @example scss
+///   $eq: eq('1.2.3', '3.2.1');
+///   -> false
+///   $eq: eq('1.2.3', '1.2.3');
+///   -> true
+///   $eq: eq('1.2.3', '0.1.2');
+///   -> false
+@function eq($v1, $v2) {
+  $v1: clean($v1);
+  $v2: clean($v2);
+
+  @return (
+    major($v1) == major($v2) and
+    minor($v1) == minor($v2) and
+    patch($v1) == patch($v2)
+  );
+}
+/// Return whether the first version is greater than the second
+/// @param {String} $v1
+/// @param {String} $v2
+/// @return {Boolean}
+/// @example scss
+///   $gt: gt('1.2.3', '3.2.1');
+///   -> false
+///   $gt: gt('1.2.3', '1.2.3');
+///   -> false
+///   $gt: gt('1.2.3', '0.1.2');
+///   -> true
+@function gt($v1, $v2) {
+  @if eq($v1, $v2) {
+    $pre-v1: _prerelease($v1);
+    $pre-v2: _prerelease($v2);
+
+    @return (
+      (map-get($pre-v1, 'name') != map-get($pre-v2, 'name')) or
+      (map-get($pre-v1, 'number') == -1 and map-get($pre-v2, 'number') != -1) or
+      map-get($pre-v1, 'number') > map-get($pre-v2, 'number')
+    );
+  }
+
+  $major-v1: major($v1);
+  $major-v2: major($v2);
+  $minor-v1: minor($v1);
+  $minor-v2: minor($v2);
+  $patch-v1: patch($v1);
+  $patch-v2: patch($v2);
+
+  @return ($major-v1 > $major-v2)
+    or ($major-v1 == $major-v2 and $minor-v1 > $minor-v2)
+    or ($major-v1 == $major-v2 and $minor-v1 == $minor-v2 and $patch-v1 > $patch-v2);
+}
+/// Return whether the first version is greater than or equal to the second
+/// @param {String} $v1
+/// @param {String} $v2
+/// @return {Boolean}
+/// @example scss
+///   $gte: gte('1.2.3', '3.2.1');
+///   -> false
+///   $gte: gte('1.2.3', '1.2.3');
+///   -> true
+///   $gte: gte('1.2.3', '0.1.2');
+///   -> true
+@function gte($v1, $v2) {
+  @return gt($v1, $v2) or eq($v1, $v2);
+}
+/// Return the version incremented by the release type (major, minor, patch, prerelease)
+/// @param {String} $version
+/// @param {String} $release - Type of release to bump (major, minor, patch, prerelease)
+/// @return {String}
+/// @example scss
+///   $version: inc('1.2.3', 'major');
+///   -> '2.0.0'
+///   $version: inc('1.2.3', 'minor');
+///   -> '1.3.0'
+///   $version: inc('1.2.3', 'patch');
+///   -> '1.2.4'
+///   $version: inc('1.2.3', 'prerelease');
+///   -> '1.2.3-beta.0'
+///   $version: inc('1.2.3', 'prerelease', 'foobar');
+///   -> '1.2.3-foobar.0'
+///   $version: inc('1.2.3-foobar.0', 'prerelease');
+///   -> '1.2.3-foobar.1'
+///   $version: inc('1.2.3', 'premajor');
+///   -> '2.0.0-beta.0'
+///   $version: inc('1.2.3', 'preminor');
+///   -> '1.3.0-beta.0'
+///   $version: inc('1.2.3', 'prepatch');
+///   -> '1.2.4-beta.0'
+@function inc($version, $release, $prerelease: '') {
+  $release: to-lower-case($release);
+  $major: major($version);
+  $minor: minor($version);
+  $patch: patch($version);
+  $pre: _prerelease($version);
+  $name: map-get($pre, 'name');
+  $number: map-get($pre, 'number');
+
+  @if ($release == 'major') {
+    @return _format($major + 1, 0, 0);
+  } @else if ($release == 'premajor') {
+    @return _format($major + 1, 0, 0, $name, 0);
+  } @else if ($release == 'minor') {
+    @return _format($major, $minor + 1, 0);
+  } @else if ($release == 'preminor') {
+    @return _format($major, $minor + 1, 0, $name, 0);
+  } @else if ($release == 'patch') {
+    @return _format($major, $minor, $patch + if($name or $number > -1, 0, 1));
+  } @else if ($release == 'prepatch') {
+    @return _format($major, $minor, $patch + 1, $name, 0);
+  } @else if ($release == 'prerelease') {
+    @return _format($major, $minor, $patch + if($name or $number > -1, 0, 1), $name, $number + 1);
+  }
+
+  @return null;
+}
+/// Return whether the first version is lesser than the second
+/// @param {String} $v1
+/// @param {String} $v2
+/// @return {Boolean}
+/// @example scss
+///   $lt: lt('1.2.3', '3.2.1');
+///   -> true
+///   $lt: lt('1.2.3', '1.2.3');
+///   -> false
+///   $lt: lt('1.2.3', '0.1.2');
+///   -> false
+@function lt($v1, $v2) {
+  @return neq($v1, $v2) and not gt($v1, $v2);
+}
+/// Return whether the first version is lesser than or equal to the second
+/// @param {String} $v1
+/// @param {String} $v2
+/// @return {Boolean}
+/// @example scss
+///   $lte: lte('1.2.3', '3.2.1');
+///   -> true
+///   $lte: lte('1.2.3', '1.2.3');
+///   -> true
+///   $lte: lte('1.2.3', '0.1.2');
+///   -> false
+@function lte($v1, $v2) {
+  @return eq($v1, $v2) or lt($v1, $v2);
+}
+/// Return the major version number
+/// @param {String} $version
+/// @return {Number}
+/// @example scss
+///   $major: major('1.2.3');
+///   -> 1
+@function major($version) {
+  $version: clean($version);
+  @return _to-number(str-slice($version, 1, str-index($version, '.') - 1));
+}
+/// Return the minor version number
+/// @param {String} $version
+/// @return {Number}
+/// @example scss
+///   $minor: minor('1.2.3');
+///   -> 2
+@function minor($version) {
+  $version: clean($version);
+  $chunk: str-slice($version, str-index($version, '.') + 1);
+  @if str-index($chunk, '.') == null { @return false; }
+  $minor: str-slice($chunk, 1, str-index($chunk, '.') - 1);
+  @return _to-number($minor);
+}
+/// Return whether the first version is not equal to the second
+/// @param {String} $v1
+/// @param {String} $v2
+/// @return {Boolean}
+/// @example scss
+///   $eq: eq('1.2.3', '3.2.1');
+///   -> true
+///   $eq: eq('1.2.3', '1.2.3');
+///   -> false
+///   $eq: eq('1.2.3', '0.1.2');
+///   -> true
+@function neq($v1, $v2) {
+  @return not eq($v1, $v2);
+}
+/// Return the patch version number
+/// @param {String} $version
+/// @return {Number}
+/// @example scss
+///   $patch: patch('1.2.3');
+///   -> 3
+@function patch($version) {
+  $version: clean($version);
+  $first-chunk: str-slice($version, str-index($version, '.') + 1);
+  $second-chunk: str-slice($first-chunk, str-index($first-chunk, '.') + 1);
+  $end: if(str-length($second-chunk) > 1, (str-index($second-chunk, '-') or 0) - 1, 1);
+  @return _to-number(str-slice($second-chunk, 1, $end));
+}
+/// Return whether $version is valid SemVer
+/// @param {String} $version
+/// @return {Boolean}
+/// @example scss
+///   $valid: valid('1.2.3');
+///   -> true
+///   $not-valid: valid('a.b.c');
+///   -> false
+@function valid($version) {
+  $version: ($version or '') + '';
+  @return str-index($version, '.') != null and
+    type-of(major($version)) == 'number' and
+    type-of(minor($version)) == 'number' and
+    type-of(patch($version)) == 'number';
+}
+/// Find first char which is not a space
+/// @access private
+/// @param {String} $string - String
+/// @param {String} $direction ['left'] - Either `left` or `right`
+/// @return {Number}
+@function _first-index($string, $direction: 'left') {
+  @for $i from 1 through str-length($string) {
+    $index: if($direction == 'left', $i, -$i);
+
+    @if str-slice($string, $index, $index) != ' ' {
+      @return $index;
+    }
+  }
+
+  @return 0;
+}
+/// Format a version based on its components
+/// @access private
+/// @param {Number} $major
+/// @param {Number} $minor
+/// @param {Number} $patch
+/// @param {String} $pre-name ['']
+/// @param {Number} $pre-number [-1]
+/// @return {String}
+@function _format($major, $minor, $patch, $pre-name: '', $pre-number: -1) {
+  $release: $major + '.' + $minor + '.' + $patch;
+
+  @if ($pre-number > -1) {
+    $pre-name: $pre-name or '';
+    $release: $release
+      + '-'
+      + $pre-name
+      + if(str-length($pre-name) > 0, '.', '')
+      + $pre-number;
+  }
+
+  @return $release;
+}
+/// Parse the prerelease of $version
+/// @access private
+/// @param {String} $version
+/// @return {Map}
+/// @example scss
+///   $prerelease: _prerelease('1.2.3');
+///    -> ( 'name': null, 'number': -1 )
+///   $prerelease: _prerelease('1.2.3-alpha.0');
+///    -> ( 'name': 'alpha', 'number': 0 )
+@function _prerelease($version) {
+  $name: null;
+  $number: -1;
+  $hyphen-index: str-index($version, '-');
+
+  @if ($hyphen-index) {
+    $prerelease: str-slice($version, $hyphen-index + 1);
+    $dot-index: _str-last-index($prerelease, '.');
+    $name: $prerelease;
+
+    @if ($dot-index) {
+      $number: _to-number(str-slice($prerelease, $dot-index + 1));
+      $name: if($number,
+        str-slice($prerelease, 1, $dot-index - 1),
+        str-slice($prerelease, 1)
+      );
+      $number: $number or -1;
+    } @else {
+      $number: _to-number($prerelease);
+      $name: if($number, null, $prerelease);
+      $number: $number or -1;
+    }
+  }
+
+  @return (
+    'name': $name,
+    'number': $number,
+  );
+}
+/// Return last index of `$needle` in `$string`.
+/// @access private
+/// @param {String} $string - string to search in
+/// @param {String} $needle - substring to search for
+/// @return {Number}
+@function _str-last-index($string, $needle) {
+  $index: str-index($string, $needle);
+  $result: $index;
+
+  @if $index {
+    @for $i from $index + str-length($needle) through str-length($string) {
+      @if str-slice($string, $i, $i + str-length($needle) - 1) == $needle {
+        $result: $i;
+      }
+    }
+  }
+
+  @return $result;
+}
+// Casts a string into a number (integer only)
+// @access private
+// @param {String} $value - Value to be parsed
+// @return {Number}
+// @author @HugoGiraudel - Simplified by @kaelig to only convert unsigned integers
+// @link http://hugogiraudel.com/2014/01/15/sass-string-to-number/
+@function _to-number($value) {
+  $result: 0;
+  $digits: 0;
+  $numbers: ('0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9);
+
+  @for $i from 1 through str-length($value) {
+    $character: str-slice($value, $i, $i);
+
+    @if not map-get($numbers, $character) {
+      @return false;
+    }
+
+    @if ($digits == 0) {
+      $result: $result * 10 + map-get($numbers, $character);
+    } @else {
+      $digits: $digits * 10;
+      $result: $result + map-get($numbers, $character) / $digits;
+    }
+  }
+
+  @return $result;
+}
+/// Trim `$string`
+/// @access private
+/// @param {String} $string - String to trim
+/// @return {String}
+@function _trim($string) {
+  @return str-slice(
+    $string,
+    _first-index($string, 'left'),
+    _first-index($string, 'right')
+  );
+}
