@@ -70,6 +70,11 @@ module.exports = {
                 "react-router-dom": "ReactRouterDOM"
             };
 
+            webpackConfig.resolve.fallback = {
+                zlib: require.resolve("browserify-zlib"),
+                stream: require.resolve("stream-browserify")
+            };
+
             return webpackConfig;
         }
     }

@@ -46,7 +46,7 @@
     "clean-css": "^4.2.1",
     "escape-string-regexp": "^1.0.5",
     "fs-extra": "^7.0.0",
-    "node-sass": "^4.9.3",
+    "node-sass": "^9.0.0",
     "postcss": "^7.0.5",
     "read-pkg-up": "^3.0.0",
     "recursive-readdir": "^2.2.2",
