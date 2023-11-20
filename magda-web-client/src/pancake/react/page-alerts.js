@@ -9,7 +9,6 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import "../sass/page-alerts.scss";
 
 
 // The following line will be replaced automatically with generic imports for the ES5 pipeline.
