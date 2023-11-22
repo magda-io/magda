@@ -111,9 +111,12 @@ function installUpdater(options: OptionsIO) {
                 } catch (e) {
                     // lets not spam console with the same error message
                     // report if error message changed
-                    if (!previousState || previousState.error !== e.message) {
-                        console.error("ERROR", id, e.stack);
-                        nextState.error = e.message;
+                    if (
+                        !previousState ||
+                        previousState.error !== (e as any)?.message
+                    ) {
+                        console.error("ERROR", id, (e as any)?.stack);
+                        nextState.error = (e as any)?.message;
                     }
                 }
                 // --- Note: typeof null === "object"
@@ -150,7 +153,7 @@ function installUpdater(options: OptionsIO) {
                 }
                 options.ready = isReady;
             } catch (e) {
-                console.error("ERROR", id, e.stack);
+                console.error("ERROR", id, (e as any)?.stack);
             }
             if (!dontUpdate) {
                 (setTimeout(update, options.probeUpdateMs) as any).unref();

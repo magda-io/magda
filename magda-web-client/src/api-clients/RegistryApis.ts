@@ -634,7 +634,7 @@ export async function doesRecordExist(id: string) {
         await fetchRecordWithNoCache(id, [], [], false);
         return true;
     } catch (e) {
-        if (e.statusCode === 404) {
+        if ((e as any)?.statusCode === 404) {
             return false;
         }
         throw e;

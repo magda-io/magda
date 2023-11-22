@@ -18,6 +18,7 @@ import DistributionItem from "Components/Dataset/Add/DistributionItem";
 
 import "./AddNewFilesModal.scss";
 import promisifySetState from "helpers/promisifySetState";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
 
 type PropsType = {
     stateData: State;
@@ -71,7 +72,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                                 ] = props.deleteDistributionHandler(distId)();
                                 await deletionPromises[distId];
                             } catch (e) {
-                                setError(e);
+                                setError(unknown2Error(e));
                                 throw e;
                             } finally {
                                 if (deletionPromisesRef?.current?.[distId]) {
@@ -152,7 +153,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
             );
             setIsOpen(false);
         } catch (e) {
-            setError(e);
+            setError(unknown2Error(e));
         } finally {
             deletionPromisesRef.current = [] as any;
         }
@@ -191,7 +192,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
 
             setIsOpen(false);
         } catch (e) {
-            setError(e);
+            setError(unknown2Error(e));
         }
     }, [
         uploadedDistributions,
@@ -227,7 +228,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                 useStorageApi: false
             });
         } catch (e) {
-            setError(e);
+            setError(unknown2Error(e));
         }
     }, [datasetStateUpdater]);
 

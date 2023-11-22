@@ -20,10 +20,10 @@
     "@types/passport": "^1.0.3",
     "@types/pg": "^8.6.5",
     "@types/urijs": "^1.19.19",
-    "ts-loader": "^6.2.1",
-    "typescript": "~4.2.4",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
+    "ts-loader": "^9.5.1",
+    "typescript": "~5.2.2",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
   },
   "dependencies": {
     "connect-pg-simple": "^6.2.1",

@@ -13,6 +13,7 @@ import "./DeleteFileModal.scss";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DistributionItem from "Components/Dataset/Add/DistributionItem";
 import promisifySetState from "helpers/promisifySetState";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
 
 type PropsType = {
     datasetId: string;
@@ -57,7 +58,7 @@ const DeleteFileModal: FunctionComponent<PropsType> = (props) => {
 
             closeModal();
         } catch (e) {
-            setError(e);
+            setError(unknown2Error(e));
         }
     }, [
         datasetStateUpdater,

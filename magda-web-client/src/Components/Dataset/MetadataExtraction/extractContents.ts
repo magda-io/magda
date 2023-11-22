@@ -1,7 +1,7 @@
 import XLSX from "xlsx";
 import mammoth from "mammoth";
-import pdfjsLib from "pdfjs-dist/build/pdf";
-import PDFWorker from "pdfjs-dist/build/pdf.worker";
+import pdfjsLib from "pdfjs-dist/build/pdf.mjs";
+import PDFWorker from "pdfjs-dist/build/pdf.worker.mjs";
 import { MAX_KEYWORDS } from "./extractKeywords";
 import uniq from "lodash/uniq";
 import moment from "moment";

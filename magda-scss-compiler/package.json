@@ -37,7 +37,7 @@
     "mocha": "^3.4.2",
     "nock": "^9.0.14",
     "sinon": "^2.4.1",
-    "typescript": "~4.2.4"
+    "typescript": "~5.2.2"
   },
   "dependencies": {
     "@magda/typescript-common": "^2.3.3",

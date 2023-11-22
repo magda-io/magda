@@ -59,7 +59,7 @@ export class MockRegistry extends MockExpressServer {
                         //         error: e.message
                         //     })
                         //     .end();
-                        console.log(e.message);
+                        console.log((e as any)?.message);
                     }
                 }
             }

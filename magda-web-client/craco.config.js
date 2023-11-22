@@ -3,7 +3,7 @@ const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
 
 module.exports = {
     babel: {
-        plugins: ["@babel/plugin-proposal-optional-chaining"]
+        //plugins: ["@babel/plugin-proposal-optional-chaining"]
     },
     webpack: {
         configure(webpackConfig) {
@@ -72,7 +72,9 @@ module.exports = {
 
             webpackConfig.resolve.fallback = {
                 zlib: require.resolve("browserify-zlib"),
-                stream: require.resolve("stream-browserify")
+                stream: require.resolve("stream-browserify"),
+                path: require.resolve("path-browserify"),
+                assert: require.resolve("assert/")
             };
 
             return webpackConfig;

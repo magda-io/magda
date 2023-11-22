@@ -213,12 +213,12 @@ export function getComponent<T>(
     return getComponentByRef<T>(ExternalComponent);
 }
 
-const wrapComponentWithProps = <T, TP>(
+const wrapComponentWithProps = <T extends object, TP>(
     component: ComponentType<T>,
     overwriteProps: TP
 ): FunctionComponent<Omit<T, keyof TP>> => (props) => {
     const { children, ...restProps } = props;
-    return React.createElement(
+    return React.createElement<T>(
         component,
         ({
             ...(restProps ? restProps : {}),

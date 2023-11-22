@@ -142,7 +142,7 @@ export function fetchDistributionFromRegistry(id: string): any {
             return dispatch(
                 requestDistributionError({
                     title: "",
-                    detail: e?.message ? e.message : `${e}`
+                    detail: e instanceof Error ? e.message : `${e}`
                 })
             );
         }

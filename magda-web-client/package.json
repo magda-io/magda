@@ -20,9 +20,8 @@
     "react-icons": "^4.3.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.2",
-    "@babel/plugin-proposal-optional-chaining": "^7.8.3",
-    "@babel/runtime": "^7.8.7",
+    "@babel/core": "^7.23.3",
+    "@babel/runtime": "^7.23.2",
     "@craco/craco": "^7.1.0",
     "@magda/registry-aspects": "^2.3.3",
     "@magda/scripts": "^2.3.3",
@@ -44,7 +43,6 @@
     "@types/uuid": "^8.0.0",
     "@types/xlsx": "^0.0.36",
     "babel-eslint": "9.0.0",
-    "babel-loader": "8.0.5",
     "brace": "^0.11.1",
     "browser-detect": "^0.2.22",
     "chrono-node": "^2.3.1",
@@ -128,7 +126,7 @@
     "text-clipper": "^2.1.0",
     "traverse": "^0.6.6",
     "type-fest": "~2.18.0",
-    "typescript": "~4.2.4",
+    "typescript": "~5.2.2",
     "ucwords": "^1.0.5",
     "urijs": "^1.19.11",
     "use-debounce": "^3.3.0",
@@ -141,6 +139,8 @@
     "yaml-front-matter": "^4.0.0",
     "browserify-zlib": "^0.2.0",
     "stream-browserify": "^3.0.0",
+    "path-browserify": "^1.0.1",
+    "assert": "^2.1.0",
     "@typescript-eslint/parser": "^6.11.0"
   },
   "browserslist": [

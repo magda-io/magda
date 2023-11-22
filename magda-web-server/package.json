@@ -42,7 +42,7 @@
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
     "typed-promisify": "^0.4.0",
-    "typescript": "~4.2.4",
+    "typescript": "~5.2.2",
     "xml2js": "^0.4.19"
   },
   "dependencies": {
