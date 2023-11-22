@@ -75,7 +75,7 @@ export default async function uploadFile(
             clearInterval(fakeProgressInterval);
         }
     } catch (e) {
-        if (e?.message) {
+        if (e instanceof Error) {
             e.message =
                 `${e.message}. Upload failed due to network related error. ` +
                 `Please check network connection and make sure the file size is lower than the system config limit.`;

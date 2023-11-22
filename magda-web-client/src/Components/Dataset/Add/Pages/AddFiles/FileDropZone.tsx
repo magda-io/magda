@@ -15,6 +15,7 @@ import processFile from "./processFile";
 import { getFiles } from "helpers/readFile";
 
 import "./FileDropZone.scss";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
 
 type PropsType = {
     stateData: State;
@@ -157,7 +158,7 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
         try {
             await addFiles(await getFiles("*.*"));
         } catch (e) {
-            onError(e);
+            onError(unknown2Error(e));
         }
     }, [onError, addFiles]);
 
@@ -168,7 +169,7 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                     await addFiles(fileList, event);
                 }
             } catch (e) {
-                onError(e);
+                onError(unknown2Error(e));
             }
         },
         [onError, addFiles]

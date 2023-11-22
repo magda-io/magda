@@ -19,6 +19,7 @@ import * as Comlink from "comlink";
 import uploadFile from "./uploadFile";
 import translateError from "helpers/translateError";
 import promisifySetState from "helpers/promisifySetState";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
 
 const ExtractorsWorker = require("worker-loader!../../../MetadataExtraction"); // eslint-disable-line import/no-webpack-loader-syntax
 
@@ -260,7 +261,7 @@ export default async function processFile(
             await promisifySetState(datasetStateUpdater)((state: State) => {
                 return {
                     ...state,
-                    error: e,
+                    error: unknown2Error(e),
                     distributions: state.distributions.filter(
                         (thisDist) => initialDistribution.id !== thisDist.id
                     )
@@ -311,6 +312,6 @@ export default async function processFile(
             await removeDist();
         }
 
-        throw translateError(e);
+        throw translateError(unknown2Error(e));
     }
 }

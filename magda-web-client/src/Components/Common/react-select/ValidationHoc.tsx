@@ -8,7 +8,7 @@ import CustomInputWithValidation from "Components/Common/react-select/CustomInpu
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 import * as ValidationManager from "../../Dataset/Add/ValidationManager";
 import { CustomValidatorType } from "../../Dataset/Add/ValidationManager";
-import StateManager from "react-select";
+import StateManager, { OptionTypeBase } from "react-select";
 const useValidation = ValidationManager.useValidation;
 
 /* eslint-disable react-hooks/rules-of-hooks */
@@ -19,7 +19,7 @@ interface SelectExtraPropsType {
     customValidator?: CustomValidatorType;
 }
 
-type PropsType<OptionType> =
+type PropsType<OptionType extends OptionTypeBase> =
     | (SelectProps<OptionType> & SelectExtraPropsType)
     | (SelectProps<OptionType> & AsyncProps<OptionType> & SelectExtraPropsType)
     | (SelectProps<OptionType> &
@@ -30,7 +30,7 @@ type PropsType<OptionType> =
           CreatableProps<OptionType> &
           SelectExtraPropsType);
 
-type ReactSelectComponent<OptionType> =
+type ReactSelectComponent<OptionType extends OptionTypeBase> =
     | AsyncCreatable<OptionType>
     | Select<OptionType>
     | Creatable<OptionType>
@@ -44,7 +44,7 @@ type ReactSelectComponentType =
     | typeof Async
     | typeof StateManager;
 
-function ValidationHoc<OptionType>(
+function ValidationHoc<OptionType extends OptionTypeBase>(
     ReactSelectKindComponent: ReactSelectComponentType
 ) {
     return (props: PropsType<OptionType>) => {

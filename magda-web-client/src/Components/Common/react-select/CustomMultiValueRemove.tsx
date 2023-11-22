@@ -1,8 +1,11 @@
 import React from "react";
 import { MultiValueProps } from "react-select/src/components/MultiValue";
 import dismissIcon from "../../../assets/dismiss-white.svg";
+import { OptionTypeBase } from "react-select";
 
-function CustomMultiValueRemove<T>(props: MultiValueProps<T>) {
+function CustomMultiValueRemove<T extends OptionTypeBase>(
+    props: MultiValueProps<T>
+) {
     const { data, innerProps } = props;
     return (
         <button
