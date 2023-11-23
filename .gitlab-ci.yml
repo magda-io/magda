@@ -9,7 +9,7 @@ variables:
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button`
-  CACHE_VERSION: ts-15-scala-7
+  CACHE_VERSION: ts-16-scala-7
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_TLS_VERIFY: 1
@@ -31,7 +31,7 @@ stages:
 
 yarn-install:
   stage: builders
-  image: data61/magda-builder-docker:node14
+  image: data61/magda-builder-docker:node18
   retry: 1
   needs: []
   cache:
@@ -50,7 +50,7 @@ yarn-install:
 
 build-builder-image:
   stage: builders
-  image: data61/magda-builder-docker:node14
+  image: data61/magda-builder-docker:node18
   retry: 1
   needs: []
   before_script:
