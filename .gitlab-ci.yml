@@ -83,6 +83,8 @@ sbt-prebuild:
         mkdir -p "$CI_PROJECT_DIR/sbt-cache/coursier"
         cp -R "$CI_PROJECT_DIR/dep-jars/." "$CI_PROJECT_DIR/sbt-cache/coursier/https/"
       fi
+    - env
+    - which sbt
     - sbt update
   artifacts:
     paths:
