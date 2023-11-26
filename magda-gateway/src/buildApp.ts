@@ -168,7 +168,8 @@ export default function buildApp(app: express.Application, config: Config) {
         authenticator,
         defaultCacheControl: config.defaultCacheControl,
         routes,
-        proxyTimeout
+        proxyTimeout,
+        authClient: authDecisionClient
     };
 
     // --- enable http basic authentication for all users

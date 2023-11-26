@@ -16,7 +16,7 @@ import io.swagger.annotations._
 import javax.ws.rs.Path
 import scalikejdbc._
 import au.csiro.data61.magda.directives.RouteDirectives.completeBlockingTask
-import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
 
 /**
   * @apiGroup Registry Aspects
@@ -154,7 +154,7 @@ class AspectsServiceRO(
       withAuthDecision(authClient, AuthDecisionReqConfig("object/aspect/read")) {
         authDecision =>
           requiresTenantId { tenantId =>
-            withBlockingTask {
+            onCompleteBlockingTask {
               DB readOnly { session =>
                 session.queryTimeout(this.defaultQueryTimeout)
                 AspectPersistence

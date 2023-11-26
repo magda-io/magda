@@ -25,7 +25,7 @@ import spray.json.JsObject
 
 import scala.util.{Failure, Success}
 
-import au.csiro.data61.magda.directives.CommonDirectives.withBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
 
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(
@@ -165,8 +165,8 @@ class RecordAspectsService(
                   Left(aspect),
                   merge.getOrElse(false)
                 ) {
-                  withBlockingTask {
-                    val theResult = DB localTx { session =>
+                  onCompleteBlockingTask {
+                    val theResult = DB localTx { implicit session =>
                       session.queryTimeout(this.defaultQueryTimeout)
                       recordPersistence.putRecordAspectById(
                         tenantId,
@@ -176,7 +176,7 @@ class RecordAspectsService(
                         userId,
                         false,
                         merge.getOrElse(false)
-                      )(session) match {
+                      ) match {
                         case Success(result) =>
                           complete(
                             StatusCodes.OK,
@@ -275,15 +275,15 @@ class RecordAspectsService(
           // we will not implement aspect level auth for now
           requireDeleteRecordAspectPermission(authClient, recordId, aspectId) {
             requiresSpecifiedTenantId { tenantId =>
-              withBlockingTask {
-                val theResult = DB localTx { session =>
+              onCompleteBlockingTask {
+                val theResult = DB localTx { implicit session =>
                   session.queryTimeout(this.defaultQueryTimeout)
                   recordPersistence.deleteRecordAspect(
                     tenantId,
                     recordId,
                     aspectId,
                     userId
-                  )(session) match {
+                  ) match {
                     case Success(result) =>
                       complete(
                         StatusCodes.OK,
@@ -399,8 +399,8 @@ class RecordAspectsService(
                 aspectId,
                 Right(aspectPatch)
               ) {
-                withBlockingTask {
-                  val theResult = DB localTx { session =>
+                onCompleteBlockingTask {
+                  val theResult = DB localTx { implicit session =>
                     session.queryTimeout(this.defaultQueryTimeout)
                     recordPersistence.patchRecordAspectById(
                       tenantId,
@@ -408,7 +408,7 @@ class RecordAspectsService(
                       aspectId,
                       aspectPatch,
                       userId
-                    )(session) match {
+                    ) match {
                       case Success(result) =>
                         complete(
                           StatusCodes.OK,

@@ -309,6 +309,79 @@ describe("JsonConnector", () => {
             });
         });
 
+        it("Will cralw only one dataset (`blah2-dataset-2`) and one distribution with `customJsFilterCode`", () => {
+            const { scope, connector } = setupCrawlTest({
+                customJsFilterCode: `if(type === 'Dataset' && jsonData.blah != 'blah2-dataset-2') {
+                    return false;
+                } else {
+                    return true;
+                }`
+            });
+            const receivedRecords: Record[] = [];
+
+            scope
+                .persist()
+                .put(new RegExp("/records"))
+                .reply(200, (uri: string, requestBody: any) => {
+                    receivedRecords.push(requestBody);
+                });
+            scope.delete(/.*/).reply(202);
+
+            return connector.run().then((result) => {
+                scope.done();
+                expect(receivedRecords.length).to.equal(3);
+                const datasets = receivedRecords.filter(
+                    (record) => !!record.aspects["dataset-distributions"]
+                );
+                expect(datasets.length).to.equal(1);
+                expect(datasets[0].name).to.equal("blah2-dataset-2");
+                const dists = receivedRecords.filter(
+                    (record) => !record.aspects["dataset-distributions"]
+                );
+                expect(dists.length).to.equal(2);
+                expect(dists.map((dist) => dist.name)).to.include.members([
+                    "blah-dist-1",
+                    "blah-dist-2"
+                ]);
+            });
+        });
+
+        it("Will cralw only one dataset (`blah2-dataset-1`) with `customJsFilterCode`", () => {
+            const { scope, connector } = setupCrawlTest({
+                customJsFilterCode: `if(type === 'Dataset' && jsonData.blah != 'blah-dataset-1') {
+                    return false;
+                } else if(type === 'Distribution' && jsonData.blah != 'blah-dist-2') {
+                    return false;
+                }else {
+                    return true;
+                }`
+            });
+            const receivedRecords: Record[] = [];
+
+            scope
+                .persist()
+                .put(new RegExp("/records"))
+                .reply(200, (uri: string, requestBody: any) => {
+                    receivedRecords.push(requestBody);
+                });
+            scope.delete(/.*/).reply(202);
+
+            return connector.run().then((result) => {
+                scope.done();
+                expect(receivedRecords.length).to.equal(2);
+                const datasets = receivedRecords.filter(
+                    (record) => !!record.aspects["dataset-distributions"]
+                );
+                expect(datasets.length).to.equal(1);
+                expect(datasets[0].name).to.equal("blah-dataset-1");
+                const dists = receivedRecords.filter(
+                    (record) => !record.aspects["dataset-distributions"]
+                );
+                expect(dists.length).to.equal(1);
+                expect(dists[0].name).to.equal("blah-dist-2");
+            });
+        });
+
         function setupCrawlTest(
             config: FakeConnectorSourceConfig = {},
             transformerConfig: JsonTransformerOptions = {} as JsonTransformerOptions
@@ -362,22 +435,23 @@ class FakeJsonTransformer extends JsonTransformer {
     }
 
     getNameFromJsonOrganization(jsonOrganization: any): string {
-        return "name";
+        return jsonOrganization?.name ? jsonOrganization.name : "name";
     }
     getNameFromJsonDataset(jsonDataset: any): string {
-        return "name";
+        return jsonDataset?.name ? jsonDataset.name : "name";
     }
     getNameFromJsonDistribution(
         jsonDistribution: any,
         jsonDataset: any
     ): string {
-        return "name";
+        return jsonDistribution?.name ? jsonDistribution.name : "name";
     }
 }
 
 type FakeConnectorSourceConfig = {
     extras?: JsonConnectorConfigExtraMetaData;
     presetRecordAspects?: JsonConnectorConfigPresetAspect[];
+    customJsFilterCode?: string;
 };
 
 class FakeConnectorSource implements ConnectorSource {
@@ -386,6 +460,7 @@ class FakeConnectorSource implements ConnectorSource {
     readonly hasFirstClassOrganizations: boolean = false;
     presetRecordAspects: JsonConnectorConfigPresetAspect[] = null;
     extras: JsonConnectorConfigExtraMetaData = null;
+    customJsFilterCode: string = "";
 
     constructor(config: FakeConnectorSourceConfig = {}) {
         if (config.extras) {
@@ -393,6 +468,9 @@ class FakeConnectorSource implements ConnectorSource {
         }
         if (config.presetRecordAspects) {
             this.presetRecordAspects = config.presetRecordAspects;
+        }
+        if (config.customJsFilterCode) {
+            this.customJsFilterCode = config.customJsFilterCode;
         }
     }
 
@@ -422,24 +500,32 @@ class FakeConnectorSource implements ConnectorSource {
     getJsonDatasets(): AsyncPage<any[]> {
         return AsyncPage.single([
             {
-                blah: "blah"
+                blah: "blah-dataset-1",
+                name: "blah-dataset-1"
             },
             {
-                blah: "blah"
+                blah: "blah2-dataset-2",
+                name: "blah2-dataset-2"
             }
         ]);
     }
     getJsonFirstClassOrganizations(): AsyncPage<any[]> {
         return AsyncPage.single([
             {
-                blah: "blah"
+                blah: "blah-org-1",
+                name: "blah-org-1"
             }
         ]);
     }
     getJsonDistributions(): AsyncPage<any[]> {
         return AsyncPage.single([
             {
-                blah: "blah"
+                blah: "blah-dist-1",
+                name: "blah-dist-1"
+            },
+            {
+                blah: "blah-dist-2",
+                name: "blah-dist-2"
             }
         ]);
     }

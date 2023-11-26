@@ -107,21 +107,6 @@ const OperationsDataGrid: FunctionComponent<PropsType> = (props) => {
         <div className="operations-data-grid">
             <OperationFormPopUp ref={operationFormRef} />
             <div className="search-button-container">
-                <div className="left-button-area-container">
-                    <Button
-                        color="blue"
-                        appearance="primary"
-                        onClick={() => {
-                            operationFormRef?.current?.open(
-                                undefined,
-                                resourceId,
-                                () => setDataReloadToken(`${Math.random()}`)
-                            );
-                        }}
-                    >
-                        <MdAddCircle /> Create Operation
-                    </Button>
-                </div>
                 <div className="search-button-inner-wrapper">
                     <InputGroup size="md" inside>
                         <Input
@@ -141,8 +126,22 @@ const OperationsDataGrid: FunctionComponent<PropsType> = (props) => {
                         </InputGroup.Button>
                     </InputGroup>
                 </div>
+                <div className="left-button-area-container">
+                    <Button
+                        color="blue"
+                        appearance="primary"
+                        onClick={() => {
+                            operationFormRef?.current?.open(
+                                resourceId,
+                                undefined,
+                                () => setDataReloadToken(`${Math.random()}`)
+                            );
+                        }}
+                    >
+                        <MdAddCircle /> Create Operation
+                    </Button>
+                </div>
             </div>
-
             <div>
                 <Table
                     height={420}
@@ -181,8 +180,9 @@ const OperationsDataGrid: FunctionComponent<PropsType> = (props) => {
                                             icon={<MdBorderColor />}
                                             onClick={() =>
                                                 operationFormRef?.current?.open(
+                                                    (rowData as any)
+                                                        .resource_id,
                                                     (rowData as any).id,
-                                                    undefined,
                                                     () =>
                                                         setDataReloadToken(
                                                             `${Math.random()}`

@@ -102,13 +102,19 @@ export default function createBaseProxy(
         }
     );
 
-    proxy.on("error", function (err: any, req: any, res: any) {
-        res.writeHead(500, {
-            "Content-Type": "text/plain"
-        });
-
+    proxy.on("error", function (err, req, res) {
         console.error(err);
-
+        try {
+            res.writeHead(500, {
+                "Content-Type": "text/plain"
+            });
+        } catch (e) {
+            // in case header already sent
+            console.log("Failed to set error repsonse header: " + e);
+            // -- we should not response anything here as header might be already sent
+            res.end();
+            return;
+        }
         res.end("Something went wrong.");
     });
 

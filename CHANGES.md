@@ -1,11 +1,22 @@
 # CHANGELOG
 
+## v2.3.3
+
+- #3495: fixed gateway might throw unhandled ERR_HTTP_HEADERS_SENT errors when proxy requests
+- #3492: fixed webhook actors shouldn't use default dispatcher even with default config & code refactoring
+- #3493: Allow user to manage the access to gateway proxied APIs
+- Allow passing Magda API key as bearer token via Authorization header
+- Allow `*` & `-` characters in resource & operation management UI
+
 ## v2.3.2
 
 - #3485: New feature for registry records manager: able to search record by keywords & added records list view
 - Display organizational unit ID info in the user general info panel
+- Improved Registry event processing performance
 - #3100: Conenctor SDK: Allow runtime filter code to be supply to connectors via Helm config
 - Fixed an issue with docker build utiliy
+- #3408: auto reset search dataset result cache when login status changes
+- Allow users to open datasets & distributions in "Raw Record Editor" when the user has edit permission
 
 ## v2.3.1
 
