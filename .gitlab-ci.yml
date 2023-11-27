@@ -72,6 +72,8 @@ sbt-prebuild:
   needs: 
     - build-builder-image
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
+  variables:
+    PATH: "$PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin"
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
@@ -83,8 +85,6 @@ sbt-prebuild:
         mkdir -p "$CI_PROJECT_DIR/sbt-cache/coursier"
         cp -R "$CI_PROJECT_DIR/dep-jars/." "$CI_PROJECT_DIR/sbt-cache/coursier/https/"
       fi
-    - env
-    - which sbt
     - sbt update
   artifacts:
     paths:
@@ -100,6 +100,8 @@ sbt-prebuild:
 check-scala-formatting:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
+  variables:
+    PATH: "$PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin"
   needs: 
     - build-builder-image
   script:
@@ -148,6 +150,7 @@ buildtest:search-with-index-cache:
     # use the next-gen collector that every blog on the internet says not to use because we know better than them
     # use < 25% of time for GC
     # put the ivy cache in the workspace where gitlab can cache it
+    PATH: "$PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin"
     SBT_OPTS: >
       -Xms2500M -Xmx2500M
       -XX:+CMSClassUnloadingEnabled
@@ -211,6 +214,7 @@ buildtest:search-no-index-cache:
     # use the next-gen collector that every blog on the internet says not to use because we know better than them
     # use < 25% of time for GC
     # put the ivy cache in the workspace where gitlab can cache it
+    PATH: "$PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin"
     SBT_OPTS: >
       -Xms2500M -Xmx2500M
       -XX:+CMSClassUnloadingEnabled
@@ -276,6 +280,7 @@ buildtest:registry:
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: "password"
+    PATH: "$PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin"
   script:
     - sbt "registryApi/testOnly au.csiro.data61.magda.registry.*"
   artifacts:
@@ -292,6 +297,8 @@ buildtest:scala-others:
   stage: buildtest
   retry: 2
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
+  variables:
+    PATH: "$PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin"
   needs: 
     - sbt-prebuild
   timeout: 30 minutes
@@ -496,6 +503,7 @@ buildtest:integration-tests:
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: "password"
+    PATH: "$PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin"
   tags:
     - heavy
   script:
@@ -594,6 +602,8 @@ buildtest:helm-docs-check:
 dockerize:scala:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
+  variables:
+    PATH: "$PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin"
   retry: 2
   needs:
     - registry-typescript-api
