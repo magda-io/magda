@@ -23,4 +23,4 @@ RUN mkdir -p "$SBT_HOME" && \
 	cd /home && \
 	sbt sbtVersion
 
-RUN echo "export PATH=${PATH}:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin" > /root/.profile
+RUN echo 'export PATH=${PATH}:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin' > /root/.profile
