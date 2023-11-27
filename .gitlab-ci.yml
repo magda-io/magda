@@ -72,8 +72,6 @@ sbt-prebuild:
   needs: 
     - build-builder-image
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
-  variables:
-    PATH: "$PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin"
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
@@ -100,8 +98,6 @@ sbt-prebuild:
 check-scala-formatting:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
-  variables:
-    PATH: "$PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin"
   needs: 
     - build-builder-image
   script:
@@ -596,8 +592,6 @@ buildtest:helm-docs-check:
 dockerize:scala:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
-  variables:
-    PATH: "$PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin"
   retry: 2
   needs:
     - registry-typescript-api
