@@ -31,7 +31,7 @@
     "http-proxy": "^1.16.2",
     "http-terminator": "^3.2.0",
     "is-uuid": "^1.0.2",
-    "isomorphic-fetch": "^2.2.1",
+    "cross-fetch": "^4.0.0",
     "jsonwebtoken": "^8.4.0",
     "jwt-simple": "^0.5.1",
     "lodash": "^4.17.4",

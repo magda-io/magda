@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 // --- let passport populate express namespace
 import "passport";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
 import isUUID from "is-uuid";
 

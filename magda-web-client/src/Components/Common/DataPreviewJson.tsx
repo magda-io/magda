@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { config } from "config";
 import getProxiedResourceUrl from "helpers/getProxiedResourceUrl";
 import isStorageApiUrl from "helpers/isStorageApiUrl";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import Spinner from "./Spinner";
 
 import { ParsedDistribution } from "helpers/record";

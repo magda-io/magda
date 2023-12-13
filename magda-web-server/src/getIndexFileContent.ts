@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import "isomorphic-fetch";
+import fetch from "cross-fetch";
 import { throttle, memoize } from "lodash";
 
 const STATIC_STYLE_REGEX = new RegExp(

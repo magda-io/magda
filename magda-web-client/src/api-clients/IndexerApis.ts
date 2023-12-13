@@ -1,5 +1,5 @@
 import { config } from "../config";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import request from "../helpers/request";
 import ServerError from "@magda/typescript-common/dist/ServerError";
 

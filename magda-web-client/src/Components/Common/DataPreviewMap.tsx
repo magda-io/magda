@@ -25,7 +25,7 @@ import DataPreviewSizeWarning from "./DataPreviewSizeWarning";
 import urijs from "urijs";
 import isStorageApiUrl from "../../helpers/isStorageApiUrl";
 import { useAsync } from "react-async-hook";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import xml2json from "../../helpers/xml2json";
 import ReactSelect from "react-select";
 import CustomStyles from "../Common/react-select/ReactSelectStyles";

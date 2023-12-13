@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from "react";
 import ReactSelect from "react-select/async";
 import { ValueType } from "react-select/src";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import { config } from "config";
 import StateSelectStyles from "./StateSelectStyles";
 

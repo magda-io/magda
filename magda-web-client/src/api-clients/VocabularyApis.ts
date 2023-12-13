@@ -1,4 +1,4 @@
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import uniq from "lodash/uniq";
 import flatMap from "lodash/flatMap";
 import type { MessageSafeConfig } from "config";

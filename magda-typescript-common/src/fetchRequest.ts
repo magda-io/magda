@@ -1,4 +1,4 @@
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import merge from "lodash/merge";
 import ServerError from "./ServerError";
 

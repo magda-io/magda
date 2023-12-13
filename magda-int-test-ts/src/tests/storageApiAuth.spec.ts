@@ -15,7 +15,7 @@ import {
     createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret
 } from "./testUtils";
 import urijs from "urijs";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import FormData from "form-data";
 import buildJwt from "magda-typescript-common/src/session/buildJwt";
 

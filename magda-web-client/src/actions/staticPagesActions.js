@@ -1,5 +1,5 @@
 import { actionTypes } from "../constants/ActionTypes";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import GenericError from "../helpers/GenericError";
 import { config } from "../config";
 import request from "helpers/request";

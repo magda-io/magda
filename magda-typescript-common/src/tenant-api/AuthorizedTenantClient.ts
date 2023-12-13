@@ -1,4 +1,4 @@
-require("isomorphic-fetch");
+import fetch from "cross-fetch";
 import { MAGDA_ADMIN_PORTAL_ID } from "../registry/TenantConsts";
 import { Tenant } from "../tenant-api/Tenant";
 import lodash from "lodash";

@@ -10,7 +10,7 @@ import yaml from "js-yaml";
 import fs from "fs-extra";
 import tempy from "tempy";
 import pg from "pg";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import child_process, { ChildProcess } from "child_process";
 import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
 import urijs from "urijs";

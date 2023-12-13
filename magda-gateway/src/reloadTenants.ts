@@ -1,4 +1,3 @@
-require("isomorphic-fetch");
 import { throttle, Cancelable } from "lodash";
 import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant";
 import AuthorizedTenantClient from "magda-typescript-common/src/tenant-api/AuthorizedTenantClient";
