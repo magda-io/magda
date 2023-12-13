@@ -38,7 +38,7 @@
     "@types/yargs": "^12.0.8",
     "chai": "^4.1.0",
     "mocha": "^3.4.2",
-    "nock": "^9.0.14",
+    "nock": "^13.4.0",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
     "typed-promisify": "^0.4.0",

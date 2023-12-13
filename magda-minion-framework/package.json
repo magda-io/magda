@@ -28,7 +28,7 @@
     "jsverify": "^0.8.2",
     "mocha": "^3.4.2",
     "mocha-testcheck": "^1.0.0-rc.0",
-    "nock": "^9.0.14",
+    "nock": "^13.4.0",
     "portfinder": "^1.0.13",
     "query-string": "^6.1.0",
     "sinon": "^2.4.1",

@@ -41,7 +41,7 @@
     "chai": "^4.1.2",
     "jsverify": "^0.8.2",
     "mocha": "^3.5.0",
-    "nock": "^9.0.14",
+    "nock": "^13.4.0",
     "request-debug": "^0.2.0",
     "sinon": "^3.2.1",
     "supertest": "^3.0.0",
