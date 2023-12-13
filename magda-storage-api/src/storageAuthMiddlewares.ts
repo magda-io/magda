@@ -162,7 +162,7 @@ export function requireStorageObjectPermission(
                     objectName
                 );
             } catch (e) {
-                if (e?.code === "NotFound") {
+                if ((e as any)?.code === "NotFound") {
                     stateData = null;
                     if (
                         (operationType === "read" ||
