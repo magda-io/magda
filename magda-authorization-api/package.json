@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^2.3.3",
-    "bcrypt": "^5.0.1",
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.18.3",
     "express": "^4.17.1",
     "http-terminator": "^3.2.0",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@magda/scripts": "^2.3.3",
-    "@types/bcrypt": "^3.0.0",
+    "@types/bcrypt": "^5.0.2",
     "@types/chai": "^4.1.2",
     "@types/chai-as-promised": "^7.1.0",
     "@types/express": "^4.17.6",
