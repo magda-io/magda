@@ -105,7 +105,7 @@ baseSpec(
                 .persist()
                 .get("/records")
                 .query(true)
-                .reply(registryReplyFunc.bind(context));
+                .reply(registryReplyFunc.bind(context) as any);
 
             const crawler = new Crawler(registry, options);
             context.crawler = crawler;

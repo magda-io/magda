@@ -219,9 +219,9 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                     expect(this.req.headers["content-type"]).to.equal(
                         "application/merge-patch+json"
                     );
-                    expect(JSON.parse(requestBody).spec.suspend).to.equal(
-                        false
-                    );
+                    expect(
+                        JSON.parse(requestBody as string).spec.suspend
+                    ).to.equal(false);
                     return cronJob;
                 });
         }
@@ -263,7 +263,9 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                     expect(this.req.headers["content-type"]).to.equal(
                         "application/merge-patch+json"
                     );
-                    expect(JSON.parse(requestBody).spec.suspend).to.equal(true);
+                    expect(
+                        JSON.parse(requestBody as string).spec.suspend
+                    ).to.equal(true);
                     return cronJob;
                 });
         }
@@ -503,7 +505,11 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                         "application/merge-patch+json"
                     );
                     expect(
-                        JSON.parse(JSON.parse(requestBody).data["config.json"])
+                        JSON.parse(
+                            JSON.parse(requestBody as string).data[
+                                "config.json"
+                            ]
+                        )
                     ).to.deep.equal({
                         id: "c1",
                         name: "test connector",
@@ -649,7 +655,11 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                         "application/merge-patch+json"
                     );
                     expect(
-                        JSON.parse(JSON.parse(requestBody).data["config.json"])
+                        JSON.parse(
+                            JSON.parse(requestBody as string).data[
+                                "config.json"
+                            ]
+                        )
                     ).to.deep.include({
                         id: "c1",
                         name: "test connector",
@@ -710,7 +720,11 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                         "application/merge-patch+json"
                     );
                     expect(
-                        JSON.parse(JSON.parse(requestBody).data["config.json"])
+                        JSON.parse(
+                            JSON.parse(requestBody as string).data[
+                                "config.json"
+                            ]
+                        )
                     ).to.deep.include({
                         id: "c1",
                         name: "test connector",
@@ -736,7 +750,7 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                         "application/merge-patch+json"
                     );
                     const requestCronJob: k8s.V1CronJob = JSON.parse(
-                        requestBody
+                        requestBody as string
                     );
                     expect(requestCronJob.spec.schedule).to.equal("0 14 * * 6");
                     k8sApiScope

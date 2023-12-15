@@ -64,7 +64,10 @@ export default async function minion(options: MinionOptions): Promise<void> {
     }
 
     function checkOptions(options: MinionOptions) {
-        if (options.argv.listenPort <= 0 || options.argv.listenPort > 65535) {
+        let listenPort = options?.argv?.listenPort;
+        listenPort =
+            typeof listenPort === "number" ? listenPort : parseInt(listenPort);
+        if (listenPort <= 0 || listenPort > 65535 || isNaN(listenPort)) {
             throw new Error(
                 `Default port of ${options.argv.listenPort} is invalid`
             );

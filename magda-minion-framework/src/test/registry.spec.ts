@@ -43,7 +43,7 @@ baseSpec(
                             `/aspects/${encodeURIComponentWithApost(
                                 aspectDef.id
                             )}`,
-                            aspectDef,
+                            aspectDef as any,
                             {
                                 reqheaders: reqHeaders(jwtSecret, userId)
                             }

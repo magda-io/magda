@@ -25,7 +25,7 @@ export interface Options {
     testMode?: boolean;
 }
 
-function handleError(e: Error, res: Response) {
+function handleError(e: unknown, res: Response) {
     if (e instanceof HttpError) {
         res.status(e.statusCode).send(e.body);
     } else if (e instanceof ServerError) {

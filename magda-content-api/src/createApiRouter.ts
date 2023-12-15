@@ -102,8 +102,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
                                     break;
                             }
                         } catch (e) {
-                            item.error = e.message;
-                            console.error(e.stack);
+                            item.error = (e as any)?.message
+                                ? e instanceof Error
+                                : `${e}`;
+                            console.error(e);
                         }
                     }
                 }
@@ -224,9 +226,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
             outputContent(res, content, format);
         } catch (e) {
-            res.status(e?.statusCode || 500).json({
+            res.status((e as any)?.statusCode || 500).json({
                 result: "FAILED",
-                message: e?.message ? e.message : ""
+                message: (e as any)?.message ? (e as any).message : ""
             });
             if (e instanceof AccessControlError) {
                 console.log(e);
@@ -319,7 +321,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     result: "SUCCESS"
                 });
             } catch (e) {
-                res.status(e.statusCode || 500).json({
+                res.status((e as any)?.statusCode || 500).json({
                     result: "FAILED"
                 });
                 console.error(e);
