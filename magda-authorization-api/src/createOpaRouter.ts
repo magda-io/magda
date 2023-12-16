@@ -215,7 +215,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             const reqOpts = await appendUserInfoToInput(req);
             await proxyToOpa(req, res, reqOpts);
         } catch (e) {
-            res.status(e.statusCode || 500).send(
+            res.status((e as any)?.statusCode || 500).send(
                 `Failed to proxy OPA request: ${e}`
             );
         }
@@ -571,11 +571,15 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             }
         } catch (e) {
             console.log(e);
-            res.status(e.statusCode || 500).send(
+            res.status((e as any)?.statusCode || 500).send(
                 // request promise core add extra status code to error.message
                 // https://github.com/request/promise-core/blob/091bac074e6c94850b999f0f824494d8b06faa1c/lib/errors.js#L26
                 // Thus, we will try to use e.error if available
-                e?.error ? e.error : e?.message ? e.message : String(e)
+                (e as any)?.error
+                    ? (e as any).error
+                    : (e as any)?.message
+                    ? (e as any).message
+                    : String(e)
             );
         } finally {
             if (options?.debug === true) {

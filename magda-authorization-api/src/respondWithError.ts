@@ -6,7 +6,7 @@ import ServerError from "magda-typescript-common/src/ServerError";
 export default function respondWithError(
     route: string,
     res: express.Response,
-    e: Error
+    e: unknown
 ) {
     console.error(`Error happened when processed "${route}"`);
     console.error(e);
