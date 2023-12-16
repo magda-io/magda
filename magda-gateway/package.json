@@ -68,7 +68,7 @@
     "@types/read-pkg-up": "^3.0.1",
     "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",
-    "@types/supertest": "^2.0.2",
+    "@types/supertest": "^2.0.16",
     "@types/urijs": "^1.19.19",
     "@types/uuid": "^8.0.0",
     "@types/yargs": "^12.0.8",
@@ -78,7 +78,7 @@
     "nock": "^13.4.0",
     "randomstring": "^1.1.5",
     "sinon": "^2.4.1",
-    "supertest": "^3.0.0",
+    "supertest": "^6.3.3",
     "typescript": "~5.2.2"
   },
   "config": {

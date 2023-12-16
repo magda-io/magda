@@ -56,7 +56,7 @@
     "@types/request": "^2.48.1",
     "@types/request-promise-native": "^1.0.15",
     "@types/sinon": "^4.3.3",
-    "@types/supertest": "^2.0.4",
+    "@types/supertest": "^2.0.16",
     "@types/type-is": "^1.6.2",
     "@types/urijs": "^1.19.19",
     "@types/yargs": "^12.0.8",
@@ -64,7 +64,7 @@
     "mocha": "^5.1.1",
     "nock": "^13.4.0",
     "sinon": "^5.0.7",
-    "supertest": "^3.0.0",
+    "supertest": "^6.3.3",
     "typescript": "~5.2.2"
   },
   "config": {

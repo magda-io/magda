@@ -31,7 +31,7 @@
     "@types/read-pkg-up": "^3.0.1",
     "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",
-    "@types/supertest": "^2.0.2",
+    "@types/supertest": "^2.0.16",
     "@types/urijs": "^1.19.19",
     "@types/xml2js": "^0.4.0",
     "@types/yaml-front-matter": "^4.1.0",
@@ -40,7 +40,7 @@
     "mocha": "^3.4.2",
     "nock": "^13.4.0",
     "sinon": "^2.4.1",
-    "supertest": "^3.0.0",
+    "supertest": "^6.3.3",
     "typed-promisify": "^0.4.0",
     "typescript": "~5.2.2",
     "xml2js": "^0.4.19"

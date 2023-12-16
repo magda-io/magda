@@ -22,7 +22,7 @@
     "@types/nock": "^8.2.1",
     "@types/query-string": "^5.1.0",
     "@types/sinon": "^2.3.3",
-    "@types/supertest": "^2.0.2",
+    "@types/supertest": "^2.0.16",
     "@types/yargs": "^12.0.8",
     "chai": "^4.1.0",
     "jsverify": "^0.8.2",
@@ -32,7 +32,7 @@
     "portfinder": "^1.0.13",
     "query-string": "^6.1.0",
     "sinon": "^2.4.1",
-    "supertest": "^3.0.0",
+    "supertest": "^6.3.3",
     "testcheck": "^1.0.0-rc.2",
     "typescript": "~5.2.2"
   },

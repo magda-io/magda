@@ -49,7 +49,7 @@
     "@types/request": "^2.48.1",
     "@types/request-promise-native": "^1.0.16",
     "@types/sinon": "^7.0.11",
-    "@types/supertest": "^2.0.4",
+    "@types/supertest": "^2.0.16",
     "@types/uuid": "^8.0.0",
     "@types/yargs": "^12.0.8",
     "chai": "^4.1.2",
@@ -60,7 +60,7 @@
     "nyc": "^13.1.0",
     "recursive-readdir": "^2.2.2",
     "sinon": "^7.3.1",
-    "supertest": "^3.0.0",
+    "supertest": "^6.3.3",
     "typescript": "~5.2.2"
   },
   "config": {
