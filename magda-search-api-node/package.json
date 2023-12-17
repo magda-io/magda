@@ -16,7 +16,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "6.8.6",
     "@magda/typescript-common": "^2.3.3",
-    "express": "^4.17.1",
+    "express": "^4.17.2",
     "express-validation": "^3.0.2",
     "geojson": "^0.5.0",
     "jsonwebtoken": "^8.4.0",
@@ -27,7 +27,7 @@
   "devDependencies": {
     "@magda/scripts": "^2.3.3",
     "@types/chai": "^4.1.2",
-    "@types/express": "^4.17.6",
+    "@types/express": "^4.17.21",
     "@types/geojson": "^7946.0.7",
     "@types/hapi__joi": "^16.0.12",
     "@types/lodash": "^4.14.96",

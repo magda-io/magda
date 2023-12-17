@@ -154,7 +154,7 @@ describe("proxying", () => {
                 })
                     .get("/")
                     .reply(() => {
-                        return 200;
+                        return [200];
                     });
 
                 return supertest(app).get(key).set("Host", "test").expect(200);

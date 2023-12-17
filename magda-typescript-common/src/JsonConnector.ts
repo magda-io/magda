@@ -511,7 +511,7 @@ export default class JsonConnector {
 
     private shutdownOnIdle(express: express.Express, timeoutSeconds: number) {
         // Arrange to shut down the Express server after the idle timeout expires.
-        let timeoutId: NodeJS.Timer;
+        let timeoutId: NodeJS.Timeout | undefined;
 
         function resetTimeout() {
             if (timeoutId !== undefined) {

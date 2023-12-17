@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^2.3.3",
-    "express": "^4.17.1",
+    "express": "^4.17.2",
     "express-multipart-file-parser": "^0.1.2",
     "http-terminator": "^3.2.0",
     "minio": "^7.0.26",
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@magda/scripts": "^2.3.3",
-    "@types/express": "^4.17.6",
+    "@types/express": "^4.17.21",
     "@types/minio": "^7.0.12",
     "@types/urijs": "^1.19.19",
     "@types/yargs": "^12.0.8",

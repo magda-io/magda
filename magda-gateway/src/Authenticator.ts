@@ -17,6 +17,12 @@ import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl";
 
 export type SessionCookieOptions = CookieOptions;
 
+declare module "express-session" {
+    interface SessionData {
+        authPlugin?: AuthPluginSessionData;
+    }
+}
+
 export interface AuthenticatorOptions {
     sessionSecret: string;
     dbPool: pg.Pool;

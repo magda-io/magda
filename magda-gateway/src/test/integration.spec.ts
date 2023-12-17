@@ -136,7 +136,7 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
         } catch (e) {
             // --- if database `test` already there
             // --- then mute the error
-            if (e.code !== "42P04") {
+            if ((e as any)?.code !== "42P04") {
                 throw e;
             }
         }

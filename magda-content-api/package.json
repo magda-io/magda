@@ -19,7 +19,7 @@
     "@magda/typescript-common": "^2.3.3",
     "body-parser": "^1.13.2",
     "djv": "^2.1.4",
-    "express": "^4.17.1",
+    "express": "^4.17.2",
     "http-terminator": "^3.2.0",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.4",
@@ -35,7 +35,7 @@
   "devDependencies": {
     "@magda/scripts": "^2.3.3",
     "@types/chai": "^4.1.2",
-    "@types/express": "^4.17.6",
+    "@types/express": "^4.17.21",
     "@types/lodash": "^4.14.96",
     "@types/mime-types": "^2.1.0",
     "@types/mocha": "^2.2.47",

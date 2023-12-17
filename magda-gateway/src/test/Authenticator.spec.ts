@@ -41,7 +41,7 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
         } catch (e) {
             // --- if database `test` already there
             // --- then mute the error
-            if (e.code !== "42P04") {
+            if ((e as any)?.code !== "42P04") {
                 throw e;
             }
         }
@@ -129,7 +129,7 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
             const data = cookie.parse(header["set-cookie"][i]);
             if (typeof data[cookieName] !== "undefined") {
                 let cookieData: string | boolean = data[cookieName];
-                if (cookieData.substr(0, 2) === "s:") {
+                if (cookieData.substring(0, 2) === "s:") {
                     // --- signed
                     cookieData = signature.unsign(
                         cookieData.slice(2),
