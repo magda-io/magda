@@ -1,8 +1,8 @@
 import spawn from "cross-spawn";
-import assert from "assert";
-import path from "path";
-import { MockRegistry } from "./MockRegistry";
-import { MockExpressServer } from "./MockExpressServer";
+import * as assert from "assert";
+import * as path from "path";
+import { MockRegistry } from "./MockRegistry.js";
+import { MockExpressServer } from "./MockExpressServer.js";
 import resolvePkg from "resolve";
 
 /**

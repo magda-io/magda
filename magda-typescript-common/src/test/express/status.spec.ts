@@ -2,11 +2,11 @@ import {
     installStatusRouter,
     OptionsIO,
     createServiceProbe
-} from "../../express/status";
+} from "../../express/status.js";
 
-const request = require("supertest");
-const express = require("express");
-const assert = require("assert");
+import request from "supertest";
+import express from "express";
+import assert from "assert";
 
 setup("status - default", undefined, (agent: any) => {
     it("should always be live", function (done) {

@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
 import MagdaMinioClient from "./MagdaMinioClient";
-import bodyParser from "body-parser";
 const { fileParser } = require("express-multipart-file-parser");
 import { getUserId } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
@@ -80,10 +79,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     // JSON files are interpreted as text
-    router.use(bodyParser.text({ type: ["text/*", "application/json"] }));
-    router.use(
-        bodyParser.raw({ type: ["image/*", "application/octet-stream"] })
-    );
+    router.use(express.text({ type: ["text/*", "application/json"] }));
+    router.use(express.raw({ type: ["image/*", "application/octet-stream"] }));
 
     /**
      * @apiGroup Storage

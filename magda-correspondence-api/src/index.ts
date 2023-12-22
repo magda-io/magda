@@ -98,7 +98,7 @@ const argv = yargs
     }).argv;
 
 const app = express();
-app.use(require("body-parser").json());
+app.use(express.json());
 
 console.log("Sync default email templates to content API...");
 

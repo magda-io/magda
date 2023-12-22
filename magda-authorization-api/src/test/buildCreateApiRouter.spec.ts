@@ -28,7 +28,7 @@ import AuthDecision, {
 import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient";
 import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
 
-describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
+describe("Auth api router", function (this) {
     this.timeout(10000);
 
     let argv: any;
@@ -89,7 +89,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
         });
 
         const app = express();
-        app.use(require("body-parser").json({ limit: "100mb" }));
+        app.use(express.json({ limit: "100mb" }));
         app.use(apiRouter);
 
         return app;

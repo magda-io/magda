@@ -1,6 +1,6 @@
 import urijs from "urijs";
 import { v4 as uuidv4 } from "uuid";
-import md5 from "crypto-js/md5";
+import md5 from "crypto-js/md5.js";
 
 // max allowed s3 object key length
 // minio implements an s3 alike / compatible API thus the similar limit should apply.

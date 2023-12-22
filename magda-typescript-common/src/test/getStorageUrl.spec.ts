@@ -1,11 +1,11 @@
 import "mocha";
 import { expect } from "chai";
 import urijs from "urijs";
-import jsc from "./jsverify";
+import jsc from "./jsverify.js";
 import getStorageUrl, {
     InvalidCharsRegEx,
     isValidS3ObjectKey
-} from "../getStorageUrl";
+} from "../getStorageUrl.js";
 
 function generateStr(len: number) {
     if (len <= 0) {

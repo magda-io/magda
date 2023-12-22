@@ -51,7 +51,7 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
         });
 
         app = express();
-        app.use(require("body-parser").json());
+        app.use(express.json());
         app.use(apiRouter);
 
         return app;

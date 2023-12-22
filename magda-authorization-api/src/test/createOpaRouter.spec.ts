@@ -19,7 +19,7 @@ import { ANONYMOUS_USERS_ROLE_ID } from "magda-typescript-common/src/authorizati
 import testDataSimple from "magda-typescript-common/src/test/sampleOpaResponses/simple.json";
 import buildJwt from "magda-typescript-common/src/session/buildJwt";
 
-describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
+describe("Auth api router", function (this) {
     this.timeout(10000);
 
     const opaBaseUrl = "http://localhost:8181/";

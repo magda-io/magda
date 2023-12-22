@@ -1,4 +1,4 @@
-import ConnectorRecordId from "./ConnectorRecordId";
+import ConnectorRecordId from "./ConnectorRecordId.js";
 
 export default class RecordCreationFailure {
     constructor(

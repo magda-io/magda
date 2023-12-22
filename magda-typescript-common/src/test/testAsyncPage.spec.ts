@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import AsyncPage, { forEachAsync } from "../AsyncPage";
+import AsyncPage, { forEachAsync } from "../AsyncPage.js";
 import "mocha";
 
 describe("AsyncPage", function () {

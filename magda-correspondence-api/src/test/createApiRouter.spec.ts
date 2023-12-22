@@ -102,7 +102,7 @@ describe("send dataset request mail", () => {
         sendStub = sinon.stub(stubbedSMTPMailer, "send");
 
         app = express();
-        app.use(require("body-parser").json());
+        app.use(express.json());
         app.use(
             "/",
             createApiRouter(
@@ -232,7 +232,7 @@ describe("send dataset request mail", () => {
         it("should fall back to default recipient if forced via options", () => {
             // Create a new app with different options
             app = express();
-            app.use(require("body-parser").json());
+            app.use(express.json());
             const options = resolveRouterOptions(
                 stubbedSMTPMailer,
                 templateRender

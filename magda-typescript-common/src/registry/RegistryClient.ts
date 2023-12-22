@@ -6,12 +6,12 @@ import {
     RecordAspectsApi,
     WebHooksApi,
     RecordHistoryApi
-} from "../generated/registry/api";
+} from "../generated/registry/api.js";
 import URI from "urijs";
-import retry from "../retry";
-import formatServiceError from "../formatServiceError";
+import retry from "../retry.js";
+import formatServiceError from "../formatServiceError.js";
 import { Response } from "request";
-import ServerError from "../ServerError";
+import ServerError from "../ServerError.js";
 
 export interface RegistryOptions {
     baseUrl: string;

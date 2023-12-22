@@ -1,4 +1,4 @@
-import { ApiError } from "./generated/registry/api";
+import { ApiError } from "./generated/registry/api.js";
 
 export class ServiceError extends Error {
     public e: any;

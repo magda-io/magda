@@ -3,27 +3,32 @@
   "description": "Common TypeScript code shared between components.",
   "version": "2.3.3",
   "license": "Apache-2.0",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
     "compile": "tsc -b",
     "watch": "tsc -b --watch",
     "generate": "generate-registry-typescript ./src/generated/registry",
-    "test": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+    "test": "nyc mocha",
     "dev": "yarn run watch",
     "release": "npm publish || echo \"Skip releasing npm package @magda/typescript-common.\""
   },
   "devDependencies": {
     "@magda/registry-aspects": "^2.3.3",
     "@magda/scripts": "^2.3.3",
-    "@types/chai": "^4.0.0",
+    "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.0",
     "@types/cross-spawn": "^6.0.1",
     "@types/crypto-js": "^4.1.1",
     "@types/dompurify": "^2.2.1",
     "@types/express": "^4.17.21",
     "@types/lodash": "^4.14.73",
-    "@types/mocha": "^2.2.41",
+    "@types/mocha": "^10.0.6",
     "@types/nock": "^8.2.1",
     "@types/pg": "^8.6.5",
     "@types/read-pkg-up": "^3.0.1",
@@ -32,16 +37,18 @@
     "@types/urijs": "^1.19.19",
     "@types/uuid": "^8.0.0",
     "@types/yargs": "^12.0.8",
-    "chai": "^4.1.2",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/djv": "^2.1.4",
+    "chai": "^5.0.0-rc.0",
     "chai-as-promised": "^7.1.1",
     "djv": "^2.1.4",
     "fs-extra": "8.1.0",
     "jsverify": "^0.8.2",
     "lazy-seq": "^1.0.0",
-    "mocha": "^3.4.2",
+    "mocha": "^10.2.0",
     "mock-req-res": "^1.1.1",
     "nock": "^13.4.0",
-    "nyc": "^13.1.0",
+    "nyc": "^15.1.0",
     "sinon": "^4.2.1",
     "typescript": "~5.2.2"
   },
@@ -49,12 +56,11 @@
     "@types/request": "^2.48.1",
     "@types/resolve": "^1.14.0",
     "@types/vfile-message": "^2.0.0",
-    "body-parser": "^1.18.2",
     "crypto-js": "^4.1.1",
     "dompurify": "^2.3.0",
     "express": "^4.17.2",
     "cross-fetch": "^4.0.0",
-    "jsonwebtoken": "^8.4.0",
+    "jsonwebtoken": "^9.0.2",
     "load-json-file": "^1.0.0",
     "lodash": "^4.17.11",
     "markdown-it": "^10.0.0",
@@ -64,9 +70,10 @@
     "request": "^2.88.0",
     "resolve": "^1.15.0",
     "sql-syntax": "^1.1.3",
-    "tsmonad": "^0.7.2",
+    "@magda/tsmonad": "^0.9.0",
     "urijs": "^1.19.11",
     "uuid": "^8.2.0",
+    "caller-path": "^4.0.0",
     "yargs": "^12.0.5"
   },
   "config": {
@@ -76,6 +83,15 @@
     "jwtSecret": "squirrel",
     "SESSION_SECRET": "keyboard cat",
     "userId": "00000000-0000-4000-8000-000000000000"
+  },
+  "mocha": {
+    "require": [
+      "ts-node/register"
+    ],
+    "loader": "ts-node/esm",
+    "spec": [
+      "src/test/**/**.spec.ts"
+    ]
   },
   "magda": {
     "language": "typescript",

@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
-import { Maybe } from "tsmonad";
-import "../authorization-api/model";
-const jwt = require("jsonwebtoken");
+import { Maybe } from "@magda/tsmonad";
+import "../authorization-api/model.js";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export function getUserId(req: Request, jwtSecret: string): Maybe<string> {
     const jwtToken = req.header("X-Magda-Session");
 
     if (jwtToken) {
         try {
-            const jwtPayload = jwt.verify(jwtToken, jwtSecret);
+            const jwtPayload = jwt.verify(jwtToken, jwtSecret) as JwtPayload;
             return Maybe.just(jwtPayload.userId);
         } catch (e) {
             console.error(e);

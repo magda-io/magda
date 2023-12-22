@@ -20,8 +20,8 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "ts-node": "^10.9.1",
-    "tsconfig-paths": "^4.1.0"
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0"
   },
   "magda": {
     "language": "typescript",

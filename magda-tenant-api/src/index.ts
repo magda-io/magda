@@ -62,7 +62,7 @@ if (argv.debug === true) {
 
 // Create a new Express application.
 var app = express();
-app.use(require("body-parser").json());
+app.use(express.json());
 
 const database = new Database({
     dbHost: argv.dbHost,

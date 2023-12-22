@@ -1,4 +1,4 @@
-import { Tenant } from "../tenant-api/Tenant";
+import { Tenant } from "../tenant-api/Tenant.js";
 
 const mockTenantData = [
     {

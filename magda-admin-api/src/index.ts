@@ -80,7 +80,7 @@ console.log(`SkipAuth: ${skipAuth}`);
 
 // Create a new Express application.
 var app = express();
-app.use(require("body-parser").json());
+app.use(express.json());
 
 app.use(
     "/v0",

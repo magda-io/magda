@@ -1,10 +1,11 @@
 import { expect } from "chai";
 import "mocha";
 import yargs from "yargs";
-import addJwtSecretFromEnvVar from "../../session/addJwtSecretFromEnvVar";
-import { getUserId } from "../../session/GetUserId";
-import { getUserSession } from "../../session/GetUserSession";
-import buildJwt from "../../session/buildJwt";
+import addJwtSecretFromEnvVar from "../../session/addJwtSecretFromEnvVar.js";
+import { getUserId } from "../../session/GetUserId.js";
+import { getUserSession } from "../../session/GetUserSession.js";
+import buildJwt from "../../session/buildJwt.js";
+import { require } from "../../esmUtils.js";
 const { mockRequest } = require("mock-req-res");
 
 describe("Get authz claim from jwt token", () => {

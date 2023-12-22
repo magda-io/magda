@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { getUserId as getUserIdFromReq } from "../session/GetUserId";
+import { getUserId as getUserIdFromReq } from "../session/GetUserId.js";
 import AuthDecisionQueryClient, {
     AuthDecisionReqConfig
-} from "../opa/AuthDecisionQueryClient";
-import AuthDecision, { isTrueEquivalent } from "../opa/AuthDecision";
-import ServerError from "../ServerError";
+} from "../opa/AuthDecisionQueryClient.js";
+import AuthDecision, { isTrueEquivalent } from "../opa/AuthDecision.js";
+import ServerError from "../ServerError.js";
 
 export type AuthDecisionReqConfigOrConfigFuncParam =
     | AuthDecisionReqConfig

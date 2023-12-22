@@ -46,7 +46,7 @@ describe("Tenant api router", function (this: Mocha.ISuiteCallbackContext) {
         });
 
         const app = express();
-        app.use(require("body-parser").json());
+        app.use(express.json());
         app.use(apiRouter);
         return app;
     }

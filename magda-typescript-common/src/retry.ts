@@ -1,6 +1,6 @@
-import runLater from "./runLater";
+import runLater from "./runLater.js";
 
-export default function retry<T>(
+export default function retry<T = any>(
     op: () => Promise<T>,
     delaySeconds: number,
     retries: number,

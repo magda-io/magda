@@ -1,5 +1,5 @@
 import { Router } from "express";
-import request = require("request");
+import request from "request";
 
 export type Probe = () => Promise<State>;
 

@@ -1,11 +1,11 @@
 import fetch from "cross-fetch";
-import { MAGDA_ADMIN_PORTAL_ID } from "../registry/TenantConsts";
-import { Tenant } from "../tenant-api/Tenant";
+import { MAGDA_ADMIN_PORTAL_ID } from "../registry/TenantConsts.js";
+import { Tenant } from "../tenant-api/Tenant.js";
 import lodash from "lodash";
-import retry from "../retry";
-import formatServiceError from "../formatServiceError";
-import createServiceError from "../createServiceError";
-import buildJwt from "../session/buildJwt";
+import retry from "../retry.js";
+import formatServiceError from "../formatServiceError.js";
+import createServiceError from "../createServiceError.js";
+import buildJwt from "../session/buildJwt.js";
 
 export interface TenantOptions {
     urlStr: string;

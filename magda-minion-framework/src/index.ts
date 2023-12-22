@@ -39,7 +39,7 @@ export default async function minion(options: MinionOptions): Promise<void> {
 
     const server = options.express();
 
-    server.use(require("body-parser").json({ limit: "50mb" }));
+    server.use(express.json({ limit: "50mb" }));
 
     server.get("/healthz", (request, response) => {
         response.status(200).send("OK");

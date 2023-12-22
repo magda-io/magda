@@ -1,7 +1,7 @@
-import { MockExpressServer } from "./MockExpressServer";
+import { MockExpressServer } from "./MockExpressServer.js";
 import { merge } from "lodash";
-const body = require("body-parser");
-const djv = require("djv");
+import express from "express";
+import djv from "djv";
 
 export class MockRegistry extends MockExpressServer {
     aspects: any = {};
@@ -10,7 +10,7 @@ export class MockRegistry extends MockExpressServer {
 
     runImplementation(registry: any) {
         registry.use(
-            body.json({
+            express.json({
                 limit: "500000kb"
             })
         );

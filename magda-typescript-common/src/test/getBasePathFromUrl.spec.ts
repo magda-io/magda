@@ -1,6 +1,6 @@
 import "mocha";
 import { expect } from "chai";
-import getBasePathFromUrl from "../getBasePathFromUrl";
+import getBasePathFromUrl from "../getBasePathFromUrl.js";
 
 const assertionList: { [key: string]: string } = {
     "": "/",

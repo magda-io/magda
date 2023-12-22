@@ -1,18 +1,19 @@
-import { AspectDefinition, Record } from "./generated/registry/api";
-import AspectCreationFailure from "./AspectCreationFailure";
-import AsyncPage, { forEachAsync, asyncPageToArray } from "./AsyncPage";
-import ConnectorRecordId, { RecordType } from "./ConnectorRecordId";
-import ConnectionResult from "./ConnectionResult";
-import RecordCreationFailure from "./RecordCreationFailure";
-import JsonTransformer from "./JsonTransformer";
-import Registry from "./registry/AuthorizedRegistryClient";
-import unionToThrowable from "./util/unionToThrowable";
-import { parse as parseArgv } from "yargs";
+import { AspectDefinition, Record } from "./generated/registry/api.js";
+import AspectCreationFailure from "./AspectCreationFailure.js";
+import AsyncPage, { forEachAsync, asyncPageToArray } from "./AsyncPage.js";
+import ConnectorRecordId, { RecordType } from "./ConnectorRecordId.js";
+import ConnectionResult from "./ConnectionResult.js";
+import RecordCreationFailure from "./RecordCreationFailure.js";
+import JsonTransformer from "./JsonTransformer.js";
+import Registry from "./registry/AuthorizedRegistryClient.js";
+import unionToThrowable from "./util/unionToThrowable.js";
+import yargs from "yargs";
+const { parse: parseArgv } = yargs;
 
 import express from "express";
-import fs from "fs";
-import path from "path";
-import process from "process";
+import * as fs from "fs";
+import * as path from "path";
+import * as process from "process";
 import { v4 as uuidv4 } from "uuid";
 import _ from "lodash";
 
@@ -432,7 +433,7 @@ export default class JsonConnector {
         }
 
         var app = express();
-        app.use(require("body-parser").json());
+        app.use(express.json());
 
         if (options.timeoutSeconds > 0) {
             this.shutdownOnIdle(app, options.timeoutSeconds);

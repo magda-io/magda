@@ -1,4 +1,4 @@
-const requestOriginal = require("request");
+import requestOriginal from "request";
 import { RequestAPI, Request, CoreOptions, RequiredUriUrl } from "request";
 import readPkgUp from "read-pkg-up";
 const pkg = readPkgUp.sync().pkg;

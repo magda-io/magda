@@ -1,4 +1,4 @@
-import unknown2Error from "./unknown2Error";
+import unknown2Error from "./unknown2Error.js";
 
 export abstract class TryResult<T = any> {
     public readonly value: T;

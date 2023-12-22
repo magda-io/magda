@@ -4,6 +4,8 @@
         "files": true
     },
     "compilerOptions": {
+        "module": "Node16",
+        "moduleResolution": "Node16",
         "outDir": "./dist",
         "strictNullChecks": false,
         "rootDir": "./src",
