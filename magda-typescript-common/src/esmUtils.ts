@@ -21,6 +21,11 @@ export function require(id: string): any {
     return requireFrom(id);
 }
 
+export function requireResolve(id: string): string {
+    const requireFrom = createRequire(callerPath({ depth: 1 }));
+    return requireFrom.resolve(id);
+}
+
 /**
  * This is an ESM replacement for `__filename`.
  *

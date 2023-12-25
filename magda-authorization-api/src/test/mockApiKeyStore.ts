@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
-import { APIKeyRecord } from "magda-typescript-common/src/authorization-api/model";
+import { APIKeyRecord } from "magda-typescript-common/src/authorization-api/model.js";
 
 const mockUserApiKeyData = [
     {

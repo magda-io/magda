@@ -1,4 +1,4 @@
-import { Maybe } from "tsmonad";
+import { Maybe } from "@magda/tsmonad";
 import pg from "pg";
 import _ from "lodash";
 

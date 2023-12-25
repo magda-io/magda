@@ -1,7 +1,7 @@
 import pg from "pg";
 import fse from "fs-extra";
 import recursive from "recursive-readdir";
-import getTestDBConfig from "./getTestDBConfig";
+import getTestDBConfig from "./getTestDBConfig.js";
 import path from "path";
 
 function getVersionNumber(fileName: string) {

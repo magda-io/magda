@@ -1,12 +1,12 @@
 import express from "express";
 import { Router } from "express";
 import _ from "lodash";
-import Database from "./Database";
-import { User } from "magda-typescript-common/src/authorization-api/model";
-import { getUserSession } from "magda-typescript-common/src/session/GetUserSession";
-import OpaCompileResponseParser from "magda-typescript-common/src/OpaCompileResponseParser";
-import setResponseNoCache from "magda-typescript-common/src/express/setResponseNoCache";
-import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
+import Database from "./Database.js";
+import { User } from "magda-typescript-common/src/authorization-api/model.js";
+import { getUserSession } from "magda-typescript-common/src/session/GetUserSession.js";
+import OpaCompileResponseParser from "magda-typescript-common/src/OpaCompileResponseParser.js";
+import setResponseNoCache from "magda-typescript-common/src/express/setResponseNoCache.js";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError.js";
 import fetch, { RequestInit } from "node-fetch";
 import urijs from "urijs";
 import objectPath from "object-path";
@@ -204,7 +204,11 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             }
             const fullResponse = await fetch(apiEndpointUri.toString(), {
                 ...fetchRequestOpts,
-                ...(reqJson ? { body: JSON.stringify(reqJson) } : {})
+                ...(reqJson ? { body: JSON.stringify(reqJson) } : {}),
+                headers: {
+                    ...(fetchRequestOpts?.headers || {}),
+                    ...(reqJson ? { "Content-Type": "application/json" } : {})
+                }
             });
             if (
                 req.path === "/compile" &&
@@ -426,7 +430,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             }
 
             if (operationUri[0] === "/") {
-                operationUri = operationUri.substr(1);
+                operationUri = operationUri.substring(1);
             }
 
             const opUriParts = operationUri.split("/");
@@ -513,7 +517,11 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             }
             const fullResponse = await fetch(apiEndpointUri.toString(), {
                 ...fetchRequestOpts,
-                ...(reqJson ? { body: JSON.stringify(reqJson) } : {})
+                ...(reqJson ? { body: JSON.stringify(reqJson) } : {}),
+                headers: {
+                    ...(fetchRequestOpts?.headers || {}),
+                    ...(reqJson ? { "Content-Type": "application/json" } : {})
+                }
             });
 
             if (options?.debug === true) {
@@ -603,7 +611,8 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             }
         } catch (e) {
             console.log(e);
-            res.status(500).send(
+            const statusCode = e instanceof GenericError ? e.statusCode : 500;
+            res.status(statusCode).send(
                 `Failed to contact OPA to get auth decision: ${e}`
             );
         } finally {

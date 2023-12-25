@@ -1,15 +1,15 @@
 import express, { Request, Response } from "express";
-import Database from "../Database";
-import respondWithError from "../respondWithError";
-import handleMaybePromise from "../handleMaybePromise";
-import handleServerError from "magda-typescript-common/src/handleServerError";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import Database from "../Database.js";
+import respondWithError from "../respondWithError.js";
+import handleMaybePromise from "../handleMaybePromise.js";
+import handleServerError from "magda-typescript-common/src/handleServerError.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import {
     requirePermission,
     withAuthDecision
-} from "magda-typescript-common/src/authorization-api/authMiddleware";
-import { requireObjectPermission } from "../recordAuthMiddlewares";
-import ServerError from "magda-typescript-common/src/ServerError";
+} from "magda-typescript-common/src/authorization-api/authMiddleware.js";
+import { requireObjectPermission } from "../recordAuthMiddlewares.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
 
 export interface ApiRouterOptions {
     database: Database;

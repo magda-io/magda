@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-const fse = require("fs-extra");
-const nodemon = require("nodemon");
-const path = require("path");
-const process = require("process");
+import * as fse from "fs-extra";
+import * as nodemon from "nodemon";
+import path from "path";
+import process from "process";
+import { requireResolve } from "@magda/typescript-common/dist/esmUtils.js";
 
 const script = process.argv[2];
 if (!script) {
@@ -47,11 +48,7 @@ nodemon({
     args: process.argv.slice(3),
     watch: watchPaths,
     execMap: {
-        ts:
-            "node " +
-            require.resolve("ts-node/dist/bin.js") +
-            " -r " +
-            require.resolve("tsconfig-paths/register")
+        ts: "node " + " --import tsx/esm "
     }
 });
 

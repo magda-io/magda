@@ -1,19 +1,19 @@
 import express, { Request, Response, NextFunction } from "express";
-import Database from "../Database";
-import respondWithError from "../respondWithError";
-import handleMaybePromise from "../handleMaybePromise";
-import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import { NO_CACHE } from "../utilityMiddlewares";
-import { requireObjectPermission } from "../recordAuthMiddlewares";
+import Database from "../Database.js";
+import respondWithError from "../respondWithError.js";
+import handleMaybePromise from "../handleMaybePromise.js";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import { NO_CACHE } from "../utilityMiddlewares.js";
+import { requireObjectPermission } from "../recordAuthMiddlewares.js";
 import {
     withAuthDecision,
     requireUnconditionalAuthDecision
-} from "magda-typescript-common/src/authorization-api/authMiddleware";
+} from "magda-typescript-common/src/authorization-api/authMiddleware.js";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
-import { searchTableRecord } from "magda-typescript-common/src/SQLUtils";
-import ServerError from "magda-typescript-common/src/ServerError";
-import { omit } from "lodash";
+import { searchTableRecord } from "magda-typescript-common/src/SQLUtils.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
+import omit from "lodash/omit.js";
 
 export interface ApiRouterOptions {
     database: Database;

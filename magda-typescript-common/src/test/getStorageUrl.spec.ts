@@ -1,7 +1,7 @@
 import "mocha";
 import { expect } from "chai";
 import urijs from "urijs";
-import jsc from "./jsverify.js";
+import jsc from "jsverify";
 import getStorageUrl, {
     InvalidCharsRegEx,
     isValidS3ObjectKey

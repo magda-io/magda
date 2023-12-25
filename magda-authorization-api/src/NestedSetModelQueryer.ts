@@ -1,12 +1,13 @@
 import pg from "pg";
 import _ from "lodash";
-import { Maybe } from "tsmonad";
+import { Maybe } from "@magda/tsmonad";
 import SQLSyntax, { sqls } from "sql-syntax";
-import { escapeIdentifier } from "magda-typescript-common/src/SQLUtils";
+import { escapeIdentifier } from "magda-typescript-common/src/SQLUtils.js";
 import AuthDecision, {
     UnconditionalTrueDecision
-} from "magda-typescript-common/src/opa/AuthDecision";
-import isUuid from "magda-typescript-common/src/util/isUuid";
+} from "magda-typescript-common/src/opa/AuthDecision.js";
+import isUuid from "magda-typescript-common/src/util/isUuid.js";
+import { require } from "magda-typescript-common/src/esmUtils.js";
 const textTree = require("text-treeview");
 
 export interface NodeRecord {

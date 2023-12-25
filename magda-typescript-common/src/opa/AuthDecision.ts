@@ -10,7 +10,7 @@ import {
     AspectQueryTrue,
     AspectQueryFalse
 } from "./AspectQuery.js";
-import { sqls, SQLSyntax } from "sql-syntax";
+import SQLSyntax, { sqls } from "sql-syntax";
 
 type PlainObject = {
     [key: string]: any;

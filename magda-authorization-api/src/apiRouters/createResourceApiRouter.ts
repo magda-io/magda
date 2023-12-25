@@ -1,24 +1,24 @@
 import express, { Request, Response } from "express";
-import Database from "../Database";
-import respondWithError from "../respondWithError";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import Database from "../Database.js";
+import respondWithError from "../respondWithError.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import {
     requirePermission,
     withAuthDecision
-} from "magda-typescript-common/src/authorization-api/authMiddleware";
+} from "magda-typescript-common/src/authorization-api/authMiddleware.js";
 import {
     requireObjectPermission,
     requireObjectUpdatePermission
-} from "../recordAuthMiddlewares";
+} from "../recordAuthMiddlewares.js";
 import {
     getTableRecord,
     createTableRecord,
     updateTableRecord,
     deleteTableRecord,
     searchTableRecord
-} from "magda-typescript-common/src/SQLUtils";
+} from "magda-typescript-common/src/SQLUtils.js";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
-import ServerError from "magda-typescript-common/src/ServerError";
+import ServerError from "magda-typescript-common/src/ServerError.js";
 
 export interface ApiRouterOptions {
     database: Database;

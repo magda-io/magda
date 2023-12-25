@@ -1,6 +1,6 @@
 import express from "express";
-import { Maybe } from "tsmonad";
-import respondWithError from "./respondWithError";
+import { Maybe } from "@magda/tsmonad";
+import respondWithError from "./respondWithError.js";
 
 export default function handleMaybePromise<T>(
     res: express.Response,

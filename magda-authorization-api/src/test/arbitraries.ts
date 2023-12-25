@@ -1,11 +1,11 @@
-import jsc from "magda-typescript-common/src/test/jsverify";
+import jsc, { Arbitrary } from "jsverify";
 import {
     peopleNameArb,
     lcAlphaNumStringArbNe
-} from "magda-typescript-common/src/test/arbitraries";
-import { User } from "magda-typescript-common/src/authorization-api/model";
+} from "magda-typescript-common/src/test/arbitraries.js";
+import { User } from "magda-typescript-common/src/authorization-api/model.js";
 
-export const emailArb: jsc.Arbitrary<string> = jsc
+export const emailArb: Arbitrary<string> = jsc
     .tuple([
         lcAlphaNumStringArbNe,
         jsc.constant("@"),
@@ -26,7 +26,7 @@ export const emailArb: jsc.Arbitrary<string> = jsc
         }
     );
 
-export const urlArb: jsc.Arbitrary<string> = jsc
+export const urlArb: Arbitrary<string> = jsc
     .tuple([
         jsc.constant("http://"),
         lcAlphaNumStringArbNe,

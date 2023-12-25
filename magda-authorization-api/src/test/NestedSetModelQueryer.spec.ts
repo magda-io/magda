@@ -1,14 +1,14 @@
 import "mocha";
 import pg from "pg";
 import _ from "lodash";
-import chai from "chai";
+import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import NestedSetModelQueryer, {
     NodeRecord,
     CompareNodeResult
-} from "../NestedSetModelQueryer";
-import getTestDBConfig from "./getTestDBConfig";
-import { Maybe } from "tsmonad";
+} from "../NestedSetModelQueryer.js";
+import getTestDBConfig from "./getTestDBConfig.js";
+import { Maybe } from "@magda/tsmonad";
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -25,7 +25,7 @@ async function checkNodeLeftRight(
     expect(testNode.right).to.equal(expectedRight);
 }
 
-describe("Test NestedSetModelQueryer", function (this: Mocha.ISuiteCallbackContext) {
+describe("Test NestedSetModelQueryer", function (this: Mocha.Suite) {
     this.timeout(10000);
     let pool: pg.Pool = null;
     const createTables: string[] = [];

@@ -9,5 +9,5 @@ export {
     PublicUser,
     Role
 } from "@magda/typescript-common/dist/authorization-api/model";
-export { Maybe } from "tsmonad";
+export { Maybe } from "@magda/tsmonad";
 export default AuthApiClient;

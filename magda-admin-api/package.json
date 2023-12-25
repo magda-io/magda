@@ -10,7 +10,7 @@
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
-    "test": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+    "test": "nyc mocha",
     "retag-and-push": "retag-and-push"
   },
   "dependencies": {
@@ -33,7 +33,6 @@
     "@types/http-proxy": "^1.12.1",
     "@types/lodash": "^4.14.74",
     "@types/mocha": "^10.0.6",
-    "@types/nock": "^8.2.1",
     "@types/sinon": "^2.3.3",
     "@types/supertest": "^2.0.16",
     "@types/yargs": "^12.0.8",
@@ -45,6 +44,12 @@
     "sinon": "^3.2.1",
     "supertest": "^6.3.3",
     "typescript": "~5.2.2"
+  },
+  "mocha": {
+    "import": "tsx/esm",
+    "spec": [
+      "src/test/**/*.spec.ts"
+    ]
   },
   "config": {
     "docker": {

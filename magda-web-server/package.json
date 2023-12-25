@@ -27,7 +27,6 @@
     "@types/mocha": "^10.0.6",
     "@types/moment-timezone": "^0.5.30",
     "@types/morgan": "^1.7.35",
-    "@types/nock": "^8.2.1",
     "@types/read-pkg-up": "^3.0.1",
     "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",

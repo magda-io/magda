@@ -7,7 +7,7 @@ import {
 import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
 import ServerError from "magda-typescript-common/src/ServerError";
 import Database, { Query } from "./Database";
-import { Maybe } from "tsmonad";
+import { Maybe } from "@magda/tsmonad";
 import { Content } from "./model";
 import { content, ContentEncoding, ContentItem } from "./content";
 

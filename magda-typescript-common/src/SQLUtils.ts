@@ -1,8 +1,9 @@
-import { SQLSyntax, sqls, Value, RawValue } from "sql-syntax";
+import SQLSyntax, { sqls, Value, RawValue } from "sql-syntax";
 import pg from "pg";
 import AuthDecision, { UnconditionalTrueDecision } from "./opa/AuthDecision.js";
 import { AspectQueryToSqlConfig } from "./opa/AspectQuery.js";
-import { camelCase, difference } from "lodash";
+import camelCase from "lodash/camelCase.js";
+import difference from "lodash/difference.js";
 import ServerError from "./ServerError.js";
 
 type PossibleObjectKind = "object" | "authObject";

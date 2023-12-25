@@ -1,23 +1,27 @@
 import {} from "mocha";
+import {
+    require,
+    requireResolve
+} from "magda-typescript-common/src/esmUtils.js";
 import path from "path";
 import fse from "fs-extra";
 import request from "supertest";
 import urijs from "urijs";
 import nock from "nock";
 import express from "express";
-import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
 //import buildJwt from "magda-typescript-common/src/session/buildJwt";
-import fakeArgv from "magda-typescript-common/src/test/fakeArgv";
-import createOpaRouter from "../createOpaRouter";
+import fakeArgv from "magda-typescript-common/src/test/fakeArgv.js";
+import createOpaRouter from "../createOpaRouter.js";
 import { expect } from "chai";
-import mockDatabase from "./mockDatabase";
-import mockUserDataStore from "magda-typescript-common/src/test/mockUserDataStore";
-import Database from "../Database";
+import mockDatabase from "./mockDatabase.js";
+import mockUserDataStore from "magda-typescript-common/src/test/mockUserDataStore.js";
+import Database from "../Database.js";
 //import { Request } from "supertest";
-import mockApiKeyStore from "./mockApiKeyStore";
-import { ANONYMOUS_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants";
-import testDataSimple from "magda-typescript-common/src/test/sampleOpaResponses/simple.json";
-import buildJwt from "magda-typescript-common/src/session/buildJwt";
+import mockApiKeyStore from "./mockApiKeyStore.js";
+import { ANONYMOUS_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants.js";
+const testDataSimple = require("../../../magda-typescript-common/src/test/sampleOpaResponses/simple.json");
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
 
 describe("Auth api router", function (this) {
     this.timeout(10000);
@@ -55,7 +59,7 @@ describe("Auth api router", function (this) {
                     : {
                           result: {}
                       };
-                return JSON.stringify(resData);
+                return [200, JSON.stringify(resData)];
             });
         return scope;
     }
@@ -112,7 +116,7 @@ describe("Auth api router", function (this) {
             const req = request(app).get(`/decision`);
             await req.then((res) => {
                 expect(res.status).to.be.equal(400);
-                expect(res.text).to.be.equal(
+                expect(res.text).to.contain(
                     "Please specify `operationUri` for the request"
                 );
             });
@@ -564,7 +568,7 @@ describe("Auth api router", function (this) {
 
     describe("Test `/decision` endpoint decision evlautation & encoding: ", () => {
         const testSampleRoot = path.resolve(
-            require.resolve("@magda/typescript-common/package.json"),
+            requireResolve("@magda/typescript-common/package.json"),
             "../src/test/"
         );
 

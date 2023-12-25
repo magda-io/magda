@@ -23,7 +23,6 @@
     "@types/fs-extra": "^5.0.4",
     "@types/lodash": "^4.14.68",
     "@types/mocha": "^10.0.6",
-    "@types/nock": "^8.2.1",
     "@types/node-sass": "^3.10.32",
     "@types/read-pkg-up": "^3.0.1",
     "@types/recursive-readdir": "^2.2.0",

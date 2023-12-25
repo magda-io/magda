@@ -1,5 +1,5 @@
 import mockContentDataStore from "./mockContentStore";
-import { Maybe } from "tsmonad";
+import { Maybe } from "@magda/tsmonad";
 import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
 import { Query, Database } from "../Database";
 const wildcard = require("wildcard");

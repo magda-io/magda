@@ -4,7 +4,7 @@ import { Record } from "../generated/registry/api.js";
 const lazyseq = require("lazy-seq");
 import { v4 as uuidv4 } from "uuid";
 import _ from "lodash";
-import jsc, { Arbitrary, Shrink, Generator } from "./jsverify.js";
+import jsc, { Arbitrary, Shrink, Generator } from "jsverify";
 
 function fromCode(code: number) {
     return String.fromCharCode(code);

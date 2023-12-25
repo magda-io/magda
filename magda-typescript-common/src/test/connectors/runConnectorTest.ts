@@ -23,21 +23,12 @@ export function runConnectorTest(
         function run() {
             return new Promise<void>((resolve, reject) => {
                 const tsconfigPath = path.resolve("tsconfig.json");
-                const tsNodeExec = path.resolve(
-                    path.dirname(
-                        resolvePkg.sync("ts-node", {
-                            basedir: process.cwd()
-                        })
-                    ),
-                    "./bin.js"
-                );
+                const nodeExec = "node";
 
                 const command = [
-                    "-r",
-                    resolvePkg.sync("tsconfig-paths/register", {
-                        basedir: process.cwd()
-                    }),
-                    "./src",
+                    "--import",
+                    "tsx/esm",
+                    "./src/index.ts",
                     "--id=connector",
                     "--name=Connector",
                     `--sourceUrl=http://localhost:${catalogPort}`,
@@ -46,7 +37,7 @@ export function runConnectorTest(
                     "--userId=user",
                     "--tenantId=1"
                 ];
-                const proc = spawn(tsNodeExec, command, {
+                const proc = spawn(nodeExec, command, {
                     stdio: "inherit",
                     cwd: path.dirname(tsconfigPath),
                     env: {
