@@ -3,7 +3,6 @@ import * as assert from "assert";
 import * as path from "path";
 import { MockRegistry } from "./MockRegistry.js";
 import { MockExpressServer } from "./MockExpressServer.js";
-import resolvePkg from "resolve";
 
 /**
  * Hoping to re-use this functionality for all black-box style connector
