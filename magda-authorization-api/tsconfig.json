@@ -1,9 +1,6 @@
 {
     "extends": "../tsconfig-global.json",
     "compilerOptions": {
-        "target": "ES2022",
-        "module": "Node16",
-        "moduleResolution": "Node16",
         "outDir": "./dist",
         "strictNullChecks": false,
         "rootDir": "./src",

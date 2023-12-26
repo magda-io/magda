@@ -3,6 +3,14 @@
   "version": "2.3.3",
   "description": "Scripts for building, running, and deploying MAGDA",
   "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    "./*.js": "./*.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "bin": {
     "generate-registry-typescript": "generate-registry-typescript.js",
     "create-jwt-token": "create-jwt-token.js",

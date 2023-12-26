@@ -6,19 +6,19 @@ import { Test, Response } from "supertest";
 import request from "supertest";
 import nock from "nock";
 import fs from "fs";
-import delay from "magda-typescript-common/src/delay";
+import delay from "magda-typescript-common/src/delay.js";
 import AuthorizedRegistryClient, {
     AuthorizedRegistryOptions
-} from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+} from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 
-const jwt = require("jsonwebtoken");
-const Minio = require("minio");
+import jwt from "jsonwebtoken";
+import Minio from "minio";
 
-import createApiRouter from "../createApiRouter";
-import MagdaMinioClient from "../MagdaMinioClient";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import { UnconditionalTrueDecision } from "magda-typescript-common/src/opa/AuthDecision";
+import createApiRouter from "../createApiRouter.js";
+import MagdaMinioClient from "../MagdaMinioClient.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import { UnconditionalTrueDecision } from "magda-typescript-common/src/opa/AuthDecision.js";
 
 /** A random UUID */
 const USER_ID = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
@@ -40,13 +40,14 @@ let authDecisionCallLogs: {
 describe("Storage API tests", () => {
     let app: express.Application;
     const bucketName = "magda-test-bucket";
+    const region = "unspecified-region";
     const minioClientOpts = {
         endPoint: process.env["MINIO_HOST"],
         port: Number(process.env["MINIO_PORT"]),
         useSSL: false,
         accessKey: process.env["MINIO_ACCESS_KEY"],
         secretKey: process.env["MINIO_SECRET_KEY"],
-        region: "unspecified-region"
+        region
     };
     const minioClient = new Minio.Client(minioClientOpts);
     const authApiUrl = "http://example.com";
@@ -57,7 +58,7 @@ describe("Storage API tests", () => {
     const uploadLimit = "100mb";
 
     before(() => {
-        minioClient.makeBucket(bucketName, (err: Error) => {
+        minioClient.makeBucket(bucketName, region, (err: Error) => {
             if (err && (err as any).code !== "BucketAlreadyOwnedByYou") {
                 return console.log("Error creating bucket.", err);
             }

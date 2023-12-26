@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { StorageBucketMetaData, StorageObjectMetaData } from "./common";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import MagdaMinioClient from "./MagdaMinioClient";
-import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
-import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import ServerError from "magda-typescript-common/src/ServerError";
+import { StorageBucketMetaData, StorageObjectMetaData } from "./common.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import MagdaMinioClient from "./MagdaMinioClient.js";
+import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware.js";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
 import { BucketItemStat } from "minio";
 
 type RecordContextData = {

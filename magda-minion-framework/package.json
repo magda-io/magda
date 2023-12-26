@@ -2,6 +2,11 @@
   "name": "@magda/minion-framework",
   "description": "MAGDA Minion Framework",
   "version": "2.3.3",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
@@ -12,7 +17,6 @@
   },
   "author": "",
   "license": "Apache-2.0",
-  "main": "dist",
   "devDependencies": {
     "@magda/scripts": "^2.3.3",
     "@types/chai": "^4.3.11",

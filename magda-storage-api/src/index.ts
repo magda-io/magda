@@ -1,13 +1,13 @@
-import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
 import express from "express";
 import { createHttpTerminator } from "http-terminator";
 import yargs from "yargs";
-import createApiRouter from "./createApiRouter";
-import MagdaMinioClient from "./MagdaMinioClient";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import createApiRouter from "./createApiRouter.js";
+import MagdaMinioClient from "./MagdaMinioClient.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import AuthorizedRegistryClient, {
     AuthorizedRegistryOptions
-} from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+} from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 
 const argv = addJwtSecretFromEnvVar(
     yargs

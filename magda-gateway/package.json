@@ -3,6 +3,11 @@
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
   "version": "2.3.3",
   "license": "Apache-2.0",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
