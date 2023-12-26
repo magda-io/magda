@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-const { askQuestions, getEnvVarInfo } = require("./askQuestions");
-const k8sExecution = require("./k8sExecution");
-const preloadConfig = require("./preloadConfig");
-const clear = require("clear");
-const chalk = require("chalk");
-const Configstore = require("configstore");
+import { askQuestions, getEnvVarInfo } from "./askQuestions.js";
+import k8sExecution from "./k8sExecution.js";
+import preloadConfig from "./preloadConfig.js";
+import clear from "clear";
+import chalk from "chalk";
+import Configstore from "configstore";
+import { require } from "@magda/typescript-common/dist/esmUtils.js";
 
 const appName = "magda-create-secrets";
 const pkg = require("../package.json");

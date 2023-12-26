@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { require } from "@magda/typescript-common/dist/esmUtils.js";
 const chalk = require("chalk");
 const path = require("path");
 const fse = require("fs-extra");

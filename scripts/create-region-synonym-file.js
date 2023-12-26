@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-const _ = require("lodash");
-const yargs = require("yargs");
-const fs = require("fs");
-const request = require("request");
-const StreamArray = require("stream-json/streamers/StreamArray");
+import _ from "lodash";
+import yargs from "yargs";
+import fs from "fs";
+import request from "request";
+import StreamArray from "stream-json/streamers/StreamArray.js";
 
 function getDefaultRegionSourceConfig() {
     try {

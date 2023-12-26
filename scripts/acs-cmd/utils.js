@@ -1,4 +1,4 @@
-async function recordExist(pool, table, record) {
+export async function recordExist(pool, table, record) {
     if (!Object.keys(record).length) {
         throw new Error("record cannot be an empty object!");
     }
@@ -19,7 +19,4 @@ async function recordExist(pool, table, record) {
     return true;
 }
 
-const ADMIN_ROLE_ID = "00000000-0000-0003-0000-000000000000";
-
-module.exports.recordExist = recordExist;
-module.exports.ADMIN_ROLE_ID = ADMIN_ROLE_ID;
+export const ADMIN_ROLE_ID = "00000000-0000-0003-0000-000000000000";

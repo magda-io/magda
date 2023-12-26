@@ -1,4 +1,4 @@
-function getDBConfig() {
+export default function getDBConfig() {
     const {
         POSTGRES_HOST: host,
         POSTGRES_DB: database,
@@ -15,5 +15,3 @@ function getDBConfig() {
         password: password ? password : ""
     };
 }
-
-module.exports = getDBConfig;

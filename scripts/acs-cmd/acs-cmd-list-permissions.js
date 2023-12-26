@@ -1,9 +1,10 @@
 #!/usr/bin/env node
+import { require } from "@magda/typescript-common/dist/esmUtils.js";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const getDBPool = require("../db/getDBPool");
-const { table } = require("table");
+import { program } from "commander";
+import chalk from "chalk";
+import getDBPool from "../db/getDBPool.js";
+import { table } from "table";
 
 const pool = getDBPool();
 

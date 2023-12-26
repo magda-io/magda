@@ -1,12 +1,12 @@
 #!/usr/bin/env node
+import { require } from "@magda/typescript-common/dist/esmUtils.js";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const NestedSetModelQueryer = require("@magda/authorization-api/dist/NestedSetModelQueryer")
-    .default;
-const getDBPool = require("../db/getDBPool");
-const getNodeIdFromNameOrId = require("./getNodeIdFromNameOrId");
-const getUserIdFromNameOrId = require("./getUserIdFromNameOrId");
+import { program } from "commander";
+import chalk from "chalk";
+import NestedSetModelQueryer from "@magda/authorization-api/dist/NestedSetModelQueryer.js";
+import getDBPool from "../db/getDBPool.js";
+import getNodeIdFromNameOrId from "./getNodeIdFromNameOrId.js";
+import getUserIdFromNameOrId from "./getUserIdFromNameOrId.js";
 
 program
     .description(

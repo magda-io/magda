@@ -1,5 +1,6 @@
-const fse = require("fs-extra");
-const path = require("path");
+import fse from "fs-extra";
+import path from "path";
+import { require } from "@magda/typescript-common/dist/esmUtils.js";
 
 function isTypeScriptPackage(packagePath, packageJson) {
     packageJson =
@@ -17,4 +18,4 @@ function isTypeScriptPackage(packagePath, packageJson) {
     return isTypeScript;
 }
 
-module.exports = isTypeScriptPackage;
+export default isTypeScriptPackage;

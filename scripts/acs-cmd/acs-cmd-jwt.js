@@ -1,9 +1,9 @@
 #!/usr/bin/env node
+import { require } from "@magda/typescript-common/dist/esmUtils.js";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const buildJwt = require("@magda/typescript-common/dist/session/buildJwt")
-    .default;
+import { program } from "commander";
+import chalk from "chalk";
+import buildJwt from "@magda/typescript-common/dist/session/buildJwt.js";
 
 const DEFAULT_JWT_SECRET = "squirrel";
 

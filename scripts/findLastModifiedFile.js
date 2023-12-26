@@ -1,5 +1,5 @@
-const fse = require("fs-extra");
-const klawSync = require("klaw-sync");
+import fse from "fs-extra";
+import klawSync from "klaw-sync";
 
 function findLastModifiedFile(path) {
     if (!fse.existsSync(path)) {

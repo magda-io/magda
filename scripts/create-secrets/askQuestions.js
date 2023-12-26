@@ -1,12 +1,12 @@
-const inquirer = require("inquirer");
-const trim = require("lodash/trim");
-const fs = require("fs");
-const path = require("path");
-const moment = require("moment");
-const chalk = require("chalk");
-const pwgen = require("./pwgen");
-const partial = require("lodash/partial");
-const stripJsonComments = require("strip-json-comments");
+import inquirer from "inquirer";
+import trim from "lodash/trim.js";
+import fs from "fs";
+import path from "path";
+import moment from "moment";
+import chalk from "chalk";
+import pwgen from "./pwgen.js";
+import partial from "lodash/partial.js";
+import stripJsonComments from "strip-json-comments";
 
 const questions = [
     {

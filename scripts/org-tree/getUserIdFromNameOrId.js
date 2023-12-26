@@ -1,4 +1,4 @@
-const isUuid = require("@magda/typescript-common/dist/util/isUuid").default;
+import isUuid from "@magda/typescript-common/dist/util/isUuid";
 async function getUserIdFromNameOrId(nameOrId, pool) {
     if (isUuid(nameOrId)) {
         return nameOrId;
@@ -13,4 +13,4 @@ async function getUserIdFromNameOrId(nameOrId, pool) {
         return result.rows[0].id;
     }
 }
-module.exports = getUserIdFromNameOrId;
+export default getUserIdFromNameOrId;

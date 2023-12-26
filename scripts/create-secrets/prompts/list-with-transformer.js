@@ -1,7 +1,7 @@
-const List = require("inquirer/lib/prompts/list");
-const chalk = require("chalk");
-const figures = require("figures");
-const cliCursor = require("cli-cursor");
+import List from "inquirer/lib/prompts/list.js";
+import chalk from "chalk";
+import figures from "figures";
+import cliCursor from "cli-cursor";
 
 /**
  * A customized UI input (selection list).

@@ -1,6 +1,6 @@
-const fs = require("fs");
-const chalk = require("chalk");
-const trim = require("lodash/trim");
+import fs from "fs";
+import chalk from "chalk";
+import trim from "lodash/trim.js";
 
 function preloadConfig(configStore, executeOption) {
     return Promise.resolve().then(function () {
@@ -100,4 +100,4 @@ function readConfigFromFile(configStore, executeOption) {
     });
 }
 
-module.exports = preloadConfig;
+export default preloadConfig;

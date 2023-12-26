@@ -1,12 +1,12 @@
-const fs = require("fs");
-const path = require("path");
-const util = require("util");
+import fs from "fs";
+import path from "path";
+import util from "util";
 
-const Choices = require("inquirer/lib/objects/choices");
-const InquirerAutocomplete = require("inquirer-autocomplete-prompt");
-const stripAnsi = require("strip-ansi");
-const style = require("ansi-styles");
-const fuzzy = require("fuzzy");
+import Choices from "inquirer/lib/objects/choices.js";
+import InquirerAutocomplete from "inquirer-autocomplete-prompt";
+import stripAnsi from "strip-ansi";
+import style from "ansi-styles";
+import fuzzy from "fuzzy";
 
 const readdir_ = util.promisify(fs.readdir);
 const maxScanDepth = 2;

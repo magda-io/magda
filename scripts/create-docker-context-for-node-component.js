@@ -1,18 +1,19 @@
 #!/usr/bin/env node
 
-const childProcess = require("child_process");
-const fse = require("fs-extra");
-const path = require("path");
-const process = require("process");
-const yargs = require("yargs");
-const _ = require("lodash");
-const isSubDir = require("is-subdir");
-const {
-    getVersions,
-    getTags,
-    getName,
-    getRepository
-} = require("./docker-util");
+import childProcess from "child_process";
+import fse from "fs-extra";
+import path from "path";
+import process from "process";
+import yargs from "yargs";
+import _ from "lodash";
+import isSubDir from "is-subdir";
+import { getVersions, getTags, getName, getRepository } from "./docker-util.js";
+import {
+    __dirname as getCurDirPath,
+    require
+} from "@magda/typescript-common/dist/esmUtils.js";
+
+const __dirname = getCurDirPath();
 
 // --- cache dependencies data from package.json
 const packageDependencyDataCache = {};
@@ -315,7 +316,7 @@ function preparePackage(packageDir, destDir) {
 
                 const productionPackages = _.uniqBy(
                     getPackageList(packageDir, path.resolve(packageDir, "..")),
-                    (package) => package.path
+                    (pkg) => pkg.path
                 );
 
                 prepareNodeModules(src, dest, productionPackages);

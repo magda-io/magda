@@ -1,5 +1,5 @@
-const pg = require("pg");
-const getDBConfig = require("./getDBConfig");
+import pg from "pg";
+import getDBConfig from "./getDBConfig.js";
 
 const pool = new pg.Pool(getDBConfig());
 pool.on("error", function (err, client) {
@@ -10,4 +10,4 @@ function getDBPool() {
     return pool;
 }
 
-module.exports = getDBPool;
+export default getDBPool;

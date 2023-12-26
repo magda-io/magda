@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import * as fse from "fs-extra";
-import * as nodemon from "nodemon";
+import { require } from "@magda/typescript-common/dist/esmUtils.js";
+import fse from "fs-extra";
+import nodemon from "nodemon";
 import path from "path";
 import process from "process";
-import { requireResolve } from "@magda/typescript-common/dist/esmUtils.js";
 
 const script = process.argv[2];
 if (!script) {

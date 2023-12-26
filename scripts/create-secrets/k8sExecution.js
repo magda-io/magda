@@ -1,14 +1,14 @@
-const childProcess = require("child_process");
-const process = require("process");
-const chalk = require("chalk");
-const trim = require("lodash/trim");
-const {
+import childProcess from "child_process";
+import process from "process";
+import chalk from "chalk";
+import trim from "lodash/trim.js";
+import {
     getEnvVarInfo,
     askIfCreateNamespace,
     settingNameToEnvVarName
-} = require("./askQuestions");
-const Base64 = require("js-base64").Base64;
-const pwgen = require("./pwgen");
+} from "./askQuestions.js";
+import { Base64 } from "js-base64";
+import pwgen from "./pwgen.js";
 
 const dbPasswordNames = [
     "authorization-db",
