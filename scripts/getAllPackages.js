@@ -1,10 +1,7 @@
-import { require } from "@magda/typescript-common/dist/esmUtils.js";
+import { require } from "@magda/esm-utils";
 const lernaJson = require("../lerna.json");
 import path from "path";
-import {
-    __dirname as getCurDirPath,
-    require
-} from "@magda/typescript-common/dist/esmUtils.js";
+import { __dirname as getCurDirPath, require } from "@magda/esm-utils";
 
 const __dirname = getCurDirPath();
 

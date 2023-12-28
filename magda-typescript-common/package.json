@@ -24,6 +24,7 @@
   "devDependencies": {
     "@magda/registry-aspects": "^2.3.3",
     "@magda/scripts": "^2.3.3",
+    "@magda/esm-utils": "^1.0.1",
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.0",
     "@types/cross-spawn": "^6.0.1",

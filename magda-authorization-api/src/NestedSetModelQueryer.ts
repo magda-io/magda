@@ -7,7 +7,7 @@ import AuthDecision, {
     UnconditionalTrueDecision
 } from "magda-typescript-common/src/opa/AuthDecision.js";
 import isUuid from "magda-typescript-common/src/util/isUuid.js";
-import { require } from "magda-typescript-common/src/esmUtils.js";
+import { require } from "@magda/esm-utils";
 const textTree = require("text-treeview");
 
 export interface NodeRecord {

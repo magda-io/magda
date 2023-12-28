@@ -8,10 +8,7 @@ import yargs from "yargs";
 import _ from "lodash";
 import isSubDir from "is-subdir";
 import { getVersions, getTags, getName, getRepository } from "./docker-util.js";
-import {
-    __dirname as getCurDirPath,
-    require
-} from "@magda/typescript-common/dist/esmUtils.js";
+import { __dirname as getCurDirPath, require } from "@magda/esm-utils";
 
 const __dirname = getCurDirPath();
 

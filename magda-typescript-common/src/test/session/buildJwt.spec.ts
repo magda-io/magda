@@ -5,7 +5,7 @@ import addJwtSecretFromEnvVar from "../../session/addJwtSecretFromEnvVar.js";
 import { getUserId } from "../../session/GetUserId.js";
 import { getUserSession } from "../../session/GetUserSession.js";
 import buildJwt from "../../session/buildJwt.js";
-import { require } from "../../esmUtils.js";
+import { require } from "@magda/esm-utils";
 const { mockRequest } = require("mock-req-res");
 
 describe("Get authz claim from jwt token", () => {

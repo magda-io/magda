@@ -1,4 +1,4 @@
-import { require } from "@magda/typescript-common/dist/esmUtils.js";
+import { require } from "@magda/esm-utils";
 import childProcess from "child_process";
 import getAllPackages from "./getAllPackages.js";
 import isScalaPackage from "./isScalaPackage";

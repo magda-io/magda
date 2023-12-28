@@ -1,8 +1,5 @@
 import {} from "mocha";
-import {
-    require,
-    requireResolve
-} from "magda-typescript-common/src/esmUtils.js";
+import { require, requireResolve } from "@magda/esm-utils";
 import path from "path";
 import fse from "fs-extra";
 import request from "supertest";

@@ -5,7 +5,7 @@ import preloadConfig from "./preloadConfig.js";
 import clear from "clear";
 import chalk from "chalk";
 import Configstore from "configstore";
-import { require } from "@magda/typescript-common/dist/esmUtils.js";
+import { require } from "@magda/esm-utils";
 
 const appName = "magda-create-secrets";
 const pkg = require("../package.json");

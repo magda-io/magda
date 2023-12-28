@@ -1,4 +1,4 @@
-import { require } from "../esmUtils.js";
+import { require } from "@magda/esm-utils";
 const { curried2 } = require("jsverify/lib/utils");
 import { Record } from "../generated/registry/api.js";
 const lazyseq = require("lazy-seq");

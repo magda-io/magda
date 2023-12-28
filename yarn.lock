@@ -3847,6 +3847,11 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
+"@magda/esm-utils@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@magda/esm-utils/-/esm-utils-1.0.1.tgz#1d5e9882958aefa879106e55d32421874baae559"
+  integrity sha512-A300Mds4wl41axrqcrqrw4y1EjUIcrVWipaZpTwlf6ChDLnI57bEqL9EVQLm8muW/qMnY3QzNjxg7EEYly18yA==
+
 "@magda/tsmonad@^0.9.0":
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/@magda/tsmonad/-/tsmonad-0.9.0.tgz#6ddcc1e78fb1606306b923968a1d2f8c3a7e3576"

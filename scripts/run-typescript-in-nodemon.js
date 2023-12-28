@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { require } from "@magda/typescript-common/dist/esmUtils.js";
+import { require } from "@magda/esm-utils";
 import fse from "fs-extra";
 import nodemon from "nodemon";
 import path from "path";

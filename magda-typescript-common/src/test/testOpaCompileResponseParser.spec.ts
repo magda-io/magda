@@ -1,5 +1,5 @@
 import "mocha";
-import { require } from "../esmUtils.js";
+import { require } from "@magda/esm-utils";
 import { expect } from "chai";
 import OpaCompileResponseParser from "../OpaCompileResponseParser.js";
 const testData = require("./sampleOpaResponses/content.json");

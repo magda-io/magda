@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { require } from "magda-typescript-common/src/esmUtils.js";
+import { require } from "@magda/esm-utils";
 import MagdaMinioClient from "./MagdaMinioClient.js";
 const { fileParser } = require("express-multipart-file-parser");
 import { getUserId } from "magda-typescript-common/src/authorization-api/authMiddleware.js";

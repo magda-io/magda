@@ -5,7 +5,7 @@ import "mocha";
 import AspectBuilder from "../AspectBuilder.js";
 import * as fs from "fs";
 import { Record } from "../generated/registry/api.js";
-import { require } from "../esmUtils.js";
+import { require } from "@magda/esm-utils";
 
 describe("JsonTransformer", () => {
     const tenantId1 = 1;

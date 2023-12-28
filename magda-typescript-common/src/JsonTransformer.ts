@@ -2,7 +2,7 @@ import { AspectDefinition, Record } from "./generated/registry/api.js";
 import AspectBuilder from "./AspectBuilder.js";
 import ConnectorRecordId from "./ConnectorRecordId.js";
 import createServiceError from "./createServiceError.js";
-import { require } from "./esmUtils.js";
+import { require } from "@magda/esm-utils";
 
 /**
  * A base class for transformers for most any JSON-based catalog source.

@@ -2,10 +2,7 @@
 import { spawnSync } from "node:child_process";
 import fs from "fs-extra";
 import path from "path";
-import {
-    __dirname as getCurDirPath,
-    require
-} from "@magda/typescript-common/dist/esmUtils.js";
+import { __dirname as getCurDirPath, require } from "@magda/esm-utils";
 const __dirname = getCurDirPath();
 const outputDir = path.resolve(process.argv[2]);
 const swaggerOutputDir = path.resolve(

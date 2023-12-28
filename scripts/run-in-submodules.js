@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { require } from "@magda/typescript-common/dist/esmUtils.js";
+import { require } from "@magda/esm-utils";
 import path from "node:path";
 import childProcess from "child_process";
 import glob from "glob";
