@@ -26,8 +26,9 @@
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
     "rimraf": "^3.0.0",
-    "ts-module-alias-transformer": "^1.0.4",
+    "ts-module-alias-transformer": "^2.0.1",
     "typescript": "~5.2.2",
+    "tsx": "^4.7.0",
     "type-fest": "~2.18.0",
     "@types/estree": "^1.0.5",
     "@types/node": "18.19.3"
@@ -52,7 +53,7 @@
     "set-version": "lerna version --no-push --force-publish"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.19.0"
   },
   "husky": {
     "hooks": {
