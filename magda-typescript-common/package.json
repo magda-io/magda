@@ -53,7 +53,8 @@
     "nock": "^13.4.0",
     "nyc": "^15.1.0",
     "sinon": "^4.2.1",
-    "typescript": "~5.2.2"
+    "typescript": "~5.2.2",
+    "ts-module-alias-transformer": "^2.0.1"
   },
   "dependencies": {
     "@types/request": "^2.48.1",
