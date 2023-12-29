@@ -39,7 +39,10 @@ yarn-install:
     paths:
       - .yarn
   script:
+    - cat yarn.lock | grep ts-module-alias-transformer
     - yarn install --no-progress --child-concurrency 1 --cache-folder .yarn
+    - yarn why ts-module-alias-transformer
+    - cat yarn.lock | grep ts-module-alias-transformer
   artifacts:
     paths:
       - "node_modules"
