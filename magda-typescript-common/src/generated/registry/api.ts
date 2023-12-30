@@ -9,8 +9,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
 import request from "request";
-import http from "http";
+import http from "node:http";
 
 let defaultBasePath = "http://localhost/api/v0/registry/";
 
