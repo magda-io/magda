@@ -532,7 +532,7 @@ buildtest:opa-policies:
 
 buildtest:helm-charts:
   stage: buildtest
-  image: dtzar/helm-kubectl:3.13.2
+  image: dtzar/helm-kubectl:3.13.3
   needs:
     - yarn-install
   cache:
@@ -727,7 +727,7 @@ dockerize:dockerExtensions:
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.13.2
+    name: dtzar/helm-kubectl:3.13.3
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -803,7 +803,7 @@ Stop Preview: &stopPreview
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.13.2
+    name: dtzar/helm-kubectl:3.13.3
   retry: 1
   before_script: []
   environment:
@@ -830,7 +830,7 @@ Deploy Main Branch To Dev:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: dtzar/helm-kubectl:3.13.2
+    name: dtzar/helm-kubectl:3.13.3
   retry: 1
   before_script: []
   environment:
@@ -978,7 +978,7 @@ Publish Helm Chart:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: dtzar/helm-kubectl:3.9.2
+    name: dtzar/helm-kubectl:3.13.3
   retry: 1
   script: |
     # release helm charts to github container registry
@@ -1021,7 +1021,7 @@ Publish Helm Chart S3:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: dtzar/helm-kubectl:3.13.2
+    name: dtzar/helm-kubectl:3.13.3
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
