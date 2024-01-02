@@ -1,9 +1,9 @@
 import express from "express";
 import yargs from "yargs";
 import { createHttpTerminator } from "http-terminator";
-import buildApiRouter from "./buildApiRouter";
-import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import buildApiRouter from "./buildApiRouter.js";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 
 const argv = addJwtSecretFromEnvVar(
     yargs

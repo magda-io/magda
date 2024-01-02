@@ -1,10 +1,10 @@
 import * as k8s from "@kubernetes/client-node";
 import { HttpError } from "@kubernetes/client-node";
-import { JsonConnectorConfig } from "magda-typescript-common/src/JsonConnector";
-import ServerError from "magda-typescript-common/src/ServerError";
+import { JsonConnectorConfig } from "magda-typescript-common/src/JsonConnector.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
 import _ from "lodash";
-import connectorObjName from "./connectorObjName";
-import buildConnectorCronJobManifest from "./buildConnectorCronJobManifest";
+import connectorObjName from "./connectorObjName.js";
+import buildConnectorCronJobManifest from "./buildConnectorCronJobManifest.js";
 
 export interface Connector extends JsonConnectorConfig {
     cronJob: k8s.V1CronJob;

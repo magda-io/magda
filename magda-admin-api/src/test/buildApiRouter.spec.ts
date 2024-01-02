@@ -4,18 +4,18 @@ import { expect } from "chai";
 import express from "express";
 import nock from "nock";
 import request from "supertest";
-import buildApiRouter from "../buildApiRouter";
-import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient";
+import buildApiRouter from "../buildApiRouter.js";
+import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient.js";
 import AuthDecision, {
     UnconditionalTrueDecision,
     UnconditionalFalseDecision
-} from "magda-typescript-common/src/opa/AuthDecision";
-import buildConnectorCronJobManifest from "../buildConnectorCronJobManifest";
-import { Connector } from "../k8sApi";
-import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+} from "magda-typescript-common/src/opa/AuthDecision.js";
+import buildConnectorCronJobManifest from "../buildConnectorCronJobManifest.js";
+import { Connector } from "../k8sApi.js";
+import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import * as k8s from "@kubernetes/client-node";
 
-describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
+describe("admin api router", function (this) {
     this.timeout(10000);
     const namespace = "THISISANAMESPACE";
     let app: express.Express;
@@ -222,7 +222,7 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                     expect(
                         JSON.parse(requestBody as string).spec.suspend
                     ).to.equal(false);
-                    return cronJob;
+                    return [200, cronJob];
                 });
         }
 
@@ -266,7 +266,7 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                     expect(
                         JSON.parse(requestBody as string).spec.suspend
                     ).to.equal(true);
-                    return cronJob;
+                    return [200, cronJob];
                 });
         }
 
@@ -448,7 +448,7 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                             `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
                         )
                         .reply(200, requestConfigMap);
-                    return requestConfigMap;
+                    return [200, requestConfigMap];
                 });
 
             k8sApiScope
@@ -472,7 +472,7 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                             `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
                         )
                         .reply(200, requestCronJob);
-                    return requestCronJob;
+                    return [200, requestCronJob];
                 });
 
             const res = await request(app)
@@ -523,7 +523,7 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                             `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
                         )
                         .reply(200, requestConfigMap);
-                    return requestConfigMap;
+                    return [200, requestConfigMap];
                 });
 
             k8sApiScope
@@ -547,7 +547,7 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                             `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
                         )
                         .reply(200, requestCronJob);
-                    return requestCronJob;
+                    return [200, requestCronJob];
                 });
 
             const res = await request(app)
@@ -689,7 +689,7 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                                 dockerImageString: "docker.io/dkkd:v1"
                             })
                         );
-                    return requestConfigMap;
+                    return [200, requestConfigMap];
                 });
 
             await request(app)
@@ -738,7 +738,7 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                             `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
                         )
                         .reply(200, requestConfigMap);
-                    return requestConfigMap;
+                    return [200, requestConfigMap];
                 });
 
             k8sApiScope
@@ -769,7 +769,7 @@ describe("admin api router", function (this: Mocha.ISuiteCallbackContext) {
                                 dockerImageString: "docker.io/dkkd:v1"
                             })
                         );
-                    return requestCronJob;
+                    return [200, requestCronJob];
                 });
 
             await request(app)
