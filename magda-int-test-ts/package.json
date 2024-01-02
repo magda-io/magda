@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^2.3.3",
-    "commander": "^9.1.0",
+    "commander": "^11.1.0",
     "dockerode": "^3.3.1",
     "dockerode-compose": "github:magda-io/dockerode-compose#magda-latest",
     "form-data": "^4.0.0",

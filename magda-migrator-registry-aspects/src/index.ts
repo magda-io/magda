@@ -5,6 +5,7 @@ import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSe
 import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
 import fse from "fs-extra";
 import ServerError from "magda-typescript-common/src/ServerError.js";
+import { requireResolve } from "@magda/esm-utils";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -46,7 +47,7 @@ type AspectDefItem = {
 
 function getAllBuiltInAspectDefs(): AspectDefItem[] {
     const aspectDefDir = path.dirname(
-        require.resolve("@magda/registry-aspects/package.json")
+        requireResolve("@magda/registry-aspects/package.json")
     );
     return fse
         .readdirSync(aspectDefDir)

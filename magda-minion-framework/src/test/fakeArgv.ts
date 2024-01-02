@@ -1,4 +1,4 @@
-import { MinionArguments } from "../commonYargs";
+import { MinionArguments } from "../commonYargs.js";
 
 export default function fakeArgv(options: {
     internalUrl: string;

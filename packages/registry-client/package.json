@@ -13,7 +13,7 @@
   "types": "dist/index.d.ts",
   "devDependencies": {
     "@magda/typescript-common": "^2.3.3",
-    "@microsoft/api-extractor": "~7.38.3",
+    "@microsoft/api-extractor": "~7.39.0",
     "ts-loader": "^9.5.1",
     "typescript": "~5.2.2",
     "webpack": "^5.89.0",

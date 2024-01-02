@@ -1,11 +1,11 @@
 import express from "express";
 
-import { MinionArguments } from "./commonYargs";
+import { MinionArguments } from "./commonYargs.js";
 import {
     Record,
     AspectDefinition
-} from "magda-typescript-common/src/generated/registry/api";
-import { default as AuthorizedRegistryClient } from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+} from "magda-typescript-common/src/generated/registry/api.js";
+import { default as AuthorizedRegistryClient } from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 
 export type onRecordFoundType = (
     record: Record,

@@ -1,17 +1,17 @@
 import express from "express";
-import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import MinionOptions from "./MinionOptions";
-import setupWebhookEndpoint from "./setupWebhookEndpoint";
-import setupRecrawlEndpoint from "./setupRecrawlEndpoint";
-import startApiEndpoints from "./startApiEndpoints";
-import isWebhookRegistered from "./isWebhookRegistered";
-import registerWebhook from "./registerWebhook";
-import resumeWebhook from "./resumeWebhook";
-import Crawler from "./Crawler";
-import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant";
-import AuthorizedTenantClient from "magda-typescript-common/src/tenant-api/AuthorizedTenantClient";
-import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
-import { MAGDA_SYSTEM_ID } from "magda-typescript-common/src/registry/TenantConsts";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import MinionOptions from "./MinionOptions.js";
+import setupWebhookEndpoint from "./setupWebhookEndpoint.js";
+import setupRecrawlEndpoint from "./setupRecrawlEndpoint.js";
+import startApiEndpoints from "./startApiEndpoints.js";
+import isWebhookRegistered from "./isWebhookRegistered.js";
+import registerWebhook from "./registerWebhook.js";
+import resumeWebhook from "./resumeWebhook.js";
+import Crawler from "./Crawler.js";
+import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant.js";
+import AuthorizedTenantClient from "magda-typescript-common/src/tenant-api/AuthorizedTenantClient.js";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
+import { MAGDA_SYSTEM_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
 
 export default async function minion(options: MinionOptions): Promise<void> {
     checkOptions(options);

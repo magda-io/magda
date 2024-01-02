@@ -4,15 +4,15 @@ import express from "express";
 import sinon from "sinon";
 import { expect } from "chai";
 
-import { Record } from "magda-typescript-common/src/generated/registry/api";
-import { lcAlphaNumStringArbNe } from "magda-typescript-common/src/test/arbitraries";
-import jsc from "magda-typescript-common/src/test/jsverify";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
+import { lcAlphaNumStringArbNe } from "magda-typescript-common/src/test/arbitraries.js";
+import jsc from "jsverify";
 
-import MinionOptions from "../MinionOptions";
-import fakeArgv from "./fakeArgv";
-import baseSpec from "./baseSpec";
-import Crawler from "../Crawler";
-import setupRecrawlEndpoint from "../setupRecrawlEndpoint";
+import MinionOptions from "../MinionOptions.js";
+import fakeArgv from "./fakeArgv.js";
+import baseSpec from "./baseSpec.js";
+import Crawler from "../Crawler.js";
+import setupRecrawlEndpoint from "../setupRecrawlEndpoint.js";
 
 baseSpec(
     "Recrawl APIs",

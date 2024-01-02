@@ -1,4 +1,4 @@
-import { default as AuthApiClient } from "@magda/typescript-common/dist/authorization-api/ApiClient";
+import { default as AuthApiClient } from "@magda/typescript-common/dist/authorization-api/ApiClient.js";
 export {
     User,
     UserToken,
@@ -8,6 +8,6 @@ export {
     Permission,
     PublicUser,
     Role
-} from "@magda/typescript-common/dist/authorization-api/model";
+} from "@magda/typescript-common/dist/authorization-api/model.js";
 export { Maybe } from "@magda/tsmonad";
 export default AuthApiClient;

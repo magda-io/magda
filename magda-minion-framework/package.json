@@ -3,7 +3,11 @@
   "description": "MAGDA Minion Framework",
   "version": "2.3.3",
   "type": "module",
-  "exports": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json",
+    "./dist/*.js": "./dist/*.js"
+  },
   "engines": {
     "node": ">=18.19.0"
   },
@@ -12,7 +16,7 @@
     "build": "yarn run compile",
     "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+    "test": "mocha",
     "release": "npm publish || echo \"Skip releasing npm package @magda/minion-framework.\""
   },
   "author": "",
@@ -46,6 +50,12 @@
     "cross-fetch": "^4.0.0",
     "lodash": "^4.17.4",
     "yargs": "^12.0.5"
+  },
+  "mocha": {
+    "import": "tsx/esm",
+    "spec": [
+      "src/test/**/*.spec.ts"
+    ]
   },
   "config": {
     "docker": {

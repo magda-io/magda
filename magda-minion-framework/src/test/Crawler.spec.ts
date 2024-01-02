@@ -4,17 +4,17 @@ import nock from "nock";
 import _ from "lodash";
 import { expect } from "chai";
 import queryString from "query-string";
-import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 
-import { Record } from "magda-typescript-common/src/generated/registry/api";
-import { lcAlphaNumStringArbNe } from "magda-typescript-common/src/test/arbitraries";
-import jsc from "magda-typescript-common/src/test/jsverify";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
+import { lcAlphaNumStringArbNe } from "magda-typescript-common/src/test/arbitraries.js";
+import jsc from "jsverify";
 
-import MinionOptions from "../MinionOptions";
-import fakeArgv from "./fakeArgv";
-import baseSpec from "./baseSpec";
-import Crawler from "../Crawler";
-import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
+import MinionOptions from "../MinionOptions.js";
+import fakeArgv from "./fakeArgv.js";
+import baseSpec from "./baseSpec.js";
+import Crawler from "../Crawler.js";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
 
 const DEFAULT_CRAWLER_RECORD_FETCH_NUMBER = 198;
 

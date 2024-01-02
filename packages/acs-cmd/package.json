@@ -3,12 +3,20 @@
   "description": "MAGDA Account Management Utilities",
   "version": "2.3.3",
   "bin": {
-    "acs-cmd": "./bin/acs-cmd/acs-cmd.js"
+    "acs-cmd": "./bin/acs-cmd.js"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./bin/acs-cmd.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   },
   "scripts": {
-    "acs-cmd": "./bin/acs-cmd/acs-cmd.js",
+    "acs-cmd": "./bin/acs-cmd.js",
     "prebuild": "rimraf bin",
-    "build": "node build.js && webpack",
+    "build": "node esbuild.js",
     "release": "npm publish || echo \"Skip releasing npm package @magda/acs-cmd.\""
   },
   "author": "",
@@ -17,12 +25,11 @@
     "@magda/scripts": "^2.3.3",
     "@magda/typescript-common": "^2.3.3",
     "fs-extra": "^2.1.2",
-    "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4"
+    "esbuild": "^0.19.10"
   },
   "dependencies": {
     "chalk": "^2.4.1",
-    "commander": "^2.17.0",
+    "commander": "^11.1.0",
     "jsonwebtoken": "^8.4.0",
     "pg": "^8.7.3",
     "table": "^5.3.3"
@@ -40,9 +47,6 @@
     "CLI Tool",
     "acs-cmd"
   ],
-  "engines": {
-    "node": ">=14.0.0"
-  },
   "files": [
     "bin"
   ]

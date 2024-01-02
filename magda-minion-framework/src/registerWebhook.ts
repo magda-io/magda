@@ -1,9 +1,9 @@
-import { WebHook } from "magda-typescript-common/src/generated/registry/api";
-import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import { WebHook } from "magda-typescript-common/src/generated/registry/api.js";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 
-import MinionOptions from "./MinionOptions";
-import getWebhookUrl from "./getWebhookUrl";
-import buildWebhookConfig from "./buildWebhookConfig";
+import MinionOptions from "./MinionOptions.js";
+import getWebhookUrl from "./getWebhookUrl.js";
+import buildWebhookConfig from "./buildWebhookConfig.js";
 
 export type NeedsCrawl = Promise<boolean>;
 

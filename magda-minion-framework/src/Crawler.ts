@@ -1,9 +1,11 @@
-import { Record } from "magda-typescript-common/src/generated/registry/api";
-import { RecordsPage } from "magda-typescript-common/src/registry/RegistryClient";
-import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
-import AsyncPage, { forEachAsync } from "magda-typescript-common/src/AsyncPage";
-import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import MinionOptions from "./MinionOptions";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
+import { RecordsPage } from "magda-typescript-common/src/registry/RegistryClient.js";
+import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable.js";
+import AsyncPage, {
+    forEachAsync
+} from "magda-typescript-common/src/AsyncPage.js";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import MinionOptions from "./MinionOptions.js";
 
 // default no. of record crawler fetechs per requests
 const DEFAULT_CRAWLER_RECORD_FETCH_NUMBER = 100;

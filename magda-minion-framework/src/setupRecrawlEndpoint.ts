@@ -1,6 +1,6 @@
-import MinionOptions from "./MinionOptions";
+import MinionOptions from "./MinionOptions.js";
 import { Application } from "express";
-import Crawler from "./Crawler";
+import Crawler from "./Crawler.js";
 
 /**
  * @apiDefine GenericErrorMinionJson
