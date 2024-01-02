@@ -14,6 +14,7 @@ import fetch from "cross-fetch";
 import child_process, { ChildProcess } from "child_process";
 import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
 import urijs from "urijs";
+import { requireResolve } from "@magda/esm-utils";
 
 /**
  * Resolve magda module dir path.
@@ -21,7 +22,7 @@ import urijs from "urijs";
  * @param {string} moduleName e.g. @magda/typescript-common
  */
 function getMagdaModulePath(moduleName: string) {
-    const pkgJsonPath = require.resolve(`${moduleName}/package.json`);
+    const pkgJsonPath = requireResolve(`${moduleName}/package.json`);
     return path.dirname(pkgJsonPath);
 }
 
@@ -113,7 +114,7 @@ export default class ServiceRunner {
         this.docker = new Docker();
         this.workspaceRoot = path.resolve(
             path.dirname(
-                require.resolve("@magda/typescript-common/package.json")
+                requireResolve("@magda/typescript-common/package.json")
             ),
             "../"
         );
