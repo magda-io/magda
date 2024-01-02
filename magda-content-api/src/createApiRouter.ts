@@ -3,21 +3,21 @@ import _ from "lodash";
 import {
     withAuthDecision,
     requireUnconditionalAuthDecision
-} from "magda-typescript-common/src/authorization-api/authMiddleware";
-import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
-import ServerError from "magda-typescript-common/src/ServerError";
-import Database, { Query } from "./Database";
+} from "magda-typescript-common/src/authorization-api/authMiddleware.js";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
+import Database, { Query } from "./Database.js";
 import { Maybe } from "@magda/tsmonad";
-import { Content } from "./model";
-import { content, ContentEncoding, ContentItem } from "./content";
+import { Content } from "./model.js";
+import { content, ContentEncoding, ContentItem } from "./content.js";
 
 import {
     installStatusRouter,
     createServiceProbe
-} from "magda-typescript-common/src/express/status";
-import AccessControlError from "magda-typescript-common/src/authorization-api/AccessControlError";
+} from "magda-typescript-common/src/express/status.js";
+import AccessControlError from "magda-typescript-common/src/authorization-api/AccessControlError.js";
 import mime from "mime-types";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 
 export interface ApiRouterOptions {
     database: Database;

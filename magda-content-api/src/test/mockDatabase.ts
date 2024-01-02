@@ -1,10 +1,11 @@
-import mockContentDataStore from "./mockContentStore";
+import { require } from "@magda/esm-utils";
+import mockContentDataStore from "./mockContentStore.js";
 import { Maybe } from "@magda/tsmonad";
-import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
-import { Query, Database } from "../Database";
+import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe.js";
+import { Query, Database } from "../Database.js";
 const wildcard = require("wildcard");
 
-import { Content } from "../model";
+import { Content } from "../model.js";
 
 export default class MockDatabase implements Database {
     getContentById(id: string): Promise<Maybe<Content>> {
