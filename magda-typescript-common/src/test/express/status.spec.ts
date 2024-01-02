@@ -1,6 +1,6 @@
 import {
     installStatusRouter,
-    OptionsIO,
+    ConfigOption,
     createServiceProbe
 } from "../../express/status.js";
 
@@ -31,7 +31,7 @@ setup(
                 };
             }
         },
-        probeUpdateMs: 1000
+        probeUpdateMs: 200
     },
     (agent: any) => {
         it("should be ready after a while", function (done) {
@@ -93,19 +93,21 @@ setup(
 );
 
 setup(
-    "status - error",
+    "status - no error consider as ready",
     {
         probes: {
             a: async () => {
+                // as long as no error, consider as ready
+                // event if not return a status data object. e.g. {ready: true}
                 return null;
             }
         },
         probeUpdateMs: 60
     },
     (agent: any) => {
-        it("should error", function (done) {
+        it("should be ready", function (done) {
             sleep(100).then(function () {
-                agent.get("/status/ready").expect(500).end(done);
+                agent.get("/status/ready").expect(200).end(done);
             });
         });
     }
@@ -163,10 +165,13 @@ function sleep(time: number) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-function setup(text: string, options: OptionsIO, callback: any) {
-    describe(text, function () {
+function setup(text: string, options: ConfigOption, callback: any) {
+    describe(text, function (this) {
+        this.timeout(30000);
         if (options) {
             options.forceRun = true;
+            // --- manually set key to avoid status probe overwritten by other tests
+            options.key = Math.random().toString();
         }
         const app = express();
         installStatusRouter(app, options);

@@ -1,5 +1,5 @@
-import { Attachment } from "./SMTPMailer";
-import ContentApiDirMapper from "./ContentApiDirMapper";
+import { Attachment } from "./SMTPMailer.js";
+import ContentApiDirMapper from "./ContentApiDirMapper.js";
 import path from "path";
 import mimeTypes from "mime-types";
 import Mustache from "mustache";

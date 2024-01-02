@@ -1,4 +1,4 @@
-import buildJwt from "magda-typescript-common/src/session/buildJwt";
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
 import rp from "request-promise-native";
 import mime from "mime-types";
 import recursiveReadDir from "recursive-readdir";

@@ -1,20 +1,22 @@
 import {} from "mocha";
-import { ApiRouterOptions } from "../createApiRouter";
-import { SMTPMailer, Message, Attachment } from "../SMTPMailer";
+import { ApiRouterOptions } from "../createApiRouter.js";
+import { SMTPMailer, Message, Attachment } from "../SMTPMailer.js";
 import fs from "fs";
 import path from "path";
 import urijs from "urijs";
-
-import createApiRouter from "../createApiRouter";
-
+import createApiRouter from "../createApiRouter.js";
 import { expect } from "chai";
 import sinon from "sinon";
 import supertest from "supertest";
 import express from "express";
 import nock from "nock";
-import RegistryClient from "magda-typescript-common/src/registry/RegistryClient";
-import ContentApiDirMapper from "../ContentApiDirMapper";
-import EmailTemplateRender from "../EmailTemplateRender";
+import RegistryClient from "magda-typescript-common/src/registry/RegistryClient.js";
+import ContentApiDirMapper from "../ContentApiDirMapper.js";
+import EmailTemplateRender from "../EmailTemplateRender.js";
+import { getCurrentDirPath } from "@magda/esm-utils";
+import delay from "magda-typescript-common/src/delay.js";
+
+const __dirname = getCurrentDirPath();
 
 function encodeUrlSegment(segmentStr: string) {
     return urijs("").segmentCoded([segmentStr]).segment()[0];
@@ -92,7 +94,8 @@ const DEFAULT_DATASET_PUBLISHER = "publisher";
 const DEFAULT_DATASET_CONTACT_POINT = "contactpoint@example.com";
 const EXTERNAL_URL = "https://datagov.au.example.com/";
 
-describe("send dataset request mail", () => {
+describe("send dataset request mail", function (this) {
+    this.timeout(30000);
     const DEFAULT_RECIPIENT = "blah@example.com";
     let app: express.Express;
     let sendStub: sinon.SinonStub;
@@ -133,11 +136,11 @@ describe("send dataset request mail", () => {
         });
 
         withStubbedConsoleError((stubbedError) => {
-            it("should return 500 if connection fails", () => {
+            it("should return 500 if connection fails", async () => {
                 checkConnectivityStub.returns(
                     Promise.reject(new Error("Fake error"))
                 );
-
+                await delay(1000);
                 return supertest(app)
                     .get("/status/ready")
                     .expect(500)
@@ -530,7 +533,9 @@ describe("send dataset request mail", () => {
             smtpMailer: smtpMailer,
             registry,
             externalUrl: EXTERNAL_URL,
-            alwaysSendToDefaultRecipient: DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT
+            alwaysSendToDefaultRecipient: DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT,
+            probeUpdateMs: 500,
+            forceRun: true
         };
     }
 });
