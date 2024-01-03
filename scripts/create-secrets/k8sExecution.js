@@ -472,4 +472,4 @@ function getKubectlCommand(configData) {
     return clusterType === "microk8s" ? "microk8s kubectl" : "kubectl";
 }
 
-module.exports = k8sExecution;
+export default k8sExecution;

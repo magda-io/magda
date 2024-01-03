@@ -45,7 +45,7 @@
     "chai": "^5.0.0-rc.0",
     "chai-as-promised": "^7.1.1",
     "djv": "^2.1.4",
-    "fs-extra": "8.1.0",
+    "fs-extra": "^11.2.0",
     "jsverify": "^0.8.2",
     "lazy-seq": "^1.0.0",
     "mocha": "^10.2.0",

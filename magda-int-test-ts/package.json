@@ -38,7 +38,7 @@
     "dockerode": "^3.3.1",
     "dockerode-compose": "github:magda-io/dockerode-compose#magda-latest",
     "form-data": "^4.0.0",
-    "fs-extra": "8.1.0",
+    "fs-extra": "11.2.0",
     "lodash": "^4.17.11",
     "minio": "^7.0.26",
     "pg": "^8.7.3",

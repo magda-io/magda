@@ -98,4 +98,4 @@ function listRender(choices, pointer) {
     return output.replace(/\n$/, "");
 }
 
-module.exports = ListWithTransformer;
+export default ListWithTransformer;

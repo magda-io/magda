@@ -5,25 +5,21 @@ import { requireResolve, require } from "@magda/esm-utils";
 const pkg = require("./package.json");
 
 const magdaScriptEntryDir = path.dirname(
-    requireResolve("@magda/scripts/acs-cmd/index.js")
+    requireResolve("@magda/scripts/org-tree/index.js")
 );
 
 const entries = (() => {
-    const entries = {
-        "acs-cmd": path.resolve(magdaScriptEntryDir, "index.js")
-    };
+    const entries = {};
     const items = fse.readdirSync(magdaScriptEntryDir, { encoding: "utf8" });
     if (items && items.length) {
         items.forEach((item) => {
             if (path.extname(item) !== ".js") {
                 return;
             }
-            if (item !== "index.js") {
-                entries[item.replace(/\.js$/, "")] = path.join(
-                    magdaScriptEntryDir,
-                    item
-                );
-            }
+            entries[item.replace(/\.js$/, "")] = path.join(
+                magdaScriptEntryDir,
+                item
+            );
         });
     }
     return entries;
@@ -34,7 +30,7 @@ await esbuild.build({
     bundle: true,
     platform: "node",
     target: ["es2022"],
-    outdir: "./bin",
+    outdir: "dist",
     format: "esm",
     external: [
         ...Object.keys(pkg.dependencies || {}),

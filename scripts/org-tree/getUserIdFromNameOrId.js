@@ -1,4 +1,4 @@
-import isUuid from "@magda/typescript-common/dist/util/isUuid";
+import isUuid from "@magda/typescript-common/dist/util/isUuid.js";
 async function getUserIdFromNameOrId(nameOrId, pool) {
     if (isUuid(nameOrId)) {
         return nameOrId;

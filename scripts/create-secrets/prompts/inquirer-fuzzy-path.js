@@ -114,4 +114,4 @@ function getPaths(rootPath, pattern, pathFilter) {
     return filterPromise;
 }
 
-module.exports = InquirerFuzzyPath;
+export default InquirerFuzzyPath;

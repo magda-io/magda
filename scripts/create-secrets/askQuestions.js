@@ -774,7 +774,7 @@ function askStartSecretsCreationWithoutQuestions(config) {
         .then((answers) => answers["deploy-now"]);
 }
 
-function askIfCreateNamespace(namespace) {
+export function askIfCreateNamespace(namespace) {
     return inquirer
         .prompt([
             {
@@ -796,7 +796,7 @@ function askIfCreateNamespace(namespace) {
         .then((answers) => answers["if-create-namespace"]);
 }
 
-function askQuestions(config) {
+export function askQuestions(config) {
     return new Promise(function (resolve, reject) {
         const creationTime = config.get("creation-time");
         let p;
@@ -817,7 +817,7 @@ function askQuestions(config) {
     });
 }
 
-function getEnvVarInfo() {
+export function getEnvVarInfo() {
     return questions.map((item) => ({
         name: settingNameToEnvVarName(item.name),
         dataType: item.dataType ? item.dataType : "string",
@@ -826,14 +826,8 @@ function getEnvVarInfo() {
     }));
 }
 
-function settingNameToEnvVarName(settingName) {
+export function settingNameToEnvVarName(settingName) {
     return settingName.replace(/\-/g, "_").toUpperCase();
 }
 
-module.exports = {
-    askQuestions,
-    getEnvVarInfo,
-    settingNameToEnvVarName,
-    askIfCreateNamespace,
-    settingNameToEnvVarName
-};
+export default askQuestions;
