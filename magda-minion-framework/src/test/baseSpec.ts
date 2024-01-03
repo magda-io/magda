@@ -47,6 +47,9 @@ export default function baseSpec(
 
         after(() => {
             sinon.restore(console);
+            if (expressServer) {
+                expressServer.close();
+            }
         });
 
         function beforeEachProperty() {
