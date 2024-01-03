@@ -1,5 +1,5 @@
 import { Client, ApiResponse, RequestParams } from "@elastic/elasticsearch";
-import _ = require("lodash");
+import _ from "lodash";
 
 import {
     Query,
@@ -9,9 +9,9 @@ import {
     FacetOption,
     SearchResult,
     ISODate
-} from "../../model";
-import SearchQueryer from "../SearchQueryer";
-import getFacetDefinition from "./getFacetDefinition";
+} from "../../model.js";
+import SearchQueryer from "../SearchQueryer.js";
+import getFacetDefinition from "./getFacetDefinition.js";
 
 /**
  * A field within the dataset document indexed in ES that will be searched
@@ -54,7 +54,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
      * The ES client to use for querying. This is an HTTP client, so it doesn't
      * need a lot of management around setup/teardown.
      */
-    private client = new Client({ node: this.url });
+    private client: Client;
 
     /**
      * @param url The base URL to call ElasticSearch at
@@ -67,7 +67,9 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         readonly datasetsIndexId: string,
         readonly regionsIndexId: string,
         readonly publishersIndexId: string
-    ) {}
+    ) {
+        this.client = new Client({ node: this.url });
+    }
 
     async searchFacets(
         facetType: FacetType,

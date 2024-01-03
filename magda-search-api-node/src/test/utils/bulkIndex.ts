@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { Client } from "@elastic/elasticsearch";
-import handleESError from "../../search/elasticsearch/handleESError";
+import handleESError from "../../search/elasticsearch/handleESError.js";
 
 /**
  * Adds an array of documents into the specified index

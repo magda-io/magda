@@ -11,8 +11,8 @@ import {
     buildDistribution,
     buildNDistributions,
     buildPublisher
-} from "../utils/builders";
-import { Dataset, SearchResult } from "../../model";
+} from "../utils/builders.js";
+import { Dataset, SearchResult } from "../../model.js";
 
 export default function testSearchByKeyword(
     app: () => express.Application,

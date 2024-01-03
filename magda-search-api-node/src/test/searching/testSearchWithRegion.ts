@@ -4,14 +4,14 @@ import supertest from "supertest";
 import express from "express";
 import _ from "lodash";
 
-import { buildDataset } from "../utils/builders";
-import { Dataset, SearchResult, Location } from "../../model";
+import { buildDataset } from "../utils/builders.js";
+import { Dataset, SearchResult, Location } from "../../model.js";
 import {
     fromBoundingBox,
     qldDataset,
     nationalDataset1,
     nationalDataset2
-} from "../utils/spatial";
+} from "../utils/spatial.js";
 
 export default function testSearchByKeyword(
     app: () => express.Application,

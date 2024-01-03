@@ -5,8 +5,8 @@ import express from "express";
 import _ from "lodash";
 import moment from "moment";
 
-import { buildDataset, buildNDatasets } from "../utils/builders";
-import { Dataset, SearchResult } from "../../model";
+import { buildDataset, buildNDatasets } from "../utils/builders.js";
+import { Dataset, SearchResult } from "../../model.js";
 
 export default function testSearchNoQuery(
     app: () => express.Application,

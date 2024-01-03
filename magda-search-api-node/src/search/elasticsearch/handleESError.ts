@@ -9,8 +9,8 @@ export default async function handleEsError<R>(
     try {
         return await promise;
     } catch (e) {
-        if (e.meta && e.meta.body && e.meta.body.error) {
-            console.error(e.meta.body.error);
+        if ((e as any)?.meta?.body?.error) {
+            console.error((e as any).meta.body.error);
         }
         throw e;
     }

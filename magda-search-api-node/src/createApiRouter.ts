@@ -1,13 +1,13 @@
 import * as express from "express";
 import * as _ from "lodash";
-import buildJwt from "magda-typescript-common/src/session/buildJwt";
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
 import moment from "moment";
 import { validate, Joi, ValidationError } from "express-validation";
 
-import ElasticSearchQueryer from "./search/elasticsearch/ElasticSearchQueryer";
-import { Query, QueryRegion, FacetType } from "./model";
+import ElasticSearchQueryer from "./search/elasticsearch/ElasticSearchQueryer.js";
+import { Query, QueryRegion, FacetType } from "./model.js";
 
-import { installStatusRouter } from "magda-typescript-common/src/express/status";
+import { installStatusRouter } from "magda-typescript-common/src/express/status.js";
 
 export interface ApiRouterOptions {
     jwtSecret: string;
@@ -170,7 +170,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 res.status(200).send(results);
             } catch (e) {
                 console.error(e);
-                console.error(e.meta?.body?.error);
+                console.error((e as any).meta?.body?.error);
                 // console.log(JSON.stringify(e.meta && e.meta.body));
                 res.status(500).send("Error");
             }
