@@ -1,7 +1,7 @@
 import React from "react";
 import "./MarkdownViewer.scss";
 import clip from "text-clipper";
-import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml";
+import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml.js";
 
 class MarkdownViewer extends React.Component {
     render() {

@@ -12,7 +12,7 @@ import { DataLoadingResult } from "helpers/CsvDataLoader";
 import { ParsedDistribution } from "helpers/record";
 
 import "./DataPreviewChart.scss";
-import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type PropsType = {
     dataLoadError: Error | null;

@@ -1,10 +1,10 @@
 import { config } from "../config";
 import request from "../helpers/request";
 import getRequest from "../helpers/getRequest";
-import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
+import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl.js";
 import { Publisher } from "../helpers/record";
 import { RawDataset } from "../helpers/record";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError.js";
 import flatMap from "lodash/flatMap";
 
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";

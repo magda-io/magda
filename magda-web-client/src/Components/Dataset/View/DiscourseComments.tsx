@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useRef, useEffect } from "react";
 import { config } from "config";
-import addTrailingSlash from "@magda/typescript-common/dist/addTrailingSlash";
+import addTrailingSlash from "@magda/typescript-common/dist/addTrailingSlash.js";
 import "./DiscourseComments.scss";
 
 type PropsType = {

@@ -12,7 +12,7 @@ import {
 } from "../../helpers/DistributionPreviewUtils";
 
 import "./DataPreviewVis.scss";
-import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 type VisType = "chart" | "table";
 
 type StateType = {

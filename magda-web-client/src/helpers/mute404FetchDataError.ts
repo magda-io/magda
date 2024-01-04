@@ -1,4 +1,4 @@
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError.js";
 
 export default async function mute404FetchDataError<T>(
     fetchDataFunc: () => Promise<T>

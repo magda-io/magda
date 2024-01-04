@@ -1,7 +1,7 @@
 import React from "react";
 import Editor from "./Editor";
 
-import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml";
+import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml.js";
 import starIcon from "assets/star.svg";
 
 // TODO:

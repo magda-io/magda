@@ -13,7 +13,7 @@ import "./DeleteFileModal.scss";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DistributionItem from "Components/Dataset/Add/DistributionItem";
 import promisifySetState from "helpers/promisifySetState";
-import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type PropsType = {
     datasetId: string;

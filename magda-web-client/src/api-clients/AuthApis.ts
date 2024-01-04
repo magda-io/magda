@@ -1,7 +1,7 @@
 import { config, ADMIN_ROLE_ID } from "../config";
 import request from "../helpers/request";
 import getRequest from "../helpers/getRequest";
-import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
+import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl.js";
 import { AuthPluginConfig } from "@magda/gateway/src/createAuthPluginRouter";
 import urijs from "urijs";
 import { User, Role } from "../reducers/userManagementReducer";
@@ -12,7 +12,7 @@ import {
     ResourceRecord
 } from "@magda/typescript-common/dist/authorization-api/model";
 import { Record } from "./RegistryApis";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError.js";
 import { v4 as isUuid } from "is-uuid";
 
 export type QrCodeImgDataResponse = {

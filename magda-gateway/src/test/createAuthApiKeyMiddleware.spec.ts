@@ -82,7 +82,7 @@ const defaultAppOptions = {
 function getUserIdFromNockReq(req: any, jwtSecret: string) {
     const jwtToken = req.headers["X-Magda-Session".toLowerCase()];
     if (jwtToken) {
-        const jwtPayload = jwt.verify(jwtToken, jwtSecret);
+        const jwtPayload = jwt.verify(jwtToken, jwtSecret) as any;
         return jwtPayload.userId;
     } else {
         throw new Error("Cannot locate JWT token header: X-Magda-Session");

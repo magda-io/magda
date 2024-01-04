@@ -33,7 +33,7 @@ import mergeDistModifiedDate from "Components/Dataset/MergeMetadata/mergeDistMod
 import mergeDistSpatialCoverage from "Components/Dataset/MergeMetadata/mergeDistSpatialCoverage";
 import mergeDistTemporalCoverage from "Components/Dataset/MergeMetadata/mergeDistTemporalCoverage";
 import promisifySetState from "helpers/promisifySetState";
-import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type Props = {
     edit: <K extends keyof State>(

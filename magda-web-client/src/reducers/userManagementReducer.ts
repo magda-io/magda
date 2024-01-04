@@ -1,6 +1,6 @@
 import { Action } from "../types";
 import { Permission } from "@magda/typescript-common/dist/authorization-api/model";
-import { ANONYMOUS_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
+import { ANONYMOUS_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
 
 export type Role = {
     id: string;

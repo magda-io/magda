@@ -1,5 +1,5 @@
 import { config, DATASETS_BUCKET } from "config";
-import getStorageUrl from "@magda/typescript-common/dist/getStorageUrl";
+import getStorageUrl from "@magda/typescript-common/dist/getStorageUrl.js";
 import promisifySetState from "helpers/promisifySetState";
 import { DatasetStateUpdaterType } from "../../DatasetAddCommon";
 import urijs from "urijs";

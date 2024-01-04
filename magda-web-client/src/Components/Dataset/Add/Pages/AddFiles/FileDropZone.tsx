@@ -10,12 +10,12 @@ import {
     DistributionSource,
     saveRuntimeStateToStorage
 } from "../../DatasetAddCommon";
-import getStorageUrl from "@magda/typescript-common/dist/getStorageUrl";
+import getStorageUrl from "@magda/typescript-common/dist/getStorageUrl.js";
 import processFile from "./processFile";
 import { getFiles } from "helpers/readFile";
 
 import "./FileDropZone.scss";
-import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type PropsType = {
     stateData: State;

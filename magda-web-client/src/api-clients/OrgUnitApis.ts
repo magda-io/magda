@@ -3,7 +3,7 @@ import { OrgUnit as OrgUnitType } from "reducers/userManagementReducer";
 import request from "helpers/request";
 import { v4 as isUuid } from "is-uuid";
 import getRequest from "helpers/getRequest";
-import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl";
+import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl.js";
 import mute404FetchDataError from "../helpers/mute404FetchDataError";
 
 export type OrgUnit = OrgUnitType;

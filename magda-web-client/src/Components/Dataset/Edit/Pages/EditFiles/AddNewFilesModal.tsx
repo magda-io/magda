@@ -18,7 +18,7 @@ import DistributionItem from "Components/Dataset/Add/DistributionItem";
 
 import "./AddNewFilesModal.scss";
 import promisifySetState from "helpers/promisifySetState";
-import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type PropsType = {
     stateData: State;

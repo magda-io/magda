@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { UserManagementState } from "reducers/userManagementReducer";
 import Loader from "rsuite/Loader";
 import { StateType } from "reducers/reducer";
-import { ANONYMOUS_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
+import { ANONYMOUS_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
 import { config } from "../config";
 
 type PropsType = {};

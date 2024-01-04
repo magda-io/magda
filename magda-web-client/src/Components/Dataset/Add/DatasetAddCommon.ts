@@ -25,7 +25,7 @@ import {
     RawDistribution
 } from "../../../helpers/record";
 import { autocompletePublishers } from "../../../api-clients/SearchApis";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError.js";
 import defer from "../../../helpers/defer";
 import { ReactStateUpdaterType } from "../../../helpers/promisifySetState";
 import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownloadUrl";

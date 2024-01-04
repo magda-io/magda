@@ -19,7 +19,7 @@ import * as Comlink from "comlink";
 import uploadFile from "./uploadFile";
 import translateError from "helpers/translateError";
 import promisifySetState from "helpers/promisifySetState";
-import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 const ExtractorsWorker = require("worker-loader!../../../MetadataExtraction"); // eslint-disable-line import/no-webpack-loader-syntax
 

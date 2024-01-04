@@ -7,7 +7,7 @@ import {
     QrCodeImgDataResponse,
     QrCodePollResponse
 } from "api-clients/AuthApis";
-import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml";
+import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml.js";
 
 type PropsType = {
     authConfig: AuthPluginConfig;

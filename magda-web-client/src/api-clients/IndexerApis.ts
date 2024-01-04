@@ -1,7 +1,7 @@
 import { config } from "../config";
 import fetch from "cross-fetch";
 import request from "../helpers/request";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError.js";
 
 /**
  * Trigger a full proactive re-indexer process for all datasets.

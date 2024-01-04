@@ -20,7 +20,7 @@ import "./ConfirmLoadPreviousChanges.scss";
 import FileDeletionError from "helpers/FileDeletionError";
 import promisifySetState from "helpers/promisifySetState";
 import { deleteRecordAspect } from "api-clients/RegistryApis";
-import unknown2Error from "@magda/typescript-common/dist/unknown2Error";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type PropsType = {
     user: User;
