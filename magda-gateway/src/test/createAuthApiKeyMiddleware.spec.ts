@@ -4,16 +4,19 @@ import pg from "pg";
 import express from "express";
 import nock from "nock";
 import supertest from "supertest";
-import buildApp from "../buildApp";
-import { AuthPluginBasicConfig } from "../createAuthPluginRouter";
-import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
+import buildApp from "../buildApp.js";
+import { AuthPluginBasicConfig } from "../createAuthPluginRouter.js";
+import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig.js";
 import runMigrationSql, {
     deleteAllTables
-} from "magda-typescript-common/src/test/db/runMigrationSql";
+} from "magda-typescript-common/src/test/db/runMigrationSql.js";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { expect } from "chai";
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
+import { getCurrentDirPath } from "@magda/esm-utils";
+
+const __dirname = getCurrentDirPath();
 
 const dbConfig = getTestDBConfig();
 const defaultAppOptions = {

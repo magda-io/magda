@@ -1,3 +1,4 @@
+import { require } from "@magda/esm-utils";
 import cors, { CorsOptions } from "cors";
 import express from "express";
 import helmet, {
@@ -11,20 +12,23 @@ import _ from "lodash";
 import {
     installStatusRouter,
     createServiceProbe
-} from "magda-typescript-common/src/express/status";
-import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl";
-import createGenericProxyRouter from "./createGenericProxyRouter";
-import createAuthRouter from "./createAuthRouter";
-import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
-import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
-import createOpenfaasGatewayProxy from "./createOpenfaasGatewayProxy";
-import Authenticator, { SessionCookieOptions } from "./Authenticator";
-import defaultConfig from "./defaultConfig";
-import { ProxyTarget, DetailedProxyTarget } from "./createGenericProxyRouter";
-import setupTenantMode from "./setupTenantMode";
-import createPool from "./createPool";
-import { AuthPluginBasicConfig } from "./createAuthPluginRouter";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+} from "magda-typescript-common/src/express/status.js";
+import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl.js";
+import createGenericProxyRouter from "./createGenericProxyRouter.js";
+import createAuthRouter from "./createAuthRouter.js";
+import createCkanRedirectionRouter from "./createCkanRedirectionRouter.js";
+import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware.js";
+import createOpenfaasGatewayProxy from "./createOpenfaasGatewayProxy.js";
+import Authenticator, { SessionCookieOptions } from "./Authenticator.js";
+import defaultConfig from "./defaultConfig.js";
+import {
+    ProxyTarget,
+    DetailedProxyTarget
+} from "./createGenericProxyRouter.js";
+import setupTenantMode from "./setupTenantMode.js";
+import createPool from "./createPool.js";
+import { AuthPluginBasicConfig } from "./createAuthPluginRouter.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 
 type Route = {
     to: string;

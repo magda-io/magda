@@ -1,11 +1,11 @@
 import { Router } from "express";
 import fetch from "cross-fetch";
-import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash";
-import Authenticator from "./Authenticator";
+import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash.js";
+import Authenticator from "./Authenticator.js";
 import createAuthPluginRouter, {
     AuthPluginBasicConfig,
     AuthPluginConfig
-} from "./createAuthPluginRouter";
+} from "./createAuthPluginRouter.js";
 
 export interface AuthRouterOptions {
     authenticator: Authenticator;

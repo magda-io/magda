@@ -1,6 +1,7 @@
-import { throttle, Cancelable } from "lodash";
-import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant";
-import AuthorizedTenantClient from "magda-typescript-common/src/tenant-api/AuthorizedTenantClient";
+import { Cancelable } from "lodash";
+import throttle from "lodash/throttle.js";
+import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant.js";
+import AuthorizedTenantClient from "magda-typescript-common/src/tenant-api/AuthorizedTenantClient.js";
 
 type TenantsLoaderConfig = {
     tenantUrl: string;

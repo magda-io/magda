@@ -2,19 +2,22 @@ import {} from "mocha";
 import pg from "pg";
 import path from "path";
 import express from "express";
-import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
+import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig.js";
 import runMigrationSql, {
     deleteAllTables
-} from "magda-typescript-common/src/test/db/runMigrationSql";
+} from "magda-typescript-common/src/test/db/runMigrationSql.js";
 import nock from "nock";
-import { UserToken } from "magda-typescript-common/src/authorization-api/model";
-import { getUserId } from "magda-typescript-common/src/session/GetUserId";
-import buildApp, { Config as BuildAppConfig } from "../buildApp";
-import defaultAppConfig from "../defaultConfig";
+import { UserToken } from "magda-typescript-common/src/authorization-api/model.js";
+import { getUserId } from "magda-typescript-common/src/session/GetUserId.js";
+import buildApp, { Config as BuildAppConfig } from "../buildApp.js";
+import defaultAppConfig from "../defaultConfig.js";
 import { v4 as uuidv4 } from "uuid";
 import supertest from "supertest";
 import { expect } from "chai";
-import partial from "lodash/partial";
+import partial from "lodash/partial.js";
+import { getCurrentDirPath } from "@magda/esm-utils";
+
+const __dirname = getCurrentDirPath();
 
 const SESSION_SECRET = "test-session-secret";
 const JWT_SECRET = uuidv4();
@@ -50,7 +53,7 @@ function createBasicAuthHeader(username: string, password: string) {
     );
 }
 
-describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
+describe("Integration Tests", function (this) {
     this.timeout(30000);
     let pool: pg.Pool = null;
     const dbConfig = getTestDBConfig();

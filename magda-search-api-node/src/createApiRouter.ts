@@ -150,7 +150,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     router.get(
         "/datasets",
-        validate(datasetQueryValidation, {}, {}),
+        //validate(datasetQueryValidation, {}, {}),
         async (req, res) => {
             const queryString = req.query;
 

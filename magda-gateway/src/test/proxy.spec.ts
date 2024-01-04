@@ -1,4 +1,5 @@
 import {} from "mocha";
+import { require } from "@magda/esm-utils";
 import sinon from "sinon";
 import express from "express";
 import nock from "nock";
@@ -6,11 +7,11 @@ import _ from "lodash";
 import supertest from "supertest";
 import URI from "urijs";
 
-import buildApp from "../buildApp";
-import chai from "chai";
+import buildApp from "../buildApp.js";
+import * as chai from "chai";
 chai.use(require("chai-as-promised"));
 const { expect, assert } = chai;
-import { AuthPluginBasicConfig } from "../createAuthPluginRouter";
+import { AuthPluginBasicConfig } from "../createAuthPluginRouter.js";
 
 const PROXY_ROOTS = {
     "/api/v0/registry": "http://registry",

@@ -10,7 +10,7 @@ import createCkanRedirectionRouter, {
     genericUrlRedirectConfig,
     covertGenericUrlRedirectConfigToFullArgList,
     genericUrlRedirectConfigs
-} from "../createCkanRedirectionRouter";
+} from "../createCkanRedirectionRouter.js";
 
 import resCkanDatasetAspect from "./sampleRegistryResponses/ckanDatasetAspect.json";
 import resCkanDatasetQuery from "./sampleRegistryResponses/ckanDatasetQuery.json";

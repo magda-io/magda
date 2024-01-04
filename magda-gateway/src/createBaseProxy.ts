@@ -1,15 +1,14 @@
 import httpProxy from "http-proxy";
 import express from "express";
 import { IncomingHttpHeaders } from "http";
-import getNoCacheHeaders from "magda-typescript-common/src/express/getNoCacheHeaders";
-
-import groupBy = require("lodash/groupBy");
+import getNoCacheHeaders from "magda-typescript-common/src/express/getNoCacheHeaders.js";
+import groupBy from "lodash/groupBy.js";
 
 import {
     MAGDA_TENANT_ID_HEADER,
     MAGDA_ADMIN_PORTAL_ID
-} from "magda-typescript-common/src/registry/TenantConsts";
-import { GenericProxyRouterOptions } from "./createGenericProxyRouter";
+} from "magda-typescript-common/src/registry/TenantConsts.js";
+import { GenericProxyRouterOptions } from "./createGenericProxyRouter.js";
 
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",

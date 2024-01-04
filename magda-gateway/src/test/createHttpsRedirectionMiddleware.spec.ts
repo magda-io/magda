@@ -6,9 +6,9 @@ import _ from "lodash";
 import URI from "urijs";
 import supertest from "supertest";
 import randomstring from "randomstring";
-import createHttpsRedirectionMiddleware from "../createHttpsRedirectionMiddleware";
-import buildApp from "../buildApp";
-import { AuthPluginBasicConfig } from "../createAuthPluginRouter";
+import createHttpsRedirectionMiddleware from "../createHttpsRedirectionMiddleware.js";
+import buildApp from "../buildApp.js";
+import { AuthPluginBasicConfig } from "../createAuthPluginRouter.js";
 
 const defaultAppOptions = {
     listenPort: 80,

@@ -1,9 +1,9 @@
 import passport from "passport";
-import ApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
+import ApiClient from "magda-typescript-common/src/authorization-api/ApiClient.js";
 import {
     User,
     UserToken
-} from "magda-typescript-common/src/authorization-api/model";
+} from "magda-typescript-common/src/authorization-api/model.js";
 
 export default function createOrGetUserToken(
     authApi: ApiClient,
