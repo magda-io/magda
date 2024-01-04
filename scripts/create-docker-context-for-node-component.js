@@ -347,7 +347,12 @@ function prepareNodeModules(packageDir, destDir, productionPackages) {
             const type = stat.isFile() ? "file" : "junction";
             fse.ensureSymlinkSync(srcPath, dest, type);
         } catch (e) {
-            fse.copySync(srcPath, dest);
+            try {
+                fse.copySync(srcPath, dest);
+            } catch (e) {
+                console.log(`attempt to copy ${srcPath} to ${dest} failed.`);
+                throw e;
+            }
         }
     });
 }

@@ -1,10 +1,13 @@
 import {} from "mocha";
-import datasetView from "../../cralwerViews/dataset";
+import datasetView from "../../cralwerViews/dataset.js";
 import sampleData from "./sampleDataset.json";
 import { expect } from "chai";
 import fse from "fs-extra";
 import path from "path";
 import moment from "moment-timezone";
+import { getCurrentDirPath } from "@magda/esm-utils";
+
+const __dirname = getCurrentDirPath();
 
 describe("Test cralwer view: dataset", () => {
     beforeEach(() => {

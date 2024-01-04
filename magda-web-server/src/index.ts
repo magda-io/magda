@@ -3,19 +3,19 @@ import path from "path";
 import URI from "urijs";
 import yargs from "yargs";
 import morgan from "morgan";
-import request from "magda-typescript-common/src/request";
+import request from "magda-typescript-common/src/request.js";
 import { createHttpTerminator } from "http-terminator";
-import Registry from "magda-typescript-common/src/registry/RegistryClient";
-import coerceJson from "magda-typescript-common/src/coerceJson";
-import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
+import Registry from "magda-typescript-common/src/registry/RegistryClient.js";
+import coerceJson from "magda-typescript-common/src/coerceJson.js";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
 
-import buildSitemapRouter from "./buildSitemapRouter";
-import getIndexFileContent from "./getIndexFileContent";
-import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl";
-import standardiseUiBaseUrl from "./standardiseUiBaseUrl";
-import createCralwerViewRouter from "./createCralwerViewRouter";
+import buildSitemapRouter from "./buildSitemapRouter.js";
+import getIndexFileContent from "./getIndexFileContent.js";
+import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl.js";
+import standardiseUiBaseUrl from "./standardiseUiBaseUrl.js";
+import createCralwerViewRouter from "./createCralwerViewRouter.js";
 import moment from "moment-timezone";
-import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash";
+import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash.js";
 
 const argv = yargs
     .config()
@@ -562,15 +562,15 @@ app.get("/page/*", async function (req, res) {
 
 if (argv.devProxy) {
     app.get("/api/*", function (req, res) {
-        console.log(argv.devProxy + req.params[0]);
+        console.log(argv.devProxy + (req as any).params[0]);
         req.pipe(
             request({
-                url: argv.devProxy + req.params[0],
+                url: argv.devProxy + (req as any).params[0],
                 qs: req.query,
                 method: req.method
-            })
+            }) as any
         )
-            .on("error", (err) => {
+            .on("error", (err: any) => {
                 const msg = "Error on connecting to the webservice.";
                 console.error(msg, err);
                 res.status(500).send(msg);

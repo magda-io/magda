@@ -18,7 +18,7 @@
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
+    "test": "c8 mocha"
   },
   "devDependencies": {
     "@magda/scripts": "^2.3.3",
@@ -47,6 +47,7 @@
     "supertest": "^6.3.3",
     "typed-promisify": "^0.4.0",
     "typescript": "~5.2.2",
+    "c8": "^9.0.0",
     "xml2js": "^0.4.19"
   },
   "dependencies": {
@@ -62,6 +63,22 @@
     "urijs": "^1.19.11",
     "yaml-front-matter": "^4.0.0",
     "yargs": "^12.0.5"
+  },
+  "c8": {
+    "all": true,
+    "clean": true,
+    "src": [
+      "./src"
+    ],
+    "exclude": [
+      "src/test/**"
+    ]
+  },
+  "mocha": {
+    "import": "tsx/esm",
+    "spec": [
+      "src/test/**/*.spec.ts"
+    ]
   },
   "config": {
     "docker": {

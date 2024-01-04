@@ -5,10 +5,10 @@ import { expect } from "chai";
 import nock from "nock";
 import supertest from "supertest";
 import { parseString } from "xml2js";
-import buildSitemapRouter from "../buildSitemapRouter";
+import buildSitemapRouter from "../buildSitemapRouter.js";
 import { promisify } from "typed-promisify";
-import Registry from "magda-typescript-common/src/registry/RegistryClient";
-import delay from "magda-typescript-common/src/delay";
+import Registry from "magda-typescript-common/src/registry/RegistryClient.js";
+import delay from "magda-typescript-common/src/delay.js";
 
 const noOptionsParseString = (
     string: string,
