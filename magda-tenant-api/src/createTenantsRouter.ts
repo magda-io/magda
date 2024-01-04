@@ -12,7 +12,7 @@ import {
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import ServerError from "magda-typescript-common/src/ServerError.js";
 import handleServerError from "magda-typescript-common/src/handleServerError.js";
-import type { DatabaseError } from "pg";
+import { DatabaseError } from "pg-protocol";
 
 export interface ApiRouterOptions {
     database: Database;
