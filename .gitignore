@@ -64,3 +64,5 @@ deploy/helm/internal-charts/tenant-db/charts/
 deploy/helm/local-deployment/charts/
 deploy/helm/local-auth-test-deployment/charts/
 magda-web-client/public/assets/libs/polyfills.min.js
+
+*/coverage/tmp/*
