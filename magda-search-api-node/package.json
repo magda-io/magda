@@ -50,6 +50,7 @@
     "typescript": "~5.2.2"
   },
   "mocha": {
+    "exit": true,
     "import": "tsx/esm",
     "spec": [
       "src/test/**/*.spec.ts"

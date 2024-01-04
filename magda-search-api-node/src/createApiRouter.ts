@@ -1,5 +1,5 @@
 import * as express from "express";
-import * as _ from "lodash";
+import _ from "lodash";
 import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
 import moment from "moment";
 import { validate, Joi, ValidationError } from "express-validation";
@@ -150,16 +150,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     router.get(
         "/datasets",
-        //validate(datasetQueryValidation, {}, {}),
+        validate(datasetQueryValidation, {}, {}),
         async (req, res) => {
             const queryString = req.query;
 
-            const processedQuery: Query = {
-                ...parseBaseQuery(queryString),
-                freeText: queryString.query as string
-            };
-
             try {
+                const processedQuery: Query = {
+                    ...parseBaseQuery(queryString),
+                    freeText: queryString.query as string
+                };
+
                 const results = await searchQueryer.search(
                     processedQuery,
                     queryString.start as any,
