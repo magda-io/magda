@@ -29,7 +29,6 @@
     "jsonwebtoken": "^8.4.0",
     "mocha": "^10.2.0",
     "nock": "^13.4.0",
-    "nyc": "^15.1.0",
     "sinon": "^4.2.1"
   },
   "dependencies": {

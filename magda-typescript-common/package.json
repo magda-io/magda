@@ -17,7 +17,7 @@
     "compile": "tsc -b",
     "watch": "tsc -b --watch",
     "generate": "generate-registry-typescript ./src/generated/registry",
-    "test": "nyc mocha",
+    "test": "c8 mocha",
     "dev": "yarn run watch",
     "release": "npm publish || echo \"Skip releasing npm package @magda/typescript-common.\""
   },
@@ -51,7 +51,7 @@
     "mocha": "^10.2.0",
     "mock-req-res": "^1.1.1",
     "nock": "^13.4.0",
-    "nyc": "^15.1.0",
+    "c8": "^9.0.0",
     "sinon": "^4.2.1",
     "typescript": "~5.2.2"
   },
@@ -100,9 +100,10 @@
       "npmPackage": true
     }
   },
-  "nyc": {
-    "extension": [
-      ".ts"
+  "c8": {
+    "all": true,
+    "src": [
+      "./src"
     ],
     "exclude": [
       "src/test/**"

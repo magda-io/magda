@@ -14,7 +14,7 @@
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "export PGUSER=postgres && run-typescript-in-nodemon src/index.ts",
-    "test": "nyc mocha",
+    "test": "c8 mocha",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push"
@@ -47,7 +47,7 @@
     "chai": "^5.0.0-rc.0",
     "mocha": "^10.2.0",
     "nock": "^13.4.0",
-    "nyc": "^15.1.0",
+    "c8": "^9.0.0",
     "sinon": "^7.3.1",
     "supertest": "^6.3.3",
     "typescript": "~5.2.2"
@@ -72,9 +72,10 @@
       "api": true
     }
   },
-  "nyc": {
-    "extension": [
-      ".ts"
+  "c8": {
+    "all": true,
+    "src": [
+      "./src"
     ],
     "exclude": [
       "src/test/**"
