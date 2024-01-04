@@ -3,23 +3,23 @@ import request from "supertest";
 import express from "express";
 import { Response } from "supertest";
 import { expect } from "chai";
-import createTenantsRouter from "../createTenantsRouter";
-import mockDatabase from "./mockDatabase";
-import Database from "../Database";
-import mockTenantDataStore from "magda-typescript-common/src/test/mockTenantDataStore";
-import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant";
+import createTenantsRouter from "../createTenantsRouter.js";
+import mockDatabase from "./mockDatabase.js";
+import Database from "../Database.js";
+import mockTenantDataStore from "magda-typescript-common/src/test/mockTenantDataStore.js";
+import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant.js";
 import {
     MAGDA_TENANT_ID_HEADER,
     MAGDA_ADMIN_PORTAL_ID
-} from "magda-typescript-common/src/registry/TenantConsts";
-import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient";
+} from "magda-typescript-common/src/registry/TenantConsts.js";
+import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient.js";
 import AuthDecision, {
     UnconditionalTrueDecision,
     UnconditionalFalseDecision
-} from "magda-typescript-common/src/opa/AuthDecision";
-import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+} from "magda-typescript-common/src/opa/AuthDecision.js";
+import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 
-describe("Tenant api router", function (this: Mocha.ISuiteCallbackContext) {
+describe("Tenant api router", function (this) {
     const nonAdminPortalId = MAGDA_ADMIN_PORTAL_ID + 1;
     const jwtSecret = "a top secret";
     const authApiUrl = "http://auth.some.where";

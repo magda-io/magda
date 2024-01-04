@@ -1,10 +1,10 @@
 import express from "express";
 import yargs from "yargs";
 import { createHttpTerminator } from "http-terminator";
-import Database from "./Database";
-import createTenantsRouter from "./createTenantsRouter";
-import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import Database from "./Database.js";
+import createTenantsRouter from "./createTenantsRouter.js";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import SQLSyntax from "sql-syntax";
 
 const argv = addJwtSecretFromEnvVar(

@@ -4,7 +4,7 @@ import yargs from "yargs";
 import fs from "node:fs";
 import path from "node:path";
 import url from "url";
-import { getCurrentDirPath } from "@magda/esm-utils";
+import { getCurrentDirPath, require } from "@magda/esm-utils";
 const __dirname = getCurrentDirPath();
 
 const argv = yargs
