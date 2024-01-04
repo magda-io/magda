@@ -1,8 +1,8 @@
 import yargs from "yargs";
 import path from "path";
-import getScssFileList from "./getScssFileList";
-import { renderScssFilesExtra } from "./renderScss";
-import saveToContentApi from "./saveToContentApi";
+import getScssFileList from "./getScssFileList.js";
+import { renderScssFilesExtra } from "./renderScss.js";
+import saveToContentApi from "./saveToContentApi.js";
 
 const argv = yargs
     .config()

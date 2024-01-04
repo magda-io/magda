@@ -102,6 +102,7 @@
   },
   "c8": {
     "all": true,
+    "clean": true,
     "src": [
       "./src"
     ],

@@ -41,12 +41,23 @@
     "@types/minio": "^7.0.12",
     "@types/urijs": "^1.19.19",
     "@types/yargs": "^12.0.8",
+    "c8": "^9.0.0",
     "typescript": "~5.2.2"
   },
   "mocha": {
     "import": "tsx/esm",
     "spec": [
       "src/test/**/*.spec.ts"
+    ]
+  },
+  "c8": {
+    "all": true,
+    "clean": true,
+    "src": [
+      "./src"
+    ],
+    "exclude": [
+      "src/test/**"
     ]
   },
   "config": {

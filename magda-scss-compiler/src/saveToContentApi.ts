@@ -1,5 +1,5 @@
-import buildJwt from "magda-typescript-common/src/session/buildJwt";
-import request from "magda-typescript-common/src/request";
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
+import request from "magda-typescript-common/src/request.js";
 
 const saveToContentApi = (
     fileName: string,
