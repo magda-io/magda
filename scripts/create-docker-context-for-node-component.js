@@ -347,12 +347,14 @@ function prepareNodeModules(packageDir, destDir, productionPackages) {
             const type = stat.isFile() ? "file" : "junction";
             fse.ensureSymlinkSync(srcPath, dest, type);
         } catch (e) {
-            try {
-                fse.copySync(srcPath, dest);
-            } catch (e) {
-                console.log(`attempt to copy ${srcPath} to ${dest} failed.`);
-                throw e;
+            // see all error codes here: https://man7.org/linux/man-pages/man2/symlink.2.html#ERRORS
+            if (e?.code === "EEXIST") {
+                //console.log(`symlink ${srcPath} already exists, skip.`);
+                // the link already exists, we choose to not attempt to overwrite it.
+                // this means that the local dependency (in nearest node_modules) will higher priority than hoisted dependency (in root node_modules).
+                return;
             }
+            throw e;
         }
     });
 }
