@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^2.3.3",
+    "@magda/esm-utils": "^1.0.1",
     "email-validator": "^2.0.3",
     "express": "^4.17.2",
     "fs-extra": "^11.2.0",
@@ -78,7 +79,7 @@
   "config": {
     "docker": {
       "name": "magda-correspondence-api",
-      "include": "node_modules dist emailTemplates Dockerfile"
+      "include": "node_modules dist emailTemplates Dockerfile package.json"
     },
     "jwtSecret": "squirrel",
     "userId": "00000000-0000-4000-8000-000000000000",

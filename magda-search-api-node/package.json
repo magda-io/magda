@@ -21,6 +21,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "6.8.6",
     "@magda/typescript-common": "^2.3.3",
+    "@magda/esm-utils": "^1.0.1",
     "express": "^4.17.2",
     "express-validation": "^3.0.2",
     "geojson": "^0.5.0",

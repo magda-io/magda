@@ -46,6 +46,7 @@
   "dependencies": {
     "@magda/registry-aspects": "^2.3.3",
     "@magda/typescript-common": "^2.3.3",
+    "@magda/esm-utils": "^1.0.1",
     "express": "^4.17.2",
     "cross-fetch": "^4.0.0",
     "lodash": "^4.17.4",
@@ -59,7 +60,7 @@
   },
   "config": {
     "docker": {
-      "include": "node_modules dist"
+      "include": "node_modules dist package.json"
     }
   },
   "magda": {

@@ -22,7 +22,7 @@ import { require } from "@magda/esm-utils";
 import express from "express";
 import djv from "djv";
 const env = djv();
-const schemas = require("@magda/content-schemas");
+import * as schemas from "@magda/content-schemas";
 const wildcard = require("wildcard");
 
 let schemaCount = 0;

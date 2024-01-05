@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^2.3.3",
+    "@magda/esm-utils": "^1.0.1",
     "@magda/web-client": "^2.3.3",
     "autoprefixer": "^10.4.16",
     "clean-css": "^4.2.1",

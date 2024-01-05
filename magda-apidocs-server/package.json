@@ -3,6 +3,7 @@
   "description": "The MAGDA in-browser api documentation.",
   "version": "2.3.3",
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
     "build": "generate-api-documentation --config ./apidoc.json --output ./build",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",

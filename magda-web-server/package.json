@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^2.3.3",
+    "@magda/esm-utils": "^1.0.1",
     "express": "^4.17.2",
     "fs-extra": "^11.2.0",
     "http-terminator": "^3.2.0",

@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@kubernetes/client-node": "^0.16.3",
+    "@magda/esm-utils": "^1.0.1",
     "@magda/typescript-common": "^2.3.3",
     "express": "^4.17.2",
     "http-proxy": "^1.16.2",
@@ -59,7 +60,7 @@
   "config": {
     "docker": {
       "name": "magda-admin-api",
-      "include": "node_modules dist Dockerfile"
+      "include": "node_modules dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",
     "userId": "00000000-0000-4000-8000-000000000000"

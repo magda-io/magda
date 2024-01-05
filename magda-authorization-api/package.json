@@ -76,7 +76,7 @@
   "config": {
     "docker": {
       "name": "magda-authorization-api",
-      "include": "node_modules dist Dockerfile"
+      "include": "node_modules dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",
     "SESSION_SECRET": "keyboard cat",

@@ -1,19 +1,21 @@
-module.exports.headerNavigation = require("./header-navigation.schema.json");
+import { require } from "@magda/esm-utils";
 
-module.exports.homeTagLine = require("./home-tag-line.schema.json");
+export const headerNavigation = require("./header-navigation.schema.json");
 
-module.exports.homeHighlight = require("./home-highlight.schema.json");
+export const homeTagLine = require("./home-tag-line.schema.json");
 
-module.exports.homeStory = require("./home-story.schema.json");
+export const homeHighlight = require("./home-highlight.schema.json");
 
-module.exports.languageString = require("./language-string.schema.json");
+export const homeStory = require("./home-story.schema.json");
 
-module.exports.footerCategory = require("./footer-category.schema.json");
+export const languageString = require("./language-string.schema.json");
 
-module.exports.footerLink = require("./footer-link.schema.json");
+export const footerCategory = require("./footer-category.schema.json");
 
-module.exports.footerCopyright = require("./footer-copyright.schema.json");
+export const footerLink = require("./footer-link.schema.json");
 
-module.exports.configDatasetSearchSuggestionScoreThreshold = require("./config-dataset-search-suggestion-score-threshold.schema.json");
+export const footerCopyright = require("./footer-copyright.schema.json");
 
-module.exports.configSearchResultsPerPage = require("./config-search-results-per-page.schema.json");
+export const configDatasetSearchSuggestionScoreThreshold = require("./config-dataset-search-suggestion-score-threshold.schema.json");
+
+export const configSearchResultsPerPage = require("./config-search-results-per-page.schema.json");

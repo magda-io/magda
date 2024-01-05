@@ -3,7 +3,11 @@
   "version": "2.3.3",
   "license": "Apache-2.0",
   "type": "module",
-  "exports": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json",
+    "./dist/*.js": "./dist/*.js"
+  },
   "engines": {
     "node": ">=18.19.0"
   },
@@ -21,6 +25,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^2.3.3",
+    "@magda/esm-utils": "^1.0.1",
     "express": "^4.17.2",
     "http-terminator": "^3.2.0",
     "jsonwebtoken": "^8.4.0",
@@ -61,7 +66,7 @@
   "config": {
     "docker": {
       "name": "magda-tenant-api",
-      "include": "node_modules dist Dockerfile"
+      "include": "node_modules dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",
     "SESSION_SECRET": "keyboard cat"

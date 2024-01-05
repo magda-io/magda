@@ -27,6 +27,7 @@
   "dependencies": {
     "@magda/tenant-api": "^2.3.3",
     "@magda/typescript-common": "^2.3.3",
+    "@magda/esm-utils": "^1.0.1",
     "compression": "^1.7.2",
     "connect-pg-simple": "^6.2.1",
     "cookie-parser": "^1.4.5",
@@ -98,7 +99,7 @@
   "config": {
     "docker": {
       "name": "magda-gateway",
-      "include": "node_modules dist Dockerfile package.json"
+      "include": "node_modules dist Dockerfile package.json package.json"
     },
     "jwtSecret": "squirrel",
     "SESSION_SECRET": "keyboard cat",
