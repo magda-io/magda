@@ -19,3 +19,5 @@ export const footerCopyright = require("./footer-copyright.schema.json");
 export const configDatasetSearchSuggestionScoreThreshold = require("./config-dataset-search-suggestion-score-threshold.schema.json");
 
 export const configSearchResultsPerPage = require("./config-search-results-per-page.schema.json");
+
+export const page = require("./page.schema.json");

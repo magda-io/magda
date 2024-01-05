@@ -8,3 +8,4 @@ export const footerLink: any;
 export const footerCopyright: any;
 export const configDatasetSearchSuggestionScoreThreshold: any;
 export const configSearchResultsPerPage: any;
+export const page: any;
