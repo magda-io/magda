@@ -7,6 +7,31 @@ import {
 import request from "supertest";
 import express from "express";
 import assert from "assert";
+import delay from "../../delay.js";
+
+describe("overall probe process", function (this) {
+    this.timeout(30000);
+    it("should be ready after required service online", async function () {
+        const app = express();
+        installStatusRouter(app, {
+            key: Math.random().toString(),
+            forceRun: true,
+            probes: {
+                a: async () => {
+                    await delay(1000);
+                    return {
+                        ready: true
+                    };
+                }
+            },
+            probeUpdateMs: 200
+        });
+        const agent = request.agent(app);
+        await agent.get("/status/ready").expect(500);
+        await delay(2000);
+        await agent.get("/status/ready").expect(200);
+    });
+});
 
 setup("status - default", undefined, (agent: any) => {
     it("should always be live", function (done) {
@@ -24,7 +49,7 @@ setup(
         probes: {
             a: async () => {
                 console.log("here");
-                await sleep(500);
+                await delay(500);
                 console.log("after");
                 return {
                     ready: true
@@ -39,7 +64,7 @@ setup(
                 .get("/status/ready")
                 .expect(500)
                 .end(async () => {
-                    await sleep(1000);
+                    await delay(1000);
                     agent.get("/status/ready").expect(200).end(done);
                 });
         });
@@ -60,13 +85,13 @@ setup(
     },
     (agent: any) => {
         it("should be ready with probes", function (done) {
-            sleep(100).then(function () {
+            delay(100).then(function () {
                 agent.get("/status/ready").expect(200).end(done);
             });
         });
 
         it("should be ready with probes", function (done) {
-            sleep(100).then(function () {
+            delay(100).then(function () {
                 agent.get("/status/readySync").expect(200).end(done);
             });
         });
@@ -85,7 +110,7 @@ setup(
     },
     (agent: any) => {
         it("should error", function (done) {
-            sleep(100).then(function () {
+            delay(100).then(function () {
                 agent.get("/status/ready").expect(500).end(done);
             });
         });
@@ -106,7 +131,7 @@ setup(
     },
     (agent: any) => {
         it("should be ready", function (done) {
-            sleep(100).then(function () {
+            delay(100).then(function () {
                 agent.get("/status/ready").expect(200).end(done);
             });
         });
@@ -160,10 +185,6 @@ describe("request", function () {
         }
     });
 });
-
-function sleep(time: number) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-}
 
 function setup(text: string, options: ConfigOption, callback: any) {
     describe(text, function (this) {

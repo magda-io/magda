@@ -137,7 +137,7 @@
     "weighted-mean": "^1.0.2",
     "worker-loader": "^3.0.8",
     "xlsx": "^0.14.0",
-    "yaml-front-matter": "^4.0.0",
+    "yaml-front-matter": "^4.1.1",
     "browserify-zlib": "^0.2.0",
     "stream-browserify": "^3.0.0",
     "path-browserify": "^1.0.1",

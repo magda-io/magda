@@ -126,7 +126,6 @@ function probeList2ProbeCheckingTask(
 // It just makes service and dependency status visible to everyone
 function createStatusRouter(key: string): Router {
     const router = Router();
-    const probeItem: ProbeDataItem = probeDB[key];
 
     // we don't want to cache status
     router.use(function (req, res, next) {
@@ -142,6 +141,7 @@ function createStatusRouter(key: string): Router {
     // readiness probe for knowing if service and its dependents are
     // ready to go
     router.get("/ready", function (req, res) {
+        const probeItem: ProbeDataItem = probeDB[key];
         res.status(probeItem.state.ready ? 200 : 500).json({
             ready: probeItem.state.ready,
             since: probeItem.state.since,
@@ -153,6 +153,7 @@ function createStatusRouter(key: string): Router {
 
     // added this for diagnosing service state based on latency in kubernetes
     router.get("/readySync", async function (req, res) {
+        const probeItem: ProbeDataItem = probeDB[key];
         await probeItem?.allProbesChecking?.();
         res.status(probeItem.state.ready ? 200 : 500).json({
             ready: probeItem.state.ready,
@@ -208,6 +209,7 @@ function installUpdater(options: ConfigOption): ProbeDataItem {
 
     if (!hasNoProbeTasks) {
         if (!isInTest || options?.forceRun) {
+            console.log("schedule ", key, "is checking");
             setTimeout(
                 allProbesCheckingFunc,
                 probeDB[key].config.probeUpdateMs
