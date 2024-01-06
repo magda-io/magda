@@ -1,3 +1,4 @@
+import { require } from "@magda/esm-utils";
 import yargs from "yargs";
 import _ from "lodash";
 import express from "express";
