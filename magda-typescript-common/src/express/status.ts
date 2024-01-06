@@ -52,8 +52,9 @@ const noopProbe = async (): Promise<State> =>
 
 function probeList2ProbeCheckingTask(
     list: ProbesList | undefined,
-    probeData: ProbeDataItem
+    key: string
 ): () => Promise<void> {
+    const probeData: ProbeDataItem = probeDB[key];
     if (!list || !Object.keys(list).length) {
         return async () => {
             probeData.state = await noopProbe();
@@ -123,8 +124,9 @@ function probeList2ProbeCheckingTask(
 
 // In case anyone is confused, this does not duplicate or replace kubernetes functionality
 // It just makes service and dependency status visible to everyone
-function createStatusRouter(probeItem: ProbeDataItem): Router {
+function createStatusRouter(key: string): Router {
     const router = Router();
+    const probeItem: ProbeDataItem = probeDB[key];
 
     // we don't want to cache status
     router.use(function (req, res, next) {
@@ -183,7 +185,7 @@ function installUpdater(options: ConfigOption): ProbeDataItem {
 
     const allProbesCheckingTask = probeList2ProbeCheckingTask(
         options?.probes,
-        probeDB[key]
+        key
     );
     const allProbesCheckingFunc = async () => {
         if (probeDB[key]?.allProbesChecking !== allProbesCheckingTask) {
@@ -223,8 +225,8 @@ export function installStatusRouter(
     options.key = options?.key
         ? options?.key
         : callerPath() + routePrefix + "/status";
-    const probeDataItem = installUpdater(options);
-    const statusRouter = createStatusRouter(probeDataItem);
+    installUpdater(options);
+    const statusRouter = createStatusRouter(options.key);
     app.use(routePrefix + "/status", statusRouter);
 }
 
