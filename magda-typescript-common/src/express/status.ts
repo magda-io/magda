@@ -209,7 +209,6 @@ function installUpdater(options: ConfigOption): ProbeDataItem {
 
     if (!hasNoProbeTasks) {
         if (!isInTest || options?.forceRun) {
-            console.log("schedule ", key, "is checking");
             setTimeout(
                 allProbesCheckingFunc,
                 probeDB[key].config.probeUpdateMs

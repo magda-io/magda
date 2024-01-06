@@ -23,7 +23,7 @@
   "config": {
     "docker": {
       "name": "magda-migrator-registry-aspects",
-      "include": "Dockerfile node_modules dist"
+      "include": "Dockerfile node_modules dist package.json"
     },
     "jwtSecret": "squirrel",
     "userId": "00000000-0000-4000-8000-000000000000"

@@ -1,3 +1,4 @@
+import { requireResolve } from "@magda/esm-utils";
 import express from "express";
 import path from "path";
 import URI from "urijs";
@@ -348,7 +349,7 @@ app.get("/status/live", (req, res) => {
 });
 
 const clientRoot = path.resolve(
-    require.resolve("@magda/web-client/package.json"),
+    requireResolve("@magda/web-client/package.json"),
     ".."
 );
 const clientBuild = path.join(clientRoot, "build");
