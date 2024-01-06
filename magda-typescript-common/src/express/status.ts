@@ -193,7 +193,10 @@ function installUpdater(options: ConfigOption): ProbeDataItem {
         }
         await allProbesCheckingTask();
         // .unref() make sure the timer will not block the process from exiting
-        setTimeout(allProbesCheckingFunc, options.probeUpdateMs).unref();
+        setTimeout(
+            allProbesCheckingFunc,
+            probeDB[key].config.probeUpdateMs
+        ).unref();
     };
 
     // should save allProbesCheckingTask rather than allProbesCheckingFunc
@@ -205,13 +208,14 @@ function installUpdater(options: ConfigOption): ProbeDataItem {
 
     if (!hasNoProbeTasks) {
         if (!isInTest || options?.forceRun) {
-            setTimeout(allProbesCheckingFunc, options.probeUpdateMs).unref();
+            setTimeout(
+                allProbesCheckingFunc,
+                probeDB[key].config.probeUpdateMs
+            ).unref();
+        } else {
+            // when the probe not run (e.g. in test cases) to make sure set it as true initially
+            probeDB[key].state.ready = true;
         }
-    }
-
-    if (isInTest && !options?.forceRun) {
-        // when the probe not run (e.g. in test cases) to make sure set it as true initially
-        probeDB[key].state.ready = true;
     }
 
     return probeDB[key];
