@@ -3,6 +3,7 @@ import path from "path";
 import getScssFileList from "./getScssFileList.js";
 import { renderScssFilesExtra } from "./renderScss.js";
 import saveToContentApi from "./saveToContentApi.js";
+import { requireResolve } from "@magda/esm-utils";
 
 const argv = yargs
     .config()
@@ -37,7 +38,7 @@ const argv = yargs
     }).argv;
 
 const clientRoot = path.resolve(
-    require.resolve("@magda/web-client/package.json"),
+    requireResolve("@magda/web-client/package.json"),
     ".."
 );
 
