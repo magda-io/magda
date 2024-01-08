@@ -4,6 +4,8 @@ type Props = {
     location: Location;
 };
 
-export default function (props: Props): number {
+function getPageNumber(props: Props): number {
     return queryString.parse(props.location.search).page;
 }
+
+export default getPageNumber;

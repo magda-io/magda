@@ -1,6 +1,6 @@
 import find from "lodash/find";
 
-export default function (
+function findMatchingObjs(
     valueList: Array<string>,
     objList: Array<any>
 ): Array<any> {
@@ -14,3 +14,5 @@ export default function (
     list = objList.filter((o) => checkActiveOption(o));
     return list;
 }
+
+export default findMatchingObjs;

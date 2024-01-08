@@ -1,5 +1,14 @@
 const { isEqual } = require("lodash");
 const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
+const path = require("path");
+
+require("dotenv").config();
+if (process.env.NODE_PATH && !path.isAbsolute(process.env.NODE_PATH)) {
+    process.env.NODE_PATH = path.resolve(__dirname, process.env.NODE_PATH);
+}
+if (process.env.SASS_PATH && !path.isAbsolute(process.env.SASS_PATH)) {
+    process.env.SASS_PATH = path.resolve(__dirname, process.env.SASS_PATH);
+}
 
 module.exports = {
     babel: {
@@ -76,6 +85,8 @@ module.exports = {
                 path: require.resolve("path-browserify"),
                 assert: require.resolve("assert/")
             };
+
+            webpackConfig.stats = "verbose";
 
             return webpackConfig;
         }

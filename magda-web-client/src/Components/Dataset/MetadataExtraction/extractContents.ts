@@ -1,12 +1,10 @@
 import XLSX from "xlsx";
 import mammoth from "mammoth";
-import pdfjsLib from "pdfjs-dist/build/pdf.mjs";
-import PDFWorker from "pdfjs-dist/build/pdf.worker.mjs";
+import * as pdfjsLib from "pdfjs-dist/webpack.mjs";
 import { MAX_KEYWORDS } from "./extractKeywords";
 import uniq from "lodash/uniq";
 import moment from "moment";
 import { FileDetails } from "./types";
-(self as any).pdfjsWorker = PDFWorker; // eslint-disable-line
 
 interface ContentExtractorOutput {
     format?: string;
@@ -339,7 +337,7 @@ function productKeywordsFromInput(
  * Extracts data/metadata from pdf format.
  */
 async function extractPDFFile(_input: FileDetails, array: Uint8Array) {
-    let pdf = await pdfjsLib.getDocument({
+    const pdf = await pdfjsLib.getDocument({
         data: array
     });
 

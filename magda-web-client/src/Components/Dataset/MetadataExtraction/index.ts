@@ -16,7 +16,7 @@ const dependentExtractors: Processor[] = [
     extractKeywords
 ];
 
-const extractors = {
+export const extractors = {
     async runExtractors(
         input: FileDetails,
         config: MessageSafeConfig,

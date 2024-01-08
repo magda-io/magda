@@ -10,9 +10,7 @@
     "nohoist": [
       "**/react-scripts",
       "**/react-scripts/**",
-      "**/@kubernetes/client-node/**",
-      "**/worker-loader",
-      "**/worker-loader/**"
+      "**/@kubernetes/client-node/**"
     ]
   },
   "eslintIgnore": [

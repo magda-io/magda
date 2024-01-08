@@ -9,12 +9,13 @@
     "dev": "yarn build-polyfills && yarn run start",
     "start": "craco start",
     "build2": "react-scripts build",
-    "build": "yarn build-polyfills && CI=false GENERATE_SOURCEMAP=false craco build",
+    "build": "yarn build-polyfills && craco build --verbose",
     "build-polyfills": "webpack --mode production --config polyfill-bundle.config.js",
     "test": "craco test --react-scripts ../node_modules/react-scripts",
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer 'build/static/js/*.js'"
   },
+  "cracoConfig": "craco.config.cjs",
   "dependencies": {
     "leaflet": "^0.7.7",
     "react-icons": "^4.3.1"
@@ -80,7 +81,7 @@
     "nlcst-to-string": "^2.0.2",
     "npm-run-all": "^4.0.1",
     "papaparse": "magda-io/PapaParse#5.3.0-magda",
-    "pdfjs-dist": "^4.0.189",
+    "pdfjs-dist": "^4.0.379",
     "pretty-date": "^0.2.0",
     "prop-types": "^15.6.1",
     "qr-image": "^3.2.0",
@@ -135,7 +136,6 @@
     "webpack": "^5.89.0",
     "webpack-filter-warnings-plugin": "^1.2.1",
     "weighted-mean": "^1.0.2",
-    "worker-loader": "^3.0.8",
     "xlsx": "^0.14.0",
     "yaml-front-matter": "^4.1.1",
     "browserify-zlib": "^0.2.0",
@@ -144,11 +144,20 @@
     "assert": "^2.1.0",
     "@typescript-eslint/parser": "^6.11.0"
   },
-  "browserslist": [
-    "last 2 versions",
-    "ie 11",
-    "chrome 41"
-  ],
+  "browserslist": {
+    "production": [
+      "chrome >= 67",
+      "edge >= 79",
+      "firefox >= 68",
+      "opera >= 54",
+      "safari >= 14"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "config": {
     "docker": {
       "include": "node_modules build package.json"

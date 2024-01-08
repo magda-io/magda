@@ -21,7 +21,12 @@ import translateError from "helpers/translateError";
 import promisifySetState from "helpers/promisifySetState";
 import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
-const ExtractorsWorker = require("worker-loader!../../../MetadataExtraction"); // eslint-disable-line import/no-webpack-loader-syntax
+const ExtractorsWorker = new Worker(
+    new URL("../../../MetadataExtraction/index.ts", import.meta.url),
+    {
+        name: "ExtractorsWorker"
+    }
+);
 
 type RunExtractors = (
     input: FileDetails,
@@ -37,7 +42,7 @@ const READ_FILE_PROGRESS_INCREMENT = 20;
 
 function readFileAsArrayBuffer(file: any): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
-        var fileReader = new FileReader();
+        const fileReader = new FileReader();
         fileReader.onload = function () {
             resolve(this.result as ArrayBuffer);
         };
@@ -200,8 +205,7 @@ export default async function processFile(
      * Function for running all extractors in the correct order, which returns
      * a promise that completes when extraction is complete
      */
-    const extractorsWorker = new ExtractorsWorker();
-    const extractors = Comlink.wrap(extractorsWorker) as Comlink.Remote<{
+    const extractors = Comlink.wrap(ExtractorsWorker) as Comlink.Remote<{
         runExtractors: RunExtractors;
     }>;
 

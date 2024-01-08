@@ -90,7 +90,7 @@ export function prependToLocalStorageArray(
  */
 export function deleteFromLocalStorageArray(key, index, defaultValue = []) {
     if (noLocalStorage) return defaultValue;
-    let items = retrieveLocalData(key, []);
+    const items = retrieveLocalData(key, []);
     items.splice(index, 1);
     try {
         window.localStorage.setItem(key, JSON.stringify(items));
