@@ -10,7 +10,7 @@ const pool = getDBPool();
 
 program
     .description("Make a user an Admin user")
-    .option("<userId>", "User ID")
+    .argument("<userId>", "User ID")
     .version(pkg.version)
     .action(async (userId) => {
         try {

@@ -10,8 +10,8 @@ const pool = getDBPool();
 program
     .version(pkg.version)
     .description(`A tool for creating permissions. Version: ${pkg.version}`)
-    .option("<name>", "Permission name")
-    .option("<description>", "Permission description")
+    .argument("<name>", "Permission name")
+    .argument("<description>", "Permission description")
     .action(async (name, description) => {
         try {
             await pool.query(

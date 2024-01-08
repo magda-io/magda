@@ -11,8 +11,8 @@ program
     .description(
         `calculate JWT token (only for testing purpose). Version: ${pkg.version}`
     )
-    .option("<userId>", "User ID")
-    .option(
+    .argument("<userId>", "User ID")
+    .argument(
         "[jwtSecret]",
         "Optional JWT secret. Default value: `" + DEFAULT_JWT_SECRET + "`"
     )

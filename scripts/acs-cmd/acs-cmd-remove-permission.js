@@ -10,8 +10,8 @@ const pool = getDBPool();
 
 program
     .description("Remove a permission from a role")
-    .option("<permissionId>", "Permission ID")
-    .option("<roleId>", "Role ID")
+    .argument("<permissionId>", "Permission ID")
+    .argument("<roleId>", "Role ID")
     .version(pkg.version)
     .action(async (permissionId, roleId) => {
         try {

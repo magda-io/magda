@@ -10,7 +10,7 @@ program
     .description(
         `Create a root tree node with specified name. You can then complete other node fields using other DB admin tools.`
     )
-    .option("<nodeName>", "Root node name")
+    .argument("<nodeName>", "Root node name")
     .version(pkg.version)
     .action(async (nodeName) => {
         try {

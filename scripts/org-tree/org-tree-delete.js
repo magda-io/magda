@@ -14,7 +14,7 @@ program
             "\nIf -o or --only switch is on, only specified node will be removed and its children (if any) " +
             "will become its parent's children."
     )
-    .option("<nodeNameOrId>", "node name or id that to be removed")
+    .argument("<nodeNameOrId>", "node name or id that to be removed")
     .option(
         "-o, --only",
         "If only remove specified node and left its children (if any) to its parent"

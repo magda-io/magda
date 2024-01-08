@@ -10,10 +10,10 @@ const pool = getDBPool();
 program
     .version(pkg.version)
     .description(`A tool for creating operations. Version: ${pkg.version}`)
-    .option("<permission>", "Permission name")
-    .option("<uri>", "Operation uri")
-    .option("<name>", "Operation name")
-    .option("<description>", "Operation description")
+    .argument("<permission>", "Permission name")
+    .argument("<uri>", "Operation uri")
+    .argument("<name>", "Operation name")
+    .argument("<description>", "Operation description")
     .action(async (permissionName, uri, name, description) => {
         try {
             await pool.query("BEGIN TRANSACTION");

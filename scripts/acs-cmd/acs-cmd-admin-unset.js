@@ -10,7 +10,7 @@ const pool = getDBPool();
 
 program
     .description("Remove Admin role / status from a user")
-    .option("<userId>", "User ID")
+    .argument("<userId>", "User ID")
     .version(pkg.version)
     .action(async (userId) => {
         try {

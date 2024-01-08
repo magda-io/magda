@@ -8,7 +8,7 @@ import getUserIdFromNameOrId from "./getUserIdFromNameOrId.js";
 
 program
     .description("Remove the specified user to from any org unit.")
-    .option("<userNameOrId>", "user name or id")
+    .argument("<userNameOrId>", "user name or id")
     .version(pkg.version)
     .action(async (userNameOrId) => {
         try {
