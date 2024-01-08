@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v3.0.0
+
+- #3472, #3484 Node.js 18 & React 18 Upgrade
+- Converted all Node modules & release NPM packages to pure ESM modules
+- Replaced ts-node with tsx
+- Replace nyc with c8
+- Upgrade to typescript 5 & webpack 5
+- Removed [@gov.au/pancake](https://www.npmjs.com/package/@gov.au/pancake) from dependencies
+
 ## v2.3.3
 
 - #3495: fixed gateway might throw unhandled ERR_HTTP_HEADERS_SENT errors when proxy requests
