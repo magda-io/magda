@@ -1,7 +1,7 @@
 {
   "name": "@magda/registry-client",
   "description": "MAGDA Registry Client",
-  "version": "2.3.3",
+  "version": "3.0.0-alpha.0",
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
@@ -23,11 +23,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "devDependencies": {
-    "@magda/typescript-common": "^2.3.3",
+    "@magda/typescript-common": "^3.0.0-alpha.0",
     "@microsoft/api-extractor": "~7.39.0",
+    "esbuild": "^0.19.10",
     "ts-loader": "^9.5.1",
-    "typescript": "~5.2.2",
-    "esbuild": "^0.19.10"
+    "typescript": "~5.2.2"
   },
   "dependencies": {
     "@types/urijs": "^1.19.19"
