@@ -1,4 +1,4 @@
-FROM node:18 AS build
+FROM node:18-alpine AS build
 
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app
