@@ -879,6 +879,7 @@ pre-release:check-release-version:
         SKIP_CHECK: "true"
   needs:
     - yarn-install
+    - build-builder-image
   cache: {}
   image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   script: |
