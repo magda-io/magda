@@ -1,6 +1,8 @@
-const path = require("path");
-const fs = require("fs");
+import path from "path";
+import fs from "fs";
+import { getCurrentDirPath } from "@magda/esm-utils";
 
+const __dirname = getCurrentDirPath();
 const fileContentCache = {};
 
 function getJsonSchemaSync(schemaName) {
@@ -24,5 +26,4 @@ function getJsonSchemaSync(schemaName) {
     return fileContentCache[filePath];
 }
 
-exports.getJsonSchemaSync = getJsonSchemaSync;
-exports.default = getJsonSchemaSync;
+export default getJsonSchemaSync;
