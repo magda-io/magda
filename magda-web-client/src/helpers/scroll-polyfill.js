@@ -1,3 +1,5 @@
+import * as smoothscroll from "smoothscroll-polyfill";
+
 (function () {
     let isFirefox = false;
     try {
@@ -8,6 +10,5 @@
         // --- force polyfill implementation
         window.__forceSmoothScrollPolyfill__ = true;
     }
-    const smoothscroll = require("smoothscroll-polyfill");
     smoothscroll.polyfill();
 })();

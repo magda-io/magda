@@ -1,4 +1,5 @@
 import React from "react";
+import emailValidator from "email-validator";
 import "./FormTemplate.scss";
 
 //This is the react form template
@@ -36,13 +37,12 @@ export default class RequestFormTemplate extends React.Component {
      */
     checkRequiredFields(state) {
         // this below package validates emails.
-        var validator = require("email-validator");
         const requiredFields = [];
         if (
             !state ||
             !state.senderEmail ||
             state.senderEmail.trim() === "" ||
-            !validator.validate(state.senderEmail.trim())
+            !emailValidator.validate(state.senderEmail.trim())
         ) {
             requiredFields.push(`senderEmail`);
             this.setState({ senderEmailValid: false });
