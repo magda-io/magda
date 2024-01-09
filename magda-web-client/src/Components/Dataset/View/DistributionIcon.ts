@@ -16,9 +16,15 @@ const dataFormatCategories = [
     "spreadsheet",
     "tabular"
 ];
-dataFormatCategories.forEach((item) => {
-    formatIcons[item] = require(`assets/data-types/${item}.svg`).default;
-});
+
+(async function init() {
+    for (const item of dataFormatCategories) {
+        formatIcons[item] = (
+            await import(`assets/data-types/${item}.svg`)
+        ).default;
+    }
+})();
+
 const CategoryDetermineConfigItems = [
     {
         regex: /wfs|wms|geojson|kml|kmz|shp|gdb|csv-geo-au|mpk|ArcGIS|ESRI REST/i,
@@ -71,7 +77,7 @@ function determineCategoryFromString(str) {
     if (!str || typeof str !== "string") return matchedCategory;
     str = str.trim().toLowerCase();
     for (let i = 0; i < CategoryDetermineConfigItems.length; i++) {
-        let config = CategoryDetermineConfigItems[i];
+        const config = CategoryDetermineConfigItems[i];
         if (str.match(config.regex)) {
             matchedCategory = config.category;
             break;
