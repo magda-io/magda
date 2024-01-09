@@ -23,27 +23,27 @@ export default function buildSearchQueryString(
         ? query.limit!
         : defaultConfiguration.searchResultsPerPage
 ) {
-    let keywords = queryToString("query", query.q);
-    let dateFroms = queryToString("dateFrom", query.dateFrom);
-    let dateTos = queryToString("dateTo", query.dateTo);
-    let publishers = queryToString(
+    const keywords = queryToString("query", query.q);
+    const dateFroms = queryToString("dateFrom", query.dateFrom);
+    const dateTos = queryToString("dateTo", query.dateTo);
+    const publishers = queryToString(
         "publisher",
         query.organisation || query.publisher
     );
-    let formats = queryToString("format", query.format);
-    let locations = queryToString(
+    const formats = queryToString("format", query.format);
+    const locations = queryToString(
         "region",
         queryToLocation(query.regionId, query.regionType)
     );
 
-    let startIndex = query.page ? (query.page - 1) * searchResultsPerPage : 0;
+    const startIndex = query.page ? (query.page - 1) * searchResultsPerPage : 0;
 
-    let publishingState = queryToString(
+    const publishingState = queryToString(
         "publishingState",
         query.publishingState
     );
 
-    let queryArr = flatten([
+    const queryArr = flatten([
         keywords,
         dateFroms,
         dateTos,

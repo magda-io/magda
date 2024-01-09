@@ -99,7 +99,12 @@ export async function isValidKeyword(
     keyword: string,
     config: MessageSafeConfig
 ): Promise<boolean> {
-    const keywords = await query(keyword, config);
-    if (!Array.isArray(keywords) || !keywords.length) return false;
-    return true;
+    try {
+        const keywords = await query(keyword, config);
+        if (!Array.isArray(keywords) || !keywords.length) return false;
+        return true;
+    } catch (e) {
+        console.warn(`Vacabulary API Error: ${e}`);
+        return true;
+    }
 }

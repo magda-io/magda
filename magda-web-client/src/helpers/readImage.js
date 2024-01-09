@@ -1,6 +1,6 @@
 export default function readImage(src) {
     return new Promise((resolve, reject) => {
-        var img = new Image();
+        const img = new Image();
         img.onload = function () {
             resolve(this);
         };

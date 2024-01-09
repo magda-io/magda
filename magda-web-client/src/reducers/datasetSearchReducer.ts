@@ -43,10 +43,10 @@ const datasetSearchReducer = (
 ) => {
     switch (action.type) {
         case "REQUEST_RESULTS":
-            let queryObject = action.queryObject;
-            let activePub = queryFilterFormat(queryObject.organisation);
-            let activeFormat = queryFilterFormat(queryObject.format);
-            let regionSelected = regionToObject(queryObject);
+            const queryObject = action.queryObject;
+            const activePub = queryFilterFormat(queryObject.organisation);
+            const activeFormat = queryFilterFormat(queryObject.format);
+            const regionSelected = regionToObject(queryObject);
             return Object.assign({}, state, {
                 isFetching: true,
                 error: null,
@@ -95,12 +95,14 @@ const datasetSearchReducer = (
                 strategy: "",
                 facets: []
             };
-            let data: DataSearchJson = action.json ? action.json : defaultJson;
-            let query: Query = data && data.query && data.query;
-            let datasets: Array<Dataset> =
+            const data: DataSearchJson = action.json
+                ? action.json
+                : defaultJson;
+            const query: Query = data && data.query && data.query;
+            const datasets: Array<Dataset> =
                 data && data.dataSets && data.dataSets;
-            let hitCount: number = data && data.hitCount && data.hitCount;
-            let temporalRange: Array<any> =
+            const hitCount: number = data && data.hitCount && data.hitCount;
+            const temporalRange: Array<any> =
                 data &&
                 data.temporal &&
                 data.temporal.start &&
@@ -111,32 +113,32 @@ const datasetSearchReducer = (
                       ]
                     : initialData.temporalRange;
 
-            let publisherOptions: Array<FacetOption> =
+            const publisherOptions: Array<FacetOption> =
                 data && data.facets && data.facets[0]
                     ? data.facets[0].options
                     : initialData.publisherOptions;
-            let formatOptions: Array<FacetOption> =
+            const formatOptions: Array<FacetOption> =
                 data && data.facets && data.facets[1]
                     ? data.facets[1].options
                     : initialData.formatOptions;
 
-            let freeText: string = data.query.freeText;
-            let activePublishers: Array<FacetOption> = findMatchingObjs(
+            const freeText: string = data.query.freeText;
+            const activePublishers: Array<FacetOption> = findMatchingObjs(
                 query.publishers,
                 publisherOptions
             );
-            let activeDateFrom = query.dateFrom
+            const activeDateFrom = query.dateFrom
                 ? query.dateFrom
                 : initialData.activeDateFrom;
-            let activeDateTo = query.dateTo
+            const activeDateTo = query.dateTo
                 ? query.dateTo
                 : initialData.activeDateTo;
-            let activeFormats: Array<FacetOption> = findMatchingObjs(
+            const activeFormats: Array<FacetOption> = findMatchingObjs(
                 query.formats,
                 formatOptions
             );
 
-            let activeRegion: Region =
+            const activeRegion: Region =
                 query.regions![0] || initialData.activeRegion;
             return Object.assign({}, state, {
                 isFetching: false,
@@ -202,7 +204,7 @@ const datasetSearchReducer = (
             });
 
         case "REMOVE_FORMAT":
-            let formatIndex = findIndex(
+            const formatIndex = findIndex(
                 state.activeFormats,
                 (item) => item.value === (action.item && action.item.value)
             );

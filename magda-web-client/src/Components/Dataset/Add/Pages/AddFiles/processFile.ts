@@ -1,4 +1,4 @@
-import { config, MessageSafeConfig, DATASETS_BUCKET } from "config";
+import { config, DATASETS_BUCKET } from "config";
 import urijs from "urijs";
 import UserVisibleError from "helpers/UserVisibleError";
 import {
@@ -7,32 +7,22 @@ import {
     DistributionState,
     DatasetStateUpdaterType
 } from "../../DatasetAddCommon";
-
-import {
-    FileDetails,
-    MetadataExtractionOutput
-} from "Components/Dataset/MetadataExtraction/types";
-
 import moment from "moment";
 import * as Comlink from "comlink";
-
 import uploadFile from "./uploadFile";
 import translateError from "helpers/translateError";
 import promisifySetState from "helpers/promisifySetState";
 import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
+import extractPdfFile from "../../../MetadataExtraction/extractPdfFile";
+import { RunExtractors } from "../../../MetadataExtraction/types";
 
 const ExtractorsWorker = new Worker(
+    /* webpackChunkName: "content-extractor-worker" */
     new URL("../../../MetadataExtraction/index.ts", import.meta.url),
     {
         name: "ExtractorsWorker"
     }
 );
-
-type RunExtractors = (
-    input: FileDetails,
-    config: MessageSafeConfig,
-    update: (progress: number) => void
-) => Promise<MetadataExtractionOutput>;
 
 /**
  * The increment / 100 to show for progress once the initial
@@ -223,7 +213,8 @@ export default async function processFile(
                 delete safeConfig.facets;
                 return safeConfig;
             })(),
-            Comlink.proxy(handleExtractionProgress)
+            Comlink.proxy(handleExtractionProgress),
+            Comlink.proxy(extractPdfFile)
         );
 
         const extractedDistData = {

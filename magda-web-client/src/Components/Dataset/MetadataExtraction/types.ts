@@ -10,6 +10,19 @@ export type FileDetails = {
     arrayBuffer: ArrayBuffer;
 };
 
+export type PdfExtractor = (
+    _input: FileDetails,
+    array: Uint8Array
+) => Promise<ExtractPdfResult>;
+
+export type ExtractPdfResult = {
+    author?: string;
+    datasetTitle?: string;
+    keywords?: string[];
+    themes?: string[];
+    text: string;
+};
+
 /**
  * Contents of the initial extraction of the file
  */
@@ -40,3 +53,10 @@ export type MetadataExtractionOutput = ExtractedContents & {
     temporalCoverage?: TemporalCoverage;
     spatialCoverage?: SpatialCoverage;
 };
+
+export type RunExtractors = (
+    input: FileDetails,
+    config: MessageSafeConfig,
+    update: (progress: number) => void,
+    extractPdfFile: PdfExtractor
+) => Promise<MetadataExtractionOutput>;

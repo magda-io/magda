@@ -4,9 +4,13 @@ import { extractSimilarFingerprint } from "./extractSimilarFingerprint";
 import { extractExtents } from "./extractExtents";
 import { extractKeywords } from "./extractKeywords";
 import * as Comlink from "comlink";
-
 import merge from "lodash/merge";
-import type { FileDetails, MetadataExtractionOutput, Processor } from "./types";
+import type {
+    PdfExtractor,
+    FileDetails,
+    MetadataExtractionOutput,
+    Processor
+} from "./types";
 import type { MessageSafeConfig } from "config"; // eslint-disable-line
 
 const dependentExtractors: Processor[] = [
@@ -20,13 +24,14 @@ export const extractors = {
     async runExtractors(
         input: FileDetails,
         config: MessageSafeConfig,
-        update: (progress: number) => void
+        update: (progress: number) => void,
+        extractPdfFile: PdfExtractor
     ): Promise<MetadataExtractionOutput> {
         const extractorCount = dependentExtractors.length + 1;
         const array = new Uint8Array(input.arrayBuffer);
 
         // Extract the contents (text, XLSX workbook)
-        const contents = await extractContents(input, array);
+        const contents = await extractContents(input, array, extractPdfFile);
 
         update(1 / (extractorCount + 1));
 

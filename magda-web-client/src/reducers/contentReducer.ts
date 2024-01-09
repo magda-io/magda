@@ -85,9 +85,9 @@ function parseContent(content) {
 
     let desktopTagLine = "";
     let mobileTagLine = "";
-    let highlights: any = {};
+    const highlights: any = {};
     let stories: any = {};
-    let configuration: any = Object.assign({}, defaultConfiguration);
+    const configuration: any = Object.assign({}, defaultConfiguration);
     let headerNavigation: any[] = [];
     let footerMediumNavs: any = {};
     let footerSmallNavs: any = {};
@@ -180,7 +180,7 @@ function parseContent(content) {
             };
         });
 
-    let filteredHighlights: string[] = Object.keys(highlights).filter(
+    const filteredHighlights: string[] = Object.keys(highlights).filter(
         (index) => highlights[index].backgroundImageUrls
     );
 
