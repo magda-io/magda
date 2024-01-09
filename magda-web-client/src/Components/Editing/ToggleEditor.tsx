@@ -15,7 +15,9 @@ interface ToggleEditorProps<V> {
  * Can specify custom viewer by specifying children which will be rendered instead of viewer of the editor.
  * Interchangable with AlwaysEditor.
  */
-export class ToggleEditor<V> extends React.Component<ToggleEditorProps<V>> {
+export class ToggleEditor<V> extends React.Component<
+    ToggleEditorProps<V> & { children?: React.ReactNode }
+> {
     state = {
         value: undefined,
         isEditing: false
@@ -51,7 +53,7 @@ export class ToggleEditor<V> extends React.Component<ToggleEditorProps<V>> {
 
     render() {
         let { value } = this.state;
-        let { editor, editable } = this.props;
+        const { editor, editable } = this.props;
         if (value === undefined) {
             value = this.props.value;
         }

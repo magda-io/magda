@@ -48,7 +48,7 @@
     "c8": "^9.0.0",
     "sinon": "^4.2.1",
     "supertest": "^6.3.3",
-    "typescript": "~5.2.2"
+    "typescript": "~5.3.3"
   },
   "mocha": {
     "exit": true,

@@ -132,7 +132,7 @@ const AssignUserRoleButton: FunctionComponent<PropsType> = (props) => {
                                     disabled={submitData.loading}
                                     data={roles ? roles : []}
                                     onChange={(roleId) =>
-                                        setSelectRoleId(roleId)
+                                        setSelectRoleId(roleId ? roleId : "")
                                     }
                                 />
                             )}

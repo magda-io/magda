@@ -274,6 +274,8 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                             setAspect((v) => ({
                                                 ...v,
                                                 id: aspectId
+                                                    ? aspectId
+                                                    : undefined
                                             }))
                                         }
                                         sort={() =>

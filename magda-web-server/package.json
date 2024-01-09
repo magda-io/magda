@@ -46,7 +46,7 @@
     "sinon": "^2.4.1",
     "supertest": "^6.3.3",
     "typed-promisify": "^0.4.0",
-    "typescript": "~5.2.2",
+    "typescript": "~5.3.3",
     "c8": "^9.0.0",
     "xml2js": "^0.4.19"
   },

@@ -213,10 +213,12 @@ export function getComponent<T>(
     return getComponentByRef<T>(ExternalComponent);
 }
 
-const wrapComponentWithProps = <T extends object, TP>(
+const wrapComponentWithProps = <T extends { children?: React.ReactNode }, TP>(
     component: ComponentType<T>,
     overwriteProps: TP
-): FunctionComponent<Omit<T, keyof TP>> => (props) => {
+): FunctionComponent<Omit<T, keyof TP> & { children?: React.ReactNode }> => (
+    props
+) => {
     const { children, ...restProps } = props;
     return React.createElement<T>(
         component,

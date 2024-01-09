@@ -81,7 +81,7 @@ const CurrencyAlert: FunctionComponent<PropsType> = (props) => {
                     {loading || !result ? (
                         <div>Loading...</div>
                     ) : error ? (
-                        <div>Error: {error}...</div>
+                        <div>Error: {`${error}`}...</div>
                     ) : (
                         <ul>
                             {result.map((item, idx) => (

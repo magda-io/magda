@@ -6,6 +6,7 @@ type PropsType = {
     showWhenCollapse?: boolean;
     alwaysShow?: boolean;
     className?: string;
+    children?: React.ReactNode;
 };
 
 const CollapseItem: FunctionComponent<PropsType> = (props) => {

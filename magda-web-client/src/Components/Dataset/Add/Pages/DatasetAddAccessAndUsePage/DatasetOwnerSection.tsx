@@ -11,7 +11,7 @@ import "./DatasetOwnerSection.scss";
 
 type PropsType = {
     selectedUserId?: string;
-    onChange: (id: string) => void;
+    onChange: (id: string | null) => void;
     disabled?: boolean;
 };
 

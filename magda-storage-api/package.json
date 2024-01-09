@@ -42,7 +42,7 @@
     "@types/urijs": "^1.19.19",
     "@types/yargs": "^12.0.8",
     "c8": "^9.0.0",
-    "typescript": "~5.2.2"
+    "typescript": "~5.3.3"
   },
   "mocha": {
     "import": "tsx/esm",

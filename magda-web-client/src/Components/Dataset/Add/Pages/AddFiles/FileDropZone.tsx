@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback } from "react";
-import FileDrop from "react-file-drop";
+import { FileDrop } from "react-file-drop";
 import partial from "lodash/partial";
 import {
     State,
