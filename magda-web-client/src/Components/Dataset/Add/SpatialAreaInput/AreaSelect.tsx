@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from "react";
 import ReactSelect from "react-select/async";
-import { ValueType } from "react-select/src";
+import { OnChangeValue } from "react-select";
 import fetch from "cross-fetch";
 import { config } from "config";
 import AreaSelectStyles from "./AreaSelectStyles";
@@ -12,11 +12,11 @@ const loadOptions = (props: PropsType) => async (inputValue) => {
     const queryStr = inputValue.trim();
     const res = await fetch(
         `${config.searchApiBaseUrl}regions?type=SA3${
-            props.steRegion
+            props?.steRegion?.regionId
                 ? `&lv2Id=${encodeURIComponent(props.steRegion.regionId)}`
                 : ""
         }${
-            props.sa4Region
+            props.sa4Region?.regionId
                 ? `&lv3Id=${encodeURIComponent(props.sa4Region.regionId)}`
                 : ""
         }${queryStr ? `&query=${encodeURIComponent(queryStr)}` : ""}`
@@ -41,14 +41,14 @@ const loadOptions = (props: PropsType) => async (inputValue) => {
 };
 
 interface PropsType {
-    countryRegion?: ValueType<Region>;
-    steRegion?: ValueType<Region>;
-    sa4Region?: ValueType<Region>;
-    value?: ValueType<Region>;
+    countryRegion?: OnChangeValue<Region, false>;
+    steRegion?: OnChangeValue<Region, false>;
+    sa4Region?: OnChangeValue<Region, false>;
+    value?: OnChangeValue<Region, false>;
     regionId?: string;
     onChange?: (
-        option: ValueType<Region>,
-        notResetOtherRegions?: Boolean
+        option: OnChangeValue<Region, false>,
+        notResetOtherRegions?: boolean
     ) => void;
 }
 

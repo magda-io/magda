@@ -15,7 +15,7 @@
   },
   "description": "Common schemas for use with the content api.",
   "scripts": {
-    "build": "echo \"ok\""
+    "build": "tsc index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
   },
   "dependencies": {
     "@magda/esm-utils": "^1.0.1"

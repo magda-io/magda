@@ -3,10 +3,10 @@ import debouncePromise from "debounce-promise";
 
 import { searchDatasets } from "api-clients/SearchApis";
 import { DatasetAutocompleteChoice, createId } from "../../DatasetAddCommon";
-import ASyncSelect, { Async } from "react-select/async";
+import AsyncSelect from "react-select/async";
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
-import { OptionProps } from "react-select/src/components/Option";
-import { components } from "react-select";
+import { OptionProps } from "react-select";
+import { components, SelectInstance } from "react-select";
 import { User } from "reducers/userManagementReducer";
 import TooltipWrapper from "Components/Common/TooltipWrapper";
 import ExplanationTooltipContent from "Components/Common/ExplanationTooltipContent";
@@ -14,7 +14,7 @@ import { retrieveLocalData, setLocalData } from "storage/localStorage";
 import CommonLink from "Components/Common/CommonLink";
 
 import "./DatasetAutocomplete.scss";
-import { MultiValueProps } from "react-select/src/components/MultiValue";
+import { MultiValueProps } from "react-select";
 
 const LS_KEY_HIDE_TOOLTIP = "magda-hide-dataset-autocomplete-tooltip";
 
@@ -56,10 +56,12 @@ const CustomOption = (props: OptionProps<Choice>) => (
         innerProps={{
             ...props.innerProps,
             onClick: (event) => {
-                if (props.data.onClick) {
-                    props.data.onClick(event);
+                if ((props.data as any).onClick) {
+                    debugger;
+                    (props.data as any).onClick(event);
                 } else {
-                    props.innerProps.onClick(event);
+                    debugger;
+                    (props?.innerProps as any)?.onClick(event);
                 }
             }
         }}
@@ -97,8 +99,10 @@ const CustomMultiValue = (props: MultiValueProps<Choice>) => {
     );
 };
 
+// Select<Choice, true, GroupBase<Choice>>
+
 export default function DatasetAutocomplete(props: Props) {
-    const selectRef = React.createRef<Async<Choice>>();
+    const selectRef = React.createRef<SelectInstance<Choice>>();
 
     const query: (term: string) => Promise<any> = debouncePromise(
         async (term: string) => {
@@ -165,7 +169,7 @@ export default function DatasetAutocomplete(props: Props) {
     );
 
     return (
-        <ASyncSelect
+        <AsyncSelect
             className="react-select"
             isMulti={true}
             isSearchable={true}

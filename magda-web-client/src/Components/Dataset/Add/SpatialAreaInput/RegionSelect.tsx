@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from "react";
 import ReactSelect from "react-select/async";
-import { ValueType } from "react-select/src";
+import { OnChangeValue } from "react-select";
 import fetch from "cross-fetch";
 import { config } from "config";
 import RegionSelectStyles from "./RegionSelectStyles";
@@ -37,13 +37,13 @@ const loadOptions = (props: PropsType) => async (inputValue) => {
 };
 
 interface PropsType {
-    countryRegion?: ValueType<Region>;
-    steRegion?: ValueType<Region>;
-    value?: ValueType<Region>;
+    countryRegion?: OnChangeValue<Region, false>;
+    steRegion?: OnChangeValue<Region, false>;
+    value?: OnChangeValue<Region, false>;
     regionId?: string;
     onChange?: (
-        option: ValueType<Region>,
-        notResetOtherRegions?: Boolean
+        option: OnChangeValue<Region, false>,
+        notResetOtherRegions?: boolean
     ) => void;
 }
 
