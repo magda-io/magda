@@ -729,7 +729,7 @@ export default class Database {
             ])} LIMIT 1`.toQuery()
         );
         if (!result?.rows?.length) {
-            throw new Error(`cannot find API with ID ${apiKeyId}`);
+            throw new Error(`cannot find API Key with ID ${apiKeyId}`);
         }
         return result.rows[0] as APIKeyRecord;
     }

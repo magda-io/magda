@@ -139,9 +139,6 @@ function ValidationHoc<
                     aria-label={validationErrorMessage}
                     styles={ReactSelectStyles}
                     onChange={onChangeHandler}
-                    isValidationError={isValidationError}
-                    validationErrorMessage={validationErrorMessage}
-                    validationElRef={elRef}
                     {...restProps}
                     components={{
                         ...(restProps.components ? restProps.components : {}),
