@@ -22,7 +22,7 @@
     "typescript": "~5.3.3"
   },
   "peerDependencies": {
-    "@types/react": "^16.8.17",
+    "@types/react": "^18.2.18",
     "@types/react-router-dom": "^5.3.3"
   },
   "magda": {
