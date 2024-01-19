@@ -14,7 +14,7 @@ type PropsType = {
     };
 };
 
-const DEFAULT_TARGET_URL = "https://nationalmap.gov.au/";
+const DEFAULT_TARGET_URL = "https://ci.terria.io/issue-6852";
 
 class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     private browser: BrowserDetectInfo;
@@ -126,6 +126,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                 initSources: [
                     {
                         stratum: "user",
+                        shortenShareUrls: false,
                         catalog: [
                             {
                                 name: distribution?.title,
