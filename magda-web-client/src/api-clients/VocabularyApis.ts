@@ -104,7 +104,7 @@ export async function isValidKeyword(
         if (!Array.isArray(keywords) || !keywords.length) return false;
         return true;
     } catch (e) {
-        console.warn(`Vacabulary API Error: ${e}`);
+        console.warn(`Vocabulary API Error: ${e}`);
         return true;
     }
 }

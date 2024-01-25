@@ -24,7 +24,7 @@ async function optionsQuery(options: string[], str: string): Promise<string[]> {
     );
 }
 
-export default (props: TagInputProps) => {
+const TagInput = (props: TagInputProps) => {
     const noManualInput = props.noManualInput === true ? true : false;
 
     return (
@@ -54,3 +54,5 @@ export default (props: TagInputProps) => {
         />
     );
 };
+
+export default TagInput;

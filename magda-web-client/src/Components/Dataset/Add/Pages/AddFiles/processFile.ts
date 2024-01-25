@@ -8,21 +8,11 @@ import {
     DatasetStateUpdaterType
 } from "../../DatasetAddCommon";
 import moment from "moment";
-import * as Comlink from "comlink";
 import uploadFile from "./uploadFile";
 import translateError from "helpers/translateError";
 import promisifySetState from "helpers/promisifySetState";
 import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
-import extractPdfFile from "../../../MetadataExtraction/extractPdfFile";
-import { RunExtractors } from "../../../MetadataExtraction/types";
-
-const ExtractorsWorker = new Worker(
-    /* webpackChunkName: "content-extractor-worker" */
-    new URL("../../../MetadataExtraction/index.ts", import.meta.url),
-    {
-        name: "ExtractorsWorker"
-    }
-);
+import runExtractors from "../../../MetadataExtraction/runExtractors";
 
 /**
  * The increment / 100 to show for progress once the initial
@@ -191,31 +181,10 @@ export default async function processFile(
         _progress: READ_FILE_PROGRESS_INCREMENT
     }));
 
-    /**
-     * Function for running all extractors in the correct order, which returns
-     * a promise that completes when extraction is complete
-     */
-    const extractors = Comlink.wrap(ExtractorsWorker) as Comlink.Remote<{
-        runExtractors: RunExtractors;
-    }>;
-
     try {
         await doUpload();
 
-        // Wait for extractors and upload to finish
-        const output = await extractors.runExtractors(
-            input,
-            (() => {
-                const safeConfig = { ...config } as any;
-                // We need to delete facets because it has regexs in it,
-                // and these cause an error if you try to pass them to
-                // the webworker
-                delete safeConfig.facets;
-                return safeConfig;
-            })(),
-            Comlink.proxy(handleExtractionProgress),
-            Comlink.proxy(extractPdfFile)
-        );
+        const output = await runExtractors(input, handleExtractionProgress);
 
         const extractedDistData = {
             format: output.format,

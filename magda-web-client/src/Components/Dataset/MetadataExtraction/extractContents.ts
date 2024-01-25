@@ -3,7 +3,8 @@ import mammoth from "mammoth";
 import { MAX_KEYWORDS } from "./extractKeywords";
 import uniq from "lodash/uniq";
 import moment from "moment";
-import { FileDetails, PdfExtractor } from "./types";
+import { FileDetails } from "./types";
+import extractPdfFile from "./extractPdfFile";
 
 interface ContentExtractorOutput {
     format?: string;
@@ -36,8 +37,7 @@ const getFormatFromFileName = (filename?: string) => {
  */
 export default async function extract(
     input: FileDetails,
-    array: Uint8Array,
-    extractPdfFile: PdfExtractor
+    array: Uint8Array
 ): Promise<ContentExtractorOutput> {
     const name = input.fileName;
 

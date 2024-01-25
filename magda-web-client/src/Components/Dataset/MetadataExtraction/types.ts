@@ -57,6 +57,5 @@ export type MetadataExtractionOutput = ExtractedContents & {
 export type RunExtractors = (
     input: FileDetails,
     config: MessageSafeConfig,
-    update: (progress: number) => void,
-    extractPdfFile: PdfExtractor
+    update: (progress: number) => void
 ) => Promise<MetadataExtractionOutput>;

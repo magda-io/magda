@@ -1,20 +1,16 @@
-import React from "react";
 import debouncePromise from "debounce-promise";
-
 import { searchDatasets } from "api-clients/SearchApis";
 import { DatasetAutocompleteChoice, createId } from "../../DatasetAddCommon";
 import AsyncSelect from "react-select/async";
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
-import { OptionProps } from "react-select";
-import { components, SelectInstance } from "react-select";
+import { components } from "react-select";
 import { User } from "reducers/userManagementReducer";
 import TooltipWrapper from "Components/Common/TooltipWrapper";
 import ExplanationTooltipContent from "Components/Common/ExplanationTooltipContent";
 import { retrieveLocalData, setLocalData } from "storage/localStorage";
 import CommonLink from "Components/Common/CommonLink";
-
-import "./DatasetAutocomplete.scss";
 import { MultiValueProps } from "react-select";
+import "./DatasetAutocomplete.scss";
 
 const LS_KEY_HIDE_TOOLTIP = "magda-hide-dataset-autocomplete-tooltip";
 
@@ -50,25 +46,7 @@ function toReactSelectValue(choice: DatasetAutocompleteChoice): Choice {
     };
 }
 
-const CustomOption = (props: OptionProps<Choice>) => (
-    <components.Option
-        {...props}
-        innerProps={{
-            ...props.innerProps,
-            onClick: (event) => {
-                if ((props.data as any).onClick) {
-                    debugger;
-                    (props.data as any).onClick(event);
-                } else {
-                    debugger;
-                    (props?.innerProps as any)?.onClick(event);
-                }
-            }
-        }}
-    />
-);
-
-const CustomMultiValue = (props: MultiValueProps<Choice>) => {
+const CustomMultiValue = (props: MultiValueProps<Choice, true>) => {
     const showTooltip = (props.data as Choice).shouldShowTooltip;
     const component = <components.MultiValue {...props} />;
 
@@ -99,11 +77,7 @@ const CustomMultiValue = (props: MultiValueProps<Choice>) => {
     );
 };
 
-// Select<Choice, true, GroupBase<Choice>>
-
 export default function DatasetAutocomplete(props: Props) {
-    const selectRef = React.createRef<SelectInstance<Choice>>();
-
     const query: (term: string) => Promise<any> = debouncePromise(
         async (term: string) => {
             const apiResult = await searchDatasets({ q: term, limit: 4 });
@@ -212,10 +186,8 @@ export default function DatasetAutocomplete(props: Props) {
             loadOptions={query}
             placeholder="Search for dataset"
             components={{
-                Option: CustomOption,
                 MultiValue: CustomMultiValue
             }}
-            ref={selectRef}
         />
     );
 }

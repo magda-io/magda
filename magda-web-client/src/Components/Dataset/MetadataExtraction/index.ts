@@ -5,12 +5,7 @@ import { extractExtents } from "./extractExtents";
 import { extractKeywords } from "./extractKeywords";
 import * as Comlink from "comlink";
 import merge from "lodash/merge";
-import type {
-    PdfExtractor,
-    FileDetails,
-    MetadataExtractionOutput,
-    Processor
-} from "./types";
+import type { FileDetails, MetadataExtractionOutput, Processor } from "./types";
 import type { MessageSafeConfig } from "config"; // eslint-disable-line
 
 const dependentExtractors: Processor[] = [
@@ -24,14 +19,13 @@ export const extractors = {
     async runExtractors(
         input: FileDetails,
         config: MessageSafeConfig,
-        update: (progress: number) => void,
-        extractPdfFile: PdfExtractor
+        update: (progress: number) => void
     ): Promise<MetadataExtractionOutput> {
         const extractorCount = dependentExtractors.length + 1;
         const array = new Uint8Array(input.arrayBuffer);
 
         // Extract the contents (text, XLSX workbook)
-        const contents = await extractContents(input, array, extractPdfFile);
+        const contents = await extractContents(input, array);
 
         update(1 / (extractorCount + 1));
 
