@@ -4,6 +4,7 @@ import fse from "fs-extra";
 import escapeStringRegexp from "escape-string-regexp";
 import postcss from "postcss";
 import autoprefixer from "autoprefixer";
+import path from "path";
 
 export const renderScssData = (clientRoot: string, data: string) => {
     return (new Promise((resolve, reject) => {
@@ -19,9 +20,9 @@ export const renderScssData = (clientRoot: string, data: string) => {
                     if (!url.match(/^[\.\/]*node_modules/i)) {
                         done({ file: url });
                     } else {
-                        const targetPath = url.replace(
-                            /^[\.\/]*node_modules/i,
-                            clientRoot + "/../.."
+                        const targetPath = path.resolve(
+                            path.dirname(prev),
+                            url
                         );
                         if (targetPath.match(/\.(css|scss)$/)) {
                             done({
