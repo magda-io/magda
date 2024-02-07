@@ -8,7 +8,6 @@ export {
     asyncPageToArray
 } from "@magda/typescript-common/dist/AsyncPage.js";
 export { default as coerceJson } from "@magda/typescript-common/dist/coerceJson.js";
-export { default as request } from "@magda/typescript-common/dist/request.js";
 export { default as fetchRequest } from "@magda/typescript-common/dist/fetchRequest.js";
 export {
     getDefaultRequestInitOptions,

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import request from "request";
+import fetch from "cross-fetch";
 import callerPath from "caller-path";
 
 export type Probe = () => Promise<State>;
@@ -240,38 +240,12 @@ export function createServiceProbe(
     statusLocation: string = "/status/ready"
 ): Probe {
     return async (): Promise<State> => {
-        const data = await requestPromise("GET", `${url}${statusLocation}`);
-        return data;
+        const res = await fetch(`${url}${statusLocation}`);
+        if (!res.ok) {
+            throw new Error(
+                `Failed to get status from ${url}${statusLocation}: ${res.status} ${res.statusText}`
+            );
+        }
+        return await res.json();
     };
-}
-
-function requestPromise(method: string, url: string) {
-    return new Promise<any>((resolve, reject) => {
-        request(
-            {
-                method,
-                uri: url,
-                json: true
-            },
-            (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve(body);
-                    } else {
-                        reject(
-                            Object.assign(
-                                { statusCode: response.statusCode },
-                                body
-                            )
-                        );
-                    }
-                }
-            }
-        );
-    });
 }
