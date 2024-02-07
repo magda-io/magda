@@ -4,7 +4,7 @@ import path from "path";
 import URI from "urijs";
 import yargs from "yargs";
 import morgan from "morgan";
-import request from "magda-typescript-common/src/request.js";
+import fetch from "node-fetch";
 import { createHttpTerminator } from "http-terminator";
 import Registry from "magda-typescript-common/src/registry/RegistryClient.js";
 import coerceJson from "magda-typescript-common/src/coerceJson.js";
@@ -72,11 +72,6 @@ const argv = yargs
             "The base url where the UI serves at. If not specify (or empty string), it assumes the UI serves at '/'. It should have a leading slash, but no trailing slash",
         type: "string",
         default: "/"
-    })
-    .option("devProxy", {
-        describe:
-            "The URL of the MAGDA API Gateway to proxy to. Useful in development when you want to serve everything from one port for CORS reasons",
-        type: "string"
     })
     .option("apiBaseUrl", {
         describe:
@@ -560,25 +555,6 @@ topLevelRoutes.forEach((topLevelRoute) => {
 app.get("/page/*", async function (req, res) {
     res.send(await getIndexFileContentZeroArgs());
 });
-
-if (argv.devProxy) {
-    app.get("/api/*", function (req, res) {
-        console.log(argv.devProxy + (req as any).params[0]);
-        req.pipe(
-            request({
-                url: argv.devProxy + (req as any).params[0],
-                qs: req.query,
-                method: req.method
-            }) as any
-        )
-            .on("error", (err: any) => {
-                const msg = "Error on connecting to the webservice.";
-                console.error(msg, err);
-                res.status(500).send(msg);
-            })
-            .pipe(res);
-    });
-}
 
 const robotsTxt = `User-agent: *
 Crawl-delay: 100

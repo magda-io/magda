@@ -25,6 +25,6 @@ const cleanUpDir = async (dirPath: string) => {
     console.log(`Deleting ${files.length} files from ${dirPath}...`);
 };
 
-await cleanUpDir(path.resolve(__dirname, "../node_modules"));
-
-await cleanUpDir(path.resolve(__dirname, "../../node_modules"));
+await cleanUpDir(
+    path.resolve(__dirname, "../../node_modules/@magda/web-client")
+);
