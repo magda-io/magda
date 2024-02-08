@@ -7,9 +7,10 @@ export default function formatServiceError(
     if (retriesLeft) {
         messageParts.push(`${retriesLeft} retries left.`);
     }
-    if (e && e.response && e.response.statusCode && e.body) {
+    if ((e?.response?.statusCode || e?.response?.status) && e.body) {
+        const statusCode = e?.response?.status || e?.response?.statusCode;
         messageParts.push(
-            `Status code: ${e.response.statusCode}, body:\n${JSON.stringify(
+            `Status code: ${statusCode}, body:\n${JSON.stringify(
                 e.body,
                 null,
                 "  "

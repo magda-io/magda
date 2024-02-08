@@ -15,7 +15,6 @@ import RegistryClient, {
 import retry from "../retry.js";
 import formatServiceError from "../formatServiceError.js";
 import buildJwt from "../session/buildJwt.js";
-import { IncomingMessage } from "http";
 import { Maybe } from "@magda/tsmonad";
 import ServerError from "../ServerError.js";
 
@@ -132,18 +131,16 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             this.webHooksApi
                 .getById(encodeURIComponent(hookId), this.jwt)
                 .then((result: any) => Maybe.just(result.body))
-                .catch(
-                    (e: { response?: IncomingMessage; message?: string }) => {
-                        if (e.response && e.response.statusCode === 404) {
-                            return Maybe.nothing();
-                        } else {
-                            throw new ServerError(
-                                "Failed to get hook: " + e.message,
-                                e?.response?.statusCode
-                            );
-                        }
+                .catch((e: { response?: Response; body?: string }) => {
+                    if (e.response && e.response.status === 404) {
+                        return Maybe.nothing();
+                    } else {
+                        throw new ServerError(
+                            "Failed to get hook: " + e.body,
+                            e?.response?.status
+                        );
                     }
-                );
+                });
         return <any>(
             retry(
                 operation,
@@ -490,7 +487,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     this.jwt
                 )
                 .then((result: any) => {
-                    if (result.response.statusCode === 202) {
+                    if (result.response.status === 202) {
                         return "Processing" as "Processing";
                     } else {
                         return result.body as MultipleDeleteResult;
@@ -559,7 +556,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     formatServiceError("Failed to GET history.", e, retriesLeft)
                 ),
             (e) => {
-                return !e.response || e.response.statusCode !== 404;
+                return !e.response || e.response.status !== 404;
             }
         )
             .then((result) => result.body)
