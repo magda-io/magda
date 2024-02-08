@@ -241,11 +241,17 @@ export function createServiceProbe(
 ): Probe {
     return async (): Promise<State> => {
         const res = await fetch(`${url}${statusLocation}`);
-        if (!res.ok) {
+        let data: any;
+        try {
+            data = await res.json();
+        } catch (e) {
             throw new Error(
-                `Failed to get status from ${url}${statusLocation}: ${res.status} ${res.statusText}`
+                `Failed to parse response from ${url}${statusLocation}: ${e}`
             );
         }
-        return await res.json();
+        if (!res.ok) {
+            throw Object.assign({ statusCode: res.status }, data);
+        }
+        return data;
     };
 }
