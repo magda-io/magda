@@ -55,9 +55,15 @@ describe("sitemap router", () => {
 
             registryScope
                 .get("/records/pagetokens?aspect=dcat-dataset-strings")
-                .reply(200, () => {
+                .reply(() => {
                     requestTimes++;
-                    return JSON.stringify(tokens);
+                    return [
+                        200,
+                        JSON.stringify(tokens),
+                        {
+                            "Content-Type": "application/json"
+                        }
+                    ];
                 })
                 .persist();
             await supertest(router).get("/sitemap.xml").expect(200);
@@ -73,9 +79,15 @@ describe("sitemap router", () => {
 
             registryScope
                 .get("/records/pagetokens?aspect=dcat-dataset-strings")
-                .reply(200, () => {
+                .reply(() => {
                     requestTimes++;
-                    return JSON.stringify(tokens);
+                    return [
+                        200,
+                        JSON.stringify(tokens),
+                        {
+                            "Content-Type": "application/json"
+                        }
+                    ];
                 })
                 .persist();
 

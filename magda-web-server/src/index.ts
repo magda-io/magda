@@ -4,7 +4,6 @@ import path from "path";
 import URI from "urijs";
 import yargs from "yargs";
 import morgan from "morgan";
-import fetch from "node-fetch";
 import { createHttpTerminator } from "http-terminator";
 import Registry from "magda-typescript-common/src/registry/RegistryClient.js";
 import coerceJson from "magda-typescript-common/src/coerceJson.js";

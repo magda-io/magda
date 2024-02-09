@@ -240,6 +240,7 @@ export interface RequestOptions extends RequestInit {
     uri?: string;
     formData?: { [key: string]: any };
     form?: { [key: string]: any } | string;
+    encoding?: null | string;
 }
 
 export function setRequestOptionsHeader(
@@ -247,6 +248,9 @@ export function setRequestOptionsHeader(
     headerName: string,
     headerValue: string
 ) {
+    if (headerValue === null || typeof headerValue === "undefined") {
+        return;
+    }
     if (!requestOptions?.headers) {
         requestOptions.headers = new Headers();
     }
@@ -263,27 +267,20 @@ export const isPlainObj = (value: any) =>
 export const isTextMimeType = (contentType: string) =>
     /text\/.*/i.test(contentType) || /[\/|\+]xml.*/i.test(contentType);
 
-export class ServerError extends Error {
-    public statusCode: number;
-
-    constructor(message: string = "Unknown Error", statusCode: number = 500) {
-        super(message);
-        this.statusCode = statusCode;
-    }
-
-    toData() {
-        return {
-            isError: true,
-            errorCode: this.statusCode,
-            errorMessage: this.message
-        };
-    }
-}
+export const isNotEmpty = (val: any) => val !== null && val !== undefined;
 
 export async function fetchWithRequestOptions(
     requestOptions: RequestOptions
 ): Promise<{ response: Response; body: any }> {
-    const { uri, qs, json, form, formData, ...fetchOptions } = requestOptions;
+    const {
+        uri,
+        qs,
+        json,
+        encoding,
+        form,
+        formData,
+        ...fetchOptions
+    } = requestOptions;
 
     const url = new URL(uri);
 
@@ -291,6 +288,10 @@ export async function fetchWithRequestOptions(
         for (const key in qs) {
             const value = qs[key];
             url.searchParams.delete(key);
+            if (!isNotEmpty(value)) {
+                url.searchParams.append(key, "");
+                continue;
+            }
             if (Array.isArray(value)) {
                 value.forEach((v) => url.searchParams.append(key, v));
             } else {
@@ -355,18 +356,32 @@ export async function fetchWithRequestOptions(
     }
 
     const res = await fetch(url, fetchOptions);
+    let contentType = res.headers.get("Content-Type");
+    contentType = contentType ? contentType : "";
+
+    let body: any;
+    if (encoding === null) {
+        body = await res.blob();
+    } else if (contentType === "application/json") {
+        body = await res.json();
+    } else if (isTextMimeType(contentType)) {
+        body = await res.text();
+        return { response: res, body: await res.text() };
+    } else {
+        if (typeof encoding === "string" && encoding) {
+            const buffer = await res.arrayBuffer();
+            const decoder = new TextDecoder(encoding);
+            body = decoder.decode(buffer);
+        } else {
+            body = await res.text();
+        }
+    }
     if (res.ok) {
         let contentType = res.headers.get("Content-Type");
         contentType = contentType ? contentType : "";
-        if (res.headers.get("Content-Type") === "application/json") {
-            return { response: res, body: await res.json() };
-        } else if (isTextMimeType(contentType)) {
-            return { response: res, body: await res.text() };
-        } else {
-            return { response: res, body: await res.blob() };
-        }
+        return { response: res, body };
     } else {
-        throw { response: res, body: await res.text() };
+        throw { response: res, body };
     }
 }
 
@@ -502,9 +517,13 @@ export class AspectDefinitionsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -551,9 +570,13 @@ export class AspectDefinitionsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -610,9 +633,13 @@ export class AspectDefinitionsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -685,9 +712,13 @@ export class AspectDefinitionsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -761,9 +792,13 @@ export class AspectDefinitionsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -870,9 +905,13 @@ export class RecordAspectsApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
         let useFormData = false;
 
@@ -956,9 +995,13 @@ export class RecordAspectsApi {
             queryParameters["limit"] = limit;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -1024,9 +1067,13 @@ export class RecordAspectsApi {
             queryParameters["keyword"] = keyword;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -1094,9 +1141,13 @@ export class RecordAspectsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -1180,9 +1231,13 @@ export class RecordAspectsApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
         let useFormData = false;
 
@@ -1273,9 +1328,13 @@ export class RecordAspectsApi {
             queryParameters["merge"] = merge;
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
         let useFormData = false;
 
@@ -1410,9 +1469,13 @@ export class RecordHistoryApi {
             queryParameters["reversePageTokenOrder"] = reversePageTokenOrder;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -1478,7 +1541,9 @@ export class RecordHistoryApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
         let useFormData = false;
 
@@ -1571,9 +1636,13 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -1641,9 +1710,13 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -1719,9 +1792,13 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -1846,9 +1923,13 @@ export class RecordsApi {
             queryParameters["q"] = q;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -1924,9 +2005,13 @@ export class RecordsApi {
             queryParameters["q"] = q;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2001,9 +2086,13 @@ export class RecordsApi {
             queryParameters["dereference"] = dereference;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2060,9 +2149,13 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2119,9 +2212,13 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2191,9 +2288,13 @@ export class RecordsApi {
             queryParameters["q"] = q;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2251,9 +2352,13 @@ export class RecordsApi {
             queryParameters["limit"] = limit;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2326,9 +2431,13 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2391,9 +2500,13 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2473,9 +2586,13 @@ export class RecordsApi {
             queryParameters["merge"] = merge;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2558,9 +2675,13 @@ export class RecordsApi {
             queryParameters["merge"] = merge;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2640,9 +2761,13 @@ export class RecordsApi {
             queryParameters["sourceId"] = sourceId;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2737,7 +2862,9 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2791,7 +2918,9 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2847,7 +2976,9 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2891,7 +3022,9 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -2945,7 +3078,9 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
@@ -3008,7 +3143,9 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
