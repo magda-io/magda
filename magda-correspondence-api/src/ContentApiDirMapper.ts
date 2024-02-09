@@ -5,6 +5,7 @@ import recursiveReadDir from "recursive-readdir";
 import fse from "fs-extra";
 import path from "path";
 import typeis from "type-is";
+import { Buffer } from "node:buffer";
 
 /**
  * A Class attempt to create an abstract access layer between content API and local directory
@@ -36,7 +37,7 @@ class ContentApiDirMapper {
      * Will return string or Buffer depends `content-type` header
      * @param localPath string: local directory path. e.g.: emailTemplates/assets/top-left-logo.jpg
      */
-    public async getFileContent(localPath: string) {
+    public async getFileContent<T = any>(localPath: string): Promise<T> {
         const res = await fetch(`${this.url}/${localPath}`);
         if (!res.ok) {
             throw new Error(
@@ -45,9 +46,9 @@ class ContentApiDirMapper {
         }
         const contentType = res.headers.get("content-type");
         if (typeis.is(contentType, ["text/*"])) {
-            return await res.text();
+            return (await res.text()) as T;
         }
-        return await res.arrayBuffer();
+        return Buffer.from(await res.arrayBuffer()) as T;
     }
 
     /**
