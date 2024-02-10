@@ -8,7 +8,7 @@ const getNonScssFiles = async (dirPath: string) => {
     return await recursiveReadDir(dirPath, [
         "*.scss",
         "*.css",
-        "*@magda/web-client/package.json",
+        "**/@magda/web-client/package.json",
         (file, stats) => {
             // @magda/web-client is our primary clean up target
             // we never need any js code from it
