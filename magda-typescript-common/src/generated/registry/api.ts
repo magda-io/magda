@@ -366,7 +366,6 @@ export async function fetchWithRequestOptions(
         body = await res.json();
     } else if (isTextMimeType(contentType)) {
         body = await res.text();
-        return { response: res, body: await res.text() };
     } else {
         if (typeof encoding === "string" && encoding) {
             const buffer = await res.arrayBuffer();
@@ -377,8 +376,6 @@ export async function fetchWithRequestOptions(
         }
     }
     if (res.ok) {
-        let contentType = res.headers.get("Content-Type");
-        contentType = contentType ? contentType : "";
         return { response: res, body };
     } else {
         throw { response: res, body };

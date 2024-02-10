@@ -1,25 +1,25 @@
 import {} from "mocha";
 import { expect } from "chai";
-import ServiceRunner from "../ServiceRunner";
-import partial from "lodash/partial";
+import ServiceRunner from "../ServiceRunner.js";
+import partial from "lodash/partial.js";
 import { v4 as uuidV4 } from "uuid";
-import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
+import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient.js";
 import {
     AUTHENTICATED_USERS_ROLE_ID,
     DEFAULT_ADMIN_USER_ID
-} from "magda-typescript-common/src/authorization-api/constants";
+} from "magda-typescript-common/src/authorization-api/constants.js";
 import {
     createOrgUnits,
     getRegistryClient as getRegistryClientWithJwtSecret,
     getOrgUnitIdByName as getOrgUnitIdByNameWithAuthApiClient,
     createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret,
     createTestDistributionByUser as createTestDistributionByUserWithAuthApiClientJwtSecret
-} from "./testUtils";
+} from "./testUtils.js";
 import urijs from "urijs";
-import buildJwt from "magda-typescript-common/src/session/buildJwt";
-import IndexerApiClient from "magda-typescript-common/src/IndexerApiClient";
-import fetchRequest from "magda-typescript-common/src/fetchRequest";
-import Try from "magda-typescript-common/src/Try";
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
+import IndexerApiClient from "magda-typescript-common/src/IndexerApiClient.js";
+import fetchRequest from "magda-typescript-common/src/fetchRequest.js";
+import Try from "magda-typescript-common/src/Try.js";
 
 const ENV_SETUP_TIME_OUT = 1200000; // -- 20 mins
 const jwtSecret = uuidV4();

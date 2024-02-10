@@ -1,9 +1,9 @@
 import Docker, { Container } from "dockerode";
 import DockerCompose from "dockerode-compose";
 import { Client as MinioClient } from "minio";
-import ServerError from "magda-typescript-common/src/ServerError";
-import delay from "magda-typescript-common/src/delay";
-import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
+import ServerError from "magda-typescript-common/src/ServerError.js";
+import delay from "magda-typescript-common/src/delay.js";
+import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig.js";
 import path from "path";
 import { v4 as uuidV4 } from "uuid";
 import yaml from "js-yaml";
@@ -12,7 +12,7 @@ import tempy from "tempy";
 import pg from "pg";
 import fetch from "cross-fetch";
 import child_process, { ChildProcess } from "child_process";
-import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
+import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 import urijs from "urijs";
 import { requireResolve } from "@magda/esm-utils";
 

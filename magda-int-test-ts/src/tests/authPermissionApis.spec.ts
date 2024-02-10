@@ -1,9 +1,9 @@
 import {} from "mocha";
 import { expect } from "chai";
-import ServiceRunner from "../ServiceRunner";
+import ServiceRunner from "../ServiceRunner.js";
 import { v4 as uuidV4 } from "uuid";
-import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
-import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
+import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient.js";
+import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 
 const ENV_SETUP_TIME_OUT = 600000; // -- 10 mins
 const jwtSecret = uuidV4();
