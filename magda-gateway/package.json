@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "2.3.3",
+  "version": "3.0.0-alpha.2",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -25,13 +25,15 @@
     "test": "PGUSER=postgres mocha"
   },
   "dependencies": {
-    "@magda/tenant-api": "^2.3.3",
-    "@magda/typescript-common": "^2.3.3",
     "@magda/esm-utils": "^1.0.1",
+    "@magda/tenant-api": "^3.0.0-alpha.2",
+    "@magda/tsmonad": "^0.9.0",
+    "@magda/typescript-common": "^3.0.0-alpha.2",
     "compression": "^1.7.2",
     "connect-pg-simple": "^6.2.1",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.3",
+    "cross-fetch": "^4.0.0",
     "escape-string-regexp": "^1.0.5",
     "express": "^4.17.2",
     "express-basic-auth": "^1.1.5",
@@ -40,7 +42,6 @@
     "http-proxy": "magda-io/http-proxy-node#magda",
     "http-terminator": "^3.2.0",
     "is-uuid": "^1.0.2",
-    "cross-fetch": "^4.0.0",
     "jsonwebtoken": "^8.4.0",
     "jwt-simple": "^0.5.1",
     "lodash": "^4.17.4",
@@ -49,13 +50,12 @@
     "passport": "^0.2.2",
     "pg": "^8.11.3",
     "read-pkg-up": "^3.0.0",
-    "@magda/tsmonad": "^0.9.0",
     "urijs": "^1.19.11",
     "uuid": "^8.2.0",
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^2.3.3",
+    "@magda/scripts": "^3.0.0-alpha.2",
     "@types/chai": "^4.3.11",
     "@types/compression": "^0.0.36",
     "@types/cookie": "^0.3.3",
