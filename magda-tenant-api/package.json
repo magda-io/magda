@@ -31,7 +31,7 @@
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.4",
     "object-path": "^0.11.4",
-    "pg": "^8.7.3",
+    "pg": "^8.11.3",
     "sql-syntax": "^2.0.1",
     "@magda/tsmonad": "^0.9.0",
     "yargs": "^12.0.5"

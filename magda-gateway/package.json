@@ -47,7 +47,7 @@
     "morgan": "^1.6.1",
     "node-cache": "^5.1.2",
     "passport": "^0.2.2",
-    "pg": "^8.7.3",
+    "pg": "^8.11.3",
     "read-pkg-up": "^3.0.0",
     "@magda/tsmonad": "^0.9.0",
     "urijs": "^1.19.11",
