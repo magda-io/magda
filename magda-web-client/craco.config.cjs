@@ -88,6 +88,9 @@ module.exports = {
 
             webpackConfig.stats = "verbose";
 
+            // auto-detect public path of compiled assets
+            webpackConfig.output.publicPath = "auto";
+
             return webpackConfig;
         }
     }
