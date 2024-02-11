@@ -20,10 +20,31 @@ export const renderScssData = (clientRoot: string, data: string) => {
                     if (!url.match(/^[\.\/]*node_modules/i)) {
                         done({ file: url });
                     } else {
-                        const targetPath = path.resolve(
-                            path.dirname(prev),
-                            url
-                        );
+                        let targetPath = path.resolve(path.dirname(prev), url);
+                        if (!fse.existsSync(targetPath)) {
+                            const appNodeModulesPath = path.resolve(
+                                clientRoot,
+                                "../.."
+                            );
+                            const libResPath = url.replace(
+                                /^[\.\/]*node_modules\//i,
+                                ""
+                            );
+                            targetPath = path.resolve(
+                                appNodeModulesPath,
+                                libResPath
+                            );
+                            if (!fse.existsSync(targetPath)) {
+                                const appComponentNodeModulesPath = path.resolve(
+                                    clientRoot,
+                                    "../../../component/node_modules"
+                                );
+                                targetPath = path.resolve(
+                                    appComponentNodeModulesPath,
+                                    libResPath
+                                );
+                            }
+                        }
                         if (targetPath.match(/\.(css|scss)$/)) {
                             done({
                                 contents: fse.readFileSync(targetPath, {
