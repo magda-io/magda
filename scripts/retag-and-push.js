@@ -2,7 +2,7 @@
 
 import yargs from "yargs";
 import * as childProcess from "child_process";
-import { getVersions, getName } from "./docker-util";
+import { getVersions, getName } from "./docker-util.js";
 
 // Docker and ConEmu (an otherwise excellent console for Windows) don't get along.
 // See: https://github.com/Maximus5/ConEmu/issues/958 and https://github.com/moby/moby/issues/28814
