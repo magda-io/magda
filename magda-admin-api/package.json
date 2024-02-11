@@ -23,7 +23,6 @@
     "@magda/esm-utils": "^1.0.1",
     "@magda/typescript-common": "^2.3.3",
     "express": "^4.17.2",
-    "http-proxy": "^1.16.2",
     "http-terminator": "^3.2.0",
     "cross-fetch": "^4.0.0",
     "lodash": "^4.17.4",
