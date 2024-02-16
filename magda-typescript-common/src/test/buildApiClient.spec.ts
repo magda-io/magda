@@ -1,12 +1,12 @@
 import {} from "mocha";
 import sinon from "sinon";
-import chai from "chai";
+import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import yargs from "yargs";
-import addJwtSecretFromEnvVar from "../session/addJwtSecretFromEnvVar";
-import mockAuthApiHost from "./mockAuthApiHost";
-import ApiClient from "../authorization-api/ApiClient";
-import mockUserDataStore from "./mockUserDataStore";
+import addJwtSecretFromEnvVar from "../session/addJwtSecretFromEnvVar.js";
+import mockAuthApiHost from "./mockAuthApiHost.js";
+import ApiClient from "../authorization-api/ApiClient.js";
+import mockUserDataStore from "./mockUserDataStore.js";
 import urijs from "urijs";
 
 chai.use(chaiAsPromised);

@@ -2,9 +2,9 @@ import casual from "casual";
 import moment from "moment";
 import _ from "lodash";
 
-import buildDatasetsIndexInner from "./buildDatasetsIndex";
-import buildRegionsIndexInner from "./buildRegionsIndex";
-import { Dataset, Agent, Distribution, PeriodOfTime } from "../../model";
+import buildDatasetsIndexInner from "./buildDatasetsIndex.js";
+import buildRegionsIndexInner from "./buildRegionsIndex.js";
+import { Dataset, Agent, Distribution, PeriodOfTime } from "../../model.js";
 
 export const buildDatasetsIndex = buildDatasetsIndexInner;
 export const buildRegionsIndex = buildRegionsIndexInner;

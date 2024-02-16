@@ -12,7 +12,7 @@ import {
 } from "api-clients/OrgUnitApis";
 import { ItemDataType } from "rsuite/esm/@types/common";
 import { User } from "reducers/userManagementReducer";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError.js";
 import { useValidation, onInputFocusOut } from "./ValidationManager";
 import { MdOutlineClear } from "react-icons/md";
 import "./OrgUnitDropDown.scss";

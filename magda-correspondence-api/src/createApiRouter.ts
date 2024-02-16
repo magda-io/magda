@@ -2,19 +2,19 @@ import express from "express";
 import emailValidator from "email-validator";
 import _ from "lodash";
 
-import RegistryClient from "magda-typescript-common/src/registry/RegistryClient";
-import { Record } from "magda-typescript-common/src/generated/registry/api";
-import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
+import RegistryClient from "magda-typescript-common/src/registry/RegistryClient.js";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
+import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable.js";
 
-import { installStatusRouter } from "magda-typescript-common/src/express/status";
+import { installStatusRouter } from "magda-typescript-common/src/express/status.js";
 
 import { Router } from "express";
-import { sendMail } from "./mail";
-import { SMTPMailer } from "./SMTPMailer";
-import { DatasetMessage } from "./model";
-import renderTemplate, { Templates } from "./renderTemplate";
-import EmailTemplateRender from "./EmailTemplateRender";
-import ServerError from "magda-typescript-common/src/ServerError";
+import { sendMail } from "./mail.js";
+import { SMTPMailer } from "./SMTPMailer.js";
+import { DatasetMessage } from "./model.js";
+import renderTemplate, { Templates } from "./renderTemplate.js";
+import EmailTemplateRender from "./EmailTemplateRender.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
 
 const EMAIL_REGEX = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 
@@ -25,6 +25,8 @@ export interface ApiRouterOptions {
     smtpMailer: SMTPMailer;
     externalUrl: string;
     alwaysSendToDefaultRecipient: boolean;
+    probeUpdateMs?: number;
+    forceRun?: boolean;
 }
 
 function validateMiddleware(
@@ -62,7 +64,11 @@ export default function createApiRouter(
                     ready: true
                 };
             }
-        }
+        },
+        ...(options?.probeUpdateMs
+            ? { probeUpdateMs: options.probeUpdateMs }
+            : {}),
+        ...(options?.forceRun ? { forceRun: options.forceRun } : {})
     };
     installStatusRouter(router, status);
     installStatusRouter(router, status, "/public");

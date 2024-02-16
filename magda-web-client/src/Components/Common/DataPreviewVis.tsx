@@ -12,6 +12,7 @@ import {
 } from "../../helpers/DistributionPreviewUtils";
 
 import "./DataPreviewVis.scss";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 type VisType = "chart" | "table";
 
 type StateType = {
@@ -126,7 +127,7 @@ class DataPreviewVis extends Component<
         } catch (e) {
             this.setState({
                 isDataLoading: false,
-                dataLoadingError: e,
+                dataLoadingError: unknown2Error(e),
                 dataLoadingResult: null
             });
             console.error("Failed to process CSV data file: ", e);

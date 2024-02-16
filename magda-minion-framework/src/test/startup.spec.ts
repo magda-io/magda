@@ -2,7 +2,7 @@ import {} from "mocha";
 import { expect } from "chai";
 import sinon from "sinon";
 import nock from "nock";
-import jsc from "magda-typescript-common/src/test/jsverify";
+import jsc from "jsverify";
 import express from "express";
 import _ from "lodash";
 import { Server } from "http";
@@ -11,13 +11,13 @@ import {
     lcAlphaNumStringArbNe,
     lcAlphaNumStringArb,
     recordArb
-} from "magda-typescript-common/src/test/arbitraries";
+} from "magda-typescript-common/src/test/arbitraries.js";
 
-import minion from "../index";
-import MinionOptions from "../MinionOptions";
-import fakeArgv from "./fakeArgv";
-import makePromiseQueryable from "./makePromiseQueryable";
-import baseSpec from "./baseSpec";
+import minion from "../index.js";
+import MinionOptions from "../MinionOptions.js";
+import fakeArgv from "./fakeArgv.js";
+import makePromiseQueryable from "./makePromiseQueryable.js";
+import baseSpec from "./baseSpec.js";
 
 const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
 

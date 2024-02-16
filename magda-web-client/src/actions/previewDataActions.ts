@@ -1,7 +1,7 @@
 import { config } from "../config";
 import getProxiedResourceUrl from "helpers/getProxiedResourceUrl";
 import isStorageApiUrl from "helpers/isStorageApiUrl";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import { actionTypes } from "../constants/ActionTypes";
 
 export function requestPreviewData(url: string) {

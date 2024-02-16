@@ -57,7 +57,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:67
+index.d.ts:74
 
 ___
 
@@ -90,7 +90,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:119
+index.d.ts:126
 
 ___
 
@@ -107,7 +107,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:76
+index.d.ts:83
 
 ___
 
@@ -123,7 +123,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:43
+index.d.ts:50
 
 ___
 
@@ -142,7 +142,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:130
+index.d.ts:137
 
 ___
 
@@ -159,7 +159,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:85
+index.d.ts:92
 
 ___
 
@@ -176,7 +176,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:94
+index.d.ts:101
 
 ___
 
@@ -200,7 +200,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:101
+index.d.ts:108
 
 ___
 
@@ -225,7 +225,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:109
+index.d.ts:116
 
 ___
 
@@ -241,7 +241,7 @@ CommonPropsType
 
 #### Defined in
 
-index.d.ts:51
+index.d.ts:58
 
 ___
 
@@ -253,4 +253,4 @@ When it's not `null`, this fields contains the error thrown by the user profile 
 
 #### Defined in
 
-index.d.ts:56
+index.d.ts:63

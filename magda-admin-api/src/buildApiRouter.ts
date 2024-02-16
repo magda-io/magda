@@ -1,15 +1,15 @@
 import express, { Response } from "express";
 
 import _ from "lodash";
-import K8SApi from "./k8sApi";
-import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import K8SApi from "./k8sApi.js";
+import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware.js";
 import {
     installStatusRouter,
     createServiceProbe
-} from "magda-typescript-common/src/express/status";
+} from "magda-typescript-common/src/express/status.js";
 import { HttpError } from "@kubernetes/client-node";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import ServerError from "magda-typescript-common/src/ServerError";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
 
 export interface Options {
     dockerRepo: string;
@@ -25,7 +25,7 @@ export interface Options {
     testMode?: boolean;
 }
 
-function handleError(e: Error, res: Response) {
+function handleError(e: unknown, res: Response) {
     if (e instanceof HttpError) {
         res.status(e.statusCode).send(e.body);
     } else if (e instanceof ServerError) {

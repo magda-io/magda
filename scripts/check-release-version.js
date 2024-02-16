@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-const path = require("path");
-const fse = require("fs-extra");
-const chalk = require("chalk");
+import { require } from "@magda/esm-utils";
+const pkg = require("./package.json");
+import path from "path";
+import fse from "fs-extra";
+import chalk from "chalk";
 
 const cwdPath = process.cwd();
-const pkg = fse.readJsonSync(path.join(cwdPath, "scripts", "package.json"));
+
 if (!pkg || !pkg["version"]) {
     console.error(chalk.red("Cannot find package.json at: " + cwdPath));
     process.exit(-1);

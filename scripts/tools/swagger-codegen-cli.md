@@ -12,7 +12,7 @@ yarn run generateSwaggerApis
 To build:
 
 ```
-git checkout -b magda git@github.com:TerriaJS/swagger-codegen.git
+git checkout -b magda git@github.com:magda-io/swagger-codegen.git
 cd swagger-codegen
 mvn clean package
 ```

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-const _ = require("lodash");
-const yargs = require("yargs");
-const fs = require("fs");
-const request = require("request");
-const StreamArray = require("stream-json/streamers/StreamArray");
+import _ from "lodash";
+import yargs from "yargs";
+import fs from "fs";
+import fetch from "node-fetch";
+import StreamArray from "stream-json/streamers/StreamArray.js";
 
 function getDefaultRegionSourceConfig() {
     try {
@@ -85,28 +85,13 @@ function createLineFromRegionData(regionConfig, item) {
 }
 
 async function getRemoteDataFileStream(url) {
-    return new Promise((resolve, reject) => {
-        request
-            .get(url)
-            .on("error", (e) => reject(e))
-            .on("response", (response) => {
-                try {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve(response.pipe(StreamArray.withParser()));
-                    } else {
-                        throw new Error(
-                            `Request failed ${url}, statusCode: ${response.statusCode}`
-                        );
-                    }
-                } catch (e) {
-                    console.error(e);
-                    reject(e);
-                }
-            });
-    });
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(
+            `Request failed ${url}, statusCode: ${res.status} ${res.statusText}`
+        );
+    }
+    return res.body.pipe(StreamArray.withParser());
 }
 
 async function processRegionDataPipeline(regionConfig, targetStream) {

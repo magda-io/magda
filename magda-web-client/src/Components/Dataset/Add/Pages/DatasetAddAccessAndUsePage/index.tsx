@@ -27,7 +27,9 @@ import DatasetOwnerSection from "./DatasetOwnerSection";
 import "./index.scss";
 
 //--- Added Validation Support to ReactSelect
-const ReactSelect = ValidationHoc(ReactSelectOriginal);
+const ReactSelect = ValidationHoc<Record<string, any>, boolean>(
+    ReactSelectOriginal
+);
 
 type Props = {
     edit: <K extends keyof State>(

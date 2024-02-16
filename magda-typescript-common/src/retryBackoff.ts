@@ -1,4 +1,4 @@
-import runLater from "./runLater";
+import runLater from "./runLater.js";
 
 export default function retryBackoff<T>(
     op: () => Promise<T>,

@@ -1,3 +1,5 @@
+import unknown2Error from "./unknown2Error.js";
+
 export abstract class TryResult<T = any> {
     public readonly value: T;
     public readonly error: Error;
@@ -50,6 +52,6 @@ export default async function Try<T>(
             return new Success(r);
         }
     } catch (e) {
-        return new Failure(e);
+        return new Failure(unknown2Error(e));
     }
 }

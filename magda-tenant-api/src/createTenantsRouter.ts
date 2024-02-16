@@ -1,18 +1,18 @@
 import express from "express";
-import Database from "./Database";
+import Database from "./Database.js";
 import {
     MAGDA_TENANT_ID_HEADER,
     MAGDA_ADMIN_PORTAL_ID
-} from "magda-typescript-common/src/registry/TenantConsts";
-import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
+} from "magda-typescript-common/src/registry/TenantConsts.js";
+import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware.js";
 import {
     installStatusRouter,
     createServiceProbe
-} from "magda-typescript-common/src/express/status";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import ServerError from "magda-typescript-common/src/ServerError";
-import handleServerError from "magda-typescript-common/src/handleServerError";
-import { DatabaseError } from "pg";
+} from "magda-typescript-common/src/express/status.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
+import handleServerError from "magda-typescript-common/src/handleServerError.js";
+import { DatabaseError } from "pg-protocol";
 
 export interface ApiRouterOptions {
     database: Database;

@@ -9,7 +9,7 @@ import {
     AspectQueryToSqlConfig,
     AspectQueryTrue,
     AspectQueryFalse
-} from "./AspectQuery";
+} from "./AspectQuery.js";
 import SQLSyntax, { sqls } from "sql-syntax";
 
 type PlainObject = {

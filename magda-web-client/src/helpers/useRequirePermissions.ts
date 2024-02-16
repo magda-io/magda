@@ -1,4 +1,4 @@
-import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
+import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
 import { useSelector } from "react-redux";
 import { StateType } from "reducers/reducer";
 import { UserManagementState } from "reducers/userManagementReducer";

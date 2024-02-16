@@ -6,8 +6,8 @@ import _ from "lodash";
 import casual from "casual";
 import moment from "moment";
 
-import { buildDataset, buildNDatasets } from "../utils/builders";
-import { Dataset, SearchResult, PeriodOfTime } from "../../model";
+import { buildDataset, buildNDatasets } from "../utils/builders.js";
+import { Dataset, SearchResult, PeriodOfTime } from "../../model.js";
 
 export default function testFilterByDate(
     app: () => express.Application,

@@ -5,8 +5,8 @@ import Temporal from "./Components/Dataset/Search/Facets/Temporal";
 import { ValidationFieldList } from "./Components/Dataset/Add/ValidationManager";
 import urijs from "urijs";
 import removePathPrefix from "./helpers/removePathPrefix";
-import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
-import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient";
+import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
+import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient.js";
 import { Component } from "react";
 
 export const ADMIN_ROLE_ID = ADMIN_USERS_ROLE_ID;

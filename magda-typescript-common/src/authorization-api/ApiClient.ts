@@ -1,4 +1,4 @@
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import {
     User,
     CreateUserData,
@@ -12,15 +12,15 @@ import {
     PermissionRecord,
     OperationRecord,
     ResourceRecord
-} from "./model";
-import { Maybe } from "tsmonad";
+} from "./model.js";
+import { Maybe } from "@magda/tsmonad";
 import lodash from "lodash";
-import buildJwt from "../session/buildJwt";
-import addTrailingSlash from "../addTrailingSlash";
+import buildJwt from "../session/buildJwt.js";
+import addTrailingSlash from "../addTrailingSlash.js";
 import urijs from "urijs";
-import { RequiredKeys } from "../utilityTypes";
-import ServerError from "../ServerError";
-import isUuid from "../util/isUuid";
+import { RequiredKeys } from "../utilityTypes.js";
+import ServerError from "../ServerError.js";
+import isUuid from "../util/isUuid.js";
 
 export default class ApiClient {
     private jwt: string = null;

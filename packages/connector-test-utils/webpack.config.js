@@ -32,7 +32,7 @@ module.exports = {
     },
     externals: [
         {
-            "ts-node": "ts-node"
+            tsx: "tsx"
         }
     ]
 };

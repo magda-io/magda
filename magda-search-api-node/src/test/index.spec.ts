@@ -6,20 +6,20 @@ import { Client } from "@elastic/elasticsearch";
 import _ from "lodash";
 import casual from "casual";
 
-import createApiRouter from "../createApiRouter";
+import createApiRouter from "../createApiRouter.js";
 import {
     buildDatasetsIndex as buildDatasetsIndexInner,
     buildRegionsIndex as buildRegionsIndexInner,
     buildDataset,
     buildNDatasets
-} from "./utils/builders";
+} from "./utils/builders.js";
 
-import { Dataset, Region, SearchResult, Agent } from "../model";
+import { Dataset, Region, SearchResult, Agent } from "../model.js";
 
-import testSearchNoQuery from "./searching/testSearchNoQuery";
-import testSearchByKeyword from "./searching/testSearchByKeyword";
-import testFilterByRegions from "./filtering/testFilterByRegion";
-import testFilterByDate from "./filtering/testFilterByDate";
+import testSearchNoQuery from "./searching/testSearchNoQuery.js";
+import testSearchByKeyword from "./searching/testSearchByKeyword.js";
+import testFilterByRegions from "./filtering/testFilterByRegion.js";
+import testFilterByDate from "./filtering/testFilterByDate.js";
 
 const ES_URL = process.env.TEST_ES_URL || "http://localhost:9200";
 const client = new Client({
@@ -33,7 +33,7 @@ const API_ROUTER_CONFIG = {
     elasticSearchUrl: ES_URL
 };
 
-describe("Search API:", function (this: Mocha.ISuiteCallbackContext) {
+describe("Search API:", function (this) {
     this.timeout(60000);
     let app: express.Application;
     casual.seed(54321);

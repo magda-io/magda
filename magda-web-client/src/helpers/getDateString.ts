@@ -1,4 +1,4 @@
-export default function (dateString: string) {
+function getDateString(dateString: string) {
     if (dateString) {
         const date = new Date(dateString);
         if (isValidDate(date)) {
@@ -11,6 +11,8 @@ export default function (dateString: string) {
     }
     return undefined;
 }
+
+export default getDateString;
 
 // https://stackoverflow.com/questions/1353684/detecting-an-invalid-date-date-instance-in-javascript
 export function isValidDate(date: Date) {

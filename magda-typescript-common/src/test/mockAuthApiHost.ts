@@ -1,11 +1,11 @@
 import nock from "nock";
 import { Scope } from "nock";
-import { getUserId } from "../session/GetUserId";
-import AuthError from "../authorization-api/AuthError";
+import { getUserId } from "../session/GetUserId.js";
+import AuthError from "../authorization-api/AuthError.js";
 
-import mockUserDataStore from "./mockUserDataStore";
+import mockUserDataStore from "./mockUserDataStore.js";
 import { Request } from "express";
-import url from "url";
+import * as url from "url";
 
 export default class mockAuthApiHost {
     public scope: Scope;
@@ -101,7 +101,7 @@ export default class mockAuthApiHost {
                     if (!records.length) return [404, "cannot locate record"];
                     return [200, JSON.stringify(records[0])];
                 } catch (e) {
-                    return [500, e.message];
+                    return [500, (e as any)?.message];
                 }
             });
 
@@ -125,7 +125,7 @@ export default class mockAuthApiHost {
                     if (!records.length) return [404, "cannot locate record"];
                     return [200, JSON.stringify(records[0])];
                 } catch (e) {
-                    return [500, e.message];
+                    return [500, (e as any)?.message];
                 }
             });
 
@@ -149,7 +149,7 @@ export default class mockAuthApiHost {
 
                     return [200, JSON.stringify(newUser)];
                 } catch (e) {
-                    return [500, e.message];
+                    return [500, (e as any)?.message];
                 }
             });
     }

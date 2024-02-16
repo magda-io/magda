@@ -1,5 +1,5 @@
 import { Response } from "express";
-import getNoCacheHeaders from "./getNoCacheHeaders";
+import getNoCacheHeaders from "./getNoCacheHeaders.js";
 
 const setResponseNoCache = (res: Response) => res.set(getNoCacheHeaders());
 

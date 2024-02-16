@@ -15,7 +15,7 @@ import { StateType } from "reducers/reducer";
 import { useSelector } from "react-redux";
 import uniq from "lodash/uniq";
 import { User } from "reducers/userManagementReducer";
-import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
+import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
 
 type PropsType = {
     menuItems?: MenuItem[];

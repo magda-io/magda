@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
+import SMTPTransport from "nodemailer/lib/smtp-transport.js";
 export { Attachment } from "nodemailer/lib/mailer";
 
 export interface SMTPMailer {

@@ -1,8 +1,9 @@
-import { Attachment } from "./SMTPMailer";
-import ContentApiDirMapper from "./ContentApiDirMapper";
+import { Attachment } from "./SMTPMailer.js";
+import ContentApiDirMapper from "./ContentApiDirMapper.js";
 import path from "path";
 import mimeTypes from "mime-types";
 import Mustache from "mustache";
+import { Buffer } from "node:buffer";
 
 /**
  * customised mustache render function.
@@ -59,7 +60,9 @@ export default class EmailTemplateRender {
 
     async render(templatePath: string, data: any) {
         this.attachments = [];
-        const template = await this.contentMapper.getFileContent(templatePath);
+        const template = await this.contentMapper.getFileContent<string>(
+            templatePath
+        );
         if (!data || typeof data !== "object") {
             data = {};
         }
@@ -70,9 +73,9 @@ export default class EmailTemplateRender {
         const renderedContent = Mustache.render(template, data);
         if (this.attachments.length) {
             for (let i = 0; i < this.attachments.length; i++) {
-                const imgContent = await this.contentMapper.getFileContent(
-                    this.attachments[i].path.toString()
-                );
+                const imgContent = await this.contentMapper.getFileContent<
+                    Buffer
+                >(this.attachments[i].path.toString());
                 this.attachments[i].content = imgContent;
                 delete this.attachments[i].path;
             }

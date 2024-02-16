@@ -10,8 +10,7 @@
  * Do not edit the class manually.
  */
 
-import request = require("request");
-import http = require("http");
+import fetch, { Headers } from "cross-fetch";
 
 let defaultBasePath = "http://localhost/api/v0/registry/";
 
@@ -230,21 +229,179 @@ export class WebHookConfig {
     "dereference": any;
 }
 
+interface GenericRecord {
+    [key: string]: any;
+}
+
+export interface RequestOptions extends RequestInit {
+    qs?: GenericRecord;
+    json?: boolean;
+    body?: any;
+    uri?: string;
+    formData?: { [key: string]: any };
+    form?: { [key: string]: any } | string;
+    encoding?: null | string;
+}
+
+export function setRequestOptionsHeader(
+    requestOptions: RequestOptions,
+    headerName: string,
+    headerValue: string
+) {
+    if (headerValue === null || typeof headerValue === "undefined") {
+        return;
+    }
+    if (!requestOptions?.headers) {
+        requestOptions.headers = new Headers();
+    }
+    if (requestOptions.headers instanceof Headers) {
+        requestOptions.headers.set(headerName, headerValue);
+    } else {
+        (requestOptions.headers as any)[headerName] = headerValue;
+    }
+}
+
+export const isPlainObj = (value: any) =>
+    !!value && Object.getPrototypeOf(value) === Object.prototype;
+
+export const isTextMimeType = (contentType: string) =>
+    /text\/.*/i.test(contentType) || /[\/|\+]xml.*/i.test(contentType);
+
+export const isNotEmpty = (val: any) => val !== null && val !== undefined;
+
+export async function fetchWithRequestOptions(
+    requestOptions: RequestOptions
+): Promise<{ response: Response; body: any }> {
+    const {
+        uri,
+        qs,
+        json,
+        encoding,
+        form,
+        formData,
+        ...fetchOptions
+    } = requestOptions;
+
+    const url = new URL(uri);
+
+    if (qs && Object.keys(qs).length > 0) {
+        for (const key in qs) {
+            const value = qs[key];
+            url.searchParams.delete(key);
+            if (!isNotEmpty(value)) {
+                url.searchParams.append(key, "");
+                continue;
+            }
+            if (Array.isArray(value)) {
+                value.forEach((v) => url.searchParams.append(key, v));
+            } else {
+                url.searchParams.append(key, value);
+            }
+        }
+    }
+
+    if (fetchOptions?.body) {
+        const body = fetchOptions.body;
+        const requireJsonStringify = isPlainObj(body) || Array.isArray(body);
+        if (json || requireJsonStringify) {
+            setRequestOptionsHeader(
+                fetchOptions,
+                "Content-Type",
+                "application/json"
+            );
+        }
+
+        if (requireJsonStringify) {
+            fetchOptions.body = JSON.stringify(body);
+        } else {
+            fetchOptions.body = body;
+        }
+    }
+
+    if (form && formData) {
+        throw new Error(
+            "Only one of form or formData can be set for request options"
+        );
+    }
+
+    if (fetchOptions?.body && (form || formData)) {
+        throw new Error(
+            "Only one of body or form or formData can be set for request options"
+        );
+    }
+
+    if (form) {
+        setRequestOptionsHeader(
+            fetchOptions,
+            "Content-Type",
+            "application/x-www-form-urlencoded"
+        );
+        if (typeof form === "string") {
+            fetchOptions.body = form;
+        } else {
+            const params = new URLSearchParams();
+            for (const key in form) {
+                params.append(key, form[key]);
+            }
+            fetchOptions.body = params;
+        }
+    }
+
+    if (formData) {
+        const form = new FormData();
+        for (const key in formData) {
+            form.append(key, formData[key]);
+        }
+        fetchOptions.body = form;
+    }
+
+    const res = await fetch(url, fetchOptions);
+    let contentType = res.headers.get("Content-Type");
+    contentType = contentType ? contentType : "";
+
+    let body: any;
+    if (encoding === null) {
+        body = await res.blob();
+    } else if (contentType === "application/json") {
+        body = await res.json();
+    } else if (isTextMimeType(contentType)) {
+        body = await res.text();
+    } else {
+        if (typeof encoding === "string" && encoding) {
+            const buffer = await res.arrayBuffer();
+            const decoder = new TextDecoder(encoding);
+            body = decoder.decode(buffer);
+        } else {
+            body = await res.text();
+        }
+    }
+    if (res.ok) {
+        return { response: res, body };
+    } else {
+        throw { response: res, body };
+    }
+}
+
 export interface Authentication {
     /**
      * Apply authentication settings to header and query params.
      */
-    applyToRequest(requestOptions: request.Options): void;
+    applyToRequest(fetchOptions: RequestOptions): void;
 }
 
 export class HttpBasicAuth implements Authentication {
     public username: string;
     public password: string;
-    applyToRequest(requestOptions: request.Options): void {
-        requestOptions.auth = {
-            username: this.username,
-            password: this.password
-        };
+    applyToRequest(requestOptions: RequestOptions): void {
+        const basicAuthValue = Buffer.from(
+            this.username + ":" + this.password,
+            "utf-8"
+        ).toString("base64");
+        setRequestOptionsHeader(
+            requestOptions,
+            "Authorization",
+            "Basic " + basicAuthValue
+        );
     }
 }
 
@@ -253,15 +410,18 @@ export class ApiKeyAuth implements Authentication {
 
     constructor(private location: string, private paramName: string) {}
 
-    applyToRequest(requestOptions: request.Options): void {
+    applyToRequest(requestOptions: RequestOptions): void {
         if (this.location == "query") {
-            (<any>requestOptions.qs)[this.paramName] = this.apiKey;
-        } else if (
-            this.location == "header" &&
-            requestOptions &&
-            requestOptions.headers
-        ) {
-            requestOptions.headers[this.paramName] = this.apiKey;
+            if (!requestOptions.qs) {
+                requestOptions.qs = {};
+            }
+            requestOptions.qs[this.paramName] = this.apiKey;
+        } else if (this.location == "header") {
+            setRequestOptionsHeader(
+                requestOptions,
+                this.paramName,
+                this.apiKey
+            );
         }
     }
 }
@@ -269,18 +429,19 @@ export class ApiKeyAuth implements Authentication {
 export class OAuth implements Authentication {
     public accessToken: string;
 
-    applyToRequest(requestOptions: request.Options): void {
-        if (requestOptions && requestOptions.headers) {
-            requestOptions.headers["Authorization"] =
-                "Bearer " + this.accessToken;
-        }
+    applyToRequest(requestOptions: RequestOptions): void {
+        setRequestOptionsHeader(
+            requestOptions,
+            "Authorization",
+            "Bearer " + this.accessToken
+        );
     }
 }
 
 export class VoidAuth implements Authentication {
     public username: string;
     public password: string;
-    applyToRequest(_: request.Options): void {
+    applyToRequest(_: RequestOptions): void {
         // Do nothing
     }
 }
@@ -290,7 +451,6 @@ export enum AspectDefinitionsApiApiKeys {}
 export class AspectDefinitionsApi {
     protected basePath = defaultBasePath;
     protected defaultHeaders: any = {};
-    protected _useQuerystring: boolean = false;
 
     protected authentications: any = {
         default: <Authentication>new VoidAuth()
@@ -313,10 +473,6 @@ export class AspectDefinitionsApi {
         }
     }
 
-    set useQuerystring(value: boolean) {
-        this._useQuerystring = value;
-    }
-
     public setApiKey(key: AspectDefinitionsApiApiKeys, value: string) {
         this.authentications[AspectDefinitionsApiApiKeys[key]].apiKey = value;
     }
@@ -331,7 +487,7 @@ export class AspectDefinitionsApi {
         xMagdaTenantId: number,
         aspect: AspectDefinition,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
+    ): Promise<{ response: Response; body: AspectDefinition }> {
         const localVarPath = this.basePath + "/aspects";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -358,18 +514,21 @@ export class AspectDefinitionsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "POST",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: aspect
         };
@@ -383,25 +542,8 @@ export class AspectDefinitionsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: AspectDefinition;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get a list of all aspects
@@ -412,10 +554,7 @@ export class AspectDefinitionsApi {
     public getAll(
         xMagdaTenantId: number,
         xMagdaSession?: string
-    ): Promise<{
-        response: http.IncomingMessage;
-        body: Array<AspectDefinition>;
-    }> {
+    ): Promise<{ response: Response; body: Array<AspectDefinition> }> {
         const localVarPath = this.basePath + "/aspects";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -428,18 +567,21 @@ export class AspectDefinitionsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -452,25 +594,8 @@ export class AspectDefinitionsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: Array<AspectDefinition>;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get an aspect by ID
@@ -483,7 +608,7 @@ export class AspectDefinitionsApi {
         xMagdaTenantId: number,
         id: string,
         xMagdaSession?: string
-    ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
+    ): Promise<{ response: Response; body: AspectDefinition }> {
         const localVarPath =
             this.basePath +
             "/aspects/{id}".replace("{" + "id" + "}", String(id));
@@ -505,18 +630,21 @@ export class AspectDefinitionsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -529,25 +657,8 @@ export class AspectDefinitionsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: AspectDefinition;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Modify an aspect by applying a JSON Patch
@@ -562,7 +673,7 @@ export class AspectDefinitionsApi {
         id: string,
         aspectPatch: Array<Operation>,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
+    ): Promise<{ response: Response; body: AspectDefinition }> {
         const localVarPath =
             this.basePath +
             "/aspects/{id}".replace("{" + "id" + "}", String(id));
@@ -598,18 +709,21 @@ export class AspectDefinitionsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "PATCH",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: aspectPatch
         };
@@ -623,25 +737,8 @@ export class AspectDefinitionsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: AspectDefinition;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Modify an aspect by ID
@@ -656,7 +753,7 @@ export class AspectDefinitionsApi {
         id: string,
         aspect: AspectDefinition,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
+    ): Promise<{ response: Response; body: AspectDefinition }> {
         const localVarPath =
             this.basePath +
             "/aspects/{id}".replace("{" + "id" + "}", String(id));
@@ -692,18 +789,21 @@ export class AspectDefinitionsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "PUT",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: aspect
         };
@@ -717,25 +817,8 @@ export class AspectDefinitionsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: AspectDefinition;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
 }
 export enum RecordAspectsApiApiKeys {}
@@ -743,7 +826,6 @@ export enum RecordAspectsApiApiKeys {}
 export class RecordAspectsApi {
     protected basePath = defaultBasePath;
     protected defaultHeaders: any = {};
-    protected _useQuerystring: boolean = false;
 
     protected authentications: any = {
         default: <Authentication>new VoidAuth()
@@ -766,10 +848,6 @@ export class RecordAspectsApi {
         }
     }
 
-    set useQuerystring(value: boolean) {
-        this._useQuerystring = value;
-    }
-
     public setApiKey(key: RecordAspectsApiApiKeys, value: string) {
         this.authentications[RecordAspectsApiApiKeys[key]].apiKey = value;
     }
@@ -786,7 +864,7 @@ export class RecordAspectsApi {
         aspectId: string,
         xMagdaSession: string,
         xMagdaTenantId: number
-    ): Promise<{ response: http.IncomingMessage; body: DeleteResult }> {
+    ): Promise<{ response: Response; body: DeleteResult }> {
         const localVarPath =
             this.basePath +
             "/records/{recordId}/aspects/{aspectId}"
@@ -824,18 +902,21 @@ export class RecordAspectsApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "DELETE",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -848,25 +929,8 @@ export class RecordAspectsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: DeleteResult;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get a list of a record&#39;s aspects
@@ -887,7 +951,7 @@ export class RecordAspectsApi {
         start?: number,
         limit?: number,
         xMagdaSession?: string
-    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+    ): Promise<{ response: Response; body: Array<any> }> {
         const localVarPath =
             this.basePath +
             "/records/{recordId}/aspects".replace(
@@ -928,18 +992,21 @@ export class RecordAspectsApi {
             queryParameters["limit"] = limit;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -952,25 +1019,8 @@ export class RecordAspectsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: Array<any>;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get the number of aspects that a record has
@@ -985,7 +1035,7 @@ export class RecordAspectsApi {
         recordId: string,
         keyword?: string,
         xMagdaSession?: string
-    ): Promise<{ response: http.IncomingMessage; body: CountResponse }> {
+    ): Promise<{ response: Response; body: CountResponse }> {
         const localVarPath =
             this.basePath +
             "/records/{recordId}/aspects/count".replace(
@@ -1014,18 +1064,21 @@ export class RecordAspectsApi {
             queryParameters["keyword"] = keyword;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -1038,25 +1091,8 @@ export class RecordAspectsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: CountResponse;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get a record aspect by ID
@@ -1071,7 +1107,7 @@ export class RecordAspectsApi {
         recordId: string,
         aspectId: string,
         xMagdaSession?: string
-    ): Promise<{ response: http.IncomingMessage; body: any }> {
+    ): Promise<{ response: Response; body: any }> {
         const localVarPath =
             this.basePath +
             "/records/{recordId}/aspects/{aspectId}"
@@ -1102,18 +1138,21 @@ export class RecordAspectsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -1126,24 +1165,8 @@ export class RecordAspectsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: any }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Modify a record aspect by applying a JSON Patch
@@ -1160,7 +1183,7 @@ export class RecordAspectsApi {
         aspectPatch: Array<Operation>,
         xMagdaSession: string,
         xMagdaTenantId: number
-    ): Promise<{ response: http.IncomingMessage; body: any }> {
+    ): Promise<{ response: Response; body: any }> {
         const localVarPath =
             this.basePath +
             "/records/{recordId}/aspects/{aspectId}"
@@ -1205,18 +1228,21 @@ export class RecordAspectsApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "PATCH",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: aspectPatch
         };
@@ -1230,24 +1256,8 @@ export class RecordAspectsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: any }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Modify a record aspect by ID
@@ -1266,7 +1276,7 @@ export class RecordAspectsApi {
         xMagdaSession: string,
         xMagdaTenantId: number,
         merge?: boolean
-    ): Promise<{ response: http.IncomingMessage; body: any }> {
+    ): Promise<{ response: Response; body: any }> {
         const localVarPath =
             this.basePath +
             "/records/{recordId}/aspects/{aspectId}"
@@ -1315,18 +1325,21 @@ export class RecordAspectsApi {
             queryParameters["merge"] = merge;
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "PUT",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: aspect
         };
@@ -1340,24 +1353,8 @@ export class RecordAspectsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: any }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
 }
 export enum RecordHistoryApiApiKeys {}
@@ -1365,7 +1362,6 @@ export enum RecordHistoryApiApiKeys {}
 export class RecordHistoryApi {
     protected basePath = defaultBasePath;
     protected defaultHeaders: any = {};
-    protected _useQuerystring: boolean = false;
 
     protected authentications: any = {
         default: <Authentication>new VoidAuth()
@@ -1386,10 +1382,6 @@ export class RecordHistoryApi {
                 this.basePath = basePathOrUsername;
             }
         }
-    }
-
-    set useQuerystring(value: boolean) {
-        this._useQuerystring = value;
     }
 
     public setApiKey(key: RecordHistoryApiApiKeys, value: string) {
@@ -1418,7 +1410,7 @@ export class RecordHistoryApi {
         aspect?: Array<string>,
         dereference?: boolean,
         reversePageTokenOrder?: boolean
-    ): Promise<{ response: http.IncomingMessage; body: EventsPage }> {
+    ): Promise<{ response: Response; body: EventsPage }> {
         const localVarPath =
             this.basePath +
             "/records/{recordId}/history".replace(
@@ -1474,18 +1466,21 @@ export class RecordHistoryApi {
             queryParameters["reversePageTokenOrder"] = reversePageTokenOrder;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -1498,25 +1493,8 @@ export class RecordHistoryApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: EventsPage;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get the version of a record that existed after a given event was applied
@@ -1529,7 +1507,7 @@ export class RecordHistoryApi {
         xMagdaTenantId: number,
         recordId: string,
         eventId: string
-    ): Promise<{ response: http.IncomingMessage; body: Record }> {
+    ): Promise<{ response: Response; body: Record }> {
         const localVarPath =
             this.basePath +
             "/records/{recordId}/history/{eventId}"
@@ -1560,16 +1538,17 @@ export class RecordHistoryApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -1582,24 +1561,8 @@ export class RecordHistoryApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: Record }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
 }
 export enum RecordsApiApiKeys {}
@@ -1607,7 +1570,6 @@ export enum RecordsApiApiKeys {}
 export class RecordsApi {
     protected basePath = defaultBasePath;
     protected defaultHeaders: any = {};
-    protected _useQuerystring: boolean = false;
 
     protected authentications: any = {
         default: <Authentication>new VoidAuth()
@@ -1630,10 +1592,6 @@ export class RecordsApi {
         }
     }
 
-    set useQuerystring(value: boolean) {
-        this._useQuerystring = value;
-    }
-
     public setApiKey(key: RecordsApiApiKeys, value: string) {
         this.authentications[RecordsApiApiKeys[key]].apiKey = value;
     }
@@ -1648,7 +1606,7 @@ export class RecordsApi {
         xMagdaTenantId: number,
         record: Record,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: Record }> {
+    ): Promise<{ response: Response; body: Record }> {
         const localVarPath = this.basePath + "/records";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -1675,18 +1633,21 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "POST",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: record
         };
@@ -1700,24 +1661,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: Record }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Delete a record
@@ -1730,7 +1675,7 @@ export class RecordsApi {
         xMagdaTenantId: number,
         recordId: string,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: DeleteResult }> {
+    ): Promise<{ response: Response; body: DeleteResult }> {
         const localVarPath =
             this.basePath +
             "/records/{recordId}".replace(
@@ -1762,18 +1707,21 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "DELETE",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -1786,25 +1734,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: DeleteResult;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Remove items from records&#39; aspect data
@@ -1819,7 +1750,7 @@ export class RecordsApi {
         aspectId: string,
         requestData: DeleteRecordsAspectArrayItemsRequest,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+    ): Promise<{ response: Response; body: Array<any> }> {
         const localVarPath =
             this.basePath +
             "/records/aspectArrayItems/{aspectId}".replace(
@@ -1858,18 +1789,21 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "DELETE",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: requestData
         };
@@ -1883,25 +1817,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: Array<any>;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get a list of all records
@@ -1938,7 +1855,7 @@ export class RecordsApi {
         reversePageTokenOrder?: boolean,
         q?: string,
         xMagdaSession?: string
-    ): Promise<{ response: http.IncomingMessage; body: Array<Record> }> {
+    ): Promise<{ response: Response; body: Array<Record> }> {
         const localVarPath = this.basePath + "/records";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -2003,18 +1920,21 @@ export class RecordsApi {
             queryParameters["q"] = q;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -2027,25 +1947,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: Array<Record>;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get a list of all records as summaries
@@ -2066,7 +1969,7 @@ export class RecordsApi {
         reversePageTokenOrder?: boolean,
         q?: string,
         xMagdaSession?: string
-    ): Promise<{ response: http.IncomingMessage; body: Array<RecordSummary> }> {
+    ): Promise<{ response: Response; body: Array<RecordSummary> }> {
         const localVarPath = this.basePath + "/records/summary";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -2099,18 +2002,21 @@ export class RecordsApi {
             queryParameters["q"] = q;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -2123,25 +2029,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: Array<RecordSummary>;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get a record by ID
@@ -2160,7 +2049,7 @@ export class RecordsApi {
         optionalAspect?: Array<string>,
         dereference?: boolean,
         xMagdaSession?: string
-    ): Promise<{ response: http.IncomingMessage; body: Record }> {
+    ): Promise<{ response: Response; body: Record }> {
         const localVarPath =
             this.basePath +
             "/records/{id}".replace("{" + "id" + "}", String(id));
@@ -2194,18 +2083,21 @@ export class RecordsApi {
             queryParameters["dereference"] = dereference;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -2218,24 +2110,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: Record }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get a record in full by ID
@@ -2248,7 +2124,7 @@ export class RecordsApi {
         id: string,
         xMagdaTenantId: number,
         xMagdaSession?: string
-    ): Promise<{ response: http.IncomingMessage; body: Record }> {
+    ): Promise<{ response: Response; body: Record }> {
         const localVarPath =
             this.basePath +
             "/records/inFull/{id}".replace("{" + "id" + "}", String(id));
@@ -2270,18 +2146,21 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -2294,24 +2173,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: Record }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get a summary record by ID
@@ -2324,7 +2187,7 @@ export class RecordsApi {
         id: string,
         xMagdaTenantId: number,
         xMagdaSession?: string
-    ): Promise<{ response: http.IncomingMessage; body: RecordSummary }> {
+    ): Promise<{ response: Response; body: RecordSummary }> {
         const localVarPath =
             this.basePath +
             "/records/summary/{id}".replace("{" + "id" + "}", String(id));
@@ -2346,18 +2209,21 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -2370,25 +2236,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: RecordSummary;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
@@ -2407,7 +2256,7 @@ export class RecordsApi {
         aspectOrQuery?: Array<string>,
         q?: string,
         xMagdaSession?: string
-    ): Promise<{ response: http.IncomingMessage; body: CountResponse }> {
+    ): Promise<{ response: Response; body: CountResponse }> {
         const localVarPath = this.basePath + "/records/count";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -2436,18 +2285,21 @@ export class RecordsApi {
             queryParameters["q"] = q;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -2460,25 +2312,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: CountResponse;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get a list tokens for paging through the records
@@ -2493,7 +2328,7 @@ export class RecordsApi {
         aspect?: Array<string>,
         limit?: number,
         xMagdaSession?: string
-    ): Promise<{ response: http.IncomingMessage; body: Array<string> }> {
+    ): Promise<{ response: Response; body: Array<string> }> {
         const localVarPath = this.basePath + "/records/pagetokens";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -2514,18 +2349,21 @@ export class RecordsApi {
             queryParameters["limit"] = limit;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -2538,25 +2376,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: Array<string>;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Modify a record by applying a JSON Patch
@@ -2571,7 +2392,7 @@ export class RecordsApi {
         id: string,
         recordPatch: Array<Operation>,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: Record }> {
+    ): Promise<{ response: Response; body: Record }> {
         const localVarPath =
             this.basePath +
             "/records/{id}".replace("{" + "id" + "}", String(id));
@@ -2607,18 +2428,21 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "PATCH",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: recordPatch
         };
@@ -2632,24 +2456,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: Record }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Modify a list of records by applying the same JSON Patch
@@ -2662,7 +2470,7 @@ export class RecordsApi {
         xMagdaTenantId: number,
         requestData: PatchRecordsRequest,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+    ): Promise<{ response: Response; body: Array<any> }> {
         const localVarPath = this.basePath + "/records";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -2689,18 +2497,21 @@ export class RecordsApi {
             );
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "PATCH",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: requestData
         };
@@ -2714,25 +2525,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: Array<any>;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Modify a record by ID
@@ -2749,7 +2543,7 @@ export class RecordsApi {
         record: Record,
         xMagdaSession: string,
         merge?: boolean
-    ): Promise<{ response: http.IncomingMessage; body: Record }> {
+    ): Promise<{ response: Response; body: Record }> {
         const localVarPath =
             this.basePath +
             "/records/{id}".replace("{" + "id" + "}", String(id));
@@ -2789,18 +2583,21 @@ export class RecordsApi {
             queryParameters["merge"] = merge;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "PUT",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: record
         };
@@ -2814,24 +2611,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: Record }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Modify a list of records&#39;s aspect with same new data
@@ -2848,7 +2629,7 @@ export class RecordsApi {
         requestData: PutRecordsAspectRequest,
         xMagdaSession: string,
         merge?: boolean
-    ): Promise<{ response: http.IncomingMessage; body: Array<any> }> {
+    ): Promise<{ response: Response; body: Array<any> }> {
         const localVarPath =
             this.basePath +
             "/records/aspects/{aspectId}".replace(
@@ -2891,18 +2672,21 @@ export class RecordsApi {
             queryParameters["merge"] = merge;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "PUT",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: requestData
         };
@@ -2916,25 +2700,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: Array<any>;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Trim by source tag
@@ -2949,7 +2716,7 @@ export class RecordsApi {
         sourceTagToPreserve: string,
         sourceId: string,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: MultipleDeleteResult }> {
+    ): Promise<{ response: Response; body: MultipleDeleteResult }> {
         const localVarPath = this.basePath + "/records";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -2991,18 +2758,21 @@ export class RecordsApi {
             queryParameters["sourceId"] = sourceId;
         }
 
-        headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "DELETE",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -3015,25 +2785,8 @@ export class RecordsApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: MultipleDeleteResult;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
 }
 export enum WebHooksApiApiKeys {}
@@ -3041,7 +2794,6 @@ export enum WebHooksApiApiKeys {}
 export class WebHooksApi {
     protected basePath = defaultBasePath;
     protected defaultHeaders: any = {};
-    protected _useQuerystring: boolean = false;
 
     protected authentications: any = {
         default: <Authentication>new VoidAuth()
@@ -3064,10 +2816,6 @@ export class WebHooksApi {
         }
     }
 
-    set useQuerystring(value: boolean) {
-        this._useQuerystring = value;
-    }
-
     public setApiKey(key: WebHooksApiApiKeys, value: string) {
         this.authentications[WebHooksApiApiKeys[key]].apiKey = value;
     }
@@ -3082,10 +2830,7 @@ export class WebHooksApi {
         id: string,
         acknowledgement: WebHookAcknowledgement,
         xMagdaSession: string
-    ): Promise<{
-        response: http.IncomingMessage;
-        body: WebHookAcknowledgementResponse;
-    }> {
+    ): Promise<{ response: Response; body: WebHookAcknowledgementResponse }> {
         const localVarPath =
             this.basePath +
             "/hooks/{id}/ack".replace("{" + "id" + "}", String(id));
@@ -3114,16 +2859,17 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "POST",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: acknowledgement
         };
@@ -3137,25 +2883,8 @@ export class WebHooksApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: WebHookAcknowledgementResponse;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Create a new web hook
@@ -3166,7 +2895,7 @@ export class WebHooksApi {
     public create(
         hook: WebHook,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: WebHook }> {
+    ): Promise<{ response: Response; body: WebHook }> {
         const localVarPath = this.basePath + "/hooks";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -3186,16 +2915,17 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "POST",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: hook
         };
@@ -3209,24 +2939,8 @@ export class WebHooksApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: WebHook }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Delete a web hook
@@ -3237,7 +2951,7 @@ export class WebHooksApi {
     public deleteById(
         hookId: string,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: DeleteResult }> {
+    ): Promise<{ response: Response; body: DeleteResult }> {
         const localVarPath =
             this.basePath +
             "/hooks/{hookId}".replace("{" + "hookId" + "}", String(hookId));
@@ -3259,16 +2973,17 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "DELETE",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -3281,25 +2996,8 @@ export class WebHooksApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: DeleteResult;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get a list of all web hooks
@@ -3308,7 +3006,7 @@ export class WebHooksApi {
      */
     public getAll(
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: Array<WebHook> }> {
+    ): Promise<{ response: Response; body: Array<WebHook> }> {
         const localVarPath = this.basePath + "/hooks";
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
@@ -3321,16 +3019,17 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -3343,25 +3042,8 @@ export class WebHooksApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{
-            response: http.IncomingMessage;
-            body: Array<WebHook>;
-        }>((resolve, reject) => {
-            request(requestOptions, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve({ response: response, body: body });
-                    } else {
-                        reject({ response: response, body: body });
-                    }
-                }
-            });
-        });
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Get a web hook by ID
@@ -3372,7 +3054,7 @@ export class WebHooksApi {
     public getById(
         id: string,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: WebHook }> {
+    ): Promise<{ response: Response; body: WebHook }> {
         const localVarPath =
             this.basePath + "/hooks/{id}".replace("{" + "id" + "}", String(id));
         let queryParameters: any = {};
@@ -3393,16 +3075,17 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "GET",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true
         };
 
@@ -3415,24 +3098,8 @@ export class WebHooksApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: WebHook }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
     /**
      * Modify a web hook by ID
@@ -3445,7 +3112,7 @@ export class WebHooksApi {
         id: string,
         hook: WebHook,
         xMagdaSession: string
-    ): Promise<{ response: http.IncomingMessage; body: WebHook }> {
+    ): Promise<{ response: Response; body: WebHook }> {
         const localVarPath =
             this.basePath + "/hooks/{id}".replace("{" + "id" + "}", String(id));
         let queryParameters: any = {};
@@ -3473,16 +3140,17 @@ export class WebHooksApi {
             );
         }
 
-        headerParams["X-Magda-Session"] = xMagdaSession;
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
 
         let useFormData = false;
 
-        let requestOptions: request.Options = {
+        const requestOptions: RequestOptions = {
             method: "PUT",
             qs: queryParameters,
             headers: headerParams,
             uri: localVarPath,
-            useQuerystring: this._useQuerystring,
             json: true,
             body: hook
         };
@@ -3496,23 +3164,7 @@ export class WebHooksApi {
                 requestOptions.form = formParams;
             }
         }
-        return new Promise<{ response: http.IncomingMessage; body: WebHook }>(
-            (resolve, reject) => {
-                request(requestOptions, (error, response, body) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        if (
-                            response.statusCode >= 200 &&
-                            response.statusCode <= 299
-                        ) {
-                            resolve({ response: response, body: body });
-                        } else {
-                            reject({ response: response, body: body });
-                        }
-                    }
-                });
-            }
-        );
+
+        return fetchWithRequestOptions(requestOptions);
     }
 }

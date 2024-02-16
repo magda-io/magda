@@ -2,21 +2,21 @@ import express from "express";
 import isUUID from "is-uuid";
 import bcrypt from "bcrypt";
 
-import Database from "./Database";
-import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
-import { installStatusRouter } from "magda-typescript-common/src/express/status";
-import respondWithError from "./respondWithError";
-import handleMaybePromise from "./handleMaybePromise";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import createOrgUnitApiRouter from "./apiRouters/createOrgUnitApiRouter";
-import createUserApiRouter from "./apiRouters/createUserApiRouter";
-import createRoleApiRouter from "./apiRouters/createRoleApiRouter";
-import createResourceApiRouter from "./apiRouters/createResourceApiRouter";
-import createOperationApiRouter from "./apiRouters/createOperationApiRouter";
-import createPermissionApiRouter from "./apiRouters/createPermissionApiRouter";
-import createAccessGroupApiRouter from "./apiRouters/createAccessGroupApiRouter";
-import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import Database from "./Database.js";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError.js";
+import { installStatusRouter } from "magda-typescript-common/src/express/status.js";
+import respondWithError from "./respondWithError.js";
+import handleMaybePromise from "./handleMaybePromise.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import createOrgUnitApiRouter from "./apiRouters/createOrgUnitApiRouter.js";
+import createUserApiRouter from "./apiRouters/createUserApiRouter.js";
+import createRoleApiRouter from "./apiRouters/createRoleApiRouter.js";
+import createResourceApiRouter from "./apiRouters/createResourceApiRouter.js";
+import createOperationApiRouter from "./apiRouters/createOperationApiRouter.js";
+import createPermissionApiRouter from "./apiRouters/createPermissionApiRouter.js";
+import createAccessGroupApiRouter from "./apiRouters/createAccessGroupApiRouter.js";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware.js";
 
 export interface ApiRouterOptions {
     database: Database;

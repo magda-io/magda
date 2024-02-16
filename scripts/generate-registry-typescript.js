@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-var spawnSync = require("child_process").spawnSync;
-const fs = require("fs-extra");
-var path = require("path");
-
+import { spawnSync } from "node:child_process";
+import fs from "fs-extra";
+import path from "path";
+import { __dirname as getCurDirPath, require } from "@magda/esm-utils";
+const __dirname = getCurDirPath();
 const outputDir = path.resolve(process.argv[2]);
 const swaggerOutputDir = path.resolve(
     __dirname,

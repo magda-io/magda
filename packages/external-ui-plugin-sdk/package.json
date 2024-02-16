@@ -19,10 +19,10 @@
   },
   "devDependencies": {
     "@magda/web-client": "^2.3.3",
-    "typescript": "~4.2.4"
+    "typescript": "~5.3.3"
   },
   "peerDependencies": {
-    "@types/react": "^16.8.17",
+    "@types/react": "^18.2.18",
     "@types/react-router-dom": "^5.3.3"
   },
   "magda": {

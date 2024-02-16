@@ -4,7 +4,7 @@ import { config } from "../config";
  * and returns the region object
  * @param {region} queryObject
  */
-export default function (queryObject) {
+function regionToObject(queryObject) {
     if (!(queryObject.regionId || queryObject.regionType)) {
         return {
             regionId: undefined,
@@ -19,3 +19,5 @@ export default function (queryObject) {
         };
     }
 }
+
+export default regionToObject;

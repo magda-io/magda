@@ -1,4 +1,4 @@
-const isUuid = require("@magda/typescript-common/dist/util/isUuid").default;
+import isUuid from "@magda/typescript-common/dist/util/isUuid.js";
 async function getNodeIdByNameOrId(nameOrId, queryer) {
     if (isUuid(nameOrId)) {
         return nameOrId;
@@ -10,4 +10,4 @@ async function getNodeIdByNameOrId(nameOrId, queryer) {
         return nodes[0].id;
     }
 }
-module.exports = getNodeIdByNameOrId;
+export default getNodeIdByNameOrId;

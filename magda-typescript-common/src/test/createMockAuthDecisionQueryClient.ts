@@ -1,7 +1,7 @@
 import AuthDecisionQueryClient, {
     AuthDecisionReqConfig
-} from "../opa/AuthDecisionQueryClient";
-import AuthDecision from "../opa/AuthDecision";
+} from "../opa/AuthDecisionQueryClient.js";
+import AuthDecision from "../opa/AuthDecision.js";
 import sinon from "sinon";
 
 type AuthDecisionRequestHandler = (

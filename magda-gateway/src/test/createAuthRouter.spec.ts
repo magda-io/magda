@@ -5,11 +5,11 @@ import pg from "pg";
 import express, { Request, Response, NextFunction } from "express";
 import request from "supertest";
 import nock from "nock";
-import createAuthRouter from "../createAuthRouter";
-import Authenticator from "../Authenticator";
-import { AuthPluginConfig } from "../createAuthPluginRouter";
+import createAuthRouter from "../createAuthRouter.js";
+import Authenticator from "../Authenticator.js";
+import { AuthPluginConfig } from "../createAuthPluginRouter.js";
 
-describe("Test createAuthRouter", function (this: Mocha.ISuiteCallbackContext) {
+describe("Test createAuthRouter", function (this) {
     this.timeout(30000);
 
     after(() => {

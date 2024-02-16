@@ -1,4 +1,4 @@
-import { config, MessageSafeConfig, DATASETS_BUCKET } from "config";
+import { config, DATASETS_BUCKET } from "config";
 import urijs from "urijs";
 import UserVisibleError from "helpers/UserVisibleError";
 import {
@@ -7,26 +7,12 @@ import {
     DistributionState,
     DatasetStateUpdaterType
 } from "../../DatasetAddCommon";
-
-import {
-    FileDetails,
-    MetadataExtractionOutput
-} from "Components/Dataset/MetadataExtraction/types";
-
 import moment from "moment";
-import * as Comlink from "comlink";
-
 import uploadFile from "./uploadFile";
 import translateError from "helpers/translateError";
 import promisifySetState from "helpers/promisifySetState";
-
-const ExtractorsWorker = require("worker-loader!../../../MetadataExtraction"); // eslint-disable-line import/no-webpack-loader-syntax
-
-type RunExtractors = (
-    input: FileDetails,
-    config: MessageSafeConfig,
-    update: (progress: number) => void
-) => Promise<MetadataExtractionOutput>;
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
+import runExtractors from "../../../MetadataExtraction/runExtractors";
 
 /**
  * The increment / 100 to show for progress once the initial
@@ -36,7 +22,7 @@ const READ_FILE_PROGRESS_INCREMENT = 20;
 
 function readFileAsArrayBuffer(file: any): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
-        var fileReader = new FileReader();
+        const fileReader = new FileReader();
         fileReader.onload = function () {
             resolve(this.result as ArrayBuffer);
         };
@@ -195,31 +181,10 @@ export default async function processFile(
         _progress: READ_FILE_PROGRESS_INCREMENT
     }));
 
-    /**
-     * Function for running all extractors in the correct order, which returns
-     * a promise that completes when extraction is complete
-     */
-    const extractorsWorker = new ExtractorsWorker();
-    const extractors = Comlink.wrap(extractorsWorker) as Comlink.Remote<{
-        runExtractors: RunExtractors;
-    }>;
-
     try {
         await doUpload();
 
-        // Wait for extractors and upload to finish
-        const output = await extractors.runExtractors(
-            input,
-            (() => {
-                const safeConfig = { ...config } as any;
-                // We need to delete facets because it has regexs in it,
-                // and these cause an error if you try to pass them to
-                // the webworker
-                delete safeConfig.facets;
-                return safeConfig;
-            })(),
-            Comlink.proxy(handleExtractionProgress)
-        );
+        const output = await runExtractors(input, handleExtractionProgress);
 
         const extractedDistData = {
             format: output.format,
@@ -260,7 +225,7 @@ export default async function processFile(
             await promisifySetState(datasetStateUpdater)((state: State) => {
                 return {
                     ...state,
-                    error: e,
+                    error: unknown2Error(e),
                     distributions: state.distributions.filter(
                         (thisDist) => initialDistribution.id !== thisDist.id
                     )
@@ -311,6 +276,6 @@ export default async function processFile(
             await removeDist();
         }
 
-        throw translateError(e);
+        throw translateError(unknown2Error(e));
     }
 }

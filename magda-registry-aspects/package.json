@@ -2,9 +2,21 @@
   "name": "@magda/registry-aspects",
   "version": "2.3.3",
   "description": "Common aspects for use with the registry.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json",
+    "./*.json": "./*.json"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "build": "echo \"ok\"",
     "release": "npm publish || echo \"Skip releasing npm package @magda/registry-aspects.\""
+  },
+  "dependencies": {
+    "@magda/esm-utils": "^1.0.1"
   },
   "author": "",
   "license": "Apache-2.0",

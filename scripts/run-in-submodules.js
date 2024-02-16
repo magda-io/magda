@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 
-const path = require("path");
-const childProcess = require("child_process");
-const glob = require("glob");
-const _ = require("lodash");
-const os = require("os");
+import { require } from "@magda/esm-utils";
+import path from "node:path";
+import childProcess from "child_process";
+import glob from "glob";
+import _ from "lodash";
+import os from "node:os";
+import yargs from "yargs";
 
 const lernaJson = require("../lerna.json");
 
-const argv = require("yargs").option("filters", {
+const argv = yargs.option("filters", {
     alias: "f",
     type: "string",
     describe:
@@ -30,8 +32,8 @@ const filters = argFilters.map((string) => {
 });
 
 const jsPackages = _(lernaJson.packages)
-    .map((package) => package + "/package.json")
-    .flatMap((package) => glob.sync(package))
+    .map((pkg) => pkg + "/package.json")
+    .flatMap((pkg) => glob.sync(pkg))
     .map((packagePath) => {
         const packageJson = require(path.resolve(packagePath));
         return packageJson;
@@ -50,7 +52,7 @@ const jsPackages = _(lernaJson.packages)
 const result = childProcess.spawnSync(
     "lerna",
     [
-        ...jsPackages.map((package) => "--scope " + package),
+        ...jsPackages.map((pkg) => "--scope " + pkg),
         "--stream",
         "--concurrency",
         os.cpus().length,

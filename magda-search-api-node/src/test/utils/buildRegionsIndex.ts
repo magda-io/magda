@@ -1,9 +1,9 @@
 import { Client } from "@elastic/elasticsearch";
 import _ from "lodash";
 
-import handleESError from "../../search/elasticsearch/handleESError";
-import bulkIndex from "./bulkIndex";
-import { Region } from "../../model";
+import handleESError from "../../search/elasticsearch/handleESError.js";
+import bulkIndex from "./bulkIndex.js";
+import { Region } from "../../model.js";
 
 const DEFINITION = {
     aliases: {},

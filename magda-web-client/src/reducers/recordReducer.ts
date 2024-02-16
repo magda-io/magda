@@ -21,14 +21,14 @@ type RecordResult = {
     distributionFetchError?: FetchError;
     dataset?: ParsedDataset;
     distribution?: ParsedDistribution;
-    raw?: Object;
+    raw?: Record<string, any>;
     newDataset?: NewDataset;
 };
 
 type NewDataset = {
     isCreating?: boolean;
     error?: Error | null;
-    dataset?: Object;
+    dataset?: Record<string, any>;
 };
 
 const record = (state: RecordResult = initialData, action: RecordAction) => {
@@ -59,7 +59,7 @@ const record = (state: RecordResult = initialData, action: RecordAction) => {
                 distribution: action.json && parseDistribution(action.json)
             });
         case "RECEIVE_ASPECT_MODIFIED":
-            let newRaw = JSON.parse(JSON.stringify(state.raw));
+            const newRaw = JSON.parse(JSON.stringify(state.raw));
             Object.assign(
                 newRaw.aspects[action.json.aspect],
                 action.json.patch

@@ -1,5 +1,5 @@
-import createPool from "./createPool";
-import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant";
+import createPool from "./createPool.js";
+import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant.js";
 import pg from "pg";
 import _ from "lodash";
 import { sqls } from "sql-syntax";

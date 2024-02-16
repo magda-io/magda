@@ -1,6 +1,7 @@
-import retext from "retext";
-import keywords from "retext-keywords";
-import toString from "nlcst-to-string";
+import { retext } from "retext";
+import retextKeywords from "retext-keywords";
+import retextPos from "retext-pos";
+import { toString } from "nlcst-to-string";
 import { isValidKeyword } from "api-clients/VocabularyApis";
 import uniq from "lodash/uniq";
 import { ExtractedContents, FileDetails } from "./types";
@@ -66,8 +67,8 @@ export async function extractKeywords(
             }
         }
 
-        // Put the validated keywords first then unvalidated, so that if it goes over MAX_KEYWORDS
-        // the unvalidated ones will be the ones trimmed.
+        // Put the validated keywords first then invalidated, so that if it goes over MAX_KEYWORDS
+        // the invalidated ones will be the ones trimmed.
         keywords = [...validatedKeywords, ...candidateKeywords];
     }
 
@@ -76,24 +77,18 @@ export async function extractKeywords(
     };
 }
 
-function getKeywordsFromText(
+async function getKeywordsFromText(
     text: string,
     maximum: number = MAX_KEYWORDS * 2
 ): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-        retext()
-            .use(keywords, {
-                maximum
-            })
-            .process(text, done);
-
-        function done(err, file) {
-            if (err) throw err;
-            let keyphrases: string[] = [];
-            file.data.keyphrases.forEach(function (phrase) {
-                keyphrases.push(phrase.matches[0].nodes.map(toString).join(""));
-            });
-            resolve(keyphrases);
-        }
+    const file = await retext()
+        .use(retextPos)
+        .use(retextKeywords, { maximum })
+        .process(text);
+    const keyPhrases: string[] = [];
+    file.data.keyphrases?.forEach(function (phrase) {
+        keyPhrases.push(phrase.matches[0].nodes.map(toString).join(""));
     });
+
+    return keyPhrases;
 }

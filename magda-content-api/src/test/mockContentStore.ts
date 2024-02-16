@@ -1,4 +1,4 @@
-import { Content } from "../model";
+import { Content } from "../model.js";
 
 export const mockContentData = [
     {

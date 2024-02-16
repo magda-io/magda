@@ -1,9 +1,10 @@
+import { require } from "@magda/esm-utils";
 const { curried2 } = require("jsverify/lib/utils");
-import { Record } from "../generated/registry/api";
+import { Record } from "../generated/registry/api.js";
 const lazyseq = require("lazy-seq");
 import { v4 as uuidv4 } from "uuid";
 import _ from "lodash";
-import jsc from "./jsverify";
+import jsc, { Arbitrary, Shrink, Generator } from "jsverify";
 
 function fromCode(code: number) {
     return String.fromCharCode(code);
@@ -55,7 +56,7 @@ export const peopleNameArb = jsc
         (string) => string.split(" ") as [string, string]
     );
 
-export const uuidArb: jsc.Arbitrary<string> = jsc.bless({
+export const uuidArb: Arbitrary<string> = jsc.bless({
     generator: jsc.generator.bless((x) => uuidv4()),
     shrink: jsc.shrink.bless((x) => []),
     show: (x: string) => x
@@ -72,7 +73,7 @@ export const recordArb = jsc.record<Record>({
 });
 
 export const specificRecordArb = (aspectArbs: {
-    [key: string]: jsc.Arbitrary<any>;
+    [key: string]: Arbitrary<any>;
 }) =>
     jsc.record<Record>({
         id: uuidArb,
@@ -90,13 +91,13 @@ const defaultSchemeArb = jsc.oneof([
 ]);
 
 type UrlArbOptions = {
-    schemeArb?: jsc.Arbitrary<string>;
-    hostArb?: jsc.Arbitrary<string>;
+    schemeArb?: Arbitrary<string>;
+    hostArb?: Arbitrary<string>;
 };
 
 function shrinkArrayWithMinimumSize<T>(
     size: number
-): (x: jsc.Shrink<T>) => jsc.Shrink<T[]> {
+): (x: Shrink<T>) => Shrink<T[]> {
     function shrinkArrayImpl(...args: any[]) {
         const shrink: (x: any) => Array<any> = args[0];
         const result: any = jsc.shrink.bless(function (arr: Array<any>) {
@@ -127,9 +128,9 @@ function shrinkArrayWithMinimumSize<T>(
     return shrinkArrayImpl;
 }
 
-export type MonadicArb<T> = jsc.Arbitrary<T> & {
+export type MonadicArb<T> = Arbitrary<T> & {
     flatMap<U>(
-        arbForward: (t: T) => jsc.Arbitrary<U>,
+        arbForward: (t: T) => Arbitrary<U>,
         backwards: (u: U) => T
     ): MonadicArb<U>;
 };
@@ -140,8 +141,8 @@ function unSeq<T>(maybeArray: any): T[] {
 }
 
 export function arbFlatMap<T, U>(
-    arb: jsc.Arbitrary<T>,
-    arbForward: (t: T) => jsc.Arbitrary<U>,
+    arb: Arbitrary<T>,
+    arbForward: (t: T) => Arbitrary<U>,
     backwards: (u: U) => T,
     show: (u: U) => string | undefined = (u) => JSON.stringify(u)
 ): MonadicArb<U> {
@@ -173,7 +174,7 @@ export function arbFlatMap<T, U>(
     return {
         ...x,
         flatMap<V>(
-            arbForward: (u: U) => jsc.Arbitrary<V>,
+            arbForward: (u: U) => Arbitrary<V>,
             backwards: (v: V) => U
         ): MonadicArb<V> {
             return arbFlatMap<U, V>(x, arbForward, backwards);
@@ -183,8 +184,8 @@ export function arbFlatMap<T, U>(
 
 function generateArrayOfSize<T>(
     arrSize: number,
-    gen: jsc.Generator<T>
-): jsc.Generator<T[]> {
+    gen: Generator<T>
+): Generator<T[]> {
     var result = jsc.generator.bless(function (size: number) {
         var arr = new Array(arrSize);
         for (var i = 0; i < arrSize; i++) {
@@ -199,8 +200,8 @@ function generateArrayOfSize<T>(
 /** Generates an array that is guaranteed to be of the supplied size */
 export function arrayOfSizeArb<T>(
     size: number,
-    arb: jsc.Arbitrary<T>
-): jsc.Arbitrary<T[]> {
+    arb: Arbitrary<T>
+): Arbitrary<T[]> {
     return jsc.bless<T[]>({
         generator: generateArrayOfSize(size, arb.generator),
         shrink: shrinkArrayWithMinimumSize<T>(size)(arb.shrink),
@@ -259,23 +260,23 @@ export const distUrlArb = ({
  * Can be passed into distStringsArb to override the default arbitraries.
  */
 export type DistStringsOverrideArbs = {
-    url?: jsc.Arbitrary<string>;
-    license?: jsc.Arbitrary<string>;
-    format?: jsc.Arbitrary<string>;
+    url?: Arbitrary<string>;
+    license?: Arbitrary<string>;
+    format?: Arbitrary<string>;
 };
 
 /**
  * Can be passed into sourceLinkArb to override the default arbitraries.
  */
 export type SourceLinkOverrideArbs = {
-    status?: jsc.Arbitrary<string | undefined>;
+    status?: Arbitrary<string | undefined>;
 };
 
 /**
  * Can be passed into datasetFormatArb to override the default arbitaries.
  */
 export type DatasetFormatOverrideArbs = {
-    format?: jsc.Arbitrary<string>;
+    format?: Arbitrary<string>;
 };
 
 /**
@@ -355,7 +356,7 @@ export const recordArbWithDists = (dists: object[]) =>
 /**
  * Randomly returns a subset of the array, in-order.
  */
-export function someOf<T>(array: T[]): jsc.Arbitrary<T[]> {
+export function someOf<T>(array: T[]): Arbitrary<T[]> {
     return jsc
         .record({
             length: jsc.integer(0, array.length),
@@ -378,8 +379,8 @@ export function someOf<T>(array: T[]): jsc.Arbitrary<T[]> {
  */
 export function fuzzStringArb(
     string: string,
-    fuzzArb: jsc.Arbitrary<string> = stringArb
-): jsc.Arbitrary<string> {
+    fuzzArb: Arbitrary<string> = stringArb
+): Arbitrary<string> {
     const words = string.split(/[^a-zA-Z\d]+/);
     const aroundArbs = arrayOfSizeArb(words.length + 1, fuzzArb);
 
@@ -415,8 +416,8 @@ export function fuzzStringArb(
  * the case and putting random strings around it and in spaces.
  */
 export function fuzzStringArbResult(
-    stringArb: jsc.Arbitrary<string>,
-    fuzzArb?: jsc.Arbitrary<string>
+    stringArb: Arbitrary<string>,
+    fuzzArb?: Arbitrary<string>
 ) {
     return arbFlatMap(
         stringArb,

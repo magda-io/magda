@@ -1,11 +1,11 @@
-import setupTenantMode from "../setupTenantMode";
-import TenantsLoader from "../reloadTenants";
-import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant";
-import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
+import setupTenantMode from "../setupTenantMode.js";
+import TenantsLoader from "../reloadTenants.js";
+import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant.js";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
 
 import { expect } from "chai";
 import nock from "nock";
-import { delay } from "q";
+import delay from "magda-typescript-common/src/delay.js";
 
 describe("Test reload tenants", () => {
     const config = {
@@ -33,6 +33,10 @@ describe("Test reload tenants", () => {
     });
 
     afterEach(() => {
+        nock.cleanAll();
+    });
+
+    after(() => {
         nock.cleanAll();
     });
 
@@ -143,7 +147,7 @@ describe("Test reload tenants", () => {
             }
         ]);
 
-        await delay(() => {}, theReqIntervalInMs);
+        await delay(theReqIntervalInMs);
         await tenantLoader.reloadTenants();
 
         expect(request2.isDone()).to.equal(false);
@@ -185,7 +189,7 @@ describe("Test reload tenants", () => {
             }
         ]);
 
-        await delay(() => {}, theReqIntervalInMs);
+        await delay(theReqIntervalInMs);
         await tenantLoader.reloadTenants();
 
         expect(request2.isDone()).to.equal(true);

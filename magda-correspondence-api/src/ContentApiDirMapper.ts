@@ -1,10 +1,11 @@
-import buildJwt from "magda-typescript-common/src/session/buildJwt";
-import rp from "request-promise-native";
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
+import fetch from "node-fetch";
 import mime from "mime-types";
 import recursiveReadDir from "recursive-readdir";
 import fse from "fs-extra";
 import path from "path";
 import typeis from "type-is";
+import { Buffer } from "node:buffer";
 
 /**
  * A Class attempt to create an abstract access layer between content API and local directory
@@ -36,16 +37,18 @@ class ContentApiDirMapper {
      * Will return string or Buffer depends `content-type` header
      * @param localPath string: local directory path. e.g.: emailTemplates/assets/top-left-logo.jpg
      */
-    public async getFileContent(localPath: string) {
-        const res = await rp.get(`${this.url}/${localPath}`, {
-            resolveWithFullResponse: true,
-            encoding: null
-        });
-        const contentType = res.headers["content-type"];
-        if (typeis.is(contentType, ["text/*"])) {
-            return res.body.toString("utf-8");
+    public async getFileContent<T = any>(localPath: string): Promise<T> {
+        const res = await fetch(`${this.url}/${localPath}`);
+        if (!res.ok) {
+            throw new Error(
+                `Failed to get file content from ${this.url}/${localPath}: ${res.status} ${res.statusText}`
+            );
         }
-        return res.body;
+        const contentType = res.headers.get("content-type");
+        if (typeis.is(contentType, ["text/*"])) {
+            return (await res.text()) as T;
+        }
+        return Buffer.from(await res.arrayBuffer()) as T;
     }
 
     /**
@@ -58,9 +61,8 @@ class ContentApiDirMapper {
         if (mimeType === false) {
             mimeType = "application/octet-stream";
         }
-        return await rp(`${this.url}/${localPath}`, {
+        return await fetch(`${this.url}/${localPath}`, {
             method: "PUT",
-            resolveWithFullResponse: true,
             headers: {
                 "X-Magda-Session": buildJwt(this.jwtSecret, this.userId),
                 "Content-type": mimeType
@@ -70,16 +72,15 @@ class ContentApiDirMapper {
     }
 
     /**
-     * Test if a resource specified by the `localPath` is avaiable on content API
+     * Test if a resource specified by the `localPath` is available on content API
      * This function is done via express build-in HEAD request handling
      * @param localPath string: local path of the resource. e.g. emailTemplates/assets/top-left-logo.jpg
      */
     public async fileExist(localPath: string) {
-        const res = await rp.head(`${this.url}/${localPath}`, {
-            resolveWithFullResponse: true,
-            simple: false
+        const res = await fetch(`${this.url}/${localPath}`, {
+            method: "HEAD"
         });
-        if (res.statusCode !== 200) return false;
+        if (!res.ok) return false;
         else return true;
     }
 

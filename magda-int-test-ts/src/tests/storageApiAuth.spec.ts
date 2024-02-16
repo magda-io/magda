@@ -1,23 +1,23 @@
 import {} from "mocha";
 import { expect } from "chai";
-import ServiceRunner from "../ServiceRunner";
-import partial from "lodash/partial";
+import ServiceRunner from "../ServiceRunner.js";
+import partial from "lodash/partial.js";
 import { v4 as uuidV4 } from "uuid";
-import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
+import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient.js";
 import {
     DEFAULT_ADMIN_USER_ID,
     DATA_STEWARDS_ROLE_ID
-} from "magda-typescript-common/src/authorization-api/constants";
-import getStorageUrl from "magda-typescript-common/src/getStorageUrl";
+} from "magda-typescript-common/src/authorization-api/constants.js";
+import getStorageUrl from "magda-typescript-common/src/getStorageUrl.js";
 import {
     createOrgUnits,
     getRegistryClient as getRegistryClientWithJwtSecret,
     createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret
-} from "./testUtils";
+} from "./testUtils.js";
 import urijs from "urijs";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import FormData from "form-data";
-import buildJwt from "magda-typescript-common/src/session/buildJwt";
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
 
 const ENV_SETUP_TIME_OUT = 600000; // -- 10 mins
 const jwtSecret = uuidV4();

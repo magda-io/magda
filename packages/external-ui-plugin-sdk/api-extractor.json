@@ -315,7 +315,6 @@
                  */
                 // "addToApiReportFile": false
             }
-
             // "TS2551": {
             //   "logLevel": "warning",
             //   "addToApiReportFile": true
@@ -340,6 +339,9 @@
             "ae-forgotten-export": {
                 "logLevel": "none",
                 "addToApiReportFile": false
+            },
+            "ae-wrong-input-file-type": {
+                "logLevel": "none"
             }
             //
             // . . .

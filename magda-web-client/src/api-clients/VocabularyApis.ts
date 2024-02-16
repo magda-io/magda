@@ -1,4 +1,4 @@
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import uniq from "lodash/uniq";
 import flatMap from "lodash/flatMap";
 import type { MessageSafeConfig } from "config";
@@ -99,7 +99,12 @@ export async function isValidKeyword(
     keyword: string,
     config: MessageSafeConfig
 ): Promise<boolean> {
-    const keywords = await query(keyword, config);
-    if (!Array.isArray(keywords) || !keywords.length) return false;
-    return true;
+    try {
+        const keywords = await query(keyword, config);
+        if (!Array.isArray(keywords) || !keywords.length) return false;
+        return true;
+    } catch (e) {
+        console.warn(`Vocabulary API Error: ${e}`);
+        return true;
+    }
 }

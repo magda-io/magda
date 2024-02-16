@@ -1,29 +1,29 @@
 import {} from "mocha";
 import { expect } from "chai";
-import ServiceRunner from "../ServiceRunner";
-import partial from "lodash/partial";
+import ServiceRunner from "../ServiceRunner.js";
+import partial from "lodash/partial.js";
 import { v4 as uuidV4 } from "uuid";
-import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
-import RegistryApiClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient.js";
+import RegistryApiClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 import {
     DEFAULT_ADMIN_USER_ID,
     AUTHENTICATED_USERS_ROLE_ID,
     DATA_STEWARDS_ROLE_ID,
     ANONYMOUS_USERS_ROLE_ID
-} from "magda-typescript-common/src/authorization-api/constants";
-import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
-import { CreateUserData } from "magda-typescript-common/src/authorization-api/model";
-import { Record } from "magda-typescript-common/src/generated/registry/api";
-import ServerError from "magda-typescript-common/src/ServerError";
-import isUuid from "magda-typescript-common/src/util/isUuid";
-import { AccessControlAspect } from "magda-typescript-common/src/registry/model";
+} from "magda-typescript-common/src/authorization-api/constants.js";
+import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable.js";
+import { CreateUserData } from "magda-typescript-common/src/authorization-api/model.js";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
+import isUuid from "magda-typescript-common/src/util/isUuid.js";
+import { AccessControlAspect } from "magda-typescript-common/src/registry/model.js";
 import {
     createOrgUnits,
     getRegistryClient as getRegistryClientWithJwtSecret,
     getOrgUnitIdByName as getOrgUnitIdByNameWithAuthApiClient,
     createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret,
     createTestDistributionByUser as createTestDistributionByUserWithAuthApiClientJwtSecret
-} from "./testUtils";
+} from "./testUtils.js";
 
 const ENV_SETUP_TIME_OUT = 600000; // -- 10 mins
 const jwtSecret = uuidV4();

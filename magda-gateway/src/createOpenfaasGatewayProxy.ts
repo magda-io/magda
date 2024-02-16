@@ -1,9 +1,9 @@
 import express, { Request, Response } from "express";
-import createBaseProxy from "./createBaseProxy";
-import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import { GenericProxyRouterOptions } from "./createGenericProxyRouter";
-import buildJwt from "magda-typescript-common/src/session/buildJwt";
+import createBaseProxy from "./createBaseProxy.js";
+import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import { GenericProxyRouterOptions } from "./createGenericProxyRouter.js";
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
 
 interface OptionsType {
     gatewayUrl: string;

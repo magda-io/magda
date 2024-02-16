@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { config } from "config";
 import getProxiedResourceUrl from "helpers/getProxiedResourceUrl";
 import isStorageApiUrl from "helpers/isStorageApiUrl";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import getDateString from "helpers/getDateString";
 import defined from "helpers/defined";
 import Spinner from "Components/Common/Spinner";

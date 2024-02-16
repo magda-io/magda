@@ -1,4 +1,4 @@
-import { AccessControlAspect } from "../registry/model";
+import { AccessControlAspect } from "../registry/model.js";
 declare global {
     namespace Express {
         /**

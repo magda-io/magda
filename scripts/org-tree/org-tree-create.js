@@ -1,16 +1,16 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const NestedSetModelQueryer = require("@magda/authorization-api/dist/NestedSetModelQueryer")
-    .default;
-const getDBPool = require("../db/getDBPool");
+import { program } from "commander";
+import chalk from "chalk";
+import NestedSetModelQueryer from "@magda/authorization-api/dist/NestedSetModelQueryer.js";
+import getDBPool from "../db/getDBPool.js";
 
 program
     .description(
         `Create a root tree node with specified name. You can then complete other node fields using other DB admin tools.`
     )
-    .option("<nodeName>", "Root node name")
+    .argument("<nodeName>", "Root node name")
     .version(pkg.version)
     .action(async (nodeName) => {
         try {

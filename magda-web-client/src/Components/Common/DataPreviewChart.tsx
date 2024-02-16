@@ -12,6 +12,7 @@ import { DataLoadingResult } from "helpers/CsvDataLoader";
 import { ParsedDistribution } from "helpers/record";
 
 import "./DataPreviewChart.scss";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type PropsType = {
     dataLoadError: Error | null;
@@ -153,7 +154,9 @@ class DataPreviewChart extends Component<PropsType, StateType> {
 
             gapi.event({
                 category: "Error",
-                action: `Failed to display chart for ${window.location.href}: ${e.message}`,
+                action: `Failed to display chart for ${window.location.href}: ${
+                    unknown2Error(e).message
+                }`,
                 label: "Chart Display Failure",
                 nonInteraction: true
             });

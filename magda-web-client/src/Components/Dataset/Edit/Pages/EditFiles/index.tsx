@@ -25,6 +25,7 @@ import DistSupercedeSection from "./DistSupercedeSection";
 import ConfirmLoadPreviousChanges from "./ConfirmLoadPreviousChanges";
 import DeleteFileModal from "./DeleteFileModal";
 import ErrorMessageBox from "Components/Common/ErrorMessageBox";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type Props = {
     edit: <K extends keyof State>(
@@ -144,7 +145,7 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
                     );
                 }
             } catch (e) {
-                setError(e);
+                setError(unknown2Error(e));
             }
         },
         [

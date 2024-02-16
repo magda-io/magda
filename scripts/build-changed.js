@@ -1,10 +1,11 @@
-const childProcess = require("child_process");
-const getAllPackages = require("./getAllPackages");
-const isScalaPackage = require("./isScalaPackage");
-const findLastModifiedFile = require("./findLastModifiedFile");
-const path = require("path");
-const toposort = require("toposort");
-const yargs = require("yargs");
+import { require } from "@magda/esm-utils";
+import childProcess from "child_process";
+import getAllPackages from "./getAllPackages.js";
+import isScalaPackage from "./isScalaPackage";
+import findLastModifiedFile from "./findLastModifiedFile";
+import path from "path";
+import toposort from "toposort";
+import yargs from "yargs";
 
 const argv = yargs.config().help().option("skipDocker", {
     describe: "Skip the build/push of the docker image.",

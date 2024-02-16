@@ -3,16 +3,16 @@ import express from "express";
 import { expect } from "chai";
 import nock, { Scope } from "nock";
 import supertest from "supertest";
-import createOpenfaasGatewayProxy from "../createOpenfaasGatewayProxy";
-import setupTenantMode from "../setupTenantMode";
+import createOpenfaasGatewayProxy from "../createOpenfaasGatewayProxy.js";
+import setupTenantMode from "../setupTenantMode.js";
 import createMockAuthDecisionQueryClient, {
     MockAuthDecisionClientConfig
-} from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient";
+} from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient.js";
 import {
     UnconditionalTrueDecision,
     UnconditionalFalseDecision
-} from "magda-typescript-common/src/opa/AuthDecision";
-import { getUserId } from "magda-typescript-common/src/session/GetUserId";
+} from "magda-typescript-common/src/opa/AuthDecision.js";
+import { getUserId } from "magda-typescript-common/src/session/GetUserId.js";
 
 describe("Test createOpenfaasGatewayProxy", () => {
     const openfaasGatewayUrl = "http://gateway.openfaas.com";

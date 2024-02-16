@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import type AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import SQLSyntax, { sqls } from "sql-syntax";
-import { escapeIdentifier } from "magda-typescript-common/src/SQLUtils";
-import Database from "./Database";
-import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware";
-import { snakeCase } from "lodash";
+import { escapeIdentifier } from "magda-typescript-common/src/SQLUtils.js";
+import Database from "./Database.js";
+import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware.js";
+import snakeCase from "lodash/snakeCase.js";
 
 type PossibleObjectType =
     | "user"

@@ -125,7 +125,7 @@ export async function autoCompleteAccessLocation(
             // --- server side error
             throw Error(response.statusText);
         } else {
-            throw Error(e);
+            throw Error("" + e);
         }
     }
 }

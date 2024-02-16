@@ -26,6 +26,7 @@ import mergeDistTemporalCoverage, {
 } from "Components/Dataset/MergeMetadata/mergeDistTemporalCoverage";
 
 import "./ConfirmMetadataModal.scss";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type PropsType = {
     datasetId: string;
@@ -252,7 +253,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
             // --- save to draft
             await saveRuntimeStateToStorage(datasetId, datasetStateUpdater);
         } catch (e) {
-            setErrors(e);
+            setErrors(unknown2Error(e));
         }
 
         setIsOpen(false);

@@ -15,7 +15,7 @@ import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
 import Pagination from "rsuite/Pagination";
 import Table from "rsuite/Table";
-import { RowDataType } from "rsuite-table";
+import { RowDataType } from "rsuite/Table";
 import AsyncToggle from "../AsyncToggle";
 import IconButton from "rsuite/IconButton";
 import { BsFillTrashFill, BsFillKeyFill } from "react-icons/bs";

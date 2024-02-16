@@ -1,20 +1,20 @@
-import jsc from "magda-typescript-common/src/test/jsverify";
+import jsc from "jsverify";
 import nock from "nock";
 import express from "express";
 import { Server } from "http";
 
-import { encodeURIComponentWithApost } from "magda-typescript-common/src/test/util";
+import { encodeURIComponentWithApost } from "magda-typescript-common/src/test/util.js";
 import {
     WebHook,
     AspectDefinition
-} from "magda-typescript-common/src/generated/registry/api";
-import buildJwt from "magda-typescript-common/src/session/buildJwt";
-import { lcAlphaNumStringArbNe } from "magda-typescript-common/src/test/arbitraries";
+} from "magda-typescript-common/src/generated/registry/api.js";
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
+import { lcAlphaNumStringArbNe } from "magda-typescript-common/src/test/arbitraries.js";
 
-import fakeArgv from "./fakeArgv";
-import MinionOptions from "../MinionOptions";
-import minion from "../index";
-import baseSpec from "./baseSpec";
+import fakeArgv from "./fakeArgv.js";
+import MinionOptions from "../MinionOptions.js";
+import minion from "../index.js";
+import baseSpec from "./baseSpec.js";
 import { expect } from "chai";
 
 const aspectArb = jsc.record({
@@ -43,7 +43,7 @@ baseSpec(
                             `/aspects/${encodeURIComponentWithApost(
                                 aspectDef.id
                             )}`,
-                            aspectDef,
+                            aspectDef as any,
                             {
                                 reqheaders: reqHeaders(jwtSecret, userId)
                             }

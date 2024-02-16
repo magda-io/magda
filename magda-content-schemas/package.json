@@ -1,8 +1,25 @@
 {
   "name": "@magda/content-schemas",
   "version": "2.3.3",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./index.js"
+    },
+    "./package.json": "./package.json",
+    "./*.json": "./*.json"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "description": "Common schemas for use with the content api.",
-  "scripts": {},
+  "scripts": {
+    "build": "tsc index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
+  },
+  "dependencies": {
+    "@magda/esm-utils": "^1.0.1"
+  },
   "author": "",
   "license": "Apache-2.0",
   "config": {

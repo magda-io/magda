@@ -1,6 +1,6 @@
-import fetch from "isomorphic-fetch";
-import merge from "lodash/merge";
-import ServerError from "./ServerError";
+import fetch from "cross-fetch";
+import merge from "lodash/merge.js";
+import ServerError from "./ServerError.js";
 
 type RequestContentTypeJson = "application/json";
 type RequestContentTypePlainText = "text/plain";

@@ -1,4 +1,4 @@
-import ServerError from "../ServerError";
+import ServerError from "../ServerError.js";
 
 export default function unionToThrowable<T>(input: T | Error | ServerError): T {
     if (input instanceof ServerError) {

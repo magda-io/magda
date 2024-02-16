@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-const childProcess = require("child_process");
-const process = require("process");
-const yargs = require("yargs");
-const fs = require("fs");
-const path = require("path");
-const url = require("url");
+import childProcess from "node:child_process";
+import yargs from "yargs";
+import fs from "node:fs";
+import path from "node:path";
+import url from "url";
+import { getCurrentDirPath, require } from "@magda/esm-utils";
+const __dirname = getCurrentDirPath();
 
 const argv = yargs
     .options({

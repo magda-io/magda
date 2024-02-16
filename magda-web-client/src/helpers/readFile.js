@@ -15,6 +15,7 @@ export default function readFile(accept, read = "ArrayBuffer") {
 }
 
 export function getFiles(accept, multiple = true) {
+    // eslint-disable-next-line
     return new Promise((resolve, reject) => {
         const input = document.createElement("input");
         input.type = "file";

@@ -1,6 +1,6 @@
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import urijs from "urijs";
-import AuthDecision, { UnconditionalTrueDecision } from "./AuthDecision";
+import AuthDecision, { UnconditionalTrueDecision } from "./AuthDecision.js";
 
 export type AuthDecisionReqConfig = {
     operationUri: string;

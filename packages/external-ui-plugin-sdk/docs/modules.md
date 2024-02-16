@@ -40,7 +40,7 @@ Dataset page `Edit Dataset` button external plugin component type
 
 #### Defined in
 
-index.d.ts:781
+index.d.ts:799
 
 ___
 
@@ -53,7 +53,7 @@ Please note: the `Like Button` on search result page is hidden unless a plugin c
 
 #### Defined in
 
-index.d.ts:801
+index.d.ts:819
 
 ___
 
@@ -67,7 +67,7 @@ More info & example please refer to repo: [magda-ui-plugin-component-dap-image-g
 
 #### Defined in
 
-index.d.ts:833
+index.d.ts:889
 
 ___
 
@@ -79,7 +79,7 @@ Footer external plugin component type
 
 #### Defined in
 
-index.d.ts:878
+index.d.ts:934
 
 ___
 
@@ -91,7 +91,7 @@ Header external plugin component type
 
 #### Defined in
 
-index.d.ts:919
+index.d.ts:975
 
 ## Variables
 
@@ -119,4 +119,4 @@ e.g. the [DAP image gallery plugin](https://github.com/magda-io/magda-ui-plugin-
 
 #### Defined in
 
-index.d.ts:1070
+index.d.ts:1121

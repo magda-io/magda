@@ -1,6 +1,6 @@
 import yargs from "yargs";
 
-import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
 
 export type MinionArguments = {
     listenPort: string | number;

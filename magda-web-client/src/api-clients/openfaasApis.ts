@@ -1,4 +1,4 @@
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import { config } from "config";
 import { DistributionSource } from "Components/Dataset/Add/DatasetAddCommon";
 import { Record } from "api-clients/RegistryApis";

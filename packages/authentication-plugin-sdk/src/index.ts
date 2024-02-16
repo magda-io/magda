@@ -1,17 +1,17 @@
 import { Router, Request, Response } from "express";
 import session from "express-session";
 import urijs from "urijs";
-import createPool, { PoolCreationOptions } from "./createPool";
+import createPool, { PoolCreationOptions } from "./createPool.js";
 import AuthApiClient, { User, UserToken, Maybe } from "@magda/auth-api-client";
-export { default as getAbsoluteUrl } from "@magda/typescript-common/dist/getAbsoluteUrl";
-export { default as getSessionId } from "@magda/typescript-common/dist/session/getSessionId";
-import { default as destroySessionImport } from "@magda/typescript-common/dist/session/destroySession";
+export { default as getAbsoluteUrl } from "@magda/typescript-common/dist/getAbsoluteUrl.js";
+export { default as getSessionId } from "@magda/typescript-common/dist/session/getSessionId.js";
+import { default as destroySessionImport } from "@magda/typescript-common/dist/session/destroySession.js";
 import {
     DEFAULT_SESSION_COOKIE_NAME as DEFAULT_SESSION_COOKIE_NAME_IMPORT,
     DEFAULT_SESSION_COOKIE_OPTIONS as DEFAULT_SESSION_COOKIE_OPTIONS_IMPORT,
     CookieOptions as CookieOptionsImport,
     deleteCookie as deleteCookieImport
-} from "@magda/typescript-common/dist/session/cookieUtils";
+} from "@magda/typescript-common/dist/session/cookieUtils.js";
 import passport from "passport";
 import _ from "lodash";
 

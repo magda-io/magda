@@ -1,8 +1,8 @@
 import express from "express";
 import * as yargs from "yargs";
 
-import createApiRouter from "./createApiRouter";
-import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
+import createApiRouter from "./createApiRouter.js";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
 
 const argv = addJwtSecretFromEnvVar(
     yargs

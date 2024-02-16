@@ -1,4 +1,4 @@
-import createPool from "./createPool";
+import createPool from "./createPool.js";
 import {
     User,
     Role,
@@ -8,24 +8,24 @@ import {
     CreateUserData,
     ResourceRecord,
     OperationRecord
-} from "magda-typescript-common/src/authorization-api/model";
-import { Maybe } from "tsmonad";
-import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
+} from "magda-typescript-common/src/authorization-api/model.js";
+import { Maybe } from "@magda/tsmonad";
+import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe.js";
 import pg from "pg";
 import _ from "lodash";
-import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError.js";
 import {
     ANONYMOUS_USERS_ROLE_ID,
     AUTHENTICATED_USERS_ROLE_ID,
     ADMIN_USERS_ROLE_ID
-} from "magda-typescript-common/src/authorization-api/constants";
-import { getUserId } from "magda-typescript-common/src/session/GetUserId";
-import NestedSetModelQueryer from "./NestedSetModelQueryer";
-import isUuid from "magda-typescript-common/src/util/isUuid";
+} from "magda-typescript-common/src/authorization-api/constants.js";
+import { getUserId } from "magda-typescript-common/src/session/GetUserId.js";
+import NestedSetModelQueryer from "./NestedSetModelQueryer.js";
+import isUuid from "magda-typescript-common/src/util/isUuid.js";
 import { v4 as uuidV4 } from "uuid";
 import AuthDecision, {
     UnconditionalTrueDecision
-} from "magda-typescript-common/src/opa/AuthDecision";
+} from "magda-typescript-common/src/opa/AuthDecision.js";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import {
     parseIntParam,
@@ -33,14 +33,14 @@ import {
     getTableRecord,
     createTableRecord,
     updateTableRecord
-} from "magda-typescript-common/src/SQLUtils";
-import ServerError from "magda-typescript-common/src/ServerError";
-import { SYSTEM_ROLES } from "magda-typescript-common/src/authorization-api/constants";
-import { generateAPIKey, createApiKeyHash } from "./apiKeyUtils";
-import isArray from "magda-typescript-common/src/util/isArray";
-import uniq from "lodash/uniq";
-import isEmpty from "lodash/isEmpty";
-import getBoolValWithDefault from "magda-typescript-common/src/getBoolValWithDefault";
+} from "magda-typescript-common/src/SQLUtils.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
+import { SYSTEM_ROLES } from "magda-typescript-common/src/authorization-api/constants.js";
+import { generateAPIKey, createApiKeyHash } from "./apiKeyUtils.js";
+import isArray from "magda-typescript-common/src/util/isArray.js";
+import uniq from "lodash/uniq.js";
+import isEmpty from "lodash/isEmpty.js";
+import getBoolValWithDefault from "magda-typescript-common/src/getBoolValWithDefault.js";
 
 export interface DatabaseOptions {
     dbHost: string;
@@ -729,7 +729,10 @@ export default class Database {
             ])} LIMIT 1`.toQuery()
         );
         if (!result?.rows?.length) {
-            throw new Error(`cannot find API with ID ${apiKeyId}`);
+            throw new GenericError(
+                `cannot find API Key with ID ${apiKeyId}`,
+                401
+            );
         }
         return result.rows[0] as APIKeyRecord;
     }

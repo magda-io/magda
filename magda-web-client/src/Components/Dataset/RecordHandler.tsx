@@ -25,7 +25,7 @@ import DistributionPage from "./DistributionPage";
 import { findPermissionGap, hasPermission } from "helpers/accessControlUtils";
 import { User } from "reducers/userManagementReducer";
 import { StateType } from "reducers/reducer";
-import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
+import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
 
 interface RecordHandlerPropsType {
     history: History;

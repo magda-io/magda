@@ -1,5 +1,5 @@
-import getWebhookUrl from "./getWebhookUrl";
-import MinionOptions from "./MinionOptions";
+import getWebhookUrl from "./getWebhookUrl.js";
+import MinionOptions from "./MinionOptions.js";
 import { Application } from "express";
 
 export default function startApiEndpoints(

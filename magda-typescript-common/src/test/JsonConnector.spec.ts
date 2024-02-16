@@ -3,19 +3,19 @@ import "mocha";
 import nock from "nock";
 // import sinon from "sinon";
 
-import AsyncPage from "../AsyncPage";
+import AsyncPage from "../AsyncPage.js";
 // import { AspectDefinition } from "../generated/registry/api";
-import AuthRegistryClient from "../registry/AuthorizedRegistryClient";
+import AuthRegistryClient from "../registry/AuthorizedRegistryClient.js";
 
 import JsonConnector, {
     JsonConnectorOptions,
     ConnectorSource,
     JsonConnectorConfigExtraMetaData,
     JsonConnectorConfigPresetAspect
-} from "../JsonConnector";
-import JsonTransformer, { JsonTransformerOptions } from "../JsonTransformer";
-import ConnectorRecordId from "../ConnectorRecordId";
-import { Record } from "../generated/registry/api";
+} from "../JsonConnector.js";
+import JsonTransformer, { JsonTransformerOptions } from "../JsonTransformer.js";
+import ConnectorRecordId from "../ConnectorRecordId.js";
+import { Record } from "../generated/registry/api.js";
 
 // ConnectorSource,
 

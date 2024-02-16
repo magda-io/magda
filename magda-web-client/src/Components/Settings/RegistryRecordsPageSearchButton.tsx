@@ -13,7 +13,7 @@ type PropsType = {
 const RegistryRecordsPageSearchButton: FunctionComponent<PropsType> = ({
     executeSearch
 }) => {
-    const whisperRef = useRef<WhisperInstance>();
+    const whisperRef = useRef<WhisperInstance>(null);
     const [query, setQuery] = useState<string>("");
 
     const inputOnkeyDown = useCallback(

@@ -1,4 +1,4 @@
-import markdownToHtml from "magda-typescript-common/src/markdownToHtml";
+import markdownToHtml from "magda-typescript-common/src/markdownToHtml.js";
 
 type ContentType = {
     title: string;

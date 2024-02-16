@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback } from "react";
-import FileDrop from "react-file-drop";
+import { FileDrop } from "react-file-drop";
 import partial from "lodash/partial";
 import {
     State,
@@ -10,11 +10,12 @@ import {
     DistributionSource,
     saveRuntimeStateToStorage
 } from "../../DatasetAddCommon";
-import getStorageUrl from "@magda/typescript-common/dist/getStorageUrl";
+import getStorageUrl from "@magda/typescript-common/dist/getStorageUrl.js";
 import processFile from "./processFile";
 import { getFiles } from "helpers/readFile";
 
 import "./FileDropZone.scss";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type PropsType = {
     stateData: State;
@@ -157,7 +158,7 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
         try {
             await addFiles(await getFiles("*.*"));
         } catch (e) {
-            onError(e);
+            onError(unknown2Error(e));
         }
     }, [onError, addFiles]);
 
@@ -168,7 +169,7 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                     await addFiles(fileList, event);
                 }
             } catch (e) {
-                onError(e);
+                onError(unknown2Error(e));
             }
         },
         [onError, addFiles]

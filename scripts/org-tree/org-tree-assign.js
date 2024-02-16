@@ -1,12 +1,12 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const NestedSetModelQueryer = require("@magda/authorization-api/dist/NestedSetModelQueryer")
-    .default;
-const getDBPool = require("../db/getDBPool");
-const getNodeIdFromNameOrId = require("./getNodeIdFromNameOrId");
-const getUserIdFromNameOrId = require("./getUserIdFromNameOrId");
+import { program } from "commander";
+import chalk from "chalk";
+import NestedSetModelQueryer from "@magda/authorization-api/dist/NestedSetModelQueryer.js";
+import getDBPool from "../db/getDBPool.js";
+import getNodeIdFromNameOrId from "./getNodeIdFromNameOrId.js";
+import getUserIdFromNameOrId from "./getUserIdFromNameOrId.js";
 
 program
     .description(
@@ -14,8 +14,8 @@ program
             "\nBoth `userNameOrId` & `nodeNameOrId` can be either entity name or Id. \n" +
             "\tIf more than one entities are located by entity name, the first one will be used."
     )
-    .option("<userNameOrId>", "user name or id")
-    .option("<nodeNameOrId>", "org unit node id or name")
+    .argument("<userNameOrId>", "user name or id")
+    .argument("<nodeNameOrId>", "org unit node id or name")
     .version(pkg.version)
     .action(async (userNameOrId, parentNodeNameOrId) => {
         try {

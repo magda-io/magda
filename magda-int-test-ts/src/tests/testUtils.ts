@@ -1,13 +1,13 @@
 import { expect } from "chai";
 import { v4 as uuidV4 } from "uuid";
-import { OrgUnit } from "magda-typescript-common/src/authorization-api/model";
-import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
-import RegistryApiClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
-import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
-import { Record } from "magda-typescript-common/src/generated/registry/api";
-import { AccessControlAspect } from "magda-typescript-common/src/registry/model";
-import merge from "lodash/merge";
+import { OrgUnit } from "magda-typescript-common/src/authorization-api/model.js";
+import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient.js";
+import RegistryApiClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
+import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable.js";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
+import { AccessControlAspect } from "magda-typescript-common/src/registry/model.js";
+import merge from "lodash/merge.js";
 
 export async function createOrgUnits(authApiClient: AuthApiClient) {
     /**

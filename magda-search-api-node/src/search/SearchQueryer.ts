@@ -1,4 +1,4 @@
-import { Query, FacetType, SearchResult, FacetSearchResult } from "../model";
+import { Query, FacetType, SearchResult, FacetSearchResult } from "../model.js";
 
 /**
  * Performs searches for datasets.

@@ -2,12 +2,12 @@ import express from "express";
 import { Router } from "express";
 import urijs from "urijs";
 import escapeStringRegexp from "escape-string-regexp";
-import createBaseProxy from "./createBaseProxy";
-import Authenticator from "./Authenticator";
-import { TenantMode } from "./setupTenantMode";
-import buildJwtFromReq from "magda-typescript-common/src/session/buildJwtFromReq";
-import createApiAccessControlMiddleware from "./createApiAccessControlMiddleware";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import createBaseProxy from "./createBaseProxy.js";
+import Authenticator from "./Authenticator.js";
+import { TenantMode } from "./setupTenantMode.js";
+import buildJwtFromReq from "magda-typescript-common/src/session/buildJwtFromReq.js";
+import createApiAccessControlMiddleware from "./createApiAccessControlMiddleware.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 
 export type ProxyTarget = DetailedProxyTarget | string;
 export type MethodWithProxyTaget = {

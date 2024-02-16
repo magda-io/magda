@@ -5,10 +5,10 @@ import { expect } from "chai";
 import nock from "nock";
 import supertest from "supertest";
 import { parseString } from "xml2js";
-import buildSitemapRouter from "../buildSitemapRouter";
+import buildSitemapRouter from "../buildSitemapRouter.js";
 import { promisify } from "typed-promisify";
-import Registry from "magda-typescript-common/src/registry/RegistryClient";
-import delay from "magda-typescript-common/src/delay";
+import Registry from "magda-typescript-common/src/registry/RegistryClient.js";
+import delay from "magda-typescript-common/src/delay.js";
 
 const noOptionsParseString = (
     string: string,
@@ -55,9 +55,15 @@ describe("sitemap router", () => {
 
             registryScope
                 .get("/records/pagetokens?aspect=dcat-dataset-strings")
-                .reply(200, () => {
+                .reply(() => {
                     requestTimes++;
-                    return JSON.stringify(tokens);
+                    return [
+                        200,
+                        JSON.stringify(tokens),
+                        {
+                            "Content-Type": "application/json"
+                        }
+                    ];
                 })
                 .persist();
             await supertest(router).get("/sitemap.xml").expect(200);
@@ -73,9 +79,15 @@ describe("sitemap router", () => {
 
             registryScope
                 .get("/records/pagetokens?aspect=dcat-dataset-strings")
-                .reply(200, () => {
+                .reply(() => {
                     requestTimes++;
-                    return JSON.stringify(tokens);
+                    return [
+                        200,
+                        JSON.stringify(tokens),
+                        {
+                            "Content-Type": "application/json"
+                        }
+                    ];
                 })
                 .persist();
 

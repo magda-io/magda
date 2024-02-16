@@ -1,3 +1,4 @@
+import { require } from "@magda/esm-utils";
 import express from "express";
 import session from "express-session";
 import pg from "pg";
@@ -8,14 +9,20 @@ import {
     deleteCookie,
     DEFAULT_SESSION_COOKIE_NAME,
     DEFAULT_SESSION_COOKIE_OPTIONS
-} from "magda-typescript-common/src/session/cookieUtils";
-import getSessionId from "magda-typescript-common/src/session/getSessionId";
-import destroySession from "magda-typescript-common/src/session/destroySession";
-import createAuthApiKeyMiddleware from "./createAuthApiKeyMiddleware";
-import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash";
-import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl";
+} from "magda-typescript-common/src/session/cookieUtils.js";
+import getSessionId from "magda-typescript-common/src/session/getSessionId.js";
+import destroySession from "magda-typescript-common/src/session/destroySession.js";
+import createAuthApiKeyMiddleware from "./createAuthApiKeyMiddleware.js";
+import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash.js";
+import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl.js";
 
 export type SessionCookieOptions = CookieOptions;
+
+declare module "express-session" {
+    interface SessionData {
+        authPlugin?: AuthPluginSessionData;
+    }
+}
 
 export interface AuthenticatorOptions {
     sessionSecret: string;

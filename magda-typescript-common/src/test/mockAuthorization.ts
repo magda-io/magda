@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 import nock from "nock";
 import { Test, Response } from "supertest";
 

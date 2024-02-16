@@ -1,23 +1,23 @@
 import express, { Request, Response } from "express";
-import Database from "../Database";
-import respondWithError from "../respondWithError";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import { requireObjectPermission } from "../recordAuthMiddlewares";
+import Database from "../Database.js";
+import respondWithError from "../respondWithError.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import { requireObjectPermission } from "../recordAuthMiddlewares.js";
 import {
     withAuthDecision,
     requirePermission,
     getUserId
-} from "magda-typescript-common/src/authorization-api/authMiddleware";
+} from "magda-typescript-common/src/authorization-api/authMiddleware.js";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 import {
     searchTableRecord,
     createTableRecord,
     getTableRecord,
     updateTableRecord
-} from "magda-typescript-common/src/SQLUtils";
-import ServerError from "magda-typescript-common/src/ServerError";
-import isUuid from "magda-typescript-common/src/util/isUuid";
-import AuthDecision from "magda-typescript-common/src/opa/AuthDecision";
+} from "magda-typescript-common/src/SQLUtils.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
+import isUuid from "magda-typescript-common/src/util/isUuid.js";
+import AuthDecision from "magda-typescript-common/src/opa/AuthDecision.js";
 
 export interface ApiRouterOptions {
     database: Database;

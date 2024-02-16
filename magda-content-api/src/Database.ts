@@ -1,15 +1,15 @@
-import { Maybe } from "tsmonad";
+import { Maybe } from "@magda/tsmonad";
 import pg from "pg";
 import _ from "lodash";
 
-import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
+import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe.js";
 import { sqls, SQLSyntax } from "sql-syntax";
 
-import { Content } from "./model";
-import createPool from "./createPool";
-import AuthDecision from "magda-typescript-common/src/opa/AuthDecision";
-import { UnconditionalTrueDecision } from "magda-typescript-common/src/opa/AuthDecision";
-import { escapeIdentifier } from "magda-typescript-common/src/SQLUtils";
+import { Content } from "./model.js";
+import createPool from "./createPool.js";
+import AuthDecision from "magda-typescript-common/src/opa/AuthDecision.js";
+import { UnconditionalTrueDecision } from "magda-typescript-common/src/opa/AuthDecision.js";
+import { escapeIdentifier } from "magda-typescript-common/src/SQLUtils.js";
 
 const ALLOWABLE_QUERY_FIELDS = ["id", "type"];
 const allowableQueryFieldLookup = _.keyBy(ALLOWABLE_QUERY_FIELDS, _.identity);

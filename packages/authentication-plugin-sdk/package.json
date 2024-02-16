@@ -2,9 +2,20 @@
   "name": "@magda/authentication-plugin-sdk",
   "description": "MAGDA Authentication Plugin SDK",
   "version": "2.3.3",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
-    "build": "webpack && api-extractor run -l",
+    "build": "yarn build-main && yarn build-types && yarn build-types-bundle",
+    "build-main": "node esbuild.js",
+    "build-types": "tsc --emitDeclarationOnly",
+    "build-types-bundle": "api-extractor run --local",
     "release": "npm publish || echo \"Skip releasing npm package @magda/authentication-plugin-sdk.\""
   },
   "author": "",
@@ -14,25 +25,24 @@
   "devDependencies": {
     "@magda/auth-api-client": "^2.3.3",
     "@magda/typescript-common": "^2.3.3",
-    "@types/express": "^4.17.6",
-    "@types/express-session": "^1.15.15",
+    "@types/express-session": "^1.17.10",
     "@types/lodash": "^4.14.74",
-    "@types/passport": "^1.0.3",
     "@types/pg": "^8.6.5",
-    "@types/urijs": "^1.19.19",
-    "ts-loader": "^6.2.1",
-    "typescript": "~4.2.4",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
-  },
-  "dependencies": {
+    "ts-loader": "^9.5.1",
+    "typescript": "~5.3.3",
+    "esbuild": "^0.19.10",
+    "urijs": "^1.19.11",
     "connect-pg-simple": "^6.2.1",
     "cookie-parser": "^1.4.5",
-    "express": "^4.17.1",
-    "express-session": "^1.17.1",
-    "lodash": "^4.17.4",
-    "pg": "^8.7.3",
-    "urijs": "^1.19.11"
+    "express": "^4.17.2",
+    "express-session": "^1.17.3",
+    "lodash": "^4.17.4"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "@types/passport": "^1.0.3",
+    "@types/urijs": "^1.19.19",
+    "pg": "^8.11.3"
   },
   "magda": {
     "language": "typescript",

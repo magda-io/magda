@@ -1,6 +1,6 @@
-import ServiceRunner from "./ServiceRunner";
+import ServiceRunner from "./ServiceRunner.js";
 import { program } from "commander";
-import delay from "magda-typescript-common/src/delay";
+import delay from "magda-typescript-common/src/delay.js";
 import pkg from "../package.json";
 
 program

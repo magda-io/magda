@@ -1,4 +1,4 @@
-FROM data61/magda-builder-docker:node14
+FROM data61/magda-builder-docker:node18
 
 RUN apk add --update --no-cache openjdk8
 
@@ -22,3 +22,5 @@ RUN mkdir -p "$SBT_HOME" && \
 	# avoid run sbt from root directory due to https://github.com/sbt/sbt/issues/1458
 	cd /home && \
 	sbt sbtVersion
+
+RUN echo 'export PATH=${PATH}:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin:/usr/local/sbt/bin' > /root/.profile

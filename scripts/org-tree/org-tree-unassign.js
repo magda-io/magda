@@ -1,16 +1,14 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const NestedSetModelQueryer = require("@magda/authorization-api/dist/NestedSetModelQueryer")
-    .default;
-const getDBPool = require("../db/getDBPool");
-const getNodeIdFromNameOrId = require("./getNodeIdFromNameOrId");
-const getUserIdFromNameOrId = require("./getUserIdFromNameOrId");
+import { program } from "commander";
+import chalk from "chalk";
+import getDBPool from "../db/getDBPool.js";
+import getUserIdFromNameOrId from "./getUserIdFromNameOrId.js";
 
 program
     .description("Remove the specified user to from any org unit.")
-    .option("<userNameOrId>", "user name or id")
+    .argument("<userNameOrId>", "user name or id")
     .version(pkg.version)
     .action(async (userNameOrId) => {
         try {

@@ -3,7 +3,7 @@ import React, {
     useRef,
     useEffect,
     useImperativeHandle,
-    RefForwardingComponent,
+    ForwardRefRenderFunction,
     RefObject
 } from "react";
 import "./FlatMultiSelectBox.scss";
@@ -39,7 +39,7 @@ export interface OptionHandles {
     scrollIntoView(parentRef: RefObject<HTMLDivElement>): void;
 }
 
-const FlatMultiSelectBoxOptionForwarding: RefForwardingComponent<
+const FlatMultiSelectBoxOptionForwarding: ForwardRefRenderFunction<
     OptionHandles,
     SelectOptionProps
 > = (props, ref) => {

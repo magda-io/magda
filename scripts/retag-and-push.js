@@ -1,13 +1,8 @@
 #!/usr/bin/env node
 
-const yargs = require("yargs");
-const childProcess = require("child_process");
-const {
-    getVersions,
-    getTags,
-    getName,
-    getRepository
-} = require("./docker-util");
+import yargs from "yargs";
+import * as childProcess from "child_process";
+import { getVersions, getName } from "./docker-util.js";
 
 // Docker and ConEmu (an otherwise excellent console for Windows) don't get along.
 // See: https://github.com/Maximus5/ConEmu/issues/958 and https://github.com/moby/moby/issues/28814

@@ -1,29 +1,29 @@
 import express, { Request, Response, NextFunction } from "express";
-import Database from "../Database";
-import respondWithError from "../respondWithError";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import Database from "../Database.js";
+import respondWithError from "../respondWithError.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 import {
     getUserId,
     requireUnconditionalAuthDecision
-} from "magda-typescript-common/src/authorization-api/authMiddleware";
+} from "magda-typescript-common/src/authorization-api/authMiddleware.js";
 import {
     createTableRecord,
     getTableRecord,
     searchTableRecord
-} from "magda-typescript-common/src/SQLUtils";
-import ServerError from "magda-typescript-common/src/ServerError";
+} from "magda-typescript-common/src/SQLUtils.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
 import {
     CreateAccessGroupRequestBodyType,
     UpdateAccessGroupRequestBodyType
-} from "magda-typescript-common/src/authorization-api/model";
-import { JsonPatch } from "magda-typescript-common/src/registry/model";
-import isUuid from "magda-typescript-common/src/util/isUuid";
+} from "magda-typescript-common/src/authorization-api/model.js";
+import { JsonPatch } from "magda-typescript-common/src/registry/model.js";
+import isUuid from "magda-typescript-common/src/util/isUuid.js";
 import { v4 as uuidV4 } from "uuid";
-import { Record } from "magda-typescript-common/src/generated/registry/api";
-import isArray from "lodash/isArray";
-import uniq from "lodash/uniq";
-import isEmpty from "lodash/isEmpty";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
+import isArray from "lodash/isArray.js";
+import uniq from "lodash/uniq.js";
+import isEmpty from "lodash/isEmpty.js";
 import SQLSyntax, { sqls, escapeIdentifier } from "sql-syntax";
 
 export interface ApiRouterOptions {

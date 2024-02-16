@@ -7,7 +7,7 @@ import { OrganisationAutocompleteChoice } from "../../DatasetAddCommon";
 import ASyncCreatableSelect from "react-select/async-creatable";
 import ValidationHoc from "Components/Common/react-select/ValidationHoc";
 
-const ASyncCreatableSelectWithValidation = ValidationHoc<Choice>(
+const ASyncCreatableSelectWithValidation = ValidationHoc<Choice, boolean>(
     ASyncCreatableSelect
 );
 

@@ -1,6 +1,6 @@
 const noLocalStorage = (() => {
     try {
-        return !("localStorage" in window || !window.localStorage);
+        return !("localStorage" in window || !(window as any).localStorage);
     } catch (e) {
         /// http://crocodillon.com/blog/always-catch-localstorage-security-and-quota-exceeded-errors
         return false;
@@ -24,7 +24,9 @@ export function retrieveLocalData<T>(key: string, defaultValue: T): T {
         return JSON.parse(itemData) || defaultValue;
     } catch (e) {
         console.error(
-            `Failed to retrieve search save data '${key}' from local storage: ${e.message}`,
+            `Failed to retrieve search save data '${key}' from local storage: ${
+                e instanceof Error ? e.message : e
+            }`,
             e
         );
         return defaultValue;
@@ -47,7 +49,9 @@ export function setLocalData(key, value, defaultValue: any = undefined) {
         return value;
     } catch (e) {
         console.error(
-            `Failed to save search save data '${key}' to local storage: ${e.message}`,
+            `Failed to save search save data '${key}' to local storage: ${
+                e instanceof Error ? e.message : e
+            }`,
             e
         );
         return defaultValue;
@@ -86,14 +90,16 @@ export function prependToLocalStorageArray(
  */
 export function deleteFromLocalStorageArray(key, index, defaultValue = []) {
     if (noLocalStorage) return defaultValue;
-    let items = retrieveLocalData(key, []);
+    const items = retrieveLocalData(key, []);
     items.splice(index, 1);
     try {
         window.localStorage.setItem(key, JSON.stringify(items));
         return items;
     } catch (e) {
         console.error(
-            `Failed to save search save data '${key}' to local storage: ${e.message}`,
+            `Failed to save search save data '${key}' to local storage: ${
+                (e as any)?.message ? (e as any).message : e
+            }`,
             e
         );
         return defaultValue;

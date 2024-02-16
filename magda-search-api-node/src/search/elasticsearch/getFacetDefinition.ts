@@ -1,4 +1,4 @@
-import { FacetType, Query } from "../../model";
+import { FacetType, Query } from "../../model.js";
 
 /**
  * Facet-specific details for a certain facet (e.g. publisher, format)

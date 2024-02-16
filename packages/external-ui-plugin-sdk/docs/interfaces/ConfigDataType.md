@@ -96,7 +96,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:339
+index.d.ts:346
 
 ___
 
@@ -113,7 +113,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:722
+index.d.ts:729
 
 ___
 
@@ -130,7 +130,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:188
+index.d.ts:195
 
 ___
 
@@ -146,7 +146,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:205
+index.d.ts:212
 
 ___
 
@@ -164,7 +164,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:741
+index.d.ts:748
 
 ___
 
@@ -181,7 +181,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:731
+index.d.ts:738
 
 ___
 
@@ -197,7 +197,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:443
+index.d.ts:450
 
 ___
 
@@ -214,7 +214,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:214
+index.d.ts:221
 
 ___
 
@@ -231,7 +231,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:197
+index.d.ts:204
 
 ___
 
@@ -256,7 +256,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:644
+index.d.ts:651
 
 ___
 
@@ -280,7 +280,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:596
+index.d.ts:603
 
 ___
 
@@ -302,7 +302,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:504
+index.d.ts:511
 
 ___
 
@@ -321,7 +321,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:163
+index.d.ts:170
 
 ___
 
@@ -338,7 +338,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:243
+index.d.ts:250
 
 ___
 
@@ -356,7 +356,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:253
+index.d.ts:260
 
 ___
 
@@ -373,7 +373,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:321
+index.d.ts:328
 
 ___
 
@@ -389,7 +389,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:435
+index.d.ts:442
 
 ___
 
@@ -405,7 +405,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:483
+index.d.ts:490
 
 ___
 
@@ -421,7 +421,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:459
+index.d.ts:466
 
 ___
 
@@ -438,7 +438,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:515
+index.d.ts:522
 
 ___
 
@@ -454,7 +454,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:427
+index.d.ts:434
 
 ___
 
@@ -470,7 +470,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:713
+index.d.ts:720
 
 ___
 
@@ -486,7 +486,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:419
+index.d.ts:426
 
 ___
 
@@ -502,7 +502,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:523
+index.d.ts:530
 
 ___
 
@@ -519,7 +519,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:365
+index.d.ts:372
 
 ___
 
@@ -536,7 +536,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:550
+index.d.ts:557
 
 ___
 
@@ -553,7 +553,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:559
+index.d.ts:566
 
 ___
 
@@ -571,7 +571,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:541
+index.d.ts:548
 
 ___
 
@@ -587,7 +587,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:531
+index.d.ts:538
 
 ___
 
@@ -603,7 +603,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:575
+index.d.ts:582
 
 ___
 
@@ -619,7 +619,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:567
+index.d.ts:574
 
 ___
 
@@ -639,7 +639,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:685
+index.d.ts:692
 
 ___
 
@@ -655,7 +655,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:608
+index.d.ts:615
 
 ___
 
@@ -672,7 +672,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:374
+index.d.ts:381
 
 ___
 
@@ -688,7 +688,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:384
+index.d.ts:391
 
 ___
 
@@ -704,7 +704,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:347
+index.d.ts:354
 
 ___
 
@@ -720,7 +720,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:616
+index.d.ts:623
 
 ___
 
@@ -736,7 +736,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:624
+index.d.ts:631
 
 ___
 
@@ -753,7 +753,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:584
+index.d.ts:591
 
 ___
 
@@ -777,7 +777,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:175
+index.d.ts:182
 
 ___
 
@@ -794,7 +794,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:280
+index.d.ts:287
 
 ___
 
@@ -810,7 +810,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:411
+index.d.ts:418
 
 ___
 
@@ -826,7 +826,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:451
+index.d.ts:458
 
 ___
 
@@ -842,7 +842,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:632
+index.d.ts:639
 
 ___
 
@@ -858,7 +858,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:467
+index.d.ts:474
 
 ___
 
@@ -874,7 +874,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:475
+index.d.ts:482
 
 ___
 
@@ -892,7 +892,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:667
+index.d.ts:674
 
 ___
 
@@ -908,7 +908,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:675
+index.d.ts:682
 
 ___
 
@@ -925,7 +925,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:492
+index.d.ts:499
 
 ___
 
@@ -942,7 +942,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:262
+index.d.ts:269
 
 ___
 
@@ -959,7 +959,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:696
+index.d.ts:703
 
 ___
 
@@ -976,7 +976,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:271
+index.d.ts:278
 
 ___
 
@@ -996,7 +996,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:292
+index.d.ts:299
 
 ___
 
@@ -1015,7 +1015,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:303
+index.d.ts:310
 
 ___
 
@@ -1032,7 +1032,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:356
+index.d.ts:363
 
 ___
 
@@ -1049,7 +1049,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:312
+index.d.ts:319
 
 ___
 
@@ -1066,7 +1066,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:705
+index.d.ts:712
 
 ___
 
@@ -1082,7 +1082,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:234
+index.d.ts:241
 
 ___
 
@@ -1099,7 +1099,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:330
+index.d.ts:337
 
 ___
 
@@ -1115,7 +1115,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:657
+index.d.ts:664
 
 ___
 
@@ -1135,7 +1135,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:226
+index.d.ts:233
 
 ___
 
@@ -1151,7 +1151,7 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:392
+index.d.ts:399
 
 ___
 
@@ -1170,4 +1170,4 @@ ConfigDataType
 
 #### Defined in
 
-index.d.ts:403
+index.d.ts:410

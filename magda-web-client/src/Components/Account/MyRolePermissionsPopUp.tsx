@@ -16,7 +16,7 @@ import "./MyRolePermissionsPopUp.scss";
 import { User, Role } from "reducers/userManagementReducer";
 import { Permission as RolePermissionRecord } from "@magda/typescript-common/dist/authorization-api/model";
 import Pagination from "rsuite/Pagination";
-import { RowDataType } from "rsuite-table";
+import { RowDataType } from "rsuite/Table";
 import { CamelCasedProperties } from "type-fest";
 
 const Column = Table.Column;

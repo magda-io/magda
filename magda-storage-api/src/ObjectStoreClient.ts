@@ -1,4 +1,4 @@
-import ObjectFromStore from "./ObjectFromStore";
+import ObjectFromStore from "./ObjectFromStore.js";
 
 export type CreateBucketResponse = {
     message: string;

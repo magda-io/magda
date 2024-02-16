@@ -1,7 +1,8 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
+import { program } from "commander";
+import chalk from "chalk";
 
 program
     .version(pkg.version)

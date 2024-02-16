@@ -1,16 +1,17 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const getDBPool = require("../db/getDBPool");
-const { recordExist } = require("./utils");
+import { program } from "commander";
+import chalk from "chalk";
+import getDBPool from "../db/getDBPool.js";
+import { recordExist } from "./utils.js";
 
 const pool = getDBPool();
 
 program
     .description("assign the permission to a role")
-    .option("<permissionId>", "Permission ID")
-    .option("<roleId>", "Role ID")
+    .argument("<permissionId>", "Permission ID")
+    .argument("<roleId>", "Role ID")
     .version(pkg.version)
     .action(async (permissionId, roleId) => {
         try {

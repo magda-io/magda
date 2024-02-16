@@ -1,17 +1,17 @@
 import express from "express";
-import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import MinionOptions from "./MinionOptions";
-import setupWebhookEndpoint from "./setupWebhookEndpoint";
-import setupRecrawlEndpoint from "./setupRecrawlEndpoint";
-import startApiEndpoints from "./startApiEndpoints";
-import isWebhookRegistered from "./isWebhookRegistered";
-import registerWebhook from "./registerWebhook";
-import resumeWebhook from "./resumeWebhook";
-import Crawler from "./Crawler";
-import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant";
-import AuthorizedTenantClient from "magda-typescript-common/src/tenant-api/AuthorizedTenantClient";
-import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
-import { MAGDA_SYSTEM_ID } from "magda-typescript-common/src/registry/TenantConsts";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import MinionOptions from "./MinionOptions.js";
+import setupWebhookEndpoint from "./setupWebhookEndpoint.js";
+import setupRecrawlEndpoint from "./setupRecrawlEndpoint.js";
+import startApiEndpoints from "./startApiEndpoints.js";
+import isWebhookRegistered from "./isWebhookRegistered.js";
+import registerWebhook from "./registerWebhook.js";
+import resumeWebhook from "./resumeWebhook.js";
+import Crawler from "./Crawler.js";
+import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant.js";
+import AuthorizedTenantClient from "magda-typescript-common/src/tenant-api/AuthorizedTenantClient.js";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
+import { MAGDA_SYSTEM_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
 
 export default async function minion(options: MinionOptions): Promise<void> {
     checkOptions(options);
@@ -39,7 +39,7 @@ export default async function minion(options: MinionOptions): Promise<void> {
 
     const server = options.express();
 
-    server.use(require("body-parser").json({ limit: "50mb" }));
+    server.use(express.json({ limit: "50mb" }));
 
     server.get("/healthz", (request, response) => {
         response.status(200).send("OK");
@@ -64,7 +64,10 @@ export default async function minion(options: MinionOptions): Promise<void> {
     }
 
     function checkOptions(options: MinionOptions) {
-        if (options.argv.listenPort <= 0 || options.argv.listenPort > 65535) {
+        let listenPort = options?.argv?.listenPort;
+        listenPort =
+            typeof listenPort === "number" ? listenPort : parseInt(listenPort);
+        if (listenPort <= 0 || listenPort > 65535 || isNaN(listenPort)) {
             throw new Error(
                 `Default port of ${options.argv.listenPort} is invalid`
             );

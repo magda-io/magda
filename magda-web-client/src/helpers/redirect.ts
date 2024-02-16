@@ -5,6 +5,7 @@ const { uiBaseUrl } = config;
 
 // We likely never need this function as history is auto-configured with based by react-router
 // https://github.com/remix-run/history/blob/3f69f9e07b0a739419704cffc3b3563133281548/modules/createBrowserHistory.js#L151
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getCompleteUrl(url: string): string {
     const uri = urijs(url);
     if (uri.hostname()) {

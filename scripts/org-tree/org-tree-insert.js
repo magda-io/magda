@@ -1,19 +1,19 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const NestedSetModelQueryer = require("@magda/authorization-api/dist/NestedSetModelQueryer")
-    .default;
-const getDBPool = require("../db/getDBPool");
-const getNodeIdFromNameOrId = require("./getNodeIdFromNameOrId");
+import { program } from "commander";
+import chalk from "chalk";
+import NestedSetModelQueryer from "@magda/authorization-api/dist/NestedSetModelQueryer.js";
+import getDBPool from "../db/getDBPool.js";
+import getNodeIdFromNameOrId from "./getNodeIdFromNameOrId.js";
 
 program
     .description(
         "Insert a node as a child node of the specified the parent node with specified name. " +
             "\nIf the parent node name is given instead of the parent node Id, the newly created child node will be inserted to the first located parent node."
     )
-    .option("<parentNodeNameOrId>", "parent node id or name")
-    .option("<nodeName>", "insert node name")
+    .argument("<parentNodeNameOrId>", "parent node id or name")
+    .argument("<nodeName>", "insert node name")
     .version(pkg.version)
     .action(async (parentNodeNameOrId, nodeName) => {
         try {

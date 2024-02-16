@@ -3,21 +3,21 @@ import _ from "lodash";
 import {
     withAuthDecision,
     requireUnconditionalAuthDecision
-} from "magda-typescript-common/src/authorization-api/authMiddleware";
-import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
-import ServerError from "magda-typescript-common/src/ServerError";
-import Database, { Query } from "./Database";
-import { Maybe } from "tsmonad";
-import { Content } from "./model";
-import { content, ContentEncoding, ContentItem } from "./content";
+} from "magda-typescript-common/src/authorization-api/authMiddleware.js";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
+import Database, { Query } from "./Database.js";
+import { Maybe } from "@magda/tsmonad";
+import { Content } from "./model.js";
+import { content, ContentEncoding, ContentItem } from "./content.js";
 
 import {
     installStatusRouter,
     createServiceProbe
-} from "magda-typescript-common/src/express/status";
-import AccessControlError from "magda-typescript-common/src/authorization-api/AccessControlError";
+} from "magda-typescript-common/src/express/status.js";
+import AccessControlError from "magda-typescript-common/src/authorization-api/AccessControlError.js";
 import mime from "mime-types";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -102,8 +102,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
                                     break;
                             }
                         } catch (e) {
-                            item.error = e.message;
-                            console.error(e.stack);
+                            item.error = (e as any)?.message
+                                ? e instanceof Error
+                                : `${e}`;
+                            console.error(e);
                         }
                     }
                 }
@@ -224,9 +226,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
             outputContent(res, content, format);
         } catch (e) {
-            res.status(e?.statusCode || 500).json({
+            res.status((e as any)?.statusCode || 500).json({
                 result: "FAILED",
-                message: e?.message ? e.message : ""
+                message: (e as any)?.message ? (e as any).message : ""
             });
             if (e instanceof AccessControlError) {
                 console.log(e);
@@ -319,7 +321,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     result: "SUCCESS"
                 });
             } catch (e) {
-                res.status(e.statusCode || 500).json({
+                res.status((e as any)?.statusCode || 500).json({
                     result: "FAILED"
                 });
                 console.error(e);

@@ -1,14 +1,21 @@
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, RefAttributes } from "react";
 import { v4 as uuidv4 } from "uuid";
-import AsyncCreatable from "react-select/async-creatable";
-import Async, { AsyncProps } from "react-select/async";
-import Select, { Props as SelectProps } from "react-select/src/Select";
-import Creatable, { CreatableProps } from "react-select/creatable";
+import { Props as SelectProps, GroupBase, SelectInstance } from "react-select";
 import CustomInputWithValidation from "Components/Common/react-select/CustomInputWithValidation";
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 import * as ValidationManager from "../../Dataset/Add/ValidationManager";
 import { CustomValidatorType } from "../../Dataset/Add/ValidationManager";
-import StateManager from "react-select";
+
+import Select from "react-select/dist/declarations/src/Select";
+import type StateManagedSelect from "react-select/dist/declarations/src/stateManager";
+import type { StateManagerProps } from "react-select/dist/declarations/src/stateManager";
+import type CreatableSelect from "react-select/dist/declarations/src/Creatable";
+import type { CreatableProps } from "react-select/dist/declarations/src/Creatable";
+import type AsyncCreatableSelect from "react-select/dist/declarations/src/async-creatable";
+import type { AsyncCreatableProps } from "react-select/dist/declarations/src/async-creatable";
+import type AsyncSelect from "react-select/dist/declarations/src/Async";
+import type { AsyncProps } from "react-select/dist/declarations/src/Async";
+
 const useValidation = ValidationManager.useValidation;
 
 /* eslint-disable react-hooks/rules-of-hooks */
@@ -19,35 +26,34 @@ interface SelectExtraPropsType {
     customValidator?: CustomValidatorType;
 }
 
-type PropsType<OptionType> =
-    | (SelectProps<OptionType> & SelectExtraPropsType)
-    | (SelectProps<OptionType> & AsyncProps<OptionType> & SelectExtraPropsType)
-    | (SelectProps<OptionType> &
-          CreatableProps<OptionType> &
-          SelectExtraPropsType)
-    | (SelectProps<OptionType> &
-          AsyncProps<OptionType> &
-          CreatableProps<OptionType> &
-          SelectExtraPropsType);
-
-type ReactSelectComponent<OptionType> =
-    | AsyncCreatable<OptionType>
-    | Select<OptionType>
-    | Creatable<OptionType>
-    | Async<OptionType>
-    | StateManager<OptionType>;
+type PropsType<
+    Option = Record<string, any>,
+    IsMulti extends boolean = false,
+    Group extends GroupBase<Option> = GroupBase<Option>
+> = (
+    | (StateManagerProps<Option, IsMulti, Group> &
+          RefAttributes<Select<Option, IsMulti, Group>>)
+    | (AsyncCreatableProps<Option, IsMulti, Group> &
+          RefAttributes<Select<Option, IsMulti, Group>>)
+    | (CreatableProps<Option, IsMulti, Group> &
+          RefAttributes<Select<Option, IsMulti, Group>>)
+    | (AsyncProps<Option, IsMulti, Group> &
+          RefAttributes<Select<Option, IsMulti, Group>>)
+) &
+    SelectExtraPropsType;
 
 type ReactSelectComponentType =
-    | typeof AsyncCreatable
-    | typeof Select
-    | typeof Creatable
-    | typeof Async
-    | typeof StateManager;
+    | StateManagedSelect
+    | AsyncCreatableSelect
+    | CreatableSelect
+    | AsyncSelect;
 
-function ValidationHoc<OptionType>(
-    ReactSelectKindComponent: ReactSelectComponentType
-) {
-    return (props: PropsType<OptionType>) => {
+function ValidationHoc<
+    OptionType extends Record<string, any>,
+    IsMulti extends boolean = false,
+    Group extends GroupBase<OptionType> = GroupBase<OptionType>
+>(ReactSelectKindComponent: ReactSelectComponentType) {
+    return (props: PropsType<OptionType, IsMulti, Group>) => {
         const {
             validationFieldPath,
             validationFieldLabel,
@@ -82,7 +88,9 @@ function ValidationHoc<OptionType>(
             undefined
         );
 
-        const selectRef = useRef<ReactSelectComponent<OptionType>>(null);
+        const selectRef = useRef<SelectInstance<OptionType, IsMulti, Group>>(
+            null
+        );
         const containerDivRef = useRef<HTMLDivElement>(null);
 
         elRef.current = {
@@ -110,9 +118,7 @@ function ValidationHoc<OptionType>(
             }
         };
 
-        const Component: new () => ReactSelectComponent<
-            OptionType
-        > = ReactSelectKindComponent as any;
+        const Component = ReactSelectKindComponent;
 
         return (
             <div
@@ -133,9 +139,6 @@ function ValidationHoc<OptionType>(
                     aria-label={validationErrorMessage}
                     styles={ReactSelectStyles}
                     onChange={onChangeHandler}
-                    isValidationError={isValidationError}
-                    validationErrorMessage={validationErrorMessage}
-                    validationElRef={elRef}
                     {...restProps}
                     components={{
                         ...(restProps.components ? restProps.components : {}),

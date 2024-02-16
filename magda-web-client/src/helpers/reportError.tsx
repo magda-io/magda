@@ -3,7 +3,7 @@ import Notification from "rsuite/Notification";
 import toaster from "rsuite/toaster";
 
 function reportError(
-    msg: string | Error,
+    msg: string | Error | unknown,
     opts: {
         header?: string;
         duration?: number;

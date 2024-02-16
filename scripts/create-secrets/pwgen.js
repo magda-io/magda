@@ -1,4 +1,4 @@
-const Pwgen = require("pwgen/lib/pwgen_module");
+import Pwgen from "pwgen/lib/pwgen_module.js";
 
 function generatePassword(
     maxLength = 16,
@@ -13,4 +13,4 @@ function generatePassword(
     return pwgenGenerator.generate();
 }
 
-module.exports = generatePassword;
+export default generatePassword;
