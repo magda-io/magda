@@ -8,14 +8,15 @@
 - Replaced nyc with c8
 - Upgraded to typescript 5 & webpack 5
 - #3486: Removed [@gov.au/pancake](https://www.npmjs.com/package/@gov.au/pancake) from dependencies
-- re-written frontend web worker handling
-- fixed: when the supplied API key is not found, 401 code will be responded rather than 500
-- adjusted CI pipeline workflow
-- replaced `isomorphic-fetch` with `cross-fetch`
-- replaced `request` lib usage (including registry client libs) with `cross-fetch` or `node-fetch`
-- removed `request` function export from `@magda/utils` & `@magda/typescript-common`
-- reduced the size of `magda-scss-compiler` docker image
-- upgraded `http-proxy`, `pg` & other dependencies
+- Re-written frontend web worker handling
+- Fixed: when the supplied API key is not found, 401 code will be responded rather than 500
+- Adjusted CI pipeline workflow
+- Replaced `isomorphic-fetch` with `cross-fetch`
+- Replaced `request` lib usage (including registry client libs) with `cross-fetch` or `node-fetch`
+- Removed `request` function export from `@magda/utils` & `@magda/typescript-common`
+- Reduced the size of `magda-scss-compiler` docker image
+- Upgraded `http-proxy`, `pg` & other dependencies
+- Make sure generated storage filename contains only alphabets, digits, `-`, `_` & `.`
 
 ## v2.3.3
 
