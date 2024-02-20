@@ -98,6 +98,19 @@ describe("getStorageUrl", function () {
             )
         );
     });
+
+    it("should generate storage url without html entities", () => {
+        const fileName =
+            "Genotype by environment studies across Australia reveal the importance\nof phenology for chickpea (Cicer arietinum L.) improvement.pdf";
+        verifyUrl(
+            "ds-" + generateStr(32),
+            "dis-" + generateStr(32),
+            fileName,
+            (url) => {
+                expect(url).not.contain("%");
+            }
+        );
+    });
 });
 
 describe("isValidS3ObjectKey", () => {
