@@ -27,7 +27,7 @@ An exmplae can be found from [here](https://github.com/magda-io/magda-config/blo
 
 [Magda main repo](https://github.com/magda-io/magda) provides a script that allows you to modify the SCSS variable in a deployed k8s cluster without interrupting the service.
 
-> You need install node.js 12 & yarn before using this script.
+> You need install node.js 18 & yarn before using this script.
 
 To run the script:
 
