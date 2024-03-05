@@ -5,8 +5,7 @@ import java.net.URL
 import au.csiro.data61.magda.AppConfig
 import com.typesafe.config.{Config, ConfigObject}
 import au.csiro.data61.magda.util.RichConfig._
-
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 case class RegionSource(
     name: String,
@@ -50,6 +49,7 @@ class RegionSources(config: Config) {
   private def loadFromConfig(config: Config): Seq[RegionSource] = {
     config
       .root()
+      .asScala
       .map {
         case (name: String, config: ConfigObject) =>
           val regionSourceConfig = config.toConfig()

@@ -1,8 +1,8 @@
 package au.csiro.data61.magda.model
 
-import com.sksamuel.elastic4s.searches.queries.Query
-import com.sksamuel.elastic4s.searches.queries.matches.MatchAllQuery
-import com.sksamuel.elastic4s.searches.queries.term.TermQuery
+import com.sksamuel.elastic4s.requests.searches.queries.Query
+import com.sksamuel.elastic4s.requests.searches.queries.matches.MatchAllQuery
+import com.sksamuel.elastic4s.requests.searches.term.TermQuery
 
 object TenantId {
   sealed trait TenantId {

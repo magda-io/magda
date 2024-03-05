@@ -13,8 +13,8 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.test.util.ApiGenerators.textQueryGen
-import com.sksamuel.elastic4s.http.ElasticDsl
-import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.ElasticDsl._
 import au.csiro.data61.magda.test.util.{Generators, TestActorSystem}
 
 import scala.collection.mutable

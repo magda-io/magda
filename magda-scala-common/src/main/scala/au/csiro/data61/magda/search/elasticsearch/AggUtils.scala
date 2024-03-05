@@ -1,6 +1,6 @@
 package au.csiro.data61.magda.search.elasticsearch
 
-import com.sksamuel.elastic4s.http.search.Aggregations
+import com.sksamuel.elastic4s.requests.searches.aggs.responses.Aggregations
 
 object AggUtils {
 

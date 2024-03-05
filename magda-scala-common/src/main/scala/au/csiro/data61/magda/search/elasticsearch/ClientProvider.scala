@@ -4,16 +4,20 @@ import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.util.ErrorHandling.retry
-import com.sksamuel.elastic4s.ElasticsearchClientUri
+import com.sksamuel.elastic4s.{ElasticClient, ElasticProperties}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
-import com.sksamuel.elastic4s.http.{ElasticClient, NoOpHttpClientConfigCallback}
+import com.sksamuel.elastic4s.http.{JavaClient, NoOpHttpClientConfigCallback}
 import com.typesafe.config.Config
-import org.apache.http.HttpHost
+import org.apache.http.auth.{AuthScope, UsernamePasswordCredentials}
 import org.apache.http.client.config.RequestConfig
-import org.elasticsearch.client.RestClient
-import org.elasticsearch.client.RestClientBuilder.RequestConfigCallback
+import org.apache.http.impl.client.BasicCredentialsProvider
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder
+import org.elasticsearch.client.RestClientBuilder.{
+  HttpClientConfigCallback,
+  RequestConfigCallback
+}
 
 trait ClientProvider {
   def getClient(): Future[ElasticClient]
@@ -28,32 +32,64 @@ class DefaultClientProvider(
   private implicit val scheduler = system.scheduler
   private val logger = system.log
 
-  object MagdaRequestConfigCallback extends RequestConfigCallback {
+  var authentication: Boolean = false
+
+  try {
+    authentication =
+      config.getConfig("elasticSearch").getBoolean("authentication")
+  } catch {
+    //--- mute the error, default value will be used
+    case _: Throwable =>
+  }
+
+  logger.info("Elastic Client authentication: {}", authentication)
+
+  val httpClientConfigCallback =
+    if (authentication) new HttpClientConfigCallback {
+      override def customizeHttpClient(
+          httpClientBuilder: HttpAsyncClientBuilder
+      ): HttpAsyncClientBuilder = {
+        val username = sys.env.get("USERNAME").getOrElse("")
+        val password = sys.env.get("PASSWORD").getOrElse("")
+        if (username.isEmpty) {
+          logger.warning("supplied authenticated username is empty.")
+        }
+        if (password.isEmpty) {
+          logger.warning("supplied authenticated password is empty.")
+        }
+        val credentials = new BasicCredentialsProvider()
+        credentials.setCredentials(
+          AuthScope.ANY,
+          new UsernamePasswordCredentials(username, password)
+        )
+        httpClientBuilder.setDefaultCredentialsProvider(credentials)
+      }
+    } else NoOpHttpClientConfigCallback
+
+  var connectTimeout = 50000
+  var socketTimeout = 10000
+
+  try {
+    connectTimeout = config.getConfig("elasticSearch").getInt("connectTimeout")
+  } catch {
+    //--- mute the error, default value will be used
+    case _: Throwable =>
+  }
+
+  try {
+    socketTimeout = config.getConfig("elasticSearch").getInt("socketTimeout")
+  } catch {
+    //--- mute the error, default value will be used
+    case _: Throwable =>
+  }
+
+  logger.info("Elastic Client connectTimeout: {}", connectTimeout)
+  logger.info("Elastic Client socketTimeout: {}", socketTimeout)
+
+  val requestConfigCallback = new RequestConfigCallback {
     override def customizeRequestConfig(
         requestConfigBuilder: RequestConfig.Builder
     ): RequestConfig.Builder = {
-
-      var connectTimeout = 50000
-      var socketTimeout = 10000
-
-      try {
-        connectTimeout =
-          config.getConfig("elasticSearch").getInt("connectTimeout")
-      } catch {
-        //--- mute the error, default value will be used
-        case _: Throwable =>
-      }
-
-      try {
-        socketTimeout =
-          config.getConfig("elasticSearch").getInt("socketTimeout")
-      } catch {
-        //--- mute the error, default value will be used
-        case _: Throwable =>
-      }
-
-      logger.info("Elastic Client connectTimeout: {}", connectTimeout)
-      logger.info("Elastic Client socketTimeout: {}", socketTimeout)
 
       requestConfigBuilder
       /* It's a long lasting bug in upstream Elasticsearch project Rest Client Code
@@ -73,48 +109,25 @@ class DefaultClientProvider(
 
   override def getClient(): Future[ElasticClient] = {
 
-    var maxRetryTimeout = 30000
-    try {
-      maxRetryTimeout =
-        config.getConfig("elasticSearch").getInt("maxRetryTimeout")
-    } catch {
-      //--- mute the error, default value will be used
-      case _: Throwable =>
-    }
-
     val outerFuture = clientFuture match {
       case Some(future) => future
       case None =>
         val future = retry(
           () =>
             Future {
-              val uri = ElasticsearchClientUri(
-                AppConfig
-                  .conf()
-                  .getString("elasticSearch.serverUrl") + "?cluster.name=myesdb"
+              val serverUrl = AppConfig
+                .conf()
+                .getString("elasticSearch.serverUrl")
+
+              logger.info("Elastic Client server Url: {}", serverUrl)
+
+              ElasticClient(
+                JavaClient(
+                  ElasticProperties(serverUrl),
+                  requestConfigCallback = requestConfigCallback,
+                  httpClientConfigCallback = httpClientConfigCallback
+                )
               )
-
-              val hosts = uri.hosts.map {
-                case (host, port) =>
-                  new HttpHost(
-                    host,
-                    port,
-                    if (uri.options.getOrElse("ssl", "false") == "true") "https"
-                    else "http"
-                  )
-              }
-
-              logger.info("Elastic Client server Url: {}", uri.uri)
-              logger.info("Elastic Client maxRetryTimeout: {}", maxRetryTimeout)
-
-              val client = RestClient
-                .builder(hosts: _*)
-                .setMaxRetryTimeoutMillis(maxRetryTimeout)
-                .setRequestConfigCallback(MagdaRequestConfigCallback)
-                .setHttpClientConfigCallback(NoOpHttpClientConfigCallback)
-                .build()
-
-              ElasticClient.fromRestClient(client)
             },
           10 seconds,
           10,

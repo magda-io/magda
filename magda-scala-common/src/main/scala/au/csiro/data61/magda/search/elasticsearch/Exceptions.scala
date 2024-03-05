@@ -1,6 +1,6 @@
 package au.csiro.data61.magda.search.elasticsearch.Exceptions
 
-import com.sksamuel.elastic4s.http.RequestFailure
+import com.sksamuel.elastic4s.RequestFailure
 
 final case class ESException(
     failure: RequestFailure,

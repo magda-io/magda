@@ -20,13 +20,9 @@ import au.csiro.data61.magda.test.util.{
   MagdaGeneratorTest,
   TestActorSystem
 }
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.cluster.ClusterHealthResponse
-import com.sksamuel.elastic4s.http.{
-  ElasticClient,
-  RequestFailure,
-  RequestSuccess
-}
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.requests.cluster.ClusterHealthResponse
+import com.sksamuel.elastic4s.{ElasticClient, RequestFailure, RequestSuccess}
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
 import spray.json.JsObject

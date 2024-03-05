@@ -6,12 +6,14 @@ import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.util.DateParser
 import au.csiro.data61.magda.util.DateParser._
-import com.sksamuel.elastic4s.searches.aggs.{
+import com.sksamuel.elastic4s.requests.searches.aggs.{
   Aggregation => AggregationDefinition,
   TermsOrder
 }
-import com.sksamuel.elastic4s.searches.queries.{Query => QueryDefinition}
-import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.requests.searches.queries.{
+  Query => QueryDefinition
+}
+import com.sksamuel.elastic4s.ElasticDsl._
 import org.elasticsearch.search.aggregations.Aggregation
 import au.csiro.data61.magda.search.elasticsearch.Queries._
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
@@ -28,7 +30,10 @@ import au.csiro.data61.magda.search.SearchStrategy
 import org.elasticsearch.search.sort.SortOrder
 import org.elasticsearch.search.aggregations.InternalAggregation
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits
-import com.sksamuel.elastic4s.http.search.{Aggregations, HasAggregations}
+import com.sksamuel.elastic4s.requests.searches.aggs.responses.{
+  Aggregations,
+  HasAggregations
+}
 
 /**
   * Contains ES-specific functionality for a Magda FacetType, which is needed to map all our clever magdaey logic
@@ -166,25 +171,26 @@ class PublisherFacetDefinition(implicit val config: Config)
 
     val inputOptions = getInputFacetOptions(query)
 
-    var otherOptionsAgg = termsAggregation("terms-other-options")
-      .size(limit)
-      .field("publisher.name.keyword")
-      .showTermDocCountError(true)
-      .subAggregations(topHitsAggregation("topHits").size(1))
+    var otherOptionsAgg =
+      termsAgg("terms-other-options", field = "publisher.name.keyword")
+        .size(limit)
+        .showTermDocCountError(true)
+        .subAggregations(topHitsAgg("topHits").size(1))
 
     if (inputOptions.size > 0) {
       // --- this if block cannot be combined with the one below
       // --- otherwise `aggs` only get a outdated copy
-      otherOptionsAgg = otherOptionsAgg.exclude(fixArrayBug(inputOptions))
+      otherOptionsAgg = otherOptionsAgg.excludeExactValues(inputOptions)
     }
 
     var aggs = List(otherOptionsAgg)
 
     if (inputOptions.size > 0) {
-      aggs = termsAggregation("terms-selected-options")
-        .size(inputOptions.size)
-        .include(fixArrayBug(inputOptions))
-        .field("publisher.name.keyword")
+      aggs = termsAgg(
+        "terms-selected-options",
+        field = "publisher.name.keyword"
+      ).size(inputOptions.size)
+        .includeExactValues(inputOptions)
         .showTermDocCountError(true)
         .subAggregations(topHitsAggregation("topHits").size(1)) :: aggs
     }
@@ -239,9 +245,10 @@ class PublisherFacetDefinition(implicit val config: Config)
 
   def isRelevantToQuery(query: Query): Boolean = !query.publishers.isEmpty
 
-  override def filterAggregationQuery(query: Query): QueryDefinition =
+  override def filterAggregationQuery(query: Query): QueryDefinition = {
     should(query.publishers.map(publisherQuery(SearchStrategy.MatchPart)))
       .minimumShouldMatch(1)
+  }
 
   override def removeFromQuery(query: Query): Query =
     query.copy(publishers = Set())
@@ -278,11 +285,12 @@ class FormatFacetDefinition(implicit val config: Config)
     nestedAggregation("nested-distributions", "distributions").subAggregations {
       val inputOptions = getInputFacetOptions(query)
 
-      val otherOptionsAgg = termsAggregation("terms-other-options")
-        .size(limit)
-        .field("distributions.format.keyword_lowercase")
+      val otherOptionsAgg = termsAgg(
+        "terms-other-options",
+        field = "distributions.format.keyword_lowercase"
+      ).size(limit)
         .showTermDocCountError(true)
-        .exclude(fixArrayBug("" :: inputOptions))
+        .excludeExactValues("" :: inputOptions)
         .subAggregations {
           reverseNestedAggregation("reverse")
         }
@@ -292,11 +300,12 @@ class FormatFacetDefinition(implicit val config: Config)
 
       if (inputOptions.size > 0) {
 
-        aggs = termsAggregation("terms-selected-options")
-          .size(inputOptions.size)
-          .include(fixArrayBug(inputOptions))
-          .exclude(fixArrayBug(Seq("")))
-          .field("distributions.format.keyword_lowercase")
+        aggs = termsAgg(
+          "terms-selected-options",
+          field = "distributions.format.keyword_lowercase"
+        ).size(inputOptions.size)
+          .includeExactValues(inputOptions)
+          .excludeExactValues(Seq(""))
           .showTermDocCountError(true)
           .subAggregations {
             reverseNestedAggregation("reverse")
