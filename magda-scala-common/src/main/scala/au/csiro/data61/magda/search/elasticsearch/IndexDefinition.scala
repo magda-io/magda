@@ -182,7 +182,7 @@ object IndexDefinition extends DefaultJsonProtocol {
       indexReq: CreateIndexRequest,
       processRefreshIntervalSetting: Boolean = false
   ) = {
-    var req = indexReq.copy(includeTypeName = Some(true))
+    var req = indexReq.copy()
     if (processRefreshIntervalSetting) {
       config
         .getOptionalString("indexer.refreshInterval")

@@ -18,7 +18,7 @@ libraryDependencies ++= {
     "com.typesafe.akka"            %% "akka-http"            % akkaHttpV,
     "com.typesafe.akka"            %% "akka-http-spray-json" % akkaHttpV,
     "com.typesafe.akka"            %% "akka-slf4j"           % akkaV,
-    "ch.qos.logback"               % "logback-classic"       % "1.2.10",
+    "ch.qos.logback"               % "logback-classic"       % "1.3.14",
     "com.monsanto.labs"            %% "mwundo-core"          % "0.5.0" exclude ("xerces", "xercesImpl"),
     "com.monsanto.labs"            %% "mwundo-spray"         % "0.5.0",
     "org.scalaz"                   %% "scalaz-core"          % "7.2.8",
