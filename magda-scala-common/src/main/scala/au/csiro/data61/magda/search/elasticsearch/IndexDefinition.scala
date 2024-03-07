@@ -3,7 +3,6 @@ package au.csiro.data61.magda.search.elasticsearch
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import au.csiro.data61.magda.model.misc.BoundingBox
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource, RegionSources}
@@ -22,8 +21,6 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import spray.json._
 import au.csiro.data61.magda.util.RichConfig._
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
-import com.sksamuel.elastic4s.analysis
 
 import scala.concurrent.Future
 

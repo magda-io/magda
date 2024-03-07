@@ -43,21 +43,4 @@ object Indices {
   case object FormatsIndex extends Index {
     override def name = "formats"
   }
-
-//  sealed trait IndexType {
-//    def name: String
-//  }
-//
-//  case object DataSetsIndexType extends IndexType {
-//    override def name() = "datasets"
-//  }
-//  case object RegionsIndexType extends IndexType {
-//    override def name() = "regions"
-//  }
-//  case object FormatsIndexType extends IndexType {
-//    override def name() = "formats"
-//  }
-//  case object PublisherIndexType extends IndexType {
-//    override def name() = "publishers"
-//  }
 }
