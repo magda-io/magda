@@ -1,29 +1,28 @@
 import defaultFormatIcon from "assets/format-passive-dark.svg";
+import iconApi from "assets/data-types/api.svg";
+import iconArchive from "assets/data-types/archive.svg";
+import iconDocument from "assets/data-types/document.svg";
+import iconGis from "assets/data-types/gis.svg";
+import iconHtml from "assets/data-types/html.svg";
+import iconImageRaster from "assets/data-types/image-raster.svg";
+import iconImageVector from "assets/data-types/image-vector.svg";
+import iconPresentation from "assets/data-types/presentation.svg";
+import iconSpreadsheet from "assets/data-types/spreadsheet.svg";
+import iconTabular from "assets/data-types/tabular.svg";
 
 const formatIcons = {
-    default: defaultFormatIcon
+    default: defaultFormatIcon,
+    api: iconApi,
+    archive: iconArchive,
+    document: iconDocument,
+    gis: iconGis,
+    html: iconHtml,
+    "image-raster": iconImageRaster,
+    "image-vector": iconImageVector,
+    presentation: iconPresentation,
+    spreadsheet: iconSpreadsheet,
+    tabular: iconTabular
 };
-
-const dataFormatCategories = [
-    "api",
-    "archive",
-    "document",
-    "gis",
-    "html",
-    "image-raster",
-    "image-vector",
-    "presentation",
-    "spreadsheet",
-    "tabular"
-];
-
-(async function init() {
-    for (const item of dataFormatCategories) {
-        formatIcons[item] = (
-            await import(`assets/data-types/${item}.svg`)
-        ).default;
-    }
-})();
 
 const CategoryDetermineConfigItems = [
     {
