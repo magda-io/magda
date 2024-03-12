@@ -114,7 +114,7 @@ class CsvDataLoader {
                 newline: overrideNewLine,
                 trimHeader: true,
                 // --- the `bind` is required here even for arrow function under worker mode
-                chunk: ((results: ParseResult<any>, parser: Parser) => {
+                chunk: (results: ParseResult<any>, parser: Parser) => {
                     try {
                         if (this.toBeAborted) {
                             parser.abort();
@@ -158,8 +158,8 @@ class CsvDataLoader {
                         console.error(e);
                         reject(e);
                     }
-                }).bind(this),
-                complete: (() => {
+                },
+                complete: () => {
                     try {
                         if (this.skipComplete) {
                             this.skipComplete = false;
@@ -177,7 +177,7 @@ class CsvDataLoader {
                     } catch (e) {
                         reject(e);
                     }
-                }).bind(this),
+                },
                 error: (err) => {
                     reject(
                         err

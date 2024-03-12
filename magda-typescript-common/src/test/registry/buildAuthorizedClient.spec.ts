@@ -1,11 +1,11 @@
 import {} from "mocha";
-import chai from "chai";
+import * as chai from "chai";
+import { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import nock from "nock";
-import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import AuthorizedRegistryClient from "../../../src/registry/AuthorizedRegistryClient.js";
 
 chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe("Test AuthorizedRegistryClient.ts", function () {
     afterEach(() => {

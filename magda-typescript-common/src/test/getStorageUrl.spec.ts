@@ -1,11 +1,11 @@
 import "mocha";
 import { expect } from "chai";
 import urijs from "urijs";
-import jsc from "./jsverify";
+import jsc from "jsverify";
 import getStorageUrl, {
     InvalidCharsRegEx,
     isValidS3ObjectKey
-} from "../getStorageUrl";
+} from "../getStorageUrl.js";
 
 function generateStr(len: number) {
     if (len <= 0) {
@@ -96,6 +96,19 @@ describe("getStorageUrl", function () {
                 (storageUrl) =>
                     expect(storageUrl.indexOf("test.exe")).not.equal(-1)
             )
+        );
+    });
+
+    it("should generate storage url without html entities", () => {
+        const fileName =
+            "Genotype by environment studies across Australia reveal the importance\nof phenology for chickpea (Cicer arietinum L.) improvement.pdf";
+        verifyUrl(
+            "ds-" + generateStr(32),
+            "dis-" + generateStr(32),
+            fileName,
+            (url) => {
+                expect(url).not.contain("%");
+            }
         );
     });
 });

@@ -5,20 +5,20 @@ import nock from "nock";
 import _ from "lodash";
 import supertest from "supertest";
 
-import Authenticator from "../Authenticator";
-import setupTenantMode from "../setupTenantMode";
+import Authenticator from "../Authenticator.js";
+import setupTenantMode from "../setupTenantMode.js";
 
-import createGenericProxyRouter from "../createGenericProxyRouter";
+import createGenericProxyRouter from "../createGenericProxyRouter.js";
 import { expect } from "chai";
 
 import AuthDecisionQueryClient, {
     AuthDecisionReqConfig
-} from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+} from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import {
     UnconditionalFalseDecision,
     UnconditionalTrueDecision
-} from "magda-typescript-common/src/opa/AuthDecision";
-import { getUserId } from "magda-typescript-common/src/session/GetUserId";
+} from "magda-typescript-common/src/opa/AuthDecision.js";
+import { getUserId } from "magda-typescript-common/src/session/GetUserId.js";
 
 const dummyAuthClient = sinon.createStubInstance(AuthDecisionQueryClient);
 

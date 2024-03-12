@@ -1,15 +1,16 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const getDBPool = require("../db/getDBPool");
-const { recordExist, ADMIN_ROLE_ID } = require("./utils");
+import { program } from "commander";
+import chalk from "chalk";
+import getDBPool from "../db/getDBPool.js";
+import { recordExist, ADMIN_ROLE_ID } from "./utils.js";
 
 const pool = getDBPool();
 
 program
     .description("Make a user an Admin user")
-    .option("<userId>", "User ID")
+    .argument("<userId>", "User ID")
     .version(pkg.version)
     .action(async (userId) => {
         try {

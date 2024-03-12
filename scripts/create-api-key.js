@@ -1,11 +1,12 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("./package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const bcrypt = require("bcrypt");
-const crypto = require("crypto");
-const getDBPool = require("./db/getDBPool");
-const isUuid = require("isuuid");
+import { program } from "commander";
+import chalk from "chalk";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
+import getDBPool from "./db/getDBPool.js";
+import isUuid from "isuuid";
 const { table } = require("table");
 
 program

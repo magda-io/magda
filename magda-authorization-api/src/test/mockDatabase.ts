@@ -1,18 +1,18 @@
-import mockUserDataStore from "magda-typescript-common/src/test/mockUserDataStore";
+import mockUserDataStore from "magda-typescript-common/src/test/mockUserDataStore.js";
 import {
     User,
     Role,
     Permission,
     APIKeyRecord
-} from "magda-typescript-common/src/authorization-api/model";
-import { Maybe } from "tsmonad";
+} from "magda-typescript-common/src/authorization-api/model.js";
+import { Maybe } from "@magda/tsmonad";
 import sinon from "sinon";
-import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
-import Database from "../Database";
-import NestedSetModelQueryer, { NodeRecord } from "../NestedSetModelQueryer";
+import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe.js";
+import Database from "../Database.js";
+import NestedSetModelQueryer, { NodeRecord } from "../NestedSetModelQueryer.js";
 import pg from "pg";
-import mockApiKeyStore from "./mockApiKeyStore";
-import { defaultAnonymousUserInfo } from "../Database";
+import mockApiKeyStore from "./mockApiKeyStore.js";
+import { defaultAnonymousUserInfo } from "../Database.js";
 
 export default class MockDatabase {
     getUser(id: string): Promise<Maybe<User>> {
@@ -79,7 +79,7 @@ export default class MockDatabase {
     check() {}
 
     async getDefaultAnonymousUserInfo(): Promise<User> {
-        const user = { ...defaultAnonymousUserInfo };
+        const user: User = { ...defaultAnonymousUserInfo };
         try {
             user.permissions = await this.getRolePermissions(user.roles[0].id);
             user.roles[0].permissionIds = user.permissions.map(

@@ -1,11 +1,15 @@
 import {} from "mocha";
-import distributionView from "../../cralwerViews/distribution";
-import sampleDatasetData from "./sampleDataset.json";
-import sampleDisData from "./sampleDistribution.json";
+import { require } from "@magda/esm-utils";
+import distributionView from "../../cralwerViews/distribution.js";
+const sampleDatasetData = require("./sampleDataset.json");
+const sampleDisData = require("./sampleDistribution.json");
 import { expect } from "chai";
 import fse from "fs-extra";
 import path from "path";
 import moment from "moment-timezone";
+import { getCurrentDirPath } from "@magda/esm-utils";
+
+const __dirname = getCurrentDirPath();
 
 describe("Test cralwer view: distribution", () => {
     beforeEach(() => {

@@ -1,4 +1,4 @@
-import { Record, RecordSummary } from "../generated/registry/api";
+import { Record, RecordSummary } from "../generated/registry/api.js";
 export class RecordLayer {
     /*
      * The record data for this record layer

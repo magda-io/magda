@@ -5,7 +5,7 @@ import { BrowserRouter, Route, withRouter } from "react-router-dom";
 import { requestWhoAmI } from "./actions/userManagementActions";
 import thunkMiddleware from "redux-thunk";
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom";
 import { gapi } from "./analytics/ga";
 import { Provider } from "react-redux";
 import reducer from "./reducers/reducer";
@@ -60,7 +60,9 @@ class GAListener extends React.Component {
 
 const GAListenerWithRouter = withRouter(GAListener);
 
-ReactDOM.render(
+const root = createRoot(document.getElementById("root"));
+
+root.render(
     <Provider store={store}>
         <BrowserRouter
             basename={

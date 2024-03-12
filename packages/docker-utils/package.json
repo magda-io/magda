@@ -1,24 +1,32 @@
 {
   "name": "@magda/docker-utils",
   "description": "MAGDA Docker Utilities",
-  "version": "2.3.3",
+  "version": "3.0.0-alpha.2",
+  "type": "module",
+  "exports": {
+    ".": "./dist/docker-util.js",
+    "./dist/*.js": "./dist/*.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "bin": {
-    "create-docker-context-for-node-component": "./bin/create-docker-context-for-node-component.js",
-    "retag-and-push": "./bin/retag-and-push.js"
+    "create-docker-context-for-node-component": "./dist/create-docker-context-for-node-component.js",
+    "retag-and-push": "./dist/retag-and-push.js"
   },
   "scripts": {
-    "prebuild": "rimraf bin",
-    "build": "node build.js",
+    "prebuild": "rimraf dist",
+    "build": "node esbuild.js",
     "release": "npm publish || echo \"Skip releasing npm package @magda/docker-utils.\""
   },
   "author": "",
   "license": "Apache-2.0",
-  "main": "bin/create-secrets.js",
   "devDependencies": {
-    "@magda/scripts": "^2.3.3"
+    "@magda/scripts": "^3.0.0-alpha.2"
   },
   "dependencies": {
-    "fs-extra": "^2.1.2",
+    "fs-extra": "^11.2.0",
     "is-subdir": "^1.0.2",
     "lodash": "^4.17.5",
     "yargs": "^12.0.5"
@@ -37,6 +45,6 @@
     "docker-utils"
   ],
   "files": [
-    "bin"
+    "dist"
   ]
 }

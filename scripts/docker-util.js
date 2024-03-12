@@ -1,4 +1,4 @@
-exports.getVersions = function getVersions(local, version) {
+export function getVersions(local, version) {
     return (
         version || [
             !local && process.env.npm_package_version
@@ -6,9 +6,9 @@ exports.getVersions = function getVersions(local, version) {
                 : "latest"
         ]
     );
-};
+}
 
-exports.getName = function getName(name) {
+export function getName(name) {
     if (name && typeof name === "string") {
         return name;
     }
@@ -17,21 +17,21 @@ exports.getName = function getName(name) {
         : process.env.npm_package_name
         ? "data61/magda-" + process.env.npm_package_name.split("/")[1]
         : "UnnamedImage";
-};
+}
 
-exports.getTags = function getTags(tag, local, repository, version, name) {
+export function getTags(tag, local, repository, version, name) {
     if (tag === "auto") {
-        return exports.getVersions(local, version).map((version) => {
-            const tagPrefix = exports.getRepository(local, repository);
-            const imageName = exports.getName(name);
+        return getVersions(local, version).map((version) => {
+            const tagPrefix = getRepository(local, repository);
+            const imageName = getName(name);
 
             return tagPrefix + imageName + ":" + version;
         });
     } else {
         return tag ? [tag] : [];
     }
-};
+}
 
-exports.getRepository = function getRepository(local, repository) {
+export function getRepository(local, repository) {
     return (repository && repository + "/") || (local ? "localhost:5000/" : "");
-};
+}

@@ -18,12 +18,14 @@
  * * "stylesheet" - site css style
  * * "csv-*" - data csvs
  */
-
-const bodyParser = require("body-parser");
-const djv = require("djv");
+import { require } from "@magda/esm-utils";
+import express from "express";
+import djv from "djv";
 const env = djv();
-const schemas = require("@magda/content-schemas");
+import * as schemas from "@magda/content-schemas";
 const wildcard = require("wildcard");
+
+let schemaCount = 0;
 
 /**
  * Any encoding we perform on the content.
@@ -95,7 +97,7 @@ export const content: { [s: string]: ContentItem } = {
 function makeImageItem(extra: any = {}) {
     return Object.assign(
         {
-            body: bodyParser.raw({
+            body: express.raw({
                 type: [
                     "image/png",
                     "image/gif",
@@ -115,7 +117,7 @@ function makeImageItem(extra: any = {}) {
 function makeIconItem(extra: any = {}) {
     return Object.assign(
         {
-            body: bodyParser.raw({
+            body: express.raw({
                 type: "image/x-icon",
                 inflate: true,
                 limit: "10mb"
@@ -129,7 +131,7 @@ function makeIconItem(extra: any = {}) {
 function makeCssItem(extra: any = {}) {
     return Object.assign(
         {
-            body: bodyParser.text({
+            body: express.text({
                 type: "text/css",
                 limit: "5mb"
             })
@@ -141,7 +143,7 @@ function makeCssItem(extra: any = {}) {
 function makeHtmlItem(extra: any = {}) {
     return Object.assign(
         {
-            body: bodyParser.text({
+            body: express.text({
                 type: "text/html",
                 limit: "1mb"
             })
@@ -151,12 +153,12 @@ function makeHtmlItem(extra: any = {}) {
 }
 
 function makeJsonItem(extra: any = {}, options: any = {}) {
-    const schemaId = `schema${(env.schemaCount = env.schemaCount || 1)}`;
-    env.schemaCount++;
+    const schemaId = `schema${schemaCount}`;
+    schemaCount++;
     env.addSchema(schemaId, options.schema || { type: "object" });
     return Object.assign(
         {
-            body: bodyParser.json({
+            body: express.json({
                 inflate: true,
                 strict: false
             }),
@@ -181,7 +183,7 @@ function makeJsonItem(extra: any = {}, options: any = {}) {
 function makeTextItem(extra: any = {}) {
     return Object.assign(
         {
-            body: bodyParser.text({
+            body: express.text({
                 type: "text/plain",
                 limit: "1mb"
             })

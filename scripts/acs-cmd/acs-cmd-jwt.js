@@ -1,9 +1,9 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const buildJwt = require("@magda/typescript-common/dist/session/buildJwt")
-    .default;
+import { program } from "commander";
+import chalk from "chalk";
+import buildJwt from "@magda/typescript-common/dist/session/buildJwt.js";
 
 const DEFAULT_JWT_SECRET = "squirrel";
 
@@ -11,8 +11,8 @@ program
     .description(
         `calculate JWT token (only for testing purpose). Version: ${pkg.version}`
     )
-    .option("<userId>", "User ID")
-    .option(
+    .argument("<userId>", "User ID")
+    .argument(
         "[jwtSecret]",
         "Optional JWT secret. Default value: `" + DEFAULT_JWT_SECRET + "`"
     )

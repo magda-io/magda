@@ -1,21 +1,21 @@
 export {
     default as AuthorizedRegistryClient,
     AuthorizedRegistryOptions
-} from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+} from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient.js";
 export {
     Record,
     AspectDefinition
-} from "@magda/typescript-common/dist/generated/registry/api";
-export { default as ConnectorRecordId } from "@magda/typescript-common/dist/ConnectorRecordId";
-export { default as cleanOrgTitle } from "@magda/typescript-common/dist/util/cleanOrgTitle";
+} from "@magda/typescript-common/dist/generated/registry/api.js";
+export { default as ConnectorRecordId } from "@magda/typescript-common/dist/ConnectorRecordId.js";
+export { default as cleanOrgTitle } from "@magda/typescript-common/dist/util/cleanOrgTitle.js";
 export {
     default as JsonConnector,
     ConnectorSource,
     JsonConnectorOptions,
     JsonConnectorRunInteractiveOptions,
     JsonConnectorConfig
-} from "@magda/typescript-common/dist/JsonConnector";
-export { default as ConnectionResult } from "@magda/typescript-common/dist/ConnectionResult";
+} from "@magda/typescript-common/dist/JsonConnector.js";
+export { default as ConnectionResult } from "@magda/typescript-common/dist/ConnectionResult.js";
 export {
     default as JsonTransformer,
     buildersToCompiledAspects,
@@ -23,7 +23,7 @@ export {
     CompiledAspects,
     BuilderSetupFunctionParameters,
     BuilderFunctionParameters
-} from "@magda/typescript-common/dist/JsonTransformer";
-import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
+} from "@magda/typescript-common/dist/JsonTransformer.js";
+import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder.js";
 export { AspectBuilder };
-export const TenantConsts = require("@magda/typescript-common/dist/registry/TenantConsts");
+export const TenantConsts = require("@magda/typescript-common/dist/registry/TenantConsts.js");

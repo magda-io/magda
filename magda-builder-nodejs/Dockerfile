@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:18-alpine3.18
 
 RUN npm install -g lerna@3.22.1
 

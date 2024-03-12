@@ -4,7 +4,6 @@ import { extractSimilarFingerprint } from "./extractSimilarFingerprint";
 import { extractExtents } from "./extractExtents";
 import { extractKeywords } from "./extractKeywords";
 import * as Comlink from "comlink";
-
 import merge from "lodash/merge";
 import type { FileDetails, MetadataExtractionOutput, Processor } from "./types";
 import type { MessageSafeConfig } from "config"; // eslint-disable-line
@@ -16,7 +15,7 @@ const dependentExtractors: Processor[] = [
     extractKeywords
 ];
 
-const extractors = {
+export const extractors = {
     async runExtractors(
         input: FileDetails,
         config: MessageSafeConfig,

@@ -1,5 +1,5 @@
 import urijs from "urijs";
-import buildJwt from "./session/buildJwt";
+import buildJwt from "./session/buildJwt.js";
 
 interface ApiClientBaseConfig {
     baseApiUrl?: string;

@@ -1,10 +1,10 @@
-import { isEqual } from "lodash";
+import isEqual from "lodash/isEqual.js";
 
-import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 
-import MinionOptions from "./MinionOptions";
-import buildWebhookConfig from "./buildWebhookConfig";
-import getWebhookUrl from "./getWebhookUrl";
+import MinionOptions from "./MinionOptions.js";
+import buildWebhookConfig from "./buildWebhookConfig.js";
+import getWebhookUrl from "./getWebhookUrl.js";
 
 export default async function isWebhookRegistered(
     options: MinionOptions,

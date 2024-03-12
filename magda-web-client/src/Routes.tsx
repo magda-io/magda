@@ -243,7 +243,7 @@ const Routes = () => {
             <Route
                 exact
                 path="/login"
-                component={withHeader(AccountLoginPage)}
+                component={withHeader(AccountLoginPage as any)}
             />
             <Route
                 exact

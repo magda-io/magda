@@ -1,5 +1,5 @@
 import { config, DATASETS_BUCKET } from "config";
-import getStorageUrl from "@magda/typescript-common/dist/getStorageUrl";
+import getStorageUrl from "@magda/typescript-common/dist/getStorageUrl.js";
 import promisifySetState from "helpers/promisifySetState";
 import { DatasetStateUpdaterType } from "../../DatasetAddCommon";
 import urijs from "urijs";
@@ -75,7 +75,7 @@ export default async function uploadFile(
             clearInterval(fakeProgressInterval);
         }
     } catch (e) {
-        if (e?.message) {
+        if (e instanceof Error) {
             e.message =
                 `${e.message}. Upload failed due to network related error. ` +
                 `Please check network connection and make sure the file size is lower than the system config limit.`;

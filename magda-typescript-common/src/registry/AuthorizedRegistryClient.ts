@@ -7,17 +7,16 @@ import {
     MultipleDeleteResult,
     EventsPage,
     DeleteResult
-} from "../generated/registry/api";
+} from "../generated/registry/api.js";
 import RegistryClient, {
     RegistryOptions,
     toServerError
-} from "./RegistryClient";
-import retry from "../retry";
-import formatServiceError from "../formatServiceError";
-import buildJwt from "../session/buildJwt";
-import { IncomingMessage } from "http";
-import { Maybe } from "tsmonad";
-import ServerError from "../ServerError";
+} from "./RegistryClient.js";
+import retry from "../retry.js";
+import formatServiceError from "../formatServiceError.js";
+import buildJwt from "../session/buildJwt.js";
+import { Maybe } from "@magda/tsmonad";
+import ServerError from "../ServerError.js";
 
 // when none of jwt, userId or jwtSecret is provided, the request is deemed to be issued by anonymous users
 export interface AuthorizedRegistryOptions extends RegistryOptions {
@@ -131,19 +130,17 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         const operation = () =>
             this.webHooksApi
                 .getById(encodeURIComponent(hookId), this.jwt)
-                .then((result) => Maybe.just(result.body))
-                .catch(
-                    (e: { response?: IncomingMessage; message?: string }) => {
-                        if (e.response && e.response.statusCode === 404) {
-                            return Maybe.nothing();
-                        } else {
-                            throw new ServerError(
-                                "Failed to get hook: " + e.message,
-                                e?.response?.statusCode
-                            );
-                        }
+                .then((result: any) => Maybe.just(result.body))
+                .catch((e: { response?: Response; body?: string }) => {
+                    if (e.response && e.response.status === 404) {
+                        return Maybe.nothing();
+                    } else {
+                        throw new ServerError(
+                            "Failed to get hook: " + e.body,
+                            e?.response?.status
+                        );
                     }
-                );
+                });
         return <any>(
             retry(
                 operation,
@@ -489,8 +486,8 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     sourceId,
                     this.jwt
                 )
-                .then((result) => {
-                    if (result.response.statusCode === 202) {
+                .then((result: any) => {
+                    if (result.response.status === 202) {
                         return "Processing" as "Processing";
                     } else {
                         return result.body as MultipleDeleteResult;
@@ -559,7 +556,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     formatServiceError("Failed to GET history.", e, retriesLeft)
                 ),
             (e) => {
-                return !e.response || e.response.statusCode !== 404;
+                return !e.response || e.response.status !== 404;
             }
         )
             .then((result) => result.body)

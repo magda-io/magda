@@ -1,5 +1,5 @@
-import AspectCreationFailure from "./AspectCreationFailure";
-import RecordCreationFailure from "./RecordCreationFailure";
+import AspectCreationFailure from "./AspectCreationFailure.js";
+import RecordCreationFailure from "./RecordCreationFailure.js";
 
 export default class ConnectionResult {
     public aspectDefinitionsConnected = 0;

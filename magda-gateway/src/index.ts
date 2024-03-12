@@ -1,9 +1,10 @@
+import { require } from "@magda/esm-utils";
 import yargs from "yargs";
 import _ from "lodash";
 import express from "express";
-import buildApp from "./buildApp";
+import buildApp from "./buildApp.js";
 import { createHttpTerminator } from "http-terminator";
-import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
 
 const coerceJson = (path?: string) => path && require(path);
 

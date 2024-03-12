@@ -1,6 +1,7 @@
 import {} from "mocha";
 import sinon from "sinon";
 import express from "express";
+import { require } from "@magda/esm-utils";
 const portfinder = require("portfinder");
 import { Server } from "http";
 
@@ -46,6 +47,9 @@ export default function baseSpec(
 
         after(() => {
             sinon.restore(console);
+            if (expressServer) {
+                expressServer.close();
+            }
         });
 
         function beforeEachProperty() {

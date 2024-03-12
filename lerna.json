@@ -2,15 +2,9 @@
   "lerna": "2.5.1",
   "npmClient": "yarn",
   "useWorkspaces": true,
-  "packages": [
-    "deploy/",
-    "magda-*",
-    "scripts/",
-    "packages/*"
-  ],
-  "version": "2.3.3",
+  "packages": ["deploy/", "magda-*", "scripts/", "packages/*"],
+  "version": "3.0.0-alpha.2",
   "hoist": [
-    "tsmonad",
     "urijs",
     "@types/urijs",
     "express",
@@ -29,10 +23,7 @@
   ],
   "command": {
     "docker-build-prod": {
-      "ignore": [
-        "magda-authorization-db",
-        "magda-authorization-api"
-      ]
+      "ignore": ["magda-authorization-db", "magda-authorization-api"]
     }
   }
 }

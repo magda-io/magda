@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import { config } from "../config";
 import spinnerIcon from "../assets/spinner.svg";
 

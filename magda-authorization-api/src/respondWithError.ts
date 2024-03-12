@@ -1,12 +1,12 @@
 import express from "express";
-import { NodeNotFoundError } from "./NestedSetModelQueryer";
-import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
-import ServerError from "magda-typescript-common/src/ServerError";
+import { NodeNotFoundError } from "./NestedSetModelQueryer.js";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
 
 export default function respondWithError(
     route: string,
     res: express.Response,
-    e: Error
+    e: unknown
 ) {
     console.error(`Error happened when processed "${route}"`);
     console.error(e);

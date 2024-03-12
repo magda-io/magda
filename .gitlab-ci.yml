@@ -9,7 +9,7 @@ variables:
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button`
-  CACHE_VERSION: ts-15-scala-7
+  CACHE_VERSION: ts-19-scala-10
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_TLS_VERIFY: 1
@@ -18,7 +18,6 @@ variables:
 
 stages:
   - builders
-  - sbt-prebuild
   - prebuild
   - buildtest
   - dockerize
@@ -31,7 +30,7 @@ stages:
 
 yarn-install:
   stage: builders
-  image: data61/magda-builder-docker:node14
+  image: data61/magda-builder-docker:node18
   retry: 1
   needs: []
   cache:
@@ -50,7 +49,7 @@ yarn-install:
 
 build-builder-image:
   stage: builders
-  image: data61/magda-builder-docker:node14
+  image: data61/magda-builder-docker:node18
   retry: 1
   needs: []
   before_script:
@@ -66,9 +65,9 @@ build-builder-image:
     cd magda-builder-scala && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-scala:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
     cd .. 
 
-# Make sure sbt depenencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
+# Make sure sbt dependencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
 sbt-prebuild:
-  stage: sbt-prebuild
+  stage: prebuild
   needs: 
     - build-builder-image
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
@@ -93,6 +92,26 @@ sbt-prebuild:
       - "*/target"
       - "*/project/target"
       - "*/project/project/target"
+    expire_in: 7 days
+
+typescript-common-libs:
+  stage: prebuild
+  image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
+  retry: 1
+  needs: 
+    - yarn-install
+    - build-builder-image
+    - registry-typescript-api
+  script:
+    - cd magda-content-schemas && yarn build
+    - cd ..
+    - cd magda-typescript-common && yarn build && yarn test
+    - cd ..
+    - cd magda-minion-framework && yarn build && yarn test
+  artifacts:
+    paths:
+      - "*/dist"
+      - "magda-content-schemas/types"
     expire_in: 7 days
 
 check-scala-formatting:
@@ -244,14 +263,13 @@ buildtest:ui:
   needs: 
     - yarn-install
     - build-builder-image
+    - typescript-common-libs
   cache:
     paths: []
   variables:
     REACT_APP_SHA1: "$CI_COMMIT_SHA"
   script:
     - yarn run eslint
-    - cd magda-typescript-common && yarn build
-    - cd ..
     - yarn run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.ui=true -- run test
   artifacts:
@@ -314,11 +332,8 @@ buildtest:typescript-apis-stateless:
     - yarn-install
     - build-builder-image
     - registry-typescript-api
+    - typescript-common-libs
   script:
-    - cd magda-typescript-common && yarn build && yarn test
-    - cd ..
-    - cd magda-minion-framework && yarn build && yarn test
-    - cd ..
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run test --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useCommonLib=true -- run build
@@ -330,7 +345,7 @@ buildtest:typescript-apis-stateless:
       - "*/dist"
       - "packages/*/dist"
       - "packages/*/bin"
-    expire_in: 30 days
+    expire_in: 7 days
 
 buildtest:typescript-apis-with-pg:
   stage: buildtest
@@ -340,6 +355,7 @@ buildtest:typescript-apis-with-pg:
     - yarn-install
     - build-builder-image
     - registry-typescript-api
+    - typescript-common-libs
   before_script:
     - |
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
@@ -369,10 +385,6 @@ buildtest:typescript-apis-with-pg:
     - cd magda-opa
     - yarn dev -d
     - cd ..
-    - cd magda-typescript-common && yarn build && yarn test
-    - cd ..
-    - cd magda-minion-framework && yarn build && yarn test
-    - cd ..
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run test --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useAuthApi=true -- run build
@@ -392,6 +404,7 @@ buildtest:typescript-apis-with-es:
   needs:
     - yarn-install
     - build-builder-image
+    - typescript-common-libs
   before_script:
     - |
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
@@ -424,7 +437,7 @@ buildtest:typescript-apis-with-es:
   artifacts:
     paths:
       - "*/dist"
-    expire_in: 30 days
+    expire_in: 7 days
 
 buildtest:storage-api:
   stage: buildtest
@@ -434,6 +447,7 @@ buildtest:storage-api:
     - yarn-install
     - build-builder-image
     - registry-typescript-api
+    - typescript-common-libs
   before_script:
     - |
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
@@ -472,6 +486,7 @@ buildtest:integration-tests:
     - yarn-install
     - build-builder-image
     - registry-typescript-api
+    - typescript-common-libs
     - sbt-prebuild
     - dockerize:dockerExtensions
   before_script:
@@ -532,7 +547,7 @@ buildtest:opa-policies:
 
 buildtest:helm-charts:
   stage: buildtest
-  image: dtzar/helm-kubectl:3.9.0
+  image: dtzar/helm-kubectl:3.13.3
   needs:
     - yarn-install
   cache:
@@ -620,6 +635,7 @@ dockerize:ui:
   needs:
     - yarn-install
     - registry-typescript-api
+    - typescript-common-libs
     - buildtest:ui
   script:
     - ./gitlab-ci-buildx-setup.sh
@@ -638,6 +654,7 @@ dockerize:ui-scss-compiler:
   needs:
     - yarn-install
     - registry-typescript-api
+    - typescript-common-libs
     - buildtest:ui
   script:
     - ./gitlab-ci-buildx-setup.sh
@@ -655,6 +672,7 @@ dockerize:typescript:
   needs:
     - yarn-install
     - registry-typescript-api
+    - typescript-common-libs
     - buildtest:typescript-apis-stateless
     - buildtest:typescript-apis-with-pg
     - buildtest:typescript-apis-with-es
@@ -727,7 +745,7 @@ dockerize:dockerExtensions:
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.9.0
+    name: dtzar/helm-kubectl:3.13.3
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -803,7 +821,7 @@ Stop Preview: &stopPreview
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.9.0
+    name: dtzar/helm-kubectl:3.13.3
   retry: 1
   before_script: []
   environment:
@@ -830,7 +848,7 @@ Deploy Main Branch To Dev:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: dtzar/helm-kubectl:3.9.0
+    name: dtzar/helm-kubectl:3.13.3
   retry: 1
   before_script: []
   environment:
@@ -861,6 +879,7 @@ pre-release:check-release-version:
         SKIP_CHECK: "true"
   needs:
     - yarn-install
+    - build-builder-image
   cache: {}
   image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   script: |
@@ -978,7 +997,7 @@ Publish Helm Chart:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: dtzar/helm-kubectl:3.9.2
+    name: dtzar/helm-kubectl:3.13.3
   retry: 1
   script: |
     # release helm charts to github container registry
@@ -1021,7 +1040,7 @@ Publish Helm Chart S3:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: dtzar/helm-kubectl:3.9.0
+    name: dtzar/helm-kubectl:3.13.3
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:

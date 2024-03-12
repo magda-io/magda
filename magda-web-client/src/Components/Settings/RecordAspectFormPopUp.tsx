@@ -166,7 +166,7 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                         `the record already has the ${aspect.id} aspect.`
                     );
                 } catch (e) {
-                    if (e?.statusCode !== 404) {
+                    if ((e as any)?.statusCode !== 404) {
                         throw e;
                     }
                 }
@@ -274,6 +274,8 @@ const RecordAspectFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                             setAspect((v) => ({
                                                 ...v,
                                                 id: aspectId
+                                                    ? aspectId
+                                                    : undefined
                                             }))
                                         }
                                         sort={() =>

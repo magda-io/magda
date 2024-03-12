@@ -63,7 +63,7 @@
     "bundledPackages": [
         "@magda/minion-framework",
         "@magda/typescript-common",
-        "tsmonad"
+        "@magda/tsmonad"
     ],
 
     /**

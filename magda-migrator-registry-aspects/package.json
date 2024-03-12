@@ -1,8 +1,13 @@
 {
   "name": "@magda/migrator-registry-aspects",
-  "version": "2.3.3",
+  "version": "3.0.0-alpha.2",
   "description": "Setting up built-in registry aspect definitions.",
   "license": "Apache-2.0",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "engines": {
+    "node": ">=18.19.0"
+  },
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
@@ -18,21 +23,21 @@
   "config": {
     "docker": {
       "name": "magda-migrator-registry-aspects",
-      "include": "Dockerfile node_modules dist"
+      "include": "Dockerfile node_modules dist package.json"
     },
     "jwtSecret": "squirrel",
     "userId": "00000000-0000-4000-8000-000000000000"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^2.3.3",
-    "@magda/typescript-common": "^2.3.3",
-    "fs-extra": "^8.1.0",
+    "@magda/registry-aspects": "^3.0.0-alpha.2",
+    "@magda/typescript-common": "^3.0.0-alpha.2",
+    "fs-extra": "^11.2.0",
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@types/fs-extra": "^8.1.0",
+    "@types/fs-extra": "^11.0.4",
     "@types/yargs": "^12.0.8",
-    "typescript": "~4.2.4"
+    "typescript": "~5.3.3"
   },
   "magda": {
     "language": "typescript",

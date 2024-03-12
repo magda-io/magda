@@ -1,11 +1,11 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const NestedSetModelQueryer = require("@magda/authorization-api/dist/NestedSetModelQueryer")
-    .default;
-const getDBPool = require("../db/getDBPool");
-const getNodeIdFromNameOrId = require("./getNodeIdFromNameOrId");
+import { program } from "commander";
+import chalk from "chalk";
+import NestedSetModelQueryer from "@magda/authorization-api/dist/NestedSetModelQueryer.js";
+import getDBPool from "../db/getDBPool.js";
+import getNodeIdFromNameOrId from "./getNodeIdFromNameOrId.js";
 
 program
     .description(
@@ -13,8 +13,8 @@ program
             "\nIf the node name is given instead of the node Id, the first located node (and its dependents) will be moved." +
             "\nIf the parent node name is given instead of the parent node Id, the specifed node will be moved to the first located parent node."
     )
-    .option("<nodeNameOrId>", "The id or name of the node to be moved")
-    .option("<parentNodeNameOrId>", "The new parent node id or name")
+    .argument("<nodeNameOrId>", "The id or name of the node to be moved")
+    .argument("<parentNodeNameOrId>", "The new parent node id or name")
     .version(pkg.version)
     .action(async (nodeNameOrId, parentNodeNameOrId) => {
         try {

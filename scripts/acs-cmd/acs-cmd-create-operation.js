@@ -1,18 +1,19 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const getDBPool = require("../db/getDBPool");
+import { program } from "commander";
+import chalk from "chalk";
+import getDBPool from "../db/getDBPool.js";
 
 const pool = getDBPool();
 
 program
     .version(pkg.version)
     .description(`A tool for creating operations. Version: ${pkg.version}`)
-    .option("<permission>", "Permission name")
-    .option("<uri>", "Operation uri")
-    .option("<name>", "Operation name")
-    .option("<description>", "Operation description")
+    .argument("<permission>", "Permission name")
+    .argument("<uri>", "Operation uri")
+    .argument("<name>", "Operation name")
+    .argument("<description>", "Operation description")
     .action(async (permissionName, uri, name, description) => {
         try {
             await pool.query("BEGIN TRANSACTION");

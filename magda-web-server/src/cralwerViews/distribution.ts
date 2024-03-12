@@ -1,5 +1,5 @@
-import { Record } from "magda-typescript-common/src/generated/registry/api";
-import { printDate } from "./common";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
+import { printDate } from "./common.js";
 
 const distribution = (
     distribution: Record,

@@ -1,11 +1,12 @@
 import { Router, Request } from "express";
-import shouldRenderCrawlerView from "./shouldRenderCrawlerView";
-import { safeLoadFront } from "yaml-front-matter";
-import datasetView from "./cralwerViews/dataset";
-import distributionView from "./cralwerViews/distribution";
-import commonView from "./cralwerViews/commonView";
-import RegistryClient from "magda-typescript-common/src/registry/RegistryClient";
-import { MAGDA_TENANT_ID_HEADER } from "magda-typescript-common/src/registry/TenantConsts";
+import shouldRenderCrawlerView from "./shouldRenderCrawlerView.js";
+import datasetView from "./cralwerViews/dataset.js";
+import distributionView from "./cralwerViews/distribution.js";
+import commonView from "./cralwerViews/commonView.js";
+import RegistryClient from "magda-typescript-common/src/registry/RegistryClient.js";
+import { MAGDA_TENANT_ID_HEADER } from "magda-typescript-common/src/registry/TenantConsts.js";
+import * as yamlFrontMatter from "yaml-front-matter";
+const { safeLoadFront } = yamlFrontMatter;
 
 type OptionType = {
     enableDiscourseSupport: boolean;

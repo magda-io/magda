@@ -1,4 +1,4 @@
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { Dispatch, GetState } from "../types";

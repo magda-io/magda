@@ -1,19 +1,20 @@
 import Docker, { Container } from "dockerode";
 import DockerCompose from "dockerode-compose";
 import { Client as MinioClient } from "minio";
-import ServerError from "magda-typescript-common/src/ServerError";
-import delay from "magda-typescript-common/src/delay";
-import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
+import ServerError from "magda-typescript-common/src/ServerError.js";
+import delay from "magda-typescript-common/src/delay.js";
+import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig.js";
 import path from "path";
 import { v4 as uuidV4 } from "uuid";
 import yaml from "js-yaml";
 import fs from "fs-extra";
 import tempy from "tempy";
 import pg from "pg";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import child_process, { ChildProcess } from "child_process";
-import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
+import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 import urijs from "urijs";
+import { requireResolve } from "@magda/esm-utils";
 
 /**
  * Resolve magda module dir path.
@@ -21,7 +22,7 @@ import urijs from "urijs";
  * @param {string} moduleName e.g. @magda/typescript-common
  */
 function getMagdaModulePath(moduleName: string) {
-    const pkgJsonPath = require.resolve(`${moduleName}/package.json`);
+    const pkgJsonPath = requireResolve(`${moduleName}/package.json`);
     return path.dirname(pkgJsonPath);
 }
 
@@ -113,7 +114,7 @@ export default class ServiceRunner {
         this.docker = new Docker();
         this.workspaceRoot = path.resolve(
             path.dirname(
-                require.resolve("@magda/typescript-common/package.json")
+                requireResolve("@magda/typescript-common/package.json")
             ),
             "../"
         );

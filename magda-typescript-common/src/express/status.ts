@@ -1,5 +1,6 @@
 import { Router } from "express";
-import request = require("request");
+import fetch from "cross-fetch";
+import callerPath from "caller-path";
 
 export type Probe = () => Promise<State>;
 
@@ -7,36 +8,124 @@ export interface ProbesList {
     [id: string]: Probe;
 }
 
-export interface OptionsIO {
-    // inputs
+export interface ConfigOption {
+    key?: string;
     probes?: ProbesList;
     probeUpdateMs?: number;
     forceRun?: boolean;
-    // outputs
-    ready?: boolean;
-    _installed?: any;
-    _probes?: { [key: string]: () => any };
-    since?: string;
-    last?: string;
-    details?: any;
-    error?: any;
 }
 
 export interface State {
     ready: boolean;
     since?: string;
     last?: string;
-    details?: any;
-    error?: any;
+    details?: {
+        [key: string]: State;
+    };
+    error?: string;
     latencyMs?: number;
+}
+
+export interface ProbeDataItem {
+    key: string;
+    state: State;
+    config: ConfigOption;
+    allProbesChecking?: () => Promise<void>;
+}
+
+/**
+ * Store all probe information in a global variable
+ * All probe will be referenced with a unique key.
+ * This key will by default auto generated.
+ */
+const probeDB: { [key: string]: ProbeDataItem } = {};
+const getInitialState = (): State => ({
+    ready: false,
+    since: new Date().toISOString(),
+    last: new Date().toISOString(),
+    details: {},
+    latencyMs: 0
+});
+
+const noopProbe = async (): Promise<State> =>
+    Promise.resolve({ ...getInitialState(), ready: true });
+
+function probeList2ProbeCheckingTask(
+    list: ProbesList | undefined,
+    key: string
+): () => Promise<void> {
+    const probeData: ProbeDataItem = probeDB[key];
+    if (!list || !Object.keys(list).length) {
+        return async () => {
+            probeData.state = await noopProbe();
+        };
+    }
+
+    const probeTasks = Object.entries(list).map(
+        ([probeKey, probe]) => async () => {
+            try {
+                const startMs = Date.now();
+                const previousState: State | undefined =
+                    probeData.state.details?.[probeKey];
+                let nextState: State = getInitialState();
+                try {
+                    const stateData = await probe();
+                    if (stateData && typeof stateData === "object") {
+                        nextState = { ...nextState, ...stateData };
+                    } else {
+                        nextState.ready = true;
+                    }
+                } catch (e) {
+                    // lets not spam console with the same error message
+                    // report if error message changed
+                    if (previousState?.error !== `${e}`) {
+                        console.error("ERROR", probeKey, e);
+                        nextState.error = `${e}`;
+                    }
+                }
+                nextState.latencyMs = Date.now() - startMs;
+                nextState.last = new Date().toISOString();
+                // report if status changed
+                if (nextState.ready !== previousState?.ready) {
+                    nextState.since = new Date(startMs).toISOString();
+                    console.log(
+                        "STATUS",
+                        probeKey,
+                        "is",
+                        nextState.ready ? "up" : "down",
+                        "on",
+                        nextState.since
+                    );
+                } else {
+                    nextState.since = previousState.since;
+                }
+                // we want to report internal details
+                probeData.state.details[probeKey] = nextState;
+            } catch (e) {
+                console.error("ERROR", probeKey, e);
+            }
+        }
+    );
+
+    return async () => {
+        await Promise.all(probeTasks.map((task) => task()));
+        // update overall probe state
+        if (
+            Object.values(probeData.state.details).findIndex(
+                (state) => !state?.ready
+            ) === -1
+        ) {
+            probeData.state.ready = true;
+        } else {
+            probeData.state.ready = false;
+        }
+    };
 }
 
 // In case anyone is confused, this does not duplicate or replace kubernetes functionality
 // It just makes service and dependency status visible to everyone
-export function createStatusRouter(options: OptionsIO = {}): Router {
+function createStatusRouter(key: string): Router {
     const router = Router();
-
-    installUpdater(options);
 
     // we don't want to cache status
     router.use(function (req, res, next) {
@@ -52,23 +141,25 @@ export function createStatusRouter(options: OptionsIO = {}): Router {
     // readiness probe for knowing if service and its dependents are
     // ready to go
     router.get("/ready", function (req, res) {
-        res.status(options.ready ? 200 : 500).json({
-            ready: options.ready,
-            since: options.since,
-            last: options.last,
-            details: options.details,
+        const probeItem: ProbeDataItem = probeDB[key];
+        res.status(probeItem.state.ready ? 200 : 500).json({
+            ready: probeItem.state.ready,
+            since: probeItem.state.since,
+            last: probeItem.state.last,
+            details: probeItem.state.details,
             now: new Date().toISOString()
         });
     });
 
     // added this for diagnosing service state based on latency in kubernetes
     router.get("/readySync", async function (req, res) {
-        await Promise.all(Object.values(options._probes).map((x) => x()));
-        res.status(options.ready ? 200 : 500).json({
-            ready: options.ready,
-            since: options.since,
-            last: options.last,
-            details: options.details,
+        const probeItem: ProbeDataItem = probeDB[key];
+        await probeItem?.allProbesChecking?.();
+        res.status(probeItem.state.ready ? 200 : 500).json({
+            ready: probeItem.state.ready,
+            since: probeItem.state.since,
+            last: probeItem.state.last,
+            details: probeItem.state.details,
             now: new Date().toISOString()
         });
     });
@@ -76,109 +167,72 @@ export function createStatusRouter(options: OptionsIO = {}): Router {
     return router;
 }
 
-function installUpdater(options: OptionsIO) {
-    // This is so that we cab share OptionsIO objects
-    // for multiple endpoints
-    if (!options._installed) {
-        options.ready = !options.probes;
-        options.probeUpdateMs = options.probeUpdateMs || 10000;
-        options.details = {};
-        options.since = new Date().toISOString();
-        options._installed = {};
-        options._probes = {};
+function installUpdater(options: ConfigOption): ProbeDataItem {
+    const { key } = options;
+    if (!key) {
+        throw new Error("key is required");
     }
-    if (!options.probes || !Object.keys(options.probes).length) {
-        // when no probes, readiness probe will behave like the liveness probe
-        options.ready = true;
-        options.since = options.last = new Date().toISOString();
-        options.details = {};
-        return;
+    const hasNoProbeTasks =
+        !options?.probes || Object.keys(options.probes).length === 0;
+
+    probeDB[key] = {
+        key,
+        config: { probeUpdateMs: 10000, ...options },
+        state: {
+            ...getInitialState(),
+            ready: hasNoProbeTasks ? true : false
+        }
+    };
+
+    const allProbesCheckingTask = probeList2ProbeCheckingTask(
+        options?.probes,
+        key
+    );
+    const allProbesCheckingFunc = async () => {
+        if (probeDB[key]?.allProbesChecking !== allProbesCheckingTask) {
+            return;
+        }
+        await allProbesCheckingTask();
+        // .unref() make sure the timer will not block the process from exiting
+        setTimeout(
+            allProbesCheckingFunc,
+            probeDB[key].config.probeUpdateMs
+        ).unref();
+    };
+
+    // should save allProbesCheckingTask rather than allProbesCheckingFunc
+    // as allProbesCheckingFunc include the `setTimeout` logic
+    probeDB[key].allProbesChecking = allProbesCheckingTask;
+
+    // let's not bother running this inside test cases
+    const isInTest = typeof it === "function";
+
+    if (!hasNoProbeTasks) {
+        if (!isInTest || options?.forceRun) {
+            setTimeout(
+                allProbesCheckingFunc,
+                probeDB[key].config.probeUpdateMs
+            ).unref();
+        } else {
+            // when the probe not run (e.g. in test cases) to make sure set it as true initially
+            probeDB[key].state.ready = true;
+        }
     }
-    // every probe deserves to not be blocked by state of other probes
-    // so we have parallel probe checkers
-    Object.entries(options.probes).forEach((probe) => {
-        const [id, callback] = probe;
-        async function update(dontUpdate?: boolean) {
-            try {
-                const startMs = Date.now();
-                let previousState: any = options.details[id];
-                let nextState: State = {
-                    ready: false
-                };
-                // update probe state
-                try {
-                    nextState = await callback();
-                } catch (e) {
-                    // lets not spam console with the same error message
-                    // report if error message changed
-                    if (!previousState || previousState.error !== e.message) {
-                        console.error("ERROR", id, e.stack);
-                        nextState.error = e.message;
-                    }
-                }
-                // --- Note: typeof null === "object"
-                if (!nextState || typeof nextState !== "object") {
-                    nextState = {
-                        ready: false
-                    };
-                }
-                nextState.latencyMs = Date.now() - startMs;
-                options.last = nextState.last = new Date().toISOString();
-                // report if status changed
-                if (!previousState || nextState.ready !== previousState.ready) {
-                    nextState.since = new Date(startMs).toISOString();
-                    console.log(
-                        "STATUS",
-                        id,
-                        "is",
-                        nextState.ready ? "up" : "down",
-                        "on",
-                        nextState.since
-                    );
-                } else {
-                    nextState.since = previousState.since;
-                }
-                // we want to report internal details
-                options.details[id] = nextState;
-                // update global state
-                let isReady = true;
-                for (const oid of Object.keys(options.probes)) {
-                    isReady =
-                        isReady &&
-                        options.details[oid] &&
-                        options.details[oid].ready;
-                }
-                options.ready = isReady;
-            } catch (e) {
-                console.error("ERROR", id, e.stack);
-            }
-            if (!dontUpdate) {
-                (setTimeout(update, options.probeUpdateMs) as any).unref();
-            }
-        }
-        if (!options._installed[id]) {
-            // let's not bother running this inside test cases
-            const isInTest = typeof it === "function";
-            if (!isInTest || options.forceRun) {
-                update();
-            }
-            options._probes[id] = update.bind(null, true);
-            options._installed[id] = true;
-        }
-    });
-    // run it again in a minute in case OptionsIO was modified to add extra probes
-    setTimeout(
-        () => installUpdater(options),
-        options.probeUpdateMs * 10
-    ).unref();
+
+    return probeDB[key];
 }
 
 export function installStatusRouter(
     app: Router,
-    options: OptionsIO = {},
+    options: ConfigOption = {},
     routePrefix: string = ""
 ) {
-    app.use(routePrefix + "/status", createStatusRouter(options));
+    options.key = options?.key
+        ? options?.key
+        : callerPath() + routePrefix + "/status";
+    installUpdater(options);
+    const statusRouter = createStatusRouter(options.key);
+    app.use(routePrefix + "/status", statusRouter);
 }
 
 export function createServiceProbe(
@@ -186,38 +240,18 @@ export function createServiceProbe(
     statusLocation: string = "/status/ready"
 ): Probe {
     return async (): Promise<State> => {
-        const data = await requestPromise("GET", `${url}${statusLocation}`);
+        const res = await fetch(`${url}${statusLocation}`);
+        let data: any;
+        try {
+            data = await res.json();
+        } catch (e) {
+            throw new Error(
+                `Failed to parse response from ${url}${statusLocation}: ${e}`
+            );
+        }
+        if (!res.ok) {
+            throw Object.assign({ statusCode: res.status }, data);
+        }
         return data;
     };
-}
-
-function requestPromise(method: string, url: string) {
-    return new Promise<any>((resolve, reject) => {
-        request(
-            {
-                method,
-                uri: url,
-                json: true
-            },
-            (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (
-                        response.statusCode >= 200 &&
-                        response.statusCode <= 299
-                    ) {
-                        resolve(body);
-                    } else {
-                        reject(
-                            Object.assign(
-                                { statusCode: response.statusCode },
-                                body
-                            )
-                        );
-                    }
-                }
-            }
-        );
-    });
 }

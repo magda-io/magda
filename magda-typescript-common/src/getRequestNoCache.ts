@@ -1,5 +1,5 @@
-import fetchRequest from "./fetchRequest";
-import createNoCacheFetchOptions from "./createNoCacheFetchOptions";
+import fetchRequest from "./fetchRequest.js";
+import createNoCacheFetchOptions from "./createNoCacheFetchOptions.js";
 
 export default async function getRequestNoCache<T = any, CT = string>(
     url: string,

@@ -26,7 +26,7 @@ FooterNavLink
 
 #### Defined in
 
-index.d.ts:887
+index.d.ts:943
 
 ___
 
@@ -36,7 +36,7 @@ ___
 
 #### Defined in
 
-index.d.ts:888
+index.d.ts:944
 
 ___
 
@@ -46,4 +46,4 @@ ___
 
 #### Defined in
 
-index.d.ts:889
+index.d.ts:945

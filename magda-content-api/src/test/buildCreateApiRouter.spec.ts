@@ -1,24 +1,24 @@
 import {} from "mocha";
-import chai from "chai";
+import * as chai from "chai";
 import request from "supertest";
 import express from "express";
-import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
-import fakeArgv from "magda-typescript-common/src/test/fakeArgv";
-import createApiRouter from "../createApiRouter";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
+import fakeArgv from "magda-typescript-common/src/test/fakeArgv.js";
+import createApiRouter from "../createApiRouter.js";
 
-import mockDatabase from "./mockDatabase";
-import Database from "../Database";
-import { mockContentData } from "./mockContentStore";
+import mockDatabase from "./mockDatabase.js";
+import Database from "../Database.js";
+import { mockContentData } from "./mockContentStore.js";
 
-import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient";
+import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient.js";
 import AuthDecision, {
     UnconditionalTrueDecision,
     UnconditionalFalseDecision
-} from "magda-typescript-common/src/opa/AuthDecision";
+} from "magda-typescript-common/src/opa/AuthDecision.js";
 
 const IMAGE_FORMATS_SUPPORTED = ["png", "gif", "svg"];
 
-describe("Content api router", function (this: Mocha.ISuiteCallbackContext) {
+describe("Content api router", function (this) {
     let app: express.Express;
     let argv: any;
     let agent: request.SuperTest<request.Test>;

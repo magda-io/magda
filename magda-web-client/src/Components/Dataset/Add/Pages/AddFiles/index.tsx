@@ -33,6 +33,7 @@ import mergeDistModifiedDate from "Components/Dataset/MergeMetadata/mergeDistMod
 import mergeDistSpatialCoverage from "Components/Dataset/MergeMetadata/mergeDistSpatialCoverage";
 import mergeDistTemporalCoverage from "Components/Dataset/MergeMetadata/mergeDistTemporalCoverage";
 import promisifySetState from "helpers/promisifySetState";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type Props = {
     edit: <K extends keyof State>(
@@ -159,7 +160,10 @@ class AddFilesPage extends React.Component<Props> {
             }
         } catch (e) {
             console.error(e);
-            this.props.setState((state) => ({ ...state, error: e }));
+            this.props.setState((state) => ({
+                ...state,
+                error: unknown2Error(e)
+            }));
         }
     };
 
@@ -190,7 +194,10 @@ class AddFilesPage extends React.Component<Props> {
             this.addDistribution(dist);
         } catch (e) {
             console.error(e);
-            this.props.setState((state) => ({ ...state, error: e }));
+            this.props.setState((state) => ({
+                ...state,
+                error: unknown2Error(e)
+            }));
         }
     }
 

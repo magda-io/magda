@@ -1,8 +1,16 @@
 {
   "name": "@magda/magda-scss-compiler",
   "description": "The web-client SCSS compiler pod",
-  "version": "2.3.3",
+  "version": "3.0.0-alpha.2",
   "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18.19.0"
+  },
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
@@ -12,48 +20,63 @@
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
+    "test": "c8 mocha"
   },
   "devDependencies": {
-    "@magda/scripts": "^2.3.3",
-    "@types/autoprefixer": "^9.1.0",
-    "@types/chai": "^4.0.1",
+    "@magda/scripts": "^3.0.0-alpha.2",
+    "@types/chai": "^4.3.11",
     "@types/clean-css": "^3.4.30",
     "@types/config": "0.0.32",
     "@types/escape-string-regexp": "^1.0.0",
-    "@types/fs-extra": "^5.0.4",
+    "@types/fs-extra": "^11.0.4",
     "@types/lodash": "^4.14.68",
-    "@types/mocha": "^2.2.41",
-    "@types/nock": "^8.2.1",
+    "@types/mocha": "^10.0.6",
     "@types/node-sass": "^3.10.32",
     "@types/read-pkg-up": "^3.0.1",
     "@types/recursive-readdir": "^2.2.0",
-    "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",
     "@types/tempy": "^0.1.0",
     "@types/urijs": "^1.19.19",
     "@types/yargs": "^12.0.8",
-    "chai": "^4.1.0",
-    "mocha": "^3.4.2",
-    "nock": "^9.0.14",
+    "c8": "^9.0.0",
+    "chai": "^5.0.0-rc.0",
+    "mocha": "^10.2.0",
+    "nock": "^13.4.0",
     "sinon": "^2.4.1",
-    "typescript": "~4.2.4"
+    "typescript": "~5.3.3"
   },
   "dependencies": {
-    "@magda/typescript-common": "^2.3.3",
-    "@magda/web-client": "^2.3.3",
-    "autoprefixer": "^9.2.1",
+    "@magda/esm-utils": "^1.0.1",
+    "@magda/typescript-common": "^3.0.0-alpha.2",
+    "@magda/web-client": "^3.0.0-alpha.2",
+    "autoprefixer": "^10.4.16",
     "clean-css": "^4.2.1",
     "escape-string-regexp": "^1.0.5",
-    "fs-extra": "^7.0.0",
-    "node-sass": "^4.9.3",
-    "postcss": "^7.0.5",
+    "fs-extra": "^11.2.0",
+    "node-fetch": "^3.3.2",
+    "node-sass": "^9.0.0",
+    "postcss": "^8.4.32",
     "read-pkg-up": "^3.0.0",
     "recursive-readdir": "^2.2.2",
-    "request": "^2.88.0",
     "tempy": "^0.2.1",
     "urijs": "^1.19.11",
     "yargs": "^12.0.5"
+  },
+  "mocha": {
+    "import": "tsx/esm",
+    "spec": [
+      "src/test/**/*.spec.ts"
+    ]
+  },
+  "c8": {
+    "all": true,
+    "clean": true,
+    "src": [
+      "./src"
+    ],
+    "exclude": [
+      "src/test/**"
+    ]
   },
   "config": {
     "docker": {

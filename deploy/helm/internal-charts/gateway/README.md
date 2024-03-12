@@ -1,6 +1,6 @@
 # gateway
 
-![Version: 2.3.3](https://img.shields.io/badge/Version-2.3.3-informational?style=flat-square)
+![Version: 3.0.0-alpha.2](https://img.shields.io/badge/Version-3.0.0--alpha.2-informational?style=flat-square)
 
 The Gateway Component of Magda that routes incoming requets to other magda components.
 
@@ -20,7 +20,7 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
 | ckanRedirectionDomain | string | `nil` | CKAN redirection target CKAN instance domain (e.g. `data.gov.au`). See `enableCkanRedirection` for more details. |
 | ckanRedirectionPath | string | `nil` | CKAN redirection target CKAN instance path (e.g. `/data`). See `enableCkanRedirection` for more details. |
-| cookie | object | default value see `Description` | Session cookie settings. <br/> More info: https://github.com/expressjs/session#cookie <br/> Supported options are:<br/> <ul> <li>`expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.</li> <li>`httpOnly`: Default: true.</li> <li>`maxAge`: Default: 7 * 60 * 60 * 1000 (7 hours)</li> <li>`path`: Default: '/'.</li> <li>`sameSite`: Default: lax </li> <li>`secure`: Default: "auto" </li> </ul> |
+| cookie | object | default value see `Description` | Session cookie settings. <br/> More info: https://github.com/expressjs/session#cookie <br/> Supported options are:<br/> <ul> <li>`expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.</li> <li>`httpOnly`: Default: true.</li> <li>`maxAge`: Default: 7 * 60 * 60 * 1000 (7 hours)</li> <li>`path`: Default: '/'.</li> <li>`sameSite`: Default: lax </li> <li>`secure`: Default: true </li> </ul> |
 | cors.exposedHeaders[0] | string | `"Content-Range"` |  |
 | cors.exposedHeaders[1] | string | `"X-Content-Range"` |  |
 | cors.exposedHeaders[2] | string | `"Accept-Ranges"` |  |

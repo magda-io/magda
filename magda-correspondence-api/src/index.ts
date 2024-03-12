@@ -2,12 +2,15 @@ import express from "express";
 import yargs from "yargs";
 import path from "path";
 import { createHttpTerminator } from "http-terminator";
-import RegistryClient from "magda-typescript-common/src/registry/RegistryClient";
-import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
-import createApiRouter from "./createApiRouter";
-import { NodeMailerSMTPMailer } from "./SMTPMailer";
-import ContentApiDirMapper from "./ContentApiDirMapper";
-import EmailTemplateRender from "./EmailTemplateRender";
+import RegistryClient from "magda-typescript-common/src/registry/RegistryClient.js";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
+import createApiRouter from "./createApiRouter.js";
+import { NodeMailerSMTPMailer } from "./SMTPMailer.js";
+import ContentApiDirMapper from "./ContentApiDirMapper.js";
+import EmailTemplateRender from "./EmailTemplateRender.js";
+import { getCurrentDirPath } from "@magda/esm-utils";
+
+const __dirname = getCurrentDirPath();
 
 const argv = yargs
     .config()
@@ -98,7 +101,7 @@ const argv = yargs
     }).argv;
 
 const app = express();
-app.use(require("body-parser").json());
+app.use(express.json());
 
 console.log("Sync default email templates to content API...");
 

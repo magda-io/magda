@@ -6,12 +6,11 @@ import {
     RecordAspectsApi,
     WebHooksApi,
     RecordHistoryApi
-} from "../generated/registry/api";
+} from "../generated/registry/api.js";
 import URI from "urijs";
-import retry from "../retry";
-import formatServiceError from "../formatServiceError";
-import { Response } from "request";
-import ServerError from "../ServerError";
+import retry from "../retry.js";
+import formatServiceError from "../formatServiceError.js";
+import ServerError from "../ServerError.js";
 
 export interface RegistryOptions {
     baseUrl: string;
@@ -40,17 +39,17 @@ export const toServerError = (apiName: string) => (
           }
         | any
 ) => {
-    if (error?.response?.statusCode) {
+    if (error?.response?.status) {
         const detailedErrorMsg = error?.body
             ? JSON.stringify(error.body)
-            : error?.response?.responseText
-            ? error.response.responseText
+            : error?.response?.statusText
+            ? error.response.statusText
             : "";
         return new ServerError(
             `Failed to ${apiName}${
                 detailedErrorMsg ? `: ${detailedErrorMsg}` : ""
             }`,
-            error.response.statusCode
+            error.response.status
         );
     } else {
         return new ServerError(`Failed to ${apiName}: ${error}`, 500);
@@ -87,7 +86,6 @@ export default class RegistryClient {
 
         this.aspectDefinitionsApi = new AspectDefinitionsApi(registryApiUrl);
         this.recordsApi = new RecordsApi(registryApiUrl);
-        this.recordsApi.useQuerystring = true; // Use querystring instead of qs to construct URL
         this.recordAspectsApi = new RecordAspectsApi(registryApiUrl);
         this.webHooksApi = new WebHooksApi(registryApiUrl);
         this.recordHistoryApi = new RecordHistoryApi(registryApiUrl);
@@ -130,7 +128,7 @@ export default class RegistryClient {
             if (typeof res.body === "string") {
                 throw new ServerError(
                     "Invalid non-json response: ",
-                    res?.response?.statusCode
+                    res?.response?.status
                 );
             }
             return res.body;
@@ -163,7 +161,7 @@ export default class RegistryClient {
                     formatServiceError("Failed to GET records.", e, retriesLeft)
                 ),
             (e) => {
-                return e?.response?.statusCode !== 404;
+                return e?.response?.status !== 404;
             }
         )
             .then((result) => result.body)
@@ -191,7 +189,7 @@ export default class RegistryClient {
                     )
                 ),
             (e) => {
-                return e?.response?.statusCode !== 404;
+                return e?.response?.status !== 404;
             }
         )
             .then((result) => result.body)
@@ -208,7 +206,7 @@ export default class RegistryClient {
             if (typeof res.body === "string") {
                 throw new ServerError(
                     "Invalid non-json response: " + res.body,
-                    res?.response?.statusCode
+                    res?.response?.status
                 );
             }
             return res.body;

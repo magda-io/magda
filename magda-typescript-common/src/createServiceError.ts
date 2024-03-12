@@ -1,4 +1,4 @@
-import { ApiError } from "./generated/registry/api";
+import { ApiError } from "./generated/registry/api.js";
 
 export class ServiceError extends Error {
     public e: any;
@@ -33,8 +33,9 @@ export class BadRequestError extends ServiceError {
  * @returns {Error} An Error created from the failed result.
  */
 export default function createServiceError(e: any): Error {
-    if (e && e.response && e.response.statusCode && e.body) {
-        return new BadRequestError(e.response.statusCode, e.body, e);
+    if ((e?.response?.statusCode || e?.response?.status) && e.body) {
+        const statusCode = e?.response?.status || e?.response?.statusCode;
+        return new BadRequestError(statusCode, e.body, e);
     } else if (e && e instanceof Error) {
         return e;
     } else if (e && e.toString() !== {}.toString()) {

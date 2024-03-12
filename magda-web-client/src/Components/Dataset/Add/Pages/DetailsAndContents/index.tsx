@@ -30,7 +30,10 @@ import AccrualPeriodicityInput from "../../AccrualPeriodicityInput";
 import ReactSelect from "react-select";
 import ReactSelectStyles from "../../../../Common/react-select/ReactSelectStyles";
 
-import { State } from "Components/Dataset/Add/DatasetAddCommon";
+import {
+    DatasetStateUpdaterType,
+    State
+} from "Components/Dataset/Add/DatasetAddCommon";
 import { User } from "reducers/userManagementReducer";
 
 import ValidationRequiredLabel from "../../ValidationRequiredLabel";
@@ -49,10 +52,7 @@ type Props = {
     edit: <K extends keyof State>(
         aspectField: K
     ) => (field: string) => (newValue: any) => void;
-    setState: <State>(
-        state: ((prevState: Readonly<State>) => State) | State,
-        callback?: () => void
-    ) => void;
+    setState: DatasetStateUpdaterType;
     user: User;
     stateData: State;
     // --- if use as edit page

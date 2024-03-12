@@ -1,4 +1,4 @@
-import { AspectDefinition } from "./generated/registry/api";
+import { AspectDefinition } from "./generated/registry/api.js";
 
 interface AspectBuilder {
     aspectDefinition: AspectDefinition;

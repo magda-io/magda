@@ -1,7 +1,7 @@
 import "mocha";
 import yargs from "yargs";
-import addJwtSecretFromEnvVar from "../../session/addJwtSecretFromEnvVar";
-import buildJwt from "../../session/buildJwt";
+import addJwtSecretFromEnvVar from "../../session/addJwtSecretFromEnvVar.js";
+import buildJwt from "../../session/buildJwt.js";
 
 describe("Get authz claim from jwt token", () => {
     const argv = addJwtSecretFromEnvVar(

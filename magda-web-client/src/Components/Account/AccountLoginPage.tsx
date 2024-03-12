@@ -4,7 +4,7 @@ import { convertAuthPluginApiUrl, getAuthPlugins } from "api-clients/AuthApis";
 import { AuthPluginConfig } from "@magda/gateway/src/createAuthPluginRouter";
 import { config, isBackendSameOrigin } from "config";
 import { useAsync } from "react-async-hook";
-import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml";
+import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml.js";
 import QrCodeLoginArea from "./QrCodeLoginArea";
 
 const { baseUrl, baseExternalUrl, authPluginRedirectUrl } = config;

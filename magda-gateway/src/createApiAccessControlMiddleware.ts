@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
-import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
-import buildJwtFromReq from "magda-typescript-common/src/session/buildJwtFromReq";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
-import { isTrueEquivalent } from "magda-typescript-common/src/opa/AuthDecision";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError.js";
+import buildJwtFromReq from "magda-typescript-common/src/session/buildJwtFromReq.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import { isTrueEquivalent } from "magda-typescript-common/src/opa/AuthDecision.js";
 
 const createApiAccessControlMiddleware = (
     authDecisionClient: AuthDecisionQueryClient,

@@ -13,6 +13,7 @@ interface PropsType extends RouteComponentProps {
     stepNum: number;
     className?: string;
     isNotCollapsible?: boolean;
+    children?: React.ReactNode;
 }
 
 const CollapseBox: FunctionComponent<PropsType> = (props) => {

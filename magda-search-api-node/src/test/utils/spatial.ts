@@ -1,7 +1,7 @@
 import { Polygon } from "geojson";
 
-import { Location } from "../../model";
-import { buildDataset } from "./builders";
+import { Location } from "../../model.js";
+import { buildDataset } from "./builders.js";
 
 export const qldGeometry: Location = {
     geoJson: fromBoundingBox([-20, 147, -25, 139])

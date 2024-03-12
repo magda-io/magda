@@ -1,4 +1,4 @@
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { RecordAction, RawDataset, RawDistribution } from "../helpers/record";
@@ -142,7 +142,7 @@ export function fetchDistributionFromRegistry(id: string): any {
             return dispatch(
                 requestDistributionError({
                     title: "",
-                    detail: e?.message ? e.message : `${e}`
+                    detail: e instanceof Error ? e.message : `${e}`
                 })
             );
         }

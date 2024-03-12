@@ -1,6 +1,6 @@
 import urijs from "urijs";
 import { v4 as uuidv4 } from "uuid";
-import md5 from "crypto-js/md5";
+import md5 from "crypto-js/md5.js";
 
 // max allowed s3 object key length
 // minio implements an s3 alike / compatible API thus the similar limit should apply.
@@ -33,7 +33,7 @@ export function removeInvalidChars(input: string): string {
     if (!input || typeof input !== "string") {
         return "";
     }
-    return input.replace(InvalidCharsRegEx, "").replace(/\.+$/, "");
+    return input.replace(/[^a-zA-Z0-9\-_.]/g, "").replace(/\.+$/, "");
 }
 
 /**
@@ -112,7 +112,7 @@ export function getValidS3ObjectKey(
     const extNameIdx = processedFileName.lastIndexOf(".");
     if (extNameIdx === -1) {
         //there is no extension name, just simply cut the file name to make object key length fall under MAX_KEY_LENGTH
-        return `${processedDatasetId}/${processedDistId}/${processedFileName}`.substr(
+        return `${processedDatasetId}/${processedDistId}/${processedFileName}`.substring(
             0,
             MAX_KEY_LENGTH
         );
@@ -122,7 +122,7 @@ export function getValidS3ObjectKey(
     const extNameLengthDiff = extNameLength - 32;
     if (extNameLengthDiff > 0) {
         // cut the extName to 32 chars long
-        processedFileName = processedFileName.substr(
+        processedFileName = processedFileName.substring(
             0,
             processedFileName.length - extNameLengthDiff
         );
@@ -134,7 +134,7 @@ export function getValidS3ObjectKey(
 
     // still too long after cut file extension name, will have to shorten the portion before `.` of the file name
     const newExtNameIdx = processedFileName.lastIndexOf(".");
-    const newExtName = processedFileName.substr(newExtNameIdx);
+    const newExtName = processedFileName.substring(newExtNameIdx);
     const newFileNameNoExtName = processedFileName.substring(0, newExtNameIdx);
     // cut newFileNameNoExtName to make total length fall under MAX_KEY_LENGTH
     const excessLength =
@@ -143,7 +143,7 @@ export function getValidS3ObjectKey(
         processedFileName.length +
         2 -
         MAX_KEY_LENGTH;
-    return `${processedDatasetId}/${processedDistId}/${newFileNameNoExtName.substr(
+    return `${processedDatasetId}/${processedDistId}/${newFileNameNoExtName.substring(
         0,
         newFileNameNoExtName.length - excessLength
     )}${newExtName}`;

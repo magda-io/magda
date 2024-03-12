@@ -1,21 +1,21 @@
+import { requireResolve } from "@magda/esm-utils";
 import express from "express";
 import path from "path";
 import URI from "urijs";
 import yargs from "yargs";
 import morgan from "morgan";
-import request from "magda-typescript-common/src/request";
 import { createHttpTerminator } from "http-terminator";
-import Registry from "magda-typescript-common/src/registry/RegistryClient";
-import coerceJson from "magda-typescript-common/src/coerceJson";
-import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
+import Registry from "magda-typescript-common/src/registry/RegistryClient.js";
+import coerceJson from "magda-typescript-common/src/coerceJson.js";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
 
-import buildSitemapRouter from "./buildSitemapRouter";
-import getIndexFileContent from "./getIndexFileContent";
-import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl";
-import standardiseUiBaseUrl from "./standardiseUiBaseUrl";
-import createCralwerViewRouter from "./createCralwerViewRouter";
+import buildSitemapRouter from "./buildSitemapRouter.js";
+import getIndexFileContent from "./getIndexFileContent.js";
+import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl.js";
+import standardiseUiBaseUrl from "./standardiseUiBaseUrl.js";
+import createCralwerViewRouter from "./createCralwerViewRouter.js";
 import moment from "moment-timezone";
-import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash";
+import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash.js";
 
 const argv = yargs
     .config()
@@ -71,11 +71,6 @@ const argv = yargs
             "The base url where the UI serves at. If not specify (or empty string), it assumes the UI serves at '/'. It should have a leading slash, but no trailing slash",
         type: "string",
         default: "/"
-    })
-    .option("devProxy", {
-        describe:
-            "The URL of the MAGDA API Gateway to proxy to. Useful in development when you want to serve everything from one port for CORS reasons",
-        type: "string"
     })
     .option("apiBaseUrl", {
         describe:
@@ -348,7 +343,7 @@ app.get("/status/live", (req, res) => {
 });
 
 const clientRoot = path.resolve(
-    require.resolve("@magda/web-client/package.json"),
+    requireResolve("@magda/web-client/package.json"),
     ".."
 );
 const clientBuild = path.join(clientRoot, "build");
@@ -559,25 +554,6 @@ topLevelRoutes.forEach((topLevelRoute) => {
 app.get("/page/*", async function (req, res) {
     res.send(await getIndexFileContentZeroArgs());
 });
-
-if (argv.devProxy) {
-    app.get("/api/*", function (req, res) {
-        console.log(argv.devProxy + req.params[0]);
-        req.pipe(
-            request({
-                url: argv.devProxy + req.params[0],
-                qs: req.query,
-                method: req.method
-            })
-        )
-            .on("error", (err) => {
-                const msg = "Error on connecting to the webservice.";
-                console.error(msg, err);
-                res.status(500).send(msg);
-            })
-            .pipe(res);
-    });
-}
 
 const robotsTxt = `User-agent: *
 Crawl-delay: 100

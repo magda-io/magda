@@ -12,6 +12,7 @@ type OverlayBoxOwnProps = {
     title?: string;
     showCloseButton?: boolean;
     onClose?: () => void;
+    children?: React.ReactNode;
 };
 
 type PropsType = OverlayBoxOwnProps &

@@ -1,14 +1,14 @@
 import express from "express";
 import { Router } from "express";
 import _ from "lodash";
-import Database from "./Database";
-import { User } from "magda-typescript-common/src/authorization-api/model";
-import { getUserSession } from "magda-typescript-common/src/session/GetUserSession";
-import OpaCompileResponseParser from "magda-typescript-common/src/OpaCompileResponseParser";
-import setResponseNoCache from "magda-typescript-common/src/express/setResponseNoCache";
-import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
-import request, { RequestPromiseOptions } from "request-promise-native";
-import bodyParser from "body-parser";
+import Database from "./Database.js";
+import { User } from "magda-typescript-common/src/authorization-api/model.js";
+import { getUserSession } from "magda-typescript-common/src/session/GetUserSession.js";
+import OpaCompileResponseParser from "magda-typescript-common/src/OpaCompileResponseParser.js";
+import setResponseNoCache from "magda-typescript-common/src/express/setResponseNoCache.js";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError.js";
+import fetch, { RequestInit } from "node-fetch";
+import urijs from "urijs";
 import objectPath from "object-path";
 
 export interface OpaRouterOptions {
@@ -45,6 +45,11 @@ const opaRoutes = [
     }
 ];
 
+interface OpaRequestOptions extends RequestInit {
+    qs?: Record<string, any>;
+    json?: Record<string, any>;
+}
+
 /**
  * 
  * @param options proxyReq: http.ClientRequest,
@@ -59,14 +64,26 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
     const jwtSecret: string = options.jwtSecret;
     const opaUrl: string = options.opaUrl;
 
-    router.use(bodyParser.json({ type: "application/json", limit: "100mb" }));
+    router.use(express.json({ type: "application/json", limit: "100mb" }));
 
-    function normaliseInputField(reqData: any) {
+    function normaliseInputField(reqData: Record<string, any>) {
         if (reqData.input && typeof reqData.input === "object") return;
         reqData.input = {};
     }
 
-    function processQueryParams(req: express.Request, reqData: any) {
+    /**
+     * consolidate query parameters from both query string & request body.
+     * Move them to `reqData` object (future request body) unless they have to be requested as query string parameters.
+     * `reqData` will be modify during the process.
+     *
+     * @param {express.Request} req
+     * @param {*} reqData
+     * @return {Record<string, any>}
+     */
+    function processQueryParams(
+        req: express.Request,
+        reqData: Record<string, any>
+    ): Record<string, any> | null {
         if (!req.query || !Object.keys(req.query).length) return null;
 
         const { q, input, unknowns, ...otherQueryParams } = req.query;
@@ -134,9 +151,8 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         let reqData: any = {};
         const contentType = req.get("content-type");
 
-        const reqOpts: request.RequestPromiseOptions = {
-            method: "post",
-            resolveWithFullResponse: true
+        const reqOpts: OpaRequestOptions = {
+            method: "POST"
         };
 
         // --- merge userInfo into possible income input data via POST
@@ -177,31 +193,42 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
     async function proxyToOpa(
         req: express.Request,
         res: express.Response,
-        reqOpts: RequestPromiseOptions
+        reqOpts: OpaRequestOptions
     ) {
         try {
             // -- request's pipe api doesn't work well with chunked response
-            const fullResponse = await request(
-                `${opaUrl}v1${req.path}`,
-                reqOpts
-            );
+            const { json: reqJson, qs: reqQs, ...fetchRequestOpts } = reqOpts;
+            const apiEndpointUri = urijs(`${opaUrl}v1${req.path}`);
+            if (reqQs) {
+                apiEndpointUri.search(reqQs);
+            }
+            const fullResponse = await fetch(apiEndpointUri.toString(), {
+                ...fetchRequestOpts,
+                ...(reqJson ? { body: JSON.stringify(reqJson) } : {}),
+                headers: {
+                    ...(fetchRequestOpts?.headers || {}),
+                    ...(reqJson ? { "Content-Type": "application/json" } : {})
+                }
+            });
             if (
                 req.path === "/compile" &&
                 req.query.printRule &&
-                fullResponse.statusCode === 200
+                fullResponse.status === 200
             ) {
                 // --- output human readable rules for debugging / investigation
                 // --- AST is good for a program to process but too long for a human to read
                 // --- query string parameter `printRule` contains the rule full name that you want to output
                 const parser = new OpaCompileResponseParser();
-                parser.parse(fullResponse.body);
-                res.status(fullResponse.statusCode).send(
+                parser.parse(await fullResponse.json());
+                res.status(fullResponse.status).send(
                     parser.evaluateRuleAsHumanReadableString(
                         req.query.printRule as string
                     )
                 );
             } else {
-                res.status(fullResponse.statusCode).send(fullResponse.body);
+                res.status(fullResponse.status)
+                    .set("Content-Type", "application/json")
+                    .send(await fullResponse.text());
             }
         } catch (e) {
             console.error(e);
@@ -215,7 +242,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             const reqOpts = await appendUserInfoToInput(req);
             await proxyToOpa(req, res, reqOpts);
         } catch (e) {
-            res.status(e.statusCode || 500).send(
+            res.status((e as any)?.statusCode || 500).send(
                 `Failed to proxy OPA request: ${e}`
             );
         }
@@ -403,7 +430,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             }
 
             if (operationUri[0] === "/") {
-                operationUri = operationUri.substr(1);
+                operationUri = operationUri.substring(1);
             }
 
             const opUriParts = operationUri.split("/");
@@ -482,7 +509,20 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             const apiEndpoint = reqOpts.json.unknowns
                 ? `${opaUrl}v1/compile`
                 : `${opaUrl}v1/data/entrypoint/allow`;
-            const fullResponse = await request(apiEndpoint, reqOpts);
+
+            const { json: reqJson, qs: reqQs, ...fetchRequestOpts } = reqOpts;
+            const apiEndpointUri = urijs(apiEndpoint);
+            if (reqQs) {
+                apiEndpointUri.search(reqQs);
+            }
+            const fullResponse = await fetch(apiEndpointUri.toString(), {
+                ...fetchRequestOpts,
+                ...(reqJson ? { body: JSON.stringify(reqJson) } : {}),
+                headers: {
+                    ...(fetchRequestOpts?.headers || {}),
+                    ...(reqJson ? { "Content-Type": "application/json" } : {})
+                }
+            });
 
             if (options?.debug === true) {
                 console.log("Auth debug info:");
@@ -490,29 +530,29 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 console.log(`Auth request options: ${JSON.stringify(reqOpts)}`);
             }
 
-            if (
-                fullResponse.statusCode >= 200 &&
-                fullResponse.statusCode < 300
-            ) {
+            if (fullResponse.ok) {
                 if (typeof req?.query?.rawAst !== "undefined") {
-                    res.status(200).send(fullResponse.body);
+                    res.status(200)
+                        .set("Content-Type", "application/json")
+                        .send(await fullResponse.text());
                 } else {
+                    const data: Record<string, any> = await fullResponse.json();
                     if (!reqOpts.json.unknowns) {
                         // result here is from policy full evaluation endpoint
                         // response is in shape of: { result: any }
                         if (
-                            !fullResponse?.body ||
-                            typeof fullResponse.body !== "object" ||
-                            !fullResponse.body.hasOwnProperty("result")
+                            !data ||
+                            typeof data !== "object" ||
+                            !data.hasOwnProperty("result")
                         ) {
                             throw new Error(
                                 "Invalid response from policy query endpoint: " +
-                                    JSON.stringify(fullResponse?.body)
+                                    JSON.stringify(data)
                             );
                         }
                         const resData = {
                             hasResidualRules: false,
-                            result: fullResponse.body.result,
+                            result: data?.result,
                             hasWarns: false,
                             unknowns: [] as string[]
                         };
@@ -527,7 +567,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                     const outputInConciseFormat =
                         req?.query?.concise === "false" ? false : true;
                     const parser = new OpaCompileResponseParser();
-                    parser.parse(fullResponse.body);
+                    parser.parse(data);
                     if (typeof req?.query?.humanReadable !== "undefined") {
                         res.status(200).send(
                             parser.evaluateAsHumanReadableString()
@@ -567,15 +607,13 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                     }
                 }
             } else {
-                res.status(fullResponse.statusCode).send(fullResponse.body);
+                res.status(fullResponse.status).send(await fullResponse.text());
             }
         } catch (e) {
             console.log(e);
-            res.status(e.statusCode || 500).send(
-                // request promise core add extra status code to error.message
-                // https://github.com/request/promise-core/blob/091bac074e6c94850b999f0f824494d8b06faa1c/lib/errors.js#L26
-                // Thus, we will try to use e.error if available
-                e?.error ? e.error : e?.message ? e.message : String(e)
+            const statusCode = e instanceof GenericError ? e.statusCode : 500;
+            res.status(statusCode).send(
+                `Failed to contact OPA to get auth decision: ${e}`
             );
         } finally {
             if (options?.debug === true) {

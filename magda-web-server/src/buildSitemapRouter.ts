@@ -1,7 +1,7 @@
 import express from "express";
-import Registry from "magda-typescript-common/src/registry/RegistryClient";
+import Registry from "magda-typescript-common/src/registry/RegistryClient.js";
 import URI from "urijs";
-import ServerError from "magda-typescript-common/src/ServerError";
+import ServerError from "magda-typescript-common/src/ServerError.js";
 import {
     SitemapStream,
     SitemapIndexStream,

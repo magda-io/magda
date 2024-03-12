@@ -1,10 +1,11 @@
 import yargs from "yargs";
 import path from "path";
-import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
-import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
 import fse from "fs-extra";
-import ServerError from "magda-typescript-common/src/ServerError";
+import ServerError from "magda-typescript-common/src/ServerError.js";
+import { requireResolve } from "@magda/esm-utils";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -46,7 +47,7 @@ type AspectDefItem = {
 
 function getAllBuiltInAspectDefs(): AspectDefItem[] {
     const aspectDefDir = path.dirname(
-        require.resolve("@magda/registry-aspects/package.json")
+        requireResolve("@magda/registry-aspects/package.json")
     );
     return fse
         .readdirSync(aspectDefDir)

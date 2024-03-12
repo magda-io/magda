@@ -42,7 +42,7 @@ export default class HighlightsAdminPage extends React.Component<any, any> {
                 }
                 items = Object.entries(items).map((params) => {
                     let [id, body] = params;
-                    return Object.assign(body, { id });
+                    return Object.assign(body as any, { id });
                 });
                 this.updateState({ items });
             }

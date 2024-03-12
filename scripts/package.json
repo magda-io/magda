@@ -1,15 +1,21 @@
 {
   "name": "@magda/scripts",
-  "version": "2.3.3",
+  "version": "3.0.0-alpha.2",
   "description": "Scripts for building, running, and deploying MAGDA",
   "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    "./*.js": "./*.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18.19.0"
+  },
   "bin": {
     "generate-registry-typescript": "generate-registry-typescript.js",
     "create-jwt-token": "create-jwt-token.js",
     "create-docker-context-for-node-component": "create-docker-context-for-node-component.js",
-    "generate-connector-jobs": "generate-connector-jobs.js",
     "run-typescript-in-nodemon": "run-typescript-in-nodemon.js",
-    "create-pod-and-forward": "create-pod-and-forward.js",
     "retag-and-push": "retag-and-push.js",
     "generate-api-documentation": "generate-api-documentation.js",
     "create-secrets": "create-secrets/index.js",
@@ -28,8 +34,7 @@
     "release": "npm publish || echo \"Skip releasing npm package @magda/scripts.\""
   },
   "devDependencies": {
-    "@types/pg": "^8.6.5",
-    "@types/request": "^2.48.1"
+    "@types/pg": "^8.6.5"
   },
   "magda": {
     "language": "javascript",
@@ -39,14 +44,16 @@
     }
   },
   "dependencies": {
+    "@magda/esm-utils": "^1.0.1",
+    "@magda/typescript-common": "^3.0.0-alpha.2",
     "ansi-styles": "^3.2.1",
     "apidoc": "https://github.com/magda-io/apidoc",
     "chalk": "^2.4.1",
     "clear": "^0.1.0",
     "cli-cursor": "^3.1.0",
-    "commander": "^2.17.0",
+    "commander": "^11.1.0",
     "configstore": "^4.0.0",
-    "fs-extra": "^2.1.2",
+    "fs-extra": "^11.2.0",
     "fuzzy": "^0.1.3",
     "inquirer": "^6.0.0",
     "inquirer-autocomplete-prompt": "^1.0.1",
@@ -57,20 +64,18 @@
     "klaw-sync": "^2.1.0",
     "lodash": "^4.17.5",
     "moment": "^2.19.4",
+    "node-fetch": "^3.3.2",
     "nodemon": "^1.11.0",
-    "pg": "^8.7.3",
-    "pkg": "^4.3.4",
+    "pg": "^8.11.3",
     "pwgen": "0.1.6",
-    "request": "^2.88.0",
     "stream-json": "^1.1.3",
     "strip-ansi": "^4.0.0",
     "strip-json-comments": "^2.0.1",
     "table": "^5.3.3",
     "tmp": "0.0.31",
     "toposort": "^1.0.6",
-    "ts-node": "^8.9.2",
-    "tsconfig-paths": "^4.1.0",
-    "typescript": "~4.2.4",
+    "tsx": "^4.7.0",
+    "typescript": "~5.3.3",
     "uniqid": "^5.0.3",
     "yaml": "^1.10.0",
     "yargs": "^12.0.5"

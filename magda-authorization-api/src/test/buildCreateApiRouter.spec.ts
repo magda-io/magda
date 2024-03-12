@@ -2,33 +2,34 @@ import {} from "mocha";
 import sinon from "sinon";
 import request from "supertest";
 import express from "express";
-import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
-import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
-import buildJwt from "magda-typescript-common/src/session/buildJwt";
-import fakeArgv from "magda-typescript-common/src/test/fakeArgv";
-import createApiRouter from "../createApiRouter";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
+import fakeArgv from "magda-typescript-common/src/test/fakeArgv.js";
+import createApiRouter from "../createApiRouter.js";
 import { expect } from "chai";
-import jsc from "magda-typescript-common/src/test/jsverify";
-import mockDatabase from "./mockDatabase";
-import mockUserDataStore from "magda-typescript-common/src/test/mockUserDataStore";
-import Database from "../Database";
-import { userDataArb } from "./arbitraries";
+import jsc from "jsverify";
+import mockDatabase from "./mockDatabase.js";
+import mockUserDataStore from "magda-typescript-common/src/test/mockUserDataStore.js";
+import Database from "../Database.js";
+import { userDataArb } from "./arbitraries.js";
 import {
     uuidArb,
     lcAlphaNumStringArbNe
-} from "magda-typescript-common/src/test/arbitraries";
+} from "magda-typescript-common/src/test/arbitraries.js";
 import { Request } from "supertest";
-import mockApiKeyStore from "./mockApiKeyStore";
-import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants";
+import mockApiKeyStore from "./mockApiKeyStore.js";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 import AuthDecision, {
     UnconditionalTrueDecision,
     UnconditionalFalseDecision
-} from "magda-typescript-common/src/opa/AuthDecision";
-import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient";
-import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+} from "magda-typescript-common/src/opa/AuthDecision.js";
+import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient.js";
+import { AuthDecisionReqConfig } from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import { User } from "magda-typescript-common/src/authorization-api/model.js";
 
-describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
+describe("Auth api router", function (this) {
     this.timeout(10000);
 
     let argv: any;
@@ -89,7 +90,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
         });
 
         const app = express();
-        app.use(require("body-parser").json({ limit: "100mb" }));
+        app.use(express.json({ limit: "100mb" }));
         app.use(apiRouter);
 
         return app;
@@ -121,7 +122,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 const app = buildExpressApp("authObject/user/create");
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
+                    jsc.forall(userDataArb, async (userData: User) => {
                         try {
                             mockUserDataStore.reset();
 
@@ -161,7 +162,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 );
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
+                    jsc.forall(userDataArb, async (userData: User) => {
                         try {
                             mockUserDataStore.reset();
                             const req = request(app)
@@ -193,7 +194,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 );
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
+                    jsc.forall(userDataArb, async (userData: User) => {
                         try {
                             mockUserDataStore.reset();
                             mockUserDataStore.createRecord(userData);
@@ -221,7 +222,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 const app = buildExpressApp("authObject/user/read");
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
+                    jsc.forall(userDataArb, async (userData: User) => {
                         try {
                             mockUserDataStore.reset();
                             mockUserDataStore.createRecord(userData);
@@ -258,7 +259,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 );
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
+                    jsc.forall(userDataArb, async (userData: User) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -284,7 +285,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 const app = buildExpressApp("authObject/user/read");
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
+                    jsc.forall(userDataArb, async (userData: User) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -324,7 +325,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                     jsc.forall(
                         uuidArb,
                         userDataArb,
-                        async (apiKey, userData) => {
+                        async (apiKey: string, userData: User) => {
                             try {
                                 mockUserDataStore.reset();
                                 const {
@@ -371,7 +372,11 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                         uuidArb,
                         lcAlphaNumStringArbNe,
                         userDataArb,
-                        async (apiKey, randomStr, userData) => {
+                        async (
+                            apiKey: string,
+                            randomStr: string,
+                            userData: User
+                        ) => {
                             try {
                                 mockUserDataStore.reset();
                                 const {
@@ -411,7 +416,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             it("should return correct user data if queried by `userId` without sepecifying user ID", async () => {
                 const app = buildExpressApp();
                 await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
+                    jsc.forall(userDataArb, async (userData: User) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -443,7 +448,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
                 const app = buildExpressApp();
                 await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
+                    jsc.forall(userDataArb, async (userData: User) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -475,7 +480,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                 const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
                 const app = buildExpressApp();
                 await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
+                    jsc.forall(userDataArb, async (userData: User) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -533,7 +538,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             it("should return correct user data specified by session header", async () => {
                 const app = buildExpressApp();
                 await jsc.assert(
-                    jsc.forall(userDataArb, async (userData) => {
+                    jsc.forall(userDataArb, async (userData: User) => {
                         try {
                             mockUserDataStore.reset();
                             const {

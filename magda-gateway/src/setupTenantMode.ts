@@ -1,4 +1,4 @@
-import TenantsLoader from "./reloadTenants";
+import TenantsLoader from "./reloadTenants.js";
 
 export type TenantConfig = {
     tenantUrl?: string;

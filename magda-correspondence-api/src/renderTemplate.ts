@@ -1,9 +1,9 @@
 import MarkdownIt from "markdown-it";
-import { DatasetMessage } from "./model";
-import { Record } from "magda-typescript-common/src/generated/registry/api";
-import appendUrlSegments from "magda-typescript-common/src/appendUrlSegments";
-import EmailTemplateRender from "./EmailTemplateRender";
-import { Attachment } from "./SMTPMailer";
+import { DatasetMessage } from "./model.js";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
+import appendUrlSegments from "magda-typescript-common/src/appendUrlSegments.js";
+import EmailTemplateRender from "./EmailTemplateRender.js";
+import { Attachment } from "./SMTPMailer.js";
 
 export enum Templates {
     Feedback = "emailTemplates/feedback.html",

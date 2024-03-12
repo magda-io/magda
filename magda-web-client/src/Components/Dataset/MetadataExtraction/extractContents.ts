@@ -1,12 +1,10 @@
 import XLSX from "xlsx";
 import mammoth from "mammoth";
-import pdfjsLib from "pdfjs-dist/build/pdf";
-import PDFWorker from "pdfjs-dist/build/pdf.worker";
 import { MAX_KEYWORDS } from "./extractKeywords";
 import uniq from "lodash/uniq";
 import moment from "moment";
 import { FileDetails } from "./types";
-(self as any).pdfjsWorker = PDFWorker; // eslint-disable-line
+import extractPdfFile from "./extractPdfFile";
 
 interface ContentExtractorOutput {
     format?: string;
@@ -61,7 +59,7 @@ export default async function extract(
             };
         } else if (name?.match(/[.]pdf$/i)) {
             return {
-                ...(await extractPDFFile(input, array)),
+                ...(await extractPdfFile(input, array)),
                 format: "PDF"
             };
         } else if (name?.match(/[.]docx?$/i)) {
@@ -333,59 +331,6 @@ function productKeywordsFromInput(
         keywords: keywords.slice(0, MAX_KEYWORDS),
         largeTextBlockIdentified
     };
-}
-
-/**
- * Extracts data/metadata from pdf format.
- */
-async function extractPDFFile(_input: FileDetails, array: Uint8Array) {
-    let pdf = await pdfjsLib.getDocument({
-        data: array
-    });
-
-    // pdf files can have embedded properties; extract those
-    const meta = await pdf.getMetadata();
-
-    let author: string | undefined;
-    let datasetTitle: string | undefined;
-    let keywords: string[] | undefined;
-    let themes: string[] | undefined;
-
-    if (meta.info) {
-        if (meta.info.Author) {
-            author = meta.info.Author;
-        }
-
-        if (
-            typeof meta.info.Title === "string" &&
-            meta.info.Title &&
-            !meta.info.Title.match(/^[\W]*untitled[\W]*$/i)
-        ) {
-            datasetTitle = meta.info.Title;
-        }
-
-        if (meta.info.Keywords) {
-            keywords = meta.info.Keywords.split(/,\s+/g);
-        }
-
-        if (meta.info.Subject) {
-            themes = [meta.info.Subject];
-        }
-    }
-
-    // extract text
-    const text: string[] = [];
-
-    for (let i = 1; i <= pdf.numPages; i++) {
-        let page = await pdf.getPage(i);
-        page = await page.getTextContent({
-            normalizeWhitespace: true
-        });
-        page = page.items.map((txt) => txt.str).join("\n");
-        text.push(page);
-    }
-
-    return { author, datasetTitle, keywords, themes, text: text.join("\n\n") };
 }
 
 /**

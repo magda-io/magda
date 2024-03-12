@@ -1,18 +1,19 @@
-import { expect } from "chai";
-import OpaCompileResponseParser from "../OpaCompileResponseParser";
-import testData from "./sampleOpaResponses/content.json";
-import testDataSimple from "./sampleOpaResponses/simple.json";
-import testDataUnconditionalTrue from "./sampleOpaResponses/unconditionalTrue.json";
-import testDataUnconditionalTrueWithDefaultRule from "./sampleOpaResponses/unconditionalTrueWithDefaultRule.json";
-import testDataEsriPolicyWithDefaultRule from "./sampleOpaResponses/withDefaultRule.json";
-import testDataUnconditionalNotMacthed from "./sampleOpaResponses/unconditionalNotMacthed.json";
-import testDataUnconditionalNotMacthedWithExtraRefs from "./sampleOpaResponses/unconditionalNotMacthedWithExtraRefs.json";
-import testDataUnconditionalFalseSimple from "./sampleOpaResponses/unconditionalFalseSimple.json";
-import testDataUnconditionalTrueSimple from "./sampleOpaResponses/unconditionalTrueSimple.json";
-import testDataDatasetPermissionWithOrgUnitConstraint from "./sampleOpaResponses/datasetPermissionWithOrgUnitConstraint.json";
-import testDataSingleTermAspectRef from "./sampleOpaResponses/singleTermAspectRef.json";
-import testExtraLargeResponse from "./sampleOpaResponses/extraLargeResponse.json";
 import "mocha";
+import { require } from "@magda/esm-utils";
+import { expect } from "chai";
+import OpaCompileResponseParser from "../OpaCompileResponseParser.js";
+const testData = require("./sampleOpaResponses/content.json");
+const testDataSimple = require("./sampleOpaResponses/simple.json");
+const testDataUnconditionalTrue = require("./sampleOpaResponses/unconditionalTrue.json");
+const testDataUnconditionalTrueWithDefaultRule = require("./sampleOpaResponses/unconditionalTrueWithDefaultRule.json");
+const testDataEsriPolicyWithDefaultRule = require("./sampleOpaResponses/withDefaultRule.json");
+const testDataUnconditionalNotMacthed = require("./sampleOpaResponses/unconditionalNotMacthed.json");
+const testDataUnconditionalNotMacthedWithExtraRefs = require("./sampleOpaResponses/unconditionalNotMacthedWithExtraRefs.json");
+const testDataUnconditionalFalseSimple = require("./sampleOpaResponses/unconditionalFalseSimple.json");
+const testDataUnconditionalTrueSimple = require("./sampleOpaResponses/unconditionalTrueSimple.json");
+const testDataDatasetPermissionWithOrgUnitConstraint = require("./sampleOpaResponses/datasetPermissionWithOrgUnitConstraint.json");
+const testDataSingleTermAspectRef = require("./sampleOpaResponses/singleTermAspectRef.json");
+const testExtraLargeResponse = require("./sampleOpaResponses/extraLargeResponse.json");
 
 describe("Test extra large opa response", () => {
     it("should process extra large opa response in timely manager", function () {

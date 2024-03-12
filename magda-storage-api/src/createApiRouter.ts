@@ -1,17 +1,17 @@
 import express, { Request, Response } from "express";
-import MagdaMinioClient from "./MagdaMinioClient";
-import bodyParser from "body-parser";
+import { require } from "@magda/esm-utils";
+import MagdaMinioClient from "./MagdaMinioClient.js";
 const { fileParser } = require("express-multipart-file-parser");
-import { getUserId } from "magda-typescript-common/src/authorization-api/authMiddleware";
-import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import { getUserId } from "magda-typescript-common/src/authorization-api/authMiddleware.js";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import {
     requireStorageBucketPermission,
     requireStorageObjectPermission
-} from "./storageAuthMiddlewares";
-import { StorageBucketMetaData, StorageObjectMetaData } from "./common";
-import ServerError from "magda-typescript-common/src/ServerError";
-import { isValidS3ObjectKey } from "magda-typescript-common/src/getStorageUrl";
+} from "./storageAuthMiddlewares.js";
+import { StorageBucketMetaData, StorageObjectMetaData } from "./common.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
+import { isValidS3ObjectKey } from "magda-typescript-common/src/getStorageUrl.js";
 export interface ApiRouterOptions {
     registryClient: AuthorizedRegistryClient;
     objectStoreClient: MagdaMinioClient;
@@ -80,10 +80,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     // JSON files are interpreted as text
-    router.use(bodyParser.text({ type: ["text/*", "application/json"] }));
-    router.use(
-        bodyParser.raw({ type: ["image/*", "application/octet-stream"] })
-    );
+    router.use(express.text({ type: ["text/*", "application/json"] }));
+    router.use(express.raw({ type: ["image/*", "application/octet-stream"] }));
 
     /**
      * @apiGroup Storage
@@ -227,7 +225,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
                 const stream = await object.createStream();
                 if (stream) {
-                    stream.on("error", (_e) => {
+                    stream.on("error", (_e: any) => {
                         res.status(500).send("Unknown error");
                     });
                     stream.pipe(res);

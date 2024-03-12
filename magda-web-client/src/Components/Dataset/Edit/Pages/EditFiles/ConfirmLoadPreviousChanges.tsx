@@ -20,6 +20,7 @@ import "./ConfirmLoadPreviousChanges.scss";
 import FileDeletionError from "helpers/FileDeletionError";
 import promisifySetState from "helpers/promisifySetState";
 import { deleteRecordAspect } from "api-clients/RegistryApis";
+import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 
 type PropsType = {
     user: User;
@@ -49,7 +50,7 @@ const ConfirmLoadPreviousChanges: FunctionComponent<PropsType> = (props) => {
                 return;
             }
         } catch (e) {
-            setError(e);
+            setError(unknown2Error(e));
             setDraftData(null);
         }
     }, [datasetDraftData, userId, setDraftData]);
@@ -101,7 +102,7 @@ const ConfirmLoadPreviousChanges: FunctionComponent<PropsType> = (props) => {
                 loadDatasetDraftConfirmed: true
             }));
         } catch (e) {
-            setError(e);
+            setError(unknown2Error(e));
         }
     }, [uploadedFileUrls, distributions, datasetId, datasetStateUpdater]);
 

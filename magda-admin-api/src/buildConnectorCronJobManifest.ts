@@ -1,5 +1,5 @@
 import * as k8s from "@kubernetes/client-node";
-import connectorObjName from "./connectorObjName";
+import connectorObjName from "./connectorObjName.js";
 
 function buildConnectorCronJobManifest(options: {
     id: string;

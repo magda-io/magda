@@ -4,12 +4,12 @@ import supertest from "supertest";
 import express from "express";
 import _ from "lodash";
 
-import { Dataset, SearchResult } from "../../model";
+import { Dataset, SearchResult } from "../../model.js";
 import {
     qldDataset,
     nationalDataset1,
     nationalDataset2
-} from "../utils/spatial";
+} from "../utils/spatial.js";
 
 export default function testFilterByRegion(
     app: () => express.Application,

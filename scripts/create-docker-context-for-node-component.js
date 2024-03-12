@@ -1,18 +1,16 @@
 #!/usr/bin/env node
 
-const childProcess = require("child_process");
-const fse = require("fs-extra");
-const path = require("path");
-const process = require("process");
-const yargs = require("yargs");
-const _ = require("lodash");
-const isSubDir = require("is-subdir");
-const {
-    getVersions,
-    getTags,
-    getName,
-    getRepository
-} = require("./docker-util");
+import childProcess from "child_process";
+import fse from "fs-extra";
+import path from "path";
+import process from "process";
+import yargs from "yargs";
+import _ from "lodash";
+import isSubDir from "is-subdir";
+import { getVersions, getTags, getName, getRepository } from "./docker-util.js";
+import { __dirname as getCurDirPath, require } from "@magda/esm-utils";
+
+const __dirname = getCurDirPath();
 
 // --- cache dependencies data from package.json
 const packageDependencyDataCache = {};
@@ -315,7 +313,7 @@ function preparePackage(packageDir, destDir) {
 
                 const productionPackages = _.uniqBy(
                     getPackageList(packageDir, path.resolve(packageDir, "..")),
-                    (package) => package.path
+                    (pkg) => pkg.path
                 );
 
                 prepareNodeModules(src, dest, productionPackages);
@@ -349,7 +347,14 @@ function prepareNodeModules(packageDir, destDir, productionPackages) {
             const type = stat.isFile() ? "file" : "junction";
             fse.ensureSymlinkSync(srcPath, dest, type);
         } catch (e) {
-            fse.copySync(srcPath, dest);
+            // see all error codes here: https://man7.org/linux/man-pages/man2/symlink.2.html#ERRORS
+            if (e?.code === "EEXIST") {
+                //console.log(`symlink ${srcPath} already exists, skip.`);
+                // the link already exists, we choose to not attempt to overwrite it.
+                // this means that the local dependency (in nearest node_modules) will higher priority than hoisted dependency (in root node_modules).
+                return;
+            }
+            throw e;
         }
     });
 }

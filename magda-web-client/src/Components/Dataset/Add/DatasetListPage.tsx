@@ -77,14 +77,11 @@ class DatasetListPage extends React.Component<any, any> {
                                             </td>
                                             <td>
                                                 Created{" "}
-                                                {dataset.dataset._createdDate}
+                                                {`${dataset.dataset._createdDate}`}
                                             </td>
                                             <td>
                                                 Last Modified{" "}
-                                                {
-                                                    dataset.dataset
-                                                        ._lastModifiedDate
-                                                }
+                                                {`${dataset.dataset._lastModifiedDate}`}
                                             </td>
                                             <td>
                                                 {dataset?.dataset?.distributions

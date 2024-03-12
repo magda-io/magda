@@ -1,12 +1,11 @@
 import {} from "mocha";
-import chai from "chai";
+import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import AuthorizedTenantClient from "../tenant-api/AuthorizedTenantClient";
-import mockTenantDataStore from "./mockTenantDataStore";
-import { MAGDA_ADMIN_PORTAL_ID } from "../registry/TenantConsts";
+import AuthorizedTenantClient from "../tenant-api/AuthorizedTenantClient.js";
+import mockTenantDataStore from "./mockTenantDataStore.js";
+import { MAGDA_ADMIN_PORTAL_ID } from "../registry/TenantConsts.js";
 import nock from "nock";
-
-const jwt = require("jsonwebtoken");
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -24,7 +23,10 @@ describe("Test AuthorizedTenantClient.ts", function () {
             // of this header can not be guaranteed. Therefore we have to
             // check the decoded user id.
             "X-Magda-Session": (jwtToken) => {
-                return jwt.verify(jwtToken, jwtSecret).userId === adminUserId;
+                return (
+                    (jwt.verify(jwtToken, jwtSecret) as JwtPayload).userId ===
+                    adminUserId
+                );
             },
             "Content-Type": "application/json",
             "X-Magda-Tenant-Id": `${MAGDA_ADMIN_PORTAL_ID}`

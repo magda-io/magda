@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
-import "isomorphic-fetch";
-import { throttle, memoize } from "lodash";
+import fetch from "cross-fetch";
+import throttle from "lodash/throttle.js";
+import memoize from "lodash/memoize.js";
 
 const STATIC_STYLE_REGEX = new RegExp(
     '<link href="\\.\\/static\\/css\\/.*.css" rel="stylesheet">',

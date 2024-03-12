@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## v3.0.0
+
+- #3472, #3484 Node.js 18 & React 18 Upgrade
+- Converted all Node modules & release NPM packages to pure ESM modules
+- Replaced ts-node with tsx
+- Replaced nyc with c8
+- Upgraded to typescript 5 & webpack 5
+- #3486: Removed [@gov.au/pancake](https://www.npmjs.com/package/@gov.au/pancake) from dependencies
+- Re-written frontend web worker handling
+- Fixed: when the supplied API key is not found, 401 code will be responded rather than 500
+- Adjusted CI pipeline workflow
+- Replaced `isomorphic-fetch` with `cross-fetch`
+- Replaced `request` lib usage (including registry client libs) with `cross-fetch` or `node-fetch`
+- Removed `request` function export from `@magda/utils` & `@magda/typescript-common`
+- Reduced the size of `magda-scss-compiler` docker image
+- Upgraded `http-proxy`, `pg` & other dependencies
+- Make sure generated storage filename contains only alphabets, digits, `-`, `_` & `.`
+
 ## v2.3.3
 
 - #3495: fixed gateway might throw unhandled ERR_HTTP_HEADERS_SENT errors when proxy requests

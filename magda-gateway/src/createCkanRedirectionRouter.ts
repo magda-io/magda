@@ -1,9 +1,9 @@
 import express from "express";
 import URI from "urijs";
 import _ from "lodash";
-import Registry from "magda-typescript-common/src/registry/RegistryClient";
-import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
-import { escapeRegExp } from "lodash";
+import Registry from "magda-typescript-common/src/registry/RegistryClient.js";
+import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable.js";
+import escapeRegExp from "lodash/escapeRegExp.js";
 import NodeCache from "node-cache";
 
 export type CkanRedirectionRouterOptions = {

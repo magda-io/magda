@@ -11,7 +11,7 @@ import takeRight from "lodash/takeRight";
 import sortBy from "lodash/sortBy";
 import * as d3 from "d3-collection";
 import * as chrono from "chrono-node";
-import escapeRegExp from "@magda/typescript-common/dist/util/escapeRegExp";
+import escapeRegExp from "@magda/typescript-common/dist/util/escapeRegExp.js";
 
 const AVAILABLE_CHART_TYPES = ["bar", "pie", "scatter", "line"];
 const STRIP_NUMBER_REGEX = /[^\-\d.+]/g;

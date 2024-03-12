@@ -1,27 +1,34 @@
 {
   "name": "@magda/connector-test-utils",
   "description": "MAGDA Connector Utils for Test Cases",
-  "version": "2.3.3",
+  "version": "3.0.0-alpha.2",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18.19.0"
+  },
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
-    "build": "webpack && api-extractor run -l",
+    "build": "yarn build-main && yarn build-types && yarn build-types-bundle",
+    "build-main": "node esbuild.js",
+    "build-types": "tsc --emitDeclarationOnly",
+    "build-types-bundle": "api-extractor run --local",
     "release": "npm publish || echo \"Skip releasing npm package @magda/connector-test-utils.\""
   },
   "author": "",
   "license": "Apache-2.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "devDependencies": {
-    "@magda/typescript-common": "^2.3.3",
-    "@microsoft/api-extractor": "~7.15.2",
-    "ts-loader": "^6.2.1",
-    "typescript": "~4.2.4",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
+    "@magda/typescript-common": "^3.0.0-alpha.2",
+    "@microsoft/api-extractor": "~7.39.0",
+    "esbuild": "^0.19.10",
+    "ts-loader": "^9.5.1",
+    "typescript": "~5.3.3"
   },
   "dependencies": {
-    "ts-node": "^8.9.2",
-    "tsconfig-paths": "^4.1.0"
+    "tsx": "^4.7.0"
   },
   "magda": {
     "language": "typescript",

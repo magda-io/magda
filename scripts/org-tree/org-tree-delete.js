@@ -1,11 +1,11 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("../package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const NestedSetModelQueryer = require("@magda/authorization-api/dist/NestedSetModelQueryer")
-    .default;
-const getDBPool = require("../db/getDBPool");
-const getNodeIdFromNameOrId = require("./getNodeIdFromNameOrId");
+import { program } from "commander";
+import chalk from "chalk";
+import NestedSetModelQueryer from "@magda/authorization-api/dist/NestedSetModelQueryer.js";
+import getDBPool from "../db/getDBPool.js";
+import getNodeIdFromNameOrId from "./getNodeIdFromNameOrId.js";
 
 program
     .description(
@@ -14,7 +14,7 @@ program
             "\nIf -o or --only switch is on, only specified node will be removed and its children (if any) " +
             "will become its parent's children."
     )
-    .option("<nodeNameOrId>", "node name or id that to be removed")
+    .argument("<nodeNameOrId>", "node name or id that to be removed")
     .option(
         "-o, --only",
         "If only remove specified node and left its children (if any) to its parent"

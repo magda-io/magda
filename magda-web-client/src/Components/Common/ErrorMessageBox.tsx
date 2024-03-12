@@ -2,7 +2,7 @@ import React, { FunctionComponent, useRef, useEffect } from "react";
 import { connect } from "react-redux";
 import { config } from "config";
 import FileDeletionError from "helpers/FileDeletionError";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError.js";
 import TooltipWrapper from "Components/Common/TooltipWrapper";
 import helpIcon from "assets/help.svg";
 import "./ErrorMessageBox.scss";

@@ -1,6 +1,6 @@
-import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 
-import MinionOptions from "./MinionOptions";
+import MinionOptions from "./MinionOptions.js";
 
 export type NeedsCrawl = Promise<boolean>;
 

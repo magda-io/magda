@@ -1,5 +1,5 @@
-import ObjectFromStore from "./ObjectFromStore";
-import { CreateBucketResponse } from "./ObjectStoreClient";
+import ObjectFromStore from "./ObjectFromStore.js";
+import { CreateBucketResponse } from "./ObjectStoreClient.js";
 import { Stream, Readable } from "stream";
 import * as Minio from "minio";
 import { UploadedObjectInfo } from "minio";

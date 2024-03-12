@@ -1,5 +1,5 @@
 import SQLSyntax, { sqls } from "sql-syntax";
-import { getTableColumnName } from "../SQLUtils";
+import { getTableColumnName } from "../SQLUtils.js";
 
 export class AspectQueryValue {
     readonly value: boolean | number | string;

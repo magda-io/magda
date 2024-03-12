@@ -1,5 +1,5 @@
-import fetchRequest from "./fetchRequest";
-import getRequestNoCache from "./getRequestNoCache";
+import fetchRequest from "./fetchRequest.js";
+import getRequestNoCache from "./getRequestNoCache.js";
 
 export default async function getRequest<T = any, CT = string>(
     url: string,

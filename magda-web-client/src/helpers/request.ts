@@ -1,6 +1,6 @@
 import { config } from "../config";
-import fetch from "isomorphic-fetch";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import fetch from "cross-fetch";
+import ServerError from "@magda/typescript-common/dist/ServerError.js";
 
 type RequestContentTypeJson = "application/json";
 type RequestContentTypePlainText = "text/plain";

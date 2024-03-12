@@ -1,10 +1,21 @@
 {
   "name": "@magda/minion-sdk",
   "description": "MAGDA Minion SDK",
-  "version": "2.3.3",
+  "version": "3.0.0-alpha.2",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
-    "build": "webpack && api-extractor run -l",
+    "build": "yarn build-main && yarn build-types && yarn build-types-bundle",
+    "build-main": "node esbuild.js",
+    "build-types": "tsc --emitDeclarationOnly",
+    "build-types-bundle": "api-extractor run --local",
     "release": "npm publish || echo \"Skip releasing npm package @magda/minion-sdk.\""
   },
   "author": "",
@@ -12,16 +23,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "devDependencies": {
-    "@magda/minion-framework": "^2.3.3",
-    "@magda/typescript-common": "^2.3.3",
-    "@microsoft/api-extractor": "~7.15.2",
-    "ts-loader": "^6.2.1",
-    "typescript": "~4.2.4",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
+    "@magda/minion-framework": "^3.0.0-alpha.2",
+    "@magda/typescript-common": "^3.0.0-alpha.2",
+    "@microsoft/api-extractor": "~7.39.0",
+    "esbuild": "^0.19.10",
+    "ts-loader": "^9.5.1",
+    "typescript": "~5.3.3"
   },
   "dependencies": {
-    "@types/express": "^4.17.6",
+    "@types/express": "^4.17.21",
     "@types/urijs": "^1.19.19",
     "@types/yargs": "^12.0.8"
   },

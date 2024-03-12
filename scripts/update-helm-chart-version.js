@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const path = require("path");
 const recursive = require("recursive-readdir");
 const fse = require("fs-extra");

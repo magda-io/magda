@@ -1,10 +1,10 @@
 #!/usr/bin/env node
+import { require } from "@magda/esm-utils";
 const pkg = require("./package.json");
-const program = require("commander");
-const chalk = require("chalk");
-const isUuid = require("isuuid");
-const buildJwt = require("@magda/typescript-common/dist/session/buildJwt")
-    .default;
+import { program } from "commander";
+import chalk from "chalk";
+import isUuid from "isuuid";
+import buildJwt from "@magda/typescript-common/dist/session/buildJwt.js";
 
 program
     .version(pkg.version)

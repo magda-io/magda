@@ -1,7 +1,7 @@
 import html2text from "html-to-text";
 
-import { Message, SMTPMailer, Attachment } from "./SMTPMailer";
-import { DatasetMessage } from "./model";
+import { Message, SMTPMailer, Attachment } from "./SMTPMailer.js";
+import { DatasetMessage } from "./model.js";
 
 /**
  *

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import ServerError from "./ServerError";
+import ServerError from "./ServerError.js";
 
 export default function handleServerError(req: Request, res: Response, e: any) {
     if (e instanceof ServerError) {

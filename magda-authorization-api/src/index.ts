@@ -1,15 +1,15 @@
 import express from "express";
 import yargs from "yargs";
-import "magda-typescript-common/src/pgTypes";
+import "magda-typescript-common/src/pgTypes.js";
 import { createHttpTerminator } from "http-terminator";
-import createApiRouter from "./createApiRouter";
-import createOpaRouter from "./createOpaRouter";
-import Database from "./Database";
-import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
-import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient";
+import createApiRouter from "./createApiRouter.js";
+import createOpaRouter from "./createOpaRouter.js";
+import Database from "./Database.js";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import AuthorizedRegistryClient, {
     AuthorizedRegistryOptions
-} from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+} from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 import SQLSyntax from "sql-syntax";
 
 const argv = addJwtSecretFromEnvVar(
@@ -79,8 +79,8 @@ const argv = addJwtSecretFromEnvVar(
 );
 
 // Create a new Express application.
-var app = express();
-app.use(require("body-parser").json({ limit: "100mb" }));
+const app = express();
+app.use(express.json({ limit: "100mb" }));
 
 const database = new Database({
     dbHost: argv.dbHost,

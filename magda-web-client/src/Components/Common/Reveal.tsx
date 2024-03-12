@@ -1,6 +1,9 @@
 import React from "react";
 
-class Reveal extends React.Component<{ label: string }, { reveal: boolean }> {
+class Reveal extends React.Component<
+    { label: string; children?: React.ReactNode },
+    { reveal: boolean }
+> {
     static defaultProps = {
         label: "Click to reveal"
     };

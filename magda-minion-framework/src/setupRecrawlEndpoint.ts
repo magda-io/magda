@@ -1,6 +1,6 @@
-import MinionOptions from "./MinionOptions";
+import MinionOptions from "./MinionOptions.js";
 import { Application } from "express";
-import Crawler from "./Crawler";
+import Crawler from "./Crawler.js";
 
 /**
  * @apiDefine GenericErrorMinionJson
@@ -66,7 +66,9 @@ export default function setupRecrawlEndpoint(
         } catch (e) {
             response.status(500).json({
                 isSuccess: false,
-                errorMessage: e.message ? e.message : "Unknown Error"
+                errorMessage: (e as any)?.message
+                    ? (e as any).message
+                    : "Unknown Error"
             });
         }
     });
@@ -99,7 +101,9 @@ export default function setupRecrawlEndpoint(
         } catch (e) {
             response.status(500).json({
                 isSuccess: false,
-                errorMessage: e.message ? e.message : "Unknown Error"
+                errorMessage: (e as any).message
+                    ? (e as any).message
+                    : "Unknown Error"
             });
         }
     });

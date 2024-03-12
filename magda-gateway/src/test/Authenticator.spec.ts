@@ -8,15 +8,18 @@ import cookie from "cookie";
 import _ from "lodash";
 import supertest from "supertest";
 import randomstring from "randomstring";
-import Authenticator from "../Authenticator";
+import Authenticator from "../Authenticator.js";
 import {
     DEFAULT_SESSION_COOKIE_NAME,
     DEFAULT_SESSION_COOKIE_OPTIONS
-} from "magda-typescript-common/src/session/cookieUtils";
-import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
+} from "magda-typescript-common/src/session/cookieUtils.js";
+import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig.js";
 import runMigrationSql, {
     deleteAllTables
-} from "magda-typescript-common/src/test/db/runMigrationSql";
+} from "magda-typescript-common/src/test/db/runMigrationSql.js";
+import { getCurrentDirPath } from "@magda/esm-utils";
+
+const __dirname = getCurrentDirPath();
 
 type PlainObject = { [key: string]: string };
 
@@ -27,7 +30,7 @@ More info of test cases behaviour see:
 https://github.com/magda-io/magda/issues/2545
 **/
 
-describe("Test Authenticator (Session Management)", function (this: Mocha.ISuiteCallbackContext) {
+describe("Test Authenticator (Session Management)", function (this) {
     this.timeout(30000);
     let pool: pg.Pool = null;
     const dbConfig = getTestDBConfig();
@@ -41,7 +44,7 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
         } catch (e) {
             // --- if database `test` already there
             // --- then mute the error
-            if (e.code !== "42P04") {
+            if ((e as any)?.code !== "42P04") {
                 throw e;
             }
         }
@@ -129,7 +132,7 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
             const data = cookie.parse(header["set-cookie"][i]);
             if (typeof data[cookieName] !== "undefined") {
                 let cookieData: string | boolean = data[cookieName];
-                if (cookieData.substr(0, 2) === "s:") {
+                if (cookieData.substring(0, 2) === "s:") {
                     // --- signed
                     cookieData = signature.unsign(
                         cookieData.slice(2),

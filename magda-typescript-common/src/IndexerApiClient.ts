@@ -1,5 +1,5 @@
-import fetchRequest from "./fetchRequest";
-import BaseApiClient, { BaseApiClientConfig } from "./BaseApiClient";
+import fetchRequest from "./fetchRequest.js";
+import BaseApiClient, { BaseApiClientConfig } from "./BaseApiClient.js";
 
 export interface IndexResult {
     successes: number;

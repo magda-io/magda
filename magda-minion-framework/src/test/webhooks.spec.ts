@@ -6,19 +6,19 @@ import sinon from "sinon";
 import _ from "lodash";
 import { expect } from "chai";
 
-import { Record } from "magda-typescript-common/src/generated/registry/api";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
 import {
     arbFlatMap,
     lcAlphaNumStringArbNe,
     recordArb
-} from "magda-typescript-common/src/test/arbitraries";
-import jsc from "magda-typescript-common/src/test/jsverify";
+} from "magda-typescript-common/src/test/arbitraries.js";
+import jsc from "jsverify";
 
-import MinionOptions from "../MinionOptions";
-import minion from "../index";
-import fakeArgv from "./fakeArgv";
-import makePromiseQueryable from "./makePromiseQueryable";
-import baseSpec from "./baseSpec";
+import MinionOptions from "../MinionOptions.js";
+import minion from "../index.js";
+import fakeArgv from "./fakeArgv.js";
+import makePromiseQueryable from "./makePromiseQueryable.js";
+import baseSpec from "./baseSpec.js";
 
 baseSpec(
     "webhooks",

@@ -1,22 +1,28 @@
 {
   "name": "@magda/create-secrets",
   "description": "MAGDA Create Secrets Tool",
-  "version": "2.3.3",
+  "version": "3.0.0-alpha.2",
+  "type": "module",
+  "exports": {
+    ".": "./bin/index.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "bin": {
-    "create-secrets": "./bin/create-secrets.js"
+    "create-secrets": "./bin/index.js"
   },
   "scripts": {
     "prebuild": "rimraf bin",
-    "build": "webpack",
+    "build": "node esbuild.js",
     "release": "npm publish || echo \"Skip releasing npm package @magda/create-secrets.\""
   },
   "author": "",
   "license": "Apache-2.0",
-  "main": "bin/create-secrets.js",
   "devDependencies": {
-    "@magda/scripts": "^2.3.3",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
+    "@magda/scripts": "^3.0.0-alpha.2",
+    "esbuild": "^0.19.10"
   },
   "magda": {
     "language": "typescript",
@@ -24,9 +30,6 @@
       "npmPackage": true,
       "useCommonLib": true
     }
-  },
-  "engines": {
-    "node": ">=14.0.0"
   },
   "keywords": [
     "Magda",

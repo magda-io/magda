@@ -203,14 +203,14 @@ cors:
 # <li>`maxAge`: Default: 7 * 60 * 60 * 1000 (7 hours)</li>
 # <li>`path`: Default: '/'.</li>
 # <li>`sameSite`: Default: lax </li>
-# <li>`secure`: Default: "auto" </li>
+# <li>`secure`: Default: true </li>
 # </ul>
 # @default -- default value see `Description`
 cookie:
   maxAge: 25200000
   httpOnly: true
   sameSite: "lax"
-  secure: "auto"
+  secure: true
 
 # defaultCacheControl -- If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable.
 defaultCacheControl: "public, max-age=60"

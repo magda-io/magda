@@ -3,7 +3,7 @@ import SelectPicker from "rsuite/SelectPicker";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import { useAsync } from "react-async-hook";
 import { getUserById, getUsers } from "api-clients/AuthApis";
-import ServerError from "@magda/typescript-common/dist/ServerError";
+import ServerError from "@magda/typescript-common/dist/ServerError.js";
 import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
 import { User } from "reducers/userManagementReducer";
@@ -11,7 +11,7 @@ import "./DatasetOwnerSection.scss";
 
 type PropsType = {
     selectedUserId?: string;
-    onChange: (id: string) => void;
+    onChange: (id: string | null) => void;
     disabled?: boolean;
 };
 

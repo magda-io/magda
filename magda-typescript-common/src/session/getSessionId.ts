@@ -1,6 +1,6 @@
 import express from "express";
 import signature from "cookie-signature";
-import { DEFAULT_SESSION_COOKIE_NAME } from "./cookieUtils";
+import { DEFAULT_SESSION_COOKIE_NAME } from "./cookieUtils.js";
 
 export default function getSessionId(
     req: express.Request,

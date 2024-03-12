@@ -20,7 +20,7 @@ import MyGeneralInfo from "../Account/MyGeneralInfo";
 import MyRoles from "../Account/MyRoles";
 import { StateType } from "reducers/reducer";
 import MyApiKeys from "../Account/MyApiKeys";
-import { ANONYMOUS_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
+import { ANONYMOUS_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
 
 const AccountPage: FunctionComponent = () => {
     const history = useHistory();

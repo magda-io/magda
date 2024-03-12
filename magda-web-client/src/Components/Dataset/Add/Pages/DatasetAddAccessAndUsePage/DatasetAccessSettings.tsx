@@ -41,7 +41,7 @@ const DatasetAccessSettings: FunctionComponent<PropsType> = (props) => {
         editConstraintExemption
     } = props;
 
-    const { result, loading, error } = useAsync(
+    const { result, loading } = useAsync(
         async (custodianOrgUnitId?: string, managingOrgUnitId?: string) => {
             try {
                 const custodianOrgUnit = custodianOrgUnitId
