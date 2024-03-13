@@ -193,6 +193,8 @@ object IndexDefinition extends DefaultJsonProtocol {
     version = 51,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
+      val esInstanceSupport =
+        config.getBoolean("elasticSearch.esInstanceSupport")
       val createIdxReq =
         createIndex(indices.getIndex(config, Indices.DataSetsIndex))
           .shards(config.getInt("elasticSearch.shardCount"))
@@ -287,7 +289,12 @@ object IndexDefinition extends DefaultJsonProtocol {
                   keywordField("url"),
                   magdaTextField("originalName"),
                   keywordField("originalUrl"),
-                  ObjectField("extras", dynamic = Some("runtime"))
+                  ObjectField(
+                    "extras",
+                    dynamic =
+                      if (esInstanceSupport) Some("runtime")
+                      else Some("true")
+                  )
                 )
               ),
               ObjectField(
