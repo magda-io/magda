@@ -49,8 +49,8 @@ class DefaultClientProvider(
       override def customizeHttpClient(
           httpClientBuilder: HttpAsyncClientBuilder
       ): HttpAsyncClientBuilder = {
-        val username = sys.env.get("USERNAME").getOrElse("")
-        val password = sys.env.get("PASSWORD").getOrElse("")
+        val username = sys.env.get("ES_USERNAME").getOrElse("admin")
+        val password = sys.env.get("ES_PASSWORD").getOrElse("")
         if (username.isEmpty) {
           logger.warning("supplied authenticated username is empty.")
         }

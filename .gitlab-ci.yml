@@ -174,13 +174,14 @@ buildtest:search-with-index-cache:
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
+    ES_PASSWORD: "sDf1sdfds@sdf!"
   tags:
     - heavy
   script:
     - cd magda-elastic-search
     - docker-compose up -d
     - cd ..
-    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.*Spec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.*Spec"
     - cd magda-elastic-search
     - docker-compose down
   artifacts:
@@ -237,13 +238,14 @@ buildtest:search-no-index-cache:
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
+    ES_PASSWORD: "sDf1sdfds@sdf!"
   tags:
     - heavy
   script:
     - cd magda-elastic-search
     - docker-compose up -d
     - cd ..
-    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
     - cd magda-elastic-search
     - docker-compose down
   artifacts:
@@ -423,6 +425,7 @@ buildtest:typescript-apis-with-es:
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     TEST_ES_URL: "http://docker:9200"
+    ES_PASSWORD: "sDf1sdfds@sdf!"
   script:
     - cd magda-elastic-search
     - docker-compose up -d

@@ -156,7 +156,7 @@ object IndexDefinition extends DefaultJsonProtocol {
     "english_without_synonym_for_search",
     tokenizer = "standard",
     tokenFilters = List(
-      "uppercase",
+      "lowercase",
       englishPossessiveStemmerFilter.name,
       lightEnglishStemmerFilter.name,
       englishStopFilter.name
@@ -169,7 +169,7 @@ object IndexDefinition extends DefaultJsonProtocol {
     "magda_edge_ngram",
     tokenizer = "standard",
     tokenFilters = List(
-      "uppercase",
+      "lowercase",
       magdaEdgeNgramFilter.name
     )
   )
