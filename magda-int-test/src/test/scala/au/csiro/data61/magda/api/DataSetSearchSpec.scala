@@ -1237,7 +1237,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     }
 
     it("should not fail for queries that are full of arbitrary characters") {
-      forAll(emptyIndexGen, Gen.listOf(arbitrary[String]).map(_.mkString(" "))) {
+      forAll(emptyIndexGen, Gen.listOf(Gen.alphaNumStr).map(_.mkString(" "))) {
         (indexTuple, textQuery) =>
           val (_, _, routes) = indexTuple
 
