@@ -18,6 +18,9 @@ import org.elasticsearch.client.RestClientBuilder.{
   HttpClientConfigCallback,
   RequestConfigCallback
 }
+import java.nio.file.{Paths}
+import nl.altindag.ssl.SSLFactory
+import nl.altindag.ssl.pem.util.PemUtils
 
 trait ClientProvider {
   def getClient(): Future[ElasticClient]
@@ -32,39 +35,60 @@ class DefaultClientProvider(
   private implicit val scheduler = system.scheduler
   private val logger = system.log
 
-  var authentication: Boolean = false
+  val serverUrl = AppConfig
+    .conf()
+    .getString("elasticSearch.serverUrl")
+
+  logger.info("Elastic Client server Url: {}", serverUrl)
+
+  val serverUrlProperties = ElasticProperties(serverUrl)
+  val serverProtocol = serverUrlProperties.endpoints.head.protocol
+  val isHttps = serverProtocol.toLowerCase == "https"
+
+  var basicAuth: Boolean = false
 
   try {
-    authentication =
-      config.getConfig("elasticSearch").getBoolean("authentication")
+    basicAuth = config.getConfig("elasticSearch").getBoolean("basicAuth")
   } catch {
     //--- mute the error, default value will be used
     case _: Throwable =>
   }
 
-  logger.info("Elastic Client authentication: {}", authentication)
+  logger.info("Elastic Client basicAuth: {}", basicAuth)
 
   val httpClientConfigCallback =
-    if (authentication) new HttpClientConfigCallback {
-      override def customizeHttpClient(
-          httpClientBuilder: HttpAsyncClientBuilder
-      ): HttpAsyncClientBuilder = {
-        val username = sys.env.get("ES_USERNAME").getOrElse("admin")
-        val password = sys.env.get("ES_PASSWORD").getOrElse("")
-        if (username.isEmpty) {
-          logger.warning("supplied authenticated username is empty.")
+    if (basicAuth || isHttps)
+      new HttpClientConfigCallback {
+        override def customizeHttpClient(
+            httpClientBuilder: HttpAsyncClientBuilder
+        ): HttpAsyncClientBuilder = {
+          var builder = httpClientBuilder
+          if (basicAuth) {
+            val username = sys.env.get("ES_USERNAME").getOrElse("admin")
+            val password = sys.env.get("ES_PASSWORD").getOrElse("")
+            if (username.isEmpty) {
+              logger.warning("supplied authenticated username is empty.")
+            }
+            if (password.isEmpty) {
+              logger.warning("supplied authenticated password is empty.")
+            }
+            val credentials = new BasicCredentialsProvider()
+            credentials.setCredentials(
+              AuthScope.ANY,
+              new UsernamePasswordCredentials(username, password)
+            )
+            builder =
+              httpClientBuilder.setDefaultCredentialsProvider(credentials)
+          }
+          if (isHttps) {
+            val sslFactory = getSslFactory()
+            builder = httpClientBuilder
+              .setSSLContext(sslFactory.getSslContext())
+              .setSSLHostnameVerifier(sslFactory.getHostnameVerifier())
+          }
+          builder
         }
-        if (password.isEmpty) {
-          logger.warning("supplied authenticated password is empty.")
-        }
-        val credentials = new BasicCredentialsProvider()
-        credentials.setCredentials(
-          AuthScope.ANY,
-          new UsernamePasswordCredentials(username, password)
-        )
-        httpClientBuilder.setDefaultCredentialsProvider(credentials)
-      }
-    } else NoOpHttpClientConfigCallback
+      } else NoOpHttpClientConfigCallback
 
   var connectTimeout = 50000
   var socketTimeout = 10000
@@ -107,6 +131,96 @@ class DefaultClientProvider(
     }
   }
 
+  val disableSslVerification =
+    config.getConfig("elasticSearch").getBoolean("disableSslVerification")
+
+  logger.info(
+    "Elastic Client disableSslVerification: {}",
+    disableSslVerification
+  )
+
+  val clientTlsAuthentication =
+    config.getConfig("elasticSearch").getBoolean("clientTlsAuthentication")
+
+  logger.info(
+    "Elastic Client clientTlsAuthentication: {}",
+    clientTlsAuthentication
+  )
+
+  val trustedCertPath =
+    if (config.hasPath("elasticSearch.trustedCertPath"))
+      config.getConfig("elasticSearch").getString("trustedCertPath")
+    else ""
+
+  val clientCertKeyPath =
+    if (config.hasPath("elasticSearch.clientCertKeyPath"))
+      config.getConfig("elasticSearch").getString("clientCertKeyPath")
+    else ""
+
+  val clientCertPath =
+    if (config.hasPath("elasticSearch.clientCertPath"))
+      config.getConfig("elasticSearch").getString("clientCertPath")
+    else ""
+
+  def getSslFactory() = {
+    if (disableSslVerification) {
+      SSLFactory
+        .builder()
+        .withUnsafeTrustMaterial()
+        .withUnsafeHostnameVerifier()
+        .build()
+    } else {
+      if (clientTlsAuthentication) {
+        if (trustedCertPath.isEmpty) {
+          throw new Exception(
+            "Elasticsearch client: elasticSearch.trustedCertPath cannot be empty"
+          )
+        }
+        if (clientCertPath.isEmpty) {
+          throw new Exception(
+            "Elasticsearch client: elasticSearch.clientCertPath cannot be empty"
+          )
+        }
+        if (clientCertKeyPath.isEmpty) {
+          throw new Exception(
+            "Elasticsearch client: elasticSearch.clientCertKeyPath cannot be empty"
+          )
+        }
+        SSLFactory
+          .builder()
+          .withIdentityMaterial(
+            PemUtils.loadIdentityMaterial(
+              Paths.get(clientCertPath),
+              Paths.get(clientCertKeyPath)
+            )
+          )
+          .withTrustMaterial(
+            PemUtils.loadTrustMaterial(
+              Paths.get(trustedCertPath)
+            )
+          )
+          .build()
+      } else {
+        if (trustedCertPath.isEmpty) {
+          SSLFactory
+            .builder()
+            .withDefaultTrustMaterial()
+            .build()
+        } else {
+          SSLFactory
+            .builder()
+            .withTrustMaterial(
+              PemUtils.loadTrustMaterial(
+                Paths.get(trustedCertPath)
+              )
+            )
+            .build()
+        }
+
+      }
+    }
+  }
+
   override def getClient(): Future[ElasticClient] = {
 
     val outerFuture = clientFuture match {
@@ -115,15 +229,9 @@ class DefaultClientProvider(
         val future = retry(
           () =>
             Future {
-              val serverUrl = AppConfig
-                .conf()
-                .getString("elasticSearch.serverUrl")
-
-              logger.info("Elastic Client server Url: {}", serverUrl)
-
               ElasticClient(
                 JavaClient(
-                  ElasticProperties(serverUrl),
+                  serverUrlProperties,
                   requestConfigCallback = requestConfigCallback,
                   httpClientConfigCallback = httpClientConfigCallback
                 )

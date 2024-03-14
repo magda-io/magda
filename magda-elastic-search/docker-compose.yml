@@ -17,7 +17,7 @@ services:
     environment:
       - NODE_NAME=es-data-0
       - OPENSEARCH_INITIAL_ADMIN_PASSWORD=sDf1sdfds@sdf!
-      - CLUSTER_NAME=myesdb
+      - cluster.name=opensearch-cluster
       - NODE_DATA=true
       - NODE_MASTER=true
       - NODE_INGEST=true

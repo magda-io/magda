@@ -174,7 +174,6 @@ buildtest:search-with-index-cache:
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
-    ES_PASSWORD: "sDf1sdfds@sdf!"
   tags:
     - heavy
   script:
@@ -238,7 +237,6 @@ buildtest:search-no-index-cache:
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
-    ES_PASSWORD: "sDf1sdfds@sdf!"
   tags:
     - heavy
   script:
@@ -425,7 +423,6 @@ buildtest:typescript-apis-with-es:
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     TEST_ES_URL: "http://docker:9200"
-    ES_PASSWORD: "sDf1sdfds@sdf!"
   script:
     - cd magda-elastic-search
     - docker-compose up -d
