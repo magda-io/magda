@@ -90,6 +90,10 @@ trait BaseApiSpec
       .execute(
         IndexDefinition.regions.definition(DefaultIndices, config)
       )
+      .map {
+        case f: RequestFailure => throw new Exception(f.error.reason)
+        case _                 =>
+      }
       .await(90 seconds)
 
     val fakeRegionLoader = new RegionLoader {

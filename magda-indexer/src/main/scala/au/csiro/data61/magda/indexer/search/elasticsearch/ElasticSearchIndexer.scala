@@ -609,9 +609,9 @@ class ElasticSearchIndexer(
             identifiers.map(
               identifier =>
                 ElasticDsl
-                  .delete(identifier)
-                  .from(
-                    indices.getIndex(config, Indices.DataSetsIndex)
+                  .deleteById(
+                    indices.getIndex(config, Indices.DataSetsIndex),
+                    identifier
                   )
             )
           )

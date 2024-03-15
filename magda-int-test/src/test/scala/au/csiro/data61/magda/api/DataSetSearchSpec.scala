@@ -287,7 +287,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
   it("for a region in query text should boost results from that region") {
     // 3 fake datasets. One that relates to Queensland, the other to all of Australia
     // (but one of those has `queensland` in title otherwise only one document will be matched)
-    // The Austrlian one happens to be slightly more "relevant" due to the description, but the
+    // The Australian one happens to be slightly more "relevant" due to the description, but the
     //  Queensland dataset should be boosted if a user searches for wildlife density in Queensland
 
     val qldGeometry =

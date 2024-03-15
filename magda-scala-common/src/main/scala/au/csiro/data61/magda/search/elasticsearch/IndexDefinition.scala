@@ -40,7 +40,7 @@ case class IndexDefinition(
 object IndexDefinition extends DefaultJsonProtocol {
 
   def magdaGeoShapeField(name: String) = {
-    GeoShapeField(name).tree("geohash")
+    GeoShapeField(name)
   }
 
   def magdaTextField(name: String, extraFields: ElasticField*) = {
@@ -418,6 +418,9 @@ object IndexDefinition extends DefaultJsonProtocol {
             )
             .analysis(
               new Analysis(
+                tokenFilters = List(
+                  magdaRegionSynonymTokenFilter
+                ),
                 analyzers = List(
                   CustomAnalyzer(
                     "quote",

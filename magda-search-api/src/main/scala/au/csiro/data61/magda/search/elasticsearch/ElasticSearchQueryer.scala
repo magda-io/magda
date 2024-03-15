@@ -270,13 +270,17 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val regionsFuture = query.freeText
       .filter(_.length > 0)
       .map(
-        freeText =>
+        freeText => {
+          val searchReq = (
+            ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
+              query (matchQuery("regionSearchId", freeText).operator("or"))
+              limit 50
+          )
+          if (debugMode) {
+            logger.info(client.show(searchReq).query)
+          }
           client
-            .execute(
-              ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
-                query (matchQuery("regionSearchId", freeText).operator("or"))
-                limit 50
-            )
+            .execute(searchReq)
             .map {
               case ESGenericException(e) => throw e
               case results: RequestSuccess[SearchResponse] => {
@@ -287,6 +291,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 }
               }
             }
+        }
       )
       .getOrElse(Future(Set[Region]()))
     regionsFuture.map(regions => query.copy(boostRegions = regions))
