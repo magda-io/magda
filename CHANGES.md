@@ -18,6 +18,7 @@
 - Upgraded `http-proxy`, `pg` & other dependencies
 - Make sure generated storage filename contains only alphabets, digits, `-`, `_` & `.`
 - Fixed table preview auto-fit the device screen width in mobile view
+- Add usage tips to temporal facet filter
 
 ## v2.3.3
 
