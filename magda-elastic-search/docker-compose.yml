@@ -1,10 +1,10 @@
 version: "3"
 services:
   test-es:
-    image: opensearchproject/opensearch:2.12.0
+    image: data61/elasticsearch:6.8.22
     ports:
       - 9200:9200
-      - 9600:9600
+      - 9300:9300
     ulimits:
       memlock:
         soft: -1
@@ -12,18 +12,21 @@ services:
     volumes:
       - ./elasticsearch.yml:/tmp/elasticsearch.yml
       - ./setup-test.sh:/tmp/setup.sh
-      - ./regionSynonyms.test.txt:/usr/share/opensearch/config/analysis/regionSynonyms.txt
-      - ./wn_s_test.pl:/usr/share/opensearch/config/analysis/wn_s.pl
+      - ./regionSynonyms.test.txt:/tmp/regionSynonyms.txt
+      - ./wn_s_test.pl:/tmp/wn_s.pl
     environment:
       - NODE_NAME=es-data-0
-      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=sDf1sdfds@sdf!
-      - cluster.name=opensearch-cluster
+      - CLUSTER_NAME=myesdb
       - NODE_DATA=true
       - NODE_MASTER=true
       - NODE_INGEST=true
       - HTTP_ENABLE=true
+      - REPO=/data/repo
       - DISCOVERY_SERVICE=localhost
       - NETWORK_HOST=0.0.0.0
       - bootstrap.memory_lock=true
       - discovery.type=single-node
-      - plugins.security.disabled=true
+      - path.data=/data/data
+      - path.logs=/data/logs
+    entrypoint:
+      - /tmp/setup.sh
