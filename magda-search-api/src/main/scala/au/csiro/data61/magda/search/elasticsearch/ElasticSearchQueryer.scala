@@ -64,9 +64,12 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 ) extends SearchQueryer {
   private val logger = system.log
 
-  val debugMode = config.hasPath("searchApi.debug") && config.getBoolean(
-    "searchApi.debug"
-  )
+  val debugMode =
+    if (config.hasPath("searchApi.debug"))
+      config.getBoolean(
+        "searchApi.debug"
+      )
+    else false
 
   val clientFuture: Future[ElasticClient] = clientProvider.getClient.recover {
     case t: Throwable =>
