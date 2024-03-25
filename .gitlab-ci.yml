@@ -177,11 +177,11 @@ buildtest:search-with-index-cache:
   tags:
     - heavy
   script:
-    - cd magda-elastic-search
+    - cd magda-opensearch
     - docker-compose up -d
     - cd ..
     - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.*Spec"
-    - cd magda-elastic-search
+    - cd magda-opensearch
     - docker-compose down
   artifacts:
     paths:
@@ -240,11 +240,11 @@ buildtest:search-no-index-cache:
   tags:
     - heavy
   script:
-    - cd magda-elastic-search
+    - cd magda-opensearch
     - docker-compose up -d
     - cd ..
     - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
-    - cd magda-elastic-search
+    - cd magda-opensearch
     - docker-compose down
   artifacts:
     paths:
@@ -424,6 +424,8 @@ buildtest:typescript-apis-with-es:
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     TEST_ES_URL: "http://docker:9200"
   script:
+    # still use es 6.8 for existing node search api client
+    # the node search api client is not used in production but still need to be tested as we will use it as the base for hybrid search
     - cd magda-elastic-search
     - docker-compose up -d
     - cd ..
