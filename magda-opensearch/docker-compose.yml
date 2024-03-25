@@ -28,5 +28,3 @@ services:
       - discovery.type=single-node
       - path.data=/data/data
       - path.logs=/data/logs
-    entrypoint:
-      - /tmp/setup.sh
