@@ -216,7 +216,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         val allDatasets = randomDatasets ++ publisherDatasets
 
-        val (indexName, _, routes,_) = putDataSetsInIndex(allDatasets)
+        val (indexName, _, routes, _) = putDataSetsInIndex(allDatasets)
         val indices = new FakeIndices(indexName)
 
         blockUntilExactCount(allDatasets.size, indexName)
@@ -616,7 +616,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         forAll(gen) {
           case (indexTuple, queryTuple) ⇒
-            val (_, dataSets, routes,_) = indexTuple
+            val (_, dataSets, routes, _) = indexTuple
             val (textQuery, query) = queryTuple
 
             Get(s"/v0/datasets?$textQuery&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
@@ -921,7 +921,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
     def doUnspecifiedTest(queryGen: Gen[Query])(test: SearchResult => Unit) = {
       forAll(indexGen, textQueryGen(queryGen)) {
-        case ((_, dataSets, routes,_), (textQuery, query)) =>
+        case ((_, dataSets, routes, _), (textQuery, query)) =>
           doFilterTest(textQuery, dataSets, routes) { (response) =>
             whenever(!response.dataSets.isEmpty) {
               test(response)
@@ -942,7 +942,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     } yield (index, dataSet, textQuery)
 
     forAll(gen) {
-      case ((indexName, dataSets, routes,_), dataSet, (textQuery, query)) =>
+      case ((indexName, dataSets, routes, _), dataSet, (textQuery, query)) =>
         whenever(!dataSets.isEmpty && dataSets.contains(dataSet)) {
           doFilterTest(textQuery, dataSets, routes) { response =>
             test(query, response, dataSet)
@@ -999,7 +999,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       "should match the result of getting all datasets and using .drop(start).take(limit) to select a subset"
     ) {
       val gen = for {
-        (indexName, dataSets, routes,_) <- indexGen
+        (indexName, dataSets, routes, _) <- indexGen
         dataSetCount = dataSets.size
         start <- Gen.choose(0, dataSetCount)
         limit <- Gen.choose(0, dataSetCount)
@@ -1112,7 +1112,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       forAll(emptyIndexGen, textQueryGen(queryGen(List[DataSet]()))) {
         (indexTuple, queryTuple) ⇒
           val (textQuery, query) = queryTuple
-          val (_, _, routes,_) = indexTuple
+          val (_, _, routes, _) = indexTuple
 
           whenever(
             textQuery.trim.equals(textQuery) && !textQuery.contains("  ") &&
@@ -1138,7 +1138,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       forAll(emptyIndexGen, textQueryGen(thisQueryGen)) {
         (indexTuple, queryTuple) ⇒
           val (textQuery, query) = queryTuple
-          val (_, _, routes,_) = indexTuple
+          val (_, _, routes, _) = indexTuple
 
           Get(s"/v0/datasets?${textQuery}") ~> addSingleTenantIdHeader ~> routes ~> check {
             status shouldBe OK
@@ -1219,7 +1219,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     it("should not fail for queries that are full of arbitrary characters") {
       forAll(emptyIndexGen, Gen.listOf(Gen.alphaNumStr).map(_.mkString(" "))) {
         (indexTuple, textQuery) =>
-          val (_, _, routes,_) = indexTuple
+          val (_, _, routes, _) = indexTuple
 
           Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> addSingleTenantIdHeader ~> routes ~> check {
             status shouldBe OK
@@ -1236,7 +1236,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       forAll(gen) {
         case (indexTuple, queryTuple) ⇒
           val (textQuery, _) = queryTuple
-          val (_, _, routes,_) = indexTuple
+          val (_, _, routes, _) = indexTuple
 
           Get(s"/v0/datasets?${textQuery}") ~> addSingleTenantIdHeader ~> routes ~> check {
             status shouldBe OK
