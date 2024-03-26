@@ -29,6 +29,7 @@ import com.monsanto.labs.mwundo.GeoJson._
 import org.locationtech.jts.geom.GeometryFactory
 import org.scalacheck.Arbitrary.{arbString, arbitrary}
 import org.scalacheck.{Gen, Shrink}
+import org.scalatest.BeforeAndAfterAll
 
 import scala.util.Random
 
@@ -54,7 +55,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     describe("*") {
       it("should return all results") {
         forAll(indexGen) {
-          case (indexName, dataSets, routes) ⇒
+          case (indexName, dataSets, routes, _) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               contentType shouldBe `application/json`
@@ -73,7 +74,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         "hitCount should reflect all hits in the system, not just what is returned"
       ) {
         forAll(indexGen) {
-          case (indexName, dataSets, routes) ⇒
+          case (indexName, dataSets, routes, _) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length / 2}") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               val response = responseAs[SearchResult]
@@ -89,7 +90,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
       it("should sort results by pure quality") {
         forAll(indexGen) {
-          case (indexName, dataSets, routes) ⇒
+          case (indexName, dataSets, routes, _) ⇒
             Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               contentType shouldBe `application/json`
@@ -144,33 +145,29 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         val allDatasets = randomDatasets ++ synonymDataset
 
-        val (indexName, _, routes) = putDataSetsInIndex(allDatasets)
+        val (indexName, _, routes, _) = putDataSetsInIndex(allDatasets)
         val indices = new FakeIndices(indexName)
 
-        try {
-          blockUntilExactCount(allDatasets.size, indexName)
+        blockUntilExactCount(allDatasets.size, indexName)
 
-          forAll(searchKeywordGen) {
-            case GenResult(searchKeyword, synonym, datasetWithSynonym) =>
-              Get(
-                s"""/v0/datasets?query=${searchKeyword}&limit=${allDatasets.size}"""
-              ) ~> addSingleTenantIdHeader ~> routes ~> check {
-                status shouldBe OK
-                val response = responseAs[SearchResult]
+        forAll(searchKeywordGen) {
+          case GenResult(searchKeyword, synonym, datasetWithSynonym) =>
+            Get(
+              s"""/v0/datasets?query=${searchKeyword}&limit=${allDatasets.size}"""
+            ) ~> addSingleTenantIdHeader ~> routes ~> check {
+              status shouldBe OK
+              val response = responseAs[SearchResult]
 
-                withClue(
-                  s"term $searchKeyword and dataset description ${datasetWithSynonym.description}"
-                ) {
-                  response.strategy.get shouldBe MatchAll
-                  response.dataSets.size should be > 0
-                  response.dataSets.exists(
-                    _.identifier == datasetWithSynonym.identifier
-                  ) shouldBe true
-                }
+              withClue(
+                s"term $searchKeyword and dataset description ${datasetWithSynonym.description}"
+              ) {
+                response.strategy.get shouldBe MatchAll
+                response.dataSets.size should be > 0
+                response.dataSets.exists(
+                  _.identifier == datasetWithSynonym.identifier
+                ) shouldBe true
               }
-          }
-        } finally {
-          this.deleteIndex(indexName)
+            }
         }
 
       }
@@ -219,33 +216,29 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         val allDatasets = randomDatasets ++ publisherDatasets
 
-        val (indexName, _, routes) = putDataSetsInIndex(allDatasets)
+        val (indexName, _, routes,_) = putDataSetsInIndex(allDatasets)
         val indices = new FakeIndices(indexName)
 
-        try {
-          blockUntilExactCount(allDatasets.size, indexName)
+        blockUntilExactCount(allDatasets.size, indexName)
 
-          forAll(randomCaseAcronymGen) {
-            case GenResult(randomCaseAcronym, datasetWithPublisher) =>
-              Get(
-                s"""/v0/datasets?query=${randomCaseAcronym}&limit=${allDatasets.size}"""
-              ) ~> addSingleTenantIdHeader ~> routes ~> check {
-                status shouldBe OK
-                val response = responseAs[SearchResult]
+        forAll(randomCaseAcronymGen) {
+          case GenResult(randomCaseAcronym, datasetWithPublisher) =>
+            Get(
+              s"""/v0/datasets?query=${randomCaseAcronym}&limit=${allDatasets.size}"""
+            ) ~> addSingleTenantIdHeader ~> routes ~> check {
+              status shouldBe OK
+              val response = responseAs[SearchResult]
 
-                withClue(
-                  s"acronym $randomCaseAcronym and dataset publisher ${datasetWithPublisher.publisher}"
-                ) {
-                  response.strategy.get shouldBe MatchAll
-                  response.dataSets.size should be > 0
-                  response.dataSets.exists(
-                    _.identifier == datasetWithPublisher.identifier
-                  ) shouldBe true
-                }
+              withClue(
+                s"acronym $randomCaseAcronym and dataset publisher ${datasetWithPublisher.publisher}"
+              ) {
+                response.strategy.get shouldBe MatchAll
+                response.dataSets.size should be > 0
+                response.dataSets.exists(
+                  _.identifier == datasetWithPublisher.identifier
+                ) shouldBe true
               }
-          }
-        } finally {
-          this.deleteIndex(indexName)
+            }
         }
       }
 
@@ -332,36 +325,32 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
     val datasets = List(nationalDataset1, nationalDataset2, qldDataset)
 
-    val (indexName, _, routes) = putDataSetsInIndex(datasets)
+    val (indexName, _, routes, _) = putDataSetsInIndex(datasets)
     val indices = new FakeIndices(indexName)
 
-    try {
-      blockUntilExactCount(3, indexName)
+    blockUntilExactCount(3, indexName)
 
-      // Verify that national dataset is usually more relevant
-      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-        status shouldBe OK
-        val response = responseAs[SearchResult]
-        response.dataSets.size shouldEqual 3
-        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
-        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-        response.dataSets(2).identifier shouldEqual qldDataset.identifier
+    // Verify that national dataset is usually more relevant
+    Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      val response = responseAs[SearchResult]
+      response.dataSets.size shouldEqual 3
+      response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+      response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+      response.dataSets(2).identifier shouldEqual qldDataset.identifier
 
-      }
-
-      Get(
-        s"""/v0/datasets?query=wildlife+density+in+queensland&limit=${datasets.size}"""
-      ) ~> addSingleTenantIdHeader ~> routes ~> check {
-        status shouldBe OK
-        val response = responseAs[SearchResult]
-        response.dataSets.size shouldEqual 2
-        response.dataSets.head.identifier shouldEqual qldDataset.identifier // Failed
-        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-      }
-
-    } finally {
-      this.deleteIndex(indexName)
     }
+
+    Get(
+      s"""/v0/datasets?query=wildlife+density+in+queensland&limit=${datasets.size}"""
+    ) ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      val response = responseAs[SearchResult]
+      response.dataSets.size shouldEqual 2
+      response.dataSets.head.identifier shouldEqual qldDataset.identifier // Failed
+      response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+    }
+
   }
 
   it(
@@ -408,48 +397,43 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
     val datasets = List(nationalDataset1, nationalDataset2, saDataset)
 
-    val (indexName, _, routes) = putDataSetsInIndex(datasets)
+    val (indexName, _, routes, _) = putDataSetsInIndex(datasets)
     val indices = new FakeIndices(indexName)
 
-    try {
-      blockUntilExactCount(3, indexName)
+    blockUntilExactCount(3, indexName)
 
-      // Verify that national dataset is usually more relevant
-      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-        status shouldBe OK
-        val response = responseAs[SearchResult]
-        response.dataSets.size shouldEqual 3
-        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
-        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-        response.dataSets(2).identifier shouldEqual saDataset.identifier
+    // Verify that national dataset is usually more relevant
+    Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      val response = responseAs[SearchResult]
+      response.dataSets.size shouldEqual 3
+      response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+      response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+      response.dataSets(2).identifier shouldEqual saDataset.identifier
 
-      }
+    }
 
-      Get(
-        s"""/v0/datasets?query=wildlife+density+in+SA&limit=${datasets.size}"""
-      ) ~> addSingleTenantIdHeader ~> routes ~> check {
-        status shouldBe OK
-        val response = responseAs[SearchResult]
-        response.dataSets.size shouldEqual 2
-        response.dataSets.head.identifier shouldEqual saDataset.identifier // Failed
-        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-      }
+    Get(
+      s"""/v0/datasets?query=wildlife+density+in+SA&limit=${datasets.size}"""
+    ) ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      val response = responseAs[SearchResult]
+      response.dataSets.size shouldEqual 2
+      response.dataSets.head.identifier shouldEqual saDataset.identifier // Failed
+      response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+    }
 
-      // Verify that half the name doesn't boost results
-      Get(
-        s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}"""
-      ) ~> addSingleTenantIdHeader ~> routes ~> check {
-        status shouldBe OK
-        val response = responseAs[SearchResult]
-        response.dataSets.size shouldEqual 3
-        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
-        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-        response.dataSets(2).identifier shouldEqual saDataset.identifier
+    // Verify that half the name doesn't boost results
+    Get(
+      s"""/v0/datasets?query=wildlife+density+south&limit=${datasets.size}"""
+    ) ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      val response = responseAs[SearchResult]
+      response.dataSets.size shouldEqual 3
+      response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+      response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+      response.dataSets(2).identifier shouldEqual saDataset.identifier
 
-      }
-
-    } finally {
-      this.deleteIndex(indexName)
     }
   }
 
@@ -503,36 +487,32 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
     val datasets = List(nationalDataset1, nationalDataset2, alfDataset)
 
-    val (indexName, _, routes) = putDataSetsInIndex(datasets)
+    val (indexName, _, routes, _) = putDataSetsInIndex(datasets)
     val indices = new FakeIndices(indexName)
 
-    try {
-      blockUntilExactCount(3, indexName)
+    blockUntilExactCount(3, indexName)
 
-      // Verify that national dataset is usually more relevant
-      Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
-        status shouldBe OK
-        val response = responseAs[SearchResult]
-        response.dataSets.size shouldEqual 3
-        response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
-        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-        response.dataSets(2).identifier shouldEqual alfDataset.identifier
+    // Verify that national dataset is usually more relevant
+    Get(s"""/v0/datasets?query=wildlife+density&limit=${datasets.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      val response = responseAs[SearchResult]
+      response.dataSets.size shouldEqual 3
+      response.dataSets.head.identifier shouldEqual nationalDataset1.identifier
+      response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+      response.dataSets(2).identifier shouldEqual alfDataset.identifier
 
-      }
-
-      Get(
-        s"""/v0/datasets?query=wildlife+density+in+Alfredton&limit=${datasets.size}"""
-      ) ~> addSingleTenantIdHeader ~> routes ~> check {
-        status shouldBe OK
-        val response = responseAs[SearchResult]
-        response.dataSets.size shouldEqual 2
-        response.dataSets.head.identifier shouldEqual alfDataset.identifier
-        response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
-      }
-
-    } finally {
-      this.deleteIndex(indexName)
     }
+
+    Get(
+      s"""/v0/datasets?query=wildlife+density+in+Alfredton&limit=${datasets.size}"""
+    ) ~> addSingleTenantIdHeader ~> routes ~> check {
+      status shouldBe OK
+      val response = responseAs[SearchResult]
+      response.dataSets.size shouldEqual 2
+      response.dataSets.head.identifier shouldEqual alfDataset.identifier
+      response.dataSets(1).identifier shouldEqual nationalDataset2.identifier
+    }
+
   }
 
   describe("quotes") {
@@ -549,7 +529,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       }
 
       val quoteGen = for {
-        (_, dataSets, routes) <- indexGen.suchThat(
+        (_, dataSets, routes, _) <- indexGen.suchThat(
           !_._2.filter(_.description.isDefined).isEmpty
         )
         dataSetsWithDesc = dataSets.filter(_.description.exists(_.trim != ""))
@@ -636,7 +616,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         forAll(gen) {
           case (indexTuple, queryTuple) ⇒
-            val (_, dataSets, routes) = indexTuple
+            val (_, dataSets, routes,_) = indexTuple
             val (textQuery, query) = queryTuple
 
             Get(s"/v0/datasets?$textQuery&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
@@ -941,7 +921,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
     def doUnspecifiedTest(queryGen: Gen[Query])(test: SearchResult => Unit) = {
       forAll(indexGen, textQueryGen(queryGen)) {
-        case ((_, dataSets, routes), (textQuery, query)) =>
+        case ((_, dataSets, routes,_), (textQuery, query)) =>
           doFilterTest(textQuery, dataSets, routes) { (response) =>
             whenever(!response.dataSets.isEmpty) {
               test(response)
@@ -962,7 +942,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     } yield (index, dataSet, textQuery)
 
     forAll(gen) {
-      case ((indexName, dataSets, routes), dataSet, (textQuery, query)) =>
+      case ((indexName, dataSets, routes,_), dataSet, (textQuery, query)) =>
         whenever(!dataSets.isEmpty && dataSets.contains(dataSet)) {
           doFilterTest(textQuery, dataSets, routes) { response =>
             test(query, response, dataSet)
@@ -1019,7 +999,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       "should match the result of getting all datasets and using .drop(start).take(limit) to select a subset"
     ) {
       val gen = for {
-        (indexName, dataSets, routes) <- indexGen
+        (indexName, dataSets, routes,_) <- indexGen
         dataSetCount = dataSets.size
         start <- Gen.choose(0, dataSetCount)
         limit <- Gen.choose(0, dataSetCount)
@@ -1132,7 +1112,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       forAll(emptyIndexGen, textQueryGen(queryGen(List[DataSet]()))) {
         (indexTuple, queryTuple) ⇒
           val (textQuery, query) = queryTuple
-          val (_, _, routes) = indexTuple
+          val (_, _, routes,_) = indexTuple
 
           whenever(
             textQuery.trim.equals(textQuery) && !textQuery.contains("  ") &&
@@ -1158,7 +1138,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       forAll(emptyIndexGen, textQueryGen(thisQueryGen)) {
         (indexTuple, queryTuple) ⇒
           val (textQuery, query) = queryTuple
-          val (_, _, routes) = indexTuple
+          val (_, _, routes,_) = indexTuple
 
           Get(s"/v0/datasets?${textQuery}") ~> addSingleTenantIdHeader ~> routes ~> check {
             status shouldBe OK
@@ -1239,7 +1219,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
     it("should not fail for queries that are full of arbitrary characters") {
       forAll(emptyIndexGen, Gen.listOf(Gen.alphaNumStr).map(_.mkString(" "))) {
         (indexTuple, textQuery) =>
-          val (_, _, routes) = indexTuple
+          val (_, _, routes,_) = indexTuple
 
           Get(s"/v0/datasets?query=${encodeForUrl(textQuery)}") ~> addSingleTenantIdHeader ~> routes ~> check {
             status shouldBe OK
@@ -1256,7 +1236,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       forAll(gen) {
         case (indexTuple, queryTuple) ⇒
           val (textQuery, _) = queryTuple
-          val (_, _, routes) = indexTuple
+          val (_, _, routes,_) = indexTuple
 
           Get(s"/v0/datasets?${textQuery}") ~> addSingleTenantIdHeader ~> routes ~> check {
             status shouldBe OK

@@ -18,7 +18,7 @@ class TenantDataSetSearchSpec extends BaseSearchApiSpec {
         val tenant2: BigInt = 2
         val tenants = List(tenant0, tenant1, tenant2)
         forAll(tenantsIndexGen(tenants)) {
-          case (_, dataSets, route) ⇒
+          case (_, dataSets, route, _) ⇒
             tenants.flatMap(
               theTenant =>
                 Get(s"/v0/datasets?query=*&limit=${dataSets.length}") ~> addTenantIdHeader(
