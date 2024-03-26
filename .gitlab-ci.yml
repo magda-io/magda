@@ -9,7 +9,7 @@ variables:
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button`
-  CACHE_VERSION: ts-19-scala-10
+  CACHE_VERSION: ts-19-scala-11
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_TLS_VERIFY: 1
@@ -180,7 +180,12 @@ buildtest:search-with-index-cache:
     - cd magda-opensearch
     - docker-compose up -d
     - cd ..
-    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.*Spec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.AutoCompleteApiSpec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.DataSetSearchSpec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.LanguageAnalyzerSpec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.TenantDataSetSearchSpec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.FacetSpec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.RegionsApiSpec"
     - cd magda-opensearch
     - docker-compose down
   artifacts:
