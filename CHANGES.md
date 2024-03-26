@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.0.1
+
+- #3511 fixed Map Preview doesn't select the default feature layer correctly when it's supplied via query parameter
+
 ## v3.0.0
 
 - #3472, #3484 Node.js 18 & React 18 Upgrade

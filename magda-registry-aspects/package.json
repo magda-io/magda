@@ -1,6 +1,6 @@
 {
   "name": "@magda/registry-aspects",
-  "version": "3.0.0",
+  "version": "3.0.1-alpha.0",
   "description": "Common aspects for use with the registry.",
   "type": "module",
   "exports": {
