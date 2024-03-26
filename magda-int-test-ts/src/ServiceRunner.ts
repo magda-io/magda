@@ -781,7 +781,7 @@ export default class ServiceRunner {
     }
 
     async createElasticSearch() {
-        const baseDir = getMagdaModulePath("@magda/elastic-search");
+        const baseDir = getMagdaModulePath("@magda/opensearch");
         const dockerComposeFile = this.createTmpDockerComposeFile(
             path.resolve(baseDir, "docker-compose.yml"),
             undefined,
