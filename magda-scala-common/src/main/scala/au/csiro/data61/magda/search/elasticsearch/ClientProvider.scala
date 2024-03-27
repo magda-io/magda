@@ -4,16 +4,23 @@ import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.util.ErrorHandling.retry
-import com.sksamuel.elastic4s.ElasticsearchClientUri
+import com.sksamuel.elastic4s.{ElasticClient, ElasticProperties}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
-import com.sksamuel.elastic4s.http.{ElasticClient, NoOpHttpClientConfigCallback}
+import com.sksamuel.elastic4s.http.{JavaClient, NoOpHttpClientConfigCallback}
 import com.typesafe.config.Config
-import org.apache.http.HttpHost
+import org.apache.http.auth.{AuthScope, UsernamePasswordCredentials}
 import org.apache.http.client.config.RequestConfig
-import org.elasticsearch.client.RestClient
-import org.elasticsearch.client.RestClientBuilder.RequestConfigCallback
+import org.apache.http.impl.client.BasicCredentialsProvider
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder
+import org.elasticsearch.client.RestClientBuilder.{
+  HttpClientConfigCallback,
+  RequestConfigCallback
+}
+import java.nio.file.{Paths}
+import nl.altindag.ssl.SSLFactory
+import nl.altindag.ssl.pem.util.PemUtils
 
 trait ClientProvider {
   def getClient(): Future[ElasticClient]
@@ -28,32 +35,85 @@ class DefaultClientProvider(
   private implicit val scheduler = system.scheduler
   private val logger = system.log
 
-  object MagdaRequestConfigCallback extends RequestConfigCallback {
+  val serverUrl = AppConfig
+    .conf()
+    .getString("elasticSearch.serverUrl")
+
+  logger.info("Elastic Client server Url: {}", serverUrl)
+
+  val serverUrlProperties = ElasticProperties(serverUrl)
+  val serverProtocol = serverUrlProperties.endpoints.head.protocol
+  val isHttps = serverProtocol.toLowerCase == "https"
+
+  var basicAuth: Boolean = false
+
+  try {
+    basicAuth = config.getConfig("elasticSearch").getBoolean("basicAuth")
+  } catch {
+    //--- mute the error, default value will be used
+    case _: Throwable =>
+  }
+
+  logger.info("Elastic Client basicAuth: {}", basicAuth)
+
+  val httpClientConfigCallback =
+    if (basicAuth || isHttps)
+      new HttpClientConfigCallback {
+        override def customizeHttpClient(
+            httpClientBuilder: HttpAsyncClientBuilder
+        ): HttpAsyncClientBuilder = {
+          var builder = httpClientBuilder
+          if (basicAuth) {
+            val username = sys.env.get("ES_USERNAME").getOrElse("admin")
+            val password = sys.env.get("ES_PASSWORD").getOrElse("")
+            if (username.isEmpty) {
+              logger.warning("supplied authenticated username is empty.")
+            }
+            if (password.isEmpty) {
+              logger.warning("supplied authenticated password is empty.")
+            }
+            val credentials = new BasicCredentialsProvider()
+            credentials.setCredentials(
+              AuthScope.ANY,
+              new UsernamePasswordCredentials(username, password)
+            )
+            builder =
+              httpClientBuilder.setDefaultCredentialsProvider(credentials)
+          }
+          if (isHttps) {
+            val sslFactory = getSslFactory()
+            builder = httpClientBuilder
+              .setSSLContext(sslFactory.getSslContext())
+              .setSSLHostnameVerifier(sslFactory.getHostnameVerifier())
+          }
+          builder
+        }
+      } else NoOpHttpClientConfigCallback
+
+  var connectTimeout = 50000
+  var socketTimeout = 10000
+
+  try {
+    connectTimeout = config.getConfig("elasticSearch").getInt("connectTimeout")
+  } catch {
+    //--- mute the error, default value will be used
+    case _: Throwable =>
+  }
+
+  try {
+    socketTimeout = config.getConfig("elasticSearch").getInt("socketTimeout")
+  } catch {
+    //--- mute the error, default value will be used
+    case _: Throwable =>
+  }
+
+  logger.info("Elastic Client connectTimeout: {}", connectTimeout)
+  logger.info("Elastic Client socketTimeout: {}", socketTimeout)
+
+  val requestConfigCallback = new RequestConfigCallback {
     override def customizeRequestConfig(
         requestConfigBuilder: RequestConfig.Builder
     ): RequestConfig.Builder = {
-
-      var connectTimeout = 50000
-      var socketTimeout = 10000
-
-      try {
-        connectTimeout =
-          config.getConfig("elasticSearch").getInt("connectTimeout")
-      } catch {
-        //--- mute the error, default value will be used
-        case _: Throwable =>
-      }
-
-      try {
-        socketTimeout =
-          config.getConfig("elasticSearch").getInt("socketTimeout")
-      } catch {
-        //--- mute the error, default value will be used
-        case _: Throwable =>
-      }
-
-      logger.info("Elastic Client connectTimeout: {}", connectTimeout)
-      logger.info("Elastic Client socketTimeout: {}", socketTimeout)
 
       requestConfigBuilder
       /* It's a long lasting bug in upstream Elasticsearch project Rest Client Code
@@ -71,16 +131,97 @@ class DefaultClientProvider(
     }
   }
 
-  override def getClient(): Future[ElasticClient] = {
+  val disableSslVerification =
+    config.getConfig("elasticSearch").getBoolean("disableSslVerification")
 
-    var maxRetryTimeout = 30000
-    try {
-      maxRetryTimeout =
-        config.getConfig("elasticSearch").getInt("maxRetryTimeout")
-    } catch {
-      //--- mute the error, default value will be used
-      case _: Throwable =>
+  logger.info(
+    "Elastic Client disableSslVerification: {}",
+    disableSslVerification
+  )
+
+  val clientTlsAuthentication =
+    config.getConfig("elasticSearch").getBoolean("clientTlsAuthentication")
+
+  logger.info(
+    "Elastic Client clientTlsAuthentication: {}",
+    clientTlsAuthentication
+  )
+
+  val trustedCertPath =
+    if (config.hasPath("elasticSearch.trustedCertPath"))
+      config.getConfig("elasticSearch").getString("trustedCertPath")
+    else ""
+
+  val clientCertKeyPath =
+    if (config.hasPath("elasticSearch.clientCertKeyPath"))
+      config.getConfig("elasticSearch").getString("clientCertKeyPath")
+    else ""
+
+  val clientCertPath =
+    if (config.hasPath("elasticSearch.clientCertPath"))
+      config.getConfig("elasticSearch").getString("clientCertPath")
+    else ""
+
+  def getSslFactory() = {
+    if (disableSslVerification) {
+      SSLFactory
+        .builder()
+        .withUnsafeTrustMaterial()
+        .withUnsafeHostnameVerifier()
+        .build()
+    } else {
+      if (clientTlsAuthentication) {
+        if (trustedCertPath.isEmpty) {
+          throw new Exception(
+            "Elasticsearch client: elasticSearch.trustedCertPath cannot be empty"
+          )
+        }
+        if (clientCertPath.isEmpty) {
+          throw new Exception(
+            "Elasticsearch client: elasticSearch.clientCertPath cannot be empty"
+          )
+        }
+        if (clientCertKeyPath.isEmpty) {
+          throw new Exception(
+            "Elasticsearch client: elasticSearch.clientCertKeyPath cannot be empty"
+          )
+        }
+        SSLFactory
+          .builder()
+          .withIdentityMaterial(
+            PemUtils.loadIdentityMaterial(
+              Paths.get(clientCertPath),
+              Paths.get(clientCertKeyPath)
+            )
+          )
+          .withTrustMaterial(
+            PemUtils.loadTrustMaterial(
+              Paths.get(trustedCertPath)
+            )
+          )
+          .build()
+      } else {
+        if (trustedCertPath.isEmpty) {
+          SSLFactory
+            .builder()
+            .withDefaultTrustMaterial()
+            .build()
+        } else {
+          SSLFactory
+            .builder()
+            .withTrustMaterial(
+              PemUtils.loadTrustMaterial(
+                Paths.get(trustedCertPath)
+              )
+            )
+            .build()
+        }
+
+      }
     }
+  }
+
+  override def getClient(): Future[ElasticClient] = {
 
     val outerFuture = clientFuture match {
       case Some(future) => future
@@ -88,33 +229,13 @@ class DefaultClientProvider(
         val future = retry(
           () =>
             Future {
-              val uri = ElasticsearchClientUri(
-                AppConfig
-                  .conf()
-                  .getString("elasticSearch.serverUrl") + "?cluster.name=myesdb"
+              ElasticClient(
+                JavaClient(
+                  serverUrlProperties,
+                  requestConfigCallback = requestConfigCallback,
+                  httpClientConfigCallback = httpClientConfigCallback
+                )
               )
-
-              val hosts = uri.hosts.map {
-                case (host, port) =>
-                  new HttpHost(
-                    host,
-                    port,
-                    if (uri.options.getOrElse("ssl", "false") == "true") "https"
-                    else "http"
-                  )
-              }
-
-              logger.info("Elastic Client server Url: {}", uri.uri)
-              logger.info("Elastic Client maxRetryTimeout: {}", maxRetryTimeout)
-
-              val client = RestClient
-                .builder(hosts: _*)
-                .setMaxRetryTimeoutMillis(maxRetryTimeout)
-                .setRequestConfigCallback(MagdaRequestConfigCallback)
-                .setHttpClientConfigCallback(NoOpHttpClientConfigCallback)
-                .build()
-
-              ElasticClient.fromRestClient(client)
             },
           10 seconds,
           10,

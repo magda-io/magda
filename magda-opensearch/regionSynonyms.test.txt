@@ -1,0 +1,8 @@
+# This test region synonym file matches region index generator for test case
+# see: magda-int-test/src/test/scala/au/csiro/data61/magda/test/api/BaseApiSpec.scala
+# Region Type: ithinkthisisregiontype
+# From: http://example.com
+
+queensland, qld => ithinkthisisregiontype/3
+south australia, sa => ithinkthisisregiontype/4
+alfredton => ithinkthisisanotherregiontype/201011001

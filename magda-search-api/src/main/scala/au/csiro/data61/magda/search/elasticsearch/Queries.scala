@@ -1,14 +1,13 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 import java.time.OffsetDateTime
-import com.sksamuel.elastic4s.searches.ScoreMode
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.searches.queries.{
-  BoolQuery,
+import com.sksamuel.elastic4s.requests.searches.ScoreMode
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.requests.searches.queries.{
   Query => QueryDefinition
 }
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import com.sksamuel.elastic4s.searches.queries.geo.{
+import com.sksamuel.elastic4s.requests.searches.queries.geo.{
   PreindexedShape,
   ShapeRelation,
   GeoShapeQuery => GeoShapeQueryDefinition
@@ -21,11 +20,12 @@ import au.csiro.data61.magda.search.SearchStrategy
 import com.typesafe.config.Config
 import spray.json._
 import DefaultJsonProtocol._
-import com.sksamuel.elastic4s.searches.queries.matches.{
+import com.sksamuel.elastic4s.requests.searches.queries.compound.BoolQuery
+import com.sksamuel.elastic4s.requests.searches.queries.matches.{
   MatchAllQuery,
   MatchNoneQuery
 }
-import com.sksamuel.elastic4s.searches.queries.term.TermQuery
+import com.sksamuel.elastic4s.requests.searches.term.TermQuery
 
 object Queries {
 
@@ -109,7 +109,6 @@ object Queries {
         region.queryRegion.regionId
       ),
       indices.getIndex(config, Indices.RegionsIndex),
-      indices.getType(Indices.RegionsIndexType),
       "geometry"
     ),
     Some(ShapeRelation.INTERSECTS)

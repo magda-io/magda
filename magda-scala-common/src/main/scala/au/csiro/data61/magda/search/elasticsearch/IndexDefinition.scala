@@ -3,23 +3,18 @@ package au.csiro.data61.magda.search.elasticsearch
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import au.csiro.data61.magda.model.misc.BoundingBox
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource, RegionSources}
 import au.csiro.data61.magda.spatial.GeometryUtils.createEnvelope
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import com.monsanto.labs.mwundo.GeoJson
-import com.sksamuel.elastic4s.analyzers._
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.bulk.BulkResponse
-import com.sksamuel.elastic4s.http.{
-  ElasticClient,
-  RequestFailure,
-  RequestSuccess
-}
-import com.sksamuel.elastic4s.indexes.CreateIndexRequest
-import com.sksamuel.elastic4s.mappings.{FieldDefinition, GeoshapeField}
+import com.sksamuel.elastic4s.analysis._
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.requests.bulk.BulkResponse
+import com.sksamuel.elastic4s.{ElasticClient, RequestFailure, RequestSuccess}
+import com.sksamuel.elastic4s.requests.indexes.CreateIndexRequest
+import com.sksamuel.elastic4s.fields.{ElasticField, GeoShapeField, ObjectField}
 import com.typesafe.config.Config
 import org.locationtech.jts.geom._
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier
@@ -45,10 +40,10 @@ case class IndexDefinition(
 object IndexDefinition extends DefaultJsonProtocol {
 
   def magdaGeoShapeField(name: String) = {
-    GeoshapeField(name).tree("geohash").strategy("recursive")
+    GeoShapeField(name)
   }
 
-  def magdaTextField(name: String, extraFields: FieldDefinition*) = {
+  def magdaTextField(name: String, extraFields: ElasticField*) = {
     val fields = extraFields ++ Seq(
       keywordField("keyword"),
       textField("quote").analyzer("quote")
@@ -57,7 +52,7 @@ object IndexDefinition extends DefaultJsonProtocol {
     textField(name).analyzer("english").fields(fields)
   }
 
-  def magdaSynonymTextField(name: String, extraFields: FieldDefinition*) = {
+  def magdaSynonymTextField(name: String, extraFields: ElasticField*) = {
     val fields = extraFields ++ Seq(
       keywordField("keyword"),
       textField("quote").analyzer("quote_partial_match")
@@ -71,7 +66,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   def magdaSynonymLongHtmlTextField(
       name: String,
-      extraFields: FieldDefinition*
+      extraFields: ElasticField*
   ) = {
     val fields = extraFields ++ Seq(
       textField("quote").analyzer("quote_partial_match")
@@ -83,10 +78,10 @@ object IndexDefinition extends DefaultJsonProtocol {
       .fields(fields)
   }
 
-  val MagdaEdgeNgramFilter =
-    EdgeNGramTokenFilter("magda_edge_ngram_filter", Some(1), Some(20))
+  val magdaEdgeNgramFilter =
+    EdgeNGramTokenFilter("magda_edge_ngram_filter", 1, 20)
 
-  def magdaAutocompleteField(name: String, extraFields: FieldDefinition*) = {
+  def magdaAutocompleteField(name: String, extraFields: ElasticField*) = {
 
     val fields = extraFields ++ Seq(
       keywordField("keyword"),
@@ -99,7 +94,7 @@ object IndexDefinition extends DefaultJsonProtocol {
     textField(name).analyzer("english").fields(fields)
   }
 
-  val MagdaSynonymTokenFilter = SynonymTokenFilter(
+  val magdaSynonymTokenFilter = SynonymTokenFilter(
     "synonym",
     Some("analysis/wn_s.pl"),
     Set.empty,
@@ -107,12 +102,84 @@ object IndexDefinition extends DefaultJsonProtocol {
     Some("wordnet")
   )
 
+  val englishPossessiveStemmerFilter = StemmerTokenFilter(
+    "english_possessive_stemmer",
+    "possessive_english"
+  )
+
+  val lightEnglishStemmerFilter = StemmerTokenFilter(
+    "light_english_stemmer",
+    "light_english"
+  )
+
+  val englishStopFilter = StopTokenFilter(
+    "english_stop",
+    Some(NamedStopTokenFilter.English)
+  )
+
+  /* Customised from new english analyzer as per:
+   https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html#english-analyzer
+   In order to apply synonym filter
+   */
+  val englishWithSynonymAnalyzer = CustomAnalyzer(
+    "english_with_synonym",
+    tokenizer = "standard",
+    tokenFilters = List(
+      "lowercase",
+      englishPossessiveStemmerFilter.name,
+      lightEnglishStemmerFilter.name,
+      //Es 6.x doesn't allow `stop` before Synonym
+      //StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
+      magdaSynonymTokenFilter.name,
+      englishPossessiveStemmerFilter.name,
+      englishStopFilter.name
+    )
+  )
+
+  val englishWithSynonymStripHtmlAnalyzer = CustomAnalyzer(
+    "english_with_synonym_strip_html",
+    tokenizer = "standard",
+    charFilters = List("html_strip"),
+    tokenFilters = List(
+      "lowercase",
+      englishPossessiveStemmerFilter.name,
+      lightEnglishStemmerFilter.name,
+      //Es 6.x doesn't allow `stop` before Synonym
+      //StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
+      magdaSynonymTokenFilter.name,
+      englishPossessiveStemmerFilter.name,
+      englishStopFilter.name
+    )
+  )
+
+  val englishWithoutSynonymForSearchAnalyzer = CustomAnalyzer(
+    "english_without_synonym_for_search",
+    tokenizer = "standard",
+    tokenFilters = List(
+      "lowercase",
+      englishPossessiveStemmerFilter.name,
+      lightEnglishStemmerFilter.name,
+      englishStopFilter.name
+    )
+  )
+
+  // this analyzer is created only for indexing purpose
+  // do not use as search analyzer
+  val magdaEdgeNgramAnalyzer = CustomAnalyzer(
+    "magda_edge_ngram",
+    tokenizer = "standard",
+    tokenFilters = List(
+      "lowercase",
+      magdaEdgeNgramFilter.name
+    )
+  )
+
   def applyIndexConfig(
       config: Config,
       indexReq: CreateIndexRequest,
       processRefreshIntervalSetting: Boolean = false
   ) = {
-    var req = indexReq.copy(includeTypeName = Some(true))
+    var req = indexReq.copy()
     if (processRefreshIntervalSetting) {
       config
         .getOptionalString("indexer.refreshInterval")
@@ -123,31 +190,38 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 50,
+    version = 51,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
-      var createIdxReq =
+      val esInstanceSupport =
+        config.getBoolean("elasticSearch.esInstanceSupport")
+      val createIdxReq =
         createIndex(indices.getIndex(config, Indices.DataSetsIndex))
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
-          .mappings(
-            mapping(indices.getType(Indices.DataSetsIndexType))
-              .fields(
-                objectField("accrualPeriodicity").fields(
-                  magdaTextField("text")
-                ),
-                keywordField("accrualPeriodicityRecurrenceRule"),
-                objectField("temporal").fields(
-                  objectField("start").fields(
-                    dateField("date"),
-                    textField("text")
+          .mapping(
+            properties(
+              ObjectField(
+                "accrualPeriodicity",
+                properties = List(magdaTextField("text"))
+              ),
+              keywordField("accrualPeriodicityRecurrenceRule"),
+              ObjectField(
+                "temporal",
+                properties = List(
+                  ObjectField(
+                    "start",
+                    properties = List(dateField("date"), textField("text"))
                   ),
-                  objectField("end").fields(
-                    dateField("date"),
-                    textField("text")
+                  ObjectField(
+                    "end",
+                    properties = List(dateField("date"), textField("text"))
                   )
-                ),
-                objectField("publisher").fields(
+                )
+              ),
+              ObjectField(
+                "publisher",
+                properties = List(
                   keywordField("identifier"),
                   textField("acronym")
                     .analyzer("keyword")
@@ -174,181 +248,137 @@ object IndexDefinition extends DefaultJsonProtocol {
                       .analyzer("quote")
                       .fielddata(true)
                   )
+                )
+              ),
+              nestedField("distributions").fields(
+                keywordField("identifier"),
+                magdaTextField("title"),
+                magdaSynonymLongHtmlTextField("description"),
+                magdaTextField(
+                  "format",
+                  textField("keyword_lowercase")
+                    .analyzer("quote")
+                    .fielddata(true)
                 ),
-                nestedField("distributions").fields(
-                  keywordField("identifier"),
-                  magdaTextField("title"),
-                  magdaSynonymLongHtmlTextField("description"),
-                  magdaTextField(
-                    "format",
-                    textField("keyword_lowercase")
-                      .analyzer("quote")
-                      .fielddata(true)
-                  ),
-                  objectField("accessControl").fields(
+                ObjectField(
+                  "accessControl",
+                  properties = List(
                     keywordField("ownerId"),
                     keywordField("orgUnitId"),
                     booleanField("constraintExemption"),
                     keywordField("preAuthorisedPermissionIds")
                   )
-                ),
-                objectField("spatial").fields(magdaGeoShapeField("geoJson")),
-                magdaTextField("title"),
-                magdaSynonymLongHtmlTextField("description"),
-                magdaTextField("keywords"),
-                magdaSynonymTextField("themes"),
-                doubleField("quality"),
-                booleanField("hasQuality"),
-                keywordField("catalog"),
-                objectField("source").fields(
+                )
+              ),
+              ObjectField(
+                "spatial",
+                properties = List(magdaGeoShapeField("geoJson"))
+              ),
+              magdaTextField("title"),
+              magdaSynonymLongHtmlTextField("description"),
+              magdaTextField("keywords"),
+              magdaSynonymTextField("themes"),
+              doubleField("quality"),
+              booleanField("hasQuality"),
+              keywordField("catalog"),
+              ObjectField(
+                "source",
+                properties = List(
                   keywordField("id"),
                   magdaTextField("name"),
                   keywordField("url"),
                   magdaTextField("originalName"),
                   keywordField("originalUrl"),
-                  objectField("extras").dynamic(true)
-                ),
-                objectField("provenance").fields(
+                  ObjectField(
+                    "extras",
+                    dynamic =
+                      if (esInstanceSupport) Some("runtime")
+                      else Some("true")
+                  )
+                )
+              ),
+              ObjectField(
+                "provenance",
+                properties = List(
                   magdaTextField("mechanism"),
                   magdaTextField("sourceSystem"),
                   booleanField("isOpenData"),
                   magdaTextField("affiliatedOrganisationIds")
-                ),
-                objectField("accessControl").fields(
+                )
+              ),
+              ObjectField(
+                "accessControl",
+                properties = List(
                   keywordField("ownerId"),
                   keywordField("orgUnitId"),
                   booleanField("constraintExemption"),
                   keywordField("preAuthorisedPermissionIds")
-                ),
-                keywordField("years"),
-                /*
-                 * not sure whether is Elasticsearch or elastic4s
-                 * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
-                 * */
-                keywordField("identifier"),
-                keywordField("tenantId"),
-                objectField("contactPoint").fields(keywordField("identifier")),
-                dateField("indexed"),
-                keywordField("publishingState"),
-                objectField("accessNotes").fields(
+                )
+              ),
+              keywordField("years"),
+              /*
+               * not sure whether is Elasticsearch or elastic4s
+               * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
+               * */
+              keywordField("identifier"),
+              keywordField("tenantId"),
+              ObjectField(
+                "contactPoint",
+                properties = List(keywordField("identifier"))
+              ),
+              dateField("indexed"),
+              keywordField("publishingState"),
+              ObjectField(
+                "accessNotes",
+                properties = List(
                   magdaTextField("notes"),
                   magdaAutocompleteField("location")
                 )
               )
+            )
           )
           .analysis(
-            CustomAnalyzerDefinition(
-              "quote",
-              KeywordTokenizer,
-              LowercaseTokenFilter
-            ),
-            /*
-            allow quoted query string match a portion of the field content rather than whole field
-            the exact form of whole quoted query string still have to be matched exactly in field content
-             */
-            CustomAnalyzerDefinition(
-              "quote_partial_match",
-              StandardTokenizer,
-              LowercaseTokenFilter
-            ),
-            CustomAnalyzerDefinition(
-              "uppercase",
-              KeywordTokenizer,
-              UppercaseTokenFilter
-            ),
-            /* Customised from new english analyzer as per:
-             https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-lang-analyzer.html#english-analyzer
-             In order to apply synonym filter
-             */
-            CustomAnalyzerDefinition(
-              "english_with_synonym",
-              StandardTokenizer,
-              List(
-                LowercaseTokenFilter,
-                StemmerTokenFilter(
-                  "english_possessive_stemmer",
-                  "possessive_english"
+            new Analysis(
+              tokenFilters = List(
+                englishPossessiveStemmerFilter,
+                lightEnglishStemmerFilter,
+                magdaSynonymTokenFilter,
+                englishPossessiveStemmerFilter,
+                englishStopFilter,
+                magdaEdgeNgramFilter
+              ),
+              analyzers = List(
+                CustomAnalyzer(
+                  "quote",
+                  tokenizer = "keyword",
+                  tokenFilters = List("lowercase")
                 ),
-                StemmerTokenFilter(
-                  "light_english_stemmer",
-                  "light_english"
+                /*
+                allow quoted query string match a portion of the field content rather than whole field
+                the exact form of whole quoted query string still have to be matched exactly in field content
+                 */
+                CustomAnalyzer(
+                  "quote_partial_match",
+                  tokenizer = "standard",
+                  tokenFilters = List("lowercase")
                 ),
-                //Es 6.x doesn't allow `stop` before Synonym
-                //StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
-                MagdaSynonymTokenFilter,
-                StemmerTokenFilter(
-                  "english_possessive_stemmer",
-                  "possessive_english"
+                CustomAnalyzer(
+                  "uppercase",
+                  tokenizer = "keyword",
+                  tokenFilters = List("uppercase")
                 ),
-                StopTokenFilter(
-                  "english_stop",
-                  Some(NamedStopTokenFilter.English)
-                )
-              )
-            ),
-            CustomAnalyzerDefinition(
-              "english_with_synonym_strip_html",
-              StandardTokenizer,
-              List(
-                HtmlStripCharFilter,
-                LowercaseTokenFilter,
-                StemmerTokenFilter(
-                  "english_possessive_stemmer",
-                  "possessive_english"
-                ),
-                StemmerTokenFilter(
-                  "light_english_stemmer",
-                  "light_english"
-                ),
-                //Es 6.x doesn't allow `stop` before Synonym
-                //StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
-                MagdaSynonymTokenFilter,
-                StemmerTokenFilter(
-                  "english_possessive_stemmer",
-                  "possessive_english"
-                ),
-                StopTokenFilter(
-                  "english_stop",
-                  Some(NamedStopTokenFilter.English)
-                )
-              )
-            ),
-            CustomAnalyzerDefinition(
-              "english_without_synonym_for_search",
-              StandardTokenizer,
-              List(
-                LowercaseTokenFilter,
-                StemmerTokenFilter(
-                  "english_possessive_stemmer",
-                  "possessive_english"
-                ),
-                StemmerTokenFilter(
-                  "light_english_stemmer",
-                  "light_english"
-                ),
-                StopTokenFilter(
-                  "english_stop",
-                  Some(NamedStopTokenFilter.English)
-                )
-              )
-            ),
-            // this analyzer is created only for indexing purpose
-            // do not use as search analyzer
-            CustomAnalyzerDefinition(
-              "magda_edge_ngram",
-              StandardTokenizer,
-              List(
-                LowercaseTokenFilter,
-                MagdaEdgeNgramFilter
+                englishWithSynonymAnalyzer,
+                englishWithSynonymStripHtmlAnalyzer,
+                englishWithoutSynonymForSearchAnalyzer,
+                magdaEdgeNgramAnalyzer
               )
             )
           )
-
       applyIndexConfig(config, createIdxReq, true)
     }
   )
 
-  val MagdaRegionSynonymTokenFilter = SynonymGraphTokenFilter(
+  val magdaRegionSynonymTokenFilter = SynonymGraphTokenFilter(
     "search_region_synonym_graph_filter",
     Some("analysis/regionSynonyms.txt"),
     Set.empty,
@@ -360,15 +390,15 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 25,
+      version = 26,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) => {
         val createIdxReq =
           createIndex(indices.getIndex(config, Indices.RegionsIndex))
             .shards(config.getInt("elasticSearch.shardCount"))
             .replicas(config.getInt("elasticSearch.replicaCount"))
-            .mappings(
-              mapping(indices.getType(Indices.RegionsIndexType)).fields(
+            .mapping(
+              properties(
                 keywordField("regionType"),
                 keywordField("regionId"),
                 magdaTextField("regionName"),
@@ -387,24 +417,31 @@ object IndexDefinition extends DefaultJsonProtocol {
               )
             )
             .analysis(
-              CustomAnalyzerDefinition(
-                "quote",
-                KeywordTokenizer,
-                LowercaseTokenFilter
-              ),
-              CustomAnalyzerDefinition(
-                "regionSearchIdInput",
-                WhitespaceTokenizer,
-                List(
-                  LowercaseTokenFilter,
-                  MagdaRegionSynonymTokenFilter
-                )
-              ),
-              CustomAnalyzerDefinition(
-                "regionSearchIdIndex",
-                KeywordTokenizer,
-                List(
-                  LowercaseTokenFilter
+              new Analysis(
+                tokenFilters = List(
+                  magdaRegionSynonymTokenFilter
+                ),
+                analyzers = List(
+                  CustomAnalyzer(
+                    "quote",
+                    tokenizer = "keyword",
+                    tokenFilters = List("lowercase")
+                  ),
+                  CustomAnalyzer(
+                    "regionSearchIdInput",
+                    tokenizer = "whitespace",
+                    tokenFilters = List(
+                      "lowercase",
+                      magdaRegionSynonymTokenFilter.name
+                    )
+                  ),
+                  CustomAnalyzer(
+                    "regionSearchIdIndex",
+                    tokenizer = "keyword",
+                    tokenFilters = List(
+                      "lowercase"
+                    )
+                  )
                 )
               )
             )
@@ -424,15 +461,15 @@ object IndexDefinition extends DefaultJsonProtocol {
   val publishers: IndexDefinition =
     new IndexDefinition(
       name = "publishers",
-      version = 7,
+      version = 8,
       indicesIndex = Indices.PublishersIndex,
       definition = (indices, config) => {
         val createIdxReq =
           createIndex(indices.getIndex(config, Indices.PublishersIndex))
             .shards(config.getInt("elasticSearch.shardCount"))
             .replicas(config.getInt("elasticSearch.replicaCount"))
-            .mappings(
-              mapping(indices.getType(Indices.PublisherIndexType)).fields(
+            .mapping(
+              properties(
                 keywordField("identifier"),
                 textField("acronym")
                   .analyzer("keyword")
@@ -454,15 +491,23 @@ object IndexDefinition extends DefaultJsonProtocol {
               )
             )
             .analysis(
-              CustomAnalyzerDefinition(
-                "quote",
-                KeywordTokenizer,
-                LowercaseTokenFilter
-              ),
-              CustomAnalyzerDefinition(
-                "uppercase",
-                KeywordTokenizer,
-                UppercaseTokenFilter
+              new Analysis(
+                analyzers = List(
+                  CustomAnalyzer(
+                    "quote",
+                    tokenizer = "keyword",
+                    tokenFilters = List(
+                      "lowercase"
+                    )
+                  ),
+                  CustomAnalyzer(
+                    "uppercase",
+                    tokenizer = "keyword",
+                    tokenFilters = List(
+                      "uppercase"
+                    )
+                  )
+                )
               )
             )
         applyIndexConfig(config, createIdxReq)
@@ -472,24 +517,30 @@ object IndexDefinition extends DefaultJsonProtocol {
   val formats: IndexDefinition =
     new IndexDefinition(
       name = "formats",
-      version = 2,
+      version = 3,
       indicesIndex = Indices.FormatsIndex,
       definition = (indices, config) => {
         val createIdxReq =
           createIndex(indices.getIndex(config, Indices.FormatsIndex))
             .shards(config.getInt("elasticSearch.shardCount"))
             .replicas(config.getInt("elasticSearch.replicaCount"))
-            .mappings(
-              mapping(indices.getType(Indices.FormatsIndexType)).fields(
+            .mapping(
+              properties(
                 magdaTextField("value"),
                 dateField("indexed")
               )
             )
             .analysis(
-              CustomAnalyzerDefinition(
-                "quote",
-                KeywordTokenizer,
-                LowercaseTokenFilter
+              new Analysis(
+                analyzers = List(
+                  CustomAnalyzer(
+                    "quote",
+                    tokenizer = "keyword",
+                    tokenFilters = List(
+                      "lowercase"
+                    )
+                  )
+                )
               )
             )
         applyIndexConfig(config, createIdxReq)
@@ -652,8 +703,7 @@ object IndexDefinition extends DefaultJsonProtocol {
           geometryOpt.map(
             geometry =>
               indexInto(
-                indices.getIndex(config, Indices.RegionsIndex) / indices
-                  .getType(Indices.RegionsIndexType)
+                indices.getIndex(config, Indices.RegionsIndex)
               ).id(uniqueRegionId)
                 .source(
                   JsObject(

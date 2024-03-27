@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.spatial
 
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.{ElasticClient, ElasticDsl, RequestSuccess}
 import au.csiro.data61.magda.search.elasticsearch.{
   DefaultClientProvider,
   IndexDefinition,
@@ -10,7 +10,7 @@ import au.csiro.data61.magda.search.elasticsearch.{
 import java.nio.file.FileSystems
 import java.nio.file.Files
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.FunSpecLike
@@ -41,7 +41,7 @@ import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import org.scalactic.anyvals.PosInt
 import au.csiro.data61.magda.test.util.TestActorSystem
 import au.csiro.data61.magda.test.util.MagdaElasticSugar
-import com.sksamuel.elastic4s.http.get.GetResponse
+import com.sksamuel.elastic4s.requests.get.GetResponse
 
 class RegionLoadingTest
     extends TestKit(TestActorSystem.actorSystem)
@@ -108,7 +108,7 @@ class RegionLoadingTest
       .parseMap(
         Map(
           "regionLoading.cachePath" -> dir.getFileName.toFile().toString()
-        )
+        ).asJava
       )
       .withFallback(AppConfig.conf())
 
@@ -138,7 +138,7 @@ class RegionLoadingTest
       .parseMap(
         Map(
           "regionLoading.cachePath" -> getCurrentDirectory.toString()
-        )
+        ).asJava
       )
       .withFallback(AppConfig.conf())
 
@@ -180,7 +180,6 @@ class RegionLoadingTest
       .setupRegions(client, regionLoader, fakeIndices)
       .await(120 seconds)
     val indexName = fakeIndices.getIndex(config, Indices.RegionsIndex)
-    val indexType = fakeIndices.getType(Indices.RegionsIndexType)
 
     refresh(indexName)
 
@@ -199,8 +198,7 @@ class RegionLoadingTest
       val result = client
         .execute(
           get(regionId).from(
-            fakeIndices.getIndex(config, Indices.RegionsIndex) / fakeIndices
-              .getType(Indices.RegionsIndexType)
+            fakeIndices.getIndex(config, Indices.RegionsIndex)
           )
         )
         .await(60 seconds)
@@ -253,7 +251,7 @@ class RegionLoadingTest
     }
 
     client
-      .execute(deleteByQuery(indexName, indexType, matchAllQuery()))
+      .execute(deleteByQuery(indexName, matchAllQuery()))
       .await match {
       case ESGenericException(e) => throw e
       case _                     =>

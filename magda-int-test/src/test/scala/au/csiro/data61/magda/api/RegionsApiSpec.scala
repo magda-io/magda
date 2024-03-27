@@ -6,8 +6,8 @@ import au.csiro.data61.magda.api.model.{Protocols, RegionSearchResult}
 import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource}
 import au.csiro.data61.magda.test.util.{MagdaElasticSugar, TestActorSystem}
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.ElasticClient
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.{ElasticClient, RequestFailure}
 import com.typesafe.config.Config
 import org.scalatest.{BeforeAndAfterAll, FunSpecLike, Matchers}
 import spray.json._
@@ -77,6 +77,10 @@ class RegionsApiSpec
 
     client
       .execute(IndexDefinition.regions.definition(fakeIndices, config))
+      .map {
+        case f: RequestFailure => throw new Exception(f.error.reason)
+        case _                 =>
+      }
       .await
 
     val fakeRegionLoader = new RegionLoader {

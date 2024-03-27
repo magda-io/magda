@@ -22,7 +22,7 @@ import au.csiro.data61.magda.search.elasticsearch.{
 import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.test.opa.ResponseDatasetAllowAll
 import au.csiro.data61.magda.test.util.Generators
-import com.sksamuel.elastic4s.http.ElasticDsl._
+import com.sksamuel.elastic4s.ElasticDsl._
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalacheck.Gen
 import spray.json.{JsNull, JsObject, _}

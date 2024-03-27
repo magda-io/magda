@@ -21,13 +21,14 @@ class FacetSpec extends BaseSearchApiSpec {
 
   describe("facets") {
     def checkFacetsNoQuery(
-        indexGen: Gen[(String, List[DataSet], Route)] = mediumIndexGen,
+        indexGen: Gen[(String, List[DataSet], Route, () => Unit)] =
+          mediumIndexGen,
         facetSizeGen: Gen[Int] = Gen.posNum[Int]
     )(inner: (List[DataSet], Int) ⇒ Unit) = {
       try {
         forAll(indexGen, facetSizeGen, Gen.posNum[Int], Gen.posNum[Int]) {
           (tuple, rawFacetSize, start, limit) ⇒
-            val (indexName, dataSets, routes) = tuple
+            val (indexName, dataSets, routes, _) = tuple
             val facetSize = Math.max(rawFacetSize, 1)
 
             whenever(start >= 0 && limit >= 0) {
@@ -51,12 +52,15 @@ class FacetSpec extends BaseSearchApiSpec {
         // --- format facet needs to return a list of values
         facetFieldGetter: DataSet => Seq[String],
         facetQueryCreator: String => String,
-        indexGen: Gen[(String, List[DataSet], Route)] = mediumIndexGen,
+        indexGen: Gen[(String, List[DataSet], Route, () => Unit)] =
+          mediumIndexGen,
         facetSizeGen: Gen[Int] = Gen.choose(1, 20)
     )(inner: (String, Seq[String]) ⇒ Unit) = {
       try {
-        val gen = for {
-          (indexName, dataSets, routes) <- indexGen
+        val gen: Gen[(Route, String, List[String])] = (for {
+          (_, dataSets, routes, _) <- indexGen
+
+          r = routes
 
           facetValueList = dataSets
             .flatMap(facetFieldGetter)
@@ -72,7 +76,7 @@ class FacetSpec extends BaseSearchApiSpec {
           if facetValueList.size > 0
           facetValue <- Gen.oneOf(facetValueList)
 
-        } yield (routes, facetValue, facetValueList)
+        } yield (r, facetValue, facetValueList))
 
         forAll(gen) { tuple ⇒
           val (routes, facetValue, facetValueList) = tuple
@@ -100,13 +104,17 @@ class FacetSpec extends BaseSearchApiSpec {
 
     def checkFacetsWithQueryGen(
         gen: Gen[
-          ((String, List[DataSet], Route), (String, Query), Seq[String])
+          (
+              (String, List[DataSet], Route, () => Unit),
+              (String, Query),
+              Seq[String]
+          )
         ] = defaultGen,
         facetSizeGen: Gen[Int] = Gen.choose(1, 20)
     )(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit): Unit = {
       forAll(gen, facetSizeGen) {
         case ((tuple, query, facetValues), rawFacetSize) ⇒
-          val (indexName, dataSets, routes) = tuple
+          val (indexName, dataSets, routes, _) = tuple
           val (textQuery, objQuery) = query
           val facetSize = Math.max(rawFacetSize, 1)
 
@@ -128,11 +136,16 @@ class FacetSpec extends BaseSearchApiSpec {
     def checkFacetsWithQuery(
         thisTextQueryGen: List[DataSet] => Gen[(String, Query)] =
           dataSets => textQueryGen(queryGen(dataSets)),
-        thisIndexGen: Gen[((String, List[DataSet], Route))] = indexGen,
+        thisIndexGen: Gen[((String, List[DataSet], Route, () => Unit))] =
+          indexGen,
         facetSizeGen: Gen[Int] = Gen.choose(0, 20)
     )(inner: (List[DataSet], Int, Query, List[DataSet], Route) ⇒ Unit): Unit = {
       val gen: Gen[
-        ((String, List[DataSet], Route), (String, Query), Seq[String])
+        (
+            (String, List[DataSet], Route, () => Unit),
+            (String, Query),
+            Seq[String]
+        )
       ] = for {
         tuple <- thisIndexGen
         query <- thisTextQueryGen(tuple._2)
@@ -535,7 +548,7 @@ class FacetSpec extends BaseSearchApiSpec {
           try {
             forAll(gen) {
               case (tuple, textQuery, facetSize) ⇒
-                val (indexName, dataSets, routes) = tuple
+                val (indexName, dataSets, routes, _) = tuple
 
                 val publishers = dataSets.flatMap(_.publisher).distinct
 

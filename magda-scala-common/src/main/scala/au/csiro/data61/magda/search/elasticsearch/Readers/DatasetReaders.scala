@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.search.elasticsearch.Readers
 
 import com.sksamuel.elastic4s.AggReader
-import com.sksamuel.elastic4s.json.JacksonSupport
+import com.sksamuel.elastic4s.JacksonSupport
 import au.csiro.data61.magda.model.misc.DataSet
 import scala.util.Try
 

@@ -12,33 +12,33 @@ import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch.Exceptions._
 import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.util.ErrorHandling.retry
-import com.sksamuel.elastic4s.admin.OpenIndexRequest
-import com.sksamuel.elastic4s.bulk.BulkRequest
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.bulk.{BulkResponse, BulkResponseItem}
-import com.sksamuel.elastic4s.http.delete.DeleteByQueryResponse
-import com.sksamuel.elastic4s.http.index.CreateIndexResponse
-import com.sksamuel.elastic4s.http.index.admin.RefreshIndexResponse
-import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
-import com.sksamuel.elastic4s.http.search.SearchResponse
-import com.sksamuel.elastic4s.http.snapshots.{
+import com.sksamuel.elastic4s.requests.admin.OpenIndexRequest
+import com.sksamuel.elastic4s.requests.bulk.BulkRequest
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.requests.bulk.{BulkResponse, BulkResponseItem}
+import com.sksamuel.elastic4s.requests.delete.DeleteByQueryResponse
+import com.sksamuel.elastic4s.requests.indexes.CreateIndexResponse
+import com.sksamuel.elastic4s.requests.indexes.admin.RefreshIndexResponse
+import com.sksamuel.elastic4s.requests.indexes.IndexMappings
+import com.sksamuel.elastic4s.requests.searches.SearchResponse
+import com.sksamuel.elastic4s.requests.snapshots.{
   CreateSnapshotResponse,
   GetSnapshotResponse,
   RestoreSnapshotResponse,
   Snapshot
 }
-import com.sksamuel.elastic4s.http.{
+import com.sksamuel.elastic4s.{
   ElasticClient,
   ElasticDsl,
   RequestFailure,
   RequestSuccess
 }
-import com.sksamuel.elastic4s.indexes.IndexRequest
-import com.sksamuel.elastic4s.snapshots._
+import com.sksamuel.elastic4s.requests.indexes.IndexRequest
+import com.sksamuel.elastic4s.requests.snapshots._
 import com.typesafe.config.Config
 import spray.json._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -299,7 +299,6 @@ class ElasticSearchIndexer(
           .execute(
             ElasticDsl
               .getMapping(indices.getIndex(config, indexDef.indicesIndex))
-              .copy(includeTypeName = Some(true))
           )
           .flatMap {
             case results: RequestSuccess[Seq[IndexMappings]] =>
@@ -529,6 +528,7 @@ class ElasticSearchIndexer(
     val settings = repoConfig
       .getConfig("types." + repoType)
       .entrySet()
+      .asScala
       .map { case entry => (entry.getKey, entry.getValue().unwrapped()) } toMap
 
     client.execute(
@@ -572,15 +572,9 @@ class ElasticSearchIndexer(
     //-- Caution: Elastic4s incorrect add _all to the endpoint if idx `type` not provide
     //-- Before it's fixed, we cannot remove the idx type
     val trimIndexFutureList = List(
-      indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(
-        Indices.DataSetsIndexType
-      ),
-      indices.getIndex(config, Indices.PublishersIndex) / indices.getType(
-        Indices.PublisherIndexType
-      ),
-      indices.getIndex(config, Indices.FormatsIndex) / indices.getType(
-        Indices.FormatsIndexType
-      )
+      indices.getIndex(config, Indices.DataSetsIndex),
+      indices.getIndex(config, Indices.PublishersIndex),
+      indices.getIndex(config, Indices.FormatsIndex)
     ).map { idxName =>
       setupFuture
         .flatMap { client =>
@@ -615,10 +609,9 @@ class ElasticSearchIndexer(
             identifiers.map(
               identifier =>
                 ElasticDsl
-                  .delete(identifier)
-                  .from(
-                    indices.getIndex(config, Indices.DataSetsIndex) / indices
-                      .getType(Indices.DataSetsIndexType)
+                  .deleteById(
+                    indices.getIndex(config, Indices.DataSetsIndex),
+                    identifier
                   )
             )
           )
@@ -663,7 +656,7 @@ class ElasticSearchIndexer(
 
       client
         .execute {
-          com.sksamuel.elastic4s.snapshots.CreateSnapshotRequest(
+          com.sksamuel.elastic4s.requests.snapshots.CreateSnapshotRequest(
             snapshotPrefix(definition) + "-" + Instant
               .now()
               .toString
@@ -729,8 +722,7 @@ class ElasticSearchIndexer(
       DataSet.uniqueEsDocumentId(rawDataSet.identifier, rawDataSet.tenantId)
     val indexDataSet = ElasticDsl
       .indexInto(
-        indices.getIndex(config, Indices.DataSetsIndex) / indices
-          .getType(Indices.DataSetsIndexType)
+        indices.getIndex(config, Indices.DataSetsIndex)
       )
       .id(documentId)
       .source(dataSet.toJson)
@@ -743,8 +735,7 @@ class ElasticSearchIndexer(
             publisherName =>
               ElasticDsl
                 .indexInto(
-                  indices.getIndex(config, Indices.PublishersIndex) / indices
-                    .getType(Indices.PublisherIndexType)
+                  indices.getIndex(config, Indices.PublishersIndex)
                 )
                 .id(publisherName.toLowerCase)
                 .source(
@@ -778,8 +769,7 @@ class ElasticSearchIndexer(
 
         ElasticDsl
           .indexInto(
-            indices.getIndex(config, Indices.FormatsIndex) / indices
-              .getType(Indices.FormatsIndexType)
+            indices.getIndex(config, Indices.FormatsIndex)
           )
           .id(format.toLowerCase)
           .source(

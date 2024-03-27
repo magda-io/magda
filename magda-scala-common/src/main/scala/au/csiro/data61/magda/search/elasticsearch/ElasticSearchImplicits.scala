@@ -14,7 +14,7 @@ import scala.util.Try
 
 import collection.JavaConverters._
 import com.sksamuel.elastic4s.{AggReader, Hit, HitReader, Indexable}
-import com.sksamuel.elastic4s.http.search.{Aggregations, HasAggregations}
+import com.sksamuel.elastic4s.requests.searches.aggs.responses.HasAggregations
 
 object ElasticSearchImplicits extends Protocols {
 

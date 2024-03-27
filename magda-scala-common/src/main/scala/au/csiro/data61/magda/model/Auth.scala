@@ -15,9 +15,9 @@ import spray.json.{
   JsValue
 }
 import scalikejdbc.interpolation.SQLSyntax
-import com.sksamuel.elastic4s.http.ElasticDsl
-import com.sksamuel.elastic4s.searches.queries.matches.MatchAllQuery
-import com.sksamuel.elastic4s.searches.queries.{Query => EsDslQuery}
+import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.requests.searches.queries.{Query => EsDslQuery}
+import com.sksamuel.elastic4s.requests.searches.queries.matches.MatchAllQuery
 
 import scala.collection.SortedSet
 

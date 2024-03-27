@@ -3,12 +3,12 @@ package au.csiro.data61.magda.model
 import au.csiro.data61.magda.util.Regex._
 import scalikejdbc._
 import au.csiro.data61.magda.util.SQLUtils
-import com.sksamuel.elastic4s.http.ElasticDsl
-import com.sksamuel.elastic4s.searches.queries.{
+import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.requests.searches.queries.{
   ExistsQuery,
   Query => EsDslQuery
 }
-import com.sksamuel.elastic4s.searches.queries.matches.{
+import com.sksamuel.elastic4s.requests.searches.queries.matches.{
   MatchAllQuery,
   MatchNoneQuery,
   MatchQuery

@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.crawler
 
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.{ElasticDsl, RequestSuccess}
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.{ElasticDsl, RequestSuccess}
 import au.csiro.data61.magda.test.api.BaseApiSpec
 import au.csiro.data61.magda.indexer.crawler.CrawlerApi
 import au.csiro.data61.magda.test.util.Generators
@@ -37,7 +37,7 @@ import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException
 import au.csiro.data61.magda.test.opa.ResponseDatasetAllowAll
 import au.csiro.data61.magda.test.util.MagdaMatchers
-import com.sksamuel.elastic4s.http.search.SearchResponse
+import com.sksamuel.elastic4s.requests.searches.SearchResponse
 
 class CrawlerApiSpec
     extends BaseApiSpec

@@ -1,0 +1,30 @@
+cluster:
+  name: ${CLUSTER_NAME}
+  routing.rebalance.enable: replicas
+  routing.allocation.allow_rebalance: indices_primaries_active
+
+node:
+  master: ${NODE_MASTER}
+  data: ${NODE_DATA}
+  ingest: ${NODE_INGEST}
+
+network.host: ${NETWORK_HOST}
+
+path:
+  data: /data/data
+  logs: /data/log
+  repo: ${REPO}
+
+bootstrap:
+  memory_lock: true
+
+action:
+  auto_create_index: false
+
+http:
+  compression: true
+
+discovery:
+  zen:
+    ping.unicast.hosts: ${DISCOVERY_SERVICE}
+    minimum_master_nodes: 1
