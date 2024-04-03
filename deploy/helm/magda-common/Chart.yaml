@@ -4,7 +4,7 @@ description: |
   A Library Helm Chart for sharing common Magda logic between charts. 
   This chart is not deployable by itself.
 type: library
-version: 3.0.0
+version: 3.0.1-alpha.0
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"

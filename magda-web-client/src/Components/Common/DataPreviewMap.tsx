@@ -236,7 +236,7 @@ function getQueryParameterValueWithPossibleKeys(
     if (!query) {
         return undefined;
     }
-    for (const key in keys) {
+    for (const key of keys) {
         if (typeof query?.[key] !== "undefined") {
             return query[key];
         }
