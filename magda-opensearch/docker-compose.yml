@@ -1,6 +1,6 @@
 version: "3"
 services:
-  test-es:
+  test-opensearch:
     image: opensearchproject/opensearch:2.12.0
     ports:
       - 9200:9200
