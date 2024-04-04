@@ -1,7 +1,7 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: apidocs-server
-version: 3.0.1-alpha.0
+version: 3.0.1
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
