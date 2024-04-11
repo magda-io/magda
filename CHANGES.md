@@ -2,6 +2,10 @@
 
 ## v3.0.1
 
+- #3513 Fixed Indexer reindex trigger job doesn't start
+
+## v3.0.1
+
 - #3511 fixed Map Preview doesn't select the default feature layer correctly when it's supplied via query parameter
 
 ## v3.0.0
