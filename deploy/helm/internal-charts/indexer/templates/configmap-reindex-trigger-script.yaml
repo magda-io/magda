@@ -8,16 +8,17 @@ data:
     {
       "name": "reindex-trigger-script",
       "version": "1.0.0",
+      "type": "module",
       "main": "index.js",
       "dependencies": {
         "@magda/typescript-common": "{{ .Chart.Version | default "^1.3.0" }}",
-        "cross-fetch": "^3.1.5"
+        "cross-fetch": "^4.0.0"
       }
     }
   index.js: |
     #!/usr/bin/env node
-    const buildJwt = require("@magda/typescript-common/dist/session/buildJwt").default;
-    const fetch = require("cross-fetch");
+    import buildJwt from "@magda/typescript-common/dist/session/buildJwt.js";
+    import fetch from "cross-fetch";
         
     const defaultAdminUserId = process.env.USER_ID;
     const jwtSecret = process.env.JWT_SECRET;

@@ -27,7 +27,7 @@ Kubernetes: `>= 1.21.0`
 | reindexJobImage.pullPolicy | string | `"IfNotPresent"` |  |
 | reindexJobImage.pullSecrets | bool | `false` |  |
 | reindexJobImage.repository | string | `"docker.io"` |  |
-| reindexJobImage.tag | string | `"14-alpine"` |  |
+| reindexJobImage.tag | string | `"18-alpine"` |  |
 | resources.limits.cpu | string | `"250m"` |  |
 | resources.requests.cpu | string | `"100m"` |  |
 | resources.requests.memory | string | `"250Mi"` |  |
