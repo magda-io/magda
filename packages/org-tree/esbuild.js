@@ -32,6 +32,7 @@ await esbuild.build({
     target: ["es2022"],
     outdir: "dist",
     format: "esm",
+    inject: ["../cjs-shim.js"],
     external: [
         ...Object.keys(pkg.dependencies || {}),
         ...Object.keys(pkg.peerDependencies || {})
