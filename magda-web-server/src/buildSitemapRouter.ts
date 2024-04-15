@@ -49,6 +49,27 @@ export default function buildSitemapRouter({
         return pageTokens;
     }
 
+    /**
+     * @apiGroup Sitemaps
+     * @api {get} /sitemap.xml Sitemaps entrypoint
+     * @apiDescription A [sitemaps protocol interface](https://www.sitemaps.org/protocol.html) that is prepared for external search engines to harvest datasets from Magda.
+     * The sitemap index is produced based on the live data in the metadata store database. By default, the sitemap index will be cached for 86400 seconds (24 hours).
+     * This setting can be adjusted via `sitemapCacheSeconds` of [web-server](https://github.com/magda-io/magda/tree/main/deploy/helm/internal-charts/web-server) module helm chart.
+     * Please note: due to the cache and the search engine indexing delay, the total number of datasets in the sitemap index may be different from the dataset total count from the search API.
+     * This sitemaps endpoint is recorded on the default /robots.txt endpoint that follows the [Robots Exclusion Standard](https://en.wikipedia.org/wiki/Robots_exclusion_standard#About_the_standard).
+     *
+     * @apiSuccessExample {json} 200
+     *    <?xml version="1.0" encoding="UTF-8"?>
+     *      <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+     *          <sitemap>
+     *              <loc>https://example.com/sitemap/main.xml</loc>
+     *          </sitemap>
+     *          <sitemap>
+     *              <loc>https://example.com/sitemap/dataset/afterToken/0.xml</loc>
+     *          </sitemap>
+     *       </sitemapindex>
+     *
+     */
     app.get("/sitemap.xml", async (req, res) => {
         try {
             const smis = new SitemapIndexStream({ level: ErrorLevel.WARN });
@@ -91,6 +112,23 @@ export default function buildSitemapRouter({
         }
     });
 
+    /**
+     * @apiGroup Sitemaps
+     * @api {get} /sitemap/main.xml Sitemaps main index
+     * @apiDescription List
+     *
+     * @apiSuccessExample {json} 200
+     *    <?xml version="1.0" encoding="UTF-8"?>
+     *      <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+     *          <sitemap>
+     *              <loc>https://example.com/sitemap/main.xml</loc>
+     *          </sitemap>
+     *          <sitemap>
+     *              <loc>https://example.com/sitemap/dataset/afterToken/0.xml</loc>
+     *          </sitemap>
+     *       </sitemapindex>
+     *
+     */
     app.get("/sitemap/main.xml", async (req, res) => {
         try {
             // For now we just put the homepage in here, seeing as everything except the datasets should be reachable

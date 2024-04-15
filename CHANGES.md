@@ -4,6 +4,7 @@
 
 - #3513 Fixed Indexer reindex trigger job doesn't start
 - #3516 Fixed released @magda NPM package esbuild commonjs bundle issue
+- Added the API document for the sitemap endpoint
 
 ## v3.0.1
 
