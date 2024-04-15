@@ -2,6 +2,6 @@ apiVersion: v2
 kubeVersion: ">= 1.14.0-0"
 description: A Helm chart for Kubernetes
 name: search-api-node
-version: 3.0.1-alpha.0
+version: 3.0.2-alpha.0
 annotations:
   magdaModuleType: "core"
