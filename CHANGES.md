@@ -5,6 +5,8 @@
 - #3513 Fixed Indexer reindex trigger job doesn't start
 - #3516 Fixed released @magda NPM package esbuild commonjs bundle issue
 - Added the API document for the sitemap endpoint
+- Make getStorageApiResourceAccessUrl available via @magda/typescript-common & @magda/utils
+- Fixed: update node engines requirements to all SDKs to 18.19.0
 
 ## v3.0.1
 
