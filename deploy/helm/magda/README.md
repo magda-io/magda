@@ -18,7 +18,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | oci://ghcr.io/magda-io/charts | ckan-connector-functions(magda-ckan-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-function-esri-url-processor | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-function-history-report | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | minion-broken-link(magda-minion-broken-link) | 2.0.0 |
+| oci://ghcr.io/magda-io/charts | minion-broken-link(magda-minion-broken-link) | 3.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-minion-ckan-exporter | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | minion-format(magda-minion-format) | 2.0.1 |
 | oci://ghcr.io/magda-io/charts | minion-linked-data-rating(magda-minion-linked-data-rating) | 2.0.0 |
