@@ -11,7 +11,7 @@
     "./*.json": "./*.json"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.19.0"
   },
   "description": "Common schemas for use with the content api.",
   "scripts": {

@@ -1,5 +1,6 @@
 import * as esbuild from "esbuild";
-import { requireResolve } from "@magda/esm-utils";
+import { requireResolve, require } from "@magda/esm-utils";
+const pkg = require("./package.json");
 
 const entries = {
     "create-docker-context-for-node-component": requireResolve(
@@ -13,6 +14,10 @@ await esbuild.build({
     bundle: true,
     platform: "node",
     target: ["es2022"],
+    external: [
+        ...Object.keys(pkg.dependencies || {}),
+        ...Object.keys(pkg.peerDependencies || {})
+    ],
     outdir: "dist",
     format: "esm"
 });

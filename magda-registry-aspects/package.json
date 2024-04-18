@@ -9,7 +9,7 @@
     "./*.json": "./*.json"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.19.0"
   },
   "scripts": {
     "build": "echo \"ok\"",

@@ -10,6 +10,7 @@ await esbuild.build({
     bundle: true,
     platform: "node",
     target: ["es2022"],
+    inject: ["../cjs-shim.js"],
     outdir: "bin",
     format: "esm"
 });
