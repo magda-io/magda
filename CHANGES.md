@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v3.0.1
+## v3.0.2
 
 - #3513 Fixed Indexer reindex trigger job doesn't start
 - #3516 Fixed released @magda NPM package esbuild commonjs bundle issue
