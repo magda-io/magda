@@ -1,6 +1,6 @@
 {
   "name": "@magda/deploy",
-  "version": "3.0.1-alpha.0",
+  "version": "3.0.2",
   "description": "MAGDA deployment configuration.",
   "scripts": {
     "create-connector-configmap": "kubectl delete configmap connector-config --ignore-not-found && kubectl create configmap connector-config --from-file ./connector-config/",
@@ -24,7 +24,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^3.0.1-alpha.0",
+    "@magda/scripts": "^3.0.2",
     "fs-extra": "^11.2.0",
     "klaw-sync": "^2.1.0",
     "tmp": "0.0.31",
