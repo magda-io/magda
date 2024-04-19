@@ -7,6 +7,7 @@
 - Added the API document for the sitemap endpoint
 - Make getStorageApiResourceAccessUrl available via @magda/typescript-common & @magda/utils
 - Fixed: update node engines requirements to all SDKs to 18.19.0
+- Upgraded the broken link minion in `magda` chart to v3.0.0
 
 ## v3.0.1
 
