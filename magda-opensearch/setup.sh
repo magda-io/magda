@@ -20,12 +20,12 @@
 #     echo "Finished gcs permissions..."
 # fi
 
-echo "Print current max locked memory in host: "
-ulimit -l
-echo "Set max locked memory to 'unlimited' in host..."
-ulimit -l unlimited
-echo "Re-print current max locked memory in host: "
-ulimit -l
+# echo "Print current max locked memory in host: "
+# ulimit -l
+# echo "Set max locked memory to 'unlimited' in host..."
+# ulimit -l unlimited
+# echo "Re-print current max locked memory in host: "
+# ulimit -l
 
 echo "Starting up..."
 ./opensearch-docker-entrypoint.sh opensearch

@@ -1,0 +1,97 @@
+{{- if .Values.production }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "opensearch.client.fullname" . }}
+  labels:
+    component: opensearch
+    role: client
+spec:
+{{- if not .Values.client.autoscaling.hpa.enabled }}
+  replicas: {{ .Values.client.replicas | default 1 }}
+{{- end }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      component: opensearch
+      role: client
+  template:
+    metadata:
+      labels:
+        component: opensearch
+        role: client
+      annotations:
+         "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
+    spec:
+      {{- include "magda.elasticsearch.initContainer" . | indent 6 }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
+      containers:
+      - name: es-client
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - IPC_LOCK
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          tcpSocket:
+            port: transport
+          initialDelaySeconds: 300
+          periodSeconds: 60
+{{- end }}
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: http
+          timeoutSeconds: 5
+          initialDelaySeconds: 30
+        resources:
+{{ toYaml .Values.client.resources | indent 10 }}
+        env:
+        - name: LOG4J_FORMAT_MSG_NO_LOOKUPS
+          value: "true"
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: "CLUSTER_NAME"
+          value: "myesdb"
+        - name: NODE_MASTER
+          value: "false"
+        - name: NODE_DATA
+          value: "false"
+        - name: NODE_INGEST
+          value: "true"
+        - name: HTTP_ENABLE
+          value: "true"
+        - name: ES_JAVA_OPTS
+          value: "-Xms{{ .Values.client.heapSize }} -Xmx{{ .Values.client.heapSize }}"
+        - name: "ES_PLUGINS_INSTALL"
+          value: {{ .Values.client.pluginsInstall | quote }}
+        - name: NETWORK_HOST
+          value: "0.0.0.0"
+        - name: DISCOVERY_SERVICE
+          value: elasticsearch-discovery
+        ports:
+        - containerPort: 9200
+          name: http
+          protocol: TCP
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: storage
+          mountPath: /data
+      volumes:
+      - emptyDir:
+          medium: ""
+        name: "storage"
+{{- end }}

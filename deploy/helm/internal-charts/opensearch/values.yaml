@@ -1,0 +1,331 @@
+image: 
+  name: "magda-opensearch"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+initContainerImage:
+  name: busybox
+  repository: docker.io
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+kibanaImage:
+  name: kibana-oss
+  repository: docker.elastic.co/kibana
+  tag: "6.8.22"
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+podSecurityContext:
+  fsGroup: 1000
+  runAsUser: 1000
+
+# -- The default is to deploy all pods serially. By setting this to parallel all pods are started at
+# the same time when bootstrapping the cluster
+podManagementPolicy: "Parallel"
+
+updateStrategy: RollingUpdate
+
+# -- Use an alternate scheduler.
+# ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+schedulerName: ""
+
+# -- Set optimal sysctl's through securityContext. This requires privilege. 
+# Can be disabled if the system has already been preconfigured. (Ex: https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html)
+# Also see: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/
+# When your system doesn't support setting optimal sysctl's through securityContext,
+# you can also set `sysctlInit.enabled` to true to set sysctl through privileged initContainer instead.
+sysctl:
+  enabled: true
+
+sysctlVmMaxMapCount: 262144
+
+# -- Set optimal sysctl's through privileged initContainer.
+# By default, `sysctl.enabled` is set to true to setting optimal sysctl's through securityContext.
+# You might need to set this to true if your system doesn't support setting optimal sysctl's through securityContext.
+sysctlInit:
+  enabled: false
+  # -- override initContainer image tag, which is busybox by default
+  image: busybox
+  # -- override image tag, which is latest by default
+  imageTag: default
+
+# -- resources config set for init container
+initResources: {}
+#  limits:
+#     cpu: "25m"
+#     memory: "128Mi"
+#  requests:
+#     cpu: "25m"
+#     memory: "128Mi"
+
+# -- resources config set for sidecar container
+sidecarResources: {}
+#   limits:
+#     cpu: "25m"
+#     memory: "128Mi"
+#   requests:
+#     cpu: "25m"
+#     memory: "128Mi"
+
+# -- Allows you to add any config files in {{ .Values.opensearchHome }}/config
+opensearchHome: /usr/share/opensearch
+
+# -- Extra environment variables to append to this nodeGroup
+# This will be appended to the current 'env:' key. You can use any of the kubernetes env syntax here. e.g.
+# extraEnvs:
+# - name: MY_ENVIRONMENT_VAR
+#   value: the_value_goes_here
+# You can overwrite `extraEnvs` for each node type (master, data, client) via the `extraEnvs` property in each node type.
+extraEnvs: []
+
+# -- Allows you to load environment variables from kubernetes secret or config map
+# e.g. 
+# - secretRef:
+#     name: env-secret
+# - configMapRef:
+#     name: config-map
+# You can overwrite `envFrom` for each node type (master, data, client) via the `envFrom` property in each node type.
+envFrom: []
+
+# -- A list of secrets and their paths to mount inside the pod
+# This is useful for mounting certificates for security and for mounting
+# the X-Pack license
+# You can overwrite `secretMounts` for each node type (master, data, client) via the `secretMounts` property in each node type.
+secretMounts: []
+
+# -- Opensearch Java options for all node types
+# You can overwrite `javaOpts` for each node type (master, data, client) via the `javaOpts` property in each node type.
+javaOpts: "-Xmx256M -Xms256M"
+
+# -- The environment variables injected by service links are not used, but can lead to slow OpenSearch boot times when
+# there are many services in the current namespace.
+# If you experience slow pod startups you probably want to set this to `false`.
+enableServiceLinks: true
+
+keystore: []
+# To add secrets to the keystore:
+#  - secretName: opensearch-encryption-key
+
+hostAliases: []
+# - ip: "127.0.0.1"
+#   hostnames:
+#   - "foo.local"
+#   - "bar.local"
+
+# -- client node group options.
+# Nodes in this group will have `Ingest` & `Coordinating` roles.
+# For production use cases, it is recommended to turn on client node group and have at least 2 client nodes.
+client:
+  # -- By default, client node group is disabled.
+  # For production use cases, it is recommended to turn on client node group.
+  enabled: false
+  nameOverride: ""
+  fullnameOverride: ""
+  extraEnvs: []
+  envFrom: []
+  secretMounts: []
+  javaOpts: "-Xmx256M -Xms256M"
+  # -- By default, .Values.sysctlVmMaxMapCount will be used.
+  # You can overwrite this value for client node group.
+  sysctlVmMaxMapCount: 
+  pluginsInstall: ""
+  heapSize: "256m"
+  replicas: 1
+  terminationGracePeriod: 120
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  # -- Will only be used if .Values.global.enablePriorityClass is set to true
+  priorityClassName: magda-9
+  autoscaling:
+    hpa:
+      enabled: false
+      minReplicas: 3
+      maxReplicas: 11
+      targetCPU: 90
+      targetMemory: ""  
+  resources:
+    requests:
+      cpu: 50m
+      memory: 512Mi
+    limits:
+      cpu: 100m
+  rbac:
+    create: false
+    serviceAccountAnnotations: {}
+    serviceAccountName: ""
+    # -- Controls whether or not the Service Account token is automatically mounted to /var/run/secrets/kubernetes.io/serviceaccount
+    automountServiceAccountToken: false
+
+# -- Data node group options
+# Nodes in this group will have `Data` & `Coordinating` roles.
+# For production use cases, it is recommended to turn on client node group and have at least 2 client nodes.
+# Data node group will always be enabled.
+# when `client` is disabled, `data` node group will have additional `Ingest` role.
+# when `master` is disabled, `data` node group will have additional `Master` role.
+data:
+  nameOverride: ""
+  fullnameOverride: ""
+  extraEnvs: []
+  envFrom: []
+  secretMounts: []
+  podAnnotations: {}
+  javaOpts: "-Xmx256M -Xms256M"
+  # -- By default, .Values.sysctlVmMaxMapCount will be used.
+  # You can overwrite this value for data node group.
+  sysctlVmMaxMapCount: 
+  pluginsInstall: ""
+  heapSize: "256m"
+  replicas: 1
+  terminationGracePeriod: 120
+  nodeSelector: {}
+  tolerations: []
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 50
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: component
+              operator: In
+              values:
+              - opensearch
+            - key: role
+              operator: In
+              values:
+              - data
+          topologyKey: kubernetes.io/hostname
+  # -- Will only be used if .Values.global.enablePriorityClass is set to true
+  priorityClassName: magda-9
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+  storage: 50Gi
+  # -- Set to false to disable the `fsgroup-volume` initContainer that will update permissions on the persistent disk.
+  enableInitChown: true
+  accessModes:
+    - ReadWriteOnce
+  storageClass:
+    rbac:
+    create: false
+    serviceAccountAnnotations: {}
+    serviceAccountName: ""
+    # -- Controls whether or not the Service Account token is automatically mounted to /var/run/secrets/kubernetes.io/serviceaccount
+    automountServiceAccountToken: false
+
+# -- Master node group options
+# Nodes in this group will have `Master` & `Coordinating` roles.
+# For production use cases, it is recommended to turn on master node group and have at least 3 master nodes across different availability zones.
+master:
+  # -- By default, Master node group is disabled.
+  # For production use cases, it is recommended to turn on Master node group.
+  enabled: false
+  nameOverride: ""
+  fullnameOverride: ""
+  extraEnvs: []
+  envFrom: []
+  secretMounts: []
+  javaOpts: "-Xmx256M -Xms256M"
+  # -- By default, .Values.sysctlVmMaxMapCount will be used.
+  # You can overwrite this value for master node group.
+  sysctlVmMaxMapCount: 
+  replicas: 3
+  terminationGracePeriod: 120
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  # -- Will only be used if .Values.global.enablePriorityClass is set to true
+  priorityClassName: magda-9
+  pluginsInstall: ""
+  resources:
+    requests:
+      cpu: 50m
+      memory: 512Mi
+    limits:
+      cpu: 100m
+  rbac:
+    create: false
+    serviceAccountAnnotations: {}
+    serviceAccountName: ""
+    # -- Controls whether or not the Service Account token is automatically mounted to /var/run/secrets/kubernetes.io/serviceaccount
+    automountServiceAccountToken: false
+
+# such as opensearch.yml and log4j2.properties
+config:
+  # Values must be YAML literal style scalar / YAML multiline string.
+  # <filename>: |
+  #   <formatted-value(s)>
+  # log4j2.properties: |
+  #   status = error
+  #
+  #   appender.console.type = Console
+  #   appender.console.name = console
+  #   appender.console.layout.type = PatternLayout
+  #   appender.console.layout.pattern = [%d{ISO8601}][%-5p][%-25c{1.}] [%node_name]%marker %m%n
+  #
+  #   rootLogger.level = info
+  #   rootLogger.appenderRef.console.ref = console
+  opensearch.yml: |
+    cluster.name: opensearch-cluster
+
+    # Bind to all interfaces because we don't know what IP address Docker will assign to us.
+    network.host: 0.0.0.0
+
+    # Setting network.host to a non-loopback address enables the annoying bootstrap checks. "Single-node" mode disables them again.
+    # Implicitly done if ".singleNode" is set to "true".
+    # discovery.type: single-node
+
+    # Start OpenSearch Security Demo Configuration
+    # WARNING: revise all the lines below before you go into production
+    plugins:
+      security:
+        ssl:
+          transport:
+            pemcert_filepath: esnode.pem
+            pemkey_filepath: esnode-key.pem
+            pemtrustedcas_filepath: root-ca.pem
+            enforce_hostname_verification: false
+          http:
+            enabled: true
+            pemcert_filepath: esnode.pem
+            pemkey_filepath: esnode-key.pem
+            pemtrustedcas_filepath: root-ca.pem
+        allow_unsafe_democertificates: true
+        allow_default_init_securityindex: true
+        authcz:
+          admin_dn:
+            - CN=kirk,OU=client,O=client,L=test,C=de
+        audit.type: internal_opensearch
+        enable_snapshot_restore_privilege: true
+        check_snapshot_restore_write_privileges: true
+        restapi:
+          roles_enabled: ["all_access", "security_rest_api_access"]
+        system_indices:
+          enabled: true
+          indices:
+            [
+              ".opendistro-alerting-config",
+              ".opendistro-alerting-alert*",
+              ".opendistro-anomaly-results*",
+              ".opendistro-anomaly-detector*",
+              ".opendistro-anomaly-checkpoints",
+              ".opendistro-anomaly-detection-state",
+              ".opendistro-reports-*",
+              ".opendistro-notifications-*",
+              ".opendistro-notebooks",
+              ".opendistro-asynchronous-search-response*",
+            ]
+    ######## End OpenSearch Security Demo Configuration ########
+  # log4j2.properties:

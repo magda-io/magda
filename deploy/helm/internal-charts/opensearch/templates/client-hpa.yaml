@@ -1,0 +1,30 @@
+{{- if and .Values.client.enabled .Values.client.autoscaling.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "opensearch.client.fullname" . }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "opensearch.client.fullname" . }}
+  minReplicas: {{ .Values.client.autoscaling.hpa.minReplicas }}
+  maxReplicas: {{ .Values.client.autoscaling.hpa.maxReplicas }}
+  metrics:
+    {{- if .Values.client.autoscaling.hpa.targetCPU }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.client.autoscaling.hpa.targetCPU | quote }}
+    {{- end }}
+    {{- if .Values.client.autoscaling.hpa.targetMemory }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.client.autoscaling.hpa.targetMemory | quote }}
+    {{- end }}
+{{- end }}

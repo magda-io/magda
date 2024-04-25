@@ -1,0 +1,177 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "magda.opensearch.data.fullname" . }}
+  labels:
+    component: opensearch
+    role: data
+spec:
+  serviceName: {{ include "magda.opensearch.data.fullname" . }}-headless
+{{- if not .Values.data.autoscaling.hpa.enabled }}
+  replicas: {{ .Values.data.replicas | default 1 }}
+{{- end }}
+  podManagementPolicy: {{ .Values.podManagementPolicy }}
+  updateStrategy:
+    type: {{ .Values.updateStrategy }}
+  selector:
+    matchLabels:
+      component: opensearch
+      role: data
+  template:
+    metadata:
+      name: {{ include "magda.opensearch.data.fullname" . }}
+      labels:
+        component: opensearch
+        role: data
+      annotations:
+        {{- range $key, $value := .Values.data.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+        {{- /* This forces a restart if the configmap has changed */}}
+        {{- if .Values.config }}
+        configchecksum: {{ include (print .Template.BasePath "/configmap.yaml") . | sha256sum | trunc 63 }}
+        {{- end }}
+    spec:
+      {{- if .Values.schedulerName }}
+      schedulerName: "{{ .Values.schedulerName }}"
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.data.terminationGracePeriod }}
+      securityContext:
+{{ toYaml .Values.podSecurityContext | indent 8 }}
+        {{- if .Values.sysctl.enabled }}
+        sysctls:
+        - name: vm.max_map_count
+          value: {{ .Values.data.sysctlVmMaxMapCount | default .Values.sysctlVmMaxMapCount | quote }}
+        {{- end }}
+        {{- if .Values.fsGroup }}
+        fsGroup: {{ .Values.fsGroup }} # Deprecated value, please use .Values.podSecurityContext.fsGroup
+        {{- end }}
+      {{- if and .Values.data.rbac.create (eq .Values.data.rbac.serviceAccountName "") }}
+      serviceAccountName: "{{ template "magda.opensearch.data.fullname" . }}"
+      automountServiceAccountToken: {{ ne .Values.data.rbac.automountServiceAccountToken false }}
+      {{- else if and .Values.data.rbac.create (ne .Values.data.rbac.serviceAccountName "") }}
+      serviceAccountName: {{ .Values.data.rbac.serviceAccountName | quote }}
+      automountServiceAccountToken: {{ ne .Values.data.rbac.automountServiceAccountToken false }}
+      {{- else }}
+      automountServiceAccountToken: {{ ne .Values.data.rbac.automountServiceAccountToken false }}
+      {{- end }}
+      {{- with .Values.data.tolerations }}
+      tolerations:
+{{ toYaml . | indent 6 }}
+      {{- end }}
+      {{- with .Values.data.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- if and .Values.data.priorityClassName .Values.global.enablePriorityClass }}
+      priorityClassName: {{ .Values.data.priorityClassName }}
+      {{- end }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
+      {{- if .Values.hostAliases }}
+      hostAliases: {{ toYaml .Values.hostAliases | nindent 8 }}
+      {{- end }}
+      {{- include "magda.elasticsearch.initContainer" . | indent 6 }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
+      containers:
+      - name: es-data
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - IPC_LOCK
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: http
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          tcpSocket:
+            port: transport
+          initialDelaySeconds: 300
+          periodSeconds: 60
+{{- end }}
+        resources:
+{{ toYaml .Values.data.resources | indent 10 }}
+        env:
+        - name: LOG4J_FORMAT_MSG_NO_LOOKUPS
+          value: "true"
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: "CLUSTER_NAME"
+          value: "myesdb"
+        - name: NODE_DATA
+          value: "true"
+        - name: NODE_MASTER
+          value: {{ not .Values.production | quote }}
+        - name: HTTP_ENABLE
+          value: {{ not .Values.production | quote }}
+        - name: NODE_INGEST
+          value: {{ not .Values.production | quote }}
+        - name: ES_JAVA_OPTS
+          value: "-Xms{{ .Values.data.heapSize }} -Xmx{{ .Values.data.heapSize }}"
+        - name: ES_PLUGINS_INSTALL
+          value: {{ .Values.data.pluginsInstall | quote }}
+        - name: NETWORK_HOST
+          value: "0.0.0.0"
+        - name: DISCOVERY_SERVICE
+          value: elasticsearch-discovery
+{{- if .Values.backup.googleApplicationCreds }}
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/var/{{ .Values.backup.googleApplicationCreds.secretName }}/{{ .Values.backup.googleApplicationCreds.fileName }}"
+{{- end }}
+{{- if not .Values.production }}
+        - name: REPO
+          value: /snapshots
+{{- end }}
+        ports:
+        - containerPort: 9200
+          name: http
+          protocol: TCP
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: storage
+          mountPath: /data
+{{- if .Values.backup.googleApplicationCreds }}
+        - name: google-account-credentials
+          mountPath: "/var/{{ .Values.backup.googleApplicationCreds.secretName }}"
+          readOnly: true
+{{- end }}
+      volumes:
+      {{- if .Values.data.config }}
+      - name: config
+        configMap:
+          name: {{ template "magda.opensearch.data.fullname" . }}-config
+      - emptyDir: {}
+        name: config-emptydir
+      {{- end }}
+{{- if .Values.keystore }}
+      - name: keystore
+        emptyDir: {}
+      {{- range .Values.keystore }}
+      - name: keystore-{{ .secretName }}
+        secret: {{ toYaml . | nindent 12 }}
+      {{- end }}
+{{ end }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ include "magda.opensearch.data.fullname" . }}
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      {{- if eq (typeOf .Values.data.storageClass) "<nil>" | not }}
+        storageClassName: {{ .Values.data.storageClass | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.data.storage | quote }}
