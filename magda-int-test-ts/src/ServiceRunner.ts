@@ -125,6 +125,9 @@ export default class ServiceRunner {
         if (this.dockerServiceForwardHost) {
             return;
         }
+        console.log(
+            `IS_NON_K8S_ENV_RUNNER = ${process?.env?.IS_NON_K8S_ENV_RUNNER}`
+        );
         if (process?.env?.IS_NON_K8S_ENV_RUNNER === "true") {
             this.dockerServiceForwardHost = "host.docker.internal";
         }
