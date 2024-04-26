@@ -125,6 +125,9 @@ export default class ServiceRunner {
         if (this.dockerServiceForwardHost) {
             return;
         }
+        if (process?.env?.IS_NON_K8S_ENV_RUNNER === "true") {
+            this.dockerServiceForwardHost = "host.docker.internal";
+        }
         const dockerHost = process?.env?.DOCKER_HOST;
         if (!dockerHost) {
             return;
@@ -382,6 +385,8 @@ export default class ServiceRunner {
             stdio: "inherit",
             shell: true
         });
+
+        console.log(`Started to portforward for ${hostname}:${remotePort}...`);
 
         this.portForwardingProcessList[
             localPort.toString()
