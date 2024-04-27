@@ -497,7 +497,8 @@ buildtest:integration-tests:
     - docker info
     - docker-compose --version
     # we can remove socat installation in future once the change is merged into master as it's installed in base image
-    - apk add socat 
+    - apk add socat
+    - export
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
@@ -509,6 +510,8 @@ buildtest:integration-tests:
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: "password"
+    IS_NON_K8S_ENV_RUNNER: "$IS_NON_K8S_ENV_RUNNER"
+    CI_DEBUG_TRACE: "true"
   tags:
     - heavy
   script:
