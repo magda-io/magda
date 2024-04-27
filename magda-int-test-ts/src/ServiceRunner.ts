@@ -126,6 +126,7 @@ export default class ServiceRunner {
             return;
         }
         const runnerTags = `${process?.env?.CI_RUNNER_TAGS}`;
+        console.log(`runnerTags: ${runnerTags}`);
         if (runnerTags.indexOf("on-prem") !== -1) {
             this.dockerServiceForwardHost = "host.docker.internal";
         }
