@@ -125,10 +125,8 @@ export default class ServiceRunner {
         if (this.dockerServiceForwardHost) {
             return;
         }
-        console.log(
-            `IS_NON_K8S_ENV_RUNNER = ${process?.env?.IS_NON_K8S_ENV_RUNNER}`
-        );
-        if (process?.env?.IS_NON_K8S_ENV_RUNNER === "true") {
+        const runnerTags = `${process?.env?.CI_RUNNER_TAGS}`;
+        if (runnerTags.indexOf("on-prem") !== -1) {
             this.dockerServiceForwardHost = "host.docker.internal";
         }
         const dockerHost = process?.env?.DOCKER_HOST;
