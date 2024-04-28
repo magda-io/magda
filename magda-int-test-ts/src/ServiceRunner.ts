@@ -119,9 +119,6 @@ export default class ServiceRunner {
             "../"
         );
         this.setDockerServiceForwardHost();
-        console.log(
-            `dockerServiceForwardHost: ${this.dockerServiceForwardHost}`
-        );
     }
 
     setDockerServiceForwardHost() {
@@ -129,12 +126,6 @@ export default class ServiceRunner {
             return;
         }
         this.dockerServiceForwardHost = "localhost";
-        // const runnerTags = `${process?.env?.CI_RUNNER_TAGS}`;
-        // console.log(`runnerTags: ${runnerTags}`);
-        // if (runnerTags.indexOf("on-prem") !== -1) {
-        //     this.dockerServiceForwardHost = "host.docker.internal";
-        //     return;
-        // }
         const dockerHost = process?.env?.DOCKER_HOST;
         if (!dockerHost) {
             return;
@@ -563,10 +554,6 @@ export default class ServiceRunner {
                 DEFAULT_ADMIN_USER_ID,
                 "--debug",
                 `${this.authApiDebugMode}`,
-                // "--opaUrl",
-                // `http://127.0.0.1:8181/`,
-                // "--dbHost",
-                // `127.0.0.1`,
                 "--skipAuth",
                 `${this.authApiSkipAuth}`
             ],
