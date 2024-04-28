@@ -95,7 +95,7 @@ export default class ServiceRunner {
 
     // the docker host mat available at a different ip / hostname
     // setting this to portforward the docker based services to localhost
-    public dockerServiceForwardHost: string = "";
+    public dockerServiceForwardHost: string = "localhost";
 
     public portForwardingProcessList: {
         [key: string]: ChildProcess;
@@ -119,18 +119,21 @@ export default class ServiceRunner {
             "../"
         );
         this.setDockerServiceForwardHost();
+        console.log(
+            `dockerServiceForwardHost: ${this.dockerServiceForwardHost}`
+        );
     }
 
     setDockerServiceForwardHost() {
         if (this.dockerServiceForwardHost) {
             return;
         }
-        const runnerTags = `${process?.env?.CI_RUNNER_TAGS}`;
-        console.log(`runnerTags: ${runnerTags}`);
-        if (runnerTags.indexOf("on-prem") !== -1) {
-            this.dockerServiceForwardHost = "host.docker.internal";
-            return;
-        }
+        // const runnerTags = `${process?.env?.CI_RUNNER_TAGS}`;
+        // console.log(`runnerTags: ${runnerTags}`);
+        // if (runnerTags.indexOf("on-prem") !== -1) {
+        //     this.dockerServiceForwardHost = "host.docker.internal";
+        //     return;
+        // }
         const dockerHost = process?.env?.DOCKER_HOST;
         if (!dockerHost) {
             return;
