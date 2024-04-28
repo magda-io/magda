@@ -509,6 +509,7 @@ buildtest:integration-tests:
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: "password"
+    NODE_OPTIONS: "--dns-result-order=ipv4first"
   tags:
     - heavy
   script:
