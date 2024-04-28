@@ -565,6 +565,8 @@ export default class ServiceRunner {
                 `${this.authApiDebugMode}`,
                 "--opaUrl",
                 `http://${this.dockerServiceForwardHost}:8181/`,
+                "--dbHost",
+                `http://${this.dockerServiceForwardHost}:8181/`,
                 "--skipAuth",
                 `${this.authApiSkipAuth}`
             ],
