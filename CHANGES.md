@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.0.3
+
+- Added `FREEZE` to PostgreSQL DB VACUUM routine
+
 ## v3.0.2
 
 - #3513 Fixed Indexer reindex trigger job doesn't start

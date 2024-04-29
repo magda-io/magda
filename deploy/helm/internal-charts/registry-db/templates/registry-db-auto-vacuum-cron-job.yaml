@@ -33,7 +33,7 @@ spec:
                 # more details see the docker image repo
                 /usr/local/bin/adduser.sh
                 echo "Running DB maintenance routine:"
-                psql -c "VACUUM VERBOSE ANALYZE"
+                psql -c "VACUUM FREEZE VERBOSE ANALYZE"
                 if [ "$?" == "0" ]; then
                   echo "DB maintenance routine has been run sucessfully."
                 else 
