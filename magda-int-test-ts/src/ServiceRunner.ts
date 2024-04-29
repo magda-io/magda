@@ -125,6 +125,7 @@ export default class ServiceRunner {
         if (this.dockerServiceForwardHost) {
             return;
         }
+        this.dockerServiceForwardHost = "localhost";
         const dockerHost = process?.env?.DOCKER_HOST;
         if (!dockerHost) {
             return;
@@ -377,11 +378,13 @@ export default class ServiceRunner {
                 `Port ${localPort} already has an existing port forwarding process running.`
             );
         }
-        const portForwardCmd = `socat TCP4-LISTEN:${localPort},fork,reuseaddr TCP4:${hostname}:${remotePort}`;
+        const portForwardCmd = `socat TCP6-LISTEN:${localPort},fork,reuseaddr TCP4:${hostname}:${remotePort}`;
         const portForwardProcess = child_process.spawn(portForwardCmd, {
             stdio: "inherit",
             shell: true
         });
+
+        console.log(`Started to portforward for ${hostname}:${remotePort}...`);
 
         this.portForwardingProcessList[
             localPort.toString()
