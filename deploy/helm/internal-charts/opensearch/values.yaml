@@ -37,25 +37,24 @@ updateStrategy: RollingUpdate
 # ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
 schedulerName: ""
 
-# -- Set optimal sysctl's through securityContext. This requires privilege. 
-# Can be disabled if the system has already been preconfigured. (Ex: https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html)
-# Also see: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/
-# When your system doesn't support setting optimal sysctl's through securityContext,
-# you can also set `sysctlInit.enabled` to true to set sysctl through privileged initContainer instead.
 sysctl:
-  enabled: true
+  # -- Set optimal sysctl's through securityContext. This requires privilege. 
+  # Can be disabled if the system has already been preconfigured. (Ex: https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html)
+  # Also see: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/
+  # When your system doesn't support setting optimal sysctl's through securityContext,
+  # you can also set `setViaInitContainer` to true to set sysctl through privileged initContainer instead.
+  setViaSecurityContext: true
+  # -- Set optimal sysctl's through privileged initContainer.
+  # By default, `setViaSecurityContext` is set to true to setting optimal sysctl's through securityContext.
+  # You might need to set this to true if your system doesn't support setting optimal sysctl's through securityContext.
+  setViaInitContainer: false
+  # -- Opensearch uses a mmapfs directory by default to store its indices. 
+  # The default operating system limits on mmap counts is likely to be too low, which may result in out of memory exceptions.
+  vmMaxMapCount: 262144
 
-sysctlVmMaxMapCount: 262144
-
-# -- Set optimal sysctl's through privileged initContainer.
-# By default, `sysctl.enabled` is set to true to setting optimal sysctl's through securityContext.
-# You might need to set this to true if your system doesn't support setting optimal sysctl's through securityContext.
-sysctlInit:
-  enabled: false
-  # -- override initContainer image tag, which is busybox by default
-  image: busybox
-  # -- override image tag, which is latest by default
-  imageTag: default
+persistence:
+    # -- Set to false to disable the `fsgroup-volume` initContainer that will update permissions on the persistent disk.
+    enableInitChown: true
 
 # -- resources config set for init container
 initResources: {}
@@ -95,11 +94,24 @@ extraEnvs: []
 # You can overwrite `envFrom` for each node type (master, data, client) via the `envFrom` property in each node type.
 envFrom: []
 
-# -- A list of secrets and their paths to mount inside the pod
-# This is useful for mounting certificates for security and for mounting
-# the X-Pack license
-# You can overwrite `secretMounts` for each node type (master, data, client) via the `secretMounts` property in each node type.
-secretMounts: []
+extraVolumes: []
+  # - name: extras
+  #   emptyDir: {}
+
+extraVolumeMounts: []
+  # - name: extras
+  #   mountPath: /usr/share/extras
+  #   readOnly: true
+
+extraContainers: []
+  # - name: do-something
+  #   image: busybox
+  #   command: ['do', 'something']
+
+extraInitContainers: []
+  # - name: do-somethings
+  #   image: busybox
+  #   command: ['do', 'something']
 
 # -- Opensearch Java options for all node types
 # You can overwrite `javaOpts` for each node type (master, data, client) via the `javaOpts` property in each node type.
@@ -131,7 +143,10 @@ client:
   fullnameOverride: ""
   extraEnvs: []
   envFrom: []
-  secretMounts: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  extraContainers: []
+  extraInitContainers: []
   javaOpts: "-Xmx256M -Xms256M"
   # -- By default, .Values.sysctlVmMaxMapCount will be used.
   # You can overwrite this value for client node group.
@@ -176,7 +191,10 @@ data:
   fullnameOverride: ""
   extraEnvs: []
   envFrom: []
-  secretMounts: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  extraContainers: []
+  extraInitContainers: []
   podAnnotations: {}
   javaOpts: "-Xmx256M -Xms256M"
   # -- By default, .Values.sysctlVmMaxMapCount will be used.
@@ -193,6 +211,7 @@ data:
       preferredDuringSchedulingIgnoredDuringExecution:
       - weight: 50
         podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
           labelSelector:
             matchExpressions:
             - key: component
@@ -203,7 +222,6 @@ data:
               operator: In
               values:
               - data
-          topologyKey: kubernetes.io/hostname
   # -- Will only be used if .Values.global.enablePriorityClass is set to true
   priorityClassName: magda-9
   resources:
@@ -212,13 +230,15 @@ data:
       memory: 512Mi
     limits:
       cpu: 500m
-  storage: 50Gi
-  # -- Set to false to disable the `fsgroup-volume` initContainer that will update permissions on the persistent disk.
-  enableInitChown: true
-  accessModes:
-    - ReadWriteOnce
-  storageClass:
-    rbac:
+  persistence:
+    size: 50Gi
+    # -- Set to false to disable the `fsgroup-volume` initContainer that will update permissions on the persistent disk.
+    enableInitChown: true
+    accessModes:
+      - ReadWriteOnce
+    # -- Storage class of the persistent volume claim
+    storageClass:
+  rbac:
     create: false
     serviceAccountAnnotations: {}
     serviceAccountName: ""
@@ -236,7 +256,10 @@ master:
   fullnameOverride: ""
   extraEnvs: []
   envFrom: []
-  secretMounts: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  extraContainers: []
+  extraInitContainers: []
   javaOpts: "-Xmx256M -Xms256M"
   # -- By default, .Values.sysctlVmMaxMapCount will be used.
   # You can overwrite this value for master node group.
@@ -255,6 +278,14 @@ master:
       memory: 512Mi
     limits:
       cpu: 100m
+  persistence:
+    size: 8Gi
+    # -- Set to false to disable the `fsgroup-volume` initContainer that will update permissions on the persistent disk.
+    enableInitChown: true
+    accessModes:
+      - ReadWriteOnce
+    # -- Storage class of the persistent volume claim
+    storageClass:
   rbac:
     create: false
     serviceAccountAnnotations: {}
