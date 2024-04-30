@@ -168,6 +168,23 @@ function FacetTemporal(props: Props) {
                             {" "}
                             Clear{" "}
                         </button>
+                        {!startYear && !endYear ? (
+                            <div className="facet-temporal-picker-tips-text">
+                                * To select a date, please enter a year first...{" "}
+                            </div>
+                        ) : null}
+                        {!startYear && endYear ? (
+                            <div className="facet-temporal-picker-tips-text">
+                                * To select start date, please enter the start
+                                year...{" "}
+                            </div>
+                        ) : null}
+                        {startYear && !endYear ? (
+                            <div className="facet-temporal-picker-tips-text">
+                                * To select end date, please enter the end
+                                year...{" "}
+                            </div>
+                        ) : null}
                         <button
                             className="au-btn au-btn--primary"
                             disabled={!canApply}

@@ -3,6 +3,14 @@
 This package includes the following common utilities that may help magda miniors / connectors development:
 
 ```typescript
+/**
+ * Checks to see whether the passed argv has a jwtSecret object. If not,
+ * tries to add one by looking at the JWT_SECRET env var and failing that,
+ * the jwtSecret value in package.json config.
+ *
+ * If it can't find one and required is true (or unprovided), this will
+ * throw an Error.
+ */
 export declare function addJwtSecretFromEnvVar<T>(
   argv: {
     [key in keyof Arguments<T>]: Arguments<T>[key];
@@ -38,13 +46,65 @@ export declare function buildJwt(
   jwtSecret: string,
   userId: string,
   session?: any
-): any;
+): string;
 
-export declare const coerceJson: (param: string) => (json?: string) => any;
+export declare const coerceJson: (
+  param: string
+) => (json?: string | object | any[]) => any;
 
+declare interface CreateAsyncPage<T> {
+  (): Promise<AsyncPage<T>>;
+}
+
+export declare function createNoCacheFetchOptions(
+  fetchOptions?: RequestInit
+): {
+  body?: BodyInit;
+  cache?: RequestCache;
+  credentials?: RequestCredentials;
+  headers?: HeadersInit;
+  integrity?: string;
+  keepalive?: boolean;
+  method?: string;
+  mode?: RequestMode;
+  redirect?: RequestRedirect;
+  referrer?: string;
+  referrerPolicy?: ReferrerPolicy;
+  signal?: AbortSignal;
+  window?: null;
+};
+
+/**
+ * Creates a {@link ServiceError} from the result of a failed call to an API generated
+ * by swagger-codegen.  The result typically includes `response` (with a status code) and
+ * a `body` (the JSON the server returned with the error), but may be other things if,
+ * e.g., an exception occurred while attempting to invoke the service.
+ *
+ * @export
+ * @param {*} e The result of the failed call.
+ * @returns {Error} An Error created from the failed result.
+ */
 export declare function createServiceError(e: any): Error;
 
 export declare function encodeURIComponentWithApost(string: string): string;
+
+export declare function fetchRequest<T = any, CT = string>(
+  method: string,
+  url: string,
+  body?: any,
+  contentType?: CT | RequestContentType | undefined | null,
+  returnHeaders?: false,
+  extraRequestOptions?: RequestInit
+): Promise<T>;
+
+export declare function fetchRequest<T = any, CT = string>(
+  method: string,
+  url: string,
+  body?: any,
+  contentType?: CT | RequestContentType | undefined | null,
+  returnHeaders?: true,
+  extraRequestOptions?: RequestInit
+): Promise<[T, Headers]>;
 
 export declare function forEachAsync<T>(
   page: AsyncPage<T[]>,
@@ -60,46 +120,25 @@ export declare function formatServiceError(
 
 export declare function getMinikubeIP(): string;
 
+/**
+ * Get the access url of a storage api resource from [pseudo storage api resource URL](https://github.com/magda-io/magda/issues/3000)
+ * If the input url is not a pseudo storage api resource URL, return the input url directly
+ *
+ * @export
+ * @param {string} resourceUrl pseudo storage api resource URL or ordinary HTTP access url
+ * @param {string} storageApiBaseUrl storage api base url
+ * @param {string} datasetsBucket datasets storage bucket name
+ * @return {*}
+ */
+export declare function getStorageApiResourceAccessUrl(
+  resourceUrl: string,
+  storageApiBaseUrl: string,
+  datasetsBucket: string
+): string;
+
 export declare const isUuid: (id: any) => boolean;
 
-// deprecated. Please use fetchRequest instead
-export declare const request: any;
-
-export declare function fetchRequest<T = any, CT = string>(
-  method: string,
-  url: string,
-  body?: any,
-  contentType?: CT | RequestContentType | undefined,
-  returnHeaders?: false,
-  extraRequestOptions?: RequestInit
-): Promise<T>;
-
-export declare function fetchRequest<T = any, CT = string>(
-  method: string,
-  url: string,
-  body?: any,
-  contentType?: CT | RequestContentType | undefined,
-  returnHeaders?: true,
-  extraRequestOptions?: RequestInit
-): Promise<[T, Headers]>;
-
-export declare function getDefaultRequestInitOptions(): RequestInit;
-export declare function setDefaultRequestInitOptions(
-  options: RequestInit
-): void;
-
-export declare function getRequest<T = any, CT = string>(
-  url: string,
-  noCache?: boolean,
-  extraFetchOptions?: RequestInit
-): Promise<T>;
-
-export declare function getRequestNoCache<T = any, CT = string>(
-  url: string,
-  extraFetchOptions?: RequestInit
-): Promise<T>;
-
-export declare function retry<T>(
+export declare function retry<T = any>(
   op: () => Promise<T>,
   delaySeconds: number,
   retries: number,
@@ -125,5 +164,5 @@ export declare class ServiceError extends Error {
   constructor(message: string, e: any);
 }
 
-export declare function unionToThrowable<T>(input: T | Error): T;
+export declare function unionToThrowable<T>(input: T | Error | ServerError): T;
 ```

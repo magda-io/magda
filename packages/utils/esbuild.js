@@ -7,7 +7,7 @@ async function build(web = false) {
     console.log(
         `Building for ${entryPoints} ${platform} with target ${target}`
     );
-    await esbuild.build({
+    const options = {
         entryPoints: entryPoints,
         bundle: true,
         platform: platform,
@@ -15,7 +15,11 @@ async function build(web = false) {
         outdir: "dist",
         // should always be esm
         format: "esm"
-    });
+    };
+    if (!web) {
+        options.inject = ["../cjs-shim.js"];
+    }
+    await esbuild.build(options);
 }
 
 await build();

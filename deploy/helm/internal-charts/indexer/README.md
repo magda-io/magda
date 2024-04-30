@@ -1,6 +1,6 @@
 # indexer
 
-![Version: 3.0.0-alpha.2](https://img.shields.io/badge/Version-3.0.0--alpha.2-informational?style=flat-square)
+![Version: 3.0.2](https://img.shields.io/badge/Version-3.0.2-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -27,7 +27,7 @@ Kubernetes: `>= 1.21.0`
 | reindexJobImage.pullPolicy | string | `"IfNotPresent"` |  |
 | reindexJobImage.pullSecrets | bool | `false` |  |
 | reindexJobImage.repository | string | `"docker.io"` |  |
-| reindexJobImage.tag | string | `"14-alpine"` |  |
+| reindexJobImage.tag | string | `"18-alpine"` |  |
 | resources.limits.cpu | string | `"250m"` |  |
 | resources.requests.cpu | string | `"100m"` |  |
 | resources.requests.memory | string | `"250Mi"` |  |
