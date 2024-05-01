@@ -1,7 +1,8 @@
+{{- if .Values.master.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "opensearch.master.fullname" . }}-headless
+  name: "{{ template "opensearch.master.fullname" . }}-headless"
   labels:
     component: opensearch
     role: master
@@ -20,3 +21,4 @@ spec:
     protocol: TCP
   - name: metrics
     port: 9600
+{{- end }}

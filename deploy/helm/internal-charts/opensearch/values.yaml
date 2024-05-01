@@ -23,8 +23,20 @@ kibanaImage:
   pullPolicy: IfNotPresent
   pullSecrets: false
 
+clusterName: "opensearch"
+
+networkHost: "0.0.0.0"
+
 podSecurityContext:
   fsGroup: 1000
+  runAsUser: 1000
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  # readOnlyRootFilesystem: true
+  runAsNonRoot: true
   runAsUser: 1000
 
 # -- The default is to deploy all pods serially. By setting this to parallel all pods are started at
@@ -36,6 +48,8 @@ updateStrategy: RollingUpdate
 # -- Use an alternate scheduler.
 # ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
 schedulerName: ""
+
+bootstrapMemoryLock: true
 
 sysctl:
   # -- Set optimal sysctl's through securityContext. This requires privilege. 
@@ -113,6 +127,26 @@ extraInitContainers: []
   #   image: busybox
   #   command: ['do', 'something']
 
+lifecycle: {}
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+  # postStart:
+  #   exec:
+  #     command:
+  #       - bash
+  #       - -c
+  #       - |
+  #         #!/bin/bash
+  #         # Add a template to adjust number of shards/replicas1
+  #         TEMPLATE_NAME=my_template
+  #         INDEX_PATTERN="logstash-*"
+  #         SHARD_COUNT=8
+  #         REPLICA_COUNT=1
+  #         ES_URL=http://localhost:9200
+  #         while [[ "$(curl -s -o /dev/null -w '%{http_code}\n' $ES_URL)" != "200" ]]; do sleep 1; done
+  #         curl -XPUT "$ES_URL/_template/$TEMPLATE_NAME" -H 'Content-Type: application/json' -d'{"index_patterns":['\""$INDEX_PATTERN"\"'],"settings":{"number_of_shards":'$SHARD_COUNT',"number_of_replicas":'$REPLICA_COUNT'}}'
+
 # -- Opensearch Java options for all node types
 # You can overwrite `javaOpts` for each node type (master, data, client) via the `javaOpts` property in each node type.
 javaOpts: "-Xmx256M -Xms256M"
@@ -121,6 +155,16 @@ javaOpts: "-Xmx256M -Xms256M"
 # there are many services in the current namespace.
 # If you experience slow pod startups you probably want to set this to `false`.
 enableServiceLinks: true
+
+# -- Use a sidecar container to prevent slow master re-election
+masterTerminationFix: false
+
+protocol: https
+httpPort: 9200
+transportPort: 9300
+metricsPort: 9600
+httpHostPort: ""
+transportHostPort: ""
 
 keystore: []
 # To add secrets to the keystore:
@@ -131,6 +175,37 @@ hostAliases: []
 #   hostnames:
 #   - "foo.local"
 #   - "bar.local"
+
+## Enable to add 3rd Party / Custom plugins not offered in the default OpenSearch image.
+plugins:
+  enabled: false
+  installList: []
+  # - example-fake-plugin
+
+startupProbe:
+  tcpSocket:
+    port: 9200
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 30
+
+livenessProbe: {}
+  # periodSeconds: 20
+  # timeoutSeconds: 5
+  # failureThreshold: 10
+  # successThreshold: 1
+  # initialDelaySeconds: 10
+  # tcpSocket:
+  #   port: 9200
+
+readinessProbe:
+  tcpSocket:
+    port: 9200
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
 
 # -- client node group options.
 # Nodes in this group will have `Ingest` & `Coordinating` roles.
@@ -308,55 +383,5 @@ config:
   #
   #   rootLogger.level = info
   #   rootLogger.appenderRef.console.ref = console
-  opensearch.yml: |
-    cluster.name: opensearch-cluster
-
-    # Bind to all interfaces because we don't know what IP address Docker will assign to us.
-    network.host: 0.0.0.0
-
-    # Setting network.host to a non-loopback address enables the annoying bootstrap checks. "Single-node" mode disables them again.
-    # Implicitly done if ".singleNode" is set to "true".
-    # discovery.type: single-node
-
-    # Start OpenSearch Security Demo Configuration
-    # WARNING: revise all the lines below before you go into production
-    plugins:
-      security:
-        ssl:
-          transport:
-            pemcert_filepath: esnode.pem
-            pemkey_filepath: esnode-key.pem
-            pemtrustedcas_filepath: root-ca.pem
-            enforce_hostname_verification: false
-          http:
-            enabled: true
-            pemcert_filepath: esnode.pem
-            pemkey_filepath: esnode-key.pem
-            pemtrustedcas_filepath: root-ca.pem
-        allow_unsafe_democertificates: true
-        allow_default_init_securityindex: true
-        authcz:
-          admin_dn:
-            - CN=kirk,OU=client,O=client,L=test,C=de
-        audit.type: internal_opensearch
-        enable_snapshot_restore_privilege: true
-        check_snapshot_restore_write_privileges: true
-        restapi:
-          roles_enabled: ["all_access", "security_rest_api_access"]
-        system_indices:
-          enabled: true
-          indices:
-            [
-              ".opendistro-alerting-config",
-              ".opendistro-alerting-alert*",
-              ".opendistro-anomaly-results*",
-              ".opendistro-anomaly-detector*",
-              ".opendistro-anomaly-checkpoints",
-              ".opendistro-anomaly-detection-state",
-              ".opendistro-reports-*",
-              ".opendistro-notifications-*",
-              ".opendistro-notebooks",
-              ".opendistro-asynchronous-search-response*",
-            ]
-    ######## End OpenSearch Security Demo Configuration ########
+  # opensearch.yml: 
   # log4j2.properties:

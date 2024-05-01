@@ -1,15 +1,15 @@
-{{- $nodeConfig := get .Values "data" -}}
+{{- $nodeConfig := get .Values "master" -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: "{{ template "magda.opensearch.data.fullname" . }}"
+  name: "{{ template "magda.opensearch.master.fullname" . }}"
   labels:
     component: opensearch
-    role: data
+    role: master
 spec:
-  serviceName: "{{ template "magda.opensearch.data.fullname" . }}-headless"
-{{- if not .Values.data.autoscaling.hpa.enabled }}
-  replicas: {{ .Values.data.replicas | default 1 }}
+  serviceName: "{{ template "magda.opensearch.master.fullname" . }}-headless"
+{{- if not .Values.master.autoscaling.hpa.enabled }}
+  replicas: {{ .Values.master.replicas | default 1 }}
 {{- end }}
   podManagementPolicy: {{ .Values.podManagementPolicy }}
   updateStrategy:
@@ -17,15 +17,15 @@ spec:
   selector:
     matchLabels:
       component: opensearch
-      role: data
+      role: master
   template:
     metadata:
-      name: "{{ template "magda.opensearch.data.fullname" . }}"
+      name: "{{ template "magda.opensearch.master.fullname" . }}"
       labels:
         component: opensearch
-        role: data
+        role: master
       annotations:
-        {{- range $key, $value := .Values.data.podAnnotations }}
+        {{- range $key, $value := .Values.master.podAnnotations }}
         {{ $key }}: {{ $value | quote }}
         {{- end }}
         {{- /* This forces a restart if the configmap has changed */}}
@@ -36,46 +36,46 @@ spec:
       {{- if .Values.schedulerName }}
       schedulerName: "{{ .Values.schedulerName }}"
       {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.data.terminationGracePeriod }}
+      terminationGracePeriodSeconds: {{ .Values.master.terminationGracePeriod }}
       securityContext:
 {{ toYaml .Values.podSecurityContext | indent 8 }}
         {{- if .Values.sysctl.enabled }}
         sysctls:
         - name: vm.max_map_count
-          value: {{ .Values.data.sysctlVmMaxMapCount | default .Values.sysctlVmMaxMapCount | quote }}
+          value: {{ .Values.master.sysctlVmMaxMapCount | default .Values.sysctlVmMaxMapCount | quote }}
         {{- end }}
         {{- if .Values.fsGroup }}
         fsGroup: {{ .Values.fsGroup }} # Deprecated value, please use .Values.podSecurityContext.fsGroup
         {{- end }}
-      {{- if and .Values.data.rbac.create (eq .Values.data.rbac.serviceAccountName "") }}
-      serviceAccountName: "{{ template "magda.opensearch.data.fullname" . }}"
-      automountServiceAccountToken: {{ ne .Values.data.rbac.automountServiceAccountToken false }}
-      {{- else if and .Values.data.rbac.create (ne .Values.data.rbac.serviceAccountName "") }}
-      serviceAccountName: {{ .Values.data.rbac.serviceAccountName | quote }}
-      automountServiceAccountToken: {{ ne .Values.data.rbac.automountServiceAccountToken false }}
+      {{- if and .Values.master.rbac.create (eq .Values.master.rbac.serviceAccountName "") }}
+      serviceAccountName: "{{ template "magda.opensearch.master.fullname" . }}"
+      automountServiceAccountToken: {{ ne .Values.master.rbac.automountServiceAccountToken false }}
+      {{- else if and .Values.master.rbac.create (ne .Values.master.rbac.serviceAccountName "") }}
+      serviceAccountName: {{ .Values.master.rbac.serviceAccountName | quote }}
+      automountServiceAccountToken: {{ ne .Values.master.rbac.automountServiceAccountToken false }}
       {{- else }}
-      automountServiceAccountToken: {{ ne .Values.data.rbac.automountServiceAccountToken false }}
+      automountServiceAccountToken: {{ ne .Values.master.rbac.automountServiceAccountToken false }}
       {{- end }}
-      {{- with .Values.data.tolerations }}
+      {{- with .Values.master.tolerations }}
       tolerations:
 {{ toYaml . | indent 6 }}
       {{- end }}
-      {{- with .Values.data.affinity }}
+      {{- with .Values.master.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
       {{- end }}
-      {{- if and .Values.data.priorityClassName .Values.global.enablePriorityClass }}
-      priorityClassName: {{ .Values.data.priorityClassName }}
+      {{- if and .Values.master.priorityClassName .Values.global.enablePriorityClass }}
+      priorityClassName: {{ .Values.master.priorityClassName }}
       {{- end }}
       enableServiceLinks: {{ .Values.enableServiceLinks }}
       {{- if .Values.hostAliases }}
       hostAliases: {{ toYaml .Values.hostAliases | nindent 8 }}
       {{- end }}
       volumes:
-      {{- if .Values.data.config }}
+      {{- if .Values.master.config }}
       - name: config
         configMap:
-          name: {{ template "magda.opensearch.data.fullname" . }}-config
+          name: {{ template "magda.opensearch.master.fullname" . }}-config
       - emptyDir: {}
         name: config-emptydir
       {{- end }}
@@ -88,9 +88,9 @@ spec:
       {{- end }}
 {{- end }}
       {{- include "magda.imagePullSecrets" . | indent 6 }}
-      {{- include "magda.opensearch.initContainer" (dict "root" . "nodeType" "data" ) | nindent 6 }}
+      {{- include "magda.opensearch.initContainer" (dict "root" . "nodeType" "master" ) | nindent 6 }}
       containers:
-      - name: "{{ template "magda.opensearch.data.fullname" . }}"
+      - name: "{{ template "magda.opensearch.master.fullname" . }}"
         securityContext:
 {{ toYaml .Values.securityContext | indent 10 }}
       {{- if .Values.plugins.enabled }}
@@ -142,15 +142,15 @@ spec:
         {{- if and .Values.master.enabled (gt .Values.master.replicas 1) }}
         - name: cluster.initial_cluster_manager_nodes
           value: {{ include "magda.opensearch.endpoints" (dict "root" . "nodeType" "master" ) | quote }}
-        {{- else if gt .Values.data.replicas 1 }}
+        {{- else if gt .Values.master.replicas 1 }}
         - name: cluster.initial_cluster_manager_nodes
-          value: {{ include "magda.opensearch.endpoints" (dict "root" . "nodeType" "data" ) | quote }}
+          value: {{ include "magda.opensearch.endpoints" (dict "root" . "nodeType" "master" ) | quote }}
         {{- end }}
         - name: discovery.seed_hosts
         {{- if .Values.master.enabled }}
           value: "{{ template "opensearch.master.fullname" . }}-headless"
         {{- else }}
-          value: "{{ template "opensearch.data.fullname" . }}-headless"
+          value: "{{ template "opensearch.master.fullname" . }}-headless"
         {{- end }}
         - name: cluster.name
           value: "{{ .Values.clusterName }}"
@@ -159,12 +159,12 @@ spec:
         - name: OPENSEARCH_JAVA_OPTS
           value: "{{ .Values.opensearchJavaOpts }}"
         - name: node.roles
-          value: "{{ template "magda.opensearch.endpoints" (dict "root" . "nodeType" "data" ) }}"
+          value: "{{ template "magda.opensearch.endpoints" (dict "root" . "nodeType" "master" ) }}"
         {{- if .Values.bootstrapMemoryLock }}
         - name: bootstrap.memory_lock
           value: "true"
         {{- end }}
-        {{- if or (and .Values.master.enabled (eq .Values.master.replicas 1)) (and (not .Values.master.enabled) (eq .Values.data.replicas 1)) }}
+        {{- if or (and .Values.master.enabled (eq .Values.master.replicas 1)) (and (not .Values.master.enabled) (eq .Values.master.replicas 1)) }}
         - name: discovery.type
           value: "single-node"
         {{- end }}
@@ -180,7 +180,7 @@ spec:
 {{ toYaml .Values.opensearchLifecycle | indent 10 }}
 {{- end }}
         volumeMounts:
-        - name: "{{ template "magda.opensearch.data.fullname" . }}"
+        - name: "{{ template "magda.opensearch.master.fullname" . }}"
           mountPath: {{ .Values.opensearchHome }}/data
         {{- if .Values.keystore }}
         - name: keystore
@@ -202,7 +202,7 @@ spec:
 {{ toYaml .Values.extraVolumeMounts | indent 8 }}
         {{- end }}
         {{- end }}
-      {{- include "magda.opensearch.masterTerminationFixSidecar" (dict "root" . "nodeType" "data" ) | nindent 6}}
+      {{- include "magda.opensearch.masterTerminationFixSidecar" (dict "root" . "nodeType" "master" ) | nindent 6}}
       {{- $extraContainers := (empty $nodeConfig.extraContainers | ternary .Values.extraContainers $nodeConfig.extraContainers) }}
       {{- if $extraContainers }}
       # Currently some extra blocks accept strings
@@ -216,15 +216,15 @@ spec:
       {{- end }}
   volumeClaimTemplates:
   - metadata:
-      name: {{ include "magda.opensearch.data.fullname" . }}
+      name: {{ include "magda.opensearch.master.fullname" . }}
     spec:
       accessModes:
-      {{- range .Values.data.persistence.accessModes }}
+      {{- range .Values.master.persistence.accessModes }}
       - {{ . | quote }}
       {{- end }}
-      {{- if eq (typeOf .Values.data.persistence.storageClass) "<nil>" | not }}
-      storageClassName: {{ .Values.data.persistence.storageClass | quote }}
+      {{- if eq (typeOf .Values.master.persistence.storageClass) "<nil>" | not }}
+      storageClassName: {{ .Values.master.persistence.storageClass | quote }}
       {{- end }}
       resources:
         requests:
-          storage: {{ .Values.data.persistence.size | quote }}
+          storage: {{ .Values.master.persistence.size | quote }}

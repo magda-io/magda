@@ -39,12 +39,6 @@
 {{- end -}}
 {{- end -}}
 
-{{- define "magda.opensearch.roles" -}}
-{{- range $.Values.roles -}}
-{{ . }},
-{{- end -}}
-{{- end -}}
-
 {{/* 
   add initContainers that will: 
   - configure linux kernel parameters & resource usage limit for elasticsearch 
@@ -170,3 +164,134 @@ initContainers:
 {{- end }}
 {{- end }}
 
+
+{{/* 
+  Generate the list of all endpoints for a given node group.
+  Only support `data` & `master` node group as they are statefulset.
+  Parameters:
+  `root` : current scope i.e. `.`
+  `nodeType`: Node type. e.g. data, master
+  Usage: 
+  {{ template "magda.opensearch.endpoints" (dict "root" . "nodeType" "data" ) }}
+*/}}
+{{- define "magda.opensearch.endpoints" -}}
+{{- $nodeType := .nodeType -}}
+{{- $nodeConfig := get .root.Values $nodeType -}}
+{{- $replicas := int (toString ($nodeConfig.replicas)) }}
+{{- $uname := (include "magda.opensearch.master.fullname" .) }}
+{{- if eq $nodeType "data" -}}
+{{- $uname = (include "magda.opensearch.data.fullname" .) }}
+{{- end -}}
+  {{- range $i, $e := untilStep 0 $replicas 1 -}}
+{{ if ne $i 0 }},{{ end }}{{ $uname }}-{{ $i }}
+  {{- end -}}
+{{- end -}}
+
+{{/* 
+  Generate the list of roles for a node group.
+  Parameters:
+  `root` : current scope i.e. `.`
+  `nodeType`: Node type. e.g. data, master, client
+  Usage: 
+  {{ template "magda.opensearch.nodeRoles" (dict "root" . "nodeType" "data" ) }}
+*/}}
+{{- define "magda.opensearch.nodeRoles" -}}
+{{- if eq .nodeType "client" -}}
+ingest
+{{- else if eq .nodeType "master" }}
+master
+{{- else }}
+  {{- $dataNodeRoles := list "data" }}
+  {{- if not .root.Values.master.enabled -}}
+  $dataNodeRoles = append $dataNodeRoles "master"
+  {{- end -}}
+  {{- if not .root.Values.client.enabled -}}
+  $dataNodeRoles = append $dataNodeRoles "ingest"
+  {{- end -}}
+  {{- range $i, $role := $dataNodeRoles -}}
+{{ if ne $i 0 }},{{ end }}{{ $role }}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/* 
+  Get cluster main / entrypoint service name
+  Usage: 
+  {{ template "magda.opensearch.mainService" . }}
+*/}}
+{{- define "magda.opensearch.mainService" -}}
+{{ .Values.clusterName }}
+{{- end -}}
+
+{{/* 
+  Generate master termination fix sidecar container.
+  Parameters:
+  `root` : current scope i.e. `.`
+  `nodeType`: Node type. e.g. data, master
+  Usage: 
+  {{ template "magda.opensearch.masterTerminationFixSidecar" (dict "root" . "nodeType" "master" ) }}
+*/}}
+{{- define "magda.opensearch.masterTerminationFixSidecar" -}}
+{{- $nodeType := .nodeType -}}
+{{- $nodeConfig := get .root.Values $nodeType -}}
+{{- with .root }}
+{{- if and .Values.masterTerminationFix ( or (eq $nodeType "master") (and (eq $nodeType "data") (not .Values.master.enabled) ) ) }}
+# This sidecar will prevent slow master re-election
+- name: opensearch-master-graceful-termination-handler
+  image: {{ include "magda.image" . | quote }}
+  imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+  {{- .Values.clusterName -}}
+  command:
+  - "sh"
+  - -c
+  - |
+    #!/usr/bin/env bash
+    set -eo pipefail
+
+    http () {
+        local path="${1}"
+        if [ -n "${USERNAME}" ] && [ -n "${PASSWORD}" ]; then
+          BASIC_AUTH="-u ${USERNAME}:${PASSWORD}"
+        else
+          BASIC_AUTH=''
+        fi
+        curl -XGET -s -k --fail ${BASIC_AUTH} {{ .Values.protocol }}://{{ template "magda.opensearch.mainService" . }}:{{ .Values.httpPort }}${path}
+    }
+
+    cleanup () {
+      while true ; do
+        local master="$(http "/_cat/master?h=node" || echo "")"
+        if [[ $master == "{{ template "magda.opensearch.mainService" . }}"* && $master != "${NODE_NAME}" ]]; then
+          echo "This node is not master."
+          break
+        fi
+        echo "This node is still master, waiting gracefully for it to step down"
+        sleep 1
+      done
+
+      exit 0
+    }
+
+    trap cleanup SIGTERM
+
+    sleep infinity &
+    wait $!
+  resources:
+    {{- toYaml .Values.sidecarResources | nindent 2 }}
+  env:
+  - name: NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.name
+  {{- $extraEnvs := (empty $nodeConfig.extraEnvs | ternary .Values.extraEnvs $nodeConfig.extraEnvs) }}
+  {{- if $extraEnvs }}
+{{ toYaml $extraEnvs | indent 2 }}
+  {{- end }}
+  {{- $envFrom := (empty $nodeConfig.envFrom | ternary .Values.envFrom $nodeConfig.envFrom) }}
+  {{- if $envFrom }}
+  envFrom:
+{{ toYaml $envFrom | indent 2 }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end -}}

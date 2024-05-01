@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "opensearch.data.fullname" . }}-headless
+  name: "{{ template "opensearch.data.fullname" . }}-headless"
   labels:
     component: opensearch
     role: data

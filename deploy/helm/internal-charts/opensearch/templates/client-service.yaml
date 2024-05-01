@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: opensearch
+  name: "{{ template "magda.opensearch.mainService" . }}"
   labels:
     component: opensearch
     role: {{- if .Values.client.enabled -}} "client" {{- else if .Values.master.enabled -}} "master" {{- else -}} "data" {{- end }}
