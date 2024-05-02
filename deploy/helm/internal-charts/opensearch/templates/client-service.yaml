@@ -6,13 +6,32 @@ metadata:
     component: opensearch
     role: {{- if .Values.client.enabled -}} "client" {{- else if .Values.master.enabled -}} "master" {{- else -}} "data" {{- end }}
 spec:
+  type: {{ .Values.service.type }}
+  {{- if (semverCompare ">= 1.23-0" .Capabilities.KubeVersion.Version) }}
+  {{- if .Values.service.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.service.ipFamilyPolicy }}
+  {{- end }}
+  {{- if .Values.service.ipFamilies }}
+  ipFamilies: {{ .Values.service.ipFamilies }}
+  {{- end }}
+  {{- end }}
   selector:
     component: opensearch
     role: {{- if .Values.client.enabled -}} "client" {{- else if .Values.master.enabled -}} "master" {{- else -}} "data" {{- end }}
   ports:
   - name: http
-    port: 9200
+    port: {{ .Values.httpPort }}
     protocol: TCP
   - name: transport
-    port: 9300
+    port: {{ .Values.transportPort }}
     protocol: TCP
+  {{- if .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
+{{- with .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- if .Values.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
+{{- end }}

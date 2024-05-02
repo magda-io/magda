@@ -14,11 +14,11 @@ spec:
     role: master
   ports:
   - name: http
-    port: 9200
+    port: {{ .Values.httpPort }}
     protocol: TCP
   - name: transport
-    port: 9300
+    port: {{ .Values.transportPort }}
     protocol: TCP
   - name: metrics
-    port: 9600
+    port: {{ .Values.metricsPort }}
 {{- end }}

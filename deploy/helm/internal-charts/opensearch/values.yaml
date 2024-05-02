@@ -65,6 +65,7 @@ sysctl:
   # -- Opensearch uses a mmapfs directory by default to store its indices. 
   # The default operating system limits on mmap counts is likely to be too low, which may result in out of memory exceptions.
   vmMaxMapCount: 262144
+  fsFileMax: 65536
 
 persistence:
     # -- Set to false to disable the `fsgroup-volume` initContainer that will update permissions on the persistent disk.
@@ -159,12 +160,24 @@ enableServiceLinks: true
 # -- Use a sidecar container to prevent slow master re-election
 masterTerminationFix: false
 
-protocol: https
 httpPort: 9200
 transportPort: 9300
 metricsPort: 9600
 httpHostPort: ""
 transportHostPort: ""
+
+service:
+  type: ClusterIP
+  # -- The IP family and IP families options are to set the behaviour in a dual-stack environment
+  # Omitting these values will let the service fall back to whatever the CNI dictates the defaults
+  # should be. requires Kubernetes v1.23+
+  ipFamilyPolicy: SingleStack
+  # -- IP family requires Kubernetes v1.23+
+  ipFamilies:
+  # - IPv4
+  loadBalancerIP: ""
+  loadBalancerSourceRanges: []
+  externalTrafficPolicy: ""
 
 keystore: []
 # To add secrets to the keystore:

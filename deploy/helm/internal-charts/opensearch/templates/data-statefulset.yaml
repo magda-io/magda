@@ -8,9 +8,7 @@ metadata:
     role: data
 spec:
   serviceName: "{{ template "magda.opensearch.data.fullname" . }}-headless"
-{{- if not .Values.data.autoscaling.hpa.enabled }}
   replicas: {{ .Values.data.replicas | default 1 }}
-{{- end }}
   podManagementPolicy: {{ .Values.podManagementPolicy }}
   updateStrategy:
     type: {{ .Values.updateStrategy }}
@@ -39,10 +37,12 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.data.terminationGracePeriod }}
       securityContext:
 {{ toYaml .Values.podSecurityContext | indent 8 }}
-        {{- if .Values.sysctl.enabled }}
+        {{- if .Values.sysctl.setViaSecurityContext }}
         sysctls:
         - name: vm.max_map_count
-          value: {{ .Values.data.sysctlVmMaxMapCount | default .Values.sysctlVmMaxMapCount | quote }}
+          value: {{ .Values.sysctl.vmMaxMapCount | quote }}
+        - name: fs.file-max
+          value: {{ .Values.sysctl.fsFileMax | quote }}
         {{- end }}
         {{- if .Values.fsGroup }}
         fsGroup: {{ .Values.fsGroup }} # Deprecated value, please use .Values.podSecurityContext.fsGroup

@@ -83,6 +83,11 @@ initContainers:
     if [ "$DESIRED" -gt "$CURRENT" ]; then
       sysctl -w vm.max_map_count=$DESIRED
     fi
+    DESIRED="{{ .Values.sysctl.fsFileMax }}"
+    CURRENT=$(sysctl -n fs.file-max)
+    if [ "$DESIRED" -gt "$CURRENT" ]; then
+      sysctl -w fs.file-max=$DESIRED
+    fi
   securityContext:
     runAsUser: 0
     privileged: true
