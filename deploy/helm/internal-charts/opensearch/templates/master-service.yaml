@@ -4,13 +4,13 @@ kind: Service
 metadata:
   name: "{{ template "opensearch.master.fullname" . }}-headless"
   labels:
-    component: opensearch
+    component: {{ .Values.clusterName | quote }}
     role: master
 spec:
   clusterIP: None
   publishNotReadyAddresses: true
   selector:
-    component: opensearch
+    component: {{ .Values.clusterName | quote }}
     role: master
   ports:
   - name: http

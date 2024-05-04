@@ -5,7 +5,7 @@ kind: StatefulSet
 metadata:
   name: "{{ template "magda.opensearch.master.fullname" . }}"
   labels:
-    component: opensearch
+    component: {{ .Values.clusterName | quote }}
     role: master
 spec:
   serviceName: "{{ template "magda.opensearch.master.fullname" . }}-headless"
@@ -15,13 +15,13 @@ spec:
     type: {{ .Values.updateStrategy }}
   selector:
     matchLabels:
-      component: opensearch
+      component: {{ .Values.clusterName | quote }}
       role: master
   template:
     metadata:
       name: "{{ template "magda.opensearch.master.fullname" . }}"
       labels:
-        component: opensearch
+        component: {{ .Values.clusterName | quote }}
         role: master
       annotations:
         {{- range $key, $value := .Values.master.podAnnotations }}

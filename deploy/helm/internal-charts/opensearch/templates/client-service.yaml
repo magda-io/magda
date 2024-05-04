@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: "{{ template "magda.opensearch.mainService" . }}"
   labels:
-    component: opensearch
+    component: {{ .Values.clusterName | quote }}
     role: {{- if .Values.client.enabled -}} "client" {{- else if .Values.master.enabled -}} "master" {{- else -}} "data" {{- end }}
 spec:
   type: {{ .Values.service.type }}
@@ -16,7 +16,7 @@ spec:
   {{- end }}
   {{- end }}
   selector:
-    component: opensearch
+    component: {{ .Values.clusterName | quote }}
     role: {{- if .Values.client.enabled -}} "client" {{- else if .Values.master.enabled -}} "master" {{- else -}} "data" {{- end }}
   ports:
   - name: http

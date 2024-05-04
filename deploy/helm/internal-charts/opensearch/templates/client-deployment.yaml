@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: {{ include "opensearch.client.fullname" . }}
   labels:
-    component: opensearch
+    component: {{ .Values.clusterName | quote }}
     role: client
 spec:
 {{- if not .Values.client.autoscaling.hpa.enabled }}
@@ -15,13 +15,13 @@ spec:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
   selector:
     matchLabels:
-      component: opensearch
+      component: {{ .Values.clusterName | quote }}
       role: client
   template:
     metadata:
       name: "{{ template "magda.opensearch.data.fullname" . }}"
       labels:
-        component: opensearch
+        component: {{ .Values.clusterName | quote }}
         role: client
       annotations:
         {{- range $key, $value := .Values.data.podAnnotations }}
