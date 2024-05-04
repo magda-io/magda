@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v4.0.0
+
+- Use OpenSearch as main search engine
+- Allow supply extra K8s manifests to deploy via `magda-core` `.Values.extraObjects`
+
 ## v3.0.2
 
 - #3513 Fixed Indexer reindex trigger job doesn't start
