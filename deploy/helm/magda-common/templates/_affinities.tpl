@@ -61,7 +61,7 @@ Return a topologyKey definition
 
 {{/*
 Return a soft podAffinity/podAntiAffinity definition
-{{ include "magda.common.affinities.pods.soft" (dict "component" "FOO" "customLabels" .Values.podLabels "extraMatchLabels" .Values.extraMatchLabels "topologyKey" "BAR" "extraPodAffinityTerms" .Values.extraPodAffinityTerms "context" $) -}}
+{{ include "magda.common.affinities.pods.soft" (dict "component" "FOO" "customLabels" .Values.podLabels "extraMatchLabels" .Values.extraMatchLabels "topologyKey" "BAR" "extraPodAffinityTerms" .Values.extraPodAffinityTerms "root" $) -}}
 */}}
 {{- define "magda.common.affinities.pods.soft" -}}
 {{- $component := default "" .component -}}
@@ -71,7 +71,7 @@ Return a soft podAffinity/podAntiAffinity definition
 preferredDuringSchedulingIgnoredDuringExecution:
   - podAffinityTerm:
       labelSelector:
-        matchLabels: {{- (include "magda.common.labels.matchLabels" ( dict "customLabels" $customLabels "context" .context )) | nindent 10 }}
+        matchLabels: {{- (include "magda.common.labels.matchLabels" ( dict "customLabels" $customLabels "root" .root )) | nindent 10 }}
           {{- if not (empty $component) }}
           {{ printf "app.kubernetes.io/component: %s" $component }}
           {{- end }}
@@ -83,7 +83,7 @@ preferredDuringSchedulingIgnoredDuringExecution:
   {{- range $extraPodAffinityTerms }}
   - podAffinityTerm:
       labelSelector:
-        matchLabels: {{- (include "magda.common.labels.matchLabels" ( dict "customLabels" $customLabels "context" $.context )) | nindent 10 }}
+        matchLabels: {{- (include "magda.common.labels.matchLabels" ( dict "customLabels" $customLabels "root" $.root )) | nindent 10 }}
           {{- if not (empty $component) }}
           {{ printf "app.kubernetes.io/component: %s" $component }}
           {{- end }}
@@ -97,7 +97,7 @@ preferredDuringSchedulingIgnoredDuringExecution:
 
 {{/*
 Return a hard podAffinity/podAntiAffinity definition
-{{ include "magda.common.affinities.pods.hard" (dict "component" "FOO" "customLabels" .Values.podLabels "extraMatchLabels" .Values.extraMatchLabels "topologyKey" "BAR" "extraPodAffinityTerms" .Values.extraPodAffinityTerms "context" $) -}}
+{{ include "magda.common.affinities.pods.hard" (dict "component" "FOO" "customLabels" .Values.podLabels "extraMatchLabels" .Values.extraMatchLabels "topologyKey" "BAR" "extraPodAffinityTerms" .Values.extraPodAffinityTerms "root" $) -}}
 */}}
 {{- define "magda.common.affinities.pods.hard" -}}
 {{- $component := default "" .component -}}
@@ -106,7 +106,7 @@ Return a hard podAffinity/podAntiAffinity definition
 {{- $extraPodAffinityTerms := default (list) .extraPodAffinityTerms -}}
 requiredDuringSchedulingIgnoredDuringExecution:
   - labelSelector:
-      matchLabels: {{- (include "magda.common.labels.matchLabels" ( dict "customLabels" $customLabels "context" .context )) | nindent 8 }}
+      matchLabels: {{- (include "magda.common.labels.matchLabels" ( dict "customLabels" $customLabels "root" .root )) | nindent 8 }}
         {{- if not (empty $component) }}
         {{ printf "app.kubernetes.io/component: %s" $component }}
         {{- end }}
@@ -116,7 +116,7 @@ requiredDuringSchedulingIgnoredDuringExecution:
     topologyKey: {{ include "magda.common.affinities.topologyKey" (dict "topologyKey" .topologyKey) }}
   {{- range $extraPodAffinityTerms }}
   - labelSelector:
-      matchLabels: {{- (include "magda.common.labels.matchLabels" ( dict "customLabels" $customLabels "context" $.context )) | nindent 8 }}
+      matchLabels: {{- (include "magda.common.labels.matchLabels" ( dict "customLabels" $customLabels "root" $.root )) | nindent 8 }}
         {{- if not (empty $component) }}
         {{ printf "app.kubernetes.io/component: %s" $component }}
         {{- end }}

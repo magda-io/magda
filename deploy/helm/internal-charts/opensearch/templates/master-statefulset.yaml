@@ -1,3 +1,4 @@
+{{- if .Values.master.enabled }}
 {{- $nodeConfig := get .Values "master" -}}
 apiVersion: apps/v1
 kind: StatefulSet
@@ -74,10 +75,10 @@ spec:
       hostAliases: {{ toYaml .Values.hostAliases | nindent 8 }}
       {{- end }}
       volumes:
-      {{- if .Values.master.config }}
+      {{- if .Values.config }}
       - name: config
         configMap:
-          name: {{ template "magda.opensearch.master.fullname" . }}-config
+          name: "{{ .Values.clusterName }}-config"
       - emptyDir: {}
         name: config-emptydir
       {{- end }}
@@ -152,16 +153,16 @@ spec:
         {{- if .Values.master.enabled }}
           value: "{{ template "opensearch.master.fullname" . }}-headless"
         {{- else }}
-          value: "{{ template "opensearch.master.fullname" . }}-headless"
+          value: "{{ template "opensearch.data.fullname" . }}-headless"
         {{- end }}
         - name: cluster.name
           value: "{{ .Values.clusterName }}"
         - name: network.host
           value: "{{ .Values.networkHost }}"
         - name: OPENSEARCH_JAVA_OPTS
-          value: "{{ .Values.opensearchJavaOpts }}"
+          value: {{ .Values.master.javaOpts | default .Values.javaOpts | quote }}
         - name: node.roles
-          value: "{{ template "magda.opensearch.endpoints" (dict "root" . "nodeType" "master" ) }}"
+          value: "{{ template "magda.opensearch.nodeRoles" (dict "root" . "nodeType" "master" ) }}"
         {{- if .Values.bootstrapMemoryLock }}
         - name: bootstrap.memory_lock
           value: "true"
@@ -230,3 +231,4 @@ spec:
       resources:
         requests:
           storage: {{ .Values.master.persistence.size | quote }}
+{{- end }}

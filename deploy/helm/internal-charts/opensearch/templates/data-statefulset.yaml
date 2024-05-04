@@ -72,10 +72,10 @@ spec:
       hostAliases: {{ toYaml .Values.hostAliases | nindent 8 }}
       {{- end }}
       volumes:
-      {{- if .Values.data.config }}
+      {{- if .Values.config }}
       - name: config
         configMap:
-          name: {{ template "magda.opensearch.data.fullname" . }}-config
+          name: "{{ .Values.clusterName }}-config"
       - emptyDir: {}
         name: config-emptydir
       {{- end }}
@@ -157,9 +157,9 @@ spec:
         - name: network.host
           value: "{{ .Values.networkHost }}"
         - name: OPENSEARCH_JAVA_OPTS
-          value: "{{ .Values.opensearchJavaOpts }}"
+          value: {{ .Values.data.javaOpts | default .Values.javaOpts | quote }}
         - name: node.roles
-          value: "{{ template "magda.opensearch.endpoints" (dict "root" . "nodeType" "data" ) }}"
+          value: "{{ template "magda.opensearch.nodeRoles" (dict "root" . "nodeType" "data" ) }}"
         {{- if .Values.bootstrapMemoryLock }}
         - name: bootstrap.memory_lock
           value: "true"

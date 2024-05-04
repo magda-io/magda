@@ -13,16 +13,16 @@ SPDX-License-Identifier: APACHE-2.0
 {{/*
 Renders a value that contains template perhaps with scope if the scope is present.
 Usage:
-{{ include "magda.common.tplvalues.render" ( dict "value" .Values.path.to.the.Value "context" $ ) }}
-{{ include "magda.common.tplvalues.render" ( dict "value" .Values.path.to.the.Value "context" $ "scope" $app ) }}
+{{ include "magda.common.tplvalues.render" ( dict "value" .Values.path.to.the.Value "root" $ ) }}
+{{ include "magda.common.tplvalues.render" ( dict "value" .Values.path.to.the.Value "root" $ "scope" $app ) }}
 */}}
 {{- define "magda.common.tplvalues.render" -}}
 {{- $value := typeIs "string" .value | ternary .value (.value | toYaml) }}
 {{- if contains "{{" (toJson .value) }}
   {{- if .scope }}
-      {{- tpl (cat "{{- with $.RelativeScope -}}" $value "{{- end }}") (merge (dict "RelativeScope" .scope) .context) }}
+      {{- tpl (cat "{{- with $.RelativeScope -}}" $value "{{- end }}") (merge (dict "RelativeScope" .scope) .root) }}
   {{- else }}
-    {{- tpl $value .context }}
+    {{- tpl $value .root }}
   {{- end }}
 {{- else }}
     {{- $value }}
@@ -33,12 +33,12 @@ Usage:
 Merge a list of values that contains template after rendering them.
 Merge precedence is consistent with http://masterminds.github.io/sprig/dicts.html#merge-mustmerge
 Usage:
-{{ include "magda.ommon.tplvalues.merge" ( dict "values" (list .Values.path.to.the.Value1 .Values.path.to.the.Value2) "context" $ ) }}
+{{ include "magda.ommon.tplvalues.merge" ( dict "values" (list .Values.path.to.the.Value1 .Values.path.to.the.Value2) "root" $ ) }}
 */}}
 {{- define "magda.common.tplvalues.merge" -}}
 {{- $dst := dict -}}
 {{- range .values -}}
-{{- $dst = include "magda.common.tplvalues.render" (dict "value" . "context" $.context "scope" $.scope) | fromYaml | merge $dst -}}
+{{- $dst = include "magda.common.tplvalues.render" (dict "value" . "root" $.root "scope" $.scope) | fromYaml | merge $dst -}}
 {{- end -}}
 {{ $dst | toYaml }}
 {{- end -}}
