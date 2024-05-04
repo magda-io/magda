@@ -179,6 +179,13 @@ service:
   loadBalancerSourceRanges: []
   externalTrafficPolicy: ""
 
+rbac:
+  create: false
+  serviceAccountAnnotations: {}
+  serviceAccountName: ""
+  # -- Controls whether or not the Service Account token is automatically mounted to /var/run/secrets/kubernetes.io/serviceaccount
+  automountServiceAccountToken: false
+
 keystore: []
 # To add secrets to the keystore:
 #  - secretName: opensearch-encryption-key
@@ -261,12 +268,6 @@ client:
       memory: 512Mi
     limits:
       cpu: 100m
-  rbac:
-    create: false
-    serviceAccountAnnotations: {}
-    serviceAccountName: ""
-    # -- Controls whether or not the Service Account token is automatically mounted to /var/run/secrets/kubernetes.io/serviceaccount
-    automountServiceAccountToken: false
 
 # -- Data node group options
 # Nodes in this group will have `Data` & `Coordinating` roles.
@@ -326,12 +327,6 @@ data:
       - ReadWriteOnce
     # -- Storage class of the persistent volume claim
     storageClass:
-  rbac:
-    create: false
-    serviceAccountAnnotations: {}
-    serviceAccountName: ""
-    # -- Controls whether or not the Service Account token is automatically mounted to /var/run/secrets/kubernetes.io/serviceaccount
-    automountServiceAccountToken: false
 
 # -- Master node group options
 # Nodes in this group will have `Master` & `Coordinating` roles.
@@ -374,12 +369,6 @@ master:
       - ReadWriteOnce
     # -- Storage class of the persistent volume claim
     storageClass:
-  rbac:
-    create: false
-    serviceAccountAnnotations: {}
-    serviceAccountName: ""
-    # -- Controls whether or not the Service Account token is automatically mounted to /var/run/secrets/kubernetes.io/serviceaccount
-    automountServiceAccountToken: false
 
 # such as opensearch.yml and log4j2.properties
 config:

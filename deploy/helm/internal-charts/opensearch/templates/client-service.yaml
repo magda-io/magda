@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: "{{ template "magda.opensearch.mainService" . }}"
   labels:
+    {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}
     component: {{ .Values.clusterName | quote }}
     role: {{- if .Values.client.enabled -}} "client" {{- else if .Values.master.enabled -}} "master" {{- else -}} "data" {{- end }}
 spec:
@@ -16,6 +17,7 @@ spec:
   {{- end }}
   {{- end }}
   selector:
+    {{- include "magda.common.labels.matchLabels" (dict "root" .) | nindent 4 }}
     component: {{ .Values.clusterName | quote }}
     role: {{- if .Values.client.enabled -}} "client" {{- else if .Values.master.enabled -}} "master" {{- else -}} "data" {{- end }}
   ports:

@@ -4,6 +4,7 @@ kind: StatefulSet
 metadata:
   name: "{{ template "magda.opensearch.data.fullname" . }}"
   labels:
+    {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}
     component: {{ .Values.clusterName | quote }}
     role: data
 spec:
@@ -14,12 +15,14 @@ spec:
     type: {{ .Values.updateStrategy }}
   selector:
     matchLabels:
+      {{- include "magda.common.labels.matchLabels" (dict "root" .) | nindent 6 }}
       component: {{ .Values.clusterName | quote }}
       role: data
   template:
     metadata:
       name: "{{ template "magda.opensearch.data.fullname" . }}"
       labels:
+        {{- include "magda.common.labels.standard" (dict "root" .) | nindent 8 }}
         component: {{ .Values.clusterName | quote }}
         role: data
       annotations:

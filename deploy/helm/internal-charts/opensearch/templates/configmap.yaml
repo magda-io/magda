@@ -4,6 +4,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "{{ .Values.clusterName }}-config"
+  labels:
+    {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}
 data:
 {{- range $configName, $configYaml := .Values.config }}
   {{ $configName }}: |
