@@ -6,39 +6,100 @@ A Helm chart for Kubernetes
 
 ## Requirements
 
-Kubernetes: `>= 1.14.0-0`
+Kubernetes: `>= 1.23.0-0`
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| backup.googleApplicationCreds | object | `{}` |  |
-| client | object | `{"enabled":false,"envFrom":[],"extraEnvs":[],"heapSize":"256m","javaOpts":"-Xmx512M -Xms512M","pluginsInstall":"","replicas":1,"resources":{"limits":{"cpu":"100m"},"requests":{"cpu":"50m","memory":"500Mi"}},"secretMounts":[]}` | client node group options. Nodes in this group will have `Ingest` & `Coordinating` roles. For production use cases, it is recommended to turn on client node group and have at least 2 client nodes. |
+| bootstrapMemoryLock | bool | `true` |  |
+| client | object | `{"affinity":{},"autoscaling":{"hpa":{"enabled":false,"maxReplicas":11,"minReplicas":3,"targetCPU":90,"targetMemory":""}},"enabled":false,"envFrom":[],"extraContainers":[],"extraEnvs":[],"extraInitContainers":[],"extraVolumeMounts":[],"extraVolumes":[],"fullnameOverride":"","heapSize":"256m","javaOpts":"-Xmx256M -Xms256M","nameOverride":"","nodeSelector":{},"pluginsInstall":"","priorityClassName":"magda-9","replicas":1,"resources":{"limits":{"cpu":"100m"},"requests":{"cpu":"50m","memory":"512Mi"}},"sysctlVmMaxMapCount":null,"terminationGracePeriod":120,"tolerations":[]}` | client node group options. Nodes in this group will have `Ingest` & `Coordinating` roles. For production use cases, it is recommended to turn on client node group and have at least 2 client nodes. |
 | client.enabled | bool | `false` | By default, client node group is disabled. For production use cases, it is recommended to turn on client node group. |
-| config."opensearch.yml" | string | `"cluster.name: opensearch-cluster\n\n# Bind to all interfaces because we don't know what IP address Docker will assign to us.\nnetwork.host: 0.0.0.0\n\n# Setting network.host to a non-loopback address enables the annoying bootstrap checks. \"Single-node\" mode disables them again.\n# Implicitly done if \".singleNode\" is set to \"true\".\n# discovery.type: single-node\n\n# Start OpenSearch Security Demo Configuration\n# WARNING: revise all the lines below before you go into production\nplugins:\n  security:\n    ssl:\n      transport:\n        pemcert_filepath: esnode.pem\n        pemkey_filepath: esnode-key.pem\n        pemtrustedcas_filepath: root-ca.pem\n        enforce_hostname_verification: false\n      http:\n        enabled: true\n        pemcert_filepath: esnode.pem\n        pemkey_filepath: esnode-key.pem\n        pemtrustedcas_filepath: root-ca.pem\n    allow_unsafe_democertificates: true\n    allow_default_init_securityindex: true\n    authcz:\n      admin_dn:\n        - CN=kirk,OU=client,O=client,L=test,C=de\n    audit.type: internal_opensearch\n    enable_snapshot_restore_privilege: true\n    check_snapshot_restore_write_privileges: true\n    restapi:\n      roles_enabled: [\"all_access\", \"security_rest_api_access\"]\n    system_indices:\n      enabled: true\n      indices:\n        [\n          \".opendistro-alerting-config\",\n          \".opendistro-alerting-alert*\",\n          \".opendistro-anomaly-results*\",\n          \".opendistro-anomaly-detector*\",\n          \".opendistro-anomaly-checkpoints\",\n          \".opendistro-anomaly-detection-state\",\n          \".opendistro-reports-*\",\n          \".opendistro-notifications-*\",\n          \".opendistro-notebooks\",\n          \".opendistro-asynchronous-search-response*\",\n        ]\n######## End OpenSearch Security Demo Configuration ########\n"` |  |
-| data | object | `{"envFrom":[],"extraEnvs":[],"heapSize":"256m","javaOpts":"-Xmx512M -Xms512M","pluginsInstall":"","resources":{"limits":{"cpu":"500m"},"requests":{"cpu":"200m","memory":"500Mi"}},"secretMounts":[],"storage":"50Gi"}` | Data node group options Nodes in this group will have `Data` & `Coordinating` roles. For production use cases, it is recommended to turn on client node group and have at least 2 client nodes. Data node group will always be enabled. when `client` is disabled, `data` node group will have additional `Ingest` role. when `master` is disabled, `data` node group will have additional `Master` role. |
+| client.priorityClassName | string | `"magda-9"` | Will only be used if .Values.global.enablePriorityClass is set to true |
+| client.sysctlVmMaxMapCount | string | `nil` | By default, .Values.sysctlVmMaxMapCount will be used. You can overwrite this value for client node group. |
+| clusterName | string | `"opensearch"` |  |
+| config | string | `nil` |  |
+| data | object | `{"affinity":{"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"component","operator":"In","values":["opensearch"]},{"key":"role","operator":"In","values":["data"]}]},"topologyKey":"kubernetes.io/hostname"},"weight":50}]}},"envFrom":[],"extraContainers":[],"extraEnvs":[],"extraInitContainers":[],"extraVolumeMounts":[],"extraVolumes":[],"fullnameOverride":"","heapSize":"256m","javaOpts":"-Xmx256M -Xms256M","nameOverride":"","nodeSelector":{},"pluginsInstall":"","podAnnotations":{},"priorityClassName":"magda-9","replicas":1,"resources":{"limits":{"cpu":"500m"},"requests":{"cpu":"200m","memory":"512Mi"}},"storage":"50Gi","sysctlVmMaxMapCount":null,"terminationGracePeriod":120,"tolerations":[]}` | Data node group options Nodes in this group will have `Data` & `Coordinating` roles. For production use cases, it is recommended to turn on client node group and have at least 2 client nodes. Data node group will always be enabled. when `client` is disabled, `data` node group will have additional `Ingest` role. when `master` is disabled, `data` node group will have additional `Master` role. |
+| data.priorityClassName | string | `"magda-9"` | Will only be used if .Values.global.enablePriorityClass is set to true |
+| data.storage | string | `"50Gi"` | Size of the persistent volume claim for each data node. |
+| data.sysctlVmMaxMapCount | string | `nil` | By default, .Values.sysctlVmMaxMapCount will be used. You can overwrite this value for data node group. |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"docker.io/data61"` |  |
+| enableServiceLinks | bool | `true` | The environment variables injected by service links are not used, but can lead to slow OpenSearch boot times when there are many services in the current namespace. If you experience slow pod startups you probably want to set this to `false`. |
 | envFrom | list | `[]` | Allows you to load environment variables from kubernetes secret or config map e.g.  - secretRef:     name: env-secret - configMapRef:     name: config-map You can overwrite `envFrom` for each node type (master, data, client) via the `envFrom` property in each node type. |
+| extraContainers | list | `[]` |  |
 | extraEnvs | list | `[]` | Extra environment variables to append to this nodeGroup This will be appended to the current 'env:' key. You can use any of the kubernetes env syntax here. e.g. extraEnvs: - name: MY_ENVIRONMENT_VAR   value: the_value_goes_here You can overwrite `extraEnvs` for each node type (master, data, client) via the `extraEnvs` property in each node type. |
+| extraInitContainers | list | `[]` |  |
+| extraVolumeMounts | list | `[]` |  |
+| extraVolumes | list | `[]` |  |
+| hostAliases | list | `[]` |  |
+| httpHostPort | string | `""` |  |
+| httpPort | int | `9200` |  |
 | image.name | string | `"magda-opensearch"` |  |
 | initContainerImage.name | string | `"busybox"` |  |
 | initContainerImage.pullPolicy | string | `"IfNotPresent"` |  |
 | initContainerImage.repository | string | `"docker.io"` |  |
 | initContainerImage.tag | string | `"latest"` |  |
 | initResources | object | `{}` | resources config set for init container |
-| javaOpts | string | `"-Xmx512M -Xms512M"` | Opensearch Java options for all node types You can overwrite `javaOpts` for each node type (master, data, client) via the `javaOpts` property in each node type. |
+| javaOpts | string | `"-Xmx256M -Xms256M"` | Opensearch Java options for all node types You can overwrite `javaOpts` for each node type (master, data, client) via the `javaOpts` property in each node type. |
+| keystore | list | `[]` |  |
 | kibanaImage.name | string | `"kibana-oss"` |  |
 | kibanaImage.pullPolicy | string | `"IfNotPresent"` |  |
 | kibanaImage.pullSecrets | bool | `false` |  |
 | kibanaImage.repository | string | `"docker.elastic.co/kibana"` |  |
 | kibanaImage.tag | string | `"6.8.22"` |  |
-| master | object | `{"enabled":false,"envFrom":[],"extraEnvs":[],"javaOpts":"-Xmx512M -Xms512M","pluginsInstall":"","replicas":3,"resources":{"limits":{"cpu":"100m"},"requests":{"cpu":"50m","memory":"900Mi"}},"secretMounts":[]}` | Master node group options Nodes in this group will have `Master` & `Coordinating` roles. For production use cases, it is recommended to turn on master node group and have at least 3 master nodes across different availability zones. |
+| lifecycle | object | `{}` |  |
+| livenessProbe | object | `{}` |  |
+| master | object | `{"affinity":{},"enabled":false,"envFrom":[],"extraContainers":[],"extraEnvs":[],"extraInitContainers":[],"extraVolumeMounts":[],"extraVolumes":[],"fullnameOverride":"","javaOpts":"-Xmx256M -Xms256M","nameOverride":"","nodeSelector":{},"pluginsInstall":"","priorityClassName":"magda-9","replicas":3,"resources":{"limits":{"cpu":"100m"},"requests":{"cpu":"50m","memory":"512Mi"}},"storage":"8Gi","sysctlVmMaxMapCount":null,"terminationGracePeriod":120,"tolerations":[]}` | Master node group options Nodes in this group will have `Master` & `Coordinating` roles. For production use cases, it is recommended to turn on master node group and have at least 3 master nodes across different availability zones. |
 | master.enabled | bool | `false` | By default, Master node group is disabled. For production use cases, it is recommended to turn on Master node group. |
+| master.priorityClassName | string | `"magda-9"` | Will only be used if .Values.global.enablePriorityClass is set to true |
+| master.storage | string | `"8Gi"` | Size of the persistent volume claim for each master node. |
+| master.sysctlVmMaxMapCount | string | `nil` | By default, .Values.sysctlVmMaxMapCount will be used. You can overwrite this value for master node group. |
+| masterTerminationFix | bool | `false` | Use a sidecar container to prevent slow master re-election |
+| metricsPort | int | `9600` |  |
+| networkHost | string | `"0.0.0.0"` |  |
 | opensearchHome | string | `"/usr/share/opensearch"` | Allows you to add any config files in {{ .Values.opensearchHome }}/config |
-| secretMounts | list | `[]` | A list of secrets and their paths to mount inside the pod This is useful for mounting certificates for security and for mounting the X-Pack license You can overwrite `secretMounts` for each node type (master, data, client) via the `secretMounts` property in each node type. |
+| persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
+| persistence.enableInitChown | bool | `false` | Set to true to enable the `fsgroup-volume` initContainer that will update permissions on the persistent disk using `chown`. |
+| persistence.storageClass | string | `nil` | Storage class of the persistent volume claim for data & master nodes |
+| plugins.enabled | bool | `false` |  |
+| plugins.installList | list | `[]` |  |
+| podManagementPolicy | string | `"Parallel"` | The default is to deploy all pods serially. By setting this to parallel all pods are started at the same time when bootstrapping the cluster |
+| podSecurityContext.fsGroup | int | `1000` |  |
+| podSecurityContext.fsGroupChangePolicy | string | `"OnRootMismatch"` | By default, Kubernetes recursively changes ownership and permissions for the contents of each volume to match the fsGroup specified in a Pod's securityContext when that volume is mounted. For large volumes,  checking and changing ownership and permissions can take a lot of time, slowing Pod startup.  You can set the fsGroupChangePolicy field to `OnRootMismatch` to make it only change permissions and ownership if the permission and the ownership of root directory does not match with expected permissions of the volume.  `fsGroupChangePolicy` is a beta feature introduced in Kubernetes 1.20 and become GA in Kubernetes 1.23. |
+| podSecurityContext.runAsUser | int | `1000` |  |
+| rbac.automountServiceAccountToken | bool | `false` | Controls whether or not the Service Account token is automatically mounted to /var/run/secrets/kubernetes.io/serviceaccount |
+| rbac.create | bool | `false` |  |
+| rbac.serviceAccountAnnotations | object | `{}` |  |
+| rbac.serviceAccountName | string | `""` |  |
+| readinessProbe.failureThreshold | int | `3` |  |
+| readinessProbe.periodSeconds | int | `5` |  |
+| readinessProbe.tcpSocket.port | int | `9200` |  |
+| readinessProbe.timeoutSeconds | int | `3` |  |
+| schedulerName | string | `""` | Use an alternate scheduler. ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/ |
+| securityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| securityContext.runAsNonRoot | bool | `true` |  |
+| securityContext.runAsUser | int | `1000` |  |
+| service.externalTrafficPolicy | string | `""` |  |
+| service.ipFamilies | string | `nil` | IP family requires Kubernetes v1.23+ |
+| service.ipFamilyPolicy | string | `"SingleStack"` | The IP family and IP families options are to set the behaviour in a dual-stack environment Omitting these values will let the service fall back to whatever the CNI dictates the defaults should be. requires Kubernetes v1.23+ |
+| service.loadBalancerIP | string | `""` |  |
+| service.loadBalancerSourceRanges | list | `[]` |  |
+| service.type | string | `"ClusterIP"` |  |
 | sidecarResources | object | `{}` | resources config set for sidecar container |
+| startupProbe.failureThreshold | int | `30` |  |
+| startupProbe.initialDelaySeconds | int | `5` |  |
+| startupProbe.periodSeconds | int | `10` |  |
+| startupProbe.tcpSocket.port | int | `9200` |  |
+| startupProbe.timeoutSeconds | int | `3` |  |
+| sysctl.fsFileMax | int | `65536` |  |
+| sysctl.setViaInitContainer | bool | `false` | Set optimal sysctl's through privileged initContainer. By default, `setViaSecurityContext` is set to true to setting optimal sysctl's through securityContext. You might need to set this to true if your system doesn't support setting optimal sysctl's through securityContext. |
+| sysctl.setViaSecurityContext | bool | `true` | Set optimal sysctl's through securityContext. This requires privilege.  Can be disabled if the system has already been preconfigured. (Ex: https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html) Also see: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ When your system doesn't support setting optimal sysctl's through securityContext, you can also set `setViaInitContainer` to true to set sysctl through privileged initContainer instead. |
+| sysctl.vmMaxMapCount | int | `262144` | Opensearch uses a mmapfs directory by default to store its indices.  The default operating system limits on mmap counts is likely to be too low, which may result in out of memory exceptions. |
+| transportHostPort | string | `""` |  |
+| transportPort | int | `9300` |  |
+| updateStrategy | string | `"RollingUpdate"` |  |
 
 ----------------------------------------------
 Autogenerated from chart metadata using [helm-docs v1.5.0](https://github.com/norwoodj/helm-docs/releases/v1.5.0)
