@@ -43,7 +43,7 @@ appConfig:
   http: 
     port: 6103
   elasticSearch:
-    serverUrl: elasticsearch://elasticsearch:9200
+    serverUrl: http://opensearch:9200
     shards: 1
     replicas: 0
   authApi:
