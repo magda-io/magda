@@ -5,6 +5,13 @@ image:
   # pullPolicy: 
   # pullSecrets: 
 
+dashboardsImage:
+  name: "magda-opensearch-dashboards"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets:
+
 defaultImage:
   repository: docker.io/data61
   pullPolicy: IfNotPresent
@@ -14,14 +21,7 @@ initContainerImage:
   name: busybox
   repository: docker.io
   tag: "latest"
-  pullPolicy: IfNotPresent
-
-kibanaImage:
-  name: kibana-oss
-  repository: docker.elastic.co/kibana
-  tag: "6.8.22"
-  pullPolicy: IfNotPresent
-  pullSecrets: false
+  pullPolicy: IfNotPresent 
 
 clusterName: "opensearch"
 
@@ -251,6 +251,7 @@ client:
   extraVolumeMounts: []
   extraContainers: []
   extraInitContainers: []
+  podAnnotations: {}
   javaOpts: "-Xmx256M -Xms256M"
   # -- By default, .Values.sysctlVmMaxMapCount will be used.
   # You can overwrite this value for client node group.
@@ -346,6 +347,7 @@ master:
   extraVolumeMounts: []
   extraContainers: []
   extraInitContainers: []
+  podAnnotations: {}
   javaOpts: "-Xmx256M -Xms256M"
   # -- By default, .Values.sysctlVmMaxMapCount will be used.
   # You can overwrite this value for master node group.
@@ -366,6 +368,11 @@ master:
       cpu: 100m
   # -- Size of the persistent volume claim for each master node.
   storage: 8Gi
+
+dashboards:
+  enabled: true
+  podAnnotations: {}
+
 
 # such as opensearch.yml and log4j2.properties
 config:

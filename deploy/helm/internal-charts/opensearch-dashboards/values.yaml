@@ -1,0 +1,171 @@
+nameOverride: ""
+fullnameOverride: ""
+
+image: 
+  name: "magda-opensearch-dashboards"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+initContainerImage:
+  name: busybox
+  repository: docker.io
+  tag: "latest"
+  pullPolicy: IfNotPresent 
+
+deploymentAnnotations: {}
+podAnnotations: {}
+
+replicas: 1
+
+autoscaling:
+  hpa:
+    enabled: false
+    minReplicas: 3
+    maxReplicas: 11
+    targetCPU: 90
+    targetMemory: ""  
+
+priorityClassName: magda-0
+
+podSecurityContext:
+  runAsUser: 1000
+
+rbac:
+  create: false
+  serviceAccountAnnotations: {}
+  serviceAccountName: ""
+  # -- Controls whether or not the Service Account token is automatically mounted to /var/run/secrets/kubernetes.io/serviceaccount
+  automountServiceAccountToken: false
+
+serverHost: "0.0.0.0"
+
+hostAliases: []
+# - ip: "127.0.0.1"
+#   hostnames:
+#   - "foo.local"
+#   - "bar.local"
+
+startupProbe:
+  tcpSocket:
+    port: 5601
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 20
+  successThreshold: 1
+  initialDelaySeconds: 10
+
+# -- the opensearchHosts is a list of OpenSearch hosts that the OpenSearch Dashboards instance will connect to
+opensearchHosts: 
+- "http://opensearch:9200"
+
+livenessProbe:
+  tcpSocket:
+    port: 5601
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 10
+  successThreshold: 1
+  initialDelaySeconds: 10
+
+readinessProbe:
+  tcpSocket:
+    port: 5601
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 10
+  successThreshold: 1
+  initialDelaySeconds: 10
+
+extraEnvs: []
+#  - name: "NODE_OPTIONS"
+#    value: "--max-old-space-size=1800"
+
+envFrom: []
+
+extraVolumes: []
+  # - name: extras
+  #   emptyDir: {}
+
+extraVolumeMounts: []
+  # - name: extras
+  #   mountPath: /usr/share/extras
+  #   readOnly: true
+
+extraInitContainers: ""
+
+extraContainers: ""
+
+service:
+  name: "opensearch-dashboards"
+  type: ClusterIP
+  # The IP family and IP families options are to set the behaviour in a dual-stack environment
+  # Omitting these values will let the service fall back to whatever the CNI dictates the defaults
+  # should be
+  #
+  # ipFamilyPolicy: SingleStack
+  # ipFamilies:
+  # - IPv4
+  port: 5601
+  loadBalancerIP: ""
+  nodePort: ""
+  labels: {}
+  annotations: {}
+  loadBalancerSourceRanges: []
+  # 0.0.0.0/0
+  httpPortName: http
+
+opensearchAccount:
+  secret: ""
+  keyPassphrase:
+    enabled: false
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "512M"
+  limits:
+    cpu: "100m"
+    memory: "512M"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# -- This is the pod topology spread constraints
+# https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+topologySpreadConstraints: []
+
+# -- pod lifecycle policies as outlined here:
+# https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
+lifecycle: {}
+
+# -- Enable to add 3rd Party / Custom plugins not offered in the default OpenSearchDashboards image.
+plugins:
+  enabled: false
+  installList: []
+  # - example-fake-plugin-downloadable-url
+
+# -- Default OpenSearch Dashboards configuration from docker image of Dashboards
+# example:
+# opensearch_dashboards.yml: |
+#   server:
+#     name: dashboards
+#     host: "{{ .Values.serverHost }}"
+# opensearch_dashboards.yml:
+#   server:
+#     name: dashboards
+#     host: "0.0.0.0"
+config: {}
+
+opensearchDashboardsYml:
+  defaultMode:
+  # value should be 0-0777

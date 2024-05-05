@@ -224,15 +224,6 @@ master
 {{- end -}}
 
 {{/* 
-  Get cluster main / entrypoint service name
-  Usage: 
-  {{ template "magda.opensearch.mainService" . }}
-*/}}
-{{- define "magda.opensearch.mainService" -}}
-{{ .Values.clusterName }}
-{{- end -}}
-
-{{/* 
   Generate master termination fix sidecar container.
   Parameters:
   `root` : current scope i.e. `.`
@@ -264,13 +255,13 @@ master
         else
           BASIC_AUTH=''
         fi
-        curl -XGET -s -k --fail ${BASIC_AUTH} {{ .Values.protocol }}://{{ template "magda.opensearch.mainService" . }}:{{ .Values.httpPort }}${path}
+        curl -XGET -s -k --fail ${BASIC_AUTH} {{ .Values.protocol }}://{{ .Values.clusterName }}:{{ .Values.httpPort }}${path}
     }
 
     cleanup () {
       while true ; do
         local master="$(http "/_cat/master?h=node" || echo "")"
-        if [[ $master == "{{ template "magda.opensearch.mainService" . }}"* && $master != "${NODE_NAME}" ]]; then
+        if [[ $master == "{{ .Values.clusterName }}"* && $master != "${NODE_NAME}" ]]; then
           echo "This node is not master."
           break
         fi

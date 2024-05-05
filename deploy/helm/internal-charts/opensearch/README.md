@@ -2,7 +2,7 @@
 
 ![Version: 3.0.0-alpha.2](https://img.shields.io/badge/Version-3.0.0--alpha.2-informational?style=flat-square)
 
-A Helm chart for Kubernetes
+A Helm chart for Magda's OpenSearch Cluster
 
 ## Requirements
 
@@ -13,12 +13,15 @@ Kubernetes: `>= 1.23.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | bootstrapMemoryLock | bool | `true` |  |
-| client | object | `{"affinity":{},"autoscaling":{"hpa":{"enabled":false,"maxReplicas":11,"minReplicas":3,"targetCPU":90,"targetMemory":""}},"enabled":false,"envFrom":[],"extraContainers":[],"extraEnvs":[],"extraInitContainers":[],"extraVolumeMounts":[],"extraVolumes":[],"fullnameOverride":"","heapSize":"256m","javaOpts":"-Xmx256M -Xms256M","nameOverride":"","nodeSelector":{},"pluginsInstall":"","priorityClassName":"magda-9","replicas":1,"resources":{"limits":{"cpu":"100m"},"requests":{"cpu":"50m","memory":"512Mi"}},"sysctlVmMaxMapCount":null,"terminationGracePeriod":120,"tolerations":[]}` | client node group options. Nodes in this group will have `Ingest` & `Coordinating` roles. For production use cases, it is recommended to turn on client node group and have at least 2 client nodes. |
+| client | object | `{"affinity":{},"autoscaling":{"hpa":{"enabled":false,"maxReplicas":11,"minReplicas":3,"targetCPU":90,"targetMemory":""}},"enabled":false,"envFrom":[],"extraContainers":[],"extraEnvs":[],"extraInitContainers":[],"extraVolumeMounts":[],"extraVolumes":[],"fullnameOverride":"","heapSize":"256m","javaOpts":"-Xmx256M -Xms256M","nameOverride":"","nodeSelector":{},"pluginsInstall":"","podAnnotations":{},"priorityClassName":"magda-9","replicas":1,"resources":{"limits":{"cpu":"100m"},"requests":{"cpu":"50m","memory":"512Mi"}},"sysctlVmMaxMapCount":null,"terminationGracePeriod":120,"tolerations":[]}` | client node group options. Nodes in this group will have `Ingest` & `Coordinating` roles. For production use cases, it is recommended to turn on client node group and have at least 2 client nodes. |
 | client.enabled | bool | `false` | By default, client node group is disabled. For production use cases, it is recommended to turn on client node group. |
 | client.priorityClassName | string | `"magda-9"` | Will only be used if .Values.global.enablePriorityClass is set to true |
 | client.sysctlVmMaxMapCount | string | `nil` | By default, .Values.sysctlVmMaxMapCount will be used. You can overwrite this value for client node group. |
 | clusterName | string | `"opensearch"` |  |
 | config | string | `nil` |  |
+| dashboards.enabled | bool | `true` |  |
+| dashboards.podAnnotations | object | `{}` |  |
+| dashboardsImage.name | string | `"magda-opensearch-dashboards"` |  |
 | data | object | `{"affinity":{"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"component","operator":"In","values":["opensearch"]},{"key":"role","operator":"In","values":["data"]}]},"topologyKey":"kubernetes.io/hostname"},"weight":50}]}},"envFrom":[],"extraContainers":[],"extraEnvs":[],"extraInitContainers":[],"extraVolumeMounts":[],"extraVolumes":[],"fullnameOverride":"","heapSize":"256m","javaOpts":"-Xmx256M -Xms256M","nameOverride":"","nodeSelector":{},"pluginsInstall":"","podAnnotations":{},"priorityClassName":"magda-9","replicas":1,"resources":{"limits":{"cpu":"500m"},"requests":{"cpu":"200m","memory":"512Mi"}},"storage":"50Gi","sysctlVmMaxMapCount":null,"terminationGracePeriod":120,"tolerations":[]}` | Data node group options Nodes in this group will have `Data` & `Coordinating` roles. For production use cases, it is recommended to turn on client node group and have at least 2 client nodes. Data node group will always be enabled. when `client` is disabled, `data` node group will have additional `Ingest` role. when `master` is disabled, `data` node group will have additional `Master` role. |
 | data.priorityClassName | string | `"magda-9"` | Will only be used if .Values.global.enablePriorityClass is set to true |
 | data.storage | string | `"50Gi"` | Size of the persistent volume claim for each data node. |
@@ -44,14 +47,9 @@ Kubernetes: `>= 1.23.0-0`
 | initResources | object | `{}` | resources config set for init container |
 | javaOpts | string | `"-Xmx256M -Xms256M"` | Opensearch Java options for all node types You can overwrite `javaOpts` for each node type (master, data, client) via the `javaOpts` property in each node type. |
 | keystore | list | `[]` |  |
-| kibanaImage.name | string | `"kibana-oss"` |  |
-| kibanaImage.pullPolicy | string | `"IfNotPresent"` |  |
-| kibanaImage.pullSecrets | bool | `false` |  |
-| kibanaImage.repository | string | `"docker.elastic.co/kibana"` |  |
-| kibanaImage.tag | string | `"6.8.22"` |  |
 | lifecycle | object | `{}` |  |
 | livenessProbe | object | `{}` |  |
-| master | object | `{"affinity":{},"enabled":false,"envFrom":[],"extraContainers":[],"extraEnvs":[],"extraInitContainers":[],"extraVolumeMounts":[],"extraVolumes":[],"fullnameOverride":"","javaOpts":"-Xmx256M -Xms256M","nameOverride":"","nodeSelector":{},"pluginsInstall":"","priorityClassName":"magda-9","replicas":3,"resources":{"limits":{"cpu":"100m"},"requests":{"cpu":"50m","memory":"512Mi"}},"storage":"8Gi","sysctlVmMaxMapCount":null,"terminationGracePeriod":120,"tolerations":[]}` | Master node group options Nodes in this group will have `Master` & `Coordinating` roles. For production use cases, it is recommended to turn on master node group and have at least 3 master nodes across different availability zones. |
+| master | object | `{"affinity":{},"enabled":false,"envFrom":[],"extraContainers":[],"extraEnvs":[],"extraInitContainers":[],"extraVolumeMounts":[],"extraVolumes":[],"fullnameOverride":"","javaOpts":"-Xmx256M -Xms256M","nameOverride":"","nodeSelector":{},"pluginsInstall":"","podAnnotations":{},"priorityClassName":"magda-9","replicas":3,"resources":{"limits":{"cpu":"100m"},"requests":{"cpu":"50m","memory":"512Mi"}},"storage":"8Gi","sysctlVmMaxMapCount":null,"terminationGracePeriod":120,"tolerations":[]}` | Master node group options Nodes in this group will have `Master` & `Coordinating` roles. For production use cases, it is recommended to turn on master node group and have at least 3 master nodes across different availability zones. |
 | master.enabled | bool | `false` | By default, Master node group is disabled. For production use cases, it is recommended to turn on Master node group. |
 | master.priorityClassName | string | `"magda-9"` | Will only be used if .Values.global.enablePriorityClass is set to true |
 | master.storage | string | `"8Gi"` | Size of the persistent volume claim for each master node. |

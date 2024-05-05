@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "opensearch.client.fullname" . }}
+  name: {{ include "magda.opensearch.client.fullname" . | quote }}
   labels:
     {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "opensearch.client.fullname" . }}
+    name: {{ include "magda.opensearch.client.fullname" . | quote }}
   minReplicas: {{ .Values.client.autoscaling.hpa.minReplicas }}
   maxReplicas: {{ .Values.client.autoscaling.hpa.maxReplicas }}
   metrics:

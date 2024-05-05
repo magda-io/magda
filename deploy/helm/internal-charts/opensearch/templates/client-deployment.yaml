@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "opensearch.client.fullname" . }}
+  name: {{ include "magda.opensearch.client.fullname" . | quote }}
   labels:
     {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}
     component: {{ .Values.clusterName | quote }}
