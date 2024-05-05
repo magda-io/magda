@@ -54,7 +54,7 @@
 {{- $nodeConfig := get .root.Values $nodeType -}}
 {{- with .root }}
 initContainers:
-{{- if .Values.persistence.enableInitChown }}
+{{- if and .Values.persistence.enableInitChown (eq $nodeType "client" | not ) }}
 - name: fsgroup-volume
   image: {{ include "magda.image" (dict "image" .Values.initContainerImage) | quote }}
   imagePullPolicy: {{ include "magda.imagePullPolicy" (dict "image" .Values.initContainerImage) | quote }}
@@ -66,7 +66,11 @@ initContainers:
   resources:
     {{ toYaml .Values.initResources }}
   volumeMounts:
+    {{- if eq $nodeType "data" }}
     - name: "{{ template "magda.opensearch.data.fullname" . }}"
+    {{- else if eq $nodeType "master" }}
+     - name: "{{ template "magda.opensearch.master.fullname" . }}"
+    {{- end }}
       mountPath: {{ .Values.opensearchHome }}/data
 {{- end }}
 {{- if .Values.sysctl.setViaInitContainer }}

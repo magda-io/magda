@@ -28,8 +28,21 @@ clusterName: "opensearch"
 networkHost: "0.0.0.0"
 
 podSecurityContext:
-  fsGroup: 1000
   runAsUser: 1000
+  fsGroup: 1000
+  # -- By default, Kubernetes recursively changes ownership and permissions for the contents of each volume to match the fsGroup specified in a Pod's securityContext when that volume is mounted. For large volumes, 
+  # checking and changing ownership and permissions can take a lot of time, slowing Pod startup. 
+  # You can set the fsGroupChangePolicy field to `OnRootMismatch` to make it only change permissions and ownership if the permission and the ownership of root directory does not match with expected permissions of the volume. 
+  # `fsGroupChangePolicy` is a beta feature introduced in Kubernetes 1.20 and become GA in Kubernetes 1.23.
+  fsGroupChangePolicy: "OnRootMismatch"
+
+persistence:
+  # -- Set to true to enable the `fsgroup-volume` initContainer that will update permissions on the persistent disk using `chown`.
+  enableInitChown: false
+  accessModes:
+  - ReadWriteOnce
+  # -- Storage class of the persistent volume claim for data & master nodes
+  storageClass:
 
 securityContext:
   capabilities:
@@ -66,10 +79,6 @@ sysctl:
   # The default operating system limits on mmap counts is likely to be too low, which may result in out of memory exceptions.
   vmMaxMapCount: 262144
   fsFileMax: 65536
-
-persistence:
-    # -- Set to false to disable the `fsgroup-volume` initContainer that will update permissions on the persistent disk.
-    enableInitChown: true
 
 # -- resources config set for init container
 initResources: {}
@@ -319,14 +328,8 @@ data:
       memory: 512Mi
     limits:
       cpu: 500m
-  persistence:
-    size: 50Gi
-    # -- Set to false to disable the `fsgroup-volume` initContainer that will update permissions on the persistent disk.
-    enableInitChown: true
-    accessModes:
-      - ReadWriteOnce
-    # -- Storage class of the persistent volume claim
-    storageClass:
+  # -- Size of the persistent volume claim for each data node.
+  storage: 50Gi
 
 # -- Master node group options
 # Nodes in this group will have `Master` & `Coordinating` roles.
@@ -361,14 +364,8 @@ master:
       memory: 512Mi
     limits:
       cpu: 100m
-  persistence:
-    size: 8Gi
-    # -- Set to false to disable the `fsgroup-volume` initContainer that will update permissions on the persistent disk.
-    enableInitChown: true
-    accessModes:
-      - ReadWriteOnce
-    # -- Storage class of the persistent volume claim
-    storageClass:
+  # -- Size of the persistent volume claim for each master node.
+  storage: 8Gi
 
 # such as opensearch.yml and log4j2.properties
 config:

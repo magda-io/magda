@@ -53,14 +53,14 @@ spec:
         {{- if .Values.fsGroup }}
         fsGroup: {{ .Values.fsGroup }} # Deprecated value, please use .Values.podSecurityContext.fsGroup
         {{- end }}
-      {{- if and .Values.master.rbac.create (eq .Values.master.rbac.serviceAccountName "") }}
-      serviceAccountName: "{{ template "magda.opensearch.master.fullname" . }}"
-      automountServiceAccountToken: {{ ne .Values.master.rbac.automountServiceAccountToken false }}
-      {{- else if and .Values.master.rbac.create (ne .Values.master.rbac.serviceAccountName "") }}
-      serviceAccountName: {{ .Values.master.rbac.serviceAccountName | quote }}
-      automountServiceAccountToken: {{ ne .Values.master.rbac.automountServiceAccountToken false }}
+      {{- if and .Values.rbac.create (eq .Values.rbac.serviceAccountName "") }}
+      serviceAccountName: "{{ .Values.clusterName }}"
+      automountServiceAccountToken: {{ ne .Values.rbac.automountServiceAccountToken false }}
+      {{- else if and .Values.rbac.create (ne .Values.rbac.serviceAccountName "") }}
+      serviceAccountName: {{ .Values.rbac.serviceAccountName | quote }}
+      automountServiceAccountToken: {{ ne .Values.rbac.automountServiceAccountToken false }}
       {{- else }}
-      automountServiceAccountToken: {{ ne .Values.master.rbac.automountServiceAccountToken false }}
+      automountServiceAccountToken: {{ ne .Values.rbac.automountServiceAccountToken false }}
       {{- end }}
       {{- with .Values.master.tolerations }}
       tolerations:
@@ -225,13 +225,13 @@ spec:
       name: {{ include "magda.opensearch.master.fullname" . }}
     spec:
       accessModes:
-      {{- range .Values.master.persistence.accessModes }}
+      {{- range .Values.persistence.accessModes }}
       - {{ . | quote }}
       {{- end }}
-      {{- if eq (typeOf .Values.master.persistence.storageClass) "<nil>" | not }}
-      storageClassName: {{ .Values.master.persistence.storageClass | quote }}
+      {{- if eq (typeOf .Values.persistence.storageClass) "<nil>" | not }}
+      storageClassName: {{ .Values.persistence.storageClass | quote }}
       {{- end }}
       resources:
         requests:
-          storage: {{ .Values.master.persistence.size | quote }}
+          storage: {{ .Values.master.storage | quote }}
 {{- end }}

@@ -50,14 +50,14 @@ spec:
         {{- if .Values.fsGroup }}
         fsGroup: {{ .Values.fsGroup }} # Deprecated value, please use .Values.podSecurityContext.fsGroup
         {{- end }}
-      {{- if and .Values.data.rbac.create (eq .Values.data.rbac.serviceAccountName "") }}
-      serviceAccountName: "{{ template "magda.opensearch.data.fullname" . }}"
-      automountServiceAccountToken: {{ ne .Values.data.rbac.automountServiceAccountToken false }}
-      {{- else if and .Values.data.rbac.create (ne .Values.data.rbac.serviceAccountName "") }}
-      serviceAccountName: {{ .Values.data.rbac.serviceAccountName | quote }}
-      automountServiceAccountToken: {{ ne .Values.data.rbac.automountServiceAccountToken false }}
+      {{- if and .Values.rbac.create (eq .Values.rbac.serviceAccountName "") }}
+      serviceAccountName: "{{ .Values.clusterName }}"
+      automountServiceAccountToken: {{ ne .Values.rbac.automountServiceAccountToken false }}
+      {{- else if and .Values.rbac.create (ne .Values.rbac.serviceAccountName "") }}
+      serviceAccountName: {{ .Values.rbac.serviceAccountName | quote }}
+      automountServiceAccountToken: {{ ne .Values.rbac.automountServiceAccountToken false }}
       {{- else }}
-      automountServiceAccountToken: {{ ne .Values.data.rbac.automountServiceAccountToken false }}
+      automountServiceAccountToken: {{ ne .Values.rbac.automountServiceAccountToken false }}
       {{- end }}
       {{- with .Values.data.tolerations }}
       tolerations:
@@ -222,12 +222,12 @@ spec:
       name: {{ include "magda.opensearch.data.fullname" . }}
     spec:
       accessModes:
-      {{- range .Values.data.persistence.accessModes }}
+      {{- range .Values.persistence.accessModes }}
       - {{ . | quote }}
       {{- end }}
-      {{- if eq (typeOf .Values.data.persistence.storageClass) "<nil>" | not }}
-      storageClassName: {{ .Values.data.persistence.storageClass | quote }}
+      {{- if eq (typeOf .Values.persistence.storageClass) "<nil>" | not }}
+      storageClassName: {{ .Values.persistence.storageClass | quote }}
       {{- end }}
       resources:
         requests:
-          storage: {{ .Values.data.persistence.size | quote }}
+          storage: {{ .Values.data.storage | quote }}
