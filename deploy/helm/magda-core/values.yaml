@@ -165,8 +165,18 @@ tags:
   correspondence-api: false
   
   # tags.elasticsearch -- turn on / off [elasticsearch](../internal-charts/elasticsearch/README.md)
-  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
+  # Please note: this module is no longer used since v4.0.0. `opensearch` chart is used instead.
+  # However, this module will still be kept for offering upgrade path for existing users v3 users.
+  # User can opt to turn on this `elasticsearch` to keep existing search engine running while building index on new opensearch engine.
   elasticsearch: false
+
+  # tags.opensearch -- turn on / off [opensearch](../internal-charts/opensearch/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
+  opensearch: false
+
+  # tags.opensearch-dashboards -- turn on / off [opensearch-dashboards](../internal-charts/opensearch-dashboards/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
+  opensearch-dashboards: false
 
   # tags.gateway -- turn on / off [gateway](../internal-charts/gateway/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.

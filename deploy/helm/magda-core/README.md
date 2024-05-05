@@ -27,6 +27,8 @@ A complete solution for managing, publishing and discovering government data, pr
 | file://../internal-charts/gateway | gateway | 3.0.2 |
 | file://../internal-charts/indexer | indexer | 3.0.2 |
 | file://../internal-charts/ingress | ingress | 3.0.2 |
+| file://../internal-charts/opensearch-dashboards | opensearch-dashboards | 3.0.2 |
+| file://../internal-charts/opensearch | opensearch | 3.0.2 |
 | file://../internal-charts/priorities | priorities | 3.0.2 |
 | file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 3.0.2 |
 | file://../internal-charts/registry-api | registry-api | 3.0.2 |
@@ -81,10 +83,12 @@ A complete solution for managing, publishing and discovering government data, pr
 | tags.content-api | bool | `false` | turn on / off [content-api](../internal-charts/content-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.content-db | bool | `false` | turn on / off [content-db](../internal-charts/content-db/README.md) |
 | tags.correspondence-api | bool | `false` | turn on / off [content-db](../internal-charts/correspondence-api/README.md) |
-| tags.elasticsearch | bool | `false` | turn on / off [elasticsearch](../internal-charts/elasticsearch/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.elasticsearch | bool | `false` | turn on / off [elasticsearch](../internal-charts/elasticsearch/README.md) Please note: this module is no longer used since v4.0.0. `opensearch` chart is used instead. However, this module will still be kept for offering upgrade path for existing users v3 users. User can opt to turn on this `elasticsearch` to keep existing search engine running while building index on new opensearch engine. |
 | tags.gateway | bool | `false` | turn on / off [gateway](../internal-charts/gateway/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.indexer | bool | `false` | turn on / off [indexer](../internal-charts/indexer/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.ingress | bool | `false` | turn on / off [ingress](../internal-charts/ingress/README.md) |
+| tags.opensearch | bool | `false` | turn on / off [opensearch](../internal-charts/opensearch/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.opensearch-dashboards | bool | `false` | turn on / off [opensearch-dashboards](../internal-charts/opensearch-dashboards/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.preview-map | bool | `false` | turn on / off [preview-map](https://github.com/magda-io/magda-preview-map) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.priorities | bool | `true` | whether or not deploy Magda defined PriorityClass. Useful to schedule different payload on different nodes. |
 | tags.rds-dev-proxy | bool | `false` | turn on / off [rds-dev-proxy](../internal-charts/rds-dev-proxy/README.md) It's only for accessing AWS RDS db for admin / testing purposes within the k8s cluster. |
