@@ -96,7 +96,7 @@ initContainers:
     runAsUser: 0
     privileged: true
   resources:
-    {{ toYaml .Values.initResources }}
+    {{- toYaml .Values.initResources | nindent 4 }}
 {{- end }}
 {{- if .Values.config }}
 - name: configfile
@@ -149,7 +149,7 @@ initContainers:
   env: {{ toYaml (empty $nodeConfig.extraEnvs | ternary .Values.extraEnvs $nodeConfig.extraEnvs) | nindent 2 }}
   envFrom: {{ toYaml (empty $nodeConfig.envFrom | ternary .Values.envFrom $nodeConfig.envFrom) | nindent 2 }}
   resources:
-    {{ toYaml .Values.initResources }}
+    {{- toYaml .Values.initResources | nindent 4 }}
   volumeMounts:
   - name: keystore
     mountPath: /tmp/keystore
@@ -159,7 +159,7 @@ initContainers:
   {{- end }}
 {{- end }}
 {{- $extraInitContainers := empty $nodeConfig.extraInitContainers | ternary .Values.extraInitContainers $nodeConfig.extraInitContainers -}}
-  {{- if $extraInitContainers }}
+{{- if $extraInitContainers }}
 # Currently some extra blocks accept strings
 # to continue with backwards compatibility this is being kept
 # whilst also allowing for yaml to be specified too.
@@ -168,8 +168,7 @@ initContainers:
   {{- else }}
 {{ toYaml $extraInitContainers }}
   {{- end }}
-  {{- end }}
-  {{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
 
@@ -212,10 +211,10 @@ master
 {{- else }}
   {{- $dataNodeRoles := list "data" }}
   {{- if not .root.Values.master.enabled -}}
-  $dataNodeRoles = append $dataNodeRoles "master"
+  {{- $dataNodeRoles = append $dataNodeRoles "master" }}
   {{- end -}}
   {{- if not .root.Values.client.enabled -}}
-  $dataNodeRoles = append $dataNodeRoles "ingest"
+  {{- $dataNodeRoles = append $dataNodeRoles "ingest" }}
   {{- end -}}
   {{- range $i, $role := $dataNodeRoles -}}
 {{ if ne $i 0 }},{{ end }}{{ $role }}

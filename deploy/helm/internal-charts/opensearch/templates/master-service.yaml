@@ -4,14 +4,14 @@ kind: Service
 metadata:
   name: "{{ template "opensearch.master.fullname" . }}-headless"
   labels:
-    {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}
+    {{- include "magda.common.labels.standard" . | nindent 4 }}
     component: {{ .Values.clusterName | quote }}
     role: master
 spec:
   clusterIP: None
   publishNotReadyAddresses: true
   selector:
-    {{- include "magda.common.labels.matchLabels" (dict "root" .) | nindent 4 }}
+    {{- include "magda.common.labels.matchLabels" . | nindent 4 }}
     component: {{ .Values.clusterName | quote }}
     role: master
   ports:

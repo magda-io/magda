@@ -1,10 +1,11 @@
 {{- if .Values.client.enabled }}
+{{- $nodeConfig := get .Values "client" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "magda.opensearch.client.fullname" . | quote }}
   labels:
-    {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}
+    {{- include "magda.common.labels.standard" . | nindent 4 }}
     component: {{ .Values.clusterName | quote }}
     role: client
 spec:
@@ -16,16 +17,17 @@ spec:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
   selector:
     matchLabels:
-      {{- include "magda.common.labels.matchLabels" (dict "root" .) | nindent 6 }}
+      {{- include "magda.common.labels.matchLabels" . | nindent 6 }}
       component: {{ .Values.clusterName | quote }}
       role: client
   template:
     metadata:
       name: "{{ template "magda.opensearch.client.fullname" . }}"
       labels:
-        {{- include "magda.common.labels.standard" (dict "root" .) | nindent 8 }}
+        {{- include "magda.common.labels.standard" . | nindent 8 }}
         component: {{ .Values.clusterName | quote }}
         role: client
+      {{- if or (empty .Values.client.podAnnotations | not) (empty .Values.config  | not) }}
       annotations:
         {{- range $key, $value := .Values.client.podAnnotations }}
         {{ $key }}: {{ $value | quote }}
@@ -34,6 +36,7 @@ spec:
         {{- if .Values.config }}
         configchecksum: {{ include (print .Template.BasePath "/configmap.yaml") . | sha256sum | trunc 63 }}
         {{- end }}
+      {{- end }}
     spec:
       {{- if .Values.schedulerName }}
       schedulerName: "{{ .Values.schedulerName }}"
@@ -85,14 +88,14 @@ spec:
       - emptyDir: {}
         name: config-emptydir
       {{- end }}
-{{- if .Values.keystore }}
+      {{- if .Values.keystore }}
       - name: keystore
         emptyDir: {}
       {{- range .Values.keystore }}
       - name: keystore-{{ .secretName }}
         secret: {{ toYaml . | nindent 12 }}
       {{- end }}
-{{- end }}
+      {{- end }}
       {{- include "magda.imagePullSecrets" . | indent 6 }}
       {{- include "magda.opensearch.initContainer" (dict "root" . "nodeType" "client" ) | nindent 6 }}
       containers:
@@ -139,7 +142,7 @@ spec:
         - name: metrics
           containerPort: {{ .Values.metricsPort }}
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          {{- toYaml .Values.client.resources | nindent 10 }}
         env:
         - name: node.name
           valueFrom:
@@ -223,5 +226,4 @@ spec:
       - emptyDir:
           medium: ""
         name: "storage"
-{{- end }}
 {{- end }}

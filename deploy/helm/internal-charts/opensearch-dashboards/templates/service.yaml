@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ .Values.service.name | quote }}
   labels:
-    {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}
+    {{- include "magda.common.labels.standard" . | nindent 4 }}
     {{- if .Values.service.labels }}
     {{- toYaml .Values.service.labels | nindent 4}}
     {{- end }}
@@ -22,7 +22,7 @@ spec:
   {{- end }}
   {{- end }}
   selector:
-    {{- include "magda.common.labels.matchLabels" (dict "root" .) | nindent 4 }}
+    {{- include "magda.common.labels.matchLabels" . | nindent 4 }}
   ports:
   - port: {{ .Values.service.port }}
 {{- if .Values.service.nodePort }}

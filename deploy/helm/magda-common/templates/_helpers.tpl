@@ -94,12 +94,3 @@ Create chart name and version as used by the chart label.
 {{- end }}
 {{- end }}
 {{- end }}
-
-
-{{/*
-  Create selector labels
-*/}}
-{{- define "magda.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "magda.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}

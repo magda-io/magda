@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ include "magda.fullname" . | quote }}
   labels: 
-    {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 -}}
+    {{- include "magda.common.labels.standard" . | nindent 4 -}}
   {{- with .Values.dashboardAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -17,11 +17,11 @@ spec:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
   selector:
     matchLabels:
-      {{- include "magda.common.labels.matchLabels" (dict "root" .) | nindent 6 }}
+      {{- include "magda.common.labels.matchLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "magda.common.labels.standard" (dict "root" .) | nindent 8 -}}
+        {{- include "magda.common.labels.standard" . | nindent 8 -}}
       annotations:
         {{- range $key, $value := .Values.dashboards.podAnnotations }}
         {{ $key }}: {{ $value | quote }}

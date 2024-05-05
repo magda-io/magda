@@ -4,7 +4,7 @@ kind: StatefulSet
 metadata:
   name: "{{ template "magda.opensearch.data.fullname" . }}"
   labels:
-    {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}
+    {{- include "magda.common.labels.standard" . | nindent 4 }}
     component: {{ .Values.clusterName | quote }}
     role: data
 spec:
@@ -15,16 +15,17 @@ spec:
     type: {{ .Values.updateStrategy }}
   selector:
     matchLabels:
-      {{- include "magda.common.labels.matchLabels" (dict "root" .) | nindent 6 }}
+      {{- include "magda.common.labels.matchLabels" . | nindent 6 }}
       component: {{ .Values.clusterName | quote }}
       role: data
   template:
     metadata:
       name: "{{ template "magda.opensearch.data.fullname" . }}"
       labels:
-        {{- include "magda.common.labels.standard" (dict "root" .) | nindent 8 }}
+        {{- include "magda.common.labels.standard" . | nindent 8 }}
         component: {{ .Values.clusterName | quote }}
         role: data
+      {{- if or (empty .Values.data.podAnnotations | not) (empty .Values.config  | not) }}
       annotations:
         {{- range $key, $value := .Values.data.podAnnotations }}
         {{ $key }}: {{ $value | quote }}
@@ -33,6 +34,7 @@ spec:
         {{- if .Values.config }}
         configchecksum: {{ include (print .Template.BasePath "/configmap.yaml") . | sha256sum | trunc 63 }}
         {{- end }}
+      {{- end }}
     spec:
       {{- if .Values.schedulerName }}
       schedulerName: "{{ .Values.schedulerName }}"
@@ -74,6 +76,7 @@ spec:
       {{- if .Values.hostAliases }}
       hostAliases: {{ toYaml .Values.hostAliases | nindent 8 }}
       {{- end }}
+{{- if or (empty .Values.config | not) (empty .Values.keystore | not) }}
       volumes:
       {{- if .Values.config }}
       - name: config
@@ -82,12 +85,13 @@ spec:
       - emptyDir: {}
         name: config-emptydir
       {{- end }}
-{{- if .Values.keystore }}
+      {{- if .Values.keystore }}
       - name: keystore
         emptyDir: {}
       {{- range .Values.keystore }}
       - name: keystore-{{ .secretName }}
         secret: {{ toYaml . | nindent 12 }}
+      {{- end }}
       {{- end }}
 {{- end }}
       {{- include "magda.imagePullSecrets" . | indent 6 }}
@@ -136,24 +140,24 @@ spec:
         - name: metrics
           containerPort: {{ .Values.metricsPort }}
         resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          {{- toYaml .Values.data.resources | nindent 10 }}
         env:
         - name: node.name
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        {{- if and .Values.master.enabled (gt .Values.master.replicas 1) }}
+        {{- if and .Values.master.enabled (gt (int .Values.master.replicas) 1) }}
         - name: cluster.initial_cluster_manager_nodes
           value: {{ include "magda.opensearch.endpoints" (dict "root" . "nodeType" "master" ) | quote }}
-        {{- else if gt .Values.data.replicas 1 }}
+        {{- else if gt (int .Values.data.replicas) 1 }}
         - name: cluster.initial_cluster_manager_nodes
           value: {{ include "magda.opensearch.endpoints" (dict "root" . "nodeType" "data" ) | quote }}
         {{- end }}
         - name: discovery.seed_hosts
         {{- if .Values.master.enabled }}
-          value: "{{ template "opensearch.master.fullname" . }}-headless"
+          value: "{{ template "magda.opensearch.master.fullname" . }}-headless"
         {{- else }}
-          value: "{{ template "opensearch.data.fullname" . }}-headless"
+          value: "{{ template "magda.opensearch.data.fullname" . }}-headless"
         {{- end }}
         - name: cluster.name
           value: "{{ .Values.clusterName }}"
@@ -162,12 +166,12 @@ spec:
         - name: OPENSEARCH_JAVA_OPTS
           value: {{ .Values.data.javaOpts | default .Values.javaOpts | quote }}
         - name: node.roles
-          value: "{{ template "magda.opensearch.nodeRoles" (dict "root" . "nodeType" "data" ) }}"
+          value: {{ include "magda.opensearch.nodeRoles" (dict "root" . "nodeType" "data" ) | quote }}
         {{- if .Values.bootstrapMemoryLock }}
         - name: bootstrap.memory_lock
           value: "true"
         {{- end }}
-        {{- if or (and .Values.master.enabled (eq .Values.master.replicas 1)) (and (not .Values.master.enabled) (eq .Values.data.replicas 1)) }}
+        {{- if or (and .Values.master.enabled (eq (int .Values.master.replicas) 1)) (and (not .Values.master.enabled) (eq (int .Values.data.replicas) 1)) }}
         - name: discovery.type
           value: "single-node"
         {{- end }}
