@@ -16,7 +16,7 @@ Kubernetes: `>= 1.21.0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami | postgresql | 10.9.1 |
+| oci://ghcr.io/magda-io/third-party/bitnami/charts | postgresql | 10.9.1 |
 
 ## Values
 
