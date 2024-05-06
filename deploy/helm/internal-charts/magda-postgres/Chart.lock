@@ -1,6 +1,6 @@
 dependencies:
 - name: postgresql
-  repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+  repository: oci://ghcr.io/magda-io/third-party/bitnami/charts
   version: 10.9.1
-digest: sha256:f0f7c763c2f2d05b70c667ad3553604f9d34a0f01340c2fb67fa3f29d423e10a
-generated: "2022-06-28T18:33:29.340263+10:00"
+digest: sha256:a62301a35ba84a6a1958d283adcd1a9855ac89ecd1ffeedd59ffcae026a4025d
+generated: "2024-05-06T21:02:20.412739+10:00"
