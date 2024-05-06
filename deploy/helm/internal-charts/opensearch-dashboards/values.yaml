@@ -1,4 +1,5 @@
-global: {}
+global:
+  rollingUpdate: {}
 
 nameOverride: ""
 fullnameOverride: ""

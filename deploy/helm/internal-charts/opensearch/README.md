@@ -36,7 +36,7 @@ Kubernetes: `>= 1.23.0-0`
 | extraInitContainers | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
-| global | object | `{}` |  |
+| global.rollingUpdate | object | `{}` |  |
 | hostAliases | list | `[]` |  |
 | httpHostPort | string | `""` |  |
 | httpPort | int | `9200` |  |

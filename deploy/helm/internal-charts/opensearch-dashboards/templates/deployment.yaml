@@ -21,15 +21,17 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "magda.common.labels.standard" . | nindent 8 -}}
+        {{- include "magda.common.labels.standard" . | nindent 8 }}
+      {{- if or (empty .Values.podAnnotations | not) (empty .Values.config | not) }}
       annotations:
-        {{- range $key, $value := .Values.dashboards.podAnnotations }}
+        {{- range $key, $value := .Values.podAnnotations }}
         {{ $key }}: {{ $value | quote }}
         {{- end }}
         {{- /* This forces a restart if the configmap has changed */}}
         {{- if .Values.config }}
         configchecksum: {{ include (print .Template.BasePath "/configmap.yaml") . | sha256sum | trunc 63 }}
         {{- end }}
+      {{- end }}
     spec:
 {{- if and .Values.priorityClassName .Values.global.enablePriorityClass }}
       priorityClassName: {{ .Values.priorityClassName }}

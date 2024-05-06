@@ -30,7 +30,7 @@ Kubernetes: `>= 1.23.0-0`
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
 | fullnameOverride | string | `""` |  |
-| global | object | `{}` |  |
+| global.rollingUpdate | object | `{}` |  |
 | hostAliases | list | `[]` |  |
 | image.name | string | `"magda-opensearch-dashboards"` |  |
 | initContainerImage.name | string | `"busybox"` |  |
