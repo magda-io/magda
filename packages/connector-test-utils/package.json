@@ -1,7 +1,7 @@
 {
   "name": "@magda/connector-test-utils",
   "description": "MAGDA Connector Utils for Test Cases",
-  "version": "3.0.2",
+  "version": "4.0.0-alpha.0",
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
@@ -21,7 +21,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/typescript-common": "^3.0.2",
+    "@magda/typescript-common": "^4.0.0-alpha.0",
     "@microsoft/api-extractor": "~7.39.0",
     "esbuild": "^0.19.10",
     "ts-loader": "^9.5.1",
