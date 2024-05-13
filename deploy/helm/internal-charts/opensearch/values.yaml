@@ -68,16 +68,19 @@ schedulerName: ""
 bootstrapMemoryLock: true
 
 sysctl:
-  # -- Set optimal sysctl's through securityContext. This requires privilege. 
-  # Can be disabled if the system has already been preconfigured. (Ex: https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html)
+  # -- Enable setting optimal sysctl settings on the node.
+  enabled: true
+
+  # -- How to set optimal sysctl settings.
+  # Possible values: 
+  # - `initContainer`: set optimal sysctl's through privileged initContainer (i.e. `privileged: true`).
+  # - `securityContext`: set optimal sysctl's through securityContext. This requires privilege.
+  # Default to `initContainer`.
+  # Please note: When use `securityContext`, you need to make sure unsafe sysctls (e.g. `vm.max_map_count`) are enabled on the node.
+  # All unsafe sysctls are disabled by default and must be allowed manually by the cluster admin on a per-node basis.
   # Also see: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/
-  # When your system doesn't support setting optimal sysctl's through securityContext,
-  # you can also set `setViaInitContainer` to true to set sysctl through privileged initContainer instead.
-  setViaSecurityContext: true
-  # -- Set optimal sysctl's through privileged initContainer.
-  # By default, `setViaSecurityContext` is set to true to setting optimal sysctl's through securityContext.
-  # You might need to set this to true if your system doesn't support setting optimal sysctl's through securityContext.
-  setViaInitContainer: false
+  method: "initContainer"
+  
   # -- Opensearch uses a mmapfs directory by default to store its indices. 
   # The default operating system limits on mmap counts is likely to be too low, which may result in out of memory exceptions.
   vmMaxMapCount: 262144

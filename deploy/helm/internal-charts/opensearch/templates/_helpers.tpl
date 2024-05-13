@@ -73,7 +73,7 @@ initContainers:
     {{- end }}
       mountPath: {{ .Values.opensearchHome }}/data
 {{- end }}
-{{- if .Values.sysctl.setViaInitContainer }}
+{{- if and .Values.sysctl.enabled (eq .Values.sysctl.method "initContainer") }}
 - name: sysctl
   image: {{ include "magda.image" (dict "image" .Values.initContainerImage) | quote }}
   imagePullPolicy: {{ include "magda.imagePullPolicy" (dict "image" .Values.initContainerImage) | quote }}
@@ -186,9 +186,9 @@ initContainers:
 {{- $nodeType := .nodeType -}}
 {{- $nodeConfig := get .root.Values $nodeType -}}
 {{- $replicas := int (toString ($nodeConfig.replicas)) }}
-{{- $uname := (include "magda.opensearch.master.fullname" .) }}
+{{- $uname := (include "magda.opensearch.master.fullname" .root) }}
 {{- if eq $nodeType "data" -}}
-{{- $uname = (include "magda.opensearch.data.fullname" .) }}
+{{- $uname = (include "magda.opensearch.data.fullname" .root) }}
 {{- end -}}
   {{- range $i, $e := untilStep 0 $replicas 1 -}}
 {{ if ne $i 0 }},{{ end }}{{ $uname }}-{{ $i }}

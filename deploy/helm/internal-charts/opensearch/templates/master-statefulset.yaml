@@ -43,7 +43,7 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.master.terminationGracePeriod }}
       securityContext:
 {{ toYaml .Values.podSecurityContext | indent 8 }}
-        {{- if .Values.sysctl.setViaSecurityContext }}
+        {{- if and .Values.sysctl.enabled (eq .Values.sysctl.method "securityContext") }}
         sysctls:
         - name: vm.max_map_count
           value: {{ .Values.sysctl.vmMaxMapCount | quote }}

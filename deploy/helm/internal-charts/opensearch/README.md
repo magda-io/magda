@@ -92,9 +92,9 @@ Kubernetes: `>= 1.23.0-0`
 | startupProbe.periodSeconds | int | `10` |  |
 | startupProbe.tcpSocket.port | int | `9200` |  |
 | startupProbe.timeoutSeconds | int | `3` |  |
+| sysctl.enabled | bool | `true` | Enable setting optimal sysctl settings on the node. |
 | sysctl.fsFileMax | int | `65536` |  |
-| sysctl.setViaInitContainer | bool | `false` | Set optimal sysctl's through privileged initContainer. By default, `setViaSecurityContext` is set to true to setting optimal sysctl's through securityContext. You might need to set this to true if your system doesn't support setting optimal sysctl's through securityContext. |
-| sysctl.setViaSecurityContext | bool | `true` | Set optimal sysctl's through securityContext. This requires privilege.  Can be disabled if the system has already been preconfigured. (Ex: https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html) Also see: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ When your system doesn't support setting optimal sysctl's through securityContext, you can also set `setViaInitContainer` to true to set sysctl through privileged initContainer instead. |
+| sysctl.method | string | `"initContainer"` | How to set optimal sysctl settings. Possible values:  - `initContainer`: set optimal sysctl's through privileged initContainer (i.e. `privileged: true`). - `securityContext`: set optimal sysctl's through securityContext. This requires privilege. Default to `initContainer`. Please note: When use `securityContext`, you need to make sure unsafe sysctls (e.g. `vm.max_map_count`) are enabled on the node. All unsafe sysctls are disabled by default and must be allowed manually by the cluster admin on a per-node basis. Also see: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ |
 | sysctl.vmMaxMapCount | int | `262144` | Opensearch uses a mmapfs directory by default to store its indices.  The default operating system limits on mmap counts is likely to be too low, which may result in out of memory exceptions. |
 | transportHostPort | string | `""` |  |
 | transportPort | int | `9300` |  |
