@@ -169,10 +169,6 @@ spec:
           value: {{ .Values.client.javaOpts | default .Values.javaOpts | quote }}
         - name: node.roles
           value: "{{ template "magda.opensearch.nodeRoles" (dict "root" . "nodeType" "client" ) }}"
-        {{- if .Values.bootstrapMemoryLock }}
-        - name: bootstrap.memory_lock
-          value: "true"
-        {{- end }}
         {{- if or (and .Values.master.enabled (eq (int .Values.master.replicas) 1)) (and (not .Values.master.enabled) (eq .Values.data.replicas 1)) }}
         - name: discovery.type
           value: "single-node"
@@ -225,5 +221,5 @@ spec:
       volumes:
       - emptyDir:
           medium: ""
-        name: "storage"
+        name: "main-storage"
 {{- end }}

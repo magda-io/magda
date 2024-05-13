@@ -65,8 +65,6 @@ updateStrategy: RollingUpdate
 # ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
 schedulerName: ""
 
-bootstrapMemoryLock: true
-
 sysctl:
   # -- Enable setting optimal sysctl settings on the node.
   enabled: true
