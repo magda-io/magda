@@ -206,9 +206,9 @@ initContainers:
 {{- define "magda.opensearch.nodeRoles" -}}
 {{- if eq .nodeType "client" -}}
 ingest
-{{- else if eq .nodeType "master" }}
+{{- else if eq .nodeType "master" -}}
 master
-{{- else }}
+{{- else -}}
   {{- $dataNodeRoles := list "data" }}
   {{- if not .root.Values.master.enabled -}}
   {{- $dataNodeRoles = append $dataNodeRoles "master" }}
