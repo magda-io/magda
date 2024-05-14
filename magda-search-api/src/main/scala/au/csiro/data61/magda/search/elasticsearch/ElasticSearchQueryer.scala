@@ -136,7 +136,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               .sequence(
                 Seq(
                   fullRegionsFuture,
-                  client.execute(query).flatMap {
+                  client.execute(query.trackTotalHits(true)).flatMap {
                     case results: RequestSuccess[SearchResponse] =>
                       Future.successful((results.result, MatchAll))
                     case IllegalArgumentException(e) => throw e
