@@ -217,26 +217,28 @@ plugins:
 
 startupProbe:
   tcpSocket:
-    port: 9200
-  initialDelaySeconds: 5
+    port: transport
+  initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 3
   failureThreshold: 30
 
-livenessProbe: {}
-  # periodSeconds: 20
-  # timeoutSeconds: 5
-  # failureThreshold: 10
-  # successThreshold: 1
-  # initialDelaySeconds: 10
-  # tcpSocket:
-  #   port: 9200
+livenessProbe:
+  tcpSocket:
+    port: transport
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 10
+  successThreshold: 1
+  initialDelaySeconds: 10
 
 readinessProbe:
-  tcpSocket:
-    port: 9200
-  periodSeconds: 5
-  timeoutSeconds: 3
+  httpGet:
+    path: /_cluster/health?local=true
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
   failureThreshold: 3
 
 
@@ -269,6 +271,9 @@ client:
   affinity: {}
   # -- Will only be used if .Values.global.enablePriorityClass is set to true
   priorityClassName: magda-9
+  startupProbe: {}
+  livenessProbe: {}
+  readinessProbe: {}
   autoscaling:
     hpa:
       enabled: false
@@ -327,6 +332,9 @@ data:
               - data
   # -- Will only be used if .Values.global.enablePriorityClass is set to true
   priorityClassName: magda-9
+  startupProbe: {}
+  livenessProbe: {}
+  readinessProbe: {}
   resources:
     requests:
       cpu: 200m
@@ -356,6 +364,7 @@ master:
   # -- By default, .Values.sysctlVmMaxMapCount will be used.
   # You can overwrite this value for master node group.
   sysctlVmMaxMapCount: 
+  pluginsInstall: ""
   replicas: 3
   terminationGracePeriod: 120
   nodeSelector: {}
@@ -363,7 +372,15 @@ master:
   affinity: {}
   # -- Will only be used if .Values.global.enablePriorityClass is set to true
   priorityClassName: magda-9
-  pluginsInstall: ""
+  startupProbe: {}
+  livenessProbe: {}
+  readinessProbe: 
+    tcpSocket:
+      port: transport
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
   resources:
     requests:
       cpu: 50m
