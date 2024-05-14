@@ -207,11 +207,11 @@ initContainers:
 {{- if eq .nodeType "client" -}}
 ingest
 {{- else if eq .nodeType "master" -}}
-master
+cluster_manager
 {{- else -}}
   {{- $dataNodeRoles := list "data" }}
   {{- if not .root.Values.master.enabled -}}
-  {{- $dataNodeRoles = append $dataNodeRoles "master" }}
+  {{- $dataNodeRoles = append $dataNodeRoles "cluster_manager" }}
   {{- end -}}
   {{- if not .root.Values.client.enabled -}}
   {{- $dataNodeRoles = append $dataNodeRoles "ingest" }}
