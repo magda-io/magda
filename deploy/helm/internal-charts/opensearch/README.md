@@ -12,7 +12,6 @@ Kubernetes: `>= 1.23.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| bootstrapMemoryLock | bool | `true` |  |
 | client | object | `{"affinity":{},"autoscaling":{"hpa":{"enabled":false,"maxReplicas":11,"minReplicas":3,"targetCPU":90,"targetMemory":""}},"enabled":false,"envFrom":[],"extraContainers":[],"extraEnvs":[],"extraInitContainers":[],"extraVolumeMounts":[],"extraVolumes":[],"fullnameOverride":"","heapSize":"256m","javaOpts":"-Xmx256M -Xms256M","nameOverride":"","nodeSelector":{},"pluginsInstall":"","podAnnotations":{},"priorityClassName":"magda-9","replicas":1,"resources":{"limits":{"cpu":"100m"},"requests":{"cpu":"50m","memory":"512Mi"}},"sysctlVmMaxMapCount":null,"terminationGracePeriod":120,"tolerations":[]}` | client node group options. Nodes in this group will have `Ingest` & `Coordinating` roles. For production use cases, it is recommended to turn on client node group and have at least 2 client nodes. |
 | client.enabled | bool | `false` | By default, client node group is disabled. For production use cases, it is recommended to turn on client node group. |
 | client.priorityClassName | string | `"magda-9"` | Will only be used if .Values.global.enablePriorityClass is set to true |
