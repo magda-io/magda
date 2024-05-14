@@ -1,6 +1,6 @@
 {
   "name": "@magda/opensearch",
-  "version": "3.0.0-alpha.2",
+  "version": "4.0.0-alpha.1",
   "description": "MAGDA's custom OpenSearch docker image.",
   "scripts": {
     "dev": "docker-compose up",
@@ -70,7 +70,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^3.0.0-alpha.2"
+    "@magda/scripts": "^4.0.0-alpha.1"
   },
   "magda": {
     "categories": {
