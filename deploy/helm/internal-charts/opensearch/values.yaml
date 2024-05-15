@@ -85,22 +85,22 @@ sysctl:
   fsFileMax: 65536
 
 # -- resources config set for init container
-initResources: {}
-#  limits:
-#     cpu: "25m"
-#     memory: "128Mi"
-#  requests:
-#     cpu: "25m"
-#     memory: "128Mi"
+initResources:
+  limits:
+    cpu: "25m"
+    memory: "128Mi"
+  requests:
+    cpu: "25m"
+    memory: "128Mi"
 
 # -- resources config set for sidecar container
-sidecarResources: {}
-#   limits:
-#     cpu: "25m"
-#     memory: "128Mi"
-#   requests:
-#     cpu: "25m"
-#     memory: "128Mi"
+sidecarResources:
+  limits:
+    cpu: "25m"
+    memory: "128Mi"
+  requests:
+    cpu: "25m"
+    memory: "128Mi"
 
 # -- Allows you to add any config files in {{ .Values.opensearchHome }}/config
 opensearchHome: /usr/share/opensearch
@@ -171,7 +171,7 @@ javaOpts: "-Xmx256M -Xms256M"
 enableServiceLinks: true
 
 # -- Use a sidecar container to prevent slow master re-election
-masterTerminationFix: false
+masterTerminationFix: true
 
 httpPort: 9200
 transportPort: 9300

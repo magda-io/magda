@@ -169,7 +169,7 @@ spec:
           value: {{ .Values.client.javaOpts | default .Values.javaOpts | quote }}
         - name: node.roles
           value: "{{ template "magda.opensearch.nodeRoles" (dict "root" . "nodeType" "client" ) }}"
-        {{- if or (and .Values.master.enabled (eq (int .Values.master.replicas) 1)) (and (not .Values.master.enabled) (eq .Values.data.replicas 1)) }}
+        {{- if or (and .Values.master.enabled (eq (int .Values.master.replicas) 1)) (and (not .Values.master.enabled) (eq (int .Values.data.replicas) 1)) }}
         - name: discovery.type
           value: "single-node"
         {{- end }}
@@ -218,8 +218,4 @@ spec:
 {{ toYaml $extraContainers | indent 6 }}
       {{- end }}
       {{- end }}
-      volumes:
-      - emptyDir:
-          medium: ""
-        name: "main-storage"
 {{- end }}

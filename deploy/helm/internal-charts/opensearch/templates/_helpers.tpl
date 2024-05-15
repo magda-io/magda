@@ -64,12 +64,12 @@ initContainers:
   securityContext:
     runAsUser: 0
   resources:
-    {{ toYaml .Values.initResources }}
+    {{- template "magda.toYamlWithNindent" (list .Values.initResources 4) }}
   volumeMounts:
     {{- if eq $nodeType "data" }}
     - name: "{{ template "magda.opensearch.data.fullname" . }}"
     {{- else if eq $nodeType "master" }}
-     - name: "{{ template "magda.opensearch.master.fullname" . }}"
+    - name: "{{ template "magda.opensearch.master.fullname" . }}"
     {{- end }}
       mountPath: {{ .Values.opensearchHome }}/data
 {{- end }}
@@ -96,7 +96,7 @@ initContainers:
     runAsUser: 0
     privileged: true
   resources:
-    {{- toYaml .Values.initResources | nindent 4 }}
+    {{- template "magda.toYamlWithNindent" (list .Values.initResources 4) }}
 {{- end }}
 {{- if .Values.config }}
 - name: configfile
@@ -109,7 +109,7 @@ initContainers:
     #!/usr/bin/env bash
     cp -r /tmp/configfolder/*  /tmp/config/
   resources:
-    {{ toYaml .Values.initResources }}
+    {{- template "magda.toYamlWithNindent" (list .Values.initResources 4) }}
   volumeMounts:
     - mountPath: /tmp/config/
       name: config-emptydir
@@ -149,7 +149,7 @@ initContainers:
   env: {{ toYaml (empty $nodeConfig.extraEnvs | ternary .Values.extraEnvs $nodeConfig.extraEnvs) | nindent 2 }}
   envFrom: {{ toYaml (empty $nodeConfig.envFrom | ternary .Values.envFrom $nodeConfig.envFrom) | nindent 2 }}
   resources:
-    {{- toYaml .Values.initResources | nindent 4 }}
+    {{- template "magda.toYamlWithNindent" (list .Values.initResources 4) }}
   volumeMounts:
   - name: keystore
     mountPath: /tmp/keystore
@@ -239,7 +239,6 @@ cluster_manager
 - name: opensearch-master-graceful-termination-handler
   image: {{ include "magda.image" . | quote }}
   imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
-  {{- .Values.clusterName -}}
   command:
   - "sh"
   - -c
@@ -276,7 +275,7 @@ cluster_manager
     sleep infinity &
     wait $!
   resources:
-    {{- toYaml .Values.sidecarResources | nindent 2 }}
+    {{- template "magda.toYamlWithNindent" (list .Values.sidecarResources 4) }}
   env:
   - name: NODE_NAME
     valueFrom:
