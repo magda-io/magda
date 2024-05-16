@@ -4,24 +4,19 @@ services:
     image: opensearchproject/opensearch:2.14.0
     ports:
       - 9200:9200
-      - 9600:9600
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      - 9300:9300
     volumes:
-      - ./setup-test.sh:/tmp/setup.sh
       - ./regionSynonyms.test.txt:/usr/share/opensearch/config/analysis/regionSynonyms.txt
       - ./wn_s_test.pl:/usr/share/opensearch/config/analysis/wn_s.pl
     environment:
       - cluster.name=oes-data-0
-      - NODE_DATA=true
-      - NODE_MASTER=true
-      - NODE_INGEST=true
-      - HTTP_ENABLE=true
-      - DISCOVERY_SERVICE=localhost
-      - NETWORK_HOST=0.0.0.0
-      - bootstrap.memory_lock=true
+      - node.roles=cluster_manager,data,ingest
+      - discovery.seed_hosts=localhost
+      - network.host=0.0.0.0
       - discovery.type=single-node
-    entrypoint:
-      - /tmp/setup.sh
+    command:
+      - /bin/bash
+      - -c
+      - |
+        ./bin/opensearch-plugin remove opensearch-security --purge
+        ./opensearch-docker-entrypoint.sh opensearch

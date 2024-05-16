@@ -12,7 +12,10 @@ services:
     # extra_hosts:
     #   - "host.docker.internal:host-gateway"
     volumes:
-      - ./setup-test.sh:/tmp/setup.sh
       - ./opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
-    entrypoint:
-      - /tmp/setup.sh
+    command:
+      - /bin/bash
+      - -c
+      - |
+        ./bin/opensearch-dashboards-plugin remove securityDashboards
+        ./opensearch-dashboards-docker-entrypoint.sh opensearch-dashboards

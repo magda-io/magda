@@ -15,7 +15,7 @@
   "config": {
     "docker": {
       "name": "magda-opensearch",
-      "include": "Dockerfile opensearch.yml setup.sh wn_s.pl regionSynonyms.txt"
+      "include": "Dockerfile wn_s.pl regionSynonyms.txt"
     },
     "regionSources": {
       "COUNTRY": {
