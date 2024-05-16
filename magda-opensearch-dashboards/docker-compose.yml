@@ -1,0 +1,21 @@
+version: "3"
+services:
+  test-opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.14.0
+    ports:
+      - 5601:5601 # Map host port 5601 to container port 5601
+    expose:
+      - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
+    environment:
+      OPENSEARCH_HOSTS: '["http://host.docker.internal:9200"]'
+    # required for linux only
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    volumes:
+      - ./opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
+    command:
+      - /bin/bash
+      - -c
+      - |
+        ./bin/opensearch-dashboards-plugin remove securityDashboards
+        ./opensearch-dashboards-docker-entrypoint.sh opensearch-dashboards

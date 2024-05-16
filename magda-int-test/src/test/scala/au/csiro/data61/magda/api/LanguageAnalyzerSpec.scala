@@ -302,7 +302,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
             list.exists(!isAStopWord(_))
 
       val indexAndTermsGen = smallIndexGen.flatMap {
-        case (indexName, dataSetsRaw, routes) ⇒
+        case (indexName, dataSetsRaw, routes, delFunc) ⇒
           val indexedDataSets =
             dataSetsRaw.filterNot(dataSet ⇒ innerTermExtractor(dataSet).isEmpty)
 
@@ -326,7 +326,10 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
 
               if (!terms.isEmpty) {
                 Some(for {
-                  noOfTerms <- Gen.choose(1, terms.length)
+                  // max 10 terms to search here?
+                  // to avoid too_many_nested_clauses error since recent es v7
+                  // the `maxClauseCount` setting is depends on system ram and we won't have too much available in CI
+                  noOfTerms <- Gen.choose(1, Math.min(10, terms.length))
                   selectedTerms <- Gen
                     .pick(noOfTerms, terms) //Gen.pick shuffles the order
                 } yield selectedTerms)
@@ -347,7 +350,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
                 } yield currentInner :+ list
             )
 
-          combinedDataSetAndTermGen.map((indexName, _, routes))
+          combinedDataSetAndTermGen.map((indexName, _, routes, delFunc))
       }
 
       implicit def dataSetStringShrinker(
@@ -373,25 +376,32 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
           implicit s: Shrink[String],
           s1: Shrink[List[(DataSet, String)]],
           s2: Shrink[Route]
-      ): Shrink[(String, List[(DataSet, String)], Route)] =
-        Shrink[(String, List[(DataSet, String)], Route)] {
-          case (indexName, terms, route) ⇒
+      ): Shrink[(String, List[(DataSet, String)], Route, () => Unit)] =
+        Shrink[(String, List[(DataSet, String)], Route, () => Unit)] {
+          case (indexName, terms, route, delFunc) ⇒
             Shrink.shrink(terms).map { shrunkTerms ⇒
-              val x = putDataSetsInIndex(shrunkTerms.map(_._1))
+              val x =
+                putDataSetsInIndex(shrunkTerms.map(_._1), noAutoDelete = true)
               logger
                 .error("Shrinking " + terms.size + " to " + shrunkTerms.size)
 
-              (x._1, shrunkTerms, x._3)
+              (x._1, shrunkTerms, x._3, x._4)
             }
         }
 
       forAll(indexAndTermsGen) {
-        case (indexName, tuples, routes) =>
-          whenever(!tuples.isEmpty) {
-            tuples.foreach {
-              case (dataSet, term) => test(dataSet, term, routes, tuples)
+        case (indexName, tuples, routes, delFunc) =>
+          try {
+            whenever(!tuples.isEmpty) {
+              tuples.foreach {
+                case (dataSet, term) =>
+                  test(dataSet, term, routes, tuples)
+              }
             }
+          } finally {
+            delFunc()
           }
+
       }
     }
   }

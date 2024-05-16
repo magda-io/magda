@@ -1,0 +1,7 @@
+apiVersion: v2
+description: A Helm chart for Magda's OpenSearch Cluster
+name: opensearch
+version: 3.0.2
+kubeVersion: ">= 1.23.0-0"
+annotations:
+  magdaModuleType: "core"

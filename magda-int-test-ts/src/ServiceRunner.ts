@@ -784,7 +784,8 @@ export default class ServiceRunner {
     }
 
     async createElasticSearch() {
-        const baseDir = getMagdaModulePath("@magda/elastic-search");
+        console.log("Creating OpenSearch...");
+        const baseDir = getMagdaModulePath("@magda/opensearch");
         const dockerComposeFile = this.createTmpDockerComposeFile(
             path.resolve(baseDir, "docker-compose.yml"),
             undefined,
@@ -798,10 +799,26 @@ export default class ServiceRunner {
         );
         try {
             await Promise.all([
-                this.elasticSearchCompose.down({ volumes: true }),
-                this.elasticSearchCompose.pull()
+                new Promise(async (resolve, reject) => {
+                    console.log(
+                        "Terminating any possible existing OpenSearch..."
+                    );
+                    resolve(
+                        await this.elasticSearchCompose.down({ volumes: true })
+                    );
+                }),
+                new Promise(async (resolve, reject) => {
+                    console.log("Pulling OpenSearch...");
+                    resolve(
+                        await this.elasticSearchCompose.pull(undefined, {
+                            verbose: true
+                        })
+                    );
+                })
             ]);
+            console.log("Starting up OpenSearch...");
             await this.elasticSearchCompose.up();
+            console.log("Start to probe OpenSearch liveness...");
             await this.waitAlive(
                 "ElasticSearch",
                 async () => {
@@ -831,6 +848,7 @@ export default class ServiceRunner {
             }
         } catch (e) {
             await this.destroyElasticSearch();
+            console.error(e);
             throw e;
         }
         await this.createIndexerSetup();

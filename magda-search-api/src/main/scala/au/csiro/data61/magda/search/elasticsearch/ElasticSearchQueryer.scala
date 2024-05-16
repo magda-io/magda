@@ -27,26 +27,27 @@ import au.csiro.data61.magda.search.{SearchQueryer, SearchStrategy}
 import au.csiro.data61.magda.util.ErrorHandling.RootCause
 import au.csiro.data61.magda.util.SetExtractor
 import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.search.{Aggregations, SearchResponse}
-import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
-import com.sksamuel.elastic4s.searches.aggs.{
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.requests.searches.SearchResponse
+import com.sksamuel.elastic4s.{ElasticClient, ElasticDsl, RequestSuccess}
+import com.sksamuel.elastic4s.requests.searches.aggs.responses.Aggregations
+import com.sksamuel.elastic4s.requests.searches.aggs.{
   FilterAggregation,
   Aggregation => AggregationDefinition
 }
-import com.sksamuel.elastic4s.searches.collapse.CollapseRequest
-import com.sksamuel.elastic4s.searches.queries.funcscorer.{
+import com.sksamuel.elastic4s.requests.searches.collapse.CollapseRequest
+import com.sksamuel.elastic4s.requests.searches.queries.funcscorer.{
   ScoreFunction => ScoreFunctionDefinition
 }
-import com.sksamuel.elastic4s.searches.queries.term.TermQuery
-import com.sksamuel.elastic4s.searches.queries.{
+import com.sksamuel.elastic4s.requests.searches.term.TermQuery
+import com.sksamuel.elastic4s.requests.searches.queries.{
   InnerHit => InnerHitDefinition,
   Query => QueryDefinition,
   SimpleStringQuery => SimpleStringQueryDefinition
 }
-import com.sksamuel.elastic4s.searches.sort.SortOrder
-import com.sksamuel.elastic4s.searches.{ScoreMode, SearchRequest}
-import com.sksamuel.elastic4s.searches.queries.matches.{
+import com.sksamuel.elastic4s.requests.searches.sort.SortOrder
+import com.sksamuel.elastic4s.requests.searches.{ScoreMode, SearchRequest}
+import com.sksamuel.elastic4s.requests.searches.queries.matches.{
   MatchAllQuery,
   MatchNoneQuery
 }
@@ -63,9 +64,12 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 ) extends SearchQueryer {
   private val logger = system.log
 
-  val debugMode = config.hasPath("searchApi.debug") && config.getBoolean(
-    "searchApi.debug"
-  )
+  val debugMode =
+    if (config.hasPath("searchApi.debug"))
+      config.getBoolean(
+        "searchApi.debug"
+      )
+    else false
 
   val clientFuture: Future[ElasticClient] = clientProvider.getClient.recover {
     case t: Throwable =>
@@ -126,13 +130,13 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               requestedFacetSize
             )
             if (debugMode) {
-              logger.info(client.show(query))
+              logger.info(client.show(query).query)
             }
             Future
               .sequence(
                 Seq(
                   fullRegionsFuture,
-                  client.execute(query).flatMap {
+                  client.execute(query.trackTotalHits(true)).flatMap {
                     case results: RequestSuccess[SearchResponse] =>
                       Future.successful((results.result, MatchAll))
                     case IllegalArgumentException(e) => throw e
@@ -269,13 +273,17 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val regionsFuture = query.freeText
       .filter(_.length > 0)
       .map(
-        freeText =>
+        freeText => {
+          val searchReq = (
+            ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
+              query (matchQuery("regionSearchId", freeText).operator("or"))
+              limit 50
+          )
+          if (debugMode) {
+            logger.info(client.show(searchReq).query)
+          }
           client
-            .execute(
-              ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
-                query (matchQuery("regionSearchId", freeText).operator("or"))
-                limit 50
-            )
+            .execute(searchReq)
             .map {
               case ESGenericException(e) => throw e
               case results: RequestSuccess[SearchResponse] => {
@@ -286,6 +294,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 }
               }
             }
+        }
       )
       .getOrElse(Future(Set[Region]()))
     regionsFuture.map(regions => query.copy(boostRegions = regions))
@@ -532,17 +541,16 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       facetSize: Int
   ) = {
     val tenantIdTermQuery = tenantId.getEsQuery()
-    filterAggregation("filter")
-      .query(
-        must(
-          Seq(
-            tenantIdTermQuery,
-            authQuery,
-            queryToQueryDef(facetDef.removeFromQuery(query), strategy, true)
-          )
+    filterAgg(
+      "filter",
+      query = must(
+        Seq(
+          tenantIdTermQuery,
+          authQuery,
+          queryToQueryDef(facetDef.removeFromQuery(query), strategy, true)
         )
       )
-      .subAggregations(facetDef.aggregationDefinition(query, facetSize))
+    ).subAggregations(facetDef.aggregationDefinition(query, facetSize))
   }
 
   /**
@@ -947,7 +955,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 d.publisher.map(
                   o =>
                     o.copy(datasetCount = innerHit.map(h => {
-                      h.total
+                      h.total.value
                     }))
                 )
               })

@@ -64,8 +64,19 @@ dependencies:
     version: 3.0.2
     repository: file://../internal-charts/elasticsearch
     tags:
-      - all
       - elasticsearch
+  - name: opensearch
+    version: 3.0.2
+    repository: file://../internal-charts/opensearch
+    tags:
+      - all
+      - opensearch
+  - name: opensearch-dashboards
+    version: 3.0.2
+    repository: file://../internal-charts/opensearch-dashboards
+    tags:
+      - all
+      - opensearch-dashboards
   - name: gateway
     version: 3.0.2
     repository: file://../internal-charts/gateway

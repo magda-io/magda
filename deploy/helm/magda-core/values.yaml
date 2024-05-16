@@ -165,8 +165,18 @@ tags:
   correspondence-api: false
   
   # tags.elasticsearch -- turn on / off [elasticsearch](../internal-charts/elasticsearch/README.md)
-  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
+  # Please note: this module is no longer used since v4.0.0. `opensearch` chart is used instead.
+  # However, this module will still be kept for offering upgrade path for existing users v3 users.
+  # User can opt to turn on this `elasticsearch` to keep existing search engine running while building index on new opensearch engine.
   elasticsearch: false
+
+  # tags.opensearch -- turn on / off [opensearch](../internal-charts/opensearch/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
+  opensearch: false
+
+  # tags.opensearch-dashboards -- turn on / off [opensearch-dashboards](../internal-charts/opensearch-dashboards/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
+  opensearch-dashboards: false
 
   # tags.gateway -- turn on / off [gateway](../internal-charts/gateway/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
@@ -222,3 +232,34 @@ tags:
   # -- turn on / off [rds-dev-proxy](../internal-charts/rds-dev-proxy/README.md)
   # It's only for accessing AWS RDS db for admin / testing purposes within the k8s cluster.
   rds-dev-proxy: false
+
+
+# -- Array of extra K8s manifests to deploy
+# Each item in the array can be a valid K8s manifest in yaml or string type.
+# When manifest is in string type, it will be parsed as a template with the root object as the context.
+# Therefore, any values can be referenced in the template string e.g. `{{ .Values.xxxxx }}`.
+# Example:
+# extraObjects:
+# - apiVersion: policy/v1 # This is a manifest item written in YAML
+#   kind: PodDisruptionBudget
+#   metadata:
+#     name: my-pdb
+#   spec:
+#     maxUnavailable: 1
+#     selector:
+#       matchLabels:
+#         app: my-app
+# - |
+#   # This is a manifest item written in template string. `|` is used to preserve the new lines. 
+#   apiVersion: v1
+#   kind: PodDisruptionBudget
+#   metadata:
+#     name: my-pdb
+#     labels: 
+#       {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}
+#   spec:
+#     maxUnavailable: 1
+#     selector:
+#       matchLabels:
+#         {{- include "magda.common.labels.matchLabels" (dict "root" .) | nindent 6 }}
+extraObjects: []
