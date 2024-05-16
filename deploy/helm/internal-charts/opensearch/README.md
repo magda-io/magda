@@ -44,7 +44,7 @@ Kubernetes: `>= 1.23.0-0`
 | initContainerImage.pullPolicy | string | `"IfNotPresent"` |  |
 | initContainerImage.repository | string | `"docker.io"` |  |
 | initContainerImage.tag | string | `"latest"` |  |
-| initResources | object | `{}` | resources config set for init container |
+| initResources | object | `{"limits":{"cpu":"25m","memory":"128Mi"},"requests":{"cpu":"25m","memory":"128Mi"}}` | resources config set for init container |
 | javaOpts | string | `"-Xmx256M -Xms256M"` | Opensearch Java options for all node types You can overwrite `javaOpts` for each node type (master, data, client) via the `javaOpts` property in each node type. |
 | keystore | list | `[]` |  |
 | lifecycle | object | `{}` |  |
@@ -59,7 +59,7 @@ Kubernetes: `>= 1.23.0-0`
 | master.priorityClassName | string | `"magda-9"` | Will only be used if .Values.global.enablePriorityClass is set to true |
 | master.storage | string | `"8Gi"` | Size of the persistent volume claim for each master node. |
 | master.sysctlVmMaxMapCount | string | `nil` | By default, .Values.sysctlVmMaxMapCount will be used. You can overwrite this value for master node group. |
-| masterTerminationFix | bool | `false` | Use a sidecar container to prevent slow master re-election |
+| masterTerminationFix | bool | `true` | Use a sidecar container to prevent slow master re-election |
 | metricsPort | int | `9600` |  |
 | networkHost | string | `"0.0.0.0"` |  |
 | opensearchHome | string | `"/usr/share/opensearch"` | Allows you to add any config files in {{ .Values.opensearchHome }}/config |
@@ -92,7 +92,7 @@ Kubernetes: `>= 1.23.0-0`
 | service.loadBalancerIP | string | `""` |  |
 | service.loadBalancerSourceRanges | list | `[]` |  |
 | service.type | string | `"ClusterIP"` |  |
-| sidecarResources | object | `{}` | resources config set for sidecar container |
+| sidecarResources | object | `{"limits":{"cpu":"25m","memory":"128Mi"},"requests":{"cpu":"25m","memory":"128Mi"}}` | resources config set for sidecar container |
 | startupProbe.failureThreshold | int | `30` |  |
 | startupProbe.initialDelaySeconds | int | `30` |  |
 | startupProbe.periodSeconds | int | `10` |  |
