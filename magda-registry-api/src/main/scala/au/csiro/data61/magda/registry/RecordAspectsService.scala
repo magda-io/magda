@@ -6,14 +6,12 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.directives.AuthDirectives.{requireUserId}
-import au.csiro.data61.magda.directives.TenantDirectives.{
-  requiresSpecifiedTenantId
-}
+import au.csiro.data61.magda.directives.AuthDirectives.requireUserId
+import au.csiro.data61.magda.directives.TenantDirectives.requiresSpecifiedTenantId
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry.Directives.{
-  requireRecordAspectUpdatePermission,
-  requireDeleteRecordAspectPermission
+  requireDeleteRecordAspectPermission,
+  requireRecordAspectUpdatePermission
 }
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -24,8 +22,10 @@ import scalikejdbc.DB
 import spray.json.JsObject
 
 import scala.util.{Failure, Success}
-
-import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.{
+  onCompleteBlockingTask,
+  sanitizedJsonEntity
+}
 
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(
@@ -154,7 +154,7 @@ class RecordAspectsService(
       (recordId: String, aspectId: String) =>
         requireUserId { userId =>
           requiresSpecifiedTenantId { tenantId =>
-            entity(as[JsObject]) { aspect =>
+            sanitizedJsonEntity(as[JsObject]) { aspect =>
               parameters(
                 'merge.as[Boolean].?
               ) { merge =>
@@ -392,7 +392,7 @@ class RecordAspectsService(
       (recordId: String, aspectId: String) =>
         requireUserId { userId =>
           requiresSpecifiedTenantId { tenantId =>
-            entity(as[JsonPatch]) { aspectPatch =>
+            sanitizedJsonEntity(as[JsonPatch]) { aspectPatch =>
               requireRecordAspectUpdatePermission(
                 authClient,
                 recordId,
