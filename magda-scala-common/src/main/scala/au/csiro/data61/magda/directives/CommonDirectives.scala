@@ -56,7 +56,7 @@ object CommonDirectives {
             ContentTypes.`application/json`,
             jsonString.removeNullByteFromJsonString
           )
-          um[T](ctx.request.mapEntity(_ => ent))
+          um(ctx.request.mapEntity(_ => ent))
       }
 
       onComplete(unmarshalled).flatMap {
