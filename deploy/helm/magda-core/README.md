@@ -1,6 +1,6 @@
 # magda-core
 
-![Version: 3.0.2](https://img.shields.io/badge/Version-3.0.2-informational?style=flat-square)
+![Version: 4.0.0-alpha.3](https://img.shields.io/badge/Version-4.0.0--alpha.3-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes all core magda modules.
 
@@ -14,33 +14,33 @@ A complete solution for managing, publishing and discovering government data, pr
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../internal-charts/admin-api | admin-api | 3.0.2 |
-| file://../internal-charts/apidocs-server | apidocs-server | 3.0.2 |
-| file://../internal-charts/authorization-api | authorization-api | 3.0.2 |
-| file://../internal-charts/authorization-db | authorization-db | 3.0.2 |
-| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 3.0.2 |
-| file://../internal-charts/combined-db | combined-db | 3.0.2 |
-| file://../internal-charts/content-api | content-api | 3.0.2 |
-| file://../internal-charts/content-db | content-db | 3.0.2 |
-| file://../internal-charts/correspondence-api | correspondence-api | 3.0.2 |
-| file://../internal-charts/elasticsearch | elasticsearch | 3.0.2 |
-| file://../internal-charts/gateway | gateway | 3.0.2 |
-| file://../internal-charts/indexer | indexer | 3.0.2 |
-| file://../internal-charts/ingress | ingress | 3.0.2 |
-| file://../internal-charts/opensearch-dashboards | opensearch-dashboards | 3.0.2 |
-| file://../internal-charts/opensearch | opensearch | 3.0.2 |
-| file://../internal-charts/priorities | priorities | 3.0.2 |
-| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 3.0.2 |
-| file://../internal-charts/registry-api | registry-api | 3.0.2 |
-| file://../internal-charts/registry-db | registry-db | 3.0.2 |
-| file://../internal-charts/search-api-node | search-api-node | 3.0.2 |
-| file://../internal-charts/search-api | search-api | 3.0.2 |
-| file://../internal-charts/session-db | session-db | 3.0.2 |
-| file://../internal-charts/storage-api | storage-api | 3.0.2 |
-| file://../internal-charts/tenant-api | tenant-api | 3.0.2 |
-| file://../internal-charts/tenant-db | tenant-db | 3.0.2 |
-| file://../internal-charts/web-server | web-server | 3.0.2 |
-| file://../magda-common | magda-common | 3.0.2 |
+| file://../internal-charts/admin-api | admin-api | 4.0.0-alpha.3 |
+| file://../internal-charts/apidocs-server | apidocs-server | 4.0.0-alpha.3 |
+| file://../internal-charts/authorization-api | authorization-api | 4.0.0-alpha.3 |
+| file://../internal-charts/authorization-db | authorization-db | 4.0.0-alpha.3 |
+| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 4.0.0-alpha.3 |
+| file://../internal-charts/combined-db | combined-db | 4.0.0-alpha.3 |
+| file://../internal-charts/content-api | content-api | 4.0.0-alpha.3 |
+| file://../internal-charts/content-db | content-db | 4.0.0-alpha.3 |
+| file://../internal-charts/correspondence-api | correspondence-api | 4.0.0-alpha.3 |
+| file://../internal-charts/elasticsearch | elasticsearch | 4.0.0-alpha.3 |
+| file://../internal-charts/gateway | gateway | 4.0.0-alpha.3 |
+| file://../internal-charts/indexer | indexer | 4.0.0-alpha.3 |
+| file://../internal-charts/ingress | ingress | 4.0.0-alpha.3 |
+| file://../internal-charts/opensearch-dashboards | opensearch-dashboards | 4.0.0-alpha.3 |
+| file://../internal-charts/opensearch | opensearch | 4.0.0-alpha.3 |
+| file://../internal-charts/priorities | priorities | 4.0.0-alpha.3 |
+| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 4.0.0-alpha.3 |
+| file://../internal-charts/registry-api | registry-api | 4.0.0-alpha.3 |
+| file://../internal-charts/registry-db | registry-db | 4.0.0-alpha.3 |
+| file://../internal-charts/search-api-node | search-api-node | 4.0.0-alpha.3 |
+| file://../internal-charts/search-api | search-api | 4.0.0-alpha.3 |
+| file://../internal-charts/session-db | session-db | 4.0.0-alpha.3 |
+| file://../internal-charts/storage-api | storage-api | 4.0.0-alpha.3 |
+| file://../internal-charts/tenant-api | tenant-api | 4.0.0-alpha.3 |
+| file://../internal-charts/tenant-db | tenant-db | 4.0.0-alpha.3 |
+| file://../internal-charts/web-server | web-server | 4.0.0-alpha.3 |
+| file://../magda-common | magda-common | 4.0.0-alpha.3 |
 | https://charts.magda.io | preview-map(magda-preview-map) | 1.1.2 |
 
 ## Values
