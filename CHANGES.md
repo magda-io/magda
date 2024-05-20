@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.0.3
+
+- #3193 auto-remove Null byte from JSON input so it won't be rejected by registry
+
 ## v3.0.2
 
 - #3513 Fixed Indexer reindex trigger job doesn't start

@@ -12,5 +12,16 @@ object StringUtils {
     def toUrlSegment = urlSegmentEncoder.encode(s, "utf-8")
 
     def toQueryStringVal = urlQsValEncoder.encode(s, "utf-8")
+
+    def removeNullByte: String = {
+      s.replace("\u0000", "")
+    }
+
+    def removeNullByteFromJsonString: String = {
+      s.replace("\u0000", "").replace("\\u0000", "")
+    }
+
+    def nullAsEmpty: String =
+      if (s eq null) "" else s
   }
 }

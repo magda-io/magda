@@ -23,8 +23,10 @@ import scalikejdbc._
 import spray.json.JsObject
 
 import scala.util.{Failure, Success}
-
-import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
+import au.csiro.data61.magda.directives.CommonDirectives.{
+  onCompleteBlockingTask,
+  sanitizedJsonEntity
+}
 
 class AspectsService(
     config: Config,
@@ -101,7 +103,7 @@ class AspectsService(
     pathEnd {
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
-          entity(as[AspectDefinition]) { aspect =>
+          sanitizedJsonEntity(as[AspectDefinition]) { aspect =>
             requirePermission(
               authClient,
               "object/aspect/create",
@@ -223,7 +225,7 @@ class AspectsService(
       {
         requireUserId { userId =>
           requiresSpecifiedTenantId { tenantId =>
-            entity(as[AspectDefinition]) { aspect =>
+            sanitizedJsonEntity(as[AspectDefinition]) { aspect =>
               requireAspectUpdateOrCreateWhenNonExistPermission(
                 authClient,
                 id,
@@ -345,7 +347,7 @@ class AspectsService(
     path(Segment) { id: String =>
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
-          entity(as[JsonPatch]) { aspectPatch =>
+          sanitizedJsonEntity(as[JsonPatch]) { aspectPatch =>
             requireAspectUpdateOrCreateWhenNonExistPermission(
               authClient,
               id,
