@@ -6,6 +6,10 @@
 - Allow supply extra K8s manifests to deploy via `magda-core` `.Values.extraObjects`
 - Stop releasing helm charts to charts.magda.io. Since v2, we started to release charts to Github container OCI registry
 
+## v3.0.3
+
+- #3193 auto-remove Null byte from JSON input so it won't be rejected by registry
+
 ## v3.0.2
 
 - #3513 Fixed Indexer reindex trigger job doesn't start

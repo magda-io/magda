@@ -35,10 +35,10 @@ import spray.json.JsObject
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
-
 import au.csiro.data61.magda.directives.CommonDirectives.{
   onCompleteBlockingTask,
-  onCompleteBlockingTaskIn
+  onCompleteBlockingTaskIn,
+  sanitizedJsonEntity
 }
 
 @Path("/records")
@@ -418,7 +418,7 @@ class RecordsService(
     path(Segment) { id: String =>
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
-          entity(as[Record]) { recordIn =>
+          sanitizedJsonEntity(as[Record]) { recordIn =>
             parameters(
               'merge.as[Boolean].?
             ) { merge =>
@@ -577,7 +577,7 @@ class RecordsService(
     path(Segment) { id: String =>
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
-          entity(as[JsonPatch]) { recordPatch =>
+          sanitizedJsonEntity(as[JsonPatch]) { recordPatch =>
             requireRecordUpdateOrCreateWhenNonExistPermission(
               authClient,
               id,
@@ -707,7 +707,7 @@ class RecordsService(
   def patchRecords: Route = patch {
     requireUserId { userId =>
       requiresSpecifiedTenantId { tenantId =>
-        entity(as[PatchRecordsRequest]) { requestData =>
+        sanitizedJsonEntity(as[PatchRecordsRequest]) { requestData =>
           withAuthDecision(
             authClient,
             AuthDecisionReqConfig("object/record/update")
@@ -831,7 +831,7 @@ class RecordsService(
     path("aspects" / Segment) { (aspectId: String) =>
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
-          entity(as[PutRecordsAspectRequest]) { requestData =>
+          sanitizedJsonEntity(as[PutRecordsAspectRequest]) { requestData =>
             parameters(
               'merge.as[Boolean].?
             ) { merge =>
@@ -1080,7 +1080,7 @@ class RecordsService(
     requireUserId { userId =>
       requiresSpecifiedTenantId { tenantId =>
         pathEnd {
-          entity(as[Record]) { record =>
+          sanitizedJsonEntity(as[Record]) { record =>
             requirePermission(
               authClient,
               "object/record/create",

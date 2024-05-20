@@ -2,7 +2,8 @@ package au.csiro.data61.magda.registry
 
 import java.net.URLEncoder
 import akka.event.LoggingAdapter
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.javadsl.model.RequestEntity
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
 import gnieh.diffson._
@@ -3904,6 +3905,116 @@ class RecordsServiceSpec extends ApiSpec {
 
           // --- check if the event id match the event id in previous POST response header
           eventId.get shouldEqual eventsPage.events(0).id.get.toString
+        }
+
+        Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_2) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.NotFound
+        }
+      }
+
+      it("can add a new record with Null Byte with no error") { param =>
+        val aspectDefinition = AspectDefinition("test", "test", None)
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        var eventId: Option[String] = None
+        val record =
+          Record(
+            "testId",
+            "testName",
+            Map(
+              "test" -> JsObject(
+                // null bytes should be removed from field values
+                "a" -> JsString("abc\u0000edf"),
+                // null bytes should be removed from field name as well
+                "b\u0000c" -> JsString("bc\u0000123")
+              )
+            ),
+            Some("tag")
+          )
+        val expectedRecord = record.copy(
+          tenantId = Some(TENANT_1),
+          aspects = Map(
+            "test" -> JsObject(
+              "a" -> JsString("abcedf"),
+              "bc" -> JsString("bc123")
+            )
+          )
+        )
+        val reqBody = record.toJson.toString()
+        val reqEntity = HttpEntity(ContentTypes.`application/json`, reqBody)
+        Post("/v0/records", reqEntity) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val r = responseAs[Record]
+          r shouldEqual expectedRecord
+          r.aspects
+            .get("test")
+            .flatMap(x => x.fields.get("a").map(_.convertTo[String]))
+            .get shouldBe "abcedf"
+          r.aspects
+            .get("test")
+            .flatMap(x => x.fields.get("bc").map(_.convertTo[String]))
+            .get shouldBe "bc123"
+          // --- try to retrieve eventId generated because of this request
+          eventId = header("x-magda-event-id").map(_.value())
+        }
+
+        Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val r = responseAs[Record]
+          r shouldEqual expectedRecord
+          r.aspects
+            .get("test")
+            .flatMap(x => x.fields.get("a").map(_.convertTo[String]))
+            .get shouldBe "abcedf"
+          r.aspects
+            .get("test")
+            .flatMap(x => x.fields.get("bc").map(_.convertTo[String]))
+            .get shouldBe "bc123"
+        }
+
+        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+
+          val eventsPage = responseAs[EventsPage]
+          eventsPage.events.length shouldEqual 2
+          eventsPage.events(0).userId shouldEqual Some(USER_ID)
+          eventsPage.events(0).eventType shouldEqual EventType.CreateRecord
+          eventsPage
+            .events(0)
+            .data
+            .fields("recordId")
+            .convertTo[String] shouldEqual record.id
+          eventsPage.events(1).userId shouldEqual Some(USER_ID)
+          eventsPage
+            .events(1)
+            .eventType shouldEqual EventType.CreateRecordAspect
+          eventsPage
+            .events(1)
+            .data
+            .fields("aspect")
+            .asJsObject
+            .fields("a")
+            .convertTo[String] shouldEqual "abcedf"
+          eventsPage
+            .events(1)
+            .data
+            .fields("aspect")
+            .asJsObject
+            .fields("bc")
+            .convertTo[String] shouldEqual "bc123"
+          // --- check if the event id match the event id in previous POST response header
+          eventId.get shouldEqual eventsPage.events(1).id.get.toString
         }
 
         Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_2) ~> param
