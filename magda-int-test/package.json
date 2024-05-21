@@ -1,6 +1,6 @@
 {
   "name": "@magda/int-test",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Integration tests",
   "scripts": {
     "build": "yarn run compile",
