@@ -15,7 +15,7 @@ Kubernetes: `>= 1.14.0-0`
 | debug | bool | `false` | when set to true, auth API will print verbose debug info (e.g. sql statements) to log |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | image.name | string | `"magda-tenant-api"` |  |
 | resources.limits.cpu | string | `"50m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |

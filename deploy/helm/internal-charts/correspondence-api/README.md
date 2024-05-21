@@ -15,7 +15,7 @@ Kubernetes: `>= 1.14.0-0`
 | alwaysSendToDefaultRecipient | bool | `false` |  |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | defaultRecipient | string | `"mail@example.com"` |  |
 | image.name | string | `"magda-correspondence-api"` |  |
 | resources.limits.cpu | string | `"50m"` |  |

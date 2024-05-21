@@ -41,7 +41,7 @@ Kubernetes: `>= 1.14.0-0`
 | defaultDatasetBucket | string | `nil` | Default bucket used to store datasets data files. If no value is provided `global.defaultDatasetBucket` will be used. |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | defaultTimeZone | string | `nil` | Default Timezone that used to display tiem related string. If not set, default value will be "Australia/Sydney" |
 | disableAuthenticationFeatures | bool | `false` |  |
 | discourseIntegrationDatasetPage | bool | `true` | Whether the discourse post integration should be turned on on dataset page. |

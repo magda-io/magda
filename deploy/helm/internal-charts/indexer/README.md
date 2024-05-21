@@ -20,7 +20,7 @@ Kubernetes: `>= 1.21.0`
 | autoReIndex.schedule | string | "0 15 * * 0": 15:00PM UTC timezone (1:00AM in AEST Sydney timezone) on every Sunday | auto reindex cronjob schedule string. specified using unix-cron format (in UTC timezone by default). |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | elasticsearch.useGcsSnapshots | bool | `false` |  |
 | image.name | string | `"magda-indexer"` |  |
 | reindexJobImage.name | string | `"node"` |  |

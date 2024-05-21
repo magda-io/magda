@@ -21,7 +21,7 @@ Kubernetes: `>= 1.21.0`
 | autoVacuum.schedule | string | "0 19 * * *": 7:00PM UTC timezone (5:00AM in AEST Sydney timezone) daily | auto vacuum cronjob schedule string. specified using unix-cron format (in UTC timezone by default). |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | image | object | `{"name":"magda-migrator-registry-db"}` | migrator docker image settings |
 | magda-postgres.postgresql.fullnameOverride | string | `"registry-db-postgresql"` |  |
 | magda-postgres.postgresql.nameOverride | string | `"registry-db-postgresql"` |  |

@@ -61,7 +61,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | global.externalUrl | string | `"http://localhost:6100"` |  |
 | global.gapiIds | list | `[]` |  |
 | global.image.pullPolicy | string | `"IfNotPresent"` |  |
-| global.image.repository | string | `"data61"` |  |
+| global.image.repository | string | `"ghcr.io/magda-io"` |  |
 | global.logLevel | string | `"INFO"` |  |
 | global.namespace | string | `"default"` |  |
 | global.postgresql.autoCreateSecret | bool | `true` | When `true`, secret with name specified by `existingSecret` will be auto-created. When in-k8s PostgreSQL instance is used, the secret will be filled with auto-generated random password. Otherwise, the secret will only be auto created when "cloudsql-db-credentials" secret exist. And its content, for this case, will be copied from "cloudsql-db-credentials" secret, `password` field for backward compatibility purposes. Please note: when the secret (specified by `existingSecret`) exists, the auto-create feature will leave the password unchanged. |

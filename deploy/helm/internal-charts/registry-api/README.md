@@ -26,7 +26,7 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | deployments.full | object | `{"idleTimeout":"60s","replicas":1,"requestTimeout":"60s"}` | deployment config for full registry instance. You can also specify different `resources` config under this key. |
 | deployments.full.idleTimeout | string | `"60s"` | Default idle timeout for full instance. Make sure `idleTimeout` is longer than `requestTimeout` |
 | deployments.full.requestTimeout | string | `"60s"` | Default request timeout for full instance |

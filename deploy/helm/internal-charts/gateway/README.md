@@ -37,7 +37,7 @@ Kubernetes: `>= 1.14.0-0`
 | defaultCacheControl | string | `"public, max-age=60"` | If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable. |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | defaultRoutes | object | Default value see [defaultRoutes Default Value](#default-value-for-defaultroutes-field) section below | Default routes list here are available under `/api/v0/` path. See [Proxy Target Definition](#proxy-target-definition) section below for route format. |
 | defaultWebRouteConfig.auth | bool | `false` | whether this target requires session. Otherwise, session / password related midddleware won't run |
 | defaultWebRouteConfig.methods | list | `["GET"]` | array of string. "all" means all methods will be proxied  |

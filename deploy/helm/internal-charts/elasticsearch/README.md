@@ -27,7 +27,7 @@ Kubernetes: `>= 1.14.0-0`
 | data.storage | string | `"50Gi"` |  |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | image.name | string | `"magda-elasticsearch"` |  |
 | initContainerImage.name | string | `"busybox"` |  |
 | initContainerImage.pullPolicy | string | `"IfNotPresent"` |  |

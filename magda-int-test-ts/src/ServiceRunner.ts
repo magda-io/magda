@@ -49,7 +49,7 @@ export default class ServiceRunner {
     public readonly docker: Docker;
     public appImgRegistry: string = "localhost:5000/data61";
     public appImgTag: string = "latest";
-    public publicImgRegistry: string = "docker.io/data61";
+    public publicImgRegistry: string = "ghcr.io/magda-io";
     public publicImgTag: string = "latest";
 
     public projectNameSuffix: string = Math.ceil(
@@ -611,7 +611,7 @@ export default class ServiceRunner {
     }
 
     async runMigrator(name: string, dbName: string) {
-        const mainMigratorImg = "data61/magda-db-migrator:master";
+        const mainMigratorImg = "ghcr.io/magda-io/magda-db-migrator:main";
         await this.pullImage(mainMigratorImg);
         const volBind = `${this.workspaceRoot}/magda-migrator-${name}/sql:/flyway/sql/${dbName}`;
         const [, container] = (await this.docker.run(

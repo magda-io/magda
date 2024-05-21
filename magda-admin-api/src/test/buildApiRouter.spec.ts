@@ -360,7 +360,7 @@ describe("admin api router", function (this) {
                     id: "c1",
                     name: "test connector",
                     dockerImageString:
-                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                        "ghcr.io/magda-io/magda-ckan-connector:2.1.0",
                     sourceUrl: "http://data-source.com",
                     pageSize: 99,
                     schedule: "0 14 * * 6"
@@ -385,7 +385,7 @@ describe("admin api router", function (this) {
                     id: "c1",
                     name: "test connector",
                     dockerImageString:
-                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                        "ghcr.io/magda-io/magda-ckan-connector:2.1.0",
                     sourceUrl: "http://data-source.com",
                     pageSize: 99
                 })
@@ -481,7 +481,7 @@ describe("admin api router", function (this) {
                     id: "c1",
                     name: "test connector",
                     dockerImageString:
-                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                        "ghcr.io/magda-io/magda-ckan-connector:2.1.0",
                     sourceUrl: "http://data-source.com",
                     pageSize: 99,
                     schedule: "0 14 * * 6"
@@ -556,7 +556,7 @@ describe("admin api router", function (this) {
                     id: "c1",
                     name: "test connector",
                     dockerImageString:
-                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                        "ghcr.io/magda-io/magda-ckan-connector:2.1.0",
                     sourceUrl: "http://data-source.com",
                     pageSize: 99,
                     schedule: "0 14 * * 6"
@@ -575,7 +575,7 @@ describe("admin api router", function (this) {
                     id: "c1",
                     name: "test connector",
                     dockerImageString:
-                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                        "ghcr.io/magda-io/magda-ckan-connector:2.1.0",
                     sourceUrl: "http://data-source.com",
                     pageSize: 99,
                     schedule: "0 14 * * 6"
@@ -629,7 +629,7 @@ describe("admin api router", function (this) {
                     id: "c1",
                     name: "test connector",
                     dockerImageString:
-                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                        "ghcr.io/magda-io/magda-ckan-connector:2.1.0",
                     sourceUrl: "http://data-source.com",
                     pageSize: 99,
                     schedule: "0 14 * * 6"
@@ -698,7 +698,7 @@ describe("admin api router", function (this) {
                     id: "c1",
                     name: "test connector",
                     dockerImageString:
-                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                        "ghcr.io/magda-io/magda-ckan-connector:2.1.0",
                     sourceUrl: "http://data-source.com",
                     pageSize: 99
                 })
@@ -778,7 +778,7 @@ describe("admin api router", function (this) {
                     id: "c1",
                     name: "test connector",
                     dockerImageString:
-                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                        "ghcr.io/magda-io/magda-ckan-connector:2.1.0",
                     sourceUrl: "http://data-source.com",
                     pageSize: 99,
                     schedule: "0 14 * * 6"
@@ -796,7 +796,7 @@ describe("admin api router", function (this) {
                     id: "c1",
                     name: "test connector",
                     dockerImageString:
-                        "docker.io/data61/magda-ckan-connector:1.3.0",
+                        "ghcr.io/magda-io/magda-ckan-connector:2.1.0",
                     sourceUrl: "http://data-source.com",
                     pageSize: 99,
                     schedule: "0 14 * * 6"

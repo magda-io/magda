@@ -1,7 +1,7 @@
 version: "3"
 services:
   test-es:
-    image: data61/elasticsearch:6.8.22
+    image: ghcr.io/magda-io/elasticsearch:6.8.22
     ports:
       - 9200:9200
       - 9300:9300

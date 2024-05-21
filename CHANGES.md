@@ -4,7 +4,8 @@
 
 - Use OpenSearch (v2.14.0) as main search engine
 - Allow supply extra K8s manifests to deploy via `magda-core` `.Values.extraObjects`
-- Stop releasing helm charts to charts.magda.io. Since v2, we started to release charts to Github container OCI registry
+- #3337 Stop releasing helm charts to charts.magda.io. Since v2, we started to release charts to Github container OCI registry
+- #3337 Make all helm charts use github container registry `ghcr.io/magda-io`
 
 ## v3.0.4
 

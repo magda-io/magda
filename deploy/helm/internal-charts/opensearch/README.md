@@ -27,7 +27,7 @@ Kubernetes: `>= 1.23.0-0`
 | data.sysctlVmMaxMapCount | string | `nil` | By default, .Values.sysctlVmMaxMapCount will be used. You can overwrite this value for data node group. |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | enableServiceLinks | bool | `true` | The environment variables injected by service links are not used, but can lead to slow OpenSearch boot times when there are many services in the current namespace. If you experience slow pod startups you probably want to set this to `false`. |
 | envFrom | list | `[]` | Allows you to load environment variables from kubernetes secret or config map e.g.  - secretRef:     name: env-secret - configMapRef:     name: config-map You can overwrite `envFrom` for each node type (master, data, client) via the `envFrom` property in each node type. |
 | extraContainers | list | `[]` |  |

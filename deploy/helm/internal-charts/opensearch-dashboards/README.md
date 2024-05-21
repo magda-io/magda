@@ -21,7 +21,7 @@ Kubernetes: `>= 1.23.0-0`
 | config | object | `{}` | Default OpenSearch Dashboards configuration from docker image of Dashboards example: opensearch_dashboards.yml: |   server:     name: dashboards     host: "{{ .Values.serverHost }}" opensearch_dashboards.yml:   server:     name: dashboards     host: "0.0.0.0" |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | deploymentAnnotations | object | `{}` |  |
 | envFrom | list | `[]` |  |
 | extraContainers | string | `""` |  |

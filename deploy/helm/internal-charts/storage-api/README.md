@@ -21,7 +21,7 @@ Kubernetes: `>= 1.14.0-0`
 | defaultBuckets | list | `[]` | Default buckets to create on startup. If no value is provided `global.defaultDatasetBucket` will be used. |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | image.name | string | `"magda-storage-api"` |  |
 | minio.DeploymentUpdate.type | string | `"Recreate"` |  |
 | minio.existingSecret | string | `"storage-secrets"` |  |
