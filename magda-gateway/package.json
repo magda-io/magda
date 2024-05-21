@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -26,9 +26,9 @@
   },
   "dependencies": {
     "@magda/esm-utils": "^1.0.1",
-    "@magda/tenant-api": "^3.0.2",
+    "@magda/tenant-api": "^3.0.3",
     "@magda/tsmonad": "^0.9.0",
-    "@magda/typescript-common": "^3.0.2",
+    "@magda/typescript-common": "^3.0.3",
     "compression": "^1.7.2",
     "connect-pg-simple": "^6.2.1",
     "cookie-parser": "^1.4.5",
@@ -55,7 +55,7 @@
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^3.0.2",
+    "@magda/scripts": "^3.0.3",
     "@types/chai": "^4.3.11",
     "@types/compression": "^0.0.36",
     "@types/cookie": "^0.3.3",
