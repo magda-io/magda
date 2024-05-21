@@ -1,87 +1,87 @@
 dependencies:
 - name: magda-common
   repository: file://../magda-common
-  version: 3.0.3
+  version: 3.0.4
 - name: apidocs-server
   repository: file://../internal-charts/apidocs-server
-  version: 3.0.3
+  version: 3.0.4
 - name: authorization-api
   repository: file://../internal-charts/authorization-api
-  version: 3.0.3
+  version: 3.0.4
 - name: authorization-db
   repository: file://../internal-charts/authorization-db
-  version: 3.0.3
+  version: 3.0.4
 - name: cloud-sql-proxy
   repository: file://../internal-charts/cloud-sql-proxy
-  version: 3.0.3
+  version: 3.0.4
 - name: combined-db
   repository: file://../internal-charts/combined-db
-  version: 3.0.3
+  version: 3.0.4
 - name: content-api
   repository: file://../internal-charts/content-api
-  version: 3.0.3
+  version: 3.0.4
 - name: content-db
   repository: file://../internal-charts/content-db
-  version: 3.0.3
+  version: 3.0.4
 - name: correspondence-api
   repository: file://../internal-charts/correspondence-api
-  version: 3.0.3
+  version: 3.0.4
 - name: elasticsearch
   repository: file://../internal-charts/elasticsearch
-  version: 3.0.3
+  version: 3.0.4
 - name: opensearch
   repository: file://../internal-charts/opensearch
-  version: 3.0.2
+  version: 3.0.4
 - name: opensearch-dashboards
   repository: file://../internal-charts/opensearch-dashboards
-  version: 3.0.2
+  version: 3.0.4
 - name: gateway
   repository: file://../internal-charts/gateway
-  version: 3.0.3
+  version: 3.0.4
 - name: indexer
   repository: file://../internal-charts/indexer
-  version: 3.0.3
+  version: 3.0.4
 - name: magda-preview-map
   repository: https://charts.magda.io
   version: 1.1.2
 - name: registry-api
   repository: file://../internal-charts/registry-api
-  version: 3.0.3
+  version: 3.0.4
 - name: registry-db
   repository: file://../internal-charts/registry-db
-  version: 3.0.3
+  version: 3.0.4
 - name: search-api
   repository: file://../internal-charts/search-api
-  version: 3.0.3
+  version: 3.0.4
 - name: search-api-node
   repository: file://../internal-charts/search-api-node
-  version: 3.0.3
+  version: 3.0.4
 - name: session-db
   repository: file://../internal-charts/session-db
-  version: 3.0.3
+  version: 3.0.4
 - name: web-server
   repository: file://../internal-charts/web-server
-  version: 3.0.3
+  version: 3.0.4
 - name: admin-api
   repository: file://../internal-charts/admin-api
-  version: 3.0.3
+  version: 3.0.4
 - name: storage-api
   repository: file://../internal-charts/storage-api
-  version: 3.0.3
+  version: 3.0.4
 - name: tenant-api
   repository: file://../internal-charts/tenant-api
-  version: 3.0.3
+  version: 3.0.4
 - name: tenant-db
   repository: file://../internal-charts/tenant-db
-  version: 3.0.3
+  version: 3.0.4
 - name: priorities
   repository: file://../internal-charts/priorities
-  version: 3.0.3
+  version: 3.0.4
 - name: ingress
   repository: file://../internal-charts/ingress
-  version: 3.0.3
+  version: 3.0.4
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
-  version: 3.0.3
-digest: sha256:d51d753f5a73f1bd85a0a31a1b8eab070f4fd89efc3084c1bfcec2e54da5e2e8
-generated: "2024-05-21T14:43:59.790517+10:00"
+  version: 3.0.4
+digest: sha256:ea21dc647d4e27306016ee56b514efd9e2a45949e0718a6974456520f270fd7c
+generated: "2024-05-21T23:15:30.439+10:00"
