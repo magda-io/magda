@@ -27,7 +27,7 @@ class ContentApiDirMapper {
         this.jwtSecret = jwtSecret;
         if (this.url === "") {
             throw new Error(
-                "ContentApiDirMapper: content API URL canot be empty!"
+                "ContentApiDirMapper: content API URL cannot be empty!"
             );
         }
     }
@@ -80,8 +80,14 @@ class ContentApiDirMapper {
         const res = await fetch(`${this.url}/${localPath}`, {
             method: "HEAD"
         });
-        if (!res.ok) return false;
-        else return true;
+        if (!res.ok) {
+            if (res.status !== 404) {
+                throw new Error(
+                    `Failed to check file existence from ${this.url}/${localPath}: ${res.status} ${res.statusText}`
+                );
+            }
+            return false;
+        } else return true;
     }
 
     /**
