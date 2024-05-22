@@ -41,7 +41,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | file://../internal-charts/tenant-db | tenant-db | 3.0.4 |
 | file://../internal-charts/web-server | web-server | 3.0.4 |
 | file://../magda-common | magda-common | 3.0.4 |
-| https://charts.magda.io | preview-map(magda-preview-map) | 1.1.2 |
+| oci://ghcr.io/magda-io/charts | preview-map(magda-preview-map) | 1.1.3 |
 
 ## Values
 
