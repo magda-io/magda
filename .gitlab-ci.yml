@@ -938,22 +938,18 @@ Release-to-Docker-Hub-Github-Container:
     - echo "$GITHUB_ACCESS_TOKEN" | docker login ghcr.io -u magdabot --password-stdin
     - |
       if [ "$RELEASE_VERSION_TAG" == "true" ]; then
-        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --copyFromRegistry=true
         yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --copyFromRegistry=true
       fi
     - |
       if [ "$RELEASE_LATEST_TAG" == "true" ]; then
-        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=latest --copyFromRegistry=true
         yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=latest --copyFromRegistry=true
       fi
     - |
       if [ "$RELEASE_MAIN_TAG" == "true" ]; then
-        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=main --copyFromRegistry=true
         yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=main --copyFromRegistry=true
       fi
     - |
       if [ "$RELEASE_NEXT_TAG" == "true" ]; then
-        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=next --copyFromRegistry=true
         yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=next --copyFromRegistry=true
       fi
 
