@@ -22,7 +22,8 @@ postgresql:
     # -- the default docker image tag/version used by the postgresql chart. 
     # When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number.
     tag: "3.0.4"
-    repository: "ghcr.io/magda-io/magda-postgres"
+    repository: "magda-io/magda-postgres"
+    registry: "ghcr.io"
 
   # -- the name of config map contains entended postgresql config options.
   # You should not change this value as this configMap is auto-generated.
