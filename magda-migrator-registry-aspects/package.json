@@ -1,6 +1,6 @@
 {
   "name": "@magda/migrator-registry-aspects",
-  "version": "3.0.4",
+  "version": "4.0.0-alpha.5",
   "description": "Setting up built-in registry aspect definitions.",
   "license": "Apache-2.0",
   "type": "module",
@@ -29,8 +29,8 @@
     "userId": "00000000-0000-4000-8000-000000000000"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^3.0.4",
-    "@magda/typescript-common": "^3.0.4",
+    "@magda/registry-aspects": "^4.0.0-alpha.5",
+    "@magda/typescript-common": "^4.0.0-alpha.5",
     "fs-extra": "^11.2.0",
     "yargs": "^12.0.5"
   },
