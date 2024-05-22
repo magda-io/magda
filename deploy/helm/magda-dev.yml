@@ -111,10 +111,10 @@ magda:
           persistence:
             size: "250Gi"
 
-    elasticsearch:
+    opensearch:
       data:
-        storage: 200Gi
-        heapSize: 500m
+        storage: 80Gi
+        javaOpts: "-Xms500m -Xmx500m"
         resources:
           requests:
             cpu: 200m
@@ -126,18 +126,6 @@ magda:
                 - matchExpressions:
                     - key: cloud.google.com/gke-preemptible
                       operator: DoesNotExist
-      backup:
-        googleApplicationCreds:
-          secretName: backup-storage-account
-          fileName: db-service-account-private-key.json
-
-    indexer:
-      readSnapshots: false
-      makeSnapshots: false
-      elasticsearch:
-        useGcsSnapshots: true
-        gcsSnapshotBucket: "magda-es-snapshots-dev"
-        gcsSnapshotClient: "default"
 
     web-server:
       fallbackUrl: "https://data.gov.au"
