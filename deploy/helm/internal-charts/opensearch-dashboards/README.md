@@ -18,7 +18,7 @@ Kubernetes: `>= 1.23.0-0`
 | autoscaling.hpa.minReplicas | int | `3` |  |
 | autoscaling.hpa.targetCPU | int | `90` |  |
 | autoscaling.hpa.targetMemory | string | `""` |  |
-| config | object | `{}` | Default OpenSearch Dashboards configuration from docker image of Dashboards example: opensearch_dashboards.yml: |   server:     name: dashboards     host: "{{ .Values.serverHost }}" opensearch_dashboards.yml:   server:     name: dashboards     host: "0.0.0.0" |
+| config | object | `{}` | Default OpenSearch Dashboards configuration from docker image of Dashboards example: opensearch_dashboards.yml: |   server:     name: dashboards     host: "{{ .Values.serverHost }}" opensearch_dashboards.yml:   server:     name: dashboards     host: "0.0.0.0" More config options. See comments in https://github.com/opensearch-project/OpenSearch-Dashboards/blob/main/config/opensearch_dashboards.yml |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
