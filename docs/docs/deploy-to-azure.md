@@ -79,23 +79,18 @@ kubectl create secret generic storage-secrets --namespace magda --from-literal=a
 kubectl create secret generic smtp-secret --namespace magda --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD
 ```
 
-8> Add Magda Helm Repo
+8> Install Magda via Helm
 
 ```bash
-helm repo add magda-io https://charts.magda.io
-helm repo update
+helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
 ```
 
-9> Install Magda via Helm
-
-```bash
-helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda magda-io/magda
-```
+> Since v2, we release our helm charts to Github container registry: `oci://ghcr.io/magda-io/charts`
 
 > By default, Helm will install the latest production version of Magda. You can use `--version` to specify the exact chart version to use. e.g.:
 
 ```bash
-helm upgrade --namespace magda --install --version 0.0.60-rc.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda magda-io/magda
+helm upgrade --namespace magda --install --version 0.0.60-rc.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
 ```
 
 The value `--set magda-core.gateway.service.type=LoadBalancer` will expose Magda via load balancer.

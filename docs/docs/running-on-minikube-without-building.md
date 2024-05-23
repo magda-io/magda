@@ -18,7 +18,7 @@ These instructions install Magda into its own `magda` namespace.
 
 Optional, but highly recommended:
 
--   [k9s](https://github.com/derailed/k9s)
+- [k9s](https://github.com/derailed/k9s)
 
 ## Preparation
 
@@ -41,7 +41,6 @@ Install the prerequisites.
 Then:
 
 ```bash
-helm repo add magda-io https://charts.magda.io
 helm repo add twuni https://helm.twun.io
 # Get update from repos
 helm repo update
