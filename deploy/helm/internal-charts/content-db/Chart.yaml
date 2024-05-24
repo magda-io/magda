@@ -1,12 +1,12 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: content-db
-version: 3.0.4
+version: 4.0.0
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
 dependencies:
   - name: magda-postgres
-    version: "3.0.4"
+    version: "4.0.0"
     repository: "file://../magda-postgres"
     condition: global.useInK8sDbInstance.content-db
