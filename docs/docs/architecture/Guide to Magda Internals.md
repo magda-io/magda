@@ -59,7 +59,7 @@
     - [Why Kubernetes?](#why-kubernetes-)
     - [Why Scala (and subsequently why not)?](#why-scala--and-subsequently-why-not--)
     - [Why Node.js?](#why-nodejs-)
-    - [Why ElasticSearch?](#why-elasticsearch-)
+    - [Why ElasticSearch/OpenSearch?](#why-elasticsearch-)
     - [Why Gitlab CI?](#why-gitlab-ci-)
   - [Front-end](#front-end)
     - [Why a Single Page Application (SPA), and why Create React App?](#why-a-single-page-application--spa---and-why-create-react-app-)
@@ -650,7 +650,7 @@ Magda's Kubernetes configuration is fairly complex - it's distributed as a numbe
 - `magda`, which depends on `magda-core` and also includes non-core components like minions and connectors
 - Various charts for connectors, minions, functions etc that are maintained by the Magda team
 
-The charts maintained by the Magda team are automatically pushed to an S3 bucket by the build process, and that S3 bucket is accessible publically at https://charts.magda.io. Maintaining the structure of files etc in that bucket is automatically done by the `helm` tool that runs as part fo the build job. Helm releases run whenever a tag is pushed with the pattern `v*.*.*`.
+The charts maintained by the Magda team are automatically pushed to Github container oci registry: `oci://ghcr.io/magda-io/charts`. Helm releases run whenever a tag is pushed with the pattern `v*.*.*`.
 
 > Since v2.0.0, we use [Github Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) as our official Helm Chart & Docker Image release registry.
 
@@ -735,7 +735,7 @@ Seriously though, the main reasons are:
 
 Something like Go has similar advantages in terms of being able to run without a lot of resources and compile quickly, but we didn't have any Go experience on the team, and Typescript offers a much more powerful type system (although this can be good or bad depending on who you ask).
 
-### Why ElasticSearch?
+### Why ElasticSearch / OpenSearch?
 
 Magda was originally concieved pretty much purely as a search engine, and hence we reached for the most powerful search technology we could find. While you can get quite far with text search in Postgres, even on day 1 we had more advanced requirements like this, because having an advanced search was intended to be Magda's selling point and a key point of advantage over the old, CKAN-based data.gov.au search.
 
@@ -746,6 +746,8 @@ In particular, ElasticSearch offers:
 - Spatial/temporal search (possibly Postgres could do this too)
 - Synonyms
 - The ability to horizontally scale (we don't actually make use of this very much, but we could)
+
+> Please note: since v4, we replaced the internal ElasticSearch cluster with latest [OpenSearch](https://opensearch.org/) cluster. As OpenSearch is a fork of open source Elasticsearch 7.10. As such, it provides backwards REST APIs for ingest, search, and management. The query syntax and responses are also the same.
 
 ### Why Gitlab CI?
 

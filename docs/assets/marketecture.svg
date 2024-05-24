@@ -78,7 +78,7 @@
                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 76px; white-space: nowrap; overflow-wrap: normal; text-align: center;">
                         <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">
                             <font style="font-size: 11px" color="#fafafa">Search<br />
-(ElasticSearch)</font>
+(OpenSearch)</font>
                         </div>
                     </div>
                 </foreignObject>

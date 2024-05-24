@@ -58,7 +58,6 @@ To install, follow the instructions at [https://helm.sh/docs/intro/install/](htt
 Once you have helm3 installed, add Magda Helm Chart Repo and other relavent helm chart repos:
 
 ```bash
-helm repo add magda-io https://charts.magda.io
 helm repo add twuni https://helm.twun.io
 # Get update from repos
 helm repo update

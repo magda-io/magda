@@ -41,7 +41,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | file://../internal-charts/tenant-db | tenant-db | 3.0.4 |
 | file://../internal-charts/web-server | web-server | 3.0.4 |
 | file://../magda-common | magda-common | 3.0.4 |
-| https://charts.magda.io | preview-map(magda-preview-map) | 1.1.2 |
+| oci://ghcr.io/magda-io/charts | preview-map(magda-preview-map) | 1.1.3 |
 
 ## Values
 
@@ -61,7 +61,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | global.externalUrl | string | `"http://localhost:6100"` |  |
 | global.gapiIds | list | `[]` |  |
 | global.image.pullPolicy | string | `"IfNotPresent"` |  |
-| global.image.repository | string | `"data61"` |  |
+| global.image.repository | string | `"ghcr.io/magda-io"` |  |
 | global.logLevel | string | `"INFO"` |  |
 | global.namespace | string | `"default"` |  |
 | global.postgresql.autoCreateSecret | bool | `true` | When `true`, secret with name specified by `existingSecret` will be auto-created. When in-k8s PostgreSQL instance is used, the secret will be filled with auto-generated random password. Otherwise, the secret will only be auto created when "cloudsql-db-credentials" secret exist. And its content, for this case, will be copied from "cloudsql-db-credentials" secret, `password` field for backward compatibility purposes. Please note: when the secret (specified by `existingSecret`) exists, the auto-create feature will leave the password unchanged. |
@@ -72,7 +72,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | global.useCloudSql | bool | `false` | whether to use Google Cloud SQL database.  When this option is on, all other database type e.g. `useCombinedDb` & `useAwsRdsDb` must be turned off. When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret, you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true). Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true ) |
 | global.useCombinedDb | bool | `true` |  |
 | global.useInK8sDbInstance | object | `{"authorization-db":false,"content-db":false,"registry-db":false,"session-db":false,"tenant-db":false}` | When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database. Please note: you must set `useCombinedDb` = false before set any of the field to `true`. Otherwise, all db requests will still be forwarded to the combined DB instance other than each individual database instance. |
-| tags | object | see default value of each individual tag below. | (object) Control on/ off of each modules.  To turn on/off openfaas, please set value to `global.openfaas.enabled` |
+| tags | object | see default value of each individual tag below. | Control on/ off of each modules.  To turn on/off openfaas, please set value to `global.openfaas.enabled` |
 | tags.admin-api | bool | `false` | turn on / off [admin-api](../internal-charts/admin-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.all | bool | `true` | Set to `true` to turn on all default modules.  When `tags.all` is `false`, a default module will only be turned off when the corresponding module tag is `false` as well.  Please note: since v1.0.0, correspondence-api is not part of default modules anymore.  |
 | tags.apidocs-server | bool | `false` | turn on / off [apidocs-server](../internal-charts/apidocs-server/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |

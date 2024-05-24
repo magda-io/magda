@@ -48,7 +48,8 @@
     "test-opa": "opa test deploy/helm/internal-charts/opa/policies -v",
     "clean": "rm -rf ./node_modules; for dir in magda-*; do echo \"Removing node_modules from $dir\"; rm -rf $dir/node_modules; done",
     "update-all-charts": "cd deploy && yarn update-all-charts && cd ..",
-    "set-version": "lerna version --no-push --force-publish"
+    "set-version": "lerna version --no-push --force-publish",
+    "helm-docs": "cd deploy && yarn helm-docs && cd .."
   },
   "engines": {
     "node": ">=18.19.0"

@@ -4,23 +4,9 @@ Magda use [Helm](https://helm.sh/) to pack our microservice components as reusab
 
 # Magda Helm Chart Repository
 
-Our helm charts are published at [helm chart repository](https://helm.sh/docs/helm/helm_repo_add/): `https://charts.magda.io/`
+Our helm charts are published at Github container registry `oci://ghcr.io/magda-io/charts`.
 
 > Since v2.0.0, we use [Github Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) as our official Helm Chart & Docker Image release registry.
-
-You can add Magda's Helm chart repo by:
-
-```bash
-helm repo add magda-io https://charts.magda.io
-```
-
-To search Magda's chart repo, you can:
-
-```bash
-helm search repo magda-io --devel
-```
-
-Here `--devel` means includes development versions.
 
 # Magda Helm Chart Documentation Index
 

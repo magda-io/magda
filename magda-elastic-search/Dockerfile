@@ -4,7 +4,7 @@ RUN yum -y install sudo zip
 RUN find modules -type d -name "x-pack-*" -exec rm -r {} +
 COPY --chown=elasticsearch:elasticsearch component/elasticsearch.yml /usr/share/elasticsearch/config/
 
-FROM --platform=linux/arm64 data61/elasticsearch:6.8.22 as stage-arm64
+FROM --platform=linux/arm64 ghcr.io/magda-io/elasticsearch:6.8.22 as stage-arm64
 RUN apt-get update && apt-get install -y --no-install-recommends sudo zip && rm -rf /var/lib/apt/lists/*
 COPY --chown=elasticsearch:elasticsearch component/elasticsearch-arm64.yml /usr/share/elasticsearch/config/elasticsearch.yml
 

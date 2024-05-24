@@ -67,7 +67,7 @@ global:
     # When we don't specify tag here, .Chart.version will be used --- which is easier for versioning
     # You still can specify a tag here to override the default `.Chart.version` value (e.g. for local debugging)
     # tag: xxxxxxx
-    repository: "data61"
+    repository: "ghcr.io/magda-io"
     pullPolicy: IfNotPresent
   defaultAdminUserId: "00000000-0000-4000-8000-000000000000"
   logLevel: INFO

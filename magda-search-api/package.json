@@ -8,7 +8,7 @@
     "test": "cd .. && sbt searchApi/test",
     "compile": "cd .. && sbt searchApi/compile",
     "docker-build-local": "cd .. && sbt docker:stage && cd magda-search-api/target/docker/stage && docker build -t localhost:5000/data61/magda-search-api:latest . && docker push localhost:5000/data61/magda-search-api:latest",
-    "docker-build-prod": "cd .. && sbt docker:stage && cd magda-search-api/target/docker/stage && docker buildx build --push -t docker.io/data61/magda-search-api:$npm_package_version --platform linux/arm64,linux/amd64 .",
+    "docker-build-prod": "cd .. && sbt docker:stage && cd magda-search-api/target/docker/stage && docker buildx build --push -t ghcr.io/magda-io/magda-search-api:$npm_package_version --platform linux/arm64,linux/amd64 .",
     "retag-and-push": "retag-and-push",
     "start": "cd .. && sbt searchApi/run",
     "dev": "cd .. && sbt ~searchApi/relaunch"

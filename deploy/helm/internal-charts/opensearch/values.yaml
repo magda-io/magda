@@ -16,7 +16,7 @@ dashboardsImage:
   # pullSecrets:
 
 defaultImage:
-  repository: docker.io/data61
+  repository: "ghcr.io/magda-io"
   pullPolicy: IfNotPresent
   pullSecrets: false
 
@@ -263,7 +263,6 @@ client:
   # You can overwrite this value for client node group.
   sysctlVmMaxMapCount: 
   pluginsInstall: ""
-  heapSize: "256m"
   replicas: 1
   terminationGracePeriod: 120
   nodeSelector: {}
@@ -309,7 +308,6 @@ data:
   # You can overwrite this value for data node group.
   sysctlVmMaxMapCount: 
   pluginsInstall: ""
-  heapSize: "256m"
   replicas: 1
   terminationGracePeriod: 120
   nodeSelector: {}

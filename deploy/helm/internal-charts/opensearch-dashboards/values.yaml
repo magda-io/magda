@@ -12,7 +12,7 @@ image:
   # pullSecrets: 
 
 defaultImage:
-  repository: docker.io/data61
+  repository: "ghcr.io/magda-io"
   pullPolicy: IfNotPresent
   pullSecrets: false
 
@@ -167,6 +167,7 @@ plugins:
 #   server:
 #     name: dashboards
 #     host: "0.0.0.0"
+# More config options. See comments in https://github.com/opensearch-project/OpenSearch-Dashboards/blob/main/config/opensearch_dashboards.yml
 config: {}
 
 opensearchDashboardsYml:
