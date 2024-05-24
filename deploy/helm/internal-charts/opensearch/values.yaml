@@ -1,0 +1,412 @@
+global:
+  rollingUpdate: {}
+
+image: 
+  name: "magda-opensearch"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
+dashboardsImage:
+  name: "magda-opensearch-dashboards"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets:
+
+defaultImage:
+  repository: "ghcr.io/magda-io"
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+initContainerImage:
+  name: busybox
+  repository: docker.io
+  tag: "latest"
+  pullPolicy: IfNotPresent 
+
+clusterName: "opensearch"
+
+networkHost: "0.0.0.0"
+
+podSecurityContext:
+  runAsUser: 1000
+  fsGroup: 1000
+  # -- By default, Kubernetes recursively changes ownership and permissions for the contents of each volume to match the fsGroup specified in a Pod's securityContext when that volume is mounted. For large volumes, 
+  # checking and changing ownership and permissions can take a lot of time, slowing Pod startup. 
+  # You can set the fsGroupChangePolicy field to `OnRootMismatch` to make it only change permissions and ownership if the permission and the ownership of root directory does not match with expected permissions of the volume. 
+  # `fsGroupChangePolicy` is a beta feature introduced in Kubernetes 1.20 and become GA in Kubernetes 1.23.
+  fsGroupChangePolicy: "OnRootMismatch"
+
+persistence:
+  # -- Set to true to enable the `fsgroup-volume` initContainer that will update permissions on the persistent disk using `chown`.
+  enableInitChown: false
+  accessModes:
+  - ReadWriteOnce
+  # -- Storage class of the persistent volume claim for data & master nodes
+  storageClass:
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  # readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# -- The default is to deploy all pods serially. By setting this to parallel all pods are started at
+# the same time when bootstrapping the cluster
+podManagementPolicy: "Parallel"
+
+updateStrategy: RollingUpdate
+
+# -- Use an alternate scheduler.
+# ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+schedulerName: ""
+
+sysctl:
+  # -- Enable setting optimal sysctl settings on the node.
+  enabled: true
+
+  # -- How to set optimal sysctl settings.
+  # Possible values: 
+  # - `initContainer`: set optimal sysctl's through privileged initContainer (i.e. `privileged: true`).
+  # - `securityContext`: set optimal sysctl's through securityContext. This requires privilege.
+  # Default to `initContainer`.
+  # Please note: When use `securityContext`, you need to make sure unsafe sysctls (e.g. `vm.max_map_count`) are enabled on the node.
+  # All unsafe sysctls are disabled by default and must be allowed manually by the cluster admin on a per-node basis.
+  # Also see: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/
+  method: "initContainer"
+  
+  # -- Opensearch uses a mmapfs directory by default to store its indices. 
+  # The default operating system limits on mmap counts is likely to be too low, which may result in out of memory exceptions.
+  vmMaxMapCount: 262144
+  fsFileMax: 65536
+
+# -- resources config set for init container
+initResources:
+  limits:
+    cpu: "25m"
+    memory: "128Mi"
+  requests:
+    cpu: "25m"
+    memory: "128Mi"
+
+# -- resources config set for sidecar container
+sidecarResources:
+  limits:
+    cpu: "25m"
+    memory: "128Mi"
+  requests:
+    cpu: "25m"
+    memory: "128Mi"
+
+# -- Allows you to add any config files in {{ .Values.opensearchHome }}/config
+opensearchHome: /usr/share/opensearch
+
+# -- Extra environment variables to append to this nodeGroup
+# This will be appended to the current 'env:' key. You can use any of the kubernetes env syntax here. e.g.
+# extraEnvs:
+# - name: MY_ENVIRONMENT_VAR
+#   value: the_value_goes_here
+# You can overwrite `extraEnvs` for each node type (master, data, client) via the `extraEnvs` property in each node type.
+extraEnvs: []
+
+# -- Allows you to load environment variables from kubernetes secret or config map
+# e.g. 
+# - secretRef:
+#     name: env-secret
+# - configMapRef:
+#     name: config-map
+# You can overwrite `envFrom` for each node type (master, data, client) via the `envFrom` property in each node type.
+envFrom: []
+
+extraVolumes: []
+  # - name: extras
+  #   emptyDir: {}
+
+extraVolumeMounts: []
+  # - name: extras
+  #   mountPath: /usr/share/extras
+  #   readOnly: true
+
+extraContainers: []
+  # - name: do-something
+  #   image: busybox
+  #   command: ['do', 'something']
+
+extraInitContainers: []
+  # - name: do-somethings
+  #   image: busybox
+  #   command: ['do', 'something']
+
+lifecycle: {}
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+  # postStart:
+  #   exec:
+  #     command:
+  #       - bash
+  #       - -c
+  #       - |
+  #         #!/bin/bash
+  #         # Add a template to adjust number of shards/replicas1
+  #         TEMPLATE_NAME=my_template
+  #         INDEX_PATTERN="logstash-*"
+  #         SHARD_COUNT=8
+  #         REPLICA_COUNT=1
+  #         ES_URL=http://localhost:9200
+  #         while [[ "$(curl -s -o /dev/null -w '%{http_code}\n' $ES_URL)" != "200" ]]; do sleep 1; done
+  #         curl -XPUT "$ES_URL/_template/$TEMPLATE_NAME" -H 'Content-Type: application/json' -d'{"index_patterns":['\""$INDEX_PATTERN"\"'],"settings":{"number_of_shards":'$SHARD_COUNT',"number_of_replicas":'$REPLICA_COUNT'}}'
+
+# -- Opensearch Java options for all node types
+# You can overwrite `javaOpts` for each node type (master, data, client) via the `javaOpts` property in each node type.
+javaOpts: "-Xmx256M -Xms256M"
+
+# -- The environment variables injected by service links are not used, but can lead to slow OpenSearch boot times when
+# there are many services in the current namespace.
+# If you experience slow pod startups you probably want to set this to `false`.
+enableServiceLinks: true
+
+# -- Use a sidecar container to prevent slow master re-election
+masterTerminationFix: true
+
+httpPort: 9200
+transportPort: 9300
+metricsPort: 9600
+httpHostPort: ""
+transportHostPort: ""
+
+service:
+  type: ClusterIP
+  # -- The IP family and IP families options are to set the behaviour in a dual-stack environment
+  # Omitting these values will let the service fall back to whatever the CNI dictates the defaults
+  # should be. requires Kubernetes v1.23+
+  ipFamilyPolicy: SingleStack
+  # -- IP family requires Kubernetes v1.23+
+  ipFamilies:
+  # - IPv4
+  loadBalancerIP: ""
+  loadBalancerSourceRanges: []
+  externalTrafficPolicy: ""
+
+rbac:
+  create: false
+  serviceAccountAnnotations: {}
+  serviceAccountName: ""
+  # -- Controls whether or not the Service Account token is automatically mounted to /var/run/secrets/kubernetes.io/serviceaccount
+  automountServiceAccountToken: false
+
+keystore: []
+# To add secrets to the keystore:
+#  - secretName: opensearch-encryption-key
+
+hostAliases: []
+# - ip: "127.0.0.1"
+#   hostnames:
+#   - "foo.local"
+#   - "bar.local"
+
+## Enable to add 3rd Party / Custom plugins not offered in the default OpenSearch image.
+plugins:
+  enabled: false
+  installList: []
+  # - example-fake-plugin
+
+startupProbe:
+  tcpSocket:
+    port: transport
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 30
+
+livenessProbe:
+  tcpSocket:
+    port: transport
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 10
+  successThreshold: 1
+  initialDelaySeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /_cluster/health?local=true
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+
+# -- client node group options.
+# Nodes in this group will have `Ingest` & `Coordinating` roles.
+# For production use cases, it is recommended to turn on client node group and have at least 2 client nodes.
+client:
+  # -- By default, client node group is disabled.
+  # For production use cases, it is recommended to turn on client node group.
+  enabled: false
+  nameOverride: ""
+  fullnameOverride: ""
+  extraEnvs: []
+  envFrom: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  extraContainers: []
+  extraInitContainers: []
+  podAnnotations: {}
+  javaOpts: "-Xmx256M -Xms256M"
+  # -- By default, .Values.sysctlVmMaxMapCount will be used.
+  # You can overwrite this value for client node group.
+  sysctlVmMaxMapCount: 
+  pluginsInstall: ""
+  replicas: 1
+  terminationGracePeriod: 120
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  # -- Will only be used if .Values.global.enablePriorityClass is set to true
+  priorityClassName: magda-9
+  startupProbe: {}
+  livenessProbe: {}
+  readinessProbe: {}
+  autoscaling:
+    hpa:
+      enabled: false
+      minReplicas: 3
+      maxReplicas: 11
+      targetCPU: 90
+      targetMemory: ""  
+  resources:
+    requests:
+      cpu: 50m
+      memory: 512Mi
+    limits:
+      cpu: 100m
+
+# -- Data node group options
+# Nodes in this group will have `Data` & `Coordinating` roles.
+# For production use cases, it is recommended to turn on client node group and have at least 2 client nodes.
+# Data node group will always be enabled.
+# when `client` is disabled, `data` node group will have additional `Ingest` role.
+# when `master` is disabled, `data` node group will have additional `Master` role.
+data:
+  nameOverride: ""
+  fullnameOverride: ""
+  extraEnvs: []
+  envFrom: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  extraContainers: []
+  extraInitContainers: []
+  podAnnotations: {}
+  javaOpts: "-Xmx256M -Xms256M"
+  # -- By default, .Values.sysctlVmMaxMapCount will be used.
+  # You can overwrite this value for data node group.
+  sysctlVmMaxMapCount: 
+  pluginsInstall: ""
+  replicas: 1
+  terminationGracePeriod: 120
+  nodeSelector: {}
+  tolerations: []
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 50
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchExpressions:
+            - key: component
+              operator: In
+              values:
+              - opensearch
+            - key: role
+              operator: In
+              values:
+              - data
+  # -- Will only be used if .Values.global.enablePriorityClass is set to true
+  priorityClassName: magda-9
+  startupProbe: {}
+  livenessProbe: {}
+  readinessProbe: {}
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+  # -- Size of the persistent volume claim for each data node.
+  storage: 50Gi
+
+# -- Master node group options
+# Nodes in this group will have `Master` & `Coordinating` roles.
+# For production use cases, it is recommended to turn on master node group and have at least 3 master nodes across different availability zones.
+master:
+  # -- By default, Master node group is disabled.
+  # For production use cases, it is recommended to turn on Master node group.
+  enabled: false
+  nameOverride: ""
+  fullnameOverride: ""
+  extraEnvs: []
+  envFrom: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  extraContainers: []
+  extraInitContainers: []
+  podAnnotations: {}
+  javaOpts: "-Xmx256M -Xms256M"
+  # -- By default, .Values.sysctlVmMaxMapCount will be used.
+  # You can overwrite this value for master node group.
+  sysctlVmMaxMapCount: 
+  pluginsInstall: ""
+  replicas: 3
+  terminationGracePeriod: 120
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  # -- Will only be used if .Values.global.enablePriorityClass is set to true
+  priorityClassName: magda-9
+  startupProbe: {}
+  livenessProbe: {}
+  readinessProbe: 
+    tcpSocket:
+      port: transport
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  resources:
+    requests:
+      cpu: 50m
+      memory: 512Mi
+    limits:
+      cpu: 100m
+  # -- Size of the persistent volume claim for each master node.
+  storage: 8Gi
+
+dashboards:
+  enabled: true
+  podAnnotations: {}
+
+
+# such as opensearch.yml and log4j2.properties
+config:
+  # Values must be YAML literal style scalar / YAML multiline string.
+  # <filename>: |
+  #   <formatted-value(s)>
+  # log4j2.properties: |
+  #   status = error
+  #
+  #   appender.console.type = Console
+  #   appender.console.name = console
+  #   appender.console.layout.type = PatternLayout
+  #   appender.console.layout.pattern = [%d{ISO8601}][%-5p][%-25c{1.}] [%node_name]%marker %m%n
+  #
+  #   rootLogger.level = info
+  #   rootLogger.appenderRef.console.ref = console
+  # opensearch.yml: 
+  # log4j2.properties:

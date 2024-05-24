@@ -1,7 +1,7 @@
 {
   "name": "@magda/int-test-ts",
   "description": "Integration test cases in typescript",
-  "version": "3.0.4",
+  "version": "4.0.0",
   "license": "Apache-2.0",
   "type": "module",
   "exports": "./dist/index.js",
@@ -33,10 +33,10 @@
   },
   "dependencies": {
     "@magda/esm-utils": "^1.0.1",
-    "@magda/typescript-common": "^3.0.4",
+    "@magda/typescript-common": "^4.0.0",
     "commander": "^11.1.0",
     "dockerode": "^3.3.1",
-    "dockerode-compose": "github:magda-io/dockerode-compose#magda-latest",
+    "dockerode-compose": "^1.4.0",
     "form-data": "^4.0.0",
     "fs-extra": "11.2.0",
     "lodash": "^4.17.11",

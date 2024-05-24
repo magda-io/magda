@@ -9,7 +9,7 @@ variables:
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button`
-  CACHE_VERSION: ts-19-scala-10
+  CACHE_VERSION: ts-19-scala-11
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_TLS_VERIFY: 1
@@ -30,7 +30,7 @@ stages:
 
 yarn-install:
   stage: builders
-  image: data61/magda-builder-docker:node18
+  image: ghcr.io/magda-io/magda-builder-docker:node18
   retry: 1
   needs: []
   cache:
@@ -49,7 +49,7 @@ yarn-install:
 
 build-builder-image:
   stage: builders
-  image: data61/magda-builder-docker:node18
+  image: ghcr.io/magda-io/magda-builder-docker:node18
   retry: 1
   needs: []
   before_script:
@@ -177,11 +177,16 @@ buildtest:search-with-index-cache:
   tags:
     - heavy
   script:
-    - cd magda-elastic-search
+    - cd magda-opensearch
     - docker-compose up -d
     - cd ..
-    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.*Spec"
-    - cd magda-elastic-search
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.AutoCompleteApiSpec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.DataSetSearchSpec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.LanguageAnalyzerSpec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.TenantDataSetSearchSpec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.FacetSpec"
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.RegionsApiSpec"
+    - cd magda-opensearch
     - docker-compose down
   artifacts:
     paths:
@@ -240,11 +245,11 @@ buildtest:search-no-index-cache:
   tags:
     - heavy
   script:
-    - cd magda-elastic-search
+    - cd magda-opensearch
     - docker-compose up -d
     - cd ..
-    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
-    - cd magda-elastic-search
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
+    - cd magda-opensearch
     - docker-compose down
   artifacts:
     paths:
@@ -424,6 +429,8 @@ buildtest:typescript-apis-with-es:
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     TEST_ES_URL: "http://docker:9200"
   script:
+    # still use es 6.8 for existing node search api client
+    # the node search api client is not used in production but still need to be tested as we will use it as the base for hybrid search
     - cd magda-elastic-search
     - docker-compose up -d
     - cd ..
@@ -588,7 +595,7 @@ buildtest:helm-docs-check:
     - docker:dind
   script:
     - code=0
-    - docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:v1.5.0 || code=$?;
+    - docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:v1.13.1 || code=$?;
       if [ "$code" != "0" ]; then 
         echo "Failed to run helm-docs!";
         exit 1;
@@ -598,7 +605,7 @@ buildtest:helm-docs-check:
     - git ls-files -m | grep -i readme.md || code=$?;
       if [ "$code" == "0" ]; then
         echo -e "Some of helm chart docs are required to be updated using the [helm-docs](https://github.com/norwoodj/helm-docs) tool. \n
-        Please run helm-docs (v1.5.0) at project root, review & commit docs changes and push a new commit.";
+        Please run helm-docs (v1.13.1) at project root, review & commit docs changes and push a new commit.";
         exit 1;
       else 
         echo -e "helm docs check passed. helm docs update is not required.";
@@ -731,6 +738,8 @@ dockerize:dockerExtensions:
     # disable multi-arch docker image build for postgreSQL for now
     #- yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 
     - cd $CI_PROJECT_DIR/magda-elastic-search && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
+    - cd $CI_PROJECT_DIR/magda-opensearch && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
+    - cd $CI_PROJECT_DIR/magda-opensearch-dashboards && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
     - cd $CI_PROJECT_DIR/magda-postgres && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG
 
 (Full) Run As Preview: &runAsPreview
@@ -801,12 +810,12 @@ dockerize:dockerExtensions:
 (No Data) Run As Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,magda.magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 (No Data) Run As Multi-tenant Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview-multi-tenant.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,magda.magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.magdaAdminPortalName=$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview-multi-tenant.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.magdaAdminPortalName=$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
 
@@ -929,22 +938,18 @@ Release-to-Docker-Hub-Github-Container:
     - echo "$GITHUB_ACCESS_TOKEN" | docker login ghcr.io -u magdabot --password-stdin
     - |
       if [ "$RELEASE_VERSION_TAG" == "true" ]; then
-        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --copyFromRegistry=true
         yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --copyFromRegistry=true
       fi
     - |
       if [ "$RELEASE_LATEST_TAG" == "true" ]; then
-        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=latest --copyFromRegistry=true
         yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=latest --copyFromRegistry=true
       fi
     - |
       if [ "$RELEASE_MAIN_TAG" == "true" ]; then
-        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=main --copyFromRegistry=true
         yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=main --copyFromRegistry=true
       fi
     - |
       if [ "$RELEASE_NEXT_TAG" == "true" ]; then
-        yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=data61/ --toVersion=next --copyFromRegistry=true
         yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --toVersion=next --copyFromRegistry=true
       fi
 
@@ -1018,48 +1023,3 @@ Publish Helm Chart:
     PKG_NAME=`ls *.tgz`
     helm push ${PKG_NAME} oci://ghcr.io/magda-io/charts
     unlink ${PKG_NAME}
-
-Publish Helm Chart S3:
-  stage: release
-  only:
-    # Strict Semvar validation
-    - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
-  except:
-    - branches
-    - triggers
-  needs:
-    - pre-release:check-release-version
-    - yarn-install
-    - buildtest:helm-charts
-    - buildtest:helm-docs-check
-    - dockerize:scala
-    - dockerize:ui
-    - dockerize:ui-scss-compiler
-    - dockerize:typescript
-    - dockerize:migrators
-    - dockerize:dockerExtensions
-    - buildtest:integration-tests
-  image:
-    name: dtzar/helm-kubectl:3.13.3
-  cache:
-    key: $CI_JOB_NAME-$CACHE_VERSION
-    paths:
-      - deploy/helm/chart-repo
-  retry: 1
-  script:
-    # Get AWS CLI
-    - apk -v --update add aws-cli
-
-    # Run deploy
-    - cd deploy/helm
-    - mkdir -p sync_dir
-    - mkdir -p index_dir
-    - if ! aws s3 cp s3://magda-charts/index.yaml index_dir/index.yaml; then echo "failed to copy current repo index" && exit 1; fi
-    - helm package -d sync_dir magda-core
-    - helm package -d sync_dir magda
-    - helm package -d sync_dir magda-common
-    - helm repo index --merge "index_dir/index.yaml" sync_dir
-    # avoid conflicts & make sure the packages are in place first; upload index at the end
-    - mv -f sync_dir/index.yaml index_dir/index.yaml
-    - aws s3 sync sync_dir s3://magda-charts/
-    - aws s3 cp index_dir/index.yaml s3://magda-charts/index.yaml

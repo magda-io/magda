@@ -222,7 +222,7 @@ export default function buildApiRouter(options: Options) {
      *
      * @apiParam (request body) {string} id Connector ID
      * @apiParam (request body) {string} dockerImageString the full docker image string of the connector including docker repository, image name & tag.
-     *   e.g. `docker.io/data61/magda-ckan-connector:1.3.0`
+     *   e.g. `ghcr.io/magda-io/magda-ckan-connector:2.1.0`
      *   When `dockerImageString` is provided, `dockerImageName` field will not be used.
      * @apiParam (request body) {string} dockerImageName The docker image name of the connector.
      *   e.g. `magda-ckan-connector`. System will pull docker image from configured docker repository & image tag (configurable via magda-admin-api helm chart).

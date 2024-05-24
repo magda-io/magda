@@ -1,0 +1,22 @@
+version: "3"
+services:
+  test-opensearch:
+    image: opensearchproject/opensearch:2.14.0
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - ./regionSynonyms.test.txt:/usr/share/opensearch/config/analysis/regionSynonyms.txt
+      - ./wn_s_test.pl:/usr/share/opensearch/config/analysis/wn_s.pl
+    environment:
+      - cluster.name=oes-data-0
+      - node.roles=cluster_manager,data,ingest
+      - discovery.seed_hosts=localhost
+      - network.host=0.0.0.0
+      - discovery.type=single-node
+    command:
+      - /bin/bash
+      - -c
+      - |
+        ./bin/opensearch-plugin remove opensearch-security --purge
+        ./opensearch-docker-entrypoint.sh opensearch

@@ -1,0 +1,26 @@
+{{- if .Values.master.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ template "magda.opensearch.master.fullname" . }}-headless"
+  labels:
+    {{- include "magda.common.labels.standard" . | nindent 4 }}
+    component: {{ .Values.clusterName | quote }}
+    role: master
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    {{- include "magda.common.labels.matchLabels" . | nindent 4 }}
+    component: {{ .Values.clusterName | quote }}
+    role: master
+  ports:
+  - name: http
+    port: {{ .Values.httpPort }}
+    protocol: TCP
+  - name: transport
+    port: {{ .Values.transportPort }}
+    protocol: TCP
+  - name: metrics
+    port: {{ .Values.metricsPort }}
+{{- end }}

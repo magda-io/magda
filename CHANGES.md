@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v4.0.0
+
+- Use OpenSearch (v2.14.0) as main search engine
+- Allow supply extra K8s manifests to deploy via `magda-core` `.Values.extraObjects`
+- #3337 Stop releasing helm charts to charts.magda.io. Since v2, we started to release charts to Github container OCI registry
+- #3337 Make all helm charts use github container registry `ghcr.io/magda-io`
+- Upgrade [helm-docs](https://github.com/norwoodj/helm-docs) to 1.13.1
+
 ## v3.0.4
 
 - #3527 correspondence API might reset the preset email resources to the default data unexpectedly during the service restart

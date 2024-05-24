@@ -15,7 +15,7 @@ libraryDependencies ++= {
     "org.scalikejdbc" %% "scalikejdbc" % "3.2.4",
     "org.scalikejdbc" %% "scalikejdbc-config" % "3.2.4",
     "org.scalikejdbc" %% "scalikejdbc-test" % "3.2.4" % Test,
-    "ch.qos.logback"  %  "logback-classic" % "1.2.10",
+    "ch.qos.logback"  %  "logback-classic" % "1.3.14",
     "org.postgresql"  %  "postgresql" % "9.4.1212",
     "org.scalatest" %% "scalatest" % scalaTestV % Test,
     "org.gnieh" %% "diffson-spray-json" % "2.1.2",

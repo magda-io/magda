@@ -1,6 +1,6 @@
 # gateway
 
-![Version: 3.0.4](https://img.shields.io/badge/Version-3.0.4-informational?style=flat-square)
+![Version: 4.0.0](https://img.shields.io/badge/Version-4.0.0-informational?style=flat-square)
 
 The Gateway Component of Magda that routes incoming requets to other magda components.
 
@@ -37,7 +37,7 @@ Kubernetes: `>= 1.14.0-0`
 | defaultCacheControl | string | `"public, max-age=60"` | If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable. |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
-| defaultImage.repository | string | `"docker.io/data61"` |  |
+| defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | defaultRoutes | object | Default value see [defaultRoutes Default Value](#default-value-for-defaultroutes-field) section below | Default routes list here are available under `/api/v0/` path. See [Proxy Target Definition](#proxy-target-definition) section below for route format. |
 | defaultWebRouteConfig.auth | bool | `false` | whether this target requires session. Otherwise, session / password related midddleware won't run |
 | defaultWebRouteConfig.methods | list | `["GET"]` | array of string. "all" means all methods will be proxied  |
@@ -75,6 +75,20 @@ A proxy target definition that defines `defaultRoutes` or `webRoutes` above supp
 - `auth`: whether this target requires session. Otherwise, session / password related midddleware won't run
 - `redirectTrailingSlash`: make /xxx auto redirect to /xxxx/
 - `statusCheck`: check target's live status from the gateway
+- `accessControl`: whether the access of this target will be controlled by the built-in access control.
+  - If `accessControl` is set to `true`, the gateway will check the access control of this target. Default: `false`
+  - You can create a `api/[basepath]` resource in `settings` UI to present the access to this target. Here, `[basepath]` is the `string key` when configure this `Proxy Target`.
+    - e.g. In the `defaultRoutes` below, the `basepath` of `search` is `search`, so you can create a `api/search` resource in `settings` UI to control the access of this target.
+    - Or create a `api/registry` resource to control the access of `registry` target.
+    - Or create a `api/registry/hooks` resource to control the access of `registry/hooks` target.
+  - Besides `resource`, you are also required to define `operation` one or more `operation` that associate with the created resource in order to grant the access to any user roles.
+    - The `operation` should be created in the format of `api/[basepath]/[path pattern]/[method]`.
+      - Here, `[method]` is the HTTP method of the requests. `ALL` means all methods will be matched.
+      - `[path pattern]` is the path pattern (in glob notion, see [here](https://www.openpolicyagent.org/docs/latest/policy-reference/#glob) for more info) of the requests. `*` means any path. `**` means any path and its sub-paths.
+    - e.g. For `api/registry` resources, you can create `operation` `api/registry/**/ALL` to control the access of all methods of `registry` target. Here, `**` will match any path.
+    - Or create `operation` `api/registry/records/records/123/GET` to match `GET` HTTP request with path to `records/123`.
+  - Once the system admin creates proper `resource` & `operation` records for the proxy target, he can grant access to those endpoints by creating permission & role records.
+  - More information of the access control system, please refer to [this doc](https://github.com/magda-io/magda/blob/main/docs/docs/architecture/Guide%20to%20Magda%20Internals.md#new-authorisation-model--implementation)
 
 A proxy target be also specify in a simply string form, in which case, Gateway assumes a GET method, no auth proxy route is requested.
 

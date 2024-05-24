@@ -110,7 +110,7 @@ magda:
             endDateRegex: "(end).*(date|dt|year|decade)"
       showContactButtonForNoContactPointDataset: true
 
-    elasticsearch:
+    opensearch:
       data:
         resources:
           limits:

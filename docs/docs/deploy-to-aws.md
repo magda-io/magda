@@ -112,18 +112,13 @@ kubectl create secret generic smtp-secret --namespace magda --from-literal=usern
 
 > If you use [authentication plugins](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md), you might need to create extra secrets as required.
 
-### 7> Add Magda Helm Repo
+### 7> Install Magda via Helm
 
 ```bash
-helm repo add magda-io https://charts.magda.io
-helm repo update
+helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
 ```
 
-### 8> Install Magda via Helm
-
-```bash
-helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda magda-io/magda
-```
+> Since v2, we release our helm charts to Github container registry: `oci://ghcr.io/magda-io/charts`
 
 > By default, it will use in pod postgresSQL database. To use RDS, you need to set extra values as blow:
 
@@ -131,13 +126,13 @@ helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gatewa
 # Set RDS endpoint domain
 export RDS_ENDPOINT=xxxx.xxx.[region name].rds.amazonaws.com
 
-helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer,global.useCombinedDb=false,global.useCloudSql=false,global.useAwsRdsDb=true,global.awsRdsEndpoint=$RDS_ENDPOINT magda magda-io/magda
+helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer,global.useCombinedDb=false,global.useCloudSql=false,global.useAwsRdsDb=true,global.awsRdsEndpoint=$RDS_ENDPOINT magda oci://ghcr.io/magda-io/charts/magda
 ```
 
 > By default, Helm will install the latest production version of Magda. You can use `--version` to specify the exact chart version to use. e.g.:
 
 ```bash
-helm upgrade --namespace magda --install --version 0.0.60-rc.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda magda-io/magda
+helm upgrade --namespace magda --install --version 0.0.60-rc.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
 ```
 
 The value `--set magda-core.gateway.service.type=LoadBalancer` will expose Magda via load balancer (AWS ELB).

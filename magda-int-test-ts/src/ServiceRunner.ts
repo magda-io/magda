@@ -49,7 +49,7 @@ export default class ServiceRunner {
     public readonly docker: Docker;
     public appImgRegistry: string = "localhost:5000/data61";
     public appImgTag: string = "latest";
-    public publicImgRegistry: string = "docker.io/data61";
+    public publicImgRegistry: string = "ghcr.io/magda-io";
     public publicImgTag: string = "latest";
 
     public projectNameSuffix: string = Math.ceil(
@@ -611,7 +611,7 @@ export default class ServiceRunner {
     }
 
     async runMigrator(name: string, dbName: string) {
-        const mainMigratorImg = "data61/magda-db-migrator:master";
+        const mainMigratorImg = "ghcr.io/magda-io/magda-db-migrator:main";
         await this.pullImage(mainMigratorImg);
         const volBind = `${this.workspaceRoot}/magda-migrator-${name}/sql:/flyway/sql/${dbName}`;
         const [, container] = (await this.docker.run(
@@ -784,7 +784,8 @@ export default class ServiceRunner {
     }
 
     async createElasticSearch() {
-        const baseDir = getMagdaModulePath("@magda/elastic-search");
+        console.log("Creating OpenSearch...");
+        const baseDir = getMagdaModulePath("@magda/opensearch");
         const dockerComposeFile = this.createTmpDockerComposeFile(
             path.resolve(baseDir, "docker-compose.yml"),
             undefined,
@@ -798,10 +799,26 @@ export default class ServiceRunner {
         );
         try {
             await Promise.all([
-                this.elasticSearchCompose.down({ volumes: true }),
-                this.elasticSearchCompose.pull()
+                new Promise(async (resolve, reject) => {
+                    console.log(
+                        "Terminating any possible existing OpenSearch..."
+                    );
+                    resolve(
+                        await this.elasticSearchCompose.down({ volumes: true })
+                    );
+                }),
+                new Promise(async (resolve, reject) => {
+                    console.log("Pulling OpenSearch...");
+                    resolve(
+                        await this.elasticSearchCompose.pull(undefined, {
+                            verbose: true
+                        })
+                    );
+                })
             ]);
+            console.log("Starting up OpenSearch...");
             await this.elasticSearchCompose.up();
+            console.log("Start to probe OpenSearch liveness...");
             await this.waitAlive(
                 "ElasticSearch",
                 async () => {
@@ -831,6 +848,7 @@ export default class ServiceRunner {
             }
         } catch (e) {
             await this.destroyElasticSearch();
+            console.error(e);
             throw e;
         }
         await this.createIndexerSetup();
