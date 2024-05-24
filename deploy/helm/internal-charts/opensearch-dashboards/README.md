@@ -2,7 +2,7 @@
 
 ![Version: 3.0.4](https://img.shields.io/badge/Version-3.0.4-informational?style=flat-square)
 
-A Helm chart for OpenSearch dashboards
+A Helm chart for OpenSearch dashboards. To make the service accessible externally, please refer to [this doc](https://github.com/magda-io/magda/blob/main/docs/docs/how-to-expose-opensearch-dashboards.md)
 
 ## Requirements
 
