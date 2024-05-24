@@ -1,5 +1,5 @@
 apiVersion: v2
-description: A Helm chart for OpenSearch dashboards
+description: A Helm chart for OpenSearch dashboards. To make the service accessible externally, please refer to [this doc](https://github.com/magda-io/magda/blob/main/docs/docs/how-to-expose-opensearch-dashboards.md)
 name: opensearch-dashboards
 version: 3.0.4
 kubeVersion: ">= 1.23.0-0"
