@@ -17,7 +17,7 @@
     "update-all-charts": "yarn clean-up-all-charts && yarn update-local-deployment-chart",
     "clean-up-all-charts": "rm -rf helm/magda-core/charts helm/magda/charts helm/local-deployment/charts helm/local-auth-test-deployment/charts",
     "add-all-chart-version-changes": "git ls-files -m | grep Chart.yaml | xargs git add && git ls-files -m | grep Chart.lock | xargs git add && git ls-files -m | grep values.yaml | xargs git add",
-    "helm-docs": "docker run --rm -v \"$(pwd):/helm-docs\" -u $(id -u) jnorwood/helm-docs:v1.5.0",
+    "helm-docs": "docker run --rm -v \"$(pwd):/helm-docs\" -u $(id -u) jnorwood/helm-docs:v1.13.1",
     "add-all-helm-docs-changes": "yarn helm-docs && git ls-files -m | grep -i readme.md | xargs git add",
     "version": "yarn update-helm-chart-version && yarn update-all-charts && yarn add-all-chart-version-changes && yarn add-all-helm-docs-changes"
   },

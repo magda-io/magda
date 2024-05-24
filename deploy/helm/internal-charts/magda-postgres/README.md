@@ -59,7 +59,7 @@ More config postgreSQL related options, please refer to: https://github.com/bitn
 | postgresql.persistence.size | string | `"50Gi"` | set the persistence volume size of the postgresql statefulset |
 | postgresql.primary.extraVolumeMounts | list | `[]` | extra volume mount can be set here.  e.g. mount backup storage config secret and map as files in /etc/wal-g.d/env |
 | postgresql.primary.extraVolumes | list | `[]` | extra volumes can be set here.  e.g. map backup storage config secret as files in /etc/wal-g.d/env |
-| postgresql.primary.priorityClassName | string | `""` |  |
+| postgresql.primary.priorityClassName | string | `""` | - Set priority class of the primary database instance. When `global.enablePriorityClass` is `true`. We should set this config to "magda-9" to make sure db instance get appropriate schedule priority. By default, Magda will create priorityClassName from "magda-10" to "magda-0" where "magda-10" indicates the highest priority.  |
 | postgresql.readinessProbe.enabled | bool | `false` | `customReadinessProbe` will only be used when `enabled`=`false` Otherwise, default livenessProbe will be used. |
 | postgresql.resources | object | `{"requests":{"cpu":"200m","memory":"500Mi"}}` | Set the resource config for the postgresql container |
 

@@ -63,7 +63,7 @@ kubectl -n [Magda Deploy Namespace] create secret generic cloudsql-instance-cred
 | image.pullSecrets | bool | `false` |  |
 | image.repository | string | `"gcr.io/cloudsql-docker"` |  |
 | image.tag | string | `"1.33.2-alpine"` |  |
-| ipAddressTypes | string | `nil` | A comma-delimited list of preferred IP types for connecting to an instance.  For example, setting this to PRIVATE will force the proxy to connect to instances using an instance's associated private IP. Available from docker image 1.23.0 Options: a list of strings separated by ',', e.g. 'PUBLIC,PRIVATE' Default to 'PUBLIC,PRIVATE' |
+| ipAddressTypes | string | PUBLIC,PRIVATE | A comma-delimited list of preferred IP types for connecting to an instance.  For example, setting this to PRIVATE will force the proxy to connect to instances using an instance's associated private IP. Available from docker image 1.23.0 Options: a list of strings separated by ',', e.g. 'PUBLIC,PRIVATE' Default to 'PUBLIC,PRIVATE' |
 | logDebugStdout | bool | true | This is to log non-error output to standard out instead of standard error.  For example, if you don't want connection related messages to log as errors, set this flag to true. Available from docker image 1.23.0 |
 | maxConnections | int | 0 (no limit). | If provided, the maximum number of connections to establish before refusing new connections.  Available from docker image 1.23.0 |
 | replicas | string | `nil` | no. of replicas required for the deployment. If not set, k8s will assume `1` but allows HPA (autoscaler) alters it. @default 1 |
