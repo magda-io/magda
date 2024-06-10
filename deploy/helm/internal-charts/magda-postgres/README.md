@@ -1,6 +1,6 @@
 # magda-postgres
 
-![Version: 3.0.1-alpha.0](https://img.shields.io/badge/Version-3.0.1--alpha.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+![Version: 4.0.0](https://img.shields.io/badge/Version-4.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 A helm wrapper chart that provides in-kubernetes postgreSQL for Magda.
 
@@ -16,7 +16,7 @@ Kubernetes: `>= 1.21.0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami | postgresql | 10.9.1 |
+| oci://ghcr.io/magda-io/third-party/bitnami/charts | postgresql | 10.9.1 |
 
 ## Values
 
@@ -33,7 +33,7 @@ More config postgreSQL related options, please refer to: https://github.com/bitn
 | backupRestore.backup.walgTarSizeThreshold | string | `"21474836480"` | To configure the size of one backup bundle (in bytes). See info of WALG_TAR_SIZE_THRESHOLD config option on [this page](https://github.com/wal-g/wal-g/blob/master/docs/PostgreSQL.md) Due to [this issue](https://github.com/wal-g/wal-g/issues/1106), we set default value to 21474836480 (20G) to avoid oversize issue. Users can set this setting to a bigger value if needs to create backup with bigger tablespace. |
 | backupRestore.image.name | string | `"magda-wal-g"` | wal-g docker image name |
 | backupRestore.image.pullPolicy | string | `"IfNotPresent"` | wal-g docker image pull policy |
-| backupRestore.image.repository | string | `"docker.io/data61"` | wal-g docker image repo |
+| backupRestore.image.repository | string | `"ghcr.io/magda-io"` | wal-g docker image repo |
 | backupRestore.image.tag | string | `"1.1.0"` | wal-g docker image tag |
 | backupRestore.recoveryMode.baseBackupName | string | `"LATEST"` | the name of the base backup that will be used for restoring database.  By default, the latest base backup will be used.  If the latest base backup doesn't, you might want to list all available base backups in the target storage and pick an alternative base backup. e.g. "base_000000020000000000000052". |
 | backupRestore.recoveryMode.enabled | bool | `false` | Whether run the DB in the receovery mode. When correct config is in place, recovery script will run (using [wal-g](https://github.com/wal-g/wal-g)) to restore DB using previous backup. The change of this field (and all other fields in backupRestore section) will take effect after restart the database pod. |
@@ -51,14 +51,15 @@ More config postgreSQL related options, please refer to: https://github.com/bitn
 | postgresql.extendedConfConfigMap | string | `"{{ .Values.fullnameOverride }}-extended-config"` | the name of config map contains entended postgresql config options. You should not change this value as this configMap is auto-generated. If you want to override the postgresql conf option, you should add options to `.Values.config` field of `magda-postgres` chart. Please note: For this field, you can use template string e.g. "{{ .Values.fullnameOverride }}" to reference any values passed to subchat `postgresql`. See more: https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function |
 | postgresql.extraEnvVarsCM | string | `"{{ .Values.fullnameOverride }}-extra-env-vars"` | the name of config map contains extra env vars for postgresql pod. You should not change this value as this configMap is auto-generated. If you want to add extra env vars, you should add vars to `.Values.envVars` field of `magda-postgres` chart. Please note: For this field, you can use template string e.g. "{{ .Values.fullnameOverride }}" to reference any values passed to subchat `postgresql`. See more: https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function |
 | postgresql.fullnameOverride | string | `"default-db-postgresql"` | Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern. And point k8s service to DB instance. |
-| postgresql.image.repository | string | `"data61/magda-postgres"` |  |
-| postgresql.image.tag | string | `"3.0.1-alpha.0"` | the default docker image tag/version used by the postgresql chart.  When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number. |
+| postgresql.image.registry | string | `"ghcr.io"` |  |
+| postgresql.image.repository | string | `"magda-io/magda-postgres"` |  |
+| postgresql.image.tag | string | `"4.0.0"` | the default docker image tag/version used by the postgresql chart.  When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number. |
 | postgresql.livenessProbe.enabled | bool | `false` | `customLivenessProbe` will only be used when `enabled`=`false` Otherwise, default livenessProbe will be used. |
 | postgresql.nameOverride | string | `"default-db-postgresql"` | Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern. And point k8s service to DB instance. |
 | postgresql.persistence.size | string | `"50Gi"` | set the persistence volume size of the postgresql statefulset |
 | postgresql.primary.extraVolumeMounts | list | `[]` | extra volume mount can be set here.  e.g. mount backup storage config secret and map as files in /etc/wal-g.d/env |
 | postgresql.primary.extraVolumes | list | `[]` | extra volumes can be set here.  e.g. map backup storage config secret as files in /etc/wal-g.d/env |
-| postgresql.primary.priorityClassName | string | `""` |  |
+| postgresql.primary.priorityClassName | string | `""` | - Set priority class of the primary database instance. When `global.enablePriorityClass` is `true`. We should set this config to "magda-9" to make sure db instance get appropriate schedule priority. By default, Magda will create priorityClassName from "magda-10" to "magda-0" where "magda-10" indicates the highest priority.  |
 | postgresql.readinessProbe.enabled | bool | `false` | `customReadinessProbe` will only be used when `enabled`=`false` Otherwise, default livenessProbe will be used. |
 | postgresql.resources | object | `{"requests":{"cpu":"200m","memory":"500Mi"}}` | Set the resource config for the postgresql container |
 

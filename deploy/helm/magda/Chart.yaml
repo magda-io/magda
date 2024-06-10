@@ -3,16 +3,16 @@ name: "magda"
 description: "A complete solution for managing, publishing and discovering
   government data, private and open. This chart includes the magda default
   deployment."
-version: "3.0.1-alpha.0"
+version: "4.0.0"
 home: "https://github.com/magda-io/magda"
 sources: [ "https://github.com/magda-io/magda" ]
 dependencies:
   - name: magda-core
-    version: "3.0.1-alpha.0"
+    version: "4.0.0"
     repository: file://../magda-core
 
   - name: openfaas
-    version: "5.5.5-magda.2"
+    version: "5.5.5-magda.3"
     repository: "oci://ghcr.io/magda-io/charts"
     # Users should turn on / off openfaas via this condition var `global.openfaas.enabled` rather than `tags`
     # Due to a limitation of helm, the value of tags is not available in chart template.
@@ -32,7 +32,7 @@ dependencies:
 
   - name: magda-minion-broken-link
     alias: minion-broken-link
-    version: "2.0.0"
+    version: "3.0.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - minions

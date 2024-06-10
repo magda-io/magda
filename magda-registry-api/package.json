@@ -1,6 +1,6 @@
 {
   "name": "@magda/registry-api",
-  "version": "3.0.1-alpha.0",
+  "version": "4.0.0",
   "description": "The registry API.",
   "license": "Apache-2.0",
   "scripts": {
@@ -8,7 +8,7 @@
     "test": "cd .. && sbt registryApi/test",
     "compile": "cd .. && sbt registryApi/compile",
     "docker-build-local": "cd .. && sbt docker:stage && cd magda-registry-api/target/docker/stage && docker build -t localhost:5000/data61/magda-registry-api:latest . && docker push localhost:5000/data61/magda-registry-api:latest",
-    "docker-build-prod": "cd .. && sbt docker:stage && cd magda-registry-api/target/docker/stage && docker buildx build --push -t docker.io/data61/magda-registry-api:$npm_package_version --platform linux/arm64,linux/amd64 .",
+    "docker-build-prod": "cd .. && sbt docker:stage && cd magda-registry-api/target/docker/stage && docker buildx build --push -t ghcr.io/magda-io/magda-registry-api:$npm_package_version --platform linux/arm64,linux/amd64 .",
     "retag-and-push": "retag-and-push",
     "start": "cd .. && sbt registryApi/run",
     "dev": "cd .. && sbt ~registryApi/relaunch"

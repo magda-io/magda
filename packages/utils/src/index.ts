@@ -28,3 +28,4 @@ export {
     ServiceError,
     BadRequestError
 } from "@magda/typescript-common/dist/createServiceError.js";
+export { default as getStorageApiResourceAccessUrl } from "@magda/typescript-common/dist/getStorageApiResourceAccessUrl.js";

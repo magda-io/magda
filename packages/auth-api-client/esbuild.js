@@ -6,5 +6,6 @@ await esbuild.build({
     platform: "node",
     target: ["es2022"],
     outdir: "dist",
+    inject: ["../cjs-shim.js"],
     format: "esm"
 });

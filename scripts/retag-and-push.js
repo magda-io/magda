@@ -28,7 +28,7 @@ const argv = yargs
         describe:
             "The package name that used to generate the fromTag. Used to optionally override the docker nanme config in package.json during the auto tagging.",
         type: "string",
-        example: "data61/magda-ckan-connector",
+        example: "magda-ckan-connector",
         default: ""
     })
     .option("fromVersion", {
@@ -48,7 +48,7 @@ const argv = yargs
         describe:
             "The package name that used to generate the toTag. Used to optionally override the docker nanme config in package.json during the auto tagging.",
         type: "string",
-        example: "data61/magda-ckan-connector",
+        example: "magda-ckan-connector",
         default: ""
     })
     .option("copyFromRegistry", {

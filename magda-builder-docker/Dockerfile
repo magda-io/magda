@@ -1,4 +1,4 @@
-FROM data61/magda-builder-nodejs:node18
+FROM ghcr.io/magda-io/magda-builder-nodejs:node18
 
 ARG TARGETOS
 ARG TARGETARCH

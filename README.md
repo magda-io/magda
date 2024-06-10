@@ -23,7 +23,7 @@ Over the past 18 months, our focus has been to develop Magda into a more general
 
 ## Features
 
-- Powerful and scalable search based on ElasticSearch
+- Powerful and scalable search based on [OpenSearch](https://opensearch.org/)
 - Quick and reliable aggregation of external sources of datasets
 - An unopinionated central store of metadata, able to cater for most metadata schemas
 - Federated authentication via passport.js - log in via Google, Facebook, WSFed, AAF, CKAN, and easily create new providers.
@@ -65,7 +65,9 @@ Other aspects exist that are written to by many minions - for instance, we have 
 
 ### Search
 
-Datasets and distributions in the registry are ingested into an ElasticSearch cluster, which indexes a few core aspects of each and exposes an API.
+Datasets and distributions in the registry are ingested into an [OpenSearch](https://opensearch.org/) cluster, which indexes a few core aspects of each and exposes an API.
+
+> Please note: since v4.0.0, we replaced the internal [ElasticSearch](https://www.elastic.co/elasticsearch) cluster with latest [OpenSearch](https://opensearch.org/) cluster. As OpenSearch is a fork of open source Elasticsearch 7.10. As such, it provides backwards REST APIs for ingest, search, and management. The query syntax and responses are also the same.
 
 ### User Interface
 
@@ -76,15 +78,14 @@ Magda provides a user interface, which is served from its own microservice and c
 If you just want to install a local testing version, installing Magda using [Helm](https://helm.sh/) is relatively easier (you can use [minikube](https://minikube.sigs.k8s.io/docs/) to install a local k8s test cluster):
 
 ```bash
-# Add Magda Helm Chart Repo:
-helm repo add magda-io https://charts.magda.io
-
 # create a namespace "magda" in your cluster
 kubectl create namespace magda
 
-# install Magda version v2.2.0 to namespace "magda", turn off openfass function and expose the service via loadBalancer
-helm upgrade --namespace magda --install --version 2.2.0 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda magda-io/magda
+# install Magda version v4.0.0 to namespace "magda", turn off openfass function and expose the service via loadBalancer
+helm upgrade --namespace magda --install --version 4.0.0 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
 ```
+
+> Since v2, we release our helm charts to Github container registry: `oci://ghcr.io/magda-io/charts`
 
 You can find out the load balancer IP and access it:
 

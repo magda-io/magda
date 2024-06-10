@@ -13,6 +13,7 @@ async function build(web = false) {
         platform: platform,
         target: [target],
         outdir: "dist",
+        inject: ["../cjs-shim.js"],
         // should always be esm
         format: "esm"
     });

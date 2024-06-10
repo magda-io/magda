@@ -18,8 +18,8 @@ import baseSpec from "./baseSpec.js";
 import { expect } from "chai";
 
 const aspectArb = jsc.record({
-    id: jsc.string,
-    name: jsc.string,
+    id: lcAlphaNumStringArbNe,
+    name: lcAlphaNumStringArbNe,
     jsonSchema: jsc.json,
     tenantId: jsc.string
 });
@@ -150,7 +150,7 @@ baseSpec(
             jsc.property(
                 caption,
                 jsc.array(aspectArb),
-                jsc.nestring,
+                lcAlphaNumStringArbNe,
                 lcAlphaNumStringArbNe,
                 lcAlphaNumStringArbNe,
                 lcAlphaNumStringArbNe,

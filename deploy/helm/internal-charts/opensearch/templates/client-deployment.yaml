@@ -1,0 +1,221 @@
+{{- if .Values.client.enabled }}
+{{- $nodeConfig := get .Values "client" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "magda.opensearch.client.fullname" . | quote }}
+  labels:
+    {{- include "magda.common.labels.standard" . | nindent 4 }}
+    component: {{ .Values.clusterName | quote }}
+    role: client
+spec:
+{{- if not .Values.client.autoscaling.hpa.enabled }}
+  replicas: {{ .Values.client.replicas | default 1 }}
+{{- end }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      {{- include "magda.common.labels.matchLabels" . | nindent 6 }}
+      component: {{ .Values.clusterName | quote }}
+      role: client
+  template:
+    metadata:
+      name: "{{ template "magda.opensearch.client.fullname" . }}"
+      labels:
+        {{- include "magda.common.labels.standard" . | nindent 8 }}
+        component: {{ .Values.clusterName | quote }}
+        role: client
+      {{- if or (empty .Values.client.podAnnotations | not) (empty .Values.config  | not) }}
+      annotations:
+        {{- range $key, $value := .Values.client.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+        {{- /* This forces a restart if the configmap has changed */}}
+        {{- if .Values.config }}
+        configchecksum: {{ include (print .Template.BasePath "/configmap.yaml") . | sha256sum | trunc 63 }}
+        {{- end }}
+      {{- end }}
+    spec:
+      {{- if .Values.schedulerName }}
+      schedulerName: "{{ .Values.schedulerName }}"
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.client.terminationGracePeriod }}
+      securityContext:
+{{ toYaml .Values.podSecurityContext | indent 8 }}
+        {{- if and .Values.sysctl.enabled (eq .Values.sysctl.method "securityContext") }}
+        sysctls:
+        - name: vm.max_map_count
+          value: {{ .Values.sysctl.vmMaxMapCount | quote }}
+        - name: fs.file-max
+          value: {{ .Values.sysctl.fsFileMax | quote }}
+        {{- end }}
+        {{- if .Values.fsGroup }}
+        fsGroup: {{ .Values.fsGroup }} # Deprecated value, please use .Values.podSecurityContext.fsGroup
+        {{- end }}
+      {{- if and .Values.rbac.create (eq .Values.rbac.serviceAccountName "") }}
+      serviceAccountName: "{{ .Values.clusterName }}"
+      automountServiceAccountToken: {{ ne .Values.rbac.automountServiceAccountToken false }}
+      {{- else if and .Values.rbac.create (ne .Values.rbac.serviceAccountName "") }}
+      serviceAccountName: {{ .Values.rbac.serviceAccountName | quote }}
+      automountServiceAccountToken: {{ ne .Values.rbac.automountServiceAccountToken false }}
+      {{- else }}
+      automountServiceAccountToken: {{ ne .Values.rbac.automountServiceAccountToken false }}
+      {{- end }}
+      {{- with .Values.client.tolerations }}
+      tolerations:
+{{ toYaml . | indent 6 }}
+      {{- end }}
+      {{- with .Values.client.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- if and .Values.client.priorityClassName .Values.global.enablePriorityClass }}
+      priorityClassName: {{ .Values.client.priorityClassName }}
+      {{- end }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
+      {{- if .Values.hostAliases }}
+      hostAliases: {{ toYaml .Values.hostAliases | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: main-storage
+        emptyDir: {}
+      {{- if .Values.config }}
+      - name: config
+        configMap:
+          name: "{{ .Values.clusterName }}-config"
+      - emptyDir: {}
+        name: config-emptydir
+      {{- end }}
+      {{- if .Values.keystore }}
+      - name: keystore
+        emptyDir: {}
+      {{- range .Values.keystore }}
+      - name: keystore-{{ .secretName }}
+        secret: {{ toYaml . | nindent 12 }}
+      {{- end }}
+      {{- end }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
+      {{- include "magda.opensearch.initContainer" (dict "root" . "nodeType" "client" ) | nindent 6 }}
+      containers:
+      - name: "{{ template "magda.opensearch.client.fullname" . }}"
+        securityContext:
+{{ toYaml .Values.securityContext | indent 10 }}
+      {{- if .Values.plugins.enabled }}
+        command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          {{- range $plugin := .Values.plugins.installList }}
+          ./bin/opensearch-plugin install -b {{ $plugin }}
+          {{- end }}
+
+          bash opensearch-docker-entrypoint.sh
+      {{- end }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+        readinessProbe:
+{{ toYaml (.Values.client.readinessProbe | default .Values.readinessProbe) | indent 10 }}
+        {{- if (.Values.client.livenessProbe | default .Values.livenessProbe) }}
+        livenessProbe:
+{{ toYaml (.Values.client.livenessProbe | default .Values.livenessProbe) | indent 10 }}
+        {{- end }}
+      {{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.Version }}
+        startupProbe:
+{{ toYaml (.Values.client.startupProbe | default .Values.startupProbe) | indent 10 }}
+      {{- end }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.httpPort }}
+          {{- if .Values.httpHostPort }}
+          hostPort: {{ .Values.httpHostPort }}
+          {{- end }}
+        - name: transport
+          containerPort: {{ .Values.transportPort }}
+          {{- if .Values.transportHostPort }}
+          hostPort: {{ .Values.transportHostPort }}
+          {{- end }}
+        - name: metrics
+          containerPort: {{ .Values.metricsPort }}
+        resources:
+          {{- toYaml .Values.client.resources | nindent 10 }}
+        env:
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        {{- if and .Values.master.enabled (gt (int .Values.master.replicas) 1) }}
+        - name: cluster.initial_cluster_manager_nodes
+          value: {{ include "magda.opensearch.endpoints" (dict "root" . "nodeType" "master" ) | quote }}
+        {{- else if gt (int .Values.data.replicas) 1 }}
+        - name: cluster.initial_cluster_manager_nodes
+          value: {{ include "magda.opensearch.endpoints" (dict "root" . "nodeType" "data" ) | quote }}
+        {{- end }}
+        - name: discovery.seed_hosts
+        {{- if .Values.master.enabled }}
+          value: "{{ template "magda.opensearch.master.fullname" . }}-headless"
+        {{- else }}
+          value: "{{ template "opensearch.data.fullname" . }}-headless"
+        {{- end }}
+        - name: cluster.name
+          value: "{{ .Values.clusterName }}"
+        - name: network.host
+          value: "{{ .Values.networkHost }}"
+        - name: OPENSEARCH_JAVA_OPTS
+          value: {{ .Values.client.javaOpts | default .Values.javaOpts | quote }}
+        - name: node.roles
+          value: "{{ template "magda.opensearch.nodeRoles" (dict "root" . "nodeType" "client" ) }}"
+        {{- if or (and .Values.master.enabled (eq (int .Values.master.replicas) 1)) (and (not .Values.master.enabled) (eq (int .Values.data.replicas) 1)) }}
+        - name: discovery.type
+          value: "single-node"
+        {{- end }}
+{{- if .Values.extraEnvs }}
+{{ toYaml .Values.extraEnvs | indent 8 }}
+{{- end }}
+{{- if .Values.envFrom }}
+        envFrom:
+{{ toYaml .Values.envFrom | indent 8 }}
+{{- end }}
+{{- if .Values.opensearchLifecycle }}
+        lifecycle:
+{{ toYaml .Values.opensearchLifecycle | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - name: main-storage
+          mountPath: {{ .Values.opensearchHome }}/data
+        {{- if .Values.keystore }}
+        - name: keystore
+          mountPath: {{ .Values.opensearchHome }}/config/opensearch.keystore
+          subPath: opensearch.keystore
+        {{- end }}
+        {{- range $path, $config := .Values.config }}
+        - name: config-emptydir
+          mountPath: {{ $.Values.opensearchHome }}/config/{{ $path }}
+          subPath: {{ $path }}
+        {{- end -}}
+        {{- if .Values.extraVolumeMounts }}
+        # Currently some extra blocks accept strings
+        # to continue with backwards compatibility this is being kept
+        # whilst also allowing for yaml to be specified too.
+        {{- if eq "string" (printf "%T" .Values.extraVolumeMounts) }}
+{{ tpl .Values.extraVolumeMounts . | indent 8 }}
+        {{- else }}
+{{ toYaml .Values.extraVolumeMounts | indent 8 }}
+        {{- end }}
+        {{- end }}
+      {{- $extraContainers := (empty $nodeConfig.extraContainers | ternary .Values.extraContainers $nodeConfig.extraContainers) }}
+      {{- if $extraContainers }}
+      # Currently some extra blocks accept strings
+      # to continue with backwards compatibility this is being kept
+      # whilst also allowing for yaml to be specified too.
+      {{- if eq "string" (printf "%T" $extraContainers) }}
+{{ tpl $extraContainers . | indent 6 }}
+      {{- else }}
+{{ toYaml $extraContainers | indent 6 }}
+      {{- end }}
+      {{- end }}
+{{- end }}

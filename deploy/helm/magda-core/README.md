@@ -1,6 +1,6 @@
 # magda-core
 
-![Version: 3.0.1-alpha.0](https://img.shields.io/badge/Version-3.0.1--alpha.0-informational?style=flat-square)
+![Version: 4.0.0](https://img.shields.io/badge/Version-4.0.0-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes all core magda modules.
 
@@ -14,38 +14,41 @@ A complete solution for managing, publishing and discovering government data, pr
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../internal-charts/admin-api | admin-api | 3.0.1-alpha.0 |
-| file://../internal-charts/apidocs-server | apidocs-server | 3.0.1-alpha.0 |
-| file://../internal-charts/authorization-api | authorization-api | 3.0.1-alpha.0 |
-| file://../internal-charts/authorization-db | authorization-db | 3.0.1-alpha.0 |
-| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 3.0.1-alpha.0 |
-| file://../internal-charts/combined-db | combined-db | 3.0.1-alpha.0 |
-| file://../internal-charts/content-api | content-api | 3.0.1-alpha.0 |
-| file://../internal-charts/content-db | content-db | 3.0.1-alpha.0 |
-| file://../internal-charts/correspondence-api | correspondence-api | 3.0.1-alpha.0 |
-| file://../internal-charts/elasticsearch | elasticsearch | 3.0.1-alpha.0 |
-| file://../internal-charts/gateway | gateway | 3.0.1-alpha.0 |
-| file://../internal-charts/indexer | indexer | 3.0.1-alpha.0 |
-| file://../internal-charts/ingress | ingress | 3.0.1-alpha.0 |
-| file://../internal-charts/priorities | priorities | 3.0.1-alpha.0 |
-| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 3.0.1-alpha.0 |
-| file://../internal-charts/registry-api | registry-api | 3.0.1-alpha.0 |
-| file://../internal-charts/registry-db | registry-db | 3.0.1-alpha.0 |
-| file://../internal-charts/search-api-node | search-api-node | 3.0.1-alpha.0 |
-| file://../internal-charts/search-api | search-api | 3.0.1-alpha.0 |
-| file://../internal-charts/session-db | session-db | 3.0.1-alpha.0 |
-| file://../internal-charts/storage-api | storage-api | 3.0.1-alpha.0 |
-| file://../internal-charts/tenant-api | tenant-api | 3.0.1-alpha.0 |
-| file://../internal-charts/tenant-db | tenant-db | 3.0.1-alpha.0 |
-| file://../internal-charts/web-server | web-server | 3.0.1-alpha.0 |
-| file://../magda-common | magda-common | 3.0.1-alpha.0 |
-| https://charts.magda.io | preview-map(magda-preview-map) | 1.1.2 |
+| file://../internal-charts/admin-api | admin-api | 4.0.0 |
+| file://../internal-charts/apidocs-server | apidocs-server | 4.0.0 |
+| file://../internal-charts/authorization-api | authorization-api | 4.0.0 |
+| file://../internal-charts/authorization-db | authorization-db | 4.0.0 |
+| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 4.0.0 |
+| file://../internal-charts/combined-db | combined-db | 4.0.0 |
+| file://../internal-charts/content-api | content-api | 4.0.0 |
+| file://../internal-charts/content-db | content-db | 4.0.0 |
+| file://../internal-charts/correspondence-api | correspondence-api | 4.0.0 |
+| file://../internal-charts/elasticsearch | elasticsearch | 4.0.0 |
+| file://../internal-charts/gateway | gateway | 4.0.0 |
+| file://../internal-charts/indexer | indexer | 4.0.0 |
+| file://../internal-charts/ingress | ingress | 4.0.0 |
+| file://../internal-charts/opensearch-dashboards | opensearch-dashboards | 4.0.0 |
+| file://../internal-charts/opensearch | opensearch | 4.0.0 |
+| file://../internal-charts/priorities | priorities | 4.0.0 |
+| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 4.0.0 |
+| file://../internal-charts/registry-api | registry-api | 4.0.0 |
+| file://../internal-charts/registry-db | registry-db | 4.0.0 |
+| file://../internal-charts/search-api-node | search-api-node | 4.0.0 |
+| file://../internal-charts/search-api | search-api | 4.0.0 |
+| file://../internal-charts/session-db | session-db | 4.0.0 |
+| file://../internal-charts/storage-api | storage-api | 4.0.0 |
+| file://../internal-charts/tenant-api | tenant-api | 4.0.0 |
+| file://../internal-charts/tenant-db | tenant-db | 4.0.0 |
+| file://../internal-charts/web-server | web-server | 4.0.0 |
+| file://../magda-common | magda-common | 4.0.0 |
+| oci://ghcr.io/magda-io/charts | preview-map(magda-preview-map) | 1.1.3 |
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | autoCreateAuthSecrets | bool | `true` | Whether or not auto create a k8s secrets named `auth-secrets` that contains: <ul> <li> JWT secret, under key: `jwt-secret`. Used internally by Magda gateway to issue JWT token.</li> <li> Session secret, under key: `session-secret`. Used by Magda gateway for managing session data.</li> </ul> The auto generated secrets will be 32 chars (256bits) long. |
+| extraObjects | list | `[]` | Array of extra K8s manifests to deploy Each item in the array can be a valid K8s manifest in yaml or string type. When manifest is in string type, it will be parsed as a template with the root object as the context. Therefore, any values can be referenced in the template string e.g. `{{ .Values.xxxxx }}`. Example: extraObjects: - apiVersion: policy/v1 # This is a manifest item written in YAML   kind: PodDisruptionBudget   metadata:     name: my-pdb   spec:     maxUnavailable: 1     selector:       matchLabels:         app: my-app - |   # This is a manifest item written in template string. `|` is used to preserve the new lines.    apiVersion: v1   kind: PodDisruptionBudget   metadata:     name: my-pdb     labels:        {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}   spec:     maxUnavailable: 1     selector:       matchLabels:         {{- include "magda.common.labels.matchLabels" (dict "root" .) | nindent 6 }} |
 | global.authPluginAllowedExternalRedirectDomains | list | `[]` | By default, at end of authentication process, an auth plugin will never redirect the user to an external domain,  even if `authPluginRedirectUrl` is configured to an URL with an external domain. Unless an external domain is added to the whitelist i.e. this `authPluginAllowedExternalRedirectDomains` config,  any auth plugins will always ignore the domain part of the url (if supplied) and only redirect the user to the URL path under the current domain. Please note: you add a url host string to this list. e.g. "abc.com:8080" |
 | global.authPluginRedirectUrl | string | `"/sign-in-redirect"` | the redirection url after the whole authentication process is completed. Authentication Plugins will use this value as default setting. The following query parameters might be present to supply the authentication result: <ul> <li>result: (string) Compulsory. Possible value: "success" or "failure". </li> <li>errorMessage: (string) Optional. Text message to provide more information on the error to the user. </li> </ul> The default built-in landing "/sign-in-redirect" route supports an additional `redirectTo` query parameter. If this parameter not presents, the user will be redirected further to the frontend route `/account` which is the account page . Otherwise, user will redirected to the url path specified by `redirectTo` query parameter. Please note: `redirectTo` only accept an URL path (e.g. `/a/b/c`). External domain urls are not supported.  You can config `authPluginRedirectUrl` to an full URL string rather than a URL path (which imply current domain). However, unless an external domain is added to `authPluginAllowedExternalRedirectDomains`, an auth plugin should never redirect the user to the external domain. |
 | global.awsRdsEndpoint | string | `nil` | AWS RDS DB instance access endpoint. e.g. xxxx.xxxx.ap-southeast-2.rds.amazonaws.com. Compulsory if `useAwsRdsDb` = true |
@@ -58,7 +61,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | global.externalUrl | string | `"http://localhost:6100"` |  |
 | global.gapiIds | list | `[]` |  |
 | global.image.pullPolicy | string | `"IfNotPresent"` |  |
-| global.image.repository | string | `"data61"` |  |
+| global.image.repository | string | `"ghcr.io/magda-io"` |  |
 | global.logLevel | string | `"INFO"` |  |
 | global.namespace | string | `"default"` |  |
 | global.postgresql.autoCreateSecret | bool | `true` | When `true`, secret with name specified by `existingSecret` will be auto-created. When in-k8s PostgreSQL instance is used, the secret will be filled with auto-generated random password. Otherwise, the secret will only be auto created when "cloudsql-db-credentials" secret exist. And its content, for this case, will be copied from "cloudsql-db-credentials" secret, `password` field for backward compatibility purposes. Please note: when the secret (specified by `existingSecret`) exists, the auto-create feature will leave the password unchanged. |
@@ -69,7 +72,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | global.useCloudSql | bool | `false` | whether to use Google Cloud SQL database.  When this option is on, all other database type e.g. `useCombinedDb` & `useAwsRdsDb` must be turned off. When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret, you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true). Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true ) |
 | global.useCombinedDb | bool | `true` |  |
 | global.useInK8sDbInstance | object | `{"authorization-db":false,"content-db":false,"registry-db":false,"session-db":false,"tenant-db":false}` | When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database. Please note: you must set `useCombinedDb` = false before set any of the field to `true`. Otherwise, all db requests will still be forwarded to the combined DB instance other than each individual database instance. |
-| tags | object | see default value of each individual tag below. | (object) Control on/ off of each modules.  To turn on/off openfaas, please set value to `global.openfaas.enabled` |
+| tags | object | see default value of each individual tag below. | Control on/ off of each modules.  To turn on/off openfaas, please set value to `global.openfaas.enabled` |
 | tags.admin-api | bool | `false` | turn on / off [admin-api](../internal-charts/admin-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.all | bool | `true` | Set to `true` to turn on all default modules.  When `tags.all` is `false`, a default module will only be turned off when the corresponding module tag is `false` as well.  Please note: since v1.0.0, correspondence-api is not part of default modules anymore.  |
 | tags.apidocs-server | bool | `false` | turn on / off [apidocs-server](../internal-charts/apidocs-server/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
@@ -80,10 +83,12 @@ A complete solution for managing, publishing and discovering government data, pr
 | tags.content-api | bool | `false` | turn on / off [content-api](../internal-charts/content-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.content-db | bool | `false` | turn on / off [content-db](../internal-charts/content-db/README.md) |
 | tags.correspondence-api | bool | `false` | turn on / off [content-db](../internal-charts/correspondence-api/README.md) |
-| tags.elasticsearch | bool | `false` | turn on / off [elasticsearch](../internal-charts/elasticsearch/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.elasticsearch | bool | `false` | turn on / off [elasticsearch](../internal-charts/elasticsearch/README.md) Please note: this module is no longer used since v4.0.0. `opensearch` chart is used instead. However, this module will still be kept for offering upgrade path for existing users v3 users. User can opt to turn on this `elasticsearch` to keep existing search engine running while building index on new opensearch engine. |
 | tags.gateway | bool | `false` | turn on / off [gateway](../internal-charts/gateway/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.indexer | bool | `false` | turn on / off [indexer](../internal-charts/indexer/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.ingress | bool | `false` | turn on / off [ingress](../internal-charts/ingress/README.md) |
+| tags.opensearch | bool | `false` | turn on / off [opensearch](../internal-charts/opensearch/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.opensearch-dashboards | bool | `false` | turn on / off [opensearch-dashboards](../internal-charts/opensearch-dashboards/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.preview-map | bool | `false` | turn on / off [preview-map](https://github.com/magda-io/magda-preview-map) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.priorities | bool | `true` | whether or not deploy Magda defined PriorityClass. Useful to schedule different payload on different nodes. |
 | tags.rds-dev-proxy | bool | `false` | turn on / off [rds-dev-proxy](../internal-charts/rds-dev-proxy/README.md) It's only for accessing AWS RDS db for admin / testing purposes within the k8s cluster. |

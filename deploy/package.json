@@ -1,6 +1,6 @@
 {
   "name": "@magda/deploy",
-  "version": "3.0.1-alpha.0",
+  "version": "4.0.0",
   "description": "MAGDA deployment configuration.",
   "scripts": {
     "create-connector-configmap": "kubectl delete configmap connector-config --ignore-not-found && kubectl create configmap connector-config --from-file ./connector-config/",
@@ -17,14 +17,14 @@
     "update-all-charts": "yarn clean-up-all-charts && yarn update-local-deployment-chart",
     "clean-up-all-charts": "rm -rf helm/magda-core/charts helm/magda/charts helm/local-deployment/charts helm/local-auth-test-deployment/charts",
     "add-all-chart-version-changes": "git ls-files -m | grep Chart.yaml | xargs git add && git ls-files -m | grep Chart.lock | xargs git add && git ls-files -m | grep values.yaml | xargs git add",
-    "helm-docs": "docker run --rm -v \"$(pwd):/helm-docs\" -u $(id -u) jnorwood/helm-docs:v1.5.0",
+    "helm-docs": "docker run --rm -v \"$(pwd):/helm-docs\" -u $(id -u) jnorwood/helm-docs:v1.13.1",
     "add-all-helm-docs-changes": "yarn helm-docs && git ls-files -m | grep -i readme.md | xargs git add",
     "version": "yarn update-helm-chart-version && yarn update-all-charts && yarn add-all-chart-version-changes && yarn add-all-helm-docs-changes"
   },
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^3.0.1-alpha.0",
+    "@magda/scripts": "^4.0.0",
     "fs-extra": "^11.2.0",
     "klaw-sync": "^2.1.0",
     "tmp": "0.0.31",

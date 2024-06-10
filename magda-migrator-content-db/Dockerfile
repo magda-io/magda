@@ -1,2 +1,2 @@
-FROM data61/magda-db-migrator:master
+FROM ghcr.io/magda-io/magda-db-migrator:main
 COPY component/sql/* /flyway/sql/content/

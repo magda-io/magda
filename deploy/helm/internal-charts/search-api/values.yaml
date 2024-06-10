@@ -6,7 +6,7 @@ image:
   # pullSecrets: 
 
 defaultImage:
-  repository: docker.io/data61
+  repository: "ghcr.io/magda-io"
   pullPolicy: IfNotPresent
   pullSecrets: false
 
@@ -59,7 +59,7 @@ appConfig:
   http: 
     port: 6102
   elasticSearch:
-    serverUrl: elasticsearch://elasticsearch:9200
+    serverUrl: http://opensearch:9200
   authApi:
     baseUrl: http://authorization-api
   # -- whether print out full config data at application starting up

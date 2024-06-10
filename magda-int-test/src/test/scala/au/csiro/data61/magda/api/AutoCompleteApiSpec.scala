@@ -1,22 +1,26 @@
 package au.csiro.data61.magda.api
 
 import au.csiro.data61.magda.test.util.Generators
-import org.scalatest.{BeforeAndAfterAll}
-
+import org.scalatest.BeforeAndAfterAll
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.ContentTypes.`application/json`
-import akka.http.scaladsl.model.StatusCodes.{OK, InternalServerError}
-import au.csiro.data61.magda.model.misc.{DataSetAccessNotes}
+import akka.http.scaladsl.model.StatusCodes.{InternalServerError, OK}
+import akka.http.scaladsl.server
+import au.csiro.data61.magda.model.misc.DataSetAccessNotes
 import au.csiro.data61.magda.api.model.AutoCompleteQueryResult
 import org.scalacheck.Gen
 
 import scala.collection.mutable
 
-class AutoCompleteApiSpec extends BaseSearchApiSpec with BeforeAndAfterAll {
+class AutoCompleteApiSpec extends BaseSearchApiSpec {
 
-  override def afterAll {
-    super.afterAll
-    cleanUpIndexes()
+  var _routes: Option[server.Route] = None
+
+  def routes = _routes.get
+
+  override def beforeAll {
+    super.beforeAll()
+    _routes = Some(createDatasetWithItems(notes))
   }
 
   def createDatasetWithItems(items: Seq[String]) = {
@@ -37,8 +41,8 @@ class AutoCompleteApiSpec extends BaseSearchApiSpec with BeforeAndAfterAll {
             )
           )
       }
-    putDataSetsInIndex(dataSets) match {
-      case (_, _, routes) => routes
+    putDataSetsInIndex(dataSets, cleanAfterEach = false) match {
+      case (_, _, routes, _) => routes
     }
   }
 
@@ -55,8 +59,6 @@ class AutoCompleteApiSpec extends BaseSearchApiSpec with BeforeAndAfterAll {
     "/shareDriveB/testDriveC/a/h",
     "/shareDriveB/testDriveD/x/y"
   )
-
-  val routes = createDatasetWithItems(notes)
 
   it("Should respond with empty list without error if input is not supplied") {
 

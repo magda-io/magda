@@ -3,10 +3,10 @@ name: magda-postgres
 description: "A helm wrapper chart that provides in-kubernetes postgreSQL for Magda."
 type: application
 kubeVersion: ">= 1.21.0"
-version: "3.0.1-alpha.0"
+version: "4.0.0"
 annotations:
   magdaModuleType: "core"
 dependencies:
   - name: postgresql
     version: "10.9.1"
-    repository: "https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami"
+    repository: "oci://ghcr.io/magda-io/third-party/bitnami/charts"

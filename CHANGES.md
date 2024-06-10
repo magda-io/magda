@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## v4.0.0
+
+- Use OpenSearch (v2.14.0) as main search engine
+- Allow supply extra K8s manifests to deploy via `magda-core` `.Values.extraObjects`
+- #3337 Stop releasing helm charts to charts.magda.io. Since v2, we started to release charts to Github container OCI registry
+- #3337 Make all helm charts use github container registry `ghcr.io/magda-io`
+- Upgrade [helm-docs](https://github.com/norwoodj/helm-docs) to 1.13.1
+
+## v3.0.4
+
+- #3527 correspondence API might reset the preset email resources to the default data unexpectedly during the service restart
+
+## v3.0.3
+
+- #3193 auto-remove Null byte from JSON input so it won't be rejected by registry
+
+## v3.0.2
+
+- #3513 Fixed Indexer reindex trigger job doesn't start
+- #3516 Fixed released @magda NPM package esbuild commonjs bundle issue
+- Added the API document for the sitemap endpoint
+- Make getStorageApiResourceAccessUrl available via @magda/typescript-common & @magda/utils
+- Fixed: update node engines requirements to all SDKs to 18.19.0
+- Upgraded the broken link minion in `magda` chart to v3.0.0
+
 ## v3.0.1
 
 - #3511 fixed Map Preview doesn't select the default feature layer correctly when it's supplied via query parameter

@@ -1,6 +1,6 @@
 {
   "name": "@magda/content-schemas",
-  "version": "3.0.1-alpha.0",
+  "version": "4.0.0",
   "type": "module",
   "exports": {
     ".": {
@@ -11,7 +11,7 @@
     "./*.json": "./*.json"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.19.0"
   },
   "description": "Common schemas for use with the content api.",
   "scripts": {

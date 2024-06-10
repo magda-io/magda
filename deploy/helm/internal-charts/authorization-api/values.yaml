@@ -6,7 +6,7 @@ image:
   # pullSecrets: 
 
 defaultImage:
-  repository: docker.io/data61
+  repository: "ghcr.io/magda-io"
   pullPolicy: IfNotPresent
   pullSecrets: false
   
@@ -41,7 +41,7 @@ opa:
   
   loaderImage: 
     # Github repo: https://github.com/magda-io/magda-configmap-dir-loader
-    repository: docker.io/data61
+    repository: "ghcr.io/magda-io"
     name: "magda-configmap-dir-loader"
     tag: "1.0.0-alpha.0"
     pullPolicy: IfNotPresent

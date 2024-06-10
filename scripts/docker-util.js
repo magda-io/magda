@@ -15,7 +15,7 @@ export function getName(name) {
     return process.env.npm_package_config_docker_name
         ? process.env.npm_package_config_docker_name
         : process.env.npm_package_name
-        ? "data61/magda-" + process.env.npm_package_name.split("/")[1]
+        ? "magda-" + process.env.npm_package_name.split("/")[1]
         : "UnnamedImage";
 }
 

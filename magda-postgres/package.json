@@ -1,12 +1,12 @@
 {
   "name": "@magda/postgres",
-  "version": "3.0.1-alpha.0",
+  "version": "4.0.0",
   "description": "A base Docker image for PostgreSQL with Flyway for schema migrations.",
   "scripts": {
     "dev": "docker-compose up",
     "dev-stop": "docker-compose down",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
-    "make-latest": "bash -c \"docker tag data61/magda-postgres:$npm_package_version data61/magda-postgres:latest && docker push data61/magda-postgres:latest\"",
+    "make-latest": "bash -c \"docker tag ghcr.io/magda-io/magda-postgres:$npm_package_version ghcr.io/magda-io/magda-postgres:latest && docker push ghcr.io/magda-io/magda-postgres:latest\"",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "retag-and-push": "retag-and-push"
   },
@@ -19,7 +19,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^3.0.1-alpha.0"
+    "@magda/scripts": "^4.0.0"
   },
   "magda": {
     "categories": {

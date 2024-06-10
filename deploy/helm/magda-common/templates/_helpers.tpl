@@ -62,3 +62,60 @@
   {{- $magdaModuleType := get $annotations "magdaModuleType" | default "" }}
   {{- print $magdaModuleType }}
 {{- end -}}
+
+{{/*
+  Either create the name from the `nameOverride` value or use the chart name.
+*/}}
+{{- define "magda.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "magda.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+  Create a default fully qualified app name.
+  We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+  If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "magda.fullname" -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+  Convert value to yaml with identation. 
+  If the value is an empty value, no new line will be added.
+  Otherwise, an new line will be added before the yaml output.
+  Parameters: 
+    Accept a list with 2 elements:
+    - 1st item: The value to convert to yaml.
+    - 2nd item: The number of spaces to indent the yaml output.
+  Usage: 
+    {{- template "magda.toYamlWithNindent" (list .Values.someValue 2) }}
+*/}}
+{{- define "magda.toYamlWithNindent" -}}
+{{- if eq (kindOf .) "slice" -}}
+  {{- $v := index . 0 -}}
+  {{- $indent := index . 1 -}}
+  {{- if empty $v -}}
+    {{- $v | toYaml | print " " }}
+  {{- else -}}
+    {{- $v | toYaml | nindent $indent }}
+  {{- end -}}
+{{- else -}}
+{{- fail "magda.toYamlWithNindent expect a list input" -}}
+{{- end -}}
+{{- end -}}

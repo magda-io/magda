@@ -1,10 +1,10 @@
 package au.csiro.data61.magda.test.util.testkit
 
-import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.ElasticDsl
-import com.sksamuel.elastic4s.http.ElasticClient
-import com.sksamuel.elastic4s.http.index.admin.RefreshIndexResponse
-import com.sksamuel.elastic4s.{IndexAndTypes, Indexes}
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.ElasticDsl
+import com.sksamuel.elastic4s.ElasticClient
+import com.sksamuel.elastic4s.requests.indexes.admin.RefreshIndexResponse
+import com.sksamuel.elastic4s.Indexes
 import org.elasticsearch.ResourceAlreadyExistsException
 import org.elasticsearch.transport.RemoteTransportException
 import org.slf4j.{Logger, LoggerFactory}

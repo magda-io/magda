@@ -98,25 +98,11 @@ magda:
         readOnly:
           enable: true
 
-    elasticsearch:
-      data:
-        heapSize: 500m
-        pluginsInstall: "repository-gcs"
-      backup:
-        googleApplicationCreds:
-          secretName: backup-storage-account
-          fileName: db-service-account-private-key.json
     indexer:
       resources:
         requests:
           cpu: 100m
-          memory: 0
-      readSnapshots: false
-      makeSnapshots: false
-      elasticsearch:
-        useGcsSnapshots: true
-        gcsSnapshotBucket: "magda-es-snapshots-dev"
-        gcsSnapshotClient: "default"
+          memory: 256Mi
 
     web-server:
       fallbackUrl: "https://data.gov.au"
