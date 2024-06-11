@@ -81,6 +81,7 @@ export type Config = {
     skipAuth?: boolean;
     registryQueryCacheMaxKeys: number;
     registryQueryCacheStdTTL: number;
+    disableGzip?: boolean;
 };
 
 export default function buildApp(app: express.Application, config: Config) {
@@ -148,7 +149,10 @@ export default function buildApp(app: express.Application, config: Config) {
     app.use(createHttpsRedirectionMiddleware(config.enableHttpsRedirection));
 
     // GZIP responses where appropriate
-    app.use(compression());
+    if (!config?.disableGzip) {
+        app.use(compression());
+        console.log("Automatic GZIP compression enabled.");
+    }
 
     // Set sensible secure headers
     app.disable("x-powered-by");

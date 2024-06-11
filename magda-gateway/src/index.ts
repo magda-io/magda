@@ -175,6 +175,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "boolean",
             default: false
         })
+        .option("disableGzip", {
+            describe:
+                "By default, response will be auto-gizpped depends on MIME type. Set this to true to disable it.",
+            type: "boolean",
+            default: false
+        })
         .option("userId", {
             describe:
                 "The user id to use when making authenticated requests to the registry",

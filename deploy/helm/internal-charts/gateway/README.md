@@ -43,6 +43,7 @@ Kubernetes: `>= 1.14.0-0`
 | defaultWebRouteConfig.methods | list | `["GET"]` | array of string. "all" means all methods will be proxied  |
 | defaultWebRouteConfig.redirectTrailingSlash | bool | `false` | make /xxx auto redirect to /xxxx/ |
 | defaultWebRouteConfig.to | string | `""` | the default web router proxy target. Optional. If set, the default web route set via `web` option will be ignored. |
+| disableGzip | bool | `false` | By default, response will be auto-gizpped depends on MIME type. Set this to true to disable it. |
 | enableAuthEndpoint | bool | `true` | whether or not enable auth endpoint. You can turn it off if you don't need to log into any account. |
 | enableCkanRedirection | bool | `false` | wether or not enable CKAN redirection. when it's on, any incoming ckan alike URL will be redirected to the CKAN instance URL  that is specified by config option `ckanRedirectionDomain` and `ckanRedirectionPath`. |
 | enableHttpsRedirection | bool | `false` | whether or not redirect incoming request using HTTP protocol to HTTPs |
