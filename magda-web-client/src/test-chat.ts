@@ -8,6 +8,13 @@ import {
 } from "@mlc-ai/web-llm";
 import { ChatWorker } from "@mlc-ai/web-llm/lib/web_worker";
 
+interface ExtensionMLCEngineConfig extends MLCEngineConfig {
+    extensionId?: string;
+    onDisconnect?: () => void;
+}
+
+const extensionId = "jjeiclacnkmkhaehifnoknfhbklffjeo";
+
 class PortAdapter implements ChatWorker {
     port: chrome.runtime.Port;
     private _onmessage!: (message: any) => void;
@@ -44,26 +51,38 @@ class PortAdapter implements ChatWorker {
 
 export class ServiceWorkerMLCEngine extends WebWorkerMLCEngine {
     port: chrome.runtime.Port;
+    extensionId?: string;
 
-    constructor(engineConfig?: MLCEngineConfig, keepAliveMs = 10000) {
-        const port = chrome.runtime.connect(
-            "jjeiclacnkmkhaehifnoknfhbklffjeo",
-            { name: "web_llm_service_worker" }
-        );
+    constructor(engineConfig?: ExtensionMLCEngineConfig, keepAliveMs = 10000) {
+        const extensionId = engineConfig?.extensionId;
+        const onDisconnect = engineConfig?.onDisconnect;
+        const port = extensionId
+            ? chrome.runtime.connect(extensionId, {
+                  name: "web_llm_service_worker"
+              })
+            : chrome.runtime.connect({ name: "web_llm_service_worker" });
         const chatWorker = new PortAdapter(port);
         super(chatWorker, engineConfig);
         this.port = port;
+        this.extensionId = extensionId;
 
         // Keep alive through periodical heartbeat signals
-        setInterval(() => {
+        const keepAliveTimer = setInterval(() => {
             this.worker.postMessage({ kind: "keepAlive" });
         }, keepAliveMs);
+
+        port.onDisconnect.addListener(() => {
+            clearInterval(keepAliveTimer);
+            if (onDisconnect) {
+                onDisconnect();
+            }
+        });
     }
 }
 
 export async function CreateServiceWorkerMLCEngine(
     modelId: string,
-    engineConfig?: MLCEngineConfig,
+    engineConfig?: ExtensionMLCEngineConfig,
     chatOpts?: ChatOptions,
     keepAliveMs = 10000
 ): Promise<ServiceWorkerMLCEngine> {
@@ -81,27 +100,42 @@ let loadingProcess: InitProgressReport = {
     text: ""
 };
 
-let enginePromise: Promise<MLCEngineInterface>;
-let engine: MLCEngineInterface;
+let enginePromise: Promise<MLCEngineInterface> | null = null;
+let engine: MLCEngineInterface | null = null;
+let onDisconnectCallbacks: (() => void)[] = [];
 
 const initProgressCallback = (report: InitProgressReport) =>
     (loadingProcess = report);
 
-export async function createEngine() {
+export async function createEngine(onDisconnect?: () => void) {
+    if (onDisconnect) {
+        onDisconnectCallbacks.push(onDisconnect);
+    }
     if (enginePromise) {
         return await enginePromise;
     } else {
         enginePromise = CreateServiceWorkerMLCEngine(
             "Mistral-7B-Instruct-v0.2-q4f16_1-MLC",
-            { initProgressCallback: initProgressCallback }
+            {
+                initProgressCallback: initProgressCallback,
+                extensionId: extensionId,
+                onDisconnect: () => {
+                    enginePromise = null;
+                    engine = null;
+                    if (onDisconnectCallbacks?.length > 0) {
+                        onDisconnectCallbacks.forEach((cb) => cb());
+                        onDisconnectCallbacks = [];
+                    }
+                }
+            }
         ).then((createdEngine) => (engine = createdEngine));
-        const keepAlivePort = chrome.runtime.connect(
-            "jjeiclacnkmkhaehifnoknfhbklffjeo",
-            { name: "keep_alive" }
-        );
-        setInterval(() => {
-            keepAlivePort.postMessage({ kind: "keepAlive" });
-        }, 20000);
+        // const keepAlivePort = chrome.runtime.connect(
+        //     "jjeiclacnkmkhaehifnoknfhbklffjeo",
+        //     { name: "keep_alive" }
+        // );
+        // setInterval(() => {
+        //     keepAlivePort.postMessage({ kind: "keepAlive" });
+        // }, 20000);
         return await enginePromise;
     }
 }
