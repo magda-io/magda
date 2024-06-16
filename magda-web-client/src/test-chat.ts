@@ -13,7 +13,7 @@ interface ExtensionMLCEngineConfig extends MLCEngineConfig {
     onDisconnect?: () => void;
 }
 
-const extensionId = "jjeiclacnkmkhaehifnoknfhbklffjeo";
+const defaultExtensionId = "jjeiclacnkmkhaehifnoknfhbklffjeo";
 
 class PortAdapter implements ChatWorker {
     port: chrome.runtime.Port;
@@ -107,7 +107,10 @@ let onDisconnectCallbacks: (() => void)[] = [];
 const initProgressCallback = (report: InitProgressReport) =>
     (loadingProcess = report);
 
-export async function createEngine(onDisconnect?: () => void) {
+export async function createEngine(
+    extensionId?: string,
+    onDisconnect?: () => void
+) {
     if (onDisconnect) {
         onDisconnectCallbacks.push(onDisconnect);
     }
@@ -118,7 +121,7 @@ export async function createEngine(onDisconnect?: () => void) {
             "Mistral-7B-Instruct-v0.2-q4f16_1-MLC",
             {
                 initProgressCallback: initProgressCallback,
-                extensionId: extensionId,
+                extensionId: extensionId ? extensionId : defaultExtensionId,
                 onDisconnect: () => {
                     enginePromise = null;
                     engine = null;
@@ -129,13 +132,6 @@ export async function createEngine(onDisconnect?: () => void) {
                 }
             }
         ).then((createdEngine) => (engine = createdEngine));
-        // const keepAlivePort = chrome.runtime.connect(
-        //     "jjeiclacnkmkhaehifnoknfhbklffjeo",
-        //     { name: "keep_alive" }
-        // );
-        // setInterval(() => {
-        //     keepAlivePort.postMessage({ kind: "keepAlive" });
-        // }, 20000);
         return await enginePromise;
     }
 }
