@@ -141,7 +141,9 @@
     "webpack-filter-warnings-plugin": "^1.2.1",
     "weighted-mean": "^1.0.2",
     "xlsx": "^0.14.0",
-    "yaml-front-matter": "^4.1.1"
+    "yaml-front-matter": "^4.1.1",
+    "@mlc-ai/web-llm": "^0.2.46",
+    "@types/chrome": "^0.0.242"
   },
   "browserslist": {
     "production": [

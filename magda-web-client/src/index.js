@@ -1,4 +1,5 @@
 // eslint-disable-next-line
+import "./test-chat";
 import logger from "redux-logger";
 import "./index.scss";
 import { BrowserRouter, Route, withRouter } from "react-router-dom";
