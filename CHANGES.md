@@ -3,6 +3,7 @@
 ## v4.0.1
 
 - Add helm chart configuration option allows users to disable gateway auto-gzip response feature
+- Update default region mapping files url to [Github repo release](https://github.com/magda-io/magda-region-mappings)
 
 ## v4.0.0
 
