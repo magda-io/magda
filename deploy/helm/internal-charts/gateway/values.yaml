@@ -53,6 +53,9 @@ ckanRedirectionPath:
 # -- whether or not redirect incoming request using HTTP protocol to HTTPs
 enableHttpsRedirection: false
 
+# -- By default, response will be auto-gizpped depends on MIME type. Set this to true to disable it.
+disableGzip: false
+
 # -- a list of authentication plugin config item. 
 # Each authentication plugin config item can contain the following fields:
 # <ul>

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.0.1
+
+- Add helm chart configuration option allows users to disable gateway auto-gzip response feature
+
 ## v4.0.0
 
 - Use OpenSearch (v2.14.0) as main search engine
