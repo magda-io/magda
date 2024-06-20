@@ -5,13 +5,14 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.model._
 import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.api.{model => apimodel}
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.search.SearchQueryer
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigRenderOptions}
 import au.csiro.data61.magda.search.Directives.withDatasetReadAuthDecision
 
 /**
@@ -31,6 +32,14 @@ class SearchApi(
     with BaseMagdaApi
     with apimodel.Protocols {
   override def getLogger = logger
+
+  val regionMappingConfig = if (config.hasPath("regionMapping")) {
+    Some(
+      config.getObject("regionMapping").render(ConfigRenderOptions.concise())
+    )
+  } else {
+    None
+  }
 
   val routes =
     magdaRoute {
@@ -423,7 +432,23 @@ class SearchApi(
             *        }
             *    }
             */
-          path("region-types") { get { getFromResource("regionMapping.json") } } ~
+          path("region-types") {
+            get {
+
+              if (regionMappingConfig.isEmpty) {
+                // Serve the default region mapping
+                getFromResource("regionMapping.json")
+              } else {
+                // Serve the region mapping from config
+                val entity = HttpEntity(
+                  ContentTypes.`application/json`,
+                  regionMappingConfig.get
+                )
+                complete(HttpResponse(StatusCodes.OK, entity = entity))
+              }
+
+            }
+          } ~
           /**
             * @apiGroup Search
             * @api {get} /v0/search/regions Get Regions
