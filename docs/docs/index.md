@@ -22,6 +22,6 @@
 - [How to recover with continuous archive backup](./how-to-recover-with-continuous-archive-backup.md)
 - [Ports used when running locally](./local-ports.md)
 - [Windows Setup Instructions](./windows-instructions.md)
-- [Region Mapping Files Config](./region-mapping-files.md)
+- [Regions Config](./region-files.md)
 
 More documentation, please check [here](https://github.com/magda-io/magda/tree/master/docs/docs)

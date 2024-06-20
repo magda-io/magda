@@ -1,14 +1,14 @@
 
 
 # Region Type: COUNTRY
-# From: https://github.com/magda-io/magda-region-mappings/releases/download/v1.0.0/country.geojson
+# From: https://github.com/magda-io/magda-regions/releases/download/v1.0.0/country.geojson
 
 australia (mainland), australia => country/1
 australian offshore remote territories => country/2
 
 
 # Region Type: OFFSHORE_TERRITORIES
-# From: https://github.com/magda-io/magda-region-mappings/releases/download/v1.0.0/off-shore-territories.geojson
+# From: https://github.com/magda-io/magda-regions/releases/download/v1.0.0/off-shore-territories.geojson
 
 norfolk island => offshore_territories/21
 christmas island => offshore_territories/22
@@ -21,7 +21,7 @@ heard island and mcdonald islands => offshore_territories/28
 
 
 # Region Type: SA4
-# From: https://github.com/magda-io/magda-region-mappings/releases/download/v1.0.0/SA4.geojson
+# From: https://github.com/magda-io/magda-regions/releases/download/v1.0.0/SA4.geojson
 
 capital region => sa4/101
 central coast => sa4/102
@@ -132,7 +132,7 @@ special purpose codes sa4 (ot), special purpose codes sa4 => sa4/999
 
 
 # Region Type: SA3
-# From: https://github.com/magda-io/magda-region-mappings/releases/download/v1.0.0/SA3.geojson
+# From: https://github.com/magda-io/magda-regions/releases/download/v1.0.0/SA3.geojson
 
 goulburn - yass => sa3/10101
 queanbeyan => sa3/10102
@@ -488,7 +488,7 @@ special purpose codes sa3 (ot), special purpose codes sa3 => sa3/99999
 
 
 # Region Type: SA2
-# From: https://github.com/magda-io/magda-region-mappings/releases/download/v1.0.0/SA2.geojson
+# From: https://github.com/magda-io/magda-regions/releases/download/v1.0.0/SA2.geojson
 
 goulburn => sa2/101011001
 goulburn region => sa2/101011002
@@ -2707,7 +2707,7 @@ no usual address (ot), no usual address => sa2/999999499
 
 
 # Region Type: LGA
-# From: https://github.com/magda-io/magda-region-mappings/releases/download/v1.0.0/LGA.geojson
+# From: https://github.com/magda-io/magda-regions/releases/download/v1.0.0/LGA.geojson
 
 albury (c), albury => lga/10050
 armidale dumaresq (a), armidale dumaresq => lga/10110
@@ -3293,7 +3293,7 @@ no usual address (ot), no usual address => lga/99499
 
 
 # Region Type: COM_ELB_ID_2016
-# From: https://github.com/magda-io/magda-region-mappings/releases/download/v1.0.0/COM_ELB_ID_2016.geojson
+# From: https://github.com/magda-io/magda-regions/releases/download/v1.0.0/COM_ELB_ID_2016.geojson
 
 lingiari => com_elb_id_2016/306
 solomon => com_elb_id_2016/307
@@ -3448,7 +3448,7 @@ tangney => com_elb_id_2016/248
 
 
 # Region Type: STE
-# From: https://github.com/magda-io/magda-region-mappings/releases/download/v1.0.0/STE.geojson
+# From: https://github.com/magda-io/magda-regions/releases/download/v1.0.0/STE.geojson
 
 new south wales, nsw => ste/1
 victoria, vic => ste/2

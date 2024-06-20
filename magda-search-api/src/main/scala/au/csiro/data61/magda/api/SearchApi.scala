@@ -407,7 +407,7 @@ class SearchApi(
             * @apiDescription Returns a list of region types
             *
             * @apiSuccess {string} comments Notes for programmers.
-            * @apiSuccess {RegionWMSMap[]} regionWmsMap A mepping of string to WMS layer metadata.
+            * @apiSuccess {RegionWMSMap[]} regionWmsMap A mapping of string to WMS layer metadata.
             *
             * @apiSuccessExample {any} 200
             *    {
