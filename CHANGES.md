@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.0.2
+
+- Update magda to use ASGS 2021 and latest LGAs boundaries
+
 ## v4.0.1
 
 - Add helm chart configuration option allows users to disable gateway auto-gzip response feature
