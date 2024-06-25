@@ -2,7 +2,7 @@
 
 ## v4.0.2
 
-- Update magda to use ASGS 2021 and latest LGAs boundaries
+- #3487: Update magda to use ASGS 2021 and latest LGAs boundaries
 
 ## v4.0.1
 
