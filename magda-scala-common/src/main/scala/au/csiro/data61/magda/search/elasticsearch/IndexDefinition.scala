@@ -611,7 +611,14 @@ object IndexDefinition extends DefaultJsonProtocol {
       .map {
         case (regionSource, jsonRegion) =>
           val properties = jsonRegion.fields("properties").asJsObject
-          val id = properties.fields(regionSource.idProperty).convertTo[String]
+          val id = properties.fields(regionSource.idProperty) match {
+            case JsString(s) => s
+            case JsNumber(n) => n.toString()
+            case _ =>
+              throw new Exception(
+                "Invalid id property value type found for region file: " + regionSource.name
+              )
+          }
           val name = if (regionSource.includeIdInName) {
             JsString(
               properties
