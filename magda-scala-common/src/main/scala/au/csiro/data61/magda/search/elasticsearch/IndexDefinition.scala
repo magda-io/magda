@@ -22,6 +22,7 @@ import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import spray.json._
 import au.csiro.data61.magda.util.RichConfig._
 
+import java.time.OffsetDateTime
 import scala.concurrent.Future
 
 case class IndexDefinition(
@@ -390,7 +391,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 26,
+      version = 27,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) => {
         val createIdxReq =
@@ -413,7 +414,8 @@ object IndexDefinition extends DefaultJsonProtocol {
                   .searchAnalyzer("regionSearchIdInput"),
                 magdaGeoShapeField("boundingBox"),
                 magdaGeoShapeField("geometry"),
-                intField("order")
+                intField("order"),
+                dateField("indexed")
               )
             )
             .analysis(
@@ -750,7 +752,8 @@ object IndexDefinition extends DefaultJsonProtocol {
                       5,
                       jsonRegion,
                       regionSource
-                    )
+                    ),
+                    "indexed" -> JsString(OffsetDateTime.now.toString)
                   ).toJson
                 )
           )

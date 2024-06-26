@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v4.0.2
+## v4.1.0
 
 - #3487: Update to use ASGS 2021 and latest LGAs (2023) boundaries
 
