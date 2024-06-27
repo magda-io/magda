@@ -3,6 +3,9 @@
 ## v4.1.0
 
 - #3487: Update to use ASGS 2021 and latest LGAs (2023) boundaries
+- Adjusted & improved region config entry skip logic
+- Improved the region loader performance
+- Fixed: region loader failed to convert number type id property into a string
 
 ## v4.0.1
 
