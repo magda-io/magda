@@ -2,198 +2,150 @@
     "comments": "Matching takes place in the order defined in this file. Place code matches before name matches, and smaller regions before larger ones.",
     "regionWmsMap": {
         "STE": {
-            "layerName": "FID_STE_2011_AUST",
-            "server": "https://vector-tiles.terria.io/FID_STE_2011_AUST/{z}/{x}/{y}.pbf",
-            "regionProp": "STE_CODE11",
-            "aliases": ["ste_code", "ste_code_2011", "ste"],
-            "digits": 1,
-            "description": "States and Territories (STE)",
-            "regionIdsFile": "data/regionids/region_map-FID_STE_2011_AUST_STE_CODE11.json",
+            "layerName": "STE_2021",
+            "server": "https://tiles.magda.io/STE_2021/{z}/{x}/{y}.pbf",
             "serverType": "MVT",
-            "serverSubdomains": [],
-            "serverMinZoom": 0,
             "serverMaxNativeZoom": 12,
-            "serverMaxZoom": 28,
-            "bbox": [
-                96.81694140799998,
-                -43.74050960300003,
-                159.10921900799997,
-                -9.142175976999999
-            ],
-            "nameProp": "STE_NAME11"
-        },
-        "SA4": {
-            "layerName": "FID_SA4_2011_AUST",
-            "server": "https://vector-tiles.terria.io/FID_SA4_2011_AUST/{z}/{x}/{y}.pbf",
-            "regionProp": "SA4_CODE11",
-            "aliases": ["sa4_code_2011", "sa4_code", "sa4"],
-            "digits": 3,
-            "description": "Statistical Area Level 4 (SA4)",
-            "regionIdsFile": "data/regionids/region_map-FID_SA4_2011_AUST_SA4_CODE11.json",
-            "serverType": "MVT",
-            "serverSubdomains": [],
             "serverMinZoom": 0,
-            "serverMaxNativeZoom": 12,
             "serverMaxZoom": 28,
-            "bbox": [
-                96.81694140799998,
-                -43.74050960300003,
-                159.10921900799997,
-                -9.142175976999999
-            ],
-            "nameProp": "SA4_NAME11"
-        },
-        "SA3": {
-            "layerName": "FID_SA3_2011_AUST",
-            "server": "https://vector-tiles.terria.io/FID_SA3_2011_AUST/{z}/{x}/{y}.pbf",
-            "regionProp": "SA3_CODE11",
-            "aliases": ["sa3_code_2011", "sa3_code", "sa3"],
-            "digits": 5,
-            "description": "Statistical Area Level 3 (SA3)",
-            "regionIdsFile": "data/regionids/region_map-FID_SA3_2011_AUST_SA3_CODE11.json",
-            "serverType": "MVT",
-            "serverSubdomains": [],
-            "serverMinZoom": 0,
-            "serverMaxNativeZoom": 12,
-            "serverMaxZoom": 28,
-            "bbox": [
-                96.81694140799998,
-                -43.74050960300003,
-                159.10921900799997,
-                -9.142175976999999
-            ],
-            "nameProp": "SA3_NAME11"
-        },
-        "SA2": {
-            "layerName": "FID_SA2_2011_AUST",
-            "server": "https://vector-tiles.terria.io/FID_SA2_2011_AUST/{z}/{x}/{y}.pbf",
-            "regionProp": "SA2_MAIN11",
-            "aliases": ["sa2_code_2011", "sa2_code", "sa2"],
-            "digits": 9,
-            "description": "Statistical Area Level 2 (SA2)",
-            "regionIdsFile": "data/regionids/region_map-FID_SA2_2011_AUST_SA2_MAIN11.json",
-            "serverType": "MVT",
-            "serverSubdomains": [],
-            "serverMinZoom": 0,
-            "serverMaxNativeZoom": 12,
-            "serverMaxZoom": 28,
-            "bbox": [
-                96.81694140799998,
-                -43.74050960300003,
-                159.10921900799997,
-                -9.142175976999999
-            ],
-            "nameProp": "SA2_NAME11"
+            "regionIdsFile": "build/TerriaJS/data/regionids/region_map-STE_2021.json",
+            "uniqueIdProp": "FID",
+            "regionProp": "STATE_CODE_2021",
+            "nameProp": "STATE_NAME_2021",
+            "aliases": ["ste_code_2021", "ste_code", "ste"],
+            "description": "States and Territories 2021",
+            "bbox": [96.81, -43.74, 168, -9.14]
         },
         "SA1": {
-            "layerName": "FID_SA1_2011_AUST",
-            "server": "https://vector-tiles.terria.io/FID_SA1_2011_AUST/{z}/{x}/{y}.pbf",
-            "regionProp": "SA1_MAIN11",
-            "aliases": [
-                "sa1_code_2011",
-                "sa1_maincode_2011",
-                "sa1_code",
-                "sa1"
-            ],
-            "digits": 11,
-            "description": "Statistical Area Level 1 (SA1)",
-            "regionIdsFile": "data/regionids/region_map-FID_SA1_2011_AUST_SA1_MAIN11.json",
+            "layerName": "SA1_2021",
+            "server": "https://tiles.magda.io/SA1_2021/{z}/{x}/{y}.pbf",
             "serverType": "MVT",
-            "serverSubdomains": [],
-            "serverMinZoom": 0,
             "serverMaxNativeZoom": 12,
+            "serverMinZoom": 0,
             "serverMaxZoom": 28,
-            "bbox": [
-                96.81694140799998,
-                -43.74050960300003,
-                159.10921900799997,
-                -9.142175976999999
+            "regionIdsFile": "build/TerriaJS/data/regionids/region_map-SA1_2021.json",
+            "uniqueIdProp": "FID",
+            "regionProp": "SA1_CODE_2021",
+            "nameProp": "SA1_CODE_2021",
+            "aliases": [
+                "sa1_code_2021",
+                "sa1_maincode_2021",
+                "sa1",
+                "sa1_code"
             ],
-            "nameProp": "SA2_NAME11"
+            "description": "Statistical Area Level 1 2021 (ABS)",
+            "bbox": [96.81, -43.75, 159.11, -9.14]
+        },
+        "SA2": {
+            "layerName": "SA2_2021",
+            "server": "https://tiles.magda.io/SA2_2021/{z}/{x}/{y}.pbf",
+            "serverType": "MVT",
+            "serverMaxNativeZoom": 12,
+            "serverMinZoom": 0,
+            "serverMaxZoom": 28,
+            "regionIdsFile": "build/TerriaJS/data/regionids/region_map-SA2_2021.json",
+            "uniqueIdProp": "FID",
+            "regionProp": "SA2_CODE_2021",
+            "nameProp": "SA2_NAME_2021",
+            "aliases": [
+                "sa2_code_2021",
+                "sa2_maincode_2021",
+                "sa2",
+                "sa2_code"
+            ],
+            "description": "Statistical Area Level 2 2021 by code (ABS)",
+            "bbox": [96.81, -43.75, 168, -9.14]
+        },
+        "SA3": {
+            "layerName": "SA3_2021",
+            "server": "https://tiles.magda.io/SA3_2021/{z}/{x}/{y}.pbf",
+            "serverType": "MVT",
+            "serverMaxNativeZoom": 12,
+            "serverMinZoom": 0,
+            "serverMaxZoom": 28,
+            "regionIdsFile": "build/TerriaJS/data/regionids/region_map-SA3_2021.json",
+            "uniqueIdProp": "FID",
+            "regionProp": "SA3_CODE_2021",
+            "nameProp": "SA3_NAME_2021",
+            "aliases": [
+                "sa3_code_2021",
+                "sa3_maincode_2021",
+                "sa3",
+                "sa3_code"
+            ],
+            "description": "Statistical Area Level 3 2021 by code (ABS)",
+            "bbox": [96.81, -43.75, 168, -9.14]
+        },
+        "SA4": {
+            "layerName": "SA4_2021",
+            "server": "https://tiles.magda.io/SA4_2021/{z}/{x}/{y}.pbf",
+            "serverType": "MVT",
+            "serverMaxNativeZoom": 12,
+            "serverMinZoom": 0,
+            "serverMaxZoom": 28,
+            "regionIdsFile": "build/TerriaJS/data/regionids/region_map-SA4_2021.json",
+            "uniqueIdProp": "FID",
+            "regionProp": "SA4_CODE_2021",
+            "nameProp": "SA4_NAME_2021",
+            "aliases": [
+                "sa4_code_2021",
+                "sa4_maincode_2021",
+                "sa4",
+                "sa4_code"
+            ],
+            "description": "Statistical Area Level 4 2021 by code (ABS)",
+            "bbox": [96.81, -43.75, 168, -9.14]
         },
         "LGA": {
-            "layerName": "FID_LGA_2015_AUST",
-            "server": "https://vector-tiles.terria.io/FID_LGA_2015_AUST/{z}/{x}/{y}.pbf",
-            "regionProp": "LGA_CODE15",
-            "aliases": [
-                "lga_code_2015",
-                "lga_code",
-                "lga",
-                "lga_code_2014",
-                "lga_code_2012",
-                "lga_code_2010"
-            ],
-            "digits": 5,
-            "description": "Local Government Area (LGA)",
-            "regionIdsFile": "data/regionids/region_map-FID_LGA_2015_AUST_LGA_CODE15.json",
+            "layerName": "LGA_2023",
+            "server": "https://tiles.magda.io/LGA_2023/{z}/{x}/{y}.pbf",
             "serverType": "MVT",
-            "serverSubdomains": [],
-            "serverMinZoom": 0,
             "serverMaxNativeZoom": 12,
+            "serverMinZoom": 0,
             "serverMaxZoom": 28,
-            "bbox": [
-                96.81694140799998,
-                -43.740509602999985,
-                159.10921900799997,
-                -9.142175976999999
-            ],
-            "nameProp": "LGA_NAME15"
+            "regionIdsFile": "build/TerriaJS/data/regionids/region_map-LGA_2023.json",
+            "uniqueIdProp": "FID",
+            "regionProp": "LGA_CODE_2023",
+            "nameProp": "LGA_NAME_2023",
+            "aliases": ["lga_code_2023", "lga_code", "lga"],
+            "description": "Local Government Areas 2023",
+            "bbox": [96.81, -43.74, 168, -9.14]
+        },
+        "ELB": {
+            "layerName": "ELB_2021",
+            "server": "https://tiles.magda.io/ELB_2021/{z}/{x}/{y}.pbf",
+            "serverType": "MVT",
+            "serverMaxNativeZoom": 12,
+            "serverMinZoom": 0,
+            "serverMaxZoom": 28,
+            "regionIdsFile": "build/TerriaJS/data/regionids/region_map-ELB_NAME_2021.json",
+            "uniqueIdProp": "FID",
+            "regionProp": "Elect_div",
+            "nameProp": "Elect_div",
+            "aliases": ["com_elb_name_2021", "com_elb_name"],
+            "description": "Commonwealth Electoral Divisions as at 2 August 2021 (AEC)",
+            "bbox": [96.81, -43.73, 168, -9.1]
         },
         "POA": {
-            "layerName": "FID_POA_2011_AUST",
-            "server": "https://vector-tiles.terria.io/FID_POA_2011_AUST/{z}/{x}/{y}.pbf",
-            "regionProp": "POA_CODE",
+            "layerName": "POA_2021",
+            "server": "https://tiles.magda.io/POA_2021/{z}/{x}/{y}.pbf",
+            "serverType": "MVT",
+            "serverMaxNativeZoom": 12,
+            "serverMinZoom": 0,
+            "serverMaxZoom": 28,
+            "regionIdsFile": "build/TerriaJS/data/regionids/region_map-POA_2021.json",
+            "uniqueIdProp": "FID",
+            "regionProp": "POA_CODE_2021",
+            "nameProp": "POA_CODE_2021",
             "aliases": [
-                "poa_2011",
-                "postcode_2011",
-                "poa",
+                "poa_code_2021",
                 "poa_code",
-                "poa_code_2011",
-                "postcode",
-                "postcode_2015"
+                "poa",
+                "postcode_2021",
+                "postcode"
             ],
-            "digits": 4,
-            "dataReplacements": [["^(?=\\d\\d\\d$)", "0"]],
-            "description": "Postal Area (POA)",
-            "regionIdsFile": "data/regionids/region_map-FID_POA_2011_AUST_POA_CODE.json",
-            "serverType": "MVT",
-            "serverSubdomains": [],
-            "serverMinZoom": 0,
-            "serverMaxNativeZoom": 12,
-            "serverMaxZoom": 28,
-            "bbox": [
-                96.81694140799998,
-                -43.59821500299999,
-                159.10921900799997,
-                -9.142175976999999
-            ],
-            "nameProp": "POA_NAME"
-        },
-        "COM_ELB_ID_2016": {
-            "layerName": "FID_COM20160509_ELB",
-            "server": "https://vector-tiles.terria.io/FID_COM20160509_ELB/{z}/{x}/{y}.pbf",
-            "regionProp": "DIV_ID",
-            "aliases": [
-                "divisionid",
-                "com_elb_id_2016",
-                "com_elb_id",
-                "com_elb"
-            ],
-            "digits": 3,
-            "description": "Commonwealth Electoral District",
-            "regionIdsFile": "data/regionids/region_map-FID_COM20160509_ELB_DIV_ID.json",
-            "serverType": "MVT",
-            "serverSubdomains": [],
-            "serverMinZoom": 0,
-            "serverMaxNativeZoom": 12,
-            "serverMaxZoom": 28,
-            "bbox": [
-                96.81676599999997,
-                -43.740509999999986,
-                159.1092189999999,
-                -9.142175999999996
-            ],
-            "nameProp": "SORTNAME"
+            "description": "Postal Areas 2021 (ABS)",
+            "bbox": [96.81, -43.74, 168, -9.14]
         }
     }
 }

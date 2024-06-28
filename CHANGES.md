@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v4.1.0
+
+- #3487: Update to use ASGS 2021 and latest LGAs (2023) boundaries
+- Added `indexed` field to region index & Bump region index version to `27`
+  - Migration instruction can be found from [the migration doc](./docs/docs/migration/4.1.0.md)
+- Adjusted & improved region config entry skip logic
+- Improved the region loader performance
+- Fixed: region loader failed to convert number type id property into a string
+
 ## v4.0.1
 
 - Add helm chart configuration option allows users to disable gateway auto-gzip response feature

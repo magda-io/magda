@@ -106,6 +106,17 @@ class FileRegionLoader(regionSources: List[RegionSource])(
           val fileSink = FileIO.toPath(file.toPath())
           response.entity.withoutSizeLimit().dataBytes.runWith(fileSink)
         }
+        .flatMap { ioResult =>
+          if (ioResult.wasSuccessful) {
+            Future.successful(file)
+          } else {
+            Future.failed(
+              new RuntimeException(
+                s"Failed to write file: ${ioResult.getError.getMessage}"
+              )
+            )
+          }
+        }
         .recover {
           case e: Throwable =>
             system.log.info(
@@ -117,13 +128,12 @@ class FileRegionLoader(regionSources: List[RegionSource])(
             file.delete()
             throw e
         }
-        .map(_ => file)
     }
   }
 
   override def setupRegions(): Source[(RegionSource, JsObject), _] = {
     Source(regionSources)
-      .mapAsync(3)(
+      .mapAsyncUnordered(3)(
         regionSource => loadABSRegions(regionSource).map((_, regionSource))
       )
       .flatMapConcat {
@@ -136,6 +146,13 @@ class FileRegionLoader(regionSources: List[RegionSource])(
             .map(byteString => byteString.decodeString("UTF-8"))
             .map(string => string.parseJson)
             .map(jsValue => (regionSource, jsValue.asJsObject))
+            .recover {
+              case ex: Exception =>
+                system.log.error(
+                  s"region file processing failed: ${ex.getMessage}"
+                )
+                throw ex
+            }
       }
   }
 }

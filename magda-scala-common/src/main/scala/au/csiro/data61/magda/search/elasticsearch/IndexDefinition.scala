@@ -22,6 +22,7 @@ import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import spray.json._
 import au.csiro.data61.magda.util.RichConfig._
 
+import java.time.OffsetDateTime
 import scala.concurrent.Future
 
 case class IndexDefinition(
@@ -390,7 +391,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 26,
+      version = 27,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) => {
         val createIdxReq =
@@ -413,7 +414,8 @@ object IndexDefinition extends DefaultJsonProtocol {
                   .searchAnalyzer("regionSearchIdInput"),
                 magdaGeoShapeField("boundingBox"),
                 magdaGeoShapeField("geometry"),
-                intField("order")
+                intField("order"),
+                dateField("indexed")
               )
             )
             .analysis(
@@ -611,7 +613,14 @@ object IndexDefinition extends DefaultJsonProtocol {
       .map {
         case (regionSource, jsonRegion) =>
           val properties = jsonRegion.fields("properties").asJsObject
-          val id = properties.fields(regionSource.idProperty).convertTo[String]
+          val id = properties.fields(regionSource.idProperty) match {
+            case JsString(s) => s
+            case JsNumber(n) => n.toString()
+            case _ =>
+              throw new Exception(
+                "Invalid id property value type found for region file: " + regionSource.name
+              )
+          }
           val name = if (regionSource.includeIdInName) {
             JsString(
               properties
@@ -743,7 +752,8 @@ object IndexDefinition extends DefaultJsonProtocol {
                       5,
                       jsonRegion,
                       regionSource
-                    )
+                    ),
+                    "indexed" -> JsString(OffsetDateTime.now.toString)
                   ).toJson
                 )
           )
