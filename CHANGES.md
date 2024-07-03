@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v4.2.1
+
+- #3551: Pagination Bar sometimes might generate `...` button with invalid page number
+
+## v4.2.0
+
+- #3545: Upgraded OpenSearch to v2.15.0
+
 ## v4.1.0
 
 - #3487: Update to use ASGS 2021 and latest LGAs (2023) boundaries
