@@ -154,12 +154,15 @@ class Pagination extends Component {
                 {pageButtons.map((i) => (
                     <li key={i}>
                         <Link
-                            to={this.generateRoute(i)}
+                            to={this.generateRoute(
+                                //-- if i===0 then it's `...` button, Rule 6 applies
+                                i === 0 ? current - 4 : i
+                            )}
                             className={`${
                                 i === current ? "current" : "non-current"
                             }`}
                             aria-current={i === current ? "true" : "false"}
-                            aria-label={`Page ${i}`}
+                            aria-label={`Page ${i === 0 ? current - 4 : i}`}
                         >
                             {i === 0 ? "..." : i}
                         </Link>
@@ -171,7 +174,7 @@ class Pagination extends Component {
     }
 
     render() {
-        let currentPage = this.props.currentPage;
+        const currentPage = this.props.currentPage;
         const searchResultsPerPage = this.props.configuration
             .searchResultsPerPage;
 

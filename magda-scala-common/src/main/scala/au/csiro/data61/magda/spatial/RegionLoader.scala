@@ -4,14 +4,16 @@ import java.io.File
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding
+import akka.http.scaladsl.model._
 import akka.stream.Materializer
 import akka.stream.scaladsl.FileIO
 import akka.stream.scaladsl.JsonFraming
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{Sink, Source}
 import spray.json.JsObject
 import spray.json._
 import scala.concurrent.Future
 import com.typesafe.config.Config
+import scala.util.{Failure, Success}
 
 trait RegionLoader {
   def setupRegions(): Source[(RegionSource, JsObject), _]
@@ -33,7 +35,48 @@ class FileRegionLoader(regionSources: List[RegionSource])(
   implicit val ec = system.dispatcher
   val pool = Http().superPool[Int]()
 
+  def sendRequestWithRedirects(
+      uri: Uri,
+      maxRedirects: Int = 5
+  ): Future[HttpResponse] = {
+    def requestLoop(
+        currentUri: Uri,
+        remainingRedirects: Int
+    ): Future[HttpResponse] = {
+      val request = RequestBuilding.Get(currentUri.toString)
+      Source
+        .single((request, 0))
+        .via(pool)
+        .runWith(Sink.head)
+        .flatMap {
+          case (Success(response), _) =>
+            response.status match {
+              case StatusCodes.MovedPermanently | StatusCodes.Found |
+                  StatusCodes.SeeOther | StatusCodes.TemporaryRedirect |
+                  StatusCodes.PermanentRedirect if remainingRedirects > 0 =>
+                response.header[headers.Location] match {
+                  case Some(locationHeader) =>
+                    val newUri = locationHeader.uri
+                    response.discardEntityBytes() // Clean up response entity
+                    requestLoop(newUri, remainingRedirects - 1)
+                  case None =>
+                    Future.failed(
+                      new RuntimeException(
+                        "Redirect response missing Location header"
+                      )
+                    )
+                }
+              case _ => Future.successful(response)
+            }
+          case (Failure(exception), _) =>
+            Future.failed(exception)
+        }
+    }
+    requestLoop(uri, maxRedirects)
+  }
+
   def loadABSRegions(regionSource: RegionSource): Future[File] = {
+
     val file = new File(
       s"${config.getString("regionLoading.cachePath")}/${regionSource.name}.json"
     )
@@ -56,18 +99,24 @@ class FileRegionLoader(regionSources: List[RegionSource])(
       file.getParentFile.mkdirs()
       file.createNewFile()
 
-      val request = RequestBuilding.Get(regionSource.url.toString)
-
       system.log.info("Indexing regions from {}", regionSource.url)
 
-      Source
-        .single((request, 0))
-        .via(pool)
-        .flatMapConcat {
-          case (response, _) =>
-            response.get.entity.withoutSizeLimit().dataBytes
+      sendRequestWithRedirects(regionSource.url.toString)
+        .flatMap { response =>
+          val fileSink = FileIO.toPath(file.toPath())
+          response.entity.withoutSizeLimit().dataBytes.runWith(fileSink)
         }
-        .runWith(FileIO.toPath(file.toPath()))
+        .flatMap { ioResult =>
+          if (ioResult.wasSuccessful) {
+            Future.successful(file)
+          } else {
+            Future.failed(
+              new RuntimeException(
+                s"Failed to write file: ${ioResult.getError.getMessage}"
+              )
+            )
+          }
+        }
         .recover {
           case e: Throwable =>
             system.log.info(
@@ -79,13 +128,12 @@ class FileRegionLoader(regionSources: List[RegionSource])(
             file.delete()
             throw e
         }
-        .map(_ => file)
     }
   }
 
   override def setupRegions(): Source[(RegionSource, JsObject), _] = {
     Source(regionSources)
-      .mapAsync(4)(
+      .mapAsyncUnordered(3)(
         regionSource => loadABSRegions(regionSource).map((_, regionSource))
       )
       .flatMapConcat {
@@ -98,6 +146,13 @@ class FileRegionLoader(regionSources: List[RegionSource])(
             .map(byteString => byteString.decodeString("UTF-8"))
             .map(string => string.parseJson)
             .map(jsValue => (regionSource, jsValue.asJsObject))
+            .recover {
+              case ex: Exception =>
+                system.log.error(
+                  s"region file processing failed: ${ex.getMessage}"
+                )
+                throw ex
+            }
       }
   }
 }

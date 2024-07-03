@@ -53,41 +53,54 @@ class RegionSources(config: Config) {
       .map {
         case (name: String, config: ConfigObject) =>
           val regionSourceConfig = config.toConfig()
-          RegionSource(
-            name = name,
-            url = new URL(regionSourceConfig.getString("url")),
-            idProperty = regionSourceConfig.getString("idField"),
-            nameProperty = regionSourceConfig.getString("nameField"),
-            shortNameProperty =
-              regionSourceConfig.getOptionalString("shortNameField"),
-            includeIdInName =
-              if (regionSourceConfig.hasPath("includeIdInName"))
-                regionSourceConfig.getBoolean("includeIdInName")
-              else false,
-            disabled = regionSourceConfig
-              .hasPath("disabled") && regionSourceConfig.getBoolean("disabled"),
-            order = regionSourceConfig.getInt("order"),
-            simplifyToleranceRatio =
-              if (regionSourceConfig.hasPath("simplifyToleranceRatio"))
-                regionSourceConfig.getDouble("simplifyToleranceRatio")
-              else 0.01,
-            requireSimplify =
-              if (regionSourceConfig.hasPath("requireSimplify"))
-                regionSourceConfig.getBoolean("requireSimplify")
-              else true,
-            lv1IdField = regionSourceConfig.getOptionalString("lv1IdField"),
-            lv2IdField = regionSourceConfig.getOptionalString("lv2IdField"),
-            lv3IdField = regionSourceConfig.getOptionalString("lv3IdField"),
-            lv4IdField = regionSourceConfig.getOptionalString("lv4IdField"),
-            lv5IdField = regionSourceConfig.getOptionalString("lv5IdField"),
-            lv1Id = regionSourceConfig.getOptionalString("lv1Id"),
-            lv2Id = regionSourceConfig.getOptionalString("lv2Id"),
-            lv3Id = regionSourceConfig.getOptionalString("lv3Id"),
-            lv4Id = regionSourceConfig.getOptionalString("lv4Id"),
-            lv5Id = regionSourceConfig.getOptionalString("lv5Id")
-          )
+
+          val disabled = regionSourceConfig
+            .hasPath("disabled") && regionSourceConfig.getBoolean("disabled")
+
+          if (disabled) {
+            println(s"""Region ${name} file is disabled and ignored.""")
+            None
+          } else {
+            Some(
+              RegionSource(
+                name = name,
+                url = new URL(regionSourceConfig.getString("url")),
+                idProperty = regionSourceConfig.getString("idField"),
+                nameProperty = regionSourceConfig.getString("nameField"),
+                shortNameProperty =
+                  regionSourceConfig.getOptionalString("shortNameField"),
+                includeIdInName =
+                  if (regionSourceConfig.hasPath("includeIdInName"))
+                    regionSourceConfig.getBoolean("includeIdInName")
+                  else false,
+                disabled = regionSourceConfig
+                  .hasPath("disabled") && regionSourceConfig
+                  .getBoolean("disabled"),
+                order = regionSourceConfig.getInt("order"),
+                simplifyToleranceRatio =
+                  if (regionSourceConfig.hasPath("simplifyToleranceRatio"))
+                    regionSourceConfig.getDouble("simplifyToleranceRatio")
+                  else 0.01,
+                requireSimplify =
+                  if (regionSourceConfig.hasPath("requireSimplify"))
+                    regionSourceConfig.getBoolean("requireSimplify")
+                  else true,
+                lv1IdField = regionSourceConfig.getOptionalString("lv1IdField"),
+                lv2IdField = regionSourceConfig.getOptionalString("lv2IdField"),
+                lv3IdField = regionSourceConfig.getOptionalString("lv3IdField"),
+                lv4IdField = regionSourceConfig.getOptionalString("lv4IdField"),
+                lv5IdField = regionSourceConfig.getOptionalString("lv5IdField"),
+                lv1Id = regionSourceConfig.getOptionalString("lv1Id"),
+                lv2Id = regionSourceConfig.getOptionalString("lv2Id"),
+                lv3Id = regionSourceConfig.getOptionalString("lv3Id"),
+                lv4Id = regionSourceConfig.getOptionalString("lv4Id"),
+                lv5Id = regionSourceConfig.getOptionalString("lv5Id")
+              )
+            )
+          }
       }
       .toSeq
-      .filterNot(_.disabled)
+      .filterNot(_.isEmpty)
+      .map(_.get)
   }
 }
