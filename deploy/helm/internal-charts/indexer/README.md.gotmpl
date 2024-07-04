@@ -1,0 +1,24 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+{{ template "chart.description" . }}
+
+The default config will pull region mapping files from [the `magda-region-mappings` repo release download area](https://github.com/magda-io/magda-regions/releases).
+
+For production deployment, you might want to host those region mapping files yourself in a more reliable way (e.g. put into a storage bucket).
+
+To config region mapping files, please refer to the this repo: https://github.com/magda-io/magda-regions
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesHeader" . }}
+
+{{ template "chart.valuesTable" . }}

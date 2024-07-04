@@ -1,6 +1,6 @@
 {
   "name": "@magda/builder-nodejs",
-  "version": "4.0.0",
+  "version": "4.2.1",
   "description": "Builder image for nodejs magda projects",
   "scripts": {
     "docker-build-prod": "create-docker-context-for-node-component --build --push",
@@ -16,7 +16,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^4.0.0"
+    "@magda/scripts": "^4.2.1"
   },
   "magda": {
     "categories": {

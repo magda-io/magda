@@ -1,6 +1,6 @@
 {
   "name": "@magda/elastic-search",
-  "version": "4.0.0",
+  "version": "4.2.1",
   "description": "MAGDA's custom elasticsearch docker image.",
   "scripts": {
     "dev": "docker-compose up",
@@ -19,49 +19,49 @@
     },
     "regionSources": {
       "COUNTRY": {
-        "url": "https://s3-ap-southeast-2.amazonaws.com/magda-files/custom/country.geojson",
+        "url": "https://github.com/magda-io/magda-regions/releases/download/v1.0.0/country.geojson",
         "idField": "id",
         "nameField": "name",
         "order": 9
       },
       "OFFSHORE_TERRITORIES": {
-        "url": "https://s3-ap-southeast-2.amazonaws.com/magda-files/custom/off-shore-territories.geojson",
+        "url": "https://github.com/magda-io/magda-regions/releases/download/v1.0.0/off-shore-territories.geojson",
         "idField": "id",
         "nameField": "name",
         "order": 11
       },
       "SA4": {
-        "url": "https://s3-ap-southeast-2.amazonaws.com/magda-files/SA4.geojson",
+        "url": "https://github.com/magda-io/magda-regions/releases/download/v1.0.0/SA4.geojson",
         "idField": "SA4_CODE11",
         "nameField": "SA4_NAME11",
         "order": 30
       },
       "SA3": {
-        "url": "https://s3-ap-southeast-2.amazonaws.com/magda-files/SA3.geojson",
+        "url": "https://github.com/magda-io/magda-regions/releases/download/v1.0.0/SA3.geojson",
         "idField": "SA3_CODE11",
         "nameField": "SA3_NAME11",
         "order": 40
       },
       "SA2": {
-        "url": "https://s3-ap-southeast-2.amazonaws.com/magda-files/SA2.geojson",
+        "url": "https://github.com/magda-io/magda-regions/releases/download/v1.0.0/SA2.geojson",
         "idField": "SA2_MAIN11",
         "nameField": "SA2_NAME11",
         "order": 50
       },
       "LGA": {
-        "url": "https://s3-ap-southeast-2.amazonaws.com/magda-files/LGA.geojson",
+        "url": "https://github.com/magda-io/magda-regions/releases/download/v1.0.0/LGA.geojson",
         "idField": "LGA_CODE15",
         "nameField": "LGA_NAME15",
         "order": 20
       },
       "COM_ELB_ID_2016": {
-        "url": "https://s3-ap-southeast-2.amazonaws.com/magda-files/COM_ELB_ID_2016.geojson",
+        "url": "https://github.com/magda-io/magda-regions/releases/download/v1.0.0/COM_ELB_ID_2016.geojson",
         "idField": "DIV_ID",
         "nameField": "SORTNAME",
         "order": 80
       },
       "STE": {
-        "url": "https://s3-ap-southeast-2.amazonaws.com/magda-files/STE.geojson",
+        "url": "https://github.com/magda-io/magda-regions/releases/download/v1.0.0/STE.geojson",
         "idField": "STE_CODE11",
         "nameField": "STE_NAME11",
         "shortNameField": "STE_ABBREV",
@@ -70,7 +70,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^4.0.0"
+    "@magda/scripts": "^4.2.1"
   },
   "magda": {
     "categories": {

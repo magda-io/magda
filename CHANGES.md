@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## v4.2.1
+
+- #3551: Pagination Bar sometimes might generate `...` button with invalid page number
+
+## v4.2.0
+
+- #3545: Upgraded OpenSearch to v2.15.0
+
+## v4.1.0
+
+- #3487: Update to use ASGS 2021 and latest LGAs (2023) boundaries
+- Added `indexed` field to region index & Bump region index version to `27`
+  - Migration instruction can be found from [the migration doc](./docs/docs/migration/4.1.0.md)
+- Adjusted & improved region config entry skip logic
+- Improved the region loader performance
+- Fixed: region loader failed to convert number type id property into a string
+
+## v4.0.1
+
+- Add helm chart configuration option allows users to disable gateway auto-gzip response feature
+- #3541 Update default region files url to [Github repo release](https://github.com/magda-io/magda-regions)
+- #3543 Make the region mapping served by search api configurable
+
 ## v4.0.0
 
 - Use OpenSearch (v2.14.0) as main search engine

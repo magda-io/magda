@@ -59,6 +59,9 @@ spec:
 {{- if .Values.enableCkanRedirection }}
             "--enableCkanRedirection", {{ .Values.enableCkanRedirection | quote }},
 {{- end }}
+{{- if .Values.disableGzip }}
+            "--disableGzip", {{ .Values.disableGzip | quote }},
+{{- end }}
 {{- if not (kindIs "invalid" .Values.registryQueryCacheStdTTL) }}
             "--registryQueryCacheStdTTL", {{ .Values.registryQueryCacheStdTTL | quote }},
 {{- end }}
