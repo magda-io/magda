@@ -10,11 +10,10 @@ services:
       - ./wn_s_test.pl:/usr/share/opensearch/config/analysis/wn_s.pl
     environment:
       - cluster.name=oes-data-0
-      - node.roles=cluster_manager,data,ingest,ml
+      - node.roles=cluster_manager,data,ingest
       - discovery.seed_hosts=localhost
       - network.host=0.0.0.0
       - discovery.type=single-node
-      - plugins.ml_commons.allow_registering_model_via_url=true
     command:
       - /bin/bash
       - -c
