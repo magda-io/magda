@@ -1,6 +1,6 @@
 # magda-local-deployment
 
-![Version: 4.0.0](https://img.shields.io/badge/Version-4.0.0-informational?style=flat-square)
+![Version: 4.2.1](https://img.shields.io/badge/Version-4.2.1-informational?style=flat-square)
 
 ## Requirements
 
@@ -8,7 +8,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda | magda | 4.0.0 |
+| file://../magda | magda | 4.2.1 |
 | oci://ghcr.io/magda-io/charts | magda-auth-arcgis | 2.0.1 |
 | oci://ghcr.io/magda-io/charts | magda-auth-facebook | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-auth-google | 2.0.1 |

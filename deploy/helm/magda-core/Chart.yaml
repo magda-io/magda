@@ -65,6 +65,13 @@ dependencies:
     repository: file://../internal-charts/elasticsearch
     tags:
       - elasticsearch
+  - name: magda-embedding-api
+    version: "1.0.0-alpha.1"
+    repository: oci://ghcr.io/magda-io/charts
+    condition: global.searchEngine.hybridSearch.enabled
+    tags:
+      - all
+      - magda-embedding-api
   - name: opensearch
     version: 4.2.1
     repository: file://../internal-charts/opensearch

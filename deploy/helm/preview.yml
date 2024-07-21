@@ -10,6 +10,9 @@ global:
   defaultContactEmail: "magda-test@googlegroups.com"
   enableMultiTenants: false
   enableLivenessProbes: true
+  searchEngine:
+    hybridSearch:
+      enabled: true
 
 tags:
   all: true
