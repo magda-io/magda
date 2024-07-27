@@ -2,6 +2,7 @@
 
 ## v4.2.2
 
+- #3553: Make Chart Preview & Table Preview Configurable per Dataset
 - #3554: Replace "schema" portion of URL alike string with [URL] in user supplied content of any emails sent out
 
 ## v4.2.1

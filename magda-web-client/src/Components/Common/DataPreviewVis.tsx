@@ -2,7 +2,7 @@ import "es6-symbol/implement";
 import React, { Component } from "react";
 import DataPreviewTable from "./DataPreviewTable";
 import DataPreviewChart from "./DataPreviewChart";
-import { ParsedDistribution } from "helpers/record";
+import { ParsedDataset, ParsedDistribution } from "helpers/record";
 import DataPreviewSizeWarning from "./DataPreviewSizeWarning";
 import CsvDataLoader, { DataLoadingResult } from "helpers/CsvDataLoader";
 import {
@@ -10,7 +10,6 @@ import {
     FileSizeCheckResult,
     FileSizeCheckStatus
 } from "../../helpers/DistributionPreviewUtils";
-
 import "./DataPreviewVis.scss";
 import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
 type VisType = "chart" | "table";
@@ -25,7 +24,8 @@ type StateType = {
 
 class DataPreviewVis extends Component<
     {
-        distribution: ParsedDistribution;
+        distribution: ParsedDistribution | null;
+        dataset?: ParsedDataset;
     },
     StateType
 > {
@@ -74,8 +74,15 @@ class DataPreviewVis extends Component<
             if (
                 !distribution ||
                 !distribution.identifier ||
-                (!distribution.compatiblePreviews.chart &&
-                    !distribution.compatiblePreviews.table)
+                // -- Optional `preview-tabular-data-settings` aspect can explicitly disable chart or table view
+                ((!distribution.compatiblePreviews.chart ||
+                    distribution?.rawData?.aspects?.[
+                        "preview-tabular-data-settings"
+                    ]?.enableChart === false) &&
+                    (!distribution.compatiblePreviews.table ||
+                        distribution?.rawData?.aspects?.[
+                            "preview-tabular-data-settings"
+                        ]?.enableTable === false))
             ) {
                 return;
             }
@@ -135,6 +142,7 @@ class DataPreviewVis extends Component<
     }
 
     renderChart() {
+        if (!this.props.distribution) return null;
         return (
             <DataPreviewChart
                 distribution={this.props.distribution}
@@ -216,10 +224,17 @@ class DataPreviewVis extends Component<
         const distribution = this.props.distribution;
         if (distribution && distribution.identifier) {
             // Render chart if there's chart fields, table if fields, both if both
+            // -- Optional `preview-tabular-data-settings` aspect can explicitly disable chart or table view
             const tabs = [
                 distribution.compatiblePreviews.chart &&
+                    distribution?.rawData?.aspects?.[
+                        "preview-tabular-data-settings"
+                    ]?.enableChart !== false &&
                     TabItem("chart", "Chart", this.renderChart()),
                 distribution.compatiblePreviews.table &&
+                    distribution?.rawData?.aspects?.[
+                        "preview-tabular-data-settings"
+                    ]?.enableTable !== false &&
                     TabItem("table", "Table", this.renderTable())
             ].filter((x) => !!x);
 
