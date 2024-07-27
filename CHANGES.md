@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.2.2
+
+- #3554: Replace "schema" portion of URL alike string with [URL] in user supplied content of any emails sent out
+
 ## v4.2.1
 
 - #3551: Pagination Bar sometimes might generate `...` button with invalid page number
