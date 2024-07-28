@@ -49,6 +49,11 @@ export type previewMapSettingsAspect = {
     format?: string;
 };
 
+export type previewTabularDataSettingsAspect = {
+    enableChart?: boolean;
+    enableTable?: boolean;
+};
+
 export type dcatDistributionStrings = {
     format: string;
     downloadURL: string;
@@ -133,6 +138,7 @@ export type RawDistribution = {
             compatiblePreviews: CompatiblePreviews;
         };
         "preview-map-settings"?: previewMapSettingsAspect;
+        "preview-tabular-data-settings"?: previewTabularDataSettingsAspect;
         "spatial-coverage": {
             bbox?: number[];
         };
@@ -211,6 +217,7 @@ export type RawDataset = {
         currency?: CurrencyData;
         publishing?: PublishingAspect;
         "preview-map-settings"?: previewMapSettingsAspect;
+        "preview-tabular-data-settings"?: previewTabularDataSettingsAspect;
         "access-control"?: AccessControlAspect;
     };
 };

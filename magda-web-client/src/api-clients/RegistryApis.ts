@@ -246,7 +246,8 @@ export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
     "currency",
     "ckan-export",
     "version",
-    "preview-map-settings"
+    "preview-map-settings",
+    "preview-tabular-data-settings"
 ];
 
 export const DEFAULT_COMPULSORY_FETCH_ASPECT_LIST = ["dcat-dataset-strings"];
