@@ -215,7 +215,7 @@ object IndexDefinition extends DefaultJsonProtocol {
         createIndex(indices.getIndex(config, Indices.DataSetsIndex))
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
-          .indexSetting("index.knn", true)
+          .indexSetting("knn", true)
           .mapping(
             properties(
               magdaTextField("queryContext"),
