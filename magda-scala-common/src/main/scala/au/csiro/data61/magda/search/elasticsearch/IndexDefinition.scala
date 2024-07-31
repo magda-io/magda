@@ -14,7 +14,14 @@ import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.bulk.BulkResponse
 import com.sksamuel.elastic4s.{ElasticClient, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.requests.indexes.CreateIndexRequest
-import com.sksamuel.elastic4s.fields.{ElasticField, GeoShapeField, ObjectField}
+import com.sksamuel.elastic4s.fields.{
+  ElasticField,
+  GeoShapeField,
+  HnswParameters,
+  KnnEngine,
+  KnnVectorField,
+  ObjectField
+}
 import com.typesafe.config.Config
 import org.locationtech.jts.geom._
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier
@@ -94,6 +101,14 @@ object IndexDefinition extends DefaultJsonProtocol {
 
     textField(name).analyzer("english").fields(fields)
   }
+
+  def magdaVectorField(name: String) = KnnVectorField(
+    "queryContextVector",
+    dimension = 768,
+    HnswParameters(
+      engine = Some(KnnEngine.faiss)
+    )
+  )
 
   val magdaSynonymTokenFilter = SynonymTokenFilter(
     "synonym",
@@ -191,7 +206,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 51,
+    version = 52,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val esInstanceSupport =
@@ -200,8 +215,11 @@ object IndexDefinition extends DefaultJsonProtocol {
         createIndex(indices.getIndex(config, Indices.DataSetsIndex))
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
+          .indexSetting("index.knn", true)
           .mapping(
             properties(
+              magdaTextField("queryContext"),
+              magdaVectorField("queryContextVector"),
               ObjectField(
                 "accrualPeriodicity",
                 properties = List(magdaTextField("text"))
@@ -255,6 +273,8 @@ object IndexDefinition extends DefaultJsonProtocol {
                 keywordField("identifier"),
                 magdaTextField("title"),
                 magdaSynonymLongHtmlTextField("description"),
+                magdaTextField("queryContext"),
+                magdaVectorField("queryContextVector"),
                 magdaTextField(
                   "format",
                   textField("keyword_lowercase")
