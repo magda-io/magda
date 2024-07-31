@@ -22,6 +22,39 @@ type StateType = {
     fileSizeCheckResult: FileSizeCheckResult | null;
 };
 
+export function mergeDatasetAndDistributionPreviewSettings(
+    dist: ParsedDistribution | null,
+    dataset: ParsedDataset
+) {
+    if (!dist) {
+        return dist;
+    }
+    const datasetPreviewTabularDataSettings =
+        dataset?.rawData?.aspects?.["preview-tabular-data-settings"];
+    if (datasetPreviewTabularDataSettings) {
+        // merge the dataset preview-tabular-data-settings with the distribution preview-tabular-data-settings
+        const rawDistDataAspect = {
+            ...dist.rawData.aspects,
+            "preview-tabular-data-settings": {
+                ...datasetPreviewTabularDataSettings,
+                ...(dist?.rawData?.aspects?.["preview-tabular-data-settings"]
+                    ? dist.rawData.aspects["preview-tabular-data-settings"]
+                    : {})
+            }
+        };
+        const rawDistData = {
+            ...dist.rawData,
+            aspects: rawDistDataAspect
+        };
+        return {
+            ...dist,
+            rawData: rawDistData
+        };
+    } else {
+        return { ...dist };
+    }
+}
+
 class DataPreviewVis extends Component<
     {
         distribution: ParsedDistribution | null;
@@ -175,10 +208,13 @@ class DataPreviewVis extends Component<
      * @param {Array} tabs - Array of tab items
      */
     renderTabs(tabs) {
-        const activeTab = tabs.find(
+        let activeTab = tabs.find(
             (item, i) =>
                 item.value.toLowerCase() === this.state.visType.toLowerCase()
         );
+        if (!activeTab && tabs.length > 0) {
+            activeTab = tabs[0];
+        }
 
         return (
             <nav className="tab-navigation">
@@ -187,7 +223,7 @@ class DataPreviewVis extends Component<
                         <li key={t.value}>
                             <button
                                 className={`${t.value.toLowerCase()} au-link ${
-                                    t.value.toLowerCase() === activeTab.value
+                                    t.value.toLowerCase() === activeTab?.value
                                         ? "tab-active"
                                         : null
                                 }`}
@@ -202,12 +238,29 @@ class DataPreviewVis extends Component<
                         </li>
                     ))}
                 </ul>
-                {activeTab.action}
+                {activeTab?.action ? activeTab.action : null}
             </nav>
         );
     }
 
+    shouldNotShow() {
+        const distribution = this.props.distribution;
+        return (
+            (distribution?.compatiblePreviews?.chart === false ||
+                distribution?.rawData?.aspects?.[
+                    "preview-tabular-data-settings"
+                ]?.enableChart === false) &&
+            (distribution?.compatiblePreviews?.table === false ||
+                distribution?.rawData?.aspects?.[
+                    "preview-tabular-data-settings"
+                ]?.enableTable === false)
+        );
+    }
+
     renderByState() {
+        if (this.shouldNotShow()) {
+            return null;
+        }
         if (
             this.state.fileSizeCheckResult &&
             this.state.fileSizeCheckResult.fileSizeCheckStatus !==

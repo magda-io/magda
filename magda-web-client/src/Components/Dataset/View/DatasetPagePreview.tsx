@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { Location } from "history";
-import DataPreviewVis from "Components/Common/DataPreviewVis";
+import DataPreviewVis, {
+    mergeDatasetAndDistributionPreviewSettings
+} from "Components/Common/DataPreviewVis";
 import DataPreviewMap from "Components/Common/DataPreviewMap";
 import { getPluginExtraVisualisationSections } from "../../../externalPluginComponents";
 import { ParsedDistribution, ParsedDataset } from "../../../helpers/record";
@@ -21,7 +23,7 @@ export default class DatasetPagePreview extends Component<PropsTypes> {
         if (!distributions || distributions?.length === 0) {
             return null;
         }
-        let dist = distributions.find((d) => {
+        const dist = distributions.find((d) => {
             // Checking if the distribution has a url
             if (!(typeof d === "string") && !d.downloadURL && !d.accessURL) {
                 return null;
@@ -33,36 +35,7 @@ export default class DatasetPagePreview extends Component<PropsTypes> {
             return null;
         }
 
-        if (dist) {
-            const datasetPreviewTabularDataSettings =
-                dataset?.rawData?.aspects?.["preview-tabular-data-settings"];
-            if (datasetPreviewTabularDataSettings) {
-                // merge the dataset preview-tabular-data-settings with the distribution preview-tabular-data-settings
-                const rawDistDataAspect = {
-                    ...dist.rawData.aspects,
-                    "preview-tabular-data-settings": {
-                        ...datasetPreviewTabularDataSettings,
-                        ...(dist?.rawData?.aspects?.[
-                            "preview-tabular-data-settings"
-                        ]
-                            ? dist.rawData.aspects[
-                                  "preview-tabular-data-settings"
-                              ]
-                            : {})
-                    }
-                };
-                const rawDistData = {
-                    ...dist.rawData,
-                    aspects: rawDistDataAspect
-                };
-                dist = {
-                    ...dist,
-                    rawData: rawDistData
-                };
-            }
-        }
-
-        return dist;
+        return mergeDatasetAndDistributionPreviewSettings(dist, dataset);
     }
 
     render() {

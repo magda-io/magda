@@ -250,6 +250,19 @@ export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
     "preview-tabular-data-settings"
 ];
 
+export const DEFAULT_OPTIONAL_DISTRIBUTION_FETCH_ASPECT_LIST = [
+    "source-link-status",
+    "source",
+    "visualization-info",
+    "access",
+    "usage",
+    "dataset-format",
+    "ckan-resource",
+    "publishing",
+    "version",
+    "preview-tabular-data-settings"
+];
+
 export const DEFAULT_COMPULSORY_FETCH_ASPECT_LIST = ["dcat-dataset-strings"];
 
 export async function fetchRecord<T = RawDataset>(
