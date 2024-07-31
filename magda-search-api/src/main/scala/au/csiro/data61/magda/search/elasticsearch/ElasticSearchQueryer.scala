@@ -621,15 +621,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
     // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
     // other analysis does. So we do this silliness
-    val distributionsEnglishQueries = nestedQuery("distributions")
-      .query(
-        queryString
-          .field("distributions.title")
-          .field("distributions.description")
-          .field("distributions.format")
-          .defaultOperator("and")
-      )
-      .scoreMode(ScoreMode.Max)
+    val distributionsEnglishQueries = nestedQuery(
+      "distributions",
+      queryString
+        .field("distributions.title")
+        .field("distributions.description")
+        .field("distributions.format")
+        .defaultOperator("and")
+    ).scoreMode(ScoreMode.Max)
 
     /**
       * Unfortunately, when default operator is AND, we can't put NON_LANGUAGE_FIELDS & DATASETS_LANGUAGE_FIELDS
