@@ -1,7 +1,7 @@
 {
   "name": "@magda/docker-utils",
   "description": "MAGDA Docker Utilities",
-  "version": "4.2.1",
+  "version": "4.2.2-alpha.0",
   "type": "module",
   "exports": {
     ".": "./dist/docker-util.js",
@@ -23,7 +23,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^4.2.1"
+    "@magda/scripts": "^4.2.2-alpha.0"
   },
   "dependencies": {
     "fs-extra": "^11.2.0",
