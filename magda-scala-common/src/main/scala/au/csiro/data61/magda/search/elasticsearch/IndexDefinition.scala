@@ -28,6 +28,14 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import spray.json._
 import au.csiro.data61.magda.util.RichConfig._
+import com.sksamuel.elastic4s.requests.searchPipeline.{
+  CombinationTechnique,
+  CombinationTechniqueType,
+  NormalizationProcessor,
+  NormalizationTechniqueType,
+  PutSearchPipelineRequest,
+  SearchPipeline
+}
 
 import java.time.OffsetDateTime
 import scala.concurrent.Future
@@ -204,18 +212,28 @@ object IndexDefinition extends DefaultJsonProtocol {
     req
   }
 
+  val datasetsIndexHybridSearchConfigKey =
+    "elasticSearch.indices.datasets.hybridSearch"
+
+  val datasetsIndexVersion = 52
+
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 52,
+    version = datasetsIndexVersion,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val esInstanceSupport =
         config.getBoolean("elasticSearch.esInstanceSupport")
+      val hybridSearchEnabled =
+        config
+          .atPath(datasetsIndexHybridSearchConfigKey)
+          .getOptionalBoolean("enabled")
+          .getOrElse(true)
       val createIdxReq =
         createIndex(indices.getIndex(config, Indices.DataSetsIndex))
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
-          .indexSetting("knn", true)
+          .indexSetting("knn", hybridSearchEnabled)
           .mapping(
             properties(
               magdaTextField("queryContext"),
@@ -396,7 +414,49 @@ object IndexDefinition extends DefaultJsonProtocol {
             )
           )
       applyIndexConfig(config, createIdxReq, true)
-    }
+    },
+    create = Some(
+      (client, indices, config) =>
+        (materializer, actorSystem) => {
+          implicit val ec = actorSystem.dispatcher
+
+          val searchPipelineConfig = config
+            .atPath(datasetsIndexHybridSearchConfigKey)
+            .atPath("searchPipeline")
+
+          if (!searchPipelineConfig.getBoolean("autoCreate")) {
+            Future(Unit)
+          } else {
+            client.execute(
+              PutSearchPipelineRequest(
+                SearchPipeline(
+                  id = searchPipelineConfig.getString("id"),
+                  processors = Seq(
+                    NormalizationProcessor(
+                      normalizationTechnique = NormalizationTechniqueType
+                        .withName(
+                          searchPipelineConfig
+                            .getString("normalization.technique")
+                        ),
+                      combinationTechnique = Some(
+                        CombinationTechnique(
+                          techniqueType = CombinationTechniqueType.withName(
+                            searchPipelineConfig
+                              .getString("combination.technique")
+                          ),
+                          weights = searchPipelineConfig.getOptionalDoubleList(
+                            "combination.weights"
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          }
+        }
+    )
   )
 
   val magdaRegionSynonymTokenFilter = SynonymGraphTokenFilter(
