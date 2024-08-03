@@ -16,11 +16,15 @@ import com.sksamuel.elastic4s.{ElasticClient, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.requests.indexes.CreateIndexRequest
 import com.sksamuel.elastic4s.fields.{
   ElasticField,
+  FaissEncoder,
+  FaissEncoderName,
+  FaissScalarQuantizationType,
   GeoShapeField,
   HnswParameters,
   KnnEngine,
   KnnVectorField,
-  ObjectField
+  ObjectField,
+  SpaceType
 }
 import com.typesafe.config.Config
 import org.locationtech.jts.geom._
@@ -114,7 +118,23 @@ object IndexDefinition extends DefaultJsonProtocol {
     "queryContextVector",
     dimension = 768,
     HnswParameters(
-      engine = Some(KnnEngine.faiss)
+      // https://opensearch.org/docs/latest/search-plugins/vector-search/#engine-recommendations
+      // the above engine recommendations is a bit outdated.
+      // faiss also support efficient filter (Filter during search)
+      // https://opensearch.org/docs/latest/search-plugins/knn/filter-search-knn/#using-a-faiss-efficient-filter
+      engine = Some(KnnEngine.faiss),
+      spaceType = Some(SpaceType.l2),
+      efConstruction = Some(100),
+      // efSearch only supported by faiss
+      efSearch = Some(100),
+      m = Some(16),
+      encoder = Some(
+        FaissEncoder(
+          name = Some(FaissEncoderName.sq),
+          sqType = Some(FaissScalarQuantizationType.fp16),
+          sqClip = Some(false)
+        )
+      )
     )
   )
 
