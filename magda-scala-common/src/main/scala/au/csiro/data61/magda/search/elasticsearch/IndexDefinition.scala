@@ -232,9 +232,6 @@ object IndexDefinition extends DefaultJsonProtocol {
     req
   }
 
-  val datasetsIndexHybridSearchConfigKey =
-    "elasticSearch.indices.datasets.hybridSearch"
-
   val datasetsIndexVersion = 52
 
   val dataSets: IndexDefinition = new IndexDefinition(
@@ -244,16 +241,11 @@ object IndexDefinition extends DefaultJsonProtocol {
     definition = (indices, config) => {
       val esInstanceSupport =
         config.getBoolean("elasticSearch.esInstanceSupport")
-      val hybridSearchEnabled =
-        config
-          .atPath(datasetsIndexHybridSearchConfigKey)
-          .getOptionalBoolean("enabled")
-          .getOrElse(true)
       val createIdxReq =
         createIndex(indices.getIndex(config, Indices.DataSetsIndex))
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
-          .indexSetting("knn", hybridSearchEnabled)
+          .indexSetting("knn", HybridSearchConfig.enabled)
           .mapping(
             properties(
               magdaTextField("queryContext"),
@@ -439,33 +431,39 @@ object IndexDefinition extends DefaultJsonProtocol {
       (client, indices, config) =>
         (materializer, actorSystem) => {
           implicit val ec = actorSystem.dispatcher
+          val logger = actorSystem.log
 
-          val searchPipelineConfig = config
-            .atPath(datasetsIndexHybridSearchConfigKey)
-            .atPath("searchPipeline")
+          val searchPipelineConfig = HybridSearchConfig.searchPipeline
 
-          if (!searchPipelineConfig.getBoolean("autoCreate")) {
+          if (!HybridSearchConfig.enabled || !HybridSearchConfig.searchPipelineAutoCreate) {
+            logger.info(
+              "Hybrid search is off or search pipeline auto-create is off. Skip creating datasets hybrid search search pipeline..."
+            )
             Future(Unit)
           } else {
-            client.execute(
-              PutSearchPipelineRequest(
-                SearchPipeline(
-                  id = searchPipelineConfig.getString("id"),
-                  processors = Seq(
-                    NormalizationProcessor(
-                      normalizationTechnique = NormalizationTechniqueType
-                        .withName(
-                          searchPipelineConfig
-                            .getString("normalization.technique")
-                        ),
-                      combinationTechnique = Some(
-                        CombinationTechnique(
-                          techniqueType = CombinationTechniqueType.withName(
+            val searchPipelineId = HybridSearchConfig.searchPipelineId
+            client
+              .execute(
+                PutSearchPipelineRequest(
+                  SearchPipeline(
+                    id = searchPipelineId,
+                    processors = Seq(
+                      NormalizationProcessor(
+                        normalizationTechnique = NormalizationTechniqueType
+                          .withName(
                             searchPipelineConfig
-                              .getString("combination.technique")
+                              .getString("normalization.technique")
                           ),
-                          weights = searchPipelineConfig.getOptionalDoubleList(
-                            "combination.weights"
+                        combinationTechnique = Some(
+                          CombinationTechnique(
+                            techniqueType = CombinationTechniqueType.withName(
+                              searchPipelineConfig
+                                .getString("combination.technique")
+                            ),
+                            weights =
+                              searchPipelineConfig.getOptionalDoubleList(
+                                "combination.weights"
+                              )
                           )
                         )
                       )
@@ -473,7 +471,11 @@ object IndexDefinition extends DefaultJsonProtocol {
                   )
                 )
               )
-            )
+              .map { _ =>
+                logger.info(
+                  s"""Search pipeline ${searchPipelineId} has been created."""
+                )
+              }
           }
         }
     )
