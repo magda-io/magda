@@ -553,7 +553,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         Seq(
           tenantIdTermQuery,
           authQuery,
-          queryToQueryDef(facetDef.removeFromQuery(query), strategy, true)
+          queryToQueryDef(authQuery, facetDef.removeFromQuery(query), strategy)
         )
       )
     ).subAggregations(facetDef.aggregationDefinition(query, facetSize))
@@ -605,7 +605,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           Seq(
             tenantTermQuery,
             authQuery,
-            queryToQueryDef(query, strategy)
+            queryToQueryDef(authQuery, query, strategy)
           )
         )
       )
@@ -613,7 +613,12 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       .scoreMode("sum")
   }
 
-  private def createInputTextQuery(inputText: String): QueryDefinition = {
+  private def createInputTextQuery(
+      authQuery: QueryDefinition,
+      inputText: String
+  ): QueryDefinition = {
+    // `*` means match everything, no need to do vector search
+    val hybridSearchEnabled = inputText != "*" && HybridSearchConfig.enabled
     val queryString = SimpleStringQueryDefinition(inputText)
       .defaultOperator("and")
       .quoteFieldSuffix(".quote")
@@ -625,8 +630,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         case (field: String, queryDef) => queryDef.field(field, 0)
       }
 
-    // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
-    // other analysis does. So we do this silliness
     val distributionsEnglishQueries = nestedQuery(
       "distributions",
       queryString
@@ -662,15 +665,15 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
   private def queryToQueryDef(
+      authQuery: QueryDefinition,
       query: Query,
-      strategy: SearchStrategy,
-      isForAggregation: Boolean = false
+      strategy: SearchStrategy
   ): QueryDefinition = {
 
     val clauses: Seq[Traversable[QueryDefinition]] = Seq(
       query.freeText flatMap { inputText =>
         val text = if (inputText.trim.length == 0) "*" else inputText
-        val textQuery = createInputTextQuery(text)
+        val textQuery = createInputTextQuery(authQuery, text)
         if (query.boostRegions.isEmpty) Some(textQuery)
         else {
           // --- make sure replace the longer region name string first to avoid missing anyone
@@ -687,8 +690,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             )
             .trim
           val inputTextQuery =
-            if (altText.length == 0) createInputTextQuery("*")
-            else createInputTextQuery(altText)
+            if (altText.length == 0) createInputTextQuery(authQuery, "*")
+            else createInputTextQuery(authQuery, altText)
           val geomScorerQuery = setToOption(query.boostRegions)(
             seq =>
               should(seq.map(region => regionToGeoShapeQuery(region, indices)))
