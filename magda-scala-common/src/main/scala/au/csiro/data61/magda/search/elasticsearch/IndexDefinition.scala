@@ -21,6 +21,7 @@ import com.sksamuel.elastic4s.fields.{
   FaissScalarQuantizationType,
   GeoShapeField,
   HnswParameters,
+  KeywordField,
   KnnEngine,
   KnnVectorField,
   ObjectField,
@@ -114,8 +115,8 @@ object IndexDefinition extends DefaultJsonProtocol {
     textField(name).analyzer("english").fields(fields)
   }
 
-  def magdaVectorField(name: String) = KnnVectorField(
-    "queryContextVector",
+  def magdaQueryContextVectorField(name: String) = KnnVectorField(
+    name,
     dimension = 768,
     HnswParameters(
       // https://opensearch.org/docs/latest/search-plugins/vector-search/#engine-recommendations
@@ -137,6 +138,14 @@ object IndexDefinition extends DefaultJsonProtocol {
       )
     )
   )
+
+  def magdaQueryContextField(name: String) =
+    KeywordField(
+      name = name,
+      index = Some(false),
+      docValues = Some(false),
+      store = Some(true)
+    )
 
   val magdaSynonymTokenFilter = SynonymTokenFilter(
     "synonym",
@@ -248,8 +257,8 @@ object IndexDefinition extends DefaultJsonProtocol {
           .indexSetting("knn", HybridSearchConfig.enabled)
           .mapping(
             properties(
-              magdaTextField("queryContext"),
-              magdaVectorField("queryContextVector"),
+              magdaQueryContextField("queryContext"),
+              magdaQueryContextVectorField("queryContextVector"),
               ObjectField(
                 "accrualPeriodicity",
                 properties = List(magdaTextField("text"))
@@ -303,8 +312,8 @@ object IndexDefinition extends DefaultJsonProtocol {
                 keywordField("identifier"),
                 magdaTextField("title"),
                 magdaSynonymLongHtmlTextField("description"),
-                magdaTextField("queryContext"),
-                magdaVectorField("queryContextVector"),
+                magdaQueryContextField("queryContext"),
+                magdaQueryContextVectorField("queryContextVector"),
                 magdaTextField(
                   "format",
                   textField("keyword_lowercase")
