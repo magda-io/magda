@@ -1,15 +1,15 @@
 package au.csiro.data61.magda.search.elasticsearch.queries
 
-import com.sksamuel.elastic4s.handlers.searches.queries.compound.BoolQueryBuilderFn
+import com.sksamuel.elastic4s.handlers.searches.queries.QueryBuilderFn
 import com.sksamuel.elastic4s.json.{XContentBuilder, XContentFactory}
-import com.sksamuel.elastic4s.requests.searches.queries.CustomQuery
+import com.sksamuel.elastic4s.requests.searches.queries.{CustomQuery, Query}
 import com.sksamuel.elastic4s.requests.searches.queries.compound.BoolQuery
 
 case class KnnQuery(
     field: String,
     vector: Array[Double],
     k: Int,
-    filter: Option[BoolQuery]
+    filter: Option[Query]
 ) extends CustomQuery {
 
   def buildQueryBody(): XContentBuilder = {
@@ -19,7 +19,7 @@ case class KnnQuery(
     xcb.startObject(field)
     xcb.array("vector", vector)
     xcb.field("k", k)
-    filter.foreach(f => xcb.rawField("filter", BoolQueryBuilderFn(f)))
+    filter.foreach(f => xcb.rawField("filter", QueryBuilderFn(f)))
     // --- end field name
     xcb.endObject()
     xcb.endObject()
@@ -32,7 +32,7 @@ object KnnQuery {
       field: String,
       vector: Array[Double],
       k: Int,
-      filter: Option[BoolQuery]
+      filter: Option[Query]
   ): KnnQuery = {
     new KnnQuery(field, vector, k, filter)
   }

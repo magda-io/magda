@@ -115,8 +115,8 @@ object IndexDefinition extends DefaultJsonProtocol {
     textField(name).analyzer("english").fields(fields)
   }
 
-  def magdaQueryContextVectorField(name: String) = KnnVectorField(
-    name,
+  def magdaQueryContextVectorField() = KnnVectorField(
+    HybridSearchConfig.queryContextVectorFieldName,
     dimension = 768,
     HnswParameters(
       // https://opensearch.org/docs/latest/search-plugins/vector-search/#engine-recommendations
@@ -139,9 +139,9 @@ object IndexDefinition extends DefaultJsonProtocol {
     )
   )
 
-  def magdaQueryContextField(name: String) =
+  def magdaQueryContextField() =
     KeywordField(
-      name = name,
+      name = HybridSearchConfig.queryContextFieldName,
       index = Some(false),
       docValues = Some(false),
       store = Some(true)
@@ -257,8 +257,8 @@ object IndexDefinition extends DefaultJsonProtocol {
           .indexSetting("knn", HybridSearchConfig.enabled)
           .mapping(
             properties(
-              magdaQueryContextField("queryContext"),
-              magdaQueryContextVectorField("queryContextVector"),
+              magdaQueryContextField(),
+              magdaQueryContextVectorField(),
               ObjectField(
                 "accrualPeriodicity",
                 properties = List(magdaTextField("text"))
@@ -312,8 +312,8 @@ object IndexDefinition extends DefaultJsonProtocol {
                 keywordField("identifier"),
                 magdaTextField("title"),
                 magdaSynonymLongHtmlTextField("description"),
-                magdaQueryContextField("queryContext"),
-                magdaQueryContextVectorField("queryContextVector"),
+                magdaQueryContextField(),
+                magdaQueryContextVectorField(),
                 magdaTextField(
                   "format",
                   textField("keyword_lowercase")

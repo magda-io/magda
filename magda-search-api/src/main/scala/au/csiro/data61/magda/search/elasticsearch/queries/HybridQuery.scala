@@ -5,7 +5,6 @@ import com.sksamuel.elastic4s.json.{XContentBuilder, XContentFactory}
 import com.sksamuel.elastic4s.requests.searches.queries.{CustomQuery, Query}
 
 case class HybridQuery(
-    field: String,
     queries: Seq[Query]
 ) extends CustomQuery {
 
@@ -19,12 +18,12 @@ case class HybridQuery(
 
 object HybridQuery {
 
-  def apply(field: String, queries: Seq[Query]): HybridQuery = {
+  def apply(queries: Seq[Query]): HybridQuery = {
     if (queries.length == 0) {
       throw new IllegalArgumentException(
         "`HybridQuery.queries` cannot be empty"
       )
     }
-    new HybridQuery(field, queries)
+    new HybridQuery(queries)
   }
 }

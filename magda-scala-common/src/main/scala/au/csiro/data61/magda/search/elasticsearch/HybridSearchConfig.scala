@@ -24,4 +24,7 @@ object HybridSearchConfig {
   def searchPipeline = get().getConfig("searchPipeline")
   def searchPipelineAutoCreate = searchPipeline.getBoolean("autoCreate")
   def searchPipelineId = searchPipeline.getString("id")
+
+  val queryContextFieldName = "queryContext"
+  val queryContextVectorFieldName = "queryContextVector"
 }
