@@ -14,13 +14,33 @@ import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.bulk.BulkResponse
 import com.sksamuel.elastic4s.{ElasticClient, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.requests.indexes.CreateIndexRequest
-import com.sksamuel.elastic4s.fields.{ElasticField, GeoShapeField, ObjectField}
+import com.sksamuel.elastic4s.fields.{
+  ElasticField,
+  FaissEncoder,
+  FaissEncoderName,
+  FaissScalarQuantizationType,
+  GeoShapeField,
+  HnswParameters,
+  KeywordField,
+  KnnEngine,
+  KnnVectorField,
+  ObjectField,
+  SpaceType
+}
 import com.typesafe.config.Config
 import org.locationtech.jts.geom._
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import spray.json._
 import au.csiro.data61.magda.util.RichConfig._
+import com.sksamuel.elastic4s.requests.searchPipeline.{
+  CombinationTechnique,
+  CombinationTechniqueType,
+  NormalizationProcessor,
+  NormalizationTechniqueType,
+  PutSearchPipelineRequest,
+  SearchPipeline
+}
 
 import java.time.OffsetDateTime
 import scala.concurrent.Future
@@ -94,6 +114,38 @@ object IndexDefinition extends DefaultJsonProtocol {
 
     textField(name).analyzer("english").fields(fields)
   }
+
+  def magdaQueryContextVectorField() = KnnVectorField(
+    HybridSearchConfig.queryContextVectorFieldName,
+    dimension = 768,
+    HnswParameters(
+      // https://opensearch.org/docs/latest/search-plugins/vector-search/#engine-recommendations
+      // the above engine recommendations is a bit outdated.
+      // faiss also support efficient filter (Filter during search)
+      // https://opensearch.org/docs/latest/search-plugins/knn/filter-search-knn/#using-a-faiss-efficient-filter
+      engine = Some(KnnEngine.faiss),
+      spaceType = Some(SpaceType.l2),
+      efConstruction = Some(100),
+      // efSearch only supported by faiss
+      efSearch = Some(100),
+      m = Some(16),
+      encoder = Some(
+        FaissEncoder(
+          name = Some(FaissEncoderName.sq),
+          sqType = Some(FaissScalarQuantizationType.fp16),
+          sqClip = Some(false)
+        )
+      )
+    )
+  )
+
+  def magdaQueryContextField() =
+    KeywordField(
+      name = HybridSearchConfig.queryContextFieldName,
+      index = Some(false),
+      docValues = Some(false),
+      store = Some(true)
+    )
 
   val magdaSynonymTokenFilter = SynonymTokenFilter(
     "synonym",
@@ -189,9 +241,11 @@ object IndexDefinition extends DefaultJsonProtocol {
     req
   }
 
+  val datasetsIndexVersion = 52
+
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 51,
+    version = datasetsIndexVersion,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val esInstanceSupport =
@@ -200,8 +254,11 @@ object IndexDefinition extends DefaultJsonProtocol {
         createIndex(indices.getIndex(config, Indices.DataSetsIndex))
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
+          .indexSetting("knn", HybridSearchConfig.enabled)
           .mapping(
             properties(
+              magdaQueryContextField(),
+              magdaQueryContextVectorField(),
               ObjectField(
                 "accrualPeriodicity",
                 properties = List(magdaTextField("text"))
@@ -255,6 +312,8 @@ object IndexDefinition extends DefaultJsonProtocol {
                 keywordField("identifier"),
                 magdaTextField("title"),
                 magdaSynonymLongHtmlTextField("description"),
+                magdaQueryContextField(),
+                magdaQueryContextVectorField(),
                 magdaTextField(
                   "format",
                   textField("keyword_lowercase")
@@ -376,7 +435,59 @@ object IndexDefinition extends DefaultJsonProtocol {
             )
           )
       applyIndexConfig(config, createIdxReq, true)
-    }
+    },
+    create = Some(
+      (client, indices, config) =>
+        (materializer, actorSystem) => {
+          implicit val ec = actorSystem.dispatcher
+          val logger = actorSystem.log
+
+          val searchPipelineConfig = HybridSearchConfig.searchPipeline
+
+          if (!HybridSearchConfig.enabled || !HybridSearchConfig.searchPipelineAutoCreate) {
+            logger.info(
+              "Hybrid search is off or search pipeline auto-create is off. Skip creating datasets hybrid search search pipeline..."
+            )
+            Future(Unit)
+          } else {
+            val searchPipelineId = HybridSearchConfig.searchPipelineId
+            client
+              .execute(
+                PutSearchPipelineRequest(
+                  SearchPipeline(
+                    id = searchPipelineId,
+                    processors = Seq(
+                      NormalizationProcessor(
+                        normalizationTechnique = NormalizationTechniqueType
+                          .withName(
+                            searchPipelineConfig
+                              .getString("normalization.technique")
+                          ),
+                        combinationTechnique = Some(
+                          CombinationTechnique(
+                            techniqueType = CombinationTechniqueType.withName(
+                              searchPipelineConfig
+                                .getString("combination.technique")
+                            ),
+                            weights =
+                              searchPipelineConfig.getOptionalDoubleList(
+                                "combination.weights"
+                              )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+              .map { _ =>
+                logger.info(
+                  s"""Search pipeline ${searchPipelineId} has been created."""
+                )
+              }
+          }
+        }
+    )
   )
 
   val magdaRegionSynonymTokenFilter = SynonymGraphTokenFilter(
