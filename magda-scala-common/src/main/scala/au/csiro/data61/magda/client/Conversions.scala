@@ -365,7 +365,8 @@ object Conversions {
       accessControl = accessControl,
       publishingState = Some(
         publishing.extract[String]('state.?).getOrElse("published")
-      )
+      ),
+      tenantId = hit.tenantId.getOrElse(MAGDA_ADMIN_PORTAL_ID)
     )
   }
 
