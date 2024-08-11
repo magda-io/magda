@@ -173,9 +173,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         list =>
           list
             .foldLeft(None: Option[Query])((initVal, item) => {
-              initVal.map(
-                iv =>
-                  iv.copy(
+              if (initVal.isEmpty) Some(item.copy())
+              else
+                Some(
+                  initVal.get.copy(
                     freeText = item.freeText,
                     freeTextVector = item.freeTextVector,
                     hybridSearch = item.hybridSearch,
@@ -185,9 +186,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                     regions = item.regions,
                     boostRegions = item.boostRegions,
                     formats = item.formats,
-                    publishingState = item.publishingState
+                    publishingState = item.publishingState,
+                    authDecision = item.authDecision,
+                    tenantId = item.tenantId
                   )
-              )
+                )
             })
             .get
       )
