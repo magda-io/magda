@@ -33,6 +33,7 @@ import au.csiro.data61.magda.util.ErrorHandling.RootCause
 import au.csiro.data61.magda.util.SetExtractor
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.requests.common.FetchSourceContext
 import com.sksamuel.elastic4s.requests.searches.SearchResponse
 import com.sksamuel.elastic4s.{ElasticClient, ElasticDsl, RequestSuccess}
 import com.sksamuel.elastic4s.requests.searches.aggs.responses.Aggregations
@@ -518,8 +519,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       // --- do not include accessControl metadata and vectors
       "accessControl",
       "queryContextVector",
-      "distributions.accessControl",
-      "distributions.queryContextVector"
+      "distributions"
     )
 
   /** Builds an empty dummy searchresult that conveys some kind of error message to the user. */
@@ -861,7 +861,16 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
             InnerHitDefinition(
               "distributions",
               from = Some(0),
-              size = Some(datasetInnerHitsSize)
+              size = Some(datasetInnerHitsSize),
+              fetchSource = Some(
+                new FetchSourceContext(
+                  fetchSource = true,
+                  excludes = Set(
+                    "distributions.accessControl",
+                    "distributions.queryContextVector"
+                  )
+                )
+              )
             )
           ) :: List(MatchAllQuery())
       )
