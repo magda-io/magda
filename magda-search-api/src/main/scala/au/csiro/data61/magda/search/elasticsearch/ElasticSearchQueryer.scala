@@ -46,7 +46,6 @@ import com.sksamuel.elastic4s.requests.searches.queries.funcscorer.{
 }
 import com.sksamuel.elastic4s.requests.searches.term.TermQuery
 import com.sksamuel.elastic4s.requests.searches.queries.{
-  InnerHit,
   NestedQuery,
   InnerHit => InnerHitDefinition,
   Query => QueryDefinition,
@@ -742,6 +741,20 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     val distributionAuthQuery =
       query.authDecision.get.getDistributionDecisionQuery
 
+    val datasetTenantIdQuery = query.tenantId
+      .map(
+        _.getEsQuery()
+      )
+      .getOrElse(MatchAllQuery())
+
+    val distributionTenantIdQuery = query.tenantId
+      .map(
+        _.getEsQuery(
+          isDistributionQuery = true
+        )
+      )
+      .getOrElse(MatchAllQuery())
+
     val filterClauses: List[QueryDefinition] = List(
       setToOption(query.publishers)(
         seq => should(seq.map(publisherQuery(strategy))).boost(2)
@@ -756,14 +769,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       ).toList
     ).flatten
 
-    val datasetFilterClauses = query.tenantId
-      .getEsQuery() :: datasetAuthQuery :: publishingStateQuery(
+    val datasetFilterClauses = datasetTenantIdQuery :: datasetAuthQuery :: publishingStateQuery(
       query.publishingState
     ).getOrElse(MatchAllQuery()) :: filterClauses
 
-    val distributionFilterClauses = query.tenantId.getEsQuery(
-      isDistributionQuery = true
-    ) :: distributionAuthQuery :: publishingStateQuery(
+    val distributionFilterClauses = distributionTenantIdQuery :: distributionAuthQuery :: publishingStateQuery(
       query.publishingState,
       isDistributionQuery = true
     ).getOrElse(MatchAllQuery()) :: filterClauses
@@ -841,13 +851,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         nestedQuery(
           "distributions",
           boolQuery().must(
-            query.tenantId.getEsQuery(
-              true
-            ) :: List(distributionAuthQuery)
+            distributionTenantIdQuery :: List(distributionAuthQuery)
           )
         ).scoreMode(ScoreMode.None)
           .inner(
-            InnerHit(
+            InnerHitDefinition(
               "distributions",
               from = Some(0),
               size = Some(datasetInnerHitsSize)

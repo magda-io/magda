@@ -30,6 +30,8 @@ object TestActorSystem {
       socketTimeout = 600000
       maxRetryTimeout = 30000
       serverUrl = "elasticsearch://localhost:9201"
+      indices.datasets.hybridSearch = false
+      indices.datasets.innerHitsSize = 50
     }
     authorization {
       skipOpaQuery = true

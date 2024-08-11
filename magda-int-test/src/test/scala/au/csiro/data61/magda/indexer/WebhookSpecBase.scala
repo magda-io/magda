@@ -251,10 +251,7 @@ trait WebhookSpecBase
                           modifyJson(
                             dist.toJson.asJsObject,
                             Map(
-                              "license" -> dist.license
-                                .flatMap(_.name)
-                                .map(_.toJson)
-                                .getOrElse(JsNull)
+                              "license" -> dist.license.toJson
                             )
                           )
                       )

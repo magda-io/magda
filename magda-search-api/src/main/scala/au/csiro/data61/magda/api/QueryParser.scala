@@ -41,8 +41,8 @@ case class Query(
     boostRegions: Set[Region] = Set(),
     formats: Set[FilterValue[String]] = Set(),
     publishingState: Set[FilterValue[String]] = Set(),
-    authDecision: Option[SearchAuthDecision],
-    tenantId: TenantId
+    authDecision: Option[SearchAuthDecision] = None,
+    tenantId: Option[TenantId] = None
 )
 
 object Query {
@@ -72,7 +72,7 @@ object Query {
       publishingState =
         publishingState.map(x => filterValueFromString(Some(x))).flatten.toSet,
       authDecision = authDecision,
-      tenantId = tenantId
+      tenantId = Some(tenantId)
     )
   }
 

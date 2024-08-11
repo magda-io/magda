@@ -55,10 +55,6 @@ class WebhookIndexNewDatasetsSpec extends WebhookSpecBase {
                 distributions = dataSet.distributions.map(
                   distribution =>
                     distribution.copy(
-                      // Distribution only takes into account the name
-                      license = distribution.license
-                        .flatMap(_.name)
-                        .map(name => License(Some(name))),
                       // Code derives media type from the format rather than reading it directly.
                       mediaType = None
                     )

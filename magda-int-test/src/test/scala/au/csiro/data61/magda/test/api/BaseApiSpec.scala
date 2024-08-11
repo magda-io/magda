@@ -2,11 +2,11 @@ package au.csiro.data61.magda.test.api
 
 import java.net.URL
 import java.util.Properties
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.client.EmbeddingApiClient
 import au.csiro.data61.magda.model.Registry.{
   MAGDA_ADMIN_PORTAL_ID,
   MAGDA_TENANT_ID_HEADER
@@ -64,6 +64,7 @@ trait BaseApiSpec
   implicit val config: Config = buildConfig
 
   val clientProvider = new DefaultClientProvider
+  implicit val embeddingApiClient = new EmbeddingApiClient()
 
   val tenant1: BigInt = 1
   val tenant2: BigInt = 2

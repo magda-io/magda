@@ -460,8 +460,6 @@ package misc {
     }
   }
 
-  case class License(name: Option[String] = None, url: Option[String] = None)
-
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
     implicit val dataSouceFormat: RootJsonFormat[DataSouce] = jsonFormat6(
       DataSouce.apply
