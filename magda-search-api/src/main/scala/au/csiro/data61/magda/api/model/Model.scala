@@ -1,13 +1,18 @@
 package au.csiro.data61.magda.api.model
 
-import au.csiro.data61.magda.model.misc.{DataSet, Facet, Region, Agent}
-import au.csiro.data61.magda.model.Temporal
+import au.csiro.data61.magda.model.misc.{Agent, DataSet, Facet, Region}
+import au.csiro.data61.magda.model.{AspectQueryToEsDslConfig, Temporal, misc}
 import au.csiro.data61.magda.model.Temporal.PeriodOfTime
-import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.search.SearchStrategy
 import spray.json.{DefaultJsonProtocol, JsString, JsValue, JsonFormat}
-import au.csiro.data61.magda.api.{Query, FilterValue, Specified, Unspecified}
-import au.csiro.data61.magda.model.misc.{QueryRegion}
+import spray.json._
+import au.csiro.data61.magda.api.{FilterValue, Query, Specified, Unspecified}
+import au.csiro.data61.magda.model.Auth.AuthDecision
+import au.csiro.data61.magda.model.TenantId.TenantIdFormat
+import com.sksamuel.elastic4s.requests.searches.queries.matches.MatchAllQuery
+import com.sksamuel.elastic4s.requests.searches.queries.{
+  Query => QueryDefinition
+}
 
 import java.time.OffsetDateTime
 import com.typesafe.config.Config
@@ -21,6 +26,26 @@ case class SearchResult(
     errorMessage: Option[String] = None,
     strategy: Option[SearchStrategy] = None
 )
+
+case class SearchAuthDecision(
+    datasetDecision: AuthDecision,
+    distributionDecision: AuthDecision
+) {
+
+  def getDatasetDecisionQuery: QueryDefinition =
+    datasetDecision
+      .toEsDsl(
+        AspectQueryToEsDslConfig(prefixes = Set("input.object.dataset"))
+      )
+      .getOrElse(MatchAllQuery())
+
+  def getDistributionDecisionQuery: QueryDefinition =
+    distributionDecision
+      .toEsDsl(
+        AspectQueryToEsDslConfig(prefixes = Set("input.object.distribution"))
+      )
+      .getOrElse(MatchAllQuery())
+}
 
 case class RegionSearchResult(
     query: Option[String],
@@ -71,6 +96,13 @@ trait Protocols
       case other => Specified(t.read(other))
     }
   }
+
+  // used to skip stringify authDecision to json
+  class AuthDecisionSkipFormat extends JsonFormat[Option[SearchAuthDecision]] {
+    override def write(auth: Option[SearchAuthDecision]): JsValue = JsNull
+    override def read(jsonRaw: JsValue): Option[SearchAuthDecision] = None
+  }
+
   implicit def stringFilterValueFormat(implicit config: Config) =
     new FilterValueFormat[String]
   implicit def offsetDateFilterValueFormat(implicit config: Config) =
@@ -79,7 +111,10 @@ trait Protocols
     new FilterValueFormat[Region]()(apiRegionFormat, config)
   implicit def queryFormat(implicit config: Config) = {
     implicit val regionFormat = apiRegionFormat
-    jsonFormat8(Query.apply)
+    // use `AuthDecisionSkipFormat` to skip output authDecision
+    implicit val authDecisionFormat = new AuthDecisionSkipFormat()
+    implicit val tenantIdFormat = new TenantIdFormat()
+    jsonFormat12(Query.apply)
   }
   implicit def searchResultFormat(implicit config: Config) =
     jsonFormat7(SearchResult.apply)

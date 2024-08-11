@@ -7,10 +7,10 @@ import au.csiro.data61.magda.Authentication
 import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
 import io.jsonwebtoken.{Claims, Jws}
 import au.csiro.data61.magda.model.Auth
+import au.csiro.data61.magda.model.Auth.AuthDecision
+import spray.json.JsObject
 
-import au.csiro.data61.magda.model.Auth.{AuthDecision}
-import spray.json.{JsObject}
-
+import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 object AuthDirectives {
@@ -38,6 +38,35 @@ object AuthDirectives {
           )
       }
   }
+
+  /**
+    * Make one or more auth decisions based on supplied auth decision request config list.
+    * Depends on the config provided, either partial eval (conditional decision on a set of records/objects)
+    * Or unconditional decision for a single record / object will be returned.
+    * @param authApiClient
+    * @param configs a list of auth decision request config for each of auth decision sought
+    * @return
+    */
+  def withAllAuthDecisions(
+      authApiClient: AuthApiClient,
+      configs: Seq[AuthDecisionReqConfig]
+  ): Directive1[Seq[AuthDecision]] =
+    (extractLog & getJwt & extractExecutionContext).tflatMap {
+      case (log, jwt, ec) =>
+        implicit val executor = ec
+        val allDecisionRequests = Future.sequence(
+          configs.map(config => authApiClient.getAuthDecision(jwt, config))
+        )
+        onComplete(allDecisionRequests).flatMap {
+          case Success(authDecision: Seq[AuthDecision]) => provide(authDecision)
+          case Failure(e) =>
+            log.error("Failed to get auth decisions: {}", e)
+            complete(
+              InternalServerError,
+              s"An error occurred while retrieving auth decisions for the request."
+            )
+        }
+    }
 
   /**
     * Require unconditional auth decision based on auth decision request config.

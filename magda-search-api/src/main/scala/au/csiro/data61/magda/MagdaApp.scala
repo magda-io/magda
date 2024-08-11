@@ -1,32 +1,19 @@
 package au.csiro.data61.magda
 
 import akka.Done
-import akka.actor.{
-  Actor,
-  ActorLogging,
-  ActorSystem,
-  CoordinatedShutdown,
-  DeadLetter,
-  Props
-}
+import akka.actor.{Actor, ActorLogging, ActorSystem, CoordinatedShutdown, DeadLetter, Props}
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.complete
-import akka.http.scaladsl.server.{
-  MalformedQueryParamRejection,
-  RejectionHandler
-}
+import akka.http.scaladsl.server.{MalformedQueryParamRejection, RejectionHandler}
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.api.SearchApi
-import au.csiro.data61.magda.client.AuthApiClient
-import au.csiro.data61.magda.search.elasticsearch.{
-  DefaultClientProvider,
-  ElasticSearchQueryer
-}
+import au.csiro.data61.magda.client.{AuthApiClient, EmbeddingApiClient}
+import au.csiro.data61.magda.search.elasticsearch.{DefaultClientProvider, ElasticSearchQueryer}
 
-import scala.concurrent.duration.{DurationLong}
+import scala.concurrent.duration.DurationLong
 
 object MagdaApp extends App {
   implicit val config = AppConfig.conf()
@@ -34,6 +21,7 @@ object MagdaApp extends App {
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
   implicit val clientProvider = new DefaultClientProvider
+  implicit val embeddingApiClient = new EmbeddingApiClient()
 
   implicit val logger = Logging(system, getClass)
 

@@ -15,6 +15,7 @@ import com.sksamuel.elastic4s.requests.bulk.BulkResponse
 import com.sksamuel.elastic4s.{ElasticClient, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.requests.indexes.CreateIndexRequest
 import com.sksamuel.elastic4s.fields.{
+  BooleanField,
   ElasticField,
   FaissEncoder,
   FaissEncoderName,
@@ -25,7 +26,8 @@ import com.sksamuel.elastic4s.fields.{
   KnnEngine,
   KnnVectorField,
   ObjectField,
-  SpaceType
+  SpaceType,
+  UnsignedLongField
 }
 import com.typesafe.config.Config
 import org.locationtech.jts.geom._
@@ -33,6 +35,7 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import spray.json._
 import au.csiro.data61.magda.util.RichConfig._
+import com.sksamuel.elastic4s.handlers.fields.NumberFieldBuilderFn
 import com.sksamuel.elastic4s.requests.searchPipeline.{
   CombinationTechnique,
   CombinationTechniqueType,
@@ -327,6 +330,32 @@ object IndexDefinition extends DefaultJsonProtocol {
                     keywordField("orgUnitId"),
                     booleanField("constraintExemption"),
                     keywordField("preAuthorisedPermissionIds")
+                  )
+                ),
+                magdaTextField("mediaType"),
+                magdaTextField("license"),
+                magdaTextField("rights"),
+                magdaTextField("accessURL"),
+                magdaTextField("accessNotes"),
+                magdaTextField("downloadURL"),
+                keywordField("publishingState"),
+                UnsignedLongField("byteSize"),
+                BooleanField("useStorageApi"),
+                keywordField("tenantId"),
+                ObjectField(
+                  "source",
+                  properties = List(
+                    keywordField("id"),
+                    magdaTextField("name"),
+                    keywordField("url"),
+                    magdaTextField("originalName"),
+                    keywordField("originalUrl"),
+                    ObjectField(
+                      "extras",
+                      dynamic =
+                        if (esInstanceSupport) Some("runtime")
+                        else Some("true")
+                    )
                   )
                 )
               ),
