@@ -4,7 +4,10 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Directive1
 import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
 import akka.http.scaladsl.model.StatusCodes.BadRequest
-import au.csiro.data61.magda.directives.AuthDirectives.{withAllAuthDecisions, withAuthDecision}
+import au.csiro.data61.magda.directives.AuthDirectives.{
+  withAllAuthDecisions,
+  withAuthDecision
+}
 import au.csiro.data61.magda.model.Auth.AuthDecision
 
 object Directives {
