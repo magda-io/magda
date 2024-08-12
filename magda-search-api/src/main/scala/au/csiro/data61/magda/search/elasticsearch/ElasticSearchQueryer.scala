@@ -478,14 +478,18 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       start: Long,
       limit: Int,
       strategy: SearchStrategy
-  ) = {
-    ElasticDsl
+  ): SearchRequest = {
+    val searchReq = ElasticDsl
       .search(indices.getIndex(config, Indices.DataSetsIndex))
       .limit(limit)
       .start(start.toInt)
-      .searchPipeline(HybridSearchConfig.searchPipelineId)
       .trackTotalHits(true)
       .query(buildEsQuery(query, strategy))
+    if (HybridSearchConfig.enabled) {
+      searchReq.searchPipeline(HybridSearchConfig.searchPipelineId)
+    } else {
+      searchReq
+    }
   }
 
   /** Same as {@link #buildQuery} but also adds aggregations */
