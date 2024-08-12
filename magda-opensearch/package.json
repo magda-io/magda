@@ -3,8 +3,8 @@
   "version": "4.2.1",
   "description": "MAGDA's custom OpenSearch docker image.",
   "scripts": {
-    "dev": "docker-compose up",
-    "dev-stop": "docker-compose down",
+    "dev": "docker compose up",
+    "dev-stop": "docker compose down",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push",
