@@ -231,12 +231,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               .sequence(
                 Seq(
                   fullRegionsFuture,
-                  client.execute(query.trackTotalHits(true)).flatMap {
-                    case results: RequestSuccess[SearchResponse] =>
-                      Future.successful((results.result, MatchAll))
-                    case IllegalArgumentException(e) => throw e
-                    case ESGenericException(e)       => throw e
-                  }
+                  client
+                    .execute(query)
+                    .flatMap {
+                      case results: RequestSuccess[SearchResponse] =>
+                        Future.successful((results.result, MatchAll))
+                      case IllegalArgumentException(e) => throw e
+                      case ESGenericException(e)       => throw e
+                    }
                 )
               )
               .map {
@@ -495,6 +497,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       .search(indices.getIndex(config, Indices.DataSetsIndex))
       .limit(limit)
       .start(start.toInt)
+      .searchPipeline(HybridSearchConfig.searchPipelineId)
+      .trackTotalHits(true)
       .query(buildEsQuery(query, strategy))
   }
 
