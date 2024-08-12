@@ -20,6 +20,7 @@ import com.typesafe.config.Config
 case class SearchResult(
     query: Query,
     hitCount: Long,
+    hitCountRelation: Option[String] = None,
     facets: Option[Seq[Facet]] = None,
     temporal: Option[PeriodOfTime] = None,
     dataSets: List[DataSet],
@@ -117,7 +118,7 @@ trait Protocols
     jsonFormat12(Query.apply)
   }
   implicit def searchResultFormat(implicit config: Config) =
-    jsonFormat7(SearchResult.apply)
+    jsonFormat8(SearchResult.apply)
   implicit val regionSearchResultFormat = {
     implicit val regionFormat = apiRegionFormat
     jsonFormat3(RegionSearchResult.apply)

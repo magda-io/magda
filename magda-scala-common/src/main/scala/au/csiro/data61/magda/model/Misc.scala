@@ -351,6 +351,7 @@ package misc {
       format: Option[String] = None,
       accessControl: Option[AccessControl] = None,
       publishingState: Option[String] = None,
+      score: Option[Float] = None,
       useStorageApi: Option[Boolean] = None
   )
 
@@ -708,7 +709,8 @@ package misc {
           "source" -> dist.source.toJson,
           "format" -> dist.format.toJson,
           "publishingState" -> dist.publishingState.toJson,
-          "useStorageApi" -> dist.useStorageApi.toJson
+          "useStorageApi" -> dist.useStorageApi.toJson,
+          "score" -> dist.score.toJson
         )
         if (!dist.accessControl.isEmpty) {
           jsFields += ("accessControl" -> dist.accessControl.toJson)
@@ -735,7 +737,8 @@ package misc {
         format = convertOptionField[String]("format", json),
         accessControl = convertOptionField[AccessControl]("accessControl", json),
         publishingState = convertOptionField[String]("publishingState", json),
-        useStorageApi = convertOptionField[Boolean]("useStorageApi", json)
+        useStorageApi = convertOptionField[Boolean]("useStorageApi", json),
+        score = convertOptionField[Float]("score", json)
       )
     }
 

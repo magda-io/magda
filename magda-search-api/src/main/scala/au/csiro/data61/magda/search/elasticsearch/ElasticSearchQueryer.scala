@@ -416,6 +416,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       strategy = Some(strategy),
       query = query,
       hitCount = response.totalHits,
+      hitCountRelation = Some(response.hits.total.relation),
       dataSets = response.to[DataSet].map(_.copy(years = None)).toList,
       temporal = Some(
         PeriodOfTime(
@@ -524,7 +525,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Builds an empty dummy searchresult that conveys some kind of error message to the user. */
   def failureSearchResult(query: Query, message: String) =
-    new SearchResult(
+    SearchResult(
       query = query,
       hitCount = 0,
       dataSets = Nil,
