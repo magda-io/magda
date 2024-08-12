@@ -4,7 +4,12 @@ import au.csiro.data61.magda.AppConfig
 import com.typesafe.config.Config
 
 object HybridSearchConfig {
+  val configPath = "elasticSearch.indices.datasets.hybridSearch"
   var _conf: Option[Config] = None
+
+  def setAppConfig(appConfig: Config) = {
+    _conf = Some(appConfig.getConfig(configPath))
+  }
 
   def get(useCache: Boolean = true) = {
     if (useCache && _conf.nonEmpty) {
@@ -13,7 +18,7 @@ object HybridSearchConfig {
       _conf = Some(
         AppConfig
           .conf(useCache = useCache)
-          .getConfig("elasticSearch.indices.datasets.hybridSearch")
+          .getConfig(configPath)
       )
       _conf.get
     }

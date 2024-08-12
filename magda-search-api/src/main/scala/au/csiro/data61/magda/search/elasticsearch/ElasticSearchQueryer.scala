@@ -115,22 +115,23 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   def augmentWithHybridSearch(
       inputQuery: Query
-  ): Future[Query] = {
+  ): Future[Query => Query] = {
     val freeText = inputQuery.freeText.getOrElse("").trim
     if (!HybridSearchConfig.enabled || freeText.isEmpty || freeText == "*") {
-      Future(inputQuery)
+      Future((q: Query) => q)
     } else {
       embeddingClient
         .get(freeText)
         .map(
-          v => inputQuery.copy(hybridSearch = true, freeTextVector = Some(v))
+          v =>
+            (q: Query) => q.copy(hybridSearch = true, freeTextVector = Some(v))
         )
     }
   }
 
   def augmentWithBoostRegions(
       query: Query
-  )(implicit client: ElasticClient): Future[Query] = {
+  )(implicit client: ElasticClient): Future[Query => Query] = {
     val regionsFuture = query.freeText
       .filter(_.length > 0)
       .map(
@@ -158,42 +159,27 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         }
       )
       .getOrElse(Future(Set[Region]()))
-    regionsFuture.map(regions => query.copy(boostRegions = regions))
+    regionsFuture.map(regions => (q: Query) => q.copy(boostRegions = regions))
   }
 
   /**
-    * Convert Seq[Future[Query]] to Future[Seq[Query]] and merge Seq[Query] into Query (later item will overwrite the proceeding one).
+    * Convert Seq[Future[Query => Query]] to Future[Seq[Query => Query]] and merge Seq[Query => Query] into Query (later item will overwrite the proceeding one).
     * Eventually will return Future[Query]
     * @param queryList
     * @return
     */
-  def mergeAugmentedInputQuery(queryList: Seq[Future[Query]]): Future[Query] = {
+  def mergeAugmentedInputQuery(
+      initQuery: Query,
+      queryList: Seq[Future[Query => Query]]
+  ): Future[Query] = {
     Future
       .sequence(queryList)
       .map(
         list =>
           list
-            .foldLeft(None: Option[Query])((initVal, item) => {
-              if (initVal.isEmpty) Some(item.copy())
-              else
-                Some(
-                  initVal.get.copy(
-                    freeText = item.freeText,
-                    freeTextVector = item.freeTextVector,
-                    hybridSearch = item.hybridSearch,
-                    publishers = item.publishers,
-                    dateFrom = item.dateFrom,
-                    dateTo = item.dateTo,
-                    regions = item.regions,
-                    boostRegions = item.boostRegions,
-                    formats = item.formats,
-                    publishingState = item.publishingState,
-                    authDecision = item.authDecision,
-                    tenantId = item.tenantId
-                  )
-                )
+            .foldLeft(initQuery)((prevVal, queryUpdater) => {
+              queryUpdater(prevVal)
             })
-            .get
       )
   }
 
@@ -211,58 +197,58 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         val fullRegionsFuture = Future.sequence(fullRegionsFutures)
 
         mergeAugmentedInputQuery(
+          inputQuery,
           Seq(
             augmentWithBoostRegions(inputQuery),
             augmentWithHybridSearch(inputQuery)
           )
-        ).flatMap {
-          case queryWithBoostRegions =>
-            val query = buildQueryWithAggregations(
-              queryWithBoostRegions,
-              start,
-              limit,
-              MatchAll,
-              requestedFacetSize
-            )
-            if (debugMode) {
-              logger.info(client.show(query).query)
-            }
-            Future
-              .sequence(
-                Seq(
-                  fullRegionsFuture,
-                  client
-                    .execute(query)
-                    .flatMap {
-                      case results: RequestSuccess[SearchResponse] =>
-                        Future.successful((results.result, MatchAll))
-                      case IllegalArgumentException(e) => throw e
-                      case ESGenericException(e)       => throw e
-                    }
-                )
+        ).flatMap { queryWithBoostRegions =>
+          val query = buildQueryWithAggregations(
+            queryWithBoostRegions,
+            start,
+            limit,
+            MatchAll,
+            requestedFacetSize
+          )
+          if (debugMode) {
+            logger.info(client.show(query).query)
+          }
+          Future
+            .sequence(
+              Seq(
+                fullRegionsFuture,
+                client
+                  .execute(query)
+                  .flatMap {
+                    case results: RequestSuccess[SearchResponse] =>
+                      Future.successful((results.result, MatchAll))
+                    case IllegalArgumentException(e) => throw e
+                    case ESGenericException(e)       => throw e
+                  }
               )
-              .map {
-                case Seq(
-                    fullRegions: List[Option[Region]],
-                    (response: SearchResponse, strategy: SearchStrategy)
-                    ) =>
-                  val newQueryRegions =
-                    inputRegionsList
-                      .zip(fullRegions)
-                      .filter(_._2.isDefined)
-                      .map(_._2.get)
-                      .map(Specified.apply)
-                      .toSet ++ inputQuery.regions.filter(_.isEmpty)
+            )
+            .map {
+              case Seq(
+                  fullRegions: List[Option[Region]],
+                  (response: SearchResponse, strategy: SearchStrategy)
+                  ) =>
+                val newQueryRegions =
+                  inputRegionsList
+                    .zip(fullRegions)
+                    .filter(_._2.isDefined)
+                    .map(_._2.get)
+                    .map(Specified.apply)
+                    .toSet ++ inputQuery.regions.filter(_.isEmpty)
 
-                  val outputQuery =
-                    queryWithBoostRegions.copy(regions = newQueryRegions)
-                  buildSearchResult(
-                    outputQuery,
-                    response,
-                    strategy,
-                    requestedFacetSize
-                  )
-              }
+                val outputQuery =
+                  queryWithBoostRegions.copy(regions = newQueryRegions)
+                buildSearchResult(
+                  outputQuery,
+                  response,
+                  strategy,
+                  requestedFacetSize
+                )
+            }
         }
       } recover {
       case RootCause(illegalArgument: IllegalArgumentException) =>

@@ -576,7 +576,7 @@ object Generators {
       license <- licenseGen
       rights <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
       accessURL <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
-      byteSize <- someBiasedOption(arbitrary[Long])
+      byteSize <- someBiasedOption(Gen.chooseNum(0, Long.MaxValue))
       format <- someBiasedOption(formatGen(inputCache))
     } yield
       Distribution(
@@ -589,7 +589,7 @@ object Generators {
         license = license,
         rights = rights,
         accessURL = accessURL,
-        byteSize = byteSize,
+        byteSize = byteSize.map(_.toLong),
         mediaType = format.flatMap(_._1),
         format = format.map(_._2)
       )
