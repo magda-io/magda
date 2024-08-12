@@ -62,6 +62,8 @@ appConfig:
     serverUrl: http://opensearch:9200
   authApi:
     baseUrl: http://authorization-api
+  embeddingApi:
+    baseUrl: http://magda-embedding-api
   # -- whether print out full config data at application starting up
   # for debug purpose only
   printFullConfig: false
