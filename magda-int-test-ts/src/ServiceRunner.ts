@@ -68,6 +68,7 @@ export default class ServiceRunner {
     private storageApiProcess: ChildProcess;
     private indexerSetupProcess: ChildProcess;
     private searchApiProcess: ChildProcess;
+    private embeddingApiCompose: DockerCompose;
 
     public shouldExit = false;
 
@@ -78,6 +79,7 @@ export default class ServiceRunner {
     public enableRegistryApi = false;
     public enableStorageApi = false;
     public enableSearchApi = false;
+    public enableEmbeddingApi = false;
     // indexer will still run even this field is set to false
     // in order to setup the indices in search engine.
     // however, indexer will auto exit if this field is set to false.
@@ -157,6 +159,11 @@ export default class ServiceRunner {
             this.enableSearchApi ||
             this.enableIndexer
                 ? this.createElasticSearch()
+                : Promise.resolve(),
+            this.enableEmbeddingApi ||
+            this.enableSearchApi ||
+            this.enableIndexer
+                ? this.createEmbeddingApi()
                 : Promise.resolve()
         ]);
 
@@ -257,7 +264,8 @@ export default class ServiceRunner {
                     }
                     try {
                         await this.minioClient.listBuckets();
-                    } catch (e) {
+                    } catch (error) {
+                        const e = error as any;
                         throw new Error(
                             (e?.code ? `Error code: ${e.code}. ` : "") + `${e}`
                         );
@@ -599,6 +607,58 @@ export default class ServiceRunner {
     async destroyAuthApi() {
         if (this.authApiProcess && !this.authApiProcess.killed) {
             this.authApiProcess.kill();
+        }
+    }
+
+    async createEmbeddingApi() {
+        const dockerComposeFile = this.createTmpDockerComposeFile(
+            path.resolve(
+                this.workspaceRoot,
+                "./magda-int-test-ts/embeddingApi/docker-compose.yml"
+            ),
+            undefined
+        );
+        this.embeddingApiCompose = new DockerCompose(
+            this.docker,
+            dockerComposeFile,
+            "test-embedding-api"
+        );
+        try {
+            await Promise.all([
+                this.embeddingApiCompose.down({ volumes: true }),
+                this.embeddingApiCompose.pull()
+            ]);
+            await this.embeddingApiCompose.up();
+            await this.waitAlive("embeddingApi", async () => {
+                const embeddingApiHost = this.dockerServiceForwardHost
+                    ? this.dockerServiceForwardHost
+                    : "localhost";
+                const res = await fetch(
+                    `http://${embeddingApiHost}:3000/status/readiness`
+                );
+                if (res.status !== 200) {
+                    throw new ServerError(
+                        `${res.statusText}. ${await res.text()}`
+                    );
+                }
+                await res.json();
+                return true;
+            });
+            if (this.dockerServiceForwardHost) {
+                await this.createPortForward(3000);
+            }
+        } catch (e) {
+            await this.destroyEmbeddingApi();
+            throw e;
+        }
+    }
+
+    async destroyEmbeddingApi() {
+        if (this.embeddingApiCompose) {
+            await this.embeddingApiCompose.down({ volumes: true });
+        }
+        if (this.dockerServiceForwardHost) {
+            await this.destroyPortForward(3000);
         }
     }
 
