@@ -363,9 +363,7 @@ object Conversions {
         .get("source")
         .flatMap(v => tryConvertValue(v.convertTo[DataSouce])),
       accessControl = accessControl,
-      publishingState = Some(
-        publishing.extract[String]('state.?).getOrElse("published")
-      ),
+      publishingState = publishing.extract[String]('state.?),
       tenantId = hit.tenantId.getOrElse(MAGDA_ADMIN_PORTAL_ID)
     )
   }
