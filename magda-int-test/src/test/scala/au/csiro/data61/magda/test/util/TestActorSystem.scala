@@ -36,6 +36,7 @@ object TestActorSystem {
     }
     authorization {
       skipOpaQuery = true
+      muteWarning = true
     }
     opa {
       baseUrl = "http://localhost:8888/v0/opa/"
