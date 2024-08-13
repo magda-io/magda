@@ -547,7 +547,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         .toList
 
     val minDateAgg = minAgg("minDate", "temporal.start.date")
-    val maxDateAgg = minAgg("maxDate", "temporal.end.date")
+    val maxDateAgg = maxAgg("maxDate", "temporal.end.date")
 
     searchDef.aggregations(facetAggregations ++ List(minDateAgg, maxDateAgg))
   }
