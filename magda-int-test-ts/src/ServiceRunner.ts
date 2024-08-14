@@ -192,7 +192,7 @@ export default class ServiceRunner {
             ...(this.enableEmbeddingApi ||
             this.enableSearchApi ||
             this.enableIndexer
-                ? [this.createEmbeddingApi()]
+                ? [this.destroyEmbeddingApi()]
                 : []),
             ...(this.enableStorageApi
                 ? [this.destroyMinio(), this.destroyStorageApi()]
@@ -641,16 +641,11 @@ export default class ServiceRunner {
                 }),
                 new Promise(async (resolve, reject) => {
                     console.log("Pulling embeddingApi...");
-                    resolve(
-                        await this.embeddingApiCompose.pull(undefined, {
-                            verbose: true
-                        })
-                    );
+                    resolve(await this.embeddingApiCompose.pull());
                 })
             ]);
-            console.log("downloading EmbeddingApi image has been done...");
+            console.log("pulling EmbeddingApi is done...");
             await this.embeddingApiCompose.up();
-            console.log("EmbeddingApi is online");
             await this.waitAlive("embeddingApi", async () => {
                 const embeddingApiHost = this.dockerServiceForwardHost
                     ? this.dockerServiceForwardHost
@@ -891,11 +886,7 @@ export default class ServiceRunner {
                 }),
                 new Promise(async (resolve, reject) => {
                     console.log("Pulling OpenSearch...");
-                    resolve(
-                        await this.elasticSearchCompose.pull(undefined, {
-                            verbose: true
-                        })
-                    );
+                    resolve(await this.elasticSearchCompose.pull());
                 })
             ]);
             console.log("Starting up OpenSearch...");
