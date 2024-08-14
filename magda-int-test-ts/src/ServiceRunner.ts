@@ -15,6 +15,7 @@ import child_process, { ChildProcess } from "child_process";
 import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 import urijs from "urijs";
 import { requireResolve } from "@magda/esm-utils";
+import { Readable } from "node:stream";
 
 /**
  * Resolve magda module dir path.
@@ -253,8 +254,10 @@ export default class ServiceRunner {
             "test-minio"
         );
         try {
-            await this.minioCompose.down({ volumes: true });
-            await this.minioCompose.pull();
+            await Promise.all([
+                this.minioCompose.down({ volumes: true }),
+                this.pullImage(this.minioCompose)
+            ]);
             await this.minioCompose.up();
             await this.waitAlive(
                 "Minio",
@@ -639,7 +642,7 @@ export default class ServiceRunner {
                 }),
                 new Promise(async (resolve, reject) => {
                     console.log("Pulling embeddingApi...");
-                    resolve(this.embeddingApiCompose.pull());
+                    resolve(this.pullImage(this.embeddingApiCompose));
                 })
             ]);
             console.log("pulling EmbeddingApi is done...");
@@ -677,11 +680,38 @@ export default class ServiceRunner {
         }
     }
 
-    pullImage(image: string) {
+    pullImage(
+        imageOrDockerComposeObj: string | DockerCompose,
+        printOutput: boolean = false
+    ) {
         return new Promise(async (resolve, reject) => {
-            const pullStream = await this.docker.pull(image);
-            pullStream.pipe(process.stdout);
-            pullStream.once("end", resolve);
+            const pullStreams: Readable[] = [];
+            if (typeof imageOrDockerComposeObj === "string") {
+                pullStreams.push(
+                    await this.docker.pull(imageOrDockerComposeObj)
+                );
+            } else {
+                pullStreams.splice(
+                    0,
+                    0,
+                    ...(await imageOrDockerComposeObj.pull(undefined, {
+                        streams: true
+                    }))
+                );
+            }
+            for (const pullStream of pullStreams) {
+                if (printOutput) {
+                    pullStream.pipe(process.stdout);
+                    pullStream.once("end", resolve);
+                } else {
+                    const devNull = fs.createWriteStream("/dev/null");
+                    pullStream.pipe(devNull);
+                    pullStream.once("end", () => {
+                        resolve(void 0);
+                        devNull.destroy();
+                    });
+                }
+            }
         });
     }
 
@@ -725,7 +755,7 @@ export default class ServiceRunner {
         try {
             await Promise.all([
                 this.opaCompose.down({ volumes: true }),
-                this.opaCompose.pull()
+                this.pullImage(this.opaCompose)
             ]);
             await this.opaCompose.up();
             await this.waitAlive("OPA", async () => {
@@ -828,7 +858,7 @@ export default class ServiceRunner {
         try {
             await Promise.all([
                 this.postgresCompose.down({ volumes: true }),
-                this.postgresCompose.pull()
+                this.pullImage(this.postgresCompose)
             ]);
             await this.postgresCompose.up();
             await this.waitAlive("Postgres", this.testAlivePostgres.bind(this));
@@ -882,7 +912,7 @@ export default class ServiceRunner {
                 }),
                 new Promise(async (resolve, reject) => {
                     console.log("Pulling OpenSearch...");
-                    resolve(this.elasticSearchCompose.pull());
+                    resolve(this.pullImage(this.elasticSearchCompose));
                 })
             ]);
             console.log("Starting up OpenSearch...");
