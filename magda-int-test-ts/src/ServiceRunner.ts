@@ -635,13 +635,11 @@ export default class ServiceRunner {
                     console.log(
                         "Terminating any possible existing embeddingApi..."
                     );
-                    resolve(
-                        await this.embeddingApiCompose.down({ volumes: true })
-                    );
+                    resolve(this.embeddingApiCompose.down({ volumes: true }));
                 }),
                 new Promise(async (resolve, reject) => {
                     console.log("Pulling embeddingApi...");
-                    resolve(await this.embeddingApiCompose.pull());
+                    resolve(this.embeddingApiCompose.pull());
                 })
             ]);
             console.log("pulling EmbeddingApi is done...");
@@ -880,13 +878,11 @@ export default class ServiceRunner {
                     console.log(
                         "Terminating any possible existing OpenSearch..."
                     );
-                    resolve(
-                        await this.elasticSearchCompose.down({ volumes: true })
-                    );
+                    resolve(this.elasticSearchCompose.down({ volumes: true }));
                 }),
                 new Promise(async (resolve, reject) => {
                     console.log("Pulling OpenSearch...");
-                    resolve(await this.elasticSearchCompose.pull());
+                    resolve(this.elasticSearchCompose.pull());
                 })
             ]);
             console.log("Starting up OpenSearch...");
