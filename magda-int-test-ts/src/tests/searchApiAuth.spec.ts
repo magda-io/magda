@@ -21,7 +21,7 @@ import IndexerApiClient from "magda-typescript-common/src/IndexerApiClient.js";
 import fetchRequest from "magda-typescript-common/src/fetchRequest.js";
 import Try from "magda-typescript-common/src/Try.js";
 
-const ENV_SETUP_TIME_OUT = 1800000; // -- 30 mins
+const ENV_SETUP_TIME_OUT = 1200000; // -- 20 mins
 const jwtSecret = uuidV4();
 const authApiClient = new AuthApiClient(
     "http://localhost:6104/v0",

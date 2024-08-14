@@ -189,6 +189,11 @@ export default class ServiceRunner {
             this.enableIndexer
                 ? [this.destroyElasticSearch()]
                 : []),
+            ...(this.enableEmbeddingApi ||
+            this.enableSearchApi ||
+            this.enableIndexer
+                ? [this.createEmbeddingApi()]
+                : []),
             ...(this.enableStorageApi
                 ? [this.destroyMinio(), this.destroyStorageApi()]
                 : []),
@@ -611,6 +616,7 @@ export default class ServiceRunner {
     }
 
     async createEmbeddingApi() {
+        console.log("starting EmbeddingApi...");
         const dockerComposeFile = this.createTmpDockerComposeFile(
             path.resolve(
                 this.workspaceRoot,
@@ -625,10 +631,26 @@ export default class ServiceRunner {
         );
         try {
             await Promise.all([
-                this.embeddingApiCompose.down({ volumes: true }),
-                this.embeddingApiCompose.pull()
+                new Promise(async (resolve, reject) => {
+                    console.log(
+                        "Terminating any possible existing embeddingApi..."
+                    );
+                    resolve(
+                        await this.embeddingApiCompose.down({ volumes: true })
+                    );
+                }),
+                new Promise(async (resolve, reject) => {
+                    console.log("Pulling embeddingApi...");
+                    resolve(
+                        await this.embeddingApiCompose.pull(undefined, {
+                            verbose: true
+                        })
+                    );
+                })
             ]);
+            console.log("downloading EmbeddingApi image has been done...");
             await this.embeddingApiCompose.up();
+            console.log("EmbeddingApi is online");
             await this.waitAlive("embeddingApi", async () => {
                 const embeddingApiHost = this.dockerServiceForwardHost
                     ? this.dockerServiceForwardHost
