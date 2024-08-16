@@ -25,7 +25,21 @@ Kubernetes: `>= 1.14.0-0`
 | defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | formatsIndexVersion | string | `nil` | Manually set format index version. If not specify, default version will be used. you want to manually set this setting when upgrade to a Magda version that involves region index version changes. As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built. |
 | image.name | string | `"magda-search-api"` |  |
+| livenessProbe.failureThreshold | int | `10` |  |
+| livenessProbe.httpGet.path | string | `"/v0/status/live"` |  |
+| livenessProbe.httpGet.port | int | `6102` |  |
+| livenessProbe.initialDelaySeconds | int | `10` |  |
+| livenessProbe.periodSeconds | int | `20` |  |
+| livenessProbe.successThreshold | int | `1` |  |
+| livenessProbe.timeoutSeconds | int | `5` |  |
 | publishersIndexVersion | string | `nil` | Manually set publisher index version. If not specify, default version will be used. you want to manually set this setting when upgrade to a Magda version that involves region index version changes. As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built. |
+| readinessProbe.failureThreshold | int | `10` |  |
+| readinessProbe.httpGet.path | string | `"/v0/status/ready"` |  |
+| readinessProbe.httpGet.port | int | `6102` |  |
+| readinessProbe.initialDelaySeconds | int | `10` |  |
+| readinessProbe.periodSeconds | int | `20` |  |
+| readinessProbe.successThreshold | int | `1` |  |
+| readinessProbe.timeoutSeconds | int | `10` |  |
 | regionsIndexVersion | string | `nil` | Manually set region index version. If not specify, default version will be used. you want to manually set this setting when upgrade to a Magda version that involves region index version changes. As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built. |
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.requests.cpu | string | `"50m"` |  |

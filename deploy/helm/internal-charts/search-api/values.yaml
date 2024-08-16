@@ -10,6 +10,26 @@ defaultImage:
   pullPolicy: IfNotPresent
   pullSecrets: false
 
+livenessProbe:
+  httpGet:
+    path: /v0/status/live
+    port: 6102
+  initialDelaySeconds: 10
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 10
+  successThreshold: 1
+
+readinessProbe:
+  httpGet:
+    path: /v0/status/ready
+    port: 6102
+  initialDelaySeconds: 10
+  periodSeconds: 20
+  timeoutSeconds: 10
+  failureThreshold: 10
+  successThreshold: 1
+
 autoscaler:
   enabled: false
   minReplicas: 1

@@ -112,7 +112,7 @@ spec:
 {{ toYaml .Values.livenessProbe | indent 10 }}
         {{- end }}
         {{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.Version }}
-        {{- if .Values.readinessProbe }}
+        {{- if .Values.startupProbe }}
         startupProbe:
 {{ toYaml .Values.startupProbe | indent 10 }}
         {{- end }}

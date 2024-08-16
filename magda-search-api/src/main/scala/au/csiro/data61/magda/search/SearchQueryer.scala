@@ -10,10 +10,13 @@ import au.csiro.data61.magda.api.model.{
 import au.csiro.data61.magda.model.Auth.AuthDecision
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.TenantId._
+import com.sksamuel.elastic4s.ElasticClient
 
 import scala.concurrent.Future
 
 trait SearchQueryer {
+
+  def getClient: Future[ElasticClient]
 
   def search(
       query: Query,

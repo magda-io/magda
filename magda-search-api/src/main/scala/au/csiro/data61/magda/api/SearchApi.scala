@@ -3,7 +3,6 @@ package au.csiro.data61.magda.api
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model._
 import au.csiro.data61.magda.api.model.SearchAuthDecision
@@ -18,6 +17,8 @@ import au.csiro.data61.magda.search.Directives.{
   withDatasetAndDistributionReadAuthDecision,
   withDatasetReadAuthDecision
 }
+import au.csiro.data61.magda.search.elasticsearch.IndexUtils
+import scala.util.{Failure, Success}
 
 /**
   * @apiDefine Search Search API
@@ -44,6 +45,8 @@ class SearchApi(
   } else {
     None
   }
+
+  var readyProbeJobDone = false
 
   val routes =
     magdaRoute {
@@ -147,7 +150,7 @@ class SearchApi(
                             limit
                           )
                         )
-                      case None ⇒ complete(NotFound)
+                      case None ⇒ complete(StatusCodes.NotFound)
                     }
                   }
               }
@@ -538,7 +541,36 @@ class SearchApi(
           } ~
           pathPrefix("status") {
             path("live") { complete("OK") } ~
-              path("ready") { complete(ReadyStatus(true)) }
+              path("ready") {
+                extractActorSystem { actorSystem =>
+                  if (readyProbeJobDone) {
+                    // only attempt to create / check search pipeline for once
+                    complete(ReadyStatus(true))
+                  } else {
+                    implicit val ec = actorSystem.dispatcher
+                    val ensureDatasetHybridSearchPipeline =
+                      searchQueryer.getClient.flatMap { client =>
+                        IndexUtils.ensureDatasetHybridSearchPipeline(
+                          recreateWhenExist = false
+                        )(
+                          actorSystem,
+                          client
+                        )
+                      }
+                    onComplete(ensureDatasetHybridSearchPipeline) {
+                      case Success(_) =>
+                        readyProbeJobDone = true
+                        complete(ReadyStatus(true))
+                      case Failure(ex) =>
+                        complete(
+                          StatusCodes.InternalServerError,
+                          s"An error occurred: ${ex.getMessage}"
+                        )
+                    }
+                  }
+
+                }
+              }
           }
       }
     }

@@ -93,6 +93,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       throw t
   }
 
+  def getClient = clientFuture
+
   val DATASETS_LANGUAGE_FIELDS = Seq(
     ("title", 50f),
     ("description", 2f),

@@ -35,7 +35,6 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import spray.json._
 import au.csiro.data61.magda.util.RichConfig._
-import com.sksamuel.elastic4s.handlers.fields.NumberFieldBuilderFn
 import com.sksamuel.elastic4s.requests.searchPipeline.{
   CombinationTechnique,
   CombinationTechniqueType,
@@ -468,53 +467,9 @@ object IndexDefinition extends DefaultJsonProtocol {
     create = Some(
       (client, indices, config) =>
         (materializer, actorSystem) => {
-          implicit val ec = actorSystem.dispatcher
-          val logger = actorSystem.log
-
-          val searchPipelineConfig = HybridSearchConfig.searchPipeline
-
-          if (!HybridSearchConfig.enabled || !HybridSearchConfig.searchPipelineAutoCreate) {
-            logger.info(
-              "Hybrid search is off or search pipeline auto-create is off. Skip creating datasets hybrid search search pipeline..."
-            )
-            Future(Unit)
-          } else {
-            val searchPipelineId = HybridSearchConfig.searchPipelineId
-            client
-              .execute(
-                PutSearchPipelineRequest(
-                  SearchPipeline(
-                    id = searchPipelineId,
-                    processors = Seq(
-                      NormalizationProcessor(
-                        normalizationTechnique = NormalizationTechniqueType
-                          .withName(
-                            searchPipelineConfig
-                              .getString("normalization.technique")
-                          ),
-                        combinationTechnique = Some(
-                          CombinationTechnique(
-                            techniqueType = CombinationTechniqueType.withName(
-                              searchPipelineConfig
-                                .getString("combination.technique")
-                            ),
-                            weights =
-                              searchPipelineConfig.getOptionalDoubleList(
-                                "combination.weights"
-                              )
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-              .map { _ =>
-                logger.info(
-                  s"""Search pipeline ${searchPipelineId} has been created."""
-                )
-              }
-          }
+          IndexUtils.ensureDatasetHybridSearchPipeline(
+            recreateWhenExist = true
+          )(actorSystem, client)
         }
     )
   )
