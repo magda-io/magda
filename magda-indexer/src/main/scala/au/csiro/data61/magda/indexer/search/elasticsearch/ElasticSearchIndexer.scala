@@ -5,9 +5,10 @@ import akka.NotUsed
 import akka.actor.{ActorSystem, Scheduler}
 import akka.stream.scaladsl.{Sink, Source, SourceQueue}
 import akka.stream.{Materializer, OverflowStrategy, QueueOfferResult}
+import au.csiro.data61.magda.client.EmbeddingApiClient
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
-import au.csiro.data61.magda.model.misc.DataSet
+import au.csiro.data61.magda.model.misc.{DataSet, Distribution}
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch.Exceptions._
 import au.csiro.data61.magda.search.elasticsearch._
@@ -45,7 +46,8 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
-    val indices: Indices
+    val indices: Indices,
+    val embeddingApiClient: EmbeddingApiClient
 )(
     implicit val config: Config,
     implicit val system: ActorSystem,
@@ -61,6 +63,9 @@ class ElasticSearchIndexer(
     config.getInt("indexer.indexingMaxBatchSize")
   private val indexingInitialBatchDelayMs =
     config.getInt("indexer.indexingInitialBatchDelayMs").milliseconds
+
+  private val datasetConversionParallelism =
+    config.getInt("indexer.datasetConversionParallelism")
 
   /**
     * Returns an initialised ElasticClient on completion. Using this to get the client rather than just keeping a reference to an initialised client
@@ -727,11 +732,77 @@ class ElasticSearchIndexer(
     }
 
   /**
+    * Create a block context describing the dataset.
+    * The text will be used to generate embedding vector for vector/hybrid search
+    * Keep in mind the LLM context window limit. Oversize text will be truncated.
+    * Thus, we should list more important information first.
+    *  @param dataset
+    * @return
+    */
+  private def constructDatasetQueryContext(dataset: DataSet): String =
+    s"""Title: ${dataset.title.getOrElse("")}
+       |Description: ${dataset.description
+         .getOrElse("")}}
+       |""".stripMargin
+
+  /**
+    * Create a block context describing the distribution.
+    * The text will be used to generate embedding vector for vector/hybrid search
+    * Keep in mind the LLM context window limit. Oversize text will be truncated.
+    * Thus, we should list more important information first.
+    * @param dist
+    * @return
+    */
+  private def constructDistributionQueryContext(dist: Distribution): String =
+    s"""Title: ${dist.title}
+       |Format: ${dist.format
+         .getOrElse("")}
+       |Description: ${dist.description
+         .getOrElse("")}
+       |""".stripMargin
+
+  /**
+    * Fill the `queryContext`` & `queryContextVector`` fields for the dataset & its distributions.
+    * @param dataset
+    * @return
+    */
+  private def fillDatasetWithQueryContext(
+      dataset: DataSet
+  ): Future[DataSet] = {
+    val datasetContext = constructDatasetQueryContext(
+      dataset
+    )
+    val distributionContextList =
+      dataset.distributions.map(constructDistributionQueryContext(_))
+    embeddingApiClient.get(datasetContext +: distributionContextList).map {
+      contextVectorList =>
+        val datasetContextVector = contextVectorList.head
+        val distVectorList =
+          contextVectorList.slice(1, contextVectorList.length + 1)
+        val distContextVectorPairList =
+          distributionContextList.zip(distVectorList)
+        dataset.copy(
+          queryContext = Some(datasetContext),
+          queryContextVector = Some(datasetContextVector),
+          distributions = dataset.distributions
+            .zip(distContextVectorPairList)
+            .map(
+              v =>
+                v._1.copy(
+                  queryContext = Some(v._2._1),
+                  queryContextVector = Some(v._2._2)
+                )
+            )
+        )
+    }
+  }
+
+  /**
     * Indexes a number of datasets into ES using a bulk insert.
     */
   private def buildDatasetIndexDefinition(
       rawDataSet: DataSet
-  ): Seq[IndexRequest] = {
+  ): Future[Seq[IndexRequest]] = {
     val dataSet = rawDataSet.copy(
       years = ElasticSearchIndexer.getYears(
         rawDataSet.temporal.flatMap(_.start.flatMap(_.date)),
@@ -739,15 +810,6 @@ class ElasticSearchIndexer(
       ),
       indexed = Some(OffsetDateTime.now)
     )
-
-    val documentId =
-      DataSet.uniqueEsDocumentId(rawDataSet.identifier, rawDataSet.tenantId)
-    val indexDataSet = ElasticDsl
-      .indexInto(
-        indices.getIndex(config, Indices.DataSetsIndex)
-      )
-      .id(documentId)
-      .source(dataSet.toJson)
 
     val indexPublisher = dataSet.publisher.flatMap(
       publisher =>
@@ -802,7 +864,22 @@ class ElasticSearchIndexer(
           )
       }
 
-    List(indexDataSet) ::: indexPublisher.toList ::: indexFormats.toList
+    // only generate embedding when hybrid search is on
+    (if (HybridSearchConfig.enabled) {
+       fillDatasetWithQueryContext(dataSet)
+     } else {
+       Future(dataSet)
+     }).map { datasetWithContext =>
+      val documentId =
+        DataSet.uniqueEsDocumentId(rawDataSet.identifier, rawDataSet.tenantId)
+      val indexDataSet = ElasticDsl
+        .indexInto(
+          indices.getIndex(config, Indices.DataSetsIndex)
+        )
+        .id(documentId)
+        .source(datasetWithContext.toJson)
+      List(indexDataSet) ::: indexPublisher.toList ::: indexFormats.toList
+    }
   }
 
   def performIndex(
@@ -811,9 +888,11 @@ class ElasticSearchIndexer(
   ): Future[SearchIndexer.IndexResult] = {
     val indexResults = dataSetStream
       .buffer(indexingBufferSize, OverflowStrategy.backpressure)
-      .map {
+      .mapAsync(datasetConversionParallelism) {
         case (dataSet, promise) =>
-          (buildDatasetIndexDefinition(dataSet), (dataSet, promise))
+          buildDatasetIndexDefinition(dataSet).map { indexReqs =>
+            (indexReqs, (dataSet, promise))
+          }
       }
       .batch(indexingMaxBatchSize, Seq(_))(_ :+ _)
       .initialDelay(indexingInitialBatchDelayMs)
