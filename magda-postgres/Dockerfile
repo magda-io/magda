@@ -1,4 +1,4 @@
-FROM bitnami/postgresql:13.3.0-debian-10-r79
+FROM bitnami/postgresql:13.15.0-debian-12-r19
 
 # copy wal-g from pre-built image
 COPY --from=ghcr.io/magda-io/magda-wal-g:1.1.0 /usr/local/bin/wal-g /usr/local/bin/wal-g
