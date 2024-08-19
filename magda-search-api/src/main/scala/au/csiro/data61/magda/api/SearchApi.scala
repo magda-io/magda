@@ -19,6 +19,7 @@ import au.csiro.data61.magda.search.Directives.{
 }
 import au.csiro.data61.magda.search.elasticsearch.IndexUtils
 import scala.util.{Failure, Success}
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
   * @apiDefine Search Search API
@@ -46,7 +47,7 @@ class SearchApi(
     None
   }
 
-  var readyProbeJobDone = false
+  private val readyProbeJobDone = new AtomicBoolean(false)
 
   val routes =
     magdaRoute {
@@ -543,7 +544,7 @@ class SearchApi(
             path("live") { complete("OK") } ~
               path("ready") {
                 extractActorSystem { actorSystem =>
-                  if (readyProbeJobDone) {
+                  if (readyProbeJobDone.get()) {
                     // only attempt to create / check search pipeline for once
                     complete(ReadyStatus(true))
                   } else {
@@ -559,7 +560,7 @@ class SearchApi(
                       }
                     onComplete(ensureDatasetHybridSearchPipeline) {
                       case Success(_) =>
-                        readyProbeJobDone = true
+                        readyProbeJobDone.set(true)
                         complete(ReadyStatus(true))
                       case Failure(ex) =>
                         complete(

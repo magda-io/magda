@@ -115,7 +115,9 @@ package misc {
       publishingState: Option[String] = None,
       accessControl: Option[AccessControl] = None,
       accrualPeriodicityRecurrenceRule: Option[String] = None,
-      accessNotes: Option[DataSetAccessNotes] = None
+      accessNotes: Option[DataSetAccessNotes] = None,
+      queryContext: Option[String] = None,
+      queryContextVector: Option[Array[Double]] = None
   ) {
 
     override def toString: String =
@@ -352,7 +354,9 @@ package misc {
       accessControl: Option[AccessControl] = None,
       publishingState: Option[String] = None,
       score: Option[Float] = None,
-      useStorageApi: Option[Boolean] = None
+      useStorageApi: Option[Boolean] = None,
+      queryContext: Option[String] = None,
+      queryContextVector: Option[Array[Double]] = None
   )
 
   object Distribution {
@@ -710,7 +714,9 @@ package misc {
           "format" -> dist.format.toJson,
           "publishingState" -> dist.publishingState.toJson,
           "useStorageApi" -> dist.useStorageApi.toJson,
-          "score" -> dist.score.toJson
+          "score" -> dist.score.toJson,
+          "queryContext" -> dist.queryContext.toJson,
+          "queryContextVector" -> dist.queryContext.toJson
         )
         if (!dist.accessControl.isEmpty) {
           jsFields += ("accessControl" -> dist.accessControl.toJson)
@@ -738,7 +744,10 @@ package misc {
         accessControl = convertOptionField[AccessControl]("accessControl", json),
         publishingState = convertOptionField[String]("publishingState", json),
         useStorageApi = convertOptionField[Boolean]("useStorageApi", json),
-        score = convertOptionField[Float]("score", json)
+        score = convertOptionField[Float]("score", json),
+        queryContext = convertOptionField[String]("queryContext", json),
+        queryContextVector =
+          convertOptionField[Array[Double]]("queryContextVector", json)
       )
     }
 
@@ -774,7 +783,9 @@ package misc {
           "source" -> dataSet.source.toJson,
           "score" -> dataSet.score.toJson,
           "publishingState" -> dataSet.publishingState.toJson,
-          "accessNotes" -> dataSet.accessNotes.toJson
+          "accessNotes" -> dataSet.accessNotes.toJson,
+          "queryContext" -> dataSet.queryContext.toJson,
+          "queryContextVector" -> dataSet.queryContext.toJson
         )
         if (!dataSet.accessControl.isEmpty) {
           jsFields += ("accessControl" -> dataSet.accessControl.toJson)
@@ -821,7 +832,10 @@ package misc {
             json
           ),
           accessNotes =
-            convertOptionField[DataSetAccessNotes]("accessNotes", json)
+            convertOptionField[DataSetAccessNotes]("accessNotes", json),
+          queryContext = convertOptionField[String]("queryContext", json),
+          queryContextVector =
+            convertOptionField[Array[Double]]("queryContextVector", json)
         )
       }
     }
