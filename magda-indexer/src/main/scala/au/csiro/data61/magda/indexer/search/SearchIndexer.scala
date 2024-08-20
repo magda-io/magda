@@ -11,6 +11,7 @@ import com.typesafe.config.Config
 import java.time.Instant
 import akka.stream.scaladsl.Source
 import akka.NotUsed
+import au.csiro.data61.magda.client.EmbeddingApiClient
 
 import java.time.OffsetDateTime
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
@@ -60,11 +61,15 @@ object SearchIndexer {
       warnReasons: Seq[String] = Seq()
   )
 
-  def apply(clientProvider: ClientProvider, indices: Indices)(
+  def apply(
+      clientProvider: ClientProvider,
+      indices: Indices,
+      embeddingApiClient: EmbeddingApiClient
+  )(
       implicit config: Config,
       system: ActorSystem,
       ec: ExecutionContext,
       materializer: Materializer
   ) =
-    new ElasticSearchIndexer(clientProvider, indices)
+    new ElasticSearchIndexer(clientProvider, indices, embeddingApiClient)
 }

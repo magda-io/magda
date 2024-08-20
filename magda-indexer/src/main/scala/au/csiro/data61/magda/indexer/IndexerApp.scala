@@ -22,7 +22,11 @@ import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook.{
   initWebhook
 }
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.client.{AuthApiClient, RegistryExternalInterface}
+import au.csiro.data61.magda.client.{
+  AuthApiClient,
+  EmbeddingApiClient,
+  RegistryExternalInterface
+}
 
 import scala.concurrent.Future
 import au.csiro.data61.magda.search.elasticsearch.Indices
@@ -46,7 +50,10 @@ object IndexerApp extends App {
   logger.debug("Starting Crawler")
 
   val registryInterface = new RegistryExternalInterface()
-  val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
+  val embeddingApiClient = new EmbeddingApiClient()
+
+  val indexer =
+    SearchIndexer(new DefaultClientProvider, DefaultIndices, embeddingApiClient)
   val crawler = new RegistryCrawler(registryInterface, indexer)
 
   val authClient = new AuthApiClient()

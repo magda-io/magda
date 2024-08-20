@@ -95,7 +95,8 @@ trait WebhookSpecBase
     val indexId = UUID.randomUUID().toString
 
     val indices = FakeIndices(indexId.toString)
-    val indexer = new ElasticSearchIndexer(MockClientProvider, indices)
+    val indexer =
+      new ElasticSearchIndexer(MockClientProvider, indices, embeddingApiClient)
     val webhookApi = new WebhookApi(indexer)
     val searchQueryer = new ElasticSearchQueryer(indices)
     val authApiClient = new AuthApiClient()
