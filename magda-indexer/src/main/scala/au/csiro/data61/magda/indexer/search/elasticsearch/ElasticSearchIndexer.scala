@@ -740,9 +740,9 @@ class ElasticSearchIndexer(
     * @return
     */
   private def constructDatasetQueryContext(dataset: DataSet): String =
-    s"""Title: ${dataset.title.getOrElse("")}
+    s"""Title: ${dataset.title.getOrElse("None")}
        |Description: ${dataset.description
-         .getOrElse("")}}
+         .getOrElse("None")}
        |""".stripMargin
 
   /**
@@ -756,9 +756,9 @@ class ElasticSearchIndexer(
   private def constructDistributionQueryContext(dist: Distribution): String =
     s"""Title: ${dist.title}
        |Format: ${dist.format
-         .getOrElse("")}
+         .getOrElse("None")}
        |Description: ${dist.description
-         .getOrElse("")}
+         .getOrElse("None")}
        |""".stripMargin
 
   /**
