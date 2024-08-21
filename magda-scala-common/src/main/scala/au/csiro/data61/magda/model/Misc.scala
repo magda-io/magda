@@ -716,7 +716,7 @@ package misc {
           "useStorageApi" -> dist.useStorageApi.toJson,
           "score" -> dist.score.toJson,
           "queryContext" -> dist.queryContext.toJson,
-          "queryContextVector" -> dist.queryContext.toJson
+          "queryContextVector" -> dist.queryContextVector.toJson
         )
         if (!dist.accessControl.isEmpty) {
           jsFields += ("accessControl" -> dist.accessControl.toJson)
@@ -785,7 +785,7 @@ package misc {
           "publishingState" -> dataSet.publishingState.toJson,
           "accessNotes" -> dataSet.accessNotes.toJson,
           "queryContext" -> dataSet.queryContext.toJson,
-          "queryContextVector" -> dataSet.queryContext.toJson
+          "queryContextVector" -> dataSet.queryContextVector.toJson
         )
         if (!dataSet.accessControl.isEmpty) {
           jsFields += ("accessControl" -> dataSet.accessControl.toJson)
