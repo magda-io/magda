@@ -16,6 +16,7 @@ import standardiseUiBaseUrl from "./standardiseUiBaseUrl.js";
 import createCralwerViewRouter from "./createCralwerViewRouter.js";
 import moment from "moment-timezone";
 import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash.js";
+import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl.js";
 
 const argv = yargs
     .config()
@@ -558,12 +559,18 @@ app.get("/page/*", async function (req, res) {
 const robotsTxt = `User-agent: *
 Crawl-delay: 100
 Disallow: /auth
-Disallow: /search
+Disallow: ${uiBaseUrl}search
+Disallow: ${uiBaseUrl}organisations
+Disallow: ${uiBaseUrl}*?*q=*
 
-Sitemap: ${baseExternalUrl ? baseExternalUrl : "/"}sitemap.xml
+Sitemap: ${getAbsoluteUrl(
+    uiBaseUrl,
+    baseExternalUrl ? baseExternalUrl : "/"
+)}sitemap.xml
 `;
 
 app.use("/robots.txt", (_, res) => {
+    res.setHeader("content-type", "text/plain");
     res.status(200).send(robotsTxt);
 });
 
@@ -571,6 +578,7 @@ app.use("/robots.txt", (_, res) => {
 app.use(
     buildSitemapRouter({
         baseExternalUrl,
+        uiBaseUrl,
         registry: new Registry({
             baseUrl: argv.registryApiBaseUrlInternal,
             maxRetries: 0,
