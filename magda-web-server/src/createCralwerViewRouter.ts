@@ -11,6 +11,7 @@ const { safeLoadFront } = yamlFrontMatter;
 type OptionType = {
     enableDiscourseSupport: boolean;
     baseUrl: string;
+    uiBaseUrl: string;
     registryApiBaseUrl: string;
 };
 
@@ -23,7 +24,8 @@ function getTenantIdFromReq(req: Request) {
 const createCralwerViewRouter = ({
     enableDiscourseSupport,
     registryApiBaseUrl,
-    baseUrl
+    baseUrl,
+    uiBaseUrl
 }: OptionType) => {
     const router: Router = Router();
 
@@ -55,7 +57,7 @@ const createCralwerViewRouter = ({
             if (datasetData instanceof Error) {
                 throw datasetData;
             }
-            const content = safeLoadFront(datasetView(datasetData, baseUrl));
+            const content = safeLoadFront(datasetView(datasetData, uiBaseUrl));
             res.send(commonView(content as any));
         } catch (e) {
             console.warn(
@@ -113,7 +115,7 @@ const createCralwerViewRouter = ({
                 }
 
                 const content = safeLoadFront(
-                    distributionView(distributionData, datasetData, baseUrl)
+                    distributionView(distributionData, datasetData, uiBaseUrl)
                 );
                 res.send(commonView(content as any));
             } catch (e) {

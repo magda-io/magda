@@ -17,6 +17,7 @@ import createCralwerViewRouter from "./createCralwerViewRouter.js";
 import moment from "moment-timezone";
 import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash.js";
 import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl.js";
+import addRobotsMeta from "./addRobotsMeta.js";
 
 const argv = yargs
     .config()
@@ -518,7 +519,8 @@ if (argv.enableCrawlerViews || enableDiscourseSupport) {
         createCralwerViewRouter({
             registryApiBaseUrl: argv.registryApiBaseUrlInternal,
             baseUrl: baseExternalUrl,
-            enableDiscourseSupport: enableDiscourseSupport
+            enableDiscourseSupport: enableDiscourseSupport,
+            uiBaseUrl
         })
     );
 }
@@ -543,13 +545,22 @@ const topLevelRoutes = [
     "home"
 ];
 
+const allowToCrawlRoutes = ["dataset", "home"];
+
 topLevelRoutes.forEach((topLevelRoute) => {
-    app.get("/" + topLevelRoute, async function (req, res) {
-        res.send(await getIndexFileContentZeroArgs());
-    });
-    app.get("/" + topLevelRoute + "/*", async function (req, res) {
-        res.send(await getIndexFileContentZeroArgs());
-    });
+    const routeHandle = async function (
+        req: express.Request,
+        res: express.Response
+    ) {
+        if (allowToCrawlRoutes.indexOf(topLevelRoute) != -1) {
+            // allow search engine robot to crawl. Thus, no robots meta tag.
+            res.send(await getIndexFileContentZeroArgs());
+        } else {
+            res.send(addRobotsMeta(await getIndexFileContentZeroArgs()));
+        }
+    };
+    app.get("/" + topLevelRoute, routeHandle);
+    app.get("/" + topLevelRoute + "/*", routeHandle);
 });
 
 app.get("/page/*", async function (req, res) {
