@@ -29,7 +29,7 @@ minikube config set driver hyperkit
 
 # you can lower / higher CPU / memory depends on your hardware.
 # Min. requirement: memory 6GB & CPU: 2
-minikube config set kubernetes-version v1.16.5
+minikube config set kubernetes-version 1.28.12
 minikube config set memory 16384
 minikube config set cpus 4
 minikube config set dashboard true
@@ -70,16 +70,6 @@ Edit the file at `deploy/helm/minikube-dev.yaml` to comment out these lines:
 #   repository: "localhost:5000/data61"
 #   tag: "latest"
 #   pullPolicy: Always
-```
-
-Then create secrets (and, for output see the bottom of this file) :
-
-```bash
-nvm use 12
-nvm alias default 12
-npm install --global @magda/create-secrets
-export CLUSTER_NAMESPACE=magda
-create-secrets
 ```
 
 Then:
