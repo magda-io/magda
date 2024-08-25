@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.2.2
+
+- Removed the `create-secrets` deployment helper command line tool script as it has not been used since Magda v1.
+
 ## v4.2.1
 
 - #3551: Pagination Bar sometimes might generate `...` button with invalid page number
