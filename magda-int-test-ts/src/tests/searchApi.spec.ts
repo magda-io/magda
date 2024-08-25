@@ -210,9 +210,8 @@ describe("search api auth integration tests", function (this) {
 
         let r = await Try(searchDataset("chocolate milk", testUserId));
         expect(r.error).to.not.be.an.instanceof(Error);
-        // should only find 2 datasets out of 3
-        //expect(r.value.hitCount).to.equal(2);
-        // first one should be the chocolate milk dataset
+        // we should get chocolate milk dataset first, then milk chocolate dataset
+        // the third dataset is not relevant but it will be returned as the last result with very low score
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId2);
         expect(r.value?.dataSets?.[1]?.identifier).to.equal(datasetId1);
     });
@@ -281,8 +280,6 @@ describe("search api auth integration tests", function (this) {
 
         let r = await Try(searchDataset("milk chocolate", testUserId));
         expect(r.error).to.not.be.an.instanceof(Error);
-        // should only find 3 datasets
-        //expect(r.value.hitCount).to.equal(2);
         // first one should be the milk chocolate  dataset
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId1);
         expect(r.value?.dataSets?.[1]?.identifier).to.equal(datasetId2);
