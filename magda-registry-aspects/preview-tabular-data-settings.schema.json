@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Preview Tabular Data Settings",
+    "description": "Provides extra tabular data preview configuration options at dataset/distribution level.",
+    "type": "object",
+    "properties": {
+        "enableChart": {
+            "title": "Whether the tabular data chart view should be enabled (when possible) for the attached dataset/distribution.",
+            "type": "boolean",
+            "default": true
+        },
+        "enableTable": {
+            "title": "Whether the tabular data table view should be enabled (when possible) for the attached dataset/distribution.",
+            "type": "boolean",
+            "default": true
+        }
+    }
+}
