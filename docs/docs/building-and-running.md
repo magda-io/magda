@@ -139,12 +139,6 @@ yarn run docker-build-local
 3. Modify `minikube-dev.yml`, remove the `global.connectors.image` & `global.minions.image` section.
 4. Deploy Magda with helm using the instructions provided by the [Install Magda on your minikube/docker-desktop cluster section](#install-magda-on-your-minikubedocker-desktop-cluster) below.
 
-### Create the necessary secrets with the secret creation script
-
-```bash
-yarn run create-secrets
-```
-
 ### Windows only: Set up a volume for Postgres data
 
 If you're using Docker Desktop on Windows, you'll need to set up a volume to store Postgres data because the standard strategy approach - a `hostpath` volume mapped to a Windows share - will result in file/directory permissions that are not to Postgres's liking. Instead, we'll set up a volume manually which is just a directory in the Docker Desktop VM's virtual disk. We use the unusual path of `/etc/kubernetes` because it is one of the few mount points backed by an actual virtual disk.

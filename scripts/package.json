@@ -18,13 +18,10 @@
     "run-typescript-in-nodemon": "run-typescript-in-nodemon.js",
     "retag-and-push": "retag-and-push.js",
     "generate-api-documentation": "generate-api-documentation.js",
-    "create-secrets": "create-secrets/index.js",
     "set-scss-vars": "set-scss-vars.js",
-    "pkg-create-secrets-script": "pkg create-secrets/index.js --out-path create-secrets/build",
     "create-region-synonym-file": "create-region-synonym-file.js",
     "org-tree": "org-tree/index.js",
     "acs-cmd": "acs-cmd/index.js",
-    "set-user-password": "set-user-password.js",
     "create-api-key": "create-api-key.js",
     "update-helm-chart-version": "update-helm-chart-version.js",
     "check-release-version": "check-release-version.js"
