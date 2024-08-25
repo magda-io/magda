@@ -43,7 +43,6 @@
     "prettier": "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**' '!**/dist/**' '!**/build/**' '!**/bin/**'",
     "retag-and-push": "lerna run retag-and-push --stream",
     "eslint": "magda-web-client/node_modules/.bin/eslint magda-web-client/src/",
-    "create-secrets": "create-secrets",
     "start-opa": "opa run deploy/helm/internal-charts/opa/policies",
     "test-opa": "opa test deploy/helm/internal-charts/opa/policies -v",
     "clean": "rm -rf ./node_modules; for dir in magda-*; do echo \"Removing node_modules from $dir\"; rm -rf $dir/node_modules; done",
