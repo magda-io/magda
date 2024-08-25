@@ -279,7 +279,7 @@ describe("search api auth integration tests", function (this) {
         expect(indexResult.error).to.not.be.an.instanceof(Error);
         expect(indexResult.value?.successes).to.equal(1);
 
-        let r = await Try(searchDataset("chocolate milk", testUserId));
+        let r = await Try(searchDataset("milk chocolate", testUserId));
         expect(r.error).to.not.be.an.instanceof(Error);
         // should only find 3 datasets
         //expect(r.value.hitCount).to.equal(2);
