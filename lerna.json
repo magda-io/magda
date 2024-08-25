@@ -8,7 +8,7 @@
     "scripts/",
     "packages/*"
   ],
-  "version": "4.2.1",
+  "version": "4.2.2",
   "hoist": [
     "urijs",
     "@types/urijs",
