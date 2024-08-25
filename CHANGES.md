@@ -1,9 +1,12 @@
 # CHANGELOG
 
-## v4.2.2
+## v4.2.3
 
 - #3553: Make Chart Preview & Table Preview Configurable per Dataset
 - #3554: Replace "schema" portion of URL alike string with [URL] in user supplied content of any emails sent out
+
+## v4.2.2
+
 - Removed the `create-secrets` deployment helper command line tool script as it has not been used since Magda v1.
 
 ## v4.2.1
