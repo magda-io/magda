@@ -3,6 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Small } from "Components/Common/Responsive";
 import CommonLink from "Components/Common/CommonLink";
+import ChatBoxRoutes from "../Chatbot/ChatBoxRoutes";
 
 import "./footer.scss";
 
@@ -135,6 +136,7 @@ function Footer({
                         ))}
                     </section>
                 ) : null}
+                <ChatBoxRoutes />
             </div>
         </footer>
     );

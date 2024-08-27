@@ -684,6 +684,16 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     authStatusRefreshInterval?: number;
+
+    /**
+     * The extension ID of the web-llm service worker chrome extension plugin.
+     * Only required by organisation-managed devices (e.g. company laptops).
+     * See here for more details: https://github.com/magda-io/magda-llm-service-worker-extension
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    llmExtensionId: string;
 }
 
 const serverConfig: ConfigDataType = window.magda_server_config || {};
@@ -994,7 +1004,11 @@ export const config: ConfigDataType = {
         : "/home",
     authStatusRefreshInterval: serverConfig?.authStatusRefreshInterval
         ? serverConfig.authStatusRefreshInterval
-        : 300000
+        : 300000,
+    llmExtensionId: serverConfig?.llmExtensionId
+        ? serverConfig.llmExtensionId
+        : // this is the ID of the default extension allow access from domain magda.io
+          "ljadmjdilnpmlhopijgimonfackfngmi"
 };
 
 export type Config = typeof config;
