@@ -134,7 +134,7 @@ describe("search api auth integration tests", function (this) {
         await serviceRunner.destroy();
     });
 
-    afterEach(async function () {
+    beforeEach(async function () {
         await fetchRequest(
             "POST",
             `${openSearchUrl}/${datasetIndexName}/_delete_by_query?refresh=true`,
@@ -196,7 +196,11 @@ describe("search api auth integration tests", function (this) {
             } as any
         );
 
-        let indexResult = await Try(indexerApiClient.indexDataset(datasetId1));
+        let indexResult = await Try(indexerApiClient.indexDataset(datasetId3));
+        expect(indexResult.error).to.not.be.an.instanceof(Error);
+        expect(indexResult.value?.successes).to.equal(1);
+
+        indexResult = await Try(indexerApiClient.indexDataset(datasetId1));
         expect(indexResult.error).to.not.be.an.instanceof(Error);
         expect(indexResult.value?.successes).to.equal(1);
 
@@ -204,12 +208,18 @@ describe("search api auth integration tests", function (this) {
         expect(indexResult.error).to.not.be.an.instanceof(Error);
         expect(indexResult.value?.successes).to.equal(1);
 
-        indexResult = await Try(indexerApiClient.indexDataset(datasetId3));
-        expect(indexResult.error).to.not.be.an.instanceof(Error);
-        expect(indexResult.value?.successes).to.equal(1);
-
         let r = await Try(searchDataset("chocolate milk", testUserId));
         expect(r.error).to.not.be.an.instanceof(Error);
+        console.log("test 1 Original datasets: ", [
+            datasetId1,
+            datasetId2,
+            datasetId3
+        ]);
+        console.log(
+            "test 1 Search result: ",
+            r.value?.dataSets.map((d: any) => d.identifier)
+        );
+        console.log("test 1 Search result data: ", r.value?.dataSets);
         // we should get chocolate milk dataset first, then milk chocolate dataset
         // the third dataset is not relevant but it will be returned as the last result with very low score
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId2);
@@ -266,7 +276,7 @@ describe("search api auth integration tests", function (this) {
             } as any
         );
 
-        let indexResult = await Try(indexerApiClient.indexDataset(datasetId1));
+        let indexResult = await Try(indexerApiClient.indexDataset(datasetId3));
         expect(indexResult.error).to.not.be.an.instanceof(Error);
         expect(indexResult.value?.successes).to.equal(1);
 
@@ -274,12 +284,22 @@ describe("search api auth integration tests", function (this) {
         expect(indexResult.error).to.not.be.an.instanceof(Error);
         expect(indexResult.value?.successes).to.equal(1);
 
-        indexResult = await Try(indexerApiClient.indexDataset(datasetId3));
+        indexResult = await Try(indexerApiClient.indexDataset(datasetId1));
         expect(indexResult.error).to.not.be.an.instanceof(Error);
         expect(indexResult.value?.successes).to.equal(1);
 
         let r = await Try(searchDataset("milk chocolate", testUserId));
         expect(r.error).to.not.be.an.instanceof(Error);
+        console.log("test 2 Original datasets: ", [
+            datasetId1,
+            datasetId2,
+            datasetId3
+        ]);
+        console.log(
+            "test 2 Search result: ",
+            r.value?.dataSets.map((d: any) => d.identifier)
+        );
+        console.log("test 2 Search result data: ", r.value?.dataSets);
         // first one should be the milk chocolate  dataset
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId1);
         expect(r.value?.dataSets?.[1]?.identifier).to.equal(datasetId2);
