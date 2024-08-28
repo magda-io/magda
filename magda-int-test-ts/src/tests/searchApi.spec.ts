@@ -93,6 +93,7 @@ describe("search api auth integration tests", function (this) {
     serviceRunner.enableSearchApi = true;
     serviceRunner.jwtSecret = jwtSecret;
     serviceRunner.authApiDebugMode = false;
+    serviceRunner.searchApiDebugMode = true;
 
     let datasetIndexName: string = "";
     let testUserId: string = "";

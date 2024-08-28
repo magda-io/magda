@@ -89,6 +89,7 @@ export default class ServiceRunner {
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
     public authApiSkipAuth = false;
+    public searchApiDebugMode = false;
     public storageApiSkipAuth = false;
 
     public sbtPath: string = "";
@@ -1033,7 +1034,7 @@ export default class ServiceRunner {
     async createSearchApi() {
         const searchApiProcess = child_process.spawn(
             "sbt",
-            ['"searchApi/run"'],
+            [`-Ddebug="${this.searchApiDebugMode}"`, '"searchApi/run"'],
             {
                 cwd: this.workspaceRoot,
                 stdio: "inherit",

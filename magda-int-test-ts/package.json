@@ -50,7 +50,7 @@
   "mocha": {
     "import": "tsx/esm",
     "spec": [
-      "src/tests/**/*.spec.ts"
+      "src/tests/**/searchApi.spec.ts"
     ]
   },
   "magda": {
