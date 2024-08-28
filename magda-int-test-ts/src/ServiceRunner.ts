@@ -1034,7 +1034,10 @@ export default class ServiceRunner {
     async createSearchApi() {
         const searchApiProcess = child_process.spawn(
             "sbt",
-            [`-Ddebug="${this.searchApiDebugMode}"`, '"searchApi/run"'],
+            [
+                `-DsearchApi.debug="${this.searchApiDebugMode}"`,
+                '"searchApi/run"'
+            ],
             {
                 cwd: this.workspaceRoot,
                 stdio: "inherit",
