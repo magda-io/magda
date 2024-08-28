@@ -6,7 +6,8 @@ import { FetchError } from "../types";
 import {
     ensureAspectExists,
     fetchRecord,
-    Record
+    Record,
+    DEFAULT_OPTIONAL_DISTRIBUTION_FETCH_ASPECT_LIST
 } from "api-clients/RegistryApis";
 import request from "helpers/request";
 
@@ -124,17 +125,7 @@ export function fetchDistributionFromRegistry(id: string): any {
         try {
             const data = await fetchRecord<RawDistribution>(
                 id,
-                [
-                    "source-link-status",
-                    "source",
-                    "visualization-info",
-                    "access",
-                    "usage",
-                    "dataset-format",
-                    "ckan-resource",
-                    "publishing",
-                    "version"
-                ],
+                DEFAULT_OPTIONAL_DISTRIBUTION_FETCH_ASPECT_LIST,
                 ["dcat-distribution-strings"]
             );
             return dispatch(receiveDistribution(data));
