@@ -2,7 +2,8 @@
 
 ## v4.2.4
 
-- Set `conflicts` to true when Indexer performs the trim operation.
+- #3559: Set `conflicts` to true when Indexer performs the trim operation.
+- Increase indexer client connection idle-timeout to avoid encountering connection reset error for downloading large region files
 
 ## v4.2.3
 
