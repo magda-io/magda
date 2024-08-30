@@ -1,6 +1,6 @@
 {
   "name": "@magda/search-api",
-  "version": "4.2.3",
+  "version": "4.2.4-alpha.0",
   "description": "The search API.",
   "license": "Apache-2.0",
   "scripts": {

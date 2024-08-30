@@ -1,6 +1,6 @@
 {
   "name": "@magda/content-schemas",
-  "version": "4.2.3",
+  "version": "4.2.4-alpha.0",
   "type": "module",
   "exports": {
     ".": {
