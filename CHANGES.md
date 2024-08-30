@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.2.4
+
+- Set `conflicts` to true when Indexer performs the trim operation.
+
 ## v4.2.3
 
 - #3553: Make Chart Preview & Table Preview Configurable per Dataset
