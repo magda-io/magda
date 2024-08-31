@@ -1,6 +1,6 @@
 # magda-local-deployment
 
-![Version: 4.2.1](https://img.shields.io/badge/Version-4.2.1-informational?style=flat-square)
+![Version: 4.2.3](https://img.shields.io/badge/Version-4.2.3-informational?style=flat-square)
 
 ## Requirements
 
@@ -8,35 +8,35 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda | magda | 4.2.1 |
+| file://../magda | magda | 4.2.3 |
 | oci://ghcr.io/magda-io/charts | magda-auth-arcgis | 2.0.1 |
 | oci://ghcr.io/magda-io/charts | magda-auth-facebook | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-auth-google | 2.0.1 |
 | oci://ghcr.io/magda-io/charts | magda-auth-internal | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | connector-vic(magda-ckan-connector) | 2.1.0 |
-| oci://ghcr.io/magda-io/charts | connector-dga(magda-ckan-connector) | 2.1.0 |
-| oci://ghcr.io/magda-io/charts | connector-wa(magda-ckan-connector) | 2.1.0 |
-| oci://ghcr.io/magda-io/charts | connector-nsw(magda-ckan-connector) | 2.1.0 |
-| oci://ghcr.io/magda-io/charts | connector-qld(magda-ckan-connector) | 2.1.0 |
-| oci://ghcr.io/magda-io/charts | connector-aurin(magda-ckan-connector) | 2.1.0 |
 | oci://ghcr.io/magda-io/charts | connector-brisbane(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-vic(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-wa(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-qld(magda-ckan-connector) | 2.1.0 |
 | oci://ghcr.io/magda-io/charts | connector-sa(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-dga(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-aurin(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-nsw(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-bom(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-tern(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-marlin(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-environment(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-ga(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-listtas(magda-csw-connector) | 2.0.2 |
-| oci://ghcr.io/magda-io/charts | connector-sdinsw(magda-csw-connector) | 2.0.2 |
-| oci://ghcr.io/magda-io/charts | connector-mrt(magda-csw-connector) | 2.0.2 |
-| oci://ghcr.io/magda-io/charts | connector-bom(magda-csw-connector) | 2.0.2 |
-| oci://ghcr.io/magda-io/charts | connector-neii(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-aodn(magda-csw-connector) | 2.0.2 |
+| oci://ghcr.io/magda-io/charts | connector-mrt(magda-csw-connector) | 2.0.2 |
+| oci://ghcr.io/magda-io/charts | connector-aims(magda-csw-connector) | 2.0.2 |
+| oci://ghcr.io/magda-io/charts | connector-neii(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-dap(magda-dap-connector) | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | connector-melbournewater(magda-project-open-data-connector) | 2.0.0 |
+| oci://ghcr.io/magda-io/charts | connector-logan(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-moretonbay(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-melbourne(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-southerngrampians(magda-project-open-data-connector) | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | connector-logan(magda-project-open-data-connector) | 2.0.0 |
+| oci://ghcr.io/magda-io/charts | connector-melbournewater(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-launceston(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-hobart(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-actmapi(magda-project-open-data-connector) | 2.0.0 |
@@ -55,6 +55,12 @@ Kubernetes: `>= 1.14.0-0`
 | connector-actmapi.config.id | string | `"actmapi"` |  |
 | connector-actmapi.config.name | string | `"ACT Government ACTMAPi"` |  |
 | connector-actmapi.config.sourceUrl | string | `"https://actmapi-actgov.opendata.arcgis.com/api/feed/dcat-us/1.1.json"` |  |
+| connector-aims.config.id | string | `"aims"` |  |
+| connector-aims.config.name | string | `"Australian Institute of Marine Science"` |  |
+| connector-aims.config.outputSchema | string | `"http://standards.iso.org/iso/19115/-3/mdb/2.0"` |  |
+| connector-aims.config.pageSize | int | `100` |  |
+| connector-aims.config.sourceUrl | string | `"https://geonetwork.apps.aims.gov.au/geonetwork/srv/eng/csw"` |  |
+| connector-aims.config.typeNames | string | `"mdb:MD_Metadata"` |  |
 | connector-aodn.config.id | string | `"aodn"` |  |
 | connector-aodn.config.name | string | `"Australian Oceans Data Network"` |  |
 | connector-aodn.config.outputSchema | string | `"http://standards.iso.org/iso/19115/-3/mdb/2.0"` |  |
@@ -110,8 +116,10 @@ Kubernetes: `>= 1.14.0-0`
 | connector-logan.config.sourceUrl | string | `"https://data-logancity.opendata.arcgis.com/api/feed/dcat-us/1.1.json"` |  |
 | connector-marlin.config.id | string | `"marlin"` |  |
 | connector-marlin.config.name | string | `"CSIRO Marlin"` |  |
+| connector-marlin.config.outputSchema | string | `"http://standards.iso.org/iso/19115/-3/mdb/2.0"` |  |
 | connector-marlin.config.pageSize | int | `50` |  |
-| connector-marlin.config.sourceUrl | string | `"http://www.marlin.csiro.au/geonetwork/srv/eng/csw"` |  |
+| connector-marlin.config.sourceUrl | string | `"https://marlin.csiro.au/geonetwork/srv/eng/csw"` |  |
+| connector-marlin.config.typeNames | string | `"mdb:MD_Metadata"` |  |
 | connector-melbourne.config.id | string | `"melbourne"` |  |
 | connector-melbourne.config.name | string | `"Melbourne Data"` |  |
 | connector-melbourne.config.sourceUrl | string | `"https://data.melbourne.vic.gov.au/data.json"` |  |
@@ -144,17 +152,15 @@ Kubernetes: `>= 1.14.0-0`
 | connector-sa.config.name | string | `"South Australia Government"` |  |
 | connector-sa.config.pageSize | int | `100` |  |
 | connector-sa.config.sourceUrl | string | `"https://data.sa.gov.au/data/"` |  |
-| connector-sdinsw.config.id | string | `"sdinsw"` |  |
-| connector-sdinsw.config.name | string | `"NSW Land and Property"` |  |
-| connector-sdinsw.config.pageSize | int | `100` |  |
-| connector-sdinsw.config.sourceUrl | string | `"https://sdi.nsw.gov.au/csw"` |  |
 | connector-southern-grampians.config.id | string | `"southern-grampians"` |  |
 | connector-southern-grampians.config.name | string | `"Southern Grampians Shire Council"` |  |
 | connector-southern-grampians.config.sourceUrl | string | `"https://www.connectgh.com.au/data.json"` |  |
 | connector-tern.config.id | string | `"tern"` |  |
 | connector-tern.config.name | string | `"Terrestrial Ecosystem Research Network"` |  |
+| connector-tern.config.outputSchema | string | `"http://standards.iso.org/iso/19115/-3/mdb/2.0"` |  |
 | connector-tern.config.pageSize | int | `100` |  |
-| connector-tern.config.sourceUrl | string | `"http://data.auscover.org.au/geonetwork/srv/eng/csw"` |  |
+| connector-tern.config.sourceUrl | string | `"https://geonetwork.tern.org.au/geonetwork/srv/eng/csw"` |  |
+| connector-tern.config.typeNames | string | `"mdb:MD_Metadata"` |  |
 | connector-vic-cardinia.config.id | string | `"vic-cardinia"` |  |
 | connector-vic-cardinia.config.name | string | `"Cardinia Shire Council"` |  |
 | connector-vic-cardinia.config.sourceUrl | string | `"https://data-cscgis.opendata.arcgis.com/api/feed/dcat-us/1.1.json"` |  |
