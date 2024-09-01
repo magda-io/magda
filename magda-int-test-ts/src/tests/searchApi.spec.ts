@@ -153,7 +153,23 @@ describe("search api auth integration tests", function (this) {
             {
                 aspects: {
                     "dcat-dataset-strings": {
-                        title: "a good milk chocolate receipt"
+                        title: "a good milk chocolate receipt",
+                        description: `Ingredients:
+
+100g cocoa butter
+25g unsweetened cocoa powder
+75g powdered sugar
+50g milk powder
+1 tsp vanilla extract (optional)
+Pinch of salt
+Instructions:
+
+Melt: Gently melt cocoa butter in a double boiler.
+Mix: Stir in cocoa powder until smooth. Add powdered sugar and milk powder gradually, mixing well. Add vanilla and salt.
+Temper (Optional): Cool chocolate to 27-28°C (80-82°F), then reheat to 31-32°C (88-90°F).
+Mold: Pour into molds, tap to remove air bubbles.
+Set: Let set at room temperature or refrigerate until firm.
+Unmold: Remove from molds and enjoy!`
                     },
                     publishing: {
                         state: "published"
@@ -169,7 +185,20 @@ describe("search api auth integration tests", function (this) {
             {
                 aspects: {
                     "dcat-dataset-strings": {
-                        title: "a good chocolate milk receipt"
+                        title: "a good chocolate milk receipt",
+                        description: `Ingredients:
+
+2 cups milk (dairy or non-dairy)
+2 tbsp unsweetened cocoa powder
+2 tbsp sugar (adjust to taste)
+1 tsp vanilla extract (optional)
+Instructions:
+
+Mix: Combine cocoa powder, sugar, and 2 tbsp of milk in a small bowl. Stir until smooth.
+Heat: Warm the remaining milk in a saucepan or microwave (optional).
+Combine: Add the cocoa mixture to the warm milk. Stir until fully dissolved.
+Flavor: Add vanilla extract, if using.
+Serve: Enjoy warm or chilled.`
                     },
                     publishing: {
                         state: "published"
@@ -185,7 +214,9 @@ describe("search api auth integration tests", function (this) {
             {
                 aspects: {
                     "dcat-dataset-strings": {
-                        title: "sydney water revenue report"
+                        title: "sydney water revenue report",
+                        description:
+                            "The Sydney Water Revenue Report is a quarterly report that provides information on the revenue collected by Sydney Water."
                     },
                     publishing: {
                         state: "published"
@@ -233,7 +264,23 @@ describe("search api auth integration tests", function (this) {
             {
                 aspects: {
                     "dcat-dataset-strings": {
-                        title: "a good milk chocolate receipt"
+                        title: "a good milk chocolate receipt",
+                        description: `Ingredients:
+
+100g cocoa butter
+25g unsweetened cocoa powder
+75g powdered sugar
+50g milk powder
+1 tsp vanilla extract (optional)
+Pinch of salt
+Instructions:
+
+Melt: Gently melt cocoa butter in a double boiler.
+Mix: Stir in cocoa powder until smooth. Add powdered sugar and milk powder gradually, mixing well. Add vanilla and salt.
+Temper (Optional): Cool chocolate to 27-28°C (80-82°F), then reheat to 31-32°C (88-90°F).
+Mold: Pour into molds, tap to remove air bubbles.
+Set: Let set at room temperature or refrigerate until firm.
+Unmold: Remove from molds and enjoy!`
                     },
                     publishing: {
                         state: "published"
@@ -249,7 +296,20 @@ describe("search api auth integration tests", function (this) {
             {
                 aspects: {
                     "dcat-dataset-strings": {
-                        title: "a good chocolate milk receipt"
+                        title: "a good chocolate milk receipt",
+                        description: `Ingredients:
+
+2 cups milk (dairy or non-dairy)
+2 tbsp unsweetened cocoa powder
+2 tbsp sugar (adjust to taste)
+1 tsp vanilla extract (optional)
+Instructions:
+
+Mix: Combine cocoa powder, sugar, and 2 tbsp of milk in a small bowl. Stir until smooth.
+Heat: Warm the remaining milk in a saucepan or microwave (optional).
+Combine: Add the cocoa mixture to the warm milk. Stir until fully dissolved.
+Flavor: Add vanilla extract, if using.
+Serve: Enjoy warm or chilled.`
                     },
                     publishing: {
                         state: "published"
@@ -265,7 +325,9 @@ describe("search api auth integration tests", function (this) {
             {
                 aspects: {
                     "dcat-dataset-strings": {
-                        title: "sydney water revenue report"
+                        title: "sydney water revenue report",
+                        description:
+                            "The Sydney Water Revenue Report is a quarterly report that provides information on the revenue collected by Sydney Water."
                     },
                     publishing: {
                         state: "published"
