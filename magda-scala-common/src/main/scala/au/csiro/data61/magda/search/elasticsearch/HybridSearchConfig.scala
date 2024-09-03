@@ -2,6 +2,7 @@ package au.csiro.data61.magda.search.elasticsearch
 
 import au.csiro.data61.magda.AppConfig
 import com.typesafe.config.Config
+import au.csiro.data61.magda.util.RichConfig._
 
 object HybridSearchConfig {
   val configPath = "elasticSearch.indices.datasets.hybridSearch"
@@ -25,7 +26,9 @@ object HybridSearchConfig {
   }
 
   def enabled = get().getBoolean("enabled")
-  def k = get().getInt("k")
+  def k = get().getOptionalInt("k")
+  def minScore = get().getOptionalDouble("minScore")
+  def maxDistance = get().getOptionalDouble("maxDistance")
   def searchPipeline = get().getConfig("searchPipeline")
   def searchPipelineAutoCreate = searchPipeline.getBoolean("autoCreate")
   def searchPipelineId = searchPipeline.getString("id")

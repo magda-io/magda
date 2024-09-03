@@ -39,6 +39,22 @@ object RichConfig {
         None
       }
 
+    def getOptionalInt(path: String): Option[Int] =
+      if (underlying.hasPath(path)) {
+        Some(underlying.getInt(path))
+      } else {
+        None
+      }
+
+    def getOptionalIntList(path: String): Option[List[Int]] =
+      if (underlying.hasPath(path)) {
+        Some(
+          underlying.getIntList(path).asScala.map(_.intValue)(breakOut)
+        )
+      } else {
+        None
+      }
+
     def getOptionalLong(path: String): Option[Long] =
       if (underlying.hasPath(path)) {
         Some(underlying.getLong(path))

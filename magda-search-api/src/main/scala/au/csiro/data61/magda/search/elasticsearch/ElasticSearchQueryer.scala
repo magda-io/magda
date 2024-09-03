@@ -705,9 +705,13 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               datasetsTextQuery,
               KnnQuery(
                 field = HybridSearchConfig.queryContextVectorFieldName,
-                k = HybridSearchConfig.k,
                 vector = inputTextVector.get,
-                filter = Some(datasetFilterQuery)
+                filter = Some(datasetFilterQuery),
+                k = HybridSearchConfig.k,
+                minScore = HybridSearchConfig.minScore,
+                maxDistance = HybridSearchConfig.maxDistance,
+                // boost score by 50 to match the boost we set for title field in keyword search
+                boost = Some(50.0)
               )
             )
           ),
@@ -719,9 +723,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 KnnQuery(
                   field =
                     s"""distributions.${HybridSearchConfig.queryContextVectorFieldName}""",
-                  k = HybridSearchConfig.k,
                   vector = inputTextVector.get,
-                  filter = Some(distributionFilterQuery)
+                  filter = Some(distributionFilterQuery),
+                  k = HybridSearchConfig.k,
+                  minScore = HybridSearchConfig.minScore,
+                  maxDistance = HybridSearchConfig.maxDistance
                 )
               )
             )

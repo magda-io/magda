@@ -93,7 +93,7 @@ describe("search api auth integration tests", function (this) {
     serviceRunner.enableSearchApi = true;
     serviceRunner.jwtSecret = jwtSecret;
     serviceRunner.authApiDebugMode = false;
-    serviceRunner.searchApiDebugMode = true;
+    serviceRunner.searchApiDebugMode = false;
 
     let datasetIndexName: string = "";
     let testUserId: string = "";
@@ -154,22 +154,7 @@ describe("search api auth integration tests", function (this) {
                 aspects: {
                     "dcat-dataset-strings": {
                         title: "a good milk chocolate receipt",
-                        description: `Ingredients:
-
-100g cocoa butter
-25g unsweetened cocoa powder
-75g powdered sugar
-50g milk powder
-1 tsp vanilla extract (optional)
-Pinch of salt
-Instructions:
-
-Melt: Gently melt cocoa butter in a double boiler.
-Mix: Stir in cocoa powder until smooth. Add powdered sugar and milk powder gradually, mixing well. Add vanilla and salt.
-Temper (Optional): Cool chocolate to 27-28°C (80-82°F), then reheat to 31-32°C (88-90°F).
-Mold: Pour into molds, tap to remove air bubbles.
-Set: Let set at room temperature or refrigerate until firm.
-Unmold: Remove from molds and enjoy!`
+                        description: `Milk chocolate is a type of chocolate that is made from a blend of cocoa solids, cocoa butter, sugar, and milk or milk powder. Unlike dark chocolate, which has a higher percentage of cocoa solids and little to no milk content, milk chocolate contains a significant amount of milk, giving it a creamier texture and a sweeter, milder flavor. Milk chocolate typically has a lower cocoa content (often between 10% to 50%) compared to dark chocolate. It is commonly used in candy bars, confections, and various desserts.`
                     },
                     publishing: {
                         state: "published"
@@ -186,19 +171,7 @@ Unmold: Remove from molds and enjoy!`
                 aspects: {
                     "dcat-dataset-strings": {
                         title: "a good chocolate milk receipt",
-                        description: `Ingredients:
-
-2 cups milk (dairy or non-dairy)
-2 tbsp unsweetened cocoa powder
-2 tbsp sugar (adjust to taste)
-1 tsp vanilla extract (optional)
-Instructions:
-
-Mix: Combine cocoa powder, sugar, and 2 tbsp of milk in a small bowl. Stir until smooth.
-Heat: Warm the remaining milk in a saucepan or microwave (optional).
-Combine: Add the cocoa mixture to the warm milk. Stir until fully dissolved.
-Flavor: Add vanilla extract, if using.
-Serve: Enjoy warm or chilled.`
+                        description: `Chocolate milk is a sweetened, flavored milk beverage that is made by mixing milk (usually cow's milk) with cocoa powder or chocolate syrup and often sugar. The drink can be served cold or hot and is popular as both a refreshing treat and a comfort beverage. Chocolate milk can be made at home or purchased pre-mixed in bottles or cartons. Some versions also include additional ingredients like vanilla extract or stabilizers to improve texture and flavor.`
                     },
                     publishing: {
                         state: "published"
@@ -265,22 +238,7 @@ Serve: Enjoy warm or chilled.`
                 aspects: {
                     "dcat-dataset-strings": {
                         title: "a good milk chocolate receipt",
-                        description: `Ingredients:
-
-100g cocoa butter
-25g unsweetened cocoa powder
-75g powdered sugar
-50g milk powder
-1 tsp vanilla extract (optional)
-Pinch of salt
-Instructions:
-
-Melt: Gently melt cocoa butter in a double boiler.
-Mix: Stir in cocoa powder until smooth. Add powdered sugar and milk powder gradually, mixing well. Add vanilla and salt.
-Temper (Optional): Cool chocolate to 27-28°C (80-82°F), then reheat to 31-32°C (88-90°F).
-Mold: Pour into molds, tap to remove air bubbles.
-Set: Let set at room temperature or refrigerate until firm.
-Unmold: Remove from molds and enjoy!`
+                        description: `Milk chocolate is a type of chocolate that is made from a blend of cocoa solids, cocoa butter, sugar, and milk or milk powder. Unlike dark chocolate, which has a higher percentage of cocoa solids and little to no milk content, milk chocolate contains a significant amount of milk, giving it a creamier texture and a sweeter, milder flavor. Milk chocolate typically has a lower cocoa content (often between 10% to 50%) compared to dark chocolate. It is commonly used in candy bars, confections, and various desserts.`
                     },
                     publishing: {
                         state: "published"
@@ -297,19 +255,7 @@ Unmold: Remove from molds and enjoy!`
                 aspects: {
                     "dcat-dataset-strings": {
                         title: "a good chocolate milk receipt",
-                        description: `Ingredients:
-
-2 cups milk (dairy or non-dairy)
-2 tbsp unsweetened cocoa powder
-2 tbsp sugar (adjust to taste)
-1 tsp vanilla extract (optional)
-Instructions:
-
-Mix: Combine cocoa powder, sugar, and 2 tbsp of milk in a small bowl. Stir until smooth.
-Heat: Warm the remaining milk in a saucepan or microwave (optional).
-Combine: Add the cocoa mixture to the warm milk. Stir until fully dissolved.
-Flavor: Add vanilla extract, if using.
-Serve: Enjoy warm or chilled.`
+                        description: `Chocolate milk is a sweetened, flavored milk beverage that is made by mixing milk (usually cow's milk) with cocoa powder or chocolate syrup and often sugar. The drink can be served cold or hot and is popular as both a refreshing treat and a comfort beverage. Chocolate milk can be made at home or purchased pre-mixed in bottles or cartons. Some versions also include additional ingredients like vanilla extract or stabilizers to improve texture and flavor.`
                     },
                     publishing: {
                         state: "published"
