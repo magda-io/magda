@@ -189,7 +189,7 @@ describe("search api auth integration tests", function (this) {
                     "dcat-dataset-strings": {
                         title: "sydney water revenue report",
                         description:
-                            "The Sydney Water Revenue Report is a quarterly report that provides information on the revenue collected by Sydney Water."
+                            "The Sydney Water Revenue Report is a quarterly report that provides information on the revenue collected by Sydney Water. The report ID is RS2SDW2S."
                     },
                     publishing: {
                         state: "published"
@@ -229,6 +229,8 @@ describe("search api auth integration tests", function (this) {
         // the third dataset is not relevant but it will be returned as the last result with very low score
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId2);
         expect(r.value?.dataSets?.[1]?.identifier).to.equal(datasetId1);
+        // should only find 2 relevant datasets
+        expect(r.value?.dataSets?.length).to.equal(2);
     });
 
     it("should rank milk chocolate over chocolate milk and not return irrelevant result when searching `milk chocolate`", async () => {
@@ -273,7 +275,7 @@ describe("search api auth integration tests", function (this) {
                     "dcat-dataset-strings": {
                         title: "sydney water revenue report",
                         description:
-                            "The Sydney Water Revenue Report is a quarterly report that provides information on the revenue collected by Sydney Water."
+                            "The Sydney Water Revenue Report is a quarterly report that provides information on the revenue collected by Sydney Water. The report ID is RS2SDW2S"
                     },
                     publishing: {
                         state: "published"
@@ -312,5 +314,7 @@ describe("search api auth integration tests", function (this) {
         // first one should be the milk chocolate  dataset
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId1);
         expect(r.value?.dataSets?.[1]?.identifier).to.equal(datasetId2);
+        // should only find 2 relevant datasets
+        expect(r.value?.dataSets?.length).to.equal(2);
     });
 });
