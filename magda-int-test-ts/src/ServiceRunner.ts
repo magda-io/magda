@@ -213,7 +213,11 @@ export default class ServiceRunner {
                 this.docker.pruneVolumes()
             ]);
         } catch (e) {
-            console.error(e);
+            if ((e as any)?.statusCode == 409) {
+                console.warn("a prune operation is already running.");
+            } else {
+                console.error(e);
+            }
         }
         await delay(30000);
     }

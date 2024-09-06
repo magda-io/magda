@@ -324,6 +324,6 @@ describe("search api hybrid integration tests", function (this) {
         // first one should be the sydney report dataset
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId3);
         // should only find 1 relevant datasets
-        //expect(r.value?.dataSets?.length).to.equal(1);
+        expect(r.value?.dataSets?.length).to.equal(1);
     });
 });
