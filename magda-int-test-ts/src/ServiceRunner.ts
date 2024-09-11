@@ -16,6 +16,7 @@ import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization
 import urijs from "urijs";
 import { requireResolve } from "@magda/esm-utils";
 import { Readable } from "node:stream";
+import fetchRequest from "magda-typescript-common/src/fetchRequest.js";
 
 /**
  * Resolve magda module dir path.
@@ -91,11 +92,15 @@ export default class ServiceRunner {
     public authApiSkipAuth = false;
     public searchApiDebugMode = false;
     public storageApiSkipAuth = false;
+    public waitForDatasetIndexReady = true;
 
     public sbtPath: string = "";
 
     // default: wait for service online within 5 mins
     public maxWaitLiveTime: number = 300000;
+
+    // default: 60s for keeping TCP connection created by socate alive
+    public tcpConnectionKeepAliveTime: number = 60;
 
     // the docker host mat available at a different ip / hostname
     // setting this to portforward the docker based services to localhost
@@ -201,7 +206,39 @@ export default class ServiceRunner {
                 : []),
             ...(this.enableSearchApi ? [this.destroySearchApi()] : [])
         ]);
+        try {
+            await Promise.all([
+                this.docker.pruneNetworks(),
+                this.docker.pruneContainers(),
+                this.docker.pruneVolumes()
+            ]);
+        } catch (e) {
+            if ((e as any)?.statusCode == 409) {
+                console.warn("a prune operation is already running.");
+            } else {
+                console.error(e);
+            }
+        }
         await delay(30000);
+    }
+
+    kill(p: ChildProcess) {
+        return new Promise((resolve, reject) => {
+            function onExit(code: number, signal: string) {
+                resolve(undefined);
+                p.off("exit", onExit);
+            }
+            if (!p) {
+                resolve(undefined);
+                return;
+            }
+            if (p.killed) {
+                resolve(undefined);
+            } else {
+                p.kill();
+                p.on("exit", onExit);
+            }
+        });
     }
 
     getSbtPath() {
@@ -367,9 +404,7 @@ export default class ServiceRunner {
     }
 
     async destroyStorageApi() {
-        if (this.storageApiProcess && !this.storageApiProcess.killed) {
-            this.storageApiProcess.kill();
-        }
+        await this.kill(this.storageApiProcess);
     }
 
     async createPortForward(
@@ -395,13 +430,15 @@ export default class ServiceRunner {
                 `Port ${localPort} already has an existing port forwarding process running.`
             );
         }
-        const portForwardCmd = `socat TCP6-LISTEN:${localPort},fork,reuseaddr TCP4:${hostname}:${remotePort}`;
+        const portForwardCmd = `socat -T ${this.tcpConnectionKeepAliveTime} TCP6-LISTEN:${localPort},fork,reuseaddr TCP4:${hostname}:${remotePort}`;
         const portForwardProcess = child_process.spawn(portForwardCmd, {
             stdio: "inherit",
             shell: true
         });
 
-        console.log(`Started to portforward for ${hostname}:${remotePort}...`);
+        console.log(
+            `Started to portforward (PID: ${portForwardProcess.pid}) for ${hostname}:${remotePort}...`
+        );
 
         this.portForwardingProcessList[
             localPort.toString()
@@ -409,7 +446,7 @@ export default class ServiceRunner {
 
         portForwardProcess.on("exit", (code, signal) => {
             this.portForwardingProcessList[localPort] = undefined;
-            const msg = `portforward for ${hostname}:${remotePort} exited with code ${code} or signal ${signal}`;
+            const msg = `portforward (PID: ${portForwardProcess.pid}) for ${hostname}:${remotePort} exited with code ${code} or signal ${signal}`;
             if (!code) {
                 console.log(msg);
             } else {
@@ -419,7 +456,7 @@ export default class ServiceRunner {
 
         portForwardProcess.on("error", (error) => {
             console.error(
-                `portforward for ${hostname}:${remotePort} has thrown an error: ${error}`
+                `portforward (PID: ${portForwardProcess.pid}) for ${hostname}:${remotePort} has thrown an error: ${error}`
             );
         });
     }
@@ -427,7 +464,10 @@ export default class ServiceRunner {
     async destroyPortForward(localPort: string | number) {
         const process = this.portForwardingProcessList[localPort];
         if (process && !process.killed) {
-            process.kill();
+            console.log(
+                `About to kill port forwarding process, PID: ${process.pid}...`
+            );
+            await this.kill(process);
             this.portForwardingProcessList[localPort] = undefined;
         }
     }
@@ -491,9 +531,7 @@ export default class ServiceRunner {
     }
 
     async destroyAspectMigrator() {
-        if (this.aspectMigratorProcess && !this.aspectMigratorProcess.killed) {
-            this.aspectMigratorProcess.kill();
-        }
+        await this.kill(this.aspectMigratorProcess);
     }
 
     async createRegistryApi() {
@@ -547,9 +585,7 @@ export default class ServiceRunner {
     }
 
     async destroyRegistryApi() {
-        if (this.registryApiProcess && !this.registryApiProcess.killed) {
-            this.registryApiProcess.kill();
-        }
+        await this.kill(this.registryApiProcess);
     }
 
     async createAuthApi() {
@@ -614,9 +650,7 @@ export default class ServiceRunner {
     }
 
     async destroyAuthApi() {
-        if (this.authApiProcess && !this.authApiProcess.killed) {
-            this.authApiProcess.kill();
-        }
+        await this.kill(this.authApiProcess);
     }
 
     async createEmbeddingApi() {
@@ -1015,6 +1049,28 @@ export default class ServiceRunner {
                 console.log(await res.text());
                 return true;
             });
+            if (this.waitForDatasetIndexReady) {
+                await this.waitAlive("Dataset index setup", async () => {
+                    const esHost = this.dockerServiceForwardHost
+                        ? this.dockerServiceForwardHost
+                        : "localhost";
+                    const resData = await fetchRequest(
+                        "GET",
+                        `http://${esHost}:9200/_cat/indices?format=json`
+                    );
+                    const datasetIndexName = resData
+                        .map((item: any) => item.index)
+                        .find((indexName: string) =>
+                            indexName.startsWith("datasets")
+                        );
+
+                    if (!datasetIndexName) {
+                        throw new Error("Can't find datasets index");
+                    }
+
+                    return true;
+                });
+            }
             if (!this.enableIndexer) {
                 console.log("Indexer is not required. Exiting now...");
                 await this.destroyIndexerSetup();
@@ -1026,9 +1082,7 @@ export default class ServiceRunner {
     }
 
     async destroyIndexerSetup() {
-        if (this.indexerSetupProcess && !this.indexerSetupProcess.killed) {
-            this.indexerSetupProcess.kill();
-        }
+        await this.kill(this.indexerSetupProcess);
     }
 
     async createSearchApi() {
@@ -1081,9 +1135,7 @@ export default class ServiceRunner {
     }
 
     async destroySearchApi() {
-        if (this.searchApiProcess && !this.searchApiProcess.killed) {
-            this.searchApiProcess.kill();
-        }
+        await this.kill(this.searchApiProcess);
     }
 
     /**

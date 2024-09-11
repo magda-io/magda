@@ -527,15 +527,6 @@ buildtest:integration-tests:
     - cd ..
     - cd magda-int-test-ts
     - yarn test
-  artifacts:
-    paths:
-      - "target"
-      - "project/target"
-      - "project/project/target"
-      - "*/target"
-      - "*/project/target"
-      - "*/project/project/target"
-    expire_in: 7 days
 
 buildtest:opa-policies:
   stage: buildtest
