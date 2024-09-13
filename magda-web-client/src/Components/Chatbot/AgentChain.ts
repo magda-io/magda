@@ -15,7 +15,7 @@ import {
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import ChatWebLLM from "./ChatWebLLM";
 import { searchDatasets } from "api-clients/SearchApis";
-import * as json2Yaml from "json-to-pretty-yaml";
+import toYaml from "../../libs/toYaml";
 import AsyncQueue from "@ai-zen/async-queue";
 import {
     CommonInputType,
@@ -76,7 +76,7 @@ class AgentChain {
     constructor(loadProgressCallback?: InitProgressCallback) {
         this.loadProgressCallback = loadProgressCallback;
         this.model = new ChatWebLLM({
-            model: "Qwen2-7B-Instruct-q4f16_1-MLC",
+            model: "Phi-3.5-mini-instruct-q4f16_1-MLC-1k",
             loadProgressCallback: this.onProgress.bind(this),
             chatOptions: {
                 temperature: 0
@@ -120,7 +120,7 @@ class AgentChain {
         return (
             await Promise.all(
                 datasets
-                    .map((item) => json2Yaml.stringify(item))
+                    .map((item) => toYaml(item))
                     .map(async (item) => {
                         const doc = await splitter.createDocuments([item]);
                         return doc[0].pageContent;
