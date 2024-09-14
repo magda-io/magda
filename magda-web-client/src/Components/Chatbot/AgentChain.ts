@@ -76,7 +76,7 @@ class AgentChain {
     constructor(loadProgressCallback?: InitProgressCallback) {
         this.loadProgressCallback = loadProgressCallback;
         this.model = new ChatWebLLM({
-            model: "Phi-3.5-mini-instruct-q4f16_1-MLC-1k",
+            model: "Qwen2-7B-Instruct-q4f16_1-MLC",
             loadProgressCallback: this.onProgress.bind(this),
             chatOptions: {
                 temperature: 0

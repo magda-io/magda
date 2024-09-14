@@ -273,8 +273,8 @@ buildtest:ui:
     paths: []
   variables:
     REACT_APP_SHA1: "$CI_COMMIT_SHA"
-    GENERATE_SOURCEMAP: "true"
-    NODE_OPTIONS: "--max-old-space-size=8192"
+    # GENERATE_SOURCEMAP: "true"
+    # NODE_OPTIONS: "--max-old-space-size=8192"
   script:
     - yarn run eslint
     - yarn run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
