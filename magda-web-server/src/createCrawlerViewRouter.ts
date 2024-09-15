@@ -1,8 +1,8 @@
 import { Router } from "express";
 import shouldRenderCrawlerView from "./shouldRenderCrawlerView.js";
-import datasetView from "./cralwerViews/dataset.js";
-import distributionView from "./cralwerViews/distribution.js";
-import commonView from "./cralwerViews/commonView.js";
+import datasetView from "./crawlerViews/dataset.js";
+import distributionView from "./crawlerViews/distribution.js";
+import commonView from "./crawlerViews/commonView.js";
 import RegistryClient from "magda-typescript-common/src/registry/RegistryClient.js";
 import { MAGDA_TENANT_ID_HEADER } from "magda-typescript-common/src/registry/TenantConsts.js";
 import yamlFrontMatter from "yaml-front-matter";

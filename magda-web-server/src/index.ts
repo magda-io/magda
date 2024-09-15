@@ -13,7 +13,7 @@ import buildSitemapRouter from "./buildSitemapRouter.js";
 import getIndexFileContent from "./getIndexFileContent.js";
 import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl.js";
 import standardiseUiBaseUrl from "./standardiseUiBaseUrl.js";
-import createCralwerViewRouter from "./createCralwerViewRouter.js";
+import createCrawlerViewRouter from "./createCrawlerViewRouter.js";
 import moment from "moment-timezone";
 import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash.js";
 import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl.js";
@@ -516,7 +516,7 @@ console.log("Is Discourse Integration Enabled: ", enableDiscourseSupport);
 // crawler view router
 if (argv.enableCrawlerViews || enableDiscourseSupport) {
     app.use(
-        createCralwerViewRouter({
+        createCrawlerViewRouter({
             registryApiBaseUrl: argv.registryApiBaseUrlInternal,
             enableDiscourseSupport: enableDiscourseSupport,
             uiBaseUrl
