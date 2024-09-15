@@ -518,7 +518,6 @@ if (argv.enableCrawlerViews || enableDiscourseSupport) {
     app.use(
         createCralwerViewRouter({
             registryApiBaseUrl: argv.registryApiBaseUrlInternal,
-            baseUrl: baseExternalUrl,
             enableDiscourseSupport: enableDiscourseSupport,
             uiBaseUrl
         })
