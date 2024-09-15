@@ -1,5 +1,5 @@
 import {} from "mocha";
-import datasetView from "../../cralwerViews/dataset.js";
+import datasetView from "../../crawlerViews/dataset.js";
 import sampleData from "./sampleDataset.json";
 import { expect } from "chai";
 import fse from "fs-extra";
@@ -9,7 +9,7 @@ import { getCurrentDirPath } from "@magda/esm-utils";
 
 const __dirname = getCurrentDirPath();
 
-describe("Test cralwer view: dataset", () => {
+describe("Test crawler view: dataset", () => {
     beforeEach(() => {
         // set default timezone "Australia/Sydney"
         moment.tz.setDefault("Australia/Sydney");
