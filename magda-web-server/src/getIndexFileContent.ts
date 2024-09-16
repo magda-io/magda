@@ -110,6 +110,19 @@ async function getIndexFileContent(
             );
         }
 
+        // -- add sitemap link
+        if (uiBaseUrl !== "/") {
+            indexFileContent = indexFileContent.replace(
+                "</head>",
+                `<link rel="sitemap" type="application/xml" href="${uiBaseUrl}sitemap.xml" />\n</head>`
+            );
+        } else {
+            indexFileContent = indexFileContent.replace(
+                "</head>",
+                '<link rel="sitemap" type="application/xml" href="/sitemap.xml" />\n</head>'
+            );
+        }
+
         if (appBasePath !== "/") {
             // if appBasePath not "/", add basePath to API urls
             indexFileContent = indexFileContent.replace(
