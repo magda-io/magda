@@ -1,12 +1,14 @@
 import markdownToHtml from "magda-typescript-common/src/markdownToHtml.js";
 
-type ContentType = {
-    title: string;
+interface ContentType {
+    title?: string;
     __content: string;
-};
+    canonicalUrl: string;
+    sitemapUrl: string;
+}
 
 const commonView = (
-    { title, __content }: ContentType,
+    { title, __content, canonicalUrl, sitemapUrl }: ContentType,
     shouldShowFullVersionLink: boolean = false,
     fullVersionUrl: string = ""
 ) => {
@@ -15,7 +17,16 @@ const commonView = (
         <head>
             <meta charset="UTF-8">
             <title>${title}</title>
-            <style></style>
+            ${
+                canonicalUrl
+                    ? `<link rel="canonical" href="${canonicalUrl}">`
+                    : ""
+            }
+            ${
+                sitemapUrl
+                    ? `<link rel="sitemap" type="application/xml" href="${sitemapUrl}">`
+                    : ""
+            }
         </head>
         <body>
             ${markdownToHtml(__content, true)}

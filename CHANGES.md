@@ -6,6 +6,7 @@
 - Increase indexer client connection idle-timeout to avoid encountering connection reset error for downloading large region files
 - Upgraded OpenSearch to v2.16.0
 - #3556: Serves robots.txt as content-type `text/plain` instead and other sitemap & crawler view related improvements.
+- #3564: Add rel="canonical" annotations to dataset & distribution page crawler views
 
 ## v4.2.3
 
