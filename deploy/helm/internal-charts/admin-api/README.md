@@ -1,6 +1,6 @@
 # admin-api
 
-![Version: 4.2.3](https://img.shields.io/badge/Version-4.2.3-informational?style=flat-square)
+![Version: 4.2.4-alpha.1](https://img.shields.io/badge/Version-4.2.4--alpha.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
