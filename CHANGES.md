@@ -5,6 +5,7 @@
 - #3559: Set `conflicts` to true when Indexer performs the trim operation.
 - Increase indexer client connection idle-timeout to avoid encountering connection reset error for downloading large region files
 - Upgraded OpenSearch to v2.16.0
+- #3556: Serves robots.txt as content-type `text/plain` instead and other sitemap & crawler view related improvements.
 
 ## v4.2.3
 
