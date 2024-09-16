@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v4.2.4
+
+- #3559: Set `conflicts` to true when Indexer performs the trim operation.
+- Increase indexer client connection idle-timeout to avoid encountering connection reset error for downloading large region files
+- Upgraded OpenSearch to v2.16.0
+
 ## v4.2.3
 
 - #3553: Make Chart Preview & Table Preview Configurable per Dataset

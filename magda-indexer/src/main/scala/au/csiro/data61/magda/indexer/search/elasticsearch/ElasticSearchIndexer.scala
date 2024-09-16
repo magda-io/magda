@@ -579,23 +579,45 @@ class ElasticSearchIndexer(
       setupFuture
         .flatMap { client =>
           client.execute(
-            deleteIn(idxName).by(rangeQuery("indexed").lt(before.toString))
+            deleteIn(idxName)
+              .by(rangeQuery("indexed").lt(before.toString))
+              .proceedOnConflicts(true)
           )
         }
-        .map {
-          case results: RequestSuccess[DeleteByQueryResponse] =>
-            logger.info(
-              "Trimmed index {} for {} old datasets",
-              idxName,
-              results.result.deleted
-            )
-          case ESGenericException(e) =>
-            logger.info(
+        .map { res =>
+          if (res.isError) {
+            logger.error(
               "Failed to Trimmed index {} old datasets: {}",
               idxName,
-              e.getMessage
+              res.body.getOrElse(res.error.reason)
             )
-        }
+            throw res.error.asException
+          } else {
+            res.result match {
+              case Left(r) =>
+                logger.info(
+                  "Trimmed index {} for {} old datasets",
+                  idxName,
+                  r.deleted
+                )
+              case Right(r) =>
+                logger.info(
+                  "A task has been created for trimmed index {}. Task Id: {}. Node Id: {}",
+                  idxName,
+                  r.taskId,
+                  r.nodeId
+                )
+            }
+          }
+        } recover {
+        case e: Throwable =>
+          logger.error(
+            "Failed to Trimmed index {} old datasets: {}",
+            idxName,
+            e.getMessage
+          )
+          throw e
+      }
     }
 
     Future.sequence(trimIndexFutureList).map(_ => Unit)
