@@ -519,6 +519,7 @@ if (argv.enableCrawlerViews || enableDiscourseSupport) {
         createCrawlerViewRouter({
             registryApiBaseUrl: argv.registryApiBaseUrlInternal,
             enableDiscourseSupport: enableDiscourseSupport,
+            baseExternalUrl,
             uiBaseUrl
         })
     );

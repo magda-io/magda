@@ -12,6 +12,7 @@ const browserNames = [
 
 const crawlerPatterns = [
     "Googlebot\\/", // Google
+    "Google-InspectionTool\\/", // Google inspectionTool
     "bingbot", // Bing
     "Slurp", // Yahoo
     "DuckDuckBot", // DuckDuckGo

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl.js";
 import shouldRenderCrawlerView from "./shouldRenderCrawlerView.js";
 import datasetView from "./crawlerViews/dataset.js";
 import distributionView from "./crawlerViews/distribution.js";
@@ -13,6 +14,7 @@ const { safeLoadFront } = yamlFrontMatter;
 type OptionType = {
     enableDiscourseSupport: boolean;
     uiBaseUrl: string;
+    baseExternalUrl: string;
     registryApiBaseUrl: string;
 };
 
@@ -22,12 +24,17 @@ function getTenantIdFromReq(req: Request) {
         : 0;
 }
 
-const createCralwerViewRouter = ({
+const createCrawlerViewRouter = ({
     enableDiscourseSupport,
     registryApiBaseUrl,
-    uiBaseUrl
+    uiBaseUrl,
+    baseExternalUrl
 }: OptionType) => {
     const router: Router = Router();
+    const sitemapUrl = `${getAbsoluteUrl(
+        uiBaseUrl,
+        baseExternalUrl ? baseExternalUrl : "/"
+    )}sitemap.xml`;
 
     async function datasetViewHandler(
         req: Request<
@@ -70,7 +77,16 @@ const createCralwerViewRouter = ({
                 throw datasetData;
             }
             const content = safeLoadFront(datasetView(datasetData, uiBaseUrl));
-            res.send(commonView(content as any));
+            res.send(
+                commonView({
+                    ...content,
+                    sitemapUrl,
+                    canonicalUrl: getAbsoluteUrl(
+                        `${uiBaseUrl}dataset/${datasetId}`,
+                        baseExternalUrl
+                    )
+                })
+            );
         } catch (e) {
             console.warn(
                 `Failed to producing crawler view for datasetId \`${datasetId}\`: ${
@@ -142,7 +158,16 @@ const createCralwerViewRouter = ({
             const content = safeLoadFront(
                 distributionView(distributionData, datasetData, uiBaseUrl)
             );
-            res.send(commonView(content as any));
+            res.send(
+                commonView({
+                    ...content,
+                    sitemapUrl,
+                    canonicalUrl: getAbsoluteUrl(
+                        `${uiBaseUrl}dataset/${datasetId}/distribution/${distributionId}`,
+                        baseExternalUrl
+                    )
+                })
+            );
         } catch (e) {
             console.warn(
                 `Failed to producing crawler view for distributionId \`${distributionId}\`: ${
@@ -165,4 +190,4 @@ const createCralwerViewRouter = ({
     return router;
 };
 
-export default createCralwerViewRouter;
+export default createCrawlerViewRouter;
