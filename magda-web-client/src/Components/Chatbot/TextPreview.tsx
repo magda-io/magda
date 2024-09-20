@@ -1,7 +1,8 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useCallback } from "react";
 import { useAsync } from "react-async-hook";
 import reportError from "helpers/reportError";
 import GeoJsonViewer from "./GeoJsonViewer";
+import MarkdownMermaid from "./MarkdownMermaid";
 
 async function loadMarkdownPreview() {
     try {
@@ -65,52 +66,67 @@ async function loadMarkdownPreview() {
 
         const MarkdownPreview: FunctionComponent<{ source: string }> = ({
             source
-        }) => (
-            <ReactMarkdown
-                remarkPlugins={[
-                    RemarkGfm,
-                    RemarkMath,
-                    RemarkBreaks,
-                    RemarkDefinitionList,
-                    RemarkExtendedTable
-                ]}
-                rehypePlugins={[
-                    RehypeKatex,
-                    [
-                        RehypeExternalLinks,
-                        {
-                            rel: ["nofollow", "noopener", "noreferrer"],
-                            target: "_blank"
-                        }
-                    ]
-                ]}
-                components={{
-                    code({ node, inline, className, children, ...props }) {
-                        const match = /language-(\w+)/.exec(className || "");
-                        if (match?.[1]?.toLowerCase() === "geojson") {
-                            return <GeoJsonViewer geoJson={children} />;
-                        }
-                        return !inline && match ? (
-                            <SyntaxHighlighter
-                                {...props}
-                                children={String(children).replace(/\n$/, "")}
-                                style={
-                                    prismStyleModule.base16AteliersulphurpoolLight
-                                }
-                                language={match[1]}
-                                PreTag="div"
-                            />
-                        ) : (
-                            <code {...props} className={className}>
-                                {children}
-                            </code>
-                        );
-                    }
-                }}
-            >
-                {source}
-            </ReactMarkdown>
-        );
+        }) => {
+            const code = useCallback((allProps) => {
+                const {
+                    node,
+                    inline,
+                    className,
+                    children,
+                    ...props
+                } = allProps;
+                const match = /language-(\w+)/.exec(className || "");
+                if (match?.[1]?.toLowerCase() === "geojson") {
+                    return <GeoJsonViewer geoJson={children} />;
+                } else if (
+                    match?.[1]?.toLowerCase() === "mermaid".toLowerCase()
+                ) {
+                    return (
+                        <MarkdownMermaid definition={String(children).trim()} />
+                    );
+                }
+                return !inline && match ? (
+                    <SyntaxHighlighter
+                        {...props}
+                        children={String(children).replace(/\n$/, "")}
+                        style={prismStyleModule.base16AteliersulphurpoolLight}
+                        language={match[1]}
+                        PreTag="div"
+                    />
+                ) : (
+                    <code {...props} className={className}>
+                        {children}
+                    </code>
+                );
+            }, []);
+
+            return (
+                <ReactMarkdown
+                    remarkPlugins={[
+                        RemarkGfm,
+                        RemarkMath,
+                        RemarkBreaks,
+                        RemarkDefinitionList,
+                        RemarkExtendedTable
+                    ]}
+                    rehypePlugins={[
+                        RehypeKatex,
+                        [
+                            RehypeExternalLinks,
+                            {
+                                rel: ["nofollow", "noopener", "noreferrer"],
+                                target: "_blank"
+                            }
+                        ]
+                    ]}
+                    components={{
+                        code
+                    }}
+                >
+                    {source}
+                </ReactMarkdown>
+            );
+        };
 
         return MarkdownPreview;
     } catch (e) {
