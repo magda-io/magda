@@ -697,7 +697,8 @@ class FacetSpec extends BaseSearchApiSpec {
     describe("year") {
       it("with no query") {
         checkFacetsNoQuery() { (dataSets, facetSize) =>
-          checkDataSetResult(dataSets, responseAs[SearchResult])
+          val result = responseAs[SearchResult]
+          checkDataSetResult(dataSets, result)
         }
       }
 

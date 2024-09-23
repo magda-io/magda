@@ -19,7 +19,6 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.duration.MILLISECONDS
 import akka.http.scaladsl.model.HttpHeader
 import akka.pattern.after
-import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.AppConfig
 
 import scala.util.{Failure, Success}
@@ -29,6 +28,10 @@ import akka.stream.scaladsl._
 import scala.concurrent.duration.FiniteDuration
 import scala.util.control.NonFatal
 import scala.util.Random
+import spray.json._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
+import akka.util.ByteString
 
 trait HttpFetcher {
   def get(path: String, headers: Seq[HttpHeader] = Seq()): Future[HttpResponse]
@@ -50,11 +53,48 @@ trait HttpFetcher {
   )(
       implicit m: ToEntityMarshaller[T]
   ): Future[HttpResponse]
+
+  def jsonResponse(
+      res: HttpResponse,
+      url: Option[String] = None,
+      method: Option[String] = None
+  )(
+      implicit system: ActorSystem,
+      ec: ExecutionContext
+  ): Future[JsValue] = {
+    if (!res.status.isSuccess()) {
+      res.entity.dataBytes.runFold(ByteString(""))(_ ++ _).flatMap { body =>
+        val errorMsg =
+          s"Failed to request${method.map(" " + _).getOrElse("")}${url
+            .map(" " + _)
+            .getOrElse("")}. ${res.status.value}. ${body.utf8String}"
+        system.log.error(errorMsg)
+        Future.failed(
+          new Exception(errorMsg)
+        )
+      }
+    } else {
+      Unmarshal(res).to[JsValue].recover {
+        case e: Throwable =>
+          res.entity.dataBytes.runFold(ByteString(""))(_ ++ _).map { body =>
+            system.log.error(
+              s"Failed to Unmarshal JSON response for request${method.map(" " + _).getOrElse("")}${url
+                .map(" " + _)
+                .getOrElse("")}: {}",
+              body.utf8String
+            )
+          }
+          throw e
+      }
+    }
+  }
 }
 
 trait MockHttpFetcher extends HttpFetcher {
   def callCount: Unit
 }
+
+trait DefaultHttpFetcherUnmarshalType[T]
 
 class HttpFetcherImpl(
     baseUrl: URL,
@@ -272,6 +312,7 @@ class HttpFetcherImpl(
       .withHeaders(scala.collection.immutable.Seq.concat(headers))
     queueRequest(request)
   }
+
 }
 
 object HttpFetcher {

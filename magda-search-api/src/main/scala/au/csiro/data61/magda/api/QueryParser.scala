@@ -1,12 +1,12 @@
 package au.csiro.data61.magda.api
 
+import au.csiro.data61.magda.api.model.SearchAuthDecision
+import au.csiro.data61.magda.model.TenantId.{TenantId}
 import au.csiro.data61.magda.util.DateParser._
 
-import scala.util.matching.Regex
 import java.time.OffsetDateTime
-
 import au.csiro.data61.magda.model.misc.QueryRegion
-import au.csiro.data61.magda.spatial.RegionSources
+
 import java.time.ZoneOffset
 import com.typesafe.config.Config
 import au.csiro.data61.magda.model.misc.Region
@@ -32,16 +32,21 @@ object FilterValue {
 }
 case class Query(
     freeText: Option[String] = None,
+    freeTextVector: Option[Array[Double]] = None,
+    hybridSearch: Boolean = false,
     publishers: Set[FilterValue[String]] = Set(),
     dateFrom: Option[FilterValue[OffsetDateTime]] = None,
     dateTo: Option[FilterValue[OffsetDateTime]] = None,
     regions: Set[FilterValue[Region]] = Set(),
     boostRegions: Set[Region] = Set(),
     formats: Set[FilterValue[String]] = Set(),
-    publishingState: Set[FilterValue[String]] = Set()
+    publishingState: Set[FilterValue[String]] = Set(),
+    authDecision: Option[SearchAuthDecision] = None,
+    tenantId: Option[TenantId] = None
 )
 
 object Query {
+
   val quoteRegex = """"(.*)""".r
 
   def fromQueryParams(
@@ -51,7 +56,9 @@ object Query {
       dateTo: Option[String],
       regions: Iterable[String],
       formats: Iterable[String],
-      publishingState: Iterable[String]
+      publishingState: Iterable[String],
+      authDecision: Option[SearchAuthDecision],
+      tenantId: TenantId
   )(implicit config: Config): Query = {
     Query(
       freeText = if (freeText.isEmpty) Some("*") else freeText,
@@ -63,7 +70,9 @@ object Query {
       boostRegions = Set(),
       formats = formats.map(x => filterValueFromString(Some(x))).flatten.toSet,
       publishingState =
-        publishingState.map(x => filterValueFromString(Some(x))).flatten.toSet
+        publishingState.map(x => filterValueFromString(Some(x))).flatten.toSet,
+      authDecision = authDecision,
+      tenantId = Some(tenantId)
     )
   }
 

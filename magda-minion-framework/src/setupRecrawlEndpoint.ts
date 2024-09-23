@@ -5,7 +5,7 @@ import Crawler from "./Crawler.js";
 /**
  * @apiDefine GenericErrorMinionJson
  * @apiError (Error 500 JSON Response Body) {Boolean} isSuccess Whether or not the operation is successfully done.
- * @apiError (Error 500 JSON Response Body) {Boolean} [isNewCrawler] indicate Whether it's a new cralwer process or existing crawling process is still no-going.
+ * @apiError (Error 500 JSON Response Body) {Boolean} [isNewCrawler] indicate Whether it's a new crawler process or existing crawling process is still no-going.
  * @apiError (Error 500 JSON Response Body) {String} errorMessage Free text error message. Only available when `isSuccess`=`false`
  * @apiErrorExample {json} Response:
  * {

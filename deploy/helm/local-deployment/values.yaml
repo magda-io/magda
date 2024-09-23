@@ -39,15 +39,14 @@ connector-actmapi:
     name: ACT Government ACTMAPi
     sourceUrl: https://actmapi-actgov.opendata.arcgis.com/api/feed/dcat-us/1.1.json
 
-# aodn includes most aims datasets
-# connector-aims:
-#   config:
-#     id: aims
-#     name: Australian Institute of Marine Science
-#     sourceUrl: https://geonetwork.apps.aims.gov.au/geonetwork/srv/eng/csw
-#     outputSchema: http://standards.iso.org/iso/19115/-3/mdb/2.0
-#     typeNames: mdb:MD_Metadata
-#     pageSize: 100
+connector-aims:
+  config:
+    id: aims
+    name: Australian Institute of Marine Science
+    sourceUrl: https://geonetwork.apps.aims.gov.au/geonetwork/srv/eng/csw
+    outputSchema: http://standards.iso.org/iso/19115/-3/mdb/2.0
+    typeNames: mdb:MD_Metadata
+    pageSize: 100
 
 connector-aodn:
   config:
@@ -89,7 +88,9 @@ connector-marlin:
   config:
     id: marlin
     name: CSIRO Marlin
-    sourceUrl: http://www.marlin.csiro.au/geonetwork/srv/eng/csw
+    sourceUrl: https://marlin.csiro.au/geonetwork/srv/eng/csw
+    outputSchema: http://standards.iso.org/iso/19115/-3/mdb/2.0
+    typeNames: mdb:MD_Metadata
     pageSize: 50
 
 connector-environment:
@@ -153,12 +154,13 @@ connector-nsw:
     sourceUrl: https://data.nsw.gov.au/data/
     pageSize: 100
 
-connector-sdinsw:
-  config:
-    id: sdinsw
-    name: NSW Land and Property
-    sourceUrl: https://sdi.nsw.gov.au/csw
-    pageSize: 100
+# Service is not available
+# connector-sdinsw:
+#   config:
+#     id: sdinsw
+#     name: NSW Land and Property
+#     sourceUrl: https://sdi.nsw.gov.au/csw
+#     pageSize: 100
 
 connector-qld:
   config:
@@ -185,7 +187,9 @@ connector-tern:
   config:
     id: tern
     name: Terrestrial Ecosystem Research Network
-    sourceUrl: http://data.auscover.org.au/geonetwork/srv/eng/csw
+    sourceUrl: https://geonetwork.tern.org.au/geonetwork/srv/eng/csw
+    outputSchema: http://standards.iso.org/iso/19115/-3/mdb/2.0
+    typeNames: mdb:MD_Metadata
     pageSize: 100
 
 connector-vic:

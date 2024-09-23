@@ -118,10 +118,25 @@ class SearchBox extends Component {
     getSearchBoxValue() {
         if (defined(this.state.searchText)) {
             return this.state.searchText;
-        } else if (defined(queryString.parse(this.props.location.search).q)) {
-            return queryString.parse(this.props.location.search).q;
+        } else {
+            const result = queryString.parse(this.props.location.search);
+            const q = result?.q;
+            if (typeof q !== "string" || !q.trim()) {
+                return "";
+            }
+            const pathname =
+                typeof this?.props?.location?.pathname === "string"
+                    ? this.props.location.pathname
+                    : "";
+            if (
+                /\/search$/.test(pathname) ||
+                /\/drafts$/.test(pathname) ||
+                /\/all-datasets$/.test(pathname)
+            ) {
+                return q;
+            }
+            return "";
         }
-        return "";
     }
 
     onDismissError() {

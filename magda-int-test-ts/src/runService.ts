@@ -21,11 +21,12 @@ program
     .option("--es", "Start Magda's elasticsearch service.")
     .option(
         "--searchApi",
-        "Start Magda's search API service. When this option is set, elasticsearch service will be started as well."
+        "Start Magda's search API service. When this option is set, elasticsearch & embedding api service will be started as well."
     )
+    .option("--embeddingApi", "Start Magda's Embedding API service.")
     .option(
         "--indexer",
-        "Start Magda's indexer and keep it running. When this option is set, elasticsearch service will be started as well." +
+        "Start Magda's indexer and keep it running. When this option is set, elasticsearch & embedding api service will be started as well." +
             "Please note: this service will still be run during elasticsearch's starting up in order to setup indices. " +
             "However, when this switch is off, the indexer will auto-exit after the setup job is done."
     )
@@ -74,6 +75,10 @@ if (options?.searchApi) {
 
 if (options?.indexer) {
     serviceRunner.enableIndexer = true;
+}
+
+if (options?.embeddingApi) {
+    serviceRunner.enableEmbeddingApi = true;
 }
 
 if (options?.jwtSecret) {

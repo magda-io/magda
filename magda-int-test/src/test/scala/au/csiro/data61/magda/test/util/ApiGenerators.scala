@@ -1,6 +1,10 @@
 package au.csiro.data61.magda.test.util
 
+import au.csiro.data61.magda.api.model.SearchAuthDecision
 import au.csiro.data61.magda.api.{FilterValue, Query, Specified, Unspecified}
+import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
+import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
+import au.csiro.data61.magda.model.TenantId.SpecifiedTenantId
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.test.util.Generators._
@@ -281,7 +285,20 @@ object ApiGenerators {
     } yield query
 
     textQuery.flatMap(
-      (_, query.copy(publishers = publishers, formats = formats))
+      (
+        _,
+        query.copy(
+          publishers = publishers,
+          formats = formats,
+          authDecision = Some(
+            SearchAuthDecision(
+              UnconditionalTrueDecision,
+              UnconditionalTrueDecision
+            )
+          ),
+          tenantId = Some(SpecifiedTenantId(MAGDA_ADMIN_PORTAL_ID))
+        )
+      )
     )
   }
 

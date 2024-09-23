@@ -1,5 +1,7 @@
 import React, { Component } from "react";
-import DataPreviewVis from "Components/Common/DataPreviewVis";
+import DataPreviewVis, {
+    mergeDatasetAndDistributionPreviewSettings
+} from "Components/Common/DataPreviewVis";
 import DataPreviewMap from "Components/Common/DataPreviewMap";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import ContactPoint from "Components/Common/ContactPoint";
@@ -115,7 +117,10 @@ class DistributionDetails extends Component<{
 
     render() {
         const dataset = this.props.dataset;
-        const distribution = this.props.distribution;
+        const distribution = mergeDatasetAndDistributionPreviewSettings(
+            this.props.distribution,
+            dataset
+        ) as ParsedDistribution;
         const sourceText = this.renderLinkText(distribution);
 
         return (
@@ -135,7 +140,8 @@ class DistributionDetails extends Component<{
                 {(distribution?.downloadURL || distribution?.accessURL) && (
                     <div className="distribution-preview">
                         <DataPreviewVis
-                            distribution={this.props.distribution}
+                            distribution={distribution}
+                            dataset={dataset}
                         />
                         <DataPreviewMap distributions={[distribution]} />
                         {extraVisualisationSections?.length

@@ -15,6 +15,7 @@ import { DatasetMessage } from "./model.js";
 import renderTemplate, { Templates } from "./renderTemplate.js";
 import EmailTemplateRender from "./EmailTemplateRender.js";
 import ServerError from "magda-typescript-common/src/ServerError.js";
+import contentSanitizer from "./contentSanitizer.js";
 
 const EMAIL_REGEX = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 
@@ -104,7 +105,7 @@ export default function createApiRouter(
         req,
         res
     ) {
-        const body: DatasetMessage = req.body;
+        const body: DatasetMessage = contentSanitizer(req.body);
         const subject = `Data Request from ${body.senderName}`;
         const html = renderTemplate(
             options.templateRender,
@@ -162,7 +163,7 @@ export default function createApiRouter(
         "/public/send/dataset/:datasetId/question",
         validateMiddleware,
         async function (req, res) {
-            const body: DatasetMessage = req.body;
+            const body: DatasetMessage = contentSanitizer(req.body);
 
             const promise = getDataset(req.params.datasetId).then((dataset) => {
                 const dcatDatasetStrings = dataset.aspects[

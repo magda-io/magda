@@ -5,7 +5,7 @@ import java.util.function.Consumer
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.model.Protocols
-import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.client.{AuthApiClient, EmbeddingApiClient}
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.misc.DataSet
@@ -203,7 +203,11 @@ trait BaseSearchApiSpec
     val searchQueryer = new ElasticSearchQueryer(fakeIndices)
     val authApiClient = new AuthApiClient()
     val api = new SearchApi(authApiClient, searchQueryer)(config, logger)
-    val indexer = new ElasticSearchIndexer(MockClientProvider, fakeIndices)
+    val indexer = new ElasticSearchIndexer(
+      MockClientProvider,
+      fakeIndices,
+      embeddingApiClient
+    )
 
     val convertedDataSets = dataSets.map(
       d =>

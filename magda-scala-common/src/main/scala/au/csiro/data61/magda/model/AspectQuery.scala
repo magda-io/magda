@@ -38,7 +38,7 @@ case class AspectQueryToEsDslConfig(
 
 sealed trait AspectQuery {
 
-  val registryRefToEsRefMappings = Map(
+  val registryRefToEsDatasetRefMappings = Map(
     "access-control" -> Map(
       "orgUnitId" -> "accessControl.orgUnitId",
       "ownerId" -> "accessControl.ownerId",
@@ -122,24 +122,71 @@ sealed trait AspectQuery {
     )
   )
 
+  val registryRefToEsDistributionRefMappings = Map(
+    "access-control" -> Map(
+      "orgUnitId" -> "distributions.accessControl.orgUnitId",
+      "ownerId" -> "distributions.accessControl.ownerId",
+      "constraintExemption" -> "distributions.accessControl.constraintExemption",
+      "preAuthorisedPermissionIds" -> "distributions.accessControl.preAuthorisedPermissionIds"
+    ),
+    "dcat-distribution-strings" -> Map(
+      "title" -> "distributions.title",
+      "description" -> "distributions.description",
+      "issued" -> "distributions.issued",
+      "modified" -> "distributions.modified",
+      "license" -> "distributions.license.keyword",
+      "rights" -> "distributions.rights",
+      "accessURL" -> "distributions.accessURL.keyword",
+      "accessNotes" -> "distributions.accessNotes",
+      "downloadURL" -> "distributions.downloadURL.keyword",
+      "byteSize" -> "distributions.byteSize",
+      "mediaType" -> "distributions.mediaType.keyword",
+      "format" -> "distributions.format.keyword",
+      "useStorageApi" -> "distributions.useStorageApi"
+    ),
+    "publishing" -> Map(
+      "state" -> "distributions.publishingState"
+    ),
+    "source" -> Map(
+      "id" -> "distributions.source.id.keyword",
+      "name" -> "distributions.source.name.keyword",
+      "originalName" -> "distributions.source.originalName.keyword",
+      "originalUrl" -> "distributions.source.originalUrl",
+      "url" -> "distributions.source.url"
+    )
+  )
+
   val aspectId: String
   val path: Seq[String]
   val negated: Boolean
 
   // interface for implementing logic of translating different types of AspectQuery to ElasticSearch DSL queries
-  protected def esDslQueries(): Option[EsDslQuery]
+  protected def esDslQueries(
+      config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
+  ): Option[EsDslQuery]
 
-  protected def getEsFieldPath(): Option[String] = {
+  protected def getEsFieldPath(
+      config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
+  ): Option[String] = {
+    val prefix =
+      if (config.prefixes.head == "input.object.dataset") ""
+      else (config.prefixes.head.replace("input.object.", "") + ".")
+
+    val mapping =
+      if (config.prefixes.head == "input.object.dataset")
+        registryRefToEsDatasetRefMappings
+      else registryRefToEsDistributionRefMappings
+
     if (aspectId == "tenantId") {
-      Some(aspectId)
+      Some(s"""${prefix}tenantId""")
     } else if (aspectId == "id") {
-      Some("identifier")
-    } else if (aspectId.isEmpty || registryRefToEsRefMappings
+      Some(s"""${prefix}identifier""")
+    } else if (aspectId.isEmpty || mapping
                  .get(aspectId)
                  .isEmpty || path.isEmpty) {
       None
     } else {
-      val mappings = registryRefToEsRefMappings(aspectId)
+      val mappings = mapping(aspectId)
       val fieldPath = path.mkString(".")
       mappings.get(fieldPath)
     }
@@ -235,7 +282,7 @@ sealed trait AspectQuery {
     */
   def toEsDsl(
       config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
-  ): Option[EsDslQuery] = esDslQueries
+  ): Option[EsDslQuery] = esDslQueries(config)
 }
 
 class AspectQueryTrue extends AspectQuery {
@@ -256,7 +303,9 @@ class AspectQueryTrue extends AspectQuery {
   ) =
     sqlQueries
 
-  def esDslQueries(): Option[EsDslQuery] =
+  def esDslQueries(
+      config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
+  ): Option[EsDslQuery] =
     Some(MatchAllQuery())
 
 }
@@ -279,7 +328,9 @@ class AspectQueryFalse extends AspectQuery {
   ) =
     sqlQueries
 
-  def esDslQueries(): Option[EsDslQuery] =
+  def esDslQueries(
+      config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
+  ): Option[EsDslQuery] =
     Some(MatchNoneQuery())
 }
 
@@ -289,8 +340,10 @@ case class AspectQueryExists(
     negated: Boolean = false
 ) extends AspectQuery {
 
-  def esDslQueries(): Option[EsDslQuery] = {
-    val field = getEsFieldPath
+  def esDslQueries(
+      config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
+  ): Option[EsDslQuery] = {
+    val field = getEsFieldPath(config)
     if (field.isEmpty) {
       throw new Exception(
         s"Failed to create ES DSL query: cannot convert registry ref to es ref: ${aspectId} / ${path
@@ -354,8 +407,10 @@ case class AspectQueryWithValue(
     placeReferenceFirst: Boolean = true
 ) extends AspectQuery {
 
-  def esDslQueries(): Option[EsDslQuery] = {
-    val fieldOpt = getEsFieldPath
+  def esDslQueries(
+      config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
+  ): Option[EsDslQuery] = {
+    val fieldOpt = getEsFieldPath(config)
     if (fieldOpt.isEmpty) {
       throw new Exception(
         s"Failed to create ES DSL query: cannot convert registry ref to es ref: ${aspectId} / ${path
@@ -529,8 +584,10 @@ case class AspectQueryArrayNotEmpty(
     val negated: Boolean = false
 ) extends AspectQuery {
 
-  def esDslQueries(): Option[EsDslQuery] = {
-    val fieldOpt = getEsFieldPath
+  def esDslQueries(
+      config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
+  ): Option[EsDslQuery] = {
+    val fieldOpt = getEsFieldPath(config)
     if (fieldOpt.isEmpty) {
       throw new Exception(
         s"Failed to create ES DSL query: cannot convert registry ref to es ref: ${aspectId} / ${path
@@ -595,8 +652,10 @@ case class AspectQueryValueInArray(
     negated: Boolean = false
 ) extends AspectQuery {
 
-  override def esDslQueries(): Option[EsDslQuery] = {
-    val fieldOpt = getEsFieldPath
+  override def esDslQueries(
+      config: AspectQueryToEsDslConfig = AspectQueryToEsDslConfig()
+  ): Option[EsDslQuery] = {
+    val fieldOpt = getEsFieldPath(config)
     if (fieldOpt.isEmpty) {
       throw new Exception(
         s"Failed to create ES DSL query: cannot convert registry ref to es ref: ${aspectId} / ${path

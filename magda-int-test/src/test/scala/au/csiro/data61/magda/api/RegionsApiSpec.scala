@@ -19,7 +19,7 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.client.{AuthApiClient, EmbeddingApiClient}
 import au.csiro.data61.magda.model.Registry.{
   MAGDA_ADMIN_PORTAL_ID,
   MAGDA_TENANT_ID_HEADER
@@ -38,6 +38,7 @@ class RegionsApiSpec
 
   val logger = Logging(system, getClass)
   implicit val clientProvider = new DefaultClientProvider
+  implicit val embeddingApiClient = new EmbeddingApiClient()
 
   val searchQueryer = new ElasticSearchQueryer(fakeIndices)
   val authApiClient = new AuthApiClient()

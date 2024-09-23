@@ -6,7 +6,6 @@ const fse = require("fs-extra");
 const childProcess = require("child_process");
 const uniqid = require("uniqid");
 
-const appName = "magda-create-secrets";
 const pkg = require("./package.json");
 
 const program = require("commander");

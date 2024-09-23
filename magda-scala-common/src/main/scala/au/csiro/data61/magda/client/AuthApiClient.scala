@@ -35,6 +35,12 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
     false
   }
 
+  private val muteWarning = if (config.hasPath("authorization.muteWarning")) {
+    config.getBoolean("authorization.muteWarning")
+  } else {
+    false
+  }
+
   def this()(
       implicit config: Config,
       system: ActorSystem,
@@ -54,9 +60,11 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
       config: AuthDecisionReqConfig
   ): Future[Auth.AuthDecision] = {
     if (skipOpaQuery) {
-      system.log.warning(
-        "WARNING: Skip OPA (policy engine) querying option is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
-      )
+      if (!muteWarning) {
+        system.log.warning(
+          "WARNING: Skip OPA (policy engine) querying option is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
+        )
+      }
       return Future(
         Auth.UnconditionalTrueDecision
       )

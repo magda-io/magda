@@ -13,9 +13,11 @@ import buildSitemapRouter from "./buildSitemapRouter.js";
 import getIndexFileContent from "./getIndexFileContent.js";
 import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl.js";
 import standardiseUiBaseUrl from "./standardiseUiBaseUrl.js";
-import createCralwerViewRouter from "./createCralwerViewRouter.js";
+import createCrawlerViewRouter from "./createCrawlerViewRouter.js";
 import moment from "moment-timezone";
 import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash.js";
+import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl.js";
+import addRobotsMeta from "./addRobotsMeta.js";
 
 const argv = yargs
     .config()
@@ -514,10 +516,11 @@ console.log("Is Discourse Integration Enabled: ", enableDiscourseSupport);
 // crawler view router
 if (argv.enableCrawlerViews || enableDiscourseSupport) {
     app.use(
-        createCralwerViewRouter({
+        createCrawlerViewRouter({
             registryApiBaseUrl: argv.registryApiBaseUrlInternal,
-            baseUrl: baseExternalUrl,
-            enableDiscourseSupport: enableDiscourseSupport
+            enableDiscourseSupport: enableDiscourseSupport,
+            baseExternalUrl,
+            uiBaseUrl
         })
     );
 }
@@ -542,13 +545,22 @@ const topLevelRoutes = [
     "home"
 ];
 
+const allowToCrawlRoutes = ["dataset", "home"];
+
 topLevelRoutes.forEach((topLevelRoute) => {
-    app.get("/" + topLevelRoute, async function (req, res) {
-        res.send(await getIndexFileContentZeroArgs());
-    });
-    app.get("/" + topLevelRoute + "/*", async function (req, res) {
-        res.send(await getIndexFileContentZeroArgs());
-    });
+    const routeHandle = async function (
+        req: express.Request,
+        res: express.Response
+    ) {
+        if (allowToCrawlRoutes.indexOf(topLevelRoute) != -1) {
+            // allow search engine robot to crawl. Thus, no robots meta tag.
+            res.send(await getIndexFileContentZeroArgs());
+        } else {
+            res.send(addRobotsMeta(await getIndexFileContentZeroArgs()));
+        }
+    };
+    app.get("/" + topLevelRoute, routeHandle);
+    app.get("/" + topLevelRoute + "/*", routeHandle);
 });
 
 app.get("/page/*", async function (req, res) {
@@ -558,12 +570,18 @@ app.get("/page/*", async function (req, res) {
 const robotsTxt = `User-agent: *
 Crawl-delay: 100
 Disallow: /auth
-Disallow: /search
+Disallow: ${uiBaseUrl}search
+Disallow: ${uiBaseUrl}organisations
+Disallow: ${uiBaseUrl}*?*q=*
 
-Sitemap: ${baseExternalUrl ? baseExternalUrl : "/"}sitemap.xml
+Sitemap: ${getAbsoluteUrl(
+    uiBaseUrl,
+    baseExternalUrl ? baseExternalUrl : "/"
+)}sitemap.xml
 `;
 
 app.use("/robots.txt", (_, res) => {
+    res.setHeader("content-type", "text/plain");
     res.status(200).send(robotsTxt);
 });
 
@@ -571,6 +589,7 @@ app.use("/robots.txt", (_, res) => {
 app.use(
     buildSitemapRouter({
         baseExternalUrl,
+        uiBaseUrl,
         registry: new Registry({
             baseUrl: argv.registryApiBaseUrlInternal,
             maxRetries: 0,

@@ -65,7 +65,8 @@ object Queries {
       .scoreMode(ScoreMode.Avg)
 
   def publishingStateQuery(
-      publishingStateValue: Set[FilterValue[String]]
+      publishingStateValue: Set[FilterValue[String]],
+      isDistributionQuery: Boolean = false
   ): Option[QueryDefinition] = {
     val filteredValue = publishingStateValue
       .map(value => {
@@ -79,9 +80,12 @@ object Queries {
     if (filteredValue.exists(_ == "*") || filteredValue.isEmpty) {
       None
     } else {
+      val fieldName =
+        if (!isDistributionQuery) "publishingState"
+        else "distributions.publishingState"
       Some(
         BoolQuery()
-          .should(filteredValue.map(TermQuery("publishingState", _)))
+          .should(filteredValue.map(TermQuery(fieldName, _)))
           .minimumShouldMatch(1)
       )
     }
@@ -93,9 +97,10 @@ object Queries {
     formatValue match {
       case Specified(inner) => baseFormatQuery(strategy, inner)
       case Unspecified() =>
-        nestedQuery("distributions")
-          .query(boolQuery().not(existsQuery("distributions.format")))
-          .scoreMode(ScoreMode.Max)
+        nestedQuery(
+          "distributions",
+          query = boolQuery().not(existsQuery("distributions.format"))
+        ).scoreMode(ScoreMode.Max)
     }
   }
 

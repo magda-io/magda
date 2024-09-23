@@ -48,6 +48,8 @@ appConfig:
     replicas: 0
   authApi:
     baseUrl: http://authorization-api
+  embeddingApi:
+    baseUrl: http://magda-embedding-api
   registry:
     baseUrl: http://registry-api
     readOnlyBaseUrl: http://registry-api-read-only

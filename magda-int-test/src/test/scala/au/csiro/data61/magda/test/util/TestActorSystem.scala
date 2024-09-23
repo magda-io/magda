@@ -3,6 +3,7 @@ package au.csiro.data61.magda.test.util
 import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.AppConfig
+import au.csiro.data61.magda.search.elasticsearch.HybridSearchConfig
 
 object TestActorSystem {
   val AUTH_USER_ID = "36bf34b8-7610-4fd3-8aab-0beaa318920a"
@@ -30,9 +31,12 @@ object TestActorSystem {
       socketTimeout = 600000
       maxRetryTimeout = 30000
       serverUrl = "elasticsearch://localhost:9201"
+      indices.datasets.hybridSearch.enabled = false
+      indices.datasets.innerHitsSize = 50
     }
     authorization {
       skipOpaQuery = true
+      muteWarning = true
     }
     opa {
       baseUrl = "http://localhost:8888/v0/opa/"
@@ -40,6 +44,8 @@ object TestActorSystem {
     }
     auth.userId = "$AUTH_USER_ID"
   """).resolve().withFallback(AppConfig.conf())
+
+  HybridSearchConfig.setAppConfig(config)
 
   def actorSystem = ActorSystem("TestActorSystem", config)
 }

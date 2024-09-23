@@ -13,6 +13,7 @@ const DATASET_REQUIRED_ASPECTS = ["dcat-dataset-strings"];
 
 export type SitemapRouterOptions = {
     baseExternalUrl: string;
+    uiBaseUrl: string;
     registry: Registry;
     cacheSeconds: number;
 };
@@ -22,6 +23,7 @@ let pageTokenQueryTime: number | null = null;
 
 export default function buildSitemapRouter({
     baseExternalUrl,
+    uiBaseUrl,
     registry,
     cacheSeconds
 }: SitemapRouterOptions): express.Router {
@@ -82,6 +84,7 @@ export default function buildSitemapRouter({
                     .path(
                         URI.joinPaths(
                             baseExternalUrl,
+                            uiBaseUrl,
                             "sitemap/main.xml"
                         ).toString()
                     )
@@ -95,6 +98,7 @@ export default function buildSitemapRouter({
                         .path(
                             URI.joinPaths(
                                 baseExternalUrl,
+                                uiBaseUrl,
                                 "sitemap/dataset/afterToken",
                                 token.toString() + ".xml"
                             ).toString()
@@ -138,7 +142,10 @@ export default function buildSitemapRouter({
             });
             const dataPromise = streamToPromise(sms);
             sms.write({
-                url: baseExternalUri.toString(),
+                url: baseExternalUri
+                    .clone()
+                    .path(URI.joinPaths(baseExternalUrl, uiBaseUrl).toString())
+                    .toString(),
                 changefreq: "daily"
             });
             sms.end();
@@ -192,6 +199,7 @@ export default function buildSitemapRouter({
                         .path(
                             URI.joinPaths(
                                 baseExternalUrl,
+                                uiBaseUrl,
                                 `/dataset/${encodeURIComponent(record.id)}`
                             ).toString()
                         )

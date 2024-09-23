@@ -12,12 +12,14 @@ object MagdaMatchers extends org.scalatest.Matchers {
     ds1.copy(
       indexed = None,
       score = None,
-      publisher = ds1.publisher.map(_.copy(acronym = None))
+      publisher = ds1.publisher.map(_.copy(acronym = None)),
+      distributions = ds1.distributions.map(_.copy(score = None))
     ) should equal(
       ds2.copy(
         indexed = None,
         score = None,
-        publisher = ds2.publisher.map(_.copy(acronym = None))
+        publisher = ds2.publisher.map(_.copy(acronym = None)),
+        distributions = ds2.distributions.map(_.copy(score = None))
       )
     )
 

@@ -2,7 +2,7 @@
   "private": true,
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "4.2.1",
+  "version": "4.2.3",
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
@@ -24,9 +24,9 @@
     "@babel/core": "^7.23.3",
     "@babel/runtime": "^7.23.2",
     "@craco/craco": "^7.1.0",
-    "@magda/registry-aspects": "^4.2.1",
-    "@magda/scripts": "^4.2.1",
-    "@magda/typescript-common": "^4.2.1",
+    "@magda/registry-aspects": "^4.2.3",
+    "@magda/scripts": "^4.2.3",
+    "@magda/typescript-common": "^4.2.3",
     "@types/debounce-promise": "^3.1.1",
     "@types/is-uuid": "^1.0.0",
     "@types/jsonpath": "^0.2.0",
@@ -121,6 +121,15 @@
     "retext": "^9.0.0",
     "retext-keywords": "^8.0.1",
     "retext-pos": "^5.0.0",
+    "rehype-external-links": "^2.1.0",
+    "rehype-katex": "^6.0.3",
+    "remark-breaks": "^3.0.3",
+    "remark-definition-list": "^1.2.0",
+    "remark-extended-table": "^1.1.0",
+    "remark-gfm": "^3.0.1",
+    "remark-math": "^5.1.1",
+    "react-markdown": "^8.0.7",
+    "github-markdown-css": "^5.2.0",
     "rrule": "^2.6.2",
     "rss-parser": "^2.9.0",
     "rsuite": "^5.49.0",
@@ -141,7 +150,17 @@
     "webpack-filter-warnings-plugin": "^1.2.1",
     "weighted-mean": "^1.0.2",
     "xlsx": "^0.14.0",
-    "yaml-front-matter": "^4.1.1"
+    "yaml-front-matter": "^4.1.1",
+    "@mlc-ai/web-llm": "0.2.62",
+    "@langchain/community": "0.2.31",
+    "langchain": "0.2.17",
+    "@ai-zen/async-queue": "^1.2.2"
+  },
+  "resolutions": {
+    "@langchain/core": "0.2.28"
+  },
+  "overrides": {
+    "@langchain/core": "0.2.28"
   },
   "browserslist": {
     "production": [

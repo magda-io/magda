@@ -793,9 +793,10 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
           whenever(
-            query != Query() && query.formats
-              .filter(_.isDefined)
-              .forall(!_.get.contains("  "))
+            query != Query() && !query.formats.isEmpty && query.formats
+              .filter(_.isInstanceOf[Specified[String]])
+              .map(_.asInstanceOf[Specified[String]])
+              .forall(!_.toString.contains("  "))
           ) {
             val queryFormats =
               query.formats.map(_.map(MagdaMatchers.extractAlphaNum))
@@ -865,9 +866,10 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
 
         doDataSetFilterTest(dataSetToQuery) { (query, response, dataSet) =>
           whenever(
-            query != Query() && query.publishers
-              .filter(_.isDefined)
-              .forall(!_.get.contains("  "))
+            query != Query() && !query.publishers.isEmpty && query.publishers
+              .filter(_.isInstanceOf[Specified[String]])
+              .map(_.asInstanceOf[Specified[String]])
+              .forall(!_.toString.contains("  "))
           ) {
             val queryPublishers =
               query.publishers.map(_.map(MagdaMatchers.extractAlphaNum))

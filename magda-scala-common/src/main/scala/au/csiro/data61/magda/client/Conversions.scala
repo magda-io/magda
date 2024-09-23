@@ -337,6 +337,8 @@ object Conversions {
       case _ => None
     }
 
+    val publishing = hit.aspects.getOrElse("publishing", JsObject())
+
     Distribution(
       identifier = Some(distributionRecord.id),
       title = dcatStrings
@@ -346,8 +348,7 @@ object Conversions {
       issued = tryParseDate(dcatStrings.extract[String]('issued.?)),
       modified = tryParseDate(dcatStrings.extract[String]('modified.?)),
       license = dcatStrings
-        .extract[String]('license.?)
-        .map(name => License(Some(name))),
+        .extract[String]('license.?),
       rights = dcatStrings.extract[String]('rights.?),
       accessURL = dcatStrings.extract[String]('accessURL.?),
       downloadURL = urlString,
@@ -361,7 +362,9 @@ object Conversions {
       source = distributionRecord.aspects
         .get("source")
         .flatMap(v => tryConvertValue(v.convertTo[DataSouce])),
-      accessControl = accessControl
+      accessControl = accessControl,
+      publishingState = publishing.extract[String]('state.?),
+      tenantId = hit.tenantId.getOrElse(MAGDA_ADMIN_PORTAL_ID)
     )
   }
 
