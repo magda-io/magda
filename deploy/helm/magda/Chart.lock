@@ -1,7 +1,7 @@
 dependencies:
 - name: magda-core
   repository: file://../magda-core
-  version: 4.2.3
+  version: 4.2.4
 - name: openfaas
   repository: oci://ghcr.io/magda-io/charts
   version: 5.5.5-magda.3
@@ -29,5 +29,5 @@ dependencies:
 - name: magda-function-esri-url-processor
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
-digest: sha256:775775cbd73082fb49128a8086b77fe556d5fab72575a98d32de69d68a48060f
-generated: "2024-08-26T06:53:15.869874417Z"
+digest: sha256:0baee21cfeb98db6431db111a4cb7f04da52dd0f0e760f868e620b00a376f657
+generated: "2024-09-23T03:26:43.850586495Z"
