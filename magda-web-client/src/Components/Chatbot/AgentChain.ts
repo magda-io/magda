@@ -131,13 +131,15 @@ class AgentChain {
 
     async stream(question: string): Promise<AsyncIterable<ChatEventMessage>> {
         const queue = new AsyncQueue<ChatEventMessage>();
+        const stream = await this.chain.stream({
+            question,
+            queue
+        });
+
         new Promise(async (resolve, reject) => {
             const msgId = uuidv4();
             let buffer = "";
-            const stream = await this.chain.stream({
-                question,
-                queue
-            });
+
             for await (const chunk of stream) {
                 queue.push(
                     createChatEventMessage(EVENT_TYPE_PARTIAL_MSG, {

@@ -110,7 +110,9 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
         if (engine) {
             return engine;
         } else {
-            await this.reload(this.model, this.chatOptions);
+            this.engine = this.createEngine();
+            this.enginePromise = this.initialize();
+            await this.enginePromise;
             return this.engine;
         }
     }
