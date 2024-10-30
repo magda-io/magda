@@ -148,34 +148,39 @@ export default class ServiceRunner {
     }
 
     async create() {
-        await this.docker.info();
+        try {
+            await this.docker.info();
 
-        if (this.enableAuthService) {
-            await Promise.all([this.createOpa(), this.createPostgres()]);
-            await this.createAuthApi();
-        }
+            if (this.enableAuthService) {
+                await Promise.all([this.createOpa(), this.createPostgres()]);
+                await this.createAuthApi();
+            }
 
-        await Promise.all([
-            this.enableRegistryApi
-                ? this.createRegistryApi()
-                : Promise.resolve(),
-            this.enableStorageApi
-                ? this.createMinio().then(this.createStorageApi.bind(this))
-                : Promise.resolve(),
-            this.enableElasticSearch ||
-            this.enableSearchApi ||
-            this.enableIndexer
-                ? this.createElasticSearch()
-                : Promise.resolve(),
-            this.enableEmbeddingApi ||
-            this.enableSearchApi ||
-            this.enableIndexer
-                ? this.createEmbeddingApi()
-                : Promise.resolve()
-        ]);
+            await Promise.all([
+                this.enableRegistryApi
+                    ? this.createRegistryApi()
+                    : Promise.resolve(),
+                this.enableStorageApi
+                    ? this.createMinio().then(this.createStorageApi.bind(this))
+                    : Promise.resolve(),
+                this.enableElasticSearch ||
+                this.enableSearchApi ||
+                this.enableIndexer
+                    ? this.createElasticSearch()
+                    : Promise.resolve(),
+                this.enableEmbeddingApi ||
+                this.enableSearchApi ||
+                this.enableIndexer
+                    ? this.createEmbeddingApi()
+                    : Promise.resolve()
+            ]);
 
-        if (this.enableSearchApi) {
-            await this.createSearchApi();
+            if (this.enableSearchApi) {
+                await this.createSearchApi();
+            }
+        } catch (e) {
+            await this.destroy();
+            throw e;
         }
     }
 
