@@ -76,14 +76,8 @@ class AgentChain {
 
     constructor(loadProgressCallback?: InitProgressCallback) {
         this.loadProgressCallback = loadProgressCallback;
-        this.model = new ChatWebLLM({
-            model: "Qwen2-7B-Instruct-q4f16_1-MLC",
-            loadProgressCallback: this.onProgress.bind(this),
-            chatOptions: {
-                temperature: 0
-                // context_window_size: 32768,
-                // sliding_window_size: -1
-            }
+        this.model = ChatWebLLM.createDefaultModel({
+            loadProgressCallback: this.onProgress.bind(this)
         });
         this.chain = this.createChain();
     }

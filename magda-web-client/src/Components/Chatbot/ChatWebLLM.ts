@@ -53,6 +53,15 @@ export interface WebLLMCallOptions extends BaseLanguageModelCallOptions {}
  * ]);
  * ```
  */
+
+const DEFAULT_MODEL_CONFIG: WebLLMInputs = {
+    model: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
+    chatOptions: {
+        temperature: 0
+        // context_window_size: 32768,
+        // sliding_window_size: -1
+    }
+};
 export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
     static inputs: WebLLMInputs;
 
@@ -77,6 +86,17 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
 
     static lc_name() {
         return "ChatWebLLM";
+    }
+
+    static createDefaultModel(modelConfig: Partial<WebLLMInputs> = {}) {
+        const config = { ...DEFAULT_MODEL_CONFIG, ...modelConfig };
+        if (modelConfig?.chatOptions) {
+            config.chatOptions = {
+                ...DEFAULT_MODEL_CONFIG.chatOptions,
+                ...modelConfig.chatOptions
+            };
+        }
+        return new ChatWebLLM(config);
     }
 
     constructor(inputs: WebLLMInputs) {
