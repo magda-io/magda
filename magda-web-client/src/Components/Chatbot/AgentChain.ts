@@ -56,6 +56,7 @@ class AgentChain {
             AgentChain.agentChain = new AgentChain((report) => {
                 AgentChain.llmLoadProgressCallbacks.forEach((cb) => cb(report));
             });
+            AgentChain.agentChain.model.initialize();
             return AgentChain.agentChain;
         }
     }

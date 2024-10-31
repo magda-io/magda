@@ -56,8 +56,10 @@ export interface WebLLMCallOptions extends BaseLanguageModelCallOptions {}
 export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
     static inputs: WebLLMInputs;
 
-    protected engine: ServiceWorkerMLCEngine;
-    protected enginePromise: Promise<ServiceWorkerMLCEngine | null>;
+    protected engine: ServiceWorkerMLCEngine | null = null;
+    protected enginePromise: Promise<ServiceWorkerMLCEngine | null> = Promise.resolve(
+        null
+    );
 
     config: ExtensionMLCEngineConfig;
 
@@ -87,11 +89,9 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
             ? inputs.keepAliveMs
             : defaultKeepAliveMs;
         this.loadProgressCallback = inputs?.loadProgressCallback;
-        this.engine = this.createEngine();
-        this.enginePromise = this.initialize();
     }
 
-    createEngine() {
+    private createEngine() {
         const { extensionId } = this.config;
 
         return new webllm.ExtensionServiceWorkerMLCEngine(
@@ -105,19 +105,27 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
         );
     }
 
+    async initialize() {
+        const engine = this.createEngine();
+        this.engine = engine;
+        this.enginePromise = Promise.resolve(engine).then(async (engine) => {
+            await engine.reload(this.model, this.chatOptions);
+            return engine;
+        });
+        return (await this.enginePromise) as ServiceWorkerMLCEngine;
+    }
+
     async getEngine(): Promise<ServiceWorkerMLCEngine> {
         const engine = await this.enginePromise;
         if (engine) {
             return engine;
         } else {
-            this.engine = this.createEngine();
-            this.enginePromise = this.initialize();
-            await this.enginePromise;
-            return this.engine;
+            return await this.initialize();
         }
     }
 
     onDisconnect() {
+        this.engine = null;
         this.enginePromise = Promise.resolve(null);
         if (this.config?.onDisconnect) {
             this.config.onDisconnect();
@@ -138,17 +146,13 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
         return "web-llm";
     }
 
-    async initialize() {
-        const engine = await this.reload(this.model, this.chatOptions);
-        return engine;
-    }
-
     async reload(modelId: string, newChatOpts?: webllm.ChatOptions) {
-        this.enginePromise = new Promise(async (resolve) => {
-            await this.engine.reload(modelId, newChatOpts);
-            resolve(this.engine);
-        });
-        return await this.enginePromise;
+        const engine = await this.enginePromise;
+        if (!engine) {
+            return engine;
+        }
+        await engine.reload(modelId, newChatOpts);
+        return engine;
     }
 
     async *_streamResponseChunks(
