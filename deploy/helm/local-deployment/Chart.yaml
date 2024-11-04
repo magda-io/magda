@@ -1,11 +1,11 @@
 apiVersion: v2
 name: "magda-local-deployment"
 description: ""
-version: "4.2.1"
+version: "4.2.4"
 kubeVersion: ">= 1.14.0-0"
 dependencies:
   - name: magda
-    version: 4.2.1
+    version: 4.2.4
     repository: "file://../magda"
 
   - name: magda-auth-google
@@ -61,14 +61,13 @@ dependencies:
     tags:
       - connectors
       - connector-actmapi
-  # aodn already includes most datasets from aims
-  # - name: magda-csw-connector
-  #   version: "2.0.2"
-  #   alias: connector-aims
-  #   repository: "oci://ghcr.io/magda-io/charts"
-  #   tags:
-  #     - connectors
-  #     - connector-aims
+  - name: magda-csw-connector
+    version: "2.0.2"
+    alias: connector-aims
+    repository: "oci://ghcr.io/magda-io/charts"
+    tags:
+      - connectors
+      - connector-aims
   - name: magda-csw-connector
     version: "2.0.2"
     alias: connector-aodn
@@ -181,13 +180,13 @@ dependencies:
     tags:
       - connectors
       - connector-nsw
-  - name: magda-csw-connector
-    version: "2.0.2"
-    alias: connector-sdinsw
-    repository: "oci://ghcr.io/magda-io/charts"
-    tags:
-      - connectors
-      - connector-sdinsw
+  # - name: magda-csw-connector
+  #   version: "2.0.2"
+  #   alias: connector-sdinsw
+  #   repository: "oci://ghcr.io/magda-io/charts"
+  #   tags:
+  #     - connectors
+  #     - connector-sdinsw
   - name: magda-ckan-connector
     version: "2.1.0"
     alias: connector-qld

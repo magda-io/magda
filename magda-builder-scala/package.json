@@ -1,6 +1,6 @@
 {
   "name": "@magda/builder-scala",
-  "version": "4.2.1",
+  "version": "4.2.4",
   "description": "Builder image for scala magda projects",
   "scripts": {
     "docker-build-prod": "create-docker-context-for-node-component --build --push",
@@ -16,8 +16,8 @@
     }
   },
   "devDependencies": {
-    "@magda/builder-docker": "^4.2.1",
-    "@magda/scripts": "^4.2.1"
+    "@magda/builder-docker": "^4.2.4",
+    "@magda/scripts": "^4.2.4"
   },
   "magda": {
     "categories": {

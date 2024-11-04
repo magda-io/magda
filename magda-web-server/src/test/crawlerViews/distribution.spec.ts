@@ -1,6 +1,6 @@
 import {} from "mocha";
 import { require } from "@magda/esm-utils";
-import distributionView from "../../cralwerViews/distribution.js";
+import distributionView from "../../crawlerViews/distribution.js";
 const sampleDatasetData = require("./sampleDataset.json");
 const sampleDisData = require("./sampleDistribution.json");
 import { expect } from "chai";
@@ -11,7 +11,7 @@ import { getCurrentDirPath } from "@magda/esm-utils";
 
 const __dirname = getCurrentDirPath();
 
-describe("Test cralwer view: distribution", () => {
+describe("Test crawler view: distribution", () => {
     beforeEach(() => {
         // set default timezone "Australia/Sydney"
         moment.tz.setDefault("Australia/Sydney");
