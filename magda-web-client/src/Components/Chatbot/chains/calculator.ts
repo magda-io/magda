@@ -10,29 +10,37 @@ import {
 const calculateChain = RunnableLambda.from(async (input) => {
     console.log(input);
     const model = ChatWebLLM.createDefaultModel();
-    const result = await model.invokeTool("What is the result of 123x567?", [
-        {
-            name: "multiplier",
-            func: (x, y) => x * y,
-            description:
-                "return the result of parameter `number1` multiplies `number2`",
-            parameters: [
-                {
-                    name: "number1",
-                    type: "number",
-                    description:
-                        "the first number used to calculate the multiply result"
+    const result = await model.invokeTool(
+        "What is the result of 123x567?",
+        [
+            {
+                name: "multiplier",
+                func: function (x, y) {
+                    // --- this will be bound to the thisObj parameter of `invokeTool`
+                    console.log(this);
+                    return x * y;
                 },
-                {
-                    name: "number2",
-                    type: "number",
-                    description:
-                        "the second number used to calculate the multiply result"
-                }
-            ],
-            requiredParameters: ["number1", "number2"]
-        }
-    ]);
+                description:
+                    "return the result of parameter `number1` multiplies `number2`",
+                parameters: [
+                    {
+                        name: "number1",
+                        type: "number",
+                        description:
+                            "the first number used to calculate the multiply result"
+                    },
+                    {
+                        name: "number2",
+                        type: "number",
+                        description:
+                            "the second number used to calculate the multiply result"
+                    }
+                ],
+                requiredParameters: ["number1", "number2"]
+            }
+        ],
+        input
+    );
     console.log("result: ", result);
     return JSON.stringify(result);
 });

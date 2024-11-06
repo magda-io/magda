@@ -294,7 +294,8 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
 
     async invokeTool<T = any>(
         userMessage: webllm.ChatCompletionUserMessageParam | string,
-        tools: WebLLMTool[]
+        tools: WebLLMTool[],
+        thisObj: any = undefined
     ): Promise<WebLLMToolCallResult<T> | undefined> {
         const toolDefs = tools.map((item) => {
             const { func, parameters, requiredParameters, ...def } = item;
@@ -354,7 +355,7 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
             ? toolCalled.parameters
             : []
         ).map((item) => funcArgsObj?.[item.name]);
-        const result = await toolCalled.func.call(undefined, ...funcArgs);
+        const result = await toolCalled.func.call(thisObj, ...funcArgs);
         return {
             name: toolCalled.name,
             result: result as T
