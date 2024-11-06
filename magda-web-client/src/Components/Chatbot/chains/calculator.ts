@@ -11,7 +11,7 @@ import {
     EVENT_TYPE_PARTIAL_MSG,
     createChatEventMessage
 } from "../Messaging";
-import { ChainInput } from "../ChainCommons";
+import { ChainInput } from "../commons";
 
 const calculateChain = RunnableLambda.from(async (input: ChainInput) => {
     console.log("input:", input);
