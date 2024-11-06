@@ -28,6 +28,51 @@ export interface WebLLMInputs extends BaseChatModelParams {
     model: string;
 }
 
+export interface WebLLMToolArgDef {
+    name: string;
+    type:
+        | "string"
+        | "number"
+        | "integer"
+        | "object"
+        | "array"
+        | "boolean"
+        | "null";
+    description?: string;
+}
+
+export interface WebLLMTool {
+    // can be async function. With or without parameters.
+    func: Function;
+    /**
+     * The name of the function to be called. Must be a-z, A-Z, 0-9, or contain
+     * underscores and dashes, with a maximum length of 64.
+     */
+    name: string;
+    /**
+     * A description of what the function does, used by the model to choose when and
+     * how to call the function.
+     */
+    description?: string;
+    /**
+     * The parameters the functions accepts.
+     *
+     * Omitting `parameters` defines a function with an empty parameter list.
+     */
+    parameters?: WebLLMToolArgDef[];
+
+    /**
+     * Optionally specify which parameters are compulsory
+     */
+    requiredParameters?: string[];
+}
+
+export interface WebLLMToolCallResult<T = any> {
+    // the name of the tool called
+    name: string;
+    result: T;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface WebLLMCallOptions extends BaseLanguageModelCallOptions {}
 
@@ -55,7 +100,7 @@ export interface WebLLMCallOptions extends BaseLanguageModelCallOptions {}
  */
 
 const DEFAULT_MODEL_CONFIG: WebLLMInputs = {
-    model: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
+    model: "Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC",
     chatOptions: {
         temperature: 0
         // context_window_size: 32768,
@@ -245,5 +290,74 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
             chunks.push(chunk.text);
         }
         return chunks.join("");
+    }
+
+    async invokeTool<T = any>(
+        userMessage: webllm.ChatCompletionUserMessageParam | string,
+        tools: WebLLMTool[]
+    ): Promise<WebLLMToolCallResult<T> | undefined> {
+        const toolDefs = tools.map((item) => {
+            const { func, parameters, requiredParameters, ...def } = item;
+            const functionDef: webllm.FunctionDefinition = {
+                ...def
+            };
+            if (parameters?.length) {
+                const properties = {};
+                parameters.forEach((item) => {
+                    const { name, ...parameterTypeDef } = item;
+                    properties[name] = parameterTypeDef;
+                });
+                functionDef.parameters = {
+                    type: "object",
+                    properties,
+                    ...(requiredParameters?.length
+                        ? { required: requiredParameters }
+                        : {})
+                };
+            }
+            return {
+                type: "function" as const,
+                function: functionDef
+            };
+        });
+        const request: webllm.ChatCompletionRequest = {
+            stream: false,
+            messages:
+                typeof userMessage === "string"
+                    ? [
+                          {
+                              role: "user",
+                              content: userMessage
+                          }
+                      ]
+                    : [userMessage],
+            tool_choice: "auto",
+            tools: toolDefs
+        };
+        const engine = await this.getEngine();
+        const reply = await engine.chat.completions.create(request);
+        if (!reply?.choices?.[0]?.message?.tool_calls?.length) {
+            return undefined;
+        }
+        const toolCall = reply.choices[0].message.tool_calls[0].function;
+        const funcName = toolCall.name;
+        const funcArgsObj: Record<string, any> = toolCall?.arguments?.length
+            ? JSON.parse(toolCall.arguments)
+            : {};
+        const toolCalled = tools.find((tool) => tool.name === funcName);
+        if (!toolCalled) {
+            throw new Error(
+                `Invalid LLM response: Cannot locate tool with name: ${funcName}`
+            );
+        }
+        const funcArgs = (toolCalled?.parameters?.length
+            ? toolCalled.parameters
+            : []
+        ).map((item) => funcArgsObj?.[item.name]);
+        const result = await toolCalled.func.call(undefined, ...funcArgs);
+        return {
+            name: toolCalled.name,
+            result: result as T
+        };
     }
 }
