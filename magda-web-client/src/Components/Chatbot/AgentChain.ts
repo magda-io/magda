@@ -26,6 +26,7 @@ import {
     EVENT_TYPE_PARTIAL_MSG,
     EVENT_TYPE_PARTIAL_MSG_FINISH
 } from "./Messaging";
+import calculateChain from "./chains/calculator";
 
 const systemPromptTemplate = `You must identify yourself as "Magda", an AI assistant designed to help users to locate relevant datasets and answer questions based on the information in the datasets.
 - You need to answer user's latest question based on chat history and possible relevant datasets in the context section below.
@@ -72,14 +73,16 @@ class AgentChain {
     private loadProgressCallback?: InitProgressCallback;
     private chatHistory: BaseMessage[] = [];
 
-    public chain: Runnable<CommonInputType, string>;
+    public chain: Runnable<CommonInputType, string | null | undefined | void>;
 
     constructor(loadProgressCallback?: InitProgressCallback) {
         this.loadProgressCallback = loadProgressCallback;
         this.model = ChatWebLLM.createDefaultModel({
             loadProgressCallback: this.onProgress.bind(this)
         });
-        this.chain = this.createChain();
+        console.log(this.model);
+        //this.chain = this.createChain();
+        this.chain = calculateChain;
     }
 
     onProgress(progressReport: InitProgressReport) {
@@ -134,8 +137,13 @@ class AgentChain {
         new Promise(async (resolve, reject) => {
             const msgId = uuidv4();
             let buffer = "";
+            let partialMsgSent = false;
 
             for await (const chunk of stream) {
+                if (chunk === null || typeof chunk === "undefined") {
+                    continue;
+                }
+                partialMsgSent = true;
                 queue.push(
                     createChatEventMessage(EVENT_TYPE_PARTIAL_MSG, {
                         id: msgId,
@@ -144,11 +152,13 @@ class AgentChain {
                 );
                 buffer += chunk;
             }
-            queue.push(
-                createChatEventMessage(EVENT_TYPE_PARTIAL_MSG_FINISH, {
-                    id: msgId
-                })
-            );
+            if (partialMsgSent) {
+                queue.push(
+                    createChatEventMessage(EVENT_TYPE_PARTIAL_MSG_FINISH, {
+                        id: msgId
+                    })
+                );
+            }
             queue.done();
             this.chatHistory.push(new AIMessage({ content: buffer }));
             resolve(buffer);
@@ -164,8 +174,12 @@ class AgentChain {
         ]);
 
         function isGeneralConversation(question: string) {
-            return ["hello", "hi", "hey", "how are you"].some(
-                (greeting) => question.toLowerCase().indexOf(greeting) !== -1
+            return (
+                true ||
+                ["hello", "hi", "hey", "how are you"].some(
+                    (greeting) =>
+                        question.toLowerCase().indexOf(greeting) !== -1
+                )
             );
         }
 

@@ -6,18 +6,30 @@ import {
     RunnableLambda,
     RunnableConfig
 } from "@langchain/core/runnables";
+import {
+    EVENT_TYPE_COMPLETE_MSG,
+    EVENT_TYPE_PARTIAL_MSG,
+    createChatEventMessage
+} from "../Messaging";
+import { ChainInput } from "../ChainCommons";
 
-const calculateChain = RunnableLambda.from(async (input) => {
-    console.log(input);
+const calculateChain = RunnableLambda.from(async (input: ChainInput) => {
+    console.log("input:", input);
     const model = ChatWebLLM.createDefaultModel();
     const result = await model.invokeTool(
-        "What is the result of 123x567?",
+        input.question,
         [
             {
                 name: "multiplier",
                 func: function (x, y) {
                     // --- this will be bound to the thisObj parameter of `invokeTool`
                     console.log(this);
+                    const queue = (this as any).queue;
+                    queue.push(
+                        createChatEventMessage(EVENT_TYPE_COMPLETE_MSG, {
+                            msg: "Calling multiplier tool..."
+                        })
+                    );
                     return x * y;
                 },
                 description:
@@ -41,8 +53,15 @@ const calculateChain = RunnableLambda.from(async (input) => {
         ],
         input
     );
+    const queue = input.queue;
+    queue.push(
+        createChatEventMessage(EVENT_TYPE_COMPLETE_MSG, {
+            msg: `The calculation result is ${result?.result}`
+        })
+    );
     console.log("result: ", result);
-    return JSON.stringify(result);
+    // don't have to return anything
+    return "calculation done";
 });
 
 export default calculateChain;
