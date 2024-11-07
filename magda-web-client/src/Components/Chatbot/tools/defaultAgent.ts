@@ -82,7 +82,7 @@ const defaultAgent = {
         }
     },
     description:
-        "You should only call this tool when all other tools are not suitable."
+        "This tool can greet the user and offer system usage information base on the user message."
 };
 
 export default defaultAgent;

@@ -2,6 +2,7 @@ import { searchDatasets as searchDatasetsApi } from "api-clients/SearchApis";
 import { createChatEventMessageCompleteMsg } from "../Messaging";
 import { markdownTable } from "markdown-table";
 import { config } from "../../../config";
+import { ChainInput } from "../commons";
 
 const MAX_DESC_DISPLAY_LENGTH = 250;
 const { uiBaseUrl } = config;
@@ -21,7 +22,7 @@ async function retrieveDatasets(question: string) {
             ? item.description.substring(0, MAX_DESC_DISPLAY_LENGTH + 1) + "..."
             : item.description
         ).replaceAll("\n", "<br/>");
-        const title = `[item.title](${
+        const title = `[${item.title}](${
             uiBaseUrl === "/"
                 ? `/datasets/${item.identifier}`
                 : `${uiBaseUrl}/datasets/${item.identifier}`
@@ -36,7 +37,8 @@ async function retrieveDatasets(question: string) {
 const searchDatasets = {
     name: "searchDatasets",
     func: async function (queryString: string) {
-        const queue = (this as any).queue;
+        const context = (this as unknown) as ChainInput;
+        const { queue } = context;
         queue.push(createChatEventMessageCompleteMsg("Searching datasets..."));
         return await retrieveDatasets(queryString);
     },

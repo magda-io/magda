@@ -56,7 +56,7 @@ const calculateChain = RunnableLambda.from(async (input: ChainInput) => {
     const queue = input.queue;
     queue.push(
         createChatEventMessage(EVENT_TYPE_COMPLETE_MSG, {
-            msg: `The calculation result is ${result?.result}`
+            msg: `The calculation result is ${result?.value}`
         })
     );
     console.log("result: ", result);

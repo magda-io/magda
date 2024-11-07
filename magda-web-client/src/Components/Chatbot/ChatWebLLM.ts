@@ -70,7 +70,7 @@ export interface WebLLMTool {
 export interface WebLLMToolCallResult<T = any> {
     // the name of the tool called
     name: string;
-    result: T;
+    value: T;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -358,7 +358,7 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
         const result = await toolCalled.func.call(thisObj, ...funcArgs);
         return {
             name: toolCalled.name,
-            result: result as T
+            value: result as T
         };
     }
 }

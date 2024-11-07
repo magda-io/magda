@@ -187,7 +187,16 @@ class AgentChain {
     createChain() {
         return RunnableLambda.from(async (input: ChainInput) => {
             const tools = this.createTools();
-            this.model.invokeTool(input.question, tools);
+            const result = await this.model.invokeTool(
+                input.question,
+                tools,
+                input
+            );
+            const value = result?.value;
+            if (typeof value === "undefined" || value === null) {
+                return;
+            }
+            return `${value}`;
         });
     }
 }
