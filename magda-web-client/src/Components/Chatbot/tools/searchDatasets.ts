@@ -21,7 +21,7 @@ async function retrieveDatasets(question: string) {
         const desc = (item?.description?.length > MAX_DESC_DISPLAY_LENGTH
             ? item.description.substring(0, MAX_DESC_DISPLAY_LENGTH + 1) + "..."
             : item.description
-        ).replaceAll("\n", "<br/>");
+        ).replace(/\n|\r|<br\s*\/>/g, " ");
         const title = `[${item.title}](${
             uiBaseUrl === "/"
                 ? `/datasets/${item.identifier}`

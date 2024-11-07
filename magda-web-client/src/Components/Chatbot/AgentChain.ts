@@ -87,10 +87,11 @@ class AgentChain {
     public model: ChatWebLLM;
     public loadProgress?: InitProgressReport;
     private loadProgressCallback?: InitProgressCallback;
-    private chatHistory: BaseMessage[] = [];
-    private navHistory: History;
-    private navLocation: Location;
-    private appName: string;
+    public chatHistory: BaseMessage[] = [];
+    public navHistory: History;
+    public navLocation: Location;
+    public appName: string;
+    public debug: boolean = false;
 
     public chain: Runnable<CommonInputType, string | null | undefined | void>;
 
@@ -108,6 +109,8 @@ class AgentChain {
         this.navHistory = navHistory;
         this.navLocation = navLocation;
         this.chain = this.createChain();
+        // for debug purpose;
+        (window as any).chatBotAgentChain = this;
     }
 
     setAppName(appName: string) {
@@ -168,7 +171,9 @@ class AgentChain {
                 );
             }
             queue.done();
-            this.chatHistory.push(new AIMessage({ content: buffer }));
+            if (this.debug) {
+                this.chatHistory.push(new AIMessage({ content: buffer }));
+            }
             resolve(buffer);
         }).catch((e) => {
             createChatEventMessage(EVENT_TYPE_ERROR, {
