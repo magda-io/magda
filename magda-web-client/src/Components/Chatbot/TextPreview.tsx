@@ -1,8 +1,13 @@
-import React, { FunctionComponent, useCallback } from "react";
+import React, { FunctionComponent, useCallback, useEffect } from "react";
 import { useAsync } from "react-async-hook";
 import reportError from "helpers/reportError";
 import GeoJsonViewer from "./GeoJsonViewer";
 import MarkdownMermaid from "./MarkdownMermaid";
+import { useHistory } from "react-router-dom";
+import { config } from "../../config";
+
+const { uiBaseUrl } = config;
+const pathNameBase = uiBaseUrl === "/" ? "/" : uiBaseUrl + "/";
 
 async function loadMarkdownPreview() {
     try {
@@ -16,7 +21,8 @@ async function loadMarkdownPreview() {
             RemarkBreaksModule,
             RemarkDefinitionListModule,
             RemarkExtendedTableModule,
-            RehypeExternalLinksModule
+            RehypeExternalLinksModule,
+            RehypeUrlsModule
         ] = await Promise.all([
             import(
                 /* webpackChunkName: "react-markdown-preview-libs" */ "react-markdown"
@@ -45,6 +51,9 @@ async function loadMarkdownPreview() {
                 /* webpackChunkName: "react-markdown-preview-libs" */ "rehype-external-links"
             ),
             import(
+                /* webpackChunkName: "react-markdown-preview-libs" */ "rehype-urls"
+            ),
+            import(
                 // @ts-ignore
                 /* webpackChunkName: "react-markdown-preview-libs" */ "github-markdown-css/github-markdown.css"
             ),
@@ -63,6 +72,7 @@ async function loadMarkdownPreview() {
         const RemarkDefinitionList = RemarkDefinitionListModule.default;
         const RemarkExtendedTable = RemarkExtendedTableModule.default;
         const RehypeExternalLinks = RehypeExternalLinksModule.default;
+        const RehypeUrls = RehypeUrlsModule.default;
 
         const MarkdownPreview: FunctionComponent<{ source: string }> = ({
             source
@@ -117,6 +127,19 @@ async function loadMarkdownPreview() {
                                 rel: ["nofollow", "noopener", "noreferrer"],
                                 target: "_blank"
                             }
+                        ],
+                        [
+                            RehypeUrls,
+                            function blankExternal(url, node) {
+                                if (
+                                    node.tagName === "a" &&
+                                    typeof url.href === "string" &&
+                                    url.href.indexOf(pathNameBase) === 0
+                                ) {
+                                    const hrefStr = JSON.stringify(url.href);
+                                    node.properties.href = `javascript:window.textPreviewNavHistory.push(${hrefStr});`;
+                                }
+                            }
                         ]
                     ]}
                     components={{
@@ -140,6 +163,12 @@ const TextPreview: FunctionComponent<{ source: string }> = ({ source }) => {
         result: MarkdownPreview,
         loading: isMarkdownPreviewLoading
     } = useAsync(loadMarkdownPreview, []);
+
+    const history = useHistory();
+
+    useEffect(() => {
+        (window as any)["textPreviewNavHistory"] = history;
+    }, [history]);
 
     if (isMarkdownPreviewLoading || !MarkdownPreview) {
         return <pre>{source}</pre>;

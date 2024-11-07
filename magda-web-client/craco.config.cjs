@@ -1,5 +1,6 @@
 const { isEqual } = require("lodash");
 const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 const path = require("path");
 
 require("dotenv").config();
@@ -72,18 +73,13 @@ module.exports = {
                 })
             );
 
+            webpackConfig.plugins.push(new NodePolyfillPlugin());
+
             webpackConfig.externals = {
                 react: "React",
                 "react-dom": "ReactDOM",
                 "react-router": "ReactRouter",
                 "react-router-dom": "ReactRouterDOM"
-            };
-
-            webpackConfig.resolve.fallback = {
-                zlib: require.resolve("browserify-zlib"),
-                stream: require.resolve("stream-browserify"),
-                path: require.resolve("path-browserify"),
-                assert: require.resolve("assert/")
             };
 
             webpackConfig.stats = "verbose";
