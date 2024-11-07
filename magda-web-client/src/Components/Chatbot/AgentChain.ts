@@ -106,8 +106,7 @@ class AgentChain {
         this.appName = appName;
         this.navHistory = navHistory;
         this.navLocation = navLocation;
-        //this.chain = this.createChain();
-        this.chain = calculateChain;
+        this.chain = this.createChain();
     }
 
     setAppName(appName: string) {
