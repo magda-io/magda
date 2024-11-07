@@ -69,6 +69,15 @@ interface StreamStateType {
     partialMessage: string | null;
 }
 
+function getDefaultMessage(appName: string): MessageItem {
+    return {
+        type: "bot",
+        content: `Hi, I'm ${
+            appName ? appName : `Magda`
+        }. Feel free to ask me anything about data.`
+    };
+}
+
 const getInitialStreamState = (): StreamStateType => ({
     streamId: null,
     streamType: STREAM_TYPE_UNDEFINED,
@@ -111,14 +120,12 @@ interface PropsType {
 
 const ChatBox: FunctionComponent<PropsType> = (props) => {
     const { appName } = props;
-    const DefaultMessage: MessageItem = {
-        type: "bot",
-        content: `Hi, I'm ${appName}. Feel free to ask me anything about data.`
-    };
     const [size, setSize] = useState<string>("sm");
     const [open, setOpen] = useState<boolean>(false);
     const [inputText, setInputText] = useState<string>("");
-    const messageQueueRef = useRef<MessageItem[]>([DefaultMessage]);
+    const messageQueueRef = useRef<MessageItem[]>([
+        getDefaultMessage(props.appName)
+    ]);
     const messageQueueLen = messageQueueRef.current?.length
         ? messageQueueRef.current.length
         : 0;
@@ -155,6 +162,12 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
     useEffect(() => {
         agentChainRef.current?.setNavHistory(history);
     }, [history]);
+
+    useEffect(() => {
+        if (messageQueueRef.current?.length) {
+            messageQueueRef.current[0] = getDefaultMessage(props.appName);
+        }
+    }, [appName]);
 
     useEffect(() => {
         agentChainRef.current = AgentChain.create(
@@ -464,7 +477,9 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
                     className="clear-message-button"
                     disabled={sendMessage.loading}
                     onClick={() => {
-                        messageQueueRef.current = [DefaultMessage];
+                        messageQueueRef.current = [
+                            getDefaultMessage(props.appName)
+                        ];
                         setDataReloadToken(Math.random().toString());
                     }}
                 >
@@ -542,7 +557,7 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
 const ChatBoxWithAppName: FunctionComponent = () => (
     <MagdaNamespacesConsumer ns={["global"]}>
         {(translate) => {
-            const appName = translate(["appName", "Magda"]);
+            const appName = translate(["appName", ""]);
 
             return <ChatBox appName={appName} />;
         }}
