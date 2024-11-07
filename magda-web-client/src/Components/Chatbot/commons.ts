@@ -12,3 +12,14 @@ export interface ChainInput {
     location: Location;
     model: ChatWebLLM;
 }
+
+export function getLocationType(location: Location): LocationType {
+    const { pathname } = location;
+    if (pathname.indexOf("/dataset/") !== -1) {
+        return "DATASET_PAGE";
+    } else if (pathname.indexOf("/distribution/") !== -1) {
+        return "DISTRIBUTION_PAGE";
+    } else {
+        return "OTHERS";
+    }
+}

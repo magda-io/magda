@@ -1,4 +1,4 @@
-import { searchDatasets } from "api-clients/SearchApis";
+import { searchDatasets as searchDatasetsApi } from "api-clients/SearchApis";
 import { createChatEventMessageCompleteMsg } from "../Messaging";
 import { markdownTable } from "markdown-table";
 import { config } from "../../../config";
@@ -12,7 +12,7 @@ async function retrieveDatasets(question: string) {
     if (!question) {
         return notFound;
     }
-    const result = await searchDatasets({ q: question, limit: 5 });
+    const result = await searchDatasetsApi({ q: question, limit: 5 });
     if (!result?.dataSets?.length) {
         return notFound;
     }
@@ -33,8 +33,8 @@ async function retrieveDatasets(question: string) {
     return `I found the following datasets might be related to your inquiry:\n ${table}`;
 }
 
-const searchDataset = {
-    name: "searchDataset",
+const searchDatasets = {
+    name: "searchDatasets",
     func: async function (queryString: string) {
         const queue = (this as any).queue;
         queue.push(createChatEventMessageCompleteMsg("Searching datasets..."));
@@ -45,11 +45,11 @@ const searchDataset = {
     parameters: [
         {
             name: "queryString",
-            type: "string",
+            type: "string" as const,
             description: "a query string used to search relevant datasets."
         }
     ],
     requiredParameters: ["queryString"]
 };
 
-export default searchDataset;
+export default searchDatasets;

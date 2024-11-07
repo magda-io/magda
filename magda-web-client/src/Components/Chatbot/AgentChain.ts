@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import type { ChainInput } from "./commons";
+import { getLocationType, ChainInput } from "./commons";
 import {
     ChatPromptTemplate,
     MessagesPlaceholder
@@ -15,7 +15,6 @@ import {
 } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import ChatWebLLM from "./ChatWebLLM";
-import { searchDatasets } from "api-clients/SearchApis";
 import toYaml from "../../libs/toYaml";
 import AsyncQueue from "@ai-zen/async-queue";
 import {
@@ -29,6 +28,8 @@ import {
 } from "./Messaging";
 import { History, Location } from "history";
 import calculateChain from "./chains/calculator";
+import defaultAgent from "./tools/defaultAgent";
+import searchDatasets from "./tools/searchDatasets";
 
 const systemPromptTemplate = `You must identify yourself as "Magda", an AI assistant designed to help users to locate relevant datasets and answer questions based on the information in the datasets.
 - You need to answer user's latest question based on chat history and possible relevant datasets in the context section below.
@@ -128,41 +129,6 @@ class AgentChain {
         }
     }
 
-    async retrieveDatasets(question: string) {
-        const notFound = "No datasets found.";
-        if (!question) {
-            return notFound;
-        }
-        const result = await searchDatasets({ q: question, limit: 3 });
-        if (!result?.dataSets?.length) {
-            return notFound;
-        }
-        const datasets = result.dataSets.map((item) => ({
-            datasetTitle: item.title,
-            description: item.description,
-            distributions: item.distributions.map((dist) => ({
-                title: dist.title,
-                description: dist.description,
-                downloadURL: dist.downloadURL,
-                format: dist.format
-            }))
-        }));
-        const splitter = new RecursiveCharacterTextSplitter({
-            chunkSize: 3000,
-            chunkOverlap: 1
-        });
-        return (
-            await Promise.all(
-                datasets
-                    .map((item) => toYaml(item))
-                    .map(async (item) => {
-                        const doc = await splitter.createDocuments([item]);
-                        return doc[0].pageContent;
-                    })
-            )
-        ).join("\n");
-    }
-
     async stream(question: string): Promise<AsyncIterable<ChatEventMessage>> {
         const queue = new AsyncQueue<ChatEventMessage>();
         const input: ChainInput = {
@@ -207,70 +173,23 @@ class AgentChain {
         return queue;
     }
 
-    createTools() {}
+    createTools() {
+        const type = getLocationType(this.navLocation);
+        switch (type) {
+            case "DATASET_PAGE":
+                return [searchDatasets, defaultAgent];
+            case "DISTRIBUTION_PAGE":
+                return [searchDatasets, defaultAgent];
+            default:
+                return [searchDatasets, defaultAgent];
+        }
+    }
 
     createChain() {
-        const promptTemplate = ChatPromptTemplate.fromMessages([
-            ["system", systemPromptTemplate],
-            new MessagesPlaceholder("chat_history"),
-            ["human", "{question}"]
-        ]);
-
-        function isGeneralConversation(question: string) {
-            return (
-                true ||
-                ["hello", "hi", "hey", "how are you"].some(
-                    (greeting) =>
-                        question.toLowerCase().indexOf(greeting) !== -1
-                )
-            );
-        }
-
-        return RunnableSequence.from([
-            new RunnableLambda({
-                func: async (input: CommonInputType) => {
-                    const qText =
-                        typeof input.question === "string"
-                            ? input.question.trim()
-                            : "";
-                    const chatHistory = [...this.chatHistory];
-                    this.chatHistory.push(
-                        new HumanMessage({ content: input.question })
-                    );
-                    let relevantDatasets = "";
-                    if (isGeneralConversation(qText)) {
-                        relevantDatasets =
-                            "No dataset required for answering user's inquiry.";
-                    } else {
-                        input.queue.push(
-                            createChatEventMessageCompleteMsg(
-                                "Querying relevant datasets, one moment please..."
-                            )
-                        );
-                        relevantDatasets = await this.retrieveDatasets(qText);
-                        input.queue.push(
-                            createChatEventMessageCompleteMsg(
-                                "Let me think about it, one moment..."
-                            )
-                        );
-                    }
-                    return {
-                        queue: input.queue,
-                        question: qText,
-                        chat_history: chatHistory,
-                        relevant_datasets: relevantDatasets,
-                        today_date: new Date().toLocaleString()
-                    };
-                }
-            }),
-            promptTemplate,
-            RunnableLambda.from((input) => {
-                console.log("propmt:", input?.messages?.[0]?.content);
-                return input;
-            }),
-            this.model,
-            new StringOutputParser()
-        ]);
+        return RunnableLambda.from(async (input: ChainInput) => {
+            const tools = this.createTools();
+            this.model.invokeTool(input.question, tools);
+        });
     }
 }
 
