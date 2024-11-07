@@ -31,7 +31,7 @@ import { v4 as uuidv4 } from "uuid";
 import reportError from "../../helpers/reportError";
 import "../../rsuite.scss";
 import "./ChatBox.scss";
-import { useLocation } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 
 import {
     EVENT_TYPE_AGENT_STEP_FINISH,
@@ -51,6 +51,7 @@ import {
 import { parseJsonMarkdown } from "../../libs/json";
 import AgentChain from "./AgentChain";
 import { InitProgressReport } from "@mlc-ai/web-llm";
+import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
 
 interface MessageItem {
     type: "user" | "bot";
@@ -74,11 +75,6 @@ const getInitialStreamState = (): StreamStateType => ({
     abortCtl: null,
     partialMessage: null
 });
-
-const DefaultMessage: MessageItem = {
-    type: "bot",
-    content: "Hi, I'm Magda. Feel free to ask me anything about data."
-};
 
 const addMessage = (
     messageQueueRef: React.MutableRefObject<MessageItem[]>,
@@ -109,7 +105,16 @@ const LLMLoadingBox: FunctionComponent<{
     }
 };
 
-const ChatBox: FunctionComponent = () => {
+interface PropsType {
+    appName: string;
+}
+
+const ChatBox: FunctionComponent<PropsType> = (props) => {
+    const { appName } = props;
+    const DefaultMessage: MessageItem = {
+        type: "bot",
+        content: `Hi, I'm ${appName}. Feel free to ask me anything about data.`
+    };
     const [size, setSize] = useState<string>("sm");
     const [open, setOpen] = useState<boolean>(false);
     const [inputText, setInputText] = useState<string>("");
@@ -136,9 +141,28 @@ const ChatBox: FunctionComponent = () => {
         llmLoadProgress,
         setLLMLoadProgress
     ] = useState<InitProgressReport | null>(null);
+    const location = useLocation();
+    const history = useHistory();
 
     useEffect(() => {
-        agentChainRef.current = AgentChain.create(setLLMLoadProgress);
+        agentChainRef.current?.setAppName(appName);
+    }, [appName]);
+
+    useEffect(() => {
+        agentChainRef.current?.setNavLocation(location);
+    }, [location]);
+
+    useEffect(() => {
+        agentChainRef.current?.setNavHistory(history);
+    }, [history]);
+
+    useEffect(() => {
+        agentChainRef.current = AgentChain.create(
+            appName,
+            location,
+            history,
+            setLLMLoadProgress
+        );
         return () => {
             agentChainRef.current = null;
             //AgentChain.removeLLMLoadProgressCallback(setLLMLoadProgress);
@@ -515,4 +539,13 @@ const ChatBox: FunctionComponent = () => {
     );
 };
 
-export default ChatBox;
+const ChatBoxWithAppName: FunctionComponent = () => (
+    <MagdaNamespacesConsumer ns={["global"]}>
+        {(translate) => {
+            const appName = translate(["appName", "Magda"]);
+
+            return <ChatBox appName={appName} />;
+        }}
+    </MagdaNamespacesConsumer>
+);
+export default ChatBoxWithAppName;

@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import type { ChainInput } from "./commons";
 import {
     ChatPromptTemplate,
     MessagesPlaceholder
@@ -26,6 +27,7 @@ import {
     EVENT_TYPE_PARTIAL_MSG,
     EVENT_TYPE_PARTIAL_MSG_FINISH
 } from "./Messaging";
+import { History, Location } from "history";
 import calculateChain from "./chains/calculator";
 
 const systemPromptTemplate = `You must identify yourself as "Magda", an AI assistant designed to help users to locate relevant datasets and answer questions based on the information in the datasets.
@@ -44,7 +46,12 @@ Possible relevant datasets:
 class AgentChain {
     static agentChain: AgentChain | null = null;
     static llmLoadProgressCallbacks: InitProgressCallback[] = [];
-    static create(loadProgressCallback?: InitProgressCallback) {
+    static create(
+        appName: string,
+        navLocation: Location,
+        navHistory: History,
+        loadProgressCallback?: InitProgressCallback
+    ) {
         if (AgentChain.agentChain) {
             if (loadProgressCallback) {
                 AgentChain.llmLoadProgressCallbacks.push(loadProgressCallback);
@@ -54,9 +61,16 @@ class AgentChain {
             if (loadProgressCallback) {
                 AgentChain.llmLoadProgressCallbacks.push(loadProgressCallback);
             }
-            AgentChain.agentChain = new AgentChain((report) => {
-                AgentChain.llmLoadProgressCallbacks.forEach((cb) => cb(report));
-            });
+            AgentChain.agentChain = new AgentChain(
+                appName,
+                navLocation,
+                navHistory,
+                (report) => {
+                    AgentChain.llmLoadProgressCallbacks.forEach((cb) =>
+                        cb(report)
+                    );
+                }
+            );
             AgentChain.agentChain.model.initialize();
             return AgentChain.agentChain;
         }
@@ -72,17 +86,39 @@ class AgentChain {
     public loadProgress?: InitProgressReport;
     private loadProgressCallback?: InitProgressCallback;
     private chatHistory: BaseMessage[] = [];
+    private navHistory: History;
+    private navLocation: Location;
+    private appName: string;
 
     public chain: Runnable<CommonInputType, string | null | undefined | void>;
 
-    constructor(loadProgressCallback?: InitProgressCallback) {
+    constructor(
+        appName: string,
+        navLocation: Location,
+        navHistory: History,
+        loadProgressCallback?: InitProgressCallback
+    ) {
         this.loadProgressCallback = loadProgressCallback;
         this.model = ChatWebLLM.createDefaultModel({
             loadProgressCallback: this.onProgress.bind(this)
         });
-        console.log(this.model);
+        this.appName = appName;
+        this.navHistory = navHistory;
+        this.navLocation = navLocation;
         //this.chain = this.createChain();
         this.chain = calculateChain;
+    }
+
+    setAppName(appName: string) {
+        this.appName = appName;
+    }
+
+    setNavLocation(location: Location) {
+        this.navLocation = location;
+    }
+
+    setNavHistory(history: History) {
+        this.navHistory = history;
     }
 
     onProgress(progressReport: InitProgressReport) {
@@ -129,10 +165,15 @@ class AgentChain {
 
     async stream(question: string): Promise<AsyncIterable<ChatEventMessage>> {
         const queue = new AsyncQueue<ChatEventMessage>();
-        const stream = await this.chain.stream({
+        const input: ChainInput = {
             question,
-            queue
-        });
+            queue,
+            appName: this.appName,
+            location: this.navLocation,
+            history: this.navHistory,
+            model: this.model
+        };
+        const stream = await this.chain.stream(input);
 
         new Promise(async (resolve, reject) => {
             const msgId = uuidv4();
@@ -165,6 +206,8 @@ class AgentChain {
         });
         return queue;
     }
+
+    createTools() {}
 
     createChain() {
         const promptTemplate = ChatPromptTemplate.fromMessages([

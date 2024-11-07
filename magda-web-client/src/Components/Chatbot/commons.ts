@@ -1,17 +1,14 @@
 import type AsyncQueue from "@ai-zen/async-queue";
 import type { ChatEventMessage } from "./Messaging";
-import type { History } from "history";
+import type { History, Location } from "history";
+import ChatWebLLM from "./ChatWebLLM";
 export type LocationType = "DATASET_PAGE" | "DISTRIBUTION_PAGE" | "OTHERS";
 
-export interface LocationInfo {
-    url: string;
-    type: LocationType;
-}
-
 export interface ChainInput {
-    agentName: string;
+    appName: string;
     question: string;
     queue: AsyncQueue<ChatEventMessage>;
     history: History;
-    location: LocationInfo;
+    location: Location;
+    model: ChatWebLLM;
 }
