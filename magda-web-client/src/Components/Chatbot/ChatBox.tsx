@@ -213,7 +213,7 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
             resetMessageProcessingStatus();
             throw new Error(
                 eventMessage?.data?.error
-                    ? eventMessage.data.error
+                    ? String(eventMessage.data.error)
                     : `Remote stream error: ${eventMessage.data}`
             );
         }

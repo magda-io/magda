@@ -24,7 +24,8 @@ import {
     createChatEventMessage,
     strChain2PartialMessageChain,
     EVENT_TYPE_PARTIAL_MSG,
-    EVENT_TYPE_PARTIAL_MSG_FINISH
+    EVENT_TYPE_PARTIAL_MSG_FINISH,
+    EVENT_TYPE_ERROR
 } from "./Messaging";
 import { History, Location } from "history";
 import calculateChain from "./chains/calculator";
@@ -138,12 +139,13 @@ class AgentChain {
             history: this.navHistory,
             model: this.model
         };
-        const stream = await this.chain.stream(input);
 
         new Promise(async (resolve, reject) => {
             const msgId = uuidv4();
             let buffer = "";
             let partialMsgSent = false;
+
+            const stream = await this.chain.stream(input);
 
             for await (const chunk of stream) {
                 if (chunk === null || typeof chunk === "undefined") {
@@ -168,6 +170,10 @@ class AgentChain {
             queue.done();
             this.chatHistory.push(new AIMessage({ content: buffer }));
             resolve(buffer);
+        }).catch((e) => {
+            createChatEventMessage(EVENT_TYPE_ERROR, {
+                error: e
+            });
         });
         return queue;
     }
