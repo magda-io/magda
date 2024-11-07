@@ -103,6 +103,9 @@ export const chatGenerationChunk2ChatEventMessage = (
 export const createChatEventMessageCompleteMsg = (msg: string) =>
     createChatEventMessage(EVENT_TYPE_COMPLETE_MSG, { msg });
 
+export const createChatEventMessageErrorMsg = (error: Error | string) =>
+    createChatEventMessage(EVENT_TYPE_ERROR, { error });
+
 export interface CommonInputType {
     question: string;
     queue: AsyncQueue<ChatEventMessage>;

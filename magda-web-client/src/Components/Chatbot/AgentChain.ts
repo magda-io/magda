@@ -25,7 +25,8 @@ import {
     strChain2PartialMessageChain,
     EVENT_TYPE_PARTIAL_MSG,
     EVENT_TYPE_PARTIAL_MSG_FINISH,
-    EVENT_TYPE_ERROR
+    EVENT_TYPE_ERROR,
+    createChatEventMessageErrorMsg
 } from "./Messaging";
 import { History, Location } from "history";
 import calculateChain from "./chains/calculator";
@@ -197,17 +198,23 @@ class AgentChain {
 
     createChain() {
         return RunnableLambda.from(async (input: ChainInput) => {
-            const tools = this.createTools();
-            const result = await this.model.invokeTool(
-                input.question,
-                tools,
-                input
-            );
-            const value = result?.value;
-            if (typeof value === "undefined" || value === null) {
+            const { queue } = input;
+            try {
+                const tools = this.createTools();
+                const result = await this.model.invokeTool(
+                    input.question,
+                    tools,
+                    input
+                );
+                const value = result?.value;
+                if (typeof value === "undefined" || value === null) {
+                    return;
+                }
+                return `${value}`;
+            } catch (e) {
+                queue.push(createChatEventMessageErrorMsg(e as Error));
                 return;
             }
-            return `${value}`;
         });
     }
 }
