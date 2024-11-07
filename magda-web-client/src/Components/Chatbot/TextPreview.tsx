@@ -21,8 +21,7 @@ async function loadMarkdownPreview() {
             RemarkBreaksModule,
             RemarkDefinitionListModule,
             RemarkExtendedTableModule,
-            RehypeExternalLinksModule,
-            RehypeUrlsModule
+            RehypeExternalLinksModule
         ] = await Promise.all([
             import(
                 /* webpackChunkName: "react-markdown-preview-libs" */ "react-markdown"
@@ -51,9 +50,6 @@ async function loadMarkdownPreview() {
                 /* webpackChunkName: "react-markdown-preview-libs" */ "rehype-external-links"
             ),
             import(
-                /* webpackChunkName: "react-markdown-preview-libs" */ "rehype-urls"
-            ),
-            import(
                 // @ts-ignore
                 /* webpackChunkName: "react-markdown-preview-libs" */ "github-markdown-css/github-markdown.css"
             ),
@@ -64,6 +60,7 @@ async function loadMarkdownPreview() {
         ]);
 
         const ReactMarkdown = ReactMarkdownModule.default;
+        const defaultUrlTransform = ReactMarkdownModule.defaultUrlTransform;
         const RemarkGfm = RemarkGfmModule.default;
         const RemarkMath = RemarkMathModule.default;
         const RehypeKatex = RehypeKatexModule.default;
@@ -72,7 +69,6 @@ async function loadMarkdownPreview() {
         const RemarkDefinitionList = RemarkDefinitionListModule.default;
         const RemarkExtendedTable = RemarkExtendedTableModule.default;
         const RehypeExternalLinks = RehypeExternalLinksModule.default;
-        const RehypeUrls = RehypeUrlsModule.default;
 
         const MarkdownPreview: FunctionComponent<{ source: string }> = ({
             source
@@ -127,23 +123,23 @@ async function loadMarkdownPreview() {
                                 rel: ["nofollow", "noopener", "noreferrer"],
                                 target: "_blank"
                             }
-                        ],
-                        [
-                            RehypeUrls,
-                            function blankExternal(url, node) {
-                                if (
-                                    node.tagName === "a" &&
-                                    typeof url.href === "string" &&
-                                    url.href.indexOf(pathNameBase) === 0
-                                ) {
-                                    const hrefStr = JSON.stringify(url.href);
-                                    node.properties.href = `javascript:window.textPreviewNavHistory.push(${hrefStr});`;
-                                }
-                            }
                         ]
                     ]}
                     components={{
                         code
+                    }}
+                    urlTransform={(url, key, node) => {
+                        if (
+                            key === "href" &&
+                            node.tagName === "a" &&
+                            url.indexOf(pathNameBase) === 0
+                        ) {
+                            // internal link should be navigated without page refresh
+                            const hrefStr = JSON.stringify(url);
+                            return `javascript:window.textPreviewNavHistory.push(${hrefStr});`;
+                        } else {
+                            return defaultUrlTransform(url);
+                        }
                     }}
                 >
                     {source}

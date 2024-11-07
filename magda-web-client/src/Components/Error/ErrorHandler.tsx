@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
+import ChatBoxRoutes from "../Chatbot/ChatBoxRoutes";
 
 type Props = {
     error: {
@@ -18,6 +19,7 @@ class ErrorHandler extends React.Component<Props> {
                         <h3>{this.props.error.title}</h3>
                     ) : null}
                     <p>{this.props.error.detail}</p>
+                    <ChatBoxRoutes />
                 </div>
             </MagdaDocumentTitle>
         );

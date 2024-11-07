@@ -15,6 +15,7 @@ const ChatBoxRoutes: FunctionComponent = () => (
         />
         <Route path="/dataset/:datasetId" component={ChatBox} />
         <Route path="/page/:pageId" component={ChatBox} />
+        <Route path="/error" exact component={ChatBox} />
     </Switch>
 );
 

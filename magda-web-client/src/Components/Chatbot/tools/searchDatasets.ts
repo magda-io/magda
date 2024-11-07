@@ -22,10 +22,13 @@ async function retrieveDatasets(question: string) {
             ? item.description.substring(0, MAX_DESC_DISPLAY_LENGTH + 1) + "..."
             : item.description
         ).replace(/\n|\r|<br\s*\/>/g, " ");
+        const datasetId = encodeURIComponent(
+            encodeURIComponent(item.identifier)
+        );
         const title = `[${item.title}](${
             uiBaseUrl === "/"
-                ? `/datasets/${item.identifier}`
-                : `${uiBaseUrl}/datasets/${item.identifier}`
+                ? `/dataset/${datasetId}`
+                : `${uiBaseUrl}/dataset/${datasetId}`
         })`;
         return [title, desc];
     });
