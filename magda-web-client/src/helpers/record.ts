@@ -26,6 +26,11 @@ export type TemporalCoverage = {
     }[];
 };
 
+export interface formatAspect {
+    confidenceLevel: number;
+    format: string;
+}
+
 export type sourceAspect = {
     name: string;
     url: string;

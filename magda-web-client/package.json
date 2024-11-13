@@ -152,7 +152,8 @@
     "@langchain/community": "0.2.31",
     "langchain": "0.2.17",
     "@ai-zen/async-queue": "^1.2.2",
-    "markdown-table": "^3.0.4"
+    "markdown-table": "^3.0.4",
+    "alasql": "^4.5.2"
   },
   "resolutions": {
     "@langchain/core": "0.2.28"

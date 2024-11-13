@@ -1,6 +1,7 @@
 const { isEqual } = require("lodash");
 const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
+const IgnorePlugin = require("webpack").IgnorePlugin;
 const path = require("path");
 
 require("dotenv").config();
@@ -74,6 +75,13 @@ module.exports = {
             );
 
             webpackConfig.plugins.push(new NodePolyfillPlugin());
+
+            //webpackConfig.module.noParse = [/alasql/];
+            webpackConfig.plugins.push(
+                new IgnorePlugin({
+                    resourceRegExp: /(^fs$|cptable|jszip|xlsx|^es6-promise$|^net$|^tls$|^forever-agent$|^tough-cookie$|cpexcel|^path$|^request$|react-native|^vertx$)/
+                })
+            );
 
             webpackConfig.externals = {
                 react: "React",
