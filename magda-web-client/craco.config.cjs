@@ -79,7 +79,7 @@ module.exports = {
             //webpackConfig.module.noParse = [/alasql/];
             webpackConfig.plugins.push(
                 new IgnorePlugin({
-                    resourceRegExp: /(^fs$|cptable|jszip|xlsx|^es6-promise$|^net$|^tls$|^forever-agent$|^tough-cookie$|cpexcel|^path$|^request$|react-native|^vertx$)/
+                    resourceRegExp: /(^fs$|cptable|jszip|^es6-promise$|^net$|^tls$|^forever-agent$|^tough-cookie$|cpexcel|^path$|^request$|react-native|^vertx$)/
                 })
             );
 

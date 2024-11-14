@@ -1,7 +1,10 @@
 import alasql from "alasql/dist/alasql.min.js";
+import xlsx from "alasql/modules/xlsx/xlsx.mjs";
 import { getRecordAspect } from "../api-clients/RegistryApis";
 import { dcatDistributionStrings, formatAspect } from "../helpers/record";
 import type ServerError from "@magda/typescript-common/dist/ServerError.js";
+
+alasql.setXLSX(xlsx);
 
 export type ResType =
     | "CSV"
@@ -127,7 +130,7 @@ async function dist(...args) {
         };
     }
     const callArgs = [dist.url, ...(args.length > 1 ? [...args.slice(1)] : [])];
-    return alasql.from?.[dist.type]?.apply(null, callArgs);
+    return alasql.from?.[dist.type]?.apply(null, callArgs as any);
 }
 
 alasql.from.dist = dist;
