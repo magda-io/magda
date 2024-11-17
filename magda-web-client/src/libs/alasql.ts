@@ -131,41 +131,52 @@ export function dataset2DistributionResourceItems(
 }
 
 async function source(...args) {
+    const alasql = await getAlaSQL();
     const distId: string | number | null = args[0];
-    let dist: DistributionResourceItem | null = null;
-    if (distId === null || distId === "this") {
-        if (!currentDist) {
-            throw new Error(
-                "Failed to use `this` ref to load distribution resource: the current distribution hasn't been set."
+    const query = args[4];
+    const cb = query?.cb;
+    try {
+        let dist: DistributionResourceItem | null = null;
+        if (distId === null || distId === "this") {
+            if (!currentDist) {
+                throw new Error(
+                    "Failed to load the current distribution resource: the current distribution hasn't been set."
+                );
+            }
+            dist = { ...currentDist };
+        } else if (typeof distId === "number" && distId >= 0) {
+            if (!currentDistList?.[distId]) {
+                throw new Error(
+                    `Failed to load the distribution resource by index "${distId}": distribution with index "${distId}" doesn't exist or not set.`
+                );
+            }
+            dist = { ...currentDistList[distId] };
+        } else {
+            const data = await getRecordAspect<dcatDistributionStrings>(
+                String(distId),
+                "dcat-distribution-strings"
             );
+            if (!data?.downloadURL && !data?.accessURL) {
+                throw new Error(
+                    `Failed to load the distribution resource by id "${distId}": cannot locate URL from metadata data.`
+                );
+            }
+            const url = data?.downloadURL ? data.downloadURL : data?.accessURL;
+            const resType = await getResType(String(distId), data?.format, url);
+            dist = {
+                url: getStorageApiResourceAccessUrl(url),
+                type: resType
+            };
         }
-        dist = { ...currentDist };
-    } else if (typeof distId === "number" && distId >= 0) {
-        if (!currentDistList?.[distId]) {
-            throw new Error(
-                `Failed to load the distribution resource by index "${distId}": distribution with index "${distId}" doesn't exist or not set.`
-            );
-        }
-        dist = { ...currentDistList[distId] };
-    } else {
-        const data = await getRecordAspect<dcatDistributionStrings>(
-            String(distId),
-            "dcat-distribution-strings"
-        );
-        if (!data?.downloadURL && !data?.accessURL) {
-            throw new Error(
-                `Failed to load the distribution resource by id "${distId}": cannot locate URL from metadata data.`
-            );
-        }
-        const url = data?.downloadURL ? data.downloadURL : data?.accessURL;
-        const resType = await getResType(String(distId), data?.format, url);
-        dist = {
-            url: getStorageApiResourceAccessUrl(url),
-            type: resType
-        };
+        const callArgs = [
+            dist.url,
+            ...(args.length > 1 ? [...args.slice(1)] : [])
+        ];
+        return alasql.from?.[dist.type]?.apply(null, callArgs as any);
+    } catch (e) {
+        console.error(e);
+        cb?.(undefined, e);
     }
-    const callArgs = [dist.url, ...(args.length > 1 ? [...args.slice(1)] : [])];
-    return alasql.from?.[dist.type]?.apply(null, callArgs as any);
 }
 
 /**
@@ -186,13 +197,11 @@ async function getAlaSQL(): Promise<alasql> {
                     /* webpackChunkName:'alasql' */ "alasql/modules/xlsx/xlsx.mjs"
                 )
             ]).then((result) => {
-                const [{ default: alasql, default: xlsx }] = result;
+                const [{ default: alasql }, { default: xlsx }] = result;
                 // alasql initialization
                 alasql.setXLSX(xlsx);
                 alasql.from.source = source;
                 alasql.from.SOURCE = source;
-                // debug code
-                (window as any).alasql = alasql;
                 return alasql;
             });
             return await alasqlLoadingPromise;
