@@ -492,11 +492,11 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
     const makeDrawerHeader = (screeSize: "sm" | undefined) =>
         screeSize === "sm" ? (
             <Drawer.Header>
-                <Drawer.Title>Chat to Magda</Drawer.Title>
+                <Drawer.Title>Chat to {appName}</Drawer.Title>
             </Drawer.Header>
         ) : (
             <Drawer.Header>
-                <Drawer.Title>Chat to Magda</Drawer.Title>
+                <Drawer.Title>Chat to {appName}</Drawer.Title>
                 <Drawer.Actions>
                     <RadioGroup
                         inline

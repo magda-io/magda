@@ -1,0 +1,71 @@
+.magda-sql-console-drawer.rs-drawer-full {
+    height: 100%;
+}
+.magda-sql-console-drawer {
+    .rs-drawer-header {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        .rs-drawer-header-close {
+            top: 20px;
+        }
+    }
+    .rs-drawer-title {
+        line-height: 18px;
+        height: 20px;
+        margin-top: 15px;
+    }
+    .rs-drawer-actions {
+        .size-selector-heading {
+            padding: 7px 2px 7px 12px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+    }
+    .rs-drawer-body {
+        padding: 10px 10px 0px 10px;
+        .rs-panel-body {
+            padding: 10px;
+        }
+    }
+
+    .magda-sql-console-main-content-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        height: 100%;
+        .query-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            .query-panel {
+                flex-grow: 1;
+            }
+            .button-tool-bar {
+                padding-left: 10px;
+                padding-bottom: 3px;
+                display: flex;
+                align-items: flex-end !important;
+                .help-icon-container {
+                    position: absolute;
+                    top: 10px;
+                }
+            }
+        }
+        .data-row {
+            flex-grow: 1;
+            margin-top: 10px;
+            .rs-panel-header {
+                padding: 10px;
+            }
+        }
+    }
+}
+
+.magda-sql-console-help-icon-tooltip {
+    a {
+        color: #ffffff;
+    }
+    a:hover {
+        color: #ffffff;
+    }
+}

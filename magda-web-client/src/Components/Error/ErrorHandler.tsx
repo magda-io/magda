@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 import ChatBoxRoutes from "../Chatbot/ChatBoxRoutes";
+import SQLConsoleRoutes from "../SQLConsole/SQLConsoleRoutes";
 
 type Props = {
     error: {
@@ -20,6 +21,7 @@ class ErrorHandler extends React.Component<Props> {
                     ) : null}
                     <p>{this.props.error.detail}</p>
                     <ChatBoxRoutes />
+                    <SQLConsoleRoutes />
                 </div>
             </MagdaDocumentTitle>
         );

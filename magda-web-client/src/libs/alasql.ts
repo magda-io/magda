@@ -1,10 +1,13 @@
-import alasql from "alasql/dist/alasql.min.js";
-import xlsx from "alasql/modules/xlsx/xlsx.mjs";
+import type alasql from "alasql/dist/alasql.min.js";
 import { getRecordAspect } from "../api-clients/RegistryApis";
-import { dcatDistributionStrings, formatAspect } from "../helpers/record";
+import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
+import {
+    ParsedDataset,
+    ParsedDistribution,
+    dcatDistributionStrings,
+    formatAspect
+} from "../helpers/record";
 import type ServerError from "@magda/typescript-common/dist/ServerError.js";
-
-alasql.setXLSX(xlsx);
 
 export type ResType =
     | "CSV"
@@ -20,6 +23,8 @@ export interface DistributionResourceItem {
     url: string;
     type: ResType;
 }
+
+let alasqlLoadingPromise: Promise<typeof alasql> | null = null;
 
 let currentDistList: DistributionResourceItem[] = [];
 let currentDist: DistributionResourceItem | null = null;
@@ -95,10 +100,40 @@ async function getResType(
     return determineDistResType(format, url);
 }
 
-async function dist(...args) {
-    const distId: string | number = args[0];
+export function distribution2ResourceItem(
+    item: ParsedDistribution
+): DistributionResourceItem | null {
+    try {
+        const url = item?.downloadURL
+            ? item.downloadURL
+            : item?.accessURL
+            ? item.accessURL
+            : "";
+        const resType = determineDistResType(item.format, url);
+        return {
+            url: getStorageApiResourceAccessUrl(url),
+            type: resType
+        };
+    } catch (e) {
+        return null;
+    }
+}
+
+export function dataset2DistributionResourceItems(
+    dataset: ParsedDataset
+): DistributionResourceItem[] {
+    if (!dataset?.distributions?.length) {
+        return [];
+    }
+    return dataset.distributions
+        .map(distribution2ResourceItem)
+        .filter((item) => item) as DistributionResourceItem[];
+}
+
+async function source(...args) {
+    const distId: string | number | null = args[0];
     let dist: DistributionResourceItem | null = null;
-    if (distId === "this") {
+    if (distId === null || distId === "this") {
         if (!currentDist) {
             throw new Error(
                 "Failed to use `this` ref to load distribution resource: the current distribution hasn't been set."
@@ -125,7 +160,7 @@ async function dist(...args) {
         const url = data?.downloadURL ? data.downloadURL : data?.accessURL;
         const resType = await getResType(String(distId), data?.format, url);
         dist = {
-            url,
+            url: getStorageApiResourceAccessUrl(url),
             type: resType
         };
     }
@@ -133,8 +168,45 @@ async function dist(...args) {
     return alasql.from?.[dist.type]?.apply(null, callArgs as any);
 }
 
-alasql.from.dist = dist;
-alasql.from.DIST = dist;
+/**
+ * Use this function to defer the loading of the AlaSQL to the first call
+ *
+ * @return {*}  {Promise<alasql>}
+ */
+async function getAlaSQL(): Promise<alasql> {
+    try {
+        if (alasqlLoadingPromise) {
+            return await alasqlLoadingPromise;
+        } else {
+            alasqlLoadingPromise = Promise.all([
+                import(
+                    /* webpackChunkName:'alasql' */ "alasql/dist/alasql.min.js"
+                ),
+                import(
+                    /* webpackChunkName:'alasql' */ "alasql/modules/xlsx/xlsx.mjs"
+                )
+            ]).then((result) => {
+                const [{ default: alasql, default: xlsx }] = result;
+                // alasql initialization
+                alasql.setXLSX(xlsx);
+                alasql.from.source = source;
+                alasql.from.SOURCE = source;
+                // debug code
+                (window as any).alasql = alasql;
+                return alasql;
+            });
+            return await alasqlLoadingPromise;
+        }
+    } catch (e) {
+        reportError(`Failed to load AlaSQL: ${e}`);
+        throw e;
+    }
+}
 
-// debug code
-(window as any).alasql = alasql;
+export async function runQuery<T = any>(
+    query: string,
+    params?: any[]
+): Promise<T> {
+    const alasql = await getAlaSQL();
+    return await alasql.promise(query, params);
+}
