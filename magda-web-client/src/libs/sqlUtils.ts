@@ -185,30 +185,23 @@ async function source(...args) {
  * @return {*}  {Promise<alasql>}
  */
 async function getAlaSQL(): Promise<typeof alasql> {
-    try {
-        if (alasqlLoadingPromise) {
-            return await alasqlLoadingPromise;
-        } else {
-            alasqlLoadingPromise = Promise.all([
-                import(
-                    /* webpackChunkName:'alasql' */ "alasql/dist/alasql.min.js"
-                ),
-                import(
-                    /* webpackChunkName:'alasql-xlsx' */ "alasql/modules/xlsx/xlsx.js"
-                )
-            ]).then((result) => {
-                const [{ default: alasql }, { default: xlsx }] = result;
-                // alasql initialization
-                alasql.setXLSX(xlsx);
-                alasql.from.source = source;
-                alasql.from.SOURCE = source;
-                return alasql;
-            });
-            return await alasqlLoadingPromise;
-        }
-    } catch (e) {
-        reportError(`Failed to load AlaSQL: ${e}`);
-        throw e;
+    if (alasqlLoadingPromise) {
+        return await alasqlLoadingPromise;
+    } else {
+        alasqlLoadingPromise = Promise.all([
+            import(/* webpackChunkName:'alasql' */ "alasql/dist/alasql.min.js"),
+            import(
+                /* webpackChunkName:'alasql-xlsx' */ "alasql/modules/xlsx/xlsx.js"
+            )
+        ]).then((result) => {
+            const [{ default: alasql }, { default: xlsx }] = result;
+            // alasql initialization
+            alasql.setXLSX(xlsx);
+            alasql.from.source = source;
+            alasql.from.SOURCE = source;
+            return alasql;
+        });
+        return await alasqlLoadingPromise;
     }
 }
 
