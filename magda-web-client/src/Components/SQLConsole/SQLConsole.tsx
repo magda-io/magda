@@ -27,7 +27,7 @@ import {
     dataset2DistributionResourceItems,
     distribution2ResourceItem,
     setCurrentDist
-} from "../../libs/alasql";
+} from "../../libs/sqlUtils";
 import downloadCsv from "../../libs/downloadCsv";
 import { BsFillQuestionCircleFill } from "react-icons/bs";
 import "./SQLConsole.scss";

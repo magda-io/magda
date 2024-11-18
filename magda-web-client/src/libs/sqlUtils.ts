@@ -1,4 +1,4 @@
-import type alasql from "alasql/dist/alasql.min.js";
+import type alasql from "alasql";
 import { getRecordAspect } from "../api-clients/RegistryApis";
 import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
 import {
@@ -184,7 +184,7 @@ async function source(...args) {
  *
  * @return {*}  {Promise<alasql>}
  */
-async function getAlaSQL(): Promise<alasql> {
+async function getAlaSQL(): Promise<typeof alasql> {
     try {
         if (alasqlLoadingPromise) {
             return await alasqlLoadingPromise;
@@ -194,7 +194,7 @@ async function getAlaSQL(): Promise<alasql> {
                     /* webpackChunkName:'alasql' */ "alasql/dist/alasql.min.js"
                 ),
                 import(
-                    /* webpackChunkName:'alasql' */ "alasql/modules/xlsx/xlsx.mjs"
+                    /* webpackChunkName:'alasql-xlsx' */ "alasql/modules/xlsx/xlsx.js"
                 )
             ]).then((result) => {
                 const [{ default: alasql }, { default: xlsx }] = result;
