@@ -2,6 +2,7 @@ import { config } from "../config";
 import getProxiedResourceUrl from "helpers/getProxiedResourceUrl";
 import isStorageApiUrl from "helpers/isStorageApiUrl";
 import fetch from "cross-fetch";
+import getPapa from "libs/getPapa";
 import { actionTypes } from "../constants/ActionTypes";
 
 export function requestPreviewData(url: string) {
@@ -32,17 +33,10 @@ export function resetPreviewData() {
 }
 
 function loadPapa() {
-    return import(/* webpackChunkName: "papa" */ "papaparse")
-        .then((papa) => {
-            return papa;
-        })
-        .catch((error) => {
-            console.error(
-                "An error occurred while loading the component",
-                error
-            );
-            throw error;
-        });
+    return getPapa().catch((error) => {
+        console.error("An error occurred while loading the component", error);
+        throw error;
+    });
 }
 
 function loadXmlParser() {
