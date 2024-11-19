@@ -180,6 +180,7 @@ csp:
     scriptSrc:
     - "'self'"
     - "'unsafe-inline'" 
+    - "'unsafe-eval'" 
     - https://*.googletagmanager.com
     objectSrc:
     - "'none'"
