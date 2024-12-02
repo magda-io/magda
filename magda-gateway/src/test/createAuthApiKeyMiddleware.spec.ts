@@ -65,6 +65,7 @@ const defaultAppOptions = {
     },
     cookieJson: {},
     helmetJson: {},
+    helmetPerPathJson: {},
     cspJson: {},
     corsJson: {},
     authorizationApi: "http://auth-api",

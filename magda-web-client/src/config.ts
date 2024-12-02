@@ -694,6 +694,17 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     llmExtensionId: string;
+
+    /**
+     * Whether alasql should be run in an iframe.
+     * There might be performance benfits to run alasql in iframe.
+     * Besides, as alasql requires runtime code generation, proper CSP (i.e. `unsafe-eval`) would be need in place to allow it run.
+     * The run in iframe option offers better control over CSP as you can specify different CSP just for alasql.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    alasqlRunInIframe: boolean;
 }
 
 const serverConfig: ConfigDataType = window.magda_server_config || {};
@@ -1008,7 +1019,10 @@ export const config: ConfigDataType = {
     llmExtensionId: serverConfig?.llmExtensionId
         ? serverConfig.llmExtensionId
         : // this is the ID of the default extension allow access from domain magda.io
-          "ljadmjdilnpmlhopijgimonfackfngmi"
+          "ljadmjdilnpmlhopijgimonfackfngmi",
+    alasqlRunInIframe: serverConfig?.alasqlRunInIframe
+        ? serverConfig.alasqlRunInIframe
+        : true
 };
 
 export type Config = typeof config;

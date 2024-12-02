@@ -65,9 +65,6 @@ disableGzip: false
 # More info on authentication plugin see [Authentication Plugin Specification](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md)
 authPlugins: []
 
-helmet:
-  frameguard: false
-
 resources:
   requests:
     cpu: 50m
@@ -174,20 +171,47 @@ defaultWebRouteConfig:
   # -- make /xxx auto redirect to /xxxx/
   redirectTrailingSlash: false
 
-csp:
-  browserSniff: false
-  directives:
-    scriptSrc:
-    - "'self'"
-    - "'unsafe-inline'" 
-    - https://*.googletagmanager.com
-    objectSrc:
-    - "'none'"
-    workerSrc:
-    - "'self'"
-    - "blob:"
-    frame-ancestors:
-    - "'self'"
+# -- Helmet config options. See https://www.npmjs.com/package/helmet
+# Since Magda v5, you should supply content security policy config via `contentSecurityPolicy` key here.
+# A separate `csp` config section for content security policy is deprecated and will be removed in future.
+# You should review the default config values here and [helmet default settings](https://github.com/helmetjs/helmet?tab=readme-ov-file#reference)
+# to determine whether you need to change the settings here.
+helmet:
+  xFrameOptions: false
+  originAgentCluster: false
+  referrerPolicy:
+    policy: strict-origin-when-cross-origin
+  strictTransportSecurity: false
+  xContentTypeOptions: false
+  xDnsPrefetchControl: false
+  xDownloadOptions: false
+  xPermittedCrossDomainPolicies: false
+  contentSecurityPolicy:
+    directives:
+      defaultSrc: null
+      fontSrc: null
+      imgSrc: null
+      scriptSrcAttr: null
+      styleSrc: null
+      scriptSrc:
+      - "'self'"
+      workerSrc:
+      - "'self'"
+      - "blob:"
+
+# -- Allow optionally to set different helmet config per request path.
+# e.g. you can specify different config for path `/routeA/abc` with:
+# helmetPerPath:
+#   "/routeA/abc": 
+#     referrerPolicy:
+#       policy: strict-origin-when-cross-origin
+helmetPerPath: {}
+
+# -- Since Magda v5, the content security policy config section here is deprecated.
+# You should set `content security policy` config via the `contentSecurityPolicy` key of the `helmet` config section.
+# This config section is still supported for backwards compatibility reasons and will be removed in future.
+# The config supplied here will override the config supplied via `helmet.contentSecurityPolicy`.
+csp: {}
 
 cors:
   exposedHeaders:
