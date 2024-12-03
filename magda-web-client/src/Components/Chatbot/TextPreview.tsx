@@ -1,9 +1,9 @@
-import React, { FunctionComponent, useCallback, useEffect } from "react";
+import React, { FunctionComponent, useCallback } from "react";
 import { useAsync } from "react-async-hook";
 import reportError from "helpers/reportError";
 import GeoJsonViewer from "./GeoJsonViewer";
 import MarkdownMermaid from "./MarkdownMermaid";
-import { useHistory } from "react-router-dom";
+import CommonLink from "../Common/CommonLink";
 import { config } from "../../config";
 
 const { uiBaseUrl } = config;
@@ -106,6 +106,11 @@ async function loadMarkdownPreview() {
                 );
             }, []);
 
+            const anchor = useCallback((allProps) => {
+                const { children, node, ...props } = allProps;
+                return <CommonLink {...props}>{children}</CommonLink>;
+            }, []);
+
             return (
                 <ReactMarkdown
                     remarkPlugins={[
@@ -126,7 +131,8 @@ async function loadMarkdownPreview() {
                         ]
                     ]}
                     components={{
-                        code
+                        code,
+                        a: anchor
                     }}
                     urlTransform={(url, key, node) => {
                         if (
@@ -134,9 +140,8 @@ async function loadMarkdownPreview() {
                             node.tagName === "a" &&
                             url.indexOf(pathNameBase) === 0
                         ) {
-                            // internal link should be navigated without page refresh
-                            const hrefStr = JSON.stringify(url);
-                            return `javascript:window.textPreviewNavHistory.push(${hrefStr});`;
+                            // internal link should skip defaultUrlTransform
+                            return url;
                         } else {
                             return defaultUrlTransform(url);
                         }
@@ -159,12 +164,6 @@ const TextPreview: FunctionComponent<{ source: string }> = ({ source }) => {
         result: MarkdownPreview,
         loading: isMarkdownPreviewLoading
     } = useAsync(loadMarkdownPreview, []);
-
-    const history = useHistory();
-
-    useEffect(() => {
-        (window as any)["textPreviewNavHistory"] = history;
-    }, [history]);
 
     if (isMarkdownPreviewLoading || !MarkdownPreview) {
         return <pre>{source}</pre>;

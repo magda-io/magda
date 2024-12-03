@@ -31,15 +31,19 @@ type PropsType = {
  * @param props
  */
 const CommonLink: FunctionComponent<PropsType> = (props) => {
-    const { href, to, ...restProps } = props;
+    const { href, to, children, ...restProps } = props;
     const urlPropVal = to ? to : href;
 
     if (!urlPropVal) {
-        return <a {...props} />;
+        return <a {...props}>{children}</a>;
     }
 
     if (typeof urlPropVal !== "string") {
-        return <Link to={urlPropVal} {...restProps} />;
+        return (
+            <Link to={urlPropVal} {...restProps}>
+                {children}
+            </Link>
+        );
     }
 
     const urlStr = urlPropVal.trim();
@@ -49,7 +53,11 @@ const CommonLink: FunctionComponent<PropsType> = (props) => {
         urlStrLowerCase.indexOf("http") === 0 ||
         urlStrLowerCase.indexOf("mailto:") === 0
     ) {
-        return <a href={urlStr} {...restProps} />;
+        return (
+            <a href={urlStr} {...restProps}>
+                {children}
+            </a>
+        );
     } else if (
         // before modify the code of this branch, be sure you've tested the following scenarios:
         // - gateway / backend apis amounted at non-root path (via [global.externalUrl](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/README.md))
@@ -66,7 +74,11 @@ const CommonLink: FunctionComponent<PropsType> = (props) => {
             urijs(uiBaseUrl).segment().join("/") ===
                 urijs(baseUrl).segment().join("/")
         ) {
-            return <Link to={urlWithNoPrefix} {...restProps} />;
+            return (
+                <Link to={urlWithNoPrefix} {...restProps}>
+                    {children}
+                </Link>
+            );
         } else {
             // as we might used `base` tag in html, we need to use absolute url here
             const targetUri = isBackendSameOrigin
@@ -81,10 +93,18 @@ const CommonLink: FunctionComponent<PropsType> = (props) => {
                 .hash(inputUri.hash())
                 .toString();
 
-            return <a href={url} {...restProps} />;
+            return (
+                <a href={url} {...restProps}>
+                    {children}
+                </a>
+            );
         }
     } else {
-        return <Link to={urlStr} {...restProps} />;
+        return (
+            <Link to={urlStr} {...restProps}>
+                {children}
+            </Link>
+        );
     }
 };
 
