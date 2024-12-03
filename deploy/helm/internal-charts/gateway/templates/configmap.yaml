@@ -15,6 +15,7 @@ data:
   routes.json: {{ $runtimeRoutes | mustToRawJson | quote }}
   webRoutes.json: {{ .Values.webRoutes | default dict | mustToRawJson | quote }}
   helmet.json: {{ .Values.helmet | default dict | mustToRawJson | quote }}
+  helmetPerPath.json: {{ .Values.helmetPerPath | default dict | mustToRawJson | quote }}
   cors.json: {{ .Values.cors | default dict | mustToRawJson | quote }}
   csp.json: {{ .Values.csp | default dict | mustToRawJson | quote }}
   cookie.json: {{ .Values.cookie | default dict | mustToRawJson | quote }}

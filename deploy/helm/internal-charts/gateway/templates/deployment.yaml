@@ -16,6 +16,7 @@ spec:
         checksum/routes: {{ .Values.routes | default .Values.defaultRoutes | mustToRawJson | sha256sum }}
         checksum/webRoutes: {{ .Values.webRoutes | default dict | mustToRawJson | sha256sum }}
         checksum/helmet: {{ .Values.helmet | default dict | mustToRawJson | sha256sum }}
+        checksum/helmetPerPath: {{ .Values.helmetPerPath | default dict | mustToRawJson | sha256sum }}
         checksum/cors: {{ .Values.cors | default dict | mustToRawJson | sha256sum }}
         checksum/csp: {{ .Values.csp | default dict | mustToRawJson | sha256sum }}
         checksum/cookie: {{ .Values.cookie | default dict | mustToRawJson | sha256sum }}
@@ -71,6 +72,7 @@ spec:
             "--proxyRoutesJson", "/etc/config/routes.json",
             "--webProxyRoutesJson", "/etc/config/webRoutes.json",
             "--helmetJson", "/etc/config/helmet.json",
+            "--helmetPerPathJson", "/etc/config/helmetPerPath.json",
             "--cspJson", "/etc/config/csp.json",
             "--corsJson", "/etc/config/cors.json",
             "--cookieJson", "/etc/config/cookie.json",

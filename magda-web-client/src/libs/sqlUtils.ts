@@ -8,6 +8,7 @@ import {
     formatAspect
 } from "../helpers/record";
 import type ServerError from "@magda/typescript-common/dist/ServerError.js";
+import { config } from "../config";
 
 export type ResType =
     | "CSV"
@@ -185,6 +186,9 @@ async function source(...args) {
  * @return {*}  {Promise<alasql>}
  */
 async function getAlaSQL(): Promise<typeof alasql> {
+    if (config?.alasqlRunInIframe) {
+        return await getAlaSQLViaIframe();
+    }
     if (alasqlLoadingPromise) {
         return await alasqlLoadingPromise;
     } else {
@@ -200,6 +204,32 @@ async function getAlaSQL(): Promise<typeof alasql> {
             alasql.from.source = source;
             alasql.from.SOURCE = source;
             return alasql;
+        });
+        return await alasqlLoadingPromise;
+    }
+}
+
+let alasqlIframe: HTMLIFrameElement | null = null;
+
+async function getAlaSQLViaIframe(): Promise<typeof alasql> {
+    if (alasqlLoadingPromise) {
+        return await alasqlLoadingPromise;
+    } else {
+        const { uiBaseUrl } = config;
+        alasqlLoadingPromise = new Promise((resolve, reject) => {
+            const refToken = Math.random().toString().replace(".", "");
+            (window as any)[`onAlaSQLIframeLoaded${refToken}`] = () => {
+                resolve(alasqlIframe?.contentWindow?.["alasql"]);
+            };
+            (window as any)[`alasqlSourceFunc${refToken}`] = source;
+            alasqlIframe = document.createElement("iframe");
+            alasqlIframe.src = `${
+                uiBaseUrl === "/" ? uiBaseUrl : uiBaseUrl + "/"
+            }assets/alasql.html?refToken=${refToken}`;
+            alasqlIframe.style.cssText =
+                "width:1px;border:0px;height:1px;position:absolute;visibility:hidden";
+
+            document.body.appendChild(alasqlIframe);
         });
         return await alasqlLoadingPromise;
     }
