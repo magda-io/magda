@@ -205,7 +205,13 @@ helmet:
 #   "/routeA/abc": 
 #     referrerPolicy:
 #       policy: strict-origin-when-cross-origin
-helmetPerPath: {}
+helmetPerPath:
+  # -- allow alasql to compile SQL query at frontend in its separate window/iframe
+  "/assets/alasql.html": 
+    contentSecurityPolicy:
+      scriptSrc:
+      - "'self'"
+      - "'unsafe-eval'"
 
 # -- Since Magda v5, the content security policy config section here is deprecated.
 # You should set `content security policy` config via the `contentSecurityPolicy` key of the `helmet` config section.
