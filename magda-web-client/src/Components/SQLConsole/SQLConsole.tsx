@@ -30,6 +30,7 @@ import {
 } from "../../libs/sqlUtils";
 import downloadCsv from "../../libs/downloadCsv";
 import { BsFillQuestionCircleFill } from "react-icons/bs";
+import type ReactAce from "react-ace";
 import "./SQLConsole.scss";
 
 const { Column, HeaderCell, Cell } = Table;
@@ -68,6 +69,9 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
     const onRunQuery = useCallback(
         async (query: string, params?: any[]) => {
             try {
+                if (!query.trim()) {
+                    throw new Error("the query supplied was empty!");
+                }
                 setIsLoading(true);
                 const result = await runQuery(query, params);
                 setData(result);
@@ -117,13 +121,9 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                 event.preventDefault();
                 event.stopPropagation();
                 setIsOpen((val) => !val);
-            } else if (event.shiftKey === true && event.key === "Enter") {
-                event.preventDefault();
-                event.stopPropagation();
-                onRunQueryButtonClick();
             }
         },
-        [setIsOpen, onRunQueryButtonClick]
+        [setIsOpen]
     );
 
     useEffect(() => {
@@ -147,52 +147,67 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
         }
     }, [dataset, distribution]);
 
-    const {
-        result: SqlEditor,
-        loading: loadingSqlEditor
-    } = useAsync(async () => {
-        try {
-            const [{ default: AceEditor }] = await Promise.all([
-                import(/* webpackChunkName:'react-ace' */ "react-ace"),
-                import(
-                    /* webpackChunkName:'react-ace' */ "ace-builds/src-noconflict/mode-sql"
-                ),
-                import(
-                    /* webpackChunkName:'react-ace' */ "ace-builds/src-noconflict/theme-xcode"
-                )
-            ]);
-            return function EditorHoc(props) {
-                const { style } = props;
-                return (
-                    <div
-                        className="sql-editor-container"
-                        style={style ? style : {}}
-                    >
-                        <AceEditor
-                            name="magda-sql-console-editor"
-                            mode="sql"
-                            theme="xcode"
-                            showGutter={false}
-                            showPrintMargin={false}
-                            highlightActiveLine={false}
-                            fontSize={12}
-                            lineHeight={15}
-                            focus={true}
-                            setOptions={{
-                                enableMobileMenu: false,
-                                showLineNumbers: false,
-                                tabSize: 2
-                            }}
-                            {...props}
-                        />
-                    </div>
-                );
-            };
-        } catch (e) {
-            reportError(`Failed to load JSON editor: ${e}`);
-            return;
-        }
-    }, []);
+    const { result: SqlEditor, loading: loadingSqlEditor } = useAsync(
+        async (onRunQueryButtonClick) => {
+            try {
+                const [{ default: AceEditor }] = await Promise.all([
+                    import(/* webpackChunkName:'react-ace' */ "react-ace"),
+                    import(
+                        /* webpackChunkName:'react-ace' */ "ace-builds/src-noconflict/mode-sql"
+                    ),
+                    import(
+                        /* webpackChunkName:'react-ace' */ "ace-builds/src-noconflict/theme-xcode"
+                    )
+                ]);
+                return function EditorHoc(props) {
+                    const { style } = props;
+                    const aceEditorRef = useRef<ReactAce>();
+                    const editorRef = aceEditorRef?.current?.editor;
+                    useEffect(() => {
+                        if (editorRef) {
+                            editorRef.commands.addCommand({
+                                name: "executeQuery",
+                                bindKey: {
+                                    win: "Shift-Enter",
+                                    mac: "Shift-Enter"
+                                },
+                                exec: onRunQueryButtonClick
+                            });
+                        }
+                    }, [editorRef]);
+                    return (
+                        <div
+                            className="sql-editor-container"
+                            style={style ? style : {}}
+                        >
+                            <AceEditor
+                                ref={aceEditorRef}
+                                name="magda-sql-console-editor"
+                                mode="sql"
+                                theme="xcode"
+                                showGutter={false}
+                                showPrintMargin={false}
+                                highlightActiveLine={false}
+                                fontSize={12}
+                                lineHeight={15}
+                                focus={true}
+                                setOptions={{
+                                    enableMobileMenu: false,
+                                    showLineNumbers: false,
+                                    tabSize: 2
+                                }}
+                                {...props}
+                            />
+                        </div>
+                    );
+                };
+            } catch (e) {
+                reportError(`Failed to load JSON editor: ${e}`);
+                return;
+            }
+        },
+        [onRunQueryButtonClick]
+    );
 
     const makeDrawerHeader = useCallback(
         (screeSize: "sm" | undefined) =>
