@@ -18,6 +18,7 @@ import {
     EVENT_TYPE_PARTIAL_MSG_FINISH,
     createChatEventMessage
 } from "../Messaging";
+import { WebLLMTool } from "../ChatWebLLM";
 
 const systemPromptTpl = SystemMessagePromptTemplate.fromTemplate(
     `You are a friendly AI agent named "{appName}". \n` +
@@ -45,7 +46,7 @@ function createToolList(location: Location): string {
     }
 }
 
-const defaultAgent = {
+const defaultAgent: WebLLMTool = {
     name: "defaultAgent",
     func: async function () {
         const context = (this as unknown) as ChainInput;

@@ -1,50 +1,22 @@
 import { v4 as uuidv4 } from "uuid";
-import { getLocationType, ChainInput } from "./commons";
-import {
-    ChatPromptTemplate,
-    MessagesPlaceholder
-} from "@langchain/core/prompts";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { ChainInput } from "./commons";
 import { InitProgressCallback, InitProgressReport } from "@mlc-ai/web-llm";
-import { HumanMessage, BaseMessage, AIMessage } from "@langchain/core/messages";
-import {
-    RunnableSequence,
-    Runnable,
-    RunnableLambda,
-    RunnableConfig
-} from "@langchain/core/runnables";
-import { StringOutputParser } from "@langchain/core/output_parsers";
+import { BaseMessage, AIMessage } from "@langchain/core/messages";
+import { Runnable, RunnableLambda } from "@langchain/core/runnables";
 import ChatWebLLM from "./ChatWebLLM";
-import toYaml from "../../libs/toYaml";
 import AsyncQueue from "@ai-zen/async-queue";
 import {
     CommonInputType,
     ChatEventMessage,
-    createChatEventMessageCompleteMsg,
     createChatEventMessage,
-    strChain2PartialMessageChain,
     EVENT_TYPE_PARTIAL_MSG,
     EVENT_TYPE_PARTIAL_MSG_FINISH,
     EVENT_TYPE_ERROR,
     createChatEventMessageErrorMsg
 } from "./Messaging";
 import { History, Location } from "history";
-import calculateChain from "./chains/calculator";
-import defaultAgent from "./tools/defaultAgent";
-import searchDatasets from "./tools/searchDatasets";
-
-const systemPromptTemplate = `You must identify yourself as "Magda", an AI assistant designed to help users to locate relevant datasets and answer questions based on the information in the datasets.
-- You need to answer user's latest question based on chat history and possible relevant datasets in the context section below.
-- When user's question is a general conversation, you should respond with a greeting.
-- When possible, you should output your answer in markdown format to present information in a visually appealing manner.
-- If you don't know the answer, you should just say that you don't know, you will not try to make up an answer.
-- You can only respond with dataset information available (if any) in the context section below. Do not mention any other datasets unless they are list in context section below.
-
-## Context:
-The current date and time is: {today_date}. 
-Possible relevant datasets:
-{relevant_datasets}
-`;
+import { ParsedDataset, ParsedDistribution } from "helpers/record";
+import createTools from "./tools";
 
 class AgentChain {
     static agentChain: AgentChain | null = null;
@@ -53,6 +25,8 @@ class AgentChain {
         appName: string,
         navLocation: Location,
         navHistory: History,
+        dataset: ParsedDataset | undefined,
+        distribution: ParsedDistribution | undefined,
         loadProgressCallback?: InitProgressCallback
     ) {
         if (AgentChain.agentChain) {
@@ -68,6 +42,8 @@ class AgentChain {
                 appName,
                 navLocation,
                 navHistory,
+                dataset,
+                distribution,
                 (report) => {
                     AgentChain.llmLoadProgressCallbacks.forEach((cb) =>
                         cb(report)
@@ -92,6 +68,8 @@ class AgentChain {
     public navHistory: History;
     public navLocation: Location;
     public appName: string;
+    public dataset: ParsedDataset | undefined;
+    public distribution: ParsedDistribution | undefined;
     public debug: boolean = false;
 
     public chain: Runnable<CommonInputType, string | null | undefined | void>;
@@ -100,6 +78,8 @@ class AgentChain {
         appName: string,
         navLocation: Location,
         navHistory: History,
+        dataset: ParsedDataset | undefined,
+        distribution: ParsedDistribution | undefined,
         loadProgressCallback?: InitProgressCallback
     ) {
         this.loadProgressCallback = loadProgressCallback;
@@ -109,6 +89,8 @@ class AgentChain {
         this.appName = appName;
         this.navHistory = navHistory;
         this.navLocation = navLocation;
+        this.dataset = dataset;
+        this.distribution = distribution;
         this.chain = this.createChain();
         // for debug purpose;
         (window as any).chatBotAgentChain = this;
@@ -126,6 +108,18 @@ class AgentChain {
         this.navHistory = history;
     }
 
+    setDataset(dataset: ParsedDataset | undefined) {
+        this.dataset = dataset;
+    }
+
+    setDistribution(distribution: ParsedDistribution | undefined) {
+        this.distribution = distribution;
+    }
+
+    setLoadProgressCallback(loadProgressCallback?: InitProgressCallback) {
+        this.loadProgressCallback = loadProgressCallback;
+    }
+
     onProgress(progressReport: InitProgressReport) {
         this.loadProgress = progressReport;
         if (this.loadProgressCallback) {
@@ -141,7 +135,9 @@ class AgentChain {
             appName: this.appName,
             location: this.navLocation,
             history: this.navHistory,
-            model: this.model
+            model: this.model,
+            dataset: this.dataset,
+            distribution: this.distribution
         };
 
         new Promise(async (resolve, reject) => {
@@ -184,23 +180,11 @@ class AgentChain {
         return queue;
     }
 
-    createTools() {
-        const type = getLocationType(this.navLocation);
-        switch (type) {
-            case "DATASET_PAGE":
-                return [searchDatasets, defaultAgent];
-            case "DISTRIBUTION_PAGE":
-                return [searchDatasets, defaultAgent];
-            default:
-                return [searchDatasets, defaultAgent];
-        }
-    }
-
     createChain() {
         return RunnableLambda.from(async (input: ChainInput) => {
             const { queue } = input;
             try {
-                const tools = this.createTools();
+                const tools = await createTools(input);
                 const result = await this.model.invokeTool(
                     input.question,
                     tools,

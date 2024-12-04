@@ -1,10 +1,4 @@
-import React, {
-    useState,
-    useEffect,
-    FunctionComponent,
-    useRef,
-    useCallback
-} from "react";
+import React, { useState, useEffect, FunctionComponent, useRef } from "react";
 import {
     Drawer,
     ButtonToolbar,
@@ -23,12 +17,8 @@ import { BsChatRightDotsFill } from "react-icons/bs";
 import { useAsyncCallback } from "react-async-hook";
 import { Small, Medium } from "../Common/Responsive";
 import TextPreview from "./TextPreview";
-import { config, commonFetchRequestOptions } from "../../config";
 import { useSelector } from "react-redux";
 import { StateType } from "../../reducers/reducer";
-import { User } from "../../reducers/userManagementReducer";
-import { v4 as uuidv4 } from "uuid";
-import reportError from "../../helpers/reportError";
 import "../../rsuite.scss";
 import "./ChatBox.scss";
 import { useLocation, useHistory } from "react-router-dom";
@@ -52,7 +42,7 @@ import { parseJsonMarkdown } from "../../libs/json";
 import AgentChain from "./AgentChain";
 import { InitProgressReport } from "@mlc-ai/web-llm";
 import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
-
+import { ParsedDataset, ParsedDistribution } from "helpers/record";
 interface MessageItem {
     type: "user" | "bot";
     content: string;
@@ -150,6 +140,12 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
     ] = useState<InitProgressReport | null>(null);
     const location = useLocation();
     const history = useHistory();
+    const dataset = useSelector<StateType, ParsedDataset | undefined>(
+        (state) => state.record.dataset
+    );
+    const distribution = useSelector<StateType, ParsedDistribution | undefined>(
+        (state) => state.record.distribution
+    );
 
     useEffect(() => {
         agentChainRef.current?.setAppName(appName);
@@ -164,23 +160,39 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
     }, [history]);
 
     useEffect(() => {
+        agentChainRef.current?.setDataset(dataset);
+    }, [dataset]);
+
+    useEffect(() => {
+        agentChainRef.current?.setDistribution(distribution);
+    }, [distribution]);
+
+    useEffect(() => {
         if (messageQueueRef.current?.length) {
-            messageQueueRef.current[0] = getDefaultMessage(props.appName);
+            messageQueueRef.current[0] = getDefaultMessage(appName);
         }
     }, [appName]);
+
+    useEffect(() => {
+        agentChainRef.current?.setLoadProgressCallback(setLLMLoadProgress);
+    }, [setLLMLoadProgress]);
 
     useEffect(() => {
         agentChainRef.current = AgentChain.create(
             appName,
             location,
             history,
+            dataset,
+            distribution,
             setLLMLoadProgress
         );
+        (window as any).agentChainRef = agentChainRef.current;
         return () => {
             agentChainRef.current = null;
             //AgentChain.removeLLMLoadProgressCallback(setLLMLoadProgress);
         };
-    }, [setLLMLoadProgress]);
+        // -- should be run once only. Thus, [] as dependencies
+    }, []);
 
     useEffect(() => {
         if (lastMessageItemRef.current) {
