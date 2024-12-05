@@ -219,6 +219,11 @@ async function getAlaSQLViaIframe(): Promise<typeof alasql> {
         alasqlLoadingPromise = new Promise((resolve, reject) => {
             const refToken = Math.random().toString().replace(".", "");
             (window as any)[`onAlaSQLIframeLoaded${refToken}`] = () => {
+                if (alasqlIframe?.contentWindow) {
+                    (alasqlIframe.contentWindow as any).commonFetchRequestOptions = {
+                        ...config.commonFetchRequestOptions
+                    };
+                }
                 resolve(alasqlIframe?.contentWindow?.["alasql"]);
             };
             (window as any)[`alasqlSourceFunc${refToken}`] = source;
