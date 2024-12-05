@@ -23,24 +23,36 @@
         credentials: "same-origin"
     };
 
-    function getData(path, success, error) {
-        return fetch(path, {
-            ...defaultCommonFetchRequestOptions,
-            ...(window.commonFetchRequestOptions
-                ? window.commonFetchRequestOptions
-                : {})
-        })
-            .then((response) => response.arrayBuffer())
-            .then((buf) => {
-                const a = new Uint8Array(buf);
-                const b = [...a].map((e) => String.fromCharCode(e)).join("");
-                success(b);
+    function getData(path, binary, success, error) {
+        if (binary) {
+            return fetch(path, {
+                ...defaultCommonFetchRequestOptions,
+                ...(window.commonFetchRequestOptions
+                    ? window.commonFetchRequestOptions
+                    : {})
             })
-            .catch((e) => {
-                if (error) return error(e);
-                console.error(e);
-                throw e;
-            });
+                .then((response) => response.arrayBuffer())
+                .then(success)
+                .catch((e) => {
+                    if (error) return error(e);
+                    console.error(e);
+                    throw e;
+                });
+        } else {
+            return fetch(path, {
+                ...defaultCommonFetchRequestOptions,
+                ...(window.commonFetchRequestOptions
+                    ? window.commonFetchRequestOptions
+                    : {})
+            })
+                .then((response) => response.text())
+                .then(success)
+                .catch((e) => {
+                    if (error) return error(e);
+                    console.error(e);
+                    throw e;
+                });
+        }
     }
 
     alasql.utils.loadFile = function (path, asy, success, error) {
@@ -56,7 +68,7 @@
             Simply read file from HTTP request, like:
             SELECT * FROM TXT('http://alasql.org/README.md');
         */
-        fetchData(path, (x) => success(cutbom(x)), error, asy);
+        fetchData(path, false, (x) => success(cutbom(x)), error, asy);
     };
 
     alasql.utils.loadBinaryFile = function (
@@ -68,7 +80,7 @@
         }
     ) {
         if (typeof path === "string") {
-            fetchData(path, success, error, runAsync);
+            fetchData(path, true, success, error, runAsync);
         } else if (path instanceof Blob) {
             success(path);
         } else {
