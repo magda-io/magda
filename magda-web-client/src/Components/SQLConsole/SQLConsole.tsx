@@ -2,8 +2,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
-    useState,
-    useRef
+    useState
 } from "react";
 import { useSelector } from "react-redux";
 import { StateType } from "reducers/reducer";
@@ -54,11 +53,14 @@ function convertEmptyData(data: any[]): any[] {
 const SQLConsole: FunctionComponent<PropsType> = (props) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [size, setSize] = useState<string>("sm");
-    const editorRef = useRef<any>();
-    const [query, setQuery] = useState<string>("");
     const [data, setData] = useState<Record<string, any>[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDownloadingCsv, setIsDownloadingCsv] = useState<boolean>(false);
+    const [aceEditorCtlRef, setAceEditorCtlRef] = useState<ReactAce | null>(
+        null
+    );
+    const aceEditorRef = aceEditorCtlRef?.editor;
+
     const dataset = useSelector<StateType, ParsedDataset | undefined>(
         (state) => state.record.dataset
     );
@@ -88,14 +90,23 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
         setIsOpen(false);
     }, [setIsOpen]);
 
-    const onEditorChange = useCallback((text: string) => setQuery(text), [
-        setQuery
-    ]);
+    const onRunQueryButtonClick = useCallback(() => {
+        const value = aceEditorRef?.getValue();
+        onRunQuery(value ? value : "");
+    }, [aceEditorRef, onRunQuery]);
 
-    const onRunQueryButtonClick = useCallback(() => onRunQuery(query), [
-        query,
-        onRunQuery
-    ]);
+    useEffect(() => {
+        if (aceEditorRef) {
+            aceEditorRef.commands.addCommand({
+                name: "executeQuery",
+                bindKey: {
+                    win: "Shift-Enter",
+                    mac: "Shift-Enter"
+                },
+                exec: onRunQueryButtonClick
+            });
+        }
+    }, [aceEditorRef, onRunQueryButtonClick]);
 
     const onDownloadButtonClick = useCallback(async () => {
         try {
@@ -147,67 +158,26 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
         }
     }, [dataset, distribution]);
 
-    const { result: SqlEditor, loading: loadingSqlEditor } = useAsync(
-        async (onRunQueryButtonClick) => {
-            try {
-                const [{ default: AceEditor }] = await Promise.all([
-                    import(/* webpackChunkName:'react-ace' */ "react-ace"),
-                    import(
-                        /* webpackChunkName:'react-ace' */ "ace-builds/src-noconflict/mode-sql"
-                    ),
-                    import(
-                        /* webpackChunkName:'react-ace' */ "ace-builds/src-noconflict/theme-xcode"
-                    )
-                ]);
-                return function EditorHoc(props) {
-                    const { style } = props;
-                    const aceEditorRef = useRef<ReactAce>();
-                    const editorRef = aceEditorRef?.current?.editor;
-                    useEffect(() => {
-                        if (editorRef) {
-                            editorRef.commands.addCommand({
-                                name: "executeQuery",
-                                bindKey: {
-                                    win: "Shift-Enter",
-                                    mac: "Shift-Enter"
-                                },
-                                exec: onRunQueryButtonClick
-                            });
-                        }
-                    }, [editorRef]);
-                    return (
-                        <div
-                            className="sql-editor-container"
-                            style={style ? style : {}}
-                        >
-                            <AceEditor
-                                ref={aceEditorRef}
-                                name="magda-sql-console-editor"
-                                mode="sql"
-                                theme="xcode"
-                                showGutter={false}
-                                showPrintMargin={false}
-                                highlightActiveLine={false}
-                                fontSize={12}
-                                lineHeight={15}
-                                focus={true}
-                                setOptions={{
-                                    enableMobileMenu: false,
-                                    showLineNumbers: false,
-                                    tabSize: 2
-                                }}
-                                {...props}
-                            />
-                        </div>
-                    );
-                };
-            } catch (e) {
-                reportError(`Failed to load JSON editor: ${e}`);
-                return;
-            }
-        },
-        [onRunQueryButtonClick]
-    );
+    const {
+        result: AceEditor,
+        loading: loadingAceEditor
+    } = useAsync(async () => {
+        try {
+            const [{ default: AceEditor }] = await Promise.all([
+                import(/* webpackChunkName:'react-ace' */ "react-ace"),
+                import(
+                    /* webpackChunkName:'react-ace' */ "ace-builds/src-noconflict/mode-sql"
+                ),
+                import(
+                    /* webpackChunkName:'react-ace' */ "ace-builds/src-noconflict/theme-xcode"
+                )
+            ]);
+            return AceEditor;
+        } catch (e) {
+            reportError(`Failed to load JSON editor: ${e}`);
+            return;
+        }
+    }, []);
 
     const makeDrawerHeader = useCallback(
         (screeSize: "sm" | undefined) =>
@@ -266,21 +236,36 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                 <div className="magda-sql-console-main-content-container">
                     <div className="query-row">
                         <Panel bordered className="query-panel">
-                            {loadingSqlEditor ? (
+                            {loadingAceEditor ? (
                                 <Loader
                                     backdrop
                                     content="Loading SQL editor..."
                                     vertical
                                 />
-                            ) : SqlEditor ? (
-                                <SqlEditor
-                                    ref={editorRef}
-                                    width="100%"
+                            ) : AceEditor ? (
+                                <div
+                                    className="sql-editor-container"
                                     style={{ height: "50px" }}
-                                    value={query}
-                                    onError={(e) => reportError(`${e}`)}
-                                    onChange={onEditorChange}
-                                />
+                                >
+                                    <AceEditor
+                                        ref={setAceEditorCtlRef}
+                                        width="100%"
+                                        name="magda-sql-console-editor"
+                                        mode="sql"
+                                        theme="xcode"
+                                        showGutter={false}
+                                        showPrintMargin={false}
+                                        highlightActiveLine={false}
+                                        fontSize={12}
+                                        lineHeight={15}
+                                        focus={true}
+                                        setOptions={{
+                                            enableMobileMenu: false,
+                                            showLineNumbers: false,
+                                            tabSize: 2
+                                        }}
+                                    />
+                                </div>
                             ) : (
                                 "Error: cannot load SQL Editor."
                             )}
