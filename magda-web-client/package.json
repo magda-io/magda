@@ -6,11 +6,11 @@
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
-    "dev": "yarn build-polyfills && yarn run start",
+    "dev": "yarn build-misc && yarn run start",
     "start": "craco start",
     "build2": "react-scripts build",
-    "build": "yarn build-polyfills && CI=false craco build --verbose",
-    "build-polyfills": "webpack --mode production --config polyfill-bundle.config.js",
+    "build": "yarn build-misc && CI=false craco build --verbose",
+    "build-misc": "webpack --mode production --config misc-bundle.config.js && webpack --mode production --config polyfills-bundle.config.js",
     "test": "craco test --react-scripts ../node_modules/react-scripts",
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer 'build/static/js/*.js'"

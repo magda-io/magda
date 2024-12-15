@@ -1,7 +1,3 @@
-import Publisher from "./Components/Dataset/Search/Facets/Publisher";
-import Format from "./Components/Dataset/Search/Facets/Format";
-import Region from "./Components/Dataset/Search/Facets/Region";
-import Temporal from "./Components/Dataset/Search/Facets/Temporal";
 import { ValidationFieldList } from "./Components/Dataset/Add/ValidationManager";
 import urijs from "urijs";
 import removePathPrefix from "./helpers/removePathPrefix";
@@ -707,7 +703,18 @@ export interface ConfigDataType {
     alasqlRunInIframe: boolean;
 }
 
-const serverConfig: ConfigDataType = window.magda_server_config || {};
+export const getGlobal = () =>
+    typeof window !== "undefined"
+        ? window
+        : // eslint-disable-next-line no-restricted-globals
+        typeof self !== "undefined"
+        ? // eslint-disable-next-line no-restricted-globals
+          self
+        : global;
+
+const serverConfig: ConfigDataType =
+    // eslint-disable-next-line no-restricted-globals
+    getGlobal().magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
 const START_DATE_REGEX = "(start|st).*(date|dt|year|decade)";
@@ -758,7 +765,7 @@ function constructDateConfig(
 }
 
 const baseUrl = serverConfig.baseUrl || fallbackApiHost;
-export const isLocalUiServer = window.magda_server_config ? true : false;
+export const isLocalUiServer = Object.keys(serverConfig).length ? false : true;
 export const isBackendSameOrigin =
     baseUrl.toLowerCase().indexOf("http") !== 0 ||
     urijs(baseUrl.toLowerCase()).segment([]).toString() ===
@@ -843,7 +850,7 @@ function getProxyUrl() {
     const uri =
         previewMapBaseUrl.indexOf("http") === 0
             ? urijs(previewMapBaseUrl)
-            : urijs(window.location.href)
+            : urijs(getGlobal().location.href)
                   .search("")
                   .fragment("")
                   .segment([previewMapBaseUrl]);
@@ -898,17 +905,6 @@ export const config: ConfigDataType = {
         medium: 992,
         large: 1200
     },
-    facets: [
-        {
-            id: "publisher",
-            component: Publisher,
-            showExplanation: true,
-            name: "Organisation"
-        },
-        { id: "region", component: Region },
-        { id: "format", component: Format },
-        { id: "temporal", component: Temporal }
-    ],
     headerLogoUrl: `${contentApiBaseUrl}header/logo`,
     headerMobileLogoUrl: `${contentApiBaseUrl}header/logo-mobile`,
     contentUrl: `${contentApiBaseUrl}all?id=home/*&id=footer/*&id=config/*&id=header/*&inline=true`,

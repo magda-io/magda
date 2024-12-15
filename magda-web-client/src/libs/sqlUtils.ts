@@ -1,6 +1,8 @@
-import type alasql from "alasql";
+// todo: should only load type to save bandwidth
+// we can't do it now as when code runs in worker when need to access the module reference
+import alasql from "alasql";
 import { getRecordAspect } from "../api-clients/RegistryApis";
-import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
+import getStorageApiResourceAccessUrl from "../helpers/getStorageApiResourceAccessUrl";
 import {
     ParsedDataset,
     ParsedDistribution,
@@ -29,13 +31,30 @@ let alasqlLoadingPromise: Promise<typeof alasql> | null = null;
 
 let currentDistList: DistributionResourceItem[] = [];
 let currentDist: DistributionResourceItem | null = null;
+let worker: Worker | null = null;
+
+const inWebWorker = typeof global.document === "undefined" ? true : false;
 
 export function setCurrentDistList(list: DistributionResourceItem[]) {
-    currentDistList = list;
+    if (worker && !inWebWorker) {
+        worker.postMessage({
+            type: "setCurrentDistList",
+            data: list
+        });
+    } else {
+        currentDistList = list;
+    }
 }
 
 export function setCurrentDist(dist: DistributionResourceItem | null) {
-    currentDist = dist;
+    if (worker && !inWebWorker) {
+        worker.postMessage({
+            type: "setCurrentDist",
+            data: dist
+        });
+    } else {
+        currentDist = dist;
+    }
 }
 
 export function determineDistResType(formatStr: string, url: string): ResType {
@@ -131,7 +150,7 @@ export function dataset2DistributionResourceItems(
         .filter((item) => item) as DistributionResourceItem[];
 }
 
-async function source(...args) {
+export async function source(...args) {
     const alasql = await getAlaSQL();
     const distId: string | number | null = args[0];
     const query = args[4];
@@ -186,6 +205,10 @@ async function source(...args) {
  * @return {*}  {Promise<alasql>}
  */
 async function getAlaSQL(): Promise<typeof alasql> {
+    if (typeof global.document === "undefined") {
+        // in web worker, return global alasql instance
+        return alasql;
+    }
     if (config?.alasqlRunInIframe) {
         return await getAlaSQLViaIframe();
     }
@@ -218,7 +241,12 @@ async function getAlaSQLViaIframe(): Promise<typeof alasql> {
         const { uiBaseUrl } = config;
         alasqlLoadingPromise = new Promise((resolve, reject) => {
             const refToken = Math.random().toString().replace(".", "");
-            (window as any)[`onAlaSQLIframeLoaded${refToken}`] = () => {
+            (global as any)[`onAlaSQLIframeLoaded${refToken}`] = (
+                webWorker
+            ) => {
+                worker = webWorker;
+                setCurrentDist(currentDist);
+                setCurrentDistList(currentDistList);
                 if (alasqlIframe?.contentWindow) {
                     (alasqlIframe.contentWindow as any).commonFetchRequestOptions = {
                         ...config.commonFetchRequestOptions
@@ -226,7 +254,8 @@ async function getAlaSQLViaIframe(): Promise<typeof alasql> {
                 }
                 resolve(alasqlIframe?.contentWindow?.["alasql"]);
             };
-            (window as any)[`alasqlSourceFunc${refToken}`] = source;
+            (global as any)[`alasqlSourceFunc${refToken}`] = source;
+            (global as any)[`alasqlMagdaConfig${refToken}`] = config;
             alasqlIframe = document.createElement("iframe");
             alasqlIframe.src = `${
                 uiBaseUrl === "/" ? uiBaseUrl : uiBaseUrl + "/"

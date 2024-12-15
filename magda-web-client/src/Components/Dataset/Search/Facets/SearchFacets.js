@@ -6,8 +6,24 @@ import ClearAllButton from "./ClearAllButton";
 import { retrieveLocalData, setLocalData } from "storage/localStorage";
 import FilterExplanation from "./FilterExplanation";
 import memoize from "memoize-one";
+import Publisher from "./Publisher";
+import Format from "./Format";
+import Region from "./Region";
+import Temporal from "./Temporal";
 
 import "./SearchFacets.scss";
+
+const facetConfig = [
+    {
+        id: "publisher",
+        component: Publisher,
+        showExplanation: true,
+        name: "Organisation"
+    },
+    { id: "region", component: Region },
+    { id: "format", component: Format },
+    { id: "temporal", component: Temporal }
+];
 
 // partition an array by size n
 const partitionArray = (array, size) =>
@@ -121,7 +137,7 @@ class SearchFacets extends Component {
 
     renderDesktop() {
         // if we group facets in two, it would help some of the layout issues on smaller screen
-        const facetGroup = partitionWithCache(config.facets, 2);
+        const facetGroup = partitionWithCache(facetConfig, 2);
         return (
             <div className="search-facets-desktop">
                 {facetGroup.map((group, i) => {

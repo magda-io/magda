@@ -27,8 +27,8 @@ export default function removePathPrefix(
             .toString();
 
         // make sure pathOrUrl's slash matches the original
-        if (pathOrUrl[0] !== "/" && newUrl.length > 1) {
-            newUrl = newUrl.substr(1);
+        if (pathOrUrl[0] === "/" && newUrl.length > 1) {
+            newUrl = newUrl.substring(1);
         }
 
         if (pathOrUrl[pathOrUrl.length - 1] === "/") {
