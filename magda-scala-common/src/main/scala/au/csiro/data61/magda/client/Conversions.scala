@@ -258,10 +258,12 @@ object Conversions {
       ).getOrElse(Seq()),
       keywords = tryConvertValue(
         dcatStrings.extract[String]('keywords.? / *),
-        Some("themes")
+        Some("keywords")
       ).getOrElse(Seq()),
-      contactPoint =
+      contactPoint = tryConvertValue(
         dcatStrings.extract[String]('contactPoint.?).map(cp => Agent(Some(cp))),
+        Some("contactPoint")
+      ).getOrElse(None),
       distributions = distributions
         .extract[JsObject]('distributions.? / *)
         .flatMap(v => tryConvertValue(convertDistribution(v, hit))),
