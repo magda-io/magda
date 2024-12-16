@@ -193,7 +193,17 @@ object Conversions {
     }) match {
       case Some(location) => Some(location)
       case None =>
-        Try(dcatStrings.extract[String]('spatial.?).map(Location(_))) match {
+        Try {
+          val spatialData = dcatStrings.fields.get("spatial")
+          spatialData
+            .map {
+              case JsObject(v) => v.toJson.compactPrint
+              case JsString(v) => v
+              case _ =>
+                throw new Error("Invalid spatial data type: " + spatialData)
+            }
+            .map(Location(_))
+        } match {
           case Success(location) => location
           case Failure(e) =>
             if (logger.isDefined) {

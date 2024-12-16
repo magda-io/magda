@@ -165,6 +165,9 @@ package misc {
 
   object Location {
     val geoJsonPattern: Regex = "\\{\\s*\"type\":\\s*\".+\",.*\\}".r
+
+    val envelopeJsonPattern: Regex =
+      "(?i)\\{\\s*\"type\":\\s*\"envelope\".*\\}".r
     val emptyPolygonPattern: Regex = "POLYGON \\(\\(0 0, 0 0, 0 0, 0 0\\)\\)".r
 
     val polygonPattern: Regex =
@@ -226,6 +229,16 @@ package misc {
       Location.applySanitised(bbox.toString, fromBoundingBox(Seq(bbox)))
     }
 
+    def apply(data: JsObject): Location = {
+      data.fields
+        .get("type")
+        .getOrElse(JsString(""))
+        .convertTo[String]
+        .toLowerCase match {
+        case "envelope" => 1
+      }
+    }
+
     def apply(stringWithNewLines: String): Location = {
       val string = stringWithNewLines.replaceAll("[\\n\\r]", " ")
       Location.applySanitised(
@@ -237,6 +250,20 @@ package misc {
               case Failure(_) =>
                 CoordinateFormat.quoteNumbersInJson(string).parseJson
             }
+            Some(Protocols.GeometryFormat.read(theJson))
+          case envelopeJsonPattern() =>
+            val theJson = (Try(string.parseJson) match {
+              case Success(json) => json
+              case Failure(_) =>
+                CoordinateFormat.quoteNumbersInJson(string).parseJson
+            })
+            val bbox = theJson match {
+              case JsObject(v) => v("coordinates")
+              case _ => throw new Error("Invalid Json data: " + theJson)
+            }
+            //theJson.
+            //val bbox = BoundingBox()
+            // north, east, south, west
             Some(Protocols.GeometryFormat.read(theJson))
           case emptyPolygonPattern() => None
           case csvPattern(_) =>
