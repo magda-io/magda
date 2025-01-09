@@ -327,7 +327,7 @@ object HttpFetcher {
     (HttpRequest, Promise[HttpResponse])
   ]]
 
-  def apply(baseUrl: URL)(
+  def apply(baseUrl: URL, parallelism: Option[Int] = None)(
       implicit system: ActorSystem,
       materializer: Materializer,
       ec: ExecutionContext
@@ -350,18 +350,28 @@ object HttpFetcher {
             Http()
               .cachedHostConnectionPoolHttps[Promise[HttpResponse]](host, port)
         }
-        val queue = Source
+        val requestQueue = Source
           .queue[(HttpRequest, Promise[HttpResponse])](
             queueSize,
             // drop oldest request
             OverflowStrategy.dropHead
           )
           .via(poolClientFlow)
+
+        val controlQueue = if (parallelism.isEmpty) {
+          requestQueue
+        } else {
+          requestQueue
+            .mapAsync(parallelism.get)(Future.successful(_))
+        }
+
+        val queue = controlQueue
           .to(Sink.foreach({
             case ((Success(resp), p)) => p.success(resp)
             case ((Failure(e), p))    => p.failure(e)
           }))
           .run()
+
         queueMap += (hostQueueKey -> queue)
         queue
     }

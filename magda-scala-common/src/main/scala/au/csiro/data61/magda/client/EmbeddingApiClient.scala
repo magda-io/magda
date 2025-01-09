@@ -6,6 +6,7 @@ import au.csiro.data61.magda.model.Auth.AuthProtocols
 import com.typesafe.config.Config
 import io.lemonlabs.uri.UrlPath
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import au.csiro.data61.magda.AppConfig
 import spray.json._
 
 import java.net.URL
@@ -18,13 +19,21 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
     implicit val materializer: Materializer
 ) {
 
+  private val parallelism: Int =
+    AppConfig.conf().getInt("embeddingApi.parallelism")
+
   def this()(
       implicit config: Config,
       system: ActorSystem,
       executor: ExecutionContext,
       materializer: Materializer
   ) = {
-    this(HttpFetcher(new URL(config.getString("embeddingApi.baseUrl"))))(
+    this(
+      HttpFetcher(
+        new URL(config.getString("embeddingApi.baseUrl")),
+        Some(parallelism)
+      )
+    )(
       config,
       system,
       executor,
