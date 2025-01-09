@@ -19,9 +19,6 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
     implicit val materializer: Materializer
 ) {
 
-  private val parallelism: Int =
-    AppConfig.conf().getInt("embeddingApi.parallelism")
-
   def this()(
       implicit config: Config,
       system: ActorSystem,
@@ -31,7 +28,7 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
     this(
       HttpFetcher(
         new URL(config.getString("embeddingApi.baseUrl")),
-        Some(parallelism)
+        Some(config.getInt("embeddingApi.parallelism"))
       )
     )(
       config,
