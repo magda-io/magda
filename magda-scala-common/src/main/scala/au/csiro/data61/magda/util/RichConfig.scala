@@ -1,11 +1,23 @@
 package au.csiro.data61.magda.util
 
 import com.typesafe.config.Config
+
+import java.util.concurrent.TimeUnit
 import scala.collection.breakOut
 import scala.collection.JavaConverters._
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 object RichConfig {
   implicit class RichConfig(val underlying: Config) extends AnyVal {
+
+    def getOptionalDuration(path: String): Option[FiniteDuration] =
+      if (underlying.hasPath(path)) {
+        Some(
+          Duration.fromNanos(underlying.getDuration(path, TimeUnit.NANOSECONDS))
+        )
+      } else {
+        None
+      }
 
     def getOptionalString(path: String): Option[String] =
       if (underlying.hasPath(path)) {

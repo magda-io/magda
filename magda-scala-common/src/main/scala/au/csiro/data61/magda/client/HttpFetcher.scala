@@ -100,7 +100,10 @@ class HttpFetcherImpl(
     baseUrl: URL,
     requestProcessingQueue: SourceQueueWithComplete[
       (HttpRequest, Promise[HttpResponse])
-    ]
+    ],
+    setupMaxRetries: Option[Int] = None,
+    setupRetryBackoff: Option[FiniteDuration] = None,
+    setupMaxRetryBackoff: Option[FiniteDuration] = None
 )(
     implicit val system: ActorSystem,
     val materializer: Materializer,
@@ -108,10 +111,10 @@ class HttpFetcherImpl(
 ) extends HttpFetcher {
 
   private val config = AppConfig.conf()
-  private val maxRetries: Int =
+  private val defaultMaxRetries: Int =
     config.getInt("akka.http.host-connection-pool.max-retries")
 
-  private val retryBackoff = Duration.fromNanos(
+  private val defaultRetryBackoff = Duration.fromNanos(
     config
       .getDuration(
         "akka.http.host-connection-pool.base-connection-backoff",
@@ -119,13 +122,18 @@ class HttpFetcherImpl(
       )
   )
 
-  private val maxRetryBackoff = Duration.fromNanos(
+  private val defaultMaxRetryBackoff = Duration.fromNanos(
     config
       .getDuration(
         "akka.http.host-connection-pool.max-connection-backoff",
         TimeUnit.NANOSECONDS
       )
   )
+
+  private def maxRetries = setupMaxRetries.getOrElse(defaultMaxRetries)
+  private def retryBackoff = setupRetryBackoff.getOrElse(defaultRetryBackoff)
+  private def maxRetryBackoff =
+    setupMaxRetryBackoff.getOrElse(defaultMaxRetryBackoff)
 
   private def queueRequest(request: HttpRequest): Future[HttpResponse] = {
     val responsePromise = Promise[HttpResponse]()
@@ -327,7 +335,13 @@ object HttpFetcher {
     (HttpRequest, Promise[HttpResponse])
   ]]
 
-  def apply(baseUrl: URL, parallelism: Option[Int] = None)(
+  def apply(
+      baseUrl: URL,
+      parallelism: Option[Int] = None,
+      maxRetries: Option[Int] = None,
+      retryBackoff: Option[FiniteDuration] = None,
+      maxRetryBackoff: Option[FiniteDuration] = None
+  )(
       implicit system: ActorSystem,
       materializer: Materializer,
       ec: ExecutionContext
@@ -376,6 +390,12 @@ object HttpFetcher {
         queue
     }
 
-    new HttpFetcherImpl(baseUrl, requestProcessingQueue)
+    new HttpFetcherImpl(
+      baseUrl,
+      requestProcessingQueue,
+      maxRetries,
+      retryBackoff,
+      maxRetryBackoff
+    )
   }
 }

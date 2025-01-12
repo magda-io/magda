@@ -2,11 +2,10 @@ package au.csiro.data61.magda.client
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import au.csiro.data61.magda.model.Auth.AuthProtocols
 import com.typesafe.config.Config
 import io.lemonlabs.uri.UrlPath
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import au.csiro.data61.magda.AppConfig
+import au.csiro.data61.magda.util.RichConfig._
 import spray.json._
 
 import java.net.URL
@@ -28,7 +27,10 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
     this(
       HttpFetcher(
         new URL(config.getString("embeddingApi.baseUrl")),
-        Some(config.getInt("embeddingApi.parallelism"))
+        config.getOptionalInt("embeddingApi.parallelism"),
+        config.getOptionalInt("embeddingApi.maxRetries"),
+        config.getOptionalDuration("embeddingApi.retryBackoff"),
+        config.getOptionalDuration("embeddingApi.maxRetryBackoff")
       )
     )(
       config,
