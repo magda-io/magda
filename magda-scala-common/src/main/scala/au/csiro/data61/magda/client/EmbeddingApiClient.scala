@@ -1,14 +1,18 @@
 package au.csiro.data61.magda.client
 
 import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.stream.Materializer
 import com.typesafe.config.Config
 import io.lemonlabs.uri.UrlPath
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import au.csiro.data61.magda.util.RichConfig._
 import spray.json._
+import au.csiro.data61.magda.util.ErrorHandling.retry
 
 import java.net.URL
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 
 class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
@@ -27,10 +31,7 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
     this(
       HttpFetcher(
         new URL(config.getString("embeddingApi.baseUrl")),
-        config.getOptionalInt("embeddingApi.parallelism"),
-        config.getOptionalInt("embeddingApi.maxRetries"),
-        config.getOptionalDuration("embeddingApi.retryBackoff"),
-        config.getOptionalDuration("embeddingApi.maxRetryBackoff")
+        config.getOptionalInt("embeddingApi.parallelism")
       )
     )(
       config,
@@ -40,7 +41,41 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
     )
   }
 
-  def get(text: String): Future[Array[Double]] = {
+  implicit val scheduler = system.scheduler
+  val logger = Logging(system, getClass)
+
+  def get(text: String): Future[Array[Double]] =
+    retry(
+      () => _get(text),
+      delay = Duration.fromNanos(
+        config.getDuration("embeddingApi.retryBackoff", TimeUnit.SECONDS)
+      ),
+      retries = config.getInt("embeddingApi.maxRetries"),
+      onRetry = (count, err) => {
+        logger.warning(
+          "{} times retry generate embedding because of error: {}",
+          count,
+          err
+        )
+      }
+    )
+
+  def get(textList: Seq[String]): Future[Array[Array[Double]]] = retry(
+    () => _get(textList),
+    delay = Duration.fromNanos(
+      config.getDuration("embeddingApi.retryBackoff", TimeUnit.SECONDS)
+    ),
+    retries = config.getInt("embeddingApi.maxRetries"),
+    onRetry = (count, err) => {
+      logger.warning(
+        "{} times retry generate embedding because of error: {}",
+        count,
+        err
+      )
+    }
+  )
+
+  private def _get(text: String): Future[Array[Double]] = {
     val embeddingEndpoint = UrlPath.parse("/v1/embeddings").toString()
     reqHttpFetcher
       .post[JsValue](
@@ -67,7 +102,7 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
       }
   }
 
-  def get(textList: Seq[String]): Future[Array[Array[Double]]] = {
+  private def _get(textList: Seq[String]): Future[Array[Array[Double]]] = {
     val embeddingEndpoint = UrlPath.parse("/v1/embeddings").toString()
     reqHttpFetcher
       .post[JsValue](
