@@ -11,8 +11,7 @@ import spray.json._
 import au.csiro.data61.magda.util.ErrorHandling.retry
 
 import java.net.URL
-import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, DurationInt}
 import scala.concurrent.{ExecutionContext, Future}
 
 class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
@@ -44,13 +43,16 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
   implicit val scheduler = system.scheduler
   val logger = Logging(system, getClass)
 
+  val maxRetries = config.getOptionalInt("embeddingApi.maxRetries").getOrElse(5)
+
+  val retryBackoff =
+    config.getOptionalDuration("embeddingApi.retryBackoff").getOrElse(5 seconds)
+
   def get(text: String): Future[Array[Double]] =
     retry(
       () => _get(text),
-      delay = Duration.fromNanos(
-        config.getDuration("embeddingApi.retryBackoff", TimeUnit.SECONDS)
-      ),
-      retries = config.getInt("embeddingApi.maxRetries"),
+      delay = retryBackoff,
+      retries = maxRetries,
       onRetry = (count, err) => {
         logger.warning(
           "{} times retry generate embedding because of error: {}",
@@ -62,10 +64,8 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
 
   def get(textList: Seq[String]): Future[Array[Array[Double]]] = retry(
     () => _get(textList),
-    delay = Duration.fromNanos(
-      config.getDuration("embeddingApi.retryBackoff", TimeUnit.SECONDS)
-    ),
-    retries = config.getInt("embeddingApi.maxRetries"),
+    delay = retryBackoff,
+    retries = maxRetries,
     onRetry = (count, err) => {
       logger.warning(
         "{} times retry generate embedding because of error: {}",
