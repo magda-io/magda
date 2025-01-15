@@ -364,22 +364,22 @@ object HttpFetcher {
             Http()
               .cachedHostConnectionPoolHttps[Promise[HttpResponse]](host, port)
         }
-        val requestQueue = Source
+        val baseQueue = Source
           .queue[(HttpRequest, Promise[HttpResponse])](
             queueSize,
             // drop oldest request
             OverflowStrategy.dropHead
           )
-          .via(poolClientFlow)
 
         val controlQueue = if (parallelism.isEmpty) {
-          requestQueue
+          baseQueue
         } else {
-          requestQueue
+          baseQueue
             .mapAsync(parallelism.get)(Future.successful(_))
         }
 
         val queue = controlQueue
+          .via(poolClientFlow)
           .to(Sink.foreach({
             case ((Success(resp), p)) => p.success(resp)
             case ((Failure(e), p))    => p.failure(e)

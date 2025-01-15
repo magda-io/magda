@@ -11,7 +11,7 @@ import spray.json._
 import au.csiro.data61.magda.util.ErrorHandling.retry
 
 import java.net.URL
-import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 
 class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
