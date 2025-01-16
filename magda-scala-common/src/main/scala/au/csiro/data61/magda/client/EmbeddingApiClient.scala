@@ -48,7 +48,16 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
   val retryBackoff =
     config.getOptionalDuration("embeddingApi.retryBackoff").getOrElse(5 seconds)
 
-  def get(text: String): Future[Array[Double]] =
+  val taskSize = config.getOptionalInt("embeddingApi.taskSize").getOrElse(5)
+
+  def get(text: String): Future[Array[Double]] = _getWithRetry(text)
+
+  def get(textList: Seq[String]): Future[Array[Array[Double]]] =
+    Future
+      .sequence(textList.grouped(taskSize).map(_getWithRetry(_)).toSeq)
+      .map(_.flatten.toArray)
+
+  def _getWithRetry(text: String): Future[Array[Double]] =
     retry(
       () => _get(text),
       delay = retryBackoff,
@@ -62,18 +71,19 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
       }
     )
 
-  def get(textList: Seq[String]): Future[Array[Array[Double]]] = retry(
-    () => _get(textList),
-    delay = retryBackoff,
-    retries = maxRetries,
-    onRetry = (count, err) => {
-      logger.warning(
-        "{} times retry generate embedding because of error: {}",
-        count,
-        err
-      )
-    }
-  )
+  def _getWithRetry(textList: Seq[String]): Future[Array[Array[Double]]] =
+    retry(
+      () => _get(textList),
+      delay = retryBackoff,
+      retries = maxRetries,
+      onRetry = (count, err) => {
+        logger.warning(
+          "{} times retry generate embedding because of error: {}",
+          count,
+          err
+        )
+      }
+    )
 
   private def _get(text: String): Future[Array[Double]] = {
     val embeddingEndpoint = UrlPath.parse("/v1/embeddings").toString()
