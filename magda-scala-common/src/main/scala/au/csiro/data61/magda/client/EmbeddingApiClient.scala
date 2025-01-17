@@ -6,6 +6,7 @@ import akka.stream.Materializer
 import com.typesafe.config.Config
 import io.lemonlabs.uri.UrlPath
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.util.RichConfig._
 import spray.json._
 import au.csiro.data61.magda.util.ErrorHandling.retry
@@ -52,10 +53,16 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
 
   def get(text: String): Future[Array[Double]] = _getWithRetry(text)
 
-  def get(textList: Seq[String]): Future[Array[Array[Double]]] =
-    Future
-      .sequence(textList.grouped(taskSize).map(_getWithRetry(_)).toSeq)
-      .map(_.flatten.toArray)
+  def get(textList: Seq[String]): Future[Array[Array[Double]]] = {
+    if (textList.size <= taskSize) {
+      _getWithRetry(textList)
+    } else {
+      Source(textList.toList)
+        .grouped(taskSize)
+        .mapAsync(parallelism = 1)(_getWithRetry(_))
+        .runFold(Array.empty[Array[Double]])(_ ++ _)
+    }
+  }
 
   def _getWithRetry(text: String): Future[Array[Double]] =
     retry(

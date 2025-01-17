@@ -30,7 +30,8 @@ class StreamController(interface: RegistryInterface, bufferSize: Int)(
     implicit val materializer: Materializer
 ) {
 
-  implicit val ec: ExecutionContextExecutor = system.dispatcher
+  implicit val ec: ExecutionContextExecutor =
+    system.dispatchers.lookup("indexer.stream-dispatcher")
   implicit val scheduler: Scheduler = system.scheduler
 
   val log = Logging(system, getClass)

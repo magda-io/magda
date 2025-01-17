@@ -24,7 +24,8 @@ class RegistryCrawler(
     implicit val materializer: Materializer
 ) extends Crawler {
   val log = Logging(system, getClass)
-  implicit val ec: ExecutionContextExecutor = system.dispatcher
+  implicit val ec: ExecutionContextExecutor = system.dispatchers.lookup("crawler.main-dispatcher")
+
   implicit val scheduler: Scheduler = system.scheduler
 
   var lastCrawl: Option[Future[Unit]] = None
