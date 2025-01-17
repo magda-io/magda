@@ -54,7 +54,9 @@ object IndexerApp extends App {
 
   val registryInterface =
     new RegistryExternalInterface()(config, system, indexerEc, materializer)
-  val embeddingApiClient = new EmbeddingApiClient()(config, system, indexerEc, materializer)
+
+  val embeddingApiClient =
+    new EmbeddingApiClient()(config, system, indexerEc, materializer)
 
   val indexer =
     SearchIndexer(new DefaultClientProvider, DefaultIndices, embeddingApiClient)

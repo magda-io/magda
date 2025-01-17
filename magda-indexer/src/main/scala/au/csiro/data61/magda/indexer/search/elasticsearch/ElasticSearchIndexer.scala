@@ -4,7 +4,12 @@ import java.time.{Instant, OffsetDateTime}
 import akka.NotUsed
 import akka.actor.{ActorSystem, Scheduler}
 import akka.stream.scaladsl.{Sink, Source, SourceQueue}
-import akka.stream.{ActorAttributes, Materializer, OverflowStrategy, QueueOfferResult}
+import akka.stream.{
+  ActorAttributes,
+  Materializer,
+  OverflowStrategy,
+  QueueOfferResult
+}
 import au.csiro.data61.magda.client.EmbeddingApiClient
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
@@ -22,8 +27,18 @@ import com.sksamuel.elastic4s.requests.indexes.CreateIndexResponse
 import com.sksamuel.elastic4s.requests.indexes.admin.RefreshIndexResponse
 import com.sksamuel.elastic4s.requests.indexes.IndexMappings
 import com.sksamuel.elastic4s.requests.searches.SearchResponse
-import com.sksamuel.elastic4s.requests.snapshots.{CreateSnapshotResponse, GetSnapshotResponse, RestoreSnapshotResponse, Snapshot}
-import com.sksamuel.elastic4s.{ElasticClient, ElasticDsl, RequestFailure, RequestSuccess}
+import com.sksamuel.elastic4s.requests.snapshots.{
+  CreateSnapshotResponse,
+  GetSnapshotResponse,
+  RestoreSnapshotResponse,
+  Snapshot
+}
+import com.sksamuel.elastic4s.{
+  ElasticClient,
+  ElasticDsl,
+  RequestFailure,
+  RequestSuccess
+}
 import com.sksamuel.elastic4s.requests.indexes.IndexRequest
 import com.sksamuel.elastic4s.requests.snapshots._
 import com.typesafe.config.Config
@@ -32,7 +47,12 @@ import spray.json._
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future, Promise}
+import scala.concurrent.{
+  ExecutionContext,
+  ExecutionContextExecutor,
+  Future,
+  Promise
+}
 
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
