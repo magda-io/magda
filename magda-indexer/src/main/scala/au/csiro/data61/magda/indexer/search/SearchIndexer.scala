@@ -68,7 +68,6 @@ object SearchIndexer {
   )(
       implicit config: Config,
       system: ActorSystem,
-      ec: ExecutionContext,
       materializer: Materializer
   ) =
     new ElasticSearchIndexer(clientProvider, indices, embeddingApiClient)

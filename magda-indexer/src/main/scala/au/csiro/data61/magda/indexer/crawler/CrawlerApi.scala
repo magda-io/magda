@@ -1,7 +1,12 @@
 package au.csiro.data61.magda.indexer.crawler
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.StatusCodes.{Accepted, Conflict, OK}
+import akka.http.scaladsl.model.StatusCodes.{
+  Accepted,
+  Conflict,
+  InternalServerError,
+  OK
+}
 import akka.http.scaladsl.server.Directives._
 import au.csiro.data61.magda.api.BaseMagdaApi
 import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
@@ -9,6 +14,7 @@ import au.csiro.data61.magda.indexer.search.SearchIndexer
 import com.typesafe.config.Config
 import au.csiro.data61.magda.directives.AuthDirectives.requireUnconditionalAuthDecision
 
+import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 class CrawlerApi(
@@ -20,6 +26,7 @@ class CrawlerApi(
     config: Config
 ) extends BaseMagdaApi {
   implicit val ec = system.dispatcher
+  val indexerEc = system.dispatchers.lookup("indexer.main-dispatcher")
   override def getLogger = system.log
 
   val routes =
@@ -81,10 +88,15 @@ class CrawlerApi(
               operationUri = "api/indexer/reindex"
             )
           ) {
-            if (crawl) {
-              complete(Accepted)
-            } else {
-              complete(Conflict, "Reindex in progress")
+            onComplete(Future(crawl)(indexerEc)) {
+              case Success(result) =>
+                if (result) complete(Accepted)
+                else complete(Conflict, "Reindex in progress")
+              case Failure(ex) =>
+                complete(
+                  InternalServerError,
+                  s"An error occurred: ${ex.getMessage}"
+                )
             }
           }
         }
@@ -94,12 +106,14 @@ class CrawlerApi(
     if (crawler.crawlInProgress()) {
       false
     } else {
-      crawler.crawl().onComplete {
-        case Success(_) =>
-          getLogger.info("Successfully completed crawl")
-        case Failure(e) =>
-          getLogger.error(e, "Crawl failed")
-      }
+      crawler
+        .crawl()
+        .onComplete {
+          case Success(_) =>
+            getLogger.info("Successfully completed crawl")
+          case Failure(e) =>
+            getLogger.error(e, "Crawl failed")
+        }
       true
     }
   }
