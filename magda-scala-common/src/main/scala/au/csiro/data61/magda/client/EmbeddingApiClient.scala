@@ -2,18 +2,20 @@ package au.csiro.data61.magda.client
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.stream.Materializer
+import akka.stream.{ActorAttributes, Materializer}
 import com.typesafe.config.Config
 import io.lemonlabs.uri.UrlPath
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.util.RichConfig._
 import spray.json._
-import au.csiro.data61.magda.util.ErrorHandling.retry
+import scala.concurrent.duration._
 
 import java.net.URL
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
+import akka.actor.Scheduler
+import akka.pattern.after
 
 class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
     implicit val config: Config,
@@ -42,6 +44,8 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
   }
 
   implicit val scheduler = system.scheduler
+
+  val mainDispatcher = system.dispatchers.lookup("embeddingApi.main-dispatcher")
   val logger = Logging(system, getClass)
 
   val maxRetries = config.getOptionalInt("embeddingApi.maxRetries").getOrElse(5)
@@ -51,16 +55,35 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
 
   val taskSize = config.getOptionalInt("embeddingApi.taskSize").getOrElse(5)
 
+  def retry[T](
+      op: () => Future[T],
+      delay: FiniteDuration,
+      retries: Int,
+      onRetry: (Int, Throwable) => Unit = (_, _) => {}
+  )(implicit ec: ExecutionContext, s: Scheduler): Future[T] = {
+    op().recoverWith {
+      case e: Throwable if retries > 0 =>
+        onRetry(retries - 1, e)
+        after(delay, s)(
+          retry(op, delay, retries - 1, onRetry)(mainDispatcher, scheduler)
+        )(mainDispatcher)
+    }(mainDispatcher)
+  }
+
   def get(text: String): Future[Array[Double]] = _getWithRetry(text)
 
   def get(textList: Seq[String]): Future[Array[Array[Double]]] = {
     if (textList.size <= taskSize) {
       _getWithRetry(textList)
     } else {
-      Source(textList.toList)
+      textList.toList
         .grouped(taskSize)
-        .mapAsync(parallelism = 1)(_getWithRetry(_))
-        .runFold(Array.empty[Array[Double]])(_ ++ _)
+        .foldLeft[Future[Array[Array[Double]]]](Future.successful(Array())) {
+          (acc, item) =>
+            acc.flatMap { resultList =>
+              _getWithRetry(item).map(resultList ++ _)
+            }
+        }
     }
   }
 
@@ -76,7 +99,7 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
           err
         )
       }
-    )
+    )(mainDispatcher, scheduler)
 
   def _getWithRetry(textList: Seq[String]): Future[Array[Array[Double]]] =
     retry(
@@ -90,7 +113,7 @@ class EmbeddingApiClient(reqHttpFetcher: HttpFetcher)(
           err
         )
       }
-    )
+    )(mainDispatcher, scheduler)
 
   private def _get(text: String): Future[Array[Double]] = {
     val embeddingEndpoint = UrlPath.parse("/v1/embeddings").toString()
