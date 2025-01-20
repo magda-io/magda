@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.client
 
 import akka.actor.ActorSystem
+import com.typesafe.config.{Config, ConfigFactory}
 import akka.http.scaladsl.model._
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.{Assertion, AsyncFunSpec, FunSpec, Matchers}
@@ -14,12 +15,12 @@ import au.csiro.data61.magda.model.Auth
 import au.csiro.data61.magda.util.StringUtils._
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.model.misc.Protocols.dataSetFormat
-import com.typesafe.config.ConfigFactory
 import spray.json._
 
 import scala.util.Random
 import scala.concurrent.{ExecutionContext, Future}
 import io.lemonlabs.uri.RelativeUrl
+import au.csiro.data61.magda.AppConfig
 
 import scala.io.BufferedSource
 import scala.io.Source.fromFile
@@ -30,18 +31,30 @@ class EmbeddingApiClientSpec
     with AsyncMockFactory
     with SprayJsonSupport {
 
-  implicit val system = ActorSystem()
+  val apiBaseUrl = "http://embedding:1234"
+
+  val testConfigSource = s"""
+                            |embeddingApi {
+                            | baseUrl = "${apiBaseUrl}"
+                            | main-dispatcher = {
+                            |      type = Dispatcher
+                            |      executor = "thread-pool-executor"
+                            |      thread-pool-executor {
+                            |        fixed-pool-size = 8
+                            |      }
+                            |      throughput = 1
+                            |    }
+                            |}
+    """.stripMargin
+
+  val testConfig = ConfigFactory.parseString(testConfigSource)
+  implicit val mergedConfig: Config = testConfig.withFallback(AppConfig.conf())
+
+  implicit val system = ActorSystem("TestSystem", mergedConfig)
   implicit def executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
 
   val logger = akka.event.Logging.getLogger(system, getClass)
-  val apiBaseUrl = "http://embedding:1234"
-
-  val testConfigSource = s"""
-                            |embeddingApi.baseUrl = "${apiBaseUrl}"
-    """.stripMargin
-
-  implicit val testConfig = ConfigFactory.parseString(testConfigSource)
 
   val defaultAllowResponse = HttpResponse(
     entity = HttpEntity(

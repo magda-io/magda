@@ -54,17 +54,24 @@ trait BaseApiSpec
         ConfigValueFactory
           .fromAnyRef(s"http://localhost:${mockServer.getLocalPort}/v0/opa/")
       )
+  implicit val config: Config = buildConfig
+
   override def createActorSystem(): ActorSystem =
     ActorSystem("BaseApiSpec", config)
+
+  val baseApiSpecSystem = createActorSystem()
 
   val logger = system.log
   implicit val indexedRegions: List[(RegionSource, JsObject)] =
     BaseApiSpec.indexedRegions
 
-  implicit val config: Config = buildConfig
-
   val clientProvider = new DefaultClientProvider
-  implicit val embeddingApiClient = new EmbeddingApiClient()
+  implicit val embeddingApiClient = new EmbeddingApiClient()(
+    config,
+    baseApiSpecSystem,
+    baseApiSpecSystem.dispatcher,
+    materializer
+  )
 
   val tenant1: BigInt = 1
   val tenant2: BigInt = 2

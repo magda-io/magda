@@ -43,6 +43,20 @@ object TestActorSystem {
       testSessionId = "general-search-api-tests"
     }
     auth.userId = "$AUTH_USER_ID"
+    embeddingApi = {
+      baseUrl = "http://localhost:3000"
+      maxRetries = 12
+      retryBackoff = 10s
+      taskSize = 5
+      main-dispatcher {
+        type = Dispatcher
+        executor = "thread-pool-executor"
+        thread-pool-executor {
+          fixed-pool-size = 8
+        }
+        throughput = 1
+      }
+    }
   """).resolve().withFallback(AppConfig.conf())
 
   HybridSearchConfig.setAppConfig(config)
