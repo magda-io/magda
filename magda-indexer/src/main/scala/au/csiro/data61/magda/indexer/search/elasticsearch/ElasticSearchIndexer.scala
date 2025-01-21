@@ -44,6 +44,7 @@ import com.sksamuel.elastic4s.requests.snapshots._
 import com.typesafe.config.Config
 import spray.json._
 
+import java.util.concurrent.atomic.AtomicLong
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
@@ -894,6 +895,9 @@ class ElasticSearchIndexer(
     }
   }
 
+  val dataSetCount = new AtomicLong(0)
+  val dataSetCountProcessed = new AtomicLong(0)
+
   def performIndex(
       dataSetStream: Source[(DataSet, Promise[Unit]), NotUsed],
       retryFailedDatasets: Boolean = true
@@ -902,10 +906,26 @@ class ElasticSearchIndexer(
       .buffer(indexingBufferSize, OverflowStrategy.backpressure)
       .mapAsync(datasetConversionParallelism) {
         case (dataSet, promise) =>
+          val totalCount = dataSetCount.incrementAndGet()
+          if (totalCount % 10 == 0) {
+            logger.info(
+              "Processing dataset ID: {}, {} datasets entered conversation pipeline...",
+              dataSet.identifier,
+              totalCount
+            )
+          }
           buildDatasetIndexDefinition(dataSet).map { indexReqs =>
+            val totalCount = dataSetCountProcessed.incrementAndGet()
+            if (totalCount % 10 == 0) {
+              logger.info(
+                "{} datasets processed from conversation pipeline...",
+                totalCount
+              )
+            }
             (indexReqs, (dataSet, promise))
           }
       }
+      //.buffer(datasetConversionParallelism, OverflowStrategy.backpressure)
       .batch(indexingMaxBatchSize, Seq(_))(_ :+ _)
       .initialDelay(indexingInitialBatchDelayMs)
       .mapAsync(1) { batch =>
@@ -915,6 +935,8 @@ class ElasticSearchIndexer(
             batch.length,
             e.getMessage
           )
+
+        logger.info("Indexing {} datasets in batch...", batch.length)
 
         // Combine all the ES inserts into one bulk statement
         val bulkDef =
