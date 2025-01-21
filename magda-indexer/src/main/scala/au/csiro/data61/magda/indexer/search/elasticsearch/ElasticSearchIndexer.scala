@@ -906,10 +906,14 @@ class ElasticSearchIndexer(
       .buffer(indexingBufferSize, OverflowStrategy.backpressure)
       .mapAsync(datasetConversionParallelism) {
         case (dataSet, promise) =>
+          logger.info(
+            "Processing dataset ID: {}",
+            dataSet.identifier
+          )
           val totalCount = dataSetCount.incrementAndGet()
           if (totalCount % 10 == 0) {
             logger.info(
-              "Processing dataset ID: {}, {} datasets entered conversation pipeline...",
+              "{} datasets entered conversation pipeline...",
               dataSet.identifier,
               totalCount
             )
