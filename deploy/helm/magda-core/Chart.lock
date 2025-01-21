@@ -31,7 +31,7 @@ dependencies:
   version: 4.2.4
 - name: magda-embedding-api
   repository: oci://ghcr.io/magda-io/charts
-  version: 1.0.1-alpha.0
+  version: 1.1.0-alpha.1
 - name: opensearch
   repository: file://../internal-charts/opensearch
   version: 4.2.4
@@ -86,5 +86,5 @@ dependencies:
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
   version: 4.2.4
-digest: sha256:0dbb251cd65b544045575537719c5dee5c016ea10323cf98683e7b757a762049
-generated: "2024-10-31T16:45:34.396653+11:00"
+digest: sha256:b8f403c6ebe87f6f974f8ad95e628adaad14fab27f398659a4a0bf4fe86e86a3
+generated: "2025-01-21T23:39:18.941768+11:00"
