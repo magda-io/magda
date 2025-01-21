@@ -11,6 +11,9 @@ defaultImage:
   pullPolicy: IfNotPresent
   pullSecrets: false
 
+# -- JVM max allowed heap memory percentage based on `resources.limits.memory`
+jvmMaxRamPercentage: 75.0
+
 # autoscaler is only for readonly instance
 autoscaler:
   enabled: false
@@ -23,6 +26,7 @@ resources:
     cpu: 250m
     memory: 500Mi
   limits:
+    memory: 1Gi
     cpu: 750m
 deployments:
   # -- deployment config for full registry instance.

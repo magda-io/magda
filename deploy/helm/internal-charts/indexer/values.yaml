@@ -23,6 +23,10 @@ resources:
     memory: 250Mi
   limits:
     cpu: 250m
+    memory: 1100Mi
+
+# -- JVM max allowed heap memory percentage based on `resources.limits.memory`
+jvmMaxRamPercentage: 75.0
 
 elasticsearch:
   useGcsSnapshots: false

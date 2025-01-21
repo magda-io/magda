@@ -36,8 +36,10 @@ Kubernetes: `>= 1.14.0-0`
 | deployments.readOnly.requestTimeout | string | `"60s"` | Default request timeout for readonly instance |
 | global | object | `{}` |  |
 | image.name | string | `"magda-registry-api"` |  |
+| jvmMaxRamPercentage | float | `75` | JVM max allowed heap memory percentage based on `resources.limits.memory` |
 | livenessProbe | object | `{}` |  |
 | resources.limits.cpu | string | `"750m"` |  |
+| resources.limits.memory | string | `"1Gi"` |  |
 | resources.requests.cpu | string | `"250m"` |  |
 | resources.requests.memory | string | `"500Mi"` |  |
 

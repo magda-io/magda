@@ -29,6 +29,7 @@ spec:
         - containerPort: 6102
         command:
           - "bin/magda-search-api"
+          - "-J-XX:MaxRAMPercentage={{ .Values.jvmMaxRamPercentage | printf "%.2f" }}"
           - "-Dconfig.file=/etc/config/deploy-application.conf"
 {{- if .Values.debug }}
           - "-DsearchApi.debug=true"

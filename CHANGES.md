@@ -4,6 +4,8 @@
 
 - #3572: Allow different helmet config to be specified per request path & upgrade helmet to v8.0.0
 - #3571 New feature: a SQL console UI Allows the user to run SQL on tabular data files at client side
+- #3573 Make JVM MaxRAMPercentage option configurable for all scala services via helm charts
+
 ## v4.2.5
 
 - #3567: Upgrade opensearch to v2.17.1

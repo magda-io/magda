@@ -40,7 +40,11 @@ resources:
     cpu: 50m
     memory: 300Mi
   limits:
+    memory: 600Mi
     cpu: 200m
+
+# -- JVM max allowed heap memory percentage based on `resources.limits.memory`
+jvmMaxRamPercentage: 75.0
 
 # -- when set to true, search API will print verbose debug info (e.g. ES DSL query) to log
 debug: false

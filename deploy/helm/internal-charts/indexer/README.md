@@ -29,11 +29,13 @@ Kubernetes: `>= 1.21.0`
 | defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | elasticsearch.useGcsSnapshots | bool | `false` |  |
 | image.name | string | `"magda-indexer"` |  |
+| jvmMaxRamPercentage | float | `75` | JVM max allowed heap memory percentage based on `resources.limits.memory` |
 | reindexJobImage.name | string | `"node"` |  |
 | reindexJobImage.pullPolicy | string | `"IfNotPresent"` |  |
 | reindexJobImage.pullSecrets | bool | `false` |  |
 | reindexJobImage.repository | string | `"docker.io"` |  |
 | reindexJobImage.tag | string | `"18-alpine"` |  |
 | resources.limits.cpu | string | `"250m"` |  |
+| resources.limits.memory | string | `"1100Mi"` |  |
 | resources.requests.cpu | string | `"100m"` |  |
 | resources.requests.memory | string | `"250Mi"` |  |

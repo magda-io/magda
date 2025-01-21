@@ -48,6 +48,7 @@ spec:
         - containerPort: 6103
         command: 
         - "bin/magda-indexer"
+        - "-J-XX:MaxRAMPercentage={{ .Values.jvmMaxRamPercentage | printf "%.2f" }}"
         - "-Dconfig.file=/etc/config/deploy-application.conf"
 {{- if hasKey .Values.elasticsearch "readSnapshots" }}
         - "-Dindexer.readSnapshots={{ .Values.readSnapshots }}"

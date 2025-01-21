@@ -25,6 +25,7 @@ Kubernetes: `>= 1.14.0-0`
 | defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | formatsIndexVersion | string | `nil` | Manually set format index version. If not specify, default version will be used. you want to manually set this setting when upgrade to a Magda version that involves region index version changes. As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built. |
 | image.name | string | `"magda-search-api"` |  |
+| jvmMaxRamPercentage | float | `75` | JVM max allowed heap memory percentage based on `resources.limits.memory` |
 | livenessProbe.failureThreshold | int | `10` |  |
 | livenessProbe.httpGet.path | string | `"/v0/status/live"` |  |
 | livenessProbe.httpGet.port | int | `6102` |  |
@@ -42,6 +43,7 @@ Kubernetes: `>= 1.14.0-0`
 | readinessProbe.timeoutSeconds | int | `10` |  |
 | regionsIndexVersion | string | `nil` | Manually set region index version. If not specify, default version will be used. you want to manually set this setting when upgrade to a Magda version that involves region index version changes. As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built. |
 | resources.limits.cpu | string | `"200m"` |  |
+| resources.limits.memory | string | `"600Mi"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"300Mi"` |  |
 
