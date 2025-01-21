@@ -895,9 +895,6 @@ class ElasticSearchIndexer(
     }
   }
 
-  val dataSetCount = new AtomicLong(0)
-  val dataSetCountProcessed = new AtomicLong(0)
-
   def performIndex(
       dataSetStream: Source[(DataSet, Promise[Unit]), NotUsed],
       retryFailedDatasets: Boolean = true
@@ -906,26 +903,7 @@ class ElasticSearchIndexer(
       .buffer(indexingBufferSize, OverflowStrategy.backpressure)
       .mapAsync(datasetConversionParallelism) {
         case (dataSet, promise) =>
-          logger.info(
-            "Processing dataset ID: {}",
-            dataSet.identifier
-          )
-          val totalCount = dataSetCount.incrementAndGet()
-          if (totalCount % 10 == 0) {
-            logger.info(
-              "{} datasets entered conversation pipeline...",
-              dataSet.identifier,
-              totalCount
-            )
-          }
           buildDatasetIndexDefinition(dataSet).map { indexReqs =>
-            val totalCount = dataSetCountProcessed.incrementAndGet()
-            if (totalCount % 10 == 0) {
-              logger.info(
-                "{} datasets processed from conversation pipeline...",
-                totalCount
-              )
-            }
             (indexReqs, (dataSet, promise))
           }
       }
@@ -939,8 +917,6 @@ class ElasticSearchIndexer(
             batch.length,
             e.getMessage
           )
-
-        logger.info("Indexing {} datasets in batch...", batch.length)
 
         // Combine all the ES inserts into one bulk statement
         val bulkDef =
