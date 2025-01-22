@@ -59,8 +59,6 @@ magda:
       cors:
         credentials: true
         origin: true
-      helmet:
-        frameguard: false
       cookie:
         # Set sameSite to "none" to explicitly allow cross-site cookie
         # It's only for allowing frontend local dev site to login to remote dev instance
