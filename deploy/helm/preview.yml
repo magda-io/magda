@@ -46,8 +46,6 @@ magda:
         baseUrl: http://magda-auth-facebook
       autoscaler:
         enabled: false
-      helmet:
-        frameguard: false
       cors:
         credentials: true
         origin: true
