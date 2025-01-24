@@ -1,7 +1,7 @@
 version: "3"
 services:
   test-embedding-api:
-    image: ghcr.io/magda-io/magda-embedding-api:1.0.0
+    image: ghcr.io/magda-io/magda-embedding-api:1.1.0-alpha.3
     ports:
       - 3000:3000
     environment:
