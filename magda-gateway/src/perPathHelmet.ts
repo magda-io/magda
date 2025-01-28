@@ -42,7 +42,7 @@ function perPathHelmet(
             perPathHelmetHandlers[fullPath](req, res, next);
             return;
         } else {
-            helmet(defaultConfig);
+            helmet(defaultConfig)(req, res, next);
             return;
         }
     };
