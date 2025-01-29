@@ -53,6 +53,8 @@ magda:
         credentials: true
         origin: true
       helmet:
+        crossOriginResourcePolicy:
+          policy: "cross-origin"
         contentSecurityPolicy:
           directives:
             scriptSrc:
