@@ -52,14 +52,15 @@ magda:
       cors:
         credentials: true
         origin: true
-      csp:
-        directives:
-          scriptSrc:
-          - "'self'"
-          - https://*.googletagmanager.com
-          # the following two domains are for downloading Magda UI plugins from github release
-          - github.com
-          - objects.githubusercontent.com
+      helmet:
+        contentSecurityPolicy:
+          directives:
+            scriptSrc:
+            - "'self'"
+            - https://*.googletagmanager.com
+            # the following two domains are for downloading Magda UI plugins from github release
+            - github.com
+            - objects.githubusercontent.com
 
     combined-db:
       magda-postgres:

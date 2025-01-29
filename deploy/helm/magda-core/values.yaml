@@ -269,3 +269,32 @@ tags:
 #       matchLabels:
 #         {{- include "magda.common.labels.matchLabels" (dict "root" .) | nindent 6 }}
 extraObjects: []
+
+gateway:
+  helmetPerPath:
+    "/preview-map/*": 
+      contentSecurityPolicy:
+        directives:
+          scriptSrc:
+          - "'self'"
+          styleSrc:
+          - "'self'"
+          - "blob:"
+          - "'unsafe-inline'"
+          - "fonts.googleapis.com"
+          connectSrc:
+          - "'self'"
+          - "*.cesium.com"
+          imgSrc:
+          - "*"
+          - "data:"
+          workerSrc:
+          - "'self'"
+          - "blob:"
+    # -- allow alasql to compile SQL query at frontend in its separate window/iframe
+    "/assets/alasql.html": 
+      contentSecurityPolicy:
+        directives:
+          scriptSrc:
+          - "'self'"
+          - "'unsafe-eval'"

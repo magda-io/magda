@@ -27,7 +27,7 @@ import setupTenantMode from "./setupTenantMode.js";
 import createPool from "./createPool.js";
 import { AuthPluginBasicConfig } from "./createAuthPluginRouter.js";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
-import perPathHelmet from "./perPathHelmet.js";
+import createHelmetRouter from "./createHelmetRouter.js";
 
 type Route = {
     to: string;
@@ -157,7 +157,7 @@ export default function buildApp(app: express.Application, config: Config) {
     // Set sensible secure headers
     app.disable("x-powered-by");
     app.use(
-        perPathHelmet(
+        createHelmetRouter(
             config.helmetJson,
             config.helmetPerPathJson,
             config.cspJson
