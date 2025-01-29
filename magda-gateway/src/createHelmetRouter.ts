@@ -1,8 +1,7 @@
 import express from "express";
 import helmet, { HelmetOptions } from "helmet";
 
-type ContentSecurityPolicyOptions = HelmetOptions["contentSecurityPolicy"];
-type ContentSecurityPolicyDirectiveValue = ContentSecurityPolicyOptions["directives"];
+type ContentSecurityPolicyDirectiveValue = any;
 
 function createHelmetRouter(
     helmConfig: HelmetOptions,
