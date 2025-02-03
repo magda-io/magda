@@ -652,8 +652,15 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   ): QueryDefinition = {
     // `*` means match everything, no need to do vector search
     val hybridSearchEnabled = inputText != "*" && HybridSearchConfig.enabled && inputTextVector.nonEmpty
+    // when hybrid search is enabled, search result is more useful with partial match (`or` operator)
+    // as the vector search will help to move more relevant results to the top
+    val defaultOperator = if (HybridSearchConfig.enabled) {
+      "or"
+    } else {
+      "and"
+    }
     val queryString = SimpleStringQueryDefinition(inputText)
-      .defaultOperator("and")
+      .defaultOperator(defaultOperator)
       .quoteFieldSuffix(".quote")
 
     def foldFields(query: SimpleStringQueryDefinition, fields: Seq[Any]) =
@@ -669,7 +676,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         .field("distributions.title")
         .field("distributions.description")
         .field("distributions.format")
-        .defaultOperator("and")
+        .defaultOperator(defaultOperator)
     ).scoreMode(ScoreMode.Max)
 
     /**
