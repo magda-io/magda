@@ -155,7 +155,8 @@
     "markdown-table": "^3.0.4",
     "alasql": "^4.5.2",
     "ace-builds": "^1.36.5",
-    "react-ace": "^13.0.0"
+    "react-ace": "^13.0.0",
+    "partial-json": "^0.1.7"
   },
   "resolutions": {
     "@langchain/core": "0.2.28"
