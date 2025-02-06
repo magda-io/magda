@@ -83,7 +83,7 @@ const defaultAgent: WebLLMTool = {
         }
     },
     description:
-        "This tool can greet the user and offer system usage information base on the user message."
+        "You should use this tool when user sends a greeting message or ask for help"
 };
 
 export default defaultAgent;

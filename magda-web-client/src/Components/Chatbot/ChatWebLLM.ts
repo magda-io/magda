@@ -337,6 +337,21 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
         };
         const engine = await this.getEngine();
         const reply = await engine.chat.completions.create(request);
+        const finish_reason = reply?.choices?.[0]?.finish_reason;
+        switch (finish_reason) {
+            case "length":
+                throw new Error(
+                    "The LLM failed to process your request because it exceeds the context window limit."
+                );
+            case "abort":
+                throw new Error(
+                    "The LLM could not process your request as it was aborted."
+                );
+            case "stop":
+                throw new Error(
+                    "The LLM could not process your request as it was stopped."
+                );
+        }
         if (!reply?.choices?.[0]?.message?.tool_calls?.length) {
             return undefined;
         }

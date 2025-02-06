@@ -47,14 +47,14 @@ const searchDatasets: WebLLMTool = {
         return await retrieveDatasets(queryString);
     },
     description:
-        "This tool can be used to search datasets relevant to the supplied `queryString` parameter and return datasets. " +
+        "This tool can be used to search datasets relevant to the user's inquiry and present the dataset list to user as the answer. You must use this call when there is no better tool to use." +
         "You should generate one or more keywords or a sentence on the user inquiry and supply as the compulsory `queryString` parameter.",
     parameters: [
         {
             name: "queryString",
             type: "string" as const,
             description:
-                "a query string used to search relevant datasets. Can be one or more keywords (separated by space) or a sentence. Must be a non-empty string."
+                "a query string used to search relevant datasets. Can be one or more keywords (separated by space). Must be a non-empty string."
         },
         {
             name: "limit",

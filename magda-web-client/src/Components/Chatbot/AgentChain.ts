@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
-import { ChainInput } from "./commons";
+import { ChainInput, KeyContextData } from "./commons";
 import { InitProgressCallback, InitProgressReport } from "@mlc-ai/web-llm";
 import { BaseMessage, AIMessage } from "@langchain/core/messages";
 import { Runnable, RunnableLambda } from "@langchain/core/runnables";
-import ChatWebLLM from "./ChatWebLLM";
+import ChatWebLLM, { WebLLMInputs } from "./ChatWebLLM";
 import AsyncQueue from "@ai-zen/async-queue";
 import {
     CommonInputType,
@@ -70,7 +70,11 @@ class AgentChain {
     public appName: string;
     public dataset: ParsedDataset | undefined;
     public distribution: ParsedDistribution | undefined;
+    public keyContextData: KeyContextData = {
+        queryResult: undefined
+    };
     public debug: boolean = false;
+    public directModelAccess: boolean = false;
 
     public chain: Runnable<CommonInputType, string | null | undefined | void>;
 
@@ -94,6 +98,14 @@ class AgentChain {
         this.chain = this.createChain();
         // for debug purpose;
         (window as any).chatBotAgentChain = this;
+    }
+
+    enableDirectModelAccess(modelConfig: Partial<WebLLMInputs> = {}) {
+        this.model = ChatWebLLM.createDefaultModel({
+            ...modelConfig,
+            loadProgressCallback: this.onProgress.bind(this)
+        });
+        this.directModelAccess = true;
     }
 
     setAppName(appName: string) {
@@ -137,7 +149,8 @@ class AgentChain {
             history: this.navHistory,
             model: this.model,
             dataset: this.dataset,
-            distribution: this.distribution
+            distribution: this.distribution,
+            keyContextData: this.keyContextData
         };
 
         new Promise(async (resolve, reject) => {
@@ -145,20 +158,24 @@ class AgentChain {
             let buffer = "";
             let partialMsgSent = false;
 
-            const stream = await this.chain.stream(input);
+            const stream = await (this.directModelAccess
+                ? this.model.stream(input.question)
+                : this.chain.stream(input));
 
             for await (const chunk of stream) {
                 if (chunk === null || typeof chunk === "undefined") {
                     continue;
                 }
                 partialMsgSent = true;
+                const chunkText =
+                    typeof chunk === "string" ? chunk : chunk.content;
                 queue.push(
                     createChatEventMessage(EVENT_TYPE_PARTIAL_MSG, {
                         id: msgId,
-                        msg: chunk
+                        msg: chunkText
                     })
                 );
-                buffer += chunk;
+                buffer += chunkText;
             }
             if (partialMsgSent) {
                 queue.push(
@@ -170,6 +187,9 @@ class AgentChain {
             queue.done();
             if (this.debug) {
                 this.chatHistory.push(new AIMessage({ content: buffer }));
+            }
+            if (this.directModelAccess) {
+                console.log(buffer);
             }
             resolve(buffer);
         }).catch((e) => {
@@ -185,6 +205,9 @@ class AgentChain {
             const { queue } = input;
             try {
                 const tools = await createTools(input);
+                if (this.debug) {
+                    console.log("available tools: ", tools);
+                }
                 const result = await this.model.invokeTool(
                     input.question,
                     tools,

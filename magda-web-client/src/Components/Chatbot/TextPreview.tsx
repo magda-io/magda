@@ -3,6 +3,7 @@ import { useAsync } from "react-async-hook";
 import reportError from "helpers/reportError";
 import GeoJsonViewer from "./GeoJsonViewer";
 import MarkdownMermaid from "./MarkdownMermaid";
+import EchartsViewer from "./EchartsViewer";
 import CommonLink from "../Common/CommonLink";
 import { config } from "../../config";
 
@@ -89,6 +90,12 @@ async function loadMarkdownPreview() {
                 ) {
                     return (
                         <MarkdownMermaid definition={String(children).trim()} />
+                    );
+                } else if (
+                    match?.[1]?.toLowerCase() === "echarts".toLowerCase()
+                ) {
+                    return (
+                        <EchartsViewer configJson={String(children).trim()} />
                     );
                 }
                 return !inline && match ? (

@@ -98,7 +98,7 @@ export function autocompletePublishers(
 }
 
 type AutoCompleteResult = {
-    inputString: String;
+    inputString: string;
     suggestions: string[];
     errorMessage?: string;
 };
