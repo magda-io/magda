@@ -83,7 +83,10 @@ const defaultAgent: WebLLMTool = {
         }
     },
     description:
-        "You should use this tool when user sends a greeting message or ask for help"
+        "this tool can be used to serve general conversations or greetings " +
+        '(e.g. when the user say "hello") ' +
+        "from the user or when the user asks for help / system usage information " +
+        '(e.g. when the user ask "how to use the system" or "what\'re the functionalities / features of the system?").'
 };
 
 export default defaultAgent;
