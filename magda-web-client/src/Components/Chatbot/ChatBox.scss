@@ -11,26 +11,6 @@
     }
 }
 
-.magda-chat-box-main-container {
-    .launch-button {
-        position: fixed;
-        bottom: 100px;
-        right: 50px;
-        z-index: 10;
-        .rs-btn-icon {
-            padding: 12px 8px 8px 28px;
-        }
-        .heading {
-            font-weight: bold;
-        }
-        svg {
-            position: absolute;
-            left: 8px;
-            top: 15px;
-        }
-    }
-}
-
 .rs-drawer-sm {
     .magda-chat-box-message-area-body {
         padding-left: 30px;

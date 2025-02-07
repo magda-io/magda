@@ -1,21 +1,21 @@
 import React, { FunctionComponent } from "react";
-import ChatBox from "./ChatBox";
+import ChatBoxLaunchButton from "./ChatBoxLaunchButton";
 import { Route, Switch } from "react-router-dom";
 
 const ChatBoxRoutes: FunctionComponent = () => (
     <Switch>
-        <Route path="/home" exact component={ChatBox} />
-        <Route path="/organisations(/)*(.)*" component={ChatBox} />
-        <Route path="/search" exact component={ChatBox} />
-        <Route path="/drafts" exact component={ChatBox} />
-        <Route path="/all-datasets" exact component={ChatBox} />
+        <Route path="/home" exact component={ChatBoxLaunchButton} />
+        <Route path="/organisations(/)*(.)*" component={ChatBoxLaunchButton} />
+        <Route path="/search" exact component={ChatBoxLaunchButton} />
+        <Route path="/drafts" exact component={ChatBoxLaunchButton} />
+        <Route path="/all-datasets" exact component={ChatBoxLaunchButton} />
         <Route
             path="/dataset/:datasetId/distribution/:distributionId"
-            component={ChatBox}
+            component={ChatBoxLaunchButton}
         />
-        <Route path="/dataset/:datasetId" component={ChatBox} />
-        <Route path="/page/:pageId" component={ChatBox} />
-        <Route path="/error" exact component={ChatBox} />
+        <Route path="/dataset/:datasetId" component={ChatBoxLaunchButton} />
+        <Route path="/page/:pageId" component={ChatBoxLaunchButton} />
+        <Route path="/error" exact component={ChatBoxLaunchButton} />
     </Switch>
 );
 

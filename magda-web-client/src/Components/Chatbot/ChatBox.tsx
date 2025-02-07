@@ -5,7 +5,6 @@ import {
     Button,
     Input,
     Panel,
-    IconButton,
     List,
     Loader,
     RadioGroup,
@@ -13,7 +12,6 @@ import {
 } from "rsuite";
 import Notification from "rsuite/Notification";
 import toaster from "rsuite/toaster";
-import { BsChatRightDotsFill } from "react-icons/bs";
 import { useAsyncCallback } from "react-async-hook";
 import { Small, Medium } from "../Common/Responsive";
 import TextPreview from "./TextPreview";
@@ -41,7 +39,6 @@ import {
 import { parseJsonMarkdown } from "../../libs/json";
 import AgentChain from "./AgentChain";
 import { InitProgressReport } from "@mlc-ai/web-llm";
-import MagdaNamespacesConsumer from "../../Components/i18n/MagdaNamespacesConsumer";
 import { ParsedDataset, ParsedDistribution } from "helpers/record";
 interface MessageItem {
     type: "user" | "bot";
@@ -106,12 +103,13 @@ const LLMLoadingBox: FunctionComponent<{
 
 interface PropsType {
     appName: string;
+    isOpen: boolean;
+    setIsOpen: (boolean) => void;
 }
 
 const ChatBox: FunctionComponent<PropsType> = (props) => {
-    const { appName } = props;
+    const { appName, isOpen, setIsOpen } = props;
     const [size, setSize] = useState<string>("sm");
-    const [open, setOpen] = useState<boolean>(false);
     const [inputText, setInputText] = useState<string>("");
     const messageQueueRef = useRef<MessageItem[]>([
         getDefaultMessage(props.appName)
@@ -527,24 +525,13 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
 
     return (
         <div className="magda-chat-box-main-container">
-            <ButtonToolbar className="launch-button">
-                <IconButton
-                    appearance="primary"
-                    icon={<BsChatRightDotsFill />}
-                    onClick={() => {
-                        setOpen(true);
-                    }}
-                >
-                    <span className="heading">Chat to Magda</span>
-                </IconButton>
-            </ButtonToolbar>
             <Small>
                 <Drawer
                     className="magda-chat-box-drawer"
-                    open={open}
+                    open={isOpen}
                     backdrop={true}
                     size={"full" as any}
-                    onClose={() => setOpen(false)}
+                    onClose={() => setIsOpen(false)}
                 >
                     {makeDrawerHeader("sm")}
                     {makeDrawerBody()}
@@ -553,10 +540,10 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
             <Medium>
                 <Drawer
                     className="magda-chat-box-drawer"
-                    open={open}
+                    open={isOpen}
                     backdrop={true}
                     size={size as any}
-                    onClose={() => setOpen(false)}
+                    onClose={() => setIsOpen(false)}
                 >
                     {makeDrawerHeader(undefined)}
                     {makeDrawerBody()}
@@ -566,13 +553,4 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
     );
 };
 
-const ChatBoxWithAppName: FunctionComponent = () => (
-    <MagdaNamespacesConsumer ns={["global"]}>
-        {(translate) => {
-            const appName = translate(["appName", ""]);
-
-            return <ChatBox appName={appName} />;
-        }}
-    </MagdaNamespacesConsumer>
-);
-export default ChatBoxWithAppName;
+export default ChatBox;
