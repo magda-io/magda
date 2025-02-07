@@ -4,7 +4,12 @@ import React, {
     useEffect,
     useState
 } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import {
+    setIsOpen,
+    setData,
+    setEditorRef
+} from "../../actions/sqlConsoleActions";
 import { StateType } from "reducers/reducer";
 import { ParsedDataset, ParsedDistribution } from "helpers/record";
 import { Small, Medium } from "../Common/Responsive";
@@ -29,7 +34,6 @@ import {
 } from "../../libs/sqlUtils";
 import downloadCsv from "../../libs/downloadCsv";
 import { BsFillQuestionCircleFill } from "react-icons/bs";
-import type ReactAce from "react-ace";
 import "./SQLConsole.scss";
 
 const { Column, HeaderCell, Cell } = Table;
@@ -51,14 +55,19 @@ function convertEmptyData(data: any[]): any[] {
 }
 
 const SQLConsole: FunctionComponent<PropsType> = (props) => {
-    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const { isOpen, data, editorRef: aceEditorCtlRef } = useSelector(
+        (state: StateType) => state.sqlConsole
+    );
+    const dispatch = useDispatch();
+    const setAceEditorCtlRef = useCallback(
+        (ref) => {
+            dispatch(setEditorRef(ref));
+        },
+        [dispatch]
+    );
     const [size, setSize] = useState<string>("sm");
-    const [data, setData] = useState<Record<string, any>[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDownloadingCsv, setIsDownloadingCsv] = useState<boolean>(false);
-    const [aceEditorCtlRef, setAceEditorCtlRef] = useState<ReactAce | null>(
-        null
-    );
     const aceEditorRef = aceEditorCtlRef?.editor;
 
     const dataset = useSelector<StateType, ParsedDataset | undefined>(
@@ -76,19 +85,19 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                 }
                 setIsLoading(true);
                 const result = await runQuery(query, params);
-                setData(result);
+                dispatch(setData(result));
             } catch (e) {
                 reportError(`Failed to execute SQL query: ${e}`);
             } finally {
                 setIsLoading(false);
             }
         },
-        [setData]
+        [dispatch]
     );
 
     const onClose = useCallback(() => {
-        setIsOpen(false);
-    }, [setIsOpen]);
+        dispatch(setIsOpen(false));
+    }, [dispatch]);
 
     const onRunQueryButtonClick = useCallback(() => {
         const value = aceEditorRef?.getValue();
@@ -121,29 +130,6 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
             setIsDownloadingCsv(false);
         }
     }, [data, setIsDownloadingCsv]);
-
-    const handleKeyPress = useCallback(
-        (event: KeyboardEvent) => {
-            if (
-                event.shiftKey === true &&
-                (event.metaKey === true || event.ctrlKey === true) &&
-                event.key === "s"
-            ) {
-                event.preventDefault();
-                event.stopPropagation();
-                setIsOpen((val) => !val);
-            }
-        },
-        [setIsOpen]
-    );
-
-    useEffect(() => {
-        document.addEventListener("keydown", handleKeyPress);
-
-        return () => {
-            document.removeEventListener("keydown", handleKeyPress);
-        };
-    }, [handleKeyPress]);
 
     useAsync(async () => {
         if (dataset?.identifier) {

@@ -1,3 +1,4 @@
+import type { StateType } from "./reducers/reducer";
 export type FetchError = {
     title: string;
     detail: string;
@@ -22,7 +23,7 @@ export type Stats = {
 };
 
 export type Dispatch = (any) => Function;
-export type GetState = () => any;
+export type GetState<T = StateType> = () => T;
 
 export type Action = {
     type: string;

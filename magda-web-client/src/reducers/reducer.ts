@@ -15,8 +15,8 @@ import topNotification from "./topNotificationReducer";
 import homepageStories from "./homePageStoriesReducer";
 import staticPagesReducer from "./staticPagesReducer";
 import topBanner from "./topBannerReducer";
-
 import previewData from "./previewDataReducer";
+import sqlConsoleReducer from "./sqlConsoleReducer";
 
 import { combineReducers } from "redux";
 
@@ -38,7 +38,8 @@ const reducer = combineReducers({
     topNotification,
     staticPages: staticPagesReducer,
     homepageStories,
-    topBanner
+    topBanner,
+    sqlConsole: sqlConsoleReducer
 });
 
 export type StateType = {
@@ -60,6 +61,7 @@ export type StateType = {
     staticPages: ReturnType<typeof staticPagesReducer>;
     homepageStories: ReturnType<typeof homepageStories>;
     topBanner: ReturnType<typeof topBanner>;
+    sqlConsole: ReturnType<typeof sqlConsoleReducer>;
 };
 
 export default reducer;

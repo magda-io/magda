@@ -58,12 +58,14 @@ export type UserManagementState = {
     user: User;
     isFetchingWhoAmI: boolean;
     whoAmIError: Error | null;
+    isSigningOut: boolean;
 };
 
 const initialData: UserManagementState = {
     user: { ...defaultUserInfo },
     isFetchingWhoAmI: false,
-    whoAmIError: null
+    whoAmIError: null,
+    isSigningOut: false
 };
 
 const userManagementMapping = (

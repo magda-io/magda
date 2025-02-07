@@ -686,6 +686,14 @@ export interface ConfigDataType {
     authStatusRefreshInterval?: number;
 
     /**
+     * Whether or not enable chatbot feature.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    enableChatbot: boolean;
+
+    /**
      * The extension ID of the web-llm service worker chrome extension plugin.
      * Only required by organisation-managed devices (e.g. company laptops).
      * See here for more details: https://github.com/magda-io/magda-llm-service-worker-extension
@@ -694,6 +702,15 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     llmExtensionId: string;
+
+    /**
+     * The installation URL of the web-llm service worker chrome extension plugin.
+     * This URL will be displayed to the user when the extension is not installed.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    llmExtensionInstallationUrl: string;
 
     /**
      * Whether alasql should be run in an iframe.
@@ -705,6 +722,14 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     alasqlRunInIframe: boolean;
+
+    /**
+     * Whether or not the SQL console feature is enabled.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    enableSQLConsole: boolean;
 }
 
 const serverConfig: ConfigDataType = window.magda_server_config || {};
@@ -1016,10 +1041,21 @@ export const config: ConfigDataType = {
     authStatusRefreshInterval: serverConfig?.authStatusRefreshInterval
         ? serverConfig.authStatusRefreshInterval
         : 300000,
+    enableChatbot:
+        typeof serverConfig?.enableChatbot === "boolean"
+            ? serverConfig.enableChatbot
+            : true,
     llmExtensionId: serverConfig?.llmExtensionId
         ? serverConfig.llmExtensionId
         : // this is the ID of the default extension allow access from domain magda.io
           "ljadmjdilnpmlhopijgimonfackfngmi",
+    llmExtensionInstallationUrl: serverConfig?.llmExtensionInstallationUrl
+        ? serverConfig.llmExtensionInstallationUrl
+        : "https://github.com/magda-io/magda-llm-service-worker-extension",
+    enableSQLConsole:
+        typeof serverConfig?.enableSQLConsole === "boolean"
+            ? serverConfig.enableSQLConsole
+            : true,
     alasqlRunInIframe: serverConfig?.alasqlRunInIframe
         ? serverConfig.alasqlRunInIframe
         : true
