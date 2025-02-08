@@ -49,6 +49,8 @@ magda:
       cors:
         credentials: true
         origin: true
+      cookie:
+        partitioned: true
       helmet:
         crossOriginResourcePolicy:
           policy: "cross-origin"
