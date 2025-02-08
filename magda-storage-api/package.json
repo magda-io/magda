@@ -28,7 +28,7 @@
   "dependencies": {
     "@magda/esm-utils": "^1.0.1",
     "@magda/typescript-common": "^4.2.4",
-    "express": "^4.17.2",
+    "express": "^4.21.2",
     "express-multipart-file-parser": "^0.1.2",
     "http-terminator": "^3.2.0",
     "minio": "^7.0.26",
