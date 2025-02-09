@@ -1,11 +1,11 @@
 apiVersion: v2
 name: "magda-local-deployment"
 description: ""
-version: "4.2.4"
+version: "5.0.0-alpha.1"
 kubeVersion: ">= 1.14.0-0"
 dependencies:
   - name: magda
-    version: 4.2.4
+    version: 5.0.0-alpha.1
     repository: "file://../magda"
 
   - name: magda-auth-google

@@ -1,12 +1,12 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: authorization-db
-version: 4.2.4
+version: 5.0.0-alpha.1
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
 dependencies:
   - name: magda-postgres
-    version: "4.2.4"
+    version: "5.0.0-alpha.1"
     repository: "file://../magda-postgres"
     condition: global.useInK8sDbInstance.authorization-db
