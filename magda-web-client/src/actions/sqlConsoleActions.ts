@@ -1,6 +1,7 @@
 import { Action, Dispatch, GetState } from "../types";
 import { actionTypes } from "../constants/ActionTypes";
 import type ReactAce from "react-ace";
+import { SQLConsoleDataType } from "../reducers/sqlConsoleReducer";
 import { config } from "../config";
 
 const enableSqlConsole = config.enableSQLConsole;
@@ -33,7 +34,7 @@ export function toggleIsOpen() {
     };
 }
 
-export function setData(data: boolean): Action {
+export function setData(data: SQLConsoleDataType): Action {
     return {
         type: actionTypes.SQL_CONSOLE_SET_DATA,
         payload: data

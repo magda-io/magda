@@ -16,7 +16,7 @@ import homepageStories from "./homePageStoriesReducer";
 import staticPagesReducer from "./staticPagesReducer";
 import topBanner from "./topBannerReducer";
 import previewData from "./previewDataReducer";
-import sqlConsoleReducer from "./sqlConsoleReducer";
+import sqlConsoleReducer, { SQLConsoleStateType } from "./sqlConsoleReducer";
 
 import { combineReducers } from "redux";
 
@@ -61,7 +61,7 @@ export type StateType = {
     staticPages: ReturnType<typeof staticPagesReducer>;
     homepageStories: ReturnType<typeof homepageStories>;
     topBanner: ReturnType<typeof topBanner>;
-    sqlConsole: ReturnType<typeof sqlConsoleReducer>;
+    sqlConsole: SQLConsoleStateType;
 };
 
 export default reducer;

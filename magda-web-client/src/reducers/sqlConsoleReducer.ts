@@ -2,12 +2,12 @@ import { Action } from "../types";
 import { actionTypes } from "../constants/ActionTypes";
 import type ReactAce from "react-ace";
 
-type SQLConsoleDataType = Record<string, any>[];
+export type SQLConsoleDataType = Record<string, any>[];
 
 export interface SQLConsoleStateType {
     isOpen: boolean;
     data: SQLConsoleDataType;
-    editorRef: typeof ReactAce | null;
+    editorRef: ReactAce | null;
 }
 
 const initialData: SQLConsoleStateType = {

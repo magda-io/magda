@@ -4,6 +4,7 @@ import reportError from "helpers/reportError";
 import GeoJsonViewer from "./GeoJsonViewer";
 import MarkdownMermaid from "./MarkdownMermaid";
 import EchartsViewer from "./EchartsViewer";
+import SQLViewer from "./SQLViewer";
 import CommonLink from "../Common/CommonLink";
 import { config } from "../../config";
 
@@ -97,6 +98,8 @@ async function loadMarkdownPreview() {
                     return (
                         <EchartsViewer configJson={String(children).trim()} />
                     );
+                } else if (match?.[1]?.toLowerCase() === "sql".toLowerCase()) {
+                    return <SQLViewer sql={String(children).trim()} />;
                 }
                 return !inline && match ? (
                     <SyntaxHighlighter
