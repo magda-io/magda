@@ -10,6 +10,7 @@ import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import Panel from "rsuite/Panel";
 import Button from "rsuite/Button";
 import Stack from "rsuite/Stack";
+import "./SQLViewer.scss";
 
 interface SQLViewerProps {
     sql: string;
@@ -26,15 +27,23 @@ const SQLViewer: FunctionComponent<SQLViewerProps> = ({ sql }) => {
 
     return (
         <Panel
-            className="markdown-sql-viewer-block"
+            className="magda-markdown-sql-viewer-block"
             bordered
+            bodyFill
             header={
                 <Stack direction="row-reverse">
-                    <Button onClick={openSqlConsoleHandler}>SQL Console</Button>
+                    <Button
+                        size="sm"
+                        appearance="ghost"
+                        onClick={openSqlConsoleHandler}
+                    >
+                        Open
+                    </Button>
                 </Stack>
             }
         >
             <SyntaxHighlighter
+                className="syntax-highlighter-container"
                 children={String(sql).trim()}
                 style={tomorrow}
                 language={"sql"}
