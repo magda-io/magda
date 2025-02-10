@@ -8,7 +8,8 @@ import { useSelector, useDispatch } from "react-redux";
 import {
     setIsOpen,
     setData,
-    setEditorRef
+    setEditorRef,
+    setEditorContent
 } from "../../actions/sqlConsoleActions";
 import { StateType } from "reducers/reducer";
 import { ParsedDataset, ParsedDistribution } from "helpers/record";
@@ -35,6 +36,7 @@ import {
 import downloadCsv from "../../libs/downloadCsv";
 import { BsFillQuestionCircleFill } from "react-icons/bs";
 import "./SQLConsole.scss";
+import type { IAceEditor } from "react-ace/lib/types";
 
 const { Column, HeaderCell, Cell } = Table;
 interface PropsType {
@@ -55,9 +57,12 @@ function convertEmptyData(data: any[]): any[] {
 }
 
 const SQLConsole: FunctionComponent<PropsType> = (props) => {
-    const { isOpen, data, editorRef: aceEditorCtlRef } = useSelector(
-        (state: StateType) => state.sqlConsole
-    );
+    const {
+        isOpen,
+        data,
+        editorRef: aceEditorCtlRef,
+        editorContent
+    } = useSelector((state: StateType) => state.sqlConsole);
     const dispatch = useDispatch();
     const setAceEditorCtlRef = useCallback(
         (ref) => {
@@ -93,9 +98,10 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                 dispatch(setData(result));
             } catch (e) {
                 const errorMsg = String(e);
-                const msg = errorMsg.indexOf("Failed to fetch")
-                    ? "Failed to fetch the nominated data file due to network error"
-                    : errorMsg;
+                const msg =
+                    errorMsg.indexOf("Failed to fetch") !== -1
+                        ? "Failed to fetch the nominated data file due to network error"
+                        : errorMsg;
                 reportError(`Failed to execute SQL query: ${msg}`);
             } finally {
                 setIsLoading(false);
@@ -105,8 +111,19 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
     );
 
     const onClose = useCallback(() => {
+        const value = aceEditorRef?.getValue();
+        dispatch(setEditorContent(value ? value : ""));
         dispatch(setIsOpen(false));
-    }, [dispatch]);
+    }, [dispatch, aceEditorRef]);
+
+    const onEditorLoad = useCallback(
+        (editor: IAceEditor) => {
+            if (editorContent) {
+                editor.setValue(editorContent);
+            }
+        },
+        [editorContent]
+    );
 
     const onRunQueryButtonClick = useCallback(() => {
         const value = aceEditorRef?.getValue();
@@ -244,6 +261,7 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                                 >
                                     <AceEditor
                                         ref={setAceEditorCtlRef}
+                                        onLoad={onEditorLoad}
                                         width="100%"
                                         name="magda-sql-console-editor"
                                         mode="sql"

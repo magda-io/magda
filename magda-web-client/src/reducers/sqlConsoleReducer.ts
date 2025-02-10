@@ -8,12 +8,16 @@ export interface SQLConsoleStateType {
     isOpen: boolean;
     data: SQLConsoleDataType;
     editorRef: ReactAce | null;
+    // for performance consideration, this field isn't backed by a "controlled" input
+    // We mainly save the editor content when it's removed from view and recover the content when it's added into the view
+    editorContent: string;
 }
 
 const initialData: SQLConsoleStateType = {
     isOpen: false,
     data: [],
-    editorRef: null
+    editorRef: null,
+    editorContent: ""
 };
 
 const sqlConsoleReducer = (
@@ -35,6 +39,11 @@ const sqlConsoleReducer = (
             return {
                 ...state,
                 editorRef: action.payload
+            };
+        case actionTypes.SQL_CONSOLE_SET_EDITOR_CONTENT:
+            return {
+                ...state,
+                editorContent: action.payload
             };
         default:
             return state;

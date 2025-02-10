@@ -1,7 +1,10 @@
 import { useRef, FunctionComponent, useCallback, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { StateType } from "../../reducers/reducer";
-import { toggleIsOpen } from "../../actions/sqlConsoleActions";
+import {
+    setEditorContent,
+    toggleIsOpen
+} from "../../actions/sqlConsoleActions";
 import { useAsync } from "react-async-hook";
 import reportError from "helpers/reportError";
 import Loader from "rsuite/Loader";
@@ -15,7 +18,10 @@ const SQLConsoleLoader: FunctionComponent = () => {
     const SQLConsole = sqlConsoleCompRef?.current
         ? sqlConsoleCompRef.current
         : null;
-    const isOpen = useSelector((state: StateType) => state.sqlConsole.isOpen);
+    const { isOpen, editorRef } = useSelector(
+        (state: StateType) => state.sqlConsole
+    );
+    const aceEditorRef = editorRef?.editor;
     const dispatch = useDispatch();
 
     const { loading: consoleLoading } = useAsync(
@@ -44,10 +50,14 @@ const SQLConsoleLoader: FunctionComponent = () => {
             ) {
                 event.preventDefault();
                 event.stopPropagation();
+                if (isOpen) {
+                    const value = aceEditorRef?.getValue();
+                    dispatch(setEditorContent(value ? value : ""));
+                }
                 dispatch(toggleIsOpen());
             }
         },
-        [dispatch]
+        [dispatch, isOpen, aceEditorRef]
     );
 
     useEffect(() => {

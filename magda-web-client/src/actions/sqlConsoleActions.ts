@@ -47,3 +47,10 @@ export function setEditorRef(editorRef: ReactAce): Action {
         payload: editorRef
     };
 }
+
+export function setEditorContent(content: string): Action {
+    return {
+        type: actionTypes.SQL_CONSOLE_SET_EDITOR_CONTENT,
+        payload: content
+    };
+}
