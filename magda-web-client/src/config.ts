@@ -806,14 +806,13 @@ const baseExternalUrl = serverConfig.baseExternalUrl
     ? baseUrl
     : urijs().segment([]).search("").fragment("").toString();
 
-// when UI domain is different from backend domain, we set credentials: "include"
-export const commonFetchRequestOptions: RequestInit = !isBackendSameOrigin
-    ? {
-          credentials: "include"
-      }
-    : {
-          credentials: "same-origin"
-      };
+export const commonFetchRequestOptions: RequestInit = {
+    // --- for local debugging you might want to set this "include" in order to log into remote dev server via local UI
+    // However, please note the latest Chrome will block CORS requests configured to include credentials when the Access-Control-Allow-Origin response header was set to a wildcard *.
+    // Also note, Cookies that operate in cross-site contexts are considered as third-party cookies in the latest Chrome.
+    // Requests send via local UI (running at http://localhost) might not have access to remote endpoint cookie as cookie are partitioned.
+    credentials: "same-origin"
+};
 
 AuthDecisionQueryClient.fetchOptions = { ...commonFetchRequestOptions };
 

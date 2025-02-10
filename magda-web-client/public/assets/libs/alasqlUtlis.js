@@ -34,8 +34,8 @@
                 .then((response) => response.arrayBuffer())
                 .then(success)
                 .catch((e) => {
-                    if (error) return error(e);
                     console.error(e);
+                    if (error) return error(e);
                     throw e;
                 });
         } else {
@@ -48,8 +48,8 @@
                 .then((response) => response.text())
                 .then(success)
                 .catch((e) => {
-                    if (error) return error(e);
                     console.error(e);
+                    if (error) return error(e);
                     throw e;
                 });
         }
