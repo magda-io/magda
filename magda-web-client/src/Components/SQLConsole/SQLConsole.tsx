@@ -12,7 +12,6 @@ import {
     setEditorContent
 } from "../../actions/sqlConsoleActions";
 import { StateType } from "reducers/reducer";
-import { ParsedDataset, ParsedDistribution } from "helpers/record";
 import { Small, Medium } from "../Common/Responsive";
 import { useAsync } from "react-async-hook";
 import Drawer from "rsuite/Drawer";
@@ -26,13 +25,7 @@ import Table from "rsuite/Table";
 import Tooltip from "rsuite/Tooltip";
 import Whisper from "rsuite/Whisper";
 import reportError from "helpers/reportError";
-import {
-    runQuery,
-    setCurrentDistList,
-    dataset2DistributionResourceItems,
-    distribution2ResourceItem,
-    setCurrentDist
-} from "../../libs/sqlUtils";
+import { runQuery } from "../../libs/sqlUtils";
 import downloadCsv from "../../libs/downloadCsv";
 import { BsFillQuestionCircleFill } from "react-icons/bs";
 import "./SQLConsole.scss";
@@ -74,13 +67,6 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDownloadingCsv, setIsDownloadingCsv] = useState<boolean>(false);
     const aceEditorRef = aceEditorCtlRef?.editor;
-
-    const dataset = useSelector<StateType, ParsedDataset | undefined>(
-        (state) => state.record.dataset
-    );
-    const distribution = useSelector<StateType, ParsedDistribution | undefined>(
-        (state) => state.record.distribution
-    );
 
     const onRunQuery = useCallback(
         async (query: string, params?: any[]) => {
@@ -156,19 +142,6 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
             setIsDownloadingCsv(false);
         }
     }, [data, setIsDownloadingCsv]);
-
-    useAsync(async () => {
-        if (dataset?.identifier) {
-            const items = dataset2DistributionResourceItems(dataset);
-            setCurrentDistList(items);
-            if (items?.length === 1) {
-                setCurrentDist(items[0]);
-            }
-        }
-        if (distribution?.identifier) {
-            setCurrentDist(distribution2ResourceItem(distribution));
-        }
-    }, [dataset, distribution]);
 
     const {
         result: AceEditor,

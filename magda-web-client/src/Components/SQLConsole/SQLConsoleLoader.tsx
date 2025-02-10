@@ -9,6 +9,13 @@ import { useAsync } from "react-async-hook";
 import reportError from "helpers/reportError";
 import Loader from "rsuite/Loader";
 import type SQLConsoleTypeImport from "./SQLConsole";
+import { ParsedDataset, ParsedDistribution } from "helpers/record";
+import {
+    setCurrentDistList,
+    dataset2DistributionResourceItems,
+    distribution2ResourceItem,
+    setCurrentDist
+} from "../../libs/sqlUtils";
 import { config } from "../../config";
 
 const enableSqlConsole = config.enableSQLConsole;
@@ -23,6 +30,26 @@ const SQLConsoleLoader: FunctionComponent = () => {
     );
     const aceEditorRef = editorRef?.editor;
     const dispatch = useDispatch();
+    const dataset = useSelector<StateType, ParsedDataset | undefined>(
+        (state) => state.record.dataset
+    );
+    const distribution = useSelector<StateType, ParsedDistribution | undefined>(
+        (state) => state.record.distribution
+    );
+
+    useAsync(async () => {
+        // -- make sure current page dataset distributions have been available via `source()` in SQL
+        if (dataset?.identifier) {
+            const items = dataset2DistributionResourceItems(dataset);
+            setCurrentDistList(items);
+            if (items?.length === 1) {
+                setCurrentDist(items[0]);
+            }
+        }
+        if (distribution?.identifier) {
+            setCurrentDist(distribution2ResourceItem(distribution));
+        }
+    }, [dataset, distribution]);
 
     const { loading: consoleLoading } = useAsync(
         async (isOpen, SQLConsole) => {

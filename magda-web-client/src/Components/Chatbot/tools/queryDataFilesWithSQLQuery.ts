@@ -9,7 +9,11 @@ import { getDistColumnNames } from "./common";
 
 async function queryDataFilesWithSQLQuery(this: ChainInput, sqlQuery: string) {
     this.keyContextData.queryResult = undefined;
-    this.queue.push(createChatEventMessageCompleteMsg("Executing queries..."));
+    this.queue.push(
+        createChatEventMessageCompleteMsg(
+            "Executing queries:\n```sql\n" + sqlQuery + "\n```"
+        )
+    );
     const records = await runQuery<Record<string, any>[]>(sqlQuery);
     if (!records?.length) {
         this.queue.push(
