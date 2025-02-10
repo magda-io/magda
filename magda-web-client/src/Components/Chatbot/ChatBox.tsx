@@ -529,7 +529,7 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
                 <Drawer
                     className="magda-chat-box-drawer"
                     open={isOpen}
-                    backdrop={true}
+                    backdrop="static"
                     size={"full" as any}
                     onClose={() => setIsOpen(false)}
                 >
@@ -541,7 +541,7 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
                 <Drawer
                     className="magda-chat-box-drawer"
                     open={isOpen}
-                    backdrop={true}
+                    backdrop="static"
                     size={size as any}
                     onClose={() => setIsOpen(false)}
                 >
