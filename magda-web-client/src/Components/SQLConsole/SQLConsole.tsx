@@ -85,9 +85,18 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                 }
                 setIsLoading(true);
                 const result = await runQuery(query, params);
+                if (
+                    Object.prototype.toString.call(result) === "[object Error]"
+                ) {
+                    throw result;
+                }
                 dispatch(setData(result));
             } catch (e) {
-                reportError(`Failed to execute SQL query: ${e}`);
+                const errorMsg = String(e);
+                const msg = errorMsg.indexOf("Failed to fetch")
+                    ? "Failed to fetch the nominated data file due to network error"
+                    : errorMsg;
+                reportError(`Failed to execute SQL query: ${msg}`);
             } finally {
                 setIsLoading(false);
             }

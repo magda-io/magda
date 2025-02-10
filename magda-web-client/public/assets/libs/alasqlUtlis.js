@@ -12,18 +12,18 @@
         return s;
     }
 
-    async function fetchData(path, success, error, async) {
+    async function fetchData(path, success, error, async, binary) {
         if (async) {
-            return getData(path, success, error);
+            return getData(path, success, error, binary);
         }
-        return await getData(path, success, error);
+        return await getData(path, success, error, binary);
     }
 
     const defaultCommonFetchRequestOptions = {
         credentials: "same-origin"
     };
 
-    function getData(path, binary, success, error) {
+    function getData(path, success, error, binary) {
         if (binary) {
             return fetch(path, {
                 ...defaultCommonFetchRequestOptions,
@@ -68,7 +68,7 @@
             Simply read file from HTTP request, like:
             SELECT * FROM TXT('http://alasql.org/README.md');
         */
-        fetchData(path, false, (x) => success(cutbom(x)), error, asy);
+        fetchData(path, (x) => success(cutbom(x)), error, asy);
     };
 
     alasql.utils.loadBinaryFile = function (
@@ -80,7 +80,7 @@
         }
     ) {
         if (typeof path === "string") {
-            fetchData(path, true, success, error, runAsync);
+            fetchData(path, success, error, runAsync, true);
         } else if (path instanceof Blob) {
             success(path);
         } else {
