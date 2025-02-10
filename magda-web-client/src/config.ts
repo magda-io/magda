@@ -730,6 +730,15 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     enableSQLConsole: boolean;
+
+    /**
+     * The maximum file size that can be loaded into the SQL console.
+     * When the user tries to load a file that is larger than this size, the system will show an error message.
+     *
+     * @type {number}
+     * @memberof ConfigDataType
+     */
+    sqlConsoleMaxFileSize: number;
 }
 
 const serverConfig: ConfigDataType = window.magda_server_config || {};
@@ -806,13 +815,14 @@ const baseExternalUrl = serverConfig.baseExternalUrl
     ? baseUrl
     : urijs().segment([]).search("").fragment("").toString();
 
-export const commonFetchRequestOptions: RequestInit = {
-    // --- for local debugging you might want to set this "include" in order to log into remote dev server via local UI
-    // However, please note the latest Chrome will block CORS requests configured to include credentials when the Access-Control-Allow-Origin response header was set to a wildcard *.
-    // Also note, Cookies that operate in cross-site contexts are considered as third-party cookies in the latest Chrome.
-    // Requests send via local UI (running at http://localhost) might not have access to remote endpoint cookie as cookie are partitioned.
-    credentials: "same-origin"
-};
+// when UI domain is different from backend domain, we set credentials: "include"
+export const commonFetchRequestOptions: RequestInit = !isBackendSameOrigin
+    ? {
+          credentials: "include"
+      }
+    : {
+          credentials: "same-origin"
+      };
 
 AuthDecisionQueryClient.fetchOptions = { ...commonFetchRequestOptions };
 
@@ -1057,7 +1067,8 @@ export const config: ConfigDataType = {
             : true,
     alasqlRunInIframe: serverConfig?.alasqlRunInIframe
         ? serverConfig.alasqlRunInIframe
-        : true
+        : true,
+    sqlConsoleMaxFileSize: serverConfig?.sqlConsoleMaxFileSize || 52428800
 };
 
 export type Config = typeof config;

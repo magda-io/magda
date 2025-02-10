@@ -50,7 +50,7 @@ magda:
         credentials: true
         origin: true
       cookie:
-        partitioned: true
+        sameSite: "none"
       helmet:
         crossOriginResourcePolicy:
           policy: "cross-origin"

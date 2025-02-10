@@ -352,7 +352,7 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                     placement={"bottom"}
                     open={isOpen}
                     onClose={onClose}
-                    backdrop={true}
+                    backdrop="static"
                     size={size as any}
                 >
                     {makeDrawerHeader(undefined)}

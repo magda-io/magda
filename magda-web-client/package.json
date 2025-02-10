@@ -75,7 +75,7 @@
     "jsonpath": "^1.0.2",
     "leaflet-mapbox-vector-tile": "github:TerriaJS/Leaflet.MapboxVectorTile",
     "lodash": "^4.17.10",
-    "mammoth": "^1.4.7",
+    "mammoth": "^1.9.0",
     "markdown-with-front-matter-loader": "^0.1.0",
     "memoize-one": "^3.1.1",
     "nlcst-to-string": "^4.0.0",
