@@ -223,6 +223,8 @@ async function getAlaSQLViaIframe(): Promise<typeof alasql> {
                     (alasqlIframe.contentWindow as any).commonFetchRequestOptions = {
                         ...config.commonFetchRequestOptions
                     };
+                    (alasqlIframe.contentWindow as any).sqlConsoleMaxFileSize =
+                        config.sqlConsoleMaxFileSize;
                 }
                 resolve(alasqlIframe?.contentWindow?.["alasql"]);
             };

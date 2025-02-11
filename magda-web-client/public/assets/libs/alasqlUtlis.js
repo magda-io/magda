@@ -23,6 +23,39 @@
         credentials: "same-origin"
     };
 
+    function formatSize(size) {
+        const mb = Math.floor(size / 1024 / 1024);
+        if (mb > 0) {
+            return mb + "MB";
+        }
+        const kb = Math.floor(size / 1024);
+        if (kb > 0) {
+            return kb + "KB";
+        }
+        return size + " bytes";
+    }
+
+    function checkContentSizeLimit(data) {
+        const sqlConsoleMaxFileSize =
+            typeof window.sqlConsoleMaxFileSize === "number"
+                ? window.sqlConsoleMaxFileSize
+                : -1;
+        if (sqlConsoleMaxFileSize < 0) {
+            return data;
+        }
+        const size = typeof data === "string" ? data.length : data.byteLength;
+        if (size > sqlConsoleMaxFileSize) {
+            throw new Error(
+                `Unable to process the data file as its size (${formatSize(
+                    size
+                )}) is beyond configured limit: ${formatSize(
+                    sqlConsoleMaxFileSize
+                )}`
+            );
+        }
+        return data;
+    }
+
     function getData(path, success, error, binary) {
         try {
             if (binary) {
@@ -33,6 +66,7 @@
                         : {})
                 })
                     .then((response) => response.arrayBuffer())
+                    .then((data) => checkContentSizeLimit(data))
                     .then(success)
                     .catch((e) => {
                         console.error(e);
@@ -47,6 +81,7 @@
                         : {})
                 })
                     .then((response) => response.text())
+                    .then((data) => checkContentSizeLimit(data))
                     .then(success)
                     .catch((e) => {
                         console.error(e);
