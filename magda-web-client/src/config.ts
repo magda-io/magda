@@ -686,6 +686,15 @@ export interface ConfigDataType {
     authStatusRefreshInterval?: number;
 
     /**
+     * Whether or not enable in-browser metadata auto-extraction pipelines.
+     * You might want to disable the feature to speed up large files upload.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    enableMetadataExtraction: boolean;
+
+    /**
      * Whether or not enable chatbot feature.
      *
      * @type {boolean}
@@ -1053,6 +1062,10 @@ export const config: ConfigDataType = {
     authStatusRefreshInterval: serverConfig?.authStatusRefreshInterval
         ? serverConfig.authStatusRefreshInterval
         : 300000,
+    enableMetadataExtraction:
+        typeof serverConfig?.enableMetadataExtraction === "boolean"
+            ? serverConfig.enableMetadataExtraction
+            : false,
     enableChatbot:
         typeof serverConfig?.enableChatbot === "boolean"
             ? serverConfig.enableChatbot

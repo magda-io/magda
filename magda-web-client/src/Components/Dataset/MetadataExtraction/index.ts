@@ -21,6 +21,15 @@ export const extractors = {
         config: MessageSafeConfig,
         update: (progress: number) => void
     ): Promise<MetadataExtractionOutput> {
+        const enabled =
+            typeof config?.enableMetadataExtraction === "boolean"
+                ? config.enableMetadataExtraction
+                : false;
+        if (!enabled) {
+            return {
+                datasetTitle: input.fileName
+            };
+        }
         const extractorCount = dependentExtractors.length + 1;
         const array = new Uint8Array(input.arrayBuffer);
 
