@@ -818,6 +818,9 @@ const baseExternalUrl = serverConfig.baseExternalUrl
 // when UI domain is different from backend domain, we set credentials: "include"
 export const commonFetchRequestOptions: RequestInit = !isBackendSameOrigin
     ? {
+          // Please note: chrome will block CORS requests when they are configured to include credentials
+          // and the Access-Control-Allow-Origin response header was set to a wildcard `*`
+          // you might want to adjust this value for local debugging.
           credentials: "include"
       }
     : {
