@@ -30,11 +30,15 @@ import downloadCsv from "../../libs/downloadCsv";
 import { BsFillQuestionCircleFill } from "react-icons/bs";
 import "./SQLConsole.scss";
 import type { IAceEditor } from "react-ace/lib/types";
+import reportWarn from "helpers/reportWarn";
+import { config } from "../../config";
 
 const { Column, HeaderCell, Cell } = Table;
 interface PropsType {
     [key: string]: any;
 }
+
+const maxDisplayRows: number = config.sqlConsoleMaxDisplayRows;
 
 /**
  * Convert any data array to an data array with single column with message
@@ -44,6 +48,9 @@ interface PropsType {
  */
 function convertEmptyData(data: any[]): any[] {
     if (data?.length) {
+        if (maxDisplayRows > 0 && data.length > maxDisplayRows) {
+            return data.slice(0, maxDisplayRows);
+        }
         return data;
     }
     return [{ "Query result:": "No data available for display..." }];
@@ -84,6 +91,12 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                 // result will comes with `columns` field for RECORDSET query
                 // e.g. `SELECT RECORDSET * from source(0) limit 1`
                 const data = result?.columns ? result.columns : result;
+                if (maxDisplayRows > 0 && data?.length > maxDisplayRows) {
+                    reportWarn(
+                        `Query result is large than ${maxDisplayRows} rows. Only the first ${maxDisplayRows} rows will be displayed. However, you still can download the full result as a CSV file.`,
+                        { duration: 5000 }
+                    );
+                }
                 dispatch(setData(data));
             } catch (e) {
                 const errorMsg = String(e);
@@ -91,7 +104,9 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                     errorMsg.indexOf("Failed to fetch") !== -1
                         ? "Failed to fetch the nominated data file due to network error"
                         : errorMsg;
-                reportError(`Failed to execute SQL query: ${msg}`);
+                reportError(`Failed to execute SQL query: ${msg}`, {
+                    duration: 5000
+                });
             } finally {
                 setIsLoading(false);
             }

@@ -748,6 +748,16 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     sqlConsoleMaxFileSize: number;
+
+    /**
+     * The maximum number of result rows will be displayed in SQLConsole UI.
+     * Users can still download the full result as CSV file via download button.
+     * Set to `0` to make it unlimited.
+     *
+     * @type {number}
+     * @memberof ConfigDataType
+     */
+    sqlConsoleMaxDisplayRows: number;
 }
 
 const serverConfig: ConfigDataType = window.magda_server_config || {};
@@ -1084,7 +1094,14 @@ export const config: ConfigDataType = {
     alasqlRunInIframe: serverConfig?.alasqlRunInIframe
         ? serverConfig.alasqlRunInIframe
         : true,
-    sqlConsoleMaxFileSize: serverConfig?.sqlConsoleMaxFileSize || 52428800
+    sqlConsoleMaxFileSize:
+        typeof serverConfig?.sqlConsoleMaxFileSize === "number"
+            ? serverConfig.sqlConsoleMaxFileSize
+            : 52428800,
+    sqlConsoleMaxDisplayRows:
+        typeof serverConfig?.sqlConsoleMaxDisplayRows === "number"
+            ? serverConfig.sqlConsoleMaxDisplayRows
+            : 1000
 };
 
 export type Config = typeof config;
