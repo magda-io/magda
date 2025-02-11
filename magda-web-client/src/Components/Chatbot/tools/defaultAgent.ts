@@ -1,16 +1,10 @@
-import { History, Location } from "history";
+import { Location } from "history";
 import { v4 as uuidv4 } from "uuid";
 import {
     ChatPromptTemplate,
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate
 } from "@langchain/core/prompts";
-import {
-    RunnableSequence,
-    Runnable,
-    RunnableLambda,
-    RunnableConfig
-} from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChainInput, getLocationType } from "../commons";
 import {

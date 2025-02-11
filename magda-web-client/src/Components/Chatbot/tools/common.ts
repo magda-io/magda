@@ -1,6 +1,3 @@
-import { createChatEventMessageCompleteMsg } from "../Messaging";
-import { markdownTable } from "markdown-table";
-import { ChainInput } from "../commons";
 import { runQuery } from "../../../libs/sqlUtils";
 
 export async function getDistColumnNames(

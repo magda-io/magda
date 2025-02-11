@@ -81,7 +81,10 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                 ) {
                     throw result;
                 }
-                dispatch(setData(result));
+                // result will comes with `columns` field for RECORDSET query
+                // e.g. `SELECT RECORDSET * from source(0) limit 1`
+                const data = result?.columns ? result.columns : result;
+                dispatch(setData(data));
             } catch (e) {
                 const errorMsg = String(e);
                 const msg =

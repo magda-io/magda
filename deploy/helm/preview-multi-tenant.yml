@@ -65,6 +65,8 @@ magda:
             # the following two domains are for downloading Magda UI plugins from github release
             - github.com
             - objects.githubusercontent.com
+            connectSrc:
+            - https://www.google-analytics.com
 
     combined-db:
       magda-postgres:

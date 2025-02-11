@@ -24,34 +24,40 @@
     };
 
     function getData(path, success, error, binary) {
-        if (binary) {
-            return fetch(path, {
-                ...defaultCommonFetchRequestOptions,
-                ...(window.commonFetchRequestOptions
-                    ? window.commonFetchRequestOptions
-                    : {})
-            })
-                .then((response) => response.arrayBuffer())
-                .then(success)
-                .catch((e) => {
-                    console.error(e);
-                    if (error) return error(e);
-                    throw e;
-                });
-        } else {
-            return fetch(path, {
-                ...defaultCommonFetchRequestOptions,
-                ...(window.commonFetchRequestOptions
-                    ? window.commonFetchRequestOptions
-                    : {})
-            })
-                .then((response) => response.text())
-                .then(success)
-                .catch((e) => {
-                    console.error(e);
-                    if (error) return error(e);
-                    throw e;
-                });
+        try {
+            if (binary) {
+                return fetch(path, {
+                    ...defaultCommonFetchRequestOptions,
+                    ...(window.commonFetchRequestOptions
+                        ? window.commonFetchRequestOptions
+                        : {})
+                })
+                    .then((response) => response.arrayBuffer())
+                    .then(success)
+                    .catch((e) => {
+                        console.error(e);
+                        if (error) return error(e);
+                        throw e;
+                    });
+            } else {
+                return fetch(path, {
+                    ...defaultCommonFetchRequestOptions,
+                    ...(window.commonFetchRequestOptions
+                        ? window.commonFetchRequestOptions
+                        : {})
+                })
+                    .then((response) => response.text())
+                    .then(success)
+                    .catch((e) => {
+                        console.error(e);
+                        if (error) return error(e);
+                        throw e;
+                    });
+            }
+        } catch (e) {
+            console.error(e);
+            if (error) return error(e);
+            throw e;
         }
     }
 
