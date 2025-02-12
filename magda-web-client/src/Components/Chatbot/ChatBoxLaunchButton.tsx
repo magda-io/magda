@@ -26,10 +26,7 @@ async function createExtensionCheckingMessage(appName: string) {
         llmExtensionRequiredVer,
         llmExtensionInstallationUrl
     } = config;
-    const extensionVersion = await getChromeExtensionVersion(
-        llmExtensionId,
-        "web_llm_service_worker"
-    );
+    const extensionVersion = await getChromeExtensionVersion(llmExtensionId);
     if (extensionVersion === false) {
         return (
             "Can't find required LLM extension. \n\n" +

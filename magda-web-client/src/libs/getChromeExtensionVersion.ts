@@ -8,6 +8,9 @@ async function getChromeExtensionVersion(
         if (!isChrome()) {
             return false;
         }
+        if (!(window as any)?.chrome?.runtime) {
+            return false;
+        }
         const chrome = (window as any).chrome;
         return new Promise((resolve, reject) => {
             const timer = setTimeout(() => resolve(false), 500);
