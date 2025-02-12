@@ -713,6 +713,15 @@ export interface ConfigDataType {
     llmExtensionId: string;
 
     /**
+     * The required version string of the MAGDA web-llm service worker chrome extension plugin.
+     * Support [semver string](https://semver.org/) e.g. ">=2.5.0"
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    llmExtensionRequiredVer: string;
+
+    /**
      * The installation URL of the web-llm service worker chrome extension plugin.
      * This URL will be displayed to the user when the extension is not installed.
      *
@@ -1084,6 +1093,9 @@ export const config: ConfigDataType = {
         ? serverConfig.llmExtensionId
         : // this is the ID of the default extension allow access from domain magda.io
           "ljadmjdilnpmlhopijgimonfackfngmi",
+    llmExtensionRequiredVer: serverConfig?.llmExtensionRequiredVer
+        ? serverConfig.llmExtensionRequiredVer
+        : "^1.0.2",
     llmExtensionInstallationUrl: serverConfig?.llmExtensionInstallationUrl
         ? serverConfig.llmExtensionInstallationUrl
         : "https://github.com/magda-io/magda-llm-service-worker-extension",
