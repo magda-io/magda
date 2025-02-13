@@ -1095,7 +1095,7 @@ export const config: ConfigDataType = {
           "ljadmjdilnpmlhopijgimonfackfngmi",
     llmExtensionRequiredVer: serverConfig?.llmExtensionRequiredVer
         ? serverConfig.llmExtensionRequiredVer
-        : "^1.0.2",
+        : "^1.0.4",
     llmExtensionInstallationUrl: serverConfig?.llmExtensionInstallationUrl
         ? serverConfig.llmExtensionInstallationUrl
         : "https://github.com/magda-io/magda-llm-service-worker-extension",

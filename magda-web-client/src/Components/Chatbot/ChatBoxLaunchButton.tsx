@@ -29,7 +29,7 @@ async function createExtensionCheckingMessage(appName: string) {
     const extensionVersion = await getChromeExtensionVersion(llmExtensionId);
     if (extensionVersion === false) {
         return (
-            "Can't find required LLM extension. \n\n" +
+            "Can't find required LLM extension OR the installed extension is configured to not accept connection from the current site. \n\n" +
             `The Chatbot feature requires ${appName} Chrome extension here: <a href="${llmExtensionInstallationUrl}">${llmExtensionInstallationUrl}</a> ` +
             `to run LLM in a web browser service worker and cache model file effectively.\n\n` +
             `Please install the required extension version "${llmExtensionRequiredVer}" and try again.`
@@ -110,7 +110,7 @@ const ChatBoxLaunchButton: FunctionComponent<PropsType> = (props) => {
                     onClose={handleDialogClose}
                 >
                     <Modal.Header>
-                        <Modal.Title>Modal Title</Modal.Title>
+                        <Modal.Title>Error:</Modal.Title>
                     </Modal.Header>
 
                     <Modal.Body>
