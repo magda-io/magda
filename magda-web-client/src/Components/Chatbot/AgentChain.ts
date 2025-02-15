@@ -27,7 +27,8 @@ class AgentChain {
         navHistory: History,
         dataset: ParsedDataset | undefined,
         distribution: ParsedDistribution | undefined,
-        loadProgressCallback?: InitProgressCallback
+        loadProgressCallback?: InitProgressCallback,
+        errorHandler?: (e) => void
     ) {
         if (AgentChain.agentChain) {
             if (loadProgressCallback) {
@@ -50,7 +51,7 @@ class AgentChain {
                     );
                 }
             );
-            AgentChain.agentChain.model.initialize();
+            AgentChain.agentChain.initialize(errorHandler);
             return AgentChain.agentChain;
         }
     }
@@ -75,7 +76,6 @@ class AgentChain {
     };
     public debug: boolean = false;
     public directModelAccess: boolean = false;
-
     public chain: Runnable<CommonInputType, string | null | undefined | void>;
 
     constructor(
@@ -98,6 +98,18 @@ class AgentChain {
         this.chain = this.createChain();
         // for debug purpose;
         (window as any).chatBotAgentChain = this;
+    }
+
+    async initialize(errorHandler?: (e) => void) {
+        try {
+            await this.model.initialize();
+        } catch (e) {
+            if (errorHandler) {
+                errorHandler(e);
+            } else {
+                throw e;
+            }
+        }
     }
 
     enableDirectModelAccess(modelConfig: Partial<WebLLMInputs> = {}) {

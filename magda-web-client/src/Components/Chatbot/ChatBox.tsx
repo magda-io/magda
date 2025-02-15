@@ -40,6 +40,7 @@ import { parseJsonMarkdown } from "../../libs/json";
 import AgentChain from "./AgentChain";
 import { InitProgressReport } from "@mlc-ai/web-llm";
 import { ParsedDataset, ParsedDistribution } from "helpers/record";
+import reportError from "helpers/reportError";
 interface MessageItem {
     type: "user" | "bot";
     content: string;
@@ -182,7 +183,10 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
             history,
             dataset,
             distribution,
-            setLLMLoadProgress
+            setLLMLoadProgress,
+            (e) => {
+                reportError(`Failed to load model: ${e}`, { duration: 5000 });
+            }
         );
         (window as any).agentChainRef = agentChainRef.current;
         return () => {
