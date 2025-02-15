@@ -75,6 +75,13 @@ magda:
             - objects.githubusercontent.com
             connectSrc:
             - https://www.google-analytics.com
+      helmetPerPath:
+        "/assets/alasql.html": 
+          contentSecurityPolicy:
+            directives:
+              connectSrc:
+                - "'self'"
+                - "https://data.gov.au"
         
     combined-db:
       magda-postgres:

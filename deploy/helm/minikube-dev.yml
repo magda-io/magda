@@ -76,6 +76,24 @@ magda:
         baseUrl: http://magda-auth-arcgis
       - key: facebook
         baseUrl: http://magda-auth-facebook
+      helmet:
+        contentSecurityPolicy:
+          directives:
+            scriptSrc:
+            - "'self'"
+            - https://*.googletagmanager.com
+            # the following two domains are for downloading Magda UI plugins from github release
+            - github.com
+            - objects.githubusercontent.com
+            connectSrc:
+            - https://www.google-analytics.com
+      helmetPerPath:
+        "/assets/alasql.html": 
+          contentSecurityPolicy:
+            directives:
+              connectSrc:
+                - "'self'"
+                - "https://data.gov.au"
 
     registry-api:
       skipAuthorization: false
