@@ -251,3 +251,34 @@ authStatusRefreshInterval: 300000
 
 # -- No. of seconds that sitemap result will be cached. By default, 86400 i.e. 1 day.
 sitemapCacheSeconds: 86400
+
+# -- Whether or not enable in-browser metadata auto-extraction pipelines. You might want to disable the feature to speed up large files upload.
+enableMetadataExtraction: false
+
+# -- Whether or not enable chatbot feature.
+# Please note: you also need to enable the hybrid search feature to use the chatbot feature.
+enableChatbot: false
+
+# -- The extension ID of the web-llm service worker chrome extension plugin.
+# See here for more details: https://github.com/magda-io/magda-llm-service-worker-extension
+llmExtensionId: "ljadmjdilnpmlhopijgimonfackfngmi"
+
+# -- The required version string of the MAGDA web-llm service worker chrome extension plugin.
+# Support [semver string](https://semver.org/) e.g. ">=2.5.0"
+llmExtensionRequiredVer: "^1.0.4"
+
+# -- The installation URL of the web-llm service worker chrome extension plugin.
+# "This URL will be displayed to the user when the extension is not installed.
+llmExtensionInstallationUrl: "https://github.com/magda-io/magda-llm-service-worker-extension"
+
+# -- Whether or not to enable the SQL console feature.
+enableSQLConsole: true
+
+# -- The maximum file size that can be loaded into the SQL console.
+# When the user tries to load a file that is larger than this size, the system will show an error message.
+# The default value is 50MB.
+sqlConsoleMaxFileSize: 52428800
+
+# -- the maximum number of result rows will be displayed in SQLConsole UI.
+# Users can still download the full result as CSV file via download button.
+sqlConsoleMaxDisplayRows: 1000
