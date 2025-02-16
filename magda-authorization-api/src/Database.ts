@@ -16,8 +16,7 @@ import _ from "lodash";
 import GenericError from "magda-typescript-common/src/authorization-api/GenericError.js";
 import {
     ANONYMOUS_USERS_ROLE_ID,
-    AUTHENTICATED_USERS_ROLE_ID,
-    ADMIN_USERS_ROLE_ID
+    AUTHENTICATED_USERS_ROLE_ID
 } from "magda-typescript-common/src/authorization-api/constants.js";
 import { getUserId } from "magda-typescript-common/src/session/GetUserId.js";
 import NestedSetModelQueryer from "./NestedSetModelQueryer.js";
