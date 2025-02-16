@@ -26,8 +26,7 @@ export default class MockDatabase {
                                 email: item.email,
                                 displayName: item.displayName,
                                 photoURL: item.photoURL,
-                                source: item.source,
-                                isAdmin: item.isAdmin
+                                source: item.source
                             } as User)
                     )
                 )
@@ -50,8 +49,7 @@ export default class MockDatabase {
                             displayName: item.displayName,
                             photoURL: item.photoURL,
                             source: item.source,
-                            sourceId: item.sourceId,
-                            isAdmin: item.isAdmin
+                            sourceId: item.sourceId
                         }))
                 )
             );

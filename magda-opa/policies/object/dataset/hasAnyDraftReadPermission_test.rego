@@ -7,7 +7,6 @@ test_hasAnyDraftReadPermission_with_correct_permission {
             "displayName": "Jacky Jiang",
             "email": "t83714@gmail.com",
             "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
-            "isAdmin": false,
             "permissions": [
                 {
                     "id": "72d52505-cf96-47b2-9b74-d0fdc1f5aee7",
@@ -72,7 +71,6 @@ test_hasAnyDraftReadPermission_with_no_correct_permission {
             "displayName": "Jacky Jiang",
             "email": "t83714@gmail.com",
             "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
-            "isAdmin": false,
             "permissions": [
                 {
                     "id": "72d52505-cf96-47b2-9b74-d0fdc1f5aee7",

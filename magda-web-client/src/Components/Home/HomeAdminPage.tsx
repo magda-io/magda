@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { connect } from "react-redux";
-
+import { isAdmin } from "../RequireAdmin";
 import ContentImageEditor from "Components/Admin/ContentImageEditor";
 
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
@@ -68,9 +68,7 @@ class HomeAdminPage extends Component<any, any> {
 
 function mapStateToProps(state, old) {
     const hasEditPermissions =
-        state.userManagement &&
-        state.userManagement.user &&
-        state.userManagement.user.isAdmin;
+        state.userManagement && isAdmin(state.userManagement.user);
     return {
         content: state.content,
         hasEditPermissions: hasEditPermissions ? true : false

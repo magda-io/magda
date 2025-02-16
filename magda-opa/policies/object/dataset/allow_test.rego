@@ -19,7 +19,6 @@ test_allow_no_constraints_permission_user_without_no_constraints_permission {
             "displayName": "Jacky Jiang",
             "email": "t83714@gmail.com",
             "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
-            "isAdmin": false,
             "permissions": [
                 {
                     "id": "72d52505-cf96-47b2-9b74-d0fdc1f5aee7",
@@ -96,7 +95,6 @@ test_allow_no_constraints_permission_user_has_no_constraints_permission {
             "displayName": "Jacky Jiang",
             "email": "t83714@gmail.com",
             "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
-            "isAdmin": false,
             "permissions": [
                 {
                     "id": "3d913ce7-e728-4bd2-9542-5e9983e45fe1",
@@ -190,7 +188,6 @@ test_allow_user_ownership_constraint_permission_user_is_not_owner {
             "displayName": "Jacky Jiang",
             "email": "t83714@gmail.com",
             "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
-            "isAdmin": false,
             "permissions": [
                 {
                     "id": "72d52505-cf96-47b2-9b74-d0fdc1f5aee7",
@@ -267,7 +264,6 @@ test_allow_user_ownership_constraint_permission_user_is_owner {
             "displayName": "Jacky Jiang",
             "email": "t83714@gmail.com",
             "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
-            "isAdmin": false,
             "permissions": [
                 {
                     "id": "72d52505-cf96-47b2-9b74-d0fdc1f5aee7",
@@ -344,7 +340,6 @@ test_allow_user_ownership_constraint_permission_user_is_owner_wildcard_res_uri_t
             "displayName": "Jacky Jiang",
             "email": "t83714@gmail.com",
             "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
-            "isAdmin": false,
             "permissions": [
                 {
                     "id": "72d52505-cf96-47b2-9b74-d0fdc1f5aee7",
@@ -421,7 +416,6 @@ test_allow_user_ownership_constraint_permission_user_is_owner_wildcard_res_uri_t
             "displayName": "Jacky Jiang",
             "email": "t83714@gmail.com",
             "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
-            "isAdmin": false,
             "permissions": [
                 {
                     "id": "72d52505-cf96-47b2-9b74-d0fdc1f5aee7",
@@ -498,7 +492,6 @@ test_allow_pre_Authorised_constraint_permission_user_permission_is_not_pre_autho
             "displayName": "Jacky Jiang",
             "email": "t83714@gmail.com",
             "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
-            "isAdmin": false,
             "permissions": [
                 {
                     "id": "72d52505-cf96-47b2-9b74-d0fdc1f5aee7",
@@ -575,7 +568,6 @@ test_allow_pre_Authorised_constraint_permission_user_permission_is_pre_authorise
             "displayName": "Jacky Jiang",
             "email": "t83714@gmail.com",
             "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
-            "isAdmin": false,
             "permissions": [
                 {
                     "id": "72d52505-cf96-47b2-9b74-d0fdc1f5aee7",
@@ -652,7 +644,6 @@ test_allow_pre_authorised_constraint_permission_user_permission_is_pre_authorise
             "displayName": "Jacky Jiang",
             "email": "t83714@gmail.com",
             "id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
-            "isAdmin": false,
             "permissions": [
                 {
                     "id": "72d52505-cf96-47b2-9b74-d0fdc1f5aee7",

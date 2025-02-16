@@ -6,7 +6,7 @@ import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 import { safeLoadFront } from "yaml-front-matter/dist/yamlFront";
 import { connect } from "react-redux";
 import "./StaticPage.scss";
-
+import { isAdmin } from "../RequireAdmin";
 import { fetchStaticPage, updateStaticPage } from "actions/staticPagesActions";
 import { bindActionCreators } from "redux";
 
@@ -97,9 +97,7 @@ class StaticPage extends Component {
 function mapStateToProps(state, old) {
     const path = old.match.params.pageId;
     const hasEditPermissions =
-        state.userManagement &&
-        state.userManagement.user &&
-        state.userManagement.user.isAdmin;
+        state.userManagement && isAdmin(state.userManagement.user);
     return {
         strings: state.content.strings,
         path,

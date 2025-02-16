@@ -4,7 +4,7 @@ import { ADMIN_ROLE_ID } from "../config";
 import ValidateUser from "./ValidateUser";
 import { User } from "reducers/userManagementReducer";
 
-function isAdmin(user: User) {
+export function isAdmin(user: User) {
     return (
         !!user?.id &&
         user?.roles?.findIndex((role) => role.id === ADMIN_ROLE_ID) !== -1

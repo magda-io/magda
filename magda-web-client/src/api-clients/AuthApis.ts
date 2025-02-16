@@ -173,38 +173,16 @@ export async function deleteUserRoles(
 
 /**
  * Set a user (specified by user id) to an admin or not (as indicated by isAdmin parameter).
- * when set user to Admin, this function will make sure both (vice versa):
- * - `isAdmin` field of user table is set to `true`
- * - AND an admin role is added to user
+ * when set user to Admin, this function will add an admin role to the user.
  * @param userId
  * @param isAdmin
  */
 export async function setAdmin(userId: string, isAdmin: boolean) {
-    // this API won't return role info. Only basic user info
-    const user = await getRequest<User>(
-        getAbsoluteUrl(
-            `users/${encodeURIComponent(userId)}`,
-            config.authApiBaseUrl
-        ),
-        true
-    );
-
     const roles = await getUserRoles(userId);
     const existingAdminRoleIdx: number | undefined = roles?.length
         ? roles.findIndex((item) => item.id === ADMIN_ROLE_ID)
         : -1;
     const hasAdminRole = existingAdminRoleIdx !== -1;
-
-    const isUserAdmin = user.isAdmin && hasAdminRole;
-
-    if (isUserAdmin === isAdmin) {
-        return;
-    }
-
-    if (user.isAdmin !== isAdmin) {
-        // updating `isAdmin` field is required
-        await updateUser(userId, { isAdmin });
-    }
 
     if (isAdmin !== hasAdminRole) {
         if (isAdmin) {

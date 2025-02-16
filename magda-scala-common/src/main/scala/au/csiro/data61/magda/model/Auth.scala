@@ -53,8 +53,7 @@ object Auth {
   }
 
   case class User(
-      id: String,
-      isAdmin: Boolean
+      id: String
   )
 
   case class ConciseOperand(
@@ -302,7 +301,7 @@ object Auth {
     AuthDecision(false, Some(JsFalse), None)
 
   trait AuthProtocols extends DefaultJsonProtocol {
-    implicit val userFormat = jsonFormat2(User)
+    implicit val userFormat = jsonFormat1(User)
     implicit val conciseOperand = jsonFormat2(ConciseOperand)
     implicit val conciseExpressionFormat = jsonFormat3(ConciseExpression)
     implicit val conciseRuleFormat = jsonFormat5(ConciseRule)

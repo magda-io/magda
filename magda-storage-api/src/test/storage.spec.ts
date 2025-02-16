@@ -117,13 +117,12 @@ describe("Storage API tests", () => {
     });
 
     function mockAuthorization(
-        isAdmin: boolean,
         jwtSecret: string,
         req: Test
     ): Promise<Response> {
         const userId = USER_ID;
 
-        authApiScope.get(`/private/users/${userId}`).reply(200, { isAdmin });
+        authApiScope.get(`/private/users/${userId}`).reply(200, { id: userId });
 
         const id = jwt.sign({ userId: userId }, jwtSecret);
 
@@ -149,7 +148,6 @@ describe("Storage API tests", () => {
 
         it("should create a bucket", async () => {
             await mockAuthorization(
-                true,
                 jwtSecret,
                 request(app)
                     .put("/v0/" + dummyBucket)
@@ -187,7 +185,6 @@ describe("Storage API tests", () => {
 
         it("should return 201 if bucket already exists", () => {
             return mockAuthorization(
-                true,
                 jwtSecret,
                 request(app)
                     .put("/v0/" + dummyBucket)
@@ -215,7 +212,6 @@ describe("Storage API tests", () => {
                 .persist();
 
             await mockAuthorization(
-                true,
                 jwtSecret,
                 request(app)
                     .post(
@@ -245,7 +241,6 @@ describe("Storage API tests", () => {
             });
 
             await mockAuthorization(
-                true,
                 jwtSecret,
                 request(app)
                     .post("/v0/upload/" + bucketName)
@@ -275,7 +270,6 @@ describe("Storage API tests", () => {
 
         it("should allow arbitrary depth for file paths", async () => {
             await mockAuthorization(
-                true,
                 jwtSecret,
                 request(app)
                     .post("/v0/upload/" + bucketName + "/this/is/a/deep/path")
@@ -299,7 +293,6 @@ describe("Storage API tests", () => {
 
         it("should fail with 400 if it contains no files", () => {
             return mockAuthorization(
-                true,
                 jwtSecret,
                 request(app)
                     .post("/v0/upload/" + bucketName)
@@ -312,7 +305,6 @@ describe("Storage API tests", () => {
     describe("PUT", () => {
         it("should result in the file being downloadable", async () => {
             await mockAuthorization(
-                true,
                 jwtSecret,
                 request(app)
                     .put("/v0/" + bucketName + "/upload-test-file-admin")
@@ -337,7 +329,6 @@ describe("Storage API tests", () => {
             // api won't allow this, so we can test that we're catching that error
             // properly.
             return mockAuthorization(
-                true,
                 jwtSecret,
                 request(app)
                     .put("/v0/" + bucketName + "/download-test-file-2")
@@ -352,7 +343,6 @@ describe("Storage API tests", () => {
         describe("should work for content type: ", () => {
             it("Empty content", () => {
                 return mockAuthorization(
-                    true,
                     jwtSecret,
                     request(app)
                         .put("/v0/" + bucketName + "/download-test-file-2")
@@ -377,7 +367,6 @@ describe("Storage API tests", () => {
             it("JPG Image", () => {
                 const img: Buffer = fs.readFileSync("src/test/test_image.jpg");
                 return mockAuthorization(
-                    true,
                     jwtSecret,
                     request(app)
                         .put("/v0/" + bucketName + "/binary-content-jpg")
@@ -400,7 +389,6 @@ describe("Storage API tests", () => {
 
             it("Bananadance GIF", () => {
                 return mockAuthorization(
-                    true,
                     jwtSecret,
                     request(app)
                         .put("/v0/" + bucketName + "/binary-content-gif")
@@ -428,7 +416,6 @@ describe("Storage API tests", () => {
                     "utf-8"
                 );
                 return mockAuthorization(
-                    true,
                     jwtSecret,
                     request(app)
                         .put("/v0/" + bucketName + "/test-csv-1")
@@ -454,7 +441,6 @@ describe("Storage API tests", () => {
                     "utf-8"
                 );
                 return mockAuthorization(
-                    true,
                     jwtSecret,
                     request(app)
                         .put("/v0/" + bucketName + "/test-json-1")
@@ -478,7 +464,6 @@ describe("Storage API tests", () => {
         it("arbitrary directory depths", () => {
             const img: Buffer = fs.readFileSync("src/test/test_image.jpg");
             return mockAuthorization(
-                true,
                 jwtSecret,
                 request(app)
                     .put(
@@ -511,7 +496,6 @@ describe("Storage API tests", () => {
         describe("deleting a file should result in it returning 404 for", () => {
             it("a simple file", () => {
                 return mockAuthorization(
-                    true,
                     jwtSecret,
                     request(app)
                         .put("/v0/" + bucketName + "/delete-test-file-1")
@@ -521,7 +505,6 @@ describe("Storage API tests", () => {
                         .expect(200)
                 ).then((_res) => {
                     return mockAuthorization(
-                        true,
                         jwtSecret,
                         request(app)
                             .delete("/v0/" + bucketName + "/delete-test-file-1")
@@ -539,7 +522,6 @@ describe("Storage API tests", () => {
 
             it("arbitrary directory depths", () => {
                 return mockAuthorization(
-                    true,
                     jwtSecret,
                     request(app)
                         .put(
@@ -553,7 +535,6 @@ describe("Storage API tests", () => {
                         .expect(200)
                 ).then((_res) => {
                     return mockAuthorization(
-                        true,
                         jwtSecret,
                         request(app)
                             .delete(
@@ -575,7 +556,6 @@ describe("Storage API tests", () => {
 
             it("empty content", () => {
                 return mockAuthorization(
-                    true,
                     jwtSecret,
                     request(app)
                         .put("/v0/" + bucketName + "/delete-test-file-2")
@@ -585,7 +565,6 @@ describe("Storage API tests", () => {
                         .expect(200)
                 ).then((_res) => {
                     return mockAuthorization(
-                        true,
                         jwtSecret,
                         request(app)
                             .delete("/v0/" + bucketName + "/delete-test-file-2")
@@ -603,7 +582,6 @@ describe("Storage API tests", () => {
 
             it("Deleting non-existent file should simply return 200", () => {
                 return mockAuthorization(
-                    true,
                     jwtSecret,
                     request(app)
                         .delete(
@@ -616,7 +594,6 @@ describe("Storage API tests", () => {
 
         it("should response 200 when deletes not exists file", async () => {
             await mockAuthorization(
-                true,
                 jwtSecret,
                 request(app)
                     .put("/v0/" + bucketName + "/delete-test-file-1")
@@ -626,7 +603,6 @@ describe("Storage API tests", () => {
                     .expect(200)
             );
             await mockAuthorization(
-                true,
                 jwtSecret,
                 request(app)
                     .delete("/v0/" + bucketName + "/delete-test-file-1")

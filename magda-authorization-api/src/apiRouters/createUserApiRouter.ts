@@ -531,8 +531,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *        "displayName":"Fred Nerk",
      *        "email":"fred.nerk@data61.csiro.au",
      *        "photoURL":"...",
-     *        "source":"google",
-     *        "isAdmin": true
+     *        "source":"google"
      *    }
      *
      * @apiErrorExample {json} 401/500
@@ -574,7 +573,6 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *        "email":"fred.nerk@data61.csiro.au",
      *        "photoURL":"...",
      *        "source":"google",
-     *        "isAdmin": true,
      *        "roles": [{
      *          id": "...",
      *          name: "Authenticated Users",
@@ -797,7 +795,6 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      *        "email":"fred.nerk@data61.csiro.au",
      *        "photoURL":"...",
      *        "source":"google",
-     *        "isAdmin": true,
      *        "orgUnitId": "..."
      *    }]
      *

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import RLDD from "react-list-drag-and-drop/lib/RLDD";
-
+import { isAdmin } from "../RequireAdmin";
 import Reveal from "Components/Common/Reveal";
 import Spinner from "Components/Common/Spinner";
 
@@ -339,7 +339,7 @@ function mapStateToProps(state, old) {
     const hasEditPermissions =
         (state.userManagement &&
             state.userManagement.user &&
-            state.userManagement.user.isAdmin) ||
+            isAdmin(state.userManagement.user)) ||
         undefined;
     return {
         hasEditPermissions
