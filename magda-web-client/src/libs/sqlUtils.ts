@@ -1,6 +1,6 @@
 import type alasql from "alasql";
 import { getRecordAspect } from "../api-clients/RegistryApis";
-import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
+import getProxiedResourceUrl from "../helpers/getProxiedResourceUrl";
 import {
     ParsedDataset,
     ParsedDistribution,
@@ -112,7 +112,7 @@ export function distribution2ResourceItem(
             : "";
         const resType = determineDistResType(item.format, url);
         return {
-            url: getStorageApiResourceAccessUrl(url),
+            url: getProxiedResourceUrl(url),
             type: resType
         };
     } catch (e) {
@@ -165,7 +165,7 @@ async function source(...args) {
             const url = data?.downloadURL ? data.downloadURL : data?.accessURL;
             const resType = await getResType(String(distId), data?.format, url);
             dist = {
-                url: getStorageApiResourceAccessUrl(url),
+                url: getProxiedResourceUrl(url),
                 type: resType
             };
         }
