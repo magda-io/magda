@@ -14,6 +14,13 @@ Kubernetes: `>= 1.14.0-0`
 |-----|------|---------|-------------|
 | appConfig | object | `{"authApi":{"baseUrl":"http://authorization-api"},"elasticSearch":{"serverUrl":"http://opensearch:9200"},"embeddingApi":{"baseUrl":"http://magda-embedding-api"},"http":{"port":6102},"printFullConfig":false}` | application config. Allow to configure any application config fields. For all available configuration fields and their default values, please refer to [application.conf](https://github.com/magda-io/magda/blob/main/magda-search-api/src/main/resources/application.conf) This config field is available since v2.2.5 Although can be set via `.Values.appConfig` as well, the following config fields will override the config set via `.Values.appConfig`: `.Values.debug`, `.Values.datasetsIndexVersion`, `.Values.regionsIndexVersion`, `.Values.publishersIndexVersion`, `.Values.formatsIndexVersion`, |
 | appConfig.printFullConfig | bool | `false` | whether print out full config data at application starting up for debug purpose only |
+| autoPing.enable | bool | `true` | Whether turn on the cronjob to auto ping search api. see https://github.com/magda-io/magda/issues/3576 for more details |
+| autoPing.schedule | string | "*/9 * * * *": run every 9 mins | auto ping cronjob schedule string. specified using unix-cron format (in UTC timezone by default). |
+| autoPingJobImage.name | string | `"node"` |  |
+| autoPingJobImage.pullPolicy | string | `"IfNotPresent"` |  |
+| autoPingJobImage.pullSecrets | bool | `false` |  |
+| autoPingJobImage.repository | string | `"docker.io"` |  |
+| autoPingJobImage.tag | string | `"18-alpine"` |  |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |

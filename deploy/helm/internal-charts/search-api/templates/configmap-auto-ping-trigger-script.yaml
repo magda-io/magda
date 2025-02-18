@@ -1,0 +1,39 @@
+{{- if .Values.autoPing.enable -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "search-api-auto-ping-trigger-script"
+data:
+  package.json: |
+    {
+      "name": "search-api-auto-ping-trigger-script",
+      "version": "1.0.0",
+      "type": "module",
+      "main": "index.js",
+      "dependencies": {
+        "@magda/typescript-common": "{{ .Chart.Version | default "^1.3.0" }}",
+        "cross-fetch": "^4.0.0"
+      }
+    }
+  index.js: |
+    #!/usr/bin/env node
+    import buildJwt from "@magda/typescript-common/dist/session/buildJwt.js";
+    import fetch from "cross-fetch";
+        
+    const defaultAdminUserId = process.env.USER_ID;
+    const jwtSecret = process.env.JWT_SECRET;
+    const jwtToken = buildJwt(jwtSecret, defaultAdminUserId);
+
+    (async()=>{
+        const res = await fetch("http://search-api/v0/datasets", {
+            method: "GET",
+            headers: {
+                "X-Magda-Session": jwtToken
+            }
+        });
+        console.log(`Response Status Code: ${res.status}`);
+        console.log(`Response: ${await res.text()}`);
+    })().catch(e => {
+        console.error(e);
+    });
+{{- end }}

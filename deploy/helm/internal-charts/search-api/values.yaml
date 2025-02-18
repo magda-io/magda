@@ -10,6 +10,21 @@ defaultImage:
   pullPolicy: IfNotPresent
   pullSecrets: false
 
+autoPingJobImage: 
+  name: "node"
+  repository: "docker.io"
+  tag: "18-alpine"
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+autoPing:
+  # -- Whether turn on the cronjob to auto ping search api.
+  # see https://github.com/magda-io/magda/issues/3576 for more details
+  enable: true
+  # -- auto ping cronjob schedule string. specified using unix-cron format (in UTC timezone by default).
+  # @default -- "*/9 * * * *": run every 9 mins
+  schedule: "*/9 * * * *"
+
 livenessProbe:
   httpGet:
     path: /v0/status/live
