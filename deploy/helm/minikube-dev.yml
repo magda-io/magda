@@ -86,14 +86,8 @@ magda:
             - github.com
             - objects.githubusercontent.com
             connectSrc:
+            - "'self'"
             - https://www.google-analytics.com
-      helmetPerPath:
-        "/assets/alasql.html": 
-          contentSecurityPolicy:
-            directives:
-              connectSrc:
-                - "'self'"
-                - "https://data.gov.au"
 
     registry-api:
       skipAuthorization: false
