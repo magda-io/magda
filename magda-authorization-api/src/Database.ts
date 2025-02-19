@@ -512,6 +512,11 @@ export default class Database {
         const updates: SQLSyntax[] = [];
 
         Object.keys(update).forEach((field) => {
+            if (field === "isAdmin") {
+                // for backward compatibility of older version auth SDK users, we will ignore the obsolete `isAdmin` field without throwing error
+                return;
+            }
+
             if (!this.isValidUserUpdateField(field)) {
                 throw new Error(
                     `Field ${field} is not a valid user record update field.`
@@ -596,6 +601,10 @@ export default class Database {
         const values = [sqls`${userId}`];
 
         Object.keys(user).forEach((field) => {
+            if (field === "isAdmin") {
+                // for backward compatibility of older version auth SDK users, we will ignore the obsolete `isAdmin` field without throwing error
+                return;
+            }
             if (!this.isValidUserUpdateField(field)) {
                 throw new ServerError(
                     `Field ${field} is not a valid user record field.`,
