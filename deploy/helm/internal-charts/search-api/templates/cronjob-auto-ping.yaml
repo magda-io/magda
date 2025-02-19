@@ -1,0 +1,48 @@
+{{- if .Values.autoPing.enable -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: search-api-auto-ping
+spec:
+  concurrencyPolicy: Forbid
+  schedule: {{ .Values.autoPing.schedule | quote }}
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  startingDeadlineSeconds: 120
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      completions: 1
+      parallelism: 1
+      template:
+        metadata:
+          name: search-api-auto-ping
+          labels:
+            cron: search-api-auto-ping
+        spec:
+          {{- include "magda.imagePullSecrets" (dict "image" .Values.autoPingJobImage) | indent 10 }}
+          containers:
+          - name: search-api-auto-ping
+            image: {{ include "magda.image" (dict "image" .Values.autoPingJobImage) | quote }}
+            imagePullPolicy: {{ include "magda.imagePullPolicy" (dict "image" .Values.autoPingJobImage) | quote }}
+            command:
+              - "/bin/sh"
+              - "-c"
+              - "mkdir /workdir && cp /trigger-script/* /workdir/ && cd /workdir && yarn install && node index.js"
+            env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: jwt-secret
+            - name: USER_ID
+              value: {{ .Values.global.defaultAdminUserId }}
+            volumeMounts:
+            - name: trigger-script
+              mountPath: /trigger-script
+          restartPolicy: OnFailure
+          volumes:
+          - name: trigger-script
+            configMap:
+              name: search-api-auto-ping-trigger-script
+{{- end }}

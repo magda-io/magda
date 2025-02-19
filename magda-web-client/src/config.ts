@@ -704,7 +704,6 @@ export interface ConfigDataType {
 
     /**
      * The extension ID of the web-llm service worker chrome extension plugin.
-     * Only required by organisation-managed devices (e.g. company laptops).
      * See here for more details: https://github.com/magda-io/magda-llm-service-worker-extension
      *
      * @type {string}
@@ -843,17 +842,16 @@ const baseExternalUrl = serverConfig.baseExternalUrl
     ? baseUrl
     : urijs().segment([]).search("").fragment("").toString();
 
-// when UI domain is different from backend domain, we set credentials: "include"
-export const commonFetchRequestOptions: RequestInit = !isBackendSameOrigin
-    ? {
-          // Please note: chrome will block CORS requests when they are configured to include credentials
-          // and the Access-Control-Allow-Origin response header was set to a wildcard `*`
-          // you might want to adjust this value for local debugging.
-          credentials: "include"
-      }
-    : {
-          credentials: "same-origin"
-      };
+export const commonFetchRequestOptions: RequestInit = {
+    /**
+     * When UI domain is different from backend domain (e.g. for local dev site debugging or UI only dev site deployment), we can set credentials: "include" to allow cookies to be sent with the request.
+     * Otherwise, the local dev UI site (e.g. when you run UI via dev server via local host) will not be able to authenticate with the backend.
+     * However, this will cause CORS requests to fail when the Access-Control-Allow-Origin response header was set to a wildcard `*`.
+     * In this case, you might want to adjust this value for local debugging.
+     * Alternatively, you can set the `Access-Control-Allow-Origin` response header to the actual domain of the UI site via getaway module helm chart config.
+     */
+    credentials: "same-origin"
+};
 
 AuthDecisionQueryClient.fetchOptions = { ...commonFetchRequestOptions };
 

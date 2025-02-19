@@ -6,6 +6,7 @@
 - #3571 New feature: a SQL console UI Allows the user to run SQL on tabular data files at client side
 - #3573 Make JVM MaxRAMPercentage option configurable for all scala services via helm charts
 - #3575 Remove unused & obsolete isAdmin field on users table
+- #3576 Avoid search engine entering idle mode
 
 ## v4.2.5
 
