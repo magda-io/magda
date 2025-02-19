@@ -28,6 +28,7 @@ data:
         const res = await fetch("http://search-api/v0/datasets", {
             method: "GET",
             headers: {
+                "X-Magda-Tenant-Id": "0",
                 "X-Magda-Session": jwtToken
             }
         });
