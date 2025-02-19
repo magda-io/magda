@@ -241,7 +241,7 @@ object IndexDefinition extends DefaultJsonProtocol {
         .foreach(v => req = req.indexSetting("refresh_interval", v))
     }
     config
-      .getOptionalString("elasticSearch.indices.searchIdleAfter")
+      .getOptionalString("elasticSearch.searchIdleAfter")
       .foreach(v => req = req.indexSetting("search.idle.after", v))
     req
   }
