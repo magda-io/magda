@@ -100,6 +100,23 @@ class AgentChain {
         (window as any).chatBotAgentChain = this;
     }
 
+    async updateModelConfig(
+        modelConfig: Partial<WebLLMInputs>,
+        errorHandler: (e) => void
+    ) {
+        this.onProgress({
+            progress: 0,
+            timeElapsed: 0,
+            text: "Unloading model in order to apply new model config..."
+        });
+        this.model.getEngine().then((engine) => engine.unload());
+        this.model = ChatWebLLM.createDefaultModel({
+            ...modelConfig,
+            loadProgressCallback: this.onProgress.bind(this)
+        });
+        await this.initialize(errorHandler);
+    }
+
     async initialize(errorHandler?: (e) => void) {
         try {
             await this.model.initialize();

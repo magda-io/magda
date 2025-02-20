@@ -76,6 +76,10 @@
     .message-input {
         margin-top: 20px;
     }
+    .tool-area-container {
+        display: flex;
+        justify-content: space-between;
+    }
     .send-button-tool-bar {
         margin-top: 10px;
         .send-button {
@@ -83,6 +87,31 @@
         }
         .clear-message-button {
             float: left;
+        }
+    }
+    .context-win-selection-area {
+        display: flex;
+        margin-top: 10px;
+        .context-win-selector {
+            width: 110px;
+            .rs-btn:focus {
+                outline: none;
+            }
+        }
+        .context-win-selector-label {
+            margin-right: 10px;
+            padding-top: 8px;
+            font-size: 14px;
+            position: relative;
+            svg {
+                top: 2px;
+                left: 2px;
+                position: relative;
+            }
+            .rs-tooltip {
+                width: 260px;
+                top: -260px !important;
+            }
         }
     }
 }
