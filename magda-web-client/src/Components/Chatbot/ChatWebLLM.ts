@@ -76,37 +76,50 @@ export interface WebLLMToolCallResult<T = any> {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface WebLLMCallOptions extends BaseLanguageModelCallOptions {}
 
-/**
- * To use this model you need to have the `@mlc-ai/web-llm` module installed.
- * This can be installed using `npm install -S @mlc-ai/web-llm`.
- *
- * You can see a list of available model records here:
- * https://github.com/mlc-ai/web-llm/blob/main/src/config.ts
- * @example
- * ```typescript
- * // Initialize the ChatWebLLM model with the model record.
- * const model = new ChatWebLLM({
- *   model: "Phi-3-mini-4k-instruct-q4f16_1-MLC",
- *   chatOptions: {
- *     temperature: 0.5,
- *   },
- * });
- *
- * // Call the model with a message and await the response.
- * const response = await model.invoke([
- *   new HumanMessage({ content: "My name is John." }),
- * ]);
- * ```
- */
+export interface ContextWindowOption {
+    label: string;
+    value: number;
+    default?: boolean;
+}
+
+export const contextWindowOptions: ContextWindowOption[] = [
+    {
+        label: "2k tokens",
+        value: 2048
+    },
+    {
+        label: "4k tokens",
+        default: true,
+        value: 4096
+    },
+    {
+        label: "6k tokens",
+        value: 6144
+    },
+    {
+        label: "8k tokens",
+        value: 8192
+    }
+];
+
+const defaultContextWindowSizeOption = contextWindowOptions.find(
+    (item) => item?.default
+);
+
+export const defaultContextWindowSize = defaultContextWindowSizeOption?.value
+    ? defaultContextWindowSizeOption.value
+    : 4096;
 
 const DEFAULT_MODEL_CONFIG: WebLLMInputs = {
     model: "Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC",
     chatOptions: {
-        temperature: 0
-        // context_window_size: 32768,
-        // sliding_window_size: -1
+        temperature: 0,
+        context_window_size: defaultContextWindowSize
+        //context_window_size: 4096
+        // sliding_window_size: -1 (LLama models do not support sliding window. Therefore, we should not set this value)
     }
 };
+
 export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
     static inputs: WebLLMInputs;
 

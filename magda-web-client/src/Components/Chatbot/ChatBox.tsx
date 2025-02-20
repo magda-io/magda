@@ -10,8 +10,12 @@ import {
     RadioGroup,
     Radio
 } from "rsuite";
+import SelectPicker from "rsuite/SelectPicker";
+import Tooltip from "rsuite/Tooltip";
+import Whisper from "rsuite/Whisper";
 import Notification from "rsuite/Notification";
 import toaster from "rsuite/toaster";
+import { MdOutlineHelp } from "react-icons/md";
 import { useAsyncCallback } from "react-async-hook";
 import { Small, Medium } from "../Common/Responsive";
 import TextPreview from "./TextPreview";
@@ -20,7 +24,6 @@ import { StateType } from "../../reducers/reducer";
 import "../../rsuite.scss";
 import "./ChatBox.scss";
 import { useLocation, useHistory } from "react-router-dom";
-
 import {
     EVENT_TYPE_AGENT_STEP_FINISH,
     EVENT_TYPE_CLOSE,
@@ -41,6 +44,7 @@ import AgentChain from "./AgentChain";
 import { InitProgressReport } from "@mlc-ai/web-llm";
 import { ParsedDataset, ParsedDistribution } from "helpers/record";
 import reportError from "helpers/reportError";
+import { contextWindowOptions, defaultContextWindowSize } from "./ChatWebLLM";
 interface MessageItem {
     type: "user" | "bot";
     content: string;
@@ -109,6 +113,10 @@ interface PropsType {
 }
 
 const ChatBox: FunctionComponent<PropsType> = (props) => {
+    const [contextWindowSize, setContextWindowSize] = useState<number>(
+        defaultContextWindowSize
+    );
+    const contextWinSelectorLabelRef = useRef<HTMLDivElement>(null);
     const { appName, isOpen, setIsOpen } = props;
     const [size, setSize] = useState<string>("sm");
     const [inputText, setInputText] = useState<string>("");
@@ -185,7 +193,7 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
             distribution,
             setLLMLoadProgress,
             (e) => {
-                reportError(`Failed to load model: ${e}`, { duration: 5000 });
+                reportError(`Failed to load model: ${e}`, { duration: 10000 });
             }
         );
         (window as any).agentChainRef = agentChainRef.current;
@@ -392,6 +400,27 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
         }
     });
 
+    const updateModelContextWin = useAsyncCallback(
+        async (ctxWinSize: number) => {
+            if (!agentChainRef?.current) {
+                return;
+            }
+            agentChainRef.current.updateModelConfig(
+                {
+                    chatOptions: {
+                        temperature: 0,
+                        context_window_size: ctxWinSize
+                    }
+                },
+                (e) => {
+                    reportError(`Failed to load model: ${e}`, {
+                        duration: 10000
+                    });
+                }
+            );
+        }
+    );
+
     const makeDrawerBody = () => (
         <Drawer.Body className="magda-chat-box-message-area-body">
             <LLMLoadingBox
@@ -478,28 +507,81 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
                 }}
                 value={inputText}
             />
-            <ButtonToolbar className="send-button-tool-bar">
-                <Button
-                    className="send-button"
-                    appearance="primary"
-                    disabled={sendMessage.loading}
-                    onClick={async () => await sendMessage.execute(inputText)}
-                >
-                    Send Message
-                </Button>
-                <Button
-                    className="clear-message-button"
-                    disabled={sendMessage.loading}
-                    onClick={() => {
-                        messageQueueRef.current = [
-                            getDefaultMessage(props.appName)
-                        ];
-                        setDataReloadToken(Math.random().toString());
-                    }}
-                >
-                    Clear Message
-                </Button>
-            </ButtonToolbar>
+            <div className="tool-area-container">
+                <ButtonToolbar className="send-button-tool-bar">
+                    <Button
+                        className="send-button"
+                        appearance="primary"
+                        disabled={sendMessage.loading}
+                        onClick={async () =>
+                            await sendMessage.execute(inputText)
+                        }
+                    >
+                        Send Message
+                    </Button>
+                    <Button
+                        className="clear-message-button"
+                        disabled={sendMessage.loading}
+                        onClick={() => {
+                            messageQueueRef.current = [
+                                getDefaultMessage(props.appName)
+                            ];
+                            setDataReloadToken(Math.random().toString());
+                        }}
+                    >
+                        Clear Message
+                    </Button>
+                </ButtonToolbar>
+                <div className="context-win-selection-area">
+                    <div
+                        className="context-win-selector-label"
+                        ref={contextWinSelectorLabelRef}
+                    >
+                        Context Window:
+                        <Whisper
+                            container={
+                                contextWinSelectorLabelRef.current as any
+                            }
+                            placement={"auto"}
+                            trigger="hover"
+                            speaker={
+                                <Tooltip>
+                                    An LLM's context window limit is the maximum
+                                    number of tokens it can process at once. The
+                                    Chatbot might not be able to respond when it
+                                    needs to examine large amount of data due to
+                                    the limit. You can increase the limit to
+                                    allow the Chatbot to process more data.
+                                    However, it will requires more memory
+                                    (default 4096 tokens context window requires
+                                    roughly 5GB VRAM) and take much longer (2x
+                                    the context windows would increase process
+                                    time by 4x) to process depends on your
+                                    hardware.
+                                </Tooltip>
+                            }
+                        >
+                            <MdOutlineHelp />
+                        </Whisper>
+                    </div>
+                    <SelectPicker
+                        className="context-win-selector"
+                        data={contextWindowOptions}
+                        preventOverflow={false}
+                        placement="leftEnd"
+                        searchable={false}
+                        cleanable={false}
+                        value={contextWindowSize}
+                        onChange={(opt) => {
+                            const ctxWinSize = opt
+                                ? opt
+                                : defaultContextWindowSize;
+                            setContextWindowSize(ctxWinSize);
+                            updateModelContextWin.execute(ctxWinSize);
+                        }}
+                    />
+                </div>
+            </div>
         </Drawer.Body>
     );
 
