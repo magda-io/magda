@@ -12,7 +12,6 @@ import isChrome from "../../libs/isChrome";
 import getChromeExtensionVersion from "../../libs/getChromeExtensionVersion";
 import semver from "semver";
 import { config } from "../../config";
-import MarkdownViewer from "../../Components/Common/MarkdownViewer";
 import type ChatBoxTypeImport from "./ChatBox";
 import "./ChatBoxLaunchButton.scss";
 
@@ -30,7 +29,7 @@ async function createExtensionCheckingMessage(appName: string) {
     if (extensionVersion === false) {
         return (
             "Can't find required LLM extension OR the installed extension is configured to not accept connection from the current site. \n\n" +
-            `The Chatbot feature requires ${appName} Chrome extension here: <a href="${llmExtensionInstallationUrl}">${llmExtensionInstallationUrl}</a> ` +
+            `The Chatbot feature requires ${appName} Chrome extension here: <a href="${llmExtensionInstallationUrl}" target="_blank" rel="noopener noreferrer">${llmExtensionInstallationUrl}</a> ` +
             `to run LLM in a web browser service worker and cache model file effectively.\n\n` +
             `Please install the required extension version "${llmExtensionRequiredVer}" and try again.`
         );
@@ -40,7 +39,7 @@ async function createExtensionCheckingMessage(appName: string) {
     ) {
         return (
             `The installed ${appName} Chrome extension with version "${extensionVersion}" doesn't meet version requirement: "${llmExtensionRequiredVer}". \n\n` +
-            `The Chatbot feature requires ${appName} Chrome extension here: <a href="${llmExtensionInstallationUrl}">${llmExtensionInstallationUrl}</a> ` +
+            `The Chatbot feature requires ${appName} Chrome extension here: <a href="${llmExtensionInstallationUrl}" target="_blank" rel="noopener noreferrer">${llmExtensionInstallationUrl}</a> ` +
             `to run LLM in a web browser service worker and cache model file effectively.\n\n` +
             `Please install the required extension version "${llmExtensionRequiredVer}" and try again.`
         );
@@ -113,8 +112,12 @@ const ChatBoxLaunchButton: FunctionComponent<PropsType> = (props) => {
                         <Modal.Title>Error:</Modal.Title>
                     </Modal.Header>
 
-                    <Modal.Body>
-                        <MarkdownViewer markdown={dialogMsg} />
+                    <Modal.Body className="message-dialog-body">
+                        <div
+                            dangerouslySetInnerHTML={{
+                                __html: dialogMsg.replace(/\n/g, "<br/>")
+                            }}
+                        ></div>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button
