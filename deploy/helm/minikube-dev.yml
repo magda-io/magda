@@ -121,6 +121,7 @@ magda:
             startDateRegex: "(start|st).*(date|dt|year|decade)"
             endDateRegex: "(end).*(date|dt|year|decade)"
       showContactButtonForNoContactPointDataset: true
+      enableChatbot: true
 
     opensearch:
       data:

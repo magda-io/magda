@@ -132,6 +132,8 @@ magda:
         "3dDatasetDigitalTwinInstances":
         - sourceDataDomain: "nsw.gov.au"
           url: "https://nsw.digitaltwin.terria.io/"
+      llmExtensionInstallationUrl: https://chromewebstore.google.com/detail/magda-llm-service-worker/ljadmjdilnpmlhopijgimonfackfngmi
+      enableChatbot: true
       gapiIds:
         - G-3LGQ7FWH1B
 
