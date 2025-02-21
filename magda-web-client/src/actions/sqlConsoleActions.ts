@@ -3,6 +3,7 @@ import { actionTypes } from "../constants/ActionTypes";
 import type ReactAce from "react-ace";
 import { SQLConsoleDataType } from "../reducers/sqlConsoleReducer";
 import { config } from "../config";
+import reportError from "helpers/reportError";
 
 const enableSqlConsole = config.enableSQLConsole;
 
