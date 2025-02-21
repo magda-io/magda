@@ -41,6 +41,7 @@ autoReIndex:
 
 # -- application config. Allow to configure any application config fields.
 # For all available configuration fields and their default values, please refer to [application.conf](https://github.com/magda-io/magda/blob/main/magda-indexer/src/main/resources/application.conf)
+# and [common.conf](https://github.com/magda-io/magda/blob/main/magda-scala-common/src/main/resources/common.conf) (e.g. for Hybrid search related config)
 # This config field is available since v2.2.5
 # Previous versions' obsolete are still supported for backward compatible reason
 appConfig:

@@ -2,9 +2,13 @@ global:
   searchEngine:
     hybridSearch: 
       # -- whether to enable hybrid search.
-      # When `true`, Magda will combine the both semantic (vector) & lexical (keyword) search to improve search relevance.
+      # When `true`, Magda will combine the both LLM powered semantic (vector) & lexical (keyword) search to improve search relevance.
       # [magda-embedding-api](https://github.com/magda-io/magda-embedding-api) will be enabled and used for embedding generation at both indexing & search stage for the semantic search.
-      enabled: false
+      # Please note: to turn on/off the hybrid search feature of a non-upgrade deployment, you need to:
+      # - manually delete the existing index, 
+      # - deploy and reindex the data by requesting full index action via indexer `reindex` API.
+      # When upgrade from older version, no manual actions are required (as a new index will be auto-created based on the index version number).
+      enabled: true
   postgresql:
     # -- PostgreSQL username
     # For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`.

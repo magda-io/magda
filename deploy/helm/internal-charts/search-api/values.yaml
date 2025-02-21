@@ -91,6 +91,7 @@ formatsIndexVersion:
 
 # -- application config. Allow to configure any application config fields.
 # For all available configuration fields and their default values, please refer to [application.conf](https://github.com/magda-io/magda/blob/main/magda-search-api/src/main/resources/application.conf)
+# and [common.conf](https://github.com/magda-io/magda/blob/main/magda-scala-common/src/main/resources/common.conf) (e.g. for Hybrid search related config)
 # This config field is available since v2.2.5
 # Although can be set via `.Values.appConfig` as well, the following config fields will override the config set via `.Values.appConfig`:
 # `.Values.debug`, `.Values.datasetsIndexVersion`, `.Values.regionsIndexVersion`, `.Values.publishersIndexVersion`, `.Values.formatsIndexVersion`,
@@ -106,3 +107,4 @@ appConfig:
   # -- whether print out full config data at application starting up
   # for debug purpose only
   printFullConfig: false
+
