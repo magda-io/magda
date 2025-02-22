@@ -34,8 +34,7 @@ function profileToUser(profile: passport.Profile, source: string): User {
                 ? profile.photos[0].value
                 : undefined,
         source: source,
-        sourceId: profile.id,
-        isAdmin: false
+        sourceId: profile.id
     };
 }
 

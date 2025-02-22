@@ -31,11 +31,6 @@ program
                     [ADMIN_ROLE_ID, userId]
                 );
             }
-
-            await pool.query(
-                `UPDATE "users" SET "isAdmin"=$1 WHERE "id" = $2`,
-                [false, userId]
-            );
             console.log(chalk.green("Operation Completed!"));
         } catch (e) {
             console.error(chalk.red(`Error: ${e}`));

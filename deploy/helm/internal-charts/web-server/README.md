@@ -1,6 +1,6 @@
 # web-server
 
-![Version: 4.2.4](https://img.shields.io/badge/Version-4.2.4-informational?style=flat-square)
+![Version: 5.0.0](https://img.shields.io/badge/Version-5.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -47,7 +47,10 @@ Kubernetes: `>= 1.14.0-0`
 | discourseIntegrationDatasetPage | bool | `true` | Whether the discourse post integration should be turned on on dataset page. |
 | discourseIntegrationDistributionPage | bool | `true` | Whether the discourse post integration should be turned on on distribution page. |
 | discourseSiteUrl | string | `nil` | The discourse site url.  Set this value to turn on the discourse post integration on dataset & distribution pages. |
+| enableChatbot | bool | `false` | Whether or not enable chatbot feature. Please note: you also need to enable the hybrid search feature to use the chatbot feature. |
 | enableCrawlerViews | bool | `true` | Whether enable crawler html view for crawlers that has limited rendering capability.  When discourse intergration feature is turned on (i.e. `discourseSiteUrl` is set and either `discourseIntegrationDatasetPage` or `discourseIntegrationDistributionPage` is true),  this will be overwritten to true. |
+| enableMetadataExtraction | bool | `false` | Whether or not enable in-browser metadata auto-extraction pipelines. You might want to disable the feature to speed up large files upload. |
+| enableSQLConsole | bool | `true` | Whether or not to enable the SQL console feature. |
 | externalCssFiles | list | `[]` | a list of external css file urls to be loaded. Can be used to further customise UI styling. this config value should be type of `string[]`. |
 | externalUIComponents | list | `[]` | a list of external UI component JS bundle file urls.  Can be used to replace existing built-in React UI component for customisation. this config value should be type of `string[]` |
 | extraConfigData | object | `{}` | Extra config data for external plugins. Normally served as a way to config external UI plugin components at runtime. |
@@ -82,6 +85,9 @@ Kubernetes: `>= 1.14.0-0`
 | keywordsBlackList[8] | string | `"Sr"` |  |
 | keywordsBlackList[9] | string | `"St"` |  |
 | listenPort | int | `80` |  |
+| llmExtensionId | string | `"ljadmjdilnpmlhopijgimonfackfngmi"` | The extension ID of the web-llm service worker chrome extension plugin. See here for more details: https://github.com/magda-io/magda-llm-service-worker-extension |
+| llmExtensionInstallationUrl | string | `"https://github.com/magda-io/magda-llm-service-worker-extension"` | The installation URL of the web-llm service worker chrome extension plugin. "This URL will be displayed to the user when the extension is not installed. |
+| llmExtensionRequiredVer | string | `"^1.0.4"` | The required version string of the MAGDA web-llm service worker chrome extension plugin. Support [semver string](https://semver.org/) e.g. ">=2.5.0" |
 | mandatoryFields[0] | string | `"dataset.title"` |  |
 | mandatoryFields[10] | string | `"informationSecurity.disseminationLimits"` |  |
 | mandatoryFields[11] | string | `"publishToDga"` |  |
@@ -108,6 +114,8 @@ Kubernetes: `>= 1.14.0-0`
 | showContactButtonForNoContactPointDataset | bool | `false` | Whether show the "Ask a question about this dataset" button for datasets without contact point info. By default, the "Ask a question about this dataset" button is only shown for datasets has contact point info. For datasets without contact point info, the inquiry will be sent to the default recipient provided by `global.defaultContactEmail`. |
 | showNotificationBanner | bool | `false` |  |
 | sitemapCacheSeconds | int | `86400` | No. of seconds that sitemap result will be cached. By default, 86400 i.e. 1 day. |
+| sqlConsoleMaxDisplayRows | int | `1000` | the maximum number of result rows will be displayed in SQLConsole UI. Users can still download the full result as CSV file via download button. |
+| sqlConsoleMaxFileSize | int | `52428800` | The maximum file size that can be loaded into the SQL console. When the user tries to load a file that is larger than this size, the system will show an error message. The default value is 50MB. |
 | supportExternalTerriaMapV7 | bool | `false` | When set to true, the `Open in National Map` button in Map Preview area will send data in v7 format. |
 | uiBaseUrl | string | `nil` | Serve Magda UI at a non-root url path. e.g. `http://example.com/magda/`. Its value should have a leading slash, but no trailing slash. When not set, by default, the magda UI will be served at `/`. (e.g. `http://example.com/`)  When `global.externalUrl` is set to an URL with non-root path (e.g. http://example.com/magda-dir/),  unless `uiBaseUrl` has a non-empty value that is not `/`, the effective runtime value of `uiBaseUrl` will be overwritten to `/magda-dir`. You probably only want to manually set `uiBaseUrl` when you want to move magda UI to a non-root URL path but still leave all APIs at root path. |
 | useLocalStyleSheet | bool | `false` |  |

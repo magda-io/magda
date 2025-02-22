@@ -1,0 +1,18 @@
+version: "3"
+services:
+  test-embedding-api:
+    image: ghcr.io/magda-io/magda-embedding-api:1.1.0
+    ports:
+      - 3000:3000
+    environment:
+      - FASTIFY_PLUGIN_TIMEOUT=600000
+      - FASTIFY_BODY_LIMIT=10485760
+      - FASTIFY_CLOSE_GRACE_DELAY=1000
+      - FASTIFY_PORT=3000
+    command:
+      - "node"
+      - "./node_modules/fastify-cli/cli.js"
+      - "start"
+      - "dist/app.js"
+    expose:
+      - 3000

@@ -494,7 +494,6 @@ describe("Auth api router", function (this) {
             const user = mockUserDataStore.createRecord({
                 displayName: "test user",
                 photoURL: "",
-                isAdmin: false,
                 email: "xxx@email123.com",
                 source: "source_1",
                 sourceId: "source_id_1"

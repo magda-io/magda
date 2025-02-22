@@ -1,0 +1,117 @@
+.magda-chat-box-drawer.rs-drawer-full {
+    width: 100%;
+}
+.magda-chat-box-drawer {
+    .rs-drawer-actions {
+        .size-selector-heading {
+            padding: 7px 2px 7px 12px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+    }
+}
+
+.rs-drawer-sm {
+    .magda-chat-box-message-area-body {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+}
+
+.magda-chat-box-message-area-body {
+    display: flex;
+    flex-direction: column;
+
+    .message-area {
+        flex: 1;
+        .rs-panel-body {
+            height: 100%;
+            padding-top: 0px;
+            padding-bottom: 0px;
+            padding-left: 0px;
+            padding-right: 0px;
+        }
+        .rs-list {
+            height: 100%;
+            overflow-y: scroll;
+            border: none;
+            box-shadow: initial;
+            padding-left: 20px;
+            padding-right: 20px;
+            .rs-list-item:first-child {
+                margin-top: 30px;
+            }
+            .rs-list-item {
+                margin-top: 10px;
+                margin-bottom: 10px;
+                width: 95%;
+                padding-top: 5px;
+                padding-bottom: 5px;
+                padding-left: 10px;
+                padding-right: 5px;
+                pre {
+                    white-space: break-spaces;
+                }
+            }
+            .rs-list-item.bot-message {
+                float: left;
+                border-radius: 10px;
+                border: none;
+                background-color: #e7e7e7;
+            }
+
+            .rs-list-item.user-message {
+                float: right;
+                border-radius: 10px;
+                border: none;
+                background-color: var(--rs-btn-primary-bg);
+                pre,
+                p {
+                    color: #f7f7f7;
+                }
+            }
+        }
+    }
+
+    .message-input {
+        margin-top: 20px;
+    }
+    .tool-area-container {
+        display: flex;
+        justify-content: space-between;
+    }
+    .send-button-tool-bar {
+        margin-top: 10px;
+        .send-button {
+            float: right;
+        }
+        .clear-message-button {
+            float: left;
+        }
+    }
+    .context-win-selection-area {
+        display: flex;
+        margin-top: 10px;
+        .context-win-selector {
+            width: 110px;
+            .rs-btn:focus {
+                outline: none;
+            }
+        }
+        .context-win-selector-label {
+            margin-right: 10px;
+            padding-top: 8px;
+            font-size: 14px;
+            position: relative;
+            svg {
+                top: 2px;
+                left: 2px;
+                position: relative;
+            }
+            .rs-tooltip {
+                width: 260px;
+                top: -260px !important;
+            }
+        }
+    }
+}

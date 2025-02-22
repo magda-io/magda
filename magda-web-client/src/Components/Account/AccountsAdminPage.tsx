@@ -82,13 +82,11 @@ const UserRow: FunctionComponent<UserRowProps> = ({ user, loggedInUser }) => {
             await setAdmin(userId, isAdmin);
             // set data directly to user to refresh screen
             // this works because `useAsyncCallback` will trigger a redrew after the execution of this function
-            user.isAdmin = isAdmin;
             user.roles = await getUserRoles(user.id);
         }
     );
 
     const isAdmin =
-        user?.isAdmin &&
         user?.roles?.length &&
         user.roles.findIndex((r) => r.id === ADMIN_ROLE_ID) !== -1;
 

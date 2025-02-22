@@ -14,13 +14,35 @@ import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.bulk.BulkResponse
 import com.sksamuel.elastic4s.{ElasticClient, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.requests.indexes.CreateIndexRequest
-import com.sksamuel.elastic4s.fields.{ElasticField, GeoShapeField, ObjectField}
+import com.sksamuel.elastic4s.fields.{
+  BooleanField,
+  ElasticField,
+  FaissEncoder,
+  FaissEncoderName,
+  FaissScalarQuantizationType,
+  GeoShapeField,
+  HnswParameters,
+  KeywordField,
+  KnnEngine,
+  KnnVectorField,
+  ObjectField,
+  SpaceType,
+  UnsignedLongField
+}
 import com.typesafe.config.Config
 import org.locationtech.jts.geom._
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import spray.json._
 import au.csiro.data61.magda.util.RichConfig._
+import com.sksamuel.elastic4s.requests.searchPipeline.{
+  CombinationTechnique,
+  CombinationTechniqueType,
+  NormalizationProcessor,
+  NormalizationTechniqueType,
+  PutSearchPipelineRequest,
+  SearchPipeline
+}
 
 import java.time.OffsetDateTime
 import scala.concurrent.Future
@@ -94,6 +116,38 @@ object IndexDefinition extends DefaultJsonProtocol {
 
     textField(name).analyzer("english").fields(fields)
   }
+
+  def magdaQueryContextVectorField() = KnnVectorField(
+    HybridSearchConfig.queryContextVectorFieldName,
+    dimension = 768,
+    HnswParameters(
+      // https://opensearch.org/docs/latest/search-plugins/vector-search/#engine-recommendations
+      // the above engine recommendations is a bit outdated.
+      // faiss also support efficient filter (Filter during search)
+      // https://opensearch.org/docs/latest/search-plugins/knn/filter-search-knn/#using-a-faiss-efficient-filter
+      engine = Some(KnnEngine.faiss),
+      spaceType = Some(SpaceType.l2),
+      efConstruction = Some(100),
+      // efSearch only supported by faiss
+      efSearch = Some(100),
+      m = Some(16),
+      encoder = Some(
+        FaissEncoder(
+          name = Some(FaissEncoderName.sq),
+          sqType = Some(FaissScalarQuantizationType.fp16),
+          sqClip = Some(false)
+        )
+      )
+    )
+  )
+
+  def magdaQueryContextField() =
+    KeywordField(
+      name = HybridSearchConfig.queryContextFieldName,
+      index = Some(false),
+      docValues = Some(false),
+      store = Some(true)
+    )
 
   val magdaSynonymTokenFilter = SynonymTokenFilter(
     "synonym",
@@ -186,156 +240,208 @@ object IndexDefinition extends DefaultJsonProtocol {
         .getOptionalString("indexer.refreshInterval")
         .foreach(v => req = req.indexSetting("refresh_interval", v))
     }
+    config
+      .getOptionalString("elasticSearch.searchIdleAfter")
+      .foreach(v => req = req.indexSetting("search.idle.after", v))
     req
   }
 
+  val datasetsIndexVersion = 52
+
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 51,
+    version = datasetsIndexVersion,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val esInstanceSupport =
         config.getBoolean("elasticSearch.esInstanceSupport")
+
+      val nestedDistributionFields
+          : Seq[ElasticField] = (if (HybridSearchConfig.enabled)
+                                   Seq(
+                                     magdaQueryContextField(),
+                                     magdaQueryContextVectorField()
+                                   )
+                                 else Nil) ++ Seq(
+        keywordField("identifier"),
+        magdaTextField("title"),
+        magdaSynonymLongHtmlTextField("description"),
+        magdaTextField(
+          "format",
+          textField("keyword_lowercase")
+            .analyzer("quote")
+            .fielddata(true)
+        ),
+        ObjectField(
+          "accessControl",
+          properties = List(
+            keywordField("ownerId"),
+            keywordField("orgUnitId"),
+            booleanField("constraintExemption"),
+            keywordField("preAuthorisedPermissionIds")
+          )
+        ),
+        magdaTextField("mediaType"),
+        magdaTextField("license"),
+        magdaTextField("rights"),
+        magdaTextField("accessURL"),
+        magdaTextField("accessNotes"),
+        magdaTextField("downloadURL"),
+        keywordField("publishingState"),
+        UnsignedLongField("byteSize"),
+        BooleanField("useStorageApi"),
+        keywordField("tenantId"),
+        ObjectField(
+          "source",
+          properties = List(
+            keywordField("id"),
+            magdaTextField("name"),
+            keywordField("url"),
+            magdaTextField("originalName"),
+            keywordField("originalUrl"),
+            ObjectField(
+              "extras",
+              dynamic =
+                if (esInstanceSupport) Some("runtime")
+                else Some("true")
+            )
+          )
+        )
+      )
+
+      val idxFields: Seq[ElasticField] = (if (HybridSearchConfig.enabled)
+                                            Seq(
+                                              magdaQueryContextField(),
+                                              magdaQueryContextVectorField()
+                                            )
+                                          else Nil) ++ Seq(
+        ObjectField(
+          "accrualPeriodicity",
+          properties = List(magdaTextField("text"))
+        ),
+        keywordField("accrualPeriodicityRecurrenceRule"),
+        ObjectField(
+          "temporal",
+          properties = List(
+            ObjectField(
+              "start",
+              properties = List(dateField("date"), textField("text"))
+            ),
+            ObjectField(
+              "end",
+              properties = List(dateField("date"), textField("text"))
+            )
+          )
+        ),
+        ObjectField(
+          "publisher",
+          properties = List(
+            keywordField("identifier"),
+            textField("acronym")
+              .analyzer("keyword")
+              .searchAnalyzer("uppercase"),
+            magdaTextField("jurisdiction"),
+            // --- the field used to merge org records by jurisdiction
+            // --- if jurisdiction is not null, its value is jurisdiction + org name
+            // --- if null, its value is org record identifier (thus, avoid merging)
+            textField("aggregation_keywords").analyzer("keyword"),
+            magdaTextField("description"),
+            keywordField("imageUrl"),
+            keywordField("phone"),
+            keywordField("email"),
+            magdaTextField("addrStreet", keywordField("keyword")),
+            magdaTextField("addrSuburb", keywordField("keyword")),
+            magdaTextField("addrState", keywordField("keyword")),
+            keywordField("addrPostCode"),
+            keywordField("addrCountry"),
+            keywordField("website"),
+            magdaTextField(
+              "name",
+              keywordField("keyword"),
+              textField("keyword_lowercase")
+                .analyzer("quote")
+                .fielddata(true)
+            )
+          )
+        ),
+        nestedField("distributions").fields(
+          nestedDistributionFields
+        ),
+        ObjectField(
+          "spatial",
+          properties = List(magdaGeoShapeField("geoJson"))
+        ),
+        magdaTextField("title"),
+        magdaSynonymLongHtmlTextField("description"),
+        magdaTextField("keywords"),
+        magdaSynonymTextField("themes"),
+        doubleField("quality"),
+        booleanField("hasQuality"),
+        keywordField("catalog"),
+        ObjectField(
+          "source",
+          properties = List(
+            keywordField("id"),
+            magdaTextField("name"),
+            keywordField("url"),
+            magdaTextField("originalName"),
+            keywordField("originalUrl"),
+            ObjectField(
+              "extras",
+              dynamic =
+                if (esInstanceSupport) Some("runtime")
+                else Some("true")
+            )
+          )
+        ),
+        ObjectField(
+          "provenance",
+          properties = List(
+            magdaTextField("mechanism"),
+            magdaTextField("sourceSystem"),
+            booleanField("isOpenData"),
+            magdaTextField("affiliatedOrganisationIds")
+          )
+        ),
+        ObjectField(
+          "accessControl",
+          properties = List(
+            keywordField("ownerId"),
+            keywordField("orgUnitId"),
+            booleanField("constraintExemption"),
+            keywordField("preAuthorisedPermissionIds")
+          )
+        ),
+        keywordField("years"),
+        /*
+         * not sure whether is Elasticsearch or elastic4s
+         * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
+         * */
+        keywordField("identifier"),
+        keywordField("tenantId"),
+        ObjectField(
+          "contactPoint",
+          properties = List(keywordField("identifier"))
+        ),
+        dateField("indexed"),
+        keywordField("publishingState"),
+        ObjectField(
+          "accessNotes",
+          properties = List(
+            magdaTextField("notes"),
+            magdaAutocompleteField("location")
+          )
+        )
+      )
+
       val createIdxReq =
         createIndex(indices.getIndex(config, Indices.DataSetsIndex))
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
+          .indexSetting("knn", HybridSearchConfig.enabled)
           .mapping(
             properties(
-              ObjectField(
-                "accrualPeriodicity",
-                properties = List(magdaTextField("text"))
-              ),
-              keywordField("accrualPeriodicityRecurrenceRule"),
-              ObjectField(
-                "temporal",
-                properties = List(
-                  ObjectField(
-                    "start",
-                    properties = List(dateField("date"), textField("text"))
-                  ),
-                  ObjectField(
-                    "end",
-                    properties = List(dateField("date"), textField("text"))
-                  )
-                )
-              ),
-              ObjectField(
-                "publisher",
-                properties = List(
-                  keywordField("identifier"),
-                  textField("acronym")
-                    .analyzer("keyword")
-                    .searchAnalyzer("uppercase"),
-                  magdaTextField("jurisdiction"),
-                  // --- the field used to merge org records by jurisdiction
-                  // --- if jurisdiction is not null, its value is jurisdiction + org name
-                  // --- if null, its value is org record identifier (thus, avoid merging)
-                  textField("aggregation_keywords").analyzer("keyword"),
-                  magdaTextField("description"),
-                  keywordField("imageUrl"),
-                  keywordField("phone"),
-                  keywordField("email"),
-                  magdaTextField("addrStreet", keywordField("keyword")),
-                  magdaTextField("addrSuburb", keywordField("keyword")),
-                  magdaTextField("addrState", keywordField("keyword")),
-                  keywordField("addrPostCode"),
-                  keywordField("addrCountry"),
-                  keywordField("website"),
-                  magdaTextField(
-                    "name",
-                    keywordField("keyword"),
-                    textField("keyword_lowercase")
-                      .analyzer("quote")
-                      .fielddata(true)
-                  )
-                )
-              ),
-              nestedField("distributions").fields(
-                keywordField("identifier"),
-                magdaTextField("title"),
-                magdaSynonymLongHtmlTextField("description"),
-                magdaTextField(
-                  "format",
-                  textField("keyword_lowercase")
-                    .analyzer("quote")
-                    .fielddata(true)
-                ),
-                ObjectField(
-                  "accessControl",
-                  properties = List(
-                    keywordField("ownerId"),
-                    keywordField("orgUnitId"),
-                    booleanField("constraintExemption"),
-                    keywordField("preAuthorisedPermissionIds")
-                  )
-                )
-              ),
-              ObjectField(
-                "spatial",
-                properties = List(magdaGeoShapeField("geoJson"))
-              ),
-              magdaTextField("title"),
-              magdaSynonymLongHtmlTextField("description"),
-              magdaTextField("keywords"),
-              magdaSynonymTextField("themes"),
-              doubleField("quality"),
-              booleanField("hasQuality"),
-              keywordField("catalog"),
-              ObjectField(
-                "source",
-                properties = List(
-                  keywordField("id"),
-                  magdaTextField("name"),
-                  keywordField("url"),
-                  magdaTextField("originalName"),
-                  keywordField("originalUrl"),
-                  ObjectField(
-                    "extras",
-                    dynamic =
-                      if (esInstanceSupport) Some("runtime")
-                      else Some("true")
-                  )
-                )
-              ),
-              ObjectField(
-                "provenance",
-                properties = List(
-                  magdaTextField("mechanism"),
-                  magdaTextField("sourceSystem"),
-                  booleanField("isOpenData"),
-                  magdaTextField("affiliatedOrganisationIds")
-                )
-              ),
-              ObjectField(
-                "accessControl",
-                properties = List(
-                  keywordField("ownerId"),
-                  keywordField("orgUnitId"),
-                  booleanField("constraintExemption"),
-                  keywordField("preAuthorisedPermissionIds")
-                )
-              ),
-              keywordField("years"),
-              /*
-               * not sure whether is Elasticsearch or elastic4s
-               * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
-               * */
-              keywordField("identifier"),
-              keywordField("tenantId"),
-              ObjectField(
-                "contactPoint",
-                properties = List(keywordField("identifier"))
-              ),
-              dateField("indexed"),
-              keywordField("publishingState"),
-              ObjectField(
-                "accessNotes",
-                properties = List(
-                  magdaTextField("notes"),
-                  magdaAutocompleteField("location")
-                )
-              )
+              idxFields
             )
           )
           .analysis(
@@ -376,7 +482,15 @@ object IndexDefinition extends DefaultJsonProtocol {
             )
           )
       applyIndexConfig(config, createIdxReq, true)
-    }
+    },
+    create = Some(
+      (client, indices, config) =>
+        (materializer, actorSystem) => {
+          IndexUtils.ensureDatasetHybridSearchPipeline(
+            recreateWhenExist = true
+          )(actorSystem, client)
+        }
+    )
   )
 
   val magdaRegionSynonymTokenFilter = SynonymGraphTokenFilter(

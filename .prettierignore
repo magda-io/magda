@@ -1,6 +1,8 @@
 deploy
 magda-web-client/src/pancake
-magda-web-client/public/assets/libs
+magda-web-client/public/assets/libs/*
+!magda-web-client/public/assets/libs/
+!magda-web-client/public/assets/libs/alasqlUtlis.js
 .gitlab-ci.yml
 .travis.yml
 *.html

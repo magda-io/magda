@@ -3,6 +3,8 @@ import React from "react";
 import { connect } from "react-redux";
 import { Small } from "Components/Common/Responsive";
 import CommonLink from "Components/Common/CommonLink";
+import ChatBoxRoutes from "../Chatbot/ChatBoxRoutes";
+import SQLConsoleRoutes from "../SQLConsole/SQLConsoleRoutes";
 
 import "./footer.scss";
 
@@ -135,6 +137,8 @@ function Footer({
                         ))}
                     </section>
                 ) : null}
+                <ChatBoxRoutes />
+                <SQLConsoleRoutes />
             </div>
         </footer>
     );

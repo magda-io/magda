@@ -15,6 +15,8 @@ import child_process, { ChildProcess } from "child_process";
 import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 import urijs from "urijs";
 import { requireResolve } from "@magda/esm-utils";
+import { Readable } from "node:stream";
+import fetchRequest from "magda-typescript-common/src/fetchRequest.js";
 
 /**
  * Resolve magda module dir path.
@@ -68,6 +70,7 @@ export default class ServiceRunner {
     private storageApiProcess: ChildProcess;
     private indexerSetupProcess: ChildProcess;
     private searchApiProcess: ChildProcess;
+    private embeddingApiCompose: DockerCompose;
 
     public shouldExit = false;
 
@@ -78,6 +81,7 @@ export default class ServiceRunner {
     public enableRegistryApi = false;
     public enableStorageApi = false;
     public enableSearchApi = false;
+    public enableEmbeddingApi = false;
     // indexer will still run even this field is set to false
     // in order to setup the indices in search engine.
     // however, indexer will auto exit if this field is set to false.
@@ -86,12 +90,17 @@ export default class ServiceRunner {
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
     public authApiSkipAuth = false;
+    public searchApiDebugMode = false;
     public storageApiSkipAuth = false;
+    public waitForDatasetIndexReady = true;
 
     public sbtPath: string = "";
 
     // default: wait for service online within 5 mins
     public maxWaitLiveTime: number = 300000;
+
+    // default: 60s for keeping TCP connection created by socate alive
+    public tcpConnectionKeepAliveTime: number = 60;
 
     // the docker host mat available at a different ip / hostname
     // setting this to portforward the docker based services to localhost
@@ -139,29 +148,39 @@ export default class ServiceRunner {
     }
 
     async create() {
-        await this.docker.info();
+        try {
+            await this.docker.info();
 
-        if (this.enableAuthService) {
-            await Promise.all([this.createOpa(), this.createPostgres()]);
-            await this.createAuthApi();
-        }
+            if (this.enableAuthService) {
+                await Promise.all([this.createOpa(), this.createPostgres()]);
+                await this.createAuthApi();
+            }
 
-        await Promise.all([
-            this.enableRegistryApi
-                ? this.createRegistryApi()
-                : Promise.resolve(),
-            this.enableStorageApi
-                ? this.createMinio().then(this.createStorageApi.bind(this))
-                : Promise.resolve(),
-            this.enableElasticSearch ||
-            this.enableSearchApi ||
-            this.enableIndexer
-                ? this.createElasticSearch()
-                : Promise.resolve()
-        ]);
+            await Promise.all([
+                this.enableRegistryApi
+                    ? this.createRegistryApi()
+                    : Promise.resolve(),
+                this.enableStorageApi
+                    ? this.createMinio().then(this.createStorageApi.bind(this))
+                    : Promise.resolve(),
+                this.enableElasticSearch ||
+                this.enableSearchApi ||
+                this.enableIndexer
+                    ? this.createElasticSearch()
+                    : Promise.resolve(),
+                this.enableEmbeddingApi ||
+                this.enableSearchApi ||
+                this.enableIndexer
+                    ? this.createEmbeddingApi()
+                    : Promise.resolve()
+            ]);
 
-        if (this.enableSearchApi) {
-            await this.createSearchApi();
+            if (this.enableSearchApi) {
+                await this.createSearchApi();
+            }
+        } catch (e) {
+            await this.destroy();
+            throw e;
         }
     }
 
@@ -182,12 +201,49 @@ export default class ServiceRunner {
             this.enableIndexer
                 ? [this.destroyElasticSearch()]
                 : []),
+            ...(this.enableEmbeddingApi ||
+            this.enableSearchApi ||
+            this.enableIndexer
+                ? [this.destroyEmbeddingApi()]
+                : []),
             ...(this.enableStorageApi
                 ? [this.destroyMinio(), this.destroyStorageApi()]
                 : []),
             ...(this.enableSearchApi ? [this.destroySearchApi()] : [])
         ]);
+        try {
+            await Promise.all([
+                this.docker.pruneNetworks(),
+                this.docker.pruneContainers(),
+                this.docker.pruneVolumes()
+            ]);
+        } catch (e) {
+            if ((e as any)?.statusCode == 409) {
+                console.warn("a prune operation is already running.");
+            } else {
+                console.error(e);
+            }
+        }
         await delay(30000);
+    }
+
+    kill(p: ChildProcess) {
+        return new Promise((resolve, reject) => {
+            function onExit(code: number, signal: string) {
+                resolve(undefined);
+                p.off("exit", onExit);
+            }
+            if (!p) {
+                resolve(undefined);
+                return;
+            }
+            if (p.killed) {
+                resolve(undefined);
+            } else {
+                p.kill();
+                p.on("exit", onExit);
+            }
+        });
     }
 
     getSbtPath() {
@@ -241,8 +297,10 @@ export default class ServiceRunner {
             "test-minio"
         );
         try {
-            await this.minioCompose.down({ volumes: true });
-            await this.minioCompose.pull();
+            await Promise.all([
+                this.minioCompose.down({ volumes: true }),
+                this.pullImage(this.minioCompose)
+            ]);
             await this.minioCompose.up();
             await this.waitAlive(
                 "Minio",
@@ -257,7 +315,8 @@ export default class ServiceRunner {
                     }
                     try {
                         await this.minioClient.listBuckets();
-                    } catch (e) {
+                    } catch (error) {
+                        const e = error as any;
                         throw new Error(
                             (e?.code ? `Error code: ${e.code}. ` : "") + `${e}`
                         );
@@ -350,9 +409,7 @@ export default class ServiceRunner {
     }
 
     async destroyStorageApi() {
-        if (this.storageApiProcess && !this.storageApiProcess.killed) {
-            this.storageApiProcess.kill();
-        }
+        await this.kill(this.storageApiProcess);
     }
 
     async createPortForward(
@@ -378,13 +435,15 @@ export default class ServiceRunner {
                 `Port ${localPort} already has an existing port forwarding process running.`
             );
         }
-        const portForwardCmd = `socat TCP6-LISTEN:${localPort},fork,reuseaddr TCP4:${hostname}:${remotePort}`;
+        const portForwardCmd = `socat -T ${this.tcpConnectionKeepAliveTime} TCP6-LISTEN:${localPort},fork,reuseaddr TCP4:${hostname}:${remotePort}`;
         const portForwardProcess = child_process.spawn(portForwardCmd, {
             stdio: "inherit",
             shell: true
         });
 
-        console.log(`Started to portforward for ${hostname}:${remotePort}...`);
+        console.log(
+            `Started to portforward (PID: ${portForwardProcess.pid}) for ${hostname}:${remotePort}...`
+        );
 
         this.portForwardingProcessList[
             localPort.toString()
@@ -392,7 +451,7 @@ export default class ServiceRunner {
 
         portForwardProcess.on("exit", (code, signal) => {
             this.portForwardingProcessList[localPort] = undefined;
-            const msg = `portforward for ${hostname}:${remotePort} exited with code ${code} or signal ${signal}`;
+            const msg = `portforward (PID: ${portForwardProcess.pid}) for ${hostname}:${remotePort} exited with code ${code} or signal ${signal}`;
             if (!code) {
                 console.log(msg);
             } else {
@@ -402,7 +461,7 @@ export default class ServiceRunner {
 
         portForwardProcess.on("error", (error) => {
             console.error(
-                `portforward for ${hostname}:${remotePort} has thrown an error: ${error}`
+                `portforward (PID: ${portForwardProcess.pid}) for ${hostname}:${remotePort} has thrown an error: ${error}`
             );
         });
     }
@@ -410,7 +469,10 @@ export default class ServiceRunner {
     async destroyPortForward(localPort: string | number) {
         const process = this.portForwardingProcessList[localPort];
         if (process && !process.killed) {
-            process.kill();
+            console.log(
+                `About to kill port forwarding process, PID: ${process.pid}...`
+            );
+            await this.kill(process);
             this.portForwardingProcessList[localPort] = undefined;
         }
     }
@@ -474,9 +536,7 @@ export default class ServiceRunner {
     }
 
     async destroyAspectMigrator() {
-        if (this.aspectMigratorProcess && !this.aspectMigratorProcess.killed) {
-            this.aspectMigratorProcess.kill();
-        }
+        await this.kill(this.aspectMigratorProcess);
     }
 
     async createRegistryApi() {
@@ -530,9 +590,7 @@ export default class ServiceRunner {
     }
 
     async destroyRegistryApi() {
-        if (this.registryApiProcess && !this.registryApiProcess.killed) {
-            this.registryApiProcess.kill();
-        }
+        await this.kill(this.registryApiProcess);
     }
 
     async createAuthApi() {
@@ -597,16 +655,103 @@ export default class ServiceRunner {
     }
 
     async destroyAuthApi() {
-        if (this.authApiProcess && !this.authApiProcess.killed) {
-            this.authApiProcess.kill();
+        await this.kill(this.authApiProcess);
+    }
+
+    async createEmbeddingApi() {
+        console.log("starting EmbeddingApi...");
+        const dockerComposeFile = this.createTmpDockerComposeFile(
+            path.resolve(
+                this.workspaceRoot,
+                "./magda-int-test-ts/embeddingApi/docker-compose.yml"
+            ),
+            undefined
+        );
+        this.embeddingApiCompose = new DockerCompose(
+            this.docker,
+            dockerComposeFile,
+            "test-embedding-api"
+        );
+        try {
+            await Promise.all([
+                new Promise(async (resolve, reject) => {
+                    console.log(
+                        "Terminating any possible existing embeddingApi..."
+                    );
+                    resolve(this.embeddingApiCompose.down({ volumes: true }));
+                }),
+                new Promise(async (resolve, reject) => {
+                    console.log("Pulling embeddingApi...");
+                    resolve(this.pullImage(this.embeddingApiCompose));
+                })
+            ]);
+            console.log("pulling EmbeddingApi is done...");
+            await this.embeddingApiCompose.up();
+            await this.waitAlive("embeddingApi", async () => {
+                const embeddingApiHost = this.dockerServiceForwardHost
+                    ? this.dockerServiceForwardHost
+                    : "localhost";
+                const res = await fetch(
+                    `http://${embeddingApiHost}:3000/status/readiness`
+                );
+                if (res.status !== 200) {
+                    throw new ServerError(
+                        `${res.statusText}. ${await res.text()}`
+                    );
+                }
+                await res.json();
+                return true;
+            });
+            if (this.dockerServiceForwardHost) {
+                await this.createPortForward(3000);
+            }
+        } catch (e) {
+            await this.destroyEmbeddingApi();
+            throw e;
         }
     }
 
-    pullImage(image: string) {
+    async destroyEmbeddingApi() {
+        if (this.embeddingApiCompose) {
+            await this.embeddingApiCompose.down({ volumes: true });
+        }
+        if (this.dockerServiceForwardHost) {
+            await this.destroyPortForward(3000);
+        }
+    }
+
+    pullImage(
+        imageOrDockerComposeObj: string | DockerCompose,
+        printOutput: boolean = false
+    ) {
         return new Promise(async (resolve, reject) => {
-            const pullStream = await this.docker.pull(image);
-            pullStream.pipe(process.stdout);
-            pullStream.once("end", resolve);
+            const pullStreams: Readable[] = [];
+            if (typeof imageOrDockerComposeObj === "string") {
+                pullStreams.push(
+                    await this.docker.pull(imageOrDockerComposeObj)
+                );
+            } else {
+                pullStreams.splice(
+                    0,
+                    0,
+                    ...(await imageOrDockerComposeObj.pull(undefined, {
+                        streams: true
+                    }))
+                );
+            }
+            for (const pullStream of pullStreams) {
+                if (printOutput) {
+                    pullStream.pipe(process.stdout);
+                    pullStream.once("end", resolve);
+                } else {
+                    const devNull = fs.createWriteStream("/dev/null");
+                    pullStream.pipe(devNull);
+                    pullStream.once("end", () => {
+                        resolve(void 0);
+                        devNull.destroy();
+                    });
+                }
+            }
         });
     }
 
@@ -650,7 +795,7 @@ export default class ServiceRunner {
         try {
             await Promise.all([
                 this.opaCompose.down({ volumes: true }),
-                this.opaCompose.pull()
+                this.pullImage(this.opaCompose)
             ]);
             await this.opaCompose.up();
             await this.waitAlive("OPA", async () => {
@@ -753,7 +898,7 @@ export default class ServiceRunner {
         try {
             await Promise.all([
                 this.postgresCompose.down({ volumes: true }),
-                this.postgresCompose.pull()
+                this.pullImage(this.postgresCompose)
             ]);
             await this.postgresCompose.up();
             await this.waitAlive("Postgres", this.testAlivePostgres.bind(this));
@@ -803,17 +948,11 @@ export default class ServiceRunner {
                     console.log(
                         "Terminating any possible existing OpenSearch..."
                     );
-                    resolve(
-                        await this.elasticSearchCompose.down({ volumes: true })
-                    );
+                    resolve(this.elasticSearchCompose.down({ volumes: true }));
                 }),
                 new Promise(async (resolve, reject) => {
                     console.log("Pulling OpenSearch...");
-                    resolve(
-                        await this.elasticSearchCompose.pull(undefined, {
-                            verbose: true
-                        })
-                    );
+                    resolve(this.pullImage(this.elasticSearchCompose));
                 })
             ]);
             console.log("Starting up OpenSearch...");
@@ -915,6 +1054,28 @@ export default class ServiceRunner {
                 console.log(await res.text());
                 return true;
             });
+            if (this.waitForDatasetIndexReady) {
+                await this.waitAlive("Dataset index setup", async () => {
+                    const esHost = this.dockerServiceForwardHost
+                        ? this.dockerServiceForwardHost
+                        : "localhost";
+                    const resData = await fetchRequest(
+                        "GET",
+                        `http://${esHost}:9200/_cat/indices?format=json`
+                    );
+                    const datasetIndexName = resData
+                        .map((item: any) => item.index)
+                        .find((indexName: string) =>
+                            indexName.startsWith("datasets")
+                        );
+
+                    if (!datasetIndexName) {
+                        throw new Error("Can't find datasets index");
+                    }
+
+                    return true;
+                });
+            }
             if (!this.enableIndexer) {
                 console.log("Indexer is not required. Exiting now...");
                 await this.destroyIndexerSetup();
@@ -926,15 +1087,16 @@ export default class ServiceRunner {
     }
 
     async destroyIndexerSetup() {
-        if (this.indexerSetupProcess && !this.indexerSetupProcess.killed) {
-            this.indexerSetupProcess.kill();
-        }
+        await this.kill(this.indexerSetupProcess);
     }
 
     async createSearchApi() {
         const searchApiProcess = child_process.spawn(
             "sbt",
-            ['"searchApi/run"'],
+            [
+                `-DsearchApi.debug="${this.searchApiDebugMode}"`,
+                '"searchApi/run"'
+            ],
             {
                 cwd: this.workspaceRoot,
                 stdio: "inherit",
@@ -978,9 +1140,7 @@ export default class ServiceRunner {
     }
 
     async destroySearchApi() {
-        if (this.searchApiProcess && !this.searchApiProcess.killed) {
-            this.searchApiProcess.kill();
-        }
+        await this.kill(this.searchApiProcess);
     }
 
     /**

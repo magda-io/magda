@@ -26,7 +26,8 @@ import au.csiro.data61.magda.client.RegistryExternalInterface
 class StreamControllerTest extends FlatSpec with Matchers {
 
   implicit val system: ActorSystem = ActorSystem("StreamControllerTest")
-  implicit val ec: ExecutionContextExecutor = system.dispatcher
+  implicit val ec: ExecutionContextExecutor =
+    system.dispatchers.lookup("indexer.stream-dispatcher")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val config: Config = ConfigFactory.load()
 

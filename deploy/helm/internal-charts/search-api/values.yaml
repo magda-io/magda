@@ -10,6 +10,41 @@ defaultImage:
   pullPolicy: IfNotPresent
   pullSecrets: false
 
+autoPingJobImage: 
+  name: "node"
+  repository: "docker.io"
+  tag: "18-alpine"
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+autoPing:
+  # -- Whether turn on the cronjob to auto ping search api.
+  # see https://github.com/magda-io/magda/issues/3576 for more details
+  enable: true
+  # -- auto ping cronjob schedule string. specified using unix-cron format (in UTC timezone by default).
+  # @default -- "*/9 * * * *": run every 9 mins
+  schedule: "*/9 * * * *"
+
+livenessProbe:
+  httpGet:
+    path: /v0/status/live
+    port: 6102
+  initialDelaySeconds: 10
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 10
+  successThreshold: 1
+
+readinessProbe:
+  httpGet:
+    path: /v0/status/ready
+    port: 6102
+  initialDelaySeconds: 10
+  periodSeconds: 20
+  timeoutSeconds: 10
+  failureThreshold: 10
+  successThreshold: 1
+
 autoscaler:
   enabled: false
   minReplicas: 1
@@ -20,7 +55,11 @@ resources:
     cpu: 50m
     memory: 300Mi
   limits:
+    memory: 600Mi
     cpu: 200m
+
+# -- JVM max allowed heap memory percentage based on `resources.limits.memory`
+jvmMaxRamPercentage: 75.0
 
 # -- when set to true, search API will print verbose debug info (e.g. ES DSL query) to log
 debug: false
@@ -52,6 +91,7 @@ formatsIndexVersion:
 
 # -- application config. Allow to configure any application config fields.
 # For all available configuration fields and their default values, please refer to [application.conf](https://github.com/magda-io/magda/blob/main/magda-search-api/src/main/resources/application.conf)
+# and [common.conf](https://github.com/magda-io/magda/blob/main/magda-scala-common/src/main/resources/common.conf) (e.g. for Hybrid search related config)
 # This config field is available since v2.2.5
 # Although can be set via `.Values.appConfig` as well, the following config fields will override the config set via `.Values.appConfig`:
 # `.Values.debug`, `.Values.datasetsIndexVersion`, `.Values.regionsIndexVersion`, `.Values.publishersIndexVersion`, `.Values.formatsIndexVersion`,
@@ -62,6 +102,9 @@ appConfig:
     serverUrl: http://opensearch:9200
   authApi:
     baseUrl: http://authorization-api
+  embeddingApi:
+    baseUrl: http://magda-embedding-api
   # -- whether print out full config data at application starting up
   # for debug purpose only
   printFullConfig: false
+

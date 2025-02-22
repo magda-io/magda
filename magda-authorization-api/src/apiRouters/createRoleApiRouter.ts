@@ -152,7 +152,6 @@ export default function createRoleApiRouter(options: ApiRouterOptions) {
      *        "email":"fred.nerk@data61.csiro.au",
      *        "photoURL":"...",
      *        "source":"google",
-     *        "isAdmin": true,
      *        "orgUnitId": "..."
      *    }]
      *

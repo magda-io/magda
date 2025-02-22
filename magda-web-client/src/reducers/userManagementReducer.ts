@@ -16,7 +16,6 @@ export type User = {
     photoURL: string;
     source: string;
     sourceId?: string;
-    isAdmin: boolean;
     roles: Role[];
     permissions: Permission[];
     orgUnitId?: string;
@@ -42,7 +41,6 @@ const defaultUserInfo: User = {
     email: "",
     photoURL: "",
     source: "",
-    isAdmin: false,
     roles: [
         {
             id: ANONYMOUS_USERS_ROLE_ID,
@@ -58,12 +56,14 @@ export type UserManagementState = {
     user: User;
     isFetchingWhoAmI: boolean;
     whoAmIError: Error | null;
+    isSigningOut: boolean;
 };
 
 const initialData: UserManagementState = {
     user: { ...defaultUserInfo },
     isFetchingWhoAmI: false,
-    whoAmIError: null
+    whoAmIError: null,
+    isSigningOut: false
 };
 
 const userManagementMapping = (

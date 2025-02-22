@@ -1,10 +1,8 @@
 import { require } from "@magda/esm-utils";
 import cors, { CorsOptions } from "cors";
 import express from "express";
-import helmet, {
-    IHelmetConfiguration,
-    IHelmetContentSecurityPolicyConfiguration
-} from "helmet";
+import { HelmetOptions } from "helmet";
+
 import compression from "compression";
 import basicAuth from "express-basic-auth";
 import _ from "lodash";
@@ -29,6 +27,7 @@ import setupTenantMode from "./setupTenantMode.js";
 import createPool from "./createPool.js";
 import { AuthPluginBasicConfig } from "./createAuthPluginRouter.js";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import createHelmetRouter from "./createHelmetRouter.js";
 
 type Route = {
     to: string;
@@ -52,8 +51,9 @@ export type Config = {
         [localRoute: string]: ProxyTarget;
     };
     authPluginConfigJson: AuthPluginBasicConfig[];
-    helmetJson: IHelmetConfiguration;
-    cspJson: IHelmetContentSecurityPolicyConfiguration;
+    helmetJson: HelmetOptions;
+    helmetPerPathJson: Record<string, HelmetOptions>;
+    cspJson: HelmetOptions["contentSecurityPolicy"];
     corsJson: CorsOptions;
     cookieJson: SessionCookieOptions;
     authorizationApi: string;
@@ -156,10 +156,11 @@ export default function buildApp(app: express.Application, config: Config) {
 
     // Set sensible secure headers
     app.disable("x-powered-by");
-    app.use(helmet(_.merge({}, defaultConfig.helmet, config.helmetJson)));
     app.use(
-        helmet.contentSecurityPolicy(
-            _.merge({}, defaultConfig.csp, config.cspJson)
+        createHelmetRouter(
+            config.helmetJson,
+            config.helmetPerPathJson,
+            config.cspJson
         )
     );
 

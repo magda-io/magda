@@ -49,19 +49,32 @@ magda:
         baseUrl: http://magda-auth-facebook
       autoscaler:
         enabled: false
-      helmet:
-        frameguard: false
       cors:
         credentials: true
         origin: true
-      csp:
-        directives:
-          scriptSrc:
-          - "'self'"
-          - https://*.googletagmanager.com
-          # the following two domains are for downloading Magda UI plugins from github release
-          - github.com
-          - objects.githubusercontent.com
+      cookie:
+        sameSite: "none"
+      helmet:
+        crossOriginResourcePolicy:
+          policy: "cross-origin"
+        contentSecurityPolicy:
+          directives:
+            scriptSrc:
+            - "'self'"
+            - https://*.googletagmanager.com
+            # the following two domains are for downloading Magda UI plugins from github release
+            - github.com
+            - objects.githubusercontent.com
+            imgSrc:
+            - "'self'"
+            - "data:"
+            - https://*.googletagmanager.com
+            - https://*.google-analytics.com
+            connectSrc:
+            - "'self'"
+            - https://*.google-analytics.com
+            - https://*.analytics.google.com
+            - https://*.googletagmanager.com
 
     combined-db:
       magda-postgres:

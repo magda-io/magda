@@ -50,6 +50,5 @@ export const userDataArb = jsc.record<User>({
     email: emailArb,
     photoURL: urlArb,
     source: lcAlphaNumStringArbNe,
-    sourceId: lcAlphaNumStringArbNe,
-    isAdmin: jsc.bool
+    sourceId: lcAlphaNumStringArbNe
 });

@@ -684,6 +684,88 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     authStatusRefreshInterval?: number;
+
+    /**
+     * Whether or not enable in-browser metadata auto-extraction pipelines.
+     * You might want to disable the feature to speed up large files upload.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    enableMetadataExtraction: boolean;
+
+    /**
+     * Whether or not enable chatbot feature.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    enableChatbot: boolean;
+
+    /**
+     * The extension ID of the web-llm service worker chrome extension plugin.
+     * See here for more details: https://github.com/magda-io/magda-llm-service-worker-extension
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    llmExtensionId: string;
+
+    /**
+     * The required version string of the MAGDA web-llm service worker chrome extension plugin.
+     * Support [semver string](https://semver.org/) e.g. ">=2.5.0"
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    llmExtensionRequiredVer: string;
+
+    /**
+     * The installation URL of the web-llm service worker chrome extension plugin.
+     * This URL will be displayed to the user when the extension is not installed.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    llmExtensionInstallationUrl: string;
+
+    /**
+     * Whether alasql should be run in an iframe.
+     * There might be performance benfits to run alasql in iframe.
+     * Besides, as alasql requires runtime code generation, proper CSP (i.e. `unsafe-eval`) would be need in place to allow it run.
+     * The run in iframe option offers better control over CSP as you can specify different CSP just for alasql.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    alasqlRunInIframe: boolean;
+
+    /**
+     * Whether or not the SQL console feature is enabled.
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    enableSQLConsole: boolean;
+
+    /**
+     * The maximum file size that can be loaded into the SQL console.
+     * When the user tries to load a file that is larger than this size, the system will show an error message.
+     *
+     * @type {number}
+     * @memberof ConfigDataType
+     */
+    sqlConsoleMaxFileSize: number;
+
+    /**
+     * The maximum number of result rows will be displayed in SQLConsole UI.
+     * Users can still download the full result as CSV file via download button.
+     * Set to `0` to make it unlimited.
+     *
+     * @type {number}
+     * @memberof ConfigDataType
+     */
+    sqlConsoleMaxDisplayRows: number;
 }
 
 const serverConfig: ConfigDataType = window.magda_server_config || {};
@@ -760,14 +842,16 @@ const baseExternalUrl = serverConfig.baseExternalUrl
     ? baseUrl
     : urijs().segment([]).search("").fragment("").toString();
 
-// when UI domain is different from backend domain, we set credentials: "include"
-export const commonFetchRequestOptions: RequestInit = !isBackendSameOrigin
-    ? {
-          credentials: "include"
-      }
-    : {
-          credentials: "same-origin"
-      };
+export const commonFetchRequestOptions: RequestInit = {
+    /**
+     * When UI domain is different from backend domain (e.g. for local dev site debugging or UI only dev site deployment), we can set credentials: "include" to allow cookies to be sent with the request.
+     * Otherwise, the local dev UI site (e.g. when you run UI via dev server via local host) will not be able to authenticate with the backend.
+     * However, this will cause CORS requests to fail when the Access-Control-Allow-Origin response header was set to a wildcard `*`.
+     * In this case, you might want to adjust this value for local debugging.
+     * Alternatively, you can set the `Access-Control-Allow-Origin` response header to the actual domain of the UI site via getaway module helm chart config.
+     */
+    credentials: "same-origin"
+};
 
 AuthDecisionQueryClient.fetchOptions = { ...commonFetchRequestOptions };
 
@@ -994,7 +1078,40 @@ export const config: ConfigDataType = {
         : "/home",
     authStatusRefreshInterval: serverConfig?.authStatusRefreshInterval
         ? serverConfig.authStatusRefreshInterval
-        : 300000
+        : 300000,
+    enableMetadataExtraction:
+        typeof serverConfig?.enableMetadataExtraction === "boolean"
+            ? serverConfig.enableMetadataExtraction
+            : false,
+    enableChatbot:
+        typeof serverConfig?.enableChatbot === "boolean"
+            ? serverConfig.enableChatbot
+            : true,
+    llmExtensionId: serverConfig?.llmExtensionId
+        ? serverConfig.llmExtensionId
+        : // this is the ID of the default extension allow access from domain magda.io
+          "ljadmjdilnpmlhopijgimonfackfngmi",
+    llmExtensionRequiredVer: serverConfig?.llmExtensionRequiredVer
+        ? serverConfig.llmExtensionRequiredVer
+        : "^1.0.4",
+    llmExtensionInstallationUrl: serverConfig?.llmExtensionInstallationUrl
+        ? serverConfig.llmExtensionInstallationUrl
+        : "https://github.com/magda-io/magda-llm-service-worker-extension",
+    enableSQLConsole:
+        typeof serverConfig?.enableSQLConsole === "boolean"
+            ? serverConfig.enableSQLConsole
+            : true,
+    alasqlRunInIframe: serverConfig?.alasqlRunInIframe
+        ? serverConfig.alasqlRunInIframe
+        : true,
+    sqlConsoleMaxFileSize:
+        typeof serverConfig?.sqlConsoleMaxFileSize === "number"
+            ? serverConfig.sqlConsoleMaxFileSize
+            : 52428800,
+    sqlConsoleMaxDisplayRows:
+        typeof serverConfig?.sqlConsoleMaxDisplayRows === "number"
+            ? serverConfig.sqlConsoleMaxDisplayRows
+            : 1000
 };
 
 export type Config = typeof config;

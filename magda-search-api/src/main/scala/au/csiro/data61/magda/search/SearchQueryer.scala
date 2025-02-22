@@ -10,18 +10,19 @@ import au.csiro.data61.magda.api.model.{
 import au.csiro.data61.magda.model.Auth.AuthDecision
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.model.TenantId._
+import com.sksamuel.elastic4s.ElasticClient
 
 import scala.concurrent.Future
 
 trait SearchQueryer {
 
+  def getClient: Future[ElasticClient]
+
   def search(
-      authDecision: AuthDecision,
       query: Query,
       start: Long,
       limit: Int,
-      facetSize: Int,
-      tenantId: TenantId
+      facetSize: Int
   ): Future[SearchResult]
 
   def autoCompleteQuery(
@@ -33,13 +34,11 @@ trait SearchQueryer {
   ): Future[AutoCompleteQueryResult]
 
   def searchFacets(
-      authDecision: AuthDecision,
       facetType: FacetType,
       facetQuery: Option[String],
       generalQuery: Query,
       start: Int,
-      limit: Int,
-      tenantId: TenantId
+      limit: Int
   ): Future[FacetSearchResult]
 
   def searchRegions(

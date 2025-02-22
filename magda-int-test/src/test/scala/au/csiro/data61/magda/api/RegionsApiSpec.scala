@@ -1,5 +1,7 @@
 package au.csiro.data61.magda.api
 
+import akka.actor.ActorSystem
+
 import java.net.URL
 import akka.event.Logging
 import au.csiro.data61.magda.api.model.{Protocols, RegionSearchResult}
@@ -19,7 +21,7 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.client.{AuthApiClient, EmbeddingApiClient}
 import au.csiro.data61.magda.model.Registry.{
   MAGDA_ADMIN_PORTAL_ID,
   MAGDA_TENANT_ID_HEADER
@@ -33,11 +35,18 @@ class RegionsApiSpec
     with ScalatestRouteTest
     with MagdaElasticSugar {
 
-  implicit val ec = system.dispatcher
   implicit val config = TestActorSystem.config
+  implicit val ec = system.dispatcher
 
   val logger = Logging(system, getClass)
   implicit val clientProvider = new DefaultClientProvider
+  implicit val embeddingApiClient =
+    new EmbeddingApiClient()(
+      config,
+      ActorSystem(actorSystemNameFrom(getClass), config),
+      ec,
+      materializer
+    )
 
   val searchQueryer = new ElasticSearchQueryer(fakeIndices)
   val authApiClient = new AuthApiClient()

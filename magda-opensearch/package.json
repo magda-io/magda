@@ -1,10 +1,10 @@
 {
   "name": "@magda/opensearch",
-  "version": "4.2.4",
+  "version": "5.0.0",
   "description": "MAGDA's custom OpenSearch docker image.",
   "scripts": {
-    "dev": "docker-compose up",
-    "dev-stop": "docker-compose down",
+    "dev": "docker compose up",
+    "dev-stop": "docker compose down",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push",
@@ -70,7 +70,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^4.2.4"
+    "@magda/scripts": "^5.0.0"
   },
   "magda": {
     "categories": {
