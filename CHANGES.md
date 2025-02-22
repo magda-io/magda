@@ -2,11 +2,16 @@
 
 ## v5.0.0
 
-- #3572: Allow different helmet config to be specified per request path & upgrade helmet to v8.0.0
+- #3549 New feature: Hybrid search engine
+- #3570 New feature: In-browser Local LLM powered Chatbot
 - #3571 New feature: a SQL console UI Allows the user to run SQL on tabular data files at client side
+- #3572 Allow different helmet config to be specified per request path & upgrade helmet to v8.0.0
 - #3573 Make JVM MaxRAMPercentage option configurable for all scala services via helm charts
 - #3575 Remove unused & obsolete isAdmin field on users table
 - #3576 Avoid search engine entering idle mode
+- #3574 Allow disabling frontend auto metadata extraction feature via config
+- Include [magda-embedding-api](https://github.com/magda-io/magda-embedding-api) v1.1.0 to support #3549
+- fixes: avoid bundling `auth-api-client` typescript definition in `authentication-plugin-sdk` to prevent TS2345 type error
 
 ## v4.2.5
 
