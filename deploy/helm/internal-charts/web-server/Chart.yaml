@@ -1,7 +1,7 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: web-server
-version: 4.2.4
+version: 5.0.0
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
