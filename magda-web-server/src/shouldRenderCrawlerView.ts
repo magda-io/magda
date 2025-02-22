@@ -10,15 +10,34 @@ const browserNames = [
     "maxthon"
 ];
 
+const crawlerPatterns = [
+    "Googlebot\\/", // Google
+    "Google-InspectionTool\\/", // Google inspectionTool
+    "bingbot", // Bing
+    "Slurp", // Yahoo
+    "DuckDuckBot", // DuckDuckGo
+    "Baiduspider", // Baidu
+    "yandex\\.com\\/bots", // Yandex
+    "Sogou", // Sogou
+    "ia_archiver" // Alexa
+];
+
+let crawlerRegex: RegExp;
+
+const isCrawler = (ua: string): boolean => {
+    if (!ua || typeof ua !== "string") {
+        return false;
+    }
+    if (!crawlerRegex) {
+        crawlerRegex = new RegExp(crawlerPatterns.join("|"), "i");
+    }
+    return crawlerRegex.test(ua);
+};
+
 const isBrowserName = (ua: string) => {
     ua = ua.toLowerCase();
     return browserNames.findIndex((name) => ua.indexOf(name) !== -1) !== -1;
 };
-
-const isBot = (ua: string): boolean =>
-    ua.match(
-        /curl|Bot|B-O-T|Crawler|Spider|Spyder|Yahoo|ia_archiver|Covario-IDS|findlinks|DataparkSearch|larbin|Mediapartners-Google|NG-Search|Snappy|Teoma|Jeeves|Charlotte|NewsGator|TinEye|Cerberian|SearchSight|Zao|Scrubby|Qseero|PycURL|Pompos|oegp|SBIder|yoogliFetchAgent|yacy|webcollage|VYU2|voyager|updated|truwoGPS|StackRambler|Sqworm|silk|semanticdiscovery|ScoutJet|Nymesis|NetResearchServer|MVAClient|mogimogi|Mnogosearch|Arachmo|Accoona|holmes|htdig|ichiro|webis|LinkWalker|lwp-trivial/i
-    ) && !ua.match(/mobile|Playstation/i);
 
 const isDiscourseCrawler = (ua: string): boolean => ua.toLowerCase() === "ruby";
 
@@ -36,11 +55,11 @@ const shouldRenderCrawlerView = (
     if (!uaStr) {
         return false;
     }
+    if (isCrawler(uaStr)) {
+        return true;
+    }
     if (isBrowserName(uaStr)) {
         return false;
-    }
-    if (isBot(uaStr)) {
-        return true;
     }
     if (enableDiscourseSupport && isDiscourseCrawler(uaStr)) {
         return true;

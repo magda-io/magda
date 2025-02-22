@@ -19,7 +19,8 @@ class StreamSourceControllerTest
     with BeforeAndAfterEach {
 
   implicit val system: ActorSystem = ActorSystem("StreamSourceControllerTest")
-  implicit val ec: ExecutionContextExecutor = system.dispatcher
+  implicit val ec: ExecutionContextExecutor =
+    system.dispatchers.lookup("indexer.stream-dispatcher")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val config: Config = ConfigFactory.load()
 

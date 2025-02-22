@@ -13,9 +13,11 @@ import buildSitemapRouter from "./buildSitemapRouter.js";
 import getIndexFileContent from "./getIndexFileContent.js";
 import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl.js";
 import standardiseUiBaseUrl from "./standardiseUiBaseUrl.js";
-import createCralwerViewRouter from "./createCralwerViewRouter.js";
+import createCrawlerViewRouter from "./createCrawlerViewRouter.js";
 import moment from "moment-timezone";
 import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash.js";
+import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl.js";
+import addRobotsMeta from "./addRobotsMeta.js";
 
 const argv = yargs
     .config()
@@ -325,6 +327,56 @@ const argv = yargs
             "No. of seconds that sitemap result will be cached. By default, 86400 i.e. 1 day.",
         default: 86400,
         type: "number"
+    })
+    .option("enableMetadataExtraction", {
+        describe:
+            "Whether or not enable in-browser metadata auto-extraction pipelines. You might want to disable the feature to speed up large files upload.",
+        default: false,
+        type: "boolean"
+    })
+    .option("enableChatbot", {
+        describe: "Whether or not enable chatbot feature.",
+        default: false,
+        type: "boolean"
+    })
+    .option("llmExtensionId", {
+        describe:
+            "The extension ID of the web-llm service worker chrome extension plugin.",
+        default: "ljadmjdilnpmlhopijgimonfackfngmi",
+        type: "string"
+    })
+    .option("llmExtensionRequiredVer", {
+        describe:
+            "The required version string of the MAGDA web-llm service worker chrome extension plugin. " +
+            `Support [semver string](https://semver.org/) e.g. ">=2.5.0"`,
+        default: "^1.0.4",
+        type: "string"
+    })
+    .option("llmExtensionInstallationUrl", {
+        describe:
+            "The installation URL of the web-llm service worker chrome extension plugin." +
+            "This URL will be displayed to the user when the extension is not installed.",
+        default:
+            "https://github.com/magda-io/magda-llm-service-worker-extension",
+        type: "string"
+    })
+    .option("enableSQLConsole", {
+        describe: "Whether or not the SQL console feature is enabled.",
+        default: true,
+        type: "boolean"
+    })
+    .option("sqlConsoleMaxFileSize", {
+        describe:
+            "The maximum file size that can be loaded into the SQL console.",
+        default: 52428800,
+        type: "number"
+    })
+    .option("sqlConsoleMaxDisplayRows", {
+        describe:
+            "the maximum number of result rows will be displayed in SQLConsole UI." +
+            "Users can still download the full result as CSV file via download button.",
+        default: 1000,
+        type: "number"
     }).argv;
 
 // set default timezone
@@ -374,6 +426,7 @@ const apiBaseUrl = addTrailingSlash(
 );
 
 const webServerConfig = {
+    ...argv,
     image: argv.image,
     disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
     baseUrl: baseUrl,
@@ -514,10 +567,11 @@ console.log("Is Discourse Integration Enabled: ", enableDiscourseSupport);
 // crawler view router
 if (argv.enableCrawlerViews || enableDiscourseSupport) {
     app.use(
-        createCralwerViewRouter({
+        createCrawlerViewRouter({
             registryApiBaseUrl: argv.registryApiBaseUrlInternal,
-            baseUrl: baseExternalUrl,
-            enableDiscourseSupport: enableDiscourseSupport
+            enableDiscourseSupport: enableDiscourseSupport,
+            baseExternalUrl,
+            uiBaseUrl
         })
     );
 }
@@ -542,13 +596,22 @@ const topLevelRoutes = [
     "home"
 ];
 
+const allowToCrawlRoutes = ["dataset", "home"];
+
 topLevelRoutes.forEach((topLevelRoute) => {
-    app.get("/" + topLevelRoute, async function (req, res) {
-        res.send(await getIndexFileContentZeroArgs());
-    });
-    app.get("/" + topLevelRoute + "/*", async function (req, res) {
-        res.send(await getIndexFileContentZeroArgs());
-    });
+    const routeHandle = async function (
+        req: express.Request,
+        res: express.Response
+    ) {
+        if (allowToCrawlRoutes.indexOf(topLevelRoute) != -1) {
+            // allow search engine robot to crawl. Thus, no robots meta tag.
+            res.send(await getIndexFileContentZeroArgs());
+        } else {
+            res.send(addRobotsMeta(await getIndexFileContentZeroArgs()));
+        }
+    };
+    app.get("/" + topLevelRoute, routeHandle);
+    app.get("/" + topLevelRoute + "/*", routeHandle);
 });
 
 app.get("/page/*", async function (req, res) {
@@ -558,12 +621,18 @@ app.get("/page/*", async function (req, res) {
 const robotsTxt = `User-agent: *
 Crawl-delay: 100
 Disallow: /auth
-Disallow: /search
+Disallow: ${uiBaseUrl}search
+Disallow: ${uiBaseUrl}organisations
+Disallow: ${uiBaseUrl}*?*q=*
 
-Sitemap: ${baseExternalUrl ? baseExternalUrl : "/"}sitemap.xml
+Sitemap: ${getAbsoluteUrl(
+    uiBaseUrl,
+    baseExternalUrl ? baseExternalUrl : "/"
+)}sitemap.xml
 `;
 
 app.use("/robots.txt", (_, res) => {
+    res.setHeader("content-type", "text/plain");
     res.status(200).send(robotsTxt);
 });
 
@@ -571,6 +640,7 @@ app.use("/robots.txt", (_, res) => {
 app.use(
     buildSitemapRouter({
         baseExternalUrl,
+        uiBaseUrl,
         registry: new Registry({
             baseUrl: argv.registryApiBaseUrlInternal,
             maxRetries: 0,

@@ -1,5 +1,8 @@
 const { isEqual } = require("lodash");
 const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
+const IgnorePlugin = require("webpack").IgnorePlugin;
+const TerserPlugin = require("terser-webpack-plugin");
 const path = require("path");
 
 require("dotenv").config();
@@ -16,17 +19,15 @@ module.exports = {
     },
     webpack: {
         configure(webpackConfig) {
-            // For reasons that are not entirely clear, production builds take
-            // ages (over an hour in Windows/WSL) when Terser is allowed to
-            // run in parallel.
-            const terser = webpackConfig.optimization.minimizer.find(
-                (min) => min && min.options && min.options.terserOptions
+            const minimizers = webpackConfig.optimization.minimizer.filter(
+                (min) => !(min instanceof TerserPlugin)
             );
-            if (terser) {
-                terser.options.parallel = false;
-                terser.options.sourceMap =
-                    process.env.GENERATE_SOURCEMAP !== "false";
-            }
+            webpackConfig.optimization.minimizer = [
+                new TerserPlugin({
+                    exclude: /alasql/
+                }),
+                ...minimizers
+            ];
 
             const updatedRules = webpackConfig.module.rules.filter(
                 (rule) => !isEqual(rule, { parser: { requireEnsure: false } })
@@ -54,7 +55,8 @@ module.exports = {
                             ) {
                                 rule.exclude = [
                                     rule.exclude,
-                                    /.*\/lexicon.js$/
+                                    /.*\/lexicon.js$/,
+                                    /alasql.min.js$/
                                 ];
                             }
                         });
@@ -72,18 +74,20 @@ module.exports = {
                 })
             );
 
+            webpackConfig.plugins.push(new NodePolyfillPlugin());
+
+            webpackConfig.module.noParse = [/dist\/alasql\.min\.js$/];
+            webpackConfig.plugins.push(
+                new IgnorePlugin({
+                    resourceRegExp: /(^fs$|cptable|^es6-promise$|^net$|^tls$|^forever-agent$|^tough-cookie$|^path$|^request$|react-native|^vertx$)/
+                })
+            );
+
             webpackConfig.externals = {
                 react: "React",
                 "react-dom": "ReactDOM",
                 "react-router": "ReactRouter",
                 "react-router-dom": "ReactRouterDOM"
-            };
-
-            webpackConfig.resolve.fallback = {
-                zlib: require.resolve("browserify-zlib"),
-                stream: require.resolve("stream-browserify"),
-                path: require.resolve("path-browserify"),
-                assert: require.resolve("assert/")
             };
 
             webpackConfig.stats = "verbose";

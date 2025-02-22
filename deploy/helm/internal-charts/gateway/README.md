@@ -1,6 +1,6 @@
 # gateway
 
-![Version: 4.2.1](https://img.shields.io/badge/Version-4.2.1-informational?style=flat-square)
+![Version: 4.2.4](https://img.shields.io/badge/Version-4.2.4-informational?style=flat-square)
 
 The Gateway Component of Magda that routes incoming requets to other magda components.
 
@@ -26,14 +26,7 @@ Kubernetes: `>= 1.14.0-0`
 | cors.exposedHeaders[2] | string | `"Accept-Ranges"` |  |
 | cors.exposedHeaders[3] | string | `"Content-Length"` |  |
 | cors.exposedHeaders[4] | string | `"x-magda-event-id"` |  |
-| csp.browserSniff | bool | `false` |  |
-| csp.directives.frame-ancestors[0] | string | `"'self'"` |  |
-| csp.directives.objectSrc[0] | string | `"'none'"` |  |
-| csp.directives.scriptSrc[0] | string | `"'self'"` |  |
-| csp.directives.scriptSrc[1] | string | `"'unsafe-inline'"` |  |
-| csp.directives.scriptSrc[2] | string | `"https://*.googletagmanager.com"` |  |
-| csp.directives.workerSrc[0] | string | `"'self'"` |  |
-| csp.directives.workerSrc[1] | string | `"blob:"` |  |
+| csp | object | `{}` | Since Magda v5, the content security policy config section here is deprecated. You should set `content security policy` config via the `contentSecurityPolicy` key of the `helmet` config section. This config section is still supported for backwards compatibility reasons and will be removed in future. The config supplied here will override the config supplied via `helmet.contentSecurityPolicy.directives`. |
 | defaultCacheControl | string | `"public, max-age=60"` | If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable. |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
@@ -48,7 +41,8 @@ Kubernetes: `>= 1.14.0-0`
 | enableCkanRedirection | bool | `false` | wether or not enable CKAN redirection. when it's on, any incoming ckan alike URL will be redirected to the CKAN instance URL  that is specified by config option `ckanRedirectionDomain` and `ckanRedirectionPath`. |
 | enableHttpsRedirection | bool | `false` | whether or not redirect incoming request using HTTP protocol to HTTPs |
 | enableWebAccessControl | bool | `false` | wether or not enable http basic auth access control. `username` & `password` will be retrieved from k8s secrets `web-access-secret`, `username` & `password` fields. |
-| helmet.frameguard | bool | `false` |  |
+| helmet | object | `{"contentSecurityPolicy":{"directives":{"defaultSrc":null,"fontSrc":null,"imgSrc":null,"scriptSrc":["'self'"],"scriptSrcAttr":null,"styleSrc":null,"workerSrc":["'self'","blob:"]}},"originAgentCluster":false,"referrerPolicy":{"policy":"strict-origin-when-cross-origin"},"strictTransportSecurity":false,"xContentTypeOptions":false,"xDnsPrefetchControl":false,"xDownloadOptions":false,"xFrameOptions":false,"xPermittedCrossDomainPolicies":false}` | Helmet config options. See https://www.npmjs.com/package/helmet Since Magda v5, you should supply content security policy config via `contentSecurityPolicy` key here. A separate `csp` config section for content security policy is deprecated and will be removed in future. You should review the default config values here and [helmet default settings](https://github.com/helmetjs/helmet?tab=readme-ov-file#reference) to determine whether you need to change the settings here. |
+| helmetPerPath | object | `{}` | Allow optionally to set different helmet config per request path. e.g. you can specify different config for path `/routeA/abc` with: helmetPerPath:   "/routeA/abc":      referrerPolicy:       policy: strict-origin-when-cross-origin |
 | image.name | string | `"magda-gateway"` |  |
 | proxyTimeout | int | nil (120 seconds default value will be used by upstream lib internally) | How long time (in seconds) before upstream service must complete request in order to avoid request timeout error. If not set, the request will time out after 120 seconds. |
 | registryQueryCacheMaxKeys | number | `nil` | Specifies a maximum amount of keys that can be stored in the registryQueryCache. By default, it will be set to 500 seconds if leave blank. |

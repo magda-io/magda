@@ -38,7 +38,8 @@ class StreamSourceController(
 ) {
 
   val log = Logging(system, getClass)
-  implicit val ec: ExecutionContextExecutor = system.dispatcher
+  implicit val ec: ExecutionContextExecutor =
+    system.dispatchers.lookup("indexer.stream-dispatcher")
   implicit val scheduler: Scheduler = system.scheduler
 
   private val GET_MORE_DATASETS: String = "Get more datasets"

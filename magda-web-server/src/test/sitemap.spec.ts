@@ -35,7 +35,8 @@ describe("sitemap router", () => {
         router = buildSitemapRouter({
             baseExternalUrl,
             registry,
-            cacheSeconds: 10
+            cacheSeconds: 10,
+            uiBaseUrl: "/"
         });
         registryScope = nock(registryUrl);
     });
@@ -94,6 +95,7 @@ describe("sitemap router", () => {
             const app = buildSitemapRouter({
                 baseExternalUrl,
                 registry,
+                uiBaseUrl: "/",
                 cacheSeconds: 1 //-- set cache time to 1s
             });
 

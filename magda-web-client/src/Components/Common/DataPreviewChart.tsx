@@ -10,6 +10,7 @@ import memoize from "memoize-one";
 import { gapi } from "analytics/ga";
 import { DataLoadingResult } from "helpers/CsvDataLoader";
 import { ParsedDistribution } from "helpers/record";
+import loadEcharts from "../../libs/loadEcharts";
 
 import "./DataPreviewChart.scss";
 import unknown2Error from "@magda/typescript-common/dist/unknown2Error.js";
@@ -142,7 +143,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
     async componentDidMount() {
         try {
             if (!ReactEcharts) {
-                ReactEcharts = (await import("echarts-for-react")).default;
+                ReactEcharts = await loadEcharts();
             }
             this.processChartDataUpdates();
         } catch (e) {

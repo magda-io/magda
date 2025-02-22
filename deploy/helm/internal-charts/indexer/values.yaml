@@ -23,6 +23,10 @@ resources:
     memory: 250Mi
   limits:
     cpu: 250m
+    memory: 1100Mi
+
+# -- JVM max allowed heap memory percentage based on `resources.limits.memory`
+jvmMaxRamPercentage: 75.0
 
 elasticsearch:
   useGcsSnapshots: false
@@ -37,6 +41,7 @@ autoReIndex:
 
 # -- application config. Allow to configure any application config fields.
 # For all available configuration fields and their default values, please refer to [application.conf](https://github.com/magda-io/magda/blob/main/magda-indexer/src/main/resources/application.conf)
+# and [common.conf](https://github.com/magda-io/magda/blob/main/magda-scala-common/src/main/resources/common.conf) (e.g. for Hybrid search related config)
 # This config field is available since v2.2.5
 # Previous versions' obsolete are still supported for backward compatible reason
 appConfig:
@@ -48,6 +53,8 @@ appConfig:
     replicas: 0
   authApi:
     baseUrl: http://authorization-api
+  embeddingApi:
+    baseUrl: http://magda-embedding-api
   registry:
     baseUrl: http://registry-api
     readOnlyBaseUrl: http://registry-api-read-only

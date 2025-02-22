@@ -62,13 +62,5 @@ export default {
     extraWebRoutes: {
         "preview-map": "http://localhost:6110"
     },
-    csp: {
-        directives: {
-            scriptSrc: ["'self'"],
-            objectSrc: ["'none'"]
-        },
-        browserSniff: false
-    },
-    helmet: {},
     cors: {}
 };

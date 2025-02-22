@@ -39,6 +39,7 @@ spec:
         - containerPort: 6101
         command:
         - "bin/magda-registry-api"
+        - "-J-XX:MaxRAMPercentage={{ .root.Values.jvmMaxRamPercentage | printf "%.2f" }}"
         - "-Dconfig.file=/etc/config/deploy-application.conf"
         - "-Drole={{ .role }}"
         - "-Dakka.http.server.request-timeout={{ .deploymentConfig.requestTimeout }}"

@@ -1,7 +1,7 @@
 version: "3"
 services:
   test-opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:2.15.0
+    image: opensearchproject/opensearch-dashboards:2.17.1
     ports:
       - 5601:5601 # Map host port 5601 to container port 5601
     expose:

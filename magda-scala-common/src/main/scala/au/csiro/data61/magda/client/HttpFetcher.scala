@@ -19,7 +19,6 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.duration.MILLISECONDS
 import akka.http.scaladsl.model.HttpHeader
 import akka.pattern.after
-import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.AppConfig
 
 import scala.util.{Failure, Success}
@@ -29,6 +28,10 @@ import akka.stream.scaladsl._
 import scala.concurrent.duration.FiniteDuration
 import scala.util.control.NonFatal
 import scala.util.Random
+import spray.json._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
+import akka.util.ByteString
 
 trait HttpFetcher {
   def get(path: String, headers: Seq[HttpHeader] = Seq()): Future[HttpResponse]
@@ -50,17 +53,57 @@ trait HttpFetcher {
   )(
       implicit m: ToEntityMarshaller[T]
   ): Future[HttpResponse]
+
+  def jsonResponse(
+      res: HttpResponse,
+      url: Option[String] = None,
+      method: Option[String] = None
+  )(
+      implicit system: ActorSystem,
+      ec: ExecutionContext
+  ): Future[JsValue] = {
+    if (!res.status.isSuccess()) {
+      res.entity.dataBytes.runFold(ByteString(""))(_ ++ _).flatMap { body =>
+        val errorMsg =
+          s"Failed to request${method.map(" " + _).getOrElse("")}${url
+            .map(" " + _)
+            .getOrElse("")}. ${res.status.value}. ${body.utf8String}"
+        system.log.error(errorMsg)
+        Future.failed(
+          new Exception(errorMsg)
+        )
+      }
+    } else {
+      Unmarshal(res).to[JsValue].recover {
+        case e: Throwable =>
+          res.entity.dataBytes.runFold(ByteString(""))(_ ++ _).map { body =>
+            system.log.error(
+              s"Failed to Unmarshal JSON response for request${method.map(" " + _).getOrElse("")}${url
+                .map(" " + _)
+                .getOrElse("")}: {}",
+              body.utf8String
+            )
+          }
+          throw e
+      }
+    }
+  }
 }
 
 trait MockHttpFetcher extends HttpFetcher {
   def callCount: Unit
 }
 
+trait DefaultHttpFetcherUnmarshalType[T]
+
 class HttpFetcherImpl(
     baseUrl: URL,
     requestProcessingQueue: SourceQueueWithComplete[
       (HttpRequest, Promise[HttpResponse])
-    ]
+    ],
+    setupMaxRetries: Option[Int] = None,
+    setupRetryBackoff: Option[FiniteDuration] = None,
+    setupMaxRetryBackoff: Option[FiniteDuration] = None
 )(
     implicit val system: ActorSystem,
     val materializer: Materializer,
@@ -68,10 +111,10 @@ class HttpFetcherImpl(
 ) extends HttpFetcher {
 
   private val config = AppConfig.conf()
-  private val maxRetries: Int =
+  private val defaultMaxRetries: Int =
     config.getInt("akka.http.host-connection-pool.max-retries")
 
-  private val retryBackoff = Duration.fromNanos(
+  private val defaultRetryBackoff = Duration.fromNanos(
     config
       .getDuration(
         "akka.http.host-connection-pool.base-connection-backoff",
@@ -79,13 +122,18 @@ class HttpFetcherImpl(
       )
   )
 
-  private val maxRetryBackoff = Duration.fromNanos(
+  private val defaultMaxRetryBackoff = Duration.fromNanos(
     config
       .getDuration(
         "akka.http.host-connection-pool.max-connection-backoff",
         TimeUnit.NANOSECONDS
       )
   )
+
+  private def maxRetries = setupMaxRetries.getOrElse(defaultMaxRetries)
+  private def retryBackoff = setupRetryBackoff.getOrElse(defaultRetryBackoff)
+  private def maxRetryBackoff =
+    setupMaxRetryBackoff.getOrElse(defaultMaxRetryBackoff)
 
   private def queueRequest(request: HttpRequest): Future[HttpResponse] = {
     val responsePromise = Promise[HttpResponse]()
@@ -272,6 +320,7 @@ class HttpFetcherImpl(
       .withHeaders(scala.collection.immutable.Seq.concat(headers))
     queueRequest(request)
   }
+
 }
 
 object HttpFetcher {
@@ -286,7 +335,13 @@ object HttpFetcher {
     (HttpRequest, Promise[HttpResponse])
   ]]
 
-  def apply(baseUrl: URL)(
+  def apply(
+      baseUrl: URL,
+      parallelism: Option[Int] = None,
+      maxRetries: Option[Int] = None,
+      retryBackoff: Option[FiniteDuration] = None,
+      maxRetryBackoff: Option[FiniteDuration] = None
+  )(
       implicit system: ActorSystem,
       materializer: Materializer,
       ec: ExecutionContext
@@ -309,22 +364,38 @@ object HttpFetcher {
             Http()
               .cachedHostConnectionPoolHttps[Promise[HttpResponse]](host, port)
         }
-        val queue = Source
+        val baseQueue = Source
           .queue[(HttpRequest, Promise[HttpResponse])](
             queueSize,
             // drop oldest request
             OverflowStrategy.dropHead
           )
+
+        val controlQueue = if (parallelism.isEmpty) {
+          baseQueue
+        } else {
+          baseQueue
+            .mapAsync(parallelism.get)(Future.successful(_))
+        }
+
+        val queue = controlQueue
           .via(poolClientFlow)
           .to(Sink.foreach({
             case ((Success(resp), p)) => p.success(resp)
             case ((Failure(e), p))    => p.failure(e)
           }))
           .run()
+
         queueMap += (hostQueueKey -> queue)
         queue
     }
 
-    new HttpFetcherImpl(baseUrl, requestProcessingQueue)
+    new HttpFetcherImpl(
+      baseUrl,
+      requestProcessingQueue,
+      maxRetries,
+      retryBackoff,
+      maxRetryBackoff
+    )
   }
 }

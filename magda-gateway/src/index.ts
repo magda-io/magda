@@ -51,10 +51,18 @@ const argv = addJwtSecretFromEnvVar(
         })
         .option("helmetJson", {
             describe:
-                "Path of the json that defines node-helmet options, as per " +
-                "https://helmetjs.github.io/docs/. Node that this _doesn't_ " +
-                "include csp options as these are a separate module. These will " +
+                "Path of the json that defines helmet options, as per " +
+                "https://github.com/helmetjs/helmet. These will " +
                 "be merged with the defaults specified in defaultConfig.ts.",
+
+            type: "string",
+            coerce: coerceJson
+        })
+        .option("helmetPerPathJson", {
+            describe:
+                "Path of the json that defines per request path helmet options, as per " +
+                "https://github.com/helmetjs/helmet. These will " +
+                "be merged with the defaults specified in `helmetJson`.",
 
             type: "string",
             coerce: coerceJson
@@ -62,8 +70,11 @@ const argv = addJwtSecretFromEnvVar(
         .option("cspJson", {
             describe:
                 "Path of the json that defines node-helmet options, as per " +
-                "https://helmetjs.github.io/docs/. These will " +
-                "be merged with the defaults specified in defaultConfig.ts.",
+                "https://github.com/helmetjs/helmet?tab=readme-ov-file#content-security-policy. " +
+                "This option is kept for backwards compatibility reasons. " +
+                "You should supply CSP config via `helmetJson.contentSecurityPolicy`." +
+                "This config option will be removed in future." +
+                "These will be merged with the defaults specified in defaultConfig.ts.",
             type: "string",
             coerce: coerceJson
         })

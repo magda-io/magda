@@ -99,8 +99,9 @@ describe("Integration Tests", function (this) {
             dbPort: 5432,
             proxyRoutesJson: defaultAppConfig.proxyRoutes,
             webProxyRoutesJson: undefined,
-            helmetJson: defaultAppConfig.helmet,
-            cspJson: defaultAppConfig.csp,
+            helmetJson: {},
+            helmetPerPathJson: {},
+            cspJson: {},
             corsJson: defaultAppConfig.cors,
             cookieJson: {
                 sameSite: "lax"

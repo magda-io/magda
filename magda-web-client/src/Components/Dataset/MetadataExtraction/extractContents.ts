@@ -1,5 +1,5 @@
 import XLSX from "xlsx";
-import mammoth from "mammoth";
+import mammoth from "mammoth/mammoth.browser";
 import { MAX_KEYWORDS } from "./extractKeywords";
 import uniq from "lodash/uniq";
 import moment from "moment";

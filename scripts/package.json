@@ -1,6 +1,6 @@
 {
   "name": "@magda/scripts",
-  "version": "4.2.1",
+  "version": "4.2.4",
   "description": "Scripts for building, running, and deploying MAGDA",
   "license": "Apache-2.0",
   "type": "module",
@@ -18,13 +18,10 @@
     "run-typescript-in-nodemon": "run-typescript-in-nodemon.js",
     "retag-and-push": "retag-and-push.js",
     "generate-api-documentation": "generate-api-documentation.js",
-    "create-secrets": "create-secrets/index.js",
     "set-scss-vars": "set-scss-vars.js",
-    "pkg-create-secrets-script": "pkg create-secrets/index.js --out-path create-secrets/build",
     "create-region-synonym-file": "create-region-synonym-file.js",
     "org-tree": "org-tree/index.js",
     "acs-cmd": "acs-cmd/index.js",
-    "set-user-password": "set-user-password.js",
     "create-api-key": "create-api-key.js",
     "update-helm-chart-version": "update-helm-chart-version.js",
     "check-release-version": "check-release-version.js"
@@ -45,7 +42,7 @@
   },
   "dependencies": {
     "@magda/esm-utils": "^1.0.1",
-    "@magda/typescript-common": "^4.2.1",
+    "@magda/typescript-common": "^4.2.4",
     "ansi-styles": "^3.2.1",
     "apidoc": "https://github.com/magda-io/apidoc",
     "chalk": "^2.4.1",
@@ -67,7 +64,6 @@
     "node-fetch": "^3.3.2",
     "nodemon": "^1.11.0",
     "pg": "^8.11.3",
-    "pwgen": "0.1.6",
     "stream-json": "^1.1.3",
     "strip-ansi": "^4.0.0",
     "strip-json-comments": "^2.0.1",

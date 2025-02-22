@@ -18,14 +18,15 @@ object ErrorHandling {
       delay: FiniteDuration,
       retries: Int,
       onRetry: (Int, Throwable) => Unit = (_, _) => {}
-  )(implicit ec: ExecutionContext, s: Scheduler): Future[T] =
-    Future { op() } flatMap (x => x) recoverWith {
+  )(implicit ec: ExecutionContext, s: Scheduler): Future[T] = {
+    op().recoverWith {
       case e: Throwable if retries > 0 =>
-        after(delay, s)({
-          onRetry(retries - 1, e)
-          retry(op, delay, retries - 1, onRetry)
-        })
-    }
+        onRetry(retries - 1, e)
+        after(delay, s)(
+          retry(op, delay, retries - 1, onRetry)(ec, s)
+        )(ec)
+    }(ec)
+  }
 
   object CausedBy {
     def unapply(e: Throwable): Option[Throwable] = Option(e.getCause)

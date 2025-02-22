@@ -21,7 +21,7 @@ import IndexerApiClient from "magda-typescript-common/src/IndexerApiClient.js";
 import fetchRequest from "magda-typescript-common/src/fetchRequest.js";
 import Try from "magda-typescript-common/src/Try.js";
 
-const ENV_SETUP_TIME_OUT = 1200000; // -- 40 mins
+const ENV_SETUP_TIME_OUT = 1200000; // -- 30 mins
 const jwtSecret = uuidV4();
 const authApiClient = new AuthApiClient(
     "http://localhost:6104/v0",
@@ -53,6 +53,7 @@ const indexerApiClient = new IndexerApiClient({
 });
 
 const searchApiUrl = "http://localhost:6102/v0";
+const openSearchUrl = "http://localhost:9200";
 
 async function getDataset(datasetId: string, userId?: string) {
     const config: RequestInit = {};
@@ -90,15 +91,39 @@ describe("search api auth integration tests", function (this) {
     serviceRunner.jwtSecret = jwtSecret;
     serviceRunner.authApiDebugMode = false;
 
+    let datasetIndexName: string = "";
+
     before(async function (this) {
         this.timeout(ENV_SETUP_TIME_OUT);
         await serviceRunner.create();
         await createOrgUnits(authApiClient);
+        let resData = await fetchRequest(
+            "GET",
+            `${openSearchUrl}/_cat/indices?format=json`
+        );
+        datasetIndexName = resData
+            .map((item: any) => item.index)
+            .find((indexName: string) => indexName.startsWith("datasets"));
+        if (!datasetIndexName) {
+            throw new Error("Can't find datasets index");
+        }
     });
 
     after(async function (this) {
         this.timeout(ENV_SETUP_TIME_OUT);
         await serviceRunner.destroy();
+    });
+
+    afterEach(async function () {
+        await fetchRequest(
+            "POST",
+            `${openSearchUrl}/${datasetIndexName}/_delete_by_query?refresh=true`,
+            {
+                query: {
+                    match_all: {}
+                }
+            }
+        );
     });
 
     it("should index accessControl aspect for both datasets & distributions", async () => {

@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## v5.0.0
+
+- #3572: Allow different helmet config to be specified per request path & upgrade helmet to v8.0.0
+- #3571 New feature: a SQL console UI Allows the user to run SQL on tabular data files at client side
+- #3573 Make JVM MaxRAMPercentage option configurable for all scala services via helm charts
+- #3576 Avoid search engine entering idle mode
+
+## v4.2.5
+
+- #3567: Upgrade opensearch to v2.17.1
+
+## v4.2.4
+
+- #3559: Set `conflicts` to true when Indexer performs the trim operation.
+- Increase indexer client connection idle-timeout to avoid encountering connection reset error for downloading large region files
+- Upgraded OpenSearch to v2.16.0
+- #3556: Serves robots.txt as content-type `text/plain` instead and other sitemap & crawler view related improvements.
+- #3564: Add rel="canonical" annotations to dataset & distribution page crawler views
+
+## v4.2.3
+
+- #3553: Make Chart Preview & Table Preview Configurable per Dataset
+- #3554: Replace "schema" portion of URL alike string with [URL] in user supplied content of any emails sent out
+
+## v4.2.2
+
+- Removed the `create-secrets` deployment helper command line tool script as it has not been used since Magda v1.
+
 ## v4.2.1
 
 - #3551: Pagination Bar sometimes might generate `...` button with invalid page number

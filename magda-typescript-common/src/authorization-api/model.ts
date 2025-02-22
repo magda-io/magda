@@ -17,7 +17,7 @@ export interface UserRecord {
     id: string;
     displayName: string;
     photoURL: string;
-    isAdmin: boolean;
+    isAdmin?: boolean;
     orgUnitId: string;
     email: string;
     source: string;

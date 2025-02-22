@@ -3,9 +3,9 @@ package au.csiro.data61.magda.api
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model._
+import au.csiro.data61.magda.api.model.SearchAuthDecision
 import au.csiro.data61.magda.model.misc
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.api.{model => apimodel}
@@ -13,7 +13,13 @@ import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.search.SearchQueryer
 import com.typesafe.config.{Config, ConfigRenderOptions}
-import au.csiro.data61.magda.search.Directives.withDatasetReadAuthDecision
+import au.csiro.data61.magda.search.Directives.{
+  withDatasetAndDistributionReadAuthDecision,
+  withDatasetReadAuthDecision
+}
+import au.csiro.data61.magda.search.elasticsearch.IndexUtils
+import scala.util.{Failure, Success}
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
   * @apiDefine Search Search API
@@ -40,6 +46,8 @@ class SearchApi(
   } else {
     None
   }
+
+  private val readyProbeJobDone = new AtomicBoolean(false)
 
   val routes =
     magdaRoute {
@@ -110,33 +118,41 @@ class SearchApi(
                     formats,
                     publishingState
                 ) =>
-                  withDatasetReadAuthDecision(authApiClient, publishingState) {
-                    authDecision =>
-                      val query = Query.fromQueryParams(
+                  withDatasetAndDistributionReadAuthDecision(
+                    authApiClient,
+                    publishingState
+                  ) { authDecisions =>
+                    val query = Query
+                      .fromQueryParams(
                         generalQuery,
                         publishers,
                         dateFrom,
                         dateTo,
                         regions,
                         formats,
-                        publishingState
+                        publishingState,
+                        authDecision = Some(
+                          SearchAuthDecision(
+                            datasetDecision = authDecisions(0),
+                            distributionDecision = authDecisions(1)
+                          )
+                        ),
+                        tenantId = tenantId
                       )
 
-                      FacetType.fromId(facetId) match {
-                        case Some(facetType) ⇒
-                          complete(
-                            searchQueryer.searchFacets(
-                              authDecision,
-                              facetType,
-                              facetQuery,
-                              query,
-                              start,
-                              limit,
-                              tenantId
-                            )
+                    FacetType.fromId(facetId) match {
+                      case Some(facetType) ⇒
+                        complete(
+                          searchQueryer.searchFacets(
+                            facetType,
+                            facetQuery,
+                            query,
+                            start,
+                            limit
                           )
-                        case None ⇒ complete(NotFound)
-                      }
+                        )
+                      case None ⇒ complete(StatusCodes.NotFound)
+                    }
                   }
               }
             }
@@ -259,50 +275,58 @@ class SearchApi(
                     formats,
                     publishingState
                 ) =>
-                  withDatasetReadAuthDecision(authApiClient, publishingState) {
-                    authDecision =>
-                      val query = Query.fromQueryParams(
+                  withDatasetAndDistributionReadAuthDecision(
+                    authApiClient,
+                    publishingState
+                  ) { authDecisions =>
+                    val query = Query
+                      .fromQueryParams(
                         generalQuery,
                         publishers,
                         dateFrom,
                         dateTo,
                         regions,
                         formats,
-                        publishingState
+                        publishingState,
+                        authDecision = Some(
+                          SearchAuthDecision(
+                            datasetDecision = authDecisions(0),
+                            distributionDecision = authDecisions(1)
+                          )
+                        ),
+                        tenantId = tenantId
                       )
 
-                      onSuccess(
-                        searchQueryer.search(
-                          authDecision,
-                          query,
-                          start,
-                          limit,
-                          facetSize,
-                          tenantId
-                        )
-                      ) { result =>
-                        val status =
-                          if (result.errorMessage.isDefined)
-                            StatusCodes.InternalServerError
-                          else StatusCodes.OK
+                    onSuccess(
+                      searchQueryer.search(
+                        query,
+                        start,
+                        limit,
+                        facetSize
+                      )
+                    ) { result =>
+                      val status =
+                        if (result.errorMessage.isDefined)
+                          StatusCodes.InternalServerError
+                        else StatusCodes.OK
 
-                        pathPrefix("datasets") {
-                          complete(status, result.copy(facets = None))
+                      pathPrefix("datasets") {
+                        complete(status, result.copy(facets = None))
 
-                          /**
-                          * @apiGroup Search
-                          * @api {get} /v0/search/datasets/facets Search Datasets Return Facets
-                          * @apiDescription Returns the facets part of dataset search. For more details, see Search Datasets and Get Facet Options.
-                          * @apiSuccessExample {any} 200
-                          *                    See Search Datasets and Get Facet Options.
-                          *
-                          */
-                        } ~ pathPrefix("facets") {
-                          complete(status, result.facets)
-                        } ~ pathEnd {
-                          complete(status, result)
-                        }
+                        /**
+                        * @apiGroup Search
+                        * @api {get} /v0/search/datasets/facets Search Datasets Return Facets
+                        * @apiDescription Returns the facets part of dataset search. For more details, see Search Datasets and Get Facet Options.
+                        * @apiSuccessExample {any} 200
+                        *                    See Search Datasets and Get Facet Options.
+                        *
+                        */
+                      } ~ pathPrefix("facets") {
+                        complete(status, result.facets)
+                      } ~ pathEnd {
+                        complete(status, result)
                       }
+                    }
                   }
               }
             }
@@ -518,7 +542,36 @@ class SearchApi(
           } ~
           pathPrefix("status") {
             path("live") { complete("OK") } ~
-              path("ready") { complete(ReadyStatus(true)) }
+              path("ready") {
+                extractActorSystem { actorSystem =>
+                  if (readyProbeJobDone.get()) {
+                    // only attempt to create / check search pipeline for once
+                    complete(ReadyStatus(true))
+                  } else {
+                    implicit val ec = actorSystem.dispatcher
+                    val ensureDatasetHybridSearchPipeline =
+                      searchQueryer.getClient.flatMap { client =>
+                        IndexUtils.ensureDatasetHybridSearchPipeline(
+                          recreateWhenExist = false
+                        )(
+                          actorSystem,
+                          client
+                        )
+                      }
+                    onComplete(ensureDatasetHybridSearchPipeline) {
+                      case Success(_) =>
+                        readyProbeJobDone.set(true)
+                        complete(ReadyStatus(true))
+                      case Failure(ex) =>
+                        complete(
+                          StatusCodes.InternalServerError,
+                          s"An error occurred: ${ex.getMessage}"
+                        )
+                    }
+                  }
+
+                }
+              }
           }
       }
     }

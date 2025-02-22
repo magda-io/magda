@@ -511,8 +511,7 @@ object Generators {
 
   val licenseGen = for {
     name <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
-    url <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
-  } yield License(name, url)
+  } yield name
 
   def randomCaseGen(string: String) = {
     for {
@@ -564,21 +563,25 @@ object Generators {
         isOpenData
       )
 
-  def distGen(inputCache: mutable.Map[String, List[_]]) =
+  def distGen(
+      inputCache: mutable.Map[String, List[_]],
+      tenantId: BigInt = MAGDA_ADMIN_PORTAL_ID
+  ) =
     for {
       identifier <- Gen.uuid.map(_.toString).map(Some.apply)
       title <- textGen
       description <- someBiasedOption(textGen(descWordGen(inputCache)))
       issued <- someBiasedOption(offsetDateTimeGen())
       modified <- someBiasedOption(offsetDateTimeGen())
-      license <- someBiasedOption(licenseGen)
+      license <- licenseGen
       rights <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
       accessURL <- someBiasedOption(arbitrary[String].map(_.take(50).trim))
-      byteSize <- someBiasedOption(arbitrary[Long])
+      byteSize <- someBiasedOption(Gen.chooseNum(0, Long.MaxValue))
       format <- someBiasedOption(formatGen(inputCache))
     } yield
       Distribution(
         identifier = identifier,
+        tenantId = tenantId,
         title = title,
         description = description,
         issued = issued,
@@ -586,7 +589,7 @@ object Generators {
         license = license,
         rights = rights,
         accessURL = accessURL,
-        byteSize = byteSize,
+        byteSize = byteSize.map(_.toLong),
         mediaType = format.flatMap(_._1),
         format = format.map(_._2)
       )

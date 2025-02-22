@@ -26,6 +26,11 @@ export type TemporalCoverage = {
     }[];
 };
 
+export interface formatAspect {
+    confidenceLevel: number;
+    format: string;
+}
+
 export type sourceAspect = {
     name: string;
     url: string;
@@ -47,6 +52,11 @@ export type sourceAspect = {
 export type previewMapSettingsAspect = {
     enable?: boolean;
     format?: string;
+};
+
+export type previewTabularDataSettingsAspect = {
+    enableChart?: boolean;
+    enableTable?: boolean;
 };
 
 export type dcatDistributionStrings = {
@@ -133,6 +143,7 @@ export type RawDistribution = {
             compatiblePreviews: CompatiblePreviews;
         };
         "preview-map-settings"?: previewMapSettingsAspect;
+        "preview-tabular-data-settings"?: previewTabularDataSettingsAspect;
         "spatial-coverage": {
             bbox?: number[];
         };
@@ -211,6 +222,7 @@ export type RawDataset = {
         currency?: CurrencyData;
         publishing?: PublishingAspect;
         "preview-map-settings"?: previewMapSettingsAspect;
+        "preview-tabular-data-settings"?: previewTabularDataSettingsAspect;
         "access-control"?: AccessControlAspect;
     };
 };

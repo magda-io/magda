@@ -123,7 +123,7 @@ export async function destroyMagdaSession(
 
 /**
  * Different type of AuthenticationMethod:
- * - IDP-URI-REDIRECTION: the plugin will rediredct user agent to idp (identity provider) for authentication. e.g. Google & fackebook oauth etc.
+ * - IDP-URI-REDIRECTION: the plugin will redirect user agent to idp (identity provider) for authentication. e.g. Google & fackebook oauth etc.
  *   - This is the default method.
  * - PASSWORD: the plugin expect frontend do a form post that contains username & password to the plugin for authentication
  * - QR-CODE: the plugin offers a url that is used by the frontend to request auth challenge data. The data will be encoded into a QR-code image and expect the user scan the QR code with a mobile app to complete the authentication request.

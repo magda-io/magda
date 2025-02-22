@@ -22,9 +22,13 @@ import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook.{
   initWebhook
 }
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.client.{AuthApiClient, RegistryExternalInterface}
+import au.csiro.data61.magda.client.{
+  AuthApiClient,
+  EmbeddingApiClient,
+  RegistryExternalInterface
+}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import au.csiro.data61.magda.search.elasticsearch.Indices
 
 import scala.concurrent.duration.DurationLong
@@ -33,6 +37,9 @@ object IndexerApp extends App {
   implicit val config = AppConfig.conf()
   implicit val system = ActorSystem("indexer", config)
   implicit val executor = system.dispatcher
+
+  val indexerEc: ExecutionContext =
+    system.dispatchers.lookup("indexer.main-dispatcher")
   implicit val materializer = ActorMaterializer()
 
   val logger = Logging(system, getClass)
@@ -45,8 +52,14 @@ object IndexerApp extends App {
 
   logger.debug("Starting Crawler")
 
-  val registryInterface = new RegistryExternalInterface()
-  val indexer = SearchIndexer(new DefaultClientProvider, DefaultIndices)
+  val registryInterface =
+    new RegistryExternalInterface()(config, system, indexerEc, materializer)
+
+  val embeddingApiClient =
+    new EmbeddingApiClient()(config, system, indexerEc, materializer)
+
+  val indexer =
+    SearchIndexer(new DefaultClientProvider, DefaultIndices, embeddingApiClient)
   val crawler = new RegistryCrawler(registryInterface, indexer)
 
   val authClient = new AuthApiClient()
@@ -116,7 +129,7 @@ object IndexerApp extends App {
       .map(_ => Done)
   }
 
-  {
+  ({
     if (config.getBoolean("registry.registerForWebhooks")) {
       initWebhook(registryInterface)
     } else {
@@ -150,7 +163,7 @@ object IndexerApp extends App {
       }
     }
     case _ => // this means we were able to resume a webhook, so all good now :)
-  } recover {
+  }).recover {
     case e: Throwable =>
       logger.error(e, "Error while initializing")
 
@@ -160,7 +173,7 @@ object IndexerApp extends App {
         "Failure to register webhook or perform initial crawl is an unrecoverable and drastic error, crashing"
       )
       System.exit(1)
-  }
+  }(indexerEc)
 }
 
 class Listener extends Actor with ActorLogging {

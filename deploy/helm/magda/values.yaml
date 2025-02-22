@@ -3,7 +3,7 @@ tags:
   connectors: false
   minion-broken-link: false
   minion-linked-data-rating: true
-  minion-visualization: false
+  minion-visualization: true
   minion-format: true
   minion-ckan-exporter: false
 

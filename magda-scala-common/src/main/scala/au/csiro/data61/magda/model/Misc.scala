@@ -115,7 +115,9 @@ package misc {
       publishingState: Option[String] = None,
       accessControl: Option[AccessControl] = None,
       accrualPeriodicityRecurrenceRule: Option[String] = None,
-      accessNotes: Option[DataSetAccessNotes] = None
+      accessNotes: Option[DataSetAccessNotes] = None,
+      queryContext: Option[String] = None,
+      queryContextVector: Option[Array[Double]] = None
   ) {
 
     override def toString: String =
@@ -336,11 +338,12 @@ package misc {
 
   case class Distribution(
       identifier: Option[String] = None,
+      tenantId: BigInt,
       title: String,
       description: Option[String] = None,
       issued: Option[OffsetDateTime] = None,
       modified: Option[OffsetDateTime] = None,
-      license: Option[License] = None,
+      license: Option[String] = None,
       rights: Option[String] = None,
       accessURL: Option[String] = None,
       downloadURL: Option[String] = None,
@@ -348,7 +351,12 @@ package misc {
       mediaType: Option[MediaType] = None,
       source: Option[DataSouce] = None,
       format: Option[String] = None,
-      accessControl: Option[AccessControl] = None
+      accessControl: Option[AccessControl] = None,
+      publishingState: Option[String] = None,
+      score: Option[Float] = None,
+      useStorageApi: Option[Boolean] = None,
+      queryContext: Option[String] = None,
+      queryContextVector: Option[Array[Double]] = None
   )
 
   object Distribution {
@@ -457,8 +465,6 @@ package misc {
     }
   }
 
-  case class License(name: Option[String] = None, url: Option[String] = None)
-
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
     implicit val dataSouceFormat: RootJsonFormat[DataSouce] = jsonFormat6(
       DataSouce.apply
@@ -467,10 +473,6 @@ package misc {
       jsonFormat2(ProvenanceRecord.apply)
     implicit val provenanceFormat: RootJsonFormat[Provenance] = jsonFormat5(
       Provenance.apply
-    )
-
-    implicit val licenseFormat: RootJsonFormat[License] = jsonFormat2(
-      License.apply
     )
 
     implicit object FacetTypeFormat extends JsonFormat[FacetType] {
@@ -697,6 +699,7 @@ package misc {
       override def write(dist: Distribution): JsValue = {
         var jsFields: Map[String, JsValue] = Map(
           "identifier" -> dist.identifier.toJson,
+          "tenantId" -> dist.tenantId.toJson,
           "title" -> dist.title.toJson,
           "description" -> dist.description.toJson,
           "issued" -> dist.issued.toJson,
@@ -708,7 +711,12 @@ package misc {
           "byteSize" -> dist.byteSize.toJson,
           "mediaType" -> dist.mediaType.toJson,
           "source" -> dist.source.toJson,
-          "format" -> dist.format.toJson
+          "format" -> dist.format.toJson,
+          "publishingState" -> dist.publishingState.toJson,
+          "useStorageApi" -> dist.useStorageApi.toJson,
+          "score" -> dist.score.toJson,
+          "queryContext" -> dist.queryContext.toJson,
+          "queryContextVector" -> dist.queryContextVector.toJson
         )
         if (!dist.accessControl.isEmpty) {
           jsFields += ("accessControl" -> dist.accessControl.toJson)
@@ -720,11 +728,12 @@ package misc {
 
       override def read(json: JsValue): Distribution = Distribution(
         identifier = convertOptionField[String]("identifier", json),
+        tenantId = Protocols.convertField[BigInt]("tenantId", json),
         title = Protocols.convertField[String]("title", json),
         description = convertOptionField[String]("description", json),
         issued = convertOptionField[OffsetDateTime]("issued", json),
         modified = convertOptionField[OffsetDateTime]("modified", json),
-        license = convertOptionField[License]("license", json),
+        license = convertOptionField[String]("license", json),
         rights = convertOptionField[String]("rights", json),
         accessURL = convertOptionField[String]("accessURL", json),
         downloadURL = convertOptionField[String]("downloadURL", json),
@@ -732,7 +741,13 @@ package misc {
         mediaType = convertOptionField[MediaType]("mediaType", json),
         source = convertOptionField[DataSouce]("source", json),
         format = convertOptionField[String]("format", json),
-        accessControl = convertOptionField[AccessControl]("accessControl", json)
+        accessControl = convertOptionField[AccessControl]("accessControl", json),
+        publishingState = convertOptionField[String]("publishingState", json),
+        useStorageApi = convertOptionField[Boolean]("useStorageApi", json),
+        score = convertOptionField[Float]("score", json),
+        queryContext = convertOptionField[String]("queryContext", json),
+        queryContextVector =
+          convertOptionField[Array[Double]]("queryContextVector", json)
       )
     }
 
@@ -768,7 +783,9 @@ package misc {
           "source" -> dataSet.source.toJson,
           "score" -> dataSet.score.toJson,
           "publishingState" -> dataSet.publishingState.toJson,
-          "accessNotes" -> dataSet.accessNotes.toJson
+          "accessNotes" -> dataSet.accessNotes.toJson,
+          "queryContext" -> dataSet.queryContext.toJson,
+          "queryContextVector" -> dataSet.queryContextVector.toJson
         )
         if (!dataSet.accessControl.isEmpty) {
           jsFields += ("accessControl" -> dataSet.accessControl.toJson)
@@ -815,7 +832,10 @@ package misc {
             json
           ),
           accessNotes =
-            convertOptionField[DataSetAccessNotes]("accessNotes", json)
+            convertOptionField[DataSetAccessNotes]("accessNotes", json),
+          queryContext = convertOptionField[String]("queryContext", json),
+          queryContextVector =
+            convertOptionField[Array[Double]]("queryContextVector", json)
         )
       }
     }

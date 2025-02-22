@@ -29,6 +29,7 @@ spec:
         - containerPort: 6102
         command:
           - "bin/magda-search-api"
+          - "-J-XX:MaxRAMPercentage={{ .Values.jvmMaxRamPercentage | printf "%.2f" }}"
           - "-Dconfig.file=/etc/config/deploy-application.conf"
 {{- if .Values.debug }}
           - "-DsearchApi.debug=true"
@@ -45,22 +46,20 @@ spec:
 {{- if .Values.formatsIndexVersion }}
           - "-DelasticSearch.indices.formats.version={{ .Values.formatsIndexVersion }}"
 {{- end }}
-{{- if .Values.global.enableLivenessProbes }}
-        livenessProbe:
-          httpGet:
-            path: /v0/status/live
-            port: 6102
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          timeoutSeconds: 10
+{{- if .Values.readinessProbe }}
         readinessProbe:
-          httpGet:
-            path: /v0/status/ready
-            port: 6102
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          timeoutSeconds: 10
-{{- end }}
+{{ toYaml .Values.readinessProbe | indent 10 }}
+        {{- end }}
+        {{- if .Values.livenessProbe }}
+        livenessProbe:
+{{ toYaml .Values.livenessProbe | indent 10 }}
+        {{- end }}
+        {{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.Version }}
+        {{- if .Values.startupProbe }}
+        startupProbe:
+{{ toYaml .Values.startupProbe | indent 10 }}
+        {{- end }}
+        {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         volumeMounts:

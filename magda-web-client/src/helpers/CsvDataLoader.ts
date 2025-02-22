@@ -3,7 +3,8 @@ import getProxiedResourceUrl from "helpers/getProxiedResourceUrl";
 import isStorageApiUrl from "helpers/isStorageApiUrl";
 // --- as we only import types here, no runtime code will be emitted.
 // --- And papaparse will not be included by the main js bundle
-import { Parser, ParseResult, ParseError, ParseMeta } from "papaparse";
+import type { Parser, ParseResult, ParseError, ParseMeta } from "papaparse";
+import getPapa from "libs/getPapa";
 import { ParsedDistribution } from "./record";
 import { getSourceUrl } from "./DistributionPreviewUtils";
 
@@ -17,15 +18,6 @@ export interface DataLoadingResult {
 type CsvUrlType = string;
 
 type CsvSourceType = CsvUrlType | ParsedDistribution;
-
-let Papa;
-
-const getPapaParse = async () => {
-    if (!Papa) {
-        Papa = await import(/* webpackChunkName: "papa" */ "papaparse");
-    }
-    return Papa;
-};
 
 const retryLater: <T>(f: () => Promise<T>, delay?: number) => Promise<T> = (
     f,
@@ -102,7 +94,7 @@ class CsvDataLoader {
             throw new Error("Could not retrieve csv: " + csvRes.statusText);
         }
 
-        const Papa = await getPapaParse();
+        const Papa = await getPapa();
         return new Promise(async (resolve, reject) => {
             const options = {
                 worker: true,

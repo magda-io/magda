@@ -10,6 +10,7 @@ import au.csiro.data61.magda.api.model.{
   SearchResult
 }
 import au.csiro.data61.magda.api.{FilterValue, Query, Specified, Unspecified}
+import au.csiro.data61.magda.client.EmbeddingApiClient
 import au.csiro.data61.magda.model.Auth.AuthDecision
 import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
@@ -23,11 +24,16 @@ import au.csiro.data61.magda.search.elasticsearch.Exceptions.{
 }
 import au.csiro.data61.magda.search.elasticsearch.FacetDefinition.facetDefForType
 import au.csiro.data61.magda.search.elasticsearch.Queries._
+import au.csiro.data61.magda.search.elasticsearch.queries.{
+  HybridQuery,
+  KnnQuery
+}
 import au.csiro.data61.magda.search.{SearchQueryer, SearchStrategy}
 import au.csiro.data61.magda.util.ErrorHandling.RootCause
 import au.csiro.data61.magda.util.SetExtractor
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.requests.common.FetchSourceContext
 import com.sksamuel.elastic4s.requests.searches.SearchResponse
 import com.sksamuel.elastic4s.{ElasticClient, ElasticDsl, RequestSuccess}
 import com.sksamuel.elastic4s.requests.searches.aggs.responses.Aggregations
@@ -41,6 +47,7 @@ import com.sksamuel.elastic4s.requests.searches.queries.funcscorer.{
 }
 import com.sksamuel.elastic4s.requests.searches.term.TermQuery
 import com.sksamuel.elastic4s.requests.searches.queries.{
+  NestedQuery,
   InnerHit => InnerHitDefinition,
   Query => QueryDefinition,
   SimpleStringQuery => SimpleStringQueryDefinition
@@ -60,9 +67,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     implicit val system: ActorSystem,
     implicit val ec: ExecutionContext,
     implicit val materializer: Materializer,
-    implicit val clientProvider: ClientProvider
+    implicit val clientProvider: ClientProvider,
+    implicit val embeddingClient: EmbeddingApiClient
 ) extends SearchQueryer {
   private val logger = system.log
+
+  val datasetInnerHitsSize = config.getInt(
+    "elasticSearch.indices.datasets.innerHitsSize"
+  )
 
   val debugMode =
     if (config.hasPath("searchApi.debug"))
@@ -80,6 +92,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       System.exit(1)
       throw t
   }
+
+  def getClient = clientFuture
 
   val DATASETS_LANGUAGE_FIELDS = Seq(
     ("title", 50f),
@@ -101,73 +115,144 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     "accessNotes.location"
   )
 
+  def augmentWithHybridSearch(
+      inputQuery: Query
+  ): Future[Query => Query] = {
+    val freeText = inputQuery.freeText.getOrElse("").trim
+    if (!HybridSearchConfig.enabled || freeText.isEmpty || freeText == "*") {
+      Future((q: Query) => q)
+    } else {
+      embeddingClient
+        .get(freeText)
+        .map(
+          v =>
+            (q: Query) => q.copy(hybridSearch = true, freeTextVector = Some(v))
+        )
+    }
+  }
+
+  def augmentWithBoostRegions(
+      query: Query
+  )(implicit client: ElasticClient): Future[Query => Query] = {
+    val regionsFuture = query.freeText
+      .filter(_.length > 0)
+      .map(
+        freeText => {
+          val searchReq = (
+            ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
+              query (matchQuery("regionSearchId", freeText).operator("or"))
+              limit 50
+          )
+          if (debugMode) {
+            logger.info(client.show(searchReq).query)
+          }
+          client
+            .execute(searchReq)
+            .map {
+              case ESGenericException(e) => throw e
+              case results: RequestSuccess[SearchResponse] => {
+                results.result.totalHits match {
+                  case 0 =>
+                    Set[Region]() // If there's no hits, no need to do anything more
+                  case _ => results.result.to[Region].toSet
+                }
+              }
+            }
+        }
+      )
+      .getOrElse(Future(Set[Region]()))
+    regionsFuture.map(regions => (q: Query) => q.copy(boostRegions = regions))
+  }
+
+  /**
+    * Convert Seq[Future[Query => Query]] to Future[Seq[Query => Query]] and merge Seq[Query => Query] into Query (later item will overwrite the proceeding one).
+    * Eventually will return Future[Query]
+    * @param queryList
+    * @return
+    */
+  def mergeAugmentedInputQuery(
+      initQuery: Query,
+      queryList: Seq[Future[Query => Query]]
+  ): Future[Query] = {
+    Future
+      .sequence(queryList)
+      .map(
+        list =>
+          list
+            .foldLeft(initQuery)((prevVal, queryUpdater) => {
+              queryUpdater(prevVal)
+            })
+      )
+  }
+
   override def search(
-      authDecision: AuthDecision,
       inputQuery: Query,
       start: Long,
       limit: Int,
-      requestedFacetSize: Int,
-      tenantId: TenantId
+      requestedFacetSize: Int
   ) = {
     val inputRegionsList = inputQuery.regions.toList
 
-    val authQuery: QueryDefinition =
-      authDecision.toEsDsl().getOrElse(MatchAllQuery())
+    clientFuture
+      .flatMap { implicit client =>
+        val fullRegionsFutures = inputRegionsList.map(resolveFullRegion)
+        val fullRegionsFuture = Future.sequence(fullRegionsFutures)
 
-    clientFuture.flatMap { implicit client =>
-      val fullRegionsFutures = inputRegionsList.map(resolveFullRegion)
-      val fullRegionsFuture = Future.sequence(fullRegionsFutures)
-      augmentWithBoostRegions(inputQuery)
-        .flatMap {
-          case queryWithBoostRegions =>
-            val query = buildQueryWithAggregations(
-              tenantId,
-              authQuery,
-              queryWithBoostRegions,
-              start,
-              limit,
-              MatchAll,
-              requestedFacetSize
-            )
-            if (debugMode) {
-              logger.info(client.show(query).query)
-            }
-            Future
-              .sequence(
-                Seq(
-                  fullRegionsFuture,
-                  client.execute(query.trackTotalHits(true)).flatMap {
+        mergeAugmentedInputQuery(
+          inputQuery,
+          Seq(
+            augmentWithBoostRegions(inputQuery),
+            augmentWithHybridSearch(inputQuery)
+          )
+        ).flatMap { queryWithBoostRegions =>
+          val query = buildQueryWithAggregations(
+            queryWithBoostRegions,
+            start,
+            limit,
+            MatchAll,
+            requestedFacetSize
+          )
+          if (debugMode) {
+            logger.info(client.show(query).query)
+          }
+          Future
+            .sequence(
+              Seq(
+                fullRegionsFuture,
+                client
+                  .execute(query)
+                  .flatMap {
                     case results: RequestSuccess[SearchResponse] =>
                       Future.successful((results.result, MatchAll))
                     case IllegalArgumentException(e) => throw e
                     case ESGenericException(e)       => throw e
                   }
-                )
               )
-              .map {
-                case Seq(
-                    fullRegions: List[Option[Region]],
-                    (response: SearchResponse, strategy: SearchStrategy)
-                    ) =>
-                  val newQueryRegions =
-                    inputRegionsList
-                      .zip(fullRegions)
-                      .filter(_._2.isDefined)
-                      .map(_._2.get)
-                      .map(Specified.apply)
-                      .toSet ++ inputQuery.regions.filter(_.isEmpty)
+            )
+            .map {
+              case Seq(
+                  fullRegions: List[Option[Region]],
+                  (response: SearchResponse, strategy: SearchStrategy)
+                  ) =>
+                val newQueryRegions =
+                  inputRegionsList
+                    .zip(fullRegions)
+                    .filter(_._2.isDefined)
+                    .map(_._2.get)
+                    .map(Specified.apply)
+                    .toSet ++ inputQuery.regions.filter(_.isEmpty)
 
-                  val outputQuery =
-                    queryWithBoostRegions.copy(regions = newQueryRegions)
-                  buildSearchResult(
-                    outputQuery,
-                    response,
-                    strategy,
-                    requestedFacetSize
-                  )
-              }
+                val outputQuery =
+                  queryWithBoostRegions.copy(regions = newQueryRegions)
+                buildSearchResult(
+                  outputQuery,
+                  response,
+                  strategy,
+                  requestedFacetSize
+                )
+            }
         }
-    } recover {
+      } recover {
       case RootCause(illegalArgument: IllegalArgumentException) =>
         logger.error(illegalArgument, "Exception when searching")
         failureSearchResult(
@@ -219,8 +304,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
           )
         )
 
-        val aggs = termsAggregation("suggestions")
-          .field(s"${field}.keyword")
+        val aggs = termsAgg("suggestions", s"${field}.keyword")
           .size(sizeLimit)
 
         val query = ElasticDsl
@@ -265,39 +349,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       }
 
     }
-  }
-
-  def augmentWithBoostRegions(
-      query: Query
-  )(implicit client: ElasticClient): Future[Query] = {
-    val regionsFuture = query.freeText
-      .filter(_.length > 0)
-      .map(
-        freeText => {
-          val searchReq = (
-            ElasticDsl.search(indices.getIndex(config, Indices.RegionsIndex))
-              query (matchQuery("regionSearchId", freeText).operator("or"))
-              limit 50
-          )
-          if (debugMode) {
-            logger.info(client.show(searchReq).query)
-          }
-          client
-            .execute(searchReq)
-            .map {
-              case ESGenericException(e) => throw e
-              case results: RequestSuccess[SearchResponse] => {
-                results.result.totalHits match {
-                  case 0 =>
-                    Set[Region]() // If there's no hits, no need to do anything more
-                  case _ => results.result.to[Region].toSet
-                }
-              }
-            }
-        }
-      )
-      .getOrElse(Future(Set[Region]()))
-    regionsFuture.map(regions => query.copy(boostRegions = regions))
   }
 
   /**
@@ -351,10 +402,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         }
     }
 
-    new SearchResult(
+    SearchResult(
       strategy = Some(strategy),
       query = query,
       hitCount = response.totalHits,
+      hitCountRelation = Some(response.hits.total.relation),
       dataSets = response.to[DataSet].map(_.copy(years = None)).toList,
       temporal = Some(
         PeriodOfTime(
@@ -369,40 +421,45 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       facets = Some(FacetType.all.map { facetType =>
         val definition = facetDefForType(facetType)
 
-        new Facet(id = facetType.id, options = {
+        Facet(
+          id = facetType.id,
+          options = {
 
-          val inputFacetOptions = definition.getInputFacetOptions(query)
+            val inputFacetOptions = definition.getInputFacetOptions(query)
 
-          val alternativeOptions =
-            definition.extractFacetOptions(
-              aggs.dataAsMap
-                .get(facetType.id + "-global")
-                .flatMap(AggUtils.toAgg(_))
-                .flatMap(_.dataAsMap.get("filter").flatMap(AggUtils.toAgg(_)))
-            )
+            val alternativeOptions =
+              definition.extractFacetOptions(
+                aggs.dataAsMap
+                  .get(facetType.id + "-global")
+                  .flatMap(AggUtils.toAgg(_))
+                  .flatMap(_.dataAsMap.get("filter").flatMap(AggUtils.toAgg(_)))
+              )
 
-          val notMatchedInputFacetOptions = inputFacetOptions
-            .filter(
-              optionStr =>
-                !alternativeOptions
-                  .exists(_.value.toLowerCase == optionStr.toLowerCase)
-            )
-            .map(FacetOption(None, _, 0L, None, None, true))
+            val notMatchedInputFacetOptions = inputFacetOptions
+              .filter(
+                optionStr =>
+                  !alternativeOptions
+                    .exists(_.value.toLowerCase == optionStr.toLowerCase)
+              )
+              .map(FacetOption(None, _, 0L, None, None, true))
 
-          val allOptions = alternativeOptions ++ notMatchedInputFacetOptions
+            val allOptions = alternativeOptions ++ notMatchedInputFacetOptions
 
-          val nonInputOptions =
-            allOptions.filter(!_.matched).sortBy(_.hitCount).reverse
-          val inputOptions =
-            allOptions.filter(_.matched).sortBy(_.hitCount).reverse
+            val nonInputOptions =
+              allOptions.filter(!_.matched).sortBy(_.hitCount).reverse
+            val inputOptions =
+              allOptions.filter(_.matched).sortBy(_.hitCount).reverse
 
-          if (facetSize <= inputOptions.size) {
-            inputOptions.take(facetSize)
-          } else {
-            inputOptions ++ nonInputOptions.take(facetSize - inputOptions.size)
+            if (facetSize <= inputOptions.size) {
+              inputOptions.take(facetSize)
+            } else {
+              inputOptions ++ nonInputOptions.take(
+                facetSize - inputOptions.size
+              )
+            }
           }
-        })
-      }.toSeq)
+        )
+      })
     )
   }
 
@@ -419,24 +476,26 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Builds an elastic search query out of the passed general magda Query */
   def buildQuery(
-      tenantId: TenantId,
-      authQuery: QueryDefinition,
       query: Query,
       start: Long,
       limit: Int,
       strategy: SearchStrategy
-  ) = {
-    ElasticDsl
+  ): SearchRequest = {
+    val searchReq = ElasticDsl
       .search(indices.getIndex(config, Indices.DataSetsIndex))
       .limit(limit)
       .start(start.toInt)
-      .query(buildEsQuery(tenantId, authQuery, query, strategy))
+      .trackTotalHits(true)
+      .query(buildEsQuery(query, strategy))
+    if (HybridSearchConfig.enabled) {
+      searchReq.searchPipeline(HybridSearchConfig.searchPipelineId)
+    } else {
+      searchReq
+    }
   }
 
   /** Same as {@link #buildQuery} but also adds aggregations */
   def buildQueryWithAggregations(
-      tenantId: TenantId,
-      authQuery: QueryDefinition,
       query: Query,
       start: Long,
       limit: Int,
@@ -444,11 +503,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       facetSize: Int
   ) =
     addAggregations(
-      tenantId,
-      authQuery,
       buildQuery(
-        tenantId,
-        authQuery,
         query,
         start,
         limit,
@@ -457,11 +512,16 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       query,
       strategy,
       facetSize
-    ).sourceExclude("accessControl", "distributions.accessControl") // --- do not include accessControl metadata
+    ).sourceExclude(
+      // --- do not include accessControl metadata and vectors
+      "accessControl",
+      "queryContextVector",
+      "distributions"
+    )
 
   /** Builds an empty dummy searchresult that conveys some kind of error message to the user. */
   def failureSearchResult(query: Query, message: String) =
-    new SearchResult(
+    SearchResult(
       query = query,
       hitCount = 0,
       dataSets = Nil,
@@ -470,8 +530,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Adds standard aggregations to an elasticsearch query */
   def addAggregations(
-      tenantId: TenantId,
-      authQuery: QueryDefinition,
       searchDef: SearchRequest,
       query: Query,
       strategy: SearchStrategy,
@@ -482,8 +540,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         .flatMap(
           facetType =>
             aggsForFacetType(
-              tenantId,
-              authQuery,
               query,
               facetType,
               strategy,
@@ -492,16 +548,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         )
         .toList
 
-    val minDateAgg = minAggregation("minDate").field("temporal.start.date")
-    val maxDateAgg = maxAggregation("maxDate").field("temporal.end.date")
+    val minDateAgg = minAgg("minDate", "temporal.start.date")
+    val maxDateAgg = maxAgg("maxDate", "temporal.end.date")
 
     searchDef.aggregations(facetAggregations ++ List(minDateAgg, maxDateAgg))
   }
 
   /** Gets all applicable ES aggregations for the passed FacetType, given a Query */
   def aggsForFacetType(
-      tenantId: TenantId,
-      authQuery: QueryDefinition,
       query: Query,
       facetType: FacetType,
       strategy: SearchStrategy,
@@ -514,8 +568,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       globalAggregation(facetType.id + "-global")
         .subAggregations(
           alternativesAggregation(
-            tenantId,
-            authQuery,
             query,
             facetDef,
             strategy,
@@ -533,22 +585,15 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     * this shows me other publishers I could search on instead
     */
   def alternativesAggregation(
-      tenantId: TenantId,
-      authQuery: QueryDefinition,
       query: Query,
       facetDef: FacetDefinition,
       strategy: SearchStrategy,
       facetSize: Int
   ) = {
-    val tenantIdTermQuery = tenantId.getEsQuery()
     filterAgg(
       "filter",
       query = must(
-        Seq(
-          tenantIdTermQuery,
-          authQuery,
-          queryToQueryDef(facetDef.removeFromQuery(query), strategy, true)
-        )
+        queryToQueryDef(facetDef.removeFromQuery(query), strategy)
       )
     ).subAggregations(facetDef.aggregationDefinition(query, facetSize))
   }
@@ -563,8 +608,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     }
 
   private def buildEsQuery(
-      tenantId: TenantId,
-      authQuery: QueryDefinition,
       query: Query,
       strategy: SearchStrategy
   ): QueryDefinition = {
@@ -591,25 +634,33 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       */
     val allScorers = Seq(weightScore(1)) ++ qualityScorers ++ geomScorer.toSeq
 
-    val tenantTermQuery = tenantId.getEsQuery()
-
     functionScoreQuery()
       .query(
         must(
-          Seq(
-            tenantTermQuery,
-            authQuery,
-            queryToQueryDef(query, strategy)
-          )
+          queryToQueryDef(query, strategy)
         )
       )
       .functions(allScorers)
       .scoreMode("sum")
   }
 
-  private def createInputTextQuery(inputText: String): QueryDefinition = {
+  private def createInputTextQuery(
+      inputText: String,
+      inputTextVector: Option[Array[Double]],
+      datasetFilterQuery: QueryDefinition,
+      distributionFilterQuery: QueryDefinition
+  ): QueryDefinition = {
+    // `*` means match everything, no need to do vector search
+    val hybridSearchEnabled = inputText != "*" && HybridSearchConfig.enabled && inputTextVector.nonEmpty
+    // when hybrid search is enabled, search result is more useful with partial match (`or` operator)
+    // as the vector search will help to move more relevant results to the top
+    val defaultOperator = if (HybridSearchConfig.enabled) {
+      "or"
+    } else {
+      "and"
+    }
     val queryString = SimpleStringQueryDefinition(inputText)
-      .defaultOperator("and")
+      .defaultOperator(defaultOperator)
       .quoteFieldSuffix(".quote")
 
     def foldFields(query: SimpleStringQueryDefinition, fields: Seq[Any]) =
@@ -619,17 +670,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         case (field: String, queryDef) => queryDef.field(field, 0)
       }
 
-    // Surprise! english analysis doesn't work on nested objects unless you have a nested query, even though
-    // other analysis does. So we do this silliness
-    val distributionsEnglishQueries = nestedQuery("distributions")
-      .query(
-        queryString
-          .field("distributions.title")
-          .field("distributions.description")
-          .field("distributions.format")
-          .defaultOperator("and")
-      )
-      .scoreMode(ScoreMode.Max)
+    val distributionsEnglishQueries = nestedQuery(
+      "distributions",
+      queryString
+        .field("distributions.title")
+        .field("distributions.description")
+        .field("distributions.format")
+        .defaultOperator(defaultOperator)
+    ).scoreMode(ScoreMode.Max)
 
     /**
       * Unfortunately, when default operator is AND, we can't put NON_LANGUAGE_FIELDS & DATASETS_LANGUAGE_FIELDS
@@ -637,81 +685,210 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       * It will result a term like +(catalog:at | _id:at) will will never be matched
       * We need to fix on our side as elasticsearch won't know our intention for this case
       * */
+    val datasetsTextQuery = should(
+      foldFields(
+        queryString,
+        DATASETS_LANGUAGE_FIELDS
+      ),
+      foldFields(
+        queryString,
+        NON_LANGUAGE_FIELDS
+      )
+    ).minimumShouldMatch(1)
+
     val queries =
       Seq(
-        should(
-          foldFields(
-            queryString,
-            DATASETS_LANGUAGE_FIELDS
-          ),
-          foldFields(
-            queryString,
-            NON_LANGUAGE_FIELDS
-          )
-        ).minimumShouldMatch(1),
+        datasetsTextQuery,
         distributionsEnglishQueries
       )
 
-    dismax(queries).tieBreaker(0.2)
+    if (!hybridSearchEnabled) {
+      dismax(queries).tieBreaker(0.2)
+    } else {
+      dismax(
+        Seq(
+          HybridQuery(
+            Seq(
+              datasetsTextQuery,
+              KnnQuery(
+                field = HybridSearchConfig.queryContextVectorFieldName,
+                vector = inputTextVector.get,
+                filter = Some(datasetFilterQuery),
+                k = HybridSearchConfig.k,
+                minScore = HybridSearchConfig.minScore,
+                maxDistance = HybridSearchConfig.maxDistance,
+                // boost score by 50 to match the boost we set for title field in keyword search
+                boost = Some(50.0)
+              )
+            )
+          ),
+          HybridQuery(
+            Seq(
+              distributionsEnglishQueries,
+              NestedQuery(
+                "distributions",
+                KnnQuery(
+                  field =
+                    s"""distributions.${HybridSearchConfig.queryContextVectorFieldName}""",
+                  vector = inputTextVector.get,
+                  filter = Some(distributionFilterQuery),
+                  k = HybridSearchConfig.k,
+                  minScore = HybridSearchConfig.minScore,
+                  maxDistance = HybridSearchConfig.maxDistance
+                )
+              )
+            )
+          )
+        )
+      ).tieBreaker(0.2)
+    }
   }
 
   /** Processes a general magda Query into a specific ES QueryDefinition */
   private def queryToQueryDef(
       query: Query,
-      strategy: SearchStrategy,
-      isForAggregation: Boolean = false
+      strategy: SearchStrategy
   ): QueryDefinition = {
 
-    val clauses: Seq[Traversable[QueryDefinition]] = Seq(
-      query.freeText flatMap { inputText =>
-        val text = if (inputText.trim.length == 0) "*" else inputText
-        val textQuery = createInputTextQuery(text)
-        if (query.boostRegions.isEmpty) Some(textQuery)
-        else {
-          // --- make sure replace the longer region name string first to avoid missing anyone
-          val regionNames = query.boostRegions.toList
-            .flatMap { region =>
-              // --- Please note: regionShortName should also be taken care
-              region.regionName.toList ++ region.regionShortName.toList
-            }
-            .map(_.toLowerCase)
-            .sortWith(_.length > _.length)
-          val altText = regionNames
-            .foldLeft(text.toLowerCase)(
-              (str, regionName) => str.replace(regionName, "")
-            )
-            .trim
-          val inputTextQuery =
-            if (altText.length == 0) createInputTextQuery("*")
-            else createInputTextQuery(altText)
-          val geomScorerQuery = setToOption(query.boostRegions)(
-            seq =>
-              should(seq.map(region => regionToGeoShapeQuery(region, indices)))
-          )
-          val queryDef = boolQuery()
-            .should(
-              textQuery :: boolQuery()
-                .must(inputTextQuery :: geomScorerQuery.toList) :: Nil
-            )
-            .minimumShouldMatch(1)
-          Some(queryDef)
-        }
-      },
-      publishingStateQuery(query.publishingState),
+    val datasetAuthQuery = query.authDecision.get.getDatasetDecisionQuery
+    val distributionAuthQuery =
+      query.authDecision.get.getDistributionDecisionQuery
+
+    val datasetTenantIdQuery = query.tenantId
+      .map(
+        _.getEsQuery()
+      )
+      .getOrElse(MatchAllQuery())
+
+    val distributionTenantIdQuery = query.tenantId
+      .map(
+        _.getEsQuery(
+          isDistributionQuery = true
+        )
+      )
+      .getOrElse(MatchAllQuery())
+
+    val filterClauses: List[QueryDefinition] = List(
       setToOption(query.publishers)(
         seq => should(seq.map(publisherQuery(strategy))).boost(2)
-      ),
+      ).toList,
       setToOption(query.formats)(
         seq => should(seq.map(formatQuery(strategy))).boost(2)
-      ),
-      dateQueries(query.dateFrom, query.dateTo).map(_.boost(2)),
+      ).toList,
+      dateQueries(query.dateFrom, query.dateTo).map(_.boost(2)).toList,
       setToOption(query.regions)(
         seq =>
           should(seq.map(region => regionIdQuery(region, indices))).boost(2)
-      )
-    )
+      ).toList
+    ).flatten
 
-    strategyToCombiner(strategy)(clauses.flatten)
+    val datasetFilterClauses = datasetTenantIdQuery :: datasetAuthQuery :: publishingStateQuery(
+      query.publishingState
+    ).getOrElse(MatchAllQuery()) :: filterClauses
+
+    val distributionFilterClauses = distributionTenantIdQuery :: distributionAuthQuery :: publishingStateQuery(
+      query.publishingState,
+      isDistributionQuery = true
+    ).getOrElse(MatchAllQuery()) :: filterClauses
+
+    val datasetFilterQuery =
+      if (datasetFilterClauses.isEmpty) boolQuery().must(datasetFilterClauses)
+      else matchAllQuery()
+
+    val distributionFilterQuery =
+      if (distributionFilterClauses.isEmpty)
+        boolQuery().must(distributionFilterClauses)
+      else matchAllQuery()
+
+    val textQueryClause = query.freeText flatMap { inputText =>
+      val text = if (inputText.trim.length == 0) "*" else inputText
+      val textQuery = createInputTextQuery(
+        text,
+        query.freeTextVector,
+        datasetFilterQuery,
+        distributionFilterQuery
+      )
+      if (query.boostRegions.isEmpty) Some(textQuery)
+      else {
+        // --- make sure replace the longer region name string first to avoid missing anyone
+        val regionNames = query.boostRegions.toList
+          .flatMap { region =>
+            // --- Please note: regionShortName should also be taken care
+            region.regionName.toList ++ region.regionShortName.toList
+          }
+          .map(_.toLowerCase)
+          .sortWith(_.length > _.length)
+        val altText = regionNames
+          .foldLeft(text.toLowerCase)(
+            (str, regionName) => str.replace(regionName, "")
+          )
+          .trim
+        val inputTextQuery =
+          if (altText.length == 0)
+            createInputTextQuery(
+              "*",
+              query.freeTextVector,
+              datasetFilterQuery,
+              distributionFilterQuery
+            )
+          else
+            createInputTextQuery(
+              altText,
+              query.freeTextVector,
+              datasetFilterQuery,
+              distributionFilterQuery
+            )
+        val geomScorerQuery = setToOption(query.boostRegions)(
+          seq =>
+            should(seq.map(region => regionToGeoShapeQuery(region, indices)))
+        )
+        val queryDef = boolQuery()
+          .should(
+            textQuery :: boolQuery()
+              .must(inputTextQuery :: geomScorerQuery.toList) :: Nil
+          )
+          .minimumShouldMatch(1)
+        Some(queryDef)
+      }
+    }
+
+    /**
+      * Create auth & tenantId filtered distribution list for each dataset as inner hits
+      * This query should always match (as "min. should match" = 1 & MatchAllQuery was added)
+      * However, its presence will generate filtered distribution list for each dataset as inner hits
+      * We only need to filter distribution by auth & tenantId as all distributions of the dataset should be included
+      * unless not accessible to users due to auth or tenantId
+      */
+    val distributionAuthInnerHitsQuery = boolQuery()
+      .should(
+        nestedQuery(
+          "distributions",
+          boolQuery().must(
+            distributionTenantIdQuery :: List(distributionAuthQuery)
+          )
+        ).scoreMode(ScoreMode.None)
+          .inner(
+            InnerHitDefinition(
+              "distributions",
+              from = Some(0),
+              size = Some(datasetInnerHitsSize),
+              fetchSource = Some(
+                new FetchSourceContext(
+                  fetchSource = true,
+                  excludes = Set(
+                    "distributions.accessControl",
+                    "distributions.queryContextVector"
+                  )
+                )
+              )
+            )
+          ) :: List(MatchAllQuery())
+      )
+      .minimumShouldMatch(1)
+
+    boolQuery()
+      .must(textQueryClause)
+      .filter(distributionAuthInnerHitsQuery :: datasetFilterClauses)
   }
 
   /**
@@ -741,16 +918,14 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   override def searchFacets(
-      authDecision: AuthDecision,
       facetType: FacetType,
       facetQuery: Option[String],
       generalQuery: Query,
       start: Int,
-      limit: Int,
-      tenantId: TenantId
+      limit: Int
   ): Future[FacetSearchResult] = {
     val facetDef = facetDefForType(facetType)
-    val authQuery = authDecision.toEsDsl().getOrElse(MatchAllQuery())
+    //val authQuery = authDecision.toEsDsl().getOrElse(MatchAllQuery())
 
     clientFuture.flatMap { client =>
       // First do a normal query search on the type we created for values in this facet
@@ -795,8 +970,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 // got back on our keyword - this allows us to get an accurate count of dataset hits for each result
                 client.execute {
                   buildQuery(
-                    tenantId,
-                    authQuery,
                     facetDef.removeFromQuery(generalQuery),
                     0,
                     0,
@@ -1027,6 +1200,7 @@ object ElasticSearchQueryer {
       system: ActorSystem,
       ec: ExecutionContext,
       materializer: Materializer,
-      clientProvider: ClientProvider
+      clientProvider: ClientProvider,
+      embeddingApiClient: EmbeddingApiClient
   ) = new ElasticSearchQueryer()
 }
