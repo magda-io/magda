@@ -16,8 +16,7 @@ import _ from "lodash";
 import GenericError from "magda-typescript-common/src/authorization-api/GenericError.js";
 import {
     ANONYMOUS_USERS_ROLE_ID,
-    AUTHENTICATED_USERS_ROLE_ID,
-    ADMIN_USERS_ROLE_ID
+    AUTHENTICATED_USERS_ROLE_ID
 } from "magda-typescript-common/src/authorization-api/constants.js";
 import { getUserId } from "magda-typescript-common/src/session/GetUserId.js";
 import NestedSetModelQueryer from "./NestedSetModelQueryer.js";
@@ -54,7 +53,6 @@ export const defaultAnonymousUserInfo: User = {
     photoURL: "",
     source: "",
     sourceId: "",
-    isAdmin: false,
     roles: [
         {
             id: ANONYMOUS_USERS_ROLE_ID,
@@ -136,7 +134,7 @@ export default class Database {
             SQLSyntax.joinWithAnd([authConditions, sqls`"id" = ${id}`])
         );
 
-        const query = sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users ${whereSql}`;
+        const query = sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "orgUnitId" FROM users ${whereSql}`;
 
         return this.pool
             .query(...query.toQuery())
@@ -467,7 +465,7 @@ export default class Database {
         });
         return this.pool
             .query(
-                ...sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" 
+                ...sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "orgUnitId" 
                 FROM users 
                 ${SQLSyntax.where(
                     SQLSyntax.joinWithAnd([
@@ -487,7 +485,6 @@ export default class Database {
             "photoURL",
             "source",
             "sourceId",
-            "isAdmin",
             "orgUnitId"
         ];
     }
@@ -515,6 +512,11 @@ export default class Database {
         const updates: SQLSyntax[] = [];
 
         Object.keys(update).forEach((field) => {
+            if (field === "isAdmin") {
+                // for backward compatibility of older version auth SDK users, we will ignore the obsolete `isAdmin` field without throwing error
+                return;
+            }
+
             if (!this.isValidUserUpdateField(field)) {
                 throw new Error(
                     `Field ${field} is not a valid user record update field.`
@@ -562,7 +564,7 @@ export default class Database {
         });
         return this.pool
             .query(
-                ...sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" 
+                ...sqls`SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "orgUnitId" 
                 FROM users 
                 WHERE ${SQLSyntax.joinWithAnd([
                     sqls`"sourceId" = ${sourceId}`,
@@ -584,10 +586,6 @@ export default class Database {
             throw new ServerError(`email cannot be empty.`, 400);
         }
 
-        if (!user?.isAdmin) {
-            user.isAdmin = false;
-        }
-
         if (!user?.photoURL) {
             user.photoURL = "";
         }
@@ -603,6 +601,10 @@ export default class Database {
         const values = [sqls`${userId}`];
 
         Object.keys(user).forEach((field) => {
+            if (field === "isAdmin") {
+                // for backward compatibility of older version auth SDK users, we will ignore the obsolete `isAdmin` field without throwing error
+                return;
+            }
             if (!this.isValidUserUpdateField(field)) {
                 throw new ServerError(
                     `Field ${field} is not a valid user record field.`,
@@ -641,13 +643,6 @@ export default class Database {
         await this.pool.query(
             ...sqls`INSERT INTO user_roles (role_id, user_id) VALUES(${AUTHENTICATED_USERS_ROLE_ID}, ${userId})`.toQuery()
         );
-
-        //--- add default Admin role to the newly create user (if isAdmin is true)
-        if (user.isAdmin) {
-            await this.pool.query(
-                ...sqls`INSERT INTO user_roles (role_id, user_id) VALUES(${ADMIN_USERS_ROLE_ID}, ${userId})`.toQuery()
-            );
-        }
 
         return fetchUserResult.rows[0];
     }

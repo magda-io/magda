@@ -33,7 +33,6 @@ test_not_allow_data_steward_user_create_his_own_record {
         "photoURL": "",
         "source": "internal",
         "sourceId": "8da06331-5f56-4951-b126-f057e8709bad",
-        "isAdmin": false,
         "orgUnitId": null,
         "roles": [
           {
@@ -521,7 +520,6 @@ test_allow_data_steward_user_create_his_own_dataset {
         "photoURL": "",
         "source": "internal",
         "sourceId": "8da06331-5f56-4951-b126-f057e8709bad",
-        "isAdmin": false,
         "orgUnitId": null,
         "roles": [
           {

@@ -8,8 +8,7 @@ const mockUserData = [
         email: "admin@admin.com",
         photoURL: "http://example.com",
         source: "manual",
-        sourceId: "1",
-        isAdmin: true
+        sourceId: "1"
     },
     {
         id: "8D8931AF-86B3-104A-9B24-153491C6EA5E",
@@ -17,8 +16,7 @@ const mockUserData = [
         email: "test@test.com",
         photoURL: "http://example.com",
         source: "ckan",
-        sourceId: "testuser",
-        isAdmin: false
+        sourceId: "testuser"
     }
 ];
 

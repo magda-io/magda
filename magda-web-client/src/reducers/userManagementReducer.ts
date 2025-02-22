@@ -16,7 +16,6 @@ export type User = {
     photoURL: string;
     source: string;
     sourceId?: string;
-    isAdmin: boolean;
     roles: Role[];
     permissions: Permission[];
     orgUnitId?: string;
@@ -42,7 +41,6 @@ const defaultUserInfo: User = {
     email: "",
     photoURL: "",
     source: "",
-    isAdmin: false,
     roles: [
         {
             id: ANONYMOUS_USERS_ROLE_ID,

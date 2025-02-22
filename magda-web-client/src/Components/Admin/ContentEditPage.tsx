@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import Spinner from "Components/Common/Spinner";
 import { connect } from "react-redux";
+import { isAdmin } from "../RequireAdmin";
 import { readContent, updateContent } from "actions/contentActions";
 import CommonLink from "Components/Common/CommonLink";
 
@@ -72,9 +73,7 @@ class ContentEditPage extends Component<any, any> {
 function mapStateToProps(state, old) {
     const itemId = old.match.params.id;
     const hasEditPermissions =
-        state.userManagement &&
-        state.userManagement.user &&
-        state.userManagement.user.isAdmin;
+        state.userManagement && isAdmin(state.userManagement.user);
     return {
         strings: state.content.strings,
         itemId,

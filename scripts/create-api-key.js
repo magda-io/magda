@@ -137,7 +137,7 @@ function printResult(result) {
         } else {
             // --- list all users
             const users = await dbClient.query(
-                'SELECT "id", "displayName", "email", "source", "sourceId", "isAdmin" FROM "users"'
+                'SELECT "id", "displayName", "email", "source", "sourceId" FROM "users"'
             );
             if (!users || !users.rows || !users.rows.length) {
                 console.log(chalk.yellow("No user found!"));

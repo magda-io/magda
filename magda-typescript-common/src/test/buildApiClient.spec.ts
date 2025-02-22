@@ -124,8 +124,7 @@ describe("Test ApiClient.ts", function () {
         email: "test@test.com",
         photoURL: "http://example.com",
         source: "manual",
-        sourceId: "2",
-        isAdmin: false
+        sourceId: "2"
     };
 
     it(`\`createUser\` should return 'Encountered error 401 when POSTing new user to ${argv.authorizationApi}' error if called without sepecifying user ID`, async function () {
