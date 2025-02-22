@@ -67,7 +67,7 @@ magda:
             - objects.githubusercontent.com
             imgSrc:
             - "'self'"
-            - data:
+            - "data:"
             - https://*.googletagmanager.com
             - https://*.google-analytics.com
             connectSrc:
