@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.2.5
+
+- Upgrade dompurify to v3.2.4
+
 ## v4.2.4
 
 - #3559: Set `conflicts` to true when Indexer performs the trim operation.
