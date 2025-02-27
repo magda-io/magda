@@ -4701,13 +4701,6 @@
     "@types/docker-modem" "*"
     "@types/node" "*"
 
-"@types/dompurify@^2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@types/dompurify/-/dompurify-2.2.1.tgz#eebf3af8afe2f577a53acab9d98a3a4cb04bbbe7"
-  integrity sha512-3JwbEeRVQ3n6+JgBW/hCdkydRk9/vWT+UEglcXEJqLJEcUganDH37zlfLznxPKTZZfDqA9K229l1qN458ubcOQ==
-  dependencies:
-    "@types/trusted-types" "*"
-
 "@types/email-validator@^1.0.6":
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/@types/email-validator/-/email-validator-1.0.6.tgz#d555e53c826ac75e0205305f33ff47fc46930cd3"
@@ -5465,15 +5458,15 @@
   resolved "https://registry.yarnpkg.com/@types/tough-cookie/-/tough-cookie-4.0.0.tgz#fef1904e4668b6e5ecee60c52cc6a078ffa6697d"
   integrity sha512-I99sngh224D0M7XgW1s120zxCt3VYQ3IQsuw3P3jbq5GG4yc79+ZjyKznyOGIQrflfylLgcfekeZW/vk0yng6A==
 
-"@types/trusted-types@*":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@types/trusted-types/-/trusted-types-2.0.0.tgz#aee6e868fcef74f2b8c71614b6df81a601a42f17"
-  integrity sha512-I8MnZqNXsOLHsU111oHbn3khtvKMi5Bn4qVFsIWSJcCP1KKDiXX5AEw8UPk0nSopeC+Hvxt6yAy1/a5PailFqg==
-
 "@types/trusted-types@^2.0.2":
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/@types/trusted-types/-/trusted-types-2.0.6.tgz#d12451beaeb9c3838f12024580dc500b7e88b0ad"
   integrity sha512-HYtNooPvUY9WAVRBr4u+4Qa9fYD1ze2IUlAD3HoA6oehn1taGwBx3Oa52U4mTslTS+GAExKpaFu39Y5xUEwfjg==
+
+"@types/trusted-types@^2.0.7":
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/@types/trusted-types/-/trusted-types-2.0.7.tgz#baccb07a970b91707df3a3e8ba6896c57ead2d11"
+  integrity sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==
 
 "@types/type-is@^1.6.2":
   version "1.6.3"
@@ -9757,10 +9750,12 @@ domhandler@^4.0.0, domhandler@^4.2.0, domhandler@^4.3.1:
   dependencies:
     domelementtype "^2.2.0"
 
-dompurify@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.3.0.tgz#07bb39515e491588e5756b1d3e8375b5964814e2"
-  integrity sha512-VV5C6Kr53YVHGOBKO/F86OYX6/iLTw2yVSI721gKetxpHCK/V5TaLEf9ODjRgl1KLSWRMY6cUhAbv/c+IUnwQw==
+dompurify@^3.2.4:
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.2.4.tgz#af5a5a11407524431456cf18836c55d13441cd8e"
+  integrity sha512-ysFSFEDVduQpyhzAob/kkuJjf5zWkZD8/A9ywSp1byueyuCfHamrCBa14/Oc2iiB0e51B+NpxSl5gmzn+Ms/mg==
+  optionalDependencies:
+    "@types/trusted-types" "^2.0.7"
 
 domutils@^1.5.1, domutils@^1.7.0:
   version "1.7.0"
