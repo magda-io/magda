@@ -1,7 +1,7 @@
 {
   "name": "@magda/utils",
   "description": "MAGDA Common Utils",
-  "version": "4.2.4",
+  "version": "4.2.5",
   "type": "module",
   "exports": {
     ".": {
@@ -26,7 +26,7 @@
   "module": "dist/index.js",
   "browser": "dist/index-web.js",
   "devDependencies": {
-    "@magda/typescript-common": "^4.2.4",
+    "@magda/typescript-common": "^4.2.5",
     "@microsoft/api-extractor": "~7.39.0",
     "esbuild": "^0.19.10",
     "ts-loader": "^9.5.1",
