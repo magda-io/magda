@@ -1,8 +1,10 @@
 # CHANGELOG
 
-## vv5.0.1
+## v5.0.1
 
 - #3581 Make storage API upload limit configurable
+- #3582 Add cache support to SQLConsole
+- Upgrade dompurify to v3.2.4
 
 ## v5.0.0
 
