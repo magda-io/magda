@@ -16,6 +16,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| authApiUrl | string | `"http://authorization-api/v0"` | The URL of the authorization API |
 | autoCreateBuckets | bool | `true` | Create `defaultBuckets` on startup. |
 | autoCreateSecrets | bool | `true` | Whether or not auto create `storage-secrets`. When auto created, random 20 chars will be generated for `accessKey` and random 40 chars will be generated for `secretKey`. When use minio as gateway mode, you might want to manualy generate the secret in order supply cloud provider secrets. e.g. <ul>   <li>awsAccessKeyId: aws s3 access key id if use AWS s3</li>   <li>awsSecretAccessKey: aws s3 secret access key id if use AWS s3</li>   <li>gcs_key.json: GCS key file if use google GCS</li> </ul> |
 | defaultBuckets | list | `[]` | Default buckets to create on startup. If no value is provided `global.defaultDatasetBucket` will be used. |
@@ -23,6 +24,7 @@ Kubernetes: `>= 1.14.0-0`
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | image.name | string | `"magda-storage-api"` |  |
+| listenPort | int | `6121` | The port for storage api to listen on |
 | minio.DeploymentUpdate.type | string | `"Recreate"` |  |
 | minio.existingSecret | string | `"storage-secrets"` |  |
 | minio.fullnameOverride | string | `"magda-minio"` |  |
@@ -31,11 +33,15 @@ Kubernetes: `>= 1.14.0-0`
 | minio.persistence.size | string | `"10Gi"` |  |
 | minio.port | int | `9000` |  |
 | minio.resources.requests.memory | string | `"256Mi"` |  |
+| minioEnableSSL | bool | `false` | Whether or not to connect to minio server with SSL connection |
 | minioRegion | string | "unspecified-region" | specify bucket region |
+| registryApiUrl | string | `"http://registry-api/v0"` | The URL of the registry API |
 | resources.limits.cpu | string | `"50m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"30Mi"` |  |
 | skipAuth | bool | `false` | when set to true, API will not query policy engine for auth decision but assume it's always permitted.  It's for debugging only. |
+| tenantId | int | `0` | The tenant ID to use for the storage API |
+| uploadLimit | string | `"100mb"` | the file upload size limit of the storage API |
 
 ### Use minio as Storage Gateway
 

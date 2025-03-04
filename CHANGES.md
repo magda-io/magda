@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## vv5.0.1
+
+- #3581 Make storage API upload limit configurable
+
 ## v5.0.0
 
 - #3549 New feature: Hybrid search engine

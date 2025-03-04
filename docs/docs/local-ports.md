@@ -6,7 +6,7 @@ It is not necessary to allocate ports to microservices when running on a Kuberne
 | --------------------------------- | ---- |
 | `magda-postgres`                  | 5432 |
 | `magda-minio`                     | 9000 |
-| `magda-elastic-search`            | 9300 |
+| `magda-opensearch`                | 9200 |
 | `magda-gateway`                   | 6100 |
 | `magda-registry-api`              | 6101 |
 | `magda-search-api`                | 6102 |
