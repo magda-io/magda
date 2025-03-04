@@ -38,6 +38,24 @@ defaultBuckets: []
 # @default -- "unspecified-region"
 minioRegion: ""
 
+# -- Whether or not to connect to minio server with SSL connection
+minioEnableSSL: false
+
+# -- The port for storage api to listen on
+listenPort: 6121
+
+# -- The URL of the authorization API
+authApiUrl: "http://authorization-api/v0"
+
+# -- The URL of the registry API
+registryApiUrl: "http://registry-api/v0"
+
+# -- The tenant ID to use for the storage API
+tenantId: 0
+
+# -- the file upload size limit of the storage API
+uploadLimit: "100mb"
+
 # -- when set to true, API will not query policy engine for auth decision but assume it's always permitted. 
 # It's for debugging only.
 skipAuth: false

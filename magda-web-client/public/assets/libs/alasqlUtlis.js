@@ -1,3 +1,4 @@
+/// <reference path="fetchWithCache.d.ts" />
 (function initialization() {
     /**
      * From https://github.com/AlaSQL/alasql/blob/9ea01ac44b033d7c0e9bc5ddecca70638ed95c60/src/15utility.js
@@ -58,13 +59,19 @@
 
     function getData(path, success, error, binary) {
         try {
+            const req = new Request(path, {
+                ...defaultCommonFetchRequestOptions,
+                ...(window.commonFetchRequestOptions
+                    ? window.commonFetchRequestOptions
+                    : {})
+            });
+            const cacheCfg = {
+                cacheName: "magda-sql-console",
+                expiration: 18400,
+                maxCacheSize: 10
+            };
             if (binary) {
-                return fetch(path, {
-                    ...defaultCommonFetchRequestOptions,
-                    ...(window.commonFetchRequestOptions
-                        ? window.commonFetchRequestOptions
-                        : {})
-                })
+                return fetchWithCache(req, cacheCfg)
                     .then((response) => response.arrayBuffer())
                     .then((data) => checkContentSizeLimit(data))
                     .then(success)
@@ -74,12 +81,7 @@
                         throw e;
                     });
             } else {
-                return fetch(path, {
-                    ...defaultCommonFetchRequestOptions,
-                    ...(window.commonFetchRequestOptions
-                        ? window.commonFetchRequestOptions
-                        : {})
-                })
+                return fetchWithCache(req, cacheCfg)
                     .then((response) => response.text())
                     .then((data) => checkContentSizeLimit(data))
                     .then(success)
