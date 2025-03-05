@@ -1,3 +1,4 @@
+/// <reference path="fetchWithCache.d.ts" />
 (function initialization() {
     /**
      * From https://github.com/AlaSQL/alasql/blob/9ea01ac44b033d7c0e9bc5ddecca70638ed95c60/src/15utility.js
@@ -56,15 +57,35 @@
         return data;
     }
 
+    const SQL_CONSOLE_CACHE_NAME = "magda-sql-console";
+    const SQL_CONSOLE_CACHE_MAX_SIZE = 10;
+    const SQL_CONSOLE_CACHE_EXPIRATION = 86400; // - 1 day
+
     function getData(path, success, error, binary) {
         try {
+            const req = new Request(path, {
+                ...defaultCommonFetchRequestOptions,
+                ...(window.commonFetchRequestOptions
+                    ? window.commonFetchRequestOptions
+                    : {})
+            });
+            const cacheCfg = {
+                cacheName:
+                    typeof window.sqlConsoleCacheName === "string"
+                        ? window.sqlConsoleCacheName
+                        : SQL_CONSOLE_CACHE_NAME,
+                expiration:
+                    typeof window.sqlConsoleCacheExpiration === "number"
+                        ? window.sqlConsoleCacheExpiration
+                        : SQL_CONSOLE_CACHE_EXPIRATION,
+                maxCacheSize:
+                    typeof window.sqlConsoleCacheMaxSize === "number"
+                        ? window.sqlConsoleCacheMaxSize
+                        : SQL_CONSOLE_CACHE_MAX_SIZE
+            };
+            const resPromise = fetchWithCache(req, cacheCfg);
             if (binary) {
-                return fetch(path, {
-                    ...defaultCommonFetchRequestOptions,
-                    ...(window.commonFetchRequestOptions
-                        ? window.commonFetchRequestOptions
-                        : {})
-                })
+                return resPromise
                     .then((response) => response.arrayBuffer())
                     .then((data) => checkContentSizeLimit(data))
                     .then(success)
@@ -74,12 +95,7 @@
                         throw e;
                     });
             } else {
-                return fetch(path, {
-                    ...defaultCommonFetchRequestOptions,
-                    ...(window.commonFetchRequestOptions
-                        ? window.commonFetchRequestOptions
-                        : {})
-                })
+                return resPromise
                     .then((response) => response.text())
                     .then((data) => checkContentSizeLimit(data))
                     .then(success)
@@ -94,6 +110,30 @@
             if (error) return error(e);
             throw e;
         }
+    }
+
+    function clearCache() {
+        if (!("caches" in window)) {
+            return "Cache API is not supported by the web browser.";
+        }
+        const cacheName =
+            typeof window.sqlConsoleCacheName === "string"
+                ? window.sqlConsoleCacheName
+                : SQL_CONSOLE_CACHE_NAME;
+        caches
+            .open(cacheName)
+            .then((cache) => cache.keys().then((keys) => [keys, cache]))
+            .then((args) => {
+                const keys = args[0];
+                const cache = args[1];
+                return Promise.all(keys.map((req) => cache.delete(req)));
+            })
+            .catch((e) =>
+                console.error(
+                    "clearCache(): Failed to clear cache for SQLCache: " + e
+                )
+            );
+        return "done";
     }
 
     alasql.utils.loadFile = function (path, asy, success, error) {
@@ -144,5 +184,8 @@
     };
     alasql.from.source = source;
     alasql.from.SOURCE = source;
+    alasql.fn.clearCache = clearCache;
+    alasql.fn.clearcache = clearCache;
+    alasql.fn.CLEARCACHE = clearCache;
     window.parent[`onAlaSQLIframeLoaded${refToken}`]();
 })();

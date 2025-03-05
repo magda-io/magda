@@ -11,6 +11,10 @@ import { Component } from "react";
 
 export const ADMIN_ROLE_ID = ADMIN_USERS_ROLE_ID;
 
+const SQL_CONSOLE_CACHE_NAME = "magda-sql-console";
+const SQL_CONSOLE_CACHE_MAX_SIZE = 10;
+const SQL_CONSOLE_CACHE_EXPIRATION = 86400; // - 1 day
+
 declare global {
     interface Window {
         magda_server_config: any;
@@ -766,6 +770,31 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     sqlConsoleMaxDisplayRows: number;
+
+    /**
+     * The cache store name SQLConsole uses.
+     * The cache store will be used to cache recent data file access.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    sqlConsoleCacheName: string;
+
+    /**
+     * Max number of recent access data files that the SQLConsole will cache.
+     *
+     * @type {number}
+     * @memberof ConfigDataType
+     */
+    sqlConsoleCacheMaxSize: number;
+
+    /**
+     * This setting will be used to determine how many seconds a stored cache item will be kept before we fetch a new copy from the remote server.
+     *
+     * @type {number}
+     * @memberof ConfigDataType
+     */
+    sqlConsoleCacheExpiration: number;
 }
 
 const serverConfig: ConfigDataType = window.magda_server_config || {};
@@ -1111,7 +1140,18 @@ export const config: ConfigDataType = {
     sqlConsoleMaxDisplayRows:
         typeof serverConfig?.sqlConsoleMaxDisplayRows === "number"
             ? serverConfig.sqlConsoleMaxDisplayRows
-            : 1000
+            : 1000,
+    sqlConsoleCacheName: serverConfig?.sqlConsoleCacheName
+        ? serverConfig.sqlConsoleCacheName
+        : SQL_CONSOLE_CACHE_NAME,
+    sqlConsoleCacheMaxSize:
+        serverConfig?.sqlConsoleCacheMaxSize > 0
+            ? serverConfig.sqlConsoleCacheMaxSize
+            : SQL_CONSOLE_CACHE_MAX_SIZE,
+    sqlConsoleCacheExpiration:
+        serverConfig?.sqlConsoleCacheExpiration > 0
+            ? serverConfig.sqlConsoleCacheExpiration
+            : SQL_CONSOLE_CACHE_EXPIRATION
 };
 
 export type Config = typeof config;

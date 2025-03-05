@@ -225,6 +225,12 @@ async function getAlaSQLViaIframe(): Promise<typeof alasql> {
                     };
                     (alasqlIframe.contentWindow as any).sqlConsoleMaxFileSize =
                         config.sqlConsoleMaxFileSize;
+                    (alasqlIframe.contentWindow as any).sqlConsoleCacheName =
+                        config.sqlConsoleCacheName;
+                    (alasqlIframe.contentWindow as any).sqlConsoleCacheMaxSize =
+                        config.sqlConsoleCacheMaxSize;
+                    (alasqlIframe.contentWindow as any).sqlConsoleCacheExpiration =
+                        config.sqlConsoleCacheExpiration;
                 }
                 resolve(alasqlIframe?.contentWindow?.["alasql"]);
             };
