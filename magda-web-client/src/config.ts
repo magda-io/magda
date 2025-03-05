@@ -789,8 +789,7 @@ export interface ConfigDataType {
     sqlConsoleCacheMaxSize: number;
 
     /**
-     * When the Etag header is not supported by the server or it's not available (e.g. due to CORS request),
-     * we will use this setting to determine how many seconds a stored cache item will be kept before we fetch a new copy from the remote server.
+     * This setting will be used to determine how many seconds a stored cache item will be kept before we fetch a new copy from the remote server.
      *
      * @type {number}
      * @memberof ConfigDataType

@@ -112,6 +112,30 @@
         }
     }
 
+    function clearCache() {
+        if (!("caches" in window)) {
+            return "Cache API is not supported by the web browser.";
+        }
+        const cacheName =
+            typeof window.sqlConsoleCacheName === "string"
+                ? window.sqlConsoleCacheName
+                : SQL_CONSOLE_CACHE_NAME;
+        caches
+            .open(cacheName)
+            .then((cache) => cache.keys().then((keys) => [keys, cache]))
+            .then((args) => {
+                const keys = args[0];
+                const cache = args[1];
+                return Promise.all(keys.map((req) => cache.delete(req)));
+            })
+            .catch((e) =>
+                console.error(
+                    "clearCache(): Failed to clear cache for SQLCache: " + e
+                )
+            );
+        return "done";
+    }
+
     alasql.utils.loadFile = function (path, asy, success, error) {
         /*
             SELECT * FROM TXT('#one') -- read data from HTML element with id="one"
@@ -160,5 +184,8 @@
     };
     alasql.from.source = source;
     alasql.from.SOURCE = source;
+    alasql.fn.clearCache = clearCache;
+    alasql.fn.clearcache = clearCache;
+    alasql.fn.CLEARCACHE = clearCache;
     window.parent[`onAlaSQLIframeLoaded${refToken}`]();
 })();

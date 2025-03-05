@@ -44,60 +44,72 @@ async function fetchWithCache(
     urlOrRequest: string | Request,
     cacheCfg: CacheOptions = {}
 ): Promise<Response> {
+    if (!("caches" in window)) {
+        // cache API is not supported
+        console.log(
+            "fetchWithCache: cache api is not supported. Fallback to fetch without cache"
+        );
+        return await fetchWithHeaders(urlOrRequest);
+    }
     const cacheName = cacheCfg.cacheName || DEFAULT_CACHE_NAME;
-    const expiration = cacheCfg.expiration || DEFAULT_CACHE_EXPIRATION;
-    const maxCacheSize = cacheCfg.maxCacheSize || DEFAULT_CACHE_SIZE;
-    const cache = await caches.open(cacheName);
+    const expiration =
+        typeof cacheCfg.expiration === "number"
+            ? cacheCfg.expiration
+            : DEFAULT_CACHE_EXPIRATION;
+    const maxCacheSize =
+        typeof cacheCfg.maxCacheSize === "number"
+            ? cacheCfg.maxCacheSize
+            : DEFAULT_CACHE_SIZE;
+    if (expiration <= 0 || maxCacheSize <= 0) {
+        return await fetchWithHeaders(urlOrRequest);
+    }
+    let cache: Cache;
+    try {
+        cache = await caches.open(cacheName);
+    } catch (e) {
+        // cache api might not accessible for some browser under private browsing mode
+        console.log(
+            "fetchWithCache: Fallback to fetch without cache due to cache API access error: " +
+                e
+        );
+        return await fetchWithHeaders(urlOrRequest);
+    }
+
     const url =
         typeof urlOrRequest === "string" ? urlOrRequest : urlOrRequest.url;
     const cachedResponse = await cache.match(url);
 
     if (cachedResponse) {
-        const etag = cachedResponse.headers.get("ETag");
-        let lastModified = cachedResponse.headers.get("Last-Modified");
-        if (!lastModified) {
-            lastModified = cachedResponse.headers.get("Date");
+        // Manage cache based on expiration time & max cache size
+        const dateHeader = cachedResponse.headers.get("Date");
+        const lastModifiedHeader = cachedResponse.headers.get("Last-Modified");
+        const curDate = new Date();
+        let cachedTime = new Date(
+            dateHeader
+                ? dateHeader
+                : lastModifiedHeader
+                ? lastModifiedHeader
+                : curDate.toUTCString()
+        ).getTime();
+        if (isNaN(cachedTime)) {
+            cachedTime = curDate.getTime();
         }
-        if (etag) {
-            // even when the server supports ETag, we might not have it as the CORS fetch response doesn't expose ETag header
-            // Send conditional request using ETag & optional Last-Modified (only when it's available)
-            const response = await fetchWithHeaders(urlOrRequest, {
-                "If-None-Match": etag,
-                ...(lastModified ? { "If-Modified-Since": lastModified } : {})
-            });
-
-            if (response.status === 304) {
-                // Cache is still valid, serving cached version
-                return cachedResponse;
-            } else {
-                // Cache expired, updating...
-                await cache.put(url, response.clone());
-                await enforceCacheSizeLimit(cacheName, maxCacheSize);
-                return response;
-            }
+        const currentTime = curDate.getTime();
+        if (currentTime - cachedTime > expiration * 1000) {
+            // Cache expired, updating...
+            const response = await fetchWithHeaders(urlOrRequest);
+            await cache.put(url, response.clone());
+            await enforceCacheSizeLimit(cacheName, maxCacheSize);
+            return response;
         } else {
-            // Server doesn't support ETag header (or the header is not accessible via fetch),
-            // we will manage cache based on expiration time & max cache size
-            const curDate = new Date();
-            const cachedTime = new Date(
-                lastModified || curDate.toUTCString()
-            ).getTime();
-            const currentTime = curDate.getTime();
-            if (currentTime - cachedTime > expiration * 1000) {
-                // Cache expired, updating...
-                const response = await fetchWithHeaders(urlOrRequest);
-                await cache.put(url, response.clone());
-                await enforceCacheSizeLimit(cacheName, maxCacheSize);
-                return response;
-            } else {
-                // Cache is still valid, serving cached version
-                return cachedResponse;
-            }
+            // Cache is still valid, serving cached version
+            return cachedResponse;
         }
     } else {
         // no existing cache entry found
         const response = await fetchWithHeaders(urlOrRequest);
-        await cache.put(url, response.clone());
+        const clonedRes = response.clone();
+        await cache.put(url, clonedRes);
         await enforceCacheSizeLimit(cacheName, maxCacheSize);
         return response;
     }
