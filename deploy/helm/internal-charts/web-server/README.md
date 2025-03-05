@@ -114,6 +114,9 @@ Kubernetes: `>= 1.14.0-0`
 | showContactButtonForNoContactPointDataset | bool | `false` | Whether show the "Ask a question about this dataset" button for datasets without contact point info. By default, the "Ask a question about this dataset" button is only shown for datasets has contact point info. For datasets without contact point info, the inquiry will be sent to the default recipient provided by `global.defaultContactEmail`. |
 | showNotificationBanner | bool | `false` |  |
 | sitemapCacheSeconds | int | `86400` | No. of seconds that sitemap result will be cached. By default, 86400 i.e. 1 day. |
+| sqlConsoleCacheExpiration | int | 86400 seconds (1 day) | When the Etag header is not supported by the server or it's not available (e.g. due to CORS request), we will use this setting to determine how many seconds a stored cache item will be kept before we fetch a new copy from the remote server. |
+| sqlConsoleCacheMaxSize | int | `10` | Max number of recent access data files that the SQLConsole will cache. Oldest cache item will be deleted before a new additional item is added into cache, when cache item number reach the limit set here. |
+| sqlConsoleCacheName | string | `"magda-sql-console"` | The cache store name SQLConsole uses. The cache store will be used to cache recent data file access. |
 | sqlConsoleMaxDisplayRows | int | `1000` | the maximum number of result rows will be displayed in SQLConsole UI. Users can still download the full result as CSV file via download button. |
 | sqlConsoleMaxFileSize | int | `52428800` | The maximum file size that can be loaded into the SQL console. When the user tries to load a file that is larger than this size, the system will show an error message. The default value is 50MB. |
 | supportExternalTerriaMapV7 | bool | `false` | When set to true, the `Open in National Map` button in Map Preview area will send data in v7 format. |

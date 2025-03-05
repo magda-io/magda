@@ -282,3 +282,17 @@ sqlConsoleMaxFileSize: 52428800
 # -- the maximum number of result rows will be displayed in SQLConsole UI.
 # Users can still download the full result as CSV file via download button.
 sqlConsoleMaxDisplayRows: 1000
+
+# -- The cache store name SQLConsole uses.
+# The cache store will be used to cache recent data file access.
+sqlConsoleCacheName: "magda-sql-console"
+
+# -- Max number of recent access data files that the SQLConsole will cache.
+# Oldest cache item will be deleted before a new additional item is added into cache,
+# when cache item number reach the limit set here.
+sqlConsoleCacheMaxSize: 10
+
+# -- When the Etag header is not supported by the server or it's not available (e.g. due to CORS request),
+# we will use this setting to determine how many seconds a stored cache item will be kept before we fetch a new copy from the remote server.
+# @default -- 86400 seconds (1 day)
+sqlConsoleCacheExpiration: 86400

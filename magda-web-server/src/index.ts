@@ -377,6 +377,26 @@ const argv = yargs
             "Users can still download the full result as CSV file via download button.",
         default: 1000,
         type: "number"
+    })
+    .option("sqlConsoleCacheName", {
+        describe:
+            "The cache store name SQLConsole uses." +
+            "The cache store will be used to cache recent data file access.",
+        default: "magda-sql-console",
+        type: "string"
+    })
+    .option("sqlConsoleCacheMaxSize", {
+        describe:
+            "Max number of recent access data files that the SQLConsole will cache.",
+        default: 10,
+        type: "number"
+    })
+    .option("sqlConsoleCacheExpiration", {
+        describe:
+            "When the Etag header is not supported by the server or it's not available (e.g. due to CORS request)," +
+            "we will use this setting to determine how many seconds a stored cache item will be kept before we fetch a new copy from the remote server.",
+        default: 86400,
+        type: "number"
     }).argv;
 
 // set default timezone

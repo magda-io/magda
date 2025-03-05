@@ -57,6 +57,10 @@
         return data;
     }
 
+    const SQL_CONSOLE_CACHE_NAME = "magda-sql-console";
+    const SQL_CONSOLE_CACHE_MAX_SIZE = 10;
+    const SQL_CONSOLE_CACHE_EXPIRATION = 86400; // - 1 day
+
     function getData(path, success, error, binary) {
         try {
             const req = new Request(path, {
@@ -66,12 +70,22 @@
                     : {})
             });
             const cacheCfg = {
-                cacheName: "magda-sql-console",
-                expiration: 18400,
-                maxCacheSize: 10
+                cacheName:
+                    typeof window.sqlConsoleCacheName === "string"
+                        ? window.sqlConsoleCacheName
+                        : SQL_CONSOLE_CACHE_NAME,
+                expiration:
+                    typeof window.sqlConsoleCacheExpiration === "number"
+                        ? window.sqlConsoleCacheExpiration
+                        : SQL_CONSOLE_CACHE_EXPIRATION,
+                maxCacheSize:
+                    typeof window.sqlConsoleCacheMaxSize === "number"
+                        ? window.sqlConsoleCacheMaxSize
+                        : SQL_CONSOLE_CACHE_MAX_SIZE
             };
+            const resPromise = fetchWithCache(req, cacheCfg);
             if (binary) {
-                return fetchWithCache(req, cacheCfg)
+                return resPromise
                     .then((response) => response.arrayBuffer())
                     .then((data) => checkContentSizeLimit(data))
                     .then(success)
@@ -81,7 +95,7 @@
                         throw e;
                     });
             } else {
-                return fetchWithCache(req, cacheCfg)
+                return resPromise
                     .then((response) => response.text())
                     .then((data) => checkContentSizeLimit(data))
                     .then(success)
