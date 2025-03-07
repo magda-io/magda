@@ -4,6 +4,7 @@
 
 - #3581 Make storage API upload limit configurable
 - #3582 Add cache support to SQLConsole
+- #3584 Make Registry WebHook Request Stream Timeout Configurable
 - Upgrade dompurify to v3.2.4
 - Fixes: when auto metadata extraction feature is disabled, the format metadata field should still be auto-prefilled
 - Increases the default memory config for OpenSearch data node to 1024mi
