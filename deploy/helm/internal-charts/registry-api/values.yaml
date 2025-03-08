@@ -96,3 +96,12 @@ appConfig:
   # -- whether print out full config data at application starting up
   # for debug purpose only
   printFullConfig: false
+  webhooks:
+    # -- WebHook event notification request stream processing timeout
+    # you might want to increase this value to allow longer processing time for sync webhooks
+    # you will also want to adjust `akka.http.client.idle-timeout` to match this value
+    requestStreamTimeout: 120s
+  akka:
+    http:
+      client:
+        idle-timeout: 120s
