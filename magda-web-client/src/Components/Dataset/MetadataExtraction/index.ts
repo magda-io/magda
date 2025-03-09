@@ -5,6 +5,7 @@ import { extractExtents } from "./extractExtents";
 import { extractKeywords } from "./extractKeywords";
 import * as Comlink from "comlink";
 import merge from "lodash/merge";
+import getFormatFromFileName from "../../../libs/getFormatFromFileName";
 import type { FileDetails, MetadataExtractionOutput, Processor } from "./types";
 import type { MessageSafeConfig } from "config"; // eslint-disable-line
 
@@ -27,7 +28,8 @@ export const extractors = {
                 : false;
         if (!enabled) {
             return {
-                datasetTitle: input.fileName
+                datasetTitle: input.fileName,
+                format: getFormatFromFileName(input.fileName)
             };
         }
         const extractorCount = dependentExtractors.length + 1;

@@ -27,20 +27,21 @@ spec:
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
-            "--listenPort", "80",
-            "--minioEnableSSL", "false",
-            "--minioHost", "magda-minio",
-            "--minioPort", "9000",
+            "--listenPort", {{ .Values.listenPort | quote }},
+            "--minioEnableSSL", {{ .Values.minioEnableSSL | quote }},
+            {{- $minioCfg := set dict "Values" .Values.minio }}
+            "--minioHost", {{ template "minio.fullname" $minioCfg }},
+            "--minioPort", {{ .Values.minio.port | default 9000 | quote }},
 {{- if .Values.minioRegion }}
             "--minioRegion", {{ .Values.minioRegion | quote }},
 {{- end }}
 {{- if .Values.skipAuth }}
             "--skipAuth", "true",
 {{- end }}
-            "--authApiUrl", "http://authorization-api/v0",
-            "--tenantId", "0",
-            "--uploadLimit", "100mb",
-            "--registryApiUrl", "http://registry-api/v0",
+            "--authApiUrl", {{ .Values.authApiUrl | quote }},
+            "--tenantId", {{ .Values.tenantId | quote }},
+            "--uploadLimit", {{ .Values.uploadLimit | quote }},
+            "--registryApiUrl", {{ .Values.registryApiUrl | quote }},
 {{- if .Values.defaultBuckets }}
             "--defaultBuckets", {{ range .Values.defaultBuckets }} {{ . | quote }},  {{- end }}
 {{- else }}
@@ -71,14 +72,14 @@ spec:
         livenessProbe:
           httpGet:
             path: /v0/status/live
-            port: 80
+            port: {{ .Values.listenPort }}
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
         readinessProbe:
           httpGet:
             path: /v0/status/ready
-            port: 80
+            port: {{ .Values.listenPort }}
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10

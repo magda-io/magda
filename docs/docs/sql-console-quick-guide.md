@@ -91,6 +91,24 @@ As we use [AlaSQL](https://alasql.org/) as the underlying SQL query engine, you 
 - Users can download query results as a CSV file by clicking the **Download** button.
 - By default, only the first 1000 records are shown. This limit can be adjusted via Magda’s `web-server` Helm chart configuration (`sqlConsoleMaxDisplayRows`).
 
+## Cache Management
+
+By default, the SQLConsole will cache the recent accessed data files via Web Browser [Cache API](https://developer.mozilla.org/en-US/docs/Web/API/Cache) to reduce the waiting time. The behaviour of the cache function is controlled by the following helm chart configuration options:
+
+- **Cache Store Name:** `sqlConsoleCacheName` (default: `magda-sql-console`). The cache store name SQLConsole uses. the cache store will be used to cache recent data file access.
+- **Max Cache Size:** `sqlConsoleCacheMaxSize` (default: 10). Max number of recent access data files that the SQLConsole will cache. Oldest cache item will be deleted before a new additional item is added into cache, when cache item number reach the limit set here.
+- **Cache Expiration:** `sqlConsoleCacheExpiration` (default: 86400 1 day). This setting will be used to determine how many seconds a stored cache item will be kept before we fetch a new copy from the remote server.
+
+> Please note: set either `sqlConsoleCacheMaxSize` or `sqlConsoleCacheExpiration` to `0` will disable the cache feature.
+
+### Manually Clear Cache
+
+Users can use the `clearCache()` function to manually clear all cached data at any time. e.g.:
+
+```sql
+SELECT clearCache()
+```
+
 ## Performance Considerations
 
 Magda SQL Console processes queries in the browser, so performance depends on the user's hardware.

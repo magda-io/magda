@@ -303,7 +303,7 @@ data:
   extraContainers: []
   extraInitContainers: []
   podAnnotations: {}
-  javaOpts: "-Xmx256M -Xms256M"
+  javaOpts: "-Xmx512M -Xms512M"
   # -- By default, .Values.sysctlVmMaxMapCount will be used.
   # You can overwrite this value for data node group.
   sysctlVmMaxMapCount: 
@@ -336,7 +336,7 @@ data:
   resources:
     requests:
       cpu: 200m
-      memory: 512Mi
+      memory: 1024Mi
     limits:
       cpu: 500m
   # -- Size of the persistent volume claim for each data node.

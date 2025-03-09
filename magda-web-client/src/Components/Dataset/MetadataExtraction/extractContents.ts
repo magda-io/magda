@@ -5,6 +5,7 @@ import uniq from "lodash/uniq";
 import moment from "moment";
 import { FileDetails } from "./types";
 import extractPdfFile from "./extractPdfFile";
+import getFormatFromFileName from "../../../libs/getFormatFromFileName";
 
 interface ContentExtractorOutput {
     format?: string;
@@ -16,20 +17,6 @@ interface ContentExtractorOutput {
     keywords?: string[];
     largeTextBlockIdentified?: boolean;
 }
-
-function getFileExtension(filename?: string) {
-    if (!filename) {
-        return "";
-    }
-    const ext = filename.split(".").pop();
-    if (ext === filename) return "";
-    return ext;
-}
-
-const getFormatFromFileName = (filename?: string) => {
-    const ext = getFileExtension(filename);
-    return ext ? ext.toUpperCase() : "UNKNOWN";
-};
 
 /**
  * Extract contents of file as text if they are text based file formats

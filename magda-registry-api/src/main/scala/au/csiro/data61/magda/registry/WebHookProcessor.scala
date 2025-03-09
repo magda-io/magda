@@ -19,6 +19,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 import au.csiro.data61.magda.model.TenantId.AllTenantsId
+import au.csiro.data61.magda.AppConfig
 
 /**
   * The processor sends notifications to a subscriber via web hook.
@@ -33,6 +34,9 @@ class WebHookProcessor(
 ) extends Protocols {
 
   private val http = Http(actorSystem)
+  private val config = AppConfig.conf()
+  private val webHoolRequestStreamTimeout =
+    config.getDuration("webhooks.requestStreamTimeout").toMillis milliseconds
 
   private def getTenantRecordIdsMap(
       events: List[RegistryEvent]
@@ -306,7 +310,10 @@ class WebHookProcessor(
             }
             Future.failed(error)
         }
-        resultStream.completionTimeout(60 seconds).runWith(Sink.head)
+
+        resultStream
+          .completionTimeout(webHoolRequestStreamTimeout)
+          .runWith(Sink.head)
       })
   }
 }

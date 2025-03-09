@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v5.0.1
+
+- #3581 Make storage API upload limit configurable
+- #3582 Add cache support to SQLConsole
+- #3584 Make Registry WebHook Request Stream Timeout Configurable
+- Upgrade dompurify to v3.2.4
+- Fixes: when auto metadata extraction feature is disabled, the format metadata field should still be auto-prefilled
+- Increases the default memory config for OpenSearch data node to 1024mi
+
 ## v5.0.0
 
 - #3549 New feature: Hybrid search engine
@@ -12,10 +21,11 @@
 - #3574 Allow disabling frontend auto metadata extraction feature via config
 - Include [magda-embedding-api](https://github.com/magda-io/magda-embedding-api) v1.1.0 to support #3549
 - fixes: avoid bundling `auth-api-client` typescript definition in `authentication-plugin-sdk` to prevent TS2345 type error
+- #3567: Upgrade opensearch to v2.17.1
 
 ## v4.2.5
 
-- #3567: Upgrade opensearch to v2.17.1
+- Upgrade dompurify to v3.2.4
 
 ## v4.2.4
 
