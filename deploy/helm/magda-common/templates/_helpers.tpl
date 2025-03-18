@@ -27,17 +27,20 @@
   Parameters:
   `filePattern`: Glob file search pattern string
   `pathPrefix` : Optional. Add pathPrefix to all file path generated in JSON
+  `removePrefix` : Optional. Remove the prefix from the file path generated in JSON
   Usage: 
   files.json: {{ include "magda.filesToJson" (dict "root" . "filePattern" "ddsd/sss/**" ) }}
   OR
-  files.json: {{ include "magda.filesToJson" (dict "root" . "filePattern" "ddsd/sss/**" "pathPrefix" "test/" ) }}
+  files.json: {{ include "magda.filesToJson" (dict "root" . "filePattern" "ddsd/sss/**" "pathPrefix" "test/" "removePrefix" "test/ddsd/" ) }}
 */}}
 {{- define "magda.filesToJson" -}}
 {{ $data := dict -}}
 {{- $pathPrefix := empty .pathPrefix | ternary "" .pathPrefix -}}
+{{- $removePrefix := empty .removePrefix | ternary "" .removePrefix -}}
   {{- range $path, $bytes := .root.Files.Glob .filePattern -}}
   {{-   $str := toString $bytes -}}
   {{-   $fullPath := print $pathPrefix $path -}}
+  {{-   $fullPath = trimPrefix $removePrefix $fullPath -}}
   {{-   $_ := set $data $fullPath $str -}}
   {{- end -}}
 {{- mustToRawJson $data | quote -}} 

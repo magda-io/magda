@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: "test-opa-policies"
 data:
-  my_custom_policy_files.json: {{ include "magda.filesToJson" (dict "root" . "filePattern" "policies/**/*" ) }} 
+  my_custom_policy_files.json: {{ include "magda.filesToJson" (dict "root" . "filePattern" "policies/**/*" "removePrefix" "policies/" ) }} 

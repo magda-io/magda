@@ -4,6 +4,7 @@
 
 - #3586: Fixes Authorisation API helm chart incorrect reference `customPolicyConfigMaps` config field
 - #3585: Gateway deployment didn't auto-roll for additional routes changes
+- #3587: adds `removePrefix` to `magda.filesToJson` helm chart named template
 
 ## v4.2.5
 
