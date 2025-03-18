@@ -3,6 +3,9 @@ package common
 import data.common.breakdownOperationUri
 
 # check if the user has a permission (with pre-authorised constaint) matches requested operation
+# please note: you can't combine the usage of this rule with checking like:
+# input.user.permissions[i].id = input.object[xxxx]["access-control"].preAuthorisedPermissionIds[_]
+# Why? because `i` is unbound, it will match any user permissions, not have to be the one previous checked by hasPreAuthConstaintPermission
 hasPreAuthConstaintPermission(inputOperationUri) {
     [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
