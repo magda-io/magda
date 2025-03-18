@@ -24,11 +24,11 @@ Kubernetes: `>= 1.14.0-0`
 | global.rollingUpdate.maxUnavailable | int | `1` |  |
 | global.useCloudSql | bool | `false` |  |
 | global.useCombinedDb | bool | `true` |  |
+| magda-core.authorization-api.opa.customPolicyConfigMaps[0] | string | `"test-opa-policies"` |  |
 | magda-core.combined-db.magda-postgres.postgresql.image.pullPolicy | string | `"Always"` |  |
 | magda-core.combined-db.magda-postgres.postgresql.image.pullSecrets[0] | string | `"regcred"` |  |
 | magda-core.combined-db.magda-postgres.postgresql.image.registry | string | `"registry.gitlab.com"` |  |
 | magda-core.combined-db.magda-postgres.postgresql.image.repository | string | `"magda-data/magda/magda-postgres"` |  |
-| magda-core.opa.customPolicyConfigMaps[0] | string | `"test-opa-policies"` |  |
 | tags.all | bool | `false` |  |
 | tags.authorization-api | bool | `true` |  |
 | tags.authorization-db | bool | `true` |  |

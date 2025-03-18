@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v4.2.6
+
+- #3586: Fixes Authorisation API helm chart incorrect reference customPolicyConfigMaps config field
+
 ## v4.2.5
 
 - Upgrade dompurify to v3.2.4

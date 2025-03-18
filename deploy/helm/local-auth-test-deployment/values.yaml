@@ -22,9 +22,10 @@ tags:
   authorization-api: true
 
 magda-core:
-  opa:
-    customPolicyConfigMaps:
-    - test-opa-policies
+  authorization-api:
+    opa:
+      customPolicyConfigMaps:
+      - test-opa-policies
   combined-db:
     magda-postgres:
       postgresql:
