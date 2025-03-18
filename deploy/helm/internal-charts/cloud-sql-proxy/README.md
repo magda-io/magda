@@ -1,6 +1,6 @@
 # cloud-sql-proxy
 
-![Version: 4.2.5](https://img.shields.io/badge/Version-4.2.5-informational?style=flat-square) ![AppVersion: 1.11](https://img.shields.io/badge/AppVersion-1.11-informational?style=flat-square)
+![Version: 4.2.6](https://img.shields.io/badge/Version-4.2.6-informational?style=flat-square) ![AppVersion: 1.11](https://img.shields.io/badge/AppVersion-1.11-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 

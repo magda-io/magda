@@ -1,6 +1,6 @@
 {
   "name": "@magda/scripts",
-  "version": "4.2.5",
+  "version": "4.2.6",
   "description": "Scripts for building, running, and deploying MAGDA",
   "license": "Apache-2.0",
   "type": "module",
@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@magda/esm-utils": "^1.0.1",
-    "@magda/typescript-common": "^4.2.5",
+    "@magda/typescript-common": "^4.2.6",
     "ansi-styles": "^3.2.1",
     "apidoc": "https://github.com/magda-io/apidoc",
     "chalk": "^2.4.1",

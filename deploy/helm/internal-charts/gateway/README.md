@@ -1,6 +1,6 @@
 # gateway
 
-![Version: 4.2.5](https://img.shields.io/badge/Version-4.2.5-informational?style=flat-square)
+![Version: 4.2.6](https://img.shields.io/badge/Version-4.2.6-informational?style=flat-square)
 
 The Gateway Component of Magda that routes incoming requets to other magda components.
 
