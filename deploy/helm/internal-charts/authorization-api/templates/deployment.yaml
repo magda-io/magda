@@ -119,7 +119,7 @@ spec:
         volumeMounts:
           - name: policy-dir
             mountPath: /opa-data/policies
-          {{- range .Values.customPolicyConfigMaps }}
+          {{- range .Values.opa.customPolicyConfigMaps }}
           - name: {{.}}
             mountPath: /opa-raw-policy-data-files
             readOnly: true
@@ -129,7 +129,7 @@ spec:
       volumes:
       - name: policy-dir
         emptyDir: {}
-      {{ range .Values.customPolicyConfigMaps -}}
+      {{ range .Values.opa.customPolicyConfigMaps -}}
       - name: {{.}}
         configMap:
           name: {{.}}

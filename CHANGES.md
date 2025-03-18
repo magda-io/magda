@@ -23,6 +23,12 @@
 - fixes: avoid bundling `auth-api-client` typescript definition in `authentication-plugin-sdk` to prevent TS2345 type error
 - #3567: Upgrade opensearch to v2.17.1
 
+## v4.2.6
+
+- #3586: Fixes Authorisation API helm chart incorrect reference `customPolicyConfigMaps` config field
+- #3585: Gateway deployment didn't auto-roll for additional routes changes
+- #3587: adds `removePrefix` to `magda.filesToJson` helm chart named template
+
 ## v4.2.5
 
 - Upgrade dompurify to v3.2.4

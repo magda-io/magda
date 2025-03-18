@@ -13,7 +13,13 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/routes: {{ .Values.routes | default .Values.defaultRoutes | mustToRawJson | sha256sum }}
+        {{- $runtimeRoutes := dict }}
+        {{- if .Values.additionalRoutes | empty | not }}
+        {{- $runtimeRoutes = mergeOverwrite (deepCopy .Values.defaultRoutes) .Values.additionalRoutes }}
+        {{- else }}
+        {{- $runtimeRoutes = .Values.routes | default .Values.defaultRoutes }}
+        {{- end }}
+        checksum/routes: {{ $runtimeRoutes | mustToRawJson | sha256sum }}
         checksum/webRoutes: {{ .Values.webRoutes | default dict | mustToRawJson | sha256sum }}
         checksum/helmet: {{ .Values.helmet | default dict | mustToRawJson | sha256sum }}
         checksum/helmetPerPath: {{ .Values.helmetPerPath | default dict | mustToRawJson | sha256sum }}

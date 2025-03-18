@@ -52,7 +52,17 @@ verifyRecordPermission(inputOperationUri, inputObjectRefName) {
 
 # if find a permission with pre-authorised constraint
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
-    hasPreAuthConstaintPermission(inputOperationUri)
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
-    input.object[inputObjectRefName]["access-control"].preAuthorisedPermissionIds[_] = input.user.permissions[i].id
+    resourceUri := concat("/", [resourceUriPrefix, resourceType])
+
+    input.user.permissions[i].resourceUri = resourceUri
+    
+    input.user.permissions[i].userOwnershipConstraint = false
+    input.user.permissions[i].orgUnitOwnershipConstraint = false
+    input.user.permissions[i].preAuthorisedConstraint = true
+    
+    input.user.permissions[i].operations[_].uri = inputOperationUri
+
+    input.user.permissions[i].id = input.object[inputObjectRefName]["access-control"].preAuthorisedPermissionIds[_]
 }
