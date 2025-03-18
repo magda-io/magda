@@ -2,7 +2,8 @@
 
 ## v4.2.6
 
-- #3586: Fixes Authorisation API helm chart incorrect reference customPolicyConfigMaps config field
+- #3586: Fixes Authorisation API helm chart incorrect reference `customPolicyConfigMaps` config field
+- #3585: Gateway deployment didn't auto-roll for additional routes changes
 
 ## v4.2.5
 
