@@ -275,6 +275,14 @@ tags:
 extraObjects: []
 
 gateway:
+  helmet:
+    contentSecurityPolicy:
+      directives:
+        imgSrc:
+        - "'self'"
+        - "data:"
+        # metadata editor map display
+        - https://*.tile.openstreetmap.org
   helmetPerPath:
     "/preview-map/*": 
       contentSecurityPolicy:

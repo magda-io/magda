@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v5.0.2
+
+- #3586: Fixes Authorisation API helm chart incorrect reference `customPolicyConfigMaps` config field
+- #3585: Gateway deployment didn't auto-roll for additional routes changes
+- #3587: adds `removePrefix` to `magda.filesToJson` helm chart named template
+- #3588: adds tile.openstreetmap.org to CSP imgSrc list in `magda-core` helm chart
+
 ## v5.0.1
 
 - #3581 Make storage API upload limit configurable
