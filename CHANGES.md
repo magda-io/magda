@@ -1,11 +1,13 @@
 # CHANGELOG
 
-## v5.0.2
+## v5.1.0
 
 - #3586: Fixes Authorisation API helm chart incorrect reference `customPolicyConfigMaps` config field
 - #3585: Gateway deployment didn't auto-roll for additional routes changes
 - #3587: adds `removePrefix` to `magda.filesToJson` helm chart named template
 - #3588: adds tile.openstreetmap.org to CSP imgSrc list in `magda-core` helm chart
+- Fix: SQLConsole should display boolean values as "true" or "false" rather than an empty string.
+- Fix: Ensure SQLConsole correctly encodes new lines in string values when downloading CSV files.
 
 ## v5.0.1
 

@@ -56,6 +56,23 @@ function convertEmptyData(data: any[]): any[] {
     return [{ "Query result:": "No data available for display..." }];
 }
 
+function convertCellData(data: any): any {
+    if (data === null || data === undefined) {
+        return "NULL";
+    }
+    if (typeof data === "boolean") {
+        return data ? "true" : "false";
+    }
+    if (typeof data === "object") {
+        return JSON.stringify(data);
+    }
+    if (typeof data === "string") {
+        // replace all \r\n with \n
+        return data.replace(/\r\n/g, "\n");
+    }
+    return data;
+}
+
 const SQLConsole: FunctionComponent<PropsType> = (props) => {
     const {
         isOpen,
@@ -153,7 +170,7 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                 throw new Error("No data available to download!");
             }
             setIsDownloadingCsv(true);
-            await downloadCsv(data);
+            await downloadCsv(data, undefined, convertCellData);
         } catch (e) {
             reportError(`Error: ${e}`);
         } finally {
@@ -338,7 +355,11 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                                         <Cell
                                             dataKey={key}
                                             style={{ padding: 4 }}
-                                        />
+                                        >
+                                            {(rowData) =>
+                                                convertCellData(rowData[key])
+                                            }
+                                        </Cell>
                                     </Column>
                                 ))}
                             </Table>

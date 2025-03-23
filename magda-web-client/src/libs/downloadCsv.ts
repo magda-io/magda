@@ -10,12 +10,22 @@ function createDefaultFileName() {
 
 export default async function downloadCsv(
     rawData: Record<string, any>[],
-    filename?: string
+    filename?: string,
+    valueConverter?: (value: any) => any,
+    papaParseConfig?: Papa.ParseConfig
 ) {
     const papa = await getPapa();
     let data: Record<string, any>[];
     if (rawData?.length && typeof rawData?.[0] === "object") {
-        data = rawData;
+        data = rawData.map((row) => {
+            const newRow = {};
+            Object.keys(row).forEach((key) => {
+                newRow[key] = valueConverter
+                    ? valueConverter(row[key])
+                    : row[key];
+            });
+            return newRow;
+        });
     } else {
         data = [
             {
@@ -23,8 +33,12 @@ export default async function downloadCsv(
             }
         ];
     }
-    const csvContent = papa.unparse(data);
-    const csvBlob = new Blob([csvContent]);
+    const csvContent = papa.unparse(data, {
+        quotes: true,
+        ...(papaParseConfig ? papaParseConfig : {})
+    });
+    const bom = "\uFEFF";
+    const csvBlob = new Blob([bom + csvContent]);
     const exportFilename = filename ? filename : createDefaultFileName();
 
     //IE11 & Edge
