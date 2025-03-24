@@ -31,6 +31,8 @@ import { BsFillQuestionCircleFill } from "react-icons/bs";
 import "./SQLConsole.scss";
 import type { IAceEditor } from "react-ace/lib/types";
 import reportWarn from "helpers/reportWarn";
+import Popover from "rsuite/Popover";
+import SimpleMathTextBox from "./SimpleMathTextBox";
 import { config } from "../../config";
 
 const { Column, HeaderCell, Cell } = Table;
@@ -356,9 +358,40 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                                             dataKey={key}
                                             style={{ padding: 4 }}
                                         >
-                                            {(rowData) =>
-                                                convertCellData(rowData[key])
-                                            }
+                                            {(rowData) => {
+                                                const convertedContent = convertCellData(
+                                                    rowData[key]
+                                                );
+                                                if (
+                                                    typeof convertedContent ===
+                                                        "string" &&
+                                                    convertedContent.length < 25
+                                                ) {
+                                                    return convertedContent;
+                                                } else {
+                                                    return (
+                                                        <Whisper
+                                                            trigger="click"
+                                                            placement="auto"
+                                                            speaker={
+                                                                <Popover>
+                                                                    <SimpleMathTextBox>
+                                                                        {
+                                                                            convertedContent
+                                                                        }
+                                                                    </SimpleMathTextBox>
+                                                                </Popover>
+                                                            }
+                                                        >
+                                                            <div className="magda-sql-console-cell-content-with-tooltip">
+                                                                {
+                                                                    convertedContent
+                                                                }
+                                                            </div>
+                                                        </Whisper>
+                                                    );
+                                                }
+                                            }}
                                         </Cell>
                                     </Column>
                                 ))}

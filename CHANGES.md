@@ -8,6 +8,7 @@
 - #3588: adds tile.openstreetmap.org to CSP imgSrc list in `magda-core` helm chart
 - Fix: SQLConsole should display boolean values as "true" or "false" rather than an empty string.
 - Fix: Ensure SQLConsole correctly encodes new lines in string values when downloading CSV files.
+- Feature: Clicking SQLConsole result cell will show full content of cell.
 
 ## v5.0.1
 
