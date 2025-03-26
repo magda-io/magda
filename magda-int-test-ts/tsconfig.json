@@ -5,7 +5,8 @@
         "resolveJsonModule": false,
         "strictNullChecks": false,
         "rootDir": "./src",
-        "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+        "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+        "skipLibCheck": true
     },
     "references": [{ "path": "../magda-typescript-common" }],
     "include": ["./src", "./src/**/*.json"]
