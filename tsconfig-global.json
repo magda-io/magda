@@ -7,6 +7,7 @@
         "lib": [
             "es2015",
             "es2017",
+            "es2022",
             "dom"
         ] /* Specify library files to be included in the compilation. */,
         "allowJs": true /* Allow javascript files to be compiled. */,
