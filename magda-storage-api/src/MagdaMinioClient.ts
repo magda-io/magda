@@ -134,8 +134,10 @@ export default class MagdaMinioClient {
             };
         } catch (err) {
             if (
-                err.code === "BucketAlreadyOwnedByYou" ||
-                err.code === "BucketAlreadyExists"
+                err instanceof Error &&
+                "code" in err &&
+                (err.code === "BucketAlreadyOwnedByYou" ||
+                    err.code === "BucketAlreadyExists")
             ) {
                 return {
                     message: "Bucket " + bucket + " already exists 👍",

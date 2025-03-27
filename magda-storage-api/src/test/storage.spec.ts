@@ -64,7 +64,13 @@ describe("Storage API tests", () => {
                 "Bucket created successfully in " + minioClientOpts.region
             );
         } catch (err) {
-            if (err.code !== "BucketAlreadyOwnedByYou") {
+            if (
+                err instanceof Error &&
+                "code" in err &&
+                err.code === "BucketAlreadyOwnedByYou"
+            ) {
+                console.log("Bucket already exists");
+            } else {
                 console.log("Error creating bucket.", err);
             }
         }
@@ -175,7 +181,13 @@ describe("Storage API tests", () => {
                 await minioClient.makeBucket(name, region);
                 console.log("Bucket created successfully in " + newOpts.region);
             } catch (err) {
-                if (err.code !== "BucketAlreadyOwnedByYou") {
+                if (
+                    err instanceof Error &&
+                    "code" in err &&
+                    err.code === "BucketAlreadyOwnedByYou"
+                ) {
+                    console.log("Bucket already exists");
+                } else {
                     console.log("Error creating bucket.", err);
                 }
             }
