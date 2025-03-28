@@ -1,10 +1,11 @@
 import * as k8s from "@kubernetes/client-node";
-import { HttpError } from "@kubernetes/client-node";
+import { ApiException } from "@kubernetes/client-node";
 import { JsonConnectorConfig } from "magda-typescript-common/src/JsonConnector.js";
 import ServerError from "magda-typescript-common/src/ServerError.js";
 import _ from "lodash";
 import connectorObjName from "./connectorObjName.js";
 import buildConnectorCronJobManifest from "./buildConnectorCronJobManifest.js";
+import { PromiseMiddlewareWrapper } from "@kubernetes/client-node/dist/gen/middleware.js";
 
 export interface Connector extends JsonConnectorConfig {
     cronJob: k8s.V1CronJob;
@@ -28,6 +29,17 @@ function getConnectorConfigMapNameFromCronJob(cronJob: k8s.V1CronJob): string {
     }
     return null;
 }
+
+const mergePatchOpts = {
+    middleware: [
+        new PromiseMiddlewareWrapper(
+            k8s.setHeaderMiddleware(
+                "Content-Type",
+                k8s.PatchStrategy.MergePatch
+            )[0]
+        )
+    ]
+};
 
 export default class K8SApi {
     public batchApi: k8s.BatchV1Api;
@@ -63,56 +75,65 @@ export default class K8SApi {
     }
 
     async getJobs() {
-        const res = await this.batchApi.listNamespacedJob(this.namespace);
-        return res.body.items;
+        const res = await this.batchApi.listNamespacedJob({
+            namespace: this.namespace
+        });
+        return res.items;
     }
 
     async getJob(id: string) {
-        const res = await this.batchApi.readNamespacedJob(id, this.namespace);
-        return res.body;
+        const res = await this.batchApi.readNamespacedJob({
+            name: id,
+            namespace: this.namespace
+        });
+        return res;
     }
 
     async getPodsWithSelector(selector: string) {
-        const res = await this.coreApi.listNamespacedPod(
-            this.namespace,
-            undefined,
-            undefined,
-            undefined,
-            selector
-        );
-        return res.body.items;
+        const res = await this.coreApi.listNamespacedPod({
+            namespace: this.namespace,
+            labelSelector: selector
+        });
+        return res.items;
     }
 
     async getService(id: string) {
-        const res = await this.coreApi.listNamespacedService(this.namespace);
-        return res.body.items;
+        const res = await this.coreApi.listNamespacedService({
+            namespace: this.namespace
+        });
+        return res.items;
     }
 
     async getJobStatus(id: string) {
-        const job = (await this.batchApi.readNamespacedJob(id, this.namespace))
-            .body;
+        const job = await this.batchApi.readNamespacedJob({
+            name: id,
+            namespace: this.namespace
+        });
         return job.status;
     }
 
     async createJob(body: k8s.V1Job) {
-        const res = await this.batchApi.createNamespacedJob(
-            this.namespace,
-            body
-        );
-        return res.body;
+        const res = await this.batchApi.createNamespacedJob({
+            namespace: this.namespace,
+            body: body
+        });
+        return res;
     }
 
     async createService(body: k8s.V1Service) {
-        const res = await this.coreApi.createNamespacedService(
-            this.namespace,
-            body
-        );
-        return res.body;
+        const res = await this.coreApi.createNamespacedService({
+            namespace: this.namespace,
+            body: body
+        });
+        return res;
     }
 
     async deleteJob(id: string) {
-        const res = await this.batchApi.deleteNamespacedJob(id, this.namespace);
-        return res.body;
+        const res = await this.batchApi.deleteNamespacedJob({
+            name: id,
+            namespace: this.namespace
+        });
+        return res;
     }
 
     deleteJobIfPresent(id: string) {
@@ -121,7 +142,7 @@ export default class K8SApi {
                 return this.deleteJob(id);
             })
             .catch((e) => {
-                if (e instanceof HttpError && e.statusCode === 404) {
+                if (e instanceof ApiException && e.code === 404) {
                     return Promise.resolve();
                 }
                 throw e;
@@ -129,17 +150,19 @@ export default class K8SApi {
     }
 
     async deleteService(id: string) {
-        const res = await this.coreApi.deleteNamespacedService(
-            id,
-            this.namespace
-        );
-        return res.body;
+        const res = await this.coreApi.deleteNamespacedService({
+            name: id,
+            namespace: this.namespace
+        });
+        return res;
     }
 
     async getConnectorConfigMaps() {
         const configMaps = (
-            await this.coreApi.listNamespacedConfigMap(this.namespace)
-        )?.body?.items?.filter(
+            await this.coreApi.listNamespacedConfigMap({
+                namespace: this.namespace
+            })
+        ).items?.filter(
             (item) => !!item?.metadata?.name?.startsWith("connector-")
         );
 
@@ -150,45 +173,50 @@ export default class K8SApi {
         }
     }
 
-    async updateConfigMap(id: string, newConfig: object) {
-        const res = await this.coreApi.patchNamespacedConfigMap(
-            id,
-            this.namespace,
-            newConfig,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            {
-                headers: {
-                    "Content-Type": "application/merge-patch+json"
-                }
-            }
-        );
-        return res.body;
+    async updateConfigMap(id: string, newConfig: k8s.V1ConfigMap) {
+        try {
+            const response = await this.coreApi.patchNamespacedConfigMap(
+                {
+                    name: id,
+                    namespace: this.namespace,
+                    body: newConfig
+                },
+                mergePatchOpts
+            );
+            return response;
+        } catch (error) {
+            console.error("Error updating configmap:", error);
+            throw error;
+        }
     }
 
     async getConfigMap(id: string) {
-        const res = await this.coreApi.readNamespacedConfigMap(
-            id,
-            this.namespace
-        );
-        return res.body;
+        try {
+            const response = await this.coreApi.readNamespacedConfigMap({
+                name: id,
+                namespace: this.namespace
+            });
+            return response;
+        } catch (error) {
+            console.error("Error getting configmap:", error);
+            throw error;
+        }
     }
 
     async getConnectors() {
-        const cronJobs = (
-            await this.batchApi.listNamespacedCronJob(this.namespace)
-        )?.body?.items?.filter(
+        const cronJobs = await this.batchApi.listNamespacedCronJob({
+            namespace: this.namespace
+        });
+        const items = cronJobs.items?.filter(
             (item) => !!item?.metadata?.name?.startsWith("connector-")
         );
-        if (!cronJobs?.length) {
+        if (!items?.length) {
             return [];
         }
         const result = [] as Connector[];
-        for (let i = 0; i < cronJobs.length; i++) {
+        for (let i = 0; i < items.length; i++) {
             const connector = await this.connectorCronJobObjectToConnectorData(
-                cronJobs[i]
+                items[i]
             );
             result.push(connector);
         }
@@ -196,11 +224,11 @@ export default class K8SApi {
     }
 
     async getConnector(id: string) {
-        const res = await this.batchApi.readNamespacedCronJob(
-            connectorObjName(id),
-            this.namespace
-        );
-        return await this.connectorCronJobObjectToConnectorData(res.body);
+        const res = await this.batchApi.readNamespacedCronJob({
+            name: connectorObjName(id),
+            namespace: this.namespace
+        });
+        return await this.connectorCronJobObjectToConnectorData(res);
     }
 
     async deleteConnector(id: string): Promise<boolean> {
@@ -217,19 +245,19 @@ export default class K8SApi {
                     400
                 );
             }
-            await this.batchApi.deleteNamespacedCronJob(
-                connectorObjName(id),
-                this.namespace
-            );
+            await this.batchApi.deleteNamespacedCronJob({
+                name: connectorObjName(id),
+                namespace: this.namespace
+            });
             // set deleted = true as we at least took the action to remove cron job
             deleted = true;
-            await this.coreApi.deleteNamespacedConfigMap(
-                connectorObjName(id),
-                this.namespace
-            );
+            await this.coreApi.deleteNamespacedConfigMap({
+                name: connectorObjName(id),
+                namespace: this.namespace
+            });
             return true;
         } catch (e) {
-            if (e instanceof HttpError && e.statusCode == 404) {
+            if (e instanceof ApiException && e.code == 404) {
                 return deleted;
             }
             throw e;
@@ -245,7 +273,7 @@ export default class K8SApi {
         }
         const connector = await this.getConnector(id);
         if (
-            connector?.cronJob?.metadata?.labels?.[
+            connector.cronJob?.metadata?.labels?.[
                 "app.kubernetes.io/managed-by"
             ] === "Helm"
         ) {
@@ -269,35 +297,29 @@ export default class K8SApi {
 
         if (connectorConfig?.schedule?.length) {
             await this.batchApi.patchNamespacedCronJob(
-                connectorObjName(id),
-                this.namespace,
                 {
-                    spec: {
-                        schedule: connectorConfig.schedule
+                    name: connectorObjName(id),
+                    namespace: this.namespace,
+                    body: {
+                        spec: {
+                            schedule: connectorConfig.schedule
+                        }
                     }
                 },
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                {
-                    headers: {
-                        "Content-Type": "application/merge-patch+json"
-                    }
-                }
+                mergePatchOpts
             );
         }
     }
 
     async connectorExist(id: string) {
         try {
-            await this.batchApi.readNamespacedCronJob(
-                connectorObjName(id),
-                this.namespace
-            );
+            await this.batchApi.readNamespacedCronJob({
+                name: connectorObjName(id),
+                namespace: this.namespace
+            });
             return true;
         } catch (e) {
-            if (e instanceof HttpError && e.statusCode === 404) {
+            if (e instanceof ApiException && e.code === 404) {
                 return false;
             }
             throw e;
@@ -361,32 +383,26 @@ export default class K8SApi {
         };
 
         try {
-            await this.coreApi.readNamespacedConfigMap(
-                connectorObjectName,
-                this.namespace
-            );
+            await this.coreApi.readNamespacedConfigMap({
+                name: connectorObjectName,
+                namespace: this.namespace
+            });
             // when configMap exists, patch the configMap
             await this.coreApi.patchNamespacedConfigMap(
-                connectorObjectName,
-                this.namespace,
-                configMap,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
                 {
-                    headers: {
-                        "Content-Type": "application/merge-patch+json"
-                    }
-                }
+                    name: connectorObjectName,
+                    namespace: this.namespace,
+                    body: configMap
+                },
+                mergePatchOpts
             );
         } catch (e) {
-            if (e instanceof HttpError && e.statusCode === 404) {
+            if (e instanceof ApiException && e.code === 404) {
                 // when configMap doesn't exist, create a new configMap
-                await this.coreApi.createNamespacedConfigMap(
-                    this.namespace,
-                    configMap
-                );
+                await this.coreApi.createNamespacedConfigMap({
+                    namespace: this.namespace,
+                    body: configMap
+                });
             } else {
                 throw e;
             }
@@ -399,50 +415,43 @@ export default class K8SApi {
             namespace: this.namespace
         });
 
-        await this.batchApi.createNamespacedCronJob(this.namespace, cronJob);
+        await this.batchApi.createNamespacedCronJob({
+            namespace: this.namespace,
+            body: cronJob
+        });
     }
 
     async startConnector(id: string) {
         const name = connectorObjName(id);
+
         await this.batchApi.patchNamespacedCronJob(
-            name,
-            this.namespace,
             {
-                spec: {
-                    suspend: false
+                name: name,
+                namespace: this.namespace,
+                body: {
+                    spec: {
+                        suspend: false
+                    }
                 }
             },
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            {
-                headers: {
-                    "Content-Type": "application/merge-patch+json"
-                }
-            }
+            mergePatchOpts
         );
     }
 
     async stopConnector(id: string) {
         const name = connectorObjName(id);
+
         await this.batchApi.patchNamespacedCronJob(
-            name,
-            this.namespace,
             {
-                spec: {
-                    suspend: true
+                name: name,
+                namespace: this.namespace,
+                body: {
+                    spec: {
+                        suspend: true
+                    }
                 }
             },
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            {
-                headers: {
-                    "Content-Type": "application/merge-patch+json"
-                }
-            }
+            mergePatchOpts
         );
     }
 
@@ -470,7 +479,9 @@ export default class K8SApi {
             );
         }
         const configMap = await this.getConfigMap(configMapName);
-        const configData = JSON.parse(configMap?.data?.["config.json"]);
+        const configData = JSON.parse(
+            configMap?.data?.["config.json"]
+        ) as JsonConnectorConfig;
         const connectorData: Connector = {
             id: connectorId.replace("connector-", ""),
             cronJob,
@@ -478,7 +489,12 @@ export default class K8SApi {
             ...configData,
             schedule: cronJob?.spec?.schedule,
             suspend: cronJob.spec.suspend,
-            status: cronJob?.status,
+            status: {
+                lastScheduleTime:
+                    cronJob?.status?.lastScheduleTime?.toISOString() || "",
+                lastSuccessfulTime:
+                    cronJob?.status?.lastSuccessfulTime?.toISOString() || ""
+            },
             configData
         };
         return connectorData;
