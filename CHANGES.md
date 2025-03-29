@@ -9,6 +9,7 @@
 - Fix: SQLConsole should display boolean values as "true" or "false" rather than an empty string.
 - Fix: Ensure SQLConsole correctly encodes new lines in string values when downloading CSV files.
 - Feature: Clicking SQLConsole result cell will show full content of cell.
+- Upgrade dependencies: apidoc, jsonpath, underscore, minio client, html-to-text & kube client
 
 ## v5.0.1
 
