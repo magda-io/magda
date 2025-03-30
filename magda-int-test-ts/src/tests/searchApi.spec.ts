@@ -4,16 +4,11 @@ import ServiceRunner from "../ServiceRunner.js";
 import partial from "lodash/partial.js";
 import { v4 as uuidV4 } from "uuid";
 import AuthApiClient from "magda-typescript-common/src/authorization-api/ApiClient.js";
-import {
-    ADMIN_USERS_ROLE_ID,
-    DEFAULT_ADMIN_USER_ID
-} from "magda-typescript-common/src/authorization-api/constants.js";
+import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 import {
     createOrgUnits,
-    getRegistryClient as getRegistryClientWithJwtSecret,
     getOrgUnitIdByName as getOrgUnitIdByNameWithAuthApiClient,
-    createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret,
-    createTestDistributionByUser as createTestDistributionByUserWithAuthApiClientJwtSecret
+    createTestDatasetByUser as createTestDatasetByUserWithAuthApiClientJwtSecret
 } from "./testUtils.js";
 import urijs from "urijs";
 import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
@@ -34,11 +29,6 @@ const createTestDatasetByUser = partial(
     authApiClient,
     jwtSecret
 );
-const createTestDistributionByUser = partial(
-    createTestDistributionByUserWithAuthApiClientJwtSecret,
-    authApiClient,
-    jwtSecret
-);
 const getOrgUnitIdByName = partial(
     getOrgUnitIdByNameWithAuthApiClient,
     authApiClient
@@ -53,10 +43,6 @@ const indexerApiClient = new IndexerApiClient({
 
 const searchApiUrl = "http://localhost:6102/v0";
 const openSearchUrl = "http://localhost:9200";
-
-async function getDataset(datasetId: string, userId?: string) {
-    return await searchDataset(datasetId, userId);
-}
 
 async function searchDataset(q: string, userId?: string) {
     const config: RequestInit = {};

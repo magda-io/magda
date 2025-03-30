@@ -127,7 +127,7 @@ export async function createTestDatasetByUser(
         : defaultRecordData;
 
     if (!recordData?.aspects) {
-        recordData.aspects = {};
+        recordData.aspects = {} as any;
     }
 
     if (!recordData.aspects?.["access-control"]) {
@@ -141,9 +141,10 @@ export async function createTestDatasetByUser(
         };
     } else {
         // when accessControlAspect is not specify, set to the user's user id & orgUnit id
-        recordData.aspects["access-control"].ownerId = userId;
+        (recordData.aspects["access-control"] as any).ownerId = userId;
         if (userInfo?.orgUnitId) {
-            recordData.aspects["access-control"].orgUnitId = userInfo.orgUnitId;
+            (recordData.aspects["access-control"] as any).orgUnitId =
+                userInfo.orgUnitId;
         }
     }
 

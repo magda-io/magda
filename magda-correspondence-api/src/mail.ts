@@ -1,4 +1,4 @@
-import html2text from "html-to-text";
+import * as html2text from "html-to-text";
 
 import { Message, SMTPMailer, Attachment } from "./SMTPMailer.js";
 import { DatasetMessage } from "./model.js";
@@ -47,7 +47,7 @@ export async function sendMail(
         from: `${input.senderName} via <${defaultRecipient}>`,
         replyTo: `${input.senderName} <${input.senderEmail}>`,
         subject: finalSubject,
-        text: html2text.fromString(html),
+        text: html2text.convert(html),
         html,
         attachments
     };

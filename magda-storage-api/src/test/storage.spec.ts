@@ -12,7 +12,7 @@ import AuthorizedRegistryClient, {
 } from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 
 import jwt from "jsonwebtoken";
-import Minio from "minio";
+import { Client } from "minio";
 
 import createApiRouter from "../createApiRouter.js";
 import MagdaMinioClient from "../MagdaMinioClient.js";
@@ -49,7 +49,7 @@ describe("Storage API tests", () => {
         secretKey: process.env["MINIO_SECRET_KEY"],
         region
     };
-    const minioClient = new Minio.Client(minioClientOpts);
+    const minioClient = new Client(minioClientOpts);
     const authApiUrl = "http://example.com";
     const registryApiUrl = "http://registry.example.com";
     const jwtSecret = "squirrel";
@@ -57,15 +57,23 @@ describe("Storage API tests", () => {
     let authApiScope: nock.Scope;
     const uploadLimit = "100mb";
 
-    before(() => {
-        minioClient.makeBucket(bucketName, region, (err: Error) => {
-            if (err && (err as any).code !== "BucketAlreadyOwnedByYou") {
-                return console.log("Error creating bucket.", err);
-            }
+    before(async () => {
+        try {
+            await minioClient.makeBucket(bucketName, region);
             console.log(
                 "Bucket created successfully in " + minioClientOpts.region
             );
-        });
+        } catch (err) {
+            if (
+                err instanceof Error &&
+                "code" in err &&
+                err.code === "BucketAlreadyOwnedByYou"
+            ) {
+                console.log("Bucket already exists");
+            } else {
+                console.log("Error creating bucket.", err);
+            }
+        }
     });
 
     beforeEach(() => {
@@ -130,15 +138,13 @@ describe("Storage API tests", () => {
     }
 
     describe("Create bucket", () => {
-        after(() => {
-            return minioClient.removeBucket(dummyBucket, function (err: Error) {
-                if (err) {
-                    return console.log("Unable to remove bucket: ", err);
-                }
-                return console.log(
-                    "Bucket " + dummyBucket + " removed successfully."
-                );
-            });
+        after(async () => {
+            try {
+                await minioClient.removeBucket(dummyBucket);
+                console.log("Bucket " + dummyBucket + " removed successfully.");
+            } catch (err) {
+                console.log("Unable to remove bucket: ", err);
+            }
         });
 
         // Random string
@@ -170,13 +176,21 @@ describe("Storage API tests", () => {
             const newOpts = Object.assign({}, minioClientOpts, {
                 region: region
             });
-            const minioClient = new Minio.Client(newOpts);
-            await minioClient.makeBucket(name, region, (err: Error) => {
-                if (err && (err as any).code !== "BucketAlreadyOwnedByYou") {
-                    return console.log("Error creating bucket.", err);
-                }
+            const minioClient = new Client(newOpts);
+            try {
+                await minioClient.makeBucket(name, region);
                 console.log("Bucket created successfully in " + newOpts.region);
-            });
+            } catch (err) {
+                if (
+                    err instanceof Error &&
+                    "code" in err &&
+                    err.code === "BucketAlreadyOwnedByYou"
+                ) {
+                    console.log("Bucket already exists");
+                } else {
+                    console.log("Error creating bucket.", err);
+                }
+            }
             // delay 500ms in case check bucket too quick
             await delay(500);
             const bucketExists = await minioClient.bucketExists(name);

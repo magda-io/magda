@@ -1,6 +1,6 @@
 {
   "name": "@magda/admin-api",
-  "version": "5.0.1",
+  "version": "5.1.0",
   "type": "module",
   "exports": "./dist/index.js",
   "engines": {
@@ -19,9 +19,9 @@
     "retag-and-push": "retag-and-push"
   },
   "dependencies": {
-    "@kubernetes/client-node": "^0.16.3",
+    "@kubernetes/client-node": "^1.1.0",
     "@magda/esm-utils": "^1.0.1",
-    "@magda/typescript-common": "^5.0.1",
+    "@magda/typescript-common": "^5.1.0",
     "c8": "^9.0.0",
     "cross-fetch": "^4.0.0",
     "express": "^4.21.2",
@@ -31,7 +31,7 @@
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^5.0.1",
+    "@magda/scripts": "^5.1.0",
     "@types/chai": "^4.3.11",
     "@types/config": "0.0.32",
     "@types/express": "^4.17.21",
@@ -46,7 +46,7 @@
     "mocha": "^10.2.0",
     "nock": "^13.4.0",
     "request-debug": "^0.2.0",
-    "sinon": "^3.2.1",
+    "sinon": "^4.2.1",
     "supertest": "^6.3.3",
     "typescript": "~5.3.3"
   },

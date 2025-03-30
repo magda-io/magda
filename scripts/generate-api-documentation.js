@@ -48,10 +48,16 @@ const output = `-o ${argv.output}`;
 
 const config = `-c ${argv.config}`;
 
-childProcess.execSync(
-    `apidoc --private true ${input} -f ".*\.scala$" -f ".*\.ts$" -f ".*\.js$" ${output} ${config}`,
-    { stdio: "pipe" }
-);
+try {
+    const execOutput = childProcess.execSync(
+        `apidoc --debug --private true ${input} -f ".*\.scala$" -f ".*\.ts$" -f ".*\.js$" ${output} ${config}`,
+        { stdio: "pipe" }
+    );
+    process.stdout.write(execOutput.toString());
+} catch (error) {
+    process.stdout.write(error.stdout?.toString() || "");
+    process.stdout.write(error.stderr?.toString() || "");
+}
 
 // Convert APIDOC to swagger and openapi specs
 

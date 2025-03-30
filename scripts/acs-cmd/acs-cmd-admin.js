@@ -8,7 +8,7 @@ program
     .version(pkg.version)
     .description(
         `A tool for setting / unsetting Admin role / status to a user. Version: ${pkg.version} \n` +
-            `Hint: Use 'acs-cmd list users' command to list all users in systemp`
+            `Hint: Use 'acs-cmd list users' command to list all users in the system`
     )
     .command("set <userId>", "Make a user an admin user")
     .command("unset <userId>", "Remove admin role / status from a user")

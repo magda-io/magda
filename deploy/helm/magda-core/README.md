@@ -1,6 +1,6 @@
 # magda-core
 
-![Version: 5.0.1](https://img.shields.io/badge/Version-5.0.1-informational?style=flat-square)
+![Version: 5.1.0](https://img.shields.io/badge/Version-5.1.0-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes all core magda modules.
 
@@ -14,33 +14,33 @@ A complete solution for managing, publishing and discovering government data, pr
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../internal-charts/admin-api | admin-api | 5.0.1 |
-| file://../internal-charts/apidocs-server | apidocs-server | 5.0.1 |
-| file://../internal-charts/authorization-api | authorization-api | 5.0.1 |
-| file://../internal-charts/authorization-db | authorization-db | 5.0.1 |
-| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 5.0.1 |
-| file://../internal-charts/combined-db | combined-db | 5.0.1 |
-| file://../internal-charts/content-api | content-api | 5.0.1 |
-| file://../internal-charts/content-db | content-db | 5.0.1 |
-| file://../internal-charts/correspondence-api | correspondence-api | 5.0.1 |
-| file://../internal-charts/elasticsearch | elasticsearch | 5.0.1 |
-| file://../internal-charts/gateway | gateway | 5.0.1 |
-| file://../internal-charts/indexer | indexer | 5.0.1 |
-| file://../internal-charts/ingress | ingress | 5.0.1 |
-| file://../internal-charts/opensearch-dashboards | opensearch-dashboards | 5.0.1 |
-| file://../internal-charts/opensearch | opensearch | 5.0.1 |
-| file://../internal-charts/priorities | priorities | 5.0.1 |
-| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 5.0.1 |
-| file://../internal-charts/registry-api | registry-api | 5.0.1 |
-| file://../internal-charts/registry-db | registry-db | 5.0.1 |
-| file://../internal-charts/search-api-node | search-api-node | 5.0.1 |
-| file://../internal-charts/search-api | search-api | 5.0.1 |
-| file://../internal-charts/session-db | session-db | 5.0.1 |
-| file://../internal-charts/storage-api | storage-api | 5.0.1 |
-| file://../internal-charts/tenant-api | tenant-api | 5.0.1 |
-| file://../internal-charts/tenant-db | tenant-db | 5.0.1 |
-| file://../internal-charts/web-server | web-server | 5.0.1 |
-| file://../magda-common | magda-common | 5.0.1 |
+| file://../internal-charts/admin-api | admin-api | 5.1.0 |
+| file://../internal-charts/apidocs-server | apidocs-server | 5.1.0 |
+| file://../internal-charts/authorization-api | authorization-api | 5.1.0 |
+| file://../internal-charts/authorization-db | authorization-db | 5.1.0 |
+| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 5.1.0 |
+| file://../internal-charts/combined-db | combined-db | 5.1.0 |
+| file://../internal-charts/content-api | content-api | 5.1.0 |
+| file://../internal-charts/content-db | content-db | 5.1.0 |
+| file://../internal-charts/correspondence-api | correspondence-api | 5.1.0 |
+| file://../internal-charts/elasticsearch | elasticsearch | 5.1.0 |
+| file://../internal-charts/gateway | gateway | 5.1.0 |
+| file://../internal-charts/indexer | indexer | 5.1.0 |
+| file://../internal-charts/ingress | ingress | 5.1.0 |
+| file://../internal-charts/opensearch-dashboards | opensearch-dashboards | 5.1.0 |
+| file://../internal-charts/opensearch | opensearch | 5.1.0 |
+| file://../internal-charts/priorities | priorities | 5.1.0 |
+| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 5.1.0 |
+| file://../internal-charts/registry-api | registry-api | 5.1.0 |
+| file://../internal-charts/registry-db | registry-db | 5.1.0 |
+| file://../internal-charts/search-api-node | search-api-node | 5.1.0 |
+| file://../internal-charts/search-api | search-api | 5.1.0 |
+| file://../internal-charts/session-db | session-db | 5.1.0 |
+| file://../internal-charts/storage-api | storage-api | 5.1.0 |
+| file://../internal-charts/tenant-api | tenant-api | 5.1.0 |
+| file://../internal-charts/tenant-db | tenant-db | 5.1.0 |
+| file://../internal-charts/web-server | web-server | 5.1.0 |
+| file://../magda-common | magda-common | 5.1.0 |
 | oci://ghcr.io/magda-io/charts | magda-embedding-api | 1.1.0 |
 | oci://ghcr.io/magda-io/charts | preview-map(magda-preview-map) | 1.1.3 |
 
@@ -50,6 +50,9 @@ A complete solution for managing, publishing and discovering government data, pr
 |-----|------|---------|-------------|
 | autoCreateAuthSecrets | bool | `true` | Whether or not auto create a k8s secrets named `auth-secrets` that contains: <ul> <li> JWT secret, under key: `jwt-secret`. Used internally by Magda gateway to issue JWT token.</li> <li> Session secret, under key: `session-secret`. Used by Magda gateway for managing session data.</li> </ul> The auto generated secrets will be 32 chars (256bits) long. |
 | extraObjects | list | `[]` | Array of extra K8s manifests to deploy Each item in the array can be a valid K8s manifest in yaml or string type. When manifest is in string type, it will be parsed as a template with the root object as the context. Therefore, any values can be referenced in the template string e.g. `{{ .Values.xxxxx }}`. Example: extraObjects: - apiVersion: policy/v1 # This is a manifest item written in YAML   kind: PodDisruptionBudget   metadata:     name: my-pdb   spec:     maxUnavailable: 1     selector:       matchLabels:         app: my-app - |   # This is a manifest item written in template string. `|` is used to preserve the new lines.    apiVersion: v1   kind: PodDisruptionBudget   metadata:     name: my-pdb     labels:        {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}   spec:     maxUnavailable: 1     selector:       matchLabels:         {{- include "magda.common.labels.matchLabels" (dict "root" .) | nindent 6 }} |
+| gateway.helmet.contentSecurityPolicy.directives.imgSrc[0] | string | `"'self'"` |  |
+| gateway.helmet.contentSecurityPolicy.directives.imgSrc[1] | string | `"data:"` |  |
+| gateway.helmet.contentSecurityPolicy.directives.imgSrc[2] | string | `"https://*.tile.openstreetmap.org"` |  |
 | gateway.helmetPerPath."/assets/alasql.html" | object | `{"contentSecurityPolicy":{"directives":{"scriptSrc":["'self'","'unsafe-eval'"]}}}` | allow alasql to compile SQL query at frontend in its separate window/iframe |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[0] | string | `"'self'"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[1] | string | `"*.cesium.com"` |  |

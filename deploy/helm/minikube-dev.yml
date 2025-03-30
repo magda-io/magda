@@ -90,6 +90,10 @@ magda:
             - "data:"
             - https://*.googletagmanager.com
             - https://*.google-analytics.com
+            # for display google user avatar
+            - https://*.googleusercontent.com
+            # metadata editor map display
+            - https://*.tile.openstreetmap.org
             connectSrc:
             - "'self'"
             - https://*.google-analytics.com

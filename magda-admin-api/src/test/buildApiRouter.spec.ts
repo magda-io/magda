@@ -58,7 +58,9 @@ describe("admin api router", function (this) {
     }
 
     const beforeEachInner = () => {
-        k8sApiScope = nock("http://mock-k8s-api.com");
+        k8sApiScope = nock("http://mock-k8s-api.com").defaultReplyHeaders({
+            "Content-type": "application/json"
+        });
         nock.disableNetConnect();
         nock.enableNetConnect("127.0.0.1");
     };
@@ -216,7 +218,7 @@ describe("admin api router", function (this) {
                     `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
                 )
                 .reply(function (this: any, uri, requestBody) {
-                    expect(this.req.headers["content-type"]).to.equal(
+                    expect(this.req.headers["content-type"]).to.contain(
                         "application/merge-patch+json"
                     );
                     expect(
@@ -260,7 +262,7 @@ describe("admin api router", function (this) {
                     `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
                 )
                 .reply(function (this: any, uri, requestBody) {
-                    expect(this.req.headers["content-type"]).to.equal(
+                    expect(this.req.headers["content-type"]).to.contain(
                         "application/merge-patch+json"
                     );
                     expect(
@@ -430,7 +432,7 @@ describe("admin api router", function (this) {
             k8sApiScope
                 .post(`/api/v1/namespaces/${namespace}/configmaps`)
                 .reply(function (this: any, uri, requestBody) {
-                    expect(this.req.headers["content-type"]).to.equal(
+                    expect(this.req.headers["content-type"]).to.contain(
                         "application/json"
                     );
                     expect(
@@ -454,7 +456,7 @@ describe("admin api router", function (this) {
             k8sApiScope
                 .post(`/apis/batch/v1/namespaces/${namespace}/cronjobs`)
                 .reply(function (this: any, uri, requestBody) {
-                    expect(this.req.headers["content-type"]).to.equal(
+                    expect(this.req.headers["content-type"]).to.contain(
                         "application/json"
                     );
                     const requestCronJob: k8s.V1CronJob = requestBody as any;
@@ -501,7 +503,7 @@ describe("admin api router", function (this) {
                     `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
                 )
                 .reply(function (this: any, uri, requestBody) {
-                    expect(this.req.headers["content-type"]).to.equal(
+                    expect(this.req.headers["content-type"]).to.contain(
                         "application/merge-patch+json"
                     );
                     expect(
@@ -529,7 +531,7 @@ describe("admin api router", function (this) {
             k8sApiScope
                 .post(`/apis/batch/v1/namespaces/${namespace}/cronjobs`)
                 .reply(function (this: any, uri, requestBody) {
-                    expect(this.req.headers["content-type"]).to.equal(
+                    expect(this.req.headers["content-type"]).to.contain(
                         "application/json"
                     );
                     const requestCronJob: k8s.V1CronJob = requestBody as any;
@@ -651,7 +653,7 @@ describe("admin api router", function (this) {
                     `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
                 )
                 .reply(function (this: any, uri, requestBody) {
-                    expect(this.req.headers["content-type"]).to.equal(
+                    expect(this.req.headers["content-type"]).to.contain(
                         "application/merge-patch+json"
                     );
                     expect(
@@ -716,7 +718,7 @@ describe("admin api router", function (this) {
                     `/api/v1/namespaces/${namespace}/configmaps/connector-c1`
                 )
                 .reply(function (this: any, uri, requestBody) {
-                    expect(this.req.headers["content-type"]).to.equal(
+                    expect(this.req.headers["content-type"]).to.contain(
                         "application/merge-patch+json"
                     );
                     expect(
@@ -746,7 +748,7 @@ describe("admin api router", function (this) {
                     `/apis/batch/v1/namespaces/${namespace}/cronjobs/connector-c1`
                 )
                 .reply(function (this: any, uri, requestBody) {
-                    expect(this.req.headers["content-type"]).to.equal(
+                    expect(this.req.headers["content-type"]).to.contain(
                         "application/merge-patch+json"
                     );
                     const requestCronJob: k8s.V1CronJob = JSON.parse(

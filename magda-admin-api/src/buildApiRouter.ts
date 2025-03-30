@@ -7,7 +7,7 @@ import {
     installStatusRouter,
     createServiceProbe
 } from "magda-typescript-common/src/express/status.js";
-import { HttpError } from "@kubernetes/client-node";
+import { ApiException } from "@kubernetes/client-node";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import ServerError from "magda-typescript-common/src/ServerError.js";
 
@@ -26,8 +26,8 @@ export interface Options {
 }
 
 function handleError(e: unknown, res: Response) {
-    if (e instanceof HttpError) {
-        res.status(e.statusCode).send(e.body);
+    if (e instanceof ApiException) {
+        res.status(e.code).send(e.body);
     } else if (e instanceof ServerError) {
         res.status(e.statusCode).send(e.message);
     } else {

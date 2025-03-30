@@ -31,6 +31,8 @@ import { BsFillQuestionCircleFill } from "react-icons/bs";
 import "./SQLConsole.scss";
 import type { IAceEditor } from "react-ace/lib/types";
 import reportWarn from "helpers/reportWarn";
+import Popover from "rsuite/Popover";
+import SimpleMathTextBox from "./SimpleMathTextBox";
 import { config } from "../../config";
 
 const { Column, HeaderCell, Cell } = Table;
@@ -54,6 +56,23 @@ function convertEmptyData(data: any[]): any[] {
         return data;
     }
     return [{ "Query result:": "No data available for display..." }];
+}
+
+function convertCellData(data: any): any {
+    if (data === null || data === undefined) {
+        return "NULL";
+    }
+    if (typeof data === "boolean") {
+        return data ? "true" : "false";
+    }
+    if (typeof data === "object") {
+        return JSON.stringify(data);
+    }
+    if (typeof data === "string") {
+        // replace all \r\n with \n
+        return data.replace(/\r\n/g, "\n");
+    }
+    return data;
 }
 
 const SQLConsole: FunctionComponent<PropsType> = (props) => {
@@ -153,7 +172,7 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                 throw new Error("No data available to download!");
             }
             setIsDownloadingCsv(true);
-            await downloadCsv(data);
+            await downloadCsv(data, undefined, convertCellData);
         } catch (e) {
             reportError(`Error: ${e}`);
         } finally {
@@ -338,7 +357,42 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                                         <Cell
                                             dataKey={key}
                                             style={{ padding: 4 }}
-                                        />
+                                        >
+                                            {(rowData) => {
+                                                const convertedContent = convertCellData(
+                                                    rowData[key]
+                                                );
+                                                if (
+                                                    typeof convertedContent ===
+                                                        "string" &&
+                                                    convertedContent.length < 25
+                                                ) {
+                                                    return convertedContent;
+                                                } else {
+                                                    return (
+                                                        <Whisper
+                                                            trigger="click"
+                                                            placement="auto"
+                                                            speaker={
+                                                                <Popover>
+                                                                    <SimpleMathTextBox>
+                                                                        {
+                                                                            convertedContent
+                                                                        }
+                                                                    </SimpleMathTextBox>
+                                                                </Popover>
+                                                            }
+                                                        >
+                                                            <div className="magda-sql-console-cell-content-with-tooltip">
+                                                                {
+                                                                    convertedContent
+                                                                }
+                                                            </div>
+                                                        </Whisper>
+                                                    );
+                                                }
+                                            }}
+                                        </Cell>
                                     </Column>
                                 ))}
                             </Table>
