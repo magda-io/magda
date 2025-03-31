@@ -215,11 +215,11 @@ export class AspectQuery {
      * @returns
      * @memberof AspectQuery
      */
-    encodeAspectQueryComponent(str: string) {
+    encodeAspectQueryComponent(str: string): string {
         return encodeURIComponent(formUrlencode(str));
     }
 
-    toString() {
+    toString(): string {
         return encodeURIComponent(
             formUrlencode(this.path) +
                 this.operator +
@@ -385,6 +385,7 @@ export const fetchRecordWithNoCache = <T = RawDataset>(
 ): Promise<T> => fetchRecord(id, optionalAspects, aspects, dereference, true);
 
 export type FetchRecordsOptions = {
+    q?: string;
     aspects?: string[];
     optionalAspects?: string[];
     pageToken?: string;
@@ -398,7 +399,8 @@ export type FetchRecordsOptions = {
     reversePageTokenOrder?: boolean;
 };
 
-export async function fetchRecords({
+export async function fetchRecords<T = RawDataset>({
+    q,
     aspects,
     optionalAspects,
     pageToken,
@@ -411,7 +413,7 @@ export async function fetchRecords({
     noCache,
     reversePageTokenOrder
 }: FetchRecordsOptions): Promise<{
-    records: RawDataset[];
+    records: T[];
     hasMore: boolean;
     nextPageToken?: string;
 }> {
@@ -423,6 +425,11 @@ export async function fetchRecords({
 
     if (aspects?.length) {
         parameters.push(aspects.map((item) => `aspect=${item}`).join("&"));
+    }
+
+    const queryStr = typeof q === "string" ? q.trim() : "";
+    if (queryStr) {
+        parameters.push("q=" + encodeURIComponent(queryStr));
     }
 
     if (optionalAspects?.length) {
@@ -561,12 +568,14 @@ export async function fetchRecordsSummary(
 }
 
 export type FetchRecordsCountOptions = {
+    q?: string;
     aspectQueries?: AspectQuery[];
     aspects?: string[];
     noCache?: boolean;
 };
 
 export async function fetchRecordsCount({
+    q,
     aspectQueries,
     aspects,
     noCache
@@ -575,6 +584,11 @@ export async function fetchRecordsCount({
 
     if (aspects?.length) {
         parameters.push(aspects.map((item) => `aspect=${item}`).join("&"));
+    }
+
+    const queryStr = typeof q === "string" ? q.trim() : "";
+    if (queryStr) {
+        parameters.push("q=" + encodeURIComponent(queryStr));
     }
 
     if (aspectQueries?.length) {
