@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v5.1.1
+
+- Fix: SQLConsole: reference error when join JSONL data source
+- Improve: SQLConsole JSON & JSONL data error handling
+
 ## v5.1.0
 
 - #3586: Fixes Authorisation API helm chart incorrect reference `customPolicyConfigMaps` config field

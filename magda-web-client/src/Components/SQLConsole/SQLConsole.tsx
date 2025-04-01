@@ -265,10 +265,7 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
                                     vertical
                                 />
                             ) : AceEditor ? (
-                                <div
-                                    className="sql-editor-container"
-                                    style={{ height: "50px" }}
-                                >
+                                <div className="sql-editor-container">
                                     <AceEditor
                                         ref={setAceEditorCtlRef}
                                         onLoad={onEditorLoad}
