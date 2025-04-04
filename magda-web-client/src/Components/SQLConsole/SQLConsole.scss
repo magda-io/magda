@@ -33,6 +33,12 @@
         flex-direction: column;
         justify-content: space-around;
         height: 100%;
+        .sql-editor-container {
+            height: 80px;
+            .ace_editor {
+                height: 80px !important;
+            }
+        }
         .query-row {
             display: flex;
             flex-direction: row;
