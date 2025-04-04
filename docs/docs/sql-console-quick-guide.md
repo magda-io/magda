@@ -81,7 +81,6 @@ As we use [AlaSQL](https://alasql.org/) as the underlying SQL query engine, you 
 
 - [XLS](https://github.com/AlaSQL/alasql/wiki/Xls)
 - [XLSX](https://github.com/AlaSQL/alasql/wiki/Xlsx)
-- [HTML](https://github.com/AlaSQL/alasql/wiki/Html)
 - [JSON](https://github.com/AlaSQL/alasql/wiki/Json)
 
 ## Query Execution & Results
@@ -148,7 +147,6 @@ Magda SQL Console supports the following file formats:
 - **TSV/TAB** ([Docs](https://github.com/AlaSQL/alasql/wiki/Tsv))
 - **XLS** ([Docs](https://github.com/AlaSQL/alasql/wiki/Xls))
 - **XLSX** ([Docs](https://github.com/AlaSQL/alasql/wiki/Xlsx))
-- **HTML** ([Docs](https://github.com/AlaSQL/alasql/wiki/Html))
 - **JSON** ([Docs](https://github.com/AlaSQL/alasql/wiki/Json))
 
 ## Availability
