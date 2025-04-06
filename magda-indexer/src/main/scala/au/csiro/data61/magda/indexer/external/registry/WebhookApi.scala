@@ -1,11 +1,10 @@
 package au.csiro.data61.magda.indexer.external.registry
 
 import java.time.ZoneOffset
-
 import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.StatusCodes.Accepted
+import akka.http.scaladsl.model.StatusCodes.{Accepted, Created, InternalServerError}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
@@ -16,12 +15,17 @@ import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.model.TenantId.{SpecifiedTenantId}
 import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import com.typesafe.config.Config
-import au.csiro.data61.magda.client.Conversions
+import au.csiro.data61.magda.client.{Conversions, RegistryExternalInterface}
 import au.csiro.data61.magda.util.Collections.mapCatching
 
+import scala.util.{Failure, Success}
 import scala.concurrent.{ExecutionContextExecutor, Future}
+import spray.json.{JsFalse, JsObject, JsString, JsTrue}
 
-class WebhookApi(indexer: SearchIndexer)(
+class WebhookApi(
+    indexer: SearchIndexer,
+    registryInterface: RegistryExternalInterface
+)(
     implicit system: ActorSystem,
     config: Config
 ) extends BaseMagdaApi {
@@ -94,8 +98,45 @@ class WebhookApi(indexer: SearchIndexer)(
 
           // The registry should never pass us a deleted record, so we can insert and delete
           // concurrently without the risk of inserting something we just deleted.
-          onSuccess(future) { _ =>
-            complete(Accepted)
+
+          if ( {
+            val wantsAsync = config.getBoolean("indexer.asyncWebhook")
+            val hasUrl = payload.deferredResponseUrl.nonEmpty
+
+            if (wantsAsync && !hasUrl)
+              getLogger.warning("No deferred response url provided – reverting to synchronous mode.")
+
+            wantsAsync && hasUrl
+          }) {
+            future.onComplete {
+              case Success(_) =>
+                registryInterface.ackWebhook(
+                  "indexer",
+                  WebHookAcknowledgement(
+                    succeeded = true,
+                    lastEventIdReceived = Some(payload.lastEventId)
+                  )
+                )
+              case Failure(e) =>
+                registryInterface.ackWebhook(
+                  "indexer",
+                  WebHookAcknowledgement(
+                    succeeded = false
+                  )
+                )
+            }
+            complete(Created, JsObject(
+              "status" -> JsString("Working"),
+              "deferResponse" -> JsTrue
+            ))
+          } else {
+            onComplete(future) {
+              case scala.util.Success(_) =>
+                complete(Accepted)
+
+              case scala.util.Failure(ex) =>
+                complete(InternalServerError, "Indexing failed")
+            }
           }
         }
       }

@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.HttpMethods.POST
 import akka.http.scaladsl.model.StatusCodes.{Accepted, OK}
 import au.csiro.data61.magda.api.SearchApi
 import au.csiro.data61.magda.api.model.{SearchResult, Protocols => ApiProtocols}
-import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.client.{AuthApiClient, RegistryExternalInterface}
 import au.csiro.data61.magda.indexer.external.registry.WebhookApi
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
@@ -97,7 +97,13 @@ trait WebhookSpecBase
     val indices = FakeIndices(indexId.toString)
     val indexer =
       new ElasticSearchIndexer(MockClientProvider, indices, embeddingApiClient)
-    val webhookApi = new WebhookApi(indexer)
+    val interface = new RegistryExternalInterface()(
+      config,
+      system,
+      executor,
+      materializer
+    )
+    val webhookApi = new WebhookApi(indexer, interface)
     val searchQueryer = new ElasticSearchQueryer(indices)
     val authApiClient = new AuthApiClient()
     val searchApi = new SearchApi(authApiClient, searchQueryer)(config, logger)
