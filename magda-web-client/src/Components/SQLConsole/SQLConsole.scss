@@ -37,6 +37,7 @@
             height: 80px;
             .ace_editor {
                 height: 80px !important;
+                min-height: 80px !important;
             }
         }
         .query-row {
