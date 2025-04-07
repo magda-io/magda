@@ -547,6 +547,28 @@ export default class Database {
     }
 
     /**
+     * Delete a user by id
+     * Upon the user record deletion, the following will happen due to foreign key constraints:
+     * - any api keys that are created for the user will be removed.
+     * - any credentials records (if any. e.g. when [magda-auth-internal](https://github.com/magda-io/magda-auth-internal) is installed) that are created for the user will be removed.
+     * - any user role association records will be removed, although the role records themselves will not be removed.
+     * - owner, editor, creator user id of role, permission & orgUnit records will be set to NULL
+     *
+     * @param {string} userId
+     * @return {*}  {Promise<void>}
+     * @memberof Database
+     */
+    async deleteUser(userId: string): Promise<void> {
+        if (!isUuid(userId)) {
+            throw new ServerError("userId should be a valid uuid.", 400);
+        }
+
+        await this.pool.query(
+            ...sqls`DELETE users WHERE id = ${userId}`.toQuery()
+        );
+    }
+
+    /**
      * This function is mainly used by internal service for user lookup
      *
      * @param {string} source

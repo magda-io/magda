@@ -1,9 +1,10 @@
 # CHANGELOG
 
-## v5.1.1
+## v5.2.0
 
 - Fix: SQLConsole: reference error when join JSONL data source
 - Improve: SQLConsole JSON & JSONL data error handling
+- #3592: add delete user by ID API
 
 ## v5.1.0
 
