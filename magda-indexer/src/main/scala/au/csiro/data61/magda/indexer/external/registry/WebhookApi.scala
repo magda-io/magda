@@ -4,7 +4,11 @@ import java.time.ZoneOffset
 import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.StatusCodes.{Accepted, Created, InternalServerError}
+import akka.http.scaladsl.model.StatusCodes.{
+  Accepted,
+  Created,
+  InternalServerError
+}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
@@ -99,19 +103,21 @@ class WebhookApi(
           // The registry should never pass us a deleted record, so we can insert and delete
           // concurrently without the risk of inserting something we just deleted.
 
-          if ( {
-            val wantsAsync = config.getBoolean("indexer.asyncWebhook")
-            val hasUrl = payload.deferredResponseUrl.nonEmpty
+          val webhookId = config.getString("registry.webhookId")
+          val wantsAsync = config.getBoolean("indexer.asyncWebhook")
+          val hasUrl = payload.deferredResponseUrl.nonEmpty
 
-            if (wantsAsync && !hasUrl)
-              getLogger.warning("No deferred response url provided – reverting to synchronous mode.")
+          if (wantsAsync && !hasUrl) {
+            getLogger.warning(
+              "No deferred response url provided – reverting to synchronous mode."
+            )
+          }
 
-            wantsAsync && hasUrl
-          }) {
+          if (wantsAsync && hasUrl) {
             future.onComplete {
               case Success(_) =>
                 registryInterface.ackWebhook(
-                  "indexer",
+                  webhookId,
                   WebHookAcknowledgement(
                     succeeded = true,
                     lastEventIdReceived = Some(payload.lastEventId)
@@ -119,22 +125,25 @@ class WebhookApi(
                 )
               case Failure(e) =>
                 registryInterface.ackWebhook(
-                  "indexer",
+                  webhookId,
                   WebHookAcknowledgement(
                     succeeded = false
                   )
                 )
             }
-            complete(Created, JsObject(
-              "status" -> JsString("Working"),
-              "deferResponse" -> JsTrue
-            ))
+            complete(
+              Created,
+              JsObject(
+                "status" -> JsString("Working"),
+                "deferResponse" -> JsTrue
+              )
+            )
           } else {
             onComplete(future) {
-              case scala.util.Success(_) =>
+              case Success(_) =>
                 complete(Accepted)
 
-              case scala.util.Failure(ex) =>
+              case Failure(ex) =>
                 complete(InternalServerError, "Indexing failed")
             }
           }
