@@ -189,7 +189,6 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             validationFieldLabel="Dataset Description"
                             value={dataset.description}
                             placeholder="Enter description text"
-                            limit={250}
                             onChange={props.edit("dataset")("description")}
                         />
                     </div>
