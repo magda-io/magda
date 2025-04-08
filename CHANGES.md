@@ -5,7 +5,7 @@
 - Fix: SQLConsole: reference error when join JSONL data source
 - Improve: SQLConsole JSON & JSONL data error handling
 - #3592: add delete user by ID API
-- Remove the 500 words limit of the dataset description input of dataset metadata editor
+- #3594: Remove the 500 words limit of the dataset description input of dataset metadata editor
 
 ## v5.1.0
 
