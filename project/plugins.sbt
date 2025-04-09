@@ -1,3 +1,11 @@
+resolvers ++= Seq(
+  Resolver.sbtPluginRepo("releases"),
+  Resolver.mavenCentral,
+  "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases",
+  "Sonatype OSS Staging" at "https://oss.sonatype.org/content/repositories/staging",
+  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+)
+
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.9.1")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.3")
