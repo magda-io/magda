@@ -36,7 +36,10 @@ trait WebhookSpecBase
     with ResponseDatasetAllowAll {
   override def buildConfig: Config =
     ConfigFactory
-      .parseString("indexer.requestThrottleMs=1")
+      .parseString("""
+        indexer.requestThrottleMs = 1
+        indexer.asyncWebhook = false
+      """)
       .withFallback(super.buildConfig)
 
   val cachedListCache: scala.collection.mutable.Map[String, List[_]] =
