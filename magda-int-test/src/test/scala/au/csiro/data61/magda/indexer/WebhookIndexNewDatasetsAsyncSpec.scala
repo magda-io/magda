@@ -12,6 +12,7 @@ import akka.http.scaladsl.model.StatusCodes.{Created, OK}
 import au.csiro.data61.magda.api.model.SearchResult
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
+import java.util.UUID
 
 class WebhookIndexNewDatasetsAsyncSpec
     extends WebhookSpecBase
@@ -28,14 +29,18 @@ class WebhookIndexNewDatasetsAsyncSpec
           """
       )
       .withFallback(super.buildConfig)
+
   describe("when webhook received") {
     it("should send defer response (async mode)") {
       forAll(dataSetsGen) {
         dataSets: List[(DataSet, List[(String, Double, Double, Double)])] =>
-          implicit val config: Config = buildConfig
-          mockServer.reset()
-          val webhookId = config.getString("registry.webhookId")
+          val webhookId = UUID.randomUUID().toString
           val ackPath = s"/v0/hooks/$webhookId/ack"
+
+          val lastEventId = 104856
+          val jsonResponse = WebHookAcknowledgementResponse(
+            lastEventIdReceived = lastEventId
+          ).toJson.prettyPrint
           mockServer
             .when(
               HttpRequest
@@ -47,10 +52,13 @@ class WebhookIndexNewDatasetsAsyncSpec
               HttpResponse
                 .response()
                 .withStatusCode(200)
+                .withBody(jsonResponse)
             )
 
-          val builtIndex = buildIndex()
-          val lastEventId = 104856
+          implicit val config: Config = ConfigFactory
+            .parseString(s"""registry.webhookId = "$webhookId" """)
+            .withFallback(buildConfig)
+          val builtIndex: TestIndex = buildIndex()(config)
           val payload = WebHookPayload(
             action = "records.changed",
             lastEventId = lastEventId,
@@ -80,26 +88,23 @@ class WebhookIndexNewDatasetsAsyncSpec
           }
 
           // should successfully retrieve data
-          eventually(timeout(Span(30, Seconds)), interval(Span(200, Millis))) {
-            builtIndex.indexNames.foreach { idxName =>
-              refresh(idxName)
-            }
+          builtIndex.indexNames.foreach { idxName =>
+            refresh(idxName)
+          }
 
-            blockUntilExactCount(dataSets.size, builtIndex.indexId)
-
-            Get("/v0/datasets?query=*&limit=10000") ~> addSingleTenantIdHeader ~> builtIndex.searchApi.routes ~> check {
-              status shouldBe OK
-              val result = responseAs[SearchResult]
-              result.dataSets.length shouldEqual dataSets.length
-              result.dataSets.map(_.identifier).toSet shouldEqual dataSets
-                .map(_._1.identifier)
-                .toSet
-            }
+          Get("/v0/datasets?query=*&limit=10000") ~> addSingleTenantIdHeader ~> builtIndex.searchApi.routes ~> check {
+            status shouldBe OK
+            val result = responseAs[SearchResult]
+            result.dataSets.length shouldEqual dataSets.length
+            result.dataSets.map(_.identifier).toSet shouldEqual dataSets
+              .map(_._1.identifier)
+              .toSet
           }
 
           builtIndex.indexNames.foreach { idxName =>
             deleteIndex(idxName)
           }
+          mockServer.clear(HttpRequest.request().withPath(ackPath))
       }
     }
   }

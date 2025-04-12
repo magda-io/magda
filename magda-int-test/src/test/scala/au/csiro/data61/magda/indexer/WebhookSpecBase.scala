@@ -94,7 +94,7 @@ trait WebhookSpecBase
       indexNames: List[String]
   )
 
-  def buildIndex(): TestIndex = {
+  def buildIndex()(implicit config: Config): TestIndex = {
     val indexId = UUID.randomUUID().toString
 
     val indices = FakeIndices(indexId.toString)
