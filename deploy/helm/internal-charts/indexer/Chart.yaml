@@ -1,7 +1,7 @@
 apiVersion: v2
 description: A Helm chart for Magda's Indexer service.
 name: indexer
-version: 5.1.0
+version: 5.2.0-alpha.0
 kubeVersion: ">= 1.21.0"
 annotations:
   magdaModuleType: "core"
