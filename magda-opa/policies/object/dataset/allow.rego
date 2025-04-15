@@ -1,14 +1,16 @@
 package object.dataset
 
+import rego.v1
+
 import data.common.verifyRecordWithPublishingStatusPermission
 
-default allow = false
+default allow := false
 
-allow {
+allow if {
 	verifyPermission(input.operationUri, "dataset")
 }
 
 # interface for external policy to forward decision request related to "dataset"
-verifyPermission(inputOperationUri, inputObjectRefName) {
+verifyPermission(inputOperationUri, inputObjectRefName) if {
 	verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName)
 }

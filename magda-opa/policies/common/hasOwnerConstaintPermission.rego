@@ -1,18 +1,21 @@
 package common
 
+import rego.v1
+
 import data.common.breakdownOperationUri
 
 # check if the user has a ownership constaint permission matches requested operation
-hasOwnerConstraintPermission(inputOperationUri) {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
+hasOwnerConstraintPermission(inputOperationUri) if {
+	[resourceType, _, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
-    resourceUri := concat("/", [resourceUriPrefix, resourceType])
+	resourceUri := concat("/", [resourceUriPrefix, resourceType])
 
-    input.user.permissions[i].resourceUri = resourceUri
-    
-    input.user.permissions[i].userOwnershipConstraint = true
-    input.user.permissions[i].orgUnitOwnershipConstraint = false
-    input.user.permissions[i].preAuthorisedConstraint = false
-    
-    input.user.permissions[i].operations[_].uri = inputOperationUri
+	some permission in input.user.permissions
+	permission.resourceUri == resourceUri
+
+	permission.userOwnershipConstraint == true
+	permission.orgUnitOwnershipConstraint == false
+	permission.preAuthorisedConstraint == false
+
+	permission.operations[_].uri == inputOperationUri
 }

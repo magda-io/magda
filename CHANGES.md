@@ -2,6 +2,7 @@
 
 ## v5.1.1
 
+- Improve: Bump OPA version to latest (v1.3.0) and use Regal for linting Rego
 - Fix: SQLConsole: reference error when join JSONL data source
 - Improve: SQLConsole JSON & JSONL data error handling
 
