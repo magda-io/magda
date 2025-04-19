@@ -325,4 +325,25 @@ class RegistryExternalInterface(
         }
       }
   }
+
+  def ackWebhook(
+      webhookId: String,
+      acknowledgement: WebHookAcknowledgement
+  ): Future[WebHookAcknowledgementResponse] = {
+    fetcher
+      .post(
+        path = s"$baseApiPath/hooks/$webhookId/ack",
+        payload = acknowledgement,
+        headers = Seq(authHeader)
+      )
+      .flatMap { response =>
+        response.status match {
+          case OK =>
+            Unmarshal(response.entity).to[WebHookAcknowledgementResponse]
+          case _ =>
+            Unmarshal(response.entity).to[String].flatMap(onError(response))
+        }
+      }
+  }
+
 }
