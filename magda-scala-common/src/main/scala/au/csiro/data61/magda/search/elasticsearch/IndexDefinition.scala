@@ -117,29 +117,50 @@ object IndexDefinition extends DefaultJsonProtocol {
     textField(name).analyzer("english").fields(fields)
   }
 
-  def magdaQueryContextVectorField() = KnnVectorField(
-    HybridSearchConfig.queryContextVectorFieldName,
-    dimension = 768,
-    HnswParameters(
+  def magdaQueryContextVectorField(): KnnVectorField = {
+    val mode = HybridSearchConfig.mode
+    val encoder: Option[FaissEncoder] =
+      if (mode == "in_memory") {
+        Some(
+          FaissEncoder(
+            name = FaissEncoderName.withName(HybridSearchConfig.encoderName),
+            sqType = FaissScalarQuantizationType.withName(
+              HybridSearchConfig.encoderType
+            ),
+            sqClip = Some(HybridSearchConfig.encoderClip)
+          )
+        )
+      } else {
+        None
+      }
+
+    val compressionLevel: Option[String] =
+      if (mode == "on_disk") {
+        Some(HybridSearchConfig.compressionLevel)
+      } else None
+
+    val parameters = HnswParameters(
       // https://opensearch.org/docs/latest/search-plugins/vector-search/#engine-recommendations
       // the above engine recommendations is a bit outdated.
       // faiss also support efficient filter (Filter during search)
       // https://opensearch.org/docs/latest/search-plugins/knn/filter-search-knn/#using-a-faiss-efficient-filter
       engine = Some(KnnEngine.faiss),
-      spaceType = Some(SpaceType.l2),
-      efConstruction = Some(100),
+      spaceType = SpaceType.withName(HybridSearchConfig.spaceType),
+      efConstruction = Some(HybridSearchConfig.efConstruction),
       // efSearch only supported by faiss
-      efSearch = Some(100),
-      m = Some(16),
-      encoder = Some(
-        FaissEncoder(
-          name = Some(FaissEncoderName.sq),
-          sqType = Some(FaissScalarQuantizationType.fp16),
-          sqClip = Some(false)
-        )
-      )
+      efSearch = Some(HybridSearchConfig.efSearch),
+      m = Some(HybridSearchConfig.m),
+      encoder = encoder
     )
-  )
+
+    KnnVectorField(
+      name = HybridSearchConfig.queryContextVectorFieldName,
+      dimension = HybridSearchConfig.dimension,
+      parameters = parameters,
+      mode = Some(mode),
+      compressionLevel = compressionLevel
+    )
+  }
 
   def magdaQueryContextField() =
     KeywordField(
