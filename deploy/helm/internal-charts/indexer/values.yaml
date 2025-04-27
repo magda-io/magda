@@ -1,11 +1,11 @@
-image: 
+image:
   name: "magda-indexer"
-  # repository: 
-  # tag: 
-  # pullPolicy: 
-  # pullSecrets: 
+  # repository:
+  # tag:
+  # pullPolicy:
+  # pullSecrets:
 
-reindexJobImage: 
+reindexJobImage:
   name: "node"
   repository: "docker.io"
   tag: "18-alpine"
@@ -16,7 +16,7 @@ defaultImage:
   repository: "ghcr.io/magda-io"
   pullPolicy: IfNotPresent
   pullSecrets: false
-  
+
 resources:
   requests:
     cpu: 100m
@@ -45,12 +45,28 @@ autoReIndex:
 # This config field is available since v2.2.5
 # Previous versions' obsolete are still supported for backward compatible reason
 appConfig:
-  http: 
+  http:
     port: 6103
   elasticSearch:
     serverUrl: http://opensearch:9200
     shards: 1
     replicas: 0
+    indices:
+      datasets:
+        hybridSearch:
+          # -- Configuration for hybrid vector search
+          vectorConfig:
+            mode: "on_disk"
+            dimension: 768
+            compressionLevel: "32x"
+            spaceType: "l2"
+            efConstruction: 100
+            efSearch: 100
+            m: 16
+            encoder:
+              name: "sq"
+              type: "fp16"
+              clip: false
   authApi:
     baseUrl: http://authorization-api
   embeddingApi:
