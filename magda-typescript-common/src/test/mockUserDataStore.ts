@@ -50,6 +50,14 @@ const mockUserDataStore = {
     },
     countRecord: function () {
         return runtimeUserDataStore.length;
+    },
+    deleteUser: function (userId: string) {
+        const index = runtimeUserDataStore.findIndex((record) => {
+            return record.id == userId;
+        });
+        if (index > -1) {
+            runtimeUserDataStore.splice(index, 1);
+        }
     }
 };
 

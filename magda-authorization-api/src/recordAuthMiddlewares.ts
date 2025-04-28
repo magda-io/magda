@@ -5,6 +5,7 @@ import { escapeIdentifier } from "magda-typescript-common/src/SQLUtils.js";
 import Database from "./Database.js";
 import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware.js";
 import snakeCase from "lodash/snakeCase.js";
+import isUuid from "@magda/typescript-common/dist/util/isUuid.js";
 
 type PossibleObjectType =
     | "user"
@@ -18,6 +19,22 @@ type PossibleObjectType =
 
 function getTableRefFromObjectType(objectType: PossibleObjectType): SQLSyntax {
     return escapeIdentifier(snakeCase(objectType) + "s");
+}
+
+function isUuidByObjectType(objectType: PossibleObjectType): boolean {
+    switch (objectType) {
+        case "user":
+        case "role":
+        case "permission":
+        case "resource":
+        case "operation":
+        case "apiKey":
+        case "credential":
+        case "orgUnit":
+            return true;
+        default:
+            return false;
+    }
 }
 
 /**
@@ -41,7 +58,7 @@ export function requireObjectPermission(
     operationUri: string,
     objectIdFunc: (req: Request, res: Response) => string,
     objectType: PossibleObjectType,
-    onRecordNotFound?: (req: Request, res: Response, next: () => void) => {},
+    onRecordNotFound?: (req: Request, res: Response, next: () => void) => void,
     objectKind: string = "authObject"
 ) {
     return async (req: Request, res: Response, next: () => void) => {
@@ -49,6 +66,10 @@ export function requireObjectPermission(
             const pool = db.getPool();
             const targetTableRef = getTableRefFromObjectType(objectType);
             const objectId = objectIdFunc(req, res);
+            if (isUuidByObjectType(objectType) && !isUuid(objectId)) {
+                res.status(400).send(`Invalid UUID id: ${objectId}`);
+                return;
+            }
             const result = await pool.query(
                 ...sqls`SELECT * FROM ${targetTableRef} WHERE id = ${objectId} LIMIT 1`.toQuery()
             );

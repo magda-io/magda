@@ -674,6 +674,7 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * - any user role association records will be removed, although the role records themselves will not be removed.
      * - owner, editor, creator user id of role, permission & orgUnit records will be set to NULL
      * If you want to implement custom user deletion logic, you should implement it in one of your custom [Magda auth plugins](https://github.com/magda-io/magda/blob/main/docs/docs/authentication-plugin-spec.md).
+     * This API will response 200 status when no user is required to be deleted.
      *
      * @apiParam {string} userId id of user
      *
@@ -696,7 +697,11 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
             database,
             "authObject/user/delete",
             (req, res) => req.params.userId,
-            "user"
+            "user",
+            (req: Request, res: Response, next: () => void) => {
+                // no user to delete - just return 200
+                res.status(200).json({ isError: false });
+            }
         ),
         async (req, res) => {
             const userId = req.params.userId;
