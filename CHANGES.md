@@ -6,6 +6,7 @@
 - Improve: SQLConsole JSON & JSONL data error handling
 - #3592: add delete user by ID API
 - #3594: Remove the 500 words limit of the dataset description input of dataset metadata editor
+- #3590: Make indexer working under Async mode
 
 ## v5.1.0
 
