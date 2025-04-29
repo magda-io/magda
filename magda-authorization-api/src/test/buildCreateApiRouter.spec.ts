@@ -63,7 +63,7 @@ describe("Auth api router", function (this) {
     ) {
         const apiRouter = createApiRouter({
             jwtSecret: argv.jwtSecret,
-            database: new mockDatabase() as Database,
+            database: (new mockDatabase() as unknown) as Database,
             opaUrl: process.env["OPA_URL"]
                 ? process.env["OPA_URL"]
                 : "http://localhost:8181/",

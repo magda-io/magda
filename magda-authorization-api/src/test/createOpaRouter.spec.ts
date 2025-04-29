@@ -94,7 +94,7 @@ describe("Auth api router", function (this) {
     function buildExpressApp() {
         const apiRouter = createOpaRouter({
             jwtSecret: argv.jwtSecret,
-            database: new mockDatabase() as Database,
+            database: (new mockDatabase() as unknown) as Database,
             opaUrl: opaBaseUrl
         });
 
