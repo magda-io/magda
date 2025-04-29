@@ -7,8 +7,10 @@ import DatasetAddPage from "Components/Dataset/Add/DatasetAddPage";
 import DatasetListPage from "Components/Dataset/Add/DatasetListPage";
 import DatasetAddMetadataPage from "Components/Dataset/Add/DatasetAddMetadataPage";
 import DatasetEditMetadataPage from "Components/Dataset/Edit/DatasetEditMetadataPage";
+import useInPopUp from "helpers/useInPopUp";
 
 const Routes = () => {
+    const isInPopUp = useInPopUp();
     return (
         <Switch>
             <Route
@@ -31,7 +33,9 @@ const Routes = () => {
             <Redirect
                 exact
                 from="/dataset/add/metadata"
-                to={`/dataset/add/metadata/${createId()}`}
+                to={`/dataset/add/metadata/${createId()}${
+                    isInPopUp ? "?popup=true" : ""
+                }`}
             />
             <Route
                 path="/dataset/add/metadata/:datasetId/:step?"

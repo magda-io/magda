@@ -42,6 +42,7 @@ import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 import redirect from "helpers/redirect";
 import Loader from "rsuite/Loader";
+import inPopUpMode from "helpers/inPopUpMode";
 
 type Props = {
     initialState: State;
@@ -62,6 +63,7 @@ type Props = {
 
 class EditDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
+    isInPopUpMode = inPopUpMode();
 
     constructor(props) {
         super(props);
@@ -301,7 +303,7 @@ class EditDataset extends React.Component<Props, State> {
                     this.props.history,
                     `/dataset/edit/${encodeURIComponent(
                         this.props.datasetId
-                    )}/${step}`
+                    )}/${step}` + (this.isInPopUpMode ? `?popup=true` : "")
                 );
             }
         } catch (e) {
@@ -357,7 +359,8 @@ class EditDataset extends React.Component<Props, State> {
             }
             redirect(
                 this.props.history,
-                `/dataset/edit/${encodeURIComponent(this.props.datasetId)}/6`
+                `/dataset/edit/${encodeURIComponent(this.props.datasetId)}/6` +
+                    (this.isInPopUpMode ? `?popup=true` : "")
             );
         } catch (e) {
             this.setState({
