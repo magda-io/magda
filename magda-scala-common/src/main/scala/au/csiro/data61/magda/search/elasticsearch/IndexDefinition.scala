@@ -27,7 +27,9 @@ import com.sksamuel.elastic4s.fields.{
   KnnVectorField,
   ObjectField,
   SpaceType,
-  UnsignedLongField
+  UnsignedLongField,
+  VectorWorkloadMode,
+  CompressionLevel
 }
 import com.typesafe.config.Config
 import org.locationtech.jts.geom._
@@ -118,26 +120,24 @@ object IndexDefinition extends DefaultJsonProtocol {
   }
 
   def magdaQueryContextVectorField(): KnnVectorField = {
-    val mode = HybridSearchConfig.mode
+    val mode = HybridSearchConfig.mode.map(VectorWorkloadMode.withName)
+    val compressionLevel =
+      HybridSearchConfig.compressionLevel.map(CompressionLevel.withName)
+
     val encoder: Option[FaissEncoder] =
-      if (mode == "in_memory") {
+      if (compressionLevel.isDefined) {
+        None
+      } else {
         Some(
           FaissEncoder(
-            name = FaissEncoderName.withName(HybridSearchConfig.encoderName),
-            sqType = FaissScalarQuantizationType.withName(
-              HybridSearchConfig.encoderType
-            ),
-            sqClip = Some(HybridSearchConfig.encoderClip)
+            name =
+              HybridSearchConfig.encoderName.flatMap(FaissEncoderName.withName),
+            sqType = HybridSearchConfig.encoderType
+              .flatMap(FaissScalarQuantizationType.withName),
+            sqClip = HybridSearchConfig.encoderClip
           )
         )
-      } else {
-        None
       }
-
-    val compressionLevel: Option[String] =
-      if (mode == "on_disk") {
-        Some(HybridSearchConfig.compressionLevel)
-      } else None
 
     val parameters = HnswParameters(
       // https://opensearch.org/docs/latest/search-plugins/vector-search/#engine-recommendations
@@ -145,11 +145,11 @@ object IndexDefinition extends DefaultJsonProtocol {
       // faiss also support efficient filter (Filter during search)
       // https://opensearch.org/docs/latest/search-plugins/knn/filter-search-knn/#using-a-faiss-efficient-filter
       engine = Some(KnnEngine.faiss),
-      spaceType = SpaceType.withName(HybridSearchConfig.spaceType),
-      efConstruction = Some(HybridSearchConfig.efConstruction),
+      spaceType = HybridSearchConfig.spaceType.flatMap(SpaceType.withName),
+      efConstruction = HybridSearchConfig.efConstruction,
       // efSearch only supported by faiss
-      efSearch = Some(HybridSearchConfig.efSearch),
-      m = Some(HybridSearchConfig.m),
+      efSearch = HybridSearchConfig.efSearch,
+      m = HybridSearchConfig.m,
       encoder = encoder
     )
 
@@ -157,7 +157,7 @@ object IndexDefinition extends DefaultJsonProtocol {
       name = HybridSearchConfig.queryContextVectorFieldName,
       dimension = HybridSearchConfig.dimension,
       parameters = parameters,
-      mode = Some(mode),
+      mode = mode,
       compressionLevel = compressionLevel
     )
   }
