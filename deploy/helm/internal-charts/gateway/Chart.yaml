@@ -2,7 +2,7 @@ apiVersion: v2
 description: The Gateway Component of Magda that routes incoming requets to
   other magda components.
 name: gateway
-version: 5.1.0
+version: 5.2.0
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
