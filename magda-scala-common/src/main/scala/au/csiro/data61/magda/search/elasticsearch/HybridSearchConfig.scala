@@ -33,22 +33,24 @@ object HybridSearchConfig {
   def searchPipelineAutoCreate = searchPipeline.getBoolean("autoCreate")
   def searchPipelineId = searchPipeline.getString("id")
 
-  private def vectorConfig = get().getConfig("vectorConfig")
-  def mode: Option[String] = vectorConfig.getOptionalString("mode")
-  def dimension: Int = vectorConfig.getInt("dimension")
-  def spaceType: Option[String] = vectorConfig.getOptionalString("spaceType")
+  private def knnVectorFieldConfig = get().getConfig("knnVectorFieldConfig")
+  def mode: Option[String] = knnVectorFieldConfig.getOptionalString("mode")
+  def dimension: Int = knnVectorFieldConfig.getInt("dimension")
+  def spaceType: Option[String] = knnVectorFieldConfig.getOptionalString("spaceType")
 
   def efConstruction: Option[Int] =
-    vectorConfig.getOptionalInt("efConstruction")
-  def efSearch: Option[Int] = vectorConfig.getOptionalInt("efSearch")
-  def m: Option[Int] = vectorConfig.getOptionalInt("m")
+    knnVectorFieldConfig.getOptionalInt("efConstruction")
+  def efSearch: Option[Int] = knnVectorFieldConfig.getOptionalInt("efSearch")
+  def m: Option[Int] = knnVectorFieldConfig.getOptionalInt("m")
 
   def compressionLevel: Option[String] =
-    vectorConfig.getOptionalString(("compressionLevel"))
-  private def encoderConfig = vectorConfig.getConfig("encoder")
+    knnVectorFieldConfig.getOptionalString(("compressionLevel"))
+  private def encoderConfig = knnVectorFieldConfig.getConfig("encoder")
   def encoderName: Option[String] = encoderConfig.getOptionalString("name")
   def encoderType: Option[String] = encoderConfig.getOptionalString("type")
   def encoderClip: Option[Boolean] = encoderConfig.getOptionalBoolean("clip")
+
+
 
   val queryContextFieldName = "queryContext"
   val queryContextVectorFieldName = "queryContextVector"

@@ -80,7 +80,24 @@ describe("search api hybrid integration tests [in_memory]", function (this) {
     serviceRunner.jwtSecret = jwtSecret;
     serviceRunner.authApiDebugMode = false;
     serviceRunner.searchApiDebugMode = false;
-    serviceRunner.hybridSearchVectorWorkloadMode = "in_memory";
+
+    const prefix = "elasticSearch.indices.datasets.hybridSearch";
+    const lines = [
+        `${prefix}.enabled = true`,
+        `${prefix}.knnVectorFieldConfig.mode = "in_memory"`,
+        `${prefix}.knnVectorFieldConfig.dimension = 768`,
+        `${prefix}.knnVectorFieldConfig.spaceType = "l2"`,
+        `${prefix}.knnVectorFieldConfig.efConstruction = 100`,
+        `${prefix}.knnVectorFieldConfig.efSearch = 100`,
+        `${prefix}.knnVectorFieldConfig.m = 16`,
+        `${prefix}.k = null`,
+        `${prefix}.minScore = 0.5`,
+        `${prefix}.knnVectorFieldConfig.compressionLevel = null`,
+        `${prefix}.knnVectorFieldConfig.encoder.name = "sq"`,
+        `${prefix}.knnVectorFieldConfig.encoder.type = "fp16"`,
+        `${prefix}.knnVectorFieldConfig.encoder.clip = false`
+    ];
+    serviceRunner.searchApiConfig = lines.join("\n");
 
     let datasetIndexName: string = "";
     let testUserId: string = "";
@@ -326,7 +343,24 @@ describe("search api hybrid integration tests [on_disk]", function (this) {
     serviceRunner.jwtSecret = jwtSecret;
     serviceRunner.authApiDebugMode = false;
     serviceRunner.searchApiDebugMode = false;
-    serviceRunner.hybridSearchVectorWorkloadMode = "on_disk";
+
+    const prefix = "elasticSearch.indices.datasets.hybridSearch";
+    const lines = [
+        `${prefix}.enabled = true`,
+        `${prefix}.knnVectorFieldConfig.mode = "on_disk"`,
+        `${prefix}.knnVectorFieldConfig.dimension = 768`,
+        `${prefix}.knnVectorFieldConfig.spaceType = "l2"`,
+        `${prefix}.knnVectorFieldConfig.efConstruction = 100`,
+        `${prefix}.knnVectorFieldConfig.efSearch = 100`,
+        `${prefix}.knnVectorFieldConfig.m = 16`,
+        `${prefix}.k = 100`,
+        `${prefix}.minScore = null`,
+        `${prefix}.knnVectorFieldConfig.compressionLevel = "32x"`,
+        `${prefix}.knnVectorFieldConfig.encoder.name = null`,
+        `${prefix}.knnVectorFieldConfig.encoder.type = null`,
+        `${prefix}.knnVectorFieldConfig.encoder.clip = null`
+    ];
+    serviceRunner.searchApiConfig = lines.join("\n");
 
     let datasetIndexName: string = "";
     let testUserId: string = "";
@@ -467,7 +501,7 @@ describe("search api hybrid integration tests [on_disk]", function (this) {
         // the third dataset is not relevant but it will be returned as the last result with very low score
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId2);
         expect(r.value?.dataSets?.[1]?.identifier).to.equal(datasetId1);
-        // should only find 2 relevant datasets
+        // should only find 2 relevant datasets; find all datasets in on_disk mode
         expect(r.value?.dataSets?.length).to.equal(datasets.length);
     });
 
@@ -512,7 +546,7 @@ describe("search api hybrid integration tests [on_disk]", function (this) {
         // first one should be the milk chocolate  dataset
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId1);
         expect(r.value?.dataSets?.[1]?.identifier).to.equal(datasetId2);
-        // should only find 2 relevant datasets
+        // should only find 2 relevant datasets; find all datasets in on_disk mode
         expect(r.value?.dataSets?.length).to.equal(datasets.length);
     });
 
@@ -556,7 +590,7 @@ describe("search api hybrid integration tests [on_disk]", function (this) {
         console.log("test 3 Search result data: ", r.value?.dataSets);
         // first one should be the sydney report dataset
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId3);
-        // should only find 1 relevant datasets
+        // should only find 1 relevant datasets; find all datasets in on_disk mode
         expect(r.value?.dataSets?.length).to.equal(datasets.length);
     });
 });

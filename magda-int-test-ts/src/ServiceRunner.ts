@@ -86,8 +86,7 @@ export default class ServiceRunner {
     // in order to setup the indices in search engine.
     // however, indexer will auto exit if this field is set to false.
     public enableIndexer = false;
-    public hybridSearchVectorWorkloadMode: "on_disk" | "in_memory" =
-        "in_memory";
+    public searchApiConfig: string | null = null;
 
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
@@ -1005,56 +1004,29 @@ export default class ServiceRunner {
         await this.destroyIndexerSetup();
     }
 
-    // Inject hybridSearch config based on different vectorWorkloadMode
-    private async buildHybridSearchVectorConf(): Promise<string> {
-        const baseConfFilePath = path
-            .resolve(
-                this.workspaceRoot,
-                "magda-int-test-ts",
-                "indexer-setup.conf"
-            )
-            .replace(/"/g, '"');
-        const baseConfContent = await fs.readFile(baseConfFilePath, "utf-8");
+    // Inject custom config
+    private async buildSearchApiConf(): Promise<string> {
+        const baseConfFilePath = path.resolve(
+            this.workspaceRoot,
+            "magda-int-test-ts",
+            "indexer-setup.conf"
+        );
 
-        const prefix = "elasticSearch.indices.datasets.hybridSearch";
-
-        const lines = [
-            `${prefix}.enabled = true`,
-            `${prefix}.vectorConfig.mode = "${this.hybridSearchVectorWorkloadMode}"`,
-            `${prefix}.vectorConfig.dimension = 768`,
-            `${prefix}.vectorConfig.spaceType = "l2"`,
-            `${prefix}.vectorConfig.efConstruction = 100`,
-            `${prefix}.vectorConfig.efSearch = 100`,
-            `${prefix}.vectorConfig.m = 16`
-        ];
-
-        if (this.hybridSearchVectorWorkloadMode === "on_disk") {
-            lines.push(`${prefix}.k = 100`);
-            lines.push(`${prefix}.minScore = null`);
-            lines.push(`${prefix}.vectorConfig.compressionLevel = "32x"`);
-            lines.push(`${prefix}.vectorConfig.encoder.name = null`);
-            lines.push(`${prefix}.vectorConfig.encoder.type = null`);
-            lines.push(`${prefix}.vectorConfig.encoder.clip = null`);
-        } else {
-            lines.push(`${prefix}.k = null`);
-            lines.push(`${prefix}.minScore = 0.5`);
-            lines.push(`${prefix}.vectorConfig.compressionLevel = null`);
-            lines.push(`${prefix}.vectorConfig.encoder.name = "sq"`);
-            lines.push(`${prefix}.vectorConfig.encoder.type = "fp16"`);
-            lines.push(`${prefix}.vectorConfig.encoder.clip = false`);
+        if (this.searchApiConfig === null) {
+            return baseConfFilePath;
         }
 
-        const vectorConf = lines.join("\n");
-
+        const baseConfContent = await fs.readFile(baseConfFilePath, "utf-8");
+        const mergedConf = baseConfContent + "\n" + this.searchApiConfig;
         const confPath = tempy.file({ extension: "conf" });
-        await fs.writeFile(confPath, baseConfContent + "\n" + vectorConf);
+        await fs.writeFile(confPath, mergedConf);
         this.tmpFiles.push(confPath);
 
         return confPath;
     }
 
     async createIndexerSetup() {
-        const confFilePath = await this.buildHybridSearchVectorConf();
+        const confFilePath = await this.buildSearchApiConf();
 
         const indexerSetupProcess = child_process.spawn(
             "sbt",
@@ -1135,7 +1107,7 @@ export default class ServiceRunner {
     }
 
     async createSearchApi() {
-        const confFilePath = await this.buildHybridSearchVectorConf();
+        const confFilePath = await this.buildSearchApiConf();
         const searchApiProcess = child_process.spawn(
             "sbt",
             [
