@@ -5,7 +5,7 @@ import urijs from "urijs";
 export function checkInPopUpStatus(location: Location) {
     const uri = urijs(location?.search);
     const queries = uri.search(true);
-    if (queries?.popup === "true") {
+    if (typeof queries?.popup !== "undefined") {
         return true;
     } else {
         return false;

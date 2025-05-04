@@ -10,11 +10,33 @@ import sinon from "sinon";
 import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe.js";
 import Database from "../Database.js";
 import NestedSetModelQueryer, { NodeRecord } from "../NestedSetModelQueryer.js";
-import pg from "pg";
+import pg, { Pool } from "pg";
 import mockApiKeyStore from "./mockApiKeyStore.js";
 import { defaultAnonymousUserInfo } from "../Database.js";
 
+const defaultPool = {
+    query: async (query: string, params: any[]) => {
+        return {
+            rows: [] as any[]
+        };
+    }
+} as Pool;
+
 export default class MockDatabase {
+    mockPool = defaultPool;
+
+    setDbPool(pool: Pool) {
+        this.mockPool = pool;
+    }
+
+    resetDbPool() {
+        this.mockPool = defaultPool;
+    }
+
+    getPool(): Pool {
+        return this.mockPool;
+    }
+
     getUser(id: string): Promise<Maybe<User>> {
         return new Promise(function (resolve, reject) {
             resolve(
@@ -72,6 +94,15 @@ export default class MockDatabase {
         return new Promise(function (resolve, reject) {
             resolve(mockUserDataStore.createRecord(user));
         });
+    }
+
+    async deleteUser(userId: string): Promise<void> {
+        const users = mockUserDataStore.getRecordByUserId(userId);
+        if (users.length === 0) {
+            return Promise.resolve();
+        }
+        mockUserDataStore.deleteUser(userId);
+        return Promise.resolve();
     }
 
     check() {}

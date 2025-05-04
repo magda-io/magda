@@ -1,9 +1,13 @@
 # CHANGELOG
 
-## v5.1.1
+## v5.2.0
 
 - Fix: SQLConsole: reference error when join JSONL data source
 - Improve: SQLConsole JSON & JSONL data error handling
+- #3592: add delete user by ID API
+- #3594: Remove the 500 words limit of the dataset description input of dataset metadata editor
+- #3590: Make indexer working under Async mode
+- #3595: Fixes: Make sure the metadata editor popup query parameter is carried over to next page properly
 
 ## v5.1.0
 

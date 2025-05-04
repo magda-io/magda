@@ -665,6 +665,57 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth Users
+     * @api {delete} /v0/auth/users/:userId Delete a user record
+     * @apiDescription Delete a user record specified by userId.
+     * You need have `authObject/user/delete` permission in order to access this API.
+     * Upon the user record deletion,
+     * - any api keys that are created for the user will be removed.
+     * - any credentials records (if any. e.g. when [magda-auth-internal](https://github.com/magda-io/magda-auth-internal) is installed) that are created for the user will be removed.
+     * - any user role association records will be removed, although the role records themselves will not be removed.
+     * - owner, editor, creator user id of role, permission & orgUnit records will be set to NULL
+     * If you want to implement custom user deletion logic, you should implement it in one of your custom [Magda auth plugins](https://github.com/magda-io/magda/blob/main/docs/docs/authentication-plugin-spec.md).
+     * This API will response 200 status when no user is required to be deleted.
+     *
+     * @apiParam {string} userId id of user
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        isError: false
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.delete(
+        "/:userId",
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/user/delete",
+            (req, res) => req.params.userId,
+            "user",
+            (req: Request, res: Response, next: () => void) => {
+                // no user to delete - just return 200
+                res.status(200).json({ isError: false });
+            }
+        ),
+        async (req, res) => {
+            const userId = req.params.userId;
+            try {
+                await database.deleteUser(userId);
+                res.status(200).json({ isError: false });
+            } catch (e) {
+                respondWithError(`delete user by id: ${userId}`, res, e);
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth Users
      * @api {put} /v0/auth/users/:userId Update User By Id
      * @apiDescription Updates a user's info by Id.
      * Supply a JSON object that contains fields to be updated in body.

@@ -47,6 +47,7 @@ import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 import redirect from "helpers/redirect";
 import Loader from "rsuite/Loader";
+import inPopUpMode from "helpers/inPopUpMode";
 
 type Props = {
     initialState: State;
@@ -66,6 +67,8 @@ type Props = {
 
 class NewDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
+
+    isInPopUpMode = inPopUpMode();
 
     constructor(props) {
         super(props);
@@ -334,7 +337,8 @@ class NewDataset extends React.Component<Props, State> {
                     "/dataset/add/metadata/" +
                         encodeURIComponent(this.props.datasetId) +
                         "/" +
-                        step
+                        step +
+                        (this.isInPopUpMode ? `?popup=true` : "")
                 );
             }
         } catch (e) {
@@ -405,7 +409,8 @@ class NewDataset extends React.Component<Props, State> {
             }
             redirect(
                 this.props.history,
-                `/dataset/add/metadata/${encodeURIComponent(datasetId)}/6`
+                `/dataset/add/metadata/${encodeURIComponent(datasetId)}/6` +
+                    (this.isInPopUpMode ? `?popup=true` : "")
             );
         } catch (e) {
             this.setState({
