@@ -1,11 +1,11 @@
-image: 
+image:
   name: "magda-indexer"
-  # repository: 
-  # tag: 
-  # pullPolicy: 
-  # pullSecrets: 
+  # repository:
+  # tag:
+  # pullPolicy:
+  # pullSecrets:
 
-reindexJobImage: 
+reindexJobImage:
   name: "node"
   repository: "docker.io"
   tag: "18-alpine"
@@ -16,7 +16,7 @@ defaultImage:
   repository: "ghcr.io/magda-io"
   pullPolicy: IfNotPresent
   pullSecrets: false
-  
+
 resources:
   requests:
     cpu: 100m
@@ -45,12 +45,53 @@ autoReIndex:
 # This config field is available since v2.2.5
 # Previous versions' obsolete are still supported for backward compatible reason
 appConfig:
-  http: 
+  http:
     port: 6103
   elasticSearch:
     serverUrl: http://opensearch:9200
     shards: 1
     replicas: 0
+    indices:
+      datasets:
+        hybridSearch:
+          # -- by default, use `minScore` to filter out irrelevant result.
+          # Can also support standard approximate top-k searches by setting `k = 200` Or maxDistance
+          # only one of `minScore`, `maxDistance` or `k` should be set and will be used
+          # The config will be applied by the following logic:
+          # when `k` is specified, `minScore` & `maxDistance` will be ignored.
+          # Otherwise, when `maxDistance` is specified, `minScore` will be ignored.
+          # when mode = "on_disk", `k` must be specified for Radial search is not supported for indices which have quantization enabled
+          minScore: 0.5
+
+          knnVectorFieldConfig:
+            # -- Vector workload mode: `on_disk` or `in_memory`.
+            mode: "in_memory"
+
+            # -- Dimension of the embedding vectors.
+            dimension: 768
+
+            # -- The compression_level mapping parameter selects a quantization encoder that reduces vector memory consumption by the given factor.
+            # Support: 1x (all), 2x/8x/16x/32x (faiss), 4x (lucene)
+            # If set, encoder will be ignored.
+            compressionLevel: null
+
+            # Supported values: l1, l2, innerProduct, cosine, linf
+            spaceType: "l2"
+
+            # -- The size of the candidate queue during search. Larger values may improve search quality but increase search latency.
+            efSearch: 100
+
+            # -- Similar to efSearch but used during index construction. Higher values improve search quality but increase index build time.
+            efConstruction: 100
+
+            # -- The maximum number of graph edges per vector. Higher values increase memory usage but may improve search quality.
+            m: 16
+
+            # -- FAISS Encoder configuration (If compressionLevel is set, encoder will be ignored).
+            encoder:
+              name: "sq"
+              type: "fp16"
+              clip: false
   authApi:
     baseUrl: http://authorization-api
   embeddingApi:
