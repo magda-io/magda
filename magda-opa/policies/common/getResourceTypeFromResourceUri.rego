@@ -1,6 +1,8 @@
 package common
 
-getResourceTypeFromResourceUri(resourceUri) = resourceType {
-    parts := split(resourceUri, "/")
-    resourceType := parts[count(parts)-1]
+import rego.v1
+
+getResourceTypeFromResourceUri(resourceUri) := resourceType if {
+	parts := split(resourceUri, "/")
+	resourceType := parts[count(parts) - 1]
 }

@@ -1,5 +1,7 @@
 package api
+
 import data.common.extractApiOperationUri
+import rego.v1
 
 # allow policy defines rules for generic gateway level enforcement based on HTTP request path & method
 # system admin might choose to use this access model for APIs that doesn't require making access control decision with high level data model
@@ -8,31 +10,32 @@ import data.common.extractApiOperationUri
 # To support it, system admin needs to define resourceUri using glob pattern,
 # e.g. above `operationUri` match `resourceUri` `api/myApi/records/*/fullSummary` and operation `GET`.
 
-default allow = false
+default allow := false
 
-allow {
-    [requestPath, requestMethod] := extractApiOperationUri(input.operationUri)
+allow if {
+	[requestPath, requestMethod] := extractApiOperationUri(input.operationUri)
 
-    input.user.permissions[i].userOwnershipConstraint = false
-    input.user.permissions[i].orgUnitOwnershipConstraint = false
-    input.user.permissions[i].preAuthorisedConstraint = false
+	some permission in input.user.permissions
+	permission.userOwnershipConstraint == false
+	permission.orgUnitOwnershipConstraint == false
+	permission.preAuthorisedConstraint == false
 
-    [opRequestPath, opRequestMethod] := extractApiOperationUri(input.user.permissions[i].operations[_].uri)
+	[opRequestPath, opRequestMethod] := extractApiOperationUri(permission.operations[_].uri)
 
-    glob.match(opRequestPath, ["/"], requestPath)
-    opRequestMethod == requestMethod
+	glob.match(opRequestPath, ["/"], requestPath)
+	opRequestMethod == requestMethod
 }
 
-allow {
+allow if {
+	[requestPath, _] := extractApiOperationUri(input.operationUri)
 
-    [requestPath, requestMethod] := extractApiOperationUri(input.operationUri)
+	some permission in input.user.permissions
+	permission.userOwnershipConstraint == false
+	permission.orgUnitOwnershipConstraint == false
+	permission.preAuthorisedConstraint == false
 
-    input.user.permissions[i].userOwnershipConstraint = false
-    input.user.permissions[i].orgUnitOwnershipConstraint = false
-    input.user.permissions[i].preAuthorisedConstraint = false
+	[opRequestPath, opRequestMethod] := extractApiOperationUri(permission.operations[_].uri)
 
-    [opRequestPath, opRequestMethod] := extractApiOperationUri(input.user.permissions[i].operations[_].uri)
-
-    glob.match(opRequestPath, ["/"], requestPath)
-    opRequestMethod == "ALL"
+	glob.match(opRequestPath, ["/"], requestPath)
+	opRequestMethod == "ALL"
 }

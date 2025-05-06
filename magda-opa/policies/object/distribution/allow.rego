@@ -1,14 +1,16 @@
 package object.distribution
 
+import rego.v1
+
 import data.common.verifyRecordWithPublishingStatusPermission
 
-default allow = false
+default allow := false
 
-allow {
-    verifyPermission(input.operationUri, "distribution")
+allow if {
+	verifyPermission(input.operationUri, "distribution")
 }
 
 # interface for external policy to forward decision request related to "distribution"
-verifyPermission(inputOperationUri, inputObjectRefName) {
+verifyPermission(inputOperationUri, inputObjectRefName) if {
 	verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName)
 }
