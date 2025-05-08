@@ -6,6 +6,6 @@ services:
       - 8181:8181
     volumes:
       - ./policies:/policies
-    command: ["run", "--server", "/policies"]
+    command: ["run", "--server", "/policies", "-a", "0.0.0.0:8181"]
     expose:
       - 8181

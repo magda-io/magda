@@ -5,4 +5,4 @@ COPY component/policies /policies
 
 ENTRYPOINT ["/bin/start.sh"]
 
-CMD ["/opa", "run", "--ignore=.*", "-s", "/policies"]
+CMD ["/opa", "run", "--ignore=.*", "-s", "/policies", "-a", "0.0.0.0:8181"]
