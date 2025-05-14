@@ -2,7 +2,7 @@
 
 ## v5.3.0
 
-- New feature: Access Group UI, useful when you need arbitrary access control management of datasets.
+- New feature: Access Group UI, useful when you need arbitrary access control management of datasets. Related to: #3269
 
 ## v5.2.0
 
