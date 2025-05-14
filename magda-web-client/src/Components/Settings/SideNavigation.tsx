@@ -7,7 +7,8 @@ import {
     MdSwitchAccount,
     MdAccountTree,
     MdCollectionsBookmark,
-    MdPageview
+    MdPageview,
+    MdOutlineFolderSpecial
 } from "react-icons/md";
 import { BsPersonCircle, BsJournals } from "react-icons/bs";
 import "./SideNavigation.scss";
@@ -95,7 +96,7 @@ const defaultMenuItems: MenuItem[] = [
     {
         path: "/settings/accessGroups",
         title: "Access Groups",
-        icon: <MdCollectionsBookmark />,
+        icon: <MdOutlineFolderSpecial />,
         requireOperationUris: ["object/accessGroup/read"]
     },
     {
