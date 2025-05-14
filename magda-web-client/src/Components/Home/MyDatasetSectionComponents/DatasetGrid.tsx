@@ -2,7 +2,8 @@ import React, {
     FunctionComponent,
     useState,
     useCallback,
-    useEffect
+    useEffect,
+    useRef
 } from "react";
 import { useHistory } from "react-router-dom";
 import { History } from "history";
@@ -17,7 +18,11 @@ import {
     updateAspectOfDatasetAndDistributions
 } from "api-clients/RegistryApis";
 import moment from "moment";
-import { BsFillTrashFill, BsFolderSymlink } from "react-icons/bs";
+import {
+    BsFillTrashFill,
+    BsFolderSymlink,
+    BsBoxArrowInRight
+} from "react-icons/bs";
 import {
     MdBorderColor,
     MdOutlineArrowDropDown,
@@ -35,6 +40,9 @@ import Whisper from "rsuite/Whisper";
 import reportError from "helpers/reportError";
 import uniq from "lodash/uniq";
 import { indexDatasetById } from "api-clients/IndexerApis";
+import AccessGroupAddDatasetPopUp, {
+    RefType as AccessGroupAddDatasetPopUpRefType
+} from "../../Settings/AccessGroupAddDatasetPopUp";
 
 const PAGE_SIZE = 10;
 
@@ -46,6 +54,9 @@ type PropsType = {
 };
 
 function createDatsetRow(
+    addToAccessGroupPopupRef: React.RefObject<
+        AccessGroupAddDatasetPopUpRefType
+    >,
     history: History,
     idx: number,
     record: Record,
@@ -179,6 +190,19 @@ function createDatsetRow(
                                             Edit Dataset
                                         </Dropdown.Item>
                                         <Dropdown.Item
+                                            key="add-to-access-group"
+                                            aria-label="Add to access group"
+                                            icon={<BsBoxArrowInRight />}
+                                            onClick={() => {
+                                                addToAccessGroupPopupRef?.current?.open(
+                                                    record.id
+                                                );
+                                                onClose();
+                                            }}
+                                        >
+                                            Add to access group
+                                        </Dropdown.Item>
+                                        <Dropdown.Item
                                             key="delete-dataset"
                                             aria-label="Delete Dataset"
                                             icon={<BsFillTrashFill />}
@@ -243,6 +267,9 @@ function createDatsetRow(
 }
 
 function createRows(
+    addToAccessGroupPopupRef: React.RefObject<
+        AccessGroupAddDatasetPopUpRefType
+    >,
     history: History,
     records: Record[] | undefined,
     loading: boolean,
@@ -269,6 +296,7 @@ function createRows(
     } else if (records?.length) {
         return records.map((record, idx) =>
             createDatsetRow(
+                addToAccessGroupPopupRef,
                 history,
                 idx,
                 record,
@@ -324,6 +352,9 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
     const { datasetType, searchText, openInPopUp } = props;
     const [pageTokenList, setPageTokenList] = useState<string[]>([]);
     const [pageToken, setPageToken] = useState<string>();
+    const accessGroupAddDatasetPopUpRef = useRef<
+        AccessGroupAddDatasetPopUpRefType
+    >(null);
     //change this value to force the record data to be reloaded
     const [recordReloadToken, setRecordReloadToken] = useState<string>("");
     const combinedRecordToken = props?.recordReloadToken
@@ -380,6 +411,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
 
     return (
         <>
+            <AccessGroupAddDatasetPopUp ref={accessGroupAddDatasetPopUpRef} />
             <div className="datat-grid-container">
                 <table>
                     <thead>
@@ -392,6 +424,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
 
                     <tbody>
                         {createRows(
+                            accessGroupAddDatasetPopUpRef,
                             history,
                             result?.records,
                             overAllLoading,

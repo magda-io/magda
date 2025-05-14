@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v5.3.0
+
+- New feature: Access Group UI, useful when you need arbitrary access control management of datasets.
+
 ## v5.2.0
 
 - Fix: SQLConsole: reference error when join JSONL data source

@@ -93,6 +93,12 @@ const defaultMenuItems: MenuItem[] = [
         icon: <MdAccountTree />
     },
     {
+        path: "/settings/accessGroups",
+        title: "Access Groups",
+        icon: <MdCollectionsBookmark />,
+        requireOperationUris: ["object/accessGroup/read"]
+    },
+    {
         title: "Registry Records",
         path: "/settings/records",
         requireOperationUris: ["object/record/read", "object/record/update"],
