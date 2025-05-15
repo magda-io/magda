@@ -4,6 +4,7 @@
 
 - New feature: Access Group UI, useful when you need arbitrary access control management of datasets. Related to: #3269
 - #3600: Allow dataset editor tool UI notify popup launcher when the dataset has been submitted
+- Fix: The publishing organisation selection dropdown menu should not be obscured by other input elements.
 
 ## v5.2.0
 

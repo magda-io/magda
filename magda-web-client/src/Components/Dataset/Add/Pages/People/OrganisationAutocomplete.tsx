@@ -6,6 +6,7 @@ import { OrganisationAutocompleteChoice } from "../../DatasetAddCommon";
 
 import ASyncCreatableSelect from "react-select/async-creatable";
 import ValidationHoc from "Components/Common/react-select/ValidationHoc";
+import "./OrganisationAutocomplete.scss";
 
 const ASyncCreatableSelectWithValidation = ValidationHoc<Choice, boolean>(
     ASyncCreatableSelect
@@ -68,7 +69,7 @@ export default function OrganisationAutocomplete(props: Props) {
 
     return (
         <ASyncCreatableSelectWithValidation
-            className="react-select"
+            className="react-select organisation-autocomplete-dropdown"
             isMulti={props.multi}
             isSearchable={true}
             onChange={(rawValue, _action) => {
