@@ -42,7 +42,10 @@ import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 import redirect from "helpers/redirect";
 import Loader from "rsuite/Loader";
-import inPopUpMode from "helpers/inPopUpMode";
+import {
+    createPopupModeQueryString,
+    executePopupModeCallback
+} from "helpers/popupUtils";
 
 type Props = {
     initialState: State;
@@ -63,7 +66,7 @@ type Props = {
 
 class EditDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
-    isInPopUpMode = inPopUpMode();
+    popUpModeQueryString = createPopupModeQueryString();
 
     constructor(props) {
         super(props);
@@ -303,7 +306,10 @@ class EditDataset extends React.Component<Props, State> {
                     this.props.history,
                     `/dataset/edit/${encodeURIComponent(
                         this.props.datasetId
-                    )}/${step}` + (this.isInPopUpMode ? `?popup=true` : "")
+                    )}/${step}` +
+                        (this.popUpModeQueryString
+                            ? `?${this.popUpModeQueryString}`
+                            : "")
                 );
             }
         } catch (e) {
@@ -357,10 +363,13 @@ class EditDataset extends React.Component<Props, State> {
             if (result.length) {
                 throw new FileDeletionError(result);
             }
+            executePopupModeCallback(this.props.datasetId);
             redirect(
                 this.props.history,
                 `/dataset/edit/${encodeURIComponent(this.props.datasetId)}/6` +
-                    (this.isInPopUpMode ? `?popup=true` : "")
+                    (this.popUpModeQueryString
+                        ? `?${this.popUpModeQueryString}`
+                        : "")
             );
         } catch (e) {
             this.setState({

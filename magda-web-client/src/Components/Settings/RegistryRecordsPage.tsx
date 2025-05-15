@@ -24,7 +24,7 @@ import RegistryRecordInfoPanel from "./RegistryRecordInfoPanel";
 import RegistryRecordAspectsPanel from "./RegistryRecordAspectsPanel";
 import RegistryRecordsPageSearchButton from "./RegistryRecordsPageSearchButton";
 import RegistryRecordsDataGrid from "./RegistryRecordsDataGrid";
-import inPopUpMode from "helpers/inPopUpMode";
+import { inPopUpMode } from "helpers/popupUtils";
 
 const Paragraph = Placeholder.Paragraph;
 

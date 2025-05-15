@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 import giantTickIcon from "assets/giant-tick.svg";
 import draftIcon from "assets/format-active.svg";
 import { BsServer } from "react-icons/bs";
-import useInPopUp from "helpers/useInPopUp";
+import { useInPopUp } from "helpers/popupUtils";
 import "./DatasetAddEndPage.scss";
 
 type Props = {
