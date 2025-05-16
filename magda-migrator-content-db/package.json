@@ -1,6 +1,6 @@
 {
   "name": "@magda/migrator-content-db",
-  "version": "5.2.0",
+  "version": "5.3.0-alpha.0",
   "description": "The MAGDA database for storing content data.",
   "license": "Apache-2.0",
   "scripts": {
@@ -16,8 +16,8 @@
     }
   },
   "devDependencies": {
-    "@magda/db-migrator": "^5.2.0",
-    "@magda/scripts": "^5.2.0"
+    "@magda/db-migrator": "^5.3.0-alpha.0",
+    "@magda/scripts": "^5.3.0-alpha.0"
   },
   "magda": {
     "categories": {
