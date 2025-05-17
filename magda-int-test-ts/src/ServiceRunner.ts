@@ -86,6 +86,7 @@ export default class ServiceRunner {
     // in order to setup the indices in search engine.
     // however, indexer will auto exit if this field is set to false.
     public enableIndexer = false;
+    public searchApiConfig: string | null = null;
 
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
@@ -1003,14 +1004,29 @@ export default class ServiceRunner {
         await this.destroyIndexerSetup();
     }
 
+    // Inject custom config
+    private async buildSearchApiConf(): Promise<string> {
+        const baseConfFilePath = path.resolve(
+            this.workspaceRoot,
+            "magda-int-test-ts",
+            "indexer-setup.conf"
+        );
+
+        if (this.searchApiConfig === null) {
+            return baseConfFilePath;
+        }
+
+        const baseConfContent = await fs.readFile(baseConfFilePath, "utf-8");
+        const mergedConf = baseConfContent + "\n" + this.searchApiConfig;
+        const confPath = tempy.file({ extension: "conf" });
+        await fs.writeFile(confPath, mergedConf);
+        this.tmpFiles.push(confPath);
+
+        return confPath;
+    }
+
     async createIndexerSetup() {
-        const confFilePath = path
-            .resolve(
-                this.workspaceRoot,
-                "magda-int-test-ts",
-                "indexer-setup.conf"
-            )
-            .replace(/"/g, '"');
+        const confFilePath = await this.buildSearchApiConf();
 
         const indexerSetupProcess = child_process.spawn(
             "sbt",
@@ -1091,10 +1107,12 @@ export default class ServiceRunner {
     }
 
     async createSearchApi() {
+        const confFilePath = await this.buildSearchApiConf();
         const searchApiProcess = child_process.spawn(
             "sbt",
             [
                 `-DsearchApi.debug="${this.searchApiDebugMode}"`,
+                `"-Dconfig.file=${confFilePath}"`,
                 '"searchApi/run"'
             ],
             {
