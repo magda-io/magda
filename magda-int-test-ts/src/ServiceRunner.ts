@@ -418,6 +418,10 @@ export default class ServiceRunner {
         localPort?: number,
         hostname?: string
     ) {
+        if (!process.env.KUBERNETES_PORT) {
+            console.log("Skipping port forward because not in Kubernetes.");
+            return;
+        }
         if (!localPort) {
             localPort = remotePort;
         }
