@@ -618,7 +618,11 @@ export default class ServiceRunner {
                 "--debug",
                 `${this.authApiDebugMode}`,
                 "--skipAuth",
-                `${this.authApiSkipAuth}`
+                `${this.authApiSkipAuth}`,
+                "--opaUrl",
+                "http://127.0.0.1:8181/",
+                "--dbHost",
+                "127.0.0.1"
             ],
             {
                 stdio: "inherit",
