@@ -620,9 +620,9 @@ export default class ServiceRunner {
                 "--skipAuth",
                 `${this.authApiSkipAuth}`,
                 "--opaUrl",
-                "http://127.0.0.1:8181/",
+                `http://${this.dockerServiceForwardHost || "localhost"}:8181/`,
                 "--dbHost",
-                "127.0.0.1"
+                `${this.dockerServiceForwardHost || "localhost"}`
             ],
             {
                 stdio: "inherit",
