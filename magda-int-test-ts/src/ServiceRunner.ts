@@ -354,9 +354,6 @@ export default class ServiceRunner {
                 `Cannot locate storage api built entrypoint file: ${storageApiExecute}`
             );
         }
-        const minioHost = this.dockerServiceForwardHost
-            ? this.dockerServiceForwardHost
-            : "localhost";
         const storageApiProcess = child_process.fork(
             storageApiExecute,
             [
@@ -376,7 +373,7 @@ export default class ServiceRunner {
                 env: {
                     MINIO_ACCESS_KEY: this.minioAccessKey,
                     MINIO_SECRET_KEY: this.minioSecretKey,
-                    MINIO_HOST: minioHost
+                    MINIO_HOST: "localhost"
                 }
             }
         );
@@ -396,11 +393,8 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("StorageApi", async () => {
-                const storageApiHost = this.dockerServiceForwardHost
-                    ? this.dockerServiceForwardHost
-                    : "localhost";
                 const res = await fetch(
-                    `http://${storageApiHost}:6121/v0/status/ready`
+                    "http://localhost:6121/v0/status/ready"
                 );
                 if (res.status !== 200) {
                     throw new ServerError(
@@ -585,11 +579,8 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("RegistryApi", async () => {
-                const registryApiHost = this.dockerServiceForwardHost
-                    ? this.dockerServiceForwardHost
-                    : "localhost";
                 const res = await fetch(
-                    `http://${registryApiHost}:6101/v0/status/ready`
+                    `http://localhost:6101/v0/status/ready`
                 );
                 if (res.status !== 200) {
                     throw new ServerError(
@@ -665,11 +656,8 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("AuthApi", async () => {
-                const authApiHost = this.dockerServiceForwardHost
-                    ? this.dockerServiceForwardHost
-                    : "localhost";
                 const res = await fetch(
-                    `http://${authApiHost}:6104/v0/public/users/whoami`
+                    "http://localhost:6104/v0/public/users/whoami"
                 );
                 if (res.status !== 200) {
                     throw new ServerError(
@@ -1092,11 +1080,8 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("IndexerSetup", async () => {
-                const indexerApiHost = this.dockerServiceForwardHost
-                    ? this.dockerServiceForwardHost
-                    : "localhost";
                 const res = await fetch(
-                    `http://${indexerApiHost}:6103/v0/status/ready`
+                    "http://localhost:6103/v0/status/ready"
                 );
                 if (res.status !== 200) {
                     throw new ServerError(
@@ -1176,11 +1161,8 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("SearchApi", async () => {
-                const searchApiHost = this.dockerServiceForwardHost
-                    ? this.dockerServiceForwardHost
-                    : "localhost";
                 const res = await fetch(
-                    `http://${searchApiHost}:6102/v0/status/ready`
+                    "http://localhost:6102/v0/status/ready"
                 );
                 if (res.status !== 200) {
                     throw new ServerError(
