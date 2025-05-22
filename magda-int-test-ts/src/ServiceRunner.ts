@@ -354,6 +354,9 @@ export default class ServiceRunner {
                 `Cannot locate storage api built entrypoint file: ${storageApiExecute}`
             );
         }
+        const minioHost = this.dockerServiceForwardHost
+            ? this.dockerServiceForwardHost
+            : "localhost";
         const storageApiProcess = child_process.fork(
             storageApiExecute,
             [
@@ -373,7 +376,7 @@ export default class ServiceRunner {
                 env: {
                     MINIO_ACCESS_KEY: this.minioAccessKey,
                     MINIO_SECRET_KEY: this.minioSecretKey,
-                    MINIO_HOST: "localhost"
+                    MINIO_HOST: minioHost
                 }
             }
         );
@@ -393,8 +396,11 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("StorageApi", async () => {
+                const storageApiHost = this.dockerServiceForwardHost
+                    ? this.dockerServiceForwardHost
+                    : "localhost";
                 const res = await fetch(
-                    "http://localhost:6121/v0/status/ready"
+                    `http://${storageApiHost}:6121/v0/status/ready`
                 );
                 if (res.status !== 200) {
                     throw new ServerError(
@@ -545,6 +551,9 @@ export default class ServiceRunner {
     }
 
     async createRegistryApi() {
+        const dbHost = this.dockerServiceForwardHost
+            ? this.dockerServiceForwardHost
+            : "localhost";
         const registryApiProcess = child_process.spawn(
             "sbt",
             ['"registryApi/run"'],
@@ -555,7 +564,8 @@ export default class ServiceRunner {
                 env: {
                     ...process.env,
                     POSTGRES_PASSWORD: "password",
-                    JWT_SECRET: this.jwtSecret
+                    JWT_SECRET: this.jwtSecret,
+                    POSTGRES_URL: `jdbc:postgresql://${dbHost}/postgres`
                 }
             }
         );
@@ -575,8 +585,11 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("RegistryApi", async () => {
+                const registryApiHost = this.dockerServiceForwardHost
+                    ? this.dockerServiceForwardHost
+                    : "localhost";
                 const res = await fetch(
-                    "http://localhost:6101/v0/status/ready"
+                    `http://${registryApiHost}:6101/v0/status/ready`
                 );
                 if (res.status !== 200) {
                     throw new ServerError(
@@ -608,6 +621,12 @@ export default class ServiceRunner {
                 `Cannot locate auth api built entrypoint file: ${authApiExecute}`
             );
         }
+        const opaHost = this.dockerServiceForwardHost
+            ? this.dockerServiceForwardHost
+            : "localhost";
+        const dbHost = this.dockerServiceForwardHost
+            ? this.dockerServiceForwardHost
+            : "localhost";
         const authApiProcess = child_process.fork(
             authApiExecute,
             [
@@ -620,9 +639,9 @@ export default class ServiceRunner {
                 "--skipAuth",
                 `${this.authApiSkipAuth}`,
                 "--opaUrl",
-                `http://${this.dockerServiceForwardHost || "localhost"}:8181/`,
+                `http://${opaHost}:8181/`,
                 "--dbHost",
-                `${this.dockerServiceForwardHost || "localhost"}`
+                dbHost
             ],
             {
                 stdio: "inherit",
@@ -646,8 +665,11 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("AuthApi", async () => {
+                const authApiHost = this.dockerServiceForwardHost
+                    ? this.dockerServiceForwardHost
+                    : "localhost";
                 const res = await fetch(
-                    "http://localhost:6104/v0/public/users/whoami"
+                    `http://${authApiHost}:6104/v0/public/users/whoami`
                 );
                 if (res.status !== 200) {
                     throw new ServerError(
@@ -768,6 +790,9 @@ export default class ServiceRunner {
         const mainMigratorImg = "ghcr.io/magda-io/magda-db-migrator:main";
         await this.pullImage(mainMigratorImg);
         const volBind = `${this.workspaceRoot}/magda-migrator-${name}/sql:/flyway/sql/${dbName}`;
+        const dbHost = this.dockerServiceForwardHost
+            ? this.dockerServiceForwardHost
+            : "localhost";
         const [, container] = (await this.docker.run(
             mainMigratorImg,
             undefined,
@@ -778,7 +803,7 @@ export default class ServiceRunner {
                     NetworkMode: "host"
                 },
                 Env: [
-                    "DB_HOST=localhost",
+                    `DB_HOST=${dbHost}`,
                     "PGUSER=postgres",
                     "PGPASSWORD=password",
                     "CLIENT_USERNAME=client",
@@ -1067,8 +1092,11 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("IndexerSetup", async () => {
+                const indexerApiHost = this.dockerServiceForwardHost
+                    ? this.dockerServiceForwardHost
+                    : "localhost";
                 const res = await fetch(
-                    "http://localhost:6103/v0/status/ready"
+                    `http://${indexerApiHost}:6103/v0/status/ready`
                 );
                 if (res.status !== 200) {
                     throw new ServerError(
@@ -1148,8 +1176,11 @@ export default class ServiceRunner {
 
         try {
             await this.waitAlive("SearchApi", async () => {
+                const searchApiHost = this.dockerServiceForwardHost
+                    ? this.dockerServiceForwardHost
+                    : "localhost";
                 const res = await fetch(
-                    "http://localhost:6102/v0/status/ready"
+                    `http://${searchApiHost}:6102/v0/status/ready`
                 );
                 if (res.status !== 200) {
                     throw new ServerError(
