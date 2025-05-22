@@ -1024,12 +1024,19 @@ export default class ServiceRunner {
             "indexer-setup.conf"
         );
 
-        if (this.searchApiConfig === null) {
-            return baseConfFilePath;
-        }
-
         const baseConfContent = await fs.readFile(baseConfFilePath, "utf-8");
-        const mergedConf = baseConfContent + "\n" + this.searchApiConfig;
+
+        const esHost = this.dockerServiceForwardHost || "localhost";
+        const embedding = this.dockerServiceForwardHost || "localhost";
+        const esConfig = `elasticSearch.serverUrl = "http://${esHost}:9200"\n`;
+        const embeddingConfig = `embeddingApi.baseUrl = "http://${embedding}:3000"\n`;
+
+        let mergedConf = baseConfContent;
+        if (this.searchApiConfig !== null) {
+            mergedConf = baseConfContent + "\n" + this.searchApiConfig;
+        }
+        mergedConf = mergedConf + "\n" + esConfig + embeddingConfig;
+
         const confPath = tempy.file({ extension: "conf" });
         await fs.writeFile(confPath, mergedConf);
         this.tmpFiles.push(confPath);
