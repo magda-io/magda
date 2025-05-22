@@ -612,12 +612,6 @@ export default class ServiceRunner {
                 `Cannot locate auth api built entrypoint file: ${authApiExecute}`
             );
         }
-        const opaHost = this.dockerServiceForwardHost
-            ? this.dockerServiceForwardHost
-            : "localhost";
-        const dbHost = this.dockerServiceForwardHost
-            ? this.dockerServiceForwardHost
-            : "localhost";
         const authApiProcess = child_process.fork(
             authApiExecute,
             [
@@ -630,9 +624,9 @@ export default class ServiceRunner {
                 "--skipAuth",
                 `${this.authApiSkipAuth}`,
                 "--opaUrl",
-                `http://${opaHost}:8181/`,
+                `http://${this.dockerServiceForwardHost || "localhost"}:8181/`,
                 "--dbHost",
-                dbHost
+                `${this.dockerServiceForwardHost || "localhost"}`
             ],
             {
                 stdio: "inherit",
@@ -778,9 +772,6 @@ export default class ServiceRunner {
         const mainMigratorImg = "ghcr.io/magda-io/magda-db-migrator:main";
         await this.pullImage(mainMigratorImg);
         const volBind = `${this.workspaceRoot}/magda-migrator-${name}/sql:/flyway/sql/${dbName}`;
-        const dbHost = this.dockerServiceForwardHost
-            ? this.dockerServiceForwardHost
-            : "localhost";
         const [, container] = (await this.docker.run(
             mainMigratorImg,
             undefined,
@@ -791,7 +782,7 @@ export default class ServiceRunner {
                     NetworkMode: "host"
                 },
                 Env: [
-                    `DB_HOST=${dbHost}`,
+                    "DB_HOST=localhost",
                     "PGUSER=postgres",
                     "PGPASSWORD=password",
                     "CLIENT_USERNAME=client",
