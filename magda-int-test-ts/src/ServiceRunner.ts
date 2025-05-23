@@ -366,7 +366,9 @@ export default class ServiceRunner {
                 "--minioRegion",
                 this.minioDefaultRegion,
                 "--defaultBuckets",
-                this.defaultBucket
+                this.defaultBucket,
+                "--minioHost",
+                this.dockerServiceForwardHost || "localhost"
             ],
             {
                 stdio: "inherit",
