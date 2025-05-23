@@ -1,7 +1,7 @@
 version: "3"
 services:
   test-opensearch:
-    image: opensearchproject/opensearch:3.0.0
+    image: opensearchproject/opensearch:2.19.1
     ports:
       - 9200:9200
       - 9300:9300
