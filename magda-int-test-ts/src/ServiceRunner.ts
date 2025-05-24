@@ -86,6 +86,7 @@ export default class ServiceRunner {
     // in order to setup the indices in search engine.
     // however, indexer will auto exit if this field is set to false.
     public enableIndexer = false;
+    public searchApiConfig: string | null = null;
 
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
@@ -365,7 +366,9 @@ export default class ServiceRunner {
                 "--minioRegion",
                 this.minioDefaultRegion,
                 "--defaultBuckets",
-                this.defaultBucket
+                this.defaultBucket,
+                "--minioHost",
+                this.dockerServiceForwardHost || "localhost"
             ],
             {
                 stdio: "inherit",
@@ -417,6 +420,10 @@ export default class ServiceRunner {
         localPort?: number,
         hostname?: string
     ) {
+        if (!process.env.KUBERNETES_PORT) {
+            console.log("Skipping port forward because not in Kubernetes.");
+            return;
+        }
         if (!localPort) {
             localPort = remotePort;
         }
@@ -540,6 +547,9 @@ export default class ServiceRunner {
     }
 
     async createRegistryApi() {
+        const dbHost = this.dockerServiceForwardHost
+            ? this.dockerServiceForwardHost
+            : "localhost";
         const registryApiProcess = child_process.spawn(
             "sbt",
             ['"registryApi/run"'],
@@ -550,7 +560,8 @@ export default class ServiceRunner {
                 env: {
                     ...process.env,
                     POSTGRES_PASSWORD: "password",
-                    JWT_SECRET: this.jwtSecret
+                    JWT_SECRET: this.jwtSecret,
+                    POSTGRES_URL: `jdbc:postgresql://${dbHost}/postgres`
                 }
             }
         );
@@ -571,7 +582,7 @@ export default class ServiceRunner {
         try {
             await this.waitAlive("RegistryApi", async () => {
                 const res = await fetch(
-                    "http://localhost:6101/v0/status/ready"
+                    `http://localhost:6101/v0/status/ready`
                 );
                 if (res.status !== 200) {
                     throw new ServerError(
@@ -613,7 +624,11 @@ export default class ServiceRunner {
                 "--debug",
                 `${this.authApiDebugMode}`,
                 "--skipAuth",
-                `${this.authApiSkipAuth}`
+                `${this.authApiSkipAuth}`,
+                "--opaUrl",
+                `http://${this.dockerServiceForwardHost || "localhost"}:8181/`,
+                "--dbHost",
+                `${this.dockerServiceForwardHost || "localhost"}`
             ],
             {
                 stdio: "inherit",
@@ -1003,14 +1018,36 @@ export default class ServiceRunner {
         await this.destroyIndexerSetup();
     }
 
+    // Inject custom config
+    private async buildSearchApiConf(): Promise<string> {
+        const baseConfFilePath = path.resolve(
+            this.workspaceRoot,
+            "magda-int-test-ts",
+            "indexer-setup.conf"
+        );
+
+        const baseConfContent = await fs.readFile(baseConfFilePath, "utf-8");
+
+        const esHost = this.dockerServiceForwardHost || "localhost";
+        const embedding = this.dockerServiceForwardHost || "localhost";
+        const esConfig = `elasticSearch.serverUrl = "http://${esHost}:9200"\n`;
+        const embeddingConfig = `embeddingApi.baseUrl = "http://${embedding}:3000"\n`;
+
+        let mergedConf = baseConfContent;
+        if (this.searchApiConfig !== null) {
+            mergedConf = baseConfContent + "\n" + this.searchApiConfig;
+        }
+        mergedConf = mergedConf + "\n" + esConfig + embeddingConfig;
+
+        const confPath = tempy.file({ extension: "conf" });
+        await fs.writeFile(confPath, mergedConf);
+        this.tmpFiles.push(confPath);
+
+        return confPath;
+    }
+
     async createIndexerSetup() {
-        const confFilePath = path
-            .resolve(
-                this.workspaceRoot,
-                "magda-int-test-ts",
-                "indexer-setup.conf"
-            )
-            .replace(/"/g, '"');
+        const confFilePath = await this.buildSearchApiConf();
 
         const indexerSetupProcess = child_process.spawn(
             "sbt",
@@ -1091,10 +1128,12 @@ export default class ServiceRunner {
     }
 
     async createSearchApi() {
+        const confFilePath = await this.buildSearchApiConf();
         const searchApiProcess = child_process.spawn(
             "sbt",
             [
                 `-DsearchApi.debug="${this.searchApiDebugMode}"`,
+                `"-Dconfig.file=${confFilePath}"`,
                 '"searchApi/run"'
             ],
             {

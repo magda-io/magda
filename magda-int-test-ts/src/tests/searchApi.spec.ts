@@ -42,7 +42,6 @@ const indexerApiClient = new IndexerApiClient({
 });
 
 const searchApiUrl = "http://localhost:6102/v0";
-const openSearchUrl = "http://localhost:9200";
 
 async function searchDataset(q: string, userId?: string) {
     const config: RequestInit = {};
@@ -81,6 +80,9 @@ describe("search api hybrid integration tests", function (this) {
     serviceRunner.authApiDebugMode = false;
     serviceRunner.searchApiDebugMode = false;
 
+    const openSearchUrl = `http://${
+        serviceRunner.dockerServiceForwardHost || "localhost"
+    }:9200`;
     let datasetIndexName: string = "";
     let testUserId: string = "";
     // user will be set to branch B

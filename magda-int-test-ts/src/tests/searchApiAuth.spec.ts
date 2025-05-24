@@ -53,7 +53,6 @@ const indexerApiClient = new IndexerApiClient({
 });
 
 const searchApiUrl = "http://localhost:6102/v0";
-const openSearchUrl = "http://localhost:9200";
 
 async function getDataset(datasetId: string, userId?: string) {
     const config: RequestInit = {};
@@ -90,7 +89,9 @@ describe("search api auth integration tests", function (this) {
     serviceRunner.enableSearchApi = true;
     serviceRunner.jwtSecret = jwtSecret;
     serviceRunner.authApiDebugMode = false;
-
+    const openSearchUrl = `http://${
+        serviceRunner.dockerServiceForwardHost || "localhost"
+    }:9200`;
     let datasetIndexName: string = "";
 
     before(async function (this) {
