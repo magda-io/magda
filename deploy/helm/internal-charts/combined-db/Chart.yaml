@@ -4,12 +4,12 @@ description: |
   Unless you attempt to run logical DBs over seperate physical DBs (via `global.useInK8sDbInstance.xxx`), 
   you should always enable this module (even when you use cloud based DB service e.g. AWS RDS or Google Cloud SQL).
 name: combined-db
-version: 5.1.0
+version: 6.0.0-alpha.1
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
 dependencies:
   - name: magda-postgres
-    version: "5.1.0"
+    version: "6.0.0-alpha.1"
     repository: "file://../magda-postgres"
     condition: global.useCombinedDb
