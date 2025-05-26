@@ -96,6 +96,7 @@ magda:
             - https://*.tile.openstreetmap.org
             connectSrc:
             - "'self'"
+            - https://tiles.magda.io
             - https://*.google-analytics.com
             - https://*.analytics.google.com
             - https://*.googletagmanager.com
