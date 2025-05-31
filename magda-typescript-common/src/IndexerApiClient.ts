@@ -15,6 +15,7 @@ export interface DeleteResult {
 
 export default class IndexerApiClient extends BaseApiClient {
     constructor(options: BaseApiClientConfig) {
+        options.baseApiUrl = options.baseApiUrl || "http://localhost:6103/v0";
         super(options);
     }
 

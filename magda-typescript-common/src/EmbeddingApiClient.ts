@@ -7,10 +7,12 @@ export interface EmbeddingResult {
     }[];
 }
 
+export interface EmbeddingApiClientConfig extends BaseApiClientConfig {}
+
 export default class EmbeddingApiClient extends BaseApiClient {
     private taskSize: number = 10;
 
-    constructor(options: BaseApiClientConfig) {
+    constructor(options: EmbeddingApiClientConfig) {
         options.baseApiUrl = options.baseApiUrl || "http://localhost:3000/v0";
         super(options);
     }
