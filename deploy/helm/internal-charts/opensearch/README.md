@@ -1,6 +1,6 @@
 # opensearch
 
-![Version: 5.2.0](https://img.shields.io/badge/Version-5.2.0-informational?style=flat-square)
+![Version: 5.3.0-alpha.2](https://img.shields.io/badge/Version-5.3.0--alpha.2-informational?style=flat-square)
 
 A Helm chart for Magda's OpenSearch Cluster
 
