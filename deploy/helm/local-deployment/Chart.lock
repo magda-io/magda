@@ -7,7 +7,7 @@ dependencies:
   version: 3.0.0
 - name: magda-auth-internal
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 3.0.0
 - name: magda-auth-arcgis
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.1
@@ -107,5 +107,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
-digest: sha256:87378891612d97c583d7adf2c898950780d313e62b832fb39e6153d8d4308ead
-generated: "2025-04-30T00:44:57.118297045Z"
+digest: sha256:1ce780b58371102775cd328af83579d2844b8c596ea6e6e0e9be6c4c9c2dcaf2
+generated: "2025-06-02T14:16:35.792002+10:00"

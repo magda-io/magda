@@ -16,7 +16,7 @@ dependencies:
       - magda-auth-google
 
   - name: magda-auth-internal
-    version: "2.0.0"
+    version: "3.0.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
