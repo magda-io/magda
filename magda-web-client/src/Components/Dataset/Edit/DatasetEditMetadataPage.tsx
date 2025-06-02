@@ -18,6 +18,7 @@ import {
 
 import {
     State,
+    saveState,
     DistributionState,
     submitDatasetFromState
 } from "../Add/DatasetAddCommon";
@@ -42,10 +43,10 @@ import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 import redirect from "helpers/redirect";
 import Loader from "rsuite/Loader";
-import {
-    createPopupModeQueryString,
-    executePopupModeCallback
-} from "helpers/popupUtils";
+import { createPopupModeQueryString } from "helpers/popupUtils";
+import sendEventToOpener, {
+    EVENT_TYPE_DATASET_EDITING_COMPLETE
+} from "libs/sendEventToOpener";
 
 type Props = {
     initialState: State;
@@ -302,6 +303,7 @@ class EditDataset extends React.Component<Props, State> {
              */
             await this.resetError();
             if (ValidationManager.validateAll()) {
+                await saveState(this.state, this.props.datasetId);
                 redirect(
                     this.props.history,
                     `/dataset/edit/${encodeURIComponent(
@@ -363,7 +365,9 @@ class EditDataset extends React.Component<Props, State> {
             if (result.length) {
                 throw new FileDeletionError(result);
             }
-            executePopupModeCallback(this.props.datasetId);
+            sendEventToOpener(EVENT_TYPE_DATASET_EDITING_COMPLETE, {
+                id: this.props.datasetId
+            });
             redirect(
                 this.props.history,
                 `/dataset/edit/${encodeURIComponent(this.props.datasetId)}/6` +

@@ -1,6 +1,7 @@
 import React from "react";
 
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
+import { Location } from "history";
 import giantTickIcon from "assets/giant-tick.svg";
 import draftIcon from "assets/format-active.svg";
 import { BsServer } from "react-icons/bs";
@@ -14,10 +15,19 @@ type Props = {
     publishStatus?: string; // "published" | "draft" | "archived"
 };
 
+function checkSaveAndExit(location: Location) {
+    const params = new URLSearchParams(location?.search);
+    if (!params.size) return false;
+    return params.has("saveExit");
+}
+
 // If you are not in preview mode
 export default function DatasetAddEndPage(props: Props) {
     const { datasetId, publishStatus } = props;
+    const location = useLocation();
     const isInPopUp = useInPopUp();
+    const isSaveAndExit = checkSaveAndExit(location);
+    console.log("isSaveAndExit: ", isSaveAndExit);
     const datasetPage = "/dataset/" + datasetId + "/details";
     const isEdit = typeof props?.isEdit === "undefined" ? false : props.isEdit;
     const history = useHistory();
@@ -29,8 +39,10 @@ export default function DatasetAddEndPage(props: Props) {
     }
 
     let allDoneText: string;
-    if (isEdit) {
-        allDoneText = "Your dataset has been updated";
+    if (isSaveAndExit) {
+        allDoneText = "Your progress has been saved.";
+    } else if (isEdit) {
+        allDoneText = "Your dataset has been updated.";
     } else {
         allDoneText =
             publishStatus === "draft"

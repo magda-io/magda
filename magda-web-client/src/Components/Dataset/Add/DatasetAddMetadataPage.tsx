@@ -47,10 +47,10 @@ import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 import redirect from "helpers/redirect";
 import Loader from "rsuite/Loader";
-import {
-    createPopupModeQueryString,
-    executePopupModeCallback
-} from "helpers/popupUtils";
+import { createPopupModeQueryString } from "helpers/popupUtils";
+import sendEventToOpener, {
+    EVENT_TYPE_DATASET_CREATION_COMPLETE
+} from "libs/sendEventToOpener";
 
 type Props = {
     initialState: State;
@@ -310,14 +310,18 @@ class NewDataset extends React.Component<Props, State> {
                 // --- still redirect to dataset list page in preview wmdoe
                 redirect(this.props.history, `/dataset/list`);
             } else {
-                // redirect to datasets management
-                redirect(
-                    this.props.history,
-                    `/settings/datasets/draft` +
-                        (this.popUpModeQueryString
-                            ? `?${this.popUpModeQueryString}`
-                            : "")
-                );
+                if (this.popUpModeQueryString) {
+                    // if it's in a popup, show the end page
+                    redirect(
+                        this.props.history,
+                        `/dataset/add/metadata/${encodeURIComponent(
+                            this.props.datasetId
+                        )}/6?${this.popUpModeQueryString}&saveExit=true`
+                    );
+                } else {
+                    // redirect to datasets management
+                    redirect(this.props.history, `/settings/datasets/draft`);
+                }
             }
         } catch (e) {
             this.props.createNewDatasetError(e);
@@ -418,7 +422,9 @@ class NewDataset extends React.Component<Props, State> {
             if (result.length) {
                 throw new FileDeletionError(result);
             }
-            executePopupModeCallback(datasetId);
+            sendEventToOpener(EVENT_TYPE_DATASET_CREATION_COMPLETE, {
+                id: datasetId
+            });
             redirect(
                 this.props.history,
                 `/dataset/add/metadata/${encodeURIComponent(datasetId)}/6` +
