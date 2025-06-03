@@ -1,0 +1,130 @@
+import { onRecordFoundType } from "@magda/minion-framework/dist/MinionOptions.js";
+import { Chunker } from "./chunker.js";
+import EmbeddingApiClient from "../EmbeddingApiClient.js";
+import OpensearchApiClient from "../OpensearchApiClient.js";
+import VectorIndexerOptions from "./vectorIndexerOptions.js";
+import { indexEmbeddingText } from "./indexEmbeddingText.js";
+import { EmbeddingText } from "./createEmbeddingText.js";
+import { Record } from "../generated/registry/api.js";
+import fetch from "node-fetch";
+import { promises as fs } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
+import { v4 as uuidv4 } from "uuid";
+import { SkipError } from "./skipError.js";
+
+export const onRecordFoundStorageObject = (
+    userConfig: VectorIndexerOptions,
+    chunker: Chunker,
+    embeddingApiClient: EmbeddingApiClient,
+    opensearchApiClient: OpensearchApiClient
+): onRecordFoundType => {
+    return async (record: Record, _registry) => {
+        try {
+            const distributions =
+                record.aspects["dataset-distributions"]?.distributions || [];
+            const tasks = distributions.map(async (dist: any) => {
+                try {
+                    let format: string | null = null;
+                    const datasetFormat = dist.aspect["dataset-format"]?.format;
+                    const dcatDist = dist.aspect["dcat-distribution-strings"];
+                    const { format: dcatFormat, downloadURL, mediaType } =
+                        dcatDist || {};
+                    if (datasetFormat) {
+                        format = datasetFormat;
+                    } else if (dcatFormat) {
+                        format = dcatFormat;
+                    } else {
+                        format = mediaType;
+                    }
+
+                    if (
+                        !format ||
+                        !downloadURL ||
+                        !userConfig.formatTypes?.some((f) =>
+                            format.toLowerCase().includes(f.toLowerCase())
+                        )
+                    )
+                        return;
+
+                    let embeddingText: EmbeddingText;
+                    let filePath: string;
+                    if (userConfig.autoDownloadFile) {
+                        try {
+                            filePath = await downloadFile(downloadURL);
+                            embeddingText = await userConfig.createEmbeddingText(
+                                {
+                                    record,
+                                    format: format,
+                                    filePath: filePath,
+                                    url: downloadURL
+                                }
+                            );
+                        } finally {
+                            if (filePath) {
+                                await deleteTempFile(filePath);
+                            }
+                        }
+                    } else {
+                        embeddingText = await userConfig.createEmbeddingText({
+                            record,
+                            format: format,
+                            filePath: null,
+                            url: downloadURL
+                        });
+                    }
+                    await indexEmbeddingText(
+                        userConfig,
+                        embeddingText,
+                        {
+                            recordId: record.id,
+                            fileFormat: format
+                        },
+                        chunker,
+                        embeddingApiClient,
+                        opensearchApiClient
+                    );
+                } catch (err) {
+                    if (err instanceof SkipError) {
+                        console.warn("Skipping record because:", err.message);
+                        return;
+                    }
+                    throw err;
+                }
+            });
+            await Promise.all(tasks);
+        } catch (err) {
+            if (err instanceof SkipError) {
+                console.warn("Skipping record because:", err.message);
+                return;
+            }
+            console.error("Error processing file:", err);
+            return;
+        }
+    };
+};
+
+async function downloadFile(url: string): Promise<string> {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new SkipError(`${response.status} ${response.statusText}`);
+    }
+
+    const tempDir = tmpdir();
+    const tempFileName = `${uuidv4()}`;
+    const tempFilePath = join(tempDir, tempFileName);
+
+    const fileStream = await fs.open(tempFilePath, "w");
+    await fileStream.write(Buffer.from(await response.arrayBuffer()));
+    await fileStream.close();
+
+    return tempFilePath;
+}
+
+async function deleteTempFile(filePath: string) {
+    try {
+        await fs.unlink(filePath);
+    } catch (err) {
+        console.warn(`Failed to delete temp file: ${filePath}`, err);
+    }
+}
