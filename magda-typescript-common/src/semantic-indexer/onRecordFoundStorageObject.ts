@@ -2,7 +2,7 @@ import { onRecordFoundType } from "@magda/minion-framework/dist/MinionOptions.js
 import { Chunker } from "./chunker.js";
 import EmbeddingApiClient from "../EmbeddingApiClient.js";
 import OpensearchApiClient from "../OpensearchApiClient.js";
-import VectorIndexerOptions from "./vectorIndexerOptions.js";
+import SemanticIndexerOptions from "./semanticIndexerOptions.js";
 import { indexEmbeddingText } from "./indexEmbeddingText.js";
 import { EmbeddingText } from "./createEmbeddingText.js";
 import { Record } from "../generated/registry/api.js";
@@ -14,7 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 import { SkipError } from "./skipError.js";
 
 export const onRecordFoundStorageObject = (
-    userConfig: VectorIndexerOptions,
+    userConfig: SemanticIndexerOptions,
     chunker: Chunker,
     embeddingApiClient: EmbeddingApiClient,
     opensearchApiClient: OpensearchApiClient
@@ -73,17 +73,25 @@ export const onRecordFoundStorageObject = (
                             url: downloadURL
                         });
                     }
-                    await indexEmbeddingText(
-                        userConfig,
-                        embeddingText,
-                        {
-                            recordId: record.id,
-                            fileFormat: format
-                        },
-                        chunker,
-                        embeddingApiClient,
-                        opensearchApiClient
-                    );
+                    try {
+                        await indexEmbeddingText(
+                            userConfig,
+                            embeddingText,
+                            {
+                                recordId: record.id,
+                                fileFormat: format
+                            },
+                            chunker,
+                            embeddingApiClient,
+                            opensearchApiClient
+                        );
+                    } catch (err) {
+                        throw new SkipError(
+                            `Failed to index embedding text, error: ${
+                                (err as Error).message
+                            }`
+                        );
+                    }
                 } catch (err) {
                     if (err instanceof SkipError) {
                         console.warn("Skipping record because:", err.message);
@@ -98,8 +106,7 @@ export const onRecordFoundStorageObject = (
                 console.warn("Skipping record because:", err.message);
                 return;
             }
-            console.error("Error processing file:", err);
-            return;
+            throw err;
         }
     };
 };
