@@ -2,13 +2,13 @@ import { onRecordFoundType } from "@magda/minion-framework/dist/MinionOptions.js
 import { Chunker } from "./chunker.js";
 import EmbeddingApiClient from "../EmbeddingApiClient.js";
 import OpensearchApiClient from "../OpensearchApiClient.js";
-import VectorIndexerOptions from "./vectorIndexerOptions.js";
+import SemanticIndexerOptions from "./semanticIndexerOptions.js";
 import { indexEmbeddingText } from "./indexEmbeddingText.js";
 import { Record } from "../generated/registry/api.js";
 import { SkipError } from "./skipError.js";
 
 export const onRecordFoundRegistryRecord = (
-    userConfig: VectorIndexerOptions,
+    userConfig: SemanticIndexerOptions,
     chunker: Chunker,
     embeddingApiClient: EmbeddingApiClient,
     opensearchApiClient: OpensearchApiClient
@@ -21,15 +21,22 @@ export const onRecordFoundRegistryRecord = (
             ) {
                 return;
             }
-            const embeddingText = await userConfig.createEmbeddingText({
-                record,
-                format: null,
-                filePath: null,
-                url: null
-            });
-            if (!embeddingText) {
-                return;
+            let embeddingText;
+            try {
+                embeddingText = await userConfig.createEmbeddingText({
+                    record,
+                    format: null,
+                    filePath: null,
+                    url: null
+                });
+            } catch (err) {
+                throw new SkipError(
+                    `Failed to create embedding text, error: ${
+                        (err as Error).message
+                    }`
+                );
             }
+
             await indexEmbeddingText(
                 userConfig,
                 embeddingText,
@@ -45,8 +52,7 @@ export const onRecordFoundRegistryRecord = (
                 console.warn("Skipping record because:", err.message);
                 return;
             }
-            console.error("Error processing registry record:", err);
-            return;
+            throw err;
         }
     };
 };
