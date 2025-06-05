@@ -25,10 +25,9 @@ export default class OpensearchApiClient {
             await instance.client.ping();
             console.log(`Successfully connected to OpenSearch: ${config.url}`);
         } catch (err) {
-            console.log(`Failed to connect to OpenSearch: ${config.url}`, {
-                error: err
-            });
-            throw err;
+            throw new Error(
+                `Failed to connect to OpenSearch: ${config.url}, error: ${err}`
+            );
         }
         return instance;
     }
@@ -38,24 +37,15 @@ export default class OpensearchApiClient {
         settings?: any;
         mappings?: any;
     }): Promise<void> {
-        try {
-            await this.client.indices.create({
-                index: indexDefinition.indexName,
-                body: {
-                    mappings: indexDefinition.mappings,
-                    settings: indexDefinition.settings
-                }
-            });
-            console.log(
-                `Index created successfully: ${indexDefinition.indexName}`
-            );
-        } catch (err) {
-            console.log(
-                `Failed to create index: ${indexDefinition.indexName}`,
-                { error: err }
-            );
-            throw err;
-        }
+        await this.client.indices.create({
+            index: indexDefinition.indexName,
+            body: {
+                mappings: indexDefinition.mappings,
+                settings: indexDefinition.settings
+            }
+        });
+
+        console.log(`Index created successfully: ${indexDefinition.indexName}`);
     }
 
     async deleteIndex(indexName: string): Promise<void> {
@@ -90,7 +80,12 @@ export default class OpensearchApiClient {
                 }
             })
             .then((result) => {
-                console.log(result);
+                console.log(
+                    `Successfully indexed ${result.successful} documents.`
+                );
+                if (result.failed > 0) {
+                    console.warn(`Failed to index ${result.failed} documents.`);
+                }
             });
     }
 
