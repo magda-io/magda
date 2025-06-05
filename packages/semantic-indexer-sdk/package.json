@@ -1,0 +1,47 @@
+{
+  "name": "@magda/semantic-indexer-sdk",
+  "description": "MAGDA Semantic Indexer SDK",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=18.19.0"
+  },
+  "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
+    "build": "yarn build-main && yarn build-types && yarn build-types-bundle",
+    "build-main": "node esbuild.js",
+    "build-types": "tsc --emitDeclarationOnly",
+    "build-types-bundle": "api-extractor run --local",
+    "release": "npm publish || echo \"Skip releasing npm package @magda/semantic-indexer-sdk.\""
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@magda/typescript-common": "^5.2.0",
+    "@microsoft/api-extractor": "~7.39.0",
+    "esbuild": "^0.19.10",
+    "ts-loader": "^9.5.1",
+    "typescript": "~5.3.3"
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "npmPackage": true
+    }
+  },
+  "keywords": [
+    "Magda",
+    "Semantic",
+    "Indexer",
+    "SDK"
+  ],
+  "files": [
+    "dist"
+  ]
+}
