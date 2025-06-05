@@ -1,4 +1,8 @@
 {
+    "default": {
+        "chunkSize": 100,
+        "overlap": 10
+    },
     "elasticSearch": {
         "serverUrl": "http://localhost:9200",
         "indices": {

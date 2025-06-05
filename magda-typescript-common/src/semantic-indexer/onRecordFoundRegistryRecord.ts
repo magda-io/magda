@@ -1,4 +1,4 @@
-import { onRecordFoundType } from "@magda/minion-framework/dist/MinionOptions.js";
+import { onRecordFoundType } from "@magda/minion-sdk";
 import { Chunker } from "./chunker.js";
 import EmbeddingApiClient from "../EmbeddingApiClient.js";
 import OpensearchApiClient from "../OpensearchApiClient.js";
@@ -17,7 +17,7 @@ export const onRecordFoundRegistryRecord = (
         try {
             if (
                 !record.aspects ||
-                !userConfig.aspects.every((aspect) => aspect in record.aspects)
+                !userConfig.aspects?.every((aspect) => aspect in record.aspects)
             ) {
                 return;
             }

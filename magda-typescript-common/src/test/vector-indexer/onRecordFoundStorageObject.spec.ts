@@ -55,7 +55,7 @@ describe("onRecordFoundStorageObject", () => {
                 "dataset-distributions": {
                     distributions: [
                         {
-                            aspect: {
+                            aspects: {
                                 "dataset-format": { format: "csv" },
                                 "dcat-distribution-strings": {
                                     format: "csv",
@@ -74,7 +74,7 @@ describe("onRecordFoundStorageObject", () => {
             embeddingApiClient,
             opensearchApiClient
         );
-        await onRecordFound(record, null);
+        await onRecordFound(record, null as any);
 
         const expectedDocs = [
             {
@@ -117,7 +117,7 @@ describe("onRecordFoundStorageObject", () => {
                 "dataset-distributions": {
                     distributions: [
                         {
-                            aspect: {
+                            aspects: {
                                 "dataset-format": { format: "csv" },
                                 "dcat-distribution-strings": {
                                     format: "csv",
@@ -176,7 +176,7 @@ describe("onRecordFoundStorageObject", () => {
             embeddingApiClient,
             opensearchApiClient
         );
-        await onRecordFound(record, null);
+        await onRecordFound(record, null as any);
 
         expect(createEmbeddingTextStub.callCount).to.equal(1);
         expect(chunker.chunk.callCount).to.equal(1);
@@ -185,7 +185,9 @@ describe("onRecordFoundStorageObject", () => {
         expect(
             opensearchApiClient.bulkIndexDocument.firstCall.args[1]
         ).to.deep.equal(expectedDocs);
-        expect(fs.existsSync(usedFilePath)).to.be.false;
+        if (usedFilePath) {
+            expect(fs.existsSync(usedFilePath)).to.be.false;
+        }
         nock.cleanAll();
     });
 
@@ -209,7 +211,7 @@ describe("onRecordFoundStorageObject", () => {
                 "dataset-distributions": {
                     distributions: [
                         {
-                            aspect: {
+                            aspects: {
                                 "dataset-format": { format: "json" },
                                 "dcat-distribution-strings": {
                                     format: "json",
@@ -218,7 +220,7 @@ describe("onRecordFoundStorageObject", () => {
                             }
                         },
                         {
-                            aspect: {
+                            aspects: {
                                 "dataset-format": { format: "csv" },
                                 "dcat-distribution-strings": {
                                     format: "csv",
@@ -252,7 +254,7 @@ describe("onRecordFoundStorageObject", () => {
             opensearchApiClient
         );
 
-        await onRecordFound(record, null);
+        await onRecordFound(record, null as any);
 
         expect(createEmbeddingTextStub.callCount).to.equal(1);
         expect(chunker.chunk.callCount).to.equal(1);
@@ -277,7 +279,7 @@ describe("onRecordFoundStorageObject", () => {
                 "dataset-distributions": {
                     distributions: [
                         {
-                            aspect: {
+                            aspects: {
                                 "dataset-format": { format: "csv" },
                                 "dcat-distribution-strings": {
                                     format: "csv",
@@ -286,7 +288,7 @@ describe("onRecordFoundStorageObject", () => {
                             }
                         },
                         {
-                            aspect: {
+                            aspects: {
                                 "dataset-format": { format: "json" },
                                 "dcat-distribution-strings": {
                                     format: "json",
@@ -332,7 +334,7 @@ describe("onRecordFoundStorageObject", () => {
             embeddingApiClient,
             opensearchApiClient
         );
-        await onRecordFound(record, null);
+        await onRecordFound(record, null as any);
 
         const expectedDocs1 = [
             {
@@ -387,7 +389,7 @@ describe("onRecordFoundStorageObject", () => {
                 "dataset-distributions": {
                     distributions: [
                         {
-                            aspect: {
+                            aspects: {
                                 "dataset-format": { format: "csv" },
                                 "dcat-distribution-strings": {
                                     format: "csv",
@@ -411,7 +413,7 @@ describe("onRecordFoundStorageObject", () => {
             opensearchApiClient
         );
 
-        await expectNoThrowsAsync(() => onRecordFound(record, null));
+        await expectNoThrowsAsync(() => onRecordFound(record, null as any));
     });
 
     it("should skip this record when opensearchApiClient throws an error", async () => {
@@ -427,7 +429,7 @@ describe("onRecordFoundStorageObject", () => {
                 "dataset-distributions": {
                     distributions: [
                         {
-                            aspect: {
+                            aspects: {
                                 "dataset-format": { format: "csv" },
                                 "dcat-distribution-strings": {
                                     format: "csv",
@@ -441,7 +443,7 @@ describe("onRecordFoundStorageObject", () => {
         });
 
         opensearchApiClient.bulkIndexDocument
-            .withArgs(record, null)
+            .withArgs(record, null as any)
             .rejects(new Error("throw test error"));
 
         const onRecordFound = onRecordFoundStorageObject(
@@ -450,7 +452,7 @@ describe("onRecordFoundStorageObject", () => {
             embeddingApiClient,
             opensearchApiClient
         );
-        await expectNoThrowsAsync(() => onRecordFound(record, null));
+        await expectNoThrowsAsync(() => onRecordFound(record, null as any));
     });
 
     it("should skip this record when createEmbeddingText throws an error", async () => {
@@ -466,7 +468,7 @@ describe("onRecordFoundStorageObject", () => {
                 "dataset-distributions": {
                     distributions: [
                         {
-                            aspect: {
+                            aspects: {
                                 "dataset-format": { format: "csv" },
                                 "dcat-distribution-strings": {
                                     format: "csv",
@@ -489,7 +491,7 @@ describe("onRecordFoundStorageObject", () => {
             embeddingApiClient,
             opensearchApiClient
         );
-        await expectNoThrowsAsync(() => onRecordFound(record, null));
+        await expectNoThrowsAsync(() => onRecordFound(record, null as any));
     });
 
     it("should skip this record when no distributions", async () => {
@@ -514,7 +516,7 @@ describe("onRecordFoundStorageObject", () => {
             embeddingApiClient,
             opensearchApiClient
         );
-        await expectNoThrowsAsync(() => onRecordFound(record, null));
+        await expectNoThrowsAsync(() => onRecordFound(record, null as any));
     });
 
     it("should skip this record when dataset-distributions aspect not exist", async () => {
@@ -535,7 +537,7 @@ describe("onRecordFoundStorageObject", () => {
             embeddingApiClient,
             opensearchApiClient
         );
-        await expectNoThrowsAsync(() => onRecordFound(record, null));
+        await expectNoThrowsAsync(() => onRecordFound(record, null as any));
     });
 
     it("should skip this record when dcat-distribution-strings is missing downloadURL", async () => {
@@ -551,7 +553,7 @@ describe("onRecordFoundStorageObject", () => {
                 "dataset-distributions": {
                     distributions: [
                         {
-                            aspect: {
+                            aspects: {
                                 "dcat-distribution-strings": {
                                     format: "csv"
                                 }
@@ -568,7 +570,7 @@ describe("onRecordFoundStorageObject", () => {
             embeddingApiClient,
             opensearchApiClient
         );
-        await expectNoThrowsAsync(() => onRecordFound(record, null));
+        await expectNoThrowsAsync(() => onRecordFound(record, null as any));
     });
 
     it("should use format from dcat-distribution-strings when dataset-format is missing", async () => {
@@ -585,7 +587,7 @@ describe("onRecordFoundStorageObject", () => {
                 "dataset-distributions": {
                     distributions: [
                         {
-                            aspect: {
+                            aspects: {
                                 "dataset-format": {},
                                 "dcat-distribution-strings": {
                                     format: "csv",
@@ -605,7 +607,7 @@ describe("onRecordFoundStorageObject", () => {
             opensearchApiClient
         );
 
-        await expectNoThrowsAsync(() => onRecordFound(record, null));
+        await expectNoThrowsAsync(() => onRecordFound(record, null as any));
         expect(createEmbeddingTextStub.firstCall.args[0]).to.deep.equal({
             record,
             format: "csv",

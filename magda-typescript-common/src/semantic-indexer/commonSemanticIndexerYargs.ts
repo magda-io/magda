@@ -1,6 +1,5 @@
 import yargs from "yargs";
-import { MinionArguments } from "@magda/minion-framework/dist/commonYargs.js";
-import commonYargs from "@magda/minion-framework/dist/commonYargs.js";
+import { MinionArguments, commonYargs } from "@magda/minion-sdk";
 import { config } from "./config.js";
 
 export interface SemanticIndexerArguments extends MinionArguments {

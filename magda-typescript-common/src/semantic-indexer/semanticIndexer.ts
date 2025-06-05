@@ -1,12 +1,10 @@
 import SemanticIndexerOptions, {
     validateSemanticIndexerOptions
 } from "./semanticIndexerOptions.js";
-import MinionOptions, {
-    onRecordFoundType
-} from "@magda/minion-framework/dist/MinionOptions.js";
+import { MinionOptions, onRecordFoundType } from "@magda/minion-sdk";
 import { Chunker, FixedLengthChunkStrategy } from "./chunker.js";
 import EmbeddingApiClient from "../EmbeddingApiClient.js";
-import minion from "@magda/minion-framework";
+import minion from "@magda/minion-sdk";
 import OpensearchApiClient from "../OpensearchApiClient.js";
 import { createSemanticIndexerMapping } from "./indexSchema.js";
 import { onRecordFoundRegistryRecord } from "./onRecordFoundRegistryRecord.js";
@@ -58,8 +56,8 @@ export async function semanticIndexer(userConfig: SemanticIndexerOptions) {
 
         const chunker = new Chunker(
             new FixedLengthChunkStrategy(
-                userConfig.chunkSize,
-                userConfig.overlap
+                userConfig.chunkSize || config.default.chunkSize,
+                userConfig.overlap || config.default.overlap
             )
         );
 
@@ -76,8 +74,8 @@ export async function semanticIndexer(userConfig: SemanticIndexerOptions) {
             minionOptions = {
                 argv: userConfig.argv,
                 id: userConfig.id,
-                aspects: userConfig.aspects,
-                optionalAspects: userConfig.optionalAspects,
+                aspects: userConfig.aspects || [],
+                optionalAspects: userConfig.optionalAspects || [],
                 writeAspectDefs: [],
                 async: true,
                 dereference: true,
@@ -103,6 +101,8 @@ export async function semanticIndexer(userConfig: SemanticIndexerOptions) {
                 includeEvents: false,
                 onRecordFound: onRecordFound
             };
+        } else {
+            throw new Error("Invalid itemType");
         }
 
         minion(minionOptions).catch((e: Error) => {

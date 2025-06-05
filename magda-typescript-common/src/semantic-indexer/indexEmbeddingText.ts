@@ -14,7 +14,7 @@ import { config } from "./config.js";
 export async function indexEmbeddingText(
     options: SemanticIndexerOptions,
     EmbeddingText: EmbeddingText,
-    meta: { recordId?: string; fileFormat?: string },
+    meta: { recordId: string; fileFormat?: string },
     chunker: Chunker,
     embeddingApiClient: EmbeddingApiClient,
     opensearchApiClient: OpensearchApiClient,
@@ -57,7 +57,7 @@ async function processSingleText(
     options: SemanticIndexerOptions,
     text: string,
     meta: {
-        recordId?: string;
+        recordId: string;
         fileFormat?: string;
         subObjectId?: string;
         subObjectType?: string;

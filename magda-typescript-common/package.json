@@ -56,7 +56,9 @@
   },
   "dependencies": {
     "@magda/esm-utils": "^1.0.1",
+    "@magda/minion-framework": "^5.2.0",
     "@magda/tsmonad": "^0.9.0",
+    "@opensearch-project/opensearch": "^3.5.1",
     "@types/resolve": "^1.14.0",
     "caller-path": "^4.0.0",
     "cross-fetch": "^4.0.0",

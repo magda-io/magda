@@ -67,14 +67,14 @@ describe("onRecordFoundRegistryRecord", () => {
                 id: "id1",
                 aspects: { "test-aspect": { text: "test1" } }
             }),
-            null
+            null as any
         );
         await onRecordFound(
             createRecord({
                 id: "id2",
                 aspects: { "test-aspect": { text: "test2" } }
             }),
-            null
+            null as any
         );
 
         expect(createEmbeddingTextStub.callCount).to.equal(2);
@@ -138,12 +138,18 @@ describe("onRecordFoundRegistryRecord", () => {
             .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
         embeddingApiClient.get.withArgs(["test1"]).resolves([[0.1, 0.2, 0.3]]);
 
-        await onRecordFound(createRecord({ id: "id1", aspects: {} }), null);
+        await onRecordFound(
+            createRecord({ id: "id1", aspects: {} }),
+            null as any
+        );
         await onRecordFound(
             createRecord({ id: "id2", aspects: { "other-aspect": {} } }),
-            null
+            null as any
         );
-        await onRecordFound(createRecord({ id: "id3", aspects: null }), null);
+        await onRecordFound(
+            createRecord({ id: "id3", aspects: null }),
+            null as any
+        );
 
         expect(createEmbeddingTextStub.callCount).to.equal(0);
         expect(chunker.chunk.callCount).to.equal(0);
@@ -179,7 +185,7 @@ describe("onRecordFoundRegistryRecord", () => {
         await expectNoThrowsAsync(() =>
             onRecordFound(
                 createRecord({ id: "id1", aspects: { "test-aspect": {} } }),
-                null
+                null as any
             )
         );
     });
@@ -211,7 +217,7 @@ describe("onRecordFoundRegistryRecord", () => {
         await expectNoThrowsAsync(() =>
             onRecordFound(
                 createRecord({ id: "id1", aspects: { "test-aspect": {} } }),
-                null
+                null as any
             )
         );
     });
@@ -243,7 +249,7 @@ describe("onRecordFoundRegistryRecord", () => {
         await expectNoThrowsAsync(() =>
             onRecordFound(
                 createRecord({ id: "id1", aspects: { "test-aspect": {} } }),
-                null
+                null as any
             )
         );
     });
