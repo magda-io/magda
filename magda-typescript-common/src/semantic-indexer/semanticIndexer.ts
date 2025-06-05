@@ -12,7 +12,9 @@ import { onRecordFoundStorageObject } from "./onRecordFoundStorageObject.js";
 import retry from "../retry.js";
 import { config } from "./config.js";
 
-export async function semanticIndexer(userConfig: SemanticIndexerOptions) {
+export default async function semanticIndexer(
+    userConfig: SemanticIndexerOptions
+) {
     try {
         validateSemanticIndexerOptions(userConfig);
         const opensearchApiClient = await retry(

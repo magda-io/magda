@@ -1,0 +1,18 @@
+{
+    "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+    "mainEntryPointFilePath": "<projectFolder>/dist/index.d.ts",
+    "bundledPackages": ["@magda/typescript-common"],
+    "apiReport": {
+        "enabled": false
+    },
+    "docModel": {
+        "enabled": false
+    },
+    "dtsRollup": {
+        "enabled": true,
+        "untrimmedFilePath": "<projectFolder>/dist/index.d.ts"
+    },
+    "tsdocMetadata": {
+        "enabled": false
+    }
+}
