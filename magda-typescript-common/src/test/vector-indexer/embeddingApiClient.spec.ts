@@ -1,46 +1,25 @@
 import nock from "nock";
 import EmbeddingApiClient from "../../EmbeddingApiClient.js";
 import { expect } from "chai";
-
-export function mockEmbeddingApi(
-    baseUrl: string = "http://localhost:3000",
-    path: string = "",
-    dim: number = 768
-) {
-    nock(baseUrl)
-        .persist()
-        .post(path)
-        .reply((uri, requestBody: any) => {
-            let input: string[] = [];
-            try {
-                input = Array.isArray(requestBody.input)
-                    ? requestBody.input
-                    : [requestBody.input];
-            } catch {
-                return [400, {}];
-            }
-            return [
-                200,
-                {
-                    data: input.map(() => ({ embedding: Array(dim).fill(0.1) }))
-                }
-            ];
-        });
-}
+import mockEmbeddingApi from "./mockEmbeddingApi.js";
+import sinon from "sinon";
 
 describe("EmbeddingApiClient", () => {
     const baseApiUrl = "http://localhost:3000";
     const path = "/v1/embeddings";
     const dim = 768;
     let client: EmbeddingApiClient;
+    let consoleLogStub: any;
 
     before(() => {
         mockEmbeddingApi(baseApiUrl, path, dim);
         client = new EmbeddingApiClient({ baseApiUrl: baseApiUrl });
+        consoleLogStub = sinon.stub(console, "log");
     });
 
     after(() => {
         nock.cleanAll();
+        consoleLogStub.restore();
     });
 
     it("should return embedding for single text", async () => {
