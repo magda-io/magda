@@ -91,7 +91,7 @@ export interface SemanticIndexDocument {
 }
 
 export function buildSemanticIndexDocument(
-    params: Partial<SemanticIndexDocument>
+    params: SemanticIndexDocument
 ): SemanticIndexDocument {
     return {
         itemType: params.itemType,

@@ -1,4 +1,4 @@
-import { onRecordFoundType } from "@magda/minion-framework/dist/MinionOptions.js";
+import { onRecordFoundType } from "@magda/minion-sdk";
 import { Chunker } from "./chunker.js";
 import EmbeddingApiClient from "../EmbeddingApiClient.js";
 import OpensearchApiClient from "../OpensearchApiClient.js";
@@ -47,8 +47,9 @@ export const onRecordFoundStorageObject = (
                         !userConfig.formatTypes?.some((f) =>
                             format.toLowerCase().includes(f.toLowerCase())
                         )
-                    )
+                    ) {
                         return;
+                    }
 
                     let embeddingText: EmbeddingText;
                     let filePath: string | null = null;

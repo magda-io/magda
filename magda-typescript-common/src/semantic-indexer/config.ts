@@ -32,9 +32,15 @@ export interface EmbeddingApiConfig {
     baseUrl: string;
 }
 
+export interface DefaultConfig {
+    chunkSize: number;
+    overlap: number;
+}
+
 export interface Config {
     elasticSearch: ElasticSearchConfig;
     embeddingApi: EmbeddingApiConfig;
+    default: DefaultConfig;
 }
 
 const configPath = path.resolve(__dirname, "./config.json");
