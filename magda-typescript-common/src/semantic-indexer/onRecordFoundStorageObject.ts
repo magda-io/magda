@@ -12,6 +12,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
 import { SkipError } from "./skipError.js";
+import retry from "../retry.js";
 
 export const onRecordFoundStorageObject = (
     userConfig: SemanticIndexerOptions,
@@ -26,8 +27,10 @@ export const onRecordFoundStorageObject = (
             const tasks = distributions.map(async (dist: any) => {
                 try {
                     let format: string | null = null;
-                    const datasetFormat = dist.aspect["dataset-format"]?.format;
-                    const dcatDist = dist.aspect["dcat-distribution-strings"];
+                    const datasetFormat =
+                        dist.aspects?.["dataset-format"]?.format;
+                    const dcatDist =
+                        dist.aspects?.["dcat-distribution-strings"];
                     const { format: dcatFormat, downloadURL, mediaType } =
                         dcatDist || {};
                     if (datasetFormat) {
@@ -48,10 +51,20 @@ export const onRecordFoundStorageObject = (
                         return;
 
                     let embeddingText: EmbeddingText;
-                    let filePath: string;
+                    let filePath: string | null = null;
                     if (userConfig.autoDownloadFile) {
                         try {
-                            filePath = await downloadFile(downloadURL);
+                            try {
+                                filePath = await downloadFileWithRetry(
+                                    downloadURL
+                                );
+                            } catch (err) {
+                                throw new SkipError(
+                                    `Failed to download file, error: ${
+                                        (err as Error).message
+                                    }`
+                                );
+                            }
                             embeddingText = await userConfig.createEmbeddingText(
                                 {
                                     record,
@@ -110,6 +123,19 @@ export const onRecordFoundStorageObject = (
         }
     };
 };
+
+async function downloadFileWithRetry(url: string): Promise<string> {
+    return retry(
+        () => downloadFile(url),
+        1,
+        5,
+        (err, retries) => {
+            console.warn(
+                `Failed to download file, error: ${err.message}, retries: ${retries}`
+            );
+        }
+    );
+}
 
 async function downloadFile(url: string): Promise<string> {
     const response = await fetch(url);

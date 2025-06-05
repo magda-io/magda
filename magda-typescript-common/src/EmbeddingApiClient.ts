@@ -13,8 +13,22 @@ export default class EmbeddingApiClient extends BaseApiClient {
     private taskSize: number = 10;
 
     constructor(options: EmbeddingApiClientConfig) {
-        options.baseApiUrl = options.baseApiUrl || "http://localhost:3000/v0";
+        options.baseApiUrl = options.baseApiUrl || "http://localhost:3000";
         super(options);
+        this.testConnection();
+    }
+
+    private async testConnection() {
+        try {
+            await this.get("test");
+            console.log(
+                `Successfully connected to embedding API: ${this.getBaseApiUri().toString()}`
+            );
+        } catch (err) {
+            throw new Error(
+                `Failed to connect to embedding API: ${this.getBaseApiUri().toString()}, error: ${err}`
+            );
+        }
     }
 
     async get(text: string): Promise<number[]>;
