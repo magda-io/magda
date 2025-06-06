@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import sinon from "sinon";
-import { onRecordFoundRegistryRecord } from "../../semantic-indexer/onRecordFoundRegistryRecord.js";
+import { onRecordFoundRegistryRecord } from "../onRecordFoundRegistryRecord.js";
 import {
     createFakeSemanticIndexerConfig,
     createRecord,

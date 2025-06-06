@@ -1,5 +1,5 @@
 import nock from "nock";
-import EmbeddingApiClient from "../../EmbeddingApiClient.js";
+import EmbeddingApiClient from "@magda/typescript-common/dist/EmbeddingApiClient.js";
 import { expect } from "chai";
 import mockEmbeddingApi from "./mockEmbeddingApi.js";
 import sinon from "sinon";

@@ -1,5 +1,5 @@
-import EmbeddingApiClient from "../EmbeddingApiClient.js";
-import OpensearchApiClient from "../OpensearchApiClient.js";
+import EmbeddingApiClient from "magda-typescript-common/src/EmbeddingApiClient.js";
+import OpensearchApiClient from "magda-typescript-common/src/OpensearchApiClient.js";
 import { Chunker } from "./chunker.js";
 import { EmbeddingText } from "./createEmbeddingText.js";
 import { SkipError } from "./skipError.js";

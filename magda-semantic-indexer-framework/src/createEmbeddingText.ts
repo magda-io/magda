@@ -1,4 +1,4 @@
-import { Record } from "../generated/registry/api.js";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
 
 export type EmbeddingText = {
     text: string;

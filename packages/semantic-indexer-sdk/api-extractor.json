@@ -1,7 +1,11 @@
 {
     "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
     "mainEntryPointFilePath": "<projectFolder>/dist/index.d.ts",
-    "bundledPackages": ["@magda/typescript-common"],
+    "bundledPackages": [
+        "@magda/typescript-common",
+        "@magda/semantic-indexer-framework",
+        "@magda/tsmonad"
+    ],
     "apiReport": {
         "enabled": false
     },
@@ -14,5 +18,8 @@
     },
     "tsdocMetadata": {
         "enabled": false
+    },
+    "compiler": {
+        "tsconfigFilePath": "<projectFolder>/tsconfig.api.json"
     }
 }
