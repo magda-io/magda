@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import sinon from "sinon";
-import { indexEmbeddingText } from "../../semantic-indexer/indexEmbeddingText.js";
+import { indexEmbeddingText } from "../indexEmbeddingText.js";
 import { createFakeSemanticIndexerConfig } from "./util.js";
 
 describe("indexEmbeddingText", () => {

@@ -1,9 +1,9 @@
-import SemanticIndexerOptions from "../../semantic-indexer/semanticIndexerOptions.js";
-import { ItemType } from "../../semantic-indexer/indexSchema.js";
-import { CreateEmbeddingText } from "../../semantic-indexer/createEmbeddingText.js";
-import { Record } from "../../generated/registry/api.js";
+import SemanticIndexerOptions from "../semanticIndexerOptions.js";
+import { ItemType } from "../indexSchema.js";
+import { CreateEmbeddingText } from "../createEmbeddingText.js";
+import { Record } from "@magda/typescript-common/dist/generated/registry/api.js";
 import { expect } from "chai";
-import { SemanticIndexerArguments } from "magda-typescript-common/src/semantic-indexer/commonSemanticIndexerYargs.js";
+import { SemanticIndexerArguments } from "../commonSemanticIndexerYargs.js";
 
 export function createFakeSemanticIndexerConfig<T extends ItemType>(
     overrideConfig: Partial<SemanticIndexerOptions> = {}

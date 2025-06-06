@@ -1,16 +1,18 @@
-import SemanticIndexerOptions, {
-    validateSemanticIndexerOptions
-} from "./semanticIndexerOptions.js";
-import { MinionOptions, onRecordFoundType } from "@magda/minion-sdk";
-import { Chunker, FixedLengthChunkStrategy } from "./chunker.js";
-import EmbeddingApiClient from "../EmbeddingApiClient.js";
-import minion from "@magda/minion-sdk";
-import OpensearchApiClient from "../OpensearchApiClient.js";
-import { createSemanticIndexerMapping } from "./indexSchema.js";
+import minion from "magda-minion-framework/src/index.js";
+import { config } from "./config.js";
+import { Chunker } from "./chunker.js";
+import { FixedLengthChunkStrategy } from "./chunker.js";
 import { onRecordFoundRegistryRecord } from "./onRecordFoundRegistryRecord.js";
 import { onRecordFoundStorageObject } from "./onRecordFoundStorageObject.js";
-import retry from "../retry.js";
-import { config } from "./config.js";
+import { createSemanticIndexerMapping } from "./indexSchema.js";
+import EmbeddingApiClient from "magda-typescript-common/src/EmbeddingApiClient.js";
+import OpensearchApiClient from "magda-typescript-common/src/OpensearchApiClient.js";
+import SemanticIndexerOptions from "./semanticIndexerOptions.js";
+import MinionOptions, {
+    onRecordFoundType
+} from "magda-minion-framework/src/MinionOptions.js";
+import retry from "magda-typescript-common/src/retry.js";
+import { validateSemanticIndexerOptions } from "./semanticIndexerOptions.js";
 
 export default async function semanticIndexer(
     userConfig: SemanticIndexerOptions

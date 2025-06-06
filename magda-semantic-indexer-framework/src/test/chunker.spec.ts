@@ -1,8 +1,5 @@
 import { expect } from "chai";
-import {
-    Chunker,
-    FixedLengthChunkStrategy
-} from "../../semantic-indexer/chunker.js";
+import { Chunker, FixedLengthChunkStrategy } from "../chunker.js";
 
 describe("FixedLengthChunker", () => {
     it("should chunk the text into smaller chunks with proper overlapping", () => {

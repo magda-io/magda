@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import sinon, { SinonStub, stub } from "sinon";
-import { onRecordFoundStorageObject } from "../../semantic-indexer/onRecordFoundStorageObject.js";
+import { onRecordFoundStorageObject } from "../onRecordFoundStorageObject.js";
 import {
     createFakeSemanticIndexerConfig,
     createRecord,

@@ -1,10 +1,10 @@
-import { onRecordFoundType } from "@magda/minion-sdk";
+import { onRecordFoundType } from "magda-minion-framework/src/MinionOptions.js";
 import { Chunker } from "./chunker.js";
-import EmbeddingApiClient from "../EmbeddingApiClient.js";
-import OpensearchApiClient from "../OpensearchApiClient.js";
+import EmbeddingApiClient from "magda-typescript-common/src/EmbeddingApiClient.js";
+import OpensearchApiClient from "magda-typescript-common/src/OpensearchApiClient.js";
 import SemanticIndexerOptions from "./semanticIndexerOptions.js";
 import { indexEmbeddingText } from "./indexEmbeddingText.js";
-import { Record } from "../generated/registry/api.js";
+import { Record } from "magda-typescript-common/src/generated/registry/api.js";
 import { SkipError } from "./skipError.js";
 
 export const onRecordFoundRegistryRecord = (
