@@ -1,0 +1,72 @@
+{
+  "name": "@magda/semantic-indexer-framework",
+  "description": "MAGDA Semantic Indexer Framework",
+  "version": "5.2.0",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json",
+    "./dist/*.js": "./dist/*.js"
+  },
+  "engines": {
+    "node": ">=18.19.0"
+  },
+  "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
+    "build": "yarn run compile",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
+    "watch": "tsc -b --watch",
+    "test": "mocha",
+    "release": "npm publish || echo \"Skip releasing npm package @magda/semantic-indexer-framework.\""
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@magda/scripts": "^5.2.0",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/uuid": "^8.0.0",
+    "@types/yargs": "^12.0.8",
+    "chai": "^5.0.0-rc.0",
+    "mocha": "^10.2.0",
+    "typescript": "~5.3.3"
+  },
+  "dependencies": {
+    "@magda/esm-utils": "^1.0.1",
+    "@opensearch-project/opensearch": "^3.5.1",
+    "cross-fetch": "^4.0.0",
+    "uuid": "^8.2.0",
+    "yargs": "^12.0.5"
+  },
+  "mocha": {
+    "import": "tsx/esm",
+    "spec": [
+      "src/test/**/*.spec.ts"
+    ]
+  },
+  "config": {
+    "docker": {
+      "include": "node_modules dist package.json"
+    }
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "minion": true,
+      "library": true,
+      "npmPackage": true
+    }
+  },
+  "_moduleMappings": {
+    "magda-semantic-indexer-framework/src": "@magda/semantic-indexer-framework/dist"
+  },
+  "keywords": [
+    "Magda",
+    "SDK",
+    "Semantic",
+    "Indexer"
+  ],
+  "files": [
+    "dist"
+  ]
+}
