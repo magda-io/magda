@@ -67,7 +67,7 @@ async function processSingleText(
     opensearchApiClient: OpensearchApiClient,
     bulkSize: number
 ) {
-    const chunks = chunker.chunk(text);
+    const chunks = await chunker.chunk(text);
     if (!chunks || chunks.length === 0) {
         throw new SkipError("No chunks generated from text.");
     }

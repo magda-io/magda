@@ -1,6 +1,6 @@
 {
     "default": {
-        "chunkSize": 100,
+        "chunkSizeLimit": 100,
         "overlap": 10
     },
     "elasticSearch": {

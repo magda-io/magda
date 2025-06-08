@@ -1,9 +1,7 @@
 import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
+import { __dirname as getCurDirPath, require } from "@magda/esm-utils";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const configPath = path.resolve(getCurDirPath(), "./config.json");
 
 export interface ElasticSearchConfig {
     serverUrl: string;
@@ -33,16 +31,14 @@ export interface EmbeddingApiConfig {
 }
 
 export interface DefaultConfig {
-    chunkSize: number;
+    chunkSizeLimit: number;
     overlap: number;
 }
 
-export interface Config {
+export interface SemanticIndexerConfig {
     elasticSearch: ElasticSearchConfig;
     embeddingApi: EmbeddingApiConfig;
     default: DefaultConfig;
 }
 
-const configPath = path.resolve(__dirname, "./config.json");
-const configContent = fs.readFileSync(configPath, "utf8");
-export const config: Config = JSON.parse(configContent);
+export const config: SemanticIndexerConfig = require(configPath);

@@ -30,7 +30,7 @@ export function createFakeSemanticIndexerConfig<T extends ItemType>(
                 Promise.resolve({
                     text: "This is a test text"
                 }))) as CreateEmbeddingText,
-        chunkSize: 100,
+        chunkSizeLimit: 100,
         overlap: 0,
 
         autoDownloadFile: false

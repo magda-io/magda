@@ -4,8 +4,14 @@
         "outDir": "./dist",
         "strictNullChecks": false,
         "rootDir": "./src",
-        "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+        "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+        "composite": true,
+        "declaration": true,
+        "declarationMap": true
     },
     "include": ["./src"],
-    "references": [{ "path": "../magda-minion-framework" }]
+    "references": [
+        { "path": "../magda-minion-framework" },
+        { "path": "../magda-typescript-common" }
+    ]
 }

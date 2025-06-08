@@ -10,7 +10,7 @@ export default interface SemanticIndexerOptions {
     optionalAspects?: string[];
     formatTypes?: string[];
     createEmbeddingText: CreateEmbeddingText;
-    chunkSize?: number;
+    chunkSizeLimit?: number;
     overlap?: number;
     autoDownloadFile?: boolean;
 }
@@ -19,10 +19,11 @@ export function validateSemanticIndexerOptions(
     options: SemanticIndexerOptions
 ) {
     if (
-        options.chunkSize !== undefined &&
-        (!Number.isInteger(options.chunkSize) || options.chunkSize <= 0)
+        options.chunkSizeLimit !== undefined &&
+        (!Number.isInteger(options.chunkSizeLimit) ||
+            options.chunkSizeLimit <= 0)
     ) {
-        throw new Error("'chunkSize' must be a positive integer");
+        throw new Error("'chunkSizeLimit' must be a positive integer");
     }
     if (
         options.overlap !== undefined &&
@@ -31,11 +32,11 @@ export function validateSemanticIndexerOptions(
         throw new Error("'overlap' must be a non-negative integer");
     }
     if (
-        options.chunkSize &&
+        options.chunkSizeLimit &&
         options.overlap &&
-        options.chunkSize <= options.overlap * 2
+        options.chunkSizeLimit <= options.overlap * 2
     ) {
-        throw new Error("'overlap' must be less than half of 'chunkSize'");
+        throw new Error("'overlap' must be less than half of 'chunkSizeLimit'");
     }
     if (options.itemType === "registryRecord") {
         if (!options.aspects || options.aspects.length === 0) {
