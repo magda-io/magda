@@ -32,7 +32,10 @@
     "typescript": "~5.3.3"
   },
   "dependencies": {
+    "@langchain/core": "^0.3.57",
     "@magda/esm-utils": "^1.0.1",
+    "@magda/minion-framework": "^5.2.0",
+    "@magda/typescript-common": "^5.2.0",
     "@opensearch-project/opensearch": "^3.5.1",
     "cross-fetch": "^4.0.0",
     "uuid": "^8.2.0",
@@ -58,7 +61,8 @@
     }
   },
   "_moduleMappings": {
-    "magda-semantic-indexer-framework/src": "@magda/semantic-indexer-framework/dist"
+    "magda-typescript-common/src": "@magda/typescript-common/dist",
+    "magda-minion-framework/src": "@magda/minion-framework/dist"
   },
   "keywords": [
     "Magda",

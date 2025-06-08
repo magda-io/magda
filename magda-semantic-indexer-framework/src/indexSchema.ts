@@ -10,7 +10,7 @@ export function createSemanticIndexerMapping() {
         throw new Error("compressionLevel and encoder cannot be used together");
     }
 
-    const mapping = {
+    return {
         indexName: config.elasticSearch.indices.semanticIndex.indexName,
         settings: {
             index: {
@@ -72,8 +72,6 @@ export function createSemanticIndexerMapping() {
             }
         }
     };
-
-    return mapping;
 }
 
 export interface SemanticIndexDocument {

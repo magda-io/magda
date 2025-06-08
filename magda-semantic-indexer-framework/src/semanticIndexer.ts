@@ -1,7 +1,7 @@
 import minion from "magda-minion-framework/src/index.js";
 import { config } from "./config.js";
 import { Chunker } from "./chunker.js";
-import { FixedLengthChunkStrategy } from "./chunker.js";
+import { RecursiveChunkStrategy } from "./chunker.js";
 import { onRecordFoundRegistryRecord } from "./onRecordFoundRegistryRecord.js";
 import { onRecordFoundStorageObject } from "./onRecordFoundStorageObject.js";
 import { createSemanticIndexerMapping } from "./indexSchema.js";
@@ -59,8 +59,8 @@ export default async function semanticIndexer(
         }
 
         const chunker = new Chunker(
-            new FixedLengthChunkStrategy(
-                userConfig.chunkSize || config.default.chunkSize,
+            new RecursiveChunkStrategy(
+                userConfig.chunkSizeLimit || config.default.chunkSizeLimit,
                 userConfig.overlap || config.default.overlap
             )
         );
