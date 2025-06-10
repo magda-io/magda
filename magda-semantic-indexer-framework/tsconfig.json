@@ -4,8 +4,7 @@
         "outDir": "./dist",
         "strictNullChecks": false,
         "rootDir": "./src",
-        "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-        "declarationMap": true
+        "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
     },
     "include": ["./src"],
     "references": [
