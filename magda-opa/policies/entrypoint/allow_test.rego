@@ -1,6 +1,8 @@
 package entrypoint
 
-test_allow_non_admin_should_have_no_permission_to_not_defined_resource {
+import rego.v1
+
+test_allow_non_admin_should_have_no_permission_to_not_defined_resource if {
 	not allow with input as {
 		"operationUri": "object/test-any-object/test-any-operation",
 		"user": {
@@ -58,7 +60,7 @@ test_allow_non_admin_should_have_no_permission_to_not_defined_resource {
 	}
 }
 
-test_allow_admin_should_have_permission_to_not_defined_resource {
+test_allow_admin_should_have_permission_to_not_defined_resource if {
 	allow with input as {
 		"operationUri": "object/test-any-object/test-any-operation",
 		"user": {
@@ -67,13 +69,11 @@ test_allow_admin_should_have_permission_to_not_defined_resource {
 			"id": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
 			"permissions": [],
 			"photoURL": "//www.gravatar.com/avatar/bed026a33c154abec6852b4e313bf1ce",
-			"roles": [
-				{
-					"id": "00000000-0000-0003-0000-000000000000",
-					"name": "Admin Users",
-					"permissionIds": []
-				}
-			],
+			"roles": [{
+				"id": "00000000-0000-0003-0000-000000000000",
+				"name": "Admin Users",
+				"permissionIds": [],
+			}],
 			"source": "ckan",
 		},
 	}

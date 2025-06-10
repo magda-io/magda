@@ -1,8 +1,10 @@
 package object.accessGroup
 
+import rego.v1
+
 import data.common.hasNoConstraintPermission
 
-default allow = false
+default allow := false
 
 # `object/accessGroup` resource currently only support two operations: `object/accessGroup/create` & `object/accessGroup/read`
 # the creation should done via API `POST /auth/accessGroup`
@@ -11,7 +13,6 @@ default allow = false
 # e.g. `object/record/update` or `object/record/delete`
 # `object/accessGroup/read` is only created for frontend to determine whether the access group related UI is available to a user.
 # The actual read access is secured via resource operation `object/record/read` over access group records
-allow {
-    hasNoConstraintPermission(input.operationUri)
+allow if {
+	hasNoConstraintPermission(input.operationUri)
 }
-

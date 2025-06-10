@@ -1,5 +1,5 @@
 package system
 
-echo[x] {
-    x := input
-}
+import rego.v1
+
+echo contains input
