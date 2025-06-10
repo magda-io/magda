@@ -3,23 +3,22 @@ import { ItemType } from "../indexSchema.js";
 import { CreateEmbeddingText } from "../createEmbeddingText.js";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api.js";
 import { expect } from "chai";
-import { SemanticIndexerArguments } from "../commonSemanticIndexerYargs.js";
+import { commonYargs } from "../commonYargs.js";
 
 export function createFakeSemanticIndexerConfig<T extends ItemType>(
     overrideConfig: Partial<SemanticIndexerOptions> = {}
 ): SemanticIndexerOptions {
+    const originalEnv = process.env;
+    process.env = {
+        ...originalEnv,
+        JWT_SECRET: "test-secret",
+        USER_ID: "test-user"
+    };
+
+    const commonArgs = commonYargs(6100, "http://localhost:6100");
+    process.env = originalEnv;
     const defaultConfig: SemanticIndexerOptions = {
-        argv: {
-            internalUrl: "http://localhost:6100",
-            registryUrl: "http://localhost:6101",
-            enableMultiTenant: false,
-            tenantUrl: "",
-            jwtSecret: "test-secret",
-            userId: "test-user",
-            listenPort: 6100,
-            embeddingApiUrl: "http://localhost:3000",
-            elasticSearchUrl: "http://localhost:9200"
-        } as SemanticIndexerArguments,
+        argv: commonArgs,
         id: "test-minion",
         itemType: (overrideConfig.itemType ?? "registryRecord") as T,
         aspects: ["test-aspect"],

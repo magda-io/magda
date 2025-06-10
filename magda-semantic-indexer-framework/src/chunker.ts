@@ -7,8 +7,10 @@ export interface ChunkResult {
     overlap: number;
 }
 
+export type ChunkStrategyType = (text: string) => Promise<ChunkResult[]>;
+
 export interface ChunkStrategy {
-    chunk(text: string): Promise<ChunkResult[]>;
+    chunk: ChunkStrategyType;
 }
 
 export class Chunker {
@@ -19,6 +21,18 @@ export class Chunker {
 
     async chunk(text: string): Promise<ChunkResult[]> {
         return this.strategy.chunk(text);
+    }
+}
+
+export class UserDefinedChunkStrategy implements ChunkStrategy {
+    private chunkFunction: ChunkStrategyType;
+
+    constructor(chunkFunction: ChunkStrategyType) {
+        this.chunkFunction = chunkFunction;
+    }
+
+    async chunk(text: string): Promise<ChunkResult[]> {
+        return this.chunkFunction(text);
     }
 }
 

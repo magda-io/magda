@@ -9,6 +9,30 @@ global:
       # - deploy and reindex the data by requesting full index action via indexer `reindex` API.
       # When upgrade from older version, no manual actions are required (as a new index will be auto-created based on the index version number).
       enabled: true
+    semanticIndexer:
+      chunkSizeLimit: 512
+      overlap: 50
+      elasticSearch:
+        serverUrl: "http://opensearch:9200"
+        indices:
+          semanticIndex:
+            indexName: "semantic-index"
+            settings:
+              number_of_shards: 1
+              number_of_replicas: 0
+            knnVectorFieldConfig:
+              mode: "in_memory"
+              dimension: 768
+              spaceType: "l2"
+              efConstruction: 100
+              efSearch: 100
+              m: 16
+              encoder:
+                name: "sq"
+                type: "fp16"
+                clip: false
+      embeddingApi:
+        baseUrl: "http://magda-embedding-api"
   postgresql:
     # -- PostgreSQL username
     # For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`.

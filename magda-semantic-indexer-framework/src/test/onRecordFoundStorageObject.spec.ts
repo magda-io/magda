@@ -5,7 +5,7 @@ import {
     createFakeSemanticIndexerConfig,
     createRecord,
     expectNoThrowsAsync
-} from "./util.js";
+} from "./helpers.js";
 import fs from "fs";
 import nock from "nock";
 

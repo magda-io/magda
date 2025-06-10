@@ -1,21 +1,26 @@
-import { config } from "./config.js";
+import { SemanticIndexerOptions } from "./index.js";
 
-export type ItemType = "registryRecord" | "storageObject";
+const SEMANTIC_INDEX_VERSION = 1;
 
-export function createSemanticIndexerMapping() {
-    const knnVectorFieldConfig =
-        config.elasticSearch.indices.semanticIndex.knnVectorFieldConfig;
+export function createSemanticIndexerMapping(options: SemanticIndexerOptions) {
+    const indexConfig =
+        options.argv.semanticIndexerConfig.semanticIndexer.elasticSearch.indices
+            .semanticIndex;
+    const knnVectorFieldConfig = indexConfig.knnVectorFieldConfig;
 
-    if (knnVectorFieldConfig.compressionLevel && knnVectorFieldConfig.encoder) {
+    if (
+        indexConfig.knnVectorFieldConfig.compressionLevel &&
+        indexConfig.knnVectorFieldConfig.encoder
+    ) {
         throw new Error("compressionLevel and encoder cannot be used together");
     }
 
     return {
-        indexName: config.elasticSearch.indices.semanticIndex.indexName,
+        indexName: `${indexConfig.indexName}-${SEMANTIC_INDEX_VERSION}`,
         settings: {
             index: {
-                number_of_shards: 1,
-                number_of_replicas: 1
+                number_of_shards: indexConfig.settings.number_of_shards,
+                number_of_replicas: indexConfig.settings.number_of_replicas
             },
             "index.knn": true
         },
@@ -73,6 +78,8 @@ export function createSemanticIndexerMapping() {
         }
     };
 }
+
+export type ItemType = "registryRecord" | "storageObject";
 
 export interface SemanticIndexDocument {
     itemType: ItemType;

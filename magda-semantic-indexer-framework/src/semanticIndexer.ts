@@ -1,28 +1,33 @@
 import minion from "magda-minion-framework/src/index.js";
-import { config } from "./config.js";
-import { Chunker } from "./chunker.js";
-import { RecursiveChunkStrategy } from "./chunker.js";
+import {
+    Chunker,
+    UserDefinedChunkStrategy,
+    RecursiveChunkStrategy
+} from "./chunker.js";
 import { onRecordFoundRegistryRecord } from "./onRecordFoundRegistryRecord.js";
 import { onRecordFoundStorageObject } from "./onRecordFoundStorageObject.js";
 import { createSemanticIndexerMapping } from "./indexSchema.js";
 import EmbeddingApiClient from "magda-typescript-common/src/EmbeddingApiClient.js";
 import OpensearchApiClient from "magda-typescript-common/src/OpensearchApiClient.js";
-import SemanticIndexerOptions from "./semanticIndexerOptions.js";
+import SemanticIndexerOptions, {
+    validateSemanticIndexerOptions
+} from "./semanticIndexerOptions.js";
 import MinionOptions, {
     onRecordFoundType
 } from "magda-minion-framework/src/MinionOptions.js";
 import retry from "magda-typescript-common/src/retry.js";
-import { validateSemanticIndexerOptions } from "./semanticIndexerOptions.js";
 
 export default async function semanticIndexer(
     userConfig: SemanticIndexerOptions
 ) {
     try {
         validateSemanticIndexerOptions(userConfig);
+        const semanticIndexerConfig =
+            userConfig.argv.semanticIndexerConfig.semanticIndexer;
         const opensearchApiClient = await retry(
             () =>
                 OpensearchApiClient.getOpensearchApiClient({
-                    url: userConfig.argv.elasticSearchUrl
+                    url: semanticIndexerConfig.elasticSearch.serverUrl
                 }),
             5,
             5,
@@ -37,7 +42,7 @@ export default async function semanticIndexer(
             () =>
                 Promise.resolve(
                     new EmbeddingApiClient({
-                        baseApiUrl: userConfig.argv.embeddingApiUrl
+                        baseApiUrl: semanticIndexerConfig.embeddingApi.baseUrl
                     })
                 ),
             5,
@@ -49,21 +54,25 @@ export default async function semanticIndexer(
                 )
         );
 
-        const indexDefinition = createSemanticIndexerMapping();
+        const indexDefinition = createSemanticIndexerMapping(userConfig);
         if (
             !(await opensearchApiClient.indexExists(
-                config.elasticSearch.indices.semanticIndex.indexName
+                semanticIndexerConfig.elasticSearch.indices.semanticIndex
+                    .indexName
             ))
         ) {
             await opensearchApiClient.createIndex(indexDefinition);
         }
 
-        const chunker = new Chunker(
-            new RecursiveChunkStrategy(
-                userConfig.chunkSizeLimit || config.default.chunkSizeLimit,
-                userConfig.overlap || config.default.overlap
-            )
-        );
+        const chunkStrategy = userConfig.chunkStrategy
+            ? new UserDefinedChunkStrategy(userConfig.chunkStrategy)
+            : new RecursiveChunkStrategy(
+                  userConfig.chunkSizeLimit ||
+                      semanticIndexerConfig.chunkSizeLimit,
+                  userConfig.overlap || semanticIndexerConfig.overlap
+              );
+
+        const chunker = new Chunker(chunkStrategy);
 
         let onRecordFound: onRecordFoundType;
         let minionOptions: MinionOptions;

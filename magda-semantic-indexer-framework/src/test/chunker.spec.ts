@@ -4,12 +4,12 @@ import {
     FixedLengthChunkStrategy,
     RecursiveChunkStrategy
 } from "../chunker.js";
-import { expectThrowsAsync } from "./util.js";
+import { expectThrowsAsync } from "./helpers.js";
 
-describe("TokenBasedChunker", () => {
+describe("RecursiveChunker", () => {
     it("should chunk the text into smaller chunks with proper overlapping", async () => {
         const text =
-            "This is a test text, for testing the token-based chunker.";
+            "This is a test text, for testing the recursive chunking strategy.";
         const chunkSize = 10;
         const overlap = 4;
         const chunker = new Chunker(
