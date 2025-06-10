@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { indexEmbeddingText } from "../indexEmbeddingText.js";
-import { createFakeSemanticIndexerConfig } from "./util.js";
+import { createFakeSemanticIndexerConfig } from "./helpers.js";
 
 describe("indexEmbeddingText", () => {
     let chunker: any;

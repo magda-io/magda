@@ -1,6 +1,7 @@
 import { ItemType } from "./indexSchema.js";
 import { CreateEmbeddingText } from "./createEmbeddingText.js";
-import { SemanticIndexerArguments } from "./commonSemanticIndexerYargs.js";
+import { SemanticIndexerArguments } from "./commonYargs.js";
+import { ChunkStrategyType } from "./chunker.js";
 
 export default interface SemanticIndexerOptions {
     argv: SemanticIndexerArguments;
@@ -10,6 +11,7 @@ export default interface SemanticIndexerOptions {
     optionalAspects?: string[];
     formatTypes?: string[];
     createEmbeddingText: CreateEmbeddingText;
+    chunkStrategy?: ChunkStrategyType;
     chunkSizeLimit?: number;
     overlap?: number;
     autoDownloadFile?: boolean;

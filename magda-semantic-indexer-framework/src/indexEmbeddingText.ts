@@ -9,7 +9,6 @@ import {
     SemanticIndexDocument
 } from "./indexSchema.js";
 import { v4 as uuidv4 } from "uuid";
-import { config } from "./config.js";
 
 export async function indexEmbeddingText(
     options: SemanticIndexerOptions,
@@ -95,7 +94,8 @@ async function processSingleText(
         if (documents.length >= bulkSize) {
             try {
                 await opensearchApiClient.bulkIndexDocument(
-                    config.elasticSearch.indices.semanticIndex.indexName,
+                    options.argv.semanticIndexerConfig.semanticIndexer
+                        .elasticSearch.serverUrl,
                     documents
                 );
             } catch (e) {
@@ -111,7 +111,8 @@ async function processSingleText(
     if (documents.length > 0) {
         try {
             await opensearchApiClient.bulkIndexDocument(
-                config.elasticSearch.indices.semanticIndex.indexName,
+                options.argv.semanticIndexerConfig.semanticIndexer.elasticSearch
+                    .indices.semanticIndex.indexName,
                 documents
             );
         } catch (e) {
