@@ -6,6 +6,7 @@
 - #3603: allow dataset editor tool UI notify popup launcher via postMessage
 - Fix: The publishing organisation selection dropdown menu should not be obscured by other input elements.
 - When the dataset editor tool UI is opened in the popup mode, the `save & button` will display the end page to the user rather than redirect the user to the draft dataset list.
+- Fix: SQLConsole incorrect source function 0 index on distribution pages
 
 ## v5.2.0
 
