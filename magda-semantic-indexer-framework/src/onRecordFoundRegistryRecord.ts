@@ -5,7 +5,7 @@ import OpensearchApiClient from "magda-typescript-common/src/OpensearchApiClient
 import SemanticIndexerOptions from "./semanticIndexerOptions.js";
 import { indexEmbeddingText } from "./indexEmbeddingText.js";
 import { Record } from "magda-typescript-common/src/generated/registry/api.js";
-import { SkipError } from "./skipError.js";
+import { SkipError } from "./SkipError.js";
 
 export const onRecordFoundRegistryRecord = (
     userConfig: SemanticIndexerOptions,

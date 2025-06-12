@@ -1,12 +1,12 @@
-interface ElasticSearchConfig {
+interface OpensearchConfig {
     serverUrl: string;
+    bulkIndexSize: number;
     indices: {
         semanticIndex: {
             indexName: string;
-            settings: {
-                number_of_shards: number;
-                number_of_replicas: number;
-            };
+            indexVersion: number;
+            numberOfShards: number;
+            numberOfReplicas: number;
             knnVectorFieldConfig: {
                 mode: string;
                 dimension: number;
@@ -27,13 +27,24 @@ interface ElasticSearchConfig {
 
 interface EmbeddingApiConfig {
     baseUrl: string;
+    bulkEmbeddingsSize: number;
+}
+
+export interface MinioConfig {
+    endPoint: string;
+    port: number;
+    useSSL: boolean;
+    accessKey: string;
+    secretKey: string;
+    region: string;
+    defaultDatasetBucket: string;
 }
 
 export interface SemanticIndexerConfig {
     semanticIndexer: {
         chunkSizeLimit: number;
         overlap: number;
-        elasticSearch: ElasticSearchConfig;
+        opensearch: OpensearchConfig;
         embeddingApi: EmbeddingApiConfig;
     };
 }
