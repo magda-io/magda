@@ -27,7 +27,7 @@ export default async function semanticIndexer(
         const opensearchApiClient = await retry(
             () =>
                 OpensearchApiClient.getOpensearchApiClient({
-                    url: semanticIndexerConfig.elasticSearch.serverUrl
+                    url: semanticIndexerConfig.opensearch.serverUrl
                 }),
             5,
             5,
@@ -54,13 +54,12 @@ export default async function semanticIndexer(
                 )
         );
 
-        const indexDefinition = createSemanticIndexerMapping(userConfig);
         if (
             !(await opensearchApiClient.indexExists(
-                semanticIndexerConfig.elasticSearch.indices.semanticIndex
-                    .indexName
+                semanticIndexerConfig.opensearch.indices.semanticIndex.indexName
             ))
         ) {
+            const indexDefinition = createSemanticIndexerMapping(userConfig);
             await opensearchApiClient.createIndex(indexDefinition);
         }
 

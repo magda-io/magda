@@ -8,11 +8,14 @@ import { EmbeddingText } from "./createEmbeddingText.js";
 import { Record } from "magda-typescript-common/src/generated/registry/api.js";
 import retry from "magda-typescript-common/src/retry.js";
 import fetch from "node-fetch";
-import { promises as fs } from "fs";
+import * as fs from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
-import { SkipError } from "./skipError.js";
+import { SkipError } from "./SkipError.js";
+import * as Minio from "minio";
+import urijs from "urijs";
+import { MinioConfig } from "./configType.js";
 
 export const onRecordFoundStorageObject = (
     userConfig: SemanticIndexerOptions,
@@ -31,19 +34,20 @@ export const onRecordFoundStorageObject = (
                         dist.aspects?.["dataset-format"]?.format;
                     const dcatDist =
                         dist.aspects?.["dcat-distribution-strings"];
-                    const { format: dcatFormat, downloadURL, mediaType } =
-                        dcatDist || {};
-                    if (datasetFormat) {
-                        format = datasetFormat;
-                    } else if (dcatFormat) {
-                        format = dcatFormat;
-                    } else {
-                        format = mediaType;
-                    }
+                    const {
+                        format: dcatFormat,
+                        downloadURL,
+                        mediaType,
+                        accessURL
+                    } = dcatDist || {};
+                    const fileDownloadURL = downloadURL
+                        ? downloadURL
+                        : accessURL;
+                    format = datasetFormat || dcatFormat || mediaType;
 
                     if (
                         !format ||
-                        !downloadURL ||
+                        !fileDownloadURL ||
                         !userConfig.formatTypes?.some((f) =>
                             format.toLowerCase().includes(f.toLowerCase())
                         )
@@ -55,24 +59,23 @@ export const onRecordFoundStorageObject = (
                     let filePath: string | null = null;
                     if (userConfig.autoDownloadFile) {
                         try {
-                            try {
-                                filePath = await downloadFileWithRetry(
-                                    downloadURL
-                                );
-                            } catch (err) {
-                                throw new SkipError(
-                                    `Failed to download file, error: ${
-                                        (err as Error).message
-                                    }`
-                                );
-                            }
+                            filePath = await downloadFileWithRetry(
+                                fileDownloadURL,
+                                userConfig.argv.minioConfig
+                            );
                             embeddingText = await userConfig.createEmbeddingText(
                                 {
                                     record,
                                     format: format,
                                     filePath: filePath,
-                                    url: downloadURL
+                                    url: fileDownloadURL
                                 }
+                            );
+                        } catch (err) {
+                            throw new SkipError(
+                                `Failed to create embedding text, error: ${
+                                    (err as Error).message
+                                }`
                             );
                         } finally {
                             if (filePath) {
@@ -84,9 +87,10 @@ export const onRecordFoundStorageObject = (
                             record,
                             format: format,
                             filePath: null,
-                            url: downloadURL
+                            url: fileDownloadURL
                         });
                     }
+
                     try {
                         await indexEmbeddingText(
                             userConfig,
@@ -125,9 +129,12 @@ export const onRecordFoundStorageObject = (
     };
 };
 
-async function downloadFileWithRetry(url: string): Promise<string> {
+async function downloadFileWithRetry(
+    url: string,
+    minioConfig: MinioConfig
+): Promise<string> {
     return retry(
-        () => downloadFile(url),
+        () => downloadFile(url, minioConfig),
         1,
         5,
         (err, retries) => {
@@ -138,7 +145,15 @@ async function downloadFileWithRetry(url: string): Promise<string> {
     );
 }
 
-async function downloadFile(url: string): Promise<string> {
+async function downloadFile(
+    url: string,
+    minioConfig: MinioConfig
+): Promise<string> {
+    const uri = urijs(url);
+    if (uri.protocol() === "magda" && uri.hostname() === "storage-api") {
+        return downloadFileFromMinio(url, minioConfig);
+    }
+
     const response = await fetch(url);
     if (!response.ok) {
         throw new SkipError(`${response.status} ${response.statusText}`);
@@ -147,18 +162,80 @@ async function downloadFile(url: string): Promise<string> {
     const tempDir = tmpdir();
     const tempFileName = `${uuidv4()}`;
     const tempFilePath = join(tempDir, tempFileName);
+    let writeStream: fs.WriteStream;
 
-    const fileStream = await fs.open(tempFilePath, "w");
-    await fileStream.write(Buffer.from(await response.arrayBuffer()));
-    await fileStream.close();
+    try {
+        writeStream = fs.createWriteStream(tempFilePath);
+        await new Promise((resolve, reject) => {
+            response.body
+                .pipe(writeStream)
+                .on("error", (err) =>
+                    reject(
+                        new SkipError(`Failed to write file: ${err.message}`)
+                    )
+                )
+                .on("finish", resolve);
+        });
+        return tempFilePath;
+    } catch (err) {
+        await deleteTempFile(tempFilePath);
+        throw err;
+    } finally {
+        if (writeStream) {
+            writeStream.end();
+        }
+    }
+}
 
-    return tempFilePath;
+let minioClientInstance: Minio.Client | null = null;
+
+function getMinioClient(config: MinioConfig): Minio.Client {
+    if (!minioClientInstance) {
+        minioClientInstance = new Minio.Client({
+            endPoint: config.endPoint,
+            port: config.port,
+            accessKey: config.accessKey,
+            secretKey: config.secretKey,
+            useSSL: config.useSSL,
+            region: config.region
+        });
+    }
+    return minioClientInstance;
+}
+
+async function downloadFileFromMinio(
+    url: string,
+    minioConfig: MinioConfig
+): Promise<string> {
+    const uri = urijs(url);
+    const [datasetId, distributionId, fileName] = uri.segmentCoded();
+
+    const minioClient = getMinioClient(minioConfig);
+    const objectName = `${datasetId}/${distributionId}/${fileName}`;
+
+    const tempDir = tmpdir();
+    const tempFileName = `${uuidv4()}`;
+    const tempFilePath = join(tempDir, tempFileName);
+
+    try {
+        await minioClient.fGetObject(
+            minioConfig.defaultDatasetBucket,
+            objectName,
+            tempFilePath
+        );
+        return tempFilePath;
+    } catch (err) {
+        await deleteTempFile(tempFilePath);
+        throw err;
+    }
 }
 
 async function deleteTempFile(filePath: string) {
-    try {
-        await fs.unlink(filePath);
-    } catch (err) {
-        console.warn(`Failed to delete temp file: ${filePath}`, err);
+    if (fs.existsSync(filePath)) {
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error("Error deleting file:", err);
+            }
+        });
     }
 }

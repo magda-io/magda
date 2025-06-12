@@ -2,11 +2,17 @@ import { SemanticIndexerOptions } from "./index.js";
 
 const SEMANTIC_INDEX_VERSION = 1;
 
-export function createSemanticIndexerMapping(options: SemanticIndexerOptions) {
+export function createSemanticIndexerMapping(config: SemanticIndexerOptions) {
     const indexConfig =
-        options.argv.semanticIndexerConfig.semanticIndexer.elasticSearch.indices
+        config.argv.semanticIndexerConfig.semanticIndexer.opensearch.indices
             .semanticIndex;
     const knnVectorFieldConfig = indexConfig.knnVectorFieldConfig;
+
+    if (indexConfig.indexVersion !== SEMANTIC_INDEX_VERSION) {
+        throw new Error(
+            `Index version mismatch. Expected ${SEMANTIC_INDEX_VERSION}, got ${indexConfig.indexVersion}`
+        );
+    }
 
     if (
         indexConfig.knnVectorFieldConfig.compressionLevel &&
@@ -19,8 +25,8 @@ export function createSemanticIndexerMapping(options: SemanticIndexerOptions) {
         indexName: `${indexConfig.indexName}-${SEMANTIC_INDEX_VERSION}`,
         settings: {
             index: {
-                number_of_shards: indexConfig.settings.number_of_shards,
-                number_of_replicas: indexConfig.settings.number_of_replicas
+                number_of_shards: indexConfig.numberOfShards,
+                number_of_replicas: indexConfig.numberOfReplicas
             },
             "index.knn": true
         },
