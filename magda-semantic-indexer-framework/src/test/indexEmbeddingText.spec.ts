@@ -73,6 +73,8 @@ describe("indexEmbeddingText", () => {
             itemType: "storageObject",
             formatTypes: ["txt"]
         });
+        config.argv.semanticIndexerConfig.semanticIndexer.opensearch.bulkIndexSize = 3;
+        config.argv.semanticIndexerConfig.semanticIndexer.embeddingApi.bulkEmbeddingsSize = 3;
 
         await indexEmbeddingText(
             config,

@@ -16,19 +16,20 @@ global:
       # -- The number of overlapping tokens between chunks.
       overlap: 50
 
-      # -- Elasticsearch configuration.
-      elasticSearch:
-        serverUrl: "http://opensearch:9200"
+      # -- OpenSearch configuration.
+      opensearch:
         indices:
           semanticIndex:
             indexName: "semantic-index"
+            
+            # -- System wide agreed version.
+            indexVersion: 1
 
-            settings:
-              # -- The number of primary shards in the index.
-              number_of_shards: 1
+            # -- The number of primary shards in the index.
+            numberOfShards: 1
 
-              # -- The number of replica shards in the index.
-              number_of_replicas: 0
+            # -- The number of replica shards in the index.
+            numberOfReplicas: 0
 
             knnVectorFieldConfig:
               # -- Vector workload mode: `on_disk` or `in_memory`.
@@ -57,8 +58,6 @@ global:
                 name: "sq"
                 type: "fp16"
                 clip: false
-      embeddingApi:
-        baseUrl: "http://magda-embedding-api"
   postgresql:
     # -- PostgreSQL username
     # For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`.
