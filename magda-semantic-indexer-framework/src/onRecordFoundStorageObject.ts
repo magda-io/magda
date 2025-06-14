@@ -16,6 +16,7 @@ import { SkipError } from "./SkipError.js";
 import * as Minio from "minio";
 import urijs from "urijs";
 import { MinioConfig } from "./configType.js";
+import { pipeline } from "stream/promises";
 
 export const onRecordFoundStorageObject = (
     userConfig: SemanticIndexerOptions,
@@ -95,13 +96,11 @@ export const onRecordFoundStorageObject = (
                         await indexEmbeddingText(
                             userConfig,
                             embeddingText,
-                            {
-                                recordId: record.id,
-                                fileFormat: format
-                            },
                             chunker,
                             embeddingApiClient,
-                            opensearchApiClient
+                            opensearchApiClient,
+                            record.id,
+                            format
                         );
                     } catch (err) {
                         throw new SkipError(
@@ -159,31 +158,21 @@ async function downloadFile(
         throw new SkipError(`${response.status} ${response.statusText}`);
     }
 
+    if (!response.body) {
+        throw new SkipError("No response body to write to file");
+    }
+
     const tempDir = tmpdir();
     const tempFileName = `${uuidv4()}`;
     const tempFilePath = join(tempDir, tempFileName);
-    let writeStream: fs.WriteStream;
 
     try {
-        writeStream = fs.createWriteStream(tempFilePath);
-        await new Promise((resolve, reject) => {
-            response.body
-                .pipe(writeStream)
-                .on("error", (err) =>
-                    reject(
-                        new SkipError(`Failed to write file: ${err.message}`)
-                    )
-                )
-                .on("finish", resolve);
-        });
+        const writeStream = fs.createWriteStream(tempFilePath);
+        await pipeline(response.body, writeStream);
         return tempFilePath;
     } catch (err) {
         await deleteTempFile(tempFilePath);
-        throw err;
-    } finally {
-        if (writeStream) {
-            writeStream.end();
-        }
+        throw new SkipError(`Failed to write file`);
     }
 }
 

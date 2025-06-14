@@ -40,12 +40,10 @@ export const onRecordFoundRegistryRecord = (
             await indexEmbeddingText(
                 userConfig,
                 embeddingText,
-                {
-                    recordId: record.id
-                },
                 chunker,
                 embeddingApiClient,
-                opensearchApiClient
+                opensearchApiClient,
+                record.id
             );
         } catch (err) {
             if (err instanceof SkipError) {

@@ -16,6 +16,9 @@ global:
       # -- The number of overlapping tokens between chunks.
       overlap: 50
 
+      bulkEmbeddingsSize: 1
+      bulkIndexSize: 50
+
       # -- OpenSearch configuration.
       opensearch:
         indices:
@@ -58,6 +61,7 @@ global:
                 name: "sq"
                 type: "fp16"
                 clip: false
+            
   postgresql:
     # -- PostgreSQL username
     # For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`.
