@@ -9,9 +9,10 @@ export const defaultConfig: SemanticIndexerConfig = {
     semanticIndexer: {
         chunkSizeLimit: 100,
         overlap: 10,
+        bulkEmbeddingsSize: 1,
+        bulkIndexSize: 50,
         opensearch: {
             serverUrl: "http://localhost:9200",
-            bulkIndexSize: 1,
             indices: {
                 semanticIndex: {
                     indexName: "semantic-index",
@@ -35,8 +36,7 @@ export const defaultConfig: SemanticIndexerConfig = {
             }
         },
         embeddingApi: {
-            baseUrl: "http://localhost:3000",
-            bulkEmbeddingsSize: 1
+            baseUrl: "http://localhost:3000"
         }
     }
 };

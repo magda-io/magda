@@ -29,10 +29,11 @@ describe("indexEmbeddingText", () => {
         await indexEmbeddingText(
             config,
             embeddingTextResult,
-            { recordId: "id1", fileFormat: "csv" },
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            "id1",
+            "csv"
         );
 
         expect(chunker.chunk.calledOnce).to.be.true;
@@ -73,16 +74,17 @@ describe("indexEmbeddingText", () => {
             itemType: "storageObject",
             formatTypes: ["txt"]
         });
-        config.argv.semanticIndexerConfig.semanticIndexer.opensearch.bulkIndexSize = 3;
-        config.argv.semanticIndexerConfig.semanticIndexer.embeddingApi.bulkEmbeddingsSize = 3;
+        config.argv.semanticIndexerConfig.semanticIndexer.bulkIndexSize = 3;
+        config.argv.semanticIndexerConfig.semanticIndexer.bulkEmbeddingsSize = 3;
 
         await indexEmbeddingText(
             config,
             embeddingTextResult,
-            { recordId: "id2", fileFormat: "txt" },
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            "id2",
+            "txt"
         );
 
         expect(chunker.chunk.calledOnce).to.be.true;
@@ -158,10 +160,11 @@ describe("indexEmbeddingText", () => {
         await indexEmbeddingText(
             config,
             embeddingTextResult,
-            { recordId: "id4", fileFormat: "csv" },
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            "id4",
+            "csv"
         );
 
         expect(chunker.chunk.callCount).to.equal(3);

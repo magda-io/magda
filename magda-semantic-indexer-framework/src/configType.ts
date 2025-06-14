@@ -1,6 +1,5 @@
 interface OpensearchConfig {
     serverUrl: string;
-    bulkIndexSize: number;
     indices: {
         semanticIndex: {
             indexName: string;
@@ -27,7 +26,6 @@ interface OpensearchConfig {
 
 interface EmbeddingApiConfig {
     baseUrl: string;
-    bulkEmbeddingsSize: number;
 }
 
 export interface MinioConfig {
@@ -44,6 +42,8 @@ export interface SemanticIndexerConfig {
     semanticIndexer: {
         chunkSizeLimit: number;
         overlap: number;
+        bulkEmbeddingsSize: number;
+        bulkIndexSize: number;
         opensearch: OpensearchConfig;
         embeddingApi: EmbeddingApiConfig;
     };
