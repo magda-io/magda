@@ -1,7 +1,7 @@
 {
   "name": "@magda/semantic-indexer-framework",
   "description": "MAGDA Semantic Indexer Framework",
-  "version": "5.2.0",
+  "version": "6.0.0-alpha.3",
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
@@ -22,7 +22,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^5.2.0",
+    "@magda/scripts": "^6.0.0-alpha.3",
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/uuid": "^8.0.0",
@@ -34,8 +34,8 @@
   "dependencies": {
     "@langchain/core": "^0.3.57",
     "@magda/esm-utils": "^1.0.1",
-    "@magda/minion-framework": "^5.2.0",
-    "@magda/typescript-common": "^5.2.0",
+    "@magda/minion-framework": "^6.0.0-alpha.3",
+    "@magda/typescript-common": "^6.0.0-alpha.3",
     "@opensearch-project/opensearch": "^3.5.1",
     "@types/lodash": "^4.17.17",
     "cross-fetch": "^4.0.0",
