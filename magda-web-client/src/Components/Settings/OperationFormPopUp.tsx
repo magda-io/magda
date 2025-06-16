@@ -90,8 +90,8 @@ const OperationFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     const model = Schema.Model({
         uri: Schema.Types.StringType(),
         localUri: Schema.Types.StringType().pattern(
-            /^[a-zA-Z0-9-*]+(\/[a-zA-Z0-9-*]+)*$/,
-            "Please enter a valid format (alphanumeric characters plus `*` and `-` with `/` as segment separator)."
+            /^(?:[a-zA-Z0-9_-]+|\*{1,2})(?:\/(?:[a-zA-Z0-9_-]+|\*{1,2}))*$/,
+            "Please enter a valid format (alphanumeric characters plus `_` and `-` with `/` as segment separator and `*` or `**` as wildcard segment name)."
         ),
         hasPopulateLocalUri: Schema.Types.BooleanType(),
         name: Schema.Types.StringType().isRequired("This field is required."),

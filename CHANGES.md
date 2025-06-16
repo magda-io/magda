@@ -7,6 +7,8 @@
 - Fix: The publishing organisation selection dropdown menu should not be obscured by other input elements.
 - When the dataset editor tool UI is opened in the popup mode, the `save & button` will display the end page to the user rather than redirect the user to the draft dataset list.
 - Fix: SQLConsole incorrect source function 0 index on distribution pages
+- Adjusted allowed characters on "resource" / "operation" forms
+- Reset the "resource" form content properly after the form is saved and closed
 
 ## v5.2.0
 
