@@ -31,7 +31,7 @@ export const onRecordFoundRegistryRecord = (
                 });
             } catch (err) {
                 throw new SkipError(
-                    `Failed to create embedding text, error: ${
+                    `Error in user-provided createEmbeddingText function: ${
                         (err as Error).message
                     }`
                 );

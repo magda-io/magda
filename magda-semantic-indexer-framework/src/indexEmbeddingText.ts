@@ -213,7 +213,7 @@ async function processSingleText(
     const bulkEmbeddingsSize = semanticIndexerConfig.bulkEmbeddingsSize || 50;
     const bulkIndexSize = semanticIndexerConfig.bulkIndexSize || 1;
     const indexName =
-        semanticIndexerConfig.opensearch.indices.semanticIndex.indexName;
+        semanticIndexerConfig.opensearch.indices.semanticIndex.fullIndexName;
 
     const chunks = await chunker.chunk(textToProcess.text);
     if (!chunks || chunks.length === 0) {

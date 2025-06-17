@@ -36,7 +36,6 @@
     "@magda/esm-utils": "^1.0.1",
     "@magda/minion-framework": "^5.2.0",
     "@magda/typescript-common": "^5.2.0",
-    "@opensearch-project/opensearch": "^3.5.1",
     "@types/lodash": "^4.17.17",
     "cross-fetch": "^4.0.0",
     "minio": "^8.0.5",

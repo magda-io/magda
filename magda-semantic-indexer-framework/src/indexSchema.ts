@@ -22,7 +22,7 @@ export function createSemanticIndexerMapping(config: SemanticIndexerOptions) {
     }
 
     return {
-        indexName: `${indexConfig.indexName}-${SEMANTIC_INDEX_VERSION}`,
+        indexName: indexConfig.fullIndexName,
         settings: {
             index: {
                 number_of_shards: indexConfig.numberOfShards,

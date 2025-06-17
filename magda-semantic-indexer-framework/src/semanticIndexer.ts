@@ -56,7 +56,8 @@ export default async function semanticIndexer(
 
         if (
             !(await opensearchApiClient.indexExists(
-                semanticIndexerConfig.opensearch.indices.semanticIndex.indexName
+                semanticIndexerConfig.opensearch.indices.semanticIndex
+                    .fullIndexName
             ))
         ) {
             const indexDefinition = createSemanticIndexerMapping(userConfig);
@@ -78,7 +79,7 @@ export default async function semanticIndexer(
 
         if (userConfig.itemType === "registryRecord") {
             onRecordFound = onRecordFoundRegistryRecord(
-                userConfig as any,
+                userConfig,
                 chunker,
                 embeddingApiClient,
                 opensearchApiClient
@@ -97,7 +98,7 @@ export default async function semanticIndexer(
             };
         } else if (userConfig.itemType === "storageObject") {
             onRecordFound = onRecordFoundStorageObject(
-                userConfig as any,
+                userConfig,
                 chunker,
                 embeddingApiClient,
                 opensearchApiClient

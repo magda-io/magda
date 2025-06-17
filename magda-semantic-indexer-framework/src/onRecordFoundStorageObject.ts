@@ -30,21 +30,25 @@ export const onRecordFoundStorageObject = (
                 record.aspects["dataset-distributions"]?.distributions || [];
             const tasks = distributions.map(async (dist: any) => {
                 try {
-                    let format: string | null = null;
                     const datasetFormat =
                         dist.aspects?.["dataset-format"]?.format;
                     const dcatDist =
-                        dist.aspects?.["dcat-distribution-strings"];
+                        dist.aspects?.["dcat-distribution-strings"] || {};
                     const {
                         format: dcatFormat,
                         downloadURL,
-                        mediaType,
                         accessURL
-                    } = dcatDist || {};
+                    } = dcatDist;
                     const fileDownloadURL = downloadURL
                         ? downloadURL
                         : accessURL;
-                    format = datasetFormat || dcatFormat || mediaType;
+
+                    let format = datasetFormat || dcatFormat;
+                    if (!format && fileDownloadURL) {
+                        format = new urijs(fileDownloadURL)
+                            .suffix()
+                            .toUpperCase();
+                    }
 
                     if (
                         !format ||
@@ -58,60 +62,52 @@ export const onRecordFoundStorageObject = (
 
                     let embeddingText: EmbeddingText;
                     let filePath: string | null = null;
-                    if (userConfig.autoDownloadFile) {
-                        try {
+
+                    try {
+                        if (userConfig.autoDownloadFile) {
                             filePath = await downloadFileWithRetry(
                                 fileDownloadURL,
                                 userConfig.argv.minioConfig
                             );
+                        }
+
+                        try {
                             embeddingText = await userConfig.createEmbeddingText(
                                 {
                                     record,
                                     format: format,
-                                    filePath: filePath,
+                                    filePath,
                                     url: fileDownloadURL
                                 }
                             );
                         } catch (err) {
                             throw new SkipError(
-                                `Failed to create embedding text, error: ${
+                                `Error in user-provided createEmbeddingText function: ${
                                     (err as Error).message
                                 }`
                             );
-                        } finally {
-                            if (filePath) {
-                                await deleteTempFile(filePath);
-                            }
                         }
-                    } else {
-                        embeddingText = await userConfig.createEmbeddingText({
-                            record,
-                            format: format,
-                            filePath: null,
-                            url: fileDownloadURL
-                        });
+                    } finally {
+                        if (filePath) {
+                            await deleteTempFile(filePath);
+                        }
                     }
 
-                    try {
-                        await indexEmbeddingText(
-                            userConfig,
-                            embeddingText,
-                            chunker,
-                            embeddingApiClient,
-                            opensearchApiClient,
-                            record.id,
-                            format
-                        );
-                    } catch (err) {
-                        throw new SkipError(
-                            `Failed to index embedding text, error: ${
-                                (err as Error).message
-                            }`
-                        );
-                    }
+                    await indexEmbeddingText(
+                        userConfig,
+                        embeddingText,
+                        chunker,
+                        embeddingApiClient,
+                        opensearchApiClient,
+                        record.id,
+                        format
+                    );
                 } catch (err) {
                     if (err instanceof SkipError) {
-                        console.warn("Skipping record because:", err.message);
+                        console.warn(
+                            "Skipping distribution because:",
+                            err.message
+                        );
                         return;
                     }
                     throw err;
@@ -136,11 +132,7 @@ async function downloadFileWithRetry(
         () => downloadFile(url, minioConfig),
         1,
         5,
-        (err, retries) => {
-            console.warn(
-                `Failed to download file, error: ${err.message}, retries: ${retries}`
-            );
-        }
+        (err, retries) => {}
     );
 }
 
@@ -153,9 +145,17 @@ async function downloadFile(
         return downloadFileFromMinio(url, minioConfig);
     }
 
-    const response = await fetch(url);
+    let response;
+    try {
+        response = await fetch(url);
+    } catch (err) {
+        throw new SkipError(`Failed to download file because network error`);
+    }
+
     if (!response.ok) {
-        throw new SkipError(`${response.status} ${response.statusText}`);
+        throw new SkipError(
+            `Failed to download file because HTTP error ${response.status}`
+        );
     }
 
     if (!response.body) {
@@ -164,7 +164,8 @@ async function downloadFile(
 
     const tempDir = tmpdir();
     const tempFileName = `${uuidv4()}`;
-    const tempFilePath = join(tempDir, tempFileName);
+    const suffix = new urijs(url).suffix();
+    const tempFilePath = join(tempDir, `${tempFileName}.${suffix}`);
 
     try {
         const writeStream = fs.createWriteStream(tempFilePath);
@@ -215,7 +216,9 @@ async function downloadFileFromMinio(
         return tempFilePath;
     } catch (err) {
         await deleteTempFile(tempFilePath);
-        throw err;
+        throw new SkipError(
+            `Failed to download file from Minio: ${(err as Error).message}`
+        );
     }
 }
 
@@ -223,7 +226,7 @@ async function deleteTempFile(filePath: string) {
     if (fs.existsSync(filePath)) {
         fs.unlink(filePath, (err) => {
             if (err) {
-                console.error("Error deleting file:", err);
+                console.error("Error deleting file");
             }
         });
     }
