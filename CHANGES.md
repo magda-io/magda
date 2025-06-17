@@ -9,6 +9,7 @@
 - Fix: SQLConsole incorrect source function 0 index on distribution pages
 - Adjusted allowed characters on "resource" / "operation" forms
 - Reset the "resource" form content properly after the form is saved and closed
+- #3606: Increase the default indexer CPU limit from 250m to 1200m as 250m
 
 ## v5.2.0
 

@@ -22,7 +22,7 @@ resources:
     cpu: 100m
     memory: 250Mi
   limits:
-    cpu: 250m
+    cpu: 1200m
     memory: 1100Mi
 
 # -- JVM max allowed heap memory percentage based on `resources.limits.memory`
