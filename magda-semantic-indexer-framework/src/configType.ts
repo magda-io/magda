@@ -4,6 +4,7 @@ interface OpensearchConfig {
         semanticIndex: {
             indexName: string;
             indexVersion: number;
+            fullIndexName?: string;
             numberOfShards: number;
             numberOfReplicas: number;
             knnVectorFieldConfig: {

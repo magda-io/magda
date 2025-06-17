@@ -120,5 +120,10 @@ export function commonYargs(
         defaultDatasetBucket: argv.defaultDatasetBucket
     };
 
+    const {
+        indexName,
+        indexVersion
+    } = argv.semanticIndexerConfig.semanticIndexer.opensearch.indices.semanticIndex;
+    argv.semanticIndexerConfig.semanticIndexer.opensearch.indices.semanticIndex.fullIndexName = `${indexName}-v${indexVersion}`;
     return argv;
 }
