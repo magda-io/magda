@@ -17,106 +17,95 @@ import * as Minio from "minio";
 import urijs from "urijs";
 import { MinioConfig } from "./configType.js";
 import { pipeline } from "stream/promises";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import ServerError from "magda-typescript-common/src/ServerError.js";
 
+// The onRecordFound function passed to minion sdk to handle storage object records
 export const onRecordFoundStorageObject = (
-    userConfig: SemanticIndexerOptions,
+    options: SemanticIndexerOptions,
     chunker: Chunker,
     embeddingApiClient: EmbeddingApiClient,
     opensearchApiClient: OpensearchApiClient
 ): onRecordFoundType => {
-    return async (record: Record, _registry) => {
+    return async (dist: Record, registry) => {
         try {
-            const distributions =
-                record.aspects["dataset-distributions"]?.distributions || [];
-            const tasks = distributions.map(async (dist: any) => {
-                try {
-                    const datasetFormat =
-                        dist.aspects?.["dataset-format"]?.format;
-                    const dcatDist =
-                        dist.aspects?.["dcat-distribution-strings"] || {};
-                    const {
-                        format: dcatFormat,
-                        downloadURL,
-                        accessURL
-                    } = dcatDist;
-                    const fileDownloadURL = downloadURL
-                        ? downloadURL
-                        : accessURL;
+            const datasetFormat = dist.aspects?.["dataset-format"]?.format;
+            const dcatDist = dist.aspects?.["dcat-distribution-strings"] || {};
+            const { format: dcatFormat, downloadURL, accessURL } = dcatDist;
+            const fileDownloadURL = downloadURL || accessURL;
+            let format = datasetFormat || dcatFormat;
+            if (!format && fileDownloadURL) {
+                format = new urijs(fileDownloadURL).suffix().toUpperCase();
+            }
 
-                    let format = datasetFormat || dcatFormat;
-                    if (!format && fileDownloadURL) {
-                        format = new urijs(fileDownloadURL)
-                            .suffix()
-                            .toUpperCase();
-                    }
+            // filler record
+            if (
+                !format ||
+                !fileDownloadURL ||
+                !options.formatTypes?.some((f) =>
+                    format.toLowerCase().includes(f.toLowerCase())
+                )
+            ) {
+                return;
+            }
 
-                    if (
-                        !format ||
-                        !fileDownloadURL ||
-                        !userConfig.formatTypes?.some((f) =>
-                            format.toLowerCase().includes(f.toLowerCase())
-                        )
-                    ) {
-                        return;
-                    }
+            let embeddingText: EmbeddingText;
+            let filePath: string | null = null;
 
-                    let embeddingText: EmbeddingText;
-                    let filePath: string | null = null;
-
-                    try {
-                        if (userConfig.autoDownloadFile) {
-                            filePath = await downloadFileWithRetry(
-                                fileDownloadURL,
-                                userConfig.argv.minioConfig
-                            );
-                        }
-
-                        try {
-                            embeddingText = await userConfig.createEmbeddingText(
-                                {
-                                    record,
-                                    format: format,
-                                    filePath,
-                                    url: fileDownloadURL
-                                }
-                            );
-                        } catch (err) {
-                            throw new SkipError(
-                                `Error in user-provided createEmbeddingText function: ${
-                                    (err as Error).message
-                                }`
-                            );
-                        }
-                    } finally {
-                        if (filePath) {
-                            await deleteTempFile(filePath);
-                        }
-                    }
-
-                    await indexEmbeddingText(
-                        userConfig,
-                        embeddingText,
-                        chunker,
-                        embeddingApiClient,
-                        opensearchApiClient,
-                        record.id,
-                        format
+            const parentRecordId = await getParentRecordId(dist.id, registry);
+            try {
+                if (
+                    options.autoDownloadFile === undefined ||
+                    options.autoDownloadFile
+                ) {
+                    filePath = await downloadFileWithRetry(
+                        fileDownloadURL,
+                        options.argv.minioConfig
                     );
-                } catch (err) {
-                    if (err instanceof SkipError) {
-                        console.warn(
-                            "Skipping distribution because:",
-                            err.message
+                }
+
+                try {
+                    embeddingText = await options.createEmbeddingText({
+                        record: dist,
+                        format: format,
+                        filePath,
+                        url: fileDownloadURL
+                    });
+
+                    if (!embeddingText.text && !embeddingText.subObjects) {
+                        throw new SkipError(
+                            "User-provided createEmbeddingText function returned no text or subObjects"
                         );
-                        return;
                     }
-                    throw err;
+                } catch (err) {
+                    throw new SkipError(
+                        `Error in user-provided createEmbeddingText function: ${
+                            (err as Error).message
+                        }`
+                    );
+                }
+            } finally {
+                if (filePath) {
+                    await deleteTempFile(filePath);
+                }
+            }
+
+            await indexEmbeddingText({
+                options,
+                chunker,
+                embeddingApiClient,
+                opensearchApiClient,
+                embeddingText,
+                metadata: {
+                    recordId: dist.id,
+                    parentRecordId: parentRecordId,
+                    aspectId: dist.aspects["dataset-format"]?.id,
+                    fileFormat: format
                 }
             });
-            await Promise.all(tasks);
         } catch (err) {
             if (err instanceof SkipError) {
-                console.warn("Skipping record because:", err.message);
+                console.warn("Skipping distribution because:", err.message);
                 return;
             }
             throw err;
@@ -229,5 +218,35 @@ async function deleteTempFile(filePath: string) {
                 console.error("Error deleting file");
             }
         });
+    }
+}
+
+export async function getParentRecordId(
+    distributionId: string,
+    registry: Registry
+): Promise<string | null> {
+    try {
+        const result = await registry.getRecords<Record>(
+            ["dataset-distributions"],
+            undefined,
+            undefined,
+            true,
+            undefined,
+            ["dataset-distributions.distributions:<|" + distributionId]
+        );
+
+        if (result instanceof ServerError) {
+            console.error(`Failed to get parent record id: ${result.message}`);
+            return null;
+        }
+        if (!("records" in result)) {
+            console.error(`Failed to get parent record id`);
+            return null;
+        }
+
+        return result.records[0]?.id || null;
+    } catch (e) {
+        console.error(`Unexpected error when getting parent record id`, e);
+        return null;
     }
 }

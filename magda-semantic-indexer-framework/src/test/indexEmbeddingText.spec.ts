@@ -26,15 +26,17 @@ describe("indexEmbeddingText", () => {
             formatTypes: ["csv"]
         });
 
-        await indexEmbeddingText(
-            config,
-            embeddingTextResult,
+        await indexEmbeddingText({
+            options: config,
+            embeddingText: embeddingTextResult,
             chunker,
             embeddingApiClient,
             opensearchApiClient,
-            "id1",
-            "csv"
-        );
+            metadata: {
+                recordId: "id1",
+                fileFormat: "csv"
+            }
+        });
 
         expect(chunker.chunk.calledOnce).to.be.true;
         expect(embeddingApiClient.get.calledOnce).to.be.true;
@@ -77,15 +79,17 @@ describe("indexEmbeddingText", () => {
         config.argv.semanticIndexerConfig.semanticIndexer.bulkIndexSize = 3;
         config.argv.semanticIndexerConfig.semanticIndexer.bulkEmbeddingsSize = 3;
 
-        await indexEmbeddingText(
-            config,
-            embeddingTextResult,
+        await indexEmbeddingText({
+            options: config,
+            embeddingText: embeddingTextResult,
             chunker,
             embeddingApiClient,
             opensearchApiClient,
-            "id2",
-            "txt"
-        );
+            metadata: {
+                recordId: "id2",
+                fileFormat: "txt"
+            }
+        });
 
         expect(chunker.chunk.calledOnce).to.be.true;
         expect(embeddingApiClient.get.calledOnce).to.be.true;
@@ -157,15 +161,17 @@ describe("indexEmbeddingText", () => {
             formatTypes: ["csv"]
         });
 
-        await indexEmbeddingText(
-            config,
-            embeddingTextResult,
+        await indexEmbeddingText({
+            options: config,
+            embeddingText: embeddingTextResult,
             chunker,
             embeddingApiClient,
             opensearchApiClient,
-            "id4",
-            "csv"
-        );
+            metadata: {
+                recordId: "id4",
+                fileFormat: "csv"
+            }
+        });
 
         expect(chunker.chunk.callCount).to.equal(3);
         expect(embeddingApiClient.get.callCount).to.equal(3);

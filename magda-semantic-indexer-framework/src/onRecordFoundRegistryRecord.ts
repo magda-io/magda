@@ -7,8 +7,9 @@ import { indexEmbeddingText } from "./indexEmbeddingText.js";
 import { Record } from "magda-typescript-common/src/generated/registry/api.js";
 import { SkipError } from "./SkipError.js";
 
+// The onRecordFound function passed to minion sdk to handle registry record records
 export const onRecordFoundRegistryRecord = (
-    userConfig: SemanticIndexerOptions,
+    options: SemanticIndexerOptions,
     chunker: Chunker,
     embeddingApiClient: EmbeddingApiClient,
     opensearchApiClient: OpensearchApiClient
@@ -17,18 +18,25 @@ export const onRecordFoundRegistryRecord = (
         try {
             if (
                 !record.aspects ||
-                !userConfig.aspects?.every((aspect) => aspect in record.aspects)
+                !options.aspects?.every((aspect) => aspect in record.aspects)
             ) {
                 return;
             }
+
             let embeddingText;
             try {
-                embeddingText = await userConfig.createEmbeddingText({
+                embeddingText = await options.createEmbeddingText({
                     record,
                     format: null,
                     filePath: null,
                     url: null
                 });
+
+                if (!embeddingText.text && !embeddingText.subObjects) {
+                    throw new SkipError(
+                        "User-provided createEmbeddingText function returned no text or subObjects"
+                    );
+                }
             } catch (err) {
                 throw new SkipError(
                     `Error in user-provided createEmbeddingText function: ${
@@ -37,14 +45,17 @@ export const onRecordFoundRegistryRecord = (
                 );
             }
 
-            await indexEmbeddingText(
-                userConfig,
-                embeddingText,
+            await indexEmbeddingText({
+                options,
                 chunker,
                 embeddingApiClient,
                 opensearchApiClient,
-                record.id
-            );
+                embeddingText,
+                metadata: {
+                    recordId: record.id,
+                    fileFormat: record.aspects["dataset-format"]?.format
+                }
+            });
         } catch (err) {
             if (err instanceof SkipError) {
                 console.warn("Skipping record because:", err.message);

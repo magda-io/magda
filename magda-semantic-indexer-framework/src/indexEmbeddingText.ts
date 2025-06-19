@@ -9,27 +9,35 @@ import { v4 as uuidv4 } from "uuid";
 import { Readable, Transform, Writable } from "stream";
 import { pipeline } from "stream/promises";
 
+interface Metadata {
+    recordId: string;
+    parentRecordId?: string;
+    aspectId?: string;
+    fileFormat?: string;
+    subObjectId?: string;
+    subObjectType?: string;
+}
+
 class BuildDocumentTransform extends Transform {
-    private buffer: ChunkResult[];
+    private buffer: ChunkResult[] = [];
 
     constructor(
-        private options: SemanticIndexerOptions,
-        private embeddingApiClient: EmbeddingApiClient,
-        private bulkEmbeddingSize: number,
-        private totalChunks: number,
-        private recordId: string,
-        private fileFormat?: string,
-        private subObjectId?: string,
-        private subObjectType?: string
+        private params: {
+            options: SemanticIndexerOptions;
+            embeddingApiClient: EmbeddingApiClient;
+            bulkEmbeddingsSize: number;
+            totalChunks: number;
+            text: string;
+            metadata: Metadata;
+        }
     ) {
         super({ objectMode: true });
-        this.buffer = [];
     }
 
     private async processBuffer(): Promise<void> {
         let embeddings: number[][];
         try {
-            embeddings = await this.embeddingApiClient.get(
+            embeddings = await this.params.embeddingApiClient.get(
                 this.buffer.map((c) => c.text)
             );
         } catch (error) {
@@ -40,14 +48,16 @@ class BuildDocumentTransform extends Transform {
 
         const documents = this.buffer.map((chunk: ChunkResult, i: number) =>
             buildSemanticIndexDocument({
-                recordId: this.recordId,
-                fileFormat: this.fileFormat,
-                subObjectId: this.subObjectId,
-                subObjectType: this.subObjectType,
-                itemType: this.options.itemType,
+                recordId: this.params.metadata.recordId,
+                parentRecordId: this.params.metadata.parentRecordId,
+                aspectId: this.params.metadata.aspectId,
+                fileFormat: this.params.metadata.fileFormat,
+                subObjectId: this.params.metadata.subObjectId,
+                subObjectType: this.params.metadata.subObjectType,
+                itemType: this.params.options.itemType,
                 index_text_chunk: chunk.text,
                 embedding: embeddings[i],
-                only_one_index_text_chunk: this.totalChunks === 1,
+                only_one_index_text_chunk: this.params.totalChunks === 1,
                 index_text_chunk_length: chunk.length,
                 index_text_chunk_position: chunk.position,
                 index_text_chunk_overlap: chunk.overlap
@@ -64,7 +74,7 @@ class BuildDocumentTransform extends Transform {
     async _transform(chunk: ChunkResult, encoding: string, callback: Function) {
         this.buffer.push(chunk);
 
-        if (this.buffer.length >= this.bulkEmbeddingSize) {
+        if (this.buffer.length >= this.params.bulkEmbeddingsSize) {
             try {
                 await this.processBuffer();
                 callback();
@@ -145,69 +155,76 @@ class OpenSearchIndexStream extends Writable {
     }
 }
 
-type textToProcess = {
-    text: string;
-    recordId: string;
-    fileFormat?: string;
-    subObjectId?: string;
-    subObjectType?: string;
-};
-
-export async function indexEmbeddingText(
-    options: SemanticIndexerOptions,
-    EmbeddingText: EmbeddingText,
-    chunker: Chunker,
-    embeddingApiClient: EmbeddingApiClient,
-    opensearchApiClient: OpensearchApiClient,
-    recordId: string,
-    fileFormat?: string
-) {
-    if (!EmbeddingText.text && !EmbeddingText.subObjects) {
+export async function indexEmbeddingText({
+    options,
+    chunker,
+    embeddingApiClient,
+    opensearchApiClient,
+    embeddingText,
+    metadata
+}: {
+    options: SemanticIndexerOptions;
+    chunker: Chunker;
+    embeddingApiClient: EmbeddingApiClient;
+    opensearchApiClient: OpensearchApiClient;
+    embeddingText: EmbeddingText;
+    metadata: Metadata;
+}) {
+    if (!embeddingText.text && !embeddingText.subObjects) {
         throw new SkipError("No text or subObjects found to index.");
     }
 
-    const textsToProcess: Array<textToProcess> = [];
+    const textsToProcess: Array<{ text: string; metadata: Metadata }> = [];
 
-    if (EmbeddingText.text) {
+    if (embeddingText.text) {
         textsToProcess.push({
-            text: EmbeddingText.text,
-            recordId,
-            fileFormat
+            text: embeddingText.text,
+            metadata: { ...metadata }
         });
     }
 
-    if (EmbeddingText.subObjects) {
-        for (const sub of EmbeddingText.subObjects) {
+    if (embeddingText.subObjects) {
+        for (const sub of embeddingText.subObjects) {
             textsToProcess.push({
                 text: sub.text,
-                recordId,
-                fileFormat,
-                subObjectId: sub.subObjectId || uuidv4(),
-                subObjectType: sub.subObjectType
+                metadata: {
+                    ...metadata,
+                    subObjectId: sub.subObjectId || uuidv4(),
+                    subObjectType: sub.subObjectType
+                }
             });
         }
     }
 
     await Promise.all(
-        textsToProcess.map((textToProcess) =>
-            processSingleText(
+        textsToProcess.map((item) =>
+            processSingleText({
                 options,
                 chunker,
                 embeddingApiClient,
                 opensearchApiClient,
-                textToProcess
-            )
+                metadata: item.metadata,
+                text: item.text
+            })
         )
     );
 }
 
-async function processSingleText(
-    options: SemanticIndexerOptions,
-    chunker: Chunker,
-    embeddingApiClient: EmbeddingApiClient,
-    opensearchApiClient: OpensearchApiClient,
-    textToProcess: textToProcess
-) {
+async function processSingleText({
+    options,
+    chunker,
+    embeddingApiClient,
+    opensearchApiClient,
+    metadata,
+    text
+}: {
+    options: SemanticIndexerOptions;
+    chunker: Chunker;
+    embeddingApiClient: EmbeddingApiClient;
+    opensearchApiClient: OpensearchApiClient;
+    metadata: Metadata;
+    text: string;
+}) {
     const semanticIndexerConfig =
         options.argv.semanticIndexerConfig.semanticIndexer;
     const bulkEmbeddingsSize = semanticIndexerConfig.bulkEmbeddingsSize || 50;
@@ -215,22 +232,20 @@ async function processSingleText(
     const indexName =
         semanticIndexerConfig.opensearch.indices.semanticIndex.fullIndexName;
 
-    const chunks = await chunker.chunk(textToProcess.text);
+    const chunks = await chunker.chunk(text);
     if (!chunks || chunks.length === 0) {
         throw new SkipError("No chunks generated from text.");
     }
 
     const textChunkStream = Readable.from(chunks, { objectMode: true });
-    const buildDocumentTransform = new BuildDocumentTransform(
+    const buildDocumentTransform = new BuildDocumentTransform({
         options,
         embeddingApiClient,
         bulkEmbeddingsSize,
-        chunks.length,
-        textToProcess.recordId,
-        textToProcess.fileFormat,
-        textToProcess.subObjectId,
-        textToProcess.subObjectType
-    );
+        totalChunks: chunks.length,
+        text,
+        metadata
+    });
     const openSearchStream = new OpenSearchIndexStream(
         opensearchApiClient,
         indexName,

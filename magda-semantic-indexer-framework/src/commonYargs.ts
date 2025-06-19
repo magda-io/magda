@@ -7,8 +7,8 @@ import { MinioConfig, SemanticIndexerConfig } from "./configType.js";
 
 export const defaultConfig: SemanticIndexerConfig = {
     semanticIndexer: {
-        chunkSizeLimit: 100,
-        overlap: 10,
+        chunkSizeLimit: 512,
+        overlap: 64,
         bulkEmbeddingsSize: 1,
         bulkIndexSize: 50,
         opensearch: {
