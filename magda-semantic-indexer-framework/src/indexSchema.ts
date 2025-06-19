@@ -34,6 +34,8 @@ export function createSemanticIndexerMapping(config: SemanticIndexerOptions) {
             properties: {
                 itemType: { type: "keyword" },
                 recordId: { type: "keyword" },
+                aspectId: { type: "keyword" },
+                parentRecordId: { type: "keyword" },
                 fileFormat: { type: "keyword" },
                 subObjectId: { type: "keyword" },
                 subObjectType: { type: "keyword" },
@@ -90,6 +92,8 @@ export type ItemType = "registryRecord" | "storageObject";
 export interface SemanticIndexDocument {
     itemType: ItemType;
     recordId: string;
+    aspectId?: string;
+    parentRecordId?: string;
     fileFormat?: string;
     subObjectId?: string;
     subObjectType?: string;
@@ -107,13 +111,13 @@ export function buildSemanticIndexDocument(
     return {
         itemType: params.itemType,
         recordId: params.recordId,
-        ...(params.fileFormat !== undefined
-            ? { fileFormat: params.fileFormat }
+        ...(params.aspectId ? { aspectId: params.aspectId } : {}),
+        ...(params.parentRecordId
+            ? { parentRecordId: params.parentRecordId }
             : {}),
-        ...(params.subObjectId !== undefined
-            ? { subObjectId: params.subObjectId }
-            : {}),
-        ...(params.subObjectType !== undefined
+        ...(params.fileFormat ? { fileFormat: params.fileFormat } : {}),
+        ...(params.subObjectId ? { subObjectId: params.subObjectId } : {}),
+        ...(params.subObjectType
             ? { subObjectType: params.subObjectType }
             : {}),
         index_text_chunk: params.index_text_chunk,

@@ -17,6 +17,7 @@ import MinionOptions, {
 } from "magda-minion-framework/src/MinionOptions.js";
 import retry from "magda-typescript-common/src/retry.js";
 
+// Main function for semantic indexer
 export default async function semanticIndexer(
     userConfig: SemanticIndexerOptions
 ) {
@@ -93,7 +94,7 @@ export default async function semanticIndexer(
                 async: true,
                 dereference: true,
                 includeEvents: false,
-                includeRecords: true,
+                includeRecords: false,
                 onRecordFound: onRecordFound
             };
         } else if (userConfig.itemType === "storageObject") {
@@ -106,13 +107,15 @@ export default async function semanticIndexer(
             minionOptions = {
                 argv: userConfig.argv,
                 id: userConfig.id,
-                aspects: ["dataset-distributions"],
+                aspects: ["dcat-distribution-strings", "dataset-format"],
                 optionalAspects: [],
                 writeAspectDefs: [],
                 async: true,
-                dereference: true,
+                dereference: false,
                 includeEvents: false,
-                onRecordFound: onRecordFound
+                includeRecords: false,
+                onRecordFound: onRecordFound,
+                maxRetries: 3
             };
         } else {
             throw new Error("Invalid itemType");

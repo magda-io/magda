@@ -3,6 +3,7 @@ import { CreateEmbeddingText } from "./createEmbeddingText.js";
 import { SemanticIndexerArguments } from "./commonYargs.js";
 import { ChunkStrategyType } from "./chunker.js";
 
+// User-provided options for semantic indexer
 export default interface SemanticIndexerOptions {
     argv: SemanticIndexerArguments;
     id: string;
