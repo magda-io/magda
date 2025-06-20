@@ -1,7 +1,7 @@
 {
   "name": "@magda/magda-scss-compiler",
   "description": "The web-client SCSS compiler pod",
-  "version": "5.2.0",
+  "version": "6.0.0-alpha.4",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -23,7 +23,7 @@
     "test": "c8 mocha"
   },
   "devDependencies": {
-    "@magda/scripts": "^5.2.0",
+    "@magda/scripts": "^6.0.0-alpha.4",
     "@types/chai": "^4.3.11",
     "@types/clean-css": "^3.4.30",
     "@types/config": "0.0.32",
@@ -47,8 +47,8 @@
   },
   "dependencies": {
     "@magda/esm-utils": "^1.0.1",
-    "@magda/typescript-common": "^5.2.0",
-    "@magda/web-client": "^5.2.0",
+    "@magda/typescript-common": "^6.0.0-alpha.4",
+    "@magda/web-client": "^6.0.0-alpha.4",
     "autoprefixer": "^10.4.16",
     "clean-css": "^4.2.1",
     "escape-string-regexp": "^1.0.5",

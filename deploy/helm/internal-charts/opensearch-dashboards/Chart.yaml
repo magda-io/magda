@@ -3,7 +3,7 @@ description: A Helm chart for OpenSearch dashboards. To make the service
   accessible externally, please refer to [this
   doc](https://github.com/magda-io/magda/blob/main/docs/docs/how-to-expose-opensearch-dashboards.md)
 name: opensearch-dashboards
-version: 5.2.0
+version: 6.0.0-alpha.4
 kubeVersion: ">= 1.23.0-0"
 annotations:
   magdaModuleType: "core"

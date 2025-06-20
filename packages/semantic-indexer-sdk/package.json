@@ -1,7 +1,7 @@
 {
   "name": "@magda/semantic-indexer-sdk",
   "description": "MAGDA Semantic Indexer SDK",
-  "version": "5.2.0",
+  "version": "6.0.0-alpha.4",
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
@@ -23,8 +23,8 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@magda/semantic-indexer-framework": "^6.0.0-alpha.4",
     "@microsoft/api-extractor": "~7.39.0",
-    "@magda/semantic-indexer-framework": "^5.2.0",
     "esbuild": "^0.19.10",
     "ts-loader": "^9.5.1",
     "typescript": "~5.3.3"
