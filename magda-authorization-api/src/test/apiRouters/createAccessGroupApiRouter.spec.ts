@@ -78,9 +78,9 @@ describe("Access Group API Router", function () {
                                     name: "auto-created for access group",
                                     description:
                                         "auto-created for access group mock-record-id",
-                                    create_by: null,
-                                    owner_id: null,
-                                    edit_by: null
+                                    create_by: null as string | null,
+                                    owner_id: null as string | null,
+                                    edit_by: null as string | null
                                 }
                             ]
                         };
