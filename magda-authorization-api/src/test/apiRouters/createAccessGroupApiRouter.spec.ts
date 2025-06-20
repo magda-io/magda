@@ -46,12 +46,12 @@ describe("Access Group API Router", function () {
 
     beforeEach(function () {
         // Ensure a clean nock state and strict network control for each test
-        nock.disableNetConnect(); 
-        nock.enableNetConnect((host) => host.startsWith("127.0.0.1")); 
+        nock.disableNetConnect();
+        nock.enableNetConnect((host) => host.startsWith("127.0.0.1"));
         if (!nock.isActive()) {
             nock.activate();
         }
-        nock.cleanAll(); 
+        nock.cleanAll();
 
         executedQueries = [];
         createPermissionCalls = [];
@@ -59,18 +59,31 @@ describe("Access Group API Router", function () {
         mergeParamSeen = false;
         mergeParamSeenControl = false;
         patchBody = undefined;
-        accessControlPatched = false; 
+        accessControlPatched = false;
         db = new mockDatabase();
         db.deleteRole = async () => {};
         let permissionIdCounter = 1;
-        db.setDbPool({ // Simplified, ensure this doesn't interfere if it also makes external calls
+        db.setDbPool({
+            // Simplified, ensure this doesn't interfere if it also makes external calls
             connect: async () => ({
                 query: async (queryOrConfig: any, values?: any[]) => {
                     const query = queryOrConfig.text ?? queryOrConfig;
                     const params = queryOrConfig.values ?? values ?? [];
                     executedQueries.push({ query, params });
                     if (query.toLowerCase().includes('insert into "roles"')) {
-                        return { rows: [{ id: "mock-role-id", name: "auto-created for access group", description: "auto-created for access group mock-record-id", create_by: null, owner_id: null, edit_by: null }] };
+                        return {
+                            rows: [
+                                {
+                                    id: "mock-role-id",
+                                    name: "auto-created for access group",
+                                    description:
+                                        "auto-created for access group mock-record-id",
+                                    create_by: null,
+                                    owner_id: null,
+                                    edit_by: null
+                                }
+                            ]
+                        };
                     }
                     return { rows: [] };
                 },
@@ -85,34 +98,20 @@ describe("Access Group API Router", function () {
         });
         db.createPermission = async (data: any) => {
             createPermissionCalls.push(data);
-            return { id: `mock-permission-id-${permissionIdCounter++}`, ...data };
+            return {
+                id: `mock-permission-id-${permissionIdCounter++}`,
+                ...data
+            };
         };
-        
-        registryScope = nock(REGISTRY_BASE_URL);
 
-        // Define the specific, non-persistent nock for GET /inFull/test-group-id FIRST
-        // This is the problematic one we want to ensure is matched.
-        // -- TEMPORARILY REMOVED FOR SIMPLIFIED DEBUGGING --
-        /*
-        registryScope
-            .get("/records/inFull/test-group-id") // Exact path
-            .reply(function(this: any, uri: string) {
-                console.log(`NOCK GET (specific /inFull/test-group-id in beforeEach): Matched URI ${uri}`);
-                const responseRecord = {
-                    id: currentGroupDetails.id,
-                    name: currentGroupDetails.name,
-                    aspects: { ...currentGroupDetails.aspects }
-                };
-                return [200, responseRecord];
-            });
-        */
+        registryScope = nock(REGISTRY_BASE_URL);
 
         currentGroupDetails = {
             id: "test-group-id",
-            name: "Test Group Initial Name", 
+            name: "Test Group Initial Name",
             aspects: {
                 "access-group-details": {
-                    name: "Old Name", 
+                    name: "Old Name",
                     description: "Old desc",
                     resourceUri: "object/record",
                     keywords: ["old"],
@@ -127,7 +126,9 @@ describe("Access Group API Router", function () {
                 "access-control": {
                     ownerId: null as string | null,
                     orgUnitId: null as string | null,
-                    preAuthorisedPermissionIds: ["33333333-3333-3333-3333-333333333333"]
+                    preAuthorisedPermissionIds: [
+                        "33333333-3333-3333-3333-333333333333"
+                    ]
                 }
             }
         };
@@ -139,29 +140,33 @@ describe("Access Group API Router", function () {
                 "dataset-distributions": {
                     distributions: [] as string[]
                 },
-                "access-control": { // Datasets can also have access-control
+                "access-control": {
+                    // Datasets can also have access-control
                     ownerId: "dataset-owner-uuid",
                     orgUnitId: null as string | null // Explicitly typed
                 }
             }
         };
-        
+
         // Remove the overly broad GET nock and replace with a more comprehensive one.
         registryScope
             .persist()
             .get(/.*/) // Still broad, but the reply function will be more specific
             .reply(function (this: any, uri: string) {
-                console.log(`COMPREHENSIVE NOCK GET in beforeEach: ${uri}`);
                 const requestUrl = new URL(uri, REGISTRY_BASE_URL);
                 const pathname = requestUrl.pathname;
 
                 // Handle general record queries like /records?aspectQuery=...
-                if (pathname === "/v0/records" && requestUrl.searchParams.has("aspectQuery")) {
-                    console.log(`COMPREHENSIVE NOCK GET: General records query, returning empty list.`);
+                if (
+                    pathname === "/v0/records" &&
+                    requestUrl.searchParams.has("aspectQuery")
+                ) {
                     return [200, { records: [] }];
                 }
 
-                const recordIdMatch = pathname.match(/\/records\/(?:inFull\/)?([^\/?\s]+)/);
+                const recordIdMatch = pathname.match(
+                    /\/records\/(?:inFull\/)?([^\/?\s]+)/
+                );
                 const recordId = recordIdMatch ? recordIdMatch[1] : null;
 
                 let targetRecord: any = null;
@@ -172,48 +177,74 @@ describe("Access Group API Router", function () {
                 }
 
                 if (targetRecord) {
-                    const aspectDirectMatch = pathname.match(/\/aspects\/([^\/?\s]+)/);
+                    const aspectDirectMatch = pathname.match(
+                        /\/aspects\/([^\/?\s]+)/
+                    );
                     if (aspectDirectMatch) {
                         const aspectName = aspectDirectMatch[1];
                         if (targetRecord.aspects[aspectName]) {
-                            console.log(`COMPREHENSIVE NOCK GET: Responding with aspect ${aspectName} for ${recordId}`);
-                            return [200, { ...targetRecord.aspects[aspectName] }];
+                            return [
+                                200,
+                                { ...targetRecord.aspects[aspectName] }
+                            ];
                         }
-                        console.log(`COMPREHENSIVE NOCK GET: Aspect ${aspectName} not found for ${recordId}, returning 404`);
-                        return [404, { message: `Aspect ${aspectName} not found for record ${recordId}` }];
+                        return [
+                            404,
+                            {
+                                message: `Aspect ${aspectName} not found for record ${recordId}`
+                            }
+                        ];
                     }
 
                     // Handle /inFull/ or requests with aspect query params
-                    const aspectsParam = requestUrl.searchParams.getAll("aspect");
-                    const optionalAspectsParam = requestUrl.searchParams.getAll("optionalAspect");
+                    const aspectsParam = requestUrl.searchParams.getAll(
+                        "aspect"
+                    );
+                    const optionalAspectsParam = requestUrl.searchParams.getAll(
+                        "optionalAspect"
+                    );
 
-                    if (pathname.includes("/inFull/") || aspectsParam.length > 0 || optionalAspectsParam.length > 0) {
+                    if (
+                        pathname.includes("/inFull/") ||
+                        aspectsParam.length > 0 ||
+                        optionalAspectsParam.length > 0
+                    ) {
                         const recordToReturn: any = {
                             id: targetRecord.id,
                             name: targetRecord.name,
                             aspects: {}
                         };
-                        const allRequestedAspectNames = new Set([...aspectsParam, ...optionalAspectsParam]);
-                        if (pathname.includes("/inFull/") || (allRequestedAspectNames.size === 0 && !pathname.includes("/aspects/"))) {
-                            recordToReturn.aspects = { ...targetRecord.aspects };
+                        const allRequestedAspectNames = new Set([
+                            ...aspectsParam,
+                            ...optionalAspectsParam
+                        ]);
+                        if (
+                            pathname.includes("/inFull/") ||
+                            (allRequestedAspectNames.size === 0 &&
+                                !pathname.includes("/aspects/"))
+                        ) {
+                            recordToReturn.aspects = {
+                                ...targetRecord.aspects
+                            };
                         } else {
-                            allRequestedAspectNames.forEach(aspectName => {
+                            allRequestedAspectNames.forEach((aspectName) => {
                                 if (targetRecord.aspects[aspectName]) {
-                                    recordToReturn.aspects[aspectName] = targetRecord.aspects[aspectName];
+                                    recordToReturn.aspects[aspectName] =
+                                        targetRecord.aspects[aspectName];
                                 }
                             });
                         }
-                        console.log(`COMPREHENSIVE NOCK GET: Responding with record ${recordId} (aspects/inFull logic)`);
                         return [200, recordToReturn];
                     }
-                    
+
                     // Fallback for GET /records/{recordId} (implies full record)
-                    console.log(`COMPREHENSIVE NOCK GET: Responding with full record ${recordId} (fallback)`);
                     return [200, { ...targetRecord }];
                 }
 
-                console.log(`COMPREHENSIVE NOCK GET: URI ${uri} did not match known records or patterns, returning 404.`);
-                return [404, { message: `Comprehensive GET nock did not match ${uri}` }];
+                return [
+                    404,
+                    { message: `Comprehensive GET nock did not match ${uri}` }
+                ];
             });
 
         // Updated general PUT handler
@@ -221,16 +252,21 @@ describe("Access Group API Router", function () {
             .persist()
             .put(/\/records\/test-group-id.*/)
             .reply(function (this: any, uri: string, body: any) {
-                console.log(`NOCK PUT: ${uri}`, body);
                 const requestUrl = new URL(uri, REGISTRY_BASE_URL);
                 const requestPath = requestUrl.pathname;
                 const queryParams = requestUrl.searchParams;
                 const isMergeTrue = queryParams.get("merge") === "true";
-                const aspectBody = typeof body === 'string' ? JSON.parse(body) : body;
-                let response: [number, object] = [500, { message: "Unhandled PUT request in nock" }];
+                const aspectBody =
+                    typeof body === "string" ? JSON.parse(body) : body;
+                let response: [number, object] = [
+                    500,
+                    { message: "Unhandled PUT request in nock" }
+                ];
 
                 if (requestPath.includes("/aspects/")) {
-                    const aspectNameMatch = requestPath.match(/\/aspects\/([^\/?]+)/);
+                    const aspectNameMatch = requestPath.match(
+                        /\/aspects\/([^\/?]+)/
+                    );
                     if (aspectNameMatch) {
                         const aspectName = aspectNameMatch[1];
                         if (currentGroupDetails.aspects[aspectName]) {
@@ -238,26 +274,49 @@ describe("Access Group API Router", function () {
                                 ...currentGroupDetails.aspects[aspectName],
                                 ...aspectBody
                             };
-                            if (aspectName === "access-group-details" && aspectBody.name) {
+                            if (
+                                aspectName === "access-group-details" &&
+                                aspectBody.name
+                            ) {
                                 currentGroupDetails.name = aspectBody.name;
                             }
-                            if (aspectName === "access-group-details" && isMergeTrue) mergeParamSeen = true;
-                            if (aspectName === "access-control" && isMergeTrue) mergeParamSeenControl = true;
-                            response = [200, { ...currentGroupDetails.aspects[aspectName] }];
+                            if (
+                                aspectName === "access-group-details" &&
+                                isMergeTrue
+                            )
+                                mergeParamSeen = true;
+                            if (aspectName === "access-control" && isMergeTrue)
+                                mergeParamSeenControl = true;
+                            response = [
+                                200,
+                                { ...currentGroupDetails.aspects[aspectName] }
+                            ];
                         } else {
-                            response = [404, { message: `Aspect ${aspectName} not found for PUT` }];
+                            response = [
+                                404,
+                                {
+                                    message: `Aspect ${aspectName} not found for PUT`
+                                }
+                            ];
                         }
                     }
                 } else if (requestPath.endsWith("/test-group-id")) {
                     if (aspectBody.id === currentGroupDetails.id) {
-                        currentGroupDetails.name = aspectBody.name || currentGroupDetails.name;
-                        currentGroupDetails.aspects = aspectBody.aspects || currentGroupDetails.aspects;
+                        currentGroupDetails.name =
+                            aspectBody.name || currentGroupDetails.name;
+                        currentGroupDetails.aspects =
+                            aspectBody.aspects || currentGroupDetails.aspects;
                         response = [200, { ...currentGroupDetails }];
                     } else {
-                        response = [400, {message: "Record ID mismatch or invalid body for full record PUT"}];
+                        response = [
+                            400,
+                            {
+                                message:
+                                    "Record ID mismatch or invalid body for full record PUT"
+                            }
+                        ];
                     }
                 }
-                console.log(`NOCK PUT: Responding with`, response);
                 return response;
             });
 
@@ -265,38 +324,63 @@ describe("Access Group API Router", function () {
         registryScope
             .persist()
             .patch(/\/records\/test-group-id.*/)
-            .reply(function (this: any, uri: string, patchPayload: any) { 
-                console.log(`NOCK PATCH: ${uri}`, patchPayload);
+            .reply(function (this: any, uri: string, patchPayload: any) {
                 const requestPath = new URL(uri, REGISTRY_BASE_URL).pathname;
-                let response: [number, object] = [500, { message: "Unhandled PATCH request in nock" }];
-                
+                let response: [number, object] = [
+                    500,
+                    { message: "Unhandled PATCH request in nock" }
+                ];
+
                 if (requestPath.includes("/aspects/")) {
-                    const aspectNameMatch = requestPath.match(/\/aspects\/([^\/?]+)/);
+                    const aspectNameMatch = requestPath.match(
+                        /\/aspects\/([^\/?]+)/
+                    );
                     if (aspectNameMatch) {
                         const aspectName = aspectNameMatch[1];
                         if (currentGroupDetails.aspects[aspectName]) {
-                            let aspectData = { ...currentGroupDetails.aspects[aspectName] };
-                            if (Array.isArray(patchPayload)) { 
+                            let aspectData = {
+                                ...currentGroupDetails.aspects[aspectName]
+                            };
+                            if (Array.isArray(patchPayload)) {
                                 for (const op of patchPayload) {
-                                    if (op.op === 'replace' && op.path && op.path.startsWith('/')) {
+                                    if (
+                                        op.op === "replace" &&
+                                        op.path &&
+                                        op.path.startsWith("/")
+                                    ) {
                                         const key = op.path.substring(1);
                                         aspectData[key] = op.value;
-                                        if (aspectName === "access-group-details" && key === "name") {
+                                        if (
+                                            aspectName ===
+                                                "access-group-details" &&
+                                            key === "name"
+                                        ) {
                                             currentGroupDetails.name = op.value;
                                         }
                                     }
                                 }
                             }
-                            currentGroupDetails.aspects[aspectName] = aspectData;
-                            if (aspectName === "access-group-details") patchBody = patchPayload; 
-                            else if (aspectName === "access-control") accessControlPatched = true; 
-                            response = [200, { ...currentGroupDetails.aspects[aspectName] }];
+                            currentGroupDetails.aspects[
+                                aspectName
+                            ] = aspectData;
+                            if (aspectName === "access-group-details")
+                                patchBody = patchPayload;
+                            else if (aspectName === "access-control")
+                                accessControlPatched = true;
+                            response = [
+                                200,
+                                { ...currentGroupDetails.aspects[aspectName] }
+                            ];
                         } else {
-                            response = [404, { message: `Aspect ${aspectName} not found for PATCH` }];
+                            response = [
+                                404,
+                                {
+                                    message: `Aspect ${aspectName} not found for PATCH`
+                                }
+                            ];
                         }
                     }
                 }
-                console.log(`NOCK PATCH: Responding with`, response);
                 return response;
             });
         const apiRouter = createAccessGroupApiRouter({
@@ -348,11 +432,11 @@ describe("Access Group API Router", function () {
         it("should create an access group and call registry API with correct permission data", async () => {
             // Arrange: mock registry createRecord endpoint
             registryScope
-                .post("/records", body => {
+                .post("/records", (body) => {
                     registryRequestBody = body;
                     return true;
                 })
-                .reply(200, ()=> {
+                .reply(200, () => {
                     return { id: "test-group-id" };
                 });
 
@@ -426,7 +510,7 @@ describe("Access Group API Router", function () {
             ]);
 
             // SQL assertions
-            const rolesInsertQuery = executedQueries.find(q =>
+            const rolesInsertQuery = executedQueries.find((q) =>
                 q.query.toLowerCase().includes('insert into "roles"')
             );
             expect(rolesInsertQuery).to.not.be.undefined;
@@ -434,10 +518,8 @@ describe("Access Group API Router", function () {
                 "auto-created for access group"
             );
 
-            const rolePermissionsInsertQuery = executedQueries.find(q =>
-                q.query
-                    .toLowerCase()
-                    .includes("insert into role_permissions")
+            const rolePermissionsInsertQuery = executedQueries.find((q) =>
+                q.query.toLowerCase().includes("insert into role_permissions")
             );
             expect(rolePermissionsInsertQuery).to.not.be.undefined;
             expect(rolePermissionsInsertQuery.params).to.deep.equal([
@@ -475,7 +557,8 @@ describe("Access Group API Router", function () {
             nock.cleanAll();
             nock.disableNetConnect();
             nock.enableNetConnect("127.0.0.1"); // Allow supertest to connect to local app
-            if (!nock.isActive()) { // Ensure nock is active after cleaning and net connect setup
+            if (!nock.isActive()) {
+                // Ensure nock is active after cleaning and net connect setup
                 nock.activate();
             }
 
@@ -484,34 +567,37 @@ describe("Access Group API Router", function () {
             const getInFullNock = nock(REGISTRY_BASE_URL)
                 .get("/records/inFull/test-group-id")
                 .reply(200, {
-                    id: currentGroupDetails.id, 
+                    id: currentGroupDetails.id,
                     name: currentGroupDetails.name,
                     aspects: { ...currentGroupDetails.aspects }
                 });
 
             // 2. Nock for PUT to access-group-details for the name update (changed from PATCH)
             const putAccessGroupDetailsNock = nock(REGISTRY_BASE_URL)
-                .put("/records/test-group-id/aspects/access-group-details?merge=true", (body) => {
-                    console.log("NOCK PUT access-group-details BODY MATCHER: received body:", JSON.stringify(body));
-                    // Check if the body contains the updated name and an editTime field
-                    const isMatch = body && 
-                                  body.name === "Updated Name" && 
-                                  typeof body.editTime === "string";
-                    console.log("NOCK PUT access-group-details BODY MATCHER: isMatch:", isMatch);
-                    return isMatch;
-                })
+                .put(
+                    "/records/test-group-id/aspects/access-group-details?merge=true",
+                    (body) => {
+                        // Check if the body contains the updated name and an editTime field
+                        const isMatch =
+                            body &&
+                            body.name === "Updated Name" &&
+                            typeof body.editTime === "string";
+                        return isMatch;
+                    }
+                )
                 .reply(200, (uri, requestBody: any) => {
-                    console.log(`NOCK PUT to /aspects/access-group-details?merge=true: body:`, requestBody);
                     // Simulate the aspect after the PUT
-                    const updatedAspect = { 
+                    const updatedAspect = {
                         ...currentGroupDetails.aspects["access-group-details"],
                         name: requestBody.name, // Use name from requestBody
                         editTime: requestBody.editTime // Persist editTime from requestBody
                     };
                     // Also update the top-level currentGroupDetails.name if it's part of this aspect update
                     currentGroupDetails.name = requestBody.name;
-                    currentGroupDetails.aspects["access-group-details"] = updatedAspect; // Update the main mock data
-                    
+                    currentGroupDetails.aspects[
+                        "access-group-details"
+                    ] = updatedAspect; // Update the main mock data
+
                     mergeParamSeen = true; // Set flag as this is a PUT with merge=true
 
                     return updatedAspect;
@@ -519,38 +605,50 @@ describe("Access Group API Router", function () {
 
             // 3. Nock for PUT to access-control for the ownerId update
             const putAccessControlNock = nock(REGISTRY_BASE_URL)
-                .put("/records/test-group-id/aspects/access-control?merge=true", (body) => {
-                    console.log("NOCK PUT access-control BODY MATCHER: received body:", JSON.stringify(body));
-                    const isMatch = body && body.ownerId === "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"; // Use the actual UUID
-                    console.log("NOCK PUT access-control BODY MATCHER: isMatch:", isMatch);
-                    return isMatch;
-                })
+                .put(
+                    "/records/test-group-id/aspects/access-control?merge=true",
+                    (body) => {
+                        const isMatch =
+                            body &&
+                            body.ownerId ===
+                                "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"; // Use the actual UUID
+                        return isMatch;
+                    }
+                )
                 .reply(200, (uri, requestBody: any) => {
-                    console.log(`NOCK PUT to /aspects/access-control?merge=true: body:`, requestBody);
                     // Simulate the aspect after the PUT
-                    const updatedAspect = { 
+                    const updatedAspect = {
                         ...currentGroupDetails.aspects["access-control"],
                         ownerId: requestBody.ownerId
                     };
-                    currentGroupDetails.aspects["access-control"] = updatedAspect; // Update the main mock data
+                    currentGroupDetails.aspects[
+                        "access-control"
+                    ] = updatedAspect; // Update the main mock data
 
                     mergeParamSeenControl = true; // Set flag as this is a PUT with merge=true
 
                     return updatedAspect;
                 });
-            
+
             // 4. Nock for the GET request to fetch the record with specific aspects after updates
             const getUpdatedRecordNock = nock(REGISTRY_BASE_URL)
-                .get("/records/test-group-id?aspect=access-group-details&optionalAspect=access-control&dereference=false")
+                .get(
+                    "/records/test-group-id?aspect=access-group-details&optionalAspect=access-control&dereference=false"
+                )
                 .reply(200, () => {
-                    console.log("NOCK GET updated record: Responding with currentGroupDetails after updates");
                     // currentGroupDetails should have been updated by the .reply() functions of the PUT nocks
                     return {
                         id: currentGroupDetails.id,
                         name: currentGroupDetails.name, // This should be "Updated Name"
                         aspects: {
-                            "access-group-details": { ...currentGroupDetails.aspects["access-group-details"] },
-                            "access-control": { ...currentGroupDetails.aspects["access-control"] }
+                            "access-group-details": {
+                                ...currentGroupDetails.aspects[
+                                    "access-group-details"
+                                ]
+                            },
+                            "access-control": {
+                                ...currentGroupDetails.aspects["access-control"]
+                            }
                         }
                     };
                 });
@@ -560,9 +658,6 @@ describe("Access Group API Router", function () {
                 ownerId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" // Changed to a valid UUID
             };
 
-            console.log("Nock Is Active (before PUT call):", nock.isActive());
-            console.log("All Nock Pending Mocks (before PUT call):", JSON.stringify(nock.pendingMocks(), null, 2));
-
             // Act
             const res = await request(app)
                 .put(`/v0/auth/accessGroups/${groupId}`)
@@ -570,48 +665,82 @@ describe("Access Group API Router", function () {
 
             // Assert
             expect(res.status).to.equal(200);
-            
-            expect(getInFullNock.isDone(), "GET /inFull/test-group-id nock should have been called").to.be.true;
-            expect(putAccessGroupDetailsNock.isDone(), "PUT /aspects/access-group-details?merge=true nock should be called for name update").to.be.true;
-            expect(putAccessControlNock.isDone(), "PUT /aspects/access-control?merge=true nock should be called for ownerId update").to.be.true;
-            expect(getUpdatedRecordNock.isDone(), "GET /records/test-group-id?aspect=... nock should have been called after updates").to.be.true;
-            
+
+            expect(
+                getInFullNock.isDone(),
+                "GET /inFull/test-group-id nock should have been called"
+            ).to.be.true;
+            expect(
+                putAccessGroupDetailsNock.isDone(),
+                "PUT /aspects/access-group-details?merge=true nock should be called for name update"
+            ).to.be.true;
+            expect(
+                putAccessControlNock.isDone(),
+                "PUT /aspects/access-control?merge=true nock should be called for ownerId update"
+            ).to.be.true;
+            expect(
+                getUpdatedRecordNock.isDone(),
+                "GET /records/test-group-id?aspect=... nock should have been called after updates"
+            ).to.be.true;
+
             let nameInResponseCorrect = false;
-            if (res.body && typeof res.body === 'object') {
-                if ('name' in res.body && res.body.name === "Updated Name") {
+            if (res.body && typeof res.body === "object") {
+                if ("name" in res.body && res.body.name === "Updated Name") {
                     nameInResponseCorrect = true;
-                } else if (res.body.aspects && 
-                           res.body.aspects["access-group-details"] && 
-                           res.body.aspects["access-group-details"].name === "Updated Name") {
+                } else if (
+                    res.body.aspects &&
+                    res.body.aspects["access-group-details"] &&
+                    res.body.aspects["access-group-details"].name ===
+                        "Updated Name"
+                ) {
                     nameInResponseCorrect = true;
                 }
             }
-            expect(nameInResponseCorrect, "Response body should contain updated name").to.be.true;
+            expect(
+                nameInResponseCorrect,
+                "Response body should contain updated name"
+            ).to.be.true;
 
             // Assert that access-group-details.name was updated in the mock registry
-            expect(currentGroupDetails.aspects["access-group-details"]?.name, "Name in mock registry should be updated")
-                .to.equal("Updated Name");
+            expect(
+                currentGroupDetails.aspects["access-group-details"]?.name,
+                "Name in mock registry should be updated"
+            ).to.equal("Updated Name");
 
-            const accessGroupDetailsUpdatedViaAspectEndpoint = patchBody !== undefined || mergeParamSeen === true;
-            expect(accessGroupDetailsUpdatedViaAspectEndpoint, "access-group-details should have been updated via aspect-specific PATCH or PUT with merge=true").to.be.true;
+            const accessGroupDetailsUpdatedViaAspectEndpoint =
+                patchBody !== undefined || mergeParamSeen === true;
+            expect(
+                accessGroupDetailsUpdatedViaAspectEndpoint,
+                "access-group-details should have been updated via aspect-specific PATCH or PUT with merge=true"
+            ).to.be.true;
 
-            if (patchBody !== undefined) { 
+            if (patchBody !== undefined) {
                 expect(patchBody).to.be.an("array");
-                const namePatchOp = (patchBody as any[]).find(op => op.path === "/name" && op.op === "replace");
+                const namePatchOp = (patchBody as any[]).find(
+                    (op) => op.path === "/name" && op.op === "replace"
+                );
                 if (namePatchOp) {
                     expect(namePatchOp.value).to.equal("Updated Name");
                 }
             }
-            
+
             if (reqBody.ownerId) {
                 // Assert that access-control.ownerId was updated in the mock registry
-                expect(currentGroupDetails.aspects["access-control"]?.ownerId, "ownerId in mock registry should be updated")
-                    .to.equal(reqBody.ownerId);
-    
+                expect(
+                    currentGroupDetails.aspects["access-control"]?.ownerId,
+                    "ownerId in mock registry should be updated"
+                ).to.equal(reqBody.ownerId);
+
                 // Assert that the access-control aspect was interacted with via an aspect-specific endpoint (PATCH or PUT with merge=true)
                 // For this test, we are specifically nocking a PUT with merge=true for access-control
-                expect(mergeParamSeenControl, "access-control aspect should have been updated via PUT with merge=true").to.be.true;
-                expect(accessControlPatched, "accessControlPatched should be false as access-control was updated via PUT").to.be.false; 
+                expect(
+                    mergeParamSeenControl,
+                    "access-control aspect should have been updated via PUT with merge=true"
+                ).to.be.true;
+                expect(
+                    accessControlPatched,
+                    "accessControlPatched should be false as access-control was updated via PUT"
+                ).to.be.false;
             }
         });
     });
@@ -621,8 +750,10 @@ describe("Access Group API Router", function () {
             const groupId = "test-group-id";
             const validPermissionId = "11111111-1111-1111-1111-111111111111";
             const validRoleId = "22222222-2222-2222-2222-222222222222";
-            const validExtraPermissionId1 = "33333333-3333-3333-3333-333333333333";
-            const validExtraPermissionId2 = "44444444-4444-4444-4444-444444444444";
+            const validExtraPermissionId1 =
+                "33333333-3333-3333-3333-333333333333";
+            const validExtraPermissionId2 =
+                "44444444-4444-4444-4444-444444444444";
             const originalGroup = {
                 id: groupId,
                 aspects: {
@@ -645,9 +776,7 @@ describe("Access Group API Router", function () {
             registryScope
                 .get(`/records/inFull/${groupId}`)
                 .reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .reply(200, originalGroup);
+            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
             registryScope
                 .get(`/records/${groupId}`)
                 .query({
@@ -671,12 +800,12 @@ describe("Access Group API Router", function () {
             expect(res.status).to.equal(200);
             expect(res.body.result).to.equal(true);
             expect(
-                executedQueries.some(q =>
+                executedQueries.some((q) =>
                     q.query.toLowerCase().includes("delete from user_roles")
                 )
             ).to.be.true;
             expect(
-                executedQueries.some(q =>
+                executedQueries.some((q) =>
                     q.query.toLowerCase().includes("delete from permissions")
                 )
             ).to.be.true;
@@ -715,9 +844,7 @@ describe("Access Group API Router", function () {
             registryScope
                 .get(`/records/${datasetId}`)
                 .reply(200, datasetRecord);
-            registryScope
-                .get(`/records/${groupId}`)
-                .reply(200, originalGroup);
+            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
             registryScope
                 .get(`/records/${groupId}`)
                 .query({
@@ -727,7 +854,7 @@ describe("Access Group API Router", function () {
                 })
                 .reply(200, originalGroup);
             registryScope
-                .put(`/records/aspects/access-control`, body => {
+                .put(`/records/aspects/access-control`, (body) => {
                     putRecordsAspectBody = body;
                     return true;
                 })
@@ -737,7 +864,10 @@ describe("Access Group API Router", function () {
                 })
                 .reply(200, {});
             registryScope
-                .put(`/records/${groupId}/aspects/access-group-details?merge=true`, () => true)
+                .put(
+                    `/records/${groupId}/aspects/access-group-details?merge=true`,
+                    () => true
+                )
                 .reply(200, {});
             registryScope
                 .put(`/records/${datasetId}`)
@@ -793,9 +923,7 @@ describe("Access Group API Router", function () {
                     dereference: "false"
                 })
                 .reply(200, datasetRecord);
-            registryScope
-                .get(`/records/${groupId}`)
-                .reply(200, originalGroup);
+            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
             registryScope
                 .get(`/records/${groupId}`)
                 .query({
@@ -806,13 +934,15 @@ describe("Access Group API Router", function () {
                 .reply(200, originalGroup);
             // Update nock to match DELETE /v0/records/aspectArrayItems/access-control
             registryScope
-                .delete(`/records/aspectArrayItems/access-control`, body => {
+                .delete(`/records/aspectArrayItems/access-control`, (body) => {
                     deleteRecordsAspectArrayItemsBody = body;
                     return true;
                 })
                 .reply(200, {});
             registryScope
-                .put(`/records/${groupId}/aspects/access-group-details?merge=true`)
+                .put(
+                    `/records/${groupId}/aspects/access-group-details?merge=true`
+                )
                 .reply(200, {});
             registryScope
                 .put(`/records/${datasetId}`)
@@ -823,7 +953,9 @@ describe("Access Group API Router", function () {
                 .reply(200, datasetRecord);
             // Act
             const res = await request(app)
-                .delete(`/v0/auth/accessGroups/${groupId}/datasets/${datasetId}`)
+                .delete(
+                    `/v0/auth/accessGroups/${groupId}/datasets/${datasetId}`
+                )
                 .send();
             // Assert
             expect(res.status).to.equal(200);
@@ -848,9 +980,7 @@ describe("Access Group API Router", function () {
             registryScope
                 .get(`/records/inFull/${groupId}`)
                 .reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .reply(200, originalGroup);
+            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
             registryScope
                 .get(`/records/${groupId}`)
                 .query({
@@ -861,7 +991,9 @@ describe("Access Group API Router", function () {
                 .reply(200, originalGroup);
             // Add missing nock for PUT /v0/records/:groupId/aspects/access-group-details?merge=true
             registryScope
-                .put(`/records/${groupId}/aspects/access-group-details?merge=true`)
+                .put(
+                    `/records/${groupId}/aspects/access-group-details?merge=true`
+                )
                 .reply(200, {});
             // Ensure user exists in mock database
             if (typeof db.createUser === "function") {
@@ -882,7 +1014,7 @@ describe("Access Group API Router", function () {
             expect(res.status).to.equal(200);
             expect(res.body.result).to.equal(true);
             expect(
-                executedQueries.some(q =>
+                executedQueries.some((q) =>
                     q.query.toLowerCase().includes("insert into user_roles")
                 )
             ).to.be.true;
@@ -905,9 +1037,7 @@ describe("Access Group API Router", function () {
             registryScope
                 .get(`/records/inFull/${groupId}`)
                 .reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .reply(200, originalGroup);
+            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
             registryScope
                 .get(`/records/${groupId}`)
                 .query({
@@ -918,7 +1048,9 @@ describe("Access Group API Router", function () {
                 .reply(200, originalGroup);
             // Add missing nock for PUT /v0/records/:groupId/aspects/access-group-details?merge=true
             registryScope
-                .put(`/records/${groupId}/aspects/access-group-details?merge=true`)
+                .put(
+                    `/records/${groupId}/aspects/access-group-details?merge=true`
+                )
                 .reply(200, {});
             // Ensure user exists in mock database
             if (typeof db.createUser === "function") {
@@ -939,7 +1071,7 @@ describe("Access Group API Router", function () {
             expect(res.status).to.equal(200);
             expect(res.body.result).to.be.oneOf([true, false]);
             expect(
-                executedQueries.some(q =>
+                executedQueries.some((q) =>
                     q.query.toLowerCase().includes("delete from user_roles")
                 )
             ).to.be.true;
@@ -962,9 +1094,7 @@ describe("Access Group API Router", function () {
             registryScope
                 .get(`/records/inFull/${groupId}`)
                 .reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .reply(200, originalGroup);
+            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
             registryScope
                 .get(`/records/${groupId}`)
                 .query({
@@ -1000,9 +1130,9 @@ describe("Access Group API Router", function () {
             // Assert
             expect(res.status).to.equal(200);
             expect(res.body).to.be.an("array");
-            const found = executedQueries.some(q => {
+            const found = executedQueries.some((q) => {
                 const qstr = q.query.toLowerCase();
-                return qstr.includes('from') && qstr.includes('users');
+                return qstr.includes("from") && qstr.includes("users");
             });
             if (!found) {
                 // Print for debug
@@ -1028,9 +1158,7 @@ describe("Access Group API Router", function () {
             registryScope
                 .get(`/records/inFull/${groupId}`)
                 .reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .reply(200, originalGroup);
+            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
             registryScope
                 .get(`/records/${groupId}`)
                 .query({
@@ -1062,7 +1190,7 @@ describe("Access Group API Router", function () {
             expect(res.status).to.equal(200);
             expect(res.body).to.have.property("count");
             expect(
-                executedQueries.some(q =>
+                executedQueries.some((q) =>
                     q.query.toLowerCase().includes("count(users.*) as count")
                 )
             ).to.be.true;
