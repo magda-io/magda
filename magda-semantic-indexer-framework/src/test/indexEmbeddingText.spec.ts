@@ -76,8 +76,8 @@ describe("indexEmbeddingText", () => {
             itemType: "storageObject",
             formatTypes: ["txt"]
         });
-        config.argv.semanticIndexerConfig.semanticIndexer.bulkIndexSize = 3;
-        config.argv.semanticIndexerConfig.semanticIndexer.bulkEmbeddingsSize = 3;
+        config.argv.semanticIndexerConfig.bulkIndexSize = 3;
+        config.argv.semanticIndexerConfig.bulkEmbeddingsSize = 3;
 
         await indexEmbeddingText({
             options: config,

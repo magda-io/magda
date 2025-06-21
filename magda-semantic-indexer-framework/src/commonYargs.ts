@@ -3,47 +3,48 @@ import commonMinionYargs, {
     MinionArguments
 } from "magda-minion-framework/src/commonYargs.js";
 import { require } from "@magda/esm-utils";
-import { MinioConfig, SemanticIndexerConfig } from "./configType.js";
 
-export const defaultConfig: SemanticIndexerConfig = {
-    semanticIndexer: {
-        chunkSizeLimit: 512,
-        overlap: 64,
-        bulkEmbeddingsSize: 1,
-        bulkIndexSize: 50,
-        opensearch: {
-            serverUrl: "http://localhost:9200",
-            indices: {
-                semanticIndex: {
-                    indexName: "semantic-index",
-                    indexVersion: 1,
-                    numberOfShards: 1,
-                    numberOfReplicas: 0,
-                    knnVectorFieldConfig: {
-                        mode: "in_memory",
-                        dimension: 768,
-                        spaceType: "l2",
-                        efConstruction: 100,
-                        efSearch: 100,
-                        m: 16,
-                        encoder: {
-                            name: "sq",
-                            type: "fp16",
-                            clip: false
-                        }
-                    }
-                }
-            }
-        },
-        embeddingApi: {
-            baseUrl: "http://localhost:3000"
-        }
-    }
-};
+export interface SemanticIndexerConfig {
+    numberOfShards: number;
+    numberOfReplicas: number;
+    indexName: string;
+    indexVersion: number;
+    chunkSizeLimit: number;
+    overlap: number;
+    bulkEmbeddingsSize: number;
+    bulkIndexSize: number;
+    fullIndexName?: string;
+    knnVectorFieldConfig: {
+        mode: string;
+        dimension: number;
+        spaceType: string;
+        efConstruction: number;
+        efSearch: number;
+        m: number;
+        encoder?: {
+            name: string;
+            type: string;
+            clip: boolean;
+        };
+        compressionLevel?: string;
+    };
+}
+
+export interface MinioConfig {
+    endPoint: string;
+    port: number;
+    useSSL: boolean;
+    region: string;
+    defaultDatasetBucket: string;
+}
 
 export interface SemanticIndexerArguments extends MinionArguments {
+    opensearchApiURL: string;
+    embeddingApiURL: string;
     semanticIndexerConfig: SemanticIndexerConfig;
     minioConfig: MinioConfig;
+    minioAccessKey: string;
+    minioSecretKey: string;
 }
 
 export function commonYargs(
@@ -58,13 +59,29 @@ export function commonYargs(
                 .option("semanticIndexerConfig", {
                     describe: "Semantic indexer configuration json",
                     type: "string",
-                    coerce: (path?: string): SemanticIndexerConfig => {
+                    coerce: (path: string): SemanticIndexerConfig => {
+                        if (!path) {
+                            throw new Error(
+                                "Semantic indexer configuration not found"
+                            );
+                        }
                         const config: SemanticIndexerConfig =
                             path && require(path);
-                        return config || defaultConfig;
+                        return config;
                     },
-                    default:
-                        process.env.SEMANTIC_INDEXER_CONFIG_PATH || undefined
+                    default: process.env.SEMANTIC_INDEXER_CONFIG_PATH || null
+                })
+                .option("minioConfig", {
+                    describe: "Minio configuration json",
+                    type: "string",
+                    coerce: (path: string): MinioConfig => {
+                        if (!path) {
+                            throw new Error("Minio configuration not found");
+                        }
+                        const config: MinioConfig = path && require(path);
+                        return config;
+                    },
+                    default: process.env.MINIO_CONFIG_PATH || null
                 })
                 .option("minioAccessKey", {
                     describe: "The access key to your minio server.",
@@ -78,52 +95,22 @@ export function commonYargs(
                     demand: true,
                     default: process.env.MINIO_SECRET_KEY || ""
                 })
-                .option("minioEnableSSL", {
-                    describe:
-                        "Whether or not to use https over http. Defaults to true",
-                    type: "boolean",
-                    default: false
-                })
-                .option("minioHost", {
-                    describe: "Host where MinIO server is running.",
-                    type: "string",
-                    default: process.env.MINIO_HOST || "localhost"
-                })
-                .option("minioPort", {
-                    describe: "Port where MinIO server is running.",
-                    type: "number",
-                    default: process.env.MINIO_PORT
-                        ? Number.parseInt(process.env.MINIO_PORT)
-                        : 9000
-                })
-                .option("minioRegion", {
-                    describe: "Region where the server is being created.",
-                    type: "string",
-                    default: "unspecified-region"
-                })
-                .option("defaultDatasetBucket", {
-                    describe:
-                        "The name of the bucket to store datasets in by default.",
+                .option("opensearchApiURL", {
+                    describe: "The URL of the OpenSearch API.",
                     type: "string",
                     default:
-                        process.env.DEFAULT_DATASET_BUCKET || "magda-datasets"
+                        process.env.OPENSEARCH_API_URL ||
+                        "http://localhost:9200"
+                })
+                .option("embeddingApiURL", {
+                    describe: "The URL of the embedding API.",
+                    type: "string",
+                    default:
+                        process.env.EMBEDDING_API_URL || "http://localhost:3000"
                 })
     );
 
-    argv.minioConfig = {
-        endPoint: argv.minioHost,
-        port: argv.minioPort,
-        useSSL: argv.minioEnableSSL,
-        accessKey: argv.minioAccessKey,
-        secretKey: argv.minioSecretKey,
-        region: argv.minioRegion,
-        defaultDatasetBucket: argv.defaultDatasetBucket
-    };
-
-    const {
-        indexName,
-        indexVersion
-    } = argv.semanticIndexerConfig.semanticIndexer.opensearch.indices.semanticIndex;
-    argv.semanticIndexerConfig.semanticIndexer.opensearch.indices.semanticIndex.fullIndexName = `${indexName}-v${indexVersion}`;
+    const { indexName, indexVersion } = argv.semanticIndexerConfig;
+    argv.semanticIndexerConfig.fullIndexName = `${indexName}-v${indexVersion}`;
     return argv;
 }

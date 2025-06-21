@@ -13,19 +13,20 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
 import { SkipError } from "./SkipError.js";
-import * as Minio from "minio";
 import urijs from "urijs";
-import { MinioConfig } from "./configType.js";
 import { pipeline } from "stream/promises";
 import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 import ServerError from "magda-typescript-common/src/ServerError.js";
+import { MinioClient } from "./MinioClient.js";
+import { deleteTempFile } from "./helpers.js";
 
 // The onRecordFound function passed to minion sdk to handle storage object records
 export const onRecordFoundStorageObject = (
     options: SemanticIndexerOptions,
     chunker: Chunker,
     embeddingApiClient: EmbeddingApiClient,
-    opensearchApiClient: OpensearchApiClient
+    opensearchApiClient: OpensearchApiClient,
+    minioClient: MinioClient
 ): onRecordFoundType => {
     return async (dist: Record, registry) => {
         try {
@@ -54,16 +55,21 @@ export const onRecordFoundStorageObject = (
 
             const parentRecordId = await getParentRecordId(dist.id, registry);
             try {
-                if (
-                    options.autoDownloadFile === undefined ||
-                    options.autoDownloadFile
-                ) {
-                    filePath = await downloadFileWithRetry(
-                        fileDownloadURL,
-                        options.argv.minioConfig
+                try {
+                    if (
+                        options.autoDownloadFile === undefined ||
+                        options.autoDownloadFile
+                    ) {
+                        filePath = await downloadFileWithRetry(
+                            fileDownloadURL,
+                            minioClient
+                        );
+                    }
+                } catch (err) {
+                    throw new SkipError(
+                        `Error in downloading file: ${(err as Error).message}`
                     );
                 }
-
                 try {
                     embeddingText = await options.createEmbeddingText({
                         record: dist,
@@ -115,10 +121,10 @@ export const onRecordFoundStorageObject = (
 
 async function downloadFileWithRetry(
     url: string,
-    minioConfig: MinioConfig
+    minioClient: MinioClient
 ): Promise<string> {
     return retry(
-        () => downloadFile(url, minioConfig),
+        () => downloadFile(url, minioClient),
         1,
         5,
         (err, retries) => {}
@@ -127,11 +133,17 @@ async function downloadFileWithRetry(
 
 async function downloadFile(
     url: string,
-    minioConfig: MinioConfig
+    minioClient: MinioClient
 ): Promise<string> {
     const uri = urijs(url);
     if (uri.protocol() === "magda" && uri.hostname() === "storage-api") {
-        return downloadFileFromMinio(url, minioConfig);
+        try {
+            return await minioClient.downloadFile(url);
+        } catch (err) {
+            throw new SkipError(
+                `Failed to download file from Minio: ${(err as Error).message}`
+            );
+        }
     }
 
     let response;
@@ -163,61 +175,6 @@ async function downloadFile(
     } catch (err) {
         await deleteTempFile(tempFilePath);
         throw new SkipError(`Failed to write file`);
-    }
-}
-
-let minioClientInstance: Minio.Client | null = null;
-
-function getMinioClient(config: MinioConfig): Minio.Client {
-    if (!minioClientInstance) {
-        minioClientInstance = new Minio.Client({
-            endPoint: config.endPoint,
-            port: config.port,
-            accessKey: config.accessKey,
-            secretKey: config.secretKey,
-            useSSL: config.useSSL,
-            region: config.region
-        });
-    }
-    return minioClientInstance;
-}
-
-async function downloadFileFromMinio(
-    url: string,
-    minioConfig: MinioConfig
-): Promise<string> {
-    const uri = urijs(url);
-    const [datasetId, distributionId, fileName] = uri.segmentCoded();
-
-    const minioClient = getMinioClient(minioConfig);
-    const objectName = `${datasetId}/${distributionId}/${fileName}`;
-
-    const tempDir = tmpdir();
-    const tempFileName = `${uuidv4()}`;
-    const tempFilePath = join(tempDir, tempFileName);
-
-    try {
-        await minioClient.fGetObject(
-            minioConfig.defaultDatasetBucket,
-            objectName,
-            tempFilePath
-        );
-        return tempFilePath;
-    } catch (err) {
-        await deleteTempFile(tempFilePath);
-        throw new SkipError(
-            `Failed to download file from Minio: ${(err as Error).message}`
-        );
-    }
-}
-
-async function deleteTempFile(filePath: string) {
-    if (fs.existsSync(filePath)) {
-        fs.unlink(filePath, (err) => {
-            if (err) {
-                console.error("Error deleting file");
-            }
-        });
     }
 }
 

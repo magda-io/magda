@@ -225,12 +225,10 @@ async function processSingleText({
     metadata: Metadata;
     text: string;
 }) {
-    const semanticIndexerConfig =
-        options.argv.semanticIndexerConfig.semanticIndexer;
+    const semanticIndexerConfig = options.argv.semanticIndexerConfig;
     const bulkEmbeddingsSize = semanticIndexerConfig.bulkEmbeddingsSize || 50;
     const bulkIndexSize = semanticIndexerConfig.bulkIndexSize || 1;
-    const indexName =
-        semanticIndexerConfig.opensearch.indices.semanticIndex.fullIndexName;
+    const indexName = semanticIndexerConfig.fullIndexName;
 
     const chunks = await chunker.chunk(text);
     if (!chunks || chunks.length === 0) {
