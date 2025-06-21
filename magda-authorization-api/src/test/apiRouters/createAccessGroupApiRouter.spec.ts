@@ -12,6 +12,7 @@ import Database from "../../Database.js";
 import createAccessGroupApiRouter from "../../apiRouters/createAccessGroupApiRouter.js";
 import { UnconditionalTrueDecision } from "@magda/typescript-common/dist/opa/AuthDecision.js";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import { v4 as uuidV4 } from "uuid";
 
 const REGISTRY_BASE_URL = "http://localhost:6101/v0";
 
@@ -26,6 +27,7 @@ describe("Access Group API Router", function () {
     let createPermissionCalls: any[] = [];
     let registryRequestBody: any;
     let currentGroupDetails: any;
+    let datasetRecordMock: any;
     let mergeParamSeen: boolean;
     let mergeParamSeenControl: boolean;
     let patchBody: any;
@@ -47,8 +49,9 @@ describe("Access Group API Router", function () {
     beforeEach(function () {
         // Ensure a clean nock state and strict network control for each test
         nock.disableNetConnect();
-        nock.enableNetConnect((host) => host.startsWith("127.0.0.1"));
+        nock.enableNetConnect("127.0.0.1");
         if (!nock.isActive()) {
+            // Ensure nock is active after cleaning and net connect setup
             nock.activate();
         }
         nock.cleanAll();
@@ -116,29 +119,24 @@ describe("Access Group API Router", function () {
                     resourceUri: "object/record",
                     keywords: ["old"],
                     operationUris: ["object/record/read"],
-                    permissionId: "11111111-1111-1111-1111-111111111111",
-                    roleId: "22222222-2222-2222-2222-222222222222",
-                    extraControlPermissionIds: [
-                        "33333333-3333-3333-3333-333333333333",
-                        "44444444-4444-4444-4444-444444444444"
-                    ]
+                    permissionId: uuidV4(),
+                    roleId: uuidV4(),
+                    extraControlPermissionIds: [uuidV4(), uuidV4()]
                 },
                 "access-control": {
                     ownerId: null as string | null,
                     orgUnitId: null as string | null,
-                    preAuthorisedPermissionIds: [
-                        "33333333-3333-3333-3333-333333333333"
-                    ]
+                    preAuthorisedPermissionIds: [uuidV4()]
                 }
             }
         };
 
-        const datasetRecordMock = {
+        datasetRecordMock = {
             id: "test-dataset-id",
             name: "Test Dataset",
             aspects: {
                 "dataset-distributions": {
-                    distributions: [] as string[]
+                    distributions: ["dist-1", "dist-2"] as string[]
                 },
                 "access-control": {
                     // Datasets can also have access-control
@@ -170,9 +168,9 @@ describe("Access Group API Router", function () {
                 const recordId = recordIdMatch ? recordIdMatch[1] : null;
 
                 let targetRecord: any = null;
-                if (recordId === "test-group-id") {
+                if (recordId === currentGroupDetails.id) {
                     targetRecord = currentGroupDetails;
-                } else if (recordId === "test-dataset-id") {
+                } else if (recordId === datasetRecordMock.id) {
                     targetRecord = datasetRecordMock;
                 }
 
@@ -247,142 +245,6 @@ describe("Access Group API Router", function () {
                 ];
             });
 
-        // Updated general PUT handler
-        registryScope
-            .persist()
-            .put(/\/records\/test-group-id.*/)
-            .reply(function (this: any, uri: string, body: any) {
-                const requestUrl = new URL(uri, REGISTRY_BASE_URL);
-                const requestPath = requestUrl.pathname;
-                const queryParams = requestUrl.searchParams;
-                const isMergeTrue = queryParams.get("merge") === "true";
-                const aspectBody =
-                    typeof body === "string" ? JSON.parse(body) : body;
-                let response: [number, object] = [
-                    500,
-                    { message: "Unhandled PUT request in nock" }
-                ];
-
-                if (requestPath.includes("/aspects/")) {
-                    const aspectNameMatch = requestPath.match(
-                        /\/aspects\/([^\/?]+)/
-                    );
-                    if (aspectNameMatch) {
-                        const aspectName = aspectNameMatch[1];
-                        if (currentGroupDetails.aspects[aspectName]) {
-                            currentGroupDetails.aspects[aspectName] = {
-                                ...currentGroupDetails.aspects[aspectName],
-                                ...aspectBody
-                            };
-                            if (
-                                aspectName === "access-group-details" &&
-                                aspectBody.name
-                            ) {
-                                currentGroupDetails.name = aspectBody.name;
-                            }
-                            if (
-                                aspectName === "access-group-details" &&
-                                isMergeTrue
-                            )
-                                mergeParamSeen = true;
-                            if (aspectName === "access-control" && isMergeTrue)
-                                mergeParamSeenControl = true;
-                            response = [
-                                200,
-                                { ...currentGroupDetails.aspects[aspectName] }
-                            ];
-                        } else {
-                            response = [
-                                404,
-                                {
-                                    message: `Aspect ${aspectName} not found for PUT`
-                                }
-                            ];
-                        }
-                    }
-                } else if (requestPath.endsWith("/test-group-id")) {
-                    if (aspectBody.id === currentGroupDetails.id) {
-                        currentGroupDetails.name =
-                            aspectBody.name || currentGroupDetails.name;
-                        currentGroupDetails.aspects =
-                            aspectBody.aspects || currentGroupDetails.aspects;
-                        response = [200, { ...currentGroupDetails }];
-                    } else {
-                        response = [
-                            400,
-                            {
-                                message:
-                                    "Record ID mismatch or invalid body for full record PUT"
-                            }
-                        ];
-                    }
-                }
-                return response;
-            });
-
-        // Updated general PATCH handler
-        registryScope
-            .persist()
-            .patch(/\/records\/test-group-id.*/)
-            .reply(function (this: any, uri: string, patchPayload: any) {
-                const requestPath = new URL(uri, REGISTRY_BASE_URL).pathname;
-                let response: [number, object] = [
-                    500,
-                    { message: "Unhandled PATCH request in nock" }
-                ];
-
-                if (requestPath.includes("/aspects/")) {
-                    const aspectNameMatch = requestPath.match(
-                        /\/aspects\/([^\/?]+)/
-                    );
-                    if (aspectNameMatch) {
-                        const aspectName = aspectNameMatch[1];
-                        if (currentGroupDetails.aspects[aspectName]) {
-                            let aspectData = {
-                                ...currentGroupDetails.aspects[aspectName]
-                            };
-                            if (Array.isArray(patchPayload)) {
-                                for (const op of patchPayload) {
-                                    if (
-                                        op.op === "replace" &&
-                                        op.path &&
-                                        op.path.startsWith("/")
-                                    ) {
-                                        const key = op.path.substring(1);
-                                        aspectData[key] = op.value;
-                                        if (
-                                            aspectName ===
-                                                "access-group-details" &&
-                                            key === "name"
-                                        ) {
-                                            currentGroupDetails.name = op.value;
-                                        }
-                                    }
-                                }
-                            }
-                            currentGroupDetails.aspects[
-                                aspectName
-                            ] = aspectData;
-                            if (aspectName === "access-group-details")
-                                patchBody = patchPayload;
-                            else if (aspectName === "access-control")
-                                accessControlPatched = true;
-                            response = [
-                                200,
-                                { ...currentGroupDetails.aspects[aspectName] }
-                            ];
-                        } else {
-                            response = [
-                                404,
-                                {
-                                    message: `Aspect ${aspectName} not found for PATCH`
-                                }
-                            ];
-                        }
-                    }
-                }
-                return response;
-            });
         const apiRouter = createAccessGroupApiRouter({
             jwtSecret: argv.jwtSecret,
             database: (db as unknown) as Database,
@@ -437,9 +299,9 @@ describe("Access Group API Router", function () {
                     return true;
                 })
                 .reply(200, () => {
-                    return { id: "test-group-id" };
+                    return { id: registryRequestBody.id };
                 });
-
+            const ownerId = uuidV4();
             const reqBody: {
                 name: string;
                 description: string;
@@ -449,12 +311,12 @@ describe("Access Group API Router", function () {
                 ownerId: string | null;
                 orgUnitId: string | null;
             } = {
-                name: "Test Group",
-                description: "desc",
+                name: "Test Group 123",
+                description: "desc 123",
                 resourceUri: "object/record",
                 keywords: ["a", "b"],
-                operationUris: ["object/record/read"],
-                ownerId: null,
+                operationUris: ["object/record/read", "object/record/update"],
+                ownerId: ownerId,
                 orgUnitId: null
             };
 
@@ -492,7 +354,8 @@ describe("Access Group API Router", function () {
                 "object/record"
             );
             expect(createPermissionCalls[0].operationUris).to.deep.equal([
-                "object/record/read"
+                "object/record/read",
+                "object/record/update"
             ]);
             // 2. Group record read permission
             expect(createPermissionCalls[1].resourceUri).to.equal(
@@ -552,16 +415,10 @@ describe("Access Group API Router", function () {
     describe("PUT /v0/auth/accessGroups/:groupId", () => {
         it("should update an access group and call registry API with correct patch", async () => {
             const groupId = "test-group-id";
-
-            // Create a completely clean nock environment for this test
+            // we don't want to use nocking
+            // Clean all nocks before setting up new ones
             nock.cleanAll();
-            nock.disableNetConnect();
-            nock.enableNetConnect("127.0.0.1"); // Allow supertest to connect to local app
-            if (!nock.isActive()) {
-                // Ensure nock is active after cleaning and net connect setup
-                nock.activate();
-            }
-
+            const ownerId = uuidV4();
             // 1. Nock for the initial GET /inFull/test-group-id
             // This uses currentGroupDetails as it is defined in beforeEach (initial state)
             const getInFullNock = nock(REGISTRY_BASE_URL)
@@ -608,10 +465,7 @@ describe("Access Group API Router", function () {
                 .put(
                     "/records/test-group-id/aspects/access-control?merge=true",
                     (body) => {
-                        const isMatch =
-                            body &&
-                            body.ownerId ===
-                                "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"; // Use the actual UUID
+                        const isMatch = body && body.ownerId === ownerId;
                         return isMatch;
                     }
                 )
@@ -655,7 +509,7 @@ describe("Access Group API Router", function () {
 
             const reqBody = {
                 name: "Updated Name",
-                ownerId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" // Changed to a valid UUID
+                ownerId: ownerId
             };
 
             // Act
@@ -747,13 +601,11 @@ describe("Access Group API Router", function () {
 
     describe("DELETE /v0/auth/accessGroups/:groupId", () => {
         it("should delete an access group and call registry API with correct parameters", async () => {
-            const groupId = "test-group-id";
-            const validPermissionId = "11111111-1111-1111-1111-111111111111";
-            const validRoleId = "22222222-2222-2222-2222-222222222222";
-            const validExtraPermissionId1 =
-                "33333333-3333-3333-3333-333333333333";
-            const validExtraPermissionId2 =
-                "44444444-4444-4444-4444-444444444444";
+            const groupId = uuidV4();
+            const validPermissionId = uuidV4();
+            const validRoleId = uuidV4();
+            const validExtraPermissionId1 = uuidV4();
+            const validExtraPermissionId2 = uuidV4();
             const originalGroup = {
                 id: groupId,
                 aspects: {
@@ -772,31 +624,18 @@ describe("Access Group API Router", function () {
                     }
                 }
             };
-            // Mock registry and DB
-            registryScope
-                .get(`/records/inFull/${groupId}`)
-                .reply(200, originalGroup);
-            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .query({
-                    aspect: "access-group-details",
-                    optionalAspect: "access-control",
-                    dereference: "false"
-                })
-                .reply(200, originalGroup);
-            registryScope
-                .get(`/records`, undefined, { reqheaders: { accept: /.*/ } })
-                .query(true)
-                .reply(200, { records: [] });
-            registryScope
-                .delete(`/records/${groupId}`)
-                .reply(200, { deleted: true });
+            currentGroupDetails = originalGroup; // Update the mock group details
+            let deleteEndpointCalled = false;
+            registryScope.delete(`/records/${groupId}`).reply(200, () => {
+                deleteEndpointCalled = true;
+                return { deleted: true };
+            });
             // Act
             const res = await request(app)
                 .delete(`/v0/auth/accessGroups/${groupId}`)
                 .send();
             // Assert
+            expect(deleteEndpointCalled).to.be.true;
             expect(res.status).to.equal(200);
             expect(res.body.result).to.equal(true);
             expect(
@@ -814,9 +653,9 @@ describe("Access Group API Router", function () {
 
     describe("POST /v0/auth/accessGroups/:groupId/datasets/:datasetId", () => {
         it("should add a dataset to an access group and call registry API with correct parameters", async () => {
-            const groupId = "test-group-id";
-            const datasetId = "test-dataset-id";
-            const validPermissionId = "11111111-1111-1111-1111-111111111111";
+            const groupId = uuidV4();
+            const datasetId = uuidV4();
+            const validPermissionId = uuidV4();
             const originalGroup = {
                 id: groupId,
                 aspects: {
@@ -825,34 +664,20 @@ describe("Access Group API Router", function () {
                     }
                 }
             };
+            currentGroupDetails = originalGroup; // Update the mock group details
+            const distId1 = uuidV4();
+            const distId2 = uuidV4();
             const datasetRecord = {
                 id: datasetId,
                 aspects: {
                     "dataset-distributions": {
-                        distributions: [] as string[]
+                        distributions: [distId1, distId2]
                     }
                 }
             };
+            datasetRecordMock = datasetRecord; // Update the mock dataset record
             let putRecordsAspectBody: any = undefined;
             let mergeParamSeen = false;
-            registryScope
-                .get(`/records/inFull/${datasetId}`)
-                .reply(200, datasetRecord);
-            registryScope
-                .get(`/records/inFull/${groupId}`)
-                .reply(200, originalGroup);
-            registryScope
-                .get(`/records/${datasetId}`)
-                .reply(200, datasetRecord);
-            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .query({
-                    aspect: "access-group-details",
-                    optionalAspect: "access-control",
-                    dereference: "false"
-                })
-                .reply(200, originalGroup);
             registryScope
                 .put(`/records/aspects/access-control`, (body) => {
                     putRecordsAspectBody = body;
@@ -866,16 +691,12 @@ describe("Access Group API Router", function () {
             registryScope
                 .put(
                     `/records/${groupId}/aspects/access-group-details?merge=true`,
-                    () => true
+                    (body) => {
+                        expect(body).to.has.property("editTime");
+                        return true;
+                    }
                 )
                 .reply(200, {});
-            registryScope
-                .put(`/records/${datasetId}`)
-                .query({
-                    optionalAspect: "dataset-distributions",
-                    dereference: "false"
-                })
-                .reply(200, datasetRecord);
             // Act
             const res = await request(app)
                 .post(`/v0/auth/accessGroups/${groupId}/datasets/${datasetId}`)
@@ -884,15 +705,21 @@ describe("Access Group API Router", function () {
             expect(res.status).to.equal(200);
             expect(res.body.result).to.equal(true);
             expect(putRecordsAspectBody).to.be.an("object");
+            expect(putRecordsAspectBody).to.deep.equal({
+                recordIds: [distId1, distId2, datasetId],
+                data: {
+                    preAuthorisedPermissionIds: [validPermissionId]
+                }
+            });
             expect(mergeParamSeen).to.be.true;
         });
     });
 
     describe("DELETE /v0/auth/accessGroups/:groupId/datasets/:datasetId", () => {
         it("should remove a dataset from an access group and call registry API with correct parameters", async () => {
-            const groupId = "test-group-id";
-            const datasetId = "test-dataset-id";
-            const validPermissionId = "11111111-1111-1111-1111-111111111111";
+            const groupId = uuidV4();
+            const datasetId = uuidV4();
+            const validPermissionId = uuidV4();
             const originalGroup = {
                 id: groupId,
                 aspects: {
@@ -901,37 +728,20 @@ describe("Access Group API Router", function () {
                     }
                 }
             };
+            currentGroupDetails = originalGroup; // Update the mock group details
+            const distId1 = uuidV4();
+            const distId2 = uuidV4();
             const datasetRecord = {
                 id: datasetId,
                 aspects: {
                     "dataset-distributions": {
-                        distributions: [] as string[]
+                        distributions: [distId1, distId2] as string[]
                     }
                 }
             };
+            datasetRecordMock = datasetRecord; // Update the mock dataset record
             let deleteRecordsAspectArrayItemsBody: any = undefined;
-            registryScope
-                .get(`/records/inFull/${groupId}`)
-                .reply(200, originalGroup);
-            registryScope
-                .get(`/records/${datasetId}`)
-                .reply(200, datasetRecord);
-            registryScope
-                .get(`/records/${datasetId}`)
-                .query({
-                    optionalAspect: "dataset-distributions",
-                    dereference: "false"
-                })
-                .reply(200, datasetRecord);
-            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .query({
-                    aspect: "access-group-details",
-                    optionalAspect: "access-control",
-                    dereference: "false"
-                })
-                .reply(200, originalGroup);
+
             // Update nock to match DELETE /v0/records/aspectArrayItems/access-control
             registryScope
                 .delete(`/records/aspectArrayItems/access-control`, (body) => {
@@ -941,16 +751,13 @@ describe("Access Group API Router", function () {
                 .reply(200, {});
             registryScope
                 .put(
-                    `/records/${groupId}/aspects/access-group-details?merge=true`
+                    `/records/${groupId}/aspects/access-group-details?merge=true`,
+                    (body) => {
+                        expect(body).to.has.property("editTime");
+                        return true;
+                    }
                 )
                 .reply(200, {});
-            registryScope
-                .put(`/records/${datasetId}`)
-                .query({
-                    optionalAspect: "dataset-distributions",
-                    dereference: "false"
-                })
-                .reply(200, datasetRecord);
             // Act
             const res = await request(app)
                 .delete(
@@ -960,15 +767,19 @@ describe("Access Group API Router", function () {
             // Assert
             expect(res.status).to.equal(200);
             expect(res.body.result).to.equal(true);
-            expect(deleteRecordsAspectArrayItemsBody).to.be.an("object");
+            expect(deleteRecordsAspectArrayItemsBody).to.deep.equal({
+                recordIds: [datasetId, distId1, distId2],
+                jsonPath: "$.preAuthorisedPermissionIds",
+                items: [validPermissionId]
+            });
         });
     });
 
     describe("POST /v0/auth/accessGroups/:groupId/users/:userId", () => {
         it("should add a user to an access group and execute correct SQL", async () => {
-            const groupId = "test-group-id";
-            const userId = "55555555-5555-5555-5555-555555555555";
-            const validRoleId = "22222222-2222-2222-2222-222222222222";
+            const groupId = uuidV4();
+            const userId = uuidV4();
+            const validRoleId = uuidV4();
             const originalGroup = {
                 id: groupId,
                 aspects: {
@@ -977,22 +788,15 @@ describe("Access Group API Router", function () {
                     }
                 }
             };
-            registryScope
-                .get(`/records/inFull/${groupId}`)
-                .reply(200, originalGroup);
-            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .query({
-                    aspect: "access-group-details",
-                    optionalAspect: "access-control",
-                    dereference: "false"
-                })
-                .reply(200, originalGroup);
+            currentGroupDetails = originalGroup; // Update the mock group details
             // Add missing nock for PUT /v0/records/:groupId/aspects/access-group-details?merge=true
             registryScope
                 .put(
-                    `/records/${groupId}/aspects/access-group-details?merge=true`
+                    `/records/${groupId}/aspects/access-group-details?merge=true`,
+                    (body) => {
+                        expect(body).to.has.property("editTime");
+                        return true;
+                    }
                 )
                 .reply(200, {});
             // Ensure user exists in mock database
@@ -1014,8 +818,14 @@ describe("Access Group API Router", function () {
             expect(res.status).to.equal(200);
             expect(res.body.result).to.equal(true);
             expect(
-                executedQueries.some((q) =>
-                    q.query.toLowerCase().includes("insert into user_roles")
+                // added access group managed role to the user
+                executedQueries.some(
+                    (q) =>
+                        q.query
+                            .toLowerCase()
+                            .includes("insert into user_roles") &&
+                        q.params.includes(userId) &&
+                        q.params.includes(validRoleId)
                 )
             ).to.be.true;
         });
@@ -1023,9 +833,9 @@ describe("Access Group API Router", function () {
 
     describe("DELETE /v0/auth/accessGroups/:groupId/users/:userId", () => {
         it("should remove a user from an access group and execute correct SQL", async () => {
-            const groupId = "test-group-id";
-            const userId = "55555555-5555-5555-5555-555555555555";
-            const validRoleId = "22222222-2222-2222-2222-222222222222";
+            const groupId = uuidV4();
+            const userId = uuidV4();
+            const validRoleId = uuidV4();
             const originalGroup = {
                 id: groupId,
                 aspects: {
@@ -1034,22 +844,15 @@ describe("Access Group API Router", function () {
                     }
                 }
             };
-            registryScope
-                .get(`/records/inFull/${groupId}`)
-                .reply(200, originalGroup);
-            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .query({
-                    aspect: "access-group-details",
-                    optionalAspect: "access-control",
-                    dereference: "false"
-                })
-                .reply(200, originalGroup);
+            currentGroupDetails = originalGroup; // Update the mock group details
             // Add missing nock for PUT /v0/records/:groupId/aspects/access-group-details?merge=true
             registryScope
                 .put(
-                    `/records/${groupId}/aspects/access-group-details?merge=true`
+                    `/records/${groupId}/aspects/access-group-details?merge=true`,
+                    (body) => {
+                        expect(body).to.has.property("editTime");
+                        return true;
+                    }
                 )
                 .reply(200, {});
             // Ensure user exists in mock database
@@ -1071,8 +874,13 @@ describe("Access Group API Router", function () {
             expect(res.status).to.equal(200);
             expect(res.body.result).to.be.oneOf([true, false]);
             expect(
-                executedQueries.some((q) =>
-                    q.query.toLowerCase().includes("delete from user_roles")
+                executedQueries.some(
+                    (q) =>
+                        q.query
+                            .toLowerCase()
+                            .includes("delete from user_roles") &&
+                        q.params.includes(userId) &&
+                        q.params.includes(validRoleId)
                 )
             ).to.be.true;
         });
@@ -1081,8 +889,9 @@ describe("Access Group API Router", function () {
     describe("GET /v0/auth/accessGroups/:groupId/users", () => {
         it("should list users in an access group and execute correct SQL", async () => {
             executedQueries = [];
-            const groupId = "test-group-id";
-            const validRoleId = "22222222-2222-2222-2222-222222222222";
+            const groupId = uuidV4();
+            const userId = uuidV4();
+            const validRoleId = uuidV4();
             const originalGroup = {
                 id: groupId,
                 aspects: {
@@ -1091,35 +900,23 @@ describe("Access Group API Router", function () {
                     }
                 }
             };
-            registryScope
-                .get(`/records/inFull/${groupId}`)
-                .reply(200, originalGroup);
-            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .query({
-                    aspect: "access-group-details",
-                    optionalAspect: "access-control",
-                    dereference: "false"
-                })
-                .reply(200, originalGroup);
+            currentGroupDetails = originalGroup; // Update the mock group details
             // Patch db pool to return a user array for user listing and push queries to executedQueries
+            const userRecord = {
+                id: userId,
+                displayName: "Test User",
+                email: "test@example.com",
+                photoURL: "",
+                source: "test-source",
+                sourceId: "test-source-id"
+            };
             db.setDbPool({
                 query: async (queryOrConfig: any, values?: any[]) => {
                     const query = queryOrConfig.text ?? queryOrConfig;
                     const params = queryOrConfig.values ?? values ?? [];
                     executedQueries.push({ query, params });
                     return {
-                        rows: [
-                            {
-                                id: "55555555-5555-5555-5555-555555555555",
-                                displayName: "Test User",
-                                email: "test@example.com",
-                                photoURL: "",
-                                source: "test-source",
-                                sourceId: "test-source-id"
-                            }
-                        ]
+                        rows: [userRecord]
                     };
                 }
             } as any);
@@ -1130,23 +927,24 @@ describe("Access Group API Router", function () {
             // Assert
             expect(res.status).to.equal(200);
             expect(res.body).to.be.an("array");
-            const found = executedQueries.some((q) => {
-                const qstr = q.query.toLowerCase();
-                return qstr.includes("from") && qstr.includes("users");
-            });
-            if (!found) {
-                // Print for debug
-                // eslint-disable-next-line no-console
-                console.error("executedQueries:", executedQueries);
-            }
-            expect(found).to.be.true;
+            expect(res.body[0]).to.deep.equal(userRecord);
+            expect(
+                executedQueries.some(
+                    (q) =>
+                        q.query
+                            .toLowerCase()
+                            .includes(
+                                "SELECT 1 FROM user_roles".toLowerCase()
+                            ) && q.params.includes(validRoleId)
+                )
+            ).to.be.true;
         });
     });
 
     describe("GET /v0/auth/accessGroups/:groupId/users/count", () => {
         it("should return the count of users in an access group and execute correct SQL", async () => {
-            const groupId = "test-group-id";
-            const validRoleId = "22222222-2222-2222-2222-222222222222";
+            const groupId = uuidV4();
+            const validRoleId = uuidV4();
             const originalGroup = {
                 id: groupId,
                 aspects: {
@@ -1155,18 +953,7 @@ describe("Access Group API Router", function () {
                     }
                 }
             };
-            registryScope
-                .get(`/records/inFull/${groupId}`)
-                .reply(200, originalGroup);
-            registryScope.get(`/records/${groupId}`).reply(200, originalGroup);
-            registryScope
-                .get(`/records/${groupId}`)
-                .query({
-                    aspect: "access-group-details",
-                    optionalAspect: "access-control",
-                    dereference: "false"
-                })
-                .reply(200, originalGroup);
+            currentGroupDetails = originalGroup; // Update the mock group details
             // Patch db pool to return a count object for user count and push queries to executedQueries
             db.setDbPool({
                 query: async (queryOrConfig: any, values?: any[]) => {
@@ -1189,9 +976,19 @@ describe("Access Group API Router", function () {
             // Assert
             expect(res.status).to.equal(200);
             expect(res.body).to.have.property("count");
+            expect(res.body.count).to.equal(1);
             expect(
-                executedQueries.some((q) =>
-                    q.query.toLowerCase().includes("count(users.*) as count")
+                executedQueries.some(
+                    (q) =>
+                        q.query
+                            .toLowerCase()
+                            .includes("count(users.*) as count") &&
+                        q.query
+                            .toLowerCase()
+                            .includes(
+                                "SELECT 1 FROM user_roles".toLowerCase()
+                            ) &&
+                        q.params.includes(validRoleId)
                 )
             ).to.be.true;
         });
