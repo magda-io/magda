@@ -3,9 +3,9 @@ import { ItemType } from "../indexSchema.js";
 import { CreateEmbeddingText } from "../createEmbeddingText.js";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api.js";
 import { expect } from "chai";
-import { commonYargs } from "../commonYargs.js";
+import { SemanticIndexerArguments } from "../commonYargs.js";
 
-export function createFakeSemanticIndexerConfig<T extends ItemType>(
+export function createFakeSemanticIndexerConfig(
     overrideConfig: Partial<SemanticIndexerOptions> = {}
 ): SemanticIndexerOptions {
     const originalEnv = process.env;
@@ -15,12 +15,56 @@ export function createFakeSemanticIndexerConfig<T extends ItemType>(
         USER_ID: "test-user"
     };
 
-    const commonArgs = commonYargs(6100, "http://localhost:6100");
-    process.env = originalEnv;
+    const commonArgs: SemanticIndexerArguments = {
+        listenPort: 6100,
+        internalUrl: "http://localhost:6100",
+        jwtSecret: "test-secret",
+        userId: "test-user",
+        registryUrl: "http://localhost:6101",
+        minioConfig: {
+            endPoint: "localhost",
+            port: 9000,
+            useSSL: false,
+            region: "us-east-1",
+            defaultDatasetBucket: "test-bucket"
+        },
+        minioAccessKey: "minioadmin",
+        minioSecretKey: "minioadmin",
+        enableMultiTenant: false,
+        tenantUrl: "http://localhost:6101",
+        retries: 3,
+        semanticIndexerConfig: {
+            numberOfShards: 1,
+            numberOfReplicas: 0,
+            indexName: "semantic-index",
+            indexVersion: 1,
+            chunkSizeLimit: 512,
+            overlap: 64,
+            bulkEmbeddingsSize: 1,
+            bulkIndexSize: 50,
+            fullIndexName: "semantic-index-v1",
+            knnVectorFieldConfig: {
+                mode: "in_memory",
+                dimension: 768,
+                spaceType: "l2",
+                efConstruction: 100,
+                efSearch: 100,
+                m: 16,
+                encoder: {
+                    name: "sq",
+                    type: "fp16",
+                    clip: false
+                }
+            }
+        },
+        opensearchApiURL: "http://localhost:9200",
+        embeddingApiURL: "http://localhost:3000"
+    };
+
     const defaultConfig: SemanticIndexerOptions = {
         argv: commonArgs,
         id: "test-minion",
-        itemType: (overrideConfig.itemType ?? "registryRecord") as T,
+        itemType: (overrideConfig.itemType ?? "registryRecord") as ItemType,
         aspects: ["test-aspect"],
         optionalAspects: [],
         formatTypes: ["txt"],
@@ -31,7 +75,6 @@ export function createFakeSemanticIndexerConfig<T extends ItemType>(
                 }))) as CreateEmbeddingText,
         chunkSizeLimit: 100,
         overlap: 0,
-
         autoDownloadFile: false
     };
     return { ...defaultConfig, ...overrideConfig };

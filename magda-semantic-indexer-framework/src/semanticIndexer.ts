@@ -16,6 +16,7 @@ import MinionOptions, {
     onRecordFoundType
 } from "magda-minion-framework/src/MinionOptions.js";
 import retry from "magda-typescript-common/src/retry.js";
+import { MinioClient } from "./MinioClient.js";
 
 // Main function for semantic indexer
 export default async function semanticIndexer(
@@ -23,12 +24,11 @@ export default async function semanticIndexer(
 ) {
     try {
         validateSemanticIndexerOptions(userConfig);
-        const semanticIndexerConfig =
-            userConfig.argv.semanticIndexerConfig.semanticIndexer;
+        const semanticIndexerConfig = userConfig.argv.semanticIndexerConfig;
         const opensearchApiClient = await retry(
             () =>
                 OpensearchApiClient.getOpensearchApiClient({
-                    url: semanticIndexerConfig.opensearch.serverUrl
+                    url: userConfig.argv.opensearchApiURL
                 }),
             5,
             5,
@@ -43,7 +43,7 @@ export default async function semanticIndexer(
             () =>
                 Promise.resolve(
                     new EmbeddingApiClient({
-                        baseApiUrl: semanticIndexerConfig.embeddingApi.baseUrl
+                        baseApiUrl: userConfig.argv.embeddingApiURL
                     })
                 ),
             5,
@@ -57,8 +57,7 @@ export default async function semanticIndexer(
 
         if (
             !(await opensearchApiClient.indexExists(
-                semanticIndexerConfig.opensearch.indices.semanticIndex
-                    .fullIndexName
+                semanticIndexerConfig.fullIndexName
             ))
         ) {
             const indexDefinition = createSemanticIndexerMapping(userConfig);
@@ -68,9 +67,9 @@ export default async function semanticIndexer(
         const chunkStrategy = userConfig.chunkStrategy
             ? new UserDefinedChunkStrategy(userConfig.chunkStrategy)
             : new RecursiveChunkStrategy(
-                  userConfig.chunkSizeLimit ||
-                      semanticIndexerConfig.chunkSizeLimit,
-                  userConfig.overlap || semanticIndexerConfig.overlap
+                  semanticIndexerConfig.chunkSizeLimit ||
+                      userConfig.chunkSizeLimit,
+                  semanticIndexerConfig.overlap || userConfig.overlap
               );
 
         const chunker = new Chunker(chunkStrategy);
@@ -98,11 +97,17 @@ export default async function semanticIndexer(
                 onRecordFound: onRecordFound
             };
         } else if (userConfig.itemType === "storageObject") {
+            const minioClient = new MinioClient(
+                userConfig.argv.minioConfig,
+                userConfig.argv.minioAccessKey,
+                userConfig.argv.minioSecretKey
+            );
             onRecordFound = onRecordFoundStorageObject(
                 userConfig,
                 chunker,
                 embeddingApiClient,
-                opensearchApiClient
+                opensearchApiClient,
+                minioClient
             );
             minionOptions = {
                 argv: userConfig.argv,

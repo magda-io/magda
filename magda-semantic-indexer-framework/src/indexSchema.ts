@@ -3,9 +3,7 @@ import { SemanticIndexerOptions } from "./index.js";
 const SEMANTIC_INDEX_VERSION = 1;
 
 export function createSemanticIndexerMapping(config: SemanticIndexerOptions) {
-    const indexConfig =
-        config.argv.semanticIndexerConfig.semanticIndexer.opensearch.indices
-            .semanticIndex;
+    const indexConfig = config.argv.semanticIndexerConfig;
     const knnVectorFieldConfig = indexConfig.knnVectorFieldConfig;
 
     if (indexConfig.indexVersion !== SEMANTIC_INDEX_VERSION) {

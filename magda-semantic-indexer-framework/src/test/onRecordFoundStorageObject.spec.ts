@@ -8,12 +8,15 @@ import {
 } from "./helpers.js";
 import fs from "fs";
 import nock from "nock";
+import { tmpdir } from "os";
+import { join } from "path";
 
 describe("onRecordFoundStorageObject", () => {
     let userConfig: any;
     let chunker: any;
     let embeddingApiClient: any;
     let opensearchApiClient: any;
+    let minioClient: any;
     let createEmbeddingTextStub: SinonStub;
     let consoleLogStub: SinonStub;
     let consoleWarnStub: SinonStub;
@@ -24,6 +27,7 @@ describe("onRecordFoundStorageObject", () => {
         chunker = { chunk: sinon.stub() };
         embeddingApiClient = { get: sinon.stub() };
         opensearchApiClient = { bulkIndexDocument: sinon.stub().resolves() };
+        minioClient = { downloadFile: sinon.stub().resolves() };
         createEmbeddingTextStub = sinon
             .stub()
             .returns({ text: "embedding text" });
@@ -72,7 +76,8 @@ describe("onRecordFoundStorageObject", () => {
             userConfig,
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            minioClient
         );
         await onRecordFound(record, registry);
 
@@ -168,7 +173,92 @@ describe("onRecordFoundStorageObject", () => {
             userConfig,
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            minioClient
+        );
+        await onRecordFound(record, registry);
+        expect(createEmbeddingTextStub.callCount).to.equal(1);
+        expect(chunker.chunk.callCount).to.equal(1);
+        expect(embeddingApiClient.get.callCount).to.equal(1);
+        expect(opensearchApiClient.bulkIndexDocument.callCount).to.equal(1);
+        expect(
+            opensearchApiClient.bulkIndexDocument.firstCall.args[1]
+        ).to.deep.equal(expectedDocs);
+        if (usedFilePath) {
+            expect(fs.existsSync(usedFilePath)).to.be.false;
+        }
+        nock.cleanAll();
+    });
+
+    it("should successfully download file from minio", async () => {
+        const fileContent = "test1";
+        const downloadUrl =
+            "magda://storage-api/fake-parent-record-id/id1/file.csv";
+        const tempDir = tmpdir();
+        const tempFilePath = join(tempDir, "file.csv");
+        minioClient.downloadFile.withArgs(downloadUrl).callsFake(async () => {
+            fs.writeFileSync(tempFilePath, fileContent);
+            return tempFilePath;
+        });
+
+        const record = createRecord({
+            id: "id1",
+            aspects: {
+                "dataset-format": { format: "csv" },
+                "dcat-distribution-strings": {
+                    format: "csv",
+                    downloadURL: downloadUrl
+                }
+            }
+        });
+
+        let usedFilePath = null;
+        createEmbeddingTextStub.callsFake(
+            async ({ record, format, filePath, url }) => {
+                expect(record).to.deep.equal(record);
+                expect(format).to.equal("csv");
+                expect(fs.existsSync(filePath)).to.be.true;
+                expect(url).to.equal(downloadUrl);
+                const content = fs.readFileSync(filePath, "utf-8");
+                expect(content).to.equal("test1");
+                usedFilePath = filePath;
+                return { text: "embedding text: test1" };
+            }
+        );
+
+        chunker.chunk
+            .withArgs("embedding text: test1")
+            .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
+        embeddingApiClient.get.withArgs(["test1"]).resolves([[0.1, 0.2, 0.3]]);
+
+        userConfig = createFakeSemanticIndexerConfig({
+            itemType: "storageObject",
+            createEmbeddingText: createEmbeddingTextStub,
+            formatTypes: ["csv"],
+            autoDownloadFile: true
+        });
+
+        const expectedDocs = [
+            {
+                itemType: userConfig.itemType,
+                recordId: "id1",
+                parentRecordId: "fake-parent-record-id",
+                fileFormat: "csv",
+                index_text_chunk: "test1",
+                embedding: [0.1, 0.2, 0.3],
+                only_one_index_text_chunk: true,
+                index_text_chunk_length: 5,
+                index_text_chunk_position: 0,
+                index_text_chunk_overlap: 0
+            }
+        ];
+
+        const onRecordFound = onRecordFoundStorageObject(
+            userConfig,
+            chunker,
+            embeddingApiClient,
+            opensearchApiClient,
+            minioClient
         );
         await onRecordFound(record, registry);
 
@@ -214,7 +304,8 @@ describe("onRecordFoundStorageObject", () => {
             userConfig,
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            minioClient
         );
 
         await onRecordFound(record, registry);
@@ -262,7 +353,8 @@ describe("onRecordFoundStorageObject", () => {
             userConfig,
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            minioClient
         );
         await onRecordFound(record, registry);
 
@@ -316,7 +408,8 @@ describe("onRecordFoundStorageObject", () => {
             userConfig,
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            minioClient
         );
 
         await expectNoThrowsAsync(() => onRecordFound(record, registry));
@@ -348,7 +441,8 @@ describe("onRecordFoundStorageObject", () => {
             userConfig,
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            minioClient
         );
         await expectNoThrowsAsync(() => onRecordFound(record, registry));
     });
@@ -379,7 +473,8 @@ describe("onRecordFoundStorageObject", () => {
             userConfig,
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            minioClient
         );
         await expectNoThrowsAsync(() => onRecordFound(record, registry));
     });
@@ -400,7 +495,8 @@ describe("onRecordFoundStorageObject", () => {
             userConfig,
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            minioClient
         );
         await expectNoThrowsAsync(() => onRecordFound(record, registry));
     });
@@ -427,7 +523,8 @@ describe("onRecordFoundStorageObject", () => {
             userConfig,
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            minioClient
         );
         await expectNoThrowsAsync(() => onRecordFound(record, registry));
     });
@@ -455,7 +552,8 @@ describe("onRecordFoundStorageObject", () => {
             userConfig,
             chunker,
             embeddingApiClient,
-            opensearchApiClient
+            opensearchApiClient,
+            minioClient
         );
 
         await expectNoThrowsAsync(() => onRecordFound(record, registry));
