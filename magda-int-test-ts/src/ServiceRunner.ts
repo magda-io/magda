@@ -18,57 +18,43 @@ import { requireResolve } from "@magda/esm-utils";
 import { Readable } from "node:stream";
 import fetchRequest from "magda-typescript-common/src/fetchRequest.js";
 
-import { promisify } from "util";
-import { exec as _exec } from "child_process";
+import { finished } from "stream/promises";
+import * as readline from "readline";
 
-const exec = promisify(_exec);
-
-/**
- * Fetches and prints logs from the Postgres container.
- * It tries to find the container using a Docker Compose project name or a name pattern.
- *
- * @param composeProject Optional Docker Compose project name (e.g., "test-postgres")
- * @param fallbackPattern Optional fallback pattern to grep container names (e.g., "postgres")
- */
-export async function printPostgresLogs(
-    composeProject = "test-postgres",
-    fallbackPattern = "postgres"
+export async function printAllComposeLogs(
+    compose: DockerCompose,
+    options: Docker.ContainerLogsOptions = {
+        stdout: true,
+        stderr: true,
+        follow: false,
+        tail: 100
+    }
 ) {
-    try {
-        console.log("Fetching Postgres logs...");
+    const containers = compose.getContainers();
 
-        // Try docker-compose logs first (if using compose project name)
+    for (const container of containers) {
+        const containerId = container.id;
+
+        console.log(`\nLogs for container: ${containerId}`);
+
         try {
-            const { stdout } = await exec(
-                `docker compose -p ${composeProject} logs --tail=100`
-            );
-            console.log(stdout);
-            return;
-        } catch (e) {
-            console.warn(
-                "⚠️  docker compose logs failed, falling back to container grep..."
+            const logStream = await container.logs(options);
+
+            // Use readline to prefix each log line with the container name
+            const rl = readline.createInterface({ input: logStream });
+
+            rl.on("line", (line) => {
+                process.stdout.write(`[${containerId}] ${line}\n`);
+            });
+
+            // Wait until logStream ends
+            await finished(logStream);
+        } catch (err) {
+            console.error(
+                `Failed to get logs for container ${containerId}:`,
+                err
             );
         }
-
-        // Fallback: find container by name pattern
-        const { stdout: containerId } = await exec(
-            `docker ps -aqf "name=${fallbackPattern}" | head -n 1`
-        );
-
-        if (!containerId.trim()) {
-            console.warn(
-                "⚠️  No Postgres container found with fallback pattern:",
-                fallbackPattern
-            );
-            return;
-        }
-
-        const { stdout: logs } = await exec(
-            `docker logs ${containerId.trim()}`
-        );
-        console.log(logs);
-    } catch (err) {
-        console.error("❌ Failed to fetch Postgres logs:", err.message || err);
     }
 }
 
@@ -975,13 +961,13 @@ export default class ServiceRunner {
                 await this.createPortForward(5432);
             }
         } catch (e) {
-            await printPostgresLogs();
+            await printAllComposeLogs(this.postgresCompose);
             await this.destroyPostgres();
             throw e;
         }
-        await printPostgresLogs();
+        await printAllComposeLogs(this.postgresCompose);
         await this.runMigrator("registry-db", "postgres");
-        await printPostgresLogs();
+        await printAllComposeLogs(this.postgresCompose);
         await Promise.all([
             this.runMigrator("authorization-db", "auth"),
             this.runMigrator("session-db", "session"),
@@ -992,7 +978,8 @@ export default class ServiceRunner {
 
     async destroyPostgres() {
         if (this.postgresCompose) {
-            //await this.postgresCompose.down({ volumes: true });
+            await printAllComposeLogs(this.postgresCompose);
+            await this.postgresCompose.down({ volumes: true });
         }
         if (this.dockerServiceForwardHost) {
             await this.destroyPortForward(5432);

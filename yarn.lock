@@ -9768,10 +9768,9 @@ docker-modem@^5.0.3:
     split-ca "^1.0.1"
     ssh2 "^1.15.0"
 
-dockerode-compose@^1.4.0:
+"dockerode-compose@https://github.com/magda-io/dockerode-compose.git#magda":
   version "1.4.0"
-  resolved "https://registry.yarnpkg.com/dockerode-compose/-/dockerode-compose-1.4.0.tgz#efed46a144e4b8904be87361822fc6e08c16c518"
-  integrity sha512-6x5ZlK06H+cgoTR4ffucqN5kWVvxNvxwTLcHQUZcegCJBEDGrdzXMOEGDMsxbHwiLtLo2dNwG0eZK7B2RfEWSw==
+  resolved "https://github.com/magda-io/dockerode-compose.git#b9ea7be279ad4e42280bb6c222ca5a68ecd903ea"
   dependencies:
     dockerode "^4.0.0"
     js-yaml "^4.0.0"

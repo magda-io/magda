@@ -38,5 +38,6 @@ declare module "dockerode-compose" {
                 streams?: boolean;
             }
         ): Promise<Readable[]>;
+        getContainers(): Dockerode.Container[];
     }
 }
