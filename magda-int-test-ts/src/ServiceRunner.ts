@@ -992,7 +992,7 @@ export default class ServiceRunner {
 
     async destroyPostgres() {
         if (this.postgresCompose) {
-            await this.postgresCompose.down({ volumes: true });
+            //await this.postgresCompose.down({ volumes: true });
         }
         if (this.dockerServiceForwardHost) {
             await this.destroyPortForward(5432);
