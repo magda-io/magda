@@ -18,6 +18,60 @@ import { requireResolve } from "@magda/esm-utils";
 import { Readable } from "node:stream";
 import fetchRequest from "magda-typescript-common/src/fetchRequest.js";
 
+import { promisify } from "util";
+import { exec as _exec } from "child_process";
+
+const exec = promisify(_exec);
+
+/**
+ * Fetches and prints logs from the Postgres container.
+ * It tries to find the container using a Docker Compose project name or a name pattern.
+ *
+ * @param composeProject Optional Docker Compose project name (e.g., "test-postgres")
+ * @param fallbackPattern Optional fallback pattern to grep container names (e.g., "postgres")
+ */
+export async function printPostgresLogs(
+    composeProject = "test-postgres",
+    fallbackPattern = "postgres"
+) {
+    try {
+        console.log("Fetching Postgres logs...");
+
+        // Try docker-compose logs first (if using compose project name)
+        try {
+            const { stdout } = await exec(
+                `docker compose -p ${composeProject} logs --tail=100`
+            );
+            console.log(stdout);
+            return;
+        } catch (e) {
+            console.warn(
+                "⚠️  docker compose logs failed, falling back to container grep..."
+            );
+        }
+
+        // Fallback: find container by name pattern
+        const { stdout: containerId } = await exec(
+            `docker ps -aqf "name=${fallbackPattern}" | head -n 1`
+        );
+
+        if (!containerId.trim()) {
+            console.warn(
+                "⚠️  No Postgres container found with fallback pattern:",
+                fallbackPattern
+            );
+            return;
+        }
+
+        const { stdout: logs } = await exec(
+            `docker logs ${containerId.trim()}`
+        );
+        console.log(logs);
+    } catch (err) {
+        console.error("❌ Failed to fetch Postgres logs:", err.message || err);
+    }
+}
+
 /**
  * Resolve magda module dir path.
  *
@@ -921,11 +975,13 @@ export default class ServiceRunner {
                 await this.createPortForward(5432);
             }
         } catch (e) {
+            await printPostgresLogs();
             await this.destroyPostgres();
             throw e;
         }
-
+        await printPostgresLogs();
         await this.runMigrator("registry-db", "postgres");
+        await printPostgresLogs();
         await Promise.all([
             this.runMigrator("authorization-db", "auth"),
             this.runMigrator("session-db", "session"),
