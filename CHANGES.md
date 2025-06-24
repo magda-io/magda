@@ -11,6 +11,7 @@
 - Reset the "resource" form content properly after the form is saved and closed
 - #3606: Increase the default indexer CPU limit from 250m to 1200m as 250m
 - #3607: "Remove an Dataset from an Access Group" API should remove the dataset distributions from the access group as well
+- add request example to the "Add Roles to a user" api docs
 
 ## v5.2.0
 
