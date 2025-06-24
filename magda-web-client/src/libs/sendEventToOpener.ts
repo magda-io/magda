@@ -5,6 +5,8 @@ const { postMessageTargetOrigin } = config;
 export const EVENT_TYPE_DATASET_CREATION_COMPLETE = "datasetCreationComplete";
 export const EVENT_TYPE_DATASET_EDITING_COMPLETE = "datasetEditingComplete";
 export const EVENT_TYPE_DATASET_DRAFT_SAVED = "datasetDraftSaved";
+export const EVENT_TYPE_DATASET_EDITOR_REACH_END_PAGE =
+    "datasetEditorReachEndPage";
 
 function sendEventToOpener(
     eventType: string,
