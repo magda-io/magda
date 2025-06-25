@@ -2,7 +2,7 @@
 
 This module contains source code for Magda's default UI.
 
-The default Magda UI is a single page React application that is built on [Magda backend APIs](https://dev.magda.io/api/v0/apidocs/index.html).
+The default Magda UI is a single page React application that is built on [Magda backend APIs](https://magda-io.github.io/api-docs/index.html).
 
 ## Run it Locally
 

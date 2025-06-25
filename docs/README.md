@@ -176,7 +176,7 @@ We welcome new contributors too! please check out our [Contributor's Guide](http
 ## Important links
 
 - [Our Github](https://github.com/magda-io/magda)
-- [Magda API Reference](https://dev.magda.io/api/v0/apidocs/index.html)
+- [Magda API Reference](https://magda-io.github.io/api-docs/index.html)
 - [Magda Helm Chart Reference](/docs/helm-charts-docs-index)
 - [Useful common documentations](./docs/index.md)
 - [Other documentations](https://github.com/magda-io/magda/tree/master/docs/docs)

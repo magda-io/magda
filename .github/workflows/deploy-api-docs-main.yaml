@@ -25,7 +25,10 @@ jobs:
 
       - name: Generate API Docs
         run: |
-          cd magda-apidocs-server && yarn build && cd ..
+          cd magda-apidocs-server
+          yarn build
+          cp doc-repo-readme.md ./build/README.md
+          cd ..
 
       - name: Push to api-docs repo (main branch root)
         uses: peaceiris/actions-gh-pages@v3
