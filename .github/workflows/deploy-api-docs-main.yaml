@@ -25,14 +25,13 @@ jobs:
 
       - name: Generate API Docs
         run: |
-          cd magda-apidocs-server
-          yarn build
+          cd magda-apidocs-server && yarn build && cd ..
 
       - name: Push to api-docs repo (main branch root)
         uses: peaceiris/actions-gh-pages@v3
         with:
           personal_token: ${{ secrets.GH_ACCESS_TOKEN }}
-          publish_dir: ./magda-apidocs-server/api-out
+          publish_dir: ./magda-apidocs-server/build
           external_repository: magda-io/api-docs
           publish_branch: main
           user_name: "magdabot"
