@@ -1,6 +1,6 @@
 # web-server
 
-![Version: 5.2.0](https://img.shields.io/badge/Version-5.2.0-informational?style=flat-square)
+![Version: 5.3.0](https://img.shields.io/badge/Version-5.3.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -104,6 +104,7 @@ Kubernetes: `>= 1.14.0-0`
 | noManualThemes | bool | `false` |  |
 | openInExternalTerriaMapButtonText | string | `nil` | When set, the string here will replace the text of the `Open in National Map` button in Map Preview area. |
 | openInExternalTerriaMapTargetUrl | string | `nil` | When set, the `Open in National Map` button in Map Preview area will sent map data to the URL provided and open the map preview there. When not set, UI will by default send to the National Map. |
+| postMessageTargetOrigin | string | `""` | The target origin used when UI need to post message to another window. By default, only send to the same origin. |
 | previewMapFormatPerference | list | `[{"format":"WMS","urlRegex":"^(?!.*(SceneServer)).*$"},{"format":"ESRI MAPSERVER","urlRegex":"MapServer"},{"format":"WFS","urlRegex":"^(?!.*(SceneServer)).*$"},{"format":"GeoJSON","singleFile":true},{"format":"csv-geo-au","singleFile":true},{"format":"ESRI FEATURESERVER","urlRegex":"FeatureServer"},{"format":"KML","singleFile":true},{"format":"KMZ","singleFile":true}]` | Preview map module format perference list The list includes one or more `format perference item`. When there are more than one data source available, "Preview Map module" will use this perference to determine which data soruce will be used. It will go through the perference list. The first matched format (i.e. find a data source with the format ) will be chosen. A `format perference item` can have the following fields: <ul>  <li>format: the format of the preferred data source. compulsory. case insensitive. </li>  <li>       isDataFile: Optional. Default to `false`. Indicate whether the specified format is a static data file or API.        If it's a static file, "Preview Map Module" will attempt to check the target file size and ask user to confirm whether he wants to render the file for large files.       The file size threshold is specified by config option `automaticPreviewMaxFileSize`.  </li>  <li>       urlRegex: optional; when exists, it will be used as regex string to double check the data source access url to confirm whether it's indeed the format specified.       If not provided or empty, only `format` will be used to determine whether a data source matches the `format perference item`.  <li> </ul> |
 | registryApiBaseUrlInternal | string | `"http://registry-api-read-only/v0"` |  |
 | replicas | string | `nil` | no. of replicas required for the deployment. If not set, k8s will assume `1` but allows HPA (autoscaler) alters it. @default 1 |

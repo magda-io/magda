@@ -60,8 +60,8 @@ const ResourceFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
         uri: Schema.Types.StringType()
             .isRequired("This field is required.")
             .pattern(
-                /^[a-zA-Z0-9-]+(\/[a-zA-Z0-9-*]+)*$/,
-                "Please enter a valid format (alphanumeric characters plus `*` and `-` with `/` as segment separator)."
+                /^[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*$/,
+                "Please enter a valid format (alphanumeric characters plus `_` and `-` with `/` as segment separator)."
             ),
         name: Schema.Types.StringType().isRequired("This field is required."),
         description: Schema.Types.StringType()
@@ -129,6 +129,8 @@ const ResourceFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                     onCompleteRef.current(result.id as string);
                 }
             }
+            setResource(undefined);
+            setResourceId(undefined);
         } catch (ex) {
             reportError(
                 `Failed to ${

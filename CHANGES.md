@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## v5.3.0
+
+- New feature: Access Group UI, useful when you need arbitrary access control management of datasets. Related to: #3269
+- #3603: allow dataset editor tool UI notify popup launcher via postMessage
+- Fix: The publishing organisation selection dropdown menu should not be obscured by other input elements.
+- When the dataset editor tool UI is opened in the popup mode, the `save & button` will display the end page to the user rather than redirect the user to the draft dataset list.
+- Fix: SQLConsole incorrect source function 0 index on distribution pages
+- Adjusted allowed characters on "resource" / "operation" forms
+- Reset the "resource" form content properly after the form is saved and closed
+- #3606: Increase the default indexer CPU limit from 250m to 1200m as 250m
+- #3607: "Remove an Dataset from an Access Group" API should remove the dataset distributions from the access group as well
+- add request example to the "Add Roles to a user" api docs
+
 ## v5.2.0
 
 - Fix: SQLConsole: reference error when join JSONL data source

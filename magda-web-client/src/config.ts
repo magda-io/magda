@@ -795,6 +795,16 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     sqlConsoleCacheExpiration: number;
+
+    /**
+     * [When Magda UI send messages to opener](https://github.com/magda-io/magda/issues/3603), this will be the target origin.
+     * i.e. only opener with same origin as the target origin specified here will receive the message.
+     * By default, its value is empty string. Magda UI's origin will be the target origin.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    postMessageTargetOrigin: string;
 }
 
 const serverConfig: ConfigDataType = window.magda_server_config || {};
@@ -1151,7 +1161,10 @@ export const config: ConfigDataType = {
     sqlConsoleCacheExpiration:
         serverConfig?.sqlConsoleCacheExpiration > 0
             ? serverConfig.sqlConsoleCacheExpiration
-            : SQL_CONSOLE_CACHE_EXPIRATION
+            : SQL_CONSOLE_CACHE_EXPIRATION,
+    postMessageTargetOrigin: serverConfig?.postMessageTargetOrigin
+        ? serverConfig.postMessageTargetOrigin
+        : ""
 };
 
 export type Config = typeof config;

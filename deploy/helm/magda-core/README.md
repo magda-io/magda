@@ -1,6 +1,6 @@
 # magda-core
 
-![Version: 5.2.0](https://img.shields.io/badge/Version-5.2.0-informational?style=flat-square)
+![Version: 5.3.0](https://img.shields.io/badge/Version-5.3.0-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes all core magda modules.
 
@@ -14,33 +14,33 @@ A complete solution for managing, publishing and discovering government data, pr
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../internal-charts/admin-api | admin-api | 5.2.0 |
-| file://../internal-charts/apidocs-server | apidocs-server | 5.2.0 |
-| file://../internal-charts/authorization-api | authorization-api | 5.2.0 |
-| file://../internal-charts/authorization-db | authorization-db | 5.2.0 |
-| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 5.2.0 |
-| file://../internal-charts/combined-db | combined-db | 5.2.0 |
-| file://../internal-charts/content-api | content-api | 5.2.0 |
-| file://../internal-charts/content-db | content-db | 5.2.0 |
-| file://../internal-charts/correspondence-api | correspondence-api | 5.2.0 |
-| file://../internal-charts/elasticsearch | elasticsearch | 5.2.0 |
-| file://../internal-charts/gateway | gateway | 5.2.0 |
-| file://../internal-charts/indexer | indexer | 5.2.0 |
-| file://../internal-charts/ingress | ingress | 5.2.0 |
-| file://../internal-charts/opensearch-dashboards | opensearch-dashboards | 5.2.0 |
-| file://../internal-charts/opensearch | opensearch | 5.2.0 |
-| file://../internal-charts/priorities | priorities | 5.2.0 |
-| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 5.2.0 |
-| file://../internal-charts/registry-api | registry-api | 5.2.0 |
-| file://../internal-charts/registry-db | registry-db | 5.2.0 |
-| file://../internal-charts/search-api-node | search-api-node | 5.2.0 |
-| file://../internal-charts/search-api | search-api | 5.2.0 |
-| file://../internal-charts/session-db | session-db | 5.2.0 |
-| file://../internal-charts/storage-api | storage-api | 5.2.0 |
-| file://../internal-charts/tenant-api | tenant-api | 5.2.0 |
-| file://../internal-charts/tenant-db | tenant-db | 5.2.0 |
-| file://../internal-charts/web-server | web-server | 5.2.0 |
-| file://../magda-common | magda-common | 5.2.0 |
+| file://../internal-charts/admin-api | admin-api | 5.3.0 |
+| file://../internal-charts/apidocs-server | apidocs-server | 5.3.0 |
+| file://../internal-charts/authorization-api | authorization-api | 5.3.0 |
+| file://../internal-charts/authorization-db | authorization-db | 5.3.0 |
+| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 5.3.0 |
+| file://../internal-charts/combined-db | combined-db | 5.3.0 |
+| file://../internal-charts/content-api | content-api | 5.3.0 |
+| file://../internal-charts/content-db | content-db | 5.3.0 |
+| file://../internal-charts/correspondence-api | correspondence-api | 5.3.0 |
+| file://../internal-charts/elasticsearch | elasticsearch | 5.3.0 |
+| file://../internal-charts/gateway | gateway | 5.3.0 |
+| file://../internal-charts/indexer | indexer | 5.3.0 |
+| file://../internal-charts/ingress | ingress | 5.3.0 |
+| file://../internal-charts/opensearch-dashboards | opensearch-dashboards | 5.3.0 |
+| file://../internal-charts/opensearch | opensearch | 5.3.0 |
+| file://../internal-charts/priorities | priorities | 5.3.0 |
+| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 5.3.0 |
+| file://../internal-charts/registry-api | registry-api | 5.3.0 |
+| file://../internal-charts/registry-db | registry-db | 5.3.0 |
+| file://../internal-charts/search-api-node | search-api-node | 5.3.0 |
+| file://../internal-charts/search-api | search-api | 5.3.0 |
+| file://../internal-charts/session-db | session-db | 5.3.0 |
+| file://../internal-charts/storage-api | storage-api | 5.3.0 |
+| file://../internal-charts/tenant-api | tenant-api | 5.3.0 |
+| file://../internal-charts/tenant-db | tenant-db | 5.3.0 |
+| file://../internal-charts/web-server | web-server | 5.3.0 |
+| file://../magda-common | magda-common | 5.3.0 |
 | oci://ghcr.io/magda-io/charts | magda-embedding-api | 1.1.0 |
 | oci://ghcr.io/magda-io/charts | preview-map(magda-preview-map) | 1.1.3 |
 
