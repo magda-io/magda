@@ -310,18 +310,12 @@ class NewDataset extends React.Component<Props, State> {
                 // --- still redirect to dataset list page in preview wmdoe
                 redirect(this.props.history, `/dataset/list`);
             } else {
-                if (this.popUpModeQueryString) {
-                    // if it's in a popup, show the end page
-                    redirect(
-                        this.props.history,
-                        `/dataset/add/metadata/${encodeURIComponent(
-                            this.props.datasetId
-                        )}/6?${this.popUpModeQueryString}&saveExit=true`
-                    );
-                } else {
-                    // redirect to datasets management
-                    redirect(this.props.history, `/settings/datasets/draft`);
-                }
+                redirect(
+                    this.props.history,
+                    `/dataset/add/metadata/${encodeURIComponent(
+                        this.props.datasetId
+                    )}/6?${this.popUpModeQueryString}&saveExit=true`
+                );
             }
         } catch (e) {
             this.props.createNewDatasetError(e);
