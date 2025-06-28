@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v5.3.1
+
+- Fix: sitemap will respond 404 with plain text error for invalid `afterToken` values
+
 ## v5.3.0
 
 - New feature: Access Group UI, useful when you need arbitrary access control management of datasets. Related to: #3269

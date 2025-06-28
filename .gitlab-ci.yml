@@ -736,6 +736,8 @@ dockerize:dockerExtensions:
     - cd $CI_PROJECT_DIR/magda-postgres && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG
 
 (Full) Run As Preview: &runAsPreview
+  tags:
+    - api-server
   stage: preview
   when: manual
   only:
@@ -787,7 +789,7 @@ dockerize:dockerExtensions:
 (UI) Run As Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.openfaas.enabled=false,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,tags.correspondence-api=false,magda.magda-core.web-server.registryApiBaseUrlInternal=https://dev.magda.io/api/v0/registry,magda.magda-core.web-server.baseUrl=https://dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.searchEngine.hybridSearch.enabled=false,global.openfaas.enabled=false,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,tags.correspondence-api=false,tags.minion-linked-data-rating=false,tags.minion-visualization=false,tags.minion-format=false,magda.magda-core.web-server.registryApiBaseUrlInternal=https://dev.magda.io/api/v0/registry,magda.magda-core.web-server.baseUrl=https://dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
 (UI - Auto) Run As Preview:
@@ -837,6 +839,8 @@ Stop Preview: &stopPreview
 
 Deploy Main Branch To Dev:
   stage: deploy-dev
+  tags:
+    - api-server
   only:
     - main
   cache: {}
