@@ -9,59 +9,6 @@ global:
       # - deploy and reindex the data by requesting full index action via indexer `reindex` API.
       # When upgrade from older version, no manual actions are required (as a new index will be auto-created based on the index version number).
       enabled: true
-    semanticIndexer:
-      # -- The maximum number of tokens in a single chunk.
-      chunkSizeLimit: 512
-
-      # -- The number of overlapping tokens between chunks.
-      overlap: 50
-
-      bulkEmbeddingsSize: 1
-      bulkIndexSize: 50
-
-      # -- OpenSearch configuration.
-      opensearch:
-        indices:
-          semanticIndex:
-            indexName: "semantic-index"
-            
-            # -- System wide agreed version.
-            indexVersion: 1
-
-            # -- The number of primary shards in the index.
-            numberOfShards: 1
-
-            # -- The number of replica shards in the index.
-            numberOfReplicas: 0
-
-            knnVectorFieldConfig:
-              # -- Vector workload mode: `on_disk` or `in_memory`.
-              mode: "in_memory"
-
-              # -- Dimension of the embedding vectors.
-              dimension: 768
-
-              # -- The compression_level mapping parameter selects a quantization encoder that reduces vector memory consumption by the given factor.
-              compressionLevel: null
-
-              # Supported values: l1, l2, innerProduct, cosine, linf
-              spaceType: "l2"
-
-              # -- Similar to efSearch but used during index construction. Higher values improve search quality but increase index build time.
-              efConstruction: 100
-
-              # -- The size of the candidate queue during search. Larger values may improve search quality but increase search latency.
-              efSearch: 100
-
-              # -- The maximum number of graph edges per vector. Higher values increase memory usage but may improve search quality.
-              m: 16
-              
-              # -- FAISS Encoder configuration (If compressionLevel is set, encoder will be ignored).
-              encoder:
-                name: "sq"
-                type: "fp16"
-                clip: false
-            
   postgresql:
     # -- PostgreSQL username
     # For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`.
