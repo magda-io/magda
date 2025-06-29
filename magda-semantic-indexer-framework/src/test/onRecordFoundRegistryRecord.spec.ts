@@ -1,67 +1,52 @@
-import { expect } from "chai";
 import sinon from "sinon";
 import { onRecordFoundRegistryRecord } from "../onRecordFoundRegistryRecord.js";
-import {
-    createFakeSemanticIndexerConfig,
-    createRecord,
-    expectNoThrowsAsync
-} from "./helpers.js";
+import { createRecord, expectNoThrowsAsync } from "./helpers.js";
+import { BaseSemanticIndexerTest } from "./BaseSemanticIndexerTest.js";
 
 describe("onRecordFoundRegistryRecord", () => {
-    let userConfig: any;
-    let chunker: any;
-    let embeddingApiClient: any;
-    let opensearchApiClient: any;
-    let createEmbeddingTextStub: any;
-    let consoleLogStub: any;
-    let consoleWarnStub: any;
-    let consoleErrorStub: any;
+    let testEnv: BaseSemanticIndexerTest;
 
     beforeEach(() => {
-        chunker = { chunk: sinon.stub() };
-        embeddingApiClient = { get: sinon.stub() };
-        opensearchApiClient = opensearchApiClient = {
-            bulkIndexDocument: sinon.stub().resolves()
-        };
-        createEmbeddingTextStub = sinon.stub();
-        consoleLogStub = sinon.stub(console, "log");
-        consoleWarnStub = sinon.stub(console, "warn");
-        consoleErrorStub = sinon.stub(console, "error");
+        testEnv = new BaseSemanticIndexerTest();
     });
 
     afterEach(() => {
-        consoleLogStub.restore();
-        consoleWarnStub.restore();
-        consoleErrorStub.restore();
+        testEnv.cleanup();
     });
 
     it("Should handle and index records with expected aspects", async () => {
-        createEmbeddingTextStub.callsFake((params: any) => {
+        testEnv.createEmbeddingTextStub.callsFake((params: any) => {
             return Promise.resolve({
                 text:
                     "embedding text: " +
                     params.record.aspects["test-aspect"].text
             });
         });
-        userConfig = createFakeSemanticIndexerConfig({
-            aspects: ["test-aspect"],
-            createEmbeddingText: createEmbeddingTextStub
+
+        const userConfig = testEnv.updateUserConfig({
+            aspects: ["test-aspect"]
         });
+
         const onRecordFound = onRecordFoundRegistryRecord(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient
         );
 
-        chunker.chunk
+        testEnv.chunker.chunk
             .withArgs("embedding text: test1")
             .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
-        chunker.chunk
+        testEnv.chunker.chunk
             .withArgs("embedding text: test2")
             .returns([{ text: "test2", length: 5, position: 0, overlap: 0 }]);
-        embeddingApiClient.get.withArgs(["test1"]).resolves([[0.1, 0.2, 0.3]]);
-        embeddingApiClient.get.withArgs(["test2"]).resolves([[0.4, 0.5, 0.6]]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test2"])
+            .resolves([[0.4, 0.5, 0.6]]);
+
         await onRecordFound(
             createRecord({
                 id: "id1",
@@ -77,10 +62,14 @@ describe("onRecordFoundRegistryRecord", () => {
             null as any
         );
 
-        expect(createEmbeddingTextStub.callCount).to.equal(2);
-        expect(chunker.chunk.callCount).to.equal(2);
-        expect(embeddingApiClient.get.callCount).to.equal(2);
-        expect(opensearchApiClient.bulkIndexDocument.callCount).to.equal(2);
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 2,
+            chunkCallCount: 2,
+            embeddingApiCallCount: 2,
+            bulkIndexCallCount: 2,
+            deleteByQueryCallCount: 2
+        });
+
         const expectedDocs1 = [
             {
                 itemType: userConfig.itemType,
@@ -90,7 +79,10 @@ describe("onRecordFoundRegistryRecord", () => {
                 only_one_index_text_chunk: true,
                 index_text_chunk_length: 5,
                 index_text_chunk_position: 0,
-                index_text_chunk_overlap: 0
+                index_text_chunk_overlap: 0,
+                indexerId: testEnv.userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             }
         ];
 
@@ -103,40 +95,36 @@ describe("onRecordFoundRegistryRecord", () => {
                 only_one_index_text_chunk: true,
                 index_text_chunk_length: 5,
                 index_text_chunk_position: 0,
-                index_text_chunk_overlap: 0
+                index_text_chunk_overlap: 0,
+                indexerId: testEnv.userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             }
         ];
 
-        expect(
-            opensearchApiClient.bulkIndexDocument.firstCall.args[1]
-        ).to.deep.equal(expectedDocs1);
-        expect(
-            opensearchApiClient.bulkIndexDocument.secondCall.args[1]
-        ).to.deep.equal(expectedDocs2);
+        testEnv.expectIndexedDocs(expectedDocs1, 0);
+        testEnv.expectIndexedDocs(expectedDocs2, 1);
     });
 
     it("should not handle records without expected aspects", async () => {
-        const userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "registryRecord",
             aspects: ["test-aspect"]
         });
 
-        const createEmbeddingTextStub = sinon.stub().resolves({
-            text: "embedding text: test1"
-        });
-        userConfig.createEmbeddingText = createEmbeddingTextStub;
-
         const onRecordFound = onRecordFoundRegistryRecord(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient
         );
 
-        chunker.chunk
+        testEnv.chunker.chunk
             .withArgs("embedding text: test1")
             .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
-        embeddingApiClient.get.withArgs(["test1"]).resolves([[0.1, 0.2, 0.3]]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
 
         await onRecordFound(
             createRecord({ id: "id1", aspects: {} }),
@@ -151,34 +139,32 @@ describe("onRecordFoundRegistryRecord", () => {
             null as any
         );
 
-        expect(createEmbeddingTextStub.callCount).to.equal(0);
-        expect(chunker.chunk.callCount).to.equal(0);
-        expect(embeddingApiClient.get.callCount).to.equal(0);
-        expect(opensearchApiClient.bulkIndexDocument.callCount).to.equal(0);
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 0,
+            chunkCallCount: 0,
+            embeddingApiCallCount: 0,
+            bulkIndexCallCount: 0,
+            deleteByQueryCallCount: 0
+        });
     });
 
     it("should skip this record when embeddingApiClient throws an error", async () => {
-        const userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "registryRecord",
             aspects: ["test-aspect"]
         });
 
-        const createEmbeddingTextStub = sinon.stub().resolves({
-            text: "embedding text: test1"
-        });
-        userConfig.createEmbeddingText = createEmbeddingTextStub;
-
         const onRecordFound = onRecordFoundRegistryRecord(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient
         );
 
-        chunker.chunk
-            .withArgs("embedding text: test1")
+        testEnv.chunker.chunk
+            .withArgs(testEnv.DEFAULT_CREATE_EMBEDDING_TEXT_RESULT.text)
             .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
-        embeddingApiClient.get
+        testEnv.embeddingApiClient.get
             .withArgs(["test1"])
             .rejects(new Error("throw test error"));
 
@@ -191,28 +177,27 @@ describe("onRecordFoundRegistryRecord", () => {
     });
 
     it("should skip this record when opensearchApiClient throws an error", async () => {
-        const userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "registryRecord",
             aspects: ["test-aspect"]
         });
 
-        const createEmbeddingTextStub = sinon.stub().resolves({
-            text: "embedding text: test1"
-        });
-        userConfig.createEmbeddingText = createEmbeddingTextStub;
-
         const onRecordFound = onRecordFoundRegistryRecord(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient
         );
 
-        chunker.chunk
-            .withArgs("embedding text: test1")
+        testEnv.chunker.chunk
+            .withArgs(testEnv.DEFAULT_CREATE_EMBEDDING_TEXT_RESULT.text)
             .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
-        embeddingApiClient.get.withArgs(["test1"]).resolves([[0.1, 0.2, 0.3]]);
-        opensearchApiClient.bulkIndexDocument.rejects(new Error("index error"));
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
+        testEnv.opensearchApiClient.bulkIndexDocument.rejects(
+            new Error("index error")
+        );
 
         await expectNoThrowsAsync(() =>
             onRecordFound(
@@ -223,28 +208,28 @@ describe("onRecordFoundRegistryRecord", () => {
     });
 
     it("should skip this record when createEmbeddingText throws an error", async () => {
-        const userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "registryRecord",
-            aspects: ["test-aspect"]
+            aspects: ["test-aspect"],
+            createEmbeddingText: sinon
+                .stub()
+                .rejects(new Error("create embedding text error"))
         });
-
-        const createEmbeddingTextStub = sinon
-            .stub()
-            .rejects(new Error("create embedding text error"));
-        userConfig.createEmbeddingText = createEmbeddingTextStub;
 
         const onRecordFound = onRecordFoundRegistryRecord(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient
         );
 
-        chunker.chunk
-            .withArgs("embedding text: test1")
+        testEnv.chunker.chunk
+            .withArgs(testEnv.DEFAULT_CREATE_EMBEDDING_TEXT_RESULT.text)
             .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
-        embeddingApiClient.get.withArgs(["test1"]).resolves([[0.1, 0.2, 0.3]]);
-        opensearchApiClient.bulkIndexDocument.resolves();
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
+        testEnv.opensearchApiClient.bulkIndexDocument.resolves();
 
         await expectNoThrowsAsync(() =>
             onRecordFound(
