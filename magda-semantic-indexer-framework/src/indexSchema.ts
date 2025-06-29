@@ -79,7 +79,10 @@ export function createSemanticIndexerMapping(config: SemanticIndexerOptions) {
                 only_one_index_text_chunk: { type: "boolean" },
                 index_text_chunk_length: { type: "integer" },
                 index_text_chunk_position: { type: "integer" },
-                index_text_chunk_overlap: { type: "integer" }
+                index_text_chunk_overlap: { type: "integer" },
+                indexerId: { type: "keyword" },
+                createTime: { type: "date", format: "strict_date_time" },
+                updateTime: { type: "date", format: "strict_date_time" }
             }
         }
     };
@@ -101,6 +104,9 @@ export interface SemanticIndexDocument {
     index_text_chunk_length: number;
     index_text_chunk_position: number;
     index_text_chunk_overlap: number;
+    indexerId: string;
+    createTime: string;
+    updateTime: string;
 }
 
 export function buildSemanticIndexDocument(
@@ -123,6 +129,9 @@ export function buildSemanticIndexDocument(
         only_one_index_text_chunk: params.only_one_index_text_chunk,
         index_text_chunk_length: params.index_text_chunk_length,
         index_text_chunk_position: params.index_text_chunk_position,
-        index_text_chunk_overlap: params.index_text_chunk_overlap
+        index_text_chunk_overlap: params.index_text_chunk_overlap,
+        indexerId: params.indexerId,
+        createTime: params.createTime,
+        updateTime: params.updateTime
     };
 }

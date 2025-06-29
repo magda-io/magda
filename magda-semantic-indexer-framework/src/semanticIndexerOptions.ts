@@ -16,6 +16,7 @@ export default interface SemanticIndexerOptions {
     chunkSizeLimit?: number;
     overlap?: number;
     autoDownloadFile?: boolean;
+    timeout?: string;
 }
 
 export function validateSemanticIndexerOptions(

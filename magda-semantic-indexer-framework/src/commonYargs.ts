@@ -45,6 +45,7 @@ export interface SemanticIndexerArguments extends MinionArguments {
     minioConfig: MinioConfig;
     minioAccessKey: string;
     minioSecretKey: string;
+    registryReadonlyURL: string;
 }
 
 export function commonYargs(
@@ -107,6 +108,13 @@ export function commonYargs(
                     type: "string",
                     default:
                         process.env.EMBEDDING_API_URL || "http://localhost:3000"
+                })
+                .option("registryReadonlyURL", {
+                    describe: "The URL of the registry readonly API.",
+                    type: "string",
+                    default:
+                        process.env.REGISTRY_READ_ONLY_URL ||
+                        "http://localhost:6101/v0"
                 })
     );
 

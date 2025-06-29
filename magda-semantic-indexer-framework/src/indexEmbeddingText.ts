@@ -8,6 +8,8 @@ import { buildSemanticIndexDocument } from "./indexSchema.js";
 import { v4 as uuidv4 } from "uuid";
 import { Readable, Transform, Writable } from "stream";
 import { pipeline } from "stream/promises";
+import { BulkByScrollResponseBase } from "@opensearch-project/opensearch/api/_types/_common.js";
+import retry from "magda-typescript-common/src/retry.js";
 
 interface Metadata {
     recordId: string;
@@ -29,6 +31,7 @@ class BuildDocumentTransform extends Transform {
             totalChunks: number;
             text: string;
             metadata: Metadata;
+            indexingStartTime: string;
         }
     ) {
         super({ objectMode: true });
@@ -60,7 +63,10 @@ class BuildDocumentTransform extends Transform {
                 only_one_index_text_chunk: this.params.totalChunks === 1,
                 index_text_chunk_length: chunk.length,
                 index_text_chunk_position: chunk.position,
-                index_text_chunk_overlap: chunk.overlap
+                index_text_chunk_overlap: chunk.overlap,
+                indexerId: this.params.options.id,
+                createTime: this.params.indexingStartTime,
+                updateTime: this.params.indexingStartTime
             })
         );
 
@@ -235,6 +241,7 @@ async function processSingleText({
         throw new SkipError("No chunks generated from text.");
     }
 
+    const indexingStartTime = new Date().toISOString();
     const textChunkStream = Readable.from(chunks, { objectMode: true });
     const buildDocumentTransform = new BuildDocumentTransform({
         options,
@@ -242,7 +249,8 @@ async function processSingleText({
         bulkEmbeddingsSize,
         totalChunks: chunks.length,
         text,
-        metadata
+        metadata,
+        indexingStartTime
     });
     const openSearchStream = new OpenSearchIndexStream(
         opensearchApiClient,
@@ -256,9 +264,70 @@ async function processSingleText({
             buildDocumentTransform,
             openSearchStream
         );
+
+        await deleteOldDocuments(
+            opensearchApiClient,
+            indexName,
+            options.id,
+            metadata.recordId,
+            indexingStartTime,
+            options.timeout || "1m",
+            3
+        );
     } catch (error) {
         throw new SkipError(
             `Failed to index documents: ${(error as Error).message}`
         );
     }
+}
+
+async function deleteOldDocuments(
+    opensearchApiClient: OpensearchApiClient,
+    indexName: string,
+    indexerId: string,
+    recordId: string,
+    beforeTimestamp: string,
+    timeout: string,
+    retries: number
+): Promise<void> {
+    const deleteQuery = {
+        bool: {
+            filter: [
+                { term: { indexerId: indexerId } },
+                { term: { recordId: recordId } },
+                { range: { createTime: { lt: beforeTimestamp } } }
+            ]
+        }
+    };
+
+    await retry(
+        async () => {
+            const result = await opensearchApiClient.deleteByQuery({
+                index: indexName,
+                body: { query: deleteQuery as any },
+                wait_for_completion: true,
+                conflicts: "proceed",
+                timeout: timeout
+            });
+            const responseBody = result.body as BulkByScrollResponseBase;
+            if (responseBody.version_conflicts !== 0) {
+                throw new Error(
+                    `${responseBody.version_conflicts} version conflicts`
+                );
+            }
+            if (responseBody.timed_out) {
+                throw new Error(`timed out`);
+            }
+            return;
+        },
+        1,
+        retries,
+        (error, left) => {
+            console.warn(
+                `Failed to delete old documents: ${
+                    (error as Error).message
+                }. remaining retries: ${left}`
+            );
+        }
+    );
 }
