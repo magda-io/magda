@@ -108,6 +108,8 @@ typescript-common-libs:
     - cd magda-typescript-common && yarn build && yarn test
     - cd ..
     - cd magda-minion-framework && yarn build && yarn test
+    - cd ..
+    - cd magda-semantic-indexer-framework && yarn build && yarn test
   artifacts:
     paths:
       - "*/dist"

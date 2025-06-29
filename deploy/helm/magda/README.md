@@ -40,6 +40,15 @@ A complete solution for managing, publishing and discovering government data, pr
 | global.openfaas.mainNamespace | string | `"openfaas"` | Default namespace for gateway and other core modules |
 | global.openfaas.namespacePrefix | string | `""` |  |
 | global.openfaas.secrets.authSecrets | bool | `true` |  |
+| global.searchEngine | object | `{"defaultDatasetBucket":"magda-datasets","semanticIndexer":{"indexName":"semantic-index","indexVersion":1,"knnVectorFieldConfig":{"compressionLevel":null,"dimension":768,"efConstruction":100,"efSearch":100,"encoder":{"clip":false,"name":"sq","type":"fp16"},"m":16,"mode":"in_memory","spaceType":"l2"},"numberOfReplicas":0,"numberOfShards":1}}` | Search engine configuration, only used for semantic indexer. |
+| global.searchEngine.semanticIndexer.indexVersion | int | `1` | System wide agreed version. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.compressionLevel | string | `nil` | The compression_level mapping parameter selects a quantization encoder that reduces vector memory consumption by the given factor. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.dimension | int | `768` | Dimension of the embedding vectors. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.efConstruction | int | `100` | Similar to efSearch but used during index construction. Higher values improve search quality but increase index build time. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.efSearch | int | `100` | The size of the candidate queue during search. Larger values may improve search quality but increase search latency. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.encoder | object | `{"clip":false,"name":"sq","type":"fp16"}` | FAISS Encoder configuration (If compressionLevel is set, encoder will be ignored). |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.m | int | `16` | The maximum number of graph edges per vector. Higher values increase memory usage but may improve search quality. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.mode | string | `"in_memory"` | Vector workload mode: `on_disk` or `in_memory`. |
 | openfaas.basic_auth | bool | `false` |  |
 | openfaas.faasIdler.dryRun | bool | `false` |  |
 | openfaas.faasnetes.imagePullPolicy | string | `"IfNotPresent"` |  |
