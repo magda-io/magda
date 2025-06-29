@@ -1,65 +1,42 @@
 import { expect } from "chai";
-import sinon, { SinonStub, stub } from "sinon";
+import sinon from "sinon";
 import { onRecordFoundStorageObject } from "../onRecordFoundStorageObject.js";
-import {
-    createFakeSemanticIndexerConfig,
-    createRecord,
-    expectNoThrowsAsync
-} from "./helpers.js";
+import { createRecord, expectNoThrowsAsync } from "./helpers.js";
+import { BaseSemanticIndexerTest } from "./BaseSemanticIndexerTest.js";
 import fs from "fs";
 import nock from "nock";
 import { tmpdir } from "os";
 import { join } from "path";
 
 describe("onRecordFoundStorageObject", () => {
-    let userConfig: any;
-    let chunker: any;
-    let embeddingApiClient: any;
-    let opensearchApiClient: any;
-    let minioClient: any;
-    let createEmbeddingTextStub: SinonStub;
-    let consoleLogStub: SinonStub;
-    let consoleWarnStub: SinonStub;
-    let consoleErrorStub: SinonStub;
-    let registry: any;
+    let testEnv: BaseSemanticIndexerTest;
 
     beforeEach(() => {
-        chunker = { chunk: sinon.stub() };
-        embeddingApiClient = { get: sinon.stub() };
-        opensearchApiClient = { bulkIndexDocument: sinon.stub().resolves() };
-        minioClient = { downloadFile: sinon.stub().resolves() };
-        createEmbeddingTextStub = sinon
-            .stub()
-            .returns({ text: "embedding text" });
-        consoleLogStub = stub(console, "log");
-        consoleWarnStub = stub(console, "warn");
-        consoleErrorStub = stub(console, "error");
-        registry = {
-            getRecords: sinon.stub().resolves({
-                records: [{ id: "fake-parent-record-id" }]
-            })
-        };
+        testEnv = new BaseSemanticIndexerTest({
+            suppressConsoleLogs: true
+        });
     });
 
     afterEach(() => {
-        consoleLogStub.restore();
-        consoleWarnStub.restore();
-        consoleErrorStub.restore();
+        testEnv.cleanup();
     });
 
     it("should handle and index storage object with expected formatType, with autoDownloadFile disabled", async () => {
-        createEmbeddingTextStub.resolves({ text: "embedding text: test1" });
-        userConfig = createFakeSemanticIndexerConfig({
+        testEnv.createEmbeddingTextStub.resolves({
+            text: "embedding text: test1"
+        });
+        const userConfig = testEnv.updateUserConfig({
             itemType: "storageObject",
-            createEmbeddingText: createEmbeddingTextStub,
             formatTypes: ["csv"],
             autoDownloadFile: false
         });
 
-        chunker.chunk
+        testEnv.chunker.chunk
             .withArgs("embedding text: test1")
             .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
-        embeddingApiClient.get.withArgs(["test1"]).resolves([[0.1, 0.2, 0.3]]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
 
         const record = createRecord({
             id: "id1",
@@ -74,43 +51,48 @@ describe("onRecordFoundStorageObject", () => {
 
         const onRecordFound = onRecordFoundStorageObject(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
-            minioClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
         );
-        await onRecordFound(record, registry);
+        await onRecordFound(record, testEnv.registry);
 
         const expectedDocs = [
             {
                 itemType: userConfig.itemType,
                 recordId: "id1",
-                parentRecordId: "fake-parent-record-id",
+                parentRecordId: testEnv.DEFAULT_PARENT_RECORD_ID,
                 fileFormat: "csv",
                 index_text_chunk: "test1",
                 embedding: [0.1, 0.2, 0.3],
                 only_one_index_text_chunk: true,
                 index_text_chunk_length: 5,
                 index_text_chunk_position: 0,
-                index_text_chunk_overlap: 0
+                index_text_chunk_overlap: 0,
+                indexerId: userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             }
         ];
 
-        expect(createEmbeddingTextStub.callCount).to.equal(1);
-        expect(
-            createEmbeddingTextStub.firstCall.calledWith({
-                record,
-                format: "csv",
-                filePath: null,
-                url: "http://test.com/file.csv"
-            })
-        ).to.be.true;
-        expect(chunker.chunk.callCount).to.equal(1);
-        expect(embeddingApiClient.get.callCount).to.equal(1);
-        expect(opensearchApiClient.bulkIndexDocument.callCount).to.equal(1);
-        expect(
-            opensearchApiClient.bulkIndexDocument.firstCall.args[1]
-        ).to.deep.equal(expectedDocs);
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 1,
+            chunkCallCount: 1,
+            embeddingApiCallCount: 1,
+            bulkIndexCallCount: 1,
+            deleteByQueryCallCount: 1
+        });
+
+        testEnv.expectCalledWith(testEnv.createEmbeddingTextStub, 0, {
+            record,
+            format: "csv",
+            filePath: null,
+            url: "http://test.com/file.csv"
+        });
+
+        testEnv.expectIndexedDocs(expectedDocs);
     });
 
     it("should handle and index storage object with expected formatType, with autoDownloadFile enabled", async () => {
@@ -129,7 +111,7 @@ describe("onRecordFoundStorageObject", () => {
         });
 
         let usedFilePath = null;
-        createEmbeddingTextStub.callsFake(
+        testEnv.createEmbeddingTextStub.callsFake(
             async ({ record, format, filePath, url }) => {
                 expect(record).to.deep.equal(record);
                 expect(format).to.equal("csv");
@@ -142,14 +124,15 @@ describe("onRecordFoundStorageObject", () => {
             }
         );
 
-        chunker.chunk
+        testEnv.chunker.chunk
             .withArgs("embedding text: test1")
             .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
-        embeddingApiClient.get.withArgs(["test1"]).resolves([[0.1, 0.2, 0.3]]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
 
-        userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "storageObject",
-            createEmbeddingText: createEmbeddingTextStub,
             formatTypes: ["csv"],
             autoDownloadFile: true
         });
@@ -158,32 +141,40 @@ describe("onRecordFoundStorageObject", () => {
             {
                 itemType: userConfig.itemType,
                 recordId: "id1",
-                parentRecordId: "fake-parent-record-id",
+                parentRecordId: testEnv.DEFAULT_PARENT_RECORD_ID,
                 fileFormat: "csv",
                 index_text_chunk: "test1",
                 embedding: [0.1, 0.2, 0.3],
                 only_one_index_text_chunk: true,
                 index_text_chunk_length: 5,
                 index_text_chunk_position: 0,
-                index_text_chunk_overlap: 0
+                index_text_chunk_overlap: 0,
+                indexerId: userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             }
         ];
 
         const onRecordFound = onRecordFoundStorageObject(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
-            minioClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
         );
-        await onRecordFound(record, registry);
-        expect(createEmbeddingTextStub.callCount).to.equal(1);
-        expect(chunker.chunk.callCount).to.equal(1);
-        expect(embeddingApiClient.get.callCount).to.equal(1);
-        expect(opensearchApiClient.bulkIndexDocument.callCount).to.equal(1);
-        expect(
-            opensearchApiClient.bulkIndexDocument.firstCall.args[1]
-        ).to.deep.equal(expectedDocs);
+        await onRecordFound(record, testEnv.registry);
+
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 1,
+            chunkCallCount: 1,
+            embeddingApiCallCount: 1,
+            bulkIndexCallCount: 1,
+            deleteByQueryCallCount: 1
+        });
+
+        testEnv.expectIndexedDocs(expectedDocs);
+
         if (usedFilePath) {
             expect(fs.existsSync(usedFilePath)).to.be.false;
         }
@@ -196,10 +187,12 @@ describe("onRecordFoundStorageObject", () => {
             "magda://storage-api/fake-parent-record-id/id1/file.csv";
         const tempDir = tmpdir();
         const tempFilePath = join(tempDir, "file.csv");
-        minioClient.downloadFile.withArgs(downloadUrl).callsFake(async () => {
-            fs.writeFileSync(tempFilePath, fileContent);
-            return tempFilePath;
-        });
+        testEnv.minioClient.downloadFile
+            .withArgs(downloadUrl)
+            .callsFake(async () => {
+                fs.writeFileSync(tempFilePath, fileContent);
+                return tempFilePath;
+            });
 
         const record = createRecord({
             id: "id1",
@@ -213,7 +206,7 @@ describe("onRecordFoundStorageObject", () => {
         });
 
         let usedFilePath = null;
-        createEmbeddingTextStub.callsFake(
+        testEnv.createEmbeddingTextStub.callsFake(
             async ({ record, format, filePath, url }) => {
                 expect(record).to.deep.equal(record);
                 expect(format).to.equal("csv");
@@ -226,14 +219,15 @@ describe("onRecordFoundStorageObject", () => {
             }
         );
 
-        chunker.chunk
+        testEnv.chunker.chunk
             .withArgs("embedding text: test1")
             .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
-        embeddingApiClient.get.withArgs(["test1"]).resolves([[0.1, 0.2, 0.3]]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
 
-        userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "storageObject",
-            createEmbeddingText: createEmbeddingTextStub,
             formatTypes: ["csv"],
             autoDownloadFile: true
         });
@@ -242,33 +236,40 @@ describe("onRecordFoundStorageObject", () => {
             {
                 itemType: userConfig.itemType,
                 recordId: "id1",
-                parentRecordId: "fake-parent-record-id",
+                parentRecordId: testEnv.DEFAULT_PARENT_RECORD_ID,
                 fileFormat: "csv",
                 index_text_chunk: "test1",
                 embedding: [0.1, 0.2, 0.3],
                 only_one_index_text_chunk: true,
                 index_text_chunk_length: 5,
                 index_text_chunk_position: 0,
-                index_text_chunk_overlap: 0
+                index_text_chunk_overlap: 0,
+                indexerId: userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             }
         ];
 
         const onRecordFound = onRecordFoundStorageObject(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
-            minioClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
         );
-        await onRecordFound(record, registry);
+        await onRecordFound(record, testEnv.registry);
 
-        expect(createEmbeddingTextStub.callCount).to.equal(1);
-        expect(chunker.chunk.callCount).to.equal(1);
-        expect(embeddingApiClient.get.callCount).to.equal(1);
-        expect(opensearchApiClient.bulkIndexDocument.callCount).to.equal(1);
-        expect(
-            opensearchApiClient.bulkIndexDocument.firstCall.args[1]
-        ).to.deep.equal(expectedDocs);
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 1,
+            chunkCallCount: 1,
+            embeddingApiCallCount: 1,
+            bulkIndexCallCount: 1,
+            deleteByQueryCallCount: 1
+        });
+
+        testEnv.expectIndexedDocs(expectedDocs);
+
         if (usedFilePath) {
             expect(fs.existsSync(usedFilePath)).to.be.false;
         }
@@ -276,18 +277,21 @@ describe("onRecordFoundStorageObject", () => {
     });
 
     it("should filter out records with unexpected formatType", async () => {
-        createEmbeddingTextStub.resolves({ text: "embedding text: test1" });
-        userConfig = createFakeSemanticIndexerConfig({
+        testEnv.createEmbeddingTextStub.resolves({
+            text: "embedding text: test1"
+        });
+        const userConfig = testEnv.updateUserConfig({
             itemType: "storageObject",
-            createEmbeddingText: createEmbeddingTextStub,
             formatTypes: ["csv"],
             autoDownloadFile: false
         });
 
-        chunker.chunk
+        testEnv.chunker.chunk
             .withArgs("embedding text: test1")
             .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
-        embeddingApiClient.get.withArgs(["test1"]).resolves([[0.1, 0.2, 0.3]]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
 
         const record = createRecord({
             id: "id1",
@@ -302,24 +306,27 @@ describe("onRecordFoundStorageObject", () => {
 
         const onRecordFound = onRecordFoundStorageObject(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
-            minioClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
         );
 
-        await onRecordFound(record, registry);
+        await onRecordFound(record, testEnv.registry);
 
-        expect(createEmbeddingTextStub.callCount).to.equal(0);
-        expect(chunker.chunk.callCount).to.equal(0);
-        expect(embeddingApiClient.get.callCount).to.equal(0);
-        expect(opensearchApiClient.bulkIndexDocument.callCount).to.equal(0);
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 0,
+            chunkCallCount: 0,
+            embeddingApiCallCount: 0,
+            bulkIndexCallCount: 0,
+            deleteByQueryCallCount: 0
+        });
     });
 
     it("should handle and index storage object with multiple expected format types", async () => {
-        userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "storageObject",
-            createEmbeddingText: createEmbeddingTextStub,
             formatTypes: ["csv", "json"],
             autoDownloadFile: false
         });
@@ -335,12 +342,14 @@ describe("onRecordFoundStorageObject", () => {
             }
         });
 
-        chunker.chunk
+        testEnv.chunker.chunk
             .withArgs("embedding text: test1")
             .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
-        embeddingApiClient.get.withArgs(["test1"]).resolves([[0.1, 0.2, 0.3]]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
 
-        createEmbeddingTextStub
+        testEnv.createEmbeddingTextStub
             .withArgs({
                 record,
                 format: "csv",
@@ -351,41 +360,46 @@ describe("onRecordFoundStorageObject", () => {
 
         const onRecordFound = onRecordFoundStorageObject(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
-            minioClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
         );
-        await onRecordFound(record, registry);
+        await onRecordFound(record, testEnv.registry);
 
         const expectedDocs1 = [
             {
                 itemType: userConfig.itemType,
                 recordId: "id1",
-                parentRecordId: "fake-parent-record-id",
+                parentRecordId: testEnv.DEFAULT_PARENT_RECORD_ID,
                 fileFormat: "csv",
                 index_text_chunk: "test1",
                 embedding: [0.1, 0.2, 0.3],
                 only_one_index_text_chunk: true,
                 index_text_chunk_length: 5,
                 index_text_chunk_position: 0,
-                index_text_chunk_overlap: 0
+                index_text_chunk_overlap: 0,
+                indexerId: userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             }
         ];
 
-        expect(createEmbeddingTextStub.callCount).to.equal(1);
-        expect(chunker.chunk.callCount).to.equal(1);
-        expect(embeddingApiClient.get.callCount).to.equal(1);
-        expect(opensearchApiClient.bulkIndexDocument.callCount).to.equal(1);
-        expect(
-            opensearchApiClient.bulkIndexDocument.firstCall.args[1]
-        ).to.deep.equal(expectedDocs1);
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 1,
+            chunkCallCount: 1,
+            embeddingApiCallCount: 1,
+            bulkIndexCallCount: 1,
+            deleteByQueryCallCount: 1
+        });
+
+        testEnv.expectIndexedDocs(expectedDocs1);
     });
 
     it("should skip this record when embeddingApiClient throws an error", async () => {
-        userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "storageObject",
-            createEmbeddingText: createEmbeddingTextStub,
             formatTypes: ["csv"]
         });
 
@@ -400,25 +414,27 @@ describe("onRecordFoundStorageObject", () => {
             }
         });
 
-        embeddingApiClient.get
+        testEnv.embeddingApiClient.get
             .withArgs(["test1"])
             .rejects(new Error("throw test error"));
 
         const onRecordFound = onRecordFoundStorageObject(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
-            minioClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
         );
 
-        await expectNoThrowsAsync(() => onRecordFound(record, registry));
+        await expectNoThrowsAsync(() =>
+            onRecordFound(record, testEnv.registry)
+        );
     });
 
     it("should skip this record when opensearchApiClient throws an error", async () => {
-        userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "storageObject",
-            createEmbeddingText: createEmbeddingTextStub,
             formatTypes: ["csv"]
         });
 
@@ -433,25 +449,30 @@ describe("onRecordFoundStorageObject", () => {
             }
         });
 
-        opensearchApiClient.bulkIndexDocument
+        testEnv.opensearchApiClient.bulkIndexDocument
             .withArgs(record, null as any)
             .rejects(new Error("throw test error"));
 
         const onRecordFound = onRecordFoundStorageObject(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
-            minioClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
         );
-        await expectNoThrowsAsync(() => onRecordFound(record, registry));
+        await expectNoThrowsAsync(() =>
+            onRecordFound(record, testEnv.registry)
+        );
     });
 
     it("should skip this record when createEmbeddingText throws an error", async () => {
-        userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "storageObject",
-            createEmbeddingText: createEmbeddingTextStub,
-            formatTypes: ["csv"]
+            formatTypes: ["csv"],
+            createEmbeddingText: sinon
+                .stub()
+                .rejects(new Error("throw test error"))
         });
 
         const record = createRecord({
@@ -465,24 +486,22 @@ describe("onRecordFoundStorageObject", () => {
             }
         });
 
-        createEmbeddingTextStub
-            .withArgs({})
-            .rejects(new Error("throw test error"));
-
         const onRecordFound = onRecordFoundStorageObject(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
-            minioClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
         );
-        await expectNoThrowsAsync(() => onRecordFound(record, registry));
+        await expectNoThrowsAsync(() =>
+            onRecordFound(record, testEnv.registry)
+        );
     });
 
     it("should skip this record when dataset-distributions aspect not exist", async () => {
-        userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "storageObject",
-            createEmbeddingText: createEmbeddingTextStub,
             formatTypes: ["csv"]
         });
 
@@ -493,18 +512,20 @@ describe("onRecordFoundStorageObject", () => {
 
         const onRecordFound = onRecordFoundStorageObject(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
-            minioClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
         );
-        await expectNoThrowsAsync(() => onRecordFound(record, registry));
+        await expectNoThrowsAsync(() =>
+            onRecordFound(record, testEnv.registry)
+        );
     });
 
     it("should skip this record when dcat-distribution-strings is missing downloadURL", async () => {
-        userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "storageObject",
-            createEmbeddingText: createEmbeddingTextStub,
             formatTypes: ["csv"]
         });
 
@@ -521,18 +542,20 @@ describe("onRecordFoundStorageObject", () => {
 
         const onRecordFound = onRecordFoundStorageObject(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
-            minioClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
         );
-        await expectNoThrowsAsync(() => onRecordFound(record, registry));
+        await expectNoThrowsAsync(() =>
+            onRecordFound(record, testEnv.registry)
+        );
     });
 
     it("should use format from dcat-distribution-strings when dataset-format is missing", async () => {
-        userConfig = createFakeSemanticIndexerConfig({
+        const userConfig = testEnv.updateUserConfig({
             itemType: "storageObject",
-            createEmbeddingText: createEmbeddingTextStub,
             formatTypes: ["csv"],
             autoDownloadFile: false
         });
@@ -550,18 +573,90 @@ describe("onRecordFoundStorageObject", () => {
 
         const onRecordFound = onRecordFoundStorageObject(
             userConfig,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
-            minioClient
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
         );
 
-        await expectNoThrowsAsync(() => onRecordFound(record, registry));
-        expect(createEmbeddingTextStub.firstCall.args[0]).to.deep.equal({
-            record,
-            format: "csv",
-            filePath: null,
-            url: "http://test.com/test.csv"
+        await expectNoThrowsAsync(() =>
+            onRecordFound(record, testEnv.registry)
+        );
+        expect(testEnv.createEmbeddingTextStub.firstCall.args[0]).to.deep.equal(
+            {
+                record,
+                format: "csv",
+                filePath: null,
+                url: "http://test.com/test.csv"
+            }
+        );
+    });
+
+    it("should call deleteByQuery after indexing", async () => {
+        testEnv.createEmbeddingTextStub.resolves({
+            text: "embedding text: test1"
+        });
+        const userConfig = testEnv.updateUserConfig({
+            itemType: "storageObject",
+            formatTypes: ["csv"],
+            autoDownloadFile: false
+        });
+
+        testEnv.chunker.chunk
+            .withArgs("embedding text: test1")
+            .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
+
+        const record = createRecord({
+            id: "id1",
+            aspects: {
+                "dataset-format": { format: "csv" },
+                "dcat-distribution-strings": {
+                    format: "csv",
+                    downloadURL: "http://test.com/file.csv"
+                }
+            }
+        });
+
+        const onRecordFound = onRecordFoundStorageObject(
+            userConfig,
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
+        );
+        await onRecordFound(record, testEnv.registry);
+
+        testEnv.expectSuccessCalls({
+            deleteByQueryCallCount: 1
+        });
+
+        testEnv.expectCalledWith(testEnv.opensearchApiClient.deleteByQuery, 0, {
+            index: userConfig.argv.semanticIndexerConfig.fullIndexName,
+            body: {
+                query: {
+                    bool: {
+                        filter: [
+                            { term: { indexerId: userConfig.id } },
+                            { term: { recordId: "id1" } },
+                            {
+                                range: {
+                                    createTime: {
+                                        lt: testEnv.getCurrentTimeString()
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            wait_for_completion: true,
+            conflicts: "proceed",
+            timeout: userConfig.timeout
         });
     });
 });

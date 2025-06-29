@@ -1,27 +1,25 @@
-import { expect } from "chai";
-import sinon from "sinon";
 import { indexEmbeddingText } from "../indexEmbeddingText.js";
-import { createFakeSemanticIndexerConfig } from "./helpers.js";
+import { BaseSemanticIndexerTest } from "./BaseSemanticIndexerTest.js";
 
 describe("indexEmbeddingText", () => {
-    let chunker: any;
-    let embeddingApiClient: any;
-    let opensearchApiClient: any;
-    let config: any;
+    let testEnv: BaseSemanticIndexerTest;
 
     beforeEach(() => {
-        chunker = { chunk: sinon.stub() };
-        embeddingApiClient = { get: sinon.stub() };
-        opensearchApiClient = { bulkIndexDocument: sinon.stub().resolves() };
+        testEnv = new BaseSemanticIndexerTest();
+    });
+
+    afterEach(() => {
+        testEnv.cleanup();
     });
 
     it("should chunk, embed and index user text", async () => {
         const embeddingTextResult = { text: "main text" };
-        chunker.chunk.returns([
+        testEnv.chunker.chunk.returns([
             { text: "a", length: 1, position: 0, overlap: 0 }
         ]);
-        embeddingApiClient.get.resolves([[0.1, 0.2, 0.3]]);
-        config = createFakeSemanticIndexerConfig({
+        testEnv.embeddingApiClient.get.resolves([[0.1, 0.2, 0.3]]);
+
+        const config = testEnv.updateUserConfig({
             itemType: "storageObject",
             formatTypes: ["csv"]
         });
@@ -29,18 +27,23 @@ describe("indexEmbeddingText", () => {
         await indexEmbeddingText({
             options: config,
             embeddingText: embeddingTextResult,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
+            chunker: testEnv.chunker,
+            embeddingApiClient: testEnv.embeddingApiClient,
+            opensearchApiClient: testEnv.opensearchApiClient,
             metadata: {
                 recordId: "id1",
                 fileFormat: "csv"
             }
         });
 
-        expect(chunker.chunk.calledOnce).to.be.true;
-        expect(embeddingApiClient.get.calledOnce).to.be.true;
-        expect(opensearchApiClient.bulkIndexDocument.calledOnce).to.be.true;
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 0,
+            chunkCallCount: 1,
+            embeddingApiCallCount: 1,
+            bulkIndexCallCount: 1,
+            deleteByQueryCallCount: 1
+        });
+
         const expectedDoc = {
             itemType: config.itemType,
             recordId: "id1",
@@ -50,29 +53,31 @@ describe("indexEmbeddingText", () => {
             only_one_index_text_chunk: true,
             index_text_chunk_length: 1,
             index_text_chunk_position: 0,
-            index_text_chunk_overlap: 0
+            index_text_chunk_overlap: 0,
+            indexerId: testEnv.userConfig.id,
+            createTime: testEnv.getCurrentTimeString(),
+            updateTime: testEnv.getCurrentTimeString()
         };
 
-        expect(
-            opensearchApiClient.bulkIndexDocument.firstCall.args[1][0]
-        ).to.deep.equal(expectedDoc);
+        testEnv.expectIndexedDoc(expectedDoc);
     });
 
     it("should correctly handle multiple chunks with overlap and index multiple chunks", async () => {
         const embeddingTextResult = {
             text: "long text that needs multiple chunks"
         };
-        chunker.chunk.returns([
+        testEnv.chunker.chunk.returns([
             { text: "long text", length: 9, position: 0, overlap: 2 },
             { text: "text that", length: 9, position: 7, overlap: 2 },
             { text: "that needs", length: 10, position: 14, overlap: 2 }
         ]);
-        embeddingApiClient.get.resolves([
+        testEnv.embeddingApiClient.get.resolves([
             [0.1, 0.2, 0.3],
             [0.4, 0.5, 0.6],
             [0.7, 0.8, 0.9]
         ]);
-        config = createFakeSemanticIndexerConfig({
+
+        const config = testEnv.updateUserConfig({
             itemType: "storageObject",
             formatTypes: ["txt"]
         });
@@ -82,18 +87,22 @@ describe("indexEmbeddingText", () => {
         await indexEmbeddingText({
             options: config,
             embeddingText: embeddingTextResult,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
+            chunker: testEnv.chunker,
+            embeddingApiClient: testEnv.embeddingApiClient,
+            opensearchApiClient: testEnv.opensearchApiClient,
             metadata: {
                 recordId: "id2",
                 fileFormat: "txt"
             }
         });
 
-        expect(chunker.chunk.calledOnce).to.be.true;
-        expect(embeddingApiClient.get.calledOnce).to.be.true;
-        expect(opensearchApiClient.bulkIndexDocument.calledOnce).to.be.true;
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 0,
+            chunkCallCount: 1,
+            embeddingApiCallCount: 1,
+            bulkIndexCallCount: 1,
+            deleteByQueryCallCount: 1
+        });
 
         const expectedDocs = [
             {
@@ -105,7 +114,10 @@ describe("indexEmbeddingText", () => {
                 only_one_index_text_chunk: false,
                 index_text_chunk_length: 9,
                 index_text_chunk_position: 0,
-                index_text_chunk_overlap: 2
+                index_text_chunk_overlap: 2,
+                indexerId: testEnv.userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             },
             {
                 itemType: config.itemType,
@@ -116,7 +128,10 @@ describe("indexEmbeddingText", () => {
                 only_one_index_text_chunk: false,
                 index_text_chunk_length: 9,
                 index_text_chunk_position: 7,
-                index_text_chunk_overlap: 2
+                index_text_chunk_overlap: 2,
+                indexerId: testEnv.userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             },
             {
                 itemType: config.itemType,
@@ -127,28 +142,30 @@ describe("indexEmbeddingText", () => {
                 only_one_index_text_chunk: false,
                 index_text_chunk_length: 10,
                 index_text_chunk_position: 14,
-                index_text_chunk_overlap: 2
+                index_text_chunk_overlap: 2,
+                indexerId: testEnv.userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             }
         ];
 
-        expect(
-            opensearchApiClient.bulkIndexDocument.firstCall.args[1]
-        ).to.deep.equal(expectedDocs);
+        testEnv.expectIndexedDocs(expectedDocs);
     });
 
     it("should handle text and subObjects and index into opensearch", async () => {
-        chunker.chunk
+        testEnv.chunker.chunk
             .withArgs("main text")
             .returns([
                 { text: "main text", length: 9, position: 0, overlap: 0 }
             ]);
-        chunker.chunk
+        testEnv.chunker.chunk
             .withArgs("table1")
             .returns([{ text: "table1", length: 6, position: 0, overlap: 0 }]);
-        chunker.chunk
+        testEnv.chunker.chunk
             .withArgs("table2")
             .returns([{ text: "table2", length: 6, position: 0, overlap: 0 }]);
-        embeddingApiClient.get.resolves([[0.1, 0.2, 0.3]]);
+        testEnv.embeddingApiClient.get.resolves([[0.1, 0.2, 0.3]]);
+
         const embeddingTextResult = {
             text: "main text",
             subObjects: [
@@ -156,7 +173,8 @@ describe("indexEmbeddingText", () => {
                 { subObjectId: "2", subObjectType: "table", text: "table2" }
             ]
         };
-        config = createFakeSemanticIndexerConfig({
+
+        const config = testEnv.updateUserConfig({
             itemType: "storageObject",
             formatTypes: ["csv"]
         });
@@ -164,18 +182,22 @@ describe("indexEmbeddingText", () => {
         await indexEmbeddingText({
             options: config,
             embeddingText: embeddingTextResult,
-            chunker,
-            embeddingApiClient,
-            opensearchApiClient,
+            chunker: testEnv.chunker,
+            embeddingApiClient: testEnv.embeddingApiClient,
+            opensearchApiClient: testEnv.opensearchApiClient,
             metadata: {
                 recordId: "id4",
                 fileFormat: "csv"
             }
         });
 
-        expect(chunker.chunk.callCount).to.equal(3);
-        expect(embeddingApiClient.get.callCount).to.equal(3);
-        expect(opensearchApiClient.bulkIndexDocument.callCount).to.equal(3);
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 0,
+            chunkCallCount: 3,
+            embeddingApiCallCount: 3,
+            bulkIndexCallCount: 3,
+            deleteByQueryCallCount: 3
+        });
 
         const expectedDocs = [
             {
@@ -187,7 +209,10 @@ describe("indexEmbeddingText", () => {
                 only_one_index_text_chunk: true,
                 index_text_chunk_length: 9,
                 index_text_chunk_position: 0,
-                index_text_chunk_overlap: 0
+                index_text_chunk_overlap: 0,
+                indexerId: testEnv.userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             }
         ];
 
@@ -203,7 +228,10 @@ describe("indexEmbeddingText", () => {
                 only_one_index_text_chunk: true,
                 index_text_chunk_length: 6,
                 index_text_chunk_position: 0,
-                index_text_chunk_overlap: 0
+                index_text_chunk_overlap: 0,
+                indexerId: testEnv.userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             }
         ];
 
@@ -219,18 +247,15 @@ describe("indexEmbeddingText", () => {
                 only_one_index_text_chunk: true,
                 index_text_chunk_length: 6,
                 index_text_chunk_position: 0,
-                index_text_chunk_overlap: 0
+                index_text_chunk_overlap: 0,
+                indexerId: testEnv.userConfig.id,
+                createTime: testEnv.getCurrentTimeString(),
+                updateTime: testEnv.getCurrentTimeString()
             }
         ];
 
-        expect(
-            opensearchApiClient.bulkIndexDocument.firstCall.args[1]
-        ).to.deep.equal(expectedDocs);
-        expect(
-            opensearchApiClient.bulkIndexDocument.secondCall.args[1]
-        ).to.deep.equal(expectedSubObjectDocs1);
-        expect(
-            opensearchApiClient.bulkIndexDocument.thirdCall.args[1]
-        ).to.deep.equal(expectedSubObjectDocs2);
+        testEnv.expectIndexedDocs(expectedDocs, 0);
+        testEnv.expectIndexedDocs(expectedSubObjectDocs1, 1);
+        testEnv.expectIndexedDocs(expectedSubObjectDocs2, 2);
     });
 });
