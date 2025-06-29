@@ -26,7 +26,8 @@ export const onRecordFoundStorageObject = (
     chunker: Chunker,
     embeddingApiClient: EmbeddingApiClient,
     opensearchApiClient: OpensearchApiClient,
-    minioClient: MinioClient
+    minioClient: MinioClient,
+    registryReadonlyClient: Registry
 ): onRecordFoundType => {
     return async (dist: Record, registry) => {
         try {
@@ -53,7 +54,10 @@ export const onRecordFoundStorageObject = (
             let embeddingText: EmbeddingText;
             let filePath: string | null = null;
 
-            const parentRecordId = await getParentRecordId(dist.id, registry);
+            const parentRecordId = await getParentRecordId(
+                dist.id,
+                registryReadonlyClient
+            );
             try {
                 try {
                     if (

@@ -1,4 +1,6 @@
 import { Client } from "@opensearch-project/opensearch";
+import { DeleteByQuery_Request } from "@opensearch-project/opensearch/api/_core/deleteByQuery.js";
+import { TransportRequestOptions } from "@opensearch-project/opensearch/lib/Transport.js";
 
 export interface OpensearchConfig {
     url?: string;
@@ -114,5 +116,16 @@ export default class OpensearchApiClient {
             id: documentId
         });
         console.log(`Document deleted successfully: ${documentId}`);
+    }
+
+    async deleteByQuery(
+        params: DeleteByQuery_Request,
+        options?: TransportRequestOptions
+    ) {
+        const response = await this.client.deleteByQuery({
+            ...params,
+            ...options
+        });
+        return response;
     }
 }

@@ -17,6 +17,8 @@ import MinionOptions, {
 } from "magda-minion-framework/src/MinionOptions.js";
 import retry from "magda-typescript-common/src/retry.js";
 import { MinioClient } from "./MinioClient.js";
+import { MAGDA_SYSTEM_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 
 // Main function for semantic indexer
 export default async function semanticIndexer(
@@ -54,6 +56,14 @@ export default async function semanticIndexer(
                     e.message
                 )
         );
+
+        const registryReadonlyClient = new Registry({
+            baseUrl: userConfig.argv.registryReadonlyURL,
+            jwtSecret: userConfig.argv.jwtSecret,
+            userId: userConfig.argv.userId,
+            maxRetries: 3,
+            tenantId: MAGDA_SYSTEM_ID
+        });
 
         if (
             !(await opensearchApiClient.indexExists(
@@ -107,7 +117,8 @@ export default async function semanticIndexer(
                 chunker,
                 embeddingApiClient,
                 opensearchApiClient,
-                minioClient
+                minioClient,
+                registryReadonlyClient
             );
             minionOptions = {
                 argv: userConfig.argv,
