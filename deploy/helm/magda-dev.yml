@@ -97,7 +97,7 @@ magda:
           storageConfig:
             WALG_GS_PREFIX: "gs://magda-postgres-backups-asia/dev"
           backup: 
-            enabled: true
+            enabled: false # disable backup for dev environment for now
             schedule: "0 15 * * 6"
         postgresql:
           image: 

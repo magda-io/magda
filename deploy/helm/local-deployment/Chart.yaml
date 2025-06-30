@@ -201,13 +201,6 @@ dependencies:
     tags:
       - connectors
       - connector-sa
-  - name: magda-project-open-data-connector
-    version: "2.0.0"
-    alias: connector-southerngrampians
-    repository: "oci://ghcr.io/magda-io/charts"
-    tags:
-      - connectors
-      - connector-southerngrampians
   - name: magda-csw-connector
     version: "2.0.2"
     alias: connector-listtas
