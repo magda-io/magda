@@ -180,6 +180,7 @@ We welcome new contributors too! please check out our [Contributor's Guide](http
 - [Magda Helm Chart Reference](/docs/helm-charts-docs-index)
 - [Useful common documentations](./docs/index.md)
 - [Other documentations](https://github.com/magda-io/magda/tree/master/docs/docs)
+- [How We Support the Community and Our Clients](https://magda.io/docs/how-we-support-the-community-and-our-clients.html)
 - [Ask Questions on Our Github Discussions forum](https://github.com/magda-io/magda/discussions)
 
 The project was started by CSIRO's [Data61](https://data61.csiro.au/) and Australia's [Department of Prime Minister and Cabinet](https://www.pmc.gov.au/). It's progressing thanks to Data61, the [Digital Transformation Agency](https://www.dta.gov.au/), the [Department of Agriculture](http://www.agriculture.gov.au/), the [Department of the Environment and Energy](https://www.environment.gov.au/) and [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF).
