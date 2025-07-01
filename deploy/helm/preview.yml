@@ -71,6 +71,7 @@ magda:
             - https://*.googleusercontent.com
             # metadata editor map display
             - https://*.tile.openstreetmap.org
+            - https://*.basemaps.cartocdn.com
             connectSrc:
             - "'self'"
             - https://tiles.magda.io

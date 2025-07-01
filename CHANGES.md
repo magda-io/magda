@@ -3,6 +3,7 @@
 ## v5.3.1
 
 - Fix: sitemap will respond 404 with plain text error for invalid `afterToken` values
+- Fix: update default CSP config for search selector region panel basemap tiles display
 
 ## v5.3.0
 
