@@ -40,22 +40,22 @@ spec:
         command:
         - "bin/magda-registry-api"
 {{- if not (empty .root.Values.jvmInitialHeapSize) }}
-          - "-J-Xms{{ .root.Values.jvmInitialHeapSize }}"
+        - "-J-Xms{{ .root.Values.jvmInitialHeapSize }}"
 {{- end }}
 {{- if not (empty .root.Values.jvmMaxHeapSize) }}
-          - "-J-Xmx{{ .root.Values.jvmMaxHeapSize }}"
+        - "-J-Xmx{{ .root.Values.jvmMaxHeapSize }}"
 {{- end }}
 {{- if and (empty .root.Values.jvmMaxHeapSize) .root.Values.jvmMaxRamPercentage }}
-          - "-J-XX:MaxRAMPercentage={{ .root.Values.jvmMaxRamPercentage | printf "%.2f" }}"
+        - "-J-XX:MaxRAMPercentage={{ .root.Values.jvmMaxRamPercentage | printf "%.2f" }}"
 {{- end }}
 {{- if and (empty .root.Values.jvmInitialHeapSize) .root.Values.jvmInitialRamPercentage }}
-          - "-J-XX:InitialRAMPercentage={{ .root.Values.jvmInitialRamPercentage | printf "%.2f" }}"
+        - "-J-XX:InitialRAMPercentage={{ .root.Values.jvmInitialRamPercentage | printf "%.2f" }}"
 {{- end }}
 {{- if and (empty .root.Values.jvmInitialHeapSize) .root.Values.jvmMinRamPercentage }}
-          - "-J-XX:MinRAMPercentage={{ .root.Values.jvmMinRamPercentage | printf "%.2f" }}"
+        - "-J-XX:MinRAMPercentage={{ .root.Values.jvmMinRamPercentage | printf "%.2f" }}"
 {{- end }}
 {{- if .root.Values.jvmPrintFlagsFinal }}
-          - "-J-XX:+PrintFlagsFinal"
+        - "-J-XX:+PrintFlagsFinal"
 {{- end }}
         - "-Dconfig.file=/etc/config/deploy-application.conf"
         - "-Drole={{ .role }}"
