@@ -28,13 +28,14 @@ magda:
   magda-core:
     ingress:
       ingressClass: nginx
-      enableTls: true
-      useDefaultCertificate: true
+      # we have to let cloudflare terminate TLS as we are on free plan
+      #enableTls: true
+      #useDefaultCertificate: true
       clientBodyBufferSize: 500M
       proxyBodySize: 500M
     gateway:
       enableAuthEndpoint: true
-      enableHttpsRedirection: true
+      enableHttpsRedirection: false # -- for cloudflare free plan issue in our dev env
       authPlugins:
       - key: google
         baseUrl: http://magda-auth-google
