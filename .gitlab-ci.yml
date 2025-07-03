@@ -816,6 +816,8 @@ dockerize:dockerExtensions:
 
 Stop Preview: &stopPreview
   stage: preview
+  tags:
+    - api-server
   when: manual
   only:
     - branches
