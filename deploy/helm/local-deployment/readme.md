@@ -180,7 +180,7 @@ Kubernetes: `>= 1.14.0-0`
 | magda-auth-arcgis.arcgisClientId | string | `"d0MgVUbbg5Z6vmWo"` |  |
 | magda-auth-arcgis.arcgisInstanceBaseUrl | string | `"https://www.arcgis.com"` |  |
 | magda-auth-facebook.clientId | string | `"173073926555600"` |  |
-| magda-auth-google.googleClientId | string | `"275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"` |  |
+| magda-auth-google.googleClientId | string | `"569942545102-7nu303pchs9n2vlgl435trcb6vr51ged.apps.googleusercontent.com"` |  |
 | magda-auth-internal.authPluginConfig.loginFormExtraInfoContent | string | `"Forgot your password? Email [magda-test@googlegroups.com](magda-test@googlegroups.com)"` |  |
 | magda.magda-core.registry-api.validateJsonSchema | bool | `false` |  |
 
