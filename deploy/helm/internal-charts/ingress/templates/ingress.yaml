@@ -16,7 +16,7 @@ spec:
   {{- if .Values.enableTls }}
   tls:
   - hosts:
-    - {{ .Values.hostname | $domain | quote }}
+    - {{ .Values.hostname | default $domain | quote }}
     {{- if not .Values.useDefaultCertificate}}
     secretName: {{ .Values.tlsSecretName | default "magda-cert-tls" }}
     {{- end }}
@@ -31,4 +31,4 @@ spec:
             name: {{ .Values.targetService | default "gateway" }}
             port: 
               number: 80
-    host: {{ .Values.hostname | $domain | quote }}
+    host: {{ .Values.hostname | default $domain | quote }}

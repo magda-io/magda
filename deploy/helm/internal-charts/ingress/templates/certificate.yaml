@@ -16,7 +16,7 @@ spec:
 {{- end }}
   dnsNames:
 {{- if empty .Values.domains }}
-  - {{ $domain  | quote }}
+  - {{ $domain | quote }}
 {{- else }}
   {{- range .Values.domains }}
   - {{ . | quote }}
