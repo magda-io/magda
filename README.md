@@ -82,7 +82,7 @@ If you just want to install a local testing version, installing Magda using [Hel
 kubectl create namespace magda
 
 # install Magda version v5.0.1 to namespace "magda", turn off openfass function and expose the service via loadBalancer
-helm upgrade --namespace magda --install --version 5.0.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
+helm upgrade --namespace magda --install --version 5.3.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
 ```
 
 > Since v2, we release our helm charts to Github container registry: `oci://ghcr.io/magda-io/charts`
@@ -101,13 +101,9 @@ If you are interested in playing more, you might find useful docs from [here](./
 
 You might also want to have a look at this tutorial repo:
 
-https://github.com/magda-io/magda-brown-bag
+[https://github.com/magda-io/magda-brown-bag](https://github.com/magda-io/magda-brown-bag)
 
-Or find out more on: https://magda.io/docs/building-and-running if you are interested in the development or play with the code.
-
-## To build and run from source
-
-https://magda.io/docs/building-and-running
+Or find out more on: [https://magda.io/docs/building-and-running](https://magda.io/docs/building-and-running) if you are interested in the development or play with the code.
 
 ## To get help with developing or running Magda
 

@@ -1,6 +1,45 @@
+# -- Whether enable TLS
 enableTls: false
+
+# -- The certificate issuer name (CRDs created by cert manager) used to issue certificate
+# Could be the name of an `Issuer` or `ClusterIssuer`
+certIssuerName: "letsencrypt"
+
+# -- The type of certificate issue. Could be `Issuer` or `ClusterIssuer`.
+certIssuerKind: "ClusterIssuer"
+
+# -- (string[]) A list of domains that should be listed on the issued certificate.
+# @default -- When not specified, the domain name extracted from `.Values.global.externalUrl` will be listed on the certificate.
+domains: 
+
+# -- (string) TLS certificate secret name.
+# Only used when `enableTls` = true and `useDefaultCertificate` = false
+# @default -- When not specified, default to `magda-cert-tls`
+tlsSecretName: 
+
+# -- Whether or not to used ingress controller default certificate.
+# When set to true, no TLS certificate secret name needs to be supplied.
 useDefaultCertificate: false
+
 # -- HTTP post request body size limit. You might want to increase this limit for larger file upload.
 clientBodyBufferSize: 100M
+
 # -- Proxy body size limit. You might want to increase this limit for larger file upload.
 proxyBodySize: 100M
+
+# -- (string) The external hostname that the ingress resource exposes to route incoming HTTP/S traffic to the underlying service.
+# @default -- When not specified, the value of this field will be extracted from `.Values.global.externalUrl`
+hostname: 
+
+# -- (string) The target service of the ingress
+# @default -- When not specified, will default to Magda's [gateway](../gateway) service
+targetService:
+
+# -- (string) The name of a Google Cloud Platform (GCP) global IP address used by ingress as static external IP.
+# Only supported on GCP. 
+ipName: 
+
+# -- (string) The ingress class. The value of config will be used to add as `kubernetes.io/ingress.class` annotation on the ingress object.
+# Possible values: nginx, gce etc. depends on the available ingressClass in your environment.
+# @default -- When not specified, the default ingress class in the environment will be used.
+ingressClass: 

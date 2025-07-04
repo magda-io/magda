@@ -1,6 +1,6 @@
 # magda-local-deployment
 
-![Version: 5.2.0](https://img.shields.io/badge/Version-5.2.0-informational?style=flat-square)
+![Version: 5.3.0](https://img.shields.io/badge/Version-5.3.0-informational?style=flat-square)
 
 ## Requirements
 
@@ -8,39 +8,38 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda | magda | 5.2.0 |
+| file://../magda | magda | 5.3.0 |
 | oci://ghcr.io/magda-io/charts | magda-auth-arcgis | 2.0.1 |
 | oci://ghcr.io/magda-io/charts | magda-auth-facebook | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-auth-google | 3.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-auth-internal | 3.0.0 |
-| oci://ghcr.io/magda-io/charts | connector-brisbane(magda-ckan-connector) | 2.1.0 |
-| oci://ghcr.io/magda-io/charts | connector-vic(magda-ckan-connector) | 2.1.0 |
 | oci://ghcr.io/magda-io/charts | connector-wa(magda-ckan-connector) | 2.1.0 |
-| oci://ghcr.io/magda-io/charts | connector-qld(magda-ckan-connector) | 2.1.0 |
-| oci://ghcr.io/magda-io/charts | connector-sa(magda-ckan-connector) | 2.1.0 |
-| oci://ghcr.io/magda-io/charts | connector-dga(magda-ckan-connector) | 2.1.0 |
-| oci://ghcr.io/magda-io/charts | connector-aurin(magda-ckan-connector) | 2.1.0 |
 | oci://ghcr.io/magda-io/charts | connector-nsw(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-vic(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-dga(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-sa(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-qld(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-aurin(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-brisbane(magda-ckan-connector) | 2.1.0 |
+| oci://ghcr.io/magda-io/charts | connector-aims(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-bom(magda-csw-connector) | 2.0.2 |
-| oci://ghcr.io/magda-io/charts | connector-tern(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-marlin(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-environment(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-ga(magda-csw-connector) | 2.0.2 |
+| oci://ghcr.io/magda-io/charts | connector-tern(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-listtas(magda-csw-connector) | 2.0.2 |
-| oci://ghcr.io/magda-io/charts | connector-aodn(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-mrt(magda-csw-connector) | 2.0.2 |
-| oci://ghcr.io/magda-io/charts | connector-aims(magda-csw-connector) | 2.0.2 |
+| oci://ghcr.io/magda-io/charts | connector-aodn(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-neii(magda-csw-connector) | 2.0.2 |
 | oci://ghcr.io/magda-io/charts | connector-dap(magda-dap-connector) | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | connector-logan(magda-project-open-data-connector) | 2.0.0 |
+| oci://ghcr.io/magda-io/charts | connector-hobart(magda-project-open-data-connector) | 2.0.0 |
+| oci://ghcr.io/magda-io/charts | connector-launceston(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-moretonbay(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-melbourne(magda-project-open-data-connector) | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | connector-southerngrampians(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-melbournewater(magda-project-open-data-connector) | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | connector-launceston(magda-project-open-data-connector) | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | connector-hobart(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-actmapi(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-act(magda-project-open-data-connector) | 2.0.0 |
+| oci://ghcr.io/magda-io/charts | connector-logan(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-vic-cardinia(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-nt-darwin(magda-project-open-data-connector) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-southern-grampians(magda-project-open-data-connector) | 2.0.0 |
@@ -181,7 +180,7 @@ Kubernetes: `>= 1.14.0-0`
 | magda-auth-arcgis.arcgisClientId | string | `"d0MgVUbbg5Z6vmWo"` |  |
 | magda-auth-arcgis.arcgisInstanceBaseUrl | string | `"https://www.arcgis.com"` |  |
 | magda-auth-facebook.clientId | string | `"173073926555600"` |  |
-| magda-auth-google.googleClientId | string | `"275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"` |  |
+| magda-auth-google.googleClientId | string | `"569942545102-7nu303pchs9n2vlgl435trcb6vr51ged.apps.googleusercontent.com"` |  |
 | magda-auth-internal.authPluginConfig.loginFormExtraInfoContent | string | `"Forgot your password? Email [magda-test@googlegroups.com](magda-test@googlegroups.com)"` |  |
 | magda.magda-core.registry-api.validateJsonSchema | bool | `false` |  |
 

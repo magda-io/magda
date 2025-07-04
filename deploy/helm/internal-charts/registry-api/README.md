@@ -37,10 +37,14 @@ Kubernetes: `>= 1.14.0-0`
 | deployments.readOnly.requestTimeout | string | `"60s"` | Default request timeout for readonly instance |
 | global | object | `{}` |  |
 | image.name | string | `"magda-registry-api"` |  |
-| jvmMaxRamPercentage | float | `75` | JVM max allowed heap memory percentage based on `resources.limits.memory` |
+| jvmInitialHeapSize | string | `nil` | Sets the initial size of the heap (via flag `-Xms`) when the JVM starts For production, should probably set to same as `jvmMaxHeapSize` for more predictable performance.  By default, will use JVM default value. value should be in format of `1g` or `200m` etc. |
+| jvmInitialRamPercentage | float | `nil` | JVM initial heap memory percentage This value will only be used if `jvmInitialHeapSize` is not set. By default, will use JVM default value. |
+| jvmMaxHeapSize | string | `"1g"` | Sets the maximum amount of memory that the JVM heap (via flag `-Xmx`) can grow to. You can set `jvmInitialHeapSize` to the same value for production use case to avoid JVM heap resizing. Should make sure leave enough room for non-heap overhead to avoid OOM. e.g. if you set `resources.limits.memory` (Pod Memory) to 256 MiB, you should set this value to 128 MiB to leave 128 MiB for non-heap overhead to avoid OOM. - For Pod memory 512 MiB, we should set this value to 256 MiB. - 768 MiB Pod memory, should set this value to 512 MiB. - Over 1GiB Pod memory, can reserve 60-70% to heap. value should be in format of `1g` or `200m` etc. |
+| jvmMaxRamPercentage | float | `70` | JVM max allowed heap memory percentage based on `resources.limits.memory` This value will only be used if `jvmMaxHeapSize` is not set. For small pods (e.g. under 1 GiB - specified by the `resources.limits.memory`), better to use `jvmMaxHeapSize` to make sure leave enough room for non-heap overhead to avoid OOM. |
+| jvmMinRamPercentage | float | `nil` | JVM min heap memory percentage This value will only be used if `jvmInitialHeapSize` is not set. If the InitialRAMPercentage result is less than MinRAMPercentage, the JVM increases it to match MinRAMPercentage. By default, will use JVM default value. |
+| jvmPrintFlagsFinal | bool | `false` | whether to print out JVM flags at application starting up This is useful for debugging purpose, e.g. to check if the JVM heap size is set correctly from printed values like InitialHeapSize and MaxHeapSize. |
 | livenessProbe | object | `{}` |  |
-| resources.limits.cpu | string | `"750m"` |  |
-| resources.limits.memory | string | `"1Gi"` |  |
+| resources.limits.memory | string | `"1.5Gi"` |  |
 | resources.requests.cpu | string | `"250m"` |  |
 | resources.requests.memory | string | `"500Mi"` |  |
 

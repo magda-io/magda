@@ -55,6 +55,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | gateway.helmet.contentSecurityPolicy.directives.imgSrc[0] | string | `"'self'"` |  |
 | gateway.helmet.contentSecurityPolicy.directives.imgSrc[1] | string | `"data:"` |  |
 | gateway.helmet.contentSecurityPolicy.directives.imgSrc[2] | string | `"https://*.tile.openstreetmap.org"` |  |
+| gateway.helmet.contentSecurityPolicy.directives.imgSrc[3] | string | `"https://*.basemaps.cartocdn.com"` |  |
 | gateway.helmetPerPath."/assets/alasql.html" | object | `{"contentSecurityPolicy":{"directives":{"scriptSrc":["'self'","'unsafe-eval'"]}}}` | allow alasql to compile SQL query at frontend in its separate window/iframe |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[0] | string | `"'self'"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[1] | string | `"*.cesium.com"` |  |

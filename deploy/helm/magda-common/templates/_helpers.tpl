@@ -122,3 +122,20 @@ Create chart name and version as used by the chart label.
 {{- fail "magda.toYamlWithNindent expect a list input" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+  get external domain from .global.externalUrl
+  usage: 
+    {{- $domain := include "p11.getExternalDomain" . }}
+*/}}
+{{- define "magda.getExternalDomain" -}}
+{{- $vals := (get . "Values" ) | default dict }}
+{{- $globalVals := (get $vals "global" ) | default dict }}
+{{- $externalUrl := (get $globalVals "externalUrl" ) | default "" }}
+    {{- if empty $externalUrl }}
+        {{- "" }}
+    {{- else }}
+        {{- $result := urlParse $externalUrl | default dict }}
+        {{- (get $result "host" ) | default "" }}
+    {{- end }}
+{{- end -}}

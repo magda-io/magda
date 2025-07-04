@@ -284,8 +284,6 @@ client:
     requests:
       cpu: 50m
       memory: 512Mi
-    limits:
-      cpu: 100m
 
 # -- Data node group options
 # Nodes in this group will have `Data` & `Coordinating` roles.
@@ -337,8 +335,6 @@ data:
     requests:
       cpu: 200m
       memory: 1024Mi
-    limits:
-      cpu: 500m
   # -- Size of the persistent volume claim for each data node.
   storage: 50Gi
 
@@ -383,8 +379,6 @@ master:
     requests:
       cpu: 50m
       memory: 512Mi
-    limits:
-      cpu: 100m
   # -- Size of the persistent volume claim for each master node.
   storage: 8Gi
 

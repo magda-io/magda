@@ -14,6 +14,7 @@ import spray.json._
 import scala.concurrent.Future
 import com.typesafe.config.Config
 import scala.util.{Failure, Success}
+import au.csiro.data61.magda.util.RichConfig._
 
 trait RegionLoader {
   def setupRegions(): Source[(RegionSource, JsObject), _]
@@ -34,6 +35,9 @@ class FileRegionLoader(regionSources: List[RegionSource])(
 ) extends RegionLoader {
   implicit val ec = system.dispatcher
   val pool = Http().superPool[Int]()
+
+  val fileProcessingParallelism =
+    config.getOptionalInt("regionLoader.fileProcessingParallelism").getOrElse(1)
 
   def sendRequestWithRedirects(
       uri: Uri,
@@ -133,7 +137,7 @@ class FileRegionLoader(regionSources: List[RegionSource])(
 
   override def setupRegions(): Source[(RegionSource, JsObject), _] = {
     Source(regionSources)
-      .mapAsyncUnordered(3)(
+      .mapAsyncUnordered(fileProcessingParallelism)(
         regionSource => loadABSRegions(regionSource).map((_, regionSource))
       )
       .flatMapConcat {
