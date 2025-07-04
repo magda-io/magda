@@ -8,14 +8,15 @@ metadata:
     {{- if .Values.ipName }}
     kubernetes.io/ingress.global-static-ip-name: {{ .Values.ipName }}
     {{- end }}
-    nginx.ingress.kubernetes.io/client-body-buffer-size: {{ .Values.clientBodyBufferSize | default "10M" | quote }}
-    nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.proxyBodySize | default "10M" | quote }}
+    nginx.ingress.kubernetes.io/client-body-buffer-size: {{ .Values.clientBodyBufferSize | default "200M" | quote }}
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.proxyBodySize | default "200M" | quote }}
   name: ingress
+{{- $domain := include "magda.getExternalDomain" . }}
 spec:
   {{- if .Values.enableTls }}
   tls:
   - hosts:
-    - {{ .Values.hostname }}
+    - {{ .Values.hostname | $domain | quote }}
     {{- if not .Values.useDefaultCertificate}}
     secretName: {{ .Values.tlsSecretName | default "magda-cert-tls" }}
     {{- end }}
@@ -30,6 +31,4 @@ spec:
             name: {{ .Values.targetService | default "gateway" }}
             port: 
               number: 80
-    {{- if .Values.hostname  }}
-    host: {{ .Values.hostname }}
-    {{- end }}
+    host: {{ .Values.hostname | $domain | quote }}

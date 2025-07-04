@@ -28,9 +28,7 @@ magda:
   magda-core:
     ingress:
       ingressClass: nginx
-      # we have to let cloudflare terminate TLS as we are on free plan
-      #enableTls: true
-      #useDefaultCertificate: true
+      enableTls: true
       clientBodyBufferSize: 500M
       proxyBodySize: 500M
     gateway:

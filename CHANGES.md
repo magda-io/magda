@@ -7,6 +7,7 @@
 - Enhancement: Make JVM heap memory allocation related settings configurable for search-api, registry-api & indexer
 - Adjustment: Tweak opensearch, search-api, registry-api & indexer default resource allocation limits
 - Feature: Allow region loader file processing parallelism to be configurable (default to `1`)
+- Enhancement: Auto-extract domain name from `.global.externalUrl` & improved helm chart document for [ingress](https://github.com/magda-io/magda/tree/main/deploy/helm/internal-charts/ingress)
 
 ## v5.3.0
 
