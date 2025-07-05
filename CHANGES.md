@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v5.3.2
+
+- #3612: Fix indexer failed to handle invalid contact data type
+
 ## v5.3.1
 
 - Fix: sitemap will respond 404 with plain text error for invalid `afterToken` values

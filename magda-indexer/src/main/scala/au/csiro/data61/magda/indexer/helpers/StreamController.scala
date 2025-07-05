@@ -42,8 +42,8 @@ class StreamController(interface: RegistryInterface, bufferSize: Int)(
   private var tokenOptionF: Future[Option[String]] = Future { None }
 
   private def getDataSets(
-      nextFuture: () => Future[(Option[String], List[DataSet])]
-  ): Future[(Option[String], List[DataSet])] = {
+      nextFuture: () => Future[(Option[String], List[DataSet], Boolean)]
+  ): Future[(Option[String], List[DataSet], Boolean)] = {
 
     val onRetry = (retryCount: Int, e: Throwable) =>
       log.error(
@@ -52,7 +52,7 @@ class StreamController(interface: RegistryInterface, bufferSize: Int)(
         retryCount + 1
       )
 
-    val safeFuture: Future[(Option[String], List[DataSet])] =
+    val safeFuture: Future[(Option[String], List[DataSet], Boolean)] =
       ErrorHandling
         .retry(nextFuture, 30.seconds, 30, onRetry)
         .recover {
@@ -62,14 +62,15 @@ class StreamController(interface: RegistryInterface, bufferSize: Int)(
               "Failed completely while fetching from registry. " +
                 "This means we can't go any further!!"
             )
-            (None, Nil)
+            // here the returned `false` means no parsing error and we shouldn't retry next token
+            (None, Nil, false)
         }
 
     safeFuture
   }
 
   private def fillStreamSource(
-      nextFuture: () => Future[(Option[String], List[DataSet])],
+      nextFuture: () => Future[(Option[String], List[DataSet], Boolean)],
       isFirst: Boolean = false
   ): Future[Option[String]] = {
 
@@ -77,9 +78,11 @@ class StreamController(interface: RegistryInterface, bufferSize: Int)(
       .map(results => {
         val tokenOption = results._1
         val dataSets = results._2
+        val hasEncounterParsingError = results._3
         crawledCount.addAndGet(dataSets.size)
         log.info("Total crawled {} datasets from registry", crawledCount.get())
-        val hasNext = tokenOption.nonEmpty && dataSets.nonEmpty
+        // we shouldn't stop crawling the next batch only because there is a parsing error with existing batch
+        val hasNext = tokenOption.nonEmpty && (dataSets.nonEmpty || hasEncounterParsingError)
         ssc.fillSource(dataSets, hasNext, isFirst)
         tokenOption
       })

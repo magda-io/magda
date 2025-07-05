@@ -1,6 +1,6 @@
 {
   "name": "@magda/opensearch-dashboards",
-  "version": "5.3.0",
+  "version": "5.3.1",
   "description": "MAGDA's custom OpenSearch dashboards docker image.",
   "scripts": {
     "dev": "docker compose up",
@@ -18,7 +18,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^5.3.0"
+    "@magda/scripts": "^5.3.1"
   },
   "magda": {
     "categories": {
