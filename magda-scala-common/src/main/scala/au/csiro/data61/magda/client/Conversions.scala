@@ -260,8 +260,24 @@ object Conversions {
         dcatStrings.extract[String]('keywords.? / *),
         Some("themes")
       ).getOrElse(Seq()),
-      contactPoint =
-        dcatStrings.extract[String]('contactPoint.?).map(cp => Agent(Some(cp))),
+      contactPoint = Try(dcatStrings.extract[String]('contactPoint.? / *))
+        .recover {
+          case e: Throwable =>
+            logger.get.warning(
+              s"Failed to parse contactPoint field as a string. dataset data: ${e.getMessage}"
+            )
+            dcatStrings.extract[Long]('contactPoint.? / *).map(_.toString)
+        }
+        .recover {
+          case e: Throwable =>
+            logger.get.warning(
+              s"Failed to parse contactPoint field as an integer. dataset data: ${e.getMessage}"
+            )
+            Seq("Unknown")
+        } match {
+        case Success(v) => v.headOption.map(cp => Agent(Some(cp)))
+        case Failure(_) => None
+      },
       distributions = distributions
         .extract[JsObject]('distributions.? / *)
         .flatMap(v => tryConvertValue(convertDistribution(v, hit))),
