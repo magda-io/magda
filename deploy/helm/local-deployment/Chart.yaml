@@ -89,13 +89,13 @@ dependencies:
     tags:
       - connectors
       - connector-aurin
-  - name: magda-ckan-connector
-    version: "2.1.0"
-    alias: connector-brisbane
-    repository: "oci://ghcr.io/magda-io/charts"
-    tags:
-      - connectors
-      - connector-brisbane
+  # - name: magda-ckan-connector
+  #   version: "2.1.0"
+  #   alias: connector-brisbane
+  #   repository: "oci://ghcr.io/magda-io/charts"
+  #   tags:
+  #     - connectors
+  #     - connector-brisbane
   - name: magda-project-open-data-connector
     version: "2.0.0"
     alias: connector-hobart
@@ -117,13 +117,6 @@ dependencies:
     tags:
       - connectors
       - connector-marlin
-  - name: magda-csw-connector
-    version: "2.0.2"
-    alias: connector-environment
-    repository: "oci://ghcr.io/magda-io/charts"
-    tags:
-      - connectors
-      - connector-environment
   - name: magda-csw-connector
     version: "2.0.2"
     alias: connector-ga
@@ -166,13 +159,6 @@ dependencies:
     tags:
       - connectors
       - connector-moretonbay
-  - name: magda-csw-connector
-    version: "2.0.2"
-    alias: connector-neii
-    repository: "oci://ghcr.io/magda-io/charts"
-    tags:
-      - connectors
-      - connector-neii
   - name: magda-ckan-connector
     version: "2.1.0"
     alias: connector-nsw
@@ -257,3 +243,35 @@ dependencies:
     tags:
       - connectors
       - connector-southern-grampians
+
+  - name: magda-project-open-data-connector
+    version: "2.0.0"
+    alias: connector-bundaberg
+    repository: "oci://ghcr.io/magda-io/charts"
+    tags:
+      - connectors
+      - connector-bundaberg
+
+  - name: magda-ckan-connector
+    version: "2.1.0"
+    alias: connector-ditrdca
+    repository: "oci://ghcr.io/magda-io/charts"
+    tags:
+      - connectors
+      - connector-ditrdca
+
+  - name: magda-project-open-data-connector
+    version: "2.0.0"
+    alias: connector-dcceew
+    repository: "oci://ghcr.io/magda-io/charts"
+    tags:
+      - connectors
+      - connector-dcceew
+
+  - name: magda-project-open-data-connector
+    version: "2.0.0"
+    alias: connector-redland
+    repository: "oci://ghcr.io/magda-io/charts"
+    tags:
+      - connectors
+      - connector-redland

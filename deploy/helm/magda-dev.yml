@@ -185,6 +185,12 @@ magda:
         readOnly:
           enable: true
 
+    authorization-api:
+      autoscaler:
+        enabled: true
+        minReplicas: 1
+        maxReplicas: 3
+
 # auth plugin for google
 magda-auth-google:
   googleClientId: "569942545102-7nu303pchs9n2vlgl435trcb6vr51ged.apps.googleusercontent.com"
