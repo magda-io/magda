@@ -3,6 +3,7 @@
 ## v5.3.2
 
 - #3612: Fix indexer failed to handle invalid contact data type
+- #3615: Fix invalid tag items in metadata will trigger unexpected exception during rendering
 
 ## v5.3.1
 

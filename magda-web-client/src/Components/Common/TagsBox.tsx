@@ -1,6 +1,5 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import { Link } from "react-router-dom";
-import PropTypes from "prop-types";
 import uniq from "lodash/uniq";
 import reduce from "lodash/reduce";
 import ucwords from "ucwords";
@@ -8,31 +7,50 @@ import "./TagsBox.scss";
 
 const tagSeperatorRegex = /[,|;|/||]/g;
 
-function mergeTags(tags) {
+function mergeTags(tags): string[] {
     return uniq(
         reduce(
             tags,
-            (acc, cur) => {
-                return acc.concat(
-                    cur
-                        .split(tagSeperatorRegex)
-                        .map((item) => item.toLowerCase().trim())
-                );
+            (acc: string[], cur) => {
+                let items: string[] = [];
+                if (typeof cur === "string") {
+                    items = items.concat(
+                        cur
+                            .split(tagSeperatorRegex)
+                            .map((item) => item.toLowerCase().trim())
+                    );
+                } else if (cur?.length && Array.isArray(cur)) {
+                    items = items.concat(
+                        cur
+                            .map((item) => String(item).toLowerCase().trim())
+                            .filter((item) => item)
+                    );
+                }
+                return acc.concat(items);
             },
             []
         )
     );
 }
 
-function TagsBox(props) {
-    const title = props.title;
+interface TagsBoxProps {
+    title?: string;
+    content?: string[];
+}
+
+const DEFAULT_TAGS_HEADING = "Tags: ";
+
+const TagsBox: FunctionComponent<TagsBoxProps> = (props) => {
+    const { title, content } = props;
     return (
         <div className="tags-box">
-            <div className="description-heading">{title}: </div>
+            <div className="description-heading">
+                {title ? title : DEFAULT_TAGS_HEADING}:
+            </div>
             {props.content && props.content.length > 0 ? (
                 <ul className="au-tags">
                     {props.content &&
-                        mergeTags(props.content)
+                        mergeTags(content ? content : [])
                             .sort((a, b) => {
                                 if (a < b) return -1;
                                 else if (a > b) return 1;
@@ -52,20 +70,10 @@ function TagsBox(props) {
                             ))}
                 </ul>
             ) : (
-                <span>No {title} defined</span>
+                <span>No {title ? title : DEFAULT_TAGS_HEADING} defined</span>
             )}
         </div>
     );
-}
-
-TagsBox.propTypes = {
-    tags: PropTypes.arrayOf(PropTypes.string),
-    title: PropTypes.string
-};
-
-TagsBox.defaultProps = {
-    tags: [],
-    title: "Tags: "
 };
 
 export default TagsBox;
