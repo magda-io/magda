@@ -22,13 +22,38 @@ describe("RecursiveChunker", () => {
         expect(chunks.length).to.be.greaterThan(0);
 
         chunks.forEach((chunk) => {
-            expect(chunk.length).to.be.equal(chunk.text.length);
-        });
-
-        chunks.forEach((chunk) => {
             // validate length property
             expect(chunk.length).to.be.equal(chunk.text.length);
             // validate position property
+            expect(
+                text.slice(chunk.position, chunk.position + chunk.length)
+            ).to.be.equal(chunk.text);
+        });
+
+        // should be able to reconstruct
+        let reconstructedText = "";
+        chunks.forEach((chunk) => {
+            reconstructedText += chunk.text.slice(chunk.overlap);
+        });
+        expect(reconstructedText).to.be.equal(text);
+    });
+
+    it("should handle text with multiple newlines", async () => {
+        const text =
+            "This is a test text,\n\nfor testing the recursive chunking strategy.\n\n";
+        const chunkSize = 10;
+        const overlap = 4;
+        const chunker = new Chunker(
+            new RecursiveChunkStrategy(chunkSize, overlap)
+        );
+
+        const chunks = await chunker.chunk(text);
+
+        expect(chunks).to.be.not.null;
+        expect(chunks.length).to.be.greaterThan(0);
+
+        chunks.forEach((chunk) => {
+            expect(chunk.length).to.be.equal(chunk.text.length);
             expect(
                 text.slice(chunk.position, chunk.position + chunk.length)
             ).to.be.equal(chunk.text);
