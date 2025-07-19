@@ -38,50 +38,50 @@ export class UserDefinedChunkStrategy implements ChunkStrategy {
 
 export class RecursiveChunkStrategy {
     private chunkSize;
-    private overlapTokens;
+    private overlap;
 
-    constructor(chunkSize: number, overlapTokens: number) {
+    constructor(chunkSize: number, overlap: number) {
+        if (overlap >= chunkSize)
+            throw new Error("overlap must be < chunkSize");
         this.chunkSize = chunkSize * 4;
-        this.overlapTokens = overlapTokens * 4;
-        if (overlapTokens >= chunkSize)
-            throw new Error("overlapTokens must be < chunkSize");
+        this.overlap = overlap * 4;
     }
 
     async chunk(text: string): Promise<ChunkResult[]> {
+        if (!text) {
+            return [];
+        }
+
+        if (text.length <= this.chunkSize) {
+            return [
+                {
+                    text: text,
+                    position: 0,
+                    length: text.length,
+                    overlap: 0
+                }
+            ];
+        }
+
         const splitter = new RecursiveCharacterTextSplitter({
             chunkSize: this.chunkSize,
-            chunkOverlap: this.overlapTokens
+            chunkOverlap: this.overlap,
+            keepSeparator: true,
+            stripWhitespace: false
         });
-        const chunks = await splitter.splitText(text);
 
-        const results: ChunkResult[] = [];
-        let charPos = 0;
-        let remainingText = text;
+        const chunks = await splitter.splitTextWithMetadata(text);
 
-        for (let i = 0; i < chunks.length; i++) {
-            let overlapChars = 0;
-            if (i != 0) {
-                for (let j = 0; j < chunks[i].length; j++) {
-                    if (remainingText.startsWith(chunks[i].slice(j))) {
-                        overlapChars = j;
-                        break;
-                    }
-                }
+        for (let i = 1; i < chunks.length; i++) {
+            if (chunks[i].overlap === 0 && chunks[i].text.trim() === "") {
+                chunks[i - 1].text = chunks[i - 1].text + chunks[i].text;
+                chunks[i - 1].length = chunks[i - 1].length + chunks[i].length;
+                chunks.splice(i, 1);
+                i--;
             }
-            remainingText = remainingText.slice(
-                chunks[i].length - overlapChars
-            );
-
-            charPos -= overlapChars;
-            results.push({
-                text: chunks[i],
-                position: charPos,
-                length: chunks[i].length,
-                overlap: overlapChars
-            });
-            charPos += chunks[i].length;
         }
-        return results;
+
+        return chunks;
     }
 }
 

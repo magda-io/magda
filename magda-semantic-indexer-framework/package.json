@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@langchain/core": "^0.3.57",
+    "@langchain/textsplitters": "https://gitpkg.vercel.app/JHZhang2736/langchainjs/libs/langchain-textsplitters?textsplitters-build",
     "@magda/esm-utils": "^1.0.1",
     "@magda/minion-framework": "^5.2.0",
     "@magda/typescript-common": "^5.2.0",
