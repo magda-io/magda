@@ -1,0 +1,24 @@
+project:
+  rego-version: 1
+
+rules:
+  idiomatic:
+    no-defined-entrypoint:
+      level: ignore
+  imports:
+    prefer-package-imports:
+      level: ignore
+  style:
+    external-reference:
+      level: ignore
+    file-length:
+      level: ignore
+    line-length:
+      level: ignore
+    prefer-snake-case:
+      level: ignore
+    rule-length:
+      level: ignore
+  testing:
+    test-outside-test-package:
+      level: ignore

@@ -28,6 +28,7 @@
 
 ## v5.2.0
 
+- Improve: Bump OPA version to latest (v1.3.0) and use Regal for linting Rego
 - Fix: SQLConsole: reference error when join JSONL data source
 - Improve: SQLConsole JSON & JSONL data error handling
 - #3592: add delete user by ID API

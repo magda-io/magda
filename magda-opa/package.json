@@ -3,12 +3,14 @@
   "version": "5.3.1",
   "description": "MAGDA's Open Policy Agent docker image with built-in policies.",
   "scripts": {
+    "check": "docker run -v $PWD/policies:/policies openpolicyagent/opa:1.3.0-static check --strict ./policies",
     "dev": "docker-compose up",
     "dev-stop": "docker-compose down",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "lint": "run -v $PWD/policies:/policies ghcr.io/styrainc/regal:0.32.0 lint /policies",
     "retag-and-push": "retag-and-push",
-    "test": "docker run -v $PWD/policies:/policies openpolicyagent/opa:0.37.2-static test -v ./policies"
+    "test": "docker run -v $PWD/policies:/policies openpolicyagent/opa:1.3.0-static test -v ./policies"
   },
   "author": "",
   "license": "Apache-2.0",

@@ -1,47 +1,47 @@
 package storage.bucket
 
+import rego.v1
+
 import data.common.hasNoConstraintPermission
+import data.common.hasOperationType
 import data.common.hasOrgUnitConstaintPermission
 import data.common.hasOwnerConstraintPermission
-import data.common.breakdownOperationUri
 import data.common.isEmpty
 
-default allow = false
+default allow := false
 
 # Only users has a unlimited permission to perform the operation on "storage bucket" will be allowed
-allow {
+allow if {
 	hasNoConstraintPermission(input.operationUri)
 }
 
 # Rules for permissions with ownership constraint
 # i.e. only owner of the storage object (file) can perform the operation
-allow {
+allow if {
 	hasOwnerConstraintPermission(input.operationUri)
 
 	# storage bucket tag ownerId should match current user's id
-	input.storage.bucket.ownerId = input.user.id
+	input.storage.bucket.ownerId == input.user.id
 }
 
 # Rules for permissions with org unit constraint
-allow {
+allow if {
 	hasOrgUnitConstaintPermission(input.operationUri)
 
 	# storage bucket tag orgUnitId should match current user's managingOrgUnitIds
-	input.user.managingOrgUnitIds[_] = input.storage.bucket.orgUnitId
+	input.storage.bucket.orgUnitId in input.user.managingOrgUnitIds
 }
 
 # or when a user has org unit ownership constraint permission, he also can access (read only) all buckets with NO org unit assigned
-allow {
-	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
-    operationType == "read"
+allow if {
+	hasOperationType(input.operationUri, "read")
 	hasOrgUnitConstaintPermission(input.operationUri)
 	not input.storage.bucket.orgUnitId
 }
 
 # or when a user has org unit ownership constraint permission, he also can access (read only) all buckets with NO org unit assigned
-allow {
-	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
-    operationType == "read"
+allow if {
+	hasOperationType(input.operationUri, "read")
 	hasOrgUnitConstaintPermission(input.operationUri)
 	isEmpty(input.storage.bucket.orgUnitId)
 }

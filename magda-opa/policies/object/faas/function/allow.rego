@@ -1,9 +1,11 @@
 package object.faas.function
 
+import rego.v1
+
 import data.common.hasNoConstraintPermission
 
-default allow = false
+default allow := false
 
-allow {
-    hasNoConstraintPermission(input.operationUri)
+allow if {
+	hasNoConstraintPermission(input.operationUri)
 }
