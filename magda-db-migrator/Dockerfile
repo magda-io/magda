@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-buster
+FROM openjdk:8-jre-bullseye
 
 RUN apt-get update && apt-get install -y postgresql-client && \
     rm -r /var/lib/apt/lists /var/cache/apt/archives

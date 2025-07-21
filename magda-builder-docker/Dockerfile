@@ -1,4 +1,4 @@
-FROM ghcr.io/magda-io/magda-builder-nodejs:node18
+FROM ghcr.io/magda-io/magda-builder-nodejs:node18-test
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -11,7 +11,11 @@ ENV BUILDX_VERSION="v0.10.0"
 ENV REGCLIENT_VERSION="v0.4.8"
 ENV REGCLIENT_ARCH="${TARGETOS:-linux}-${TARGETARCH:-amd64}"
 
-RUN apk add --no-cache docker docker-compose
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    docker.io \
+    docker-compose \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p ~/.docker/cli-plugins && \
     wget -nv -O ~/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.${BUILDX_ARCH} && \

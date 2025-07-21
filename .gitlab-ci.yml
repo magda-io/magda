@@ -30,7 +30,7 @@ stages:
 
 yarn-install:
   stage: builders
-  image: ghcr.io/magda-io/magda-builder-docker:node18
+  image: ghcr.io/magda-io/magda-builder-docker:node18-test
   retry: 1
   needs: []
   cache:
@@ -49,7 +49,7 @@ yarn-install:
 
 build-builder-image:
   stage: builders
-  image: ghcr.io/magda-io/magda-builder-docker:node18
+  image: ghcr.io/magda-io/magda-builder-docker:node18-test
   retry: 1
   needs: []
   before_script:
@@ -730,7 +730,7 @@ dockerize:dockerExtensions:
     - ./gitlab-ci-buildx-setup.sh
     # disable multi-arch docker image build for postgreSQL for now
     #- yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 
-    - cd $CI_PROJECT_DIR/magda-elastic-search && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
+    #- cd $CI_PROJECT_DIR/magda-elastic-search && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
     - cd $CI_PROJECT_DIR/magda-opensearch && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
     - cd $CI_PROJECT_DIR/magda-opensearch-dashboards && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
     - cd $CI_PROJECT_DIR/magda-postgres && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG
