@@ -4,6 +4,8 @@
 
 - #3612: Fix indexer failed to handle invalid contact data type
 - #3615: Fix invalid tag items in metadata will trigger unexpected exception during rendering
+- Fix: Role form should reset the content after save
+- Enhancement: adjust the resource & operation setting section data grid column width
 
 ## v5.3.1
 
