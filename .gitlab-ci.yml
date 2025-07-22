@@ -58,12 +58,15 @@ build-builder-image:
     - docker:dind
   script:
     # Build all three builder images and push to gitlab registry
-    - cd magda-builder-nodejs && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-nodejs:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
-    - cd .. 
-    - cd magda-builder-docker && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-docker:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
-    - cd .. 
-    - cd magda-builder-scala && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-scala:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
-    - cd .. 
+    - set -x
+    - env | grep CI_  # Dump all CI env vars for debugging
+    - echo "CI_REPOSITORY_URL=$CI_REPOSITORY_URL"
+    # - cd magda-builder-nodejs && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-nodejs:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
+    # - cd .. 
+    # - cd magda-builder-docker && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-docker:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    # - cd .. 
+    # - cd magda-builder-scala && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-builder-scala:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    # - cd .. 
 
 # Make sure sbt dependencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
 sbt-prebuild:
