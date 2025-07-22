@@ -6,6 +6,7 @@
 - #3615: Fix invalid tag items in metadata will trigger unexpected exception during rendering
 - Fix: Role form should reset the content after save
 - Enhancement: adjust the resource & operation setting section data grid column width
+- Fix: Access Group UI orgUnit selector should load user's orgUnit as root unit when it's set
 
 ## v5.3.1
 
