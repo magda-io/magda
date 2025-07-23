@@ -73,7 +73,7 @@ build-builder-image:
   services:
     - docker:dind
   script:
-    - 'echo "Running under bash"''
+    - 'echo "Running under bash"'
     - 'echo "Shell: $0"'
     # Build all three builder images and push to gitlab registry
     # - set -euxo pipefail
