@@ -47,6 +47,20 @@ yarn-install:
       - "yarn.lock"
     expire_in: 7 days
 
+no-dind-test:
+  stage: builders
+  image:
+    name: ghcr.io/magda-io/magda-builder-docker:node18-test
+    entrypoint: ["/bin/bash"]
+  retry: 1
+  needs: []
+  before_script:
+    - ./gitlab-ci-buildx-setup.sh
+  script:
+    - 'echo "Shell: $0"'
+    - bash --version
+    - echo "This runs fine without dind"
+
 build-builder-image:
   stage: builders
   image: 
