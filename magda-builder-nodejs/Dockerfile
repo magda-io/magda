@@ -1,6 +1,4 @@
-FROM node:18-bullseye
-
-RUN npm install -g npm@10.5.2 && npm install -g lerna@3.22.1
+FROM ubuntu:22.04
 
 # Install required packages
 RUN apt-get update && apt-get install -y \
@@ -16,4 +14,11 @@ RUN apt-get update && apt-get install -y \
     socat \
  && rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT ["/bin/bash", "-l", "-c"]
+# Use NodeSource to install Node.js (LTS or v18)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    node -v && npm -v
+
+RUN npm install -g npm@10.5.2 && npm install -g lerna@3.22.1 yarn@1.22.19
+
+CMD ["/bin/bash"]
