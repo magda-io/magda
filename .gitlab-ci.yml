@@ -50,7 +50,7 @@ yarn-install:
 build-builder-image:
   stage: builders
   image: 
-    name: ghcr.io/magda-io/magda-builder-docker:node18-test
+    name: ghcr.io/magda-io/magda-builder-docker:3cadec16c8250b73668248e7bf746901a778f97b28cdb7a9d1b7de28
     entrypoint: ["/bin/bash"]
   retry: 1
   needs: []
