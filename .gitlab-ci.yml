@@ -30,7 +30,7 @@ stages:
 
 yarn-install:
   stage: builders
-  image: ghcr.io/magda-io/magda-builder-docker:node18-test
+  image: ghcr.io/magda-io/magda-builder-docker:node18-ubuntu
   retry: 1
   needs: []
   cache:
@@ -49,7 +49,7 @@ yarn-install:
 
 build-builder-image:
   stage: builders
-  image: ghcr.io/magda-io/magda-builder-docker:node18-test
+  image: ghcr.io/magda-io/magda-builder-docker:node18-ubuntu
   retry: 1
   needs: []
   before_script:
