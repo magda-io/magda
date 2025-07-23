@@ -49,7 +49,9 @@ yarn-install:
 
 build-builder-image:
   stage: builders
-  image: ghcr.io/magda-io/magda-builder-docker:node18-test
+  image: 
+    name: ghcr.io/magda-io/magda-builder-docker:node18-test
+    entrypoint: ["/bin/bash"]
   retry: 1
   needs: []
   before_script:
@@ -57,14 +59,16 @@ build-builder-image:
   services:
     - docker:dind
   script:
+    - 'echo "Running under bash"''
+    - 'echo "Shell: $0"'
     # Build all three builder images and push to gitlab registry
-    - set -euxo pipefail
-    - cd magda-builder-nodejs && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-nodejs:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile . 
-    - cd .. 
-    - cd magda-builder-docker && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-docker:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile . 
-    - cd .. 
-    - cd magda-builder-scala && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-scala:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile . 
-    - cd ..
+    # - set -euxo pipefail
+    # - cd magda-builder-nodejs && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-nodejs:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    # - cd .. 
+    # - cd magda-builder-docker && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-docker:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    # - cd .. 
+    # - cd magda-builder-scala && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-scala:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    # - cd ..
 
 # Make sure sbt dependencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
 sbt-prebuild:
