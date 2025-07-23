@@ -505,8 +505,6 @@ buildtest:integration-tests:
       fi
     - docker info
     - docker-compose --version
-    # we can remove socat installation in future once the change is merged into master as it's installed in base image
-    - apk add socat 
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
