@@ -59,7 +59,7 @@ no-dind-test:
   script:
     - 'echo "Shell: $0"'
     - bash --version
-    - echo "This runs fine without dind"
+    - 'echo "This runs fine without dind"'
 
 build-builder-image:
   stage: builders
