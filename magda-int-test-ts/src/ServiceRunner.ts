@@ -600,8 +600,43 @@ export default class ServiceRunner {
         await this.runAspectMigrator();
     }
 
+    /**
+     * Wait for registry api to be offline.
+     * Registry API might wait for a few seconds even receive SIGTERM signal to make sure pending requests are completed.
+     * This could cause the test to fail as initialization data requests are sent to the terminating registry API.
+     * This method can be used to wait for the registry API to be offline before exit the destroy method.
+     *
+     * @memberof ServiceRunner
+     */
+    async awaitForRegistryApiOffline() {
+        await this.waitAlive("(RegistryApi TERMINATING Process)", async () => {
+            let res;
+            try {
+                res = await fetch(`http://localhost:6101/v0/status/ready`);
+            } catch (e) {
+                // error indicates the registry api is offline
+                console.log(
+                    "deem registry api is terminated. Error: ",
+                    String(e)
+                );
+                return true;
+            }
+            if (res.status === 200) {
+                throw new Error(
+                    "Registry API is still in the process of terminating."
+                );
+            }
+            console.log(
+                "deem registry api is terminated. Status code: ",
+                res.status
+            );
+            return true;
+        });
+    }
+
     async destroyRegistryApi() {
         await this.kill(this.registryApiProcess);
+        await this.awaitForRegistryApiOffline();
     }
 
     async createAuthApi() {
