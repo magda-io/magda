@@ -92,7 +92,8 @@ export default async function semanticIndexer(
                 userConfig,
                 chunker,
                 embeddingApiClient,
-                opensearchApiClient
+                opensearchApiClient,
+                registryReadonlyClient
             );
             minionOptions = {
                 argv: userConfig.argv,

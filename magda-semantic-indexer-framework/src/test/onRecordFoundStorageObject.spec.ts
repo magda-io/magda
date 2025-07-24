@@ -89,7 +89,8 @@ describe("onRecordFoundStorageObject", () => {
             record,
             format: "csv",
             filePath: null,
-            url: "http://test.com/file.csv"
+            url: "http://test.com/file.csv",
+            readonlyRegistry: testEnv.registry
         });
 
         testEnv.expectIndexedDocs(expectedDocs);
@@ -354,7 +355,8 @@ describe("onRecordFoundStorageObject", () => {
                 record,
                 format: "csv",
                 filePath: null,
-                url: "http://test.com/file.csv"
+                url: "http://test.com/file.csv",
+                readonlyRegistry: testEnv.registry
             })
             .resolves({ text: "embedding text: test1" });
 
@@ -588,7 +590,8 @@ describe("onRecordFoundStorageObject", () => {
                 record,
                 format: "csv",
                 filePath: null,
-                url: "http://test.com/test.csv"
+                url: "http://test.com/test.csv",
+                readonlyRegistry: testEnv.registry
             }
         );
     });
