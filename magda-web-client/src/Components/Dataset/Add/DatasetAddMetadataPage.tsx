@@ -47,7 +47,10 @@ import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 import redirect from "helpers/redirect";
 import Loader from "rsuite/Loader";
-import inPopUpMode from "helpers/inPopUpMode";
+import { createPopupModeQueryString } from "helpers/popupUtils";
+import sendEventToOpener, {
+    EVENT_TYPE_DATASET_CREATION_COMPLETE
+} from "libs/sendEventToOpener";
 
 type Props = {
     initialState: State;
@@ -68,7 +71,7 @@ type Props = {
 class NewDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
 
-    isInPopUpMode = inPopUpMode();
+    popUpModeQueryString = createPopupModeQueryString();
 
     constructor(props) {
         super(props);
@@ -307,8 +310,12 @@ class NewDataset extends React.Component<Props, State> {
                 // --- still redirect to dataset list page in preview wmdoe
                 redirect(this.props.history, `/dataset/list`);
             } else {
-                // redirect to datasets management
-                redirect(this.props.history, `/settings/datasets/draft`);
+                redirect(
+                    this.props.history,
+                    `/dataset/add/metadata/${encodeURIComponent(
+                        this.props.datasetId
+                    )}/6?${this.popUpModeQueryString}&saveExit=true`
+                );
             }
         } catch (e) {
             this.props.createNewDatasetError(e);
@@ -338,7 +345,9 @@ class NewDataset extends React.Component<Props, State> {
                         encodeURIComponent(this.props.datasetId) +
                         "/" +
                         step +
-                        (this.isInPopUpMode ? `?popup=true` : "")
+                        (this.popUpModeQueryString
+                            ? `?${this.popUpModeQueryString}`
+                            : "")
                 );
             }
         } catch (e) {
@@ -407,10 +416,15 @@ class NewDataset extends React.Component<Props, State> {
             if (result.length) {
                 throw new FileDeletionError(result);
             }
+            sendEventToOpener(EVENT_TYPE_DATASET_CREATION_COMPLETE, {
+                id: datasetId
+            });
             redirect(
                 this.props.history,
                 `/dataset/add/metadata/${encodeURIComponent(datasetId)}/6` +
-                    (this.isInPopUpMode ? `?popup=true` : "")
+                    (this.popUpModeQueryString
+                        ? `?${this.popUpModeQueryString}`
+                        : "")
             );
         } catch (e) {
             this.setState({

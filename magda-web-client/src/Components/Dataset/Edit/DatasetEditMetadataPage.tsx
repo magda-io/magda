@@ -18,6 +18,7 @@ import {
 
 import {
     State,
+    saveState,
     DistributionState,
     submitDatasetFromState
 } from "../Add/DatasetAddCommon";
@@ -42,7 +43,10 @@ import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 import redirect from "helpers/redirect";
 import Loader from "rsuite/Loader";
-import inPopUpMode from "helpers/inPopUpMode";
+import { createPopupModeQueryString } from "helpers/popupUtils";
+import sendEventToOpener, {
+    EVENT_TYPE_DATASET_EDITING_COMPLETE
+} from "libs/sendEventToOpener";
 
 type Props = {
     initialState: State;
@@ -63,7 +67,7 @@ type Props = {
 
 class EditDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
-    isInPopUpMode = inPopUpMode();
+    popUpModeQueryString = createPopupModeQueryString();
 
     constructor(props) {
         super(props);
@@ -299,11 +303,15 @@ class EditDataset extends React.Component<Props, State> {
              */
             await this.resetError();
             if (ValidationManager.validateAll()) {
+                await saveState(this.state, this.props.datasetId);
                 redirect(
                     this.props.history,
                     `/dataset/edit/${encodeURIComponent(
                         this.props.datasetId
-                    )}/${step}` + (this.isInPopUpMode ? `?popup=true` : "")
+                    )}/${step}` +
+                        (this.popUpModeQueryString
+                            ? `?${this.popUpModeQueryString}`
+                            : "")
                 );
             }
         } catch (e) {
@@ -357,10 +365,15 @@ class EditDataset extends React.Component<Props, State> {
             if (result.length) {
                 throw new FileDeletionError(result);
             }
+            sendEventToOpener(EVENT_TYPE_DATASET_EDITING_COMPLETE, {
+                id: this.props.datasetId
+            });
             redirect(
                 this.props.history,
                 `/dataset/edit/${encodeURIComponent(this.props.datasetId)}/6` +
-                    (this.isInPopUpMode ? `?popup=true` : "")
+                    (this.popUpModeQueryString
+                        ? `?${this.popUpModeQueryString}`
+                        : "")
             );
         } catch (e) {
             this.setState({

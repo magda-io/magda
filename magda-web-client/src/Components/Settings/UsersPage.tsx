@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState, useRef } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter, useHistory } from "react-router-dom";
 import { Location, History } from "history";
 import "./main.scss";
 import "./UsersPage.scss";
@@ -20,8 +20,15 @@ import {
     MdSearch,
     MdSwitchAccount,
     MdBorderColor,
-    MdAccountTree
+    MdAccountTree,
+    MdOutlineArrowDropDown
 } from "react-icons/md";
+import { BsBoxArrowInRight } from "react-icons/bs";
+import Dropdown from "rsuite/Dropdown";
+import Popover from "rsuite/Popover";
+import Whisper from "rsuite/Whisper";
+import ButtonGroup from "rsuite/ButtonGroup";
+import Button from "rsuite/Button";
 import IconButton from "rsuite/IconButton";
 import OrgUnitNameLabel from "../OrgUnitNameLabel";
 import AssignUserOrgUnitFormPopUp, {
@@ -30,6 +37,9 @@ import AssignUserOrgUnitFormPopUp, {
 import UserFormPopUp, {
     RefType as UserFormPopUpRefType
 } from "./UserFormPopUp";
+import AccessGroupAddUserPopUp, {
+    RefType as AccessGroupAddUserPopUpRefType
+} from "./AccessGroupAddUserPopUp";
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
@@ -43,6 +53,7 @@ type PropsType = {
 };
 
 const UsersPage: FunctionComponent<PropsType> = (props) => {
+    const history = useHistory();
     const [keyword, setKeyword] = useState<string>("");
     const [page, setPage] = useState<number>(1);
 
@@ -55,6 +66,9 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
         null
     );
     const userFormRef = useRef<UserFormPopUpRefType>(null);
+    const accessGroupAddUserPopUpRef = useRef<AccessGroupAddUserPopUpRefType>(
+        null
+    );
 
     //change this value to force the role data to be reloaded
     const [dataReloadToken, setDataReloadToken] = useState<string>("");
@@ -106,6 +120,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                 />
                 <AssignUserOrgUnitFormPopUp ref={assignUserOrgUnitFormRef} />
                 <UserFormPopUp ref={userFormRef} />
+                <AccessGroupAddUserPopUp ref={accessGroupAddUserPopUpRef} />
                 <div className="search-button-container">
                     <div className="search-button-inner-wrapper">
                         <InputGroup size="md" inside>
@@ -163,7 +178,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                             <Cell dataKey="sourceId" />
                         </Column>
                         <Column width={150} resizable>
-                            <HeaderCell>Orgnasitional Unit</HeaderCell>
+                            <HeaderCell>Organisational Unit</HeaderCell>
                             <Cell>
                                 {(rowData: any) => (
                                     <OrgUnitNameLabel id={rowData?.orgUnitId} />
@@ -173,55 +188,127 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                         <Column width={120} fixed="right">
                             <HeaderCell align="center">Action</HeaderCell>
                             <Cell
+                                className="action-col"
                                 verticalAlign="middle"
                                 style={{ padding: "0px" }}
                             >
                                 {(rowData) => {
                                     return (
-                                        <div>
-                                            <Link
-                                                to={`/settings/users/${
-                                                    (rowData as any)?.id
-                                                }/roles`}
+                                        <ButtonGroup>
+                                            <Button
+                                                appearance="ghost"
+                                                aria-label="actions available to the user"
+                                                title="actions available to the user"
+                                            >
+                                                Actions
+                                            </Button>
+                                            <Whisper
+                                                placement="bottomEnd"
+                                                trigger="click"
+                                                speaker={(
+                                                    {
+                                                        onClose,
+                                                        left,
+                                                        top,
+                                                        className
+                                                    },
+                                                    ref
+                                                ) => {
+                                                    return (
+                                                        <Popover
+                                                            ref={ref}
+                                                            className={`${className} user-datagrid-action-dropdown`}
+                                                            style={{
+                                                                left,
+                                                                top
+                                                            }}
+                                                            full
+                                                        >
+                                                            <Dropdown.Menu>
+                                                                <Dropdown.Item
+                                                                    key="view-user-roles"
+                                                                    aria-label="View User Roles"
+                                                                    icon={
+                                                                        <MdSwitchAccount />
+                                                                    }
+                                                                    onClick={() => {
+                                                                        onClose();
+                                                                        history.push(
+                                                                            `/settings/users/${rowData.id}/roles`
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    View User
+                                                                    Roles
+                                                                </Dropdown.Item>
+                                                                <Dropdown.Item
+                                                                    key="assign-user-to-org-units"
+                                                                    aria-label="Assign User to Org Unit"
+                                                                    icon={
+                                                                        <MdAccountTree />
+                                                                    }
+                                                                    onClick={() => {
+                                                                        onClose();
+                                                                        assignUserOrgUnitFormRef?.current?.open(
+                                                                            rowData.id,
+                                                                            () =>
+                                                                                setDataReloadToken(
+                                                                                    `${Math.random()}`
+                                                                                )
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    Assign User
+                                                                    to Org Unit
+                                                                </Dropdown.Item>
+                                                                <Dropdown.Item
+                                                                    key="add-to-access-group"
+                                                                    aria-label="Add to access group"
+                                                                    icon={
+                                                                        <BsBoxArrowInRight />
+                                                                    }
+                                                                    onClick={() => {
+                                                                        onClose();
+                                                                        accessGroupAddUserPopUpRef?.current?.open(
+                                                                            rowData.id
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    Add to
+                                                                    access group
+                                                                </Dropdown.Item>
+                                                                <Dropdown.Item
+                                                                    key="edit-user"
+                                                                    aria-label="Edit User"
+                                                                    icon={
+                                                                        <MdBorderColor />
+                                                                    }
+                                                                    onClick={() => {
+                                                                        onClose();
+                                                                        userFormRef?.current?.open(
+                                                                            rowData.id,
+                                                                            () =>
+                                                                                setDataReloadToken(
+                                                                                    `${Math.random()}`
+                                                                                )
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    Edit User
+                                                                </Dropdown.Item>
+                                                            </Dropdown.Menu>
+                                                        </Popover>
+                                                    );
+                                                }}
                                             >
                                                 <IconButton
-                                                    size="md"
-                                                    title="View User Roles"
-                                                    aria-label="View User Roles"
-                                                    icon={<MdSwitchAccount />}
+                                                    appearance="ghost"
+                                                    icon={
+                                                        <MdOutlineArrowDropDown />
+                                                    }
                                                 />
-                                            </Link>{" "}
-                                            <IconButton
-                                                size="md"
-                                                title="Assign User to Org Unit"
-                                                aria-label="Assign User to Org Unit"
-                                                icon={<MdAccountTree />}
-                                                onClick={() =>
-                                                    assignUserOrgUnitFormRef?.current?.open(
-                                                        (rowData as any).id,
-                                                        () =>
-                                                            setDataReloadToken(
-                                                                `${Math.random()}`
-                                                            )
-                                                    )
-                                                }
-                                            />{" "}
-                                            <IconButton
-                                                size="md"
-                                                title="Edit User"
-                                                aria-label="Edit User"
-                                                icon={<MdBorderColor />}
-                                                onClick={() =>
-                                                    userFormRef?.current?.open(
-                                                        (rowData as any).id,
-                                                        () =>
-                                                            setDataReloadToken(
-                                                                `${Math.random()}`
-                                                            )
-                                                    )
-                                                }
-                                            />
-                                        </div>
+                                            </Whisper>
+                                        </ButtonGroup>
                                     );
                                 }}
                             </Cell>

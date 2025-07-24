@@ -295,3 +295,7 @@ sqlConsoleCacheMaxSize: 10
 # -- This setting will be used to determine how many seconds a stored cache item will be kept before we fetch a new copy from the remote server.
 # @default -- 86400 seconds (1 day)
 sqlConsoleCacheExpiration: 86400
+
+# -- The target origin used when UI need to post message to another window.
+# By default, only send to the same origin.
+postMessageTargetOrigin: ""

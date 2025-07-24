@@ -1074,7 +1074,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
 
                 const distributionIds =
                     datasetFetchResult?.aspects?.["dataset-distributions"]?.[
-                        "dataset-distributions"
+                        "distributions"
                     ];
 
                 const recordIds: string[] = [

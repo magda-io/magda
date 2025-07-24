@@ -8,6 +8,7 @@ import path from "path";
 import { v4 as uuidV4 } from "uuid";
 import yaml from "js-yaml";
 import fs from "fs-extra";
+import os from "os";
 import tempy from "tempy";
 import pg from "pg";
 import fetch from "cross-fetch";
@@ -17,6 +18,7 @@ import urijs from "urijs";
 import { requireResolve } from "@magda/esm-utils";
 import { Readable } from "node:stream";
 import fetchRequest from "magda-typescript-common/src/fetchRequest.js";
+import treeKill from "magda-typescript-common/src/treeKill.js";
 
 /**
  * Resolve magda module dir path.
@@ -121,7 +123,14 @@ export default class ServiceRunner {
         // docker config should be passed via env vars e.g.
         // DOCKER_HOST, DOCKER_TLS_VERIFY, DOCKER_CLIENT_TIMEOUT & DOCKER_CERT_PATH
         // our gitlab pipeline already setup in this way.
-        this.docker = new Docker();
+        const dockerSocketPath = this.getDockerSocketPath();
+        this.docker = new Docker(
+            dockerSocketPath
+                ? {
+                      socketPath: dockerSocketPath
+                  }
+                : undefined
+        );
         this.workspaceRoot = path.resolve(
             path.dirname(
                 requireResolve("@magda/typescript-common/package.json")
@@ -129,6 +138,29 @@ export default class ServiceRunner {
             "../"
         );
         this.setDockerServiceForwardHost();
+    }
+
+    getDockerSocketPath(): string | null {
+        if (process.env.DOCKER_HOST) {
+            return null;
+        }
+
+        const standardSock = "/var/run/docker.sock";
+        if (fs.existsSync(standardSock)) {
+            return standardSock;
+        }
+
+        if (process.platform === "darwin") {
+            const homeSock = path.join(
+                os.homedir(),
+                ".docker",
+                "run",
+                "docker.sock"
+            );
+            return homeSock;
+        } else {
+            return standardSock;
+        }
     }
 
     setDockerServiceForwardHost() {
@@ -228,21 +260,47 @@ export default class ServiceRunner {
         await delay(30000);
     }
 
-    kill(p: ChildProcess) {
+    kill(
+        p: ChildProcess,
+        signal: NodeJS.Signals = "SIGTERM",
+        delayAfterExit: number = 0,
+        useTreeKill: boolean = false
+    ): Promise<void> {
         return new Promise((resolve, reject) => {
-            function onExit(code: number, signal: string) {
-                resolve(undefined);
-                p.off("exit", onExit);
-            }
             if (!p) {
-                resolve(undefined);
+                if (delayAfterExit) {
+                    return delay(delayAfterExit).then(() => resolve());
+                } else {
+                    return resolve();
+                }
+            }
+
+            const onExit = () => {
+                console.log(
+                    `Process (PID: ${p?.pid}) has exited with code ${p?.exitCode} or signal ${p?.signalCode}`
+                );
+                p.off("exit", onExit);
+                if (delayAfterExit) {
+                    return delay(delayAfterExit).then(() => resolve());
+                } else {
+                    return resolve();
+                }
+            };
+
+            // Already exited? Wait for 'exit' just in case it hasn't fired yet
+            if (p.killed) {
+                p.once("exit", onExit); // in case 'exit' not fired yet
                 return;
             }
-            if (p.killed) {
-                resolve(undefined);
+
+            p.once("exit", onExit); // must register BEFORE killing
+            if (useTreeKill && p?.pid) {
+                console.log(
+                    `Killing process group ${p.pid} with signal ${signal} using treeKill...`
+                );
+                treeKill(p.pid, signal).then(resolve).catch(reject);
             } else {
-                p.kill();
-                p.on("exit", onExit);
+                p.kill(signal);
             }
         });
     }
@@ -601,7 +659,7 @@ export default class ServiceRunner {
     }
 
     async destroyRegistryApi() {
-        await this.kill(this.registryApiProcess);
+        await this.kill(this.registryApiProcess, "SIGKILL", 1000, true);
     }
 
     async createAuthApi() {
@@ -1124,7 +1182,7 @@ export default class ServiceRunner {
     }
 
     async destroyIndexerSetup() {
-        await this.kill(this.indexerSetupProcess);
+        await this.kill(this.indexerSetupProcess, "SIGKILL", 1000, true);
     }
 
     async createSearchApi() {
@@ -1179,7 +1237,7 @@ export default class ServiceRunner {
     }
 
     async destroySearchApi() {
-        await this.kill(this.searchApiProcess);
+        await this.kill(this.searchApiProcess, "SIGKILL", 1000, true);
     }
 
     /**

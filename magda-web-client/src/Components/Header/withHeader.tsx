@@ -8,7 +8,7 @@ import AddDatasetProgressMeter, {
     ExternalProps as AddDatasetProgressMeterProps
 } from "Components/Common/AddDatasetProgressMeter";
 import { getPluginHeader, HeaderNavItem } from "externalPluginComponents";
-import inPopUpMode from "helpers/inPopUpMode";
+import { inPopUpMode } from "helpers/popupUtils";
 
 import "./withHeader.scss";
 

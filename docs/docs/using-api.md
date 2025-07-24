@@ -2,7 +2,7 @@
 
 If you're trying to write something that uses the Magda API externally, there are two main apis that you're likely to be using - Registry and Search. Both of these have API documentation at `/api/v0/apidocs/index.html` on the Magda instance that you're using.
 
-Latest API doc (master branch deployment version) can be found from [here](https://dev.magda.io/api/v0/apidocs/index.html)
+Latest API doc (main branch deployment version) can be found from [here](https://magda-io.github.io/api-docs/index.html)
 
 ## Using the Registry API
 

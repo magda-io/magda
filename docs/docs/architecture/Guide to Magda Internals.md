@@ -146,7 +146,7 @@ i.e. any [CRUD operations](https://en.wikipedia.org/wiki/Create,_read,_update_an
 Any other services can choose to subscribe to event stream (for certain type of data), enhance the metadata or performance other actions and send back event processed confirmation to registry via APIs.
 
 > You can find more info on registry API on API doc here:
-> https://dev.magda.io/api/v0/apidocs/index.html#api-Registry_Aspects
+> https://magda-io.github.io/api-docs/index.html#api-Registry_Aspects
 
 ### Records
 
@@ -164,7 +164,7 @@ e.g. we can say a “record” with “order-details” aspect is a "order" reco
 
 Before you can attach an aspect (i.e. a pieces json data) to a record, you need to declare the aspect first.
 
-You can declare an aspect by sending a HTTP POST request to [Registry's Aspect API](https://dev.magda.io/api/v0/apidocs/index.html#api-Registry_Aspects-PostV0RegistryAspects) with the following information:
+You can declare an aspect by sending a HTTP POST request to [Registry's Aspect API](https://magda-io.github.io/api-docs/index.html#api-Registry_Aspects-PostV0RegistryAspects) with the following information:
 
 - an id
 - a name
@@ -209,7 +209,7 @@ After the webhook is created, the registry will send notifications in HTTP POST 
 
 For instance, the search indexer keeps the ElasticSearch index up to date by subscribing to nearly every event type that has to do with the `dcat-dataset-strings`, `dataset-distributions` and a few other aspects. When any dataset record is added, deleted or modified in the registry, a webhook is sent to the indexer with details of the change and an up-to-date version of the record, which the indexer either ingests or deletes depending on the event type.
 
-> You can also find out more from API doc: https://dev.magda.io/api/v0/apidocs/index.html#api-Registry_Webhooks-PostHttpSomeRemoteHostWebhookNotificationRecipientEndpoint
+> You can also find out more from API doc: https://magda-io.github.io/api-docs/index.html#api-Registry_Webhooks-PostHttpSomeRemoteHostWebhookNotificationRecipientEndpoint
 
 ## Search API
 

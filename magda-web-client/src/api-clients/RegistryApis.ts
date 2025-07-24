@@ -171,7 +171,7 @@ export async function ensureAspectExists(id: string, jsonSchema?: any) {
     // await aspectJsonSchemaSavingCache[id];
 }
 
-// --- See registry API document for API [Get a list of all records](https://dev.magda.io/api/v0/apidocs/index.html#api-Registry_Record_Service-GetV0RegistryRecords) for more details
+// --- See registry API document for API [Get a list of all records](https://magda-io.github.io/api-docs/index.html#api-Registry_Record_Service-GetV0RegistryRecords) for more details
 export enum AspectQueryOperators {
     "=" = ":", // --- equal
     "!=" = ":!", // --- Not equal

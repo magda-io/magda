@@ -396,6 +396,13 @@ const argv = yargs
             "This setting will be used to determine how many seconds a stored cache item will be kept before we fetch a new copy from the remote server.",
         default: 86400,
         type: "number"
+    })
+    .option("postMessageTargetOrigin", {
+        describe:
+            "The target origin used when UI need to post message to another window." +
+            "By default, only send to the same origin.",
+        default: "",
+        type: "string"
     }).argv;
 
 // set default timezone

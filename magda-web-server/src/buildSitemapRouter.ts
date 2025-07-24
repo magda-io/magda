@@ -192,6 +192,14 @@ export default function buildSitemapRouter({
                 false
             );
             const records = handleError(result);
+            if (!records?.records?.length) {
+                res.status(404)
+                    .set("Content-Type", "text/plain")
+                    .send(
+                        `Sitemap page not found: token "${afterToken}" is out of range or does not exist.`
+                    );
+                return;
+            }
             records?.records?.forEach((record) =>
                 sms.write({
                     url: baseExternalUri
