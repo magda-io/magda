@@ -8,6 +8,7 @@ import path from "path";
 import { v4 as uuidV4 } from "uuid";
 import yaml from "js-yaml";
 import fs from "fs-extra";
+import os from "os";
 import tempy from "tempy";
 import pg from "pg";
 import fetch from "cross-fetch";
@@ -122,7 +123,14 @@ export default class ServiceRunner {
         // docker config should be passed via env vars e.g.
         // DOCKER_HOST, DOCKER_TLS_VERIFY, DOCKER_CLIENT_TIMEOUT & DOCKER_CERT_PATH
         // our gitlab pipeline already setup in this way.
-        this.docker = new Docker();
+        const dockerSocketPath = this.getDockerSocketPath();
+        this.docker = new Docker(
+            dockerSocketPath
+                ? {
+                      socketPath: dockerSocketPath
+                  }
+                : undefined
+        );
         this.workspaceRoot = path.resolve(
             path.dirname(
                 requireResolve("@magda/typescript-common/package.json")
@@ -130,6 +138,29 @@ export default class ServiceRunner {
             "../"
         );
         this.setDockerServiceForwardHost();
+    }
+
+    getDockerSocketPath(): string | null {
+        if (process.env.DOCKER_HOST) {
+            return null;
+        }
+
+        const standardSock = "/var/run/docker.sock";
+        if (fs.existsSync(standardSock)) {
+            return standardSock;
+        }
+
+        if (process.platform === "darwin") {
+            const homeSock = path.join(
+                os.homedir(),
+                ".docker",
+                "run",
+                "docker.sock"
+            );
+            return homeSock;
+        } else {
+            return standardSock;
+        }
     }
 
     setDockerServiceForwardHost() {
