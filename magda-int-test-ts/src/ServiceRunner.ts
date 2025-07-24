@@ -17,6 +17,7 @@ import urijs from "urijs";
 import { requireResolve } from "@magda/esm-utils";
 import { Readable } from "node:stream";
 import fetchRequest from "magda-typescript-common/src/fetchRequest.js";
+import treeKill from "magda-typescript-common/src/treeKill.js";
 
 /**
  * Resolve magda module dir path.
@@ -231,7 +232,8 @@ export default class ServiceRunner {
     kill(
         p: ChildProcess,
         signal: NodeJS.Signals = "SIGTERM",
-        delayAfterExit: number = 0
+        delayAfterExit: number = 0,
+        useTreeKill: boolean = false
     ): Promise<void> {
         return new Promise((resolve, reject) => {
             if (!p) {
@@ -261,7 +263,14 @@ export default class ServiceRunner {
             }
 
             p.once("exit", onExit); // must register BEFORE killing
-            p.kill(signal);
+            if (useTreeKill && p?.pid) {
+                console.log(
+                    `Killing process group ${p.pid} with signal ${signal} using treeKill...`
+                );
+                treeKill(p.pid, signal).then(resolve).catch(reject);
+            } else {
+                p.kill(signal);
+            }
         });
     }
 
@@ -619,7 +628,7 @@ export default class ServiceRunner {
     }
 
     async destroyRegistryApi() {
-        await this.kill(this.registryApiProcess, "SIGKILL", 1000);
+        await this.kill(this.registryApiProcess, "SIGKILL", 1000, true);
     }
 
     async createAuthApi() {
@@ -1142,7 +1151,7 @@ export default class ServiceRunner {
     }
 
     async destroyIndexerSetup() {
-        await this.kill(this.indexerSetupProcess);
+        await this.kill(this.indexerSetupProcess, "SIGKILL", 1000, true);
     }
 
     async createSearchApi() {
@@ -1197,7 +1206,7 @@ export default class ServiceRunner {
     }
 
     async destroySearchApi() {
-        await this.kill(this.searchApiProcess);
+        await this.kill(this.searchApiProcess, "SIGKILL", 1000, true);
     }
 
     /**

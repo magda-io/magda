@@ -74,6 +74,7 @@
     "sql-syntax": "^2.0.1",
     "urijs": "^1.19.11",
     "uuid": "^8.2.0",
+    "tree-kill": "https://github.com/magda-io/node-tree-kill.git#magda",
     "yargs": "^12.0.5"
   },
   "config": {
