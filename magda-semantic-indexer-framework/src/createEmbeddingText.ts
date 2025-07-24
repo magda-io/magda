@@ -1,4 +1,5 @@
 import { Record } from "magda-typescript-common/src/generated/registry/api.js";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 
 // The result that should be returned by the createEmbeddingText function
 export type EmbeddingText = {
@@ -16,6 +17,7 @@ export type CreateEmbeddingTextParams = {
     format: string | null;
     filePath: string | null;
     url: string | null;
+    readonlyRegistry: Registry;
 };
 
 // The user-provided createEmbeddingText function to generate embedding text

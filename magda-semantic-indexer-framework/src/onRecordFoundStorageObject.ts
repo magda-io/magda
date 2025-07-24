@@ -79,7 +79,8 @@ export const onRecordFoundStorageObject = (
                         record: dist,
                         format: format,
                         filePath,
-                        url: fileDownloadURL
+                        url: fileDownloadURL,
+                        readonlyRegistry: registryReadonlyClient
                     });
 
                     if (!embeddingText.text && !embeddingText.subObjects) {

@@ -31,7 +31,8 @@ describe("onRecordFoundRegistryRecord", () => {
             userConfig,
             testEnv.chunker,
             testEnv.embeddingApiClient,
-            testEnv.opensearchApiClient
+            testEnv.opensearchApiClient,
+            testEnv.registry
         );
 
         testEnv.chunker.chunk
@@ -116,7 +117,8 @@ describe("onRecordFoundRegistryRecord", () => {
             userConfig,
             testEnv.chunker,
             testEnv.embeddingApiClient,
-            testEnv.opensearchApiClient
+            testEnv.opensearchApiClient,
+            testEnv.registry
         );
 
         testEnv.chunker.chunk
@@ -158,7 +160,8 @@ describe("onRecordFoundRegistryRecord", () => {
             userConfig,
             testEnv.chunker,
             testEnv.embeddingApiClient,
-            testEnv.opensearchApiClient
+            testEnv.opensearchApiClient,
+            testEnv.registry
         );
 
         testEnv.chunker.chunk
@@ -186,7 +189,8 @@ describe("onRecordFoundRegistryRecord", () => {
             userConfig,
             testEnv.chunker,
             testEnv.embeddingApiClient,
-            testEnv.opensearchApiClient
+            testEnv.opensearchApiClient,
+            testEnv.registry
         );
 
         testEnv.chunker.chunk
@@ -220,7 +224,8 @@ describe("onRecordFoundRegistryRecord", () => {
             userConfig,
             testEnv.chunker,
             testEnv.embeddingApiClient,
-            testEnv.opensearchApiClient
+            testEnv.opensearchApiClient,
+            testEnv.registry
         );
 
         testEnv.chunker.chunk

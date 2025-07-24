@@ -6,13 +6,15 @@ import SemanticIndexerOptions from "./semanticIndexerOptions.js";
 import { indexEmbeddingText } from "./indexEmbeddingText.js";
 import { Record } from "magda-typescript-common/src/generated/registry/api.js";
 import { SkipError } from "./SkipError.js";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 
 // The onRecordFound function passed to minion sdk to handle registry record records
 export const onRecordFoundRegistryRecord = (
     options: SemanticIndexerOptions,
     chunker: Chunker,
     embeddingApiClient: EmbeddingApiClient,
-    opensearchApiClient: OpensearchApiClient
+    opensearchApiClient: OpensearchApiClient,
+    registryReadonlyClient: Registry
 ): onRecordFoundType => {
     return async (record: Record, _registry) => {
         try {
@@ -29,7 +31,8 @@ export const onRecordFoundRegistryRecord = (
                     record,
                     format: null,
                     filePath: null,
-                    url: null
+                    url: null,
+                    readonlyRegistry: registryReadonlyClient
                 });
 
                 if (!embeddingText.text && !embeddingText.subObjects) {
