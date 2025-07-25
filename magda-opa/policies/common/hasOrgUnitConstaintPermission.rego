@@ -3,7 +3,7 @@ package common
 import data.common.breakdownOperationUri
 
 # check if the user has a ownership constaint permission matches requested operation
-hasOrgUnitConstaintPermission(inputOperationUri) {
+hasOrgUnitConstraintPermission(inputOperationUri) {
     [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
     resourceUri := concat("/", [resourceUriPrefix, resourceType])
