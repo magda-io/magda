@@ -283,6 +283,8 @@ gateway:
         - "data:"
         # metadata editor map display
         - https://*.tile.openstreetmap.org
+        # for search panel region selection view
+        - https://*.basemaps.cartocdn.com
         connectSrc:
         - "'self'"
         # geospatial search panel selection view vector tiles buckets

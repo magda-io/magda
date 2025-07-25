@@ -2,7 +2,10 @@
     <iframe width="560" height="315" src="https://www.youtube.com/embed/Jqlu34eocVA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </p>
 
-# A federated catalog for all of your data
+# A Federated, AI-Enhanced Data Catalog for All Your Data
+
+**Discover. Understand. Govern.**  
+From Excel to APIs, from legacy systems to LLM-powered interfaces.
 
 The better an organization understands and uses its data, the better it is able to make decisions and discover new opportunities. Many organizations hold massive quantities of data, but it often gets stuck inside organizational silos where its importance is invisible, origins untracked, and existence unknown to those elsewhere in the organization who could improve or derive further value from it.
 
@@ -28,11 +31,45 @@ This results in squandered opportunities as small datasets go undiscovered by ot
 
 Magda is designed with the flexibility to work with _all_ of an organisation's data assets, big or small - it can be used as a catalog for big data in a data lake, an easily-searchable repository for an organization's small data files, an aggregator for multiple external data sources, or all at once.
 
+## ✨ What’s New in Magda v5.0.0
+
+### 🧠 In-Browser LLM Chatbot
+
+<p class="center">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/AvB2YiFU59g" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</p>
+
+Explore your data with natural language:
+
+- Ask questions like "Which region had the highest rainfall in 2023?"
+- Perform tabular analysis and get charts & summaries
+- All processed **privately in-browser** via WebGPU
+
+### 🔍 Hybrid Search Engine
+
+Combine keyword precision and semantic understanding:
+
+- Vector + lexical search with BM25 ranking
+- Handles synonyms, fuzzy phrasing, and structured filters
+- Ideal for technical and natural language queries alike
+
+### 📊 SQL Console in Your Browser
+
+Query data without backend setup:
+
+- Supports Excel, CSV, and more
+- Powered by in-browser SQL execution
+- One-click export to CSV
+
+<p class="center">
+    <img src="./docs/sql-console.png">
+</p>
+
 ## Features
 
 ### Discovery
 
-The easiest way to find a dataset is by searching for it, and Magda puts its search functionality front and centre. Magda was originally developed for the Australian government's federal open data portal [data.gov.au](https://data.gov.au), providing a single place for Australia's citizens, scientists, journalists and businesses to discover and access 80,000+ datasets, from linked data APIs to small Excel files.
+The easiest way to find a dataset is by searching for it, and Magda puts its search functionality front and centre. Magda was originally developed for the Australian Government's open data portal data.gov.au, where it supported discovery and access to over 100,000 datasets during its deployment between 2019 and 2025. Although this contract concluded in June 2025, Magda remains an open-source platform powering new innovations across public and private sectors worldwide.
 
 When users search they expect the result to be the best result for the meaning of their query, not simply the one with the most keyword matches. Magda is able to return higher-quality datasets above lower-quality ones, understand synonyms and acronyms, as well as search by time or geospatial extent.
 
@@ -128,28 +165,64 @@ We're always looking to help more organizations use their data better with Magda
 
 If you'd like to become a co-creation partner, want our help getting up and running, or want to sponsor specific features, we'd love to talk to you! Please get in contact with us at [contact@magda.io](mailto:contact@magda.io). You can also ask questions in [Our Github Discussions forum](https://github.com/magda-io/magda/discussions).
 
+> Interested in expert support or co-developing features? Learn more about [how we support the community and our clients](https://magda.io/docs/how-we-support-the-community-and-our-clients.html).
+
 Magda is also completely open-source and can be used for free - to get it running, please see the instructions [below](#want-to-get-it-running-yourself). Don't forget to let us know you're using it!
 
-## Current Users
+## Who’s Used Magda
 
-- [Digital Transformation Agency](https://www.dta.gov.au/) - [data.gov.au](https://data.gov.au)
-- [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF) - [Knowledge Network V2](https://knowledgenet.co/)
-- [Department of Agriculture](http://www.agriculture.gov.au/) - Private Instance
-- [Department of the Environment and Energy](https://www.environment.gov.au/) - Private Instance
-- [NSW Department of Customer Service](https://www.customerservice.nsw.gov.au/) - [NSW Spatial Digital Twin](https://nsw.digitaltwin.terria.io/)
-- [QLD Department of Natural Resources, Mines and Energy](https://www.dnrme.qld.gov.au/) - Under Development
+Magda has powered national- and state-level data portals, research infrastructure, and public sector data ecosystems. Some of the organizations who have previously deployed Magda include:
+
+- [Digital Transformation Agency](https://www.dta.gov.au/) and later the [Australian Bureau of Statistics](https://www.abs.gov.au/) – Deployed & Managed Magda platform for [data.gov.au](https://data.gov.au) from 2019 to June 2025
+- [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF) – Knowledge Network V2
+- [Department of Agriculture](http://www.agriculture.gov.au/) – Private instance
+- [Department of the Environment and Energy](https://www.environment.gov.au/) – Private instance
+- [NSW Department of Customer Service](https://www.customerservice.nsw.gov.au/) – NSW Spatial Digital Twin
+- [QLD Department of Natural Resources, Mines and Energy](https://www.dnrme.qld.gov.au/) – QLD Spatial Digital Twin
+
+Magda is used in a variety of contexts — from open data portals serving national audiences, to private, domain-specific platforms supporting research workflows and scientific discovery. Its flexibility makes it a good fit for governments, research agencies, and enterprises that need to integrate diverse datasets across complex technical landscapes.
 
 <p class="center">
     <img src="./assets/magdascreenshots.png">
 </p>
 
-## See it in action
+Alongside our open-source work, we’ve been developing Magda++, a proprietary platform built on top of the Magda open-source core, tailored for scientific research applications. While Magda provides a general-purpose federated data catalog, Magda++ extends this with specialized AI/ML capabilities designed to support interactive scientific discovery and decision-making. Unlike Magda’s lightweight, in-browser AI, Magda++ integrates more powerful models, enabling deeper analysis and domain-specific insights across scientific fields.
 
-A demo site exists at [demo.dev.magda.io](https://demo.dev.magda.io). This is hosted on pre-emptible instances and may go down for short periods. If it seems down, wait 5-10 minutes and it should come back up again. For an example of Magda in production, see [data.gov.au](https://data.gov.au).
+Magda++ is designed to bridge AI and scientific research, enabling researchers to integrate, analyse, and apply complex data more effectively. A key focus is Food Value Chain Optimization with AI Insights, where AI helps uncover hidden patterns in agricultural data, from genomic traits to environmental impacts, to improve crop yields and sustainability. Magda++ also facilitates interactive knowledge discovery, allowing researchers to navigate scientific challenges through AI-assisted reasoning and data fusion. Magda++ is redefining how AI powers scientific discovery, combining advanced AI models, interactive data exploration, and domain expertise to tackle real-world research challenges.
+
+> _These deployments shaped Magda’s evolution and validated its capabilities in real-world, mission-critical environments._
 
 ## Want to get it running yourself?
 
-[Try the latest version](https://github.com/magda-io/magda-config), or [build and run from source](https://magda.io/docs/building-and-running)
+If you just want to install a local testing version, installing Magda using [Helm](https://helm.sh/) is relatively easier (you can use [minikube](https://minikube.sigs.k8s.io/docs/) to install a local k8s test cluster):
+
+```bash
+# create a namespace "magda" in your cluster
+kubectl create namespace magda
+
+# install Magda version v5.0.1 to namespace "magda", turn off openfass function and expose the service via loadBalancer
+helm upgrade --namespace magda --install --version 5.3.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
+```
+
+> Since v2, we release our helm charts to Github container registry: `oci://ghcr.io/magda-io/charts`
+
+You can find out the load balancer IP and access it:
+
+```bash
+echo $(kubectl get svc --namespace magda gateway --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
+```
+
+If you are interested in playing more, you might find useful docs from [here](./docs/). Particularly:
+
+- [Magda Charts Docs Index](./docs/helm-charts-docs-index.html)
+- [How to create a local testing user](./docs/how-to-create-local-users.html)
+- [How to set a user as admin user](./docs/how-to-set-user-as-admin-user.html)
+
+You might also want to have a look at this tutorial repo:
+
+[https://github.com/magda-io/magda-brown-bag](https://github.com/magda-io/magda-brown-bag)
+
+Or find out more on: [https://magda.io/docs/building-and-running](https://magda.io/docs/building-and-running) if you are interested in the development or play with the code.
 
 ## Want to build your connectors / minions?
 
@@ -176,10 +249,11 @@ We welcome new contributors too! please check out our [Contributor's Guide](http
 ## Important links
 
 - [Our Github](https://github.com/magda-io/magda)
-- [Magda API Reference](https://dev.magda.io/api/v0/apidocs/index.html)
+- [Magda API Reference](https://magda-io.github.io/api-docs/index.html)
 - [Magda Helm Chart Reference](/docs/helm-charts-docs-index)
 - [Useful common documentations](./docs/index.md)
 - [Other documentations](https://github.com/magda-io/magda/tree/master/docs/docs)
+- [How We Support the Community and Our Clients](https://magda.io/docs/how-we-support-the-community-and-our-clients.html)
 - [Ask Questions on Our Github Discussions forum](https://github.com/magda-io/magda/discussions)
 
 The project was started by CSIRO's [Data61](https://data61.csiro.au/) and Australia's [Department of Prime Minister and Cabinet](https://www.pmc.gov.au/). It's progressing thanks to Data61, the [Digital Transformation Agency](https://www.dta.gov.au/), the [Department of Agriculture](http://www.agriculture.gov.au/), the [Department of the Environment and Energy](https://www.environment.gov.au/) and [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF).

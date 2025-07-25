@@ -1,0 +1,40 @@
+.flex-main-container.setting-page-main-container.access-group-details-page {
+    .access-group-datasets-panel {
+        .search-button-container {
+            position: relative;
+            height: 42px;
+            margin-bottom: 10px;
+            .search-button-inner-wrapper {
+                position: absolute;
+                right: 5px;
+                width: 250px;
+                svg {
+                    width: 24px;
+                    height: 24px;
+                }
+            }
+            .left-button-area-container {
+                position: absolute;
+                left: 5px;
+                display: flex;
+                .rs-input {
+                    margin-right: 5px;
+                }
+                .rs-btn {
+                    width: 350px;
+                }
+            }
+        }
+
+        .rs-btn-icon {
+            margin-right: 5px;
+        }
+        .pagination-container {
+            padding: 20px;
+            margin-bottom: 10px;
+            .rs-btn-group {
+                float: right;
+            }
+        }
+    }
+}

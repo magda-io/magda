@@ -35,8 +35,11 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
      * @apiDescription Returns a list of current role ids of the user.
      * You need have update permission to the user record in order to access this API.
      *
+     * @apiParamExample (Body) {json}:
+     *    ["xxxx-xxxx-xxx-xxx-xx1", "xx-xx-xxx-xxxx-xxx2"]
+     *
      * @apiSuccessExample {json} 200
-     *    ["xxxx-xxxx-xxx-xxx-xx", "xx-xx-xxx-xxxx-xxxxx"]
+     *    ["xxxx-xxxx-xxx-xxx-xx1", "xx-xx-xxx-xxxx-xxx2", "xx-xx-xxx-xxxx-xxx3"]
      *
      * @apiErrorExample {json} 401/500
      *    {

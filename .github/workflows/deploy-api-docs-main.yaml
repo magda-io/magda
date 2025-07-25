@@ -1,0 +1,41 @@
+name: Deploy Latest API Docs
+
+run-name: Deploy Latest API Docs on branch ${{ github.ref_name }}
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-latest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.19.0
+          cache: "yarn"
+
+      - name: Install Utilities
+        run: yarn install
+
+      - name: Generate API Docs
+        run: |
+          cd magda-apidocs-server
+          yarn build
+          cp doc-repo-readme.md ./build/README.md
+          cd ..
+
+      - name: Push to api-docs repo (main branch root)
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.GH_ACCESS_TOKEN }}
+          publish_dir: ./magda-apidocs-server/build
+          external_repository: magda-io/api-docs
+          publish_branch: main
+          user_name: "magdabot"
+          user_email: "magdabot@users.noreply.github.com"

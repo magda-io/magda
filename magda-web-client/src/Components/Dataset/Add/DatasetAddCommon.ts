@@ -35,6 +35,9 @@ import {
     indexDatasetById,
     deleteDatasetIndexById
 } from "../../../api-clients/IndexerApis";
+import sendEventToOpener, {
+    EVENT_TYPE_DATASET_DRAFT_SAVED
+} from "libs/sendEventToOpener";
 
 export type Distribution = {
     title: string;
@@ -1005,10 +1008,12 @@ export async function saveStateToRegistry(state: State, id: string) {
 export async function saveState(state: State, id = createId()) {
     if (config?.featureFlags?.previewAddDataset) {
         // --- in preview mode, still save to local storage
-        return saveStateToLocalStorage(state, id);
+        saveStateToLocalStorage(state, id);
     } else {
-        return await saveStateToRegistry(state, id);
+        await saveStateToRegistry(state, id);
     }
+    sendEventToOpener(EVENT_TYPE_DATASET_DRAFT_SAVED, { id });
+    return id;
 }
 
 /**
