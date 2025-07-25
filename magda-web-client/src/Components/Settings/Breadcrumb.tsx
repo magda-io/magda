@@ -4,7 +4,7 @@ import { Location, History } from "history";
 import urijs from "urijs";
 import "./Breadcrumb.scss";
 
-type BreadcrumbItem = { to?: string; title: string };
+export type BreadcrumbItem = { to?: string; title: string };
 
 type PropsType = {
     items: BreadcrumbItem[];

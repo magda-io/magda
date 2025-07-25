@@ -13,6 +13,8 @@ import RegistryRecordsPage from "./RegistryRecordsPage";
 import RolePermissionsPage from "./RolePermissionsPage";
 import AccountPage from "./AccountPage";
 import DatasetManagementPage from "./DatasetManagementPage";
+import AccessGroupsPage from "./AccessGroupsPage";
+import AccessGroupDetailsPage from "./AccessGroupDetailsPage";
 import ValidateUser from "Components/ValidateUser";
 
 const Routes = () => {
@@ -105,6 +107,34 @@ const Routes = () => {
                         exact
                         path="/settings/records/:recordId"
                         component={withHeader(RegistryRecordsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/accessGroups"
+                        component={withHeader(AccessGroupsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/accessGroups/:groupId"
+                        component={withHeader(AccessGroupDetailsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/accessGroups/:groupId/datasets"
+                        component={withHeader(AccessGroupDetailsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/accessGroups/:groupId/users"
+                        component={withHeader(AccessGroupDetailsPage, {
                             noContainerClass: true
                         })}
                     />

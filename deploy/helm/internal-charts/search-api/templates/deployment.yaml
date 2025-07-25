@@ -29,7 +29,24 @@ spec:
         - containerPort: 6102
         command:
           - "bin/magda-search-api"
+{{- if not (empty .Values.jvmInitialHeapSize) }}
+          - "-J-Xms{{ .Values.jvmInitialHeapSize }}"
+{{- end }}
+{{- if not (empty .Values.jvmMaxHeapSize) }}
+          - "-J-Xmx{{ .Values.jvmMaxHeapSize }}"
+{{- end }}
+{{- if and (empty .Values.jvmMaxHeapSize) .Values.jvmMaxRamPercentage }}
           - "-J-XX:MaxRAMPercentage={{ .Values.jvmMaxRamPercentage | printf "%.2f" }}"
+{{- end }}
+{{- if and (empty .Values.jvmInitialHeapSize) .Values.jvmInitialRamPercentage }}
+          - "-J-XX:InitialRAMPercentage={{ .Values.jvmInitialRamPercentage | printf "%.2f" }}"
+{{- end }}
+{{- if and (empty .Values.jvmInitialHeapSize) .Values.jvmMinRamPercentage }}
+          - "-J-XX:MinRAMPercentage={{ .Values.jvmMinRamPercentage | printf "%.2f" }}"
+{{- end }}
+{{- if .Values.jvmPrintFlagsFinal }}
+          - "-J-XX:+PrintFlagsFinal"
+{{- end }}
           - "-Dconfig.file=/etc/config/deploy-application.conf"
 {{- if .Values.debug }}
           - "-DsearchApi.debug=true"

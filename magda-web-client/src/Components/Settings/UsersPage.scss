@@ -15,4 +15,24 @@
     .pagination-container {
         padding: 20px;
     }
+    .action-col {
+        text-align: center;
+        .rs-btn-icon.rs-btn {
+            padding-top: 7px;
+            padding-bottom: 6px;
+        }
+        .rs-btn {
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+    }
+}
+
+.user-datagrid-action-dropdown {
+    .rs-dropdown-item {
+        svg {
+            margin-right: 8px;
+            margin-top: 2px;
+        }
+    }
 }

@@ -129,7 +129,9 @@ class CrawlerApiSpec
             override def getDataSetsToken(
                 pageToken: String,
                 number: Int
-            ): scala.concurrent.Future[(Option[String], List[DataSet])] = {
+            ): scala.concurrent.Future[
+              (Option[String], List[DataSet], Boolean)
+            ] = {
               if (pageToken.toInt < dataSets.length) {
                 val start = pageToken.toInt
                 val end = start + Math.min(
@@ -145,15 +147,15 @@ class CrawlerApiSpec
                   else
                     Some((pageToken.toInt + number).toString)
 
-                Future(tokenOption, theDataSets)
+                Future(tokenOption, theDataSets, false)
               } else {
-                Future(None, Nil)
+                Future(None, Nil, false)
               }
             }
             override def getDataSetsReturnToken(
                 start: Long = 0,
                 number: Int = 10
-            ): Future[(Option[String], List[DataSet])] = {
+            ): Future[(Option[String], List[DataSet], Boolean)] = {
               val theDataSets =
                 dataSets.slice(start.toInt, start.toInt + number)
               val tokenOption =
@@ -162,7 +164,7 @@ class CrawlerApiSpec
                 else
                   Some((start.toInt + number).toString)
 
-              Future(tokenOption, theDataSets)
+              Future(tokenOption, theDataSets, false)
             }
           }
       }

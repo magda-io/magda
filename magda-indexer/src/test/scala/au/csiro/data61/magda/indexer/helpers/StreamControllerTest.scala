@@ -46,7 +46,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
     override def getDataSetsReturnToken(
         start: Long,
         size: Int
-    ): Future[(Option[String], List[DataSet])] = Future {
+    ): Future[(Option[String], List[DataSet], Boolean)] = Future {
       assert(start == 0)
       nextIndex.set(size)
       val batch = dataSets.slice(start.toInt, size).toList
@@ -59,13 +59,13 @@ class StreamControllerTest extends FlatSpec with Matchers {
 //        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
       Thread.sleep(1000)
 
-      (tokenOption, batch)
+      (tokenOption, batch, false)
     }
 
     override def getDataSetsToken(
         token: String,
         size: Int
-    ): Future[(Option[String], List[DataSet])] = Future {
+    ): Future[(Option[String], List[DataSet], Boolean)] = Future {
       assert(token.nonEmpty)
 
       val startIndex = nextIndex.get()
@@ -89,7 +89,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
 //      println(s"** start: $startIndex, end: $endIndex, batch: ${batch.size}, " +
 //        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
       Thread.sleep(1000)
-      (tokenOption, batch)
+      (tokenOption, batch, false)
     }
   }
 

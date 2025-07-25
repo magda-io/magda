@@ -24,7 +24,7 @@ This is why we implemented the new hybrid search engine in Magda v5.0.0. It addr
 
 By default, the hybrid search engine is enabled. You can disable this feature by setting the Helm chart configuration `global.searchEngine.hybridSearch.enabled` to `false`.
 
-> **Note:** To apply changes to this setting in an existing v5.0.0 deployment, you need to manually delete the dataset index and trigger a reindex action via the [indexer's `reindex` API](https://dev.magda.io/api/v0/apidocs/index.html#api-Indexer-PostV0IndexerReindex).
+> **Note:** To apply changes to this setting in an existing v5.0.0 deployment, you need to manually delete the dataset index and trigger a reindex action via the [indexer's `reindex` API](https://magda-io.github.io/api-docs/index.html#api-Indexer-PostV0IndexerReindex).
 
 There are additional configuration options that allow you to fine-tune the performance of the search engine. You can find relevant configuration options in [common.conf](../../magda-scala-common/src/main/resources/common.conf). You can update configuration values via the `appConfig` field in both the [indexer](../../deploy/helm/internal-charts/indexer/README.md) and [search API](../../deploy/helm/internal-charts/search-api/README.md) Helm chart configurations.
 

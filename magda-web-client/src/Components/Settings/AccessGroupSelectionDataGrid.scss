@@ -1,0 +1,36 @@
+.access-group-selection-data-grid {
+    .search-button-container {
+        position: relative;
+        height: 42px;
+        margin-bottom: 10px;
+        .search-button-inner-wrapper {
+            position: absolute;
+            right: 5px;
+            width: 250px;
+            svg {
+                width: 24px;
+                height: 24px;
+            }
+        }
+        .left-button-area-container {
+            position: absolute;
+            left: 5px;
+        }
+    }
+
+    .rs-btn-icon {
+        margin-right: 5px;
+    }
+    .add-to-group-button.rs-btn-icon {
+        padding-left: 10px;
+        svg {
+            margin-right: 8px;
+        }
+    }
+    .pagination-container {
+        padding: 20px;
+        .rs-btn-group {
+            float: right;
+        }
+    }
+}

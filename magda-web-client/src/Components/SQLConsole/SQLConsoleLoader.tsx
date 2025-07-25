@@ -1,6 +1,8 @@
 import { useRef, FunctionComponent, useCallback, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { StateType } from "../../reducers/reducer";
+import type { Location, History } from "history";
+import type { match } from "react-router-dom";
 import {
     setEditorContent,
     toggleIsOpen
@@ -20,7 +22,15 @@ import { config } from "../../config";
 
 const enableSqlConsole = config.enableSQLConsole;
 
-const SQLConsoleLoader: FunctionComponent = () => {
+interface PropsType {
+    history: History;
+    location: Location;
+    match: match<{ datasetId?: string; distributionId?: string }>;
+}
+
+const SQLConsoleLoader: FunctionComponent<PropsType> = (props) => {
+    const matchParams = props?.match?.params || {};
+    const { datasetId, distributionId } = matchParams;
     const sqlConsoleCompRef = useRef<typeof SQLConsoleTypeImport | null>(null);
     const SQLConsole = sqlConsoleCompRef?.current
         ? sqlConsoleCompRef.current
@@ -39,17 +49,22 @@ const SQLConsoleLoader: FunctionComponent = () => {
 
     useAsync(async () => {
         // -- make sure current page dataset distributions have been available via `source()` in SQL
-        if (dataset?.identifier) {
-            const items = dataset2DistributionResourceItems(dataset);
-            setCurrentDistList(items);
-            if (items?.length === 1) {
+        if (distributionId) {
+            if (distribution?.identifier) {
+                const item = distribution2ResourceItem(distribution);
+                if (item) {
+                    setCurrentDist(item);
+                    setCurrentDistList([item]);
+                }
+            }
+        } else {
+            if (dataset?.identifier) {
+                const items = dataset2DistributionResourceItems(dataset);
+                setCurrentDistList(items);
                 setCurrentDist(items[0]);
             }
         }
-        if (distribution?.identifier) {
-            setCurrentDist(distribution2ResourceItem(distribution));
-        }
-    }, [dataset, distribution]);
+    }, [dataset, distribution, datasetId, distributionId]);
 
     const { loading: consoleLoading } = useAsync(
         async (isOpen, SQLConsole) => {

@@ -16,7 +16,7 @@ import Routes from "./Routes";
 import { Medium } from "./Components/Common/Responsive";
 import { Route, Switch } from "react-router-dom";
 import { getPluginFooter } from "./externalPluginComponents";
-import inPopUpMode from "./helpers/inPopUpMode";
+import { inPopUpMode } from "./helpers/popupUtils";
 import "./AppContainer.scss";
 
 const ExternalFooterComponent = getPluginFooter();

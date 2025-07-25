@@ -1,6 +1,6 @@
 # search-api
 
-![Version: 5.2.0](https://img.shields.io/badge/Version-5.2.0-informational?style=flat-square)
+![Version: 5.3.1](https://img.shields.io/badge/Version-5.3.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -32,7 +32,12 @@ Kubernetes: `>= 1.14.0-0`
 | defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | formatsIndexVersion | string | `nil` | Manually set format index version. If not specify, default version will be used. you want to manually set this setting when upgrade to a Magda version that involves region index version changes. As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built. |
 | image.name | string | `"magda-search-api"` |  |
-| jvmMaxRamPercentage | float | `75` | JVM max allowed heap memory percentage based on `resources.limits.memory` |
+| jvmInitialHeapSize | string | `nil` | Sets the initial size of the heap (via flag `-Xms`) when the JVM starts For production, should probably set to same as `jvmMaxHeapSize` for more predictable performance.  By default, will use JVM default value. value should be in format of `1g` or `200m` etc. |
+| jvmInitialRamPercentage | float | `nil` | JVM initial heap memory percentage This value will only be used if `jvmInitialHeapSize` is not set. By default, will use JVM default value. |
+| jvmMaxHeapSize | string | `"1g"` | Sets the maximum amount of memory that the JVM heap (via flag `-Xmx`) can grow to. You can set `jvmInitialHeapSize` to the same value for production use case to avoid JVM heap resizing. Should make sure leave enough room for non-heap overhead to avoid OOM. e.g. if you set `resources.limits.memory` (Pod Memory) to 256 MiB, you should set this value to 128 MiB to leave 128 MiB for non-heap overhead to avoid OOM. - For Pod memory 512 MiB, we should set this value to 256 MiB. - 768 MiB Pod memory, should set this value to 512 MiB. - Over 1GiB Pod memory, can reserve 60-70% to heap. value should be in format of `1g` or `200m` etc. |
+| jvmMaxRamPercentage | float | `70` | JVM max allowed heap memory percentage based on `resources.limits.memory` This value will only be used if `jvmMaxHeapSize` is not set. For small pods (e.g. under 1 GiB - specified by the `resources.limits.memory`), better to use `jvmMaxHeapSize` to make sure leave enough room for non-heap overhead to avoid OOM. |
+| jvmMinRamPercentage | float | `nil` | JVM min heap memory percentage This value will only be used if `jvmInitialHeapSize` is not set. If the InitialRAMPercentage result is less than MinRAMPercentage, the JVM increases it to match MinRAMPercentage. By default, will use JVM default value. |
+| jvmPrintFlagsFinal | bool | `false` | whether to print out JVM flags at application starting up This is useful for debugging purpose, e.g. to check if the JVM heap size is set correctly from printed values like InitialHeapSize and MaxHeapSize. |
 | livenessProbe.failureThreshold | int | `10` |  |
 | livenessProbe.httpGet.path | string | `"/v0/status/live"` |  |
 | livenessProbe.httpGet.port | int | `6102` |  |
@@ -49,8 +54,7 @@ Kubernetes: `>= 1.14.0-0`
 | readinessProbe.successThreshold | int | `1` |  |
 | readinessProbe.timeoutSeconds | int | `10` |  |
 | regionsIndexVersion | string | `nil` | Manually set region index version. If not specify, default version will be used. you want to manually set this setting when upgrade to a Magda version that involves region index version changes. As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built. |
-| resources.limits.cpu | string | `"200m"` |  |
-| resources.limits.memory | string | `"600Mi"` |  |
+| resources.limits.memory | string | `"1.5Gi"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"300Mi"` |  |
 

@@ -1,16 +1,27 @@
-FROM node:18-alpine3.18
+FROM ubuntu:20.04
 
-RUN npm install -g npm@10.5.2 && npm install -g lerna@3.22.1
+RUN apt-get update && apt-get install -y \
+    haveged \
+ && rm -rf /var/lib/apt/lists/*
 
-# Install haveged and run it so that we don't get lockups due to a lack of entropy
-RUN apk --no-cache add haveged
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    git \
+    openssh-client \
+    bash \
+    build-essential \
+    ca-certificates \
+    curl \
+    tar \
+    wget \
+    socat \
+ && rm -rf /var/lib/apt/lists/*
 
-RUN apk --no-cache add git openssh bash \
-	make g++ \
-	ca-certificates \
-	curl \
-	tar \
-	wget \
-	socat
+# Use NodeSource to install Node.js (LTS or v18)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    node -v && npm -v
 
-ENTRYPOINT ["/bin/bash", "-l", "-c"]
+RUN npm install -g npm@10.5.2 && npm install -g lerna@3.22.1 yarn@1.22.19
+
+CMD ["/bin/bash"]

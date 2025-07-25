@@ -1,0 +1,10 @@
+.access-group-add-user-popup {
+    width: 1200px;
+    .rs-modal-body {
+        padding-left: 3px;
+    }
+    .rs-loader-wrapper {
+        z-index: 999;
+        font-weight: bold;
+    }
+}

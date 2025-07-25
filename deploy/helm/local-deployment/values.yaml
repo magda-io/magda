@@ -6,7 +6,7 @@ magda:
 
 # auth plugin for google
 magda-auth-google:
-  googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
+  googleClientId: "569942545102-7nu303pchs9n2vlgl435trcb6vr51ged.apps.googleusercontent.com"
 
 magda-auth-internal:
   authPluginConfig:
@@ -32,12 +32,14 @@ connector-act:
     id: act
     name: ACT Government data.act.gov.au
     sourceUrl: https://www.data.act.gov.au/data.json
+    schedule: 0 0 */3 * *
 
 connector-actmapi:
   config:
     id: actmapi
     name: ACT Government ACTMAPi
     sourceUrl: https://actmapi-actgov.opendata.arcgis.com/api/feed/dcat-us/1.1.json
+    schedule: 45 0 */3 * *
 
 connector-aims:
   config:
@@ -70,19 +72,21 @@ connector-aurin:
     name: Australian Urban Research Infrastructure Network
     sourceUrl: https://data.aurin.org.au/
     pageSize: 100
+    schedule: 0 1 */3 * *
 
-connector-brisbane:
-  config:
-    id: brisbane
-    name: Brisbane City Council
-    sourceUrl: https://www.data.brisbane.qld.gov.au/data/
-    pageSize: 100
+# connector-brisbane:
+#   config:
+#     id: brisbane
+#     name: Brisbane City Council
+#     sourceUrl: https://www.data.brisbane.qld.gov.au/data/
+#     pageSize: 100
 
 connector-hobart:
   config:
     id: hobart
     name: City of Hobart Open Data Portal
     sourceUrl: https://data-1-hobartcc.opendata.arcgis.com/api/feed/dcat-us/1.1.json
+    schedule: 30 2 */3 * *
 
 connector-marlin:
   config:
@@ -92,40 +96,38 @@ connector-marlin:
     outputSchema: http://standards.iso.org/iso/19115/-3/mdb/2.0
     typeNames: mdb:MD_Metadata
     pageSize: 50
-
-connector-environment:
-  config:
-    id: environment
-    name: Department of the Environment and Energy
-    sourceUrl: http://www.environment.gov.au/fed/csw
-    pageSize: 100
+    schedule: 30 3 */3 * *
 
 connector-ga:
   config:
     id: ga
     name: Geoscience Australia
     sourceUrl: https://ecat.ga.gov.au/geonetwork/srv/eng/csw
-    outputSchema: http://standards.iso.org/iso/19115/-3/mdb/1.0
+    outputSchema: http://standards.iso.org/iso/19115/-3/mdb/2.0
     typeNames: mdb:MD_Metadata
     pageSize: 100
+    schedule: 0 5 */3 * *
 
 connector-logan:
   config:
     id: logan
     name: Logan City Council
     sourceUrl: https://data-logancity.opendata.arcgis.com/api/feed/dcat-us/1.1.json
+    schedule: 30 5 */3 * *
 
 connector-melbournewater:
   config:
     id: melbournewater
     name: Melbourne Water Corporation
     sourceUrl: https://data-melbournewater.opendata.arcgis.com/api/feed/dcat-us/1.1.json
+    schedule: "30 4 */3 * *"
 
 connector-melbourne:
   config:
     id: melbourne
     name: Melbourne Data
     sourceUrl: https://data.melbourne.vic.gov.au/data.json
+    schedule: 0 6 */3 * *
 
 connector-mrt:
   config:
@@ -133,19 +135,14 @@ connector-mrt:
     name: Mineral Resources Tasmania
     sourceUrl: http://www.mrt.tas.gov.au/web-catalogue/srv/eng/csw
     pageSize: 100
+    schedule: 30 6 */3 * *
 
 connector-moretonbay:
   config:
     id: moretonbay
     name: Moreton Bay Regional Council Data Portal
     sourceUrl: https://datahub.moretonbay.qld.gov.au/api/feed/dcat-us/1.1.json
-
-connector-neii:
-  config:
-    id: neii
-    name: National Environmental Information Infrastructure
-    sourceUrl: http://neii.bom.gov.au/services/catalogue/csw
-    pageSize: 100
+    schedule: 0 7 */3 * *
 
 connector-nsw:
   config:
@@ -182,6 +179,7 @@ connector-listtas:
     name: Tasmania TheList
     sourceUrl: https://data.thelist.tas.gov.au:443/datagn/srv/eng/csw
     pageSize: 100
+    schedule: 30 10 */3 * *
 
 connector-tern:
   config:
@@ -191,6 +189,7 @@ connector-tern:
     outputSchema: http://standards.iso.org/iso/19115/-3/mdb/2.0
     typeNames: mdb:MD_Metadata
     pageSize: 100
+    schedule: 0 11 */3 * *
 
 connector-vic:
   config:
@@ -198,6 +197,7 @@ connector-vic:
     name: Victoria Government
     sourceUrl: https://discover.data.vic.gov.au/
     pageSize: 100
+    schedule: 50 * * * *
     ignoreHarvestSources: []
     presetRecordAspects:
     - id: organization-details
@@ -226,33 +226,87 @@ connector-dap:
     name: CSIRO
     sourceUrl: https://data.csiro.au/dap/ws/v2/
     pageSize: 100
+    schedule: 20 15 * * *
+    presetRecordAspects:
+    - id: organization-details
+      recordType: Organization
+      data: 
+        title: "CSIRO"
+        jurisdiction: "Australian Government"
 
 connector-vic-cardinia:
   config:
     id: vic-cardinia
     name: Cardinia Shire Council
     sourceUrl: https://data-cscgis.opendata.arcgis.com/api/feed/dcat-us/1.1.json
+    schedule: 30 11 * * *
 
 connector-nt-darwin:
   config:
     id: nt-darwin
     name: City of Darwin
     sourceUrl: https://open-darwin.opendata.arcgis.com/api/feed/dcat-us/1.1.json
+    schedule: 0 12 */3 * *
 
 connector-southern-grampians:
   config:
     id: southern-grampians
     name: Southern Grampians Shire Council
     sourceUrl: https://www.connectgh.com.au/data.json
+    schedule: 30 12 */3 * *
 
 connector-gbrmpa:
   config:
     id: gbrmpa
     name: GBRMPA Geoportal
     sourceUrl: https://geoportal.gbrmpa.gov.au/api/feed/dcat-us/1.1.json
+    schedule: 30 15 */3 * *
 
 connector-launceston:
   config:
     id: launceston
     name: City of Launceston Open Data
     sourceUrl: https://opendata.launceston.tas.gov.au/api/feed/dcat-us/1.1.json
+    schedule: 0 3 */3 * * 
+
+connector-ditrdca:
+  config:
+    id: ditrdca
+    name: Department of infrastructure
+    sourceUrl: https://catalogue.data.infrastructure.gov.au/
+    pageSize: 25
+    ignoreHarvestSources: ["No"]
+    schedule: 55 13 * * *
+
+connector-dcceew:
+  config:
+    id: dcceew
+    name: "Department of Climate Change, Energy, the Environment and Water"
+    sourceUrl: https://fed.dcceew.gov.au/api/feed/dcat-us/1.1.json
+    schedule: 10 13 * * 6
+
+connector-bundaberg:
+  config:
+    id: bundaberg
+    name: Bundaberg Regional Council
+    sourceUrl: https://opendata-bundabergrc.hub.arcgis.com/api/feed/dcat-us/1.1.json
+    schedule: 30 13 * * *
+    presetRecordAspects:
+    - id: organization-details
+      recordType: Organization
+      opType: MERGE_RIGHT
+      data: 
+        title: "Bundaberg Regional Council"
+        jurisdiction: "Queensland Government"
+    - id: dcat-dataset-strings
+      recordType: Dataset
+      opType: MERGE_RIGHT
+      data: 
+        publisher: "Bundaberg Regional Council"
+
+connector-redland:
+  config:
+    id: redland
+    name: "Redland City Council"
+    sourceUrl: https://opendata.redland.qld.gov.au/api/feed/dcat-us/1.1.json
+    schedule: 10 12 * * 6

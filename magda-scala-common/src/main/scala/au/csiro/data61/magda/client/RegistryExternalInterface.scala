@@ -30,12 +30,12 @@ trait RegistryInterface {
   def getDataSetsReturnToken(
       start: Long,
       size: Int
-  ): Future[(Option[String], List[DataSet])]
+  ): Future[(Option[String], List[DataSet], Boolean)]
 
   def getDataSetsToken(
       token: String,
       size: Int
-  ): Future[(Option[String], List[DataSet])]
+  ): Future[(Option[String], List[DataSet], Boolean)]
 }
 
 /**
@@ -127,7 +127,7 @@ class RegistryExternalInterface(
   def getDataSetsToken(
       pageToken: String,
       number: Int
-  ): scala.concurrent.Future[(Option[String], List[DataSet])] = {
+  ): scala.concurrent.Future[(Option[String], List[DataSet], Boolean)] = {
     readOnlyFetcher
       .get(
         path =
@@ -139,16 +139,23 @@ class RegistryExternalInterface(
           case OK =>
             Unmarshal(response.entity).to[RegistryRecordsResponse].map {
               registryResponse =>
-                (
-                  registryResponse.nextPageToken,
-                  mapCatching[Record, DataSet](
-                    registryResponse.records, { hit =>
-                      Conversions.convertRegistryDataSet(hit, Some(logger))
-                    }, { (e, item) =>
-                      logger.error(e, "Could not parse item: {}", item.toString)
-                    }
+                {
+                  // when an parsing error is encountered, the caller should not assume there are no more records, even if an empty list is returned.
+                  var encounterError = false
+                  (
+                    registryResponse.nextPageToken,
+                    mapCatching[Record, DataSet](
+                      registryResponse.records, { hit =>
+                        Conversions.convertRegistryDataSet(hit, Some(logger))
+                      }, { (e, item) =>
+                        encounterError = true
+                        logger
+                          .error(e, "Could not parse item: {}", item.toString)
+                      }
+                    ),
+                    encounterError
                   )
-                )
+                }
             }
           case _ =>
             Unmarshal(response.entity).to[String].flatMap(onError(response))
@@ -214,7 +221,7 @@ class RegistryExternalInterface(
   def getDataSetsReturnToken(
       start: Long,
       number: Int
-  ): scala.concurrent.Future[(Option[String], List[DataSet])] = {
+  ): scala.concurrent.Future[(Option[String], List[DataSet], Boolean)] = {
     readOnlyFetcher
       .get(
         path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number",
@@ -225,16 +232,23 @@ class RegistryExternalInterface(
           case OK =>
             Unmarshal(response.entity).to[RegistryRecordsResponse].map {
               registryResponse =>
-                (
-                  registryResponse.nextPageToken,
-                  mapCatching[Record, DataSet](
-                    registryResponse.records, { hit =>
-                      Conversions.convertRegistryDataSet(hit, Some(logger))
-                    }, { (e, item) =>
-                      logger.error(e, "Could not parse item: {}", item.toString)
-                    }
+                {
+                  // when an parsing error is encountered, the caller should not assume there are no more records, even if an empty list is returned.
+                  var encounterError = false
+                  (
+                    registryResponse.nextPageToken,
+                    mapCatching[Record, DataSet](
+                      registryResponse.records, { hit =>
+                        Conversions.convertRegistryDataSet(hit, Some(logger))
+                      }, { (e, item) =>
+                        encounterError = true
+                        logger
+                          .error(e, "Could not parse item: {}", item.toString)
+                      }
+                    ),
+                    encounterError
                   )
-                )
+                }
             }
           case _ =>
             Unmarshal(response.entity).to[String].flatMap(onError(response))

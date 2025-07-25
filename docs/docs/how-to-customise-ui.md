@@ -98,7 +98,7 @@ Not all built-in Magda components can be replaced by an `External UI Plugin Comp
 
 ## Complete replace default Magda UI
 
-The default Magda UI is a single page application that is built on [Magda backend APIs](https://dev.magda.io/api/v0/apidocs/index.html).
+The default Magda UI is a single page application that is built on [Magda backend APIs](https://magda-io.github.io/api-docs/index.html).
 
 When the solution above can't meet your requirements, you may choose to fork or complete replace the default Magda UI.
 

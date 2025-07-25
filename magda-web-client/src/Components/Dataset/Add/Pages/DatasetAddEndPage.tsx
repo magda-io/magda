@@ -1,10 +1,13 @@
-import React from "react";
-
-import { useHistory } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useHistory, useLocation } from "react-router-dom";
+import { Location } from "history";
 import giantTickIcon from "assets/giant-tick.svg";
 import draftIcon from "assets/format-active.svg";
 import { BsServer } from "react-icons/bs";
-import useInPopUp from "helpers/useInPopUp";
+import { useInPopUp } from "helpers/popupUtils";
+import sendEventToOpener, {
+    EVENT_TYPE_DATASET_EDITOR_REACH_END_PAGE
+} from "libs/sendEventToOpener";
 import "./DatasetAddEndPage.scss";
 
 type Props = {
@@ -14,10 +17,18 @@ type Props = {
     publishStatus?: string; // "published" | "draft" | "archived"
 };
 
+function checkSaveAndExit(location: Location) {
+    const params = new URLSearchParams(location?.search);
+    if (!params.size) return false;
+    return params.has("saveExit");
+}
+
 // If you are not in preview mode
 export default function DatasetAddEndPage(props: Props) {
     const { datasetId, publishStatus } = props;
+    const location = useLocation();
     const isInPopUp = useInPopUp();
+    const isSaveAndExit = checkSaveAndExit(location);
     const datasetPage = "/dataset/" + datasetId + "/details";
     const isEdit = typeof props?.isEdit === "undefined" ? false : props.isEdit;
     const history = useHistory();
@@ -29,8 +40,10 @@ export default function DatasetAddEndPage(props: Props) {
     }
 
     let allDoneText: string;
-    if (isEdit) {
-        allDoneText = "Your dataset has been updated";
+    if (isSaveAndExit) {
+        allDoneText = "Your progress has been saved.";
+    } else if (isEdit) {
+        allDoneText = "Your dataset has been updated.";
     } else {
         allDoneText =
             publishStatus === "draft"
@@ -38,11 +51,29 @@ export default function DatasetAddEndPage(props: Props) {
                 : "Your dataset has been successfully submitted.";
     }
 
+    useEffect(() => {
+        if (!datasetId) {
+            return;
+        }
+        sendEventToOpener(EVENT_TYPE_DATASET_EDITOR_REACH_END_PAGE, {
+            id: datasetId,
+            reason: isSaveAndExit
+                ? "draftSaved"
+                : isEdit
+                ? "datasetEditingSubmitted"
+                : "datasetCreationSubmitted"
+        });
+    }, [datasetId, isEdit, isSaveAndExit]);
+
     return (
         <div className="row">
             <div className="col-sm-12 end-preview-page-1">
                 <div className="end-preview-container-1">
-                    <img src={giantTickIcon} className="giant-tick" />
+                    <img
+                        alt="tick_icon"
+                        src={giantTickIcon}
+                        className="giant-tick"
+                    />
                     <h1 className="end-preview-heading">You're all done!</h1>
                 </div>
                 <div className="end-preview-container-2">

@@ -1,6 +1,6 @@
 # storage-api
 
-![Version: 5.2.0](https://img.shields.io/badge/Version-5.2.0-informational?style=flat-square)
+![Version: 5.3.1](https://img.shields.io/badge/Version-5.3.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -48,6 +48,10 @@ Kubernetes: `>= 1.14.0-0`
 By default, the storage api will use minio to create in-cluster storage (Persistent Volumes).
 
 To use minio as cloud storage service gateway while still enjoy the standard s3 compatible API, you can set the Helm chart config as the followings:
+
+> Please note: When using MinIO as a storage gateway, you will often need to manually create storage buckets via cloud vendors, as there are typically requirements for bucket names. For example, in AWS S3, the bucket name must be globally unique and DNS-compliant.
+> Therefore, you should set autoCreateBuckets to false to prevent the storage-api from automatically creating default buckets (e.g., the default dataset storage bucket).
+> In this case, you should also set global.defaultDatasetBucket to the name of the bucket you created manually as well.
 
 #### use AWS S3 as storage target
 

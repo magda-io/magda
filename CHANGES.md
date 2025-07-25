@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## v5.3.2
+
+- #3612: Fix indexer failed to handle invalid contact data type
+
+## v5.3.1
+
+- Fix: sitemap will respond 404 with plain text error for invalid `afterToken` values
+- Fix: update default CSP config for search selector region panel basemap tiles display
+- Enhancement: Make JVM heap memory allocation related settings configurable for search-api, registry-api & indexer
+- Adjustment: Tweak opensearch, search-api, registry-api & indexer default resource allocation limits
+- Feature: Allow region loader file processing parallelism to be configurable (default to `1`)
+- Enhancement: Auto-extract domain name from `.global.externalUrl` & improved helm chart document for [ingress](https://github.com/magda-io/magda/tree/main/deploy/helm/internal-charts/ingress)
+
+## v5.3.0
+
+- New feature: Access Group UI, useful when you need arbitrary access control management of datasets. Related to: #3269
+- #3603: allow dataset editor tool UI notify popup launcher via postMessage
+- Fix: The publishing organisation selection dropdown menu should not be obscured by other input elements.
+- When the dataset editor tool UI is opened in the popup mode, the `save & button` will display the end page to the user rather than redirect the user to the draft dataset list.
+- Fix: SQLConsole incorrect source function 0 index on distribution pages
+- Adjusted allowed characters on "resource" / "operation" forms
+- Reset the "resource" form content properly after the form is saved and closed
+- #3606: Increase the default indexer CPU limit from 250m to 1200m as 250m
+- #3607: "Remove an Dataset from an Access Group" API should remove the dataset distributions from the access group as well
+- add request example to the "Add Roles to a user" api docs
+
 ## v5.2.0
 
 - Fix: SQLConsole: reference error when join JSONL data source

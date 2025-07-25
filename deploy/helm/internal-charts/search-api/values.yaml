@@ -55,11 +55,43 @@ resources:
     cpu: 50m
     memory: 300Mi
   limits:
-    memory: 600Mi
-    cpu: 200m
+    memory: 1.5Gi
 
-# -- JVM max allowed heap memory percentage based on `resources.limits.memory`
-jvmMaxRamPercentage: 75.0
+# -- (string) Sets the maximum amount of memory that the JVM heap (via flag `-Xmx`) can grow to.
+# You can set `jvmInitialHeapSize` to the same value for production use case to avoid JVM heap resizing.
+# Should make sure leave enough room for non-heap overhead to avoid OOM.
+# e.g. if you set `resources.limits.memory` (Pod Memory) to 256 MiB, you should set this value to 128 MiB to leave 128 MiB for non-heap overhead to avoid OOM.
+# - For Pod memory 512 MiB, we should set this value to 256 MiB.
+# - 768 MiB Pod memory, should set this value to 512 MiB.
+# - Over 1GiB Pod memory, can reserve 60-70% to heap.
+# value should be in format of `1g` or `200m` etc.
+jvmMaxHeapSize: 1g
+
+# -- (string) Sets the initial size of the heap (via flag `-Xms`) when the JVM starts
+# For production, should probably set to same as `jvmMaxHeapSize` for more predictable performance. 
+# By default, will use JVM default value.
+# value should be in format of `1g` or `200m` etc.
+jvmInitialHeapSize: 
+
+# -- (float) JVM max allowed heap memory percentage based on `resources.limits.memory`
+# This value will only be used if `jvmMaxHeapSize` is not set.
+# For small pods (e.g. under 1 GiB - specified by the `resources.limits.memory`), better to use `jvmMaxHeapSize` to make sure leave enough room for non-heap overhead to avoid OOM.
+jvmMaxRamPercentage: 70.0
+
+# -- (float) JVM initial heap memory percentage
+# This value will only be used if `jvmInitialHeapSize` is not set.
+# By default, will use JVM default value.
+jvmInitialRamPercentage: 
+
+# -- (float) JVM min heap memory percentage
+# This value will only be used if `jvmInitialHeapSize` is not set.
+# If the InitialRAMPercentage result is less than MinRAMPercentage, the JVM increases it to match MinRAMPercentage.
+# By default, will use JVM default value.
+jvmMinRamPercentage:
+
+# -- whether to print out JVM flags at application starting up
+# This is useful for debugging purpose, e.g. to check if the JVM heap size is set correctly from printed values like InitialHeapSize and MaxHeapSize.
+jvmPrintFlagsFinal: false
 
 # -- when set to true, search API will print verbose debug info (e.g. ES DSL query) to log
 debug: false
