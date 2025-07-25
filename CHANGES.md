@@ -12,6 +12,7 @@
 - Fix daemontools installation in local postgres image build
 - Enhancement: integration test will use correct docker socket path on MacOs
 - Upgraded local in cluster use PostgreSQL build from 13.3 to [13.5](https://www.postgresql.org/docs/release/13.5/)
+- Fix: access group assign user / dataset to access group APIs always deny non-admin users access
 
 ## v5.3.1
 
