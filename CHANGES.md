@@ -11,6 +11,7 @@
 - Fix integration test scala app termination issue by sending signals to sub-processes as well
 - Fix daemontools installation in local postgres image build
 - Enhancement: integration test will use correct docker socket path on MacOs
+- Upgraded local in cluster use PostgreSQL build from 13.3 to [13.5](https://www.postgresql.org/docs/release/13.5/)
 
 ## v5.3.1
 
