@@ -6,6 +6,8 @@ tags:
   minion-visualization: true
   minion-format: true
   minion-ckan-exporter: false
+  pdf-semantic-indexer: true
+  csv-semantic-indexer: true
 
 global:
   connectors:
