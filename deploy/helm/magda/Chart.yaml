@@ -84,3 +84,15 @@ dependencies:
       - all
       - url-processors
       - magda-function-esri-url-processor
+
+  - name: magda-pdf-semantic-indexer
+    version: "1.0.0-alpha.1"
+    repository: "oci://ghcr.io/magda-io/charts"
+    tags:
+      - pdf-semantic-indexer
+
+  - name: magda-csv-semantic-indexer
+    version: "1.0.0-alpha.0"
+    repository: "oci://ghcr.io/magda-io/charts"
+    tags:
+      - csv-semantic-indexer
