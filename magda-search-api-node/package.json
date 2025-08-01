@@ -1,6 +1,6 @@
 {
   "name": "@magda/search-api-node",
-  "version": "5.3.1",
+  "version": "5.4.0-alpha.0",
   "type": "module",
   "exports": "./dist/index.js",
   "engines": {
@@ -22,7 +22,7 @@
     "@elastic/elasticsearch": "6.8.6",
     "@magda/esm-utils": "^1.0.1",
     "@magda/tsmonad": "^0.9.0",
-    "@magda/typescript-common": "^5.3.1",
+    "@magda/typescript-common": "^5.4.0-alpha.0",
     "express": "^4.21.2",
     "express-validation": "^3.0.2",
     "geojson": "^0.5.0",
@@ -31,7 +31,7 @@
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^5.3.1",
+    "@magda/scripts": "^5.4.0-alpha.0",
     "@types/chai": "^4.3.11",
     "@types/express": "^4.17.21",
     "@types/geojson": "^7946.0.7",

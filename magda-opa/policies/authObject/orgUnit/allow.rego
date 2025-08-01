@@ -1,7 +1,7 @@
 package authObject.orgUnit
 
 import data.common.hasNoConstraintPermission
-import data.common.hasOrgUnitConstaintPermission
+import data.common.hasOrgUnitConstraintPermission
 
 default allow = false
 
@@ -13,7 +13,7 @@ allow {
 # verify the user's permission with Org Unit Constaint
 # the user should allow to perform the operation on the user's current org unit and any children
 allow {
-    hasOrgUnitConstaintPermission(input.operationUri)
+    hasOrgUnitConstraintPermission(input.operationUri)
     input.user.orgUnit.id
     # as org units are stored in nested set model
     # children's left is >= than parent's left but <= parent's right
