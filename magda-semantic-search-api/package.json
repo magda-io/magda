@@ -61,7 +61,7 @@
     "language": "typescript",
     "categories": {
       "api": true,
-      "uses-es": false
+      "uses-es": true
     }
   },
   "_moduleMappings": {

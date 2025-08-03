@@ -19,11 +19,7 @@ Kubernetes: `>= 1.14.0-0`
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
-| global.rollingUpdate.maxUnavailable | int | `0` |  |
 | image.name | string | `"magda-semantic-search-api"` |  |
-| image.pullPolicy | string | `"IfNotPresent"` |  |
-| image.repository | string | `"localhost:5000"` |  |
-| image.tag | string | `"latest"` |  |
 | resources.limits.cpu | string | `"50m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"60Mi"` |  |
