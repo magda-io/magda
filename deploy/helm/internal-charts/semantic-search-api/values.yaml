@@ -1,0 +1,33 @@
+image: 
+  name: "magda-semantic-search-api"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
+defaultImage:
+  repository: "ghcr.io/magda-io"
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+autoscaler:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 60Mi
+  limits:
+    cpu: 50m
+
+semanticSearchConfig:
+  listenPort: 6123
+  openSearchUrl: http://opensearch:9200
+  embeddingApiUrl: http://magda-embedding-api
+  # The following fields will override the values in Global.searchEngine.semanticIndexer
+  semanticIndexName: 
+  semanticIndexVersion: 
+  semanticIndexerMode: 
