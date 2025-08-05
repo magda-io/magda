@@ -5,6 +5,7 @@ import React, {
     useImperativeHandle,
     useRef
 } from "react";
+import { whoami } from "../../api-clients/AuthApis";
 import Modal from "rsuite/Modal";
 import Button from "rsuite/Button";
 import Placeholder from "rsuite/Placeholder";
@@ -155,15 +156,23 @@ const AccessGroupFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     const { loading: isUserRootNodeLoading } = useAsync(
         async (dataReloadToken: string) => {
             try {
-                const rootNode: OrgUnit = await getRootNode(true);
-                setUnitOrgData([
-                    {
-                        label: rootNode.name,
-                        value: rootNode.id,
-                        rawData: rootNode,
-                        children: []
-                    }
-                ]);
+                const user = await whoami();
+                let rootNode: OrgUnit | undefined = undefined;
+                if (!user?.orgUnitId) {
+                    rootNode = await getRootNode(true);
+                } else {
+                    rootNode = await getOrgUnitById(user.orgUnitId, true);
+                }
+                if (rootNode) {
+                    setUnitOrgData([
+                        {
+                            label: rootNode.name,
+                            value: rootNode.id,
+                            rawData: rootNode,
+                            children: []
+                        }
+                    ]);
+                }
                 return rootNode;
             } catch (e) {
                 reportError(`Failed to retrieve user orgUnit root node: ${e}`);

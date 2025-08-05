@@ -149,7 +149,7 @@ const OperationsDataGrid: FunctionComponent<PropsType> = (props) => {
                     data={(data?.length ? data : []) as any}
                     loading={isLoading}
                 >
-                    <Column width={100} resizable>
+                    <Column width={200} resizable>
                         <HeaderCell> id</HeaderCell>
                         <Cell dataKey="id" />
                     </Column>
@@ -158,12 +158,12 @@ const OperationsDataGrid: FunctionComponent<PropsType> = (props) => {
                         <Cell dataKey="uri" />
                     </Column>
 
-                    <Column width={200} flexGrow={1}>
+                    <Column width={200} resizable>
                         <HeaderCell> Name</HeaderCell>
                         <Cell dataKey="name" />
                     </Column>
 
-                    <Column width={250} resizable>
+                    <Column width={550} resizable>
                         <HeaderCell>Description</HeaderCell>
                         <Cell dataKey="description" />
                     </Column>
