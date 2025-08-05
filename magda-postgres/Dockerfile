@@ -1,4 +1,4 @@
-FROM ghcr.io/magda-io/postgresql:13.5.0-debian-10-r87
+FROM ghcr.io/magda-io/postgresql:13.6.0-debian-10-r87
 
 # copy wal-g from pre-built image
 COPY --from=ghcr.io/magda-io/magda-wal-g:1.1.0 /usr/local/bin/wal-g /usr/local/bin/wal-g
