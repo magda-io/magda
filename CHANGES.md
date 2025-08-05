@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v5.5.0
+
+- Fix: search-api-auto-ping job "Couldn't find the binary git" error
+
 ## v5.4.0
 
 - #3612: Fix indexer failed to handle invalid contact data type
