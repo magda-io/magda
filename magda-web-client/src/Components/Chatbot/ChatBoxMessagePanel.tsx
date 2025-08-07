@@ -168,7 +168,7 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                     streamStateRef.current.partialMessage = null;
                     // push the partial message to the completed message queue
                     addMessage(messageQueueRef, {
-                        type: "ai",
+                        type: "bot",
                         content: partialMessage
                     });
                 }

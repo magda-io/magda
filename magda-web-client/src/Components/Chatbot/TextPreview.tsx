@@ -11,6 +11,77 @@ import { config } from "../../config";
 const { uiBaseUrl } = config;
 const pathNameBase = uiBaseUrl === "/" ? "/" : uiBaseUrl + "/";
 
+function sanitizeTransformImg(allProps: any): JSX.Element {
+    try {
+        const { src, alt } = allProps;
+        const url = src;
+
+        if (!url) {
+            return <div>[Img {alt} has empty `src`]</div>;
+        }
+
+        const trimmed = url.trim();
+
+        // Handle data URI
+        if (trimmed.startsWith("data:")) {
+            const dataUriRegex = /^data:(image\/(png|jpeg));base64,([a-zA-Z0-9+/=]+)$/;
+            const match = trimmed.match(dataUriRegex);
+
+            if (!match) {
+                return <div>[Img {alt} has unsupported Data URI]</div>;
+            }
+
+            const mimeType = match[1];
+            const base64Data = match[3];
+
+            // Decode and check image header
+            const binary = atob(base64Data);
+            const byteArray = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                byteArray[i] = binary.charCodeAt(i);
+            }
+
+            // PNG header: 89 50 4E 47
+            if (
+                mimeType === "image/png" &&
+                byteArray[0] === 0x89 &&
+                byteArray[1] === 0x50 &&
+                byteArray[2] === 0x4e &&
+                byteArray[3] === 0x47
+            ) {
+                return <img src={trimmed} alt={alt ? alt : ""} />;
+            }
+
+            // JPEG header: FF D8
+            if (
+                mimeType === "image/jpeg" &&
+                byteArray[0] === 0xff &&
+                byteArray[1] === 0xd8
+            ) {
+                return <img src={trimmed} alt={alt ? alt : ""} />;
+            }
+
+            return <div>[Img {alt} has invalid Data URI]</div>;
+        }
+
+        // Handle http/https URLs
+        const parsed = new URL(trimmed);
+
+        if (parsed.protocol === "https:") {
+            // only allow https urls
+            return <img src={parsed.href} alt={alt ? alt : ""} />;
+        }
+
+        return (
+            <div>
+                [Img {alt} has unsupported url schema: {parsed.protocol}]
+            </div>
+        ); // Disallow other schemes
+    } catch {
+        return <div>[Failed to render IMG.]</div>;
+    }
+}
+
 async function loadMarkdownPreview() {
     try {
         const [
@@ -142,7 +213,8 @@ async function loadMarkdownPreview() {
                     ]}
                     components={{
                         code,
-                        a: anchor
+                        a: anchor,
+                        img: sanitizeTransformImg
                     }}
                     urlTransform={(url, key, node) => {
                         if (
@@ -151,6 +223,11 @@ async function loadMarkdownPreview() {
                             url.indexOf(pathNameBase) === 0
                         ) {
                             // internal link should skip defaultUrlTransform
+                            // we will transform it as our own CommonLink component
+                            return url;
+                        } else if (key === "src" && node.tagName === "img") {
+                            // we will skip img url being processed by defaultUrlTransform here
+                            // instead, we will check & sanitize it in imgTransformFunc
                             return url;
                         } else {
                             return defaultUrlTransform(url);
