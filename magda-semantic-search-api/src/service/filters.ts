@@ -2,9 +2,9 @@ import type { SearchResultItem } from "../model.js";
 
 export function filterByMinScore(
     results: SearchResultItem[],
-    minScore: number
+    minScore?: number
 ): SearchResultItem[] {
-    if (!minScore || minScore <= 0) {
+    if (!minScore || minScore <= 0 || minScore > 1) {
         return results;
     }
     return results.filter((item) => item.score >= minScore);

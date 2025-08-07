@@ -8,12 +8,17 @@ export interface EmbeddingResult {
     }[];
 }
 
-export interface EmbeddingApiClientConfig extends BaseApiClientConfig {}
+export interface EmbeddingApiClientConfig extends BaseApiClientConfig {
+    taskSize?: number;
+}
 
 export default class EmbeddingApiClient extends BaseApiClient {
+    public taskSize: number = 10;
+
     constructor(options: EmbeddingApiClientConfig) {
         options.baseApiUrl = options.baseApiUrl || "http://localhost:3000";
         super(options);
+        this.taskSize = options.taskSize || 10;
         this.testConnection();
     }
 
@@ -37,18 +42,32 @@ export default class EmbeddingApiClient extends BaseApiClient {
             .toString();
 
         try {
-            const res = await fetchRequest<EmbeddingResult>(
-                "post",
-                url,
-                { input },
-                "application/json",
-                false,
-                this.addAuthHeader()
-            );
-
-            return Array.isArray(input)
-                ? res.data.map((d) => d.embedding)
-                : res.data[0].embedding;
+            if (Array.isArray(input)) {
+                const result: number[][] = [];
+                for (let i = 0; i < input.length; i += this.taskSize) {
+                    const chunk = input.slice(i, i + this.taskSize);
+                    const res = await fetchRequest<EmbeddingResult>(
+                        "post",
+                        url,
+                        { input: chunk },
+                        "application/json",
+                        false,
+                        this.addAuthHeader()
+                    );
+                    result.push(...res.data.map((d) => d.embedding));
+                }
+                return result;
+            } else {
+                const res = await fetchRequest<EmbeddingResult>(
+                    "post",
+                    url,
+                    { input },
+                    "application/json",
+                    false,
+                    this.addAuthHeader()
+                );
+                return res.data[0].embedding;
+            }
         } catch (e) {
             if (e instanceof ServerError) {
                 throw new Error(

@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { SemanticSearchService } from "../service/SemanticSearchService.js";
-import type { SearchParams } from "../model.js";
+import type { SearchParams, RetrieveParams } from "../model.js";
 import { validate, Joi, ValidationError } from "express-validation";
 
 export interface ApiRouterOptions {
@@ -62,6 +62,33 @@ export function createRoutes(
             next(err);
         }
     }
+
+    const retrieveSchema = Joi.object({
+        ids: Joi.array().items(Joi.string()).required(),
+        mode: Joi.string().valid("full", "partial").default("full"),
+        precedingChunksNum: Joi.number().integer().min(0).default(0),
+        subsequentChunksNum: Joi.number().integer().min(0).default(0)
+    });
+
+    async function handleRetrieve(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) {
+        try {
+            const params = req.body as RetrieveParams;
+            const results = await semanticSearchService.retrieve(params);
+            res.status(200).json(results);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    router.post(
+        "/retrieve",
+        validate({ body: retrieveSchema }, { context: true }, {}),
+        handleRetrieve
+    );
 
     router.get(
         "/search",

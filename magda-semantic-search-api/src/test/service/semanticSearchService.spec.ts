@@ -1,6 +1,10 @@
 import { expect } from "chai";
 import { SemanticSearchService } from "../../service/SemanticSearchService.js";
-import type { SearchParams, SemanticIndexerConfig } from "../../model.js";
+import type {
+    RetrieveParams,
+    SearchParams,
+    SemanticIndexerConfig
+} from "../../model.js";
 
 const returnMockSearchResult = (
     fetchSize: number = undefined,
@@ -77,7 +81,7 @@ const returnMockSearchResult = (
     };
 };
 
-describe("SemanticSearchService", () => {
+describe("SemanticSearchService.search", () => {
     let semanticSearchService: SemanticSearchService;
     let mockEmbeddingApiClient: any;
     let mockOpenSearchClient: any;
@@ -157,5 +161,175 @@ describe("SemanticSearchService", () => {
             expect(result).to.have.length(1);
             expect(result[0].score).to.equal(0.95);
         });
+    });
+});
+
+const ORIGINAL_TEXT =
+    "chunk-1 [overlap],chunk-2 [overlap],chunk-3 [overlap],chunk-4 [overlap],chunk-5";
+
+const mockRetrieveIndexItemsResponse = (ids: string[]) => ({
+    body: {
+        hits: {
+            hits: ids
+                .map((id, idx) => {
+                    if (id === "NoSuchDoc") {
+                        return null;
+                    }
+                    const recordId = id.includes("-")
+                        ? id.split("-")[0]
+                        : `record${idx + 1}`;
+                    return {
+                        _id: id,
+                        _source: {
+                            recordId,
+                            parentRecordId: `parent${idx + 1}`,
+                            itemType: "storageObject",
+                            fileFormat: idx === 0 ? "PDF" : "CSV",
+                            index_text_chunk: `placeholder ${idx + 1}`,
+                            only_one_index_text_chunk: true,
+                            index_text_chunk_length: 1,
+                            index_text_chunk_position: 0,
+                            index_text_chunk_overlap: 0
+                        }
+                    };
+                })
+                .filter((item) => item !== null)
+        }
+    }
+});
+
+const mockRetrieveChunksResponse = (recordId: string) => {
+    const chunks = [
+        "chunk-1 [overlap],",
+        "[overlap],chunk-2 [overlap],",
+        "[overlap],chunk-3 [overlap],",
+        "[overlap],chunk-4 [overlap],",
+        "[overlap],chunk-5"
+    ];
+
+    const hits = chunks.map((c, idx) => ({
+        _id: `${recordId}-chunk${idx + 1}`,
+        _source: {
+            index_text_chunk: c,
+            only_one_index_text_chunk: false,
+            index_text_chunk_length: c.length,
+            index_text_chunk_position: ORIGINAL_TEXT.indexOf(c),
+            index_text_chunk_overlap: 10
+        }
+    }));
+
+    return { body: { hits: { hits } } };
+};
+
+describe("SemanticSearchService.retrieve", () => {
+    let service: SemanticSearchService;
+    let mockOpenSearchClient: any;
+    let mockEmbeddingApiClient: any;
+    let cfg: SemanticIndexerConfig;
+
+    beforeEach(() => {
+        mockEmbeddingApiClient = { get: async () => [0.1] };
+
+        let call = 0;
+        mockOpenSearchClient = {
+            search: async (_idx: string, body: any) => {
+                call++;
+                if (call === 1) {
+                    return mockRetrieveIndexItemsResponse(
+                        body.query.ids.values
+                    );
+                }
+                const recordId = body.query.bool.should.find(
+                    (t: any) => t.term?.recordId
+                ).term.recordId;
+                return mockRetrieveChunksResponse(recordId);
+            }
+        };
+
+        cfg = { indexName: "test-index", indexVersion: 1, mode: "in_memory" };
+        service = new SemanticSearchService(
+            mockEmbeddingApiClient,
+            mockOpenSearchClient,
+            cfg
+        );
+    });
+
+    it("merges all chunks in full mode (single id)", async () => {
+        const params: RetrieveParams = { ids: ["doc1"], mode: "full" };
+        const res = await service.retrieve(params);
+        expect(res).to.have.length(1);
+        expect(res[0].text).to.equal(ORIGINAL_TEXT);
+    });
+
+    it("merges all chunks in full mode (multiple ids)", async () => {
+        const params: RetrieveParams = { ids: ["doc1", "doc2"], mode: "full" };
+        const res = await service.retrieve(params);
+        expect(res).to.have.length(2);
+        res.forEach((r) => expect(r.text).to.equal(ORIGINAL_TEXT));
+    });
+
+    it("should only return partial result when some documents don't exist", async () => {
+        const params: RetrieveParams = {
+            ids: ["doc1", "NoSuchDoc", "NoSuchDoc", "doc4"],
+            mode: "full"
+        };
+        const res = await service.retrieve(params);
+        expect(res).to.have.length(2);
+        res.forEach((r) => expect(r.text).to.equal(ORIGINAL_TEXT));
+    });
+
+    it("extracts correct window in partial mode", async () => {
+        const targetDocId = "record1-chunk3";
+        const PARTIAL_TEXT =
+            "[overlap],chunk-2 [overlap],chunk-3 [overlap],chunk-4 [overlap],";
+
+        const params: RetrieveParams = {
+            ids: [targetDocId],
+            mode: "partial",
+            precedingChunksNum: 1,
+            subsequentChunksNum: 1
+        };
+
+        const res = await service.retrieve(params);
+        expect(res).to.have.length(1);
+        expect(res[0].text).to.equal(PARTIAL_TEXT);
+    });
+
+    it("partial mode caps window at dataset boundaries", async () => {
+        const params: RetrieveParams = {
+            ids: ["record1-chunk1"],
+            mode: "partial",
+            precedingChunksNum: 2,
+            subsequentChunksNum: 2
+        };
+        const res = await service.retrieve(params);
+        expect(res).to.have.length(1);
+
+        const expected =
+            "chunk-1 [overlap],chunk-2 [overlap],chunk-3 [overlap],";
+        expect(res[0].text).to.equal(expected);
+    });
+
+    it("partial mode works for multiple ids", async () => {
+        const params: RetrieveParams = {
+            ids: ["record1-chunk2", "record2-chunk4"],
+            mode: "partial",
+            precedingChunksNum: 1,
+            subsequentChunksNum: 1
+        };
+        const res = await service.retrieve(params);
+        expect(res).to.have.length(2);
+        expect(res[0].text).to.equal(
+            "chunk-1 [overlap],chunk-2 [overlap],chunk-3 [overlap],"
+        );
+        expect(res[1].text).to.equal(
+            "[overlap],chunk-3 [overlap],chunk-4 [overlap],chunk-5"
+        );
+    });
+
+    it("returns empty array when ids list is empty", async () => {
+        const params: RetrieveParams = { ids: [], mode: "full" };
+        const res = await service.retrieve(params);
+        expect(res).to.be.an("array").that.is.empty;
     });
 });

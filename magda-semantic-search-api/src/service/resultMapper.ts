@@ -1,24 +1,27 @@
-import type { SearchResultItem } from "../model.js";
+import type { IndexItem, SearchResultItem } from "../model.js";
 
 export function mapSearchResults(response: any): SearchResultItem[] {
-    if (
-        !response ||
-        !response.body ||
-        !response.body.hits ||
-        !response.body.hits.hits
-    ) {
+    if (!response?.body?.hits?.hits) {
         return [];
     }
 
-    return response.body.hits.hits.map((hit: any) => mapHitToSearchResult(hit));
+    return response.body.hits.hits.map((hit: any) => mapToSearchResult(hit));
 }
 
-function mapHitToSearchResult(hit: any): SearchResultItem {
+function mapToSearchResult(hit: any): SearchResultItem {
+    const indexItem = mapToIndexItem(hit);
+
+    return {
+        ...indexItem,
+        score: hit._score ?? 0
+    };
+}
+
+export function mapToIndexItem(hit: any): IndexItem {
     const source = hit._source || {};
 
     return {
         id: hit._id || "",
-        score: hit._score || 0,
         itemType: source.itemType ?? undefined,
         recordId: source.recordId ?? undefined,
         parentRecordId: source.parentRecordId ?? undefined,

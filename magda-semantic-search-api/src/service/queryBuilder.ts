@@ -2,8 +2,7 @@ import type { SearchParams } from "../model.js";
 
 export function buildSearchQueryBody(
     embeddingVector: number[],
-    searchParams: SearchParams,
-    fetchSize: number
+    searchParams: SearchParams
 ) {
     const filterClauses: any[] = [];
 
@@ -21,17 +20,56 @@ export function buildSearchQueryBody(
         });
 
     return {
-        size: fetchSize,
+        size: searchParams.max_num_results,
         query: {
             knn: {
                 embedding: {
                     vector: embeddingVector,
-                    k: fetchSize,
+                    min_score: searchParams.minScore,
+                    k: searchParams.minScore
+                        ? undefined
+                        : searchParams.max_num_results,
                     filter:
                         filterClauses.length > 0
                             ? { bool: { must: filterClauses } }
                             : undefined
                 }
+            }
+        },
+        _source: {
+            excludes: ["embedding"]
+        }
+    };
+}
+
+export function buildSingleRetrieveQueryBody(
+    recordId: string,
+    subObjectId?: string
+) {
+    return {
+        query: {
+            bool: {
+                should: [
+                    { term: { recordId: recordId } },
+                    ...(subObjectId
+                        ? [{ term: { subObjectId: subObjectId } }]
+                        : [])
+                ]
+            }
+        },
+        sort: [{ index_text_chunk_position: "asc" }],
+        _source: {
+            excludes: ["embedding"]
+        }
+    };
+}
+
+export function getIndexItemsByIdsQueryBody(documentIds: string[]) {
+    return {
+        size: documentIds.length,
+        query: {
+            ids: {
+                values: documentIds
             }
         }
     };

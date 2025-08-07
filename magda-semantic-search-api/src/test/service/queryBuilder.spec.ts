@@ -9,13 +9,13 @@ describe("QueryBuilder", () => {
     describe("buildSearchQueryBody", () => {
         it("should correctly build the basic search query body", () => {
             const searchParams: SearchParams = {
-                query: "test query"
+                query: "test query",
+                max_num_results: mockFetchSize
             };
 
             const result = buildSearchQueryBody(
                 mockEmbeddingVector,
-                searchParams,
-                mockFetchSize
+                searchParams
             );
 
             expect(result).to.deep.equal({
@@ -25,9 +25,13 @@ describe("QueryBuilder", () => {
                         embedding: {
                             vector: mockEmbeddingVector,
                             k: mockFetchSize,
+                            min_score: undefined,
                             filter: undefined
                         }
                     }
+                },
+                _source: {
+                    excludes: ["embedding"]
                 }
             });
         });
@@ -35,24 +39,83 @@ describe("QueryBuilder", () => {
         it("should include multiple filters", () => {
             const searchParams: SearchParams = {
                 query: "test query",
-                itemType: "document",
+                itemType: "storageObject",
                 fileFormat: "pdf",
-                recordId: "record123"
+                recordId: "record123",
+                max_num_results: mockFetchSize
             };
 
             const result = buildSearchQueryBody(
                 mockEmbeddingVector,
-                searchParams,
-                mockFetchSize
+                searchParams
             );
 
             expect(result.query.knn.embedding.filter).to.deep.equal({
                 bool: {
                     must: [
-                        { term: { itemType: "document" } },
+                        { term: { itemType: "storageObject" } },
                         { term: { fileFormat: "pdf" } },
                         { term: { recordId: "record123" } }
                     ]
+                }
+            });
+        });
+
+        it("should use k if instead of min_score if minScore is not provided", () => {
+            const searchParams: SearchParams = {
+                query: "test query",
+                max_num_results: mockFetchSize
+            };
+
+            const result = buildSearchQueryBody(
+                mockEmbeddingVector,
+                searchParams
+            );
+
+            expect(result).to.deep.equal({
+                size: 10,
+                query: {
+                    knn: {
+                        embedding: {
+                            vector: mockEmbeddingVector,
+                            min_score: undefined,
+                            k: 10,
+                            filter: undefined
+                        }
+                    }
+                },
+                _source: {
+                    excludes: ["embedding"]
+                }
+            });
+        });
+
+        it("should use min_score if instead of k if provided", () => {
+            const searchParams: SearchParams = {
+                query: "test query",
+                minScore: 0.5,
+                max_num_results: 10
+            };
+
+            const result = buildSearchQueryBody(
+                mockEmbeddingVector,
+                searchParams
+            );
+
+            expect(result).to.deep.equal({
+                size: 10,
+                query: {
+                    knn: {
+                        embedding: {
+                            vector: mockEmbeddingVector,
+                            min_score: 0.5,
+                            k: undefined,
+                            filter: undefined
+                        }
+                    }
+                },
+                _source: {
+                    excludes: ["embedding"]
                 }
             });
         });
