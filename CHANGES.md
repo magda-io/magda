@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v5.5.0
+
+- Fix: search-api-auto-ping job "Couldn't find the binary git" error
+- Upgraded local in cluster use PostgreSQL build from 13.3 to [13.6](https://www.postgresql.org/docs/release/13.6/)
+
 ## v5.4.0
 
 - #3612: Fix indexer failed to handle invalid contact data type
