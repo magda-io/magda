@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { Panel, List, Loader } from "rsuite";
 import { Subject, takeUntil } from "rxjs";
+import MarkdownChunkStream from "./MarkdownChunkStream";
 import TextPreview from "./TextPreview";
 import {
     EVENT_TYPE_AGENT_STEP_FINISH,
@@ -46,6 +47,9 @@ interface StreamStateType {
     streamId: string | null;
     streamType: STREAM_TYPE;
     partialMessage: string | null;
+    // markdownChunkStream will make sure only incomplete code block will not be emitted until full code block is received.
+    // only applied to partial message
+    markdownChunkStream: MarkdownChunkStream;
 }
 
 function getDefaultMessage(appName: string): MessageItem {
@@ -57,11 +61,21 @@ function getDefaultMessage(appName: string): MessageItem {
     };
 }
 
-const getInitialStreamState = (): StreamStateType => ({
-    streamId: null,
-    streamType: STREAM_TYPE_UNDEFINED,
-    partialMessage: null
-});
+const CODE_BLOCK_EMIT_TIMEOUT = 180000;
+
+const getInitialStreamState = (): StreamStateType => {
+    const streamState: Partial<StreamStateType> = {
+        streamId: null,
+        streamType: STREAM_TYPE_UNDEFINED,
+        partialMessage: null
+    };
+    streamState.markdownChunkStream = new MarkdownChunkStream((msg) => {
+        streamState.partialMessage =
+            (streamState.partialMessage ? streamState.partialMessage : "") +
+            msg;
+    }, CODE_BLOCK_EMIT_TIMEOUT);
+    return streamState as StreamStateType;
+};
 
 const addMessage = (
     messageQueueRef: React.MutableRefObject<MessageItem[]>,
@@ -147,20 +161,23 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
     // - reset the stream id and stream type
     const resetMessageProcessingStatus = useCallback(
         (streamId?: string, streamType?: STREAM_TYPE) => {
-            const { partialMessage } = streamStateRef.current;
-            if (typeof partialMessage === "string" && partialMessage) {
-                streamStateRef.current.partialMessage = null;
-                // push the partial message to the completed message queue
-                addMessage(messageQueueRef, {
-                    type: "bot",
-                    content: partialMessage
-                });
-            }
-            streamStateRef.current.streamId = streamId ? streamId : null;
-            streamStateRef.current.streamType = streamType
-                ? streamType
-                : STREAM_TYPE_UNDEFINED;
-            setDataReloadToken(Math.random().toString());
+            const { markdownChunkStream } = streamStateRef.current;
+            markdownChunkStream.flush(() => {
+                const { partialMessage } = streamStateRef.current;
+                if (typeof partialMessage === "string" && partialMessage) {
+                    streamStateRef.current.partialMessage = null;
+                    // push the partial message to the completed message queue
+                    addMessage(messageQueueRef, {
+                        type: "ai",
+                        content: partialMessage
+                    });
+                }
+                streamStateRef.current.streamId = streamId ? streamId : null;
+                streamStateRef.current.streamType = streamType
+                    ? streamType
+                    : STREAM_TYPE_UNDEFINED;
+                setDataReloadToken(Math.random().toString());
+            });
         },
         [streamStateRef, setDataReloadToken]
     );
@@ -194,11 +211,7 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                 return;
             }
 
-            const {
-                streamId,
-                streamType,
-                partialMessage
-            } = streamStateRef.current;
+            const { streamId, streamType } = streamStateRef.current;
 
             if (eventMessage.event === EVENT_TYPE_ERROR) {
                 resetMessageProcessingStatus();
@@ -248,10 +261,11 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                         resetMessageProcessingStatus();
                         return;
                     }
-                    // add new arriving partial message to the `partialMessage` state
-                    streamStateRef.current.partialMessage =
-                        (partialMessage ? partialMessage : "") +
-                        (eventMessage?.data?.msg ? eventMessage.data.msg : "");
+                    // add new arriving partial message to the markdownChunkStream
+                    // markdownChunkStream will make sure emitting content (and add to streamStateRef.current.partialMessage) at right timing without breaking code block
+                    streamStateRef.current.markdownChunkStream.write(
+                        eventMessage?.data?.msg ? eventMessage.data.msg : ""
+                    );
                     break;
                 case STREAM_TYPE_AGENT_STEP:
                     if (eventMessage.event === EVENT_TYPE_AGENT_STEP_FINISH) {
@@ -383,7 +397,7 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                     </List.Item>
                 ) : null}
             </List>
-            {sendMessageLoading || true ? (
+            {sendMessageLoading ? (
                 <Loader
                     style={{
                         position: "absolute",
