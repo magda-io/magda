@@ -1,7 +1,7 @@
+import { EVENT_TYPE, BaseEventTypes } from "./EventTypes";
 import { ChatGenerationChunk } from "@langchain/core/outputs";
 import { Runnable, RunnableLambda } from "@langchain/core/runnables";
 import { v4 as uuidv4 } from "uuid";
-
 import type AsyncQueue from "@ai-zen/async-queue";
 
 export interface EventSourceMessage {
@@ -18,38 +18,6 @@ export interface ChatEventMessage<T = Record<string, any>> {
     retry?: number;
 }
 
-export const EVENT_TYPE_CLOSE = "close";
-export const EVENT_TYPE_ERROR = "error";
-export const EVENT_TYPE_PARTIAL_MSG = "partial_msg";
-export const EVENT_TYPE_PARTIAL_MSG_FINISH = "partial_msg_finish";
-export const EVENT_TYPE_COMPLETE_MSG = "complete_msg";
-export const EVENT_TYPE_RUN_LOG = "run_log";
-export const EVENT_TYPE_RUN_LOG_FINISH = "run_log_finish";
-export const EVENT_TYPE_AGENT_STEP = "agent_step";
-export const EVENT_TYPE_AGENT_STEP_FINISH = "agent_step_finish";
-export const EVENT_TYPE_PING = "ping";
-// a message has been sent to the agent for process and should be rendered at frontend messaging area
-export const EVENT_TYPE_CLIENT_MESSAGE_SENT = "client_message_sent";
-export const EVENT_TYPE_CLIENT_RESET_MESSAGE_QUEUE =
-    "reset_client_message_queue";
-export const EVENT_TYPE_CLIENT_RESET_MESSAGE_PROCESSING_STATE =
-    "reset_client_message_processing_state";
-
-export type EVENT_TYPE =
-    | typeof EVENT_TYPE_CLOSE
-    | typeof EVENT_TYPE_ERROR
-    | typeof EVENT_TYPE_PARTIAL_MSG
-    | typeof EVENT_TYPE_COMPLETE_MSG
-    | typeof EVENT_TYPE_PARTIAL_MSG_FINISH
-    | typeof EVENT_TYPE_RUN_LOG
-    | typeof EVENT_TYPE_RUN_LOG_FINISH
-    | typeof EVENT_TYPE_AGENT_STEP
-    | typeof EVENT_TYPE_AGENT_STEP_FINISH
-    | typeof EVENT_TYPE_PING
-    | typeof EVENT_TYPE_CLIENT_MESSAGE_SENT
-    | typeof EVENT_TYPE_CLIENT_RESET_MESSAGE_QUEUE
-    | typeof EVENT_TYPE_CLIENT_RESET_MESSAGE_PROCESSING_STATE;
-
 export const STREAM_TYPE_PARTIAL_MSG = "partial_msg";
 export const STREAM_TYPE_RUN_LOG = "run_log";
 export const STREAM_TYPE_AGENT_STEP = "agent_step";
@@ -65,19 +33,19 @@ export type STREAM_TYPE =
 
 export const getStreamType = (message: ChatEventMessage): STREAM_TYPE => {
     switch (message.event) {
-        case EVENT_TYPE_PARTIAL_MSG:
+        case BaseEventTypes.PARTIAL_MSG:
             return STREAM_TYPE_PARTIAL_MSG;
-        case EVENT_TYPE_PARTIAL_MSG_FINISH:
+        case BaseEventTypes.PARTIAL_MSG_FINISH:
             return STREAM_TYPE_PARTIAL_MSG;
-        case EVENT_TYPE_COMPLETE_MSG:
+        case BaseEventTypes.COMPLETE_MSG:
             return STREAM_TYPE_COMPLETE_MSG;
-        case EVENT_TYPE_RUN_LOG:
+        case BaseEventTypes.RUN_LOG:
             return STREAM_TYPE_RUN_LOG;
-        case EVENT_TYPE_RUN_LOG_FINISH:
+        case BaseEventTypes.RUN_LOG_FINISH:
             return STREAM_TYPE_RUN_LOG;
-        case EVENT_TYPE_AGENT_STEP:
+        case BaseEventTypes.AGENT_STEP:
             return STREAM_TYPE_AGENT_STEP;
-        case EVENT_TYPE_AGENT_STEP_FINISH:
+        case BaseEventTypes.AGENT_STEP_FINISH:
             return STREAM_TYPE_AGENT_STEP;
         default:
             return STREAM_TYPE_UNDEFINED;
@@ -103,16 +71,16 @@ export const chatGenerationChunk2ChatEventMessage = (
     chunk: ChatGenerationChunk,
     msgId: string
 ) =>
-    createChatEventMessage(EVENT_TYPE_PARTIAL_MSG, {
+    createChatEventMessage(BaseEventTypes.PARTIAL_MSG, {
         id: msgId,
         msg: chunk.text
     });
 
 export const createChatEventMessageCompleteMsg = (msg: string) =>
-    createChatEventMessage(EVENT_TYPE_COMPLETE_MSG, { msg });
+    createChatEventMessage(BaseEventTypes.COMPLETE_MSG, { msg });
 
 export const createChatEventMessageErrorMsg = (error: Error | string) =>
-    createChatEventMessage(EVENT_TYPE_ERROR, { error });
+    createChatEventMessage(BaseEventTypes.ERROR, { error });
 
 export interface CommonInputType {
     question: string;
@@ -129,7 +97,7 @@ export function strChain2PartialMessageChain(
         const stream = await chain.stream(input);
         for await (const chunk of stream) {
             console.log("strChain2PartialMessageChain chunk:", chunk);
-            yield createChatEventMessage(EVENT_TYPE_PARTIAL_MSG, {
+            yield createChatEventMessage(BaseEventTypes.PARTIAL_MSG, {
                 id: msgId,
                 msg: chunk
             });
@@ -137,7 +105,7 @@ export function strChain2PartialMessageChain(
                 buffer += chunk;
             }
         }
-        yield createChatEventMessage(EVENT_TYPE_PARTIAL_MSG_FINISH, {
+        yield createChatEventMessage(BaseEventTypes.PARTIAL_MSG_FINISH, {
             id: msgId
         });
         if (onComplete) {
