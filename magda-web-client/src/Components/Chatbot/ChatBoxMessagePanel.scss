@@ -1,5 +1,11 @@
 .magda-chat-box-message-panel {
     flex: 1;
+    position: relative;
+    .message-panel-loader {
+        position: absolute;
+        right: 10px;
+        bottom: 8px;
+    }
     .rs-panel-body {
         height: 100%;
         padding-top: 0px;
@@ -35,7 +41,16 @@
             border: none;
             background-color: #e7e7e7;
         }
-
+        .rs-list-item.bot-reasoning-message {
+            float: left;
+            background-color: rgba(255, 249, 196, 0.8);
+            border: 1px dashed #d3d3d3;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #555;
+            font-style: italic;
+        }
         .rs-list-item.user-message {
             float: right;
             border-radius: 10px;

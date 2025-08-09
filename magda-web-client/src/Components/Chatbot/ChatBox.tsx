@@ -201,7 +201,6 @@ const ChatBox: FunctionComponent<PropsType> = (props) => {
                 appName={appName}
                 sendMessageLoading={sendMessage.loading}
                 messageStream={messageStreamRef.current}
-                size={size}
             />
             <Input
                 className="message-input"

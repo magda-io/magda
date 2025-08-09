@@ -5,7 +5,9 @@ import React, {
     useRef,
     useCallback
 } from "react";
-import { Panel, List, Loader } from "rsuite";
+import Panel from "rsuite/Panel";
+import List from "rsuite/List";
+import Loader from "rsuite/Loader";
 import { Subject, takeUntil } from "rxjs";
 import MarkdownChunkStream from "./MarkdownChunkStream";
 import TextPreview from "./TextPreview";
@@ -35,6 +37,7 @@ interface MessageItem {
     // depends on implementation, the value of type could be "user" | "bot" | "human" | "ai" or other value
     type: string;
     content: string;
+    reasoning?: boolean;
     // For some implementation, messages that are marked as optional will not be passed to LLM as part of history
     optional?: boolean;
 }
@@ -47,31 +50,46 @@ interface StreamStateType {
     streamId: string | null;
     streamType: STREAM_TYPE;
     partialMessage: string | null;
+    isReasoningPartialMessage?: boolean;
     // markdownChunkStream will make sure only incomplete code block will not be emitted until full code block is received.
     // only applied to partial message
     markdownChunkStream: MarkdownChunkStream;
 }
 
-function getDefaultMessage(appName: string): MessageItem {
+function getDefaultMessage(appName?: string): MessageItem {
     return {
         type: "bot",
         content: `Hi, I'm ${
-            appName ? appName : `Magda`
+            appName ? appName : "Magda"
         }. Feel free to ask me anything about data.`
     };
 }
 
 const CODE_BLOCK_EMIT_TIMEOUT = 180000;
-
+const reasoningMessageContent = "\uD83E\uDD14...";
+const getMessageStartingContent = (streamState: StreamStateType) => {
+    const { isReasoningPartialMessage, partialMessage } = streamState;
+    if (
+        isReasoningPartialMessage &&
+        partialMessage?.trim()?.indexOf(reasoningMessageContent) !== 0
+    ) {
+        return reasoningMessageContent;
+    } else {
+        return "";
+    }
+};
 const getInitialStreamState = (): StreamStateType => {
     const streamState: Partial<StreamStateType> = {
         streamId: null,
         streamType: STREAM_TYPE_UNDEFINED,
-        partialMessage: null
+        partialMessage: null,
+        isReasoningPartialMessage: false
     };
     streamState.markdownChunkStream = new MarkdownChunkStream((msg) => {
         streamState.partialMessage =
-            (streamState.partialMessage ? streamState.partialMessage : "") +
+            (streamState.partialMessage
+                ? streamState.partialMessage
+                : getMessageStartingContent(streamState as StreamStateType)) +
             msg;
     }, CODE_BLOCK_EMIT_TIMEOUT);
     return streamState as StreamStateType;
@@ -85,16 +103,21 @@ const addMessage = (
 };
 
 interface PropsType {
-    appName: string;
+    appName?: string;
     sendMessageLoading: boolean;
     messageStream: Subject<ChatEventMessage>;
-    // "sm" | "md" | "lg" | "full
-    size: string;
     // whether or not display an initial message in the chat area
     // default to `true` when not supplied
     useInitialMessage?: boolean;
     // optionally supply the initial message. Otherwise, use the default initial message (when useInitialMessage = true)
     initialMessage?: MessageItem;
+}
+
+function getMessageBoxClassName(item: MessageItem) {
+    if (item.type === "bot" && item?.reasoning === true) {
+        return "bot-reasoning-message";
+    }
+    return `${item.type}-message`;
 }
 
 const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
@@ -103,7 +126,6 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
         typeof props?.useInitialMessage === "boolean"
             ? props.useInitialMessage
             : true;
-    const size = props?.size ? props.size : "sm";
     const sendMessageLoading =
         typeof props?.sendMessageLoading === "boolean"
             ? props.sendMessageLoading
@@ -160,22 +182,43 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
     //   or we believe should be no more partial message events to come for this stream
     // - reset the stream id and stream type
     const resetMessageProcessingStatus = useCallback(
-        (streamId?: string, streamType?: STREAM_TYPE) => {
+        (
+            streamId: string | null = null,
+            streamType: STREAM_TYPE | null = null,
+            isReasoning: boolean | null = null
+        ) => {
             const { markdownChunkStream } = streamStateRef.current;
             markdownChunkStream.flush(() => {
-                const { partialMessage } = streamStateRef.current;
+                const {
+                    partialMessage,
+                    isReasoningPartialMessage
+                } = streamStateRef.current;
                 if (typeof partialMessage === "string" && partialMessage) {
                     streamStateRef.current.partialMessage = null;
                     // push the partial message to the completed message queue
                     addMessage(messageQueueRef, {
                         type: "bot",
-                        content: partialMessage
+                        content: partialMessage,
+                        reasoning: isReasoningPartialMessage
                     });
                 }
-                streamStateRef.current.streamId = streamId ? streamId : null;
-                streamStateRef.current.streamType = streamType
-                    ? streamType
-                    : STREAM_TYPE_UNDEFINED;
+                if (streamId !== null) {
+                    streamStateRef.current.streamId = streamId
+                        ? streamId
+                        : null;
+                }
+
+                if (streamType !== null) {
+                    streamStateRef.current.streamType = streamType
+                        ? streamType
+                        : STREAM_TYPE_UNDEFINED;
+                }
+
+                if (isReasoning !== null) {
+                    streamStateRef.current.isReasoningPartialMessage =
+                        isReasoning === true ? true : false;
+                }
+
                 setDataReloadToken(Math.random().toString());
             });
         },
@@ -211,7 +254,11 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                 return;
             }
 
-            const { streamId, streamType } = streamStateRef.current;
+            const {
+                streamId,
+                streamType,
+                isReasoningPartialMessage
+            } = streamStateRef.current;
 
             if (eventMessage.event === EVENT_TYPE_ERROR) {
                 resetMessageProcessingStatus();
@@ -243,15 +290,26 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                 return;
             }
 
-            const eventStreamId = eventMessage.data?.id
+            const eventStreamType = getStreamType(eventMessage);
+            const eventStreamId = eventMessage?.data?.id
                 ? eventMessage.data.id
                 : null;
-            const eventStreamType = getStreamType(eventMessage);
-            if (eventStreamType !== streamType || eventStreamId !== streamId) {
-                // if the stream type changes or event stream id changes, we should clean up the partial message display
+            const eventIsReasoning =
+                eventMessage?.data?.reasoning === true ? true : false;
+
+            if (
+                eventStreamType !== streamType ||
+                eventStreamId !== streamId ||
+                eventIsReasoning !== isReasoningPartialMessage
+            ) {
+                // if the stream type changes or event stream id changes or different type of partial message (e.g. reasoning),
+                // we should clean up the partial message display
                 resetMessageProcessingStatus(
-                    eventStreamId !== streamId ? eventStreamId : undefined,
-                    eventStreamType !== streamType ? eventStreamType : undefined
+                    eventStreamId !== streamId ? eventStreamId : null,
+                    eventStreamType !== streamType ? eventStreamType : null,
+                    eventIsReasoning !== isReasoningPartialMessage
+                        ? eventIsReasoning
+                        : null
                 );
             }
 
@@ -263,6 +321,11 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                     }
                     // add new arriving partial message to the markdownChunkStream
                     // markdownChunkStream will make sure emitting content (and add to streamStateRef.current.partialMessage) at right timing without breaking code block
+                    streamStateRef.current.streamId = eventMessage?.data?.id
+                        ? eventMessage.data.id
+                        : null;
+                    streamStateRef.current.isReasoningPartialMessage =
+                        eventMessage?.data?.reasoning === true ? true : false;
                     streamStateRef.current.markdownChunkStream.write(
                         eventMessage?.data?.msg ? eventMessage.data.msg : ""
                     );
@@ -363,7 +426,9 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                             key={index}
                             ref={lastMessageItemRef}
                             index={index}
-                            className={`${item.type}-message markdown-body`}
+                            className={`${getMessageBoxClassName(
+                                item
+                            )} markdown-body`}
                         >
                             <TextPreview source={item.content} />
                         </List.Item>
@@ -371,7 +436,9 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                         <List.Item
                             key={index}
                             index={index}
-                            className={`${item.type}-message markdown-body`}
+                            className={`${getMessageBoxClassName(
+                                item
+                            )} markdown-body`}
                         >
                             <TextPreview source={item.content} />
                         </List.Item>
@@ -386,7 +453,11 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                                 ? messageQueueRef.current.length
                                 : 1
                         }
-                        className={`bot-message markdown-body`}
+                        className={`${
+                            streamStateRef.current.isReasoningPartialMessage
+                                ? "bot-reasoning-message"
+                                : "bot-message"
+                        } markdown-body`}
                     >
                         <TextPreview
                             source={
@@ -398,13 +469,7 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                 ) : null}
             </List>
             {sendMessageLoading ? (
-                <Loader
-                    style={{
-                        position: "absolute",
-                        right: size === "sm" ? "40px" : "70px",
-                        bottom: "180px"
-                    }}
-                />
+                <Loader className="message-panel-loader" />
             ) : null}
         </Panel>
     );

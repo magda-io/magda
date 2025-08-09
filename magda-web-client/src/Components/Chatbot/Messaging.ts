@@ -86,15 +86,24 @@ export const getStreamType = (message: ChatEventMessage): STREAM_TYPE => {
 
 export class NoErrorStop extends Error {}
 
-export function createChatEventMessage(
+export interface EventPartialMessageData {
+    // the optional message id
+    // for stream type message e.g. PartialMessage this id should remain unchanged for streaming the same message
+    id?: string;
+    // indicate it's an AI reasoning message
+    reasoning?: boolean;
+    msg: string;
+}
+
+export function createChatEventMessage<T = Record<string, any>>(
     eventType: EVENT_TYPE,
-    data: { [key: string]: any } = {},
+    data: T = {} as T,
     retry?: number
-): ChatEventMessage {
+): ChatEventMessage<T> {
     return {
         id: uuidv4(),
         event: eventType,
-        data,
+        data: data as T,
         retry
     };
 }

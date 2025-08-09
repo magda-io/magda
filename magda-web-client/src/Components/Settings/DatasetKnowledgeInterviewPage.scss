@@ -6,9 +6,10 @@
             padding-bottom: 10px;
         }
         .view-memory-blocks-button {
+            position: relative;
             padding-left: 25px;
-            .svg {
-                top: 10px;
+            svg {
+                top: 11px;
                 left: 8px;
                 position: absolute;
             }
