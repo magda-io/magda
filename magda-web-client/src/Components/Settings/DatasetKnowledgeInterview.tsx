@@ -106,9 +106,8 @@ const DatasetKnowledgeInterview: FunctionComponent<PropsType> = () => {
                 {
                     messages: [
                         {
-                            role: "system",
-                            content: `A user just connects for the same dataset interview for answering additional questions you might have.
-                                Please review existing conversation history and memory blocks (if any) to see if any additional question you need to ask.`
+                            role: "user",
+                            content: sendOutText
                         }
                     ],
                     streamTokens: true
