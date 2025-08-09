@@ -1,0 +1,14 @@
+.magda-dataset-knowledge-interview-container {
+    display: flex;
+    flex-direction: column;
+    .magda-chat-box-message-panel {
+        min-height: 420px;
+        margin-bottom: 10px;
+    }
+    .message-input {
+        margin-bottom: 10px;
+    }
+    .send-button-tool-bar {
+        float: right;
+    }
+}

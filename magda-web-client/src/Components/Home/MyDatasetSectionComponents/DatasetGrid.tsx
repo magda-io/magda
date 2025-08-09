@@ -28,6 +28,7 @@ import {
     MdOutlineArrowDropDown,
     MdPreview
 } from "react-icons/md";
+import { RiRobot3Fill } from "react-icons/ri";
 import ConfirmDialog from "../../Settings/ConfirmDialog";
 import { deleteDataset } from "../../Dataset/Add/DatasetAddCommon";
 import openWindow from "../../../helpers/openWindow";
@@ -188,6 +189,46 @@ function createDatsetRow(
                                             }}
                                         >
                                             Edit Dataset
+                                        </Dropdown.Item>
+                                        <Dropdown.Item
+                                            key="dataset-knowledge-interview"
+                                            aria-label="Dataset Knowledge Interview"
+                                            icon={<RiRobot3Fill />}
+                                            onClick={() => {
+                                                onClose();
+                                                const url = `/settings/datasets/${encodeURIComponent(
+                                                    record.id
+                                                )}/datasetKnowledgeInterview`;
+                                                if (openInPopUp) {
+                                                    openWindow(
+                                                        `${url}?popup=true`,
+                                                        {
+                                                            name:
+                                                                "dataset-knowledge-interview-" +
+                                                                record.id
+                                                        }
+                                                    );
+                                                } else {
+                                                    history.push(url);
+                                                }
+                                            }}
+                                        >
+                                            Knowledge Interview
+                                        </Dropdown.Item>
+                                        <Dropdown.Item
+                                            key="view-dataset"
+                                            aria-label="View Dataset"
+                                            icon={<MdPreview />}
+                                            onClick={() => {
+                                                onClose();
+                                                history.push(
+                                                    `/dataset/${encodeURIComponent(
+                                                        record.id
+                                                    )}/details`
+                                                );
+                                            }}
+                                        >
+                                            View Dataset
                                         </Dropdown.Item>
                                         <Dropdown.Item
                                             key="add-to-access-group"
