@@ -130,7 +130,7 @@ export default async function semanticIndexer(
                 async: true,
                 dereference: false,
                 includeEvents: false,
-                includeRecords: false,
+                includeRecords: true,
                 onRecordFound: onRecordFound,
                 maxRetries: 3
             };

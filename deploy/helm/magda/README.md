@@ -16,7 +16,6 @@ A complete solution for managing, publishing and discovering government data, pr
 |------------|------|---------|
 | file://../magda-core | magda-core | 5.3.1 |
 | oci://ghcr.io/magda-io/charts | ckan-connector-functions(magda-ckan-connector) | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | magda-csv-semantic-indexer | 1.0.0-alpha.0 |
 | oci://ghcr.io/magda-io/charts | magda-function-esri-url-processor | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | magda-function-history-report | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | minion-broken-link(magda-minion-broken-link) | 3.0.0 |
@@ -24,7 +23,6 @@ A complete solution for managing, publishing and discovering government data, pr
 | oci://ghcr.io/magda-io/charts | minion-format(magda-minion-format) | 2.0.1 |
 | oci://ghcr.io/magda-io/charts | minion-linked-data-rating(magda-minion-linked-data-rating) | 2.0.0 |
 | oci://ghcr.io/magda-io/charts | minion-visualization(magda-minion-visualization) | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | magda-pdf-semantic-indexer | 1.0.0-alpha.1 |
 | oci://ghcr.io/magda-io/charts | openfaas | 5.5.5-magda.3 |
 
 ## Values
