@@ -43,6 +43,7 @@ import { indexDatasetById } from "api-clients/IndexerApis";
 import AccessGroupAddDatasetPopUp, {
     RefType as AccessGroupAddDatasetPopUpRefType
 } from "../../Settings/AccessGroupAddDatasetPopUp";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 const PAGE_SIZE = 10;
 
@@ -106,11 +107,26 @@ function createDatsetRow(
                                             icon={<MdPreview />}
                                             onClick={() => {
                                                 onClose();
-                                                history.push(
-                                                    `/dataset/${encodeURIComponent(
-                                                        record.id
-                                                    )}/details`
-                                                );
+                                                if (openInPopUp) {
+                                                    openWindow(
+                                                        `/dataset/${encodeURIComponent(
+                                                            record.id
+                                                        )}/details?popup=true`,
+                                                        {
+                                                            name:
+                                                                "view-dataset-" +
+                                                                record.id
+                                                        }
+                                                    );
+                                                } else {
+                                                    history.push(
+                                                        getUrlWithPopUpQueryString(
+                                                            `/dataset/${encodeURIComponent(
+                                                                record.id
+                                                            )}/details`
+                                                        )
+                                                    );
+                                                }
                                             }}
                                         >
                                             View Dataset

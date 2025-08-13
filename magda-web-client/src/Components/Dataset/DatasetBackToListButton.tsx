@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from "react";
 import { ParsedDataset } from "helpers/record";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import redirect from "helpers/redirect";
+import { inPopUpMode } from "helpers/popupUtils";
 
 type PropsType = {
     dataset: ParsedDataset;
@@ -11,6 +12,8 @@ type PropsType = {
 const DatasetBackToListButton: FunctionComponent<PropsType> = (props) => {
     const { dataset, hasEditPermissions } = props;
     const history = useHistory();
+    const location = useLocation();
+    const isInPopUpMode = inPopUpMode(location);
 
     if (!hasEditPermissions) {
         return null;
@@ -27,7 +30,7 @@ const DatasetBackToListButton: FunctionComponent<PropsType> = (props) => {
     const publishingStatus =
         dataset.publishingState === "published" ? "published" : "draft";
 
-    return (
+    return isInPopUpMode ? null : (
         <button
             className="au-btn au-btn--secondary ask-question-button"
             disabled={!isDatasetEditable}

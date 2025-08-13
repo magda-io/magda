@@ -4,7 +4,7 @@ import { Location } from "history";
 import giantTickIcon from "assets/giant-tick.svg";
 import draftIcon from "assets/format-active.svg";
 import { BsServer } from "react-icons/bs";
-import { useInPopUp } from "helpers/popupUtils";
+import { inPopUpMode } from "helpers/popupUtils";
 import sendEventToOpener, {
     EVENT_TYPE_DATASET_EDITOR_REACH_END_PAGE
 } from "libs/sendEventToOpener";
@@ -27,7 +27,7 @@ function checkSaveAndExit(location: Location) {
 export default function DatasetAddEndPage(props: Props) {
     const { datasetId, publishStatus } = props;
     const location = useLocation();
-    const isInPopUp = useInPopUp();
+    const isInPopUp = inPopUpMode(location);
     const isSaveAndExit = checkSaveAndExit(location);
     const datasetPage = "/dataset/" + datasetId + "/details";
     const isEdit = typeof props?.isEdit === "undefined" ? false : props.isEdit;

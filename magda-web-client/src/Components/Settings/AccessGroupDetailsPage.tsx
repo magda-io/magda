@@ -24,6 +24,7 @@ import DateDisplayWithTooltip from "Components/DateDisplayWithTooltip";
 import AccessGroupDatasetsPanel from "./AccessGroupDatasetsPanel";
 import AccessGroupUsersPanel from "./AccessGroupUsersPanel";
 import "./AccessGroupDetailsPage.scss";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 type PropsType = {};
 
@@ -61,7 +62,7 @@ const AccessGroupDetailsPage: FunctionComponent<PropsType> = (props) => {
     const [active, setActive] = React.useState(location.pathname);
     const onSelectTab = useCallback((key) => {
         setActive(key);
-        history.push(key);
+        history.push(getUrlWithPopUpQueryString(key));
     }, []);
 
     const { loading: isLoading } = useAsync(
@@ -234,7 +235,9 @@ const AccessGroupDetailsPage: FunctionComponent<PropsType> = (props) => {
                                                         }
                                                     >
                                                         <Link
-                                                            to={`/settings/roles/${accessGroup?.roleId}/permissions`}
+                                                            to={getUrlWithPopUpQueryString(
+                                                                `/settings/roles/${accessGroup?.roleId}/permissions`
+                                                            )}
                                                         >
                                                             {
                                                                 accessGroup?.roleId

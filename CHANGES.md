@@ -7,6 +7,7 @@
 - Upgrade react-icon to 5.5.0
 - Enhancement: apply slim style to footers in all "settings" pages
 - #3622 Refactor the chatbot message rendering UI to make it reusable
+- #3624 Improve popup support to all "settings" pages
 
 ## v5.4.0
 
