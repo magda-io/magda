@@ -1,7 +1,7 @@
 {
   "name": "@magda/acs-cmd",
   "description": "MAGDA Account Management Utilities",
-  "version": "5.4.0",
+  "version": "5.5.0-alpha.0",
   "bin": {
     "acs-cmd": "./bin/acs-cmd.js"
   },
@@ -22,8 +22,8 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^5.4.0",
-    "@magda/typescript-common": "^5.4.0",
+    "@magda/scripts": "^5.5.0-alpha.0",
+    "@magda/typescript-common": "^5.5.0-alpha.0",
     "esbuild": "^0.19.10",
     "fs-extra": "^11.2.0"
   },
