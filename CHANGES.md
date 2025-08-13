@@ -4,6 +4,9 @@
 
 - Fix: search-api-auto-ping job "Couldn't find the binary git" error
 - Upgraded local in cluster use PostgreSQL build from 13.3 to [13.6](https://www.postgresql.org/docs/release/13.6/)
+- Upgrade react-icon to 5.5.0
+- Enhancement: apply slim style to footers in all "settings" pages
+- #3622 Refactor the chatbot message rendering UI to make it reusable
 
 ## v5.4.0
 
