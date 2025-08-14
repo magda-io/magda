@@ -76,20 +76,23 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     throw fetchRecordResult;
                 }
                 const { aspects, ...recordData } = fetchRecordResult;
-                if (aspects?.length) {
-                    aspects.forEach(
-                        (item: any, idx: string) =>
-                            ((recordData as any)[idx] = item)
+                if (typeof aspects === "object") {
+                    const aspectsKeys = Object.keys(aspects);
+                    aspectsKeys.forEach(
+                        (idx: string) =>
+                            ((recordData as any)[idx] = aspects[idx])
                     );
                 }
                 res.locals.originalAccessGroup = fetchRecordResult;
                 return {
                     operationUri,
                     input: {
-                        [operationUri.startsWith("object/record/")
-                            ? "record"
-                            : "accessGroup"]: {
-                            recordData
+                        object: {
+                            [operationUri.startsWith("object/record/")
+                                ? "record"
+                                : "accessGroup"]: {
+                                ...recordData
+                            }
                         }
                     }
                 };
@@ -933,10 +936,11 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     throw fetchRecordResult;
                 }
                 const { aspects, ...recordData } = fetchRecordResult;
-                if (aspects?.length) {
-                    aspects.forEach(
-                        (item: any, idx: string) =>
-                            ((recordData as any)[idx] = item)
+                if (typeof aspects === "object") {
+                    const aspectsKeys = Object.keys(aspects);
+                    aspectsKeys.forEach(
+                        (idx: string) =>
+                            ((recordData as any)[idx] = aspects[idx])
                     );
                 }
                 res.locals.originalDataset = fetchRecordResult;
@@ -944,7 +948,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     operationUri: "object/record/update",
                     input: {
                         object: {
-                            recordData
+                            record: recordData
                         }
                     }
                 };

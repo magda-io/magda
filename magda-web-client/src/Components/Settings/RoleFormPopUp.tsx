@@ -74,7 +74,7 @@ const RoleFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     const { loading, error } = useAsync(
         async (roleId?: string, dataReloadToken?: string) => {
             if (!roleId) {
-                setRole(undefined);
+                setRole({ name: "", description: "" } as RoleRecord);
             } else {
                 const record = await getRoleById(roleId, true);
                 setRole(record);

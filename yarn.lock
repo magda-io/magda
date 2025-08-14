@@ -3972,6 +3972,11 @@
   resolved "https://registry.yarnpkg.com/@magda/esm-utils/-/esm-utils-1.0.1.tgz#1d5e9882958aefa879106e55d32421874baae559"
   integrity sha512-A300Mds4wl41axrqcrqrw4y1EjUIcrVWipaZpTwlf6ChDLnI57bEqL9EVQLm8muW/qMnY3QzNjxg7EEYly18yA==
 
+"@magda/tree-kill@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@magda/tree-kill/-/tree-kill-1.2.3.tgz#a4e5329d759da0985a8818e6b808aa4ccafe1c97"
+  integrity sha512-QZ9pAuU1yDWx8z4dVAtR4w5wVMb++hmBCYi9Rj864TobnuG29gqVHmRuwcPAvFL8qjMfn5Z0Mcu4eCI5dmD1Sg==
+
 "@magda/tsmonad@^0.9.0":
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/@magda/tsmonad/-/tsmonad-0.9.0.tgz#6ddcc1e78fb1606306b923968a1d2f8c3a7e3576"
@@ -23903,10 +23908,6 @@ traverse@^0.6.6:
   version "0.6.6"
   resolved "https://registry.yarnpkg.com/traverse/-/traverse-0.6.6.tgz#cbdf560fd7b9af632502fed40f918c157ea97137"
   integrity sha1-y99WD9e5r2MlAv7UD5GMFX6pcTc=
-
-"tree-kill@https://github.com/magda-io/node-tree-kill.git#magda":
-  version "1.2.2"
-  resolved "https://github.com/magda-io/node-tree-kill.git#34a14d315939566035be249a0772f0e1921d911e"
 
 trim-lines@^3.0.0:
   version "3.0.1"

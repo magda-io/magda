@@ -1,8 +1,23 @@
 # CHANGELOG
 
-## v5.3.2
+## v5.5.0
+
+- Fix: search-api-auto-ping job "Couldn't find the binary git" error
+- Upgraded local in cluster use PostgreSQL build from 13.3 to [13.6](https://www.postgresql.org/docs/release/13.6/)
+
+## v5.4.0
 
 - #3612: Fix indexer failed to handle invalid contact data type
+- #3615: Fix invalid tag items in metadata will trigger unexpected exception during rendering
+- Fix: Role form should reset the content after save
+- Enhancement: adjust the resource & operation setting section data grid column width
+- Fix: Access Group UI orgUnit selector should load user's orgUnit as root unit when it's set
+- Fix: Adjust builder images for CI pipelines building issues
+- Fix integration test scala app termination issue by sending signals to sub-processes as well
+- Fix daemontools installation in local postgres image build
+- Enhancement: integration test will use correct docker socket path on MacOs
+- Upgraded local in cluster use PostgreSQL build from 13.3 to [13.5](https://www.postgresql.org/docs/release/13.5/)
+- Fix: access group assign user / dataset to access group APIs always deny non-admin users access
 
 ## v5.3.1
 
