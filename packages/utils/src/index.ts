@@ -29,3 +29,4 @@ export {
     BadRequestError
 } from "@magda/typescript-common/dist/createServiceError.js";
 export { default as getStorageApiResourceAccessUrl } from "@magda/typescript-common/dist/getStorageApiResourceAccessUrl.js";
+export { default as getAbsoluteUrl } from "@magda/typescript-common/dist/getAbsoluteUrl.js";

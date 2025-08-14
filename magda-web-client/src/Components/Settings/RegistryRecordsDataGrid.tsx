@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAsync } from "react-async-hook";
 import Table from "rsuite/Table";
 import Button from "rsuite/Button";
@@ -17,6 +17,7 @@ import {
 import "./RegistryRecordsDataGrid.scss";
 import reportError from "../../helpers/reportError";
 import ConfirmDialog from "./ConfirmDialog";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -33,6 +34,7 @@ const RegistryRecordsDataGrid: FunctionComponent<PropsType> = ({
     query,
     externalRefreshToken
 }: PropsType) => {
+    const location = useLocation();
     const queryStr = typeof query === "string" ? query.trim() : "";
     const [pageTokenList, setPageTokenList] = useState<string[]>([]);
     const [pageToken, setPageToken] = useState<string>("");
@@ -122,9 +124,12 @@ const RegistryRecordsDataGrid: FunctionComponent<PropsType> = ({
                             return (
                                 <div>
                                     <Link
-                                        to={`/settings/records/${encodeURIComponent(
-                                            (rowData as any)?.id
-                                        )}`}
+                                        to={getUrlWithPopUpQueryString(
+                                            `/settings/records/${encodeURIComponent(
+                                                (rowData as any)?.id
+                                            )}`,
+                                            location
+                                        )}
                                     >
                                         <IconButton
                                             size="md"

@@ -10,7 +10,7 @@ allow {
     hasNoConstraintPermission(input.operationUri)
 }
 
-# User has a permission to perfom operation with owner / user constaint
+# User has a permission to perform operation with owner / user constraint
 # i.e. Only can perform operation on user's own api key
 allow {
     hasOwnerConstraintPermission(input.operationUri)

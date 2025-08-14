@@ -1,7 +1,7 @@
 {
   "name": "@magda/typescript-common",
   "description": "Common TypeScript code shared between components.",
-  "version": "5.3.1",
+  "version": "5.4.0",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -23,8 +23,8 @@
   },
   "devDependencies": {
     "@magda/esm-utils": "^1.0.1",
-    "@magda/registry-aspects": "^5.3.1",
-    "@magda/scripts": "^5.3.1",
+    "@magda/registry-aspects": "^5.4.0",
+    "@magda/scripts": "^5.4.0",
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.0",
     "@types/cross-spawn": "^6.0.1",
@@ -73,9 +73,9 @@
     "read-pkg-up": "^3.0.0",
     "resolve": "^1.15.0",
     "sql-syntax": "^2.0.1",
+    "@magda/tree-kill": "^1.2.3",
     "urijs": "^1.19.11",
     "uuid": "^8.2.0",
-    "tree-kill": "https://github.com/magda-io/node-tree-kill.git#magda",
     "yargs": "^12.0.5"
   },
   "config": {

@@ -2,7 +2,7 @@
   "private": true,
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "5.3.1",
+  "version": "5.4.0",
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
@@ -20,7 +20,7 @@
   "cracoConfig": "craco.config.cjs",
   "dependencies": {
     "leaflet": "^0.7.7",
-    "react-icons": "^4.3.1"
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@ai-zen/async-queue": "^1.2.2",
@@ -28,9 +28,9 @@
     "@babel/runtime": "^7.23.2",
     "@craco/craco": "^7.1.0",
     "@langchain/community": "0.2.31",
-    "@magda/registry-aspects": "^5.3.1",
-    "@magda/scripts": "^5.3.1",
-    "@magda/typescript-common": "^5.3.1",
+    "@magda/registry-aspects": "^5.4.0",
+    "@magda/scripts": "^5.4.0",
+    "@magda/typescript-common": "^5.4.0",
     "@mlc-ai/web-llm": "0.2.73",
     "@types/debounce-promise": "^3.1.1",
     "@types/is-uuid": "^1.0.0",
@@ -159,7 +159,8 @@
     "webpack-filter-warnings-plugin": "^1.2.1",
     "weighted-mean": "^1.0.2",
     "xlsx": "^0.14.0",
-    "yaml-front-matter": "^4.1.1"
+    "yaml-front-matter": "^4.1.1",
+    "rxjs": "^7.8.2"
   },
   "resolutions": {
     "@langchain/core": "0.2.28",

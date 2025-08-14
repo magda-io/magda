@@ -7,10 +7,9 @@ import DatasetAddPage from "Components/Dataset/Add/DatasetAddPage";
 import DatasetListPage from "Components/Dataset/Add/DatasetListPage";
 import DatasetAddMetadataPage from "Components/Dataset/Add/DatasetAddMetadataPage";
 import DatasetEditMetadataPage from "Components/Dataset/Edit/DatasetEditMetadataPage";
-import { usePopUpQueryString } from "helpers/popupUtils";
+import { inPopUpMode } from "helpers/popupUtils";
 
 const Routes = () => {
-    const popUpQueryString = usePopUpQueryString();
     return (
         <Switch>
             <Route
@@ -34,7 +33,7 @@ const Routes = () => {
                 exact
                 from="/dataset/add/metadata"
                 to={`/dataset/add/metadata/${createId()}${
-                    popUpQueryString ? `?${popUpQueryString}` : ""
+                    inPopUpMode() ? `?popup` : ""
                 }`}
             />
             <Route

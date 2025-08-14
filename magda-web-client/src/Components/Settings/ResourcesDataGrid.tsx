@@ -27,6 +27,7 @@ import ResourceFormPopUp, {
 } from "./ResourceFormPopUp";
 import ConfirmDialog from "./ConfirmDialog";
 import { ResourceRecord } from "@magda/typescript-common/dist/authorization-api/model";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -152,7 +153,7 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = ({
                     data={(data?.length ? data : []) as any}
                     loading={isLoading}
                 >
-                    <Column width={100} align="center" resizable>
+                    <Column width={200} align="center" resizable>
                         <HeaderCell>Id</HeaderCell>
                         <Cell dataKey="id" />
                     </Column>
@@ -162,12 +163,12 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = ({
                         <Cell dataKey="uri" />
                     </Column>
 
-                    <Column width={200} flexGrow={2}>
+                    <Column width={200} resizable>
                         <HeaderCell> Name</HeaderCell>
                         <Cell dataKey="name" />
                     </Column>
 
-                    <Column width={250} resizable>
+                    <Column width={550} resizable>
                         <HeaderCell>Description</HeaderCell>
                         <Cell dataKey="description" />
                     </Column>
@@ -182,9 +183,11 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = ({
                                 return (
                                     <div>
                                         <Link
-                                            to={`/${directory}/resources/${
-                                                (rowData as any)?.id
-                                            }/operations`}
+                                            to={getUrlWithPopUpQueryString(
+                                                `/${directory}/resources/${
+                                                    (rowData as any)?.id
+                                                }/operations`
+                                            )}
                                         >
                                             <IconButton
                                                 size="md"

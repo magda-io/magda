@@ -26,3 +26,4 @@ export {
 export { default as getRequest } from "@magda/typescript-common/dist/getRequest.js";
 export { default as getRequestNoCache } from "@magda/typescript-common/dist/getRequestNoCache.js";
 export { default as createNoCacheFetchOptions } from "@magda/typescript-common/dist/createNoCacheFetchOptions.js";
+export { default as getAbsoluteUrl } from "@magda/typescript-common/dist/getAbsoluteUrl.js";

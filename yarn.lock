@@ -3972,6 +3972,11 @@
   resolved "https://registry.yarnpkg.com/@magda/esm-utils/-/esm-utils-1.0.1.tgz#1d5e9882958aefa879106e55d32421874baae559"
   integrity sha512-A300Mds4wl41axrqcrqrw4y1EjUIcrVWipaZpTwlf6ChDLnI57bEqL9EVQLm8muW/qMnY3QzNjxg7EEYly18yA==
 
+"@magda/tree-kill@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@magda/tree-kill/-/tree-kill-1.2.3.tgz#a4e5329d759da0985a8818e6b808aa4ccafe1c97"
+  integrity sha512-QZ9pAuU1yDWx8z4dVAtR4w5wVMb++hmBCYi9Rj864TobnuG29gqVHmRuwcPAvFL8qjMfn5Z0Mcu4eCI5dmD1Sg==
+
 "@magda/tsmonad@^0.9.0":
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/@magda/tsmonad/-/tsmonad-0.9.0.tgz#6ddcc1e78fb1606306b923968a1d2f8c3a7e3576"
@@ -20392,10 +20397,10 @@ react-i18next@^8.1.0:
     hoist-non-react-statics "3.0.1"
     html-parse-stringify2 "2.0.1"
 
-react-icons@^4.3.1:
-  version "4.3.1"
-  resolved "https://registry.yarnpkg.com/react-icons/-/react-icons-4.3.1.tgz#2fa92aebbbc71f43d2db2ed1aed07361124e91ca"
-  integrity sha512-cB10MXLTs3gVuXimblAdI71jrJx8njrJZmNMEMC+sQu5B/BIOmlsAjskdqpn81y8UBVEGuHODd7/ci5DvoSzTQ==
+react-icons@^5.5.0:
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/react-icons/-/react-icons-5.5.0.tgz#8aa25d3543ff84231685d3331164c00299cdfaf2"
+  integrity sha512-MEFcXdkP3dLo8uumGI5xN3lDFNsRtrjbOEKDLD7yv76v4wpnEq2Lt2qeHaQOr34I/wPN3s3+N08WkQ+CW37Xiw==
 
 react-is@^16.13.1, react-is@^16.3.2, react-is@^16.6.0, react-is@^16.7.0, react-is@^16.8.1, react-is@^16.9.0:
   version "16.13.1"
@@ -21792,6 +21797,13 @@ rxjs@^6.4.0:
   integrity sha512-WfQI+1gohdf0Dai/Bbmk5L5ItH5tYqm3ki2c5GdWhKjalzjg93N3avFjVStyZZz+A2Em+ZxKH5bNghw9UeylGQ==
   dependencies:
     tslib "^1.9.0"
+
+rxjs@^7.8.2:
+  version "7.8.2"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.8.2.tgz#955bc473ed8af11a002a2be52071bf475638607b"
+  integrity sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA==
+  dependencies:
+    tslib "^2.1.0"
 
 safe-array-concat@^1.0.1:
   version "1.0.1"
@@ -23904,10 +23916,6 @@ traverse@^0.6.6:
   resolved "https://registry.yarnpkg.com/traverse/-/traverse-0.6.6.tgz#cbdf560fd7b9af632502fed40f918c157ea97137"
   integrity sha1-y99WD9e5r2MlAv7UD5GMFX6pcTc=
 
-"tree-kill@https://github.com/magda-io/node-tree-kill.git#magda":
-  version "1.2.2"
-  resolved "https://github.com/magda-io/node-tree-kill.git#34a14d315939566035be249a0772f0e1921d911e"
-
 trim-lines@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/trim-lines/-/trim-lines-3.0.1.tgz#d802e332a07df861c48802c04321017b1bd87338"
@@ -24027,6 +24035,11 @@ tslib@^2.0.3:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.6.2.tgz#703ac29425e7b37cd6fd456e92404d46d1f3e4ae"
   integrity sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==
+
+tslib@^2.1.0:
+  version "2.8.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.8.1.tgz#612efe4ed235d567e8aba5f2a5fab70280ade83f"
+  integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
 
 tsutils@^3.21.0:
   version "3.21.0"

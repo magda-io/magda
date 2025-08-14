@@ -93,7 +93,10 @@ class AppContainer extends React.Component {
                                             }
                                         />
                                     ) : (
-                                        <Footer noTopMargin={true} />
+                                        <Footer
+                                            noTopMargin={true}
+                                            slimSize={true}
+                                        />
                                     )
                                 }
                             />

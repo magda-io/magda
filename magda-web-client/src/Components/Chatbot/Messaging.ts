@@ -1,6 +1,7 @@
 import { ChatGenerationChunk } from "@langchain/core/outputs";
 import { Runnable, RunnableLambda } from "@langchain/core/runnables";
 import { v4 as uuidv4 } from "uuid";
+
 import type AsyncQueue from "@ai-zen/async-queue";
 
 export interface EventSourceMessage {
@@ -10,12 +11,10 @@ export interface EventSourceMessage {
     retry?: number;
 }
 
-export interface ChatEventMessage {
+export interface ChatEventMessage<T = Record<string, any>> {
     id: string;
     event: EVENT_TYPE;
-    data?: {
-        [key: string]: any;
-    };
+    data?: T;
     retry?: number;
 }
 
@@ -29,6 +28,12 @@ export const EVENT_TYPE_RUN_LOG_FINISH = "run_log_finish";
 export const EVENT_TYPE_AGENT_STEP = "agent_step";
 export const EVENT_TYPE_AGENT_STEP_FINISH = "agent_step_finish";
 export const EVENT_TYPE_PING = "ping";
+// a message has been sent to the agent for process and should be rendered at frontend messaging area
+export const EVENT_TYPE_CLIENT_MESSAGE_SENT = "client_message_sent";
+export const EVENT_TYPE_CLIENT_RESET_MESSAGE_QUEUE =
+    "reset_client_message_queue";
+export const EVENT_TYPE_CLIENT_RESET_MESSAGE_PROCESSING_STATE =
+    "reset_client_message_processing_state";
 
 export type EVENT_TYPE =
     | typeof EVENT_TYPE_CLOSE
@@ -40,7 +45,10 @@ export type EVENT_TYPE =
     | typeof EVENT_TYPE_RUN_LOG_FINISH
     | typeof EVENT_TYPE_AGENT_STEP
     | typeof EVENT_TYPE_AGENT_STEP_FINISH
-    | typeof EVENT_TYPE_PING;
+    | typeof EVENT_TYPE_PING
+    | typeof EVENT_TYPE_CLIENT_MESSAGE_SENT
+    | typeof EVENT_TYPE_CLIENT_RESET_MESSAGE_QUEUE
+    | typeof EVENT_TYPE_CLIENT_RESET_MESSAGE_PROCESSING_STATE;
 
 export const STREAM_TYPE_PARTIAL_MSG = "partial_msg";
 export const STREAM_TYPE_RUN_LOG = "run_log";

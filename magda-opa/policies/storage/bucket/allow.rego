@@ -1,7 +1,7 @@
 package storage.bucket
 
 import data.common.hasNoConstraintPermission
-import data.common.hasOrgUnitConstaintPermission
+import data.common.hasOrgUnitConstraintPermission
 import data.common.hasOwnerConstraintPermission
 import data.common.breakdownOperationUri
 import data.common.isEmpty
@@ -24,7 +24,7 @@ allow {
 
 # Rules for permissions with org unit constraint
 allow {
-	hasOrgUnitConstaintPermission(input.operationUri)
+	hasOrgUnitConstraintPermission(input.operationUri)
 
 	# storage bucket tag orgUnitId should match current user's managingOrgUnitIds
 	input.user.managingOrgUnitIds[_] = input.storage.bucket.orgUnitId
@@ -34,7 +34,7 @@ allow {
 allow {
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
     operationType == "read"
-	hasOrgUnitConstaintPermission(input.operationUri)
+	hasOrgUnitConstraintPermission(input.operationUri)
 	not input.storage.bucket.orgUnitId
 }
 
@@ -42,6 +42,6 @@ allow {
 allow {
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
     operationType == "read"
-	hasOrgUnitConstaintPermission(input.operationUri)
+	hasOrgUnitConstraintPermission(input.operationUri)
 	isEmpty(input.storage.bucket.orgUnitId)
 }

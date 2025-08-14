@@ -29,6 +29,7 @@ import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessU
 import humanFileSize from "helpers/humanFileSize";
 import "./DatasetPage.scss";
 import openRegistryRecordEditor from "helpers/openRegistryRecordEditor";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 interface PropsType {
     history: History;
@@ -234,10 +235,9 @@ const DistributionPageMainContent: FunctionComponent<{
                     />
                     <Redirect
                         from="/dataset/:datasetId/distribution/:distributionId"
-                        to={{
-                            pathname: `${baseUrlDistribution}/details`,
-                            search: `?q=${props.searchText}`
-                        }}
+                        to={getUrlWithPopUpQueryString(
+                            `${baseUrlDistribution}/details?q=${props.searchText}`
+                        )}
                     />
                 </Switch>
             </div>
