@@ -21,7 +21,7 @@ postgresql:
   image:
     # -- the default docker image tag/version used by the postgresql chart. 
     # When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number.
-    tag: "5.4.0"
+    tag: "5.5.0-alpha.1"
     repository: "magda-io/magda-postgres"
     registry: "ghcr.io"
 
