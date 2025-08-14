@@ -1,7 +1,7 @@
 {
   "name": "@magda/apidocs-server",
   "description": "The MAGDA in-browser api documentation.",
-  "version": "5.4.0",
+  "version": "6.0.0-alpha.8",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
@@ -11,7 +11,7 @@
     "retag-and-push": "retag-and-push"
   },
   "devDependencies": {
-    "@magda/scripts": "^5.4.0"
+    "@magda/scripts": "^6.0.0-alpha.8"
   },
   "config": {
     "docker": {

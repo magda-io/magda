@@ -1,12 +1,12 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: tenant-db
-version: 5.4.0
+version: 6.0.0-alpha.8
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
 dependencies:
   - name: magda-postgres
-    version: "5.4.0"
+    version: "6.0.0-alpha.8"
     repository: "file://../magda-postgres"
     condition: global.useInK8sDbInstance.tenant-db
