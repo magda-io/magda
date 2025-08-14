@@ -35,6 +35,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | file://../internal-charts/registry-db | registry-db | 5.4.0 |
 | file://../internal-charts/search-api-node | search-api-node | 5.4.0 |
 | file://../internal-charts/search-api | search-api | 5.4.0 |
+| file://../internal-charts/semantic-search-api | semantic-search-api | 5.3.1 |
 | file://../internal-charts/session-db | session-db | 5.4.0 |
 | file://../internal-charts/storage-api | storage-api | 5.4.0 |
 | file://../internal-charts/tenant-api | tenant-api | 5.4.0 |
