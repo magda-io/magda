@@ -33,6 +33,7 @@ import RoleFormPopUp, {
     RefType as RoleFormPopUpRefType
 } from "./RoleFormPopUp";
 import Whisper from "rsuite/Whisper";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -275,11 +276,13 @@ const RolesDataGrid: FunctionComponent<PropsType> = ({
                                             // thus, show action menu for a user's roles
                                             <>
                                                 <Link
-                                                    to={`/${directory}/users/${encodeURIComponent(
-                                                        userId
-                                                    )}/roles/${encodeURIComponent(
-                                                        roleId
-                                                    )}/permissions`}
+                                                    to={getUrlWithPopUpQueryString(
+                                                        `/${directory}/users/${encodeURIComponent(
+                                                            userId
+                                                        )}/roles/${encodeURIComponent(
+                                                            roleId
+                                                        )}/permissions`
+                                                    )}
                                                 >
                                                     <IconButton
                                                         size="md"
@@ -306,9 +309,11 @@ const RolesDataGrid: FunctionComponent<PropsType> = ({
                                         ) : (
                                             <>
                                                 <Link
-                                                    to={`/${directory}/roles/${encodeURIComponent(
-                                                        roleId
-                                                    )}/permissions`}
+                                                    to={getUrlWithPopUpQueryString(
+                                                        `/${directory}/roles/${encodeURIComponent(
+                                                            roleId
+                                                        )}/permissions`
+                                                    )}
                                                 >
                                                     <IconButton
                                                         size="md"

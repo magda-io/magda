@@ -4,6 +4,10 @@
 .footer {
     padding: 2rem 0;
 
+    &.au-body.slim-size {
+        padding: 0 0 0.5rem 0;
+    }
+
     &.au-body.with-top-margin {
         margin-top: 34px; //Match bottom-margin of search result pagination
     }

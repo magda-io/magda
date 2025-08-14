@@ -4,6 +4,7 @@ import { ParsedDataset } from "helpers/record";
 import { withRouter, match } from "react-router-dom";
 import { Location, History } from "history";
 import redirect from "helpers/redirect";
+import { inPopUpMode } from "helpers/popupUtils";
 
 type PropsType = {
     dataset: ParsedDataset;
@@ -14,7 +15,8 @@ type PropsType = {
 };
 
 const DatasetEditButton: FunctionComponent<PropsType> = (props) => {
-    const { dataset, hasEditPermissions } = props;
+    const { dataset, hasEditPermissions, location } = props;
+    const isInPopUpMode = inPopUpMode(location);
 
     if (!hasEditPermissions) {
         return null;
@@ -27,7 +29,7 @@ const DatasetEditButton: FunctionComponent<PropsType> = (props) => {
     const editButtonTooltipText =
         "This dataset is harvested from outside the system, so it can't be edited here.";
 
-    return (
+    return isInPopUpMode ? null : (
         <div className="dataset-edit-button-container no-print">
             <button
                 className="au-btn au-btn--secondary ask-question-button"

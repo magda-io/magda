@@ -24,7 +24,7 @@ import RegistryRecordInfoPanel from "./RegistryRecordInfoPanel";
 import RegistryRecordAspectsPanel from "./RegistryRecordAspectsPanel";
 import RegistryRecordsPageSearchButton from "./RegistryRecordsPageSearchButton";
 import RegistryRecordsDataGrid from "./RegistryRecordsDataGrid";
-import { inPopUpMode } from "helpers/popupUtils";
+import { getUrlWithPopUpQueryString, inPopUpMode } from "helpers/popupUtils";
 
 const Paragraph = Placeholder.Paragraph;
 
@@ -37,7 +37,8 @@ type PropsType = {
 };
 
 const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
-    const isPopUp = inPopUpMode();
+    const { location } = props;
+    const isPopUp = inPopUpMode(location);
     const [query, setQuery] = React.useState<string>("");
     const [recordListRefreshToken, setRecordListRefreshToken] = useState<
         string
@@ -92,7 +93,11 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
             } else {
                 redirect(
                     props.history as History,
-                    "/settings/records/" + encodeURIComponent(submittedRecordId)
+                    getUrlWithPopUpQueryString(
+                        "/settings/records/" +
+                            encodeURIComponent(submittedRecordId),
+                        location
+                    )
                 );
             }
         });
@@ -100,12 +105,8 @@ const RegistryRecordsPage: FunctionComponent<PropsType> = (props) => {
 
     return (
         <div className="flex-main-container setting-page-main-container registry-records-page">
-            {!isPopUp && <SideNavigation />}
-            <div
-                className={`main-content-container${
-                    isPopUp ? " is-pop-up" : ""
-                }`}
-            >
+            <SideNavigation />
+            <div className="main-content-container">
                 <Breadcrumb
                     items={[
                         { to: "/settings/records", title: "Registry Records" },
