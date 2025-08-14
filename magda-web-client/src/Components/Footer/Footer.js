@@ -103,13 +103,14 @@ function Footer({
     footerMediumNavs,
     footerSmallNavs,
     footerCopyRightItems,
-    noTopMargin
+    noTopMargin,
+    slimSize
 }) {
     return (
         <footer
             className={`au-footer au-body au-body--dark footer ${
                 noTopMargin === true ? "" : "with-top-margin"
-            }`}
+            } ${slimSize ? "slim-size" : ""}`}
             role="contentinfo"
             aria-label="footer"
         >

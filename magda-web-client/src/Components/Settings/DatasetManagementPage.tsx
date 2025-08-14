@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from "react";
+import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import "./main.scss";
 import SideNavigation from "./SideNavigation";
@@ -8,9 +9,12 @@ import DatasetList from "../Home/MyDatasetSectionComponents/DatasetList";
 import Placeholder from "rsuite/Placeholder";
 import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
+import { inPopUpMode } from "helpers/popupUtils";
 import "./DatasetManagementPage.scss";
 
 const DatasetManagementPage: FunctionComponent = () => {
+    const location = useLocation();
+    const isInPopUpMode = inPopUpMode(location);
     const userId = useSelector<StateType, string>(
         (state) => state?.userManagement?.user?.id
     );
@@ -31,7 +35,7 @@ const DatasetManagementPage: FunctionComponent = () => {
                         You need to login in order to access this section.
                     </Message>
                 ) : (
-                    <DatasetList openInPopUp={false} />
+                    <DatasetList openInPopUp={isInPopUpMode} />
                 )}
             </div>
         </div>

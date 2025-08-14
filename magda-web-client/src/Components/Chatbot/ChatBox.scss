@@ -22,57 +22,6 @@
     display: flex;
     flex-direction: column;
 
-    .message-area {
-        flex: 1;
-        .rs-panel-body {
-            height: 100%;
-            padding-top: 0px;
-            padding-bottom: 0px;
-            padding-left: 0px;
-            padding-right: 0px;
-        }
-        .rs-list {
-            height: 100%;
-            overflow-y: scroll;
-            border: none;
-            box-shadow: initial;
-            padding-left: 20px;
-            padding-right: 20px;
-            .rs-list-item:first-child {
-                margin-top: 30px;
-            }
-            .rs-list-item {
-                margin-top: 10px;
-                margin-bottom: 10px;
-                width: 95%;
-                padding-top: 5px;
-                padding-bottom: 5px;
-                padding-left: 10px;
-                padding-right: 5px;
-                pre {
-                    white-space: break-spaces;
-                }
-            }
-            .rs-list-item.bot-message {
-                float: left;
-                border-radius: 10px;
-                border: none;
-                background-color: #e7e7e7;
-            }
-
-            .rs-list-item.user-message {
-                float: right;
-                border-radius: 10px;
-                border: none;
-                background-color: var(--rs-btn-primary-bg);
-                pre,
-                p {
-                    color: #f7f7f7;
-                }
-            }
-        }
-    }
-
     .message-input {
         margin-top: 20px;
     }
