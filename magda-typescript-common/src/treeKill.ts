@@ -1,4 +1,4 @@
-import treeKillSync from "tree-kill";
+import treeKillSync from "@magda/tree-kill";
 
 async function treeKill(
     pid: number,

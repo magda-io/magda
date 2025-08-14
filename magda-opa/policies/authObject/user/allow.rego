@@ -2,7 +2,7 @@ package authObject.user
 
 import data.common.hasNoConstraintPermission
 import data.common.hasOwnerConstraintPermission
-import data.common.hasOrgUnitConstaintPermission
+import data.common.hasOrgUnitConstraintPermission
 
 default allow = false
 
@@ -25,7 +25,7 @@ allow {
 
 # user with org unit scope permission can perform operation on user records of all managing org units
 allow {
-    hasOrgUnitConstaintPermission(input.operationUri)
+    hasOrgUnitConstraintPermission(input.operationUri)
 
     input.authObject.user.orgUnitId = input.user.managingOrgUnitIds[_]
 }

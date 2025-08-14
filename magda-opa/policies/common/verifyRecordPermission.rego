@@ -2,7 +2,7 @@ package common
 
 import data.common.hasNoConstraintPermission
 import data.common.hasOwnerConstraintPermission
-import data.common.hasOrgUnitConstaintPermission
+import data.common.hasOrgUnitConstraintPermission
 import data.common.hasPreAuthConstaintPermission
 import data.common.isEmpty
 
@@ -29,7 +29,7 @@ verifyRecordPermission(inputOperationUri, inputObjectRefName) {
 
 # if find a permission with org unit ownership constraint
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
-    hasOrgUnitConstaintPermission(inputOperationUri)
+    hasOrgUnitConstraintPermission(inputOperationUri)
 
     input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["access-control"].orgUnitId
 }
@@ -38,7 +38,7 @@ verifyRecordPermission(inputOperationUri, inputObjectRefName) {
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
     [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
     operationType == "read"
-    hasOrgUnitConstaintPermission(inputOperationUri)
+    hasOrgUnitConstraintPermission(inputOperationUri)
     # unfortunately, we can't use isEmpty to handle undefined value 
     not input.object[inputObjectRefName]["access-control"].orgUnitId
 }
@@ -46,7 +46,7 @@ verifyRecordPermission(inputOperationUri, inputObjectRefName) {
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
     [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
     operationType == "read"
-    hasOrgUnitConstaintPermission(inputOperationUri)
+    hasOrgUnitConstraintPermission(inputOperationUri)
     isEmpty(input.object[inputObjectRefName]["access-control"].orgUnitId)
 }
 
