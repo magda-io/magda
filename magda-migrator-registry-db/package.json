@@ -1,6 +1,6 @@
 {
   "name": "@magda/migrator-registry-db",
-  "version": "5.4.0",
+  "version": "5.5.0-alpha.2",
   "description": "The registry's PostgreSQL database.",
   "scripts": {
     "dev": "echo \"No dev mode available, use helm instead.\"",
@@ -17,8 +17,8 @@
     }
   },
   "devDependencies": {
-    "@magda/db-migrator": "^5.4.0",
-    "@magda/scripts": "^5.4.0"
+    "@magda/db-migrator": "^5.5.0-alpha.2",
+    "@magda/scripts": "^5.5.0-alpha.2"
   },
   "magda": {
     "categories": {
