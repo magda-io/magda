@@ -60,7 +60,8 @@ export function buildSingleRetrieveQueryBody(
         sort: [{ index_text_chunk_position: "asc" }],
         _source: {
             excludes: ["embedding"]
-        }
+        },
+        size: 1000
     };
 }
 
