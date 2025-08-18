@@ -126,6 +126,11 @@ dependencies:
     repository: file://../internal-charts/search-api-node
     tags:
       - search-api-node
+  - name: semantic-search-api
+    version: 5.3.1
+    repository: file://../internal-charts/semantic-search-api
+    tags:
+      - semantic-search-api
   - name: session-db
     version: 5.4.0
     repository: file://../internal-charts/session-db

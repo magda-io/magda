@@ -28,3 +28,4 @@ It is not necessary to allocate ports to microservices when running on a Kuberne
 | `magda-content-api`               | 6119 |
 | `magda-storage-api`               | 6121 |
 | `magda-search-api-node`           | 6122 |
+| `magda-semantic-search-api`       | 6123 |

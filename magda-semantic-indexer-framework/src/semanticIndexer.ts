@@ -104,7 +104,7 @@ export default async function semanticIndexer(
                 async: true,
                 dereference: true,
                 includeEvents: false,
-                includeRecords: false,
+                includeRecords: true,
                 onRecordFound: onRecordFound
             };
         } else if (userConfig.itemType === "storageObject") {
@@ -130,7 +130,7 @@ export default async function semanticIndexer(
                 async: true,
                 dereference: false,
                 includeEvents: false,
-                includeRecords: false,
+                includeRecords: true,
                 onRecordFound: onRecordFound,
                 maxRetries: 3
             };

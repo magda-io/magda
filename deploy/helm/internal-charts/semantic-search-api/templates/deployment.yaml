@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: semantic-search-api
+spec:
+  replicas: {{ .Values.replicas | default 1 }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      service: semantic-search-api
+  template:
+    metadata:
+      labels:
+        service: semantic-search-api
+    spec:
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .Values.global.enablePriorityClass }}
+      priorityClassName: magda-8
+{{- end }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
+      containers:
+      - name: semantic-search-api
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+        ports:
+          - containerPort: {{ .Values.semanticSearchConfig.listenPort }}
+        command: [
+            "node",
+            "/usr/src/app/component/dist/index.js",
+            "--listenPort", "{{ .Values.semanticSearchConfig.listenPort }}",
+            "--opensearchApiURL", "{{ .Values.semanticSearchConfig.openSearchUrl }}",
+            "--embeddingApiURL", "{{ .Values.semanticSearchConfig.embeddingApiUrl }}",
+            
+            "--semanticIndexName",
+            "{{ .Values.semanticSearchConfig.semanticIndexName | default .Values.global.searchEngine.semanticIndexer.indexName  }}",
+
+            "--semanticIndexVersion",
+            "{{ .Values.semanticSearchConfig.semanticIndexVersion | default .Values.global.searchEngine.semanticIndexer.indexVersion  }}",
+
+            "--semanticIndexerMode",
+            "{{ .Values.semanticSearchConfig.semanticIndexerMode | default .Values.global.searchEngine.semanticIndexer.knnVectorFieldConfig.mode }}"
+        ]
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          httpGet:
+            path: /v0/status/live
+            port: {{ .Values.semanticSearchConfig.listenPort }}
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /v0/status/ready
+            port: {{ .Values.semanticSearchConfig.listenPort }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- end }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret

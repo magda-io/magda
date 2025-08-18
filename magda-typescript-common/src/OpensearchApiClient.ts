@@ -34,6 +34,10 @@ export default class OpensearchApiClient {
         return instance;
     }
 
+    async ping(): Promise<void> {
+        await this.client.ping();
+    }
+
     async createIndex(indexDefinition: {
         indexName: string;
         settings?: any;
@@ -91,25 +95,6 @@ export default class OpensearchApiClient {
             });
     }
 
-    async searchDocuments(indexName: string, query: string) {
-        const searchResult = await this.client.search({
-            index: indexName,
-            body: {
-                query: {
-                    match: {
-                        text: query
-                    }
-                }
-            }
-        });
-        console.log(
-            `Search query: ${query}, result: ${JSON.stringify(
-                searchResult.body
-            )}`
-        );
-        return searchResult.body;
-    }
-
     async deleteDocument(indexName: string, documentId: string) {
         await this.client.delete({
             index: indexName,
@@ -127,5 +112,12 @@ export default class OpensearchApiClient {
             ...options
         });
         return response;
+    }
+
+    async search(indexName: string, searchBody: Record<string, unknown>) {
+        return this.client.search({
+            index: indexName,
+            body: searchBody
+        });
     }
 }

@@ -59,6 +59,9 @@ dependencies:
 - name: search-api-node
   repository: file://../internal-charts/search-api-node
   version: 5.4.0
+- name: semantic-search-api
+  repository: file://../internal-charts/semantic-search-api
+  version: 5.3.1
 - name: session-db
   repository: file://../internal-charts/session-db
   version: 5.4.0
@@ -86,5 +89,5 @@ dependencies:
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
   version: 5.4.0
-digest: sha256:97052ef761271a63dee23cc0b42e3a2b7c7d8f6c4023d0cffb71d9217c5b6150
-generated: "2025-08-01T03:40:11.468058219Z"
+digest: sha256:a0dda0c67cb4aeece92a7bd801902448ef65dc5c609e0daa209936f7d3942290
+generated: "2025-08-14T17:06:27.60127+10:00"

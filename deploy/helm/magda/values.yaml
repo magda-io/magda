@@ -36,11 +36,11 @@ global:
       numberOfReplicas: 0
       knnVectorFieldConfig:
         # -- Vector workload mode: `on_disk` or `in_memory`.
-        mode: "in_memory"
+        mode: "on_disk"
         # -- Dimension of the embedding vectors.
         dimension: 768
         # -- The compression_level mapping parameter selects a quantization encoder that reduces vector memory consumption by the given factor.
-        compressionLevel: null
+        compressionLevel: 32x
         # Supported values: l1, l2, innerProduct, cosine, linf
         spaceType: "l2"
         # -- Similar to efSearch but used during index construction. Higher values improve search quality but increase index build time.
@@ -51,10 +51,10 @@ global:
         m: 16
         
         # -- FAISS Encoder configuration (If compressionLevel is set, encoder will be ignored).
-        encoder:
-          name: "sq"
-          type: "fp16"
-          clip: false
+        encoder: null
+          # name: "sq"
+          # type: "fp16"
+          # clip: false
     defaultDatasetBucket: "magda-datasets"
     
 openfaas:
