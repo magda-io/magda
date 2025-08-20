@@ -28,7 +28,7 @@ Our helm charts are published at Github container registry `oci://ghcr.io/magda-
   - [content-api](https://github.com/magda-io/magda/blob/master/deploy/helm/internal-charts/content-api/README.md)
   - [content-db](https://github.com/magda-io/magda/blob/master/deploy/helm/internal-charts/content-db/README.md)
   - [correspondence-api](https://github.com/magda-io/magda/blob/master/deploy/helm/internal-charts/correspondence-api/README.md)
-  - [elasticsearch](https://github.com/magda-io/magda/blob/master/deploy/helm/internal-charts/elasticsearch/README.md)
+  - [opensearch](https://github.com/magda-io/magda/blob/master/deploy/helm/internal-charts/opensearch/README.md)
   - [gateway](https://github.com/magda-io/magda/blob/master/deploy/helm/internal-charts/gateway/README.md)
   - [indexer](https://github.com/magda-io/magda/blob/master/deploy/helm/internal-charts/indexer/README.md)
   - [ingress](https://github.com/magda-io/magda/blob/master/deploy/helm/internal-charts/ingress/README.md)
