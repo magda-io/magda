@@ -83,12 +83,18 @@ function processStreamResponseChunk(
     }
 }
 
-const DatasetKnowledgeInterview: FunctionComponent<PropsType> = () => {
+const DatasetKnowledgeInterview: FunctionComponent<PropsType> = (props) => {
+    const { datasetId } = props;
     const [chatActivated, setChatActivated] = useState<boolean>(false);
     const messageStreamRef = useRef(new Subject<ChatEventMessage>());
+    const agentIdRef = useRef<string>();
     const [inputText, setInputText] = useState<string>("");
     const sendMessage = useAsyncCallback(async (inputText) => {
         try {
+            const agentId = agentIdRef.current;
+            if (!agentId) {
+                throw new Error("Agent is not initialized.");
+            }
             const sendOutText = inputText.trim();
             if (!sendOutText) {
                 return;
@@ -101,18 +107,15 @@ const DatasetKnowledgeInterview: FunctionComponent<PropsType> = () => {
             );
             setInputText("");
             const client = getAgentServiceApiClient();
-            const stream = await client.createMessageStream(
-                "agent-940cfcea-1853-45b4-a02c-e5fa3b72f7bf",
-                {
-                    messages: [
-                        {
-                            role: "user",
-                            content: sendOutText
-                        }
-                    ],
-                    streamTokens: true
-                }
-            );
+            const stream = await client.createMessageStream(agentId, {
+                messages: [
+                    {
+                        role: "user",
+                        content: sendOutText
+                    }
+                ],
+                streamTokens: true
+            });
             for await (const chunk of stream) {
                 processStreamResponseChunk(messageStreamRef.current, chunk);
             }
@@ -136,20 +139,21 @@ const DatasetKnowledgeInterview: FunctionComponent<PropsType> = () => {
                 return;
             }
             const client = getAgentServiceApiClient();
-            setChatActivated(true);
-            const stream = await client.createMessageStream(
-                "agent-940cfcea-1853-45b4-a02c-e5fa3b72f7bf",
-                {
-                    messages: [
-                        {
-                            role: "system",
-                            content: `A user just connects for the same dataset interview for answering additional questions you might have.
-                                Please review existing conversation history and memory blocks (if any) to see if any additional question you need to ask.`
-                        }
-                    ],
-                    streamTokens: true
-                }
+            const { agentId } = await client.initializeDatasetInterviewAgent(
+                datasetId
             );
+            agentIdRef.current = agentId;
+            setChatActivated(true);
+            const stream = await client.createMessageStream(agentId, {
+                messages: [
+                    {
+                        role: "system",
+                        content: `A user just connects for the same dataset interview for answering additional questions you might have.
+                                Please review existing conversation history and memory blocks (if any) to see if any additional question you need to ask.`
+                    }
+                ],
+                streamTokens: true
+            });
             for await (const chunk of stream) {
                 processStreamResponseChunk(messageStreamRef.current, chunk);
             }

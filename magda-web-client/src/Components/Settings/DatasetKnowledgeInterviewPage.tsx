@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useAsync } from "react-async-hook";
@@ -15,6 +15,9 @@ import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
 import Panel from "rsuite/Panel";
 import DatasetKnowledgeInterview from "./DatasetKnowledgeInterview";
+import InterviewAgentMemoryBlocksPopUp, {
+    RefType as InterviewAgentMemoryBlocksPopUpRefType
+} from "./InterviewAgentMemoryBlocksPopUp";
 import "./DatasetKnowledgeInterviewPage.scss";
 import reportError from "helpers/reportError";
 
@@ -26,6 +29,9 @@ const DatasetKnowledgeInterviewPage: FunctionComponent = () => {
     const userIdLoading = useSelector<StateType, boolean>(
         (state) => state?.userManagement?.isFetchingWhoAmI
     );
+    const agentMemoryBlockPopUpRef = useRef<
+        InterviewAgentMemoryBlocksPopUpRefType
+    >(null);
     const { result: datasetTitle } = useAsync(
         async (datasetId: string) => {
             try {
@@ -68,7 +74,9 @@ const DatasetKnowledgeInterviewPage: FunctionComponent = () => {
                             <Button
                                 className="view-memory-blocks-button"
                                 appearance="primary"
-                                onClick={() => {}}
+                                onClick={() => {
+                                    agentMemoryBlockPopUpRef?.current?.open();
+                                }}
                             >
                                 <MdMemory /> View Agent Memory Blocks
                             </Button>
@@ -81,6 +89,10 @@ const DatasetKnowledgeInterviewPage: FunctionComponent = () => {
                                 />
                             </div>
                         </Panel>
+                        <InterviewAgentMemoryBlocksPopUp
+                            datasetId={datasetId}
+                            ref={agentMemoryBlockPopUpRef}
+                        />
                         <DatasetKnowledgeInterview datasetId={datasetId} />
                     </div>
                 )}

@@ -1,0 +1,30 @@
+.knowledge-interview-agent-memory-blocks-popup {
+    .dataset-knowledge-interview-agent-memory-block-item-container {
+        .memory-block-actions {
+            .update-memory-block-button {
+                float: right;
+            }
+            margin-top: 10px;
+        }
+        .rs-panel-body {
+            pre {
+                background: none !important;
+            }
+        }
+        .button-area {
+            position: absolute;
+            right: 30px;
+            top: 10px;
+        }
+        .expand-indicator-icon {
+            width: 22px;
+            height: 22px;
+            position: absolute;
+            top: 22px;
+        }
+        .panel-heading-text {
+            font-size: large;
+            margin-left: 25px;
+        }
+    }
+}
