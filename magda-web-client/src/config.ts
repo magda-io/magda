@@ -805,6 +805,22 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     postMessageTargetOrigin: string;
+
+    /**
+     * Whether or not the MAGDA agent service is enabled
+     *
+     * @type {boolean}
+     * @memberof ConfigDataType
+     */
+    agentServiceBaseEnabled: boolean;
+
+    /**
+     * The base url of MAGDA agent service
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    agentServiceBaseUrl: string;
 }
 
 const serverConfig: ConfigDataType = window.magda_server_config || {};
@@ -1164,7 +1180,14 @@ export const config: ConfigDataType = {
             : SQL_CONSOLE_CACHE_EXPIRATION,
     postMessageTargetOrigin: serverConfig?.postMessageTargetOrigin
         ? serverConfig.postMessageTargetOrigin
-        : ""
+        : "",
+    agentServiceBaseEnabled:
+        typeof serverConfig?.agentServiceBaseEnabled === "boolean"
+            ? serverConfig.agentServiceBaseEnabled
+            : false,
+    agentServiceBaseUrl: serverConfig.agentServiceBaseUrl
+        ? serverConfig.agentServiceBaseUrl
+        : baseUrl + "api/v0/agent-service/"
 };
 
 export type Config = typeof config;
