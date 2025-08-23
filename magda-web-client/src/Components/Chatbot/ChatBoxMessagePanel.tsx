@@ -27,7 +27,9 @@ import {
     ChatEventMessage,
     EVENT_TYPE_CLIENT_RESET_MESSAGE_QUEUE,
     EVENT_TYPE_CLIENT_RESET_MESSAGE_PROCESSING_STATE,
-    EVENT_TYPE_CLIENT_MESSAGE_SENT
+    EVENT_TYPE_CLIENT_MESSAGE_SENT,
+    STREAM_TYPE_TOOL_CALL_INDICATOR,
+    EVENT_TYPE_TOOL_CALL_INDICATOR_RESULT
 } from "./Messaging";
 import { parseJsonMarkdown } from "../../libs/json";
 import "../../rsuite.scss";
@@ -51,6 +53,8 @@ interface StreamStateType {
     streamType: STREAM_TYPE;
     partialMessage: string | null;
     isReasoningPartialMessage?: boolean;
+    toolCallIndicator: boolean;
+    toolName: string | null;
     // markdownChunkStream will make sure only incomplete code block will not be emitted until full code block is received.
     // only applied to partial message
     markdownChunkStream: MarkdownChunkStream;
@@ -83,7 +87,9 @@ const getInitialStreamState = (): StreamStateType => {
         streamId: null,
         streamType: STREAM_TYPE_UNDEFINED,
         partialMessage: null,
-        isReasoningPartialMessage: false
+        isReasoningPartialMessage: false,
+        toolCallIndicator: false,
+        toolName: null
     };
     streamState.markdownChunkStream = new MarkdownChunkStream((msg) => {
         streamState.partialMessage =
@@ -202,6 +208,9 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                         reasoning: isReasoningPartialMessage
                     });
                 }
+                streamStateRef.current.toolCallIndicator = false;
+                streamStateRef.current.toolName = null;
+
                 if (streamId !== null) {
                     streamStateRef.current.streamId = streamId
                         ? streamId
@@ -329,6 +338,17 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                     streamStateRef.current.markdownChunkStream.write(
                         eventMessage?.data?.msg ? eventMessage.data.msg : ""
                     );
+                    break;
+                case STREAM_TYPE_TOOL_CALL_INDICATOR:
+                    streamStateRef.current.toolCallIndicator =
+                        eventMessage.event ===
+                        EVENT_TYPE_TOOL_CALL_INDICATOR_RESULT
+                            ? false
+                            : true;
+                    if (typeof eventMessage?.data?.name === "string") {
+                        streamStateRef.current.toolName =
+                            eventMessage.data.name;
+                    }
                     break;
                 case STREAM_TYPE_AGENT_STEP:
                     if (eventMessage.event === EVENT_TYPE_AGENT_STEP_FINISH) {
@@ -468,8 +488,15 @@ const ChatBoxMessagePanel: FunctionComponent<PropsType> = (props) => {
                     </List.Item>
                 ) : null}
             </List>
-            {sendMessageLoading ? (
-                <Loader className="message-panel-loader" />
+            {sendMessageLoading || streamStateRef.current?.toolCallIndicator ? (
+                <Loader
+                    className="message-panel-loader"
+                    content={
+                        streamStateRef.current?.toolName
+                            ? `Calling tool ${streamStateRef.current.toolName}...`
+                            : undefined
+                    }
+                />
             ) : null}
         </Panel>
     );

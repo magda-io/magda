@@ -22,6 +22,9 @@ export const EVENT_TYPE_CLOSE = "close";
 export const EVENT_TYPE_ERROR = "error";
 export const EVENT_TYPE_PARTIAL_MSG = "partial_msg";
 export const EVENT_TYPE_PARTIAL_MSG_FINISH = "partial_msg_finish";
+export const EVENT_TYPE_TOOL_CALL_INDICATOR = "tool_call_indicator";
+export const EVENT_TYPE_TOOL_CALL_INDICATOR_RESULT =
+    "tool_call_indicator_result";
 export const EVENT_TYPE_COMPLETE_MSG = "complete_msg";
 export const EVENT_TYPE_RUN_LOG = "run_log";
 export const EVENT_TYPE_RUN_LOG_FINISH = "run_log_finish";
@@ -41,6 +44,8 @@ export type EVENT_TYPE =
     | typeof EVENT_TYPE_PARTIAL_MSG
     | typeof EVENT_TYPE_COMPLETE_MSG
     | typeof EVENT_TYPE_PARTIAL_MSG_FINISH
+    | typeof EVENT_TYPE_TOOL_CALL_INDICATOR
+    | typeof EVENT_TYPE_TOOL_CALL_INDICATOR_RESULT
     | typeof EVENT_TYPE_RUN_LOG
     | typeof EVENT_TYPE_RUN_LOG_FINISH
     | typeof EVENT_TYPE_AGENT_STEP
@@ -51,6 +56,7 @@ export type EVENT_TYPE =
     | typeof EVENT_TYPE_CLIENT_RESET_MESSAGE_PROCESSING_STATE;
 
 export const STREAM_TYPE_PARTIAL_MSG = "partial_msg";
+export const STREAM_TYPE_TOOL_CALL_INDICATOR = "tool_call_indicator";
 export const STREAM_TYPE_RUN_LOG = "run_log";
 export const STREAM_TYPE_AGENT_STEP = "agent_step";
 export const STREAM_TYPE_COMPLETE_MSG = "complete_msg";
@@ -58,6 +64,7 @@ export const STREAM_TYPE_UNDEFINED = "undefined";
 
 export type STREAM_TYPE =
     | typeof STREAM_TYPE_PARTIAL_MSG
+    | typeof STREAM_TYPE_TOOL_CALL_INDICATOR
     | typeof STREAM_TYPE_COMPLETE_MSG
     | typeof STREAM_TYPE_RUN_LOG
     | typeof STREAM_TYPE_AGENT_STEP
@@ -69,6 +76,10 @@ export const getStreamType = (message: ChatEventMessage): STREAM_TYPE => {
             return STREAM_TYPE_PARTIAL_MSG;
         case EVENT_TYPE_PARTIAL_MSG_FINISH:
             return STREAM_TYPE_PARTIAL_MSG;
+        case EVENT_TYPE_TOOL_CALL_INDICATOR:
+            return STREAM_TYPE_TOOL_CALL_INDICATOR;
+        case EVENT_TYPE_TOOL_CALL_INDICATOR_RESULT:
+            return STREAM_TYPE_TOOL_CALL_INDICATOR;
         case EVENT_TYPE_COMPLETE_MSG:
             return STREAM_TYPE_COMPLETE_MSG;
         case EVENT_TYPE_RUN_LOG:
@@ -93,6 +104,35 @@ export interface EventPartialMessageData {
     // indicate it's an AI reasoning message
     reasoning?: boolean;
     msg: string;
+}
+
+export interface EventToolCallIndicatorData {
+    // the optional message id
+    // for stream type message e.g. PartialMessage this id should remain unchanged for streaming the same message
+    id?: string;
+    name?: string;
+    // the system specified tool call id
+    // this is used to match the tool call with the tool call result
+    // this is not the same as the message id
+    toolCallId?: string;
+    arguments?: Record<string, any>;
+    // the arguments in JSON string format - usually in stream mode
+    // the argumentJson might be partial json in stream mode
+    argumentJson?: string;
+}
+
+export interface EventToolCallIndicatorResultData<T = any> {
+    // the optional message id
+    // for stream type message e.g. PartialMessage this id should remain unchanged for streaming the same message
+    id?: string;
+    name?: string;
+    status: "success" | "error";
+    result?: T;
+    error?: string;
+    // the system specified tool call id
+    // this is used to match the tool call with the tool call result
+    // this is not the same as the message id
+    toolCallId?: string;
 }
 
 export function createChatEventMessage<T = Record<string, any>>(

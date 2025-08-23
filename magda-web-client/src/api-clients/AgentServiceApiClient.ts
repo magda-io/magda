@@ -92,7 +92,6 @@ export default class AgentServiceApiClient {
         const requestUrl = this.getRequestUrl(
             `/datasets/${encodeURIComponent(datasetId)}/interviewAgent`
         );
-        debugger;
         return await request<{
             agentId: string;
             sharableMemoryBlockIds: string[];
@@ -106,12 +105,6 @@ export default class AgentServiceApiClient {
     ): lettaCode.HttpResponsePromise<
         lettaCode.Stream<Letta.agents.LettaStreamingResponse>
     > {
-        debugger;
-        // return this.client.agents.messages.createStream(
-        //     agentId,
-        //     request,
-        //     requestOptions
-        // );
         return lettaCode.HttpResponsePromise.fromPromise(
             this.__createStream(agentId, request, requestOptions)
         );

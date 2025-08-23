@@ -15,8 +15,11 @@ import {
     EVENT_TYPE_CLIENT_MESSAGE_SENT,
     EVENT_TYPE_PARTIAL_MSG,
     EventPartialMessageData,
-    EVENT_TYPE_COMPLETE_MSG,
-    EVENT_TYPE_CLIENT_RESET_MESSAGE_PROCESSING_STATE
+    EVENT_TYPE_CLIENT_RESET_MESSAGE_PROCESSING_STATE,
+    EVENT_TYPE_TOOL_CALL_INDICATOR,
+    EventToolCallIndicatorData,
+    EventToolCallIndicatorResultData,
+    EVENT_TYPE_TOOL_CALL_INDICATOR_RESULT
 } from "../Chatbot/Messaging";
 import { MdOutlinePlayCircle } from "react-icons/md";
 import ChatBoxMessagePanel from "../Chatbot/ChatBoxMessagePanel";
@@ -31,7 +34,6 @@ function processStreamResponseChunk(
     messageStream: Subject<ChatEventMessage<Record<string, any>>>,
     chunk: Letta.agents.LettaStreamingResponse
 ) {
-    console.log(chunk);
     if (chunk.messageType === "assistant_message") {
         messageStream.next(
             createChatEventMessage<EventPartialMessageData>(
@@ -60,14 +62,30 @@ function processStreamResponseChunk(
     }
     if (chunk.messageType === "tool_call_message") {
         messageStream.next(
-            createChatEventMessage<EventPartialMessageData>(
-                EVENT_TYPE_COMPLETE_MSG,
+            createChatEventMessage<EventToolCallIndicatorData>(
+                EVENT_TYPE_TOOL_CALL_INDICATOR,
                 {
-                    id: `${chunk.id}-tool`,
-                    reasoning: true,
-                    msg: `Using tool${
-                        chunk?.toolCall?.name ? ": " + chunk.toolCall.name : ""
-                    }...`
+                    id: `${chunk.otid}`,
+                    name: chunk.toolCall?.name,
+                    argumentJson: chunk.toolCall?.arguments,
+                    toolCallId: chunk.toolCall?.toolCallId
+                }
+            )
+        );
+        return;
+    }
+    if (chunk.messageType === "tool_return_message") {
+        messageStream.next(
+            createChatEventMessage<EventToolCallIndicatorResultData>(
+                EVENT_TYPE_TOOL_CALL_INDICATOR_RESULT,
+                {
+                    id: `${chunk.otid}`,
+                    name: chunk?.name,
+                    toolCallId: chunk.toolCallId,
+                    status: chunk.status,
+                    error: chunk.stderr?.length
+                        ? chunk.stderr.join("\n")
+                        : undefined
                 }
             )
         );
@@ -130,7 +148,7 @@ const DatasetKnowledgeInterview: FunctionComponent<PropsType> = (props) => {
                 // this is a special error that we throw to stop the operation without error
                 return;
             }
-            reportError(String(e));
+            reportError(e);
         }
     });
     const activateChat = useAsyncCallback(async () => {
@@ -168,7 +186,7 @@ const DatasetKnowledgeInterview: FunctionComponent<PropsType> = (props) => {
                 // this is a special error that we throw to stop the operation without error
                 return;
             }
-            reportError(String(e));
+            reportError(e);
         }
     });
     return (
@@ -230,6 +248,27 @@ const DatasetKnowledgeInterview: FunctionComponent<PropsType> = (props) => {
                 value={inputText}
             />
             <div className="chat-tool-area-container">
+                {chatActivated ? (
+                    <Button
+                        className="reset-interview-button"
+                        appearance="primary"
+                        color="red"
+                        disabled={
+                            sendMessage.loading ||
+                            activateChat.loading ||
+                            !chatActivated
+                        }
+                        onClick={() =>
+                            messageStreamRef.current.next(
+                                createChatEventMessage(
+                                    EVENT_TYPE_CLIENT_RESET_MESSAGE_QUEUE
+                                )
+                            )
+                        }
+                    >
+                        Reset Interview
+                    </Button>
+                ) : null}
                 <ButtonToolbar className="send-button-tool-bar">
                     <Button
                         className="clear-message-button"

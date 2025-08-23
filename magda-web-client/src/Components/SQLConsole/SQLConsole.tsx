@@ -174,7 +174,7 @@ const SQLConsole: FunctionComponent<PropsType> = (props) => {
             setIsDownloadingCsv(true);
             await downloadCsv(data, undefined, convertCellData);
         } catch (e) {
-            reportError(`Error: ${e}`);
+            reportError(e);
         } finally {
             setIsDownloadingCsv(false);
         }
