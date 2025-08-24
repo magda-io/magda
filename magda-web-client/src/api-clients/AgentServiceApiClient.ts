@@ -52,7 +52,7 @@ export default class AgentServiceApiClient {
 
     async existDatasetInterviewAgent(datasetId: string) {
         const requestUrl = this.getRequestUrl(
-            `/datasets/${encodeURIComponent(datasetId)}/interviewAgent`
+            `/datasets/${encodeURIComponent(datasetId)}/interview-agent`
         );
         try {
             await request("GET", requestUrl);
@@ -74,7 +74,7 @@ export default class AgentServiceApiClient {
             this.getRequestUrl(
                 `/datasets/${encodeURIComponent(
                     datasetId
-                )}/interviewAgent/messages/stream`
+                )}/interview-agent/messages/stream`
             ),
             request,
             requestOptions
@@ -83,19 +83,35 @@ export default class AgentServiceApiClient {
 
     async getDatasetInterviewAgentMemoryBlocks(datasetId: string) {
         const requestUrl = this.getRequestUrl(
-            `/datasets/${encodeURIComponent(datasetId)}/interviewAgent/blocks`
+            `/datasets/${encodeURIComponent(datasetId)}/interview-agent/blocks`
         );
         return await request<Letta.Block[]>("GET", requestUrl);
     }
 
     async initializeDatasetInterviewAgent(datasetId: string) {
         const requestUrl = this.getRequestUrl(
-            `/datasets/${encodeURIComponent(datasetId)}/interviewAgent`
+            `/datasets/${encodeURIComponent(datasetId)}/interview-agent`
         );
         return await request<{
             agentId: string;
             sharableMemoryBlockIds: string[];
         }>("PUT", requestUrl);
+    }
+
+    async resetDatasetInterviewAgent(
+        datasetId: string,
+        opts: { resetMessage?: boolean; resetMemory?: boolean } = {}
+    ) {
+        const qs = new URLSearchParams(opts as any).toString();
+        const requestUrl = this.getRequestUrl(
+            `/datasets/${encodeURIComponent(datasetId)}/interview-agent/reset${
+                qs ? `?${qs}` : ""
+            }`
+        );
+        return await request<{
+            resetMessage: boolean;
+            resetMemory: boolean;
+        }>("PATCH", requestUrl);
     }
 
     public createStream(

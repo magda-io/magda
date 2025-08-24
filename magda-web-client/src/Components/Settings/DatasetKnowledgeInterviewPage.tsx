@@ -14,7 +14,9 @@ import Placeholder from "rsuite/Placeholder";
 import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
 import Panel from "rsuite/Panel";
-import DatasetKnowledgeInterview from "./DatasetKnowledgeInterview";
+import DatasetKnowledgeInterview, {
+    RefType as DatasetKnowledgeInterviewRefType
+} from "./DatasetKnowledgeInterview";
 import InterviewAgentMemoryBlocksPopUp, {
     RefType as InterviewAgentMemoryBlocksPopUpRefType
 } from "./InterviewAgentMemoryBlocksPopUp";
@@ -32,6 +34,10 @@ const DatasetKnowledgeInterviewPage: FunctionComponent = () => {
     const agentMemoryBlockPopUpRef = useRef<
         InterviewAgentMemoryBlocksPopUpRefType
     >(null);
+    const datasetKnowledgeInterviewRef = useRef<
+        DatasetKnowledgeInterviewRefType
+    >(null);
+
     const { result: datasetTitle } = useAsync(
         async (datasetId: string) => {
             try {
@@ -80,6 +86,16 @@ const DatasetKnowledgeInterviewPage: FunctionComponent = () => {
                             >
                                 <MdMemory /> View Agent Memory Blocks
                             </Button>
+                            <Button
+                                className="reset-interview-button"
+                                appearance="primary"
+                                color="red"
+                                onClick={() => {
+                                    datasetKnowledgeInterviewRef?.current?.reset();
+                                }}
+                            >
+                                Reset Interview
+                            </Button>
                             <div className="share-agent-toggle">
                                 <label>Share Dataset Knowledge? </label>
                                 <Toggle
@@ -93,7 +109,10 @@ const DatasetKnowledgeInterviewPage: FunctionComponent = () => {
                             datasetId={datasetId}
                             ref={agentMemoryBlockPopUpRef}
                         />
-                        <DatasetKnowledgeInterview datasetId={datasetId} />
+                        <DatasetKnowledgeInterview
+                            ref={datasetKnowledgeInterviewRef}
+                            datasetId={datasetId}
+                        />
                     </div>
                 )}
             </div>

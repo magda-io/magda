@@ -1,4 +1,10 @@
-import React, { FunctionComponent, useRef, useState } from "react";
+import React, {
+    ForwardRefRenderFunction,
+    forwardRef,
+    useImperativeHandle,
+    useRef,
+    useState
+} from "react";
 import { Subject } from "rxjs";
 import { Letta } from "@letta-ai/letta-client";
 import Input from "rsuite/Input";
@@ -23,9 +29,13 @@ import {
 } from "../Chatbot/Messaging";
 import { MdOutlinePlayCircle } from "react-icons/md";
 import ChatBoxMessagePanel from "../Chatbot/ChatBoxMessagePanel";
+import ConfirmDialog from "./ConfirmDialog";
 import "./DatasetKnowledgeInterview.scss";
 import reportError from "helpers/reportError";
 
+export type RefType = {
+    reset: (onComplete?: () => void) => Promise<void>;
+};
 interface PropsType {
     datasetId: string;
 }
@@ -101,12 +111,43 @@ function processStreamResponseChunk(
     }
 }
 
-const DatasetKnowledgeInterview: FunctionComponent<PropsType> = (props) => {
+const DatasetKnowledgeInterview: ForwardRefRenderFunction<
+    RefType,
+    PropsType
+> = (props, ref) => {
     const { datasetId } = props;
     const [chatActivated, setChatActivated] = useState<boolean>(false);
     const messageStreamRef = useRef(new Subject<ChatEventMessage>());
     const agentIdRef = useRef<string>();
     const [inputText, setInputText] = useState<string>("");
+
+    useImperativeHandle(ref, () => ({
+        reset: async (onComplete?: () => void) => {
+            ConfirmDialog.open({
+                confirmMsg: (
+                    <div>
+                        Reset interview and start from scratch? <br /> This will
+                        erase all memory and conversation history.
+                    </div>
+                ),
+                headingText: "Confirm to reset the dataset interview?",
+                loadingText:
+                    "Resetting dataset interview memory & conversation...",
+                errorNotificationDuration: 0,
+                confirmHandler: async () => {
+                    const client = getAgentServiceApiClient();
+                    await client.resetDatasetInterviewAgent(datasetId);
+                    messageStreamRef.current.next(
+                        createChatEventMessage(
+                            EVENT_TYPE_CLIENT_RESET_MESSAGE_QUEUE
+                        )
+                    );
+                    setChatActivated(false);
+                }
+            });
+        }
+    }));
+
     const sendMessage = useAsyncCallback(async (inputText) => {
         try {
             const agentId = agentIdRef.current;
@@ -248,27 +289,6 @@ const DatasetKnowledgeInterview: FunctionComponent<PropsType> = (props) => {
                 value={inputText}
             />
             <div className="chat-tool-area-container">
-                {chatActivated ? (
-                    <Button
-                        className="reset-interview-button"
-                        appearance="primary"
-                        color="red"
-                        disabled={
-                            sendMessage.loading ||
-                            activateChat.loading ||
-                            !chatActivated
-                        }
-                        onClick={() =>
-                            messageStreamRef.current.next(
-                                createChatEventMessage(
-                                    EVENT_TYPE_CLIENT_RESET_MESSAGE_QUEUE
-                                )
-                            )
-                        }
-                    >
-                        Reset Interview
-                    </Button>
-                ) : null}
                 <ButtonToolbar className="send-button-tool-bar">
                     <Button
                         className="clear-message-button"
@@ -307,4 +327,4 @@ const DatasetKnowledgeInterview: FunctionComponent<PropsType> = (props) => {
     );
 };
 
-export default DatasetKnowledgeInterview;
+export default forwardRef<RefType, PropsType>(DatasetKnowledgeInterview);

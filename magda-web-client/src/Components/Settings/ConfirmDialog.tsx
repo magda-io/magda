@@ -1,4 +1,4 @@
-import React, { SyntheticEvent } from "react";
+import React, { ReactElement, SyntheticEvent } from "react";
 import Button from "rsuite/Button";
 import Modal from "rsuite/Modal";
 import Loader from "rsuite/Loader";
@@ -8,7 +8,7 @@ import { v4 as uuid } from "uuid";
 type PropsType = {};
 type StateType = {
     isOpen: boolean;
-    confirmMsg: string;
+    confirmMsg: string | ReactElement;
     headingText: string;
     confirmHandler: () => void | Promise<void>;
     cancelHandler: () => void | Promise<void>;
@@ -51,7 +51,7 @@ class ConfirmDialog extends React.Component<PropsType, StateType> {
     };
 
     static open(config: {
-        confirmMsg: string;
+        confirmMsg: string | ReactElement;
         headingText?: string;
         confirmHandler: () => void;
         cancelHandler?: () => void;
