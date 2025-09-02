@@ -10,6 +10,7 @@ import Modal from "rsuite/Modal";
 import Panel from "rsuite/Panel";
 import Button from "rsuite/Button";
 import Tag from "rsuite/Tag";
+import PanelGroup from "rsuite/PanelGroup";
 import Placeholder from "rsuite/Placeholder";
 import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
@@ -20,6 +21,7 @@ import reportError from "../../helpers/reportError";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { Letta } from "@letta-ai/letta-client";
 import { getAgentServiceApiClient } from "api-clients/AgentServiceApiClient";
+import ucwords from "ucwords";
 import "./InterviewAgentMemoryBlocksPopUp.scss";
 
 interface PermissionDataType extends Partial<CreateRolePermissionInputData> {
@@ -81,8 +83,15 @@ const MemoryBlockItem: FunctionComponent<MemoryBlockItemPropsType> = (
                         <MdKeyboardArrowDown className="expand-indicator-icon" />
                     )}
                     <span className="panel-heading-text">
-                        {block?.label ? block.label : "loading..."}
+                        {block?.label
+                            ? ucwords(block.label.replaceAll("_", " "))
+                            : "loading..."}
                     </span>
+                    {block?.metadata?.shared !== false ? null : (
+                        <Tag className="memory-block-tag" color="green">
+                            Sharable Memory Block
+                        </Tag>
+                    )}
                 </div>
             }
             className="dataset-knowledge-interview-agent-memory-block-item-container"
@@ -90,7 +99,7 @@ const MemoryBlockItem: FunctionComponent<MemoryBlockItemPropsType> = (
             <Input
                 className="memory-block-value"
                 as="textarea"
-                rows={5}
+                rows={8}
                 onKeyDown={async (e) => {
                     if (e.key === "Enter" && e.shiftKey) {
                         e.preventDefault();
@@ -100,9 +109,6 @@ const MemoryBlockItem: FunctionComponent<MemoryBlockItemPropsType> = (
                 value={block?.value || ""}
             />
             <div className="memory-block-actions">
-                {block?.metadata?.shared !== false ? null : (
-                    <Tag color="green">Sharable Memory Block</Tag>
-                )}
                 <Button
                     className="update-memory-block-button"
                     appearance="primary"
@@ -210,15 +216,32 @@ const InterviewAgentMemoryBlocksPopUp: ForwardRefRenderFunction<
                                 vertical
                             />
                         ) : null}
-                        <div className="memory-blocks-list">
-                            {blocks.map((block) => (
-                                <MemoryBlockItem
-                                    key={block.id}
-                                    datasetId={datasetId}
-                                    block={block}
-                                />
-                            ))}
-                        </div>
+                        <PanelGroup
+                            className="memory-blocks-list"
+                            accordion
+                            bordered
+                        >
+                            {blocks
+                                .sort((a, b) => {
+                                    if (
+                                        a?.metadata?.shared !== false &&
+                                        b?.metadata?.shared !== false
+                                    ) {
+                                        return 0;
+                                    }
+                                    return a?.metadata?.shared !== false
+                                        ? -1
+                                        : 1;
+                                })
+                                .map((block, idx) => (
+                                    <MemoryBlockItem
+                                        key={block.id}
+                                        datasetId={datasetId}
+                                        block={block}
+                                        defaultExpanded={idx === 0}
+                                    />
+                                ))}
+                        </PanelGroup>
                     </>
                 )}
             </Modal.Body>

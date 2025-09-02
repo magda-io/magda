@@ -1,5 +1,8 @@
 .knowledge-interview-agent-memory-blocks-popup {
     .dataset-knowledge-interview-agent-memory-block-item-container {
+        .memory-block-tag {
+            float: right;
+        }
         .memory-block-actions {
             .update-memory-block-button {
                 float: right;
@@ -10,6 +13,7 @@
             pre {
                 background: none !important;
             }
+            margin-bottom: 30px;
         }
         .button-area {
             position: absolute;
