@@ -1,6 +1,6 @@
 # content-api
 
-![Version: 5.4.0](https://img.shields.io/badge/Version-5.4.0-informational?style=flat-square)
+![Version: 6.0.0-alpha.9](https://img.shields.io/badge/Version-6.0.0--alpha.9-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 

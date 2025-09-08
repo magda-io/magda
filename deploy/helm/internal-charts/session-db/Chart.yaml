@@ -1,12 +1,12 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: session-db
-version: 5.4.0
+version: 6.0.0-alpha.9
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
 dependencies:
   - name: magda-postgres
-    version: "5.4.0"
+    version: "6.0.0-alpha.9"
     repository: "file://../magda-postgres"
     condition: global.useInK8sDbInstance.session-db

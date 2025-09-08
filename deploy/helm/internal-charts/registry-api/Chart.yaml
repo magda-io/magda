@@ -1,7 +1,7 @@
 apiVersion: v2
 description: A Helm chart for Kubernetes
 name: registry-api
-version: 5.4.0
+version: 6.0.0-alpha.9
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"
