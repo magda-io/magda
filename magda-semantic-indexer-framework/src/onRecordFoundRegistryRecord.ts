@@ -61,7 +61,10 @@ export const onRecordFoundRegistryRecord = (
             });
         } catch (err) {
             if (err instanceof SkipError) {
-                console.warn("Skipping record because:", err.message);
+                console.warn(
+                    `Skipping record ${record.id} because:`,
+                    err.message
+                );
                 return;
             }
             throw err;
