@@ -1,6 +1,6 @@
 # semantic-search-api
 
-![Version: 5.3.1](https://img.shields.io/badge/Version-5.3.1-informational?style=flat-square)
+![Version: 6.0.0-alpha.11](https://img.shields.io/badge/Version-6.0.0--alpha.11-informational?style=flat-square)
 
 A Helm chart for Semantic Search API
 
