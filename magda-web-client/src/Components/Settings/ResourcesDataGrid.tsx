@@ -27,6 +27,7 @@ import ResourceFormPopUp, {
 } from "./ResourceFormPopUp";
 import ConfirmDialog from "./ConfirmDialog";
 import { ResourceRecord } from "@magda/typescript-common/dist/authorization-api/model";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 const Column = Table.Column;
 const HeaderCell = Table.HeaderCell;
@@ -182,9 +183,11 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = ({
                                 return (
                                     <div>
                                         <Link
-                                            to={`/${directory}/resources/${
-                                                (rowData as any)?.id
-                                            }/operations`}
+                                            to={getUrlWithPopUpQueryString(
+                                                `/${directory}/resources/${
+                                                    (rowData as any)?.id
+                                                }/operations`
+                                            )}
                                         >
                                             <IconButton
                                                 size="md"

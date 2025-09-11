@@ -1,4 +1,8 @@
 .setting-page-main-container {
+    .side-navigation.no-side-nav {
+        display: none;
+    }
+
     .side-navigation {
         position: absolute;
         height: 100%;

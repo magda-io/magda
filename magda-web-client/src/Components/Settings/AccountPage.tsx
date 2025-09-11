@@ -21,6 +21,7 @@ import MyRoles from "../Account/MyRoles";
 import { StateType } from "reducers/reducer";
 import MyApiKeys from "../Account/MyApiKeys";
 import { ANONYMOUS_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 const AccountPage: FunctionComponent = () => {
     const history = useHistory();
@@ -51,7 +52,7 @@ const AccountPage: FunctionComponent = () => {
     const [active, setActive] = React.useState(location.pathname);
     const onSelectTab = useCallback((key) => {
         setActive(key);
-        history.push(key);
+        history.push(getUrlWithPopUpQueryString(key));
     }, []);
 
     useEffect(() => {

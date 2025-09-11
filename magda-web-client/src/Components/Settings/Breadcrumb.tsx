@@ -3,6 +3,7 @@ import { Link, withRouter, match } from "react-router-dom";
 import { Location, History } from "history";
 import urijs from "urijs";
 import "./Breadcrumb.scss";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 export type BreadcrumbItem = { to?: string; title: string };
 
@@ -42,7 +43,14 @@ const Breadcrumb: FunctionComponent<PropsType> = (props) => {
                     .map((item, idx) => (
                         <span key={idx} className="breadcrumb-item">
                             {item?.to && !isCurrentPage(location, item) ? (
-                                <Link to={item.to}>{item.title}</Link>
+                                <Link
+                                    to={getUrlWithPopUpQueryString(
+                                        item.to,
+                                        location
+                                    )}
+                                >
+                                    {item.title}
+                                </Link>
                             ) : (
                                 item.title
                             )}

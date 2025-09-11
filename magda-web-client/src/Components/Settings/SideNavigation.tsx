@@ -1,6 +1,6 @@
 import React, { FunctionComponent, ReactElement } from "react";
 import { withRouter } from "react-router-dom";
-import { Link } from "react-router-dom";
+import CommonLink from "../Common/CommonLink";
 import { Location, History } from "history";
 import {
     MdSupervisorAccount,
@@ -17,6 +17,10 @@ import { useSelector } from "react-redux";
 import uniq from "lodash/uniq";
 import { User } from "reducers/userManagementReducer";
 import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
+import {
+    getUrlWithPopUpQueryString,
+    showSideNav
+} from "../../helpers/popupUtils";
 
 type PropsType = {
     menuItems?: MenuItem[];
@@ -109,6 +113,8 @@ const defaultMenuItems: MenuItem[] = [
 
 /* eslint-disable jsx-a11y/anchor-is-valid */
 const SideNavigation: FunctionComponent<PropsType> = (props) => {
+    const { location } = props;
+    const shouldShowSideNav = showSideNav(location);
     const user = useSelector<StateType, User>(
         (state) => state?.userManagement?.user
     );
@@ -183,19 +189,23 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
     }
 
     return (
-        <div className="side-navigation">
+        <div
+            className={`side-navigation${
+                shouldShowSideNav ? "" : " no-side-nav"
+            }`}
+        >
             <div className="sidenav">
                 {menuItems.filter(accessFilter).map((item, idx) => (
-                    <Link
+                    <CommonLink
                         key={idx}
-                        to={item.path}
+                        to={getUrlWithPopUpQueryString(item.path, location)}
                         className={item?.active ? "active" : ""}
                     >
                         <span>
                             {item.icon}
                             {item.title}
                         </span>
-                    </Link>
+                    </CommonLink>
                 ))}
             </div>
         </div>
