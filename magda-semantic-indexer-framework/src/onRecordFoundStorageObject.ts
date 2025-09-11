@@ -116,7 +116,10 @@ export const onRecordFoundStorageObject = (
             });
         } catch (err) {
             if (err instanceof SkipError) {
-                console.warn("Skipping distribution because:", err.message);
+                console.warn(
+                    `Skipping distribution ${dist.id} because:`,
+                    err.message
+                );
                 return;
             }
             throw err;
