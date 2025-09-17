@@ -40,6 +40,7 @@ import UserFormPopUp, {
 import AccessGroupAddUserPopUp, {
     RefType as AccessGroupAddUserPopUpRefType
 } from "./AccessGroupAddUserPopUp";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
@@ -234,7 +235,9 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                                                     onClick={() => {
                                                                         onClose();
                                                                         history.push(
-                                                                            `/settings/users/${rowData.id}/roles`
+                                                                            getUrlWithPopUpQueryString(
+                                                                                `/settings/users/${rowData.id}/roles`
+                                                                            )
                                                                         );
                                                                     }}
                                                                 >

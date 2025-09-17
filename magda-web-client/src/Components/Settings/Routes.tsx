@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch, Redirect } from "react-router-dom";
+import { Route, Switch, Redirect, useLocation } from "react-router-dom";
 import withHeader from "Components/Header/withHeader";
 import "../../rsuite.scss";
 import ConfirmDialog from "./ConfirmDialog";
@@ -18,15 +18,23 @@ import AccessGroupDetailsPage from "./AccessGroupDetailsPage";
 import DatasetKnowledgeInterviewPage from "./DatasetKnowledgeInterviewPage";
 import ValidateUser from "Components/ValidateUser";
 
+function SettingsRedirect() {
+    const location = useLocation();
+    // preserve the query string if it exists
+    return <Redirect to={`/settings/account${location.search}`} />;
+}
+
 const Routes = () => {
     return (
         <ValidateUser>
             <>
                 <ConfirmDialog />
                 <Switch>
-                    <Route exact path="/settings">
-                        <Redirect to="/settings/account" />
-                    </Route>
+                    <Route
+                        exact
+                        path="/settings"
+                        component={SettingsRedirect}
+                    />
                     <Route
                         exact
                         path="/settings/datasets(/)*([^/])*"

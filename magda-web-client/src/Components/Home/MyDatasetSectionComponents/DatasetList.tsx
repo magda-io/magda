@@ -12,6 +12,8 @@ import openWindow from "helpers/openWindow";
 import { useHistory, Link, useLocation } from "react-router-dom";
 import { Location } from "history";
 import urijs from "urijs";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
+import getAbsoluteUrlPath from "helpers/getAbsoluteUrlPath";
 
 type PropsType = {
     openInPopUp?: boolean;
@@ -60,7 +62,9 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                 appearance="primary"
                 onClick={() => {
                     if (openInPopUp) {
-                        openWindow("/dataset/add/metadata?popup=true");
+                        openWindow(
+                            getAbsoluteUrlPath("/dataset/add/metadata?popup")
+                        );
                     } else {
                         history.push("/dataset/add/metadata");
                     }
@@ -76,7 +80,9 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                             className={`${
                                 activeTab === "drafts" ? "active" : ""
                             }`}
-                            to="/settings/datasets/draft"
+                            to={getUrlWithPopUpQueryString(
+                                "/settings/datasets/draft"
+                            )}
                         >
                             Drafts
                         </Link>
@@ -85,7 +91,9 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                             className={`${
                                 activeTab === "published" ? "active" : ""
                             }`}
-                            to="/settings/datasets/published"
+                            to={getUrlWithPopUpQueryString(
+                                "/settings/datasets/published"
+                            )}
                         >
                             Published
                         </Link>

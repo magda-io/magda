@@ -35,6 +35,7 @@ import VisibleForUser from "../VisibleForUser";
 import { User } from "reducers/userManagementReducer";
 import "./AccessGroupDataGrid.scss";
 import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 function hasAccessGroupCreationPermission(userData: User): boolean {
     if (!userData) {
@@ -315,9 +316,11 @@ const AccessGroupDataGrid: FunctionComponent<PropsType> = (
                                 return (
                                     <>
                                         <Link
-                                            to={`/settings/accessGroups/${encodeURIComponent(
-                                                rowData.id
-                                            )}`}
+                                            to={getUrlWithPopUpQueryString(
+                                                `/settings/accessGroups/${encodeURIComponent(
+                                                    rowData.id
+                                                )}`
+                                            )}
                                         >
                                             <IconButton
                                                 size="md"

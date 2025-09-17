@@ -44,6 +44,8 @@ import { indexDatasetById } from "api-clients/IndexerApis";
 import AccessGroupAddDatasetPopUp, {
     RefType as AccessGroupAddDatasetPopUpRefType
 } from "../../Settings/AccessGroupAddDatasetPopUp";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
+import getAbsoluteUrlPath from "helpers/getAbsoluteUrlPath";
 
 const PAGE_SIZE = 10;
 
@@ -107,11 +109,27 @@ function createDatsetRow(
                                             icon={<MdPreview />}
                                             onClick={() => {
                                                 onClose();
-                                                history.push(
-                                                    `/dataset/${encodeURIComponent(
-                                                        record.id
-                                                    )}/details`
-                                                );
+                                                const datasetUrl = `/dataset/${encodeURIComponent(
+                                                    record.id
+                                                )}/details`;
+                                                if (openInPopUp) {
+                                                    openWindow(
+                                                        getAbsoluteUrlPath(
+                                                            `${datasetUrl}?popup`
+                                                        ),
+                                                        {
+                                                            name:
+                                                                "view-dataset-" +
+                                                                record.id
+                                                        }
+                                                    );
+                                                } else {
+                                                    history.push(
+                                                        getUrlWithPopUpQueryString(
+                                                            datasetUrl
+                                                        )
+                                                    );
+                                                }
                                             }}
                                         >
                                             View Dataset
@@ -176,7 +194,9 @@ function createDatsetRow(
                                                 )}`;
                                                 if (openInPopUp) {
                                                     openWindow(
-                                                        `${editorUrl}?popup=true`,
+                                                        getAbsoluteUrlPath(
+                                                            `${editorUrl}?popup`
+                                                        ),
                                                         {
                                                             name:
                                                                 "edit-dataset-" +

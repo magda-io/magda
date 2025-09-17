@@ -43,7 +43,7 @@ import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 import redirect from "helpers/redirect";
 import Loader from "rsuite/Loader";
-import { createPopupModeQueryString } from "helpers/popupUtils";
+import { inPopUpMode } from "helpers/popupUtils";
 import sendEventToOpener, {
     EVENT_TYPE_DATASET_EDITING_COMPLETE
 } from "libs/sendEventToOpener";
@@ -67,7 +67,7 @@ type Props = {
 
 class EditDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
-    popUpModeQueryString = createPopupModeQueryString();
+    popUpModeQueryString = inPopUpMode() ? "popup" : "";
 
     constructor(props) {
         super(props);

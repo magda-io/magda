@@ -15,6 +15,7 @@ import { getFormatIcon, determineFormatIcon } from "./DistributionIcon";
 import { licenseLevel } from "constants/DatasetConstants";
 import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
 import humanFileSize from "helpers/humanFileSize";
+import { getUrlWithPopUpQueryString } from "helpers/popupUtils";
 
 export type PropType = {
     dataset: Dataset;
@@ -45,11 +46,13 @@ class DistributionRow extends Component<PropType> {
             ? getStorageApiResourceAccessUrl(distribution.downloadURL)
             : undefined;
 
-        const distributionLink = `/dataset/${encodeURIComponent(
-            dataset.identifier
-        )}/distribution/${encodeURIComponent(distribution.identifier!)}/?q=${
-            this.props.searchText
-        }`;
+        const distributionLink = getUrlWithPopUpQueryString(
+            `/dataset/${encodeURIComponent(
+                dataset.identifier
+            )}/distribution/${encodeURIComponent(
+                distribution.identifier!
+            )}/?q=${this.props.searchText}`
+        );
 
         let apiUrl = "";
 
