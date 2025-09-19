@@ -87,7 +87,7 @@ const MemoryBlockItem: FunctionComponent<MemoryBlockItemPropsType> = (
                             ? ucwords(block.label.replaceAll("_", " "))
                             : "loading..."}
                     </span>
-                    {block?.metadata?.shared !== false ? null : (
+                    {!block?.metadata?.shared ? null : (
                         <Tag className="memory-block-tag" color="green">
                             Sharable Memory Block
                         </Tag>
@@ -223,15 +223,12 @@ const InterviewAgentMemoryBlocksPopUp: ForwardRefRenderFunction<
                         >
                             {blocks
                                 .sort((a, b) => {
-                                    if (
-                                        a?.metadata?.shared !== false &&
-                                        b?.metadata?.shared !== false
-                                    ) {
+                                    const sharedA = !!a?.metadata?.shared;
+                                    const sharedB = !!b?.metadata?.shared;
+                                    if (sharedA === sharedB) {
                                         return 0;
                                     }
-                                    return a?.metadata?.shared !== false
-                                        ? -1
-                                        : 1;
+                                    return sharedA !== false ? 1 : -1;
                                 })
                                 .map((block, idx) => (
                                     <MemoryBlockItem

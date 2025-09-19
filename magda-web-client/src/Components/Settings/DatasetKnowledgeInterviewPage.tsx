@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef } from "react";
+import React, { FunctionComponent, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useAsync } from "react-async-hook";
@@ -25,6 +25,7 @@ import reportError from "helpers/reportError";
 
 const DatasetKnowledgeInterviewPage: FunctionComponent = () => {
     const { datasetId } = useParams<{ datasetId: string }>();
+    const [loading, setLoading] = useState<boolean>(false);
     const userId = useSelector<StateType, string>(
         (state) => state?.userManagement?.user?.id
     );
@@ -76,12 +77,24 @@ const DatasetKnowledgeInterviewPage: FunctionComponent = () => {
                     </Message>
                 ) : (
                     <div>
+                        {loading ? (
+                            <Loader backdrop content="loading..." vertical />
+                        ) : null}
                         <Panel className="top-tool-area" bordered>
                             <Button
                                 className="view-memory-blocks-button"
                                 appearance="primary"
-                                onClick={() => {
-                                    agentMemoryBlockPopUpRef?.current?.open();
+                                onClick={async () => {
+                                    try {
+                                        setLoading(true);
+                                        await agentMemoryBlockPopUpRef?.current?.open();
+                                    } catch (e) {
+                                        reportError(
+                                            `Failed to open memory blocks: ${e}`
+                                        );
+                                    } finally {
+                                        setLoading(false);
+                                    }
                                 }}
                             >
                                 <MdMemory /> View Agent Memory Blocks

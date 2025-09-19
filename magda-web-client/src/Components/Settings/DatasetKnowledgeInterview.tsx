@@ -250,10 +250,13 @@ const DatasetKnowledgeInterview: ForwardRefRenderFunction<
                         <Button
                             className="chat-activation-button"
                             appearance="primary"
-                            onClick={async () => await activateChat.execute()}
+                            disabled={activateChat.loading}
+                            onClick={activateChat.execute}
                         >
                             <MdOutlinePlayCircle />
-                            Start Interview
+                            {activateChat.loading
+                                ? "Starting Interview..."
+                                : "Start Interview"}
                         </Button>
                     </Panel>
                 )}
