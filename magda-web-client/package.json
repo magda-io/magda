@@ -2,7 +2,7 @@
   "private": true,
   "name": "@magda/web-client",
   "description": "The MAGDA in-browser web front end.",
-  "version": "5.4.0",
+  "version": "5.5.0",
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
@@ -28,9 +28,9 @@
     "@babel/runtime": "^7.23.2",
     "@craco/craco": "^7.1.0",
     "@langchain/community": "0.2.31",
-    "@magda/registry-aspects": "^5.4.0",
-    "@magda/scripts": "^5.4.0",
-    "@magda/typescript-common": "^5.4.0",
+    "@magda/registry-aspects": "^5.5.0",
+    "@magda/scripts": "^5.5.0",
+    "@magda/typescript-common": "^5.5.0",
     "@mlc-ai/web-llm": "0.2.73",
     "@types/debounce-promise": "^3.1.1",
     "@types/is-uuid": "^1.0.0",
@@ -142,6 +142,7 @@
     "rrule": "^2.6.2",
     "rss-parser": "^2.9.0",
     "rsuite": "^5.49.0",
+    "rxjs": "^7.8.2",
     "semver": "^7.7.1",
     "smoothscroll-polyfill": "^0.4.4",
     "source-map-explorer": "^1.7.0",
@@ -159,8 +160,7 @@
     "webpack-filter-warnings-plugin": "^1.2.1",
     "weighted-mean": "^1.0.2",
     "xlsx": "^0.14.0",
-    "yaml-front-matter": "^4.1.1",
-    "rxjs": "^7.8.2"
+    "yaml-front-matter": "^4.1.1"
   },
   "resolutions": {
     "@langchain/core": "0.2.28",

@@ -1,6 +1,6 @@
 # magda-postgres
 
-![Version: 5.4.0](https://img.shields.io/badge/Version-5.4.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+![Version: 5.5.0](https://img.shields.io/badge/Version-5.5.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 A helm wrapper chart that provides in-kubernetes postgreSQL for Magda.
 
@@ -53,7 +53,7 @@ More config postgreSQL related options, please refer to: https://github.com/bitn
 | postgresql.fullnameOverride | string | `"default-db-postgresql"` | Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern. And point k8s service to DB instance. |
 | postgresql.image.registry | string | `"ghcr.io"` |  |
 | postgresql.image.repository | string | `"magda-io/magda-postgres"` |  |
-| postgresql.image.tag | string | `"5.4.0"` | the default docker image tag/version used by the postgresql chart.  When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number. |
+| postgresql.image.tag | string | `"5.5.0"` | the default docker image tag/version used by the postgresql chart.  When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number. |
 | postgresql.livenessProbe.enabled | bool | `false` | `customLivenessProbe` will only be used when `enabled`=`false` Otherwise, default livenessProbe will be used. |
 | postgresql.nameOverride | string | `"default-db-postgresql"` | Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern. And point k8s service to DB instance. |
 | postgresql.persistence.size | string | `"50Gi"` | set the persistence volume size of the postgresql statefulset |
