@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v5.6.0
+
+- Fix: recent search panel display organisation label incorrect
+
 ## v5.5.0
 
 - Fix: search-api-auto-ping job "Couldn't find the binary git" error

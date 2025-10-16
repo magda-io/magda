@@ -132,7 +132,7 @@ class SearchSuggestionBox extends Component<Props & any, any> {
         if (data.organisation)
             filters.push(
                 "from organisation " +
-                    this.createSearchOptionListTextFromArray(data.publisher)
+                    this.createSearchOptionListTextFromArray(data.organisation)
             );
         if (data.dateFrom)
             filters.push("from *" + getDateString(data.dateFrom) + "*");
@@ -186,7 +186,6 @@ class SearchSuggestionBox extends Component<Props & any, any> {
 
     executeSearchItem(item: SearchDataType) {
         const searchData = { ...item.data };
-        if (searchData.publisher) delete searchData.publisher;
         redirect(this.props.history, `/search`, searchData);
         this.setState({
             isMouseOver: false,
