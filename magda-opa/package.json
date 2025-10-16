@@ -1,6 +1,6 @@
 {
   "name": "@magda/opa",
-  "version": "5.4.0",
+  "version": "5.5.0",
   "description": "MAGDA's Open Policy Agent docker image with built-in policies.",
   "scripts": {
     "dev": "docker-compose up",
@@ -19,6 +19,6 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^5.4.0"
+    "@magda/scripts": "^5.5.0"
   }
 }
