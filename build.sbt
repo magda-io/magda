@@ -1,5 +1,7 @@
 import spray.json._
 import DefaultJsonProtocol._
+import sbt.{Def, Resolver}
+import sbt.Keys.baseDirectory
 
 name := "magda-metadata"
 
@@ -12,6 +14,14 @@ lazy val packageJson = {
 
    Map(
     "version" -> jsonAst.getFields("version").head.asInstanceOf[JsString].value
+  )
+}
+
+ThisBuild / resolvers ++= {
+  val root = (ThisBuild / baseDirectory).value
+  Seq(
+    Resolver.mavenLocal,
+    "monsanto-local" at (root / "dep-jars/dl.bintray.com/monsanto/maven").toURI.toString
   )
 }
 
