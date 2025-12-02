@@ -1,4 +1,4 @@
-FROM ghcr.io/magda-io/magda-builder-nodejs:node18-ubuntu20
+FROM ghcr.io/magda-io/magda-builder-nodejs:node22-ubuntu20
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -25,4 +25,3 @@ RUN mkdir -p ~/.docker/cli-plugins && \
 RUN wget -nv -O /usr/local/bin/regctl https://github.com/regclient/regclient/releases/download/${REGCLIENT_VERSION}/regctl-${REGCLIENT_ARCH} && \
     chmod a+x /usr/local/bin/regctl && \
     echo "Successfully installed regctl"
-

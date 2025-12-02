@@ -17,8 +17,8 @@ RUN apt-get update && apt-get install -y \
     socat \
  && rm -rf /var/lib/apt/lists/*
 
-# Use NodeSource to install Node.js (LTS or v18)
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+# Use NodeSource to install Node.js (current LTS v22)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
     node -v && npm -v
 

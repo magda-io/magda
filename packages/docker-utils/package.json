@@ -9,7 +9,7 @@
     "./package.json": "./package.json"
   },
   "engines": {
-    "node": ">=18.19.0"
+    "node": ">=22.0.0"
   },
   "bin": {
     "create-docker-context-for-node-component": "./dist/create-docker-context-for-node-component.js",
