@@ -1,5 +1,7 @@
 import spray.json._
 import DefaultJsonProtocol._
+import sbt.{Def, Resolver}
+import sbt.Keys.baseDirectory
 
 name := "magda-metadata"
 
@@ -12,6 +14,14 @@ lazy val packageJson = {
 
    Map(
     "version" -> jsonAst.getFields("version").head.asInstanceOf[JsString].value
+  )
+}
+
+ThisBuild / resolvers ++= {
+  val root = (ThisBuild / baseDirectory).value
+  Seq(
+    Resolver.mavenLocal,
+    "monsanto-local" at (root / "dep-jars/dl.bintray.com/monsanto/maven").toURI.toString
   )
 }
 
@@ -31,21 +41,21 @@ lazy val searchApi = (project in file("magda-search-api"))
   .dependsOn(common % "test->test;compile->compile")
   .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
   .settings(
-    dockerBaseImage := "openjdk:8-jre"
+    dockerBaseImage := "eclipse-temurin:8-jre"
   )
 lazy val indexer = (project in file("magda-indexer"))
   .settings(commonSettings: _*)
   .dependsOn(common % "test->test;compile->compile")
   .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
   .settings(
-    dockerBaseImage := "openjdk:8-jre"
+    dockerBaseImage := "eclipse-temurin:8-jre"
   )
 lazy val registryApi = (project in file("magda-registry-api"))
   .settings(commonSettings: _*)
   .dependsOn(common)
   .enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
   .settings(
-    dockerBaseImage := "openjdk:8-jre"
+    dockerBaseImage := "eclipse-temurin:8-jre"
   )
 lazy val intTest = (project in file("magda-int-test"))
   .settings(commonSettings: _*)

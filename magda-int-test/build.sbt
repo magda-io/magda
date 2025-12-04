@@ -5,7 +5,6 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 // See ref https://github.com/sbt/sbt/issues/413
 updateOptions := updateOptions.value.withCachedResolution(true)
 
-resolvers += Resolver.bintrayRepo("monsanto", "maven")
 resolvers += "elasticsearch-releases" at "https://artifacts.elastic.co/maven"
 
 libraryDependencies ++= {
@@ -31,4 +30,3 @@ libraryDependencies ++= {
     "org.mock-server" % "mockserver-netty" % "5.5.1" % Test
   )
 }
-

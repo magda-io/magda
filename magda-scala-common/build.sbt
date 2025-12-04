@@ -1,6 +1,5 @@
 name := "magda-scala-common"
 
-resolvers += Resolver.bintrayRepo("monsanto", "maven")
 resolvers += "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
 resolvers += "Sonatype OSS Staging" at "https://oss.sonatype.org/content/repositories/staging"
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
