@@ -51,7 +51,7 @@
     "helm-docs": "cd deploy && yarn helm-docs && cd .."
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "husky": {
     "hooks": {
