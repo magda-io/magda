@@ -9,7 +9,7 @@
     "./package.json": "./package.json"
   },
   "engines": {
-    "node": ">=20 <21"
+    "node": ">=20"
   },
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
@@ -31,7 +31,6 @@
     "@types/fs-extra": "^11.0.4",
     "@types/lodash": "^4.14.68",
     "@types/mocha": "^10.0.6",
-    "@types/node-sass": "^3.10.32",
     "@types/read-pkg-up": "^3.0.1",
     "@types/recursive-readdir": "^2.2.0",
     "@types/sinon": "^2.3.3",
@@ -54,7 +53,7 @@
     "escape-string-regexp": "^1.0.5",
     "fs-extra": "^11.2.0",
     "node-fetch": "^3.3.2",
-    "node-sass": "^9.0.0",
+    "sass": "^1.71.0",
     "postcss": "^8.4.32",
     "read-pkg-up": "^3.0.0",
     "recursive-readdir": "^2.2.2",

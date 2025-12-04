@@ -1,4 +1,5 @@
-import sass from "node-sass";
+import sass from "sass";
+import type { LegacyResult } from "sass";
 import cleancss from "clean-css";
 import fse from "fs-extra";
 import escapeStringRegexp from "escape-string-regexp";
@@ -7,16 +8,13 @@ import autoprefixer from "autoprefixer";
 import path from "path";
 
 export const renderScssData = (clientRoot: string, data: string) => {
-    return (new Promise((resolve, reject) => {
+    return new Promise<LegacyResult>((resolve, reject) => {
         sass.render(
             {
                 data,
                 includePaths: [clientRoot + "/src"],
                 importer: (url, prev, done) => {
-                    // --- adjust the path to `node_modules`
-                    // --- and if it's a .css file then read it manually to avoid the warning
-                    // --- the warning will be fixed in node-sass 4.10 (not yet availble)
-                    // --- https://github.com/sass/node-sass/issues/2362
+                    // Adjust the path to `node_modules` and inline .css files to avoid warnings.
                     if (!url.match(/^[\.\/]*node_modules/i)) {
                         done({ file: url });
                     } else {
@@ -67,12 +65,12 @@ export const renderScssData = (clientRoot: string, data: string) => {
                 }
             }
         );
-    }) as Promise<sass.Result>)
-        .then((result: sass.Result) => {
+    })
+        .then((result: LegacyResult) => {
             return postcss([autoprefixer])
                 .process(result.css.toString("utf-8"), {
                     //--- from & to are name only used for sourcemap
-                    from: "node-sass-raw.css",
+                    from: "sass-raw.css",
                     to: "stylesheet.css"
                 })
                 .then(function (result) {
