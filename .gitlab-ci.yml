@@ -545,13 +545,12 @@ buildtest:opa-policies:
 
 buildtest:helm-charts:
   stage: buildtest
-  image: dtzar/helm-kubectl:3.13.3
+  image: ghcr.io/magda-io/magda-builder-docker:$BUILDER_IMG_TAG
   needs:
     - yarn-install
   cache:
     paths: []
   script:
-    - apk add nodejs npm yarn
     - helm repo add magda-io https://charts.magda.io
     - yarn update-all-charts
 
@@ -747,7 +746,7 @@ dockerize:dockerExtensions:
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.13.3
+    name: ghcr.io/magda-io/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -755,7 +754,7 @@ dockerize:dockerExtensions:
     on_stop: Stop Preview
   before_script:
     # Add PWGEN for generating passwords
-    - apk add --update pwgen
+    - apt-get update -qq && apt-get install -y -qq --no-install-recommends pwgen
 
     # Env vars
     - MINIO_HOST="${MINIO_HOST:-localhost}"
@@ -825,7 +824,7 @@ Stop Preview: &stopPreview
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.13.3
+    name: ghcr.io/magda-io/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   before_script: []
   environment:
@@ -854,7 +853,7 @@ Deploy Main Branch To Dev:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: dtzar/helm-kubectl:3.13.3
+    name: ghcr.io/magda-io/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   before_script: []
   environment:
@@ -999,7 +998,7 @@ Publish Helm Chart:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: dtzar/helm-kubectl:3.13.3
+    name: ghcr.io/magda-io/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   script: |
     # release helm charts to github container registry
