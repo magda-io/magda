@@ -548,6 +548,7 @@ buildtest:helm-charts:
   image: ghcr.io/magda-io/magda-builder-docker:$BUILDER_IMG_TAG
   needs:
     - yarn-install
+    - build-builder-image
   cache:
     paths: []
   script:
