@@ -13,7 +13,7 @@ These instructions install Magda into its own `magda` namespace.
 1. [minikube](https://minikube.sigs.k8s.io/docs/start/)
 2. [Docker Desktop](https://www.docker.com/products/docker-desktop): Docker Desktop comes wit the hyperkit driver that used by minikube
 3. [kubectl](https://kubernetes.io/docs/tasks/tools/)
-4. [nvm](https://github.com/nvm-sh/nvm): nvm is used for managing NodeJs version. We need either NodeJs 12
+4. [nvm](https://github.com/nvm-sh/nvm): nvm is used for managing NodeJs version. We need either NodeJs 22
 5. [helm](https://helm.sh/)
 
 Optional, but highly recommended:
