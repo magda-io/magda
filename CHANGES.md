@@ -4,11 +4,12 @@
 
 - Fix: recent search panel display organisation label incorrect
 - Node 22 Upgrade
+- Upgraded local in cluster use PostgreSQL build from 13.6 to [13.7](https://www.postgresql.org/docs/release/13.7/)
 
 ## v5.5.0
 
 - Fix: search-api-auto-ping job "Couldn't find the binary git" error
-- Upgraded local in cluster use PostgreSQL build from 13.3 to [13.6](https://www.postgresql.org/docs/release/13.6/)
+- Upgraded local in cluster use PostgreSQL build from 13.5 to [13.6](https://www.postgresql.org/docs/release/13.6/)
 - Upgrade react-icon to 5.5.0
 - Enhancement: apply slim style to footers in all "settings" pages
 - #3622 Refactor the chatbot message rendering UI to make it reusable
