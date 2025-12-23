@@ -3,6 +3,7 @@
 ## v5.6.0
 
 - Fix: recent search panel display organisation label incorrect
+- Node 22 Upgrade
 
 ## v5.5.0
 
