@@ -217,7 +217,7 @@ buildtest:search-no-index-cache:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - postgres:13.6
+    - postgres:13.7
     - docker:28.5.0-dind
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
@@ -293,7 +293,7 @@ buildtest:registry:
     - sbt-prebuild
   timeout: 30 minutes
   services:
-    - postgres:13.6
+    - postgres:13.7
   variables:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
@@ -375,7 +375,7 @@ buildtest:typescript-apis-with-pg:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - postgres:13.6
+    - postgres:13.7
     - docker:28.5.0-dind
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
