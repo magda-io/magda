@@ -3,6 +3,7 @@
 ## v5.6.0
 
 - Fix: recent search panel display organisation label incorrect
+- Bump and rename sslcontext-kicktart to ayza by @Hakky54 in https://github.com/magda-io/magda/pull/3628
 - Node 22 Upgrade
 - Upgraded local in cluster use PostgreSQL build from 13.6 to [13.7](https://www.postgresql.org/docs/release/13.7/)
 
