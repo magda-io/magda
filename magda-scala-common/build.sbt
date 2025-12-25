@@ -1,6 +1,5 @@
 name := "magda-scala-common"
 
-resolvers += Resolver.bintrayRepo("monsanto", "maven")
 resolvers += "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
 resolvers += "Sonatype OSS Staging" at "https://oss.sonatype.org/content/repositories/staging"
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
@@ -45,7 +44,7 @@ libraryDependencies ++= {
     "org.scalikejdbc"              %% "scalikejdbc"                 % "3.2.4",
     "org.json4s"                   % "json4s-native_2.12"           % "4.0.5",
     "com.jayway.jsonpath"          % "json-path"                    % "2.7.0",
-    "io.github.hakky54"            % "sslcontext-kickstart"         % "8.3.2",
-    "io.github.hakky54"            % "sslcontext-kickstart-for-pem" % "8.3.2"
+    "io.github.hakky54"            % "ayza"                         % "10.0.0",
+    "io.github.hakky54"            % "ayza-for-pem"                 % "10.0.0"
   )
 }

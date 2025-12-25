@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:20
 ADD component/setup.sh /setup.sh
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app

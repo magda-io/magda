@@ -30,7 +30,7 @@ stages:
 
 yarn-install:
   stage: builders
-  image: ghcr.io/magda-io/magda-builder-docker:node18-ubuntu20
+  image: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
   retry: 1
   needs: []
   cache:
@@ -49,13 +49,13 @@ yarn-install:
 
 build-builder-image:
   stage: builders
-  image: ghcr.io/magda-io/magda-builder-docker:node18-ubuntu20
+  image: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
   retry: 1
   needs: []
   before_script:
     - ./gitlab-ci-buildx-setup.sh
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   # Build all three builder images and push to gitlab registry
   script:
     - cd magda-builder-nodejs && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-nodejs:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile . 
@@ -156,7 +156,7 @@ buildtest:search-with-index-cache:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
@@ -219,8 +219,8 @@ buildtest:search-no-index-cache:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - postgres:13.6
-    - docker:dind
+    - postgres:13.7
+    - docker:28.5.0-dind
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
@@ -295,7 +295,7 @@ buildtest:registry:
     - sbt-prebuild
   timeout: 30 minutes
   services:
-    - postgres:13.6
+    - postgres:13.7
   variables:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
@@ -377,8 +377,8 @@ buildtest:typescript-apis-with-pg:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - postgres:13.6
-    - docker:dind
+    - postgres:13.7
+    - docker:28.5.0-dind
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
@@ -426,7 +426,7 @@ buildtest:typescript-apis-with-es:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
@@ -471,7 +471,7 @@ buildtest:storage-api:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
@@ -512,7 +512,7 @@ buildtest:integration-tests:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   variables:
     POSTGRES_URL: "jdbc:postgresql://localhost/postgres"
     POSTGRES_DB: postgres
@@ -540,20 +540,20 @@ buildtest:opa-policies:
   cache:
     paths: []
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   script:
     - cd magda-opa
     - yarn test
 
 buildtest:helm-charts:
   stage: buildtest
-  image: dtzar/helm-kubectl:3.13.3
+  image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   needs:
     - yarn-install
+    - build-builder-image
   cache:
     paths: []
   script:
-    - apk add nodejs npm yarn
     - helm repo add magda-io https://charts.magda.io
     - yarn update-all-charts
 
@@ -585,7 +585,7 @@ buildtest:helm-docs-check:
   cache:
     paths: []
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   script:
     - code=0
     - docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:v1.13.1 || code=$?;
@@ -615,7 +615,7 @@ dockerize:scala:
     - buildtest:search-no-index-cache
     - buildtest:search-with-index-cache
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   script:
     - ./gitlab-ci-buildx-setup.sh
     # output stage docker image content without build it
@@ -631,7 +631,7 @@ dockerize:ui:
   cache:
     paths: []
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   needs:
     - yarn-install
     - registry-typescript-api
@@ -650,7 +650,7 @@ dockerize:ui-scss-compiler:
   cache:
     paths: []
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   needs:
     - yarn-install
     - registry-typescript-api
@@ -668,7 +668,7 @@ dockerize:typescript:
   cache:
     paths: []
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   needs:
     - yarn-install
     - registry-typescript-api
@@ -692,7 +692,7 @@ dockerize:migrators:
   cache:
     paths: []
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   script:
     - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
@@ -710,7 +710,7 @@ dockerize:opa:
   before_script:
     - ./gitlab-ci-buildx-setup.sh
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   script:
   - cd magda-opa
   - yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
@@ -725,7 +725,7 @@ dockerize:dockerExtensions:
   cache:
     paths: []
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   script:
     - ./gitlab-ci-buildx-setup.sh
     # disable multi-arch docker image build for postgreSQL for now
@@ -749,7 +749,7 @@ dockerize:dockerExtensions:
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.13.3
+    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -757,7 +757,7 @@ dockerize:dockerExtensions:
     on_stop: Stop Preview
   before_script:
     # Add PWGEN for generating passwords
-    - apk add --update pwgen
+    - apt-get update -qq && apt-get install -y -qq --no-install-recommends pwgen
 
     # Env vars
     - MINIO_HOST="${MINIO_HOST:-localhost}"
@@ -827,7 +827,7 @@ Stop Preview: &stopPreview
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.13.3
+    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
   retry: 1
   before_script: []
   environment:
@@ -856,7 +856,7 @@ Deploy Main Branch To Dev:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: dtzar/helm-kubectl:3.13.3
+    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
   retry: 1
   before_script: []
   environment:
@@ -900,7 +900,7 @@ pre-release:check-release-version:
 Release-to-Docker-Hub-Github-Container:
   stage: release
   services:
-    - docker:dind
+    - docker:28.5.0-dind
   rules:
     # Strict Semvar validation. match any version string. Should release version tag
     - if: $CI_COMMIT_TAG =~ /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
@@ -1001,7 +1001,7 @@ Publish Helm Chart:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: dtzar/helm-kubectl:3.13.3
+    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
   retry: 1
   script: |
     # release helm charts to github container registry

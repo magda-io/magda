@@ -1,4 +1,4 @@
-FROM ghcr.io/magda-io/magda-builder-docker:node18-ubuntu20
+FROM ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
 
 ARG TARGETOS
 ARG TARGETARCH

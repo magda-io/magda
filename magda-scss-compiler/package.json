@@ -1,7 +1,7 @@
 {
   "name": "@magda/magda-scss-compiler",
   "description": "The web-client SCSS compiler pod",
-  "version": "5.4.0",
+  "version": "5.6.0",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -9,7 +9,7 @@
     "./package.json": "./package.json"
   },
   "engines": {
-    "node": ">=18.19.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
@@ -23,7 +23,7 @@
     "test": "c8 mocha"
   },
   "devDependencies": {
-    "@magda/scripts": "^5.4.0",
+    "@magda/scripts": "^5.6.0",
     "@types/chai": "^4.3.11",
     "@types/clean-css": "^3.4.30",
     "@types/config": "0.0.32",
@@ -31,7 +31,6 @@
     "@types/fs-extra": "^11.0.4",
     "@types/lodash": "^4.14.68",
     "@types/mocha": "^10.0.6",
-    "@types/node-sass": "^3.10.32",
     "@types/read-pkg-up": "^3.0.1",
     "@types/recursive-readdir": "^2.2.0",
     "@types/sinon": "^2.3.3",
@@ -47,17 +46,17 @@
   },
   "dependencies": {
     "@magda/esm-utils": "^1.0.1",
-    "@magda/typescript-common": "^5.4.0",
-    "@magda/web-client": "^5.4.0",
+    "@magda/typescript-common": "^5.6.0",
+    "@magda/web-client": "^5.6.0",
     "autoprefixer": "^10.4.16",
     "clean-css": "^4.2.1",
     "escape-string-regexp": "^1.0.5",
     "fs-extra": "^11.2.0",
     "node-fetch": "^3.3.2",
-    "node-sass": "^9.0.0",
     "postcss": "^8.4.32",
     "read-pkg-up": "^3.0.0",
     "recursive-readdir": "^2.2.2",
+    "sass": "^1.71.0",
     "tempy": "^0.2.1",
     "urijs": "^1.19.11",
     "yargs": "^12.0.5"
