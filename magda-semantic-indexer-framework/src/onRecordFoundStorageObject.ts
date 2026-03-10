@@ -156,7 +156,12 @@ async function downloadFile(
 
     let response;
     try {
-        response = await fetch(url);
+        response = await fetch(url, {
+            compress: false,
+            headers: {
+                "accept-encoding": "identity"
+            }
+        });
     } catch (err) {
         throw new SkipError(`Failed to download file because network error`);
     }

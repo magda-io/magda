@@ -98,7 +98,10 @@ describe("onRecordFoundStorageObject", () => {
 
     it("should handle and index storage object with expected formatType, with autoDownloadFile enabled", async () => {
         const fileContent = "test1";
-        nock("http://test.com").get("/file.csv").reply(200, fileContent);
+        nock("http://test.com")
+            .matchHeader("accept-encoding", "identity")
+            .get("/file.csv")
+            .reply(200, fileContent);
 
         const record = createRecord({
             id: "id1",
