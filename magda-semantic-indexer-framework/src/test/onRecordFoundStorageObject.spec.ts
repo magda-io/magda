@@ -337,6 +337,74 @@ describe("onRecordFoundStorageObject", () => {
         nock.cleanAll();
     });
 
+    it("should decode gzip payload when content-encoding includes identity token", async () => {
+        const fileContent = "test1";
+        nock("http://test.com")
+            .matchHeader("accept-encoding", /gzip,\s*deflate,\s*br/i)
+            .get("/file.csv")
+            .reply(200, gzipSync(Buffer.from(fileContent)), {
+                "content-type": "application/octet-stream",
+                "content-encoding": "gzip, identity"
+            });
+
+        let usedFilePath = null;
+        testEnv.createEmbeddingTextStub.callsFake(async ({ filePath }) => {
+            expect(filePath).to.be.a("string");
+            expect(fs.existsSync(filePath)).to.be.true;
+            const content = fs.readFileSync(filePath, "utf-8");
+            expect(content).to.equal(fileContent);
+            usedFilePath = filePath;
+            return { text: "embedding text: test1" };
+        });
+
+        testEnv.chunker.chunk
+            .withArgs("embedding text: test1")
+            .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
+
+        const record = createRecord({
+            id: "id1",
+            aspects: {
+                "dataset-format": { format: "csv" },
+                "dcat-distribution-strings": {
+                    format: "csv",
+                    downloadURL: "http://test.com/file.csv"
+                }
+            }
+        });
+
+        const userConfig = testEnv.updateUserConfig({
+            itemType: "storageObject",
+            formatTypes: ["csv"],
+            autoDownloadFile: true
+        });
+
+        const onRecordFound = onRecordFoundStorageObject(
+            userConfig,
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
+        );
+        await onRecordFound(record, testEnv.registry);
+
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 1,
+            chunkCallCount: 1,
+            embeddingApiCallCount: 1,
+            bulkIndexCallCount: 1,
+            deleteByQueryCallCount: 1
+        });
+
+        if (usedFilePath) {
+            expect(fs.existsSync(usedFilePath)).to.be.false;
+        }
+        nock.cleanAll();
+    });
+
     it("should filter out records with unexpected formatType", async () => {
         testEnv.createEmbeddingTextStub.resolves({
             text: "embedding text: test1"

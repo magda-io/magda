@@ -20,6 +20,7 @@ import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryCli
 import ServerError from "magda-typescript-common/src/ServerError.js";
 import { MinioClient } from "./MinioClient.js";
 import { deleteTempFile } from "./helpers.js";
+import { Transform } from "stream";
 
 class RetryableDownloadError extends Error {}
 
@@ -191,11 +192,12 @@ async function downloadFile(
     const tempFileName = `${uuidv4()}`;
     const suffix = new urijs(url).suffix();
     const tempFilePath = join(tempDir, `${tempFileName}.${suffix}`);
-    const responseStream = getDecodedResponseStream(response);
+    const decoderTransforms = getDecoderTransforms(response);
 
     try {
         const writeStream = fs.createWriteStream(tempFilePath);
-        await pipeline(responseStream, writeStream);
+        // Keep source + decode transforms + sink in one pipeline so stream errors are captured in-path.
+        await pipeline(response.body, ...decoderTransforms, writeStream);
         return tempFilePath;
     } catch (err) {
         await deleteTempFile(tempFilePath);
@@ -203,15 +205,14 @@ async function downloadFile(
     }
 }
 
-function getDecodedResponseStream(response: {
+function getDecoderTransforms(response: {
     body: NodeJS.ReadableStream | null;
     headers: { get(name: string): string | null };
-}): NodeJS.ReadableStream {
+}): Transform[] {
     if (!response.body) {
         throw new SkipError("No response body to write to file");
     }
 
-    let stream: NodeJS.ReadableStream = response.body;
     const contentEncodingHeader =
         response.headers.get("content-encoding")?.toLowerCase() || "";
     const encodings = contentEncodingHeader
@@ -220,8 +221,10 @@ function getDecodedResponseStream(response: {
         .filter(Boolean);
 
     if (encodings.length === 0 || encodings[0] === "identity") {
-        return stream;
+        return [];
     }
+
+    const decoderTransforms: Transform[] = [];
 
     // Content-Encoding is applied in order and must be decoded in reverse.
     for (let i = encodings.length - 1; i >= 0; i--) {
@@ -229,13 +232,15 @@ function getDecodedResponseStream(response: {
         switch (encoding) {
             case "gzip":
             case "x-gzip":
-                stream = stream.pipe(createGunzip());
+                decoderTransforms.push(createGunzip());
                 break;
             case "deflate":
-                stream = stream.pipe(createInflate());
+                decoderTransforms.push(createInflate());
                 break;
             case "br":
-                stream = stream.pipe(createBrotliDecompress());
+                decoderTransforms.push(createBrotliDecompress());
+                break;
+            case "identity":
                 break;
             default:
                 throw new SkipError(
@@ -244,7 +249,7 @@ function getDecodedResponseStream(response: {
         }
     }
 
-    return stream;
+    return decoderTransforms;
 }
 
 export async function getParentRecordId(
