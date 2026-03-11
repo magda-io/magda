@@ -100,9 +100,12 @@ describe("onRecordFoundStorageObject", () => {
     it("should handle and index storage object with expected formatType, with autoDownloadFile enabled", async () => {
         const fileContent = "test1";
         nock("http://test.com")
-            .matchHeader("accept-encoding", "identity")
+            .matchHeader("accept-encoding", /gzip,\s*deflate,\s*br/i)
             .get("/file.csv")
-            .reply(200, fileContent);
+            .reply(200, gzipSync(Buffer.from(fileContent)), {
+                "content-type": "application/octet-stream",
+                "content-encoding": "gzip"
+            });
 
         const record = createRecord({
             id: "id1",
@@ -287,7 +290,7 @@ describe("onRecordFoundStorageObject", () => {
             Buffer.from("JUNK_TRAILING_BYTES")
         ]);
         nock("http://test.com")
-            .matchHeader("accept-encoding", "identity")
+            .matchHeader("accept-encoding", /gzip,\s*deflate,\s*br/i)
             .get("/file.csv")
             .reply(200, malformedCompressedBody, {
                 "content-type": "application/octet-stream",
@@ -303,15 +306,6 @@ describe("onRecordFoundStorageObject", () => {
                     downloadURL: "http://test.com/file.csv"
                 }
             }
-        });
-
-        testEnv.createEmbeddingTextStub.callsFake(async ({ filePath }) => {
-            expect(filePath).to.not.equal(null);
-            const content = fs.readFileSync(filePath as string);
-            // With `compress: false`, bytes are written as-is; parsing should fail in user code.
-            expect(content[0]).to.equal(0x1f);
-            expect(content[1]).to.equal(0x8b);
-            throw new Error("Invalid CSV content");
         });
 
         const userConfig = testEnv.updateUserConfig({
@@ -334,7 +328,7 @@ describe("onRecordFoundStorageObject", () => {
         );
 
         testEnv.expectSuccessCalls({
-            createEmbeddingTextCallCount: 1,
+            createEmbeddingTextCallCount: 0,
             chunkCallCount: 0,
             embeddingApiCallCount: 0,
             bulkIndexCallCount: 0,

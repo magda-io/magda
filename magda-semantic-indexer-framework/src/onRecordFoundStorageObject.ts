@@ -15,10 +15,13 @@ import { v4 as uuidv4 } from "uuid";
 import { SkipError } from "./SkipError.js";
 import urijs from "urijs";
 import { pipeline } from "stream/promises";
+import { createBrotliDecompress, createGunzip, createInflate } from "zlib";
 import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 import ServerError from "magda-typescript-common/src/ServerError.js";
 import { MinioClient } from "./MinioClient.js";
 import { deleteTempFile } from "./helpers.js";
+
+class RetryableDownloadError extends Error {}
 
 // The onRecordFound function passed to minion sdk to handle storage object records
 export const onRecordFoundStorageObject = (
@@ -135,7 +138,8 @@ async function downloadFileWithRetry(
         () => downloadFile(url, minioClient),
         1,
         5,
-        (err, retries) => {}
+        (err, retries) => {},
+        (err) => err instanceof RetryableDownloadError
     );
 }
 
@@ -159,14 +163,21 @@ async function downloadFile(
         response = await fetch(url, {
             compress: false,
             headers: {
-                "accept-encoding": "identity"
+                "accept-encoding": "gzip, deflate, br"
             }
         });
     } catch (err) {
-        throw new SkipError(`Failed to download file because network error`);
+        throw new RetryableDownloadError(
+            `Failed to download file because network error`
+        );
     }
 
     if (!response.ok) {
+        if (response.status >= 500 || response.status === 429) {
+            throw new RetryableDownloadError(
+                `Failed to download file because HTTP error ${response.status}`
+            );
+        }
         throw new SkipError(
             `Failed to download file because HTTP error ${response.status}`
         );
@@ -180,15 +191,60 @@ async function downloadFile(
     const tempFileName = `${uuidv4()}`;
     const suffix = new urijs(url).suffix();
     const tempFilePath = join(tempDir, `${tempFileName}.${suffix}`);
+    const responseStream = getDecodedResponseStream(response);
 
     try {
         const writeStream = fs.createWriteStream(tempFilePath);
-        await pipeline(response.body, writeStream);
+        await pipeline(responseStream, writeStream);
         return tempFilePath;
     } catch (err) {
         await deleteTempFile(tempFilePath);
-        throw new SkipError(`Failed to write file`);
+        throw new SkipError(`Failed to write file: ${(err as Error).message}`);
     }
+}
+
+function getDecodedResponseStream(response: {
+    body: NodeJS.ReadableStream | null;
+    headers: { get(name: string): string | null };
+}): NodeJS.ReadableStream {
+    if (!response.body) {
+        throw new SkipError("No response body to write to file");
+    }
+
+    let stream: NodeJS.ReadableStream = response.body;
+    const contentEncodingHeader =
+        response.headers.get("content-encoding")?.toLowerCase() || "";
+    const encodings = contentEncodingHeader
+        .split(",")
+        .map((encoding) => encoding.trim())
+        .filter(Boolean);
+
+    if (encodings.length === 0 || encodings[0] === "identity") {
+        return stream;
+    }
+
+    // Content-Encoding is applied in order and must be decoded in reverse.
+    for (let i = encodings.length - 1; i >= 0; i--) {
+        const encoding = encodings[i];
+        switch (encoding) {
+            case "gzip":
+            case "x-gzip":
+                stream = stream.pipe(createGunzip());
+                break;
+            case "deflate":
+                stream = stream.pipe(createInflate());
+                break;
+            case "br":
+                stream = stream.pipe(createBrotliDecompress());
+                break;
+            default:
+                throw new SkipError(
+                    `Unsupported content encoding: ${encoding}`
+                );
+        }
+    }
+
+    return stream;
 }
 
 export async function getParentRecordId(
