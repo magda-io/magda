@@ -7,6 +7,7 @@ import fs from "fs";
 import nock from "nock";
 import { tmpdir } from "os";
 import { join } from "path";
+import { gzipSync } from "zlib";
 
 describe("onRecordFoundStorageObject", () => {
     let testEnv: BaseSemanticIndexerTest;
@@ -277,6 +278,68 @@ describe("onRecordFoundStorageObject", () => {
         if (usedFilePath) {
             expect(fs.existsSync(usedFilePath)).to.be.false;
         }
+        nock.cleanAll();
+    });
+
+    it("should skip record (without throwing) when server returns malformed compressed response", async () => {
+        const malformedCompressedBody = Buffer.concat([
+            gzipSync(Buffer.from("test1")),
+            Buffer.from("JUNK_TRAILING_BYTES")
+        ]);
+        nock("http://test.com")
+            .matchHeader("accept-encoding", "identity")
+            .get("/file.csv")
+            .reply(200, malformedCompressedBody, {
+                "content-type": "application/octet-stream",
+                "content-encoding": "gzip"
+            });
+
+        const record = createRecord({
+            id: "id1",
+            aspects: {
+                "dataset-format": { format: "csv" },
+                "dcat-distribution-strings": {
+                    format: "csv",
+                    downloadURL: "http://test.com/file.csv"
+                }
+            }
+        });
+
+        testEnv.createEmbeddingTextStub.callsFake(async ({ filePath }) => {
+            expect(filePath).to.not.equal(null);
+            const content = fs.readFileSync(filePath as string);
+            // With `compress: false`, bytes are written as-is; parsing should fail in user code.
+            expect(content[0]).to.equal(0x1f);
+            expect(content[1]).to.equal(0x8b);
+            throw new Error("Invalid CSV content");
+        });
+
+        const userConfig = testEnv.updateUserConfig({
+            itemType: "storageObject",
+            formatTypes: ["csv"],
+            autoDownloadFile: true
+        });
+
+        const onRecordFound = onRecordFoundStorageObject(
+            userConfig,
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
+        );
+
+        await expectNoThrowsAsync(() =>
+            onRecordFound(record, testEnv.registry)
+        );
+
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 1,
+            chunkCallCount: 0,
+            embeddingApiCallCount: 0,
+            bulkIndexCallCount: 0,
+            deleteByQueryCallCount: 0
+        });
         nock.cleanAll();
     });
 
