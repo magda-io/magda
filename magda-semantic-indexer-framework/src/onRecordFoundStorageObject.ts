@@ -20,7 +20,6 @@ import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryCli
 import ServerError from "magda-typescript-common/src/ServerError.js";
 import { MinioClient } from "./MinioClient.js";
 import { deleteTempFile } from "./helpers.js";
-import { Transform } from "stream";
 
 class RetryableDownloadError extends Error {}
 
@@ -197,7 +196,12 @@ async function downloadFile(
     try {
         const writeStream = fs.createWriteStream(tempFilePath);
         // Keep source + decode transforms + sink in one pipeline so stream errors are captured in-path.
-        await pipeline(response.body, ...decoderTransforms, writeStream);
+        const streamChain: (
+            | NodeJS.ReadableStream
+            | NodeJS.WritableStream
+            | NodeJS.ReadWriteStream
+        )[] = [response.body, ...decoderTransforms, writeStream];
+        await pipeline(streamChain);
         return tempFilePath;
     } catch (err) {
         await deleteTempFile(tempFilePath);
@@ -208,7 +212,7 @@ async function downloadFile(
 function getDecoderTransforms(response: {
     body: NodeJS.ReadableStream | null;
     headers: { get(name: string): string | null };
-}): Transform[] {
+}): NodeJS.ReadWriteStream[] {
     if (!response.body) {
         throw new SkipError("No response body to write to file");
     }
@@ -224,7 +228,7 @@ function getDecoderTransforms(response: {
         return [];
     }
 
-    const decoderTransforms: Transform[] = [];
+    const decoderTransforms: NodeJS.ReadWriteStream[] = [];
 
     // Content-Encoding is applied in order and must be decoded in reverse.
     for (let i = encodings.length - 1; i >= 0; i--) {
