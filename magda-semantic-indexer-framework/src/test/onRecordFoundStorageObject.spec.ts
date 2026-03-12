@@ -284,17 +284,26 @@ describe("onRecordFoundStorageObject", () => {
         nock.cleanAll();
     });
 
-    it("should skip record (without throwing) when server returns malformed compressed response", async () => {
+    it("should skip record (without throwing) when server returns malformed compressed response and should not retry", async () => {
         const malformedCompressedBody = Buffer.concat([
             gzipSync(Buffer.from("test1")),
             Buffer.from("JUNK_TRAILING_BYTES")
         ]);
+        let requestCount = 0;
         nock("http://test.com")
             .matchHeader("accept-encoding", /gzip,\s*deflate,\s*br/i)
             .get("/file.csv")
-            .reply(200, malformedCompressedBody, {
-                "content-type": "application/octet-stream",
-                "content-encoding": "gzip"
+            .times(6)
+            .reply(() => {
+                requestCount += 1;
+                return [
+                    200,
+                    malformedCompressedBody,
+                    {
+                        "content-type": "application/octet-stream",
+                        "content-encoding": "gzip"
+                    }
+                ];
             });
 
         const record = createRecord({
@@ -334,6 +343,93 @@ describe("onRecordFoundStorageObject", () => {
             bulkIndexCallCount: 0,
             deleteByQueryCallCount: 0
         });
+        expect(requestCount).to.equal(1);
+        nock.cleanAll();
+    });
+
+    it("should retry transient HTTP failures and succeed on a later attempt", async function () {
+        this.timeout(7000);
+        // This test exercises real retry delay behavior, so use real timers for this case.
+        testEnv.clock.restore();
+        (testEnv as any).clock = undefined;
+        const fileContent = "test1";
+        let requestCount = 0;
+        nock("http://test.com")
+            .matchHeader("accept-encoding", /gzip,\s*deflate,\s*br/i)
+            .get("/retry.csv")
+            .times(2)
+            .reply(() => {
+                requestCount += 1;
+                if (requestCount === 1) {
+                    return [503, "temporary server error"];
+                }
+                return [
+                    200,
+                    gzipSync(Buffer.from(fileContent)),
+                    {
+                        "content-type": "application/octet-stream",
+                        "content-encoding": "gzip"
+                    }
+                ];
+            });
+
+        let usedFilePath = null;
+        testEnv.createEmbeddingTextStub.callsFake(async ({ filePath }) => {
+            expect(filePath).to.be.a("string");
+            expect(fs.existsSync(filePath)).to.be.true;
+            const content = fs.readFileSync(filePath, "utf-8");
+            expect(content).to.equal(fileContent);
+            usedFilePath = filePath;
+            return { text: "embedding text: test1" };
+        });
+
+        testEnv.chunker.chunk
+            .withArgs("embedding text: test1")
+            .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
+
+        const record = createRecord({
+            id: "id1",
+            aspects: {
+                "dataset-format": { format: "csv" },
+                "dcat-distribution-strings": {
+                    format: "csv",
+                    downloadURL: "http://test.com/retry.csv"
+                }
+            }
+        });
+
+        const userConfig = testEnv.updateUserConfig({
+            itemType: "storageObject",
+            formatTypes: ["csv"],
+            autoDownloadFile: true
+        });
+
+        const onRecordFound = onRecordFoundStorageObject(
+            userConfig,
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
+        );
+
+        await onRecordFound(record, testEnv.registry);
+
+        testEnv.expectSuccessCalls({
+            createEmbeddingTextCallCount: 1,
+            chunkCallCount: 1,
+            embeddingApiCallCount: 1,
+            bulkIndexCallCount: 1,
+            deleteByQueryCallCount: 1
+        });
+        expect(requestCount).to.equal(2);
+
+        if (usedFilePath) {
+            expect(fs.existsSync(usedFilePath)).to.be.false;
+        }
         nock.cleanAll();
     });
 
