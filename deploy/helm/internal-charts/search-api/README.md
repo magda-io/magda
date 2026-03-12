@@ -20,7 +20,7 @@ Kubernetes: `>= 1.14.0-0`
 | autoPingJobImage.pullPolicy | string | `"IfNotPresent"` |  |
 | autoPingJobImage.pullSecrets | bool | `false` |  |
 | autoPingJobImage.repository | string | `"docker.io"` |  |
-| autoPingJobImage.tag | string | `"18-alpine"` |  |
+| autoPingJobImage.tag | string | `"22-alpine"` |  |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |
