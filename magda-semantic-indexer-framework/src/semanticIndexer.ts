@@ -1,4 +1,5 @@
 import minion from "magda-minion-framework/src/index.js";
+import { AsyncLocalStorage } from "async_hooks";
 import {
     Chunker,
     UserDefinedChunkStrategy,
@@ -19,12 +20,110 @@ import retry from "magda-typescript-common/src/retry.js";
 import { MinioClient } from "./MinioClient.js";
 import { MAGDA_SYSTEM_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
 import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
+import { Record as RegistryRecord } from "magda-typescript-common/src/generated/registry/api.js";
+
+type ProcessingContext = {
+    indexerId: string;
+    itemType: string;
+    recordId: string;
+    format?: string;
+    downloadUrl?: string;
+    startedAt: string;
+};
+
+const UNCAUGHT_DIAGNOSTICS_INSTALLED = Symbol.for(
+    "magda.semantic.indexer.uncaughtDiagnosticsInstalled"
+);
+const processingContextStorage = new AsyncLocalStorage<ProcessingContext>();
+const inFlightProcessingContexts = new Map<string, ProcessingContext>();
+
+function toErrorPayload(err: unknown) {
+    if (err instanceof Error) {
+        return {
+            name: err.name,
+            message: err.message,
+            stack: err.stack
+        };
+    }
+    return {
+        name: typeof err,
+        message: String(err)
+    };
+}
+
+function installUncaughtDiagnostics() {
+    const globalKey = globalThis as Record<PropertyKey, unknown>;
+    if (globalKey[UNCAUGHT_DIAGNOSTICS_INSTALLED]) {
+        return;
+    }
+
+    process.on(
+        "uncaughtExceptionMonitor",
+        (err: Error, origin: NodeJS.UncaughtExceptionOrigin) => {
+            const activeContext = processingContextStorage.getStore() ?? null;
+            const inFlight = Array.from(inFlightProcessingContexts.values());
+            console.error(
+                "[semantic-indexer] uncaught exception monitor",
+                JSON.stringify(
+                    {
+                        origin,
+                        error: toErrorPayload(err),
+                        activeContext,
+                        inFlightContexts: inFlight.slice(0, 10)
+                    },
+                    null,
+                    2
+                )
+            );
+        }
+    );
+
+    globalKey[UNCAUGHT_DIAGNOSTICS_INSTALLED] = true;
+}
+
+function createProcessingContext(
+    userConfig: SemanticIndexerOptions,
+    record: RegistryRecord
+): ProcessingContext {
+    const distributionAspect = record?.aspects?.["dcat-distribution-strings"];
+    const format = record?.aspects?.["dataset-format"]?.format;
+    return {
+        indexerId: userConfig.id,
+        itemType: userConfig.itemType,
+        recordId: record?.id || "unknown",
+        format,
+        downloadUrl:
+            distributionAspect?.downloadURL || distributionAspect?.accessURL,
+        startedAt: new Date().toISOString()
+    };
+}
+
+function withProcessingDiagnostics(
+    userConfig: SemanticIndexerOptions,
+    onRecordFound: onRecordFoundType
+): onRecordFoundType {
+    return async (record: RegistryRecord, registry: Registry) => {
+        const context = createProcessingContext(userConfig, record);
+        const contextKey = `${context.recordId}-${
+            context.startedAt
+        }-${Math.random().toString(36).slice(2)}`;
+        inFlightProcessingContexts.set(contextKey, context);
+        try {
+            await processingContextStorage.run(context, () =>
+                onRecordFound(record, registry)
+            );
+        } finally {
+            inFlightProcessingContexts.delete(contextKey);
+        }
+    };
+}
 
 // Main function for semantic indexer
 export default async function semanticIndexer(
     userConfig: SemanticIndexerOptions
 ) {
     try {
+        installUncaughtDiagnostics();
         validateSemanticIndexerOptions(userConfig);
         const semanticIndexerConfig = userConfig.argv.semanticIndexerConfig;
         const opensearchApiClient = await retry(
@@ -88,12 +187,15 @@ export default async function semanticIndexer(
         let minionOptions: MinionOptions;
 
         if (userConfig.itemType === "registryRecord") {
-            onRecordFound = onRecordFoundRegistryRecord(
+            onRecordFound = withProcessingDiagnostics(
                 userConfig,
-                chunker,
-                embeddingApiClient,
-                opensearchApiClient,
-                registryReadonlyClient
+                onRecordFoundRegistryRecord(
+                    userConfig,
+                    chunker,
+                    embeddingApiClient,
+                    opensearchApiClient,
+                    registryReadonlyClient
+                )
             );
             minionOptions = {
                 argv: userConfig.argv,
@@ -113,13 +215,16 @@ export default async function semanticIndexer(
                 userConfig.argv.minioAccessKey,
                 userConfig.argv.minioSecretKey
             );
-            onRecordFound = onRecordFoundStorageObject(
+            onRecordFound = withProcessingDiagnostics(
                 userConfig,
-                chunker,
-                embeddingApiClient,
-                opensearchApiClient,
-                minioClient,
-                registryReadonlyClient
+                onRecordFoundStorageObject(
+                    userConfig,
+                    chunker,
+                    embeddingApiClient,
+                    opensearchApiClient,
+                    minioClient,
+                    registryReadonlyClient
+                )
             );
             minionOptions = {
                 argv: userConfig.argv,
