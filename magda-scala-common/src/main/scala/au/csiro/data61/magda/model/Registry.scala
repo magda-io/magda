@@ -429,4 +429,6 @@ object Registry
         else deserializationError(s"Invalid nullableString field: ${field}")
     }
   }
+
+  case class FilterRecordsByAccessRequest(records: List[Record])
 }
