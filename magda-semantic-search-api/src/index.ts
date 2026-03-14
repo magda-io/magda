@@ -4,6 +4,7 @@ import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwt
 import { SemanticSearchService } from "./service/SemanticSearchService.js";
 import EmbeddingApiClient from "@magda/typescript-common/dist/EmbeddingApiClient.js";
 import OpensearchApiClient from "@magda/typescript-common/dist/OpensearchApiClient.js";
+import RegistryApiClient from "@magda/typescript-common/dist/RegistryApiClient.js";
 import { createRoutes } from "./api/createApiRouter.js";
 import retry from "magda-typescript-common/src/retry.js";
 
@@ -82,9 +83,26 @@ const embeddingApiClient = await retry(
         )
 );
 
+const registryApiClient = await retry(
+    () =>
+        Promise.resolve(
+            new RegistryApiClient({
+                baseApiUrl: argv.registryReadonlyURL
+            })
+        ),
+    5,
+    5,
+    (e, left) =>
+        console.error(
+            `Registry API connection failed, remaining retries: ${left}, error:`,
+            e.message
+        )
+);
+
 const semanticSearchService = new SemanticSearchService(
     embeddingApiClient,
     opensearchApiClient,
+    registryApiClient,
     {
         indexName: argv.semanticIndexName as string,
         indexVersion: argv.semanticIndexVersion as number,

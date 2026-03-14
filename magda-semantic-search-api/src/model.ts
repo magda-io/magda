@@ -22,6 +22,7 @@ export interface SearchParams {
     subObjectId?: string;
     subObjectType?: string;
     minScore?: number;
+    jwt?: string;
 }
 
 export type SearchResultItem = { score: number } & Pick<

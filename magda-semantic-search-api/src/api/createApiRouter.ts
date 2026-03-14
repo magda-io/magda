@@ -53,9 +53,14 @@ export function createRoutes(
         next: NextFunction
     ) {
         try {
-            const params = ((req.method === "GET"
+            const rawParams = ((req.method === "GET"
                 ? req.query
                 : req.body) as unknown) as SearchParams;
+            const jwt = req.header("X-Magda-Session");
+            const params: SearchParams = {
+                ...(rawParams as SearchParams),
+                jwt: jwt || undefined
+            };
             const results = await semanticSearchService.search(params);
             res.status(200).json(results);
         } catch (err) {

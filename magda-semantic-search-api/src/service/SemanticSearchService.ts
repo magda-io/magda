@@ -1,5 +1,6 @@
 import EmbeddingApiClient from "magda-typescript-common/src/EmbeddingApiClient.js";
 import OpensearchApiClient from "magda-typescript-common/src/OpensearchApiClient.js";
+import RegistryApiClient from "magda-typescript-common/src/RegistryApiClient.js";
 import {
     getIndexItemsByIdsQueryBody,
     buildSearchQueryBody,
@@ -24,6 +25,7 @@ export class SemanticSearchService {
     constructor(
         private embeddingApiClient: EmbeddingApiClient,
         private openSearchClient: OpensearchApiClient,
+        private registryApiClient: RegistryApiClient,
         private semanticIndexerConfig: SemanticIndexerConfig
     ) {
         this.indexName = `${this.semanticIndexerConfig.indexName}-v${this.semanticIndexerConfig.indexVersion}`;
@@ -60,7 +62,13 @@ export class SemanticSearchService {
             items = filterByMinScore(items, searchParams.minScore);
             items = keepTopK(items, searchParams.max_num_results);
         }
-
+        const recordIds = [...new Set(items.map((item) => item.recordId))];
+        const registryResponse = await this.registryApiClient.filterRecordsByAccess(
+            recordIds,
+            searchParams.jwt
+        );
+        const allowedRecordIds = new Set(registryResponse.records);
+        items = items.filter((item) => allowedRecordIds.has(item.recordId));
         return items;
     }
 
