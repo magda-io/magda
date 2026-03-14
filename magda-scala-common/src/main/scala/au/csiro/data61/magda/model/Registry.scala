@@ -430,5 +430,6 @@ object Registry
     }
   }
 
-  case class FilterRecordsByAccessRequest(records: List[Record])
+  case class FilterRecordsByAccessRequest(records: Seq[String])
+  case class FilterRecordsByAccessResponse(records: Seq[String])
 }

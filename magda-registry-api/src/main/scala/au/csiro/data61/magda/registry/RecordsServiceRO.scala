@@ -38,9 +38,8 @@ class RecordsServiceRO(
   private val logger = Logging(system, getClass)
   implicit private val ec: ExecutionContext = system.dispatcher
 
-  implicit val filterRecordsByAccessRequestFormat = jsonFormat1(
-    FilterRecordsByAccessRequest.apply
-  )
+  implicit val filterRecordsByAccessRequestFormat = jsonFormat1(FilterRecordsByAccessRequest)
+  implicit val filterRecordsByAccessResponseFormat = jsonFormat1(FilterRecordsByAccessResponse)
 
   private val defaultQueryTimeout = config
     .getDuration(
@@ -1153,12 +1152,12 @@ class RecordsServiceRO(
    */
   @Path("/access-filter")
   @ApiOperation(
-    value = "Filter a list of records by access",
+    value = "Filter a list of record ids by access",
     nickname = "filterByAccess",
     httpMethod = "POST",
-    response = classOf[Record],
+    response = classOf[String],
     responseContainer = "List",
-    notes = "Returns only the records that the current user has permission to read."
+    notes = "Returns only the record ids that the current user has permission to read."
   )
   @ApiImplicitParams(
     Array(
@@ -1167,7 +1166,7 @@ class RecordsServiceRO(
         required = true,
         dataType = "object",
         paramType = "body",
-        value = "A JSON object with a `records` field, e.g. { \"records\": [ ... ] }"
+        value = "A JSON object with a `records` field, e.g. { \"records\": [\"id1\", \"id2\"] }"
       ),
       new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
@@ -1195,30 +1194,22 @@ class RecordsServiceRO(
               AuthDecisionReqConfig("object/record/read")
             ) { authDecision =>
               completeBlockingTask {
-                val inputRecords = requestData.records
-                val requestedRecordIds = inputRecords
-                  .map(_.id)
+                val requestedRecordIds = requestData.records
                   .map(_.trim)
                   .filter(_.nonEmpty)
                   .distinct
-
                 if (requestedRecordIds.isEmpty) {
-                  List.empty[Record]
+                  FilterRecordsByAccessResponse(Seq.empty)
                 } else {
                   DB readOnly { implicit session =>
                     session.queryTimeout(this.defaultQueryTimeout)
-
                     val validRecordIds = recordPersistence
                       .getValidRecordIds(
                         tenantId,
                         authDecision,
                         requestedRecordIds
                       )
-                      .toSet
-
-                    inputRecords.filter(record =>
-                      validRecordIds.contains(record.id.trim)
-                    )
+                    FilterRecordsByAccessResponse(validRecordIds)
                   }
                 }
               }
