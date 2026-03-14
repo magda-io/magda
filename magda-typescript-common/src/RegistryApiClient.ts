@@ -15,17 +15,19 @@ export default class RegistryApiClient extends BaseApiClient {
         records: string[],
         jwtToken: string
     ): Promise<FilterRecordsByAccessResult> {
+        const requestConfig = this.addAuthHeader();
+        requestConfig.headers = this.setHeader(
+            requestConfig.headers,
+            "X-Magda-Session",
+            jwtToken
+        );
         return await fetchRequest<FilterRecordsByAccessResult>(
             "post",
             this.getBaseApiUri().segmentCoded("access-filter").toString(),
             { records },
             "application/json",
             false,
-            {
-                headers: {
-                    "X-Magda-Session": jwtToken
-                }
-            }
+            requestConfig
         );
     }
 }
