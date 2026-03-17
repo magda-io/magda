@@ -4,6 +4,7 @@ module.exports = {
     printWidth: 80,
     trailingComma: "none",
     useTabs: false,
+    endOfLine: "auto",
     overrides: [
         {
             files: ["**/package.json", "lerna.json"],
