@@ -111,7 +111,8 @@ export const defaultContextWindowSize = defaultContextWindowSizeOption?.value
     : 4096;
 
 const DEFAULT_MODEL_CONFIG: WebLLMInputs = {
-    model: "Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC",
+    //model: "Qwen3-0.6B-q4f16_1-MLC",
+    model: "Qwen3-4B-q4f16_1-MLC",
     chatOptions: {
         temperature: 0,
         context_window_size: defaultContextWindowSize
