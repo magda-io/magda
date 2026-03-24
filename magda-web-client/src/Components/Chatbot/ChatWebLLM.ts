@@ -111,7 +111,6 @@ export const defaultContextWindowSize = defaultContextWindowSizeOption?.value
     : 4096;
 
 const DEFAULT_MODEL_CONFIG: WebLLMInputs = {
-    //model: "Qwen3-0.6B-q4f16_1-MLC",
     model: "Qwen3-4B-q4f16_1-MLC",
     chatOptions: {
         temperature: 0,
@@ -335,19 +334,47 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
                 function: functionDef
             };
         });
+
+        const magdaIdentity = {
+            role: "system",
+            content: `You are Magda, the intelligent, expert AI assistant for Magda, a federated, open-source data catalog for big data and small data.
+
+CORE MISSION:
+Guide users to relevant open datasets and provide actionable data insights. You are the specific interface to this data catalog, not a general chatbot.
+
+GUIDELINES:
+1. **Prioritize Tools**: Your primary power comes from your tools (Search, Analysis). Always look for opportunities to use them rather than answering from general knowledge.
+2. **Be Proactive**: Instead of generic offers ("How can I help?"), propose specific actions based on the user's input (e.g., "I can search the catalog for 'population growth' for you.").
+3. **Accuracy First**: Never make up dataset names or IDs. Only reference data returned by your tools.
+4. **Tone**: Confident, professional, and data-literate. You own your capabilities.`
+        };
+
+        const messages =
+            typeof userMessage === "string"
+                ? [
+                      {
+                          role: "user",
+                          content: userMessage
+                      }
+                  ]
+                : Array.isArray(userMessage)
+                ? userMessage
+                : [userMessage];
+
+        // Filter out any existing system messages to ensure magdaIdentity is the only one and is first
+        const userMessagesFiltered = messages.filter(
+            (m) => m?.role !== "system"
+        );
+
         const request: webllm.ChatCompletionRequest = {
             stream: false,
-            messages:
-                typeof userMessage === "string"
-                    ? [
-                          {
-                              role: "user",
-                              content: userMessage
-                          }
-                      ]
-                    : [userMessage],
+            messages: [magdaIdentity, ...userMessagesFiltered] as any,
             tool_choice: "auto",
-            tools: toolDefs
+            tools: toolDefs,
+            extra_body: {
+                enable_latency_breakdown: false,
+                enable_thinking: false
+            }
         };
         const engine = await this.getEngine();
         const reply = await engine.chat.completions.create(request);
@@ -361,12 +388,16 @@ export default class ChatWebLLM extends SimpleChatModel<WebLLMCallOptions> {
                 throw new Error(
                     "The LLM could not process your request as it was aborted."
                 );
-            case "stop":
-                throw new Error(
-                    "The LLM could not process your request as it was stopped."
-                );
         }
         if (!reply?.choices?.[0]?.message?.tool_calls?.length) {
+            const content = reply?.choices?.[0]?.message?.content;
+            if (content) {
+                return {
+                    name: "Conversational Response",
+                    value: content as T
+                };
+            }
+
             return undefined;
         }
         const toolCall = reply.choices[0].message.tool_calls[0].function;
