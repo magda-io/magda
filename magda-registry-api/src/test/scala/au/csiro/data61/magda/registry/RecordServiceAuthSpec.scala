@@ -2089,5 +2089,123 @@ class RecordServiceAuthSpec extends ApiSpec {
       }
     }
 
+    describe("filterByAccess API: {post} /v0/registry/records/access-filter:") {
+
+      def filterByAccessRequest(recordIds: Seq[String]): HttpRequest =
+        Post(
+          "/v0/records/access-filter",
+          JsObject("records" -> JsArray(recordIds.map(JsString(_)).toVector))
+        )
+
+      def returnedRecordIds: Seq[String] =
+        responseAs[JsObject]
+          .fields
+          .get("records")
+          .map(_.convertTo[Seq[String]])
+          .getOrElse(Seq.empty)
+
+      endpointStandardAuthTestCase(
+        request = filterByAccessRequest(Seq("test1", "test2", "missing-id")),
+        requiredOperationUris = List("object/record/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          returnedRecordIds shouldEqual Seq("test1", "test2")
+          param.authFetcher.callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          // As designed: return 200 + empty list when read permission is denied.
+          status shouldEqual StatusCodes.OK
+          returnedRecordIds shouldEqual Seq.empty
+          param.authFetcher.callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          settingUpTestData(
+            param,
+            List(
+              Record(
+                "test1",
+                "test record 1",
+                aspects = Map("aspectA" -> JsObject("a" -> JsNumber(1))),
+                sourceTag = Some("blah")
+              ),
+              Record(
+                "test2",
+                "test record 2",
+                aspects = Map("aspectA" -> JsObject("a" -> JsNumber(2))),
+                sourceTag = Some("blah")
+              )
+            )
+          )
+        }
+      )
+
+      it("should return 200 with empty list when all requested record ids do not exist") {
+        param =>
+          param.authFetcher.setAuthDecision(
+            "object/record/read",
+            UnconditionalTrueDecision
+          )
+
+          filterByAccessRequest(Seq("missing-1", "missing-2")) ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            returnedRecordIds shouldEqual Seq.empty
+          }
+      }
+
+      it("should enforce tenant isolation when filtering ids") { param =>
+        val tenant1Record =
+          Record("tenant1-rec", "tenant1 rec", Map("aspectA" -> JsObject()), Some("blah"))
+        val tenant2Record =
+          Record("tenant2-rec", "tenant2 rec", Map("aspectA" -> JsObject()), Some("blah"))
+
+        // create same aspect in both tenants
+        param.authFetcher.setAuthDecision("object/aspect/create", UnconditionalTrueDecision)
+        Post("/v0/aspects", AspectDefinition("aspectA", "aspectA", None)) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check { status shouldEqual StatusCodes.OK }
+        Post("/v0/aspects", AspectDefinition("aspectA", "aspectA", None)) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_2
+        ) ~> param.api(Full).routes ~> check { status shouldEqual StatusCodes.OK }
+
+        // create records in different tenants
+        param.authFetcher.setAuthDecision("object/record/create", UnconditionalTrueDecision)
+        Post("/v0/records", tenant1Record) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check { status shouldEqual StatusCodes.OK }
+        Post("/v0/records", tenant2Record) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_2
+        ) ~> param.api(Full).routes ~> check { status shouldEqual StatusCodes.OK }
+
+        param.authFetcher.setAuthDecision("object/record/read", UnconditionalTrueDecision)
+
+        filterByAccessRequest(Seq("tenant1-rec", "tenant2-rec")) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          returnedRecordIds shouldEqual Seq("tenant1-rec")
+        }
+      }
+
+      it("should trim, drop empty ids and de-duplicate input ids") { param =>
+        settingUpTestData(
+          param,
+          List(
+            Record("dup-id", "dup rec", Map("aspectA" -> JsObject("a" -> JsNumber(1))), Some("blah"))
+          )
+        )
+        param.authFetcher.setAuthDecision("object/record/read", UnconditionalTrueDecision)
+
+        filterByAccessRequest(Seq("  dup-id  ", "", "dup-id", "   ")) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          returnedRecordIds shouldEqual Seq("dup-id")
+        }
+      }
+    }
+
+
   }
 }

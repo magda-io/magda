@@ -34,6 +34,8 @@ describe("createRoutes /search API", () => {
             text: "some text"
         }
     ];
+    const SESSION_HEADER = "X-Magda-Session";
+    const TENANT_HEADER = "X-Magda-Tenant-Id";
 
     it("GET /search should return results and call service.search", async () => {
         let capturedParams: any = null;
@@ -44,6 +46,8 @@ describe("createRoutes /search API", () => {
 
         await supertest(app)
             .get("/search")
+            .set(SESSION_HEADER, "mock-jwt-token")
+            .set(TENANT_HEADER, "1")
             .query({ query: "test keyword", max_num_results: 50 })
             .expect(200)
             .expect((res) => {
@@ -51,6 +55,8 @@ describe("createRoutes /search API", () => {
                 expect(capturedParams).to.be.an("object");
                 expect(capturedParams.query).to.equal("test keyword");
                 expect(capturedParams.max_num_results).to.equal(50);
+                expect(capturedParams.jwt).to.equal("mock-jwt-token");
+                expect(capturedParams.tenantId).to.equal("1");
             });
     });
 
@@ -63,12 +69,16 @@ describe("createRoutes /search API", () => {
 
         await supertest(app)
             .post("/search")
+            .set(SESSION_HEADER, "mock-jwt-token-2")
+            .set(TENANT_HEADER, "2")
             .send({ query: "another test", max_num_results: 10 })
             .expect(200)
             .expect((res) => {
                 expect(res.body).to.deep.equal(mockResults);
                 expect(capturedParams.query).to.equal("another test");
                 expect(capturedParams.max_num_results).to.equal(10);
+                expect(capturedParams.jwt).to.equal("mock-jwt-token-2");
+                expect(capturedParams.tenantId).to.equal("2");
             });
     });
 

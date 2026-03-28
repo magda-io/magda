@@ -3,19 +3,19 @@ import OpensearchApiClient from "magda-typescript-common/src/OpensearchApiClient
 import RegistryApiClient from "magda-typescript-common/src/RegistryApiClient.js";
 import SearchApiClient from "magda-typescript-common/src/SearchApiClient.js";
 import {
-    getIndexItemsByIdsQueryBody,
     buildSearchQueryBody,
+    buildSearchQueryBodyByRecordIds,
     buildSingleRetrieveQueryBody,
-    buildSearchQueryBodyByRecordIds
+    getIndexItemsByIdsQueryBody
 } from "./queryBuilder.js";
-import { mapToIndexItem, mapSearchResults } from "./resultMapper.js";
+import { mapSearchResults, mapToIndexItem } from "./resultMapper.js";
 import { filterByMinScore, keepTopK } from "./filters.js";
 import type {
     IndexItem,
-    SearchParams,
-    SearchResultItem,
     RetrieveParams,
     RetrieveResultItem,
+    SearchParams,
+    SearchResultItem,
     SemanticIndexerConfig
 } from "../model.js";
 
@@ -64,7 +64,8 @@ export class SemanticSearchService {
 
         const registryResponse = await this.registryApiClient.filterRecordsByAccess(
             recordIds,
-            searchParams.jwt
+            searchParams.jwt,
+            searchParams.tenantId
         );
 
         const allowedRecordIds = new Set(registryResponse.records);
@@ -78,7 +79,8 @@ export class SemanticSearchService {
                     start: 0,
                     limit: 500
                 },
-                searchParams.jwt
+                searchParams.jwt,
+                searchParams.tenantId
             );
 
             const newAllowedRecordIds = new Set<string>();
@@ -105,7 +107,10 @@ export class SemanticSearchService {
                 [...newAllowedRecordIds]
             );
         }
-
+        if (!inMemoryMode) {
+            items = filterByMinScore(items, searchParams.minScore);
+            items = keepTopK(items, searchParams.max_num_results);
+        }
         return items;
     }
 
@@ -114,8 +119,6 @@ export class SemanticSearchService {
         searchParams: SearchParams,
         recordIds?: string[]
     ): Promise<SearchResultItem[]> {
-        const inMemoryMode = this.semanticIndexerConfig.mode === "in_memory";
-
         const queryBody = recordIds?.length
             ? buildSearchQueryBodyByRecordIds(
                   embeddingVector,
@@ -128,15 +131,7 @@ export class SemanticSearchService {
             this.indexName,
             queryBody
         );
-
-        let items = mapSearchResults(searchResponse);
-
-        if (!inMemoryMode) {
-            items = filterByMinScore(items, searchParams.minScore);
-            items = keepTopK(items, searchParams.max_num_results);
-        }
-
-        return items;
+        return mapSearchResults(searchResponse);
     }
 
     async retrieve(_params: RetrieveParams): Promise<RetrieveResultItem[]> {

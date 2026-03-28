@@ -57,9 +57,11 @@ export function createRoutes(
                 ? req.query
                 : req.body) as unknown) as SearchParams;
             const jwt = req.header("X-Magda-Session");
+            const tenantId = req.header("X-Magda-Tenant-Id");
             const params: SearchParams = {
                 ...(rawParams as SearchParams),
-                jwt: jwt || undefined
+                jwt: jwt || undefined,
+                tenantId: tenantId || undefined
             };
             const results = await semanticSearchService.search(params);
             res.status(200).json(results);

@@ -13,13 +13,20 @@ export default class RegistryApiClient extends BaseApiClient {
 
     async filterRecordsByAccess(
         records: string[],
-        jwtToken: string
+        jwtToken: string,
+        tenantId?: string
     ): Promise<FilterRecordsByAccessResult> {
         const requestConfig = this.addAuthHeader();
         requestConfig.headers = this.setHeader(
             requestConfig.headers,
             "X-Magda-Session",
             jwtToken
+        );
+        const resolvedTenantId = tenantId === undefined ? "0" : tenantId;
+        requestConfig.headers = this.setHeader(
+            requestConfig.headers,
+            "X-Magda-Tenant-Id",
+            resolvedTenantId
         );
         return await fetchRequest<FilterRecordsByAccessResult>(
             "post",

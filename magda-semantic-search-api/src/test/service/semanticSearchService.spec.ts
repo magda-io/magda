@@ -5,6 +5,12 @@ import type {
     SearchParams,
     SemanticIndexerConfig
 } from "../../model.js";
+import type {
+    SearchDatasetsParams,
+    SearchDatasetsResult,
+    SearchDataset
+} from "magda-typescript-common/src/SearchApiClient.js";
+import type { FilterRecordsByAccessResult } from "magda-typescript-common/src/RegistryApiClient.js";
 
 const returnMockSearchResult = (
     fetchSize: number = undefined,
@@ -81,10 +87,39 @@ const returnMockSearchResult = (
     };
 };
 
+const returnMockFilterRecordsByAccessResult = (
+    records: string[] = []
+): FilterRecordsByAccessResult => ({
+    records
+});
+
+type MockDatasetInput = {
+    identifier: string;
+    distributions?: Array<{ identifier?: string }>;
+};
+
+const returnMockSearchDatasetsResult = (
+    datasets: MockDatasetInput[] = []
+): SearchDatasetsResult => {
+    const dataSets: SearchDataset[] = datasets.map((d) => ({
+        identifier: d.identifier,
+        distributions: (d.distributions ?? []).map((dist) => ({
+            identifier: dist.identifier
+        }))
+    }));
+
+    return {
+        hitCount: dataSets.length,
+        dataSets
+    };
+};
+
 describe("SemanticSearchService.search", () => {
     let semanticSearchService: SemanticSearchService;
     let mockEmbeddingApiClient: any;
     let mockOpenSearchClient: any;
+    let mockRegistryApiClient: any;
+    let mockSearchApiClient: any;
     let mockSemanticIndexerConfig: SemanticIndexerConfig;
 
     beforeEach(() => {
@@ -100,6 +135,30 @@ describe("SemanticSearchService.search", () => {
             }
         };
 
+        mockRegistryApiClient = {
+            filterRecordsByAccess: async (
+                _records: string[],
+                _jwtToken: string,
+                _tenantId?: string
+            ): Promise<FilterRecordsByAccessResult> => {
+                return returnMockFilterRecordsByAccessResult([
+                    "record1",
+                    "record2",
+                    "record3"
+                ]);
+            }
+        };
+
+        mockSearchApiClient = {
+            searchDatasets: async (
+                _params: SearchDatasetsParams = {},
+                _jwtToken: string,
+                _tenantId?: string
+            ): Promise<SearchDatasetsResult> => {
+                return returnMockSearchDatasetsResult([]);
+            }
+        };
+
         mockSemanticIndexerConfig = {
             indexName: "test-index",
             indexVersion: 1,
@@ -109,6 +168,8 @@ describe("SemanticSearchService.search", () => {
         semanticSearchService = new SemanticSearchService(
             mockEmbeddingApiClient,
             mockOpenSearchClient,
+            mockRegistryApiClient,
+            mockSearchApiClient,
             mockSemanticIndexerConfig
         );
     });
@@ -147,6 +208,8 @@ describe("SemanticSearchService.search", () => {
             semanticSearchService = new SemanticSearchService(
                 mockEmbeddingApiClient,
                 mockOpenSearchClient,
+                mockRegistryApiClient,
+                mockSearchApiClient,
                 mockSemanticIndexerConfig
             );
 
@@ -160,6 +223,188 @@ describe("SemanticSearchService.search", () => {
 
             expect(result).to.have.length(1);
             expect(result[0].score).to.equal(0.95);
+        });
+
+        it("should keep only records allowed by filterRecordsByAccess", async () => {
+            let searchDatasetsCallCount = 0;
+
+            mockRegistryApiClient = {
+                filterRecordsByAccess: async (
+                    _records: string[],
+                    _jwtToken: string,
+                    _tenantId?: string
+                ): Promise<FilterRecordsByAccessResult> => {
+                    return returnMockFilterRecordsByAccessResult([
+                        "record1",
+                        "record2"
+                    ]);
+                }
+            };
+
+            mockSearchApiClient = {
+                searchDatasets: async (
+                    _params: SearchDatasetsParams = {},
+                    _jwtToken: string,
+                    _tenantId?: string
+                ): Promise<SearchDatasetsResult> => {
+                    searchDatasetsCallCount++;
+                    return returnMockSearchDatasetsResult([]);
+                }
+            };
+
+            // Mode is irrelevant here; always return fixed records record1/2/3.
+            mockOpenSearchClient = {
+                search: async (_indexName: string, _queryBody: any) => {
+                    return returnMockSearchResult(3, undefined);
+                }
+            };
+
+            semanticSearchService = new SemanticSearchService(
+                mockEmbeddingApiClient,
+                mockOpenSearchClient,
+                mockRegistryApiClient,
+                mockSearchApiClient,
+                mockSemanticIndexerConfig
+            );
+
+            const result = await semanticSearchService.search({
+                query: "test query",
+                max_num_results: 3
+            });
+
+            expect(result).to.have.length(2);
+            expect(result.map((r) => r.recordId)).to.have.members([
+                "record1",
+                "record2"
+            ]);
+            expect(searchDatasetsCallCount).to.equal(0); // Phase 1 has results, so Phase 2 should not run.
+        });
+
+        it("should fallback to searchDatasets when phase 1 returns empty and re-search by returned recordIds", async () => {
+            let openSearchCallCount = 0;
+            let searchDatasetsCallCount = 0;
+
+            mockRegistryApiClient = {
+                filterRecordsByAccess: async (
+                    _records: string[],
+                    _jwtToken: string,
+                    _tenantId?: string
+                ): Promise<FilterRecordsByAccessResult> => {
+                    // When the first vector search is empty, this receives [].
+                    return returnMockFilterRecordsByAccessResult([]);
+                }
+            };
+
+            mockSearchApiClient = {
+                searchDatasets: async (
+                    params: SearchDatasetsParams = {},
+                    jwtToken: string,
+                    _tenantId?: string
+                ): Promise<SearchDatasetsResult> => {
+                    searchDatasetsCallCount++;
+                    expect(params).to.deep.equal({
+                        query: "test query",
+                        start: 0,
+                        limit: 500
+                    });
+                    expect(jwtToken).to.equal("mock-jwt");
+                    return returnMockSearchDatasetsResult([
+                        {
+                            identifier: "record1",
+                            distributions: [{ identifier: "record2" }]
+                        }
+                    ]);
+                }
+            };
+
+            mockOpenSearchClient = {
+                search: async (_indexName: string, queryBody: any) => {
+                    openSearchCallCount++;
+
+                    if (openSearchCallCount === 1) {
+                        // Phase 1 vector search returns empty and triggers fallback.
+                        return { body: { hits: { hits: [] } } };
+                    }
+
+                    // Phase 2 should include a terms filter on recordId.
+                    const mustClauses =
+                        queryBody?.query?.knn?.embedding?.filter?.bool?.must ??
+                        [];
+                    const termsClause = mustClauses.find(
+                        (c: any) => c.terms?.recordId
+                    );
+                    expect(termsClause).to.exist;
+                    expect(termsClause.terms.recordId).to.have.members([
+                        "record1",
+                        "record2"
+                    ]);
+
+                    // Return second-pass vector search results.
+                    return {
+                        body: {
+                            hits: {
+                                hits: [
+                                    {
+                                        _id: "doc1",
+                                        _score: 0.95,
+                                        _source: {
+                                            itemType: "storegeObject",
+                                            recordId: "record1",
+                                            parentRecordId: "parent1",
+                                            fileFormat: "PDF",
+                                            subObjectId: "sub1",
+                                            subObjectType: "graph",
+                                            text: "test text 1",
+                                            only_one_index_text_chunk: true,
+                                            index_text_chunk_length: 200,
+                                            index_text_chunk_position: 0,
+                                            index_text_chunk_overlap: 50
+                                        }
+                                    },
+                                    {
+                                        _id: "doc2",
+                                        _score: 0.85,
+                                        _source: {
+                                            itemType: "storegeObject",
+                                            recordId: "record2",
+                                            parentRecordId: "parent2",
+                                            fileFormat: "CSV",
+                                            subObjectId: "sub2",
+                                            subObjectType: "graph",
+                                            text: "test text 2",
+                                            only_one_index_text_chunk: false,
+                                            index_text_chunk_length: 150,
+                                            index_text_chunk_position: 10,
+                                            index_text_chunk_overlap: 0
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    };
+                }
+            };
+
+            semanticSearchService = new SemanticSearchService(
+                mockEmbeddingApiClient,
+                mockOpenSearchClient,
+                mockRegistryApiClient,
+                mockSearchApiClient,
+                mockSemanticIndexerConfig
+            );
+
+            const result = await semanticSearchService.search({
+                query: "test query",
+                jwt: "mock-jwt"
+            });
+
+            expect(openSearchCallCount).to.equal(2);
+            expect(searchDatasetsCallCount).to.equal(1);
+            expect(result).to.have.length(2);
+            expect(result.map((r) => r.recordId)).to.have.members([
+                "record1",
+                "record2"
+            ]);
         });
     });
 });
@@ -225,6 +470,8 @@ describe("SemanticSearchService.retrieve", () => {
     let service: SemanticSearchService;
     let mockOpenSearchClient: any;
     let mockEmbeddingApiClient: any;
+    let mockRegistryApiClient: any;
+    let mockSearchApiClient: any;
     let cfg: SemanticIndexerConfig;
 
     beforeEach(() => {
@@ -250,6 +497,8 @@ describe("SemanticSearchService.retrieve", () => {
         service = new SemanticSearchService(
             mockEmbeddingApiClient,
             mockOpenSearchClient,
+            mockRegistryApiClient,
+            mockSearchApiClient,
             cfg
         );
     });
