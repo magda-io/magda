@@ -3,9 +3,13 @@ import express from "express";
 import supertest from "supertest";
 import { createRoutes } from "../api/createApiRouter.js";
 
-function buildApp(mockSearch: (params: any) => Promise<any[]>) {
+function buildApp(
+    mockSearch: (params: any) => Promise<any[]>,
+    mockRetrieve: (params: any) => Promise<any[]> = async () => []
+) {
     const mockSemanticSearchService = {
-        search: mockSearch
+        search: mockSearch,
+        retrieve: mockRetrieve
     } as any;
 
     const app = express();
@@ -114,6 +118,63 @@ describe("createRoutes /search API", () => {
         await supertest(app)
             .get("/search")
             .query({ query: "test", minScore: 1 })
+            .expect(500);
+    });
+
+    it("POST /retrieve should return results and call service.retrieve", async () => {
+        let capturedParams: any = null;
+        const retrieveResults = [
+            { id: "doc1", recordId: "record1", text: "chunk text", score: 0.9 }
+        ];
+
+        const app = buildApp(
+            async () => mockResults,
+            async (params) => {
+                capturedParams = params;
+                return retrieveResults;
+            }
+        );
+
+        await supertest(app)
+            .post("/retrieve")
+            .send({
+                ids: ["doc1", "doc2"],
+                mode: "full",
+                precedingChunksNum: 1,
+                subsequentChunksNum: 2
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body).to.deep.equal(retrieveResults);
+                expect(capturedParams).to.deep.equal({
+                    ids: ["doc1", "doc2"],
+                    mode: "full",
+                    precedingChunksNum: 1,
+                    subsequentChunksNum: 2
+                });
+            });
+    });
+
+    it("POST /retrieve should return 400 if ids is missing", async () => {
+        const app = buildApp(async () => mockResults);
+
+        await supertest(app)
+            .post("/retrieve")
+            .send({ mode: "full" })
+            .expect(400);
+    });
+
+    it("POST /retrieve should return 500 if service.retrieve throws an error", async () => {
+        const app = buildApp(
+            async () => mockResults,
+            async () => {
+                throw new Error("retrieve failed");
+            }
+        );
+
+        await supertest(app)
+            .post("/retrieve")
+            .send({ ids: ["doc1"], mode: "full" })
             .expect(500);
     });
 });
