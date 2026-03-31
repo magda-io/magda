@@ -19,7 +19,7 @@ Magda has been used in production for over a year by [data.gov.au](https://data.
 
 ### As a data catalogue
 
-Over the past 18 months, our focus has been to develop Magda into a more general-purpose data catalogue for use within organisations. If you want to use it as a data catalog, please do, but expect some rough edges! If you'd like to contribute to the project with issues or PRs, we love to recieve them.
+Over the past 18 months, our focus has been to develop Magda into a more general-purpose data catalogue for use within organisations. If you want to use it as a data catalog, please do, but expect some rough edges! If you'd like to contribute to the project with issues or PRs, we love to receive them.
 
 ## Features
 
