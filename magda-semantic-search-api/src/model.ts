@@ -47,6 +47,8 @@ export interface RetrieveParams {
     mode?: "full" | "partial";
     precedingChunksNum?: number;
     subsequentChunksNum?: number;
+    jwt?: string;
+    tenantId?: string;
 }
 
 export type RetrieveResultItem = Pick<

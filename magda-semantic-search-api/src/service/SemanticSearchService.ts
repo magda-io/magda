@@ -139,14 +139,36 @@ export class SemanticSearchService {
             ids,
             mode = "full",
             precedingChunksNum = 0,
-            subsequentChunksNum = 0
+            subsequentChunksNum = 0,
+            jwt,
+            tenantId
         } = _params;
 
         // fetch recordIds
         const indexItems = await this._fetchIndexItemsByIds(ids);
 
+        // filter access - only keep items whose recordId is accessible
+        const recordIds = [
+            ...new Set(
+                indexItems
+                    .map((item) => item.recordId)
+                    .filter((id): id is string => !!id)
+            )
+        ];
+
+        const registryResponse = await this.registryApiClient.filterRecordsByAccess(
+            recordIds,
+            jwt,
+            tenantId
+        );
+
+        const allowedRecordIds = new Set(registryResponse.records);
+
         const results: RetrieveResultItem[] = [];
         for (const item of indexItems) {
+            if (!item.recordId || !allowedRecordIds.has(item.recordId)) {
+                continue;
+            }
             // get all chunks for the record
             const allChunks = await this._fetchChunks(
                 item.recordId,

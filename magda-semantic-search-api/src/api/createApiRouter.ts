@@ -83,7 +83,14 @@ export function createRoutes(
         next: NextFunction
     ) {
         try {
-            const params = req.body as RetrieveParams;
+            const rawParams = req.body as RetrieveParams;
+            const jwt = req.header("X-Magda-Session");
+            const tenantId = req.header("X-Magda-Tenant-Id");
+            const params: RetrieveParams = {
+                ...(rawParams as RetrieveParams),
+                jwt: jwt || undefined,
+                tenantId: tenantId || undefined
+            };
             const results = await semanticSearchService.retrieve(params);
             res.status(200).json(results);
         } catch (err) {

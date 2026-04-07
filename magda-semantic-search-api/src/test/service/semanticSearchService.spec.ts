@@ -774,6 +774,22 @@ describe("SemanticSearchService.retrieve", () => {
     beforeEach(() => {
         mockEmbeddingApiClient = { get: async () => [0.1] };
 
+        mockRegistryApiClient = {
+            filterRecordsByAccess: async (
+                records: string[],
+                _jwtToken: string,
+                _tenantId?: string
+            ): Promise<FilterRecordsByAccessResult> => {
+                return returnMockFilterRecordsByAccessResult(records);
+            }
+        };
+
+        mockSearchApiClient = {
+            searchDatasets: async (): Promise<SearchDatasetsResult> => {
+                return returnMockSearchDatasetsResult([]);
+            }
+        };
+
         let call = 0;
         mockOpenSearchClient = {
             search: async (_idx: string, body: any) => {
@@ -877,5 +893,107 @@ describe("SemanticSearchService.retrieve", () => {
         const params: RetrieveParams = { ids: [], mode: "full" };
         const res = await service.retrieve(params);
         expect(res).to.be.an("array").that.is.empty;
+    });
+
+    it("should only return results whose recordIds pass filterRecordsByAccess", async () => {
+        mockRegistryApiClient = {
+            filterRecordsByAccess: async (
+                records: string[],
+                _jwtToken: string,
+                _tenantId?: string
+            ): Promise<FilterRecordsByAccessResult> => {
+                expect(records).to.have.members(["record1", "record2"]);
+                return returnMockFilterRecordsByAccessResult(["record1"]);
+            }
+        };
+
+        mockSearchApiClient = {
+            searchDatasets: async (): Promise<SearchDatasetsResult> => {
+                return returnMockSearchDatasetsResult([]);
+            }
+        };
+
+        let call = 0;
+        mockOpenSearchClient = {
+            search: async (_idx: string, body: any) => {
+                call++;
+                if (call === 1) {
+                    return mockRetrieveIndexItemsResponse(
+                        body.query.ids.values
+                    );
+                }
+
+                const recordId = body.query.bool.should.find(
+                    (t: any) => t.term?.recordId
+                ).term.recordId;
+                expect(recordId).to.equal("record1");
+                return mockRetrieveChunksResponse(recordId);
+            }
+        };
+
+        service = new SemanticSearchService(
+            mockEmbeddingApiClient,
+            mockOpenSearchClient,
+            mockRegistryApiClient,
+            mockSearchApiClient,
+            cfg
+        );
+
+        const res = await service.retrieve({
+            ids: ["doc1", "doc2"],
+            mode: "full"
+        });
+
+        expect(res).to.have.length(1);
+        expect(res[0].text).to.equal(ORIGINAL_TEXT);
+    });
+
+    it("should return empty array when filterRecordsByAccess rejects all records", async () => {
+        mockRegistryApiClient = {
+            filterRecordsByAccess: async (
+                records: string[],
+                _jwtToken: string,
+                _tenantId?: string
+            ): Promise<FilterRecordsByAccessResult> => {
+                expect(records).to.have.members(["record1", "record2"]);
+                return returnMockFilterRecordsByAccessResult([]);
+            }
+        };
+
+        mockSearchApiClient = {
+            searchDatasets: async (): Promise<SearchDatasetsResult> => {
+                return returnMockSearchDatasetsResult([]);
+            }
+        };
+
+        let call = 0;
+        mockOpenSearchClient = {
+            search: async (_idx: string, body: any) => {
+                call++;
+                if (call === 1) {
+                    return mockRetrieveIndexItemsResponse(
+                        body.query.ids.values
+                    );
+                }
+                throw new Error(
+                    "Phase 2 should not be called when all records are filtered out"
+                );
+            }
+        };
+
+        service = new SemanticSearchService(
+            mockEmbeddingApiClient,
+            mockOpenSearchClient,
+            mockRegistryApiClient,
+            mockSearchApiClient,
+            cfg
+        );
+
+        const res = await service.retrieve({
+            ids: ["doc1", "doc2"],
+            mode: "full"
+        });
+
+        expect(res).to.deep.equal([]);
     });
 });

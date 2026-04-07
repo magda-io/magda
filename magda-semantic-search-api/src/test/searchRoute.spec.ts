@@ -121,7 +121,7 @@ describe("createRoutes /search API", () => {
             .expect(500);
     });
 
-    it("POST /retrieve should return results and call service.retrieve", async () => {
+    it("POST /retrieve should return results and call service.retrieve with jwt and tenantId from headers", async () => {
         let capturedParams: any = null;
         const retrieveResults = [
             { id: "doc1", recordId: "record1", text: "chunk text", score: 0.9 }
@@ -137,6 +137,8 @@ describe("createRoutes /search API", () => {
 
         await supertest(app)
             .post("/retrieve")
+            .set(SESSION_HEADER, "mock-retrieve-jwt")
+            .set(TENANT_HEADER, "123")
             .send({
                 ids: ["doc1", "doc2"],
                 mode: "full",
@@ -150,7 +152,37 @@ describe("createRoutes /search API", () => {
                     ids: ["doc1", "doc2"],
                     mode: "full",
                     precedingChunksNum: 1,
-                    subsequentChunksNum: 2
+                    subsequentChunksNum: 2,
+                    jwt: "mock-retrieve-jwt",
+                    tenantId: "123"
+                });
+            });
+    });
+
+    it("POST /retrieve should pass jwt and tenantId as undefined when headers are missing", async () => {
+        let capturedParams: any = null;
+
+        const app = buildApp(
+            async () => mockResults,
+            async (params) => {
+                capturedParams = params;
+                return [];
+            }
+        );
+
+        await supertest(app)
+            .post("/retrieve")
+            .send({
+                ids: ["doc1"],
+                mode: "metadata"
+            })
+            .expect(200)
+            .expect(() => {
+                expect(capturedParams).to.deep.equal({
+                    ids: ["doc1"],
+                    mode: "metadata",
+                    jwt: undefined,
+                    tenantId: undefined
                 });
             });
     });
