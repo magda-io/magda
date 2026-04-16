@@ -1142,7 +1142,7 @@ class RecordsServiceRO(
 
   /**
    * @apiGroup Registry Record Service
-   * @api {post} /v0/registry/records/access-filter Filter records by access
+   * @api {post} /v0/registry/records/filterByAccess Filter records by access
    * @apiDescription Filter the supplied records and return only those the current user can read.
    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
    * @apiHeader {string} X-Magda-Session Magda internal session id
