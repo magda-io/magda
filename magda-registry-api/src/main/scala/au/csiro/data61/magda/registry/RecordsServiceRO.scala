@@ -1188,7 +1188,7 @@ class RecordsServiceRO(
     path("access-filter") {
       pathEnd {
         requiresTenantId { tenantId =>
-          entity(as[FilterRecordsByAccessRequest]) { requestData =>
+          entity(as[List[String]]) { requestData =>
             withAuthDecision(
               authApiClient,
               AuthDecisionReqConfig("object/record/read")
