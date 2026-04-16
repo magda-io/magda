@@ -38,9 +38,6 @@ class RecordsServiceRO(
   private val logger = Logging(system, getClass)
   implicit private val ec: ExecutionContext = system.dispatcher
 
-  implicit val filterRecordsByAccessRequestFormat = jsonFormat1(FilterRecordsByAccessRequest)
-  implicit val filterRecordsByAccessResponseFormat = jsonFormat1(FilterRecordsByAccessResponse)
-
   private val defaultQueryTimeout = config
     .getDuration(
       "db-query.default-timeout",
@@ -1142,31 +1139,31 @@ class RecordsServiceRO(
 
   /**
    * @apiGroup Registry Record Service
-   * @api {post} /v0/registry/records/filterByAccess Filter records by access
-   * @apiDescription Filter the supplied records and return only those the current user can read.
+   * @api {post} /v0/registry/records/filterByAccess Filter record ids by access
+   * @apiDescription Filter the supplied record ids and return only those the current user can read.
    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
    * @apiHeader {string} X-Magda-Session Magda internal session id
-   * @apiParam (body) {object} requestData JSON object with a `records` field
-   * @apiSuccess (Success 200) {json[]} Response filtered records
+   * @apiParam (body) {string[]} requestData JSON array of record ids, e.g. ["id1", "id2"]
+   * @apiSuccess (Success 200) {string[]} Response filtered record ids
    * @apiUse GenericError
    */
-  @Path("/access-filter")
+  @Path("/filterByAccess")
   @ApiOperation(
     value = "Filter a list of record ids by access",
     nickname = "filterByAccess",
     httpMethod = "POST",
     response = classOf[String],
     responseContainer = "List",
-    notes = "Returns only the record ids that the current user has permission to read."
+    notes = "Request body is a JSON array of record ids. Returns only readable record ids."
   )
   @ApiImplicitParams(
     Array(
       new ApiImplicitParam(
         name = "requestData",
         required = true,
-        dataType = "object",
+        dataTypeClass = classOf[Array[String]],
         paramType = "body",
-        value = "A JSON object with a `records` field, e.g. { \"records\": [\"id1\", \"id2\"] }"
+        value = """A JSON array of record ids, e.g. ["id1", "id2"]"""
       ),
       new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
@@ -1185,7 +1182,7 @@ class RecordsServiceRO(
     )
   )
   def filterByAccess: Route = post {
-    path("access-filter") {
+    path("filterByAccess") {
       pathEnd {
         requiresTenantId { tenantId =>
           entity(as[List[String]]) { requestData =>
@@ -1194,12 +1191,12 @@ class RecordsServiceRO(
               AuthDecisionReqConfig("object/record/read")
             ) { authDecision =>
               completeBlockingTask {
-                val requestedRecordIds = requestData.records
+                val requestedRecordIds = requestData
                   .map(_.trim)
                   .filter(_.nonEmpty)
                   .distinct
                 if (requestedRecordIds.isEmpty) {
-                  FilterRecordsByAccessResponse(Seq.empty)
+                  Seq.empty[String]
                 } else {
                   DB readOnly { implicit session =>
                     session.queryTimeout(this.defaultQueryTimeout)
@@ -1209,7 +1206,7 @@ class RecordsServiceRO(
                         authDecision,
                         requestedRecordIds
                       )
-                    FilterRecordsByAccessResponse(validRecordIds)
+                    validRecordIds.toSeq
                   }
                 }
               }

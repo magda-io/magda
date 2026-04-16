@@ -61,7 +61,7 @@ export function createRoutes(
             const params: SearchParams = {
                 ...(rawParams as SearchParams),
                 jwt: jwt || undefined,
-                tenantId: tenantId || undefined
+                tenantId: tenantId === undefined ? 0 : Number(tenantId)
             };
             const results = await semanticSearchService.search(params);
             res.status(200).json(results);
@@ -89,7 +89,7 @@ export function createRoutes(
             const params: RetrieveParams = {
                 ...(rawParams as RetrieveParams),
                 jwt: jwt || undefined,
-                tenantId: tenantId || undefined
+                tenantId: tenantId === undefined ? 0 : Number(tenantId)
             };
             const results = await semanticSearchService.retrieve(params);
             res.status(200).json(results);

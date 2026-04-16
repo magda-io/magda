@@ -60,7 +60,7 @@ describe("createRoutes /search API", () => {
                 expect(capturedParams.query).to.equal("test keyword");
                 expect(capturedParams.max_num_results).to.equal(50);
                 expect(capturedParams.jwt).to.equal("mock-jwt-token");
-                expect(capturedParams.tenantId).to.equal("1");
+                expect(capturedParams.tenantId).to.equal(1);
             });
     });
 
@@ -82,7 +82,7 @@ describe("createRoutes /search API", () => {
                 expect(capturedParams.query).to.equal("another test");
                 expect(capturedParams.max_num_results).to.equal(10);
                 expect(capturedParams.jwt).to.equal("mock-jwt-token-2");
-                expect(capturedParams.tenantId).to.equal("2");
+                expect(capturedParams.tenantId).to.equal(2);
             });
     });
 
@@ -154,12 +154,12 @@ describe("createRoutes /search API", () => {
                     precedingChunksNum: 1,
                     subsequentChunksNum: 2,
                     jwt: "mock-retrieve-jwt",
-                    tenantId: "123"
+                    tenantId: 123
                 });
             });
     });
 
-    it("POST /retrieve should pass jwt and tenantId as undefined when headers are missing", async () => {
+    it("POST /retrieve should pass jwt as undefined and tenantId as 0 when headers are missing", async () => {
         let capturedParams: any = null;
 
         const app = buildApp(
@@ -174,15 +174,19 @@ describe("createRoutes /search API", () => {
             .post("/retrieve")
             .send({
                 ids: ["doc1"],
-                mode: "metadata"
+                mode: "full",
+                precedingChunksNum: 1,
+                subsequentChunksNum: 2
             })
             .expect(200)
             .expect(() => {
                 expect(capturedParams).to.deep.equal({
                     ids: ["doc1"],
-                    mode: "metadata",
+                    mode: "full",
+                    precedingChunksNum: 1,
+                    subsequentChunksNum: 2,
                     jwt: undefined,
-                    tenantId: undefined
+                    tenantId: 0
                 });
             });
     });

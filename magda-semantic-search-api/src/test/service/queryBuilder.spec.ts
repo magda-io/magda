@@ -1,8 +1,5 @@
 import { expect } from "chai";
-import {
-    buildSearchQueryBody,
-    buildSearchQueryBodyByRecordIds
-} from "../../service/queryBuilder.js";
+import { buildSearchQueryBody } from "../../service/queryBuilder.js";
 import type { SearchParams } from "../../model.js";
 
 describe("QueryBuilder", () => {
@@ -156,7 +153,7 @@ describe("QueryBuilder", () => {
                 max_num_results: mockFetchSize
             };
 
-            const result = buildSearchQueryBodyByRecordIds(
+            const result = buildSearchQueryBody(
                 mockEmbeddingVector,
                 searchParams,
                 []
@@ -190,7 +187,7 @@ describe("QueryBuilder", () => {
                 max_num_results: mockFetchSize
             };
 
-            const result = buildSearchQueryBodyByRecordIds(
+            const result = buildSearchQueryBody(
                 mockEmbeddingVector,
                 searchParams,
                 ["record1", "record2"]
@@ -216,7 +213,7 @@ describe("QueryBuilder", () => {
                 max_num_results: mockFetchSize
             };
 
-            const result = buildSearchQueryBodyByRecordIds(
+            const result = buildSearchQueryBody(
                 mockEmbeddingVector,
                 searchParams,
                 ["record1"]

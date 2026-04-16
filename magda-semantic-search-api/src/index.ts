@@ -4,7 +4,7 @@ import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwt
 import { SemanticSearchService } from "./service/SemanticSearchService.js";
 import EmbeddingApiClient from "@magda/typescript-common/dist/EmbeddingApiClient.js";
 import OpensearchApiClient from "@magda/typescript-common/dist/OpensearchApiClient.js";
-import RegistryApiClient from "@magda/typescript-common/dist/RegistryApiClient.js";
+import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient.js";
 import SearchApiClient from "@magda/typescript-common/dist/SearchApiClient.js";
 import { createRoutes } from "./api/createApiRouter.js";
 import retry from "magda-typescript-common/src/retry.js";
@@ -89,11 +89,12 @@ const embeddingApiClient = await retry(
         )
 );
 
-const registryApiClient = await retry(
+const registryClient = await retry(
     () =>
         Promise.resolve(
-            new RegistryApiClient({
-                baseApiUrl: argv.registryReadonlyURL
+            new RegistryClient({
+                baseUrl: argv.registryReadonlyURL as string,
+                tenantId: 0
             })
         ),
     5,
@@ -124,7 +125,7 @@ const searchApiClient = await retry(
 const semanticSearchService = new SemanticSearchService(
     embeddingApiClient,
     opensearchApiClient,
-    registryApiClient,
+    registryClient,
     searchApiClient,
     {
         indexName: argv.semanticIndexName as string,

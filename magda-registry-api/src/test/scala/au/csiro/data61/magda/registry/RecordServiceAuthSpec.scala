@@ -2089,33 +2089,26 @@ class RecordServiceAuthSpec extends ApiSpec {
       }
     }
 
-    describe("filterByAccess API: {post} /v0/registry/records/access-filter:") {
+    describe("filterByAccess API: {post} /v0/registry/records/filterByAccess:") {
 
       def filterByAccessRequest(recordIds: Seq[String]): HttpRequest =
-        Post(
-          "/v0/records/access-filter",
-          JsObject("records" -> JsArray(recordIds.map(JsString(_)).toVector))
-        )
+        Post("/v0/records/filterByAccess", recordIds.toList)
 
-      def returnedRecordIds: Seq[String] =
-        responseAs[JsObject]
-          .fields
-          .get("records")
-          .map(_.convertTo[Seq[String]])
-          .getOrElse(Seq.empty)
+      def returnedRecordIds: List[String] =
+        responseAs[List[String]]
 
       endpointStandardAuthTestCase(
         request = filterByAccessRequest(Seq("test1", "test2", "missing-id")),
         requiredOperationUris = List("object/record/read"),
         hasPermissionCheck = param => {
           status shouldEqual StatusCodes.OK
-          returnedRecordIds shouldEqual Seq("test1", "test2")
+          returnedRecordIds shouldEqual List("test1", "test2")
           param.authFetcher.callTimesByOperationUri("object/record/read") shouldBe 1
         },
         noPermissionCheck = param => {
           // As designed: return 200 + empty list when read permission is denied.
           status shouldEqual StatusCodes.OK
-          returnedRecordIds shouldEqual Seq.empty
+          returnedRecordIds shouldEqual List.empty[String]
           param.authFetcher.callTimesByOperationUri("object/record/read") shouldBe 1
         },
         beforeRequest = param => {
@@ -2150,7 +2143,7 @@ class RecordServiceAuthSpec extends ApiSpec {
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
-            returnedRecordIds shouldEqual Seq.empty
+            returnedRecordIds shouldEqual List.empty[String]
           }
       }
 
@@ -2184,7 +2177,7 @@ class RecordServiceAuthSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
-          returnedRecordIds shouldEqual Seq("tenant1-rec")
+          returnedRecordIds shouldEqual List("tenant1-rec")
         }
       }
 
@@ -2201,11 +2194,9 @@ class RecordServiceAuthSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
-          returnedRecordIds shouldEqual Seq("dup-id")
+          returnedRecordIds shouldEqual List("dup-id")
         }
       }
     }
-
-
   }
 }

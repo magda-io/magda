@@ -1821,6 +1821,68 @@ export class RecordsApi {
         return fetchWithRequestOptions(requestOptions);
     }
     /**
+     * Filter a list of record ids by access
+     * Request body is a JSON array of record ids. Returns only readable record ids.
+     * @param requestData A JSON array of record ids, e.g. [\&quot;id1\&quot;, \&quot;id2\&quot;]
+     * @param xMagdaTenantId 0
+     * @param xMagdaSession Magda internal session id
+     */
+    public filterByAccess(
+        requestData: Array<string>,
+        xMagdaTenantId: number,
+        xMagdaSession?: string
+    ): Promise<{ response: Response; body: Array<string> }> {
+        const localVarPath = this.basePath + "/records/filterByAccess";
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'requestData' is not null or undefined
+        if (requestData === null || requestData === undefined) {
+            throw new Error(
+                "Required parameter requestData was null or undefined when calling filterByAccess."
+            );
+        }
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling filterByAccess."
+            );
+        }
+
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
+
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
+
+        let useFormData = false;
+
+        const requestOptions: RequestOptions = {
+            method: "POST",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            json: true,
+            body: requestData
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+
+        return fetchWithRequestOptions(requestOptions);
+    }
+    /**
      * Get a list of all records
      *
      * @param xMagdaTenantId 0

@@ -1,10 +1,9 @@
 import EmbeddingApiClient from "magda-typescript-common/src/EmbeddingApiClient.js";
 import OpensearchApiClient from "magda-typescript-common/src/OpensearchApiClient.js";
-import RegistryApiClient from "magda-typescript-common/src/RegistryApiClient.js";
+import RegistryClient from "magda-typescript-common/src/registry/RegistryClient.js";
 import SearchApiClient from "magda-typescript-common/src/SearchApiClient.js";
 import {
     buildSearchQueryBody,
-    buildSearchQueryBodyByRecordIds,
     buildSingleRetrieveQueryBody,
     getIndexItemsByIdsQueryBody
 } from "./queryBuilder.js";
@@ -27,7 +26,7 @@ export class SemanticSearchService {
     constructor(
         private embeddingApiClient: EmbeddingApiClient,
         private openSearchClient: OpensearchApiClient,
-        private registryApiClient: RegistryApiClient,
+        private registryClient: RegistryClient,
         private searchApiClient: SearchApiClient,
         private semanticIndexerConfig: SemanticIndexerConfig
     ) {
@@ -43,7 +42,9 @@ export class SemanticSearchService {
         const tempSearchParams = { ...searchParams };
 
         if (!inMemoryMode) {
+            // minScore is not used in on_disk mode
             tempSearchParams.minScore = undefined;
+            // fetch more results to filter by minScore
             tempSearchParams.max_num_results =
                 (searchParams.max_num_results ?? DEFAULT_MAX_NUM_RESULTS) * 2;
         }
@@ -62,13 +63,13 @@ export class SemanticSearchService {
             )
         ];
 
-        const registryResponse = await this.registryApiClient.filterRecordsByAccess(
+        const registryResponse = await this.registryClient.filterRecordsByAccess(
             recordIds,
             searchParams.jwt,
             searchParams.tenantId
         );
 
-        const allowedRecordIds = new Set(registryResponse.records);
+        const allowedRecordIds = this._toAllowedRecordIds(registryResponse);
         items = items.filter((item) => allowedRecordIds.has(item.recordId));
 
         // Phase 2: Access-Aware Narrowed Vector Search
@@ -120,11 +121,7 @@ export class SemanticSearchService {
         recordIds?: string[]
     ): Promise<SearchResultItem[]> {
         const queryBody = recordIds?.length
-            ? buildSearchQueryBodyByRecordIds(
-                  embeddingVector,
-                  searchParams,
-                  recordIds
-              )
+            ? buildSearchQueryBody(embeddingVector, searchParams, recordIds)
             : buildSearchQueryBody(embeddingVector, searchParams);
 
         const searchResponse = await this.openSearchClient.search(
@@ -132,6 +129,19 @@ export class SemanticSearchService {
             queryBody
         );
         return mapSearchResults(searchResponse);
+    }
+
+    private _toAllowedRecordIds(registryResponse: unknown): Set<string> {
+        if (!Array.isArray(registryResponse)) {
+            throw new Error(
+                "Invalid filterByAccess response: expected string[]"
+            );
+        }
+        return new Set(
+            registryResponse.filter(
+                (id): id is string => typeof id === "string" && id.length > 0
+            )
+        );
     }
 
     async retrieve(_params: RetrieveParams): Promise<RetrieveResultItem[]> {
@@ -156,13 +166,13 @@ export class SemanticSearchService {
             )
         ];
 
-        const registryResponse = await this.registryApiClient.filterRecordsByAccess(
+        const registryResponse = await this.registryClient.filterRecordsByAccess(
             recordIds,
             jwt,
             tenantId
         );
 
-        const allowedRecordIds = new Set(registryResponse.records);
+        const allowedRecordIds = this._toAllowedRecordIds(registryResponse);
 
         const results: RetrieveResultItem[] = [];
         for (const item of indexItems) {

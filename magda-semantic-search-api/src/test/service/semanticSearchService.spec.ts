@@ -10,7 +10,6 @@ import type {
     SearchDatasetsResult,
     SearchDataset
 } from "magda-typescript-common/src/SearchApiClient.js";
-import type { FilterRecordsByAccessResult } from "magda-typescript-common/src/RegistryApiClient.js";
 
 const returnMockSearchResult = (
     fetchSize: number = undefined,
@@ -89,9 +88,7 @@ const returnMockSearchResult = (
 
 const returnMockFilterRecordsByAccessResult = (
     records: string[] = []
-): FilterRecordsByAccessResult => ({
-    records
-});
+): string[] => records;
 
 type MockDatasetInput = {
     identifier?: string;
@@ -118,7 +115,7 @@ describe("SemanticSearchService.search", () => {
     let semanticSearchService: SemanticSearchService;
     let mockEmbeddingApiClient: any;
     let mockOpenSearchClient: any;
-    let mockRegistryApiClient: any;
+    let mockRegistryClient: any;
     let mockSearchApiClient: any;
     let mockSemanticIndexerConfig: SemanticIndexerConfig;
 
@@ -135,16 +132,15 @@ describe("SemanticSearchService.search", () => {
             }
         };
 
-        mockRegistryApiClient = {
+        mockRegistryClient = {
             filterRecordsByAccess: async (
                 _records: string[],
                 _jwtToken: string,
-                _tenantId?: string
-            ): Promise<FilterRecordsByAccessResult> => {
+                _tenantId?: number
+            ): Promise<string[]> => {
                 return returnMockFilterRecordsByAccessResult([
                     "record1",
-                    "record2",
-                    "record3"
+                    "record2"
                 ]);
             }
         };
@@ -153,7 +149,7 @@ describe("SemanticSearchService.search", () => {
             searchDatasets: async (
                 _params: SearchDatasetsParams = {},
                 _jwtToken: string,
-                _tenantId?: string
+                _tenantId?: number
             ): Promise<SearchDatasetsResult> => {
                 return returnMockSearchDatasetsResult([]);
             }
@@ -168,7 +164,7 @@ describe("SemanticSearchService.search", () => {
         semanticSearchService = new SemanticSearchService(
             mockEmbeddingApiClient,
             mockOpenSearchClient,
-            mockRegistryApiClient,
+            mockRegistryClient,
             mockSearchApiClient,
             mockSemanticIndexerConfig
         );
@@ -190,7 +186,7 @@ describe("SemanticSearchService.search", () => {
             semanticSearchService = new SemanticSearchService(
                 mockEmbeddingApiClient,
                 mockOpenSearchClient,
-                mockRegistryApiClient,
+                mockRegistryClient,
                 mockSearchApiClient,
                 mockSemanticIndexerConfig
             );
@@ -236,7 +232,7 @@ describe("SemanticSearchService.search", () => {
             semanticSearchService = new SemanticSearchService(
                 mockEmbeddingApiClient,
                 mockOpenSearchClient,
-                mockRegistryApiClient,
+                mockRegistryClient,
                 mockSearchApiClient,
                 mockSemanticIndexerConfig
             );
@@ -256,12 +252,12 @@ describe("SemanticSearchService.search", () => {
         it("should keep only records allowed by filterRecordsByAccess", async () => {
             let searchDatasetsCallCount = 0;
 
-            mockRegistryApiClient = {
+            mockRegistryClient = {
                 filterRecordsByAccess: async (
                     _records: string[],
                     _jwtToken: string,
-                    _tenantId?: string
-                ): Promise<FilterRecordsByAccessResult> => {
+                    _tenantId?: number
+                ): Promise<string[]> => {
                     return returnMockFilterRecordsByAccessResult([
                         "record1",
                         "record2"
@@ -273,7 +269,7 @@ describe("SemanticSearchService.search", () => {
                 searchDatasets: async (
                     _params: SearchDatasetsParams = {},
                     _jwtToken: string,
-                    _tenantId?: string
+                    _tenantId?: number
                 ): Promise<SearchDatasetsResult> => {
                     searchDatasetsCallCount++;
                     return returnMockSearchDatasetsResult([]);
@@ -290,7 +286,7 @@ describe("SemanticSearchService.search", () => {
             semanticSearchService = new SemanticSearchService(
                 mockEmbeddingApiClient,
                 mockOpenSearchClient,
-                mockRegistryApiClient,
+                mockRegistryClient,
                 mockSearchApiClient,
                 mockSemanticIndexerConfig
             );
@@ -312,12 +308,12 @@ describe("SemanticSearchService.search", () => {
             let openSearchCallCount = 0;
             let searchDatasetsCallCount = 0;
 
-            mockRegistryApiClient = {
+            mockRegistryClient = {
                 filterRecordsByAccess: async (
                     _records: string[],
                     _jwtToken: string,
-                    _tenantId?: string
-                ): Promise<FilterRecordsByAccessResult> => {
+                    _tenantId?: number
+                ): Promise<string[]> => {
                     // When the first vector search is empty, this receives [].
                     return returnMockFilterRecordsByAccessResult([]);
                 }
@@ -327,7 +323,7 @@ describe("SemanticSearchService.search", () => {
                 searchDatasets: async (
                     params: SearchDatasetsParams = {},
                     jwtToken: string,
-                    _tenantId?: string
+                    _tenantId?: number
                 ): Promise<SearchDatasetsResult> => {
                     searchDatasetsCallCount++;
                     expect(params).to.deep.equal({
@@ -416,7 +412,7 @@ describe("SemanticSearchService.search", () => {
             semanticSearchService = new SemanticSearchService(
                 mockEmbeddingApiClient,
                 mockOpenSearchClient,
-                mockRegistryApiClient,
+                mockRegistryClient,
                 mockSearchApiClient,
                 mockSemanticIndexerConfig
             );
@@ -501,12 +497,12 @@ describe("SemanticSearchService.search", () => {
                 }
             };
 
-            mockRegistryApiClient = {
+            mockRegistryClient = {
                 filterRecordsByAccess: async (
                     records: string[],
                     _jwtToken: string,
-                    _tenantId?: string
-                ): Promise<FilterRecordsByAccessResult> => {
+                    _tenantId?: number
+                ): Promise<string[]> => {
                     filterRecordsCallCount++;
                     capturedPhase1RecordIds = records;
                     // Deny all phase-1 records -> force fallback
@@ -518,7 +514,7 @@ describe("SemanticSearchService.search", () => {
                 searchDatasets: async (
                     _params: SearchDatasetsParams = {},
                     _jwtToken: string,
-                    _tenantId?: string
+                    _tenantId?: number
                 ): Promise<SearchDatasetsResult> => {
                     searchDatasetsCallCount++;
                     return returnMockSearchDatasetsResult([
@@ -531,7 +527,7 @@ describe("SemanticSearchService.search", () => {
             semanticSearchService = new SemanticSearchService(
                 mockEmbeddingApiClient,
                 mockOpenSearchClient,
-                mockRegistryApiClient,
+                mockRegistryClient,
                 mockSearchApiClient,
                 mockSemanticIndexerConfig
             );
@@ -612,12 +608,12 @@ describe("SemanticSearchService.search", () => {
                 })
             };
 
-            mockRegistryApiClient = {
+            mockRegistryClient = {
                 filterRecordsByAccess: async (
                     records: string[],
                     _jwtToken: string,
-                    _tenantId?: string
-                ): Promise<FilterRecordsByAccessResult> => {
+                    _tenantId?: number
+                ): Promise<string[]> => {
                     capturedRecordIds = records;
                     return returnMockFilterRecordsByAccessResult(["record1"]);
                 }
@@ -633,7 +629,7 @@ describe("SemanticSearchService.search", () => {
             semanticSearchService = new SemanticSearchService(
                 mockEmbeddingApiClient,
                 mockOpenSearchClient,
-                mockRegistryApiClient,
+                mockRegistryClient,
                 mockSearchApiClient,
                 mockSemanticIndexerConfig
             );
@@ -662,12 +658,12 @@ describe("SemanticSearchService.search", () => {
                 }
             };
 
-            mockRegistryApiClient = {
+            mockRegistryClient = {
                 filterRecordsByAccess: async (
                     records: string[],
                     _jwtToken: string,
-                    _tenantId?: string
-                ): Promise<FilterRecordsByAccessResult> => {
+                    _tenantId?: number
+                ): Promise<string[]> => {
                     // Ensure Phase 1 recordIds are empty
                     expect(records).to.deep.equal([]);
                     return returnMockFilterRecordsByAccessResult([]);
@@ -688,7 +684,7 @@ describe("SemanticSearchService.search", () => {
             semanticSearchService = new SemanticSearchService(
                 mockEmbeddingApiClient,
                 mockOpenSearchClient,
-                mockRegistryApiClient,
+                mockRegistryClient,
                 mockSearchApiClient,
                 mockSemanticIndexerConfig
             );
@@ -767,19 +763,19 @@ describe("SemanticSearchService.retrieve", () => {
     let service: SemanticSearchService;
     let mockOpenSearchClient: any;
     let mockEmbeddingApiClient: any;
-    let mockRegistryApiClient: any;
+    let mockRegistryClient: any;
     let mockSearchApiClient: any;
     let cfg: SemanticIndexerConfig;
 
     beforeEach(() => {
         mockEmbeddingApiClient = { get: async () => [0.1] };
 
-        mockRegistryApiClient = {
+        mockRegistryClient = {
             filterRecordsByAccess: async (
                 records: string[],
                 _jwtToken: string,
-                _tenantId?: string
-            ): Promise<FilterRecordsByAccessResult> => {
+                _tenantId?: number
+            ): Promise<string[]> => {
                 return returnMockFilterRecordsByAccessResult(records);
             }
         };
@@ -810,7 +806,7 @@ describe("SemanticSearchService.retrieve", () => {
         service = new SemanticSearchService(
             mockEmbeddingApiClient,
             mockOpenSearchClient,
-            mockRegistryApiClient,
+            mockRegistryClient,
             mockSearchApiClient,
             cfg
         );
@@ -896,12 +892,12 @@ describe("SemanticSearchService.retrieve", () => {
     });
 
     it("should only return results whose recordIds pass filterRecordsByAccess", async () => {
-        mockRegistryApiClient = {
+        mockRegistryClient = {
             filterRecordsByAccess: async (
                 records: string[],
                 _jwtToken: string,
-                _tenantId?: string
-            ): Promise<FilterRecordsByAccessResult> => {
+                _tenantId?: number
+            ): Promise<string[]> => {
                 expect(records).to.have.members(["record1", "record2"]);
                 return returnMockFilterRecordsByAccessResult(["record1"]);
             }
@@ -934,7 +930,7 @@ describe("SemanticSearchService.retrieve", () => {
         service = new SemanticSearchService(
             mockEmbeddingApiClient,
             mockOpenSearchClient,
-            mockRegistryApiClient,
+            mockRegistryClient,
             mockSearchApiClient,
             cfg
         );
@@ -949,12 +945,12 @@ describe("SemanticSearchService.retrieve", () => {
     });
 
     it("should return empty array when filterRecordsByAccess rejects all records", async () => {
-        mockRegistryApiClient = {
+        mockRegistryClient = {
             filterRecordsByAccess: async (
                 records: string[],
                 _jwtToken: string,
-                _tenantId?: string
-            ): Promise<FilterRecordsByAccessResult> => {
+                _tenantId?: number
+            ): Promise<string[]> => {
                 expect(records).to.have.members(["record1", "record2"]);
                 return returnMockFilterRecordsByAccessResult([]);
             }
@@ -984,7 +980,7 @@ describe("SemanticSearchService.retrieve", () => {
         service = new SemanticSearchService(
             mockEmbeddingApiClient,
             mockOpenSearchClient,
-            mockRegistryApiClient,
+            mockRegistryClient,
             mockSearchApiClient,
             cfg
         );

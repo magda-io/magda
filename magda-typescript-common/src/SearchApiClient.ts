@@ -75,8 +75,8 @@ export default class SearchApiClient extends BaseApiClient {
 
     async searchDatasets(
         params: SearchDatasetsParams = {},
-        jwtToken: string,
-        tenantId?: string
+        jwtToken?: string,
+        tenantId?: number
     ): Promise<SearchDatasetsResult> {
         const uri = this.getBaseApiUri().segmentCoded("datasets");
 
@@ -108,11 +108,11 @@ export default class SearchApiClient extends BaseApiClient {
             "X-Magda-Session",
             jwtToken
         );
-        const resolvedTenantId = tenantId === undefined ? "0" : tenantId;
+        const resolvedTenantId = tenantId === undefined ? 0 : tenantId;
         requestConfig.headers = this.setHeader(
             requestConfig.headers,
             "X-Magda-Tenant-Id",
-            resolvedTenantId
+            String(resolvedTenantId)
         );
         return await fetchRequest<SearchDatasetsResult>(
             "get",
