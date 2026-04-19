@@ -1,0 +1,20 @@
+# Redis Bitnami chart configuration
+redis:
+  auth:
+    # -- Enable Redis authentication
+    enabled: false
+  master:
+    # -- Redis master persistence
+    persistence:
+      enabled: false
+      size: 8Gi
+  replica:
+    replicaCount: 0
+  architecture: standalone
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

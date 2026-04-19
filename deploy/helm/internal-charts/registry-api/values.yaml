@@ -1,10 +1,10 @@
 global: {}
-image: 
+image:
   name: "magda-registry-api"
-  # repository: 
-  # tag: 
-  # pullPolicy: 
-  # pullSecrets: 
+  # repository:
+  # tag:
+  # pullPolicy:
+  # pullSecrets:
 
 defaultImage:
   repository: "ghcr.io/magda-io"
@@ -22,10 +22,10 @@ defaultImage:
 jvmMaxHeapSize: 1g
 
 # -- (string) Sets the initial size of the heap (via flag `-Xms`) when the JVM starts
-# For production, should probably set to same as `jvmMaxHeapSize` for more predictable performance. 
+# For production, should probably set to same as `jvmMaxHeapSize` for more predictable performance.
 # By default, will use JVM default value.
 # value should be in format of `1g` or `200m` etc.
-jvmInitialHeapSize: 
+jvmInitialHeapSize:
 
 # -- (float) JVM max allowed heap memory percentage based on `resources.limits.memory`
 # This value will only be used if `jvmMaxHeapSize` is not set.
@@ -35,7 +35,7 @@ jvmMaxRamPercentage: 70.0
 # -- (float) JVM initial heap memory percentage
 # This value will only be used if `jvmInitialHeapSize` is not set.
 # By default, will use JVM default value.
-jvmInitialRamPercentage: 
+jvmInitialRamPercentage:
 
 # -- (float) JVM min heap memory percentage
 # This value will only be used if `jvmInitialHeapSize` is not set.
@@ -54,7 +54,7 @@ autoscaler:
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
 livenessProbe: {}
-resources: 
+resources:
   requests:
     cpu: 250m
     memory: 500Mi
@@ -72,7 +72,7 @@ deployments:
     # -- Default idle timeout for full instance.
     # Make sure `idleTimeout` is longer than `requestTimeout`
     idleTimeout: 60s
-  
+
   # -- deployment config for readonly registry instances.
   # You can also specify different `resources` config under this key.
   readOnly:
@@ -90,23 +90,23 @@ deployments:
 aspectDefinitionMigrator:
   enabled: true
   backoffLimit: 6
-  image: 
+  image:
     name: magda-migrator-registry-aspects
-    # repository: 
-    # tag: 
-    # pullPolicy: 
-    # pullSecrets: 
+    # repository:
+    # tag:
+    # pullPolicy:
+    # pullSecrets:
 
 # -- application config. Allow to configure any application config fields.
 # For all available configuration fields and their default values, please refer to [application.conf](https://github.com/magda-io/magda/blob/main/magda-registry-api/src/main/resources/application.conf)
 # This config field is available since v2.2.5
-# Previous versions supported config fields: `.Values.validateJsonSchema`, `.Values.db.poolInitialSize`, `.Values.db.poolMaxSize` and 
+# Previous versions supported config fields: `.Values.validateJsonSchema`, `.Values.db.poolInitialSize`, `.Values.db.poolMaxSize` and
 # `.Values.db.poolConnectionTimeoutMillis` are still supported for backward compatible reason (although deprecated).
 # When exist, values from those obsolete config fields will override relevant fields in `.Values.appConfig`.
 # Obsolete config fields: `.Values.logLevel`, `.Values.skipAuthorization` and `.Values.printSQlInConsole` are not supported anymore.
 # Please config using alternative fields via `.Values.appConfig` instead.
 appConfig:
-  http: 
+  http:
     port: 6101
   db:
     default:
@@ -121,7 +121,7 @@ appConfig:
   authorization:
     # -- Skip asking authorization decisions from policy engine.
     # `UnconditionalTrueDecision` will be always returned for this case
-    # Useful when running locally - DO NOT TURN ON IN PRODUCTION 
+    # Useful when running locally - DO NOT TURN ON IN PRODUCTION
     skipOpaQuery: false
   # -- Whether registry api should validate incoming JSON data
   validateJsonSchema: true
@@ -134,6 +134,14 @@ appConfig:
     # you will also want to adjust `akka.http.client.idle-timeout` to match this value
     requestStreamTimeout: 120s
   akka:
-    http:
-      client:
-        idle-timeout: 120s
+   http:
+     client:
+       idle-timeout: 120s
+  redis:
+   # -- Redis connection host
+   host: registry-redis
+   # -- Redis connection port
+   port: 6379
+   # -- Redis database number
+   db: 0
+

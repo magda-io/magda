@@ -3,10 +3,16 @@ kind: Deployment
 metadata:
   name: semantic-search-api
 spec:
+  {{- $global := .Values.global | default dict }}
+  {{- $rollingUpdate := get $global "rollingUpdate" | default dict }}
+  {{- $searchEngine := get $global "searchEngine" | default dict }}
+  {{- $semanticIndexer := get $searchEngine "semanticIndexer" | default dict }}
+  {{- $semanticIndexerKnn := get $semanticIndexer "knnVectorFieldConfig" | default dict }}
+  {{- $redis := get $global "redis" | default dict }}
   replicas: {{ .Values.replicas | default 1 }}
   strategy:
     rollingUpdate:
-      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+      maxUnavailable: {{ get $rollingUpdate "maxUnavailable" | default 0 }}
   selector:
     matchLabels:
       service: semantic-search-api
@@ -15,9 +21,9 @@ spec:
       labels:
         service: semantic-search-api
     spec:
-{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .Values.global.enablePriorityClass }}
+{{ if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") (get $global "enablePriorityClass") }}
       priorityClassName: magda-8
-{{- end }}
+{{ end }}
       {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: semantic-search-api
@@ -25,23 +31,26 @@ spec:
         imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         ports:
           - containerPort: {{ .Values.semanticSearchConfig.listenPort }}
-        command: [
-            "node",
-            "/usr/src/app/component/dist/index.js",
-            "--listenPort", "{{ .Values.semanticSearchConfig.listenPort }}",
-            "--opensearchApiURL", "{{ .Values.semanticSearchConfig.openSearchUrl }}",
-            "--embeddingApiURL", "{{ .Values.semanticSearchConfig.embeddingApiUrl }}",
-            
-            "--semanticIndexName",
-            "{{ .Values.semanticSearchConfig.semanticIndexName | default .Values.global.searchEngine.semanticIndexer.indexName  }}",
-
-            "--semanticIndexVersion",
-            "{{ .Values.semanticSearchConfig.semanticIndexVersion | default .Values.global.searchEngine.semanticIndexer.indexVersion  }}",
-
-            "--semanticIndexerMode",
-            "{{ .Values.semanticSearchConfig.semanticIndexerMode | default .Values.global.searchEngine.semanticIndexer.knnVectorFieldConfig.mode }}"
-        ]
-{{- if .Values.global.enableLivenessProbes }}
+        command:
+          - "node"
+          - "/usr/src/app/component/dist/index.js"
+          - "--listenPort"
+          - "{{ .Values.semanticSearchConfig.listenPort }}"
+          - "--opensearchApiURL"
+          - "{{ .Values.semanticSearchConfig.openSearchUrl }}"
+          - "--embeddingApiURL"
+          - "{{ .Values.semanticSearchConfig.embeddingApiUrl }}"
+          - "--semanticIndexName"
+          - "{{ .Values.semanticSearchConfig.semanticIndexName | default (get $semanticIndexer "indexName") }}"
+          - "--semanticIndexVersion"
+          - "{{ .Values.semanticSearchConfig.semanticIndexVersion | default (get $semanticIndexer "indexVersion") }}"
+          - "--semanticIndexerMode"
+          - "{{ .Values.semanticSearchConfig.semanticIndexerMode | default (get $semanticIndexerKnn "mode") }}"
+          - "--redisHost"
+          - '{{ if (get $redis "enabled" | default true) }}{{ .Values.redis.host | default "registry-redis" }}{{ else }}{{ get $redis "host" | default "registry-redis" }}{{ end }}'
+          - "--redisPort"
+          - '{{ if (get $redis "enabled" | default true) }}{{ .Values.redis.port | default 6379 }}{{ else }}{{ get $redis "port" | default 6379 }}{{ end }}'
+{{ if (get $global "enableLivenessProbes") }}
         livenessProbe:
           httpGet:
             path: /v0/status/live
@@ -56,7 +65,7 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
-{{- end }}
+{{ end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
@@ -67,3 +76,10 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
+        {{ if (get $redis "passwordSecret") }}
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ get $redis "passwordSecret" }}
+              key: redis-password
+        {{ end }}

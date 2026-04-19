@@ -1,0 +1,21 @@
+# This service is used to make Redis accessible via a consistent DNS name
+# when deployed as part of the Magda cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-redis
+  labels:
+    app: registry-redis
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  selector:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  type: ClusterIP
+
