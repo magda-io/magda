@@ -50,7 +50,9 @@ spec:
           - '{{ if (get $redis "enabled" | default true) }}{{ .Values.redis.host | default "registry-redis" }}{{ else }}{{ get $redis "host" | default "registry-redis" }}{{ end }}'
           - "--redisPort"
           - '{{ if (get $redis "enabled" | default true) }}{{ .Values.redis.port | default 6379 }}{{ else }}{{ get $redis "port" | default 6379 }}{{ end }}'
-{{ if (get $global "enableLivenessProbes") }}
+          - "--redisDb"
+          - '{{ if (get $redis "enabled" | default true) }}{{ .Values.redis.db | default 0 }}{{ else }}{{ get $redis "db" | default 0 }}{{ end }}'
+ {{ if (get $global "enableLivenessProbes") }}
         livenessProbe:
           httpGet:
             path: /v0/status/live

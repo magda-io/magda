@@ -144,4 +144,6 @@ appConfig:
    port: 6379
    # -- Redis database number
    db: 0
+   # -- Redis connection timeout
+   timeout: 1h
 
