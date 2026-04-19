@@ -4,6 +4,7 @@ import java.net.URLEncoder
 import akka.event.LoggingAdapter
 import akka.http.javadsl.model.RequestEntity
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
+import au.csiro.data61.magda.client.RedisClient
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
 import gnieh.diffson._
@@ -5941,6 +5942,7 @@ class RecordsServiceSpec extends ApiSpec {
         it("returns Accepted HTTP code if delete is taking too long") { param =>
           val mockedRecordPersistence = mock[RecordPersistence]
           val mockedEventPersistence = mock[EventPersistence]
+          val mockedRedisClient = mock[RedisClient]
           val mockedApi = new RecordsService(
             param.api(role).config,
             param.webHookActor,
@@ -5948,7 +5950,8 @@ class RecordsServiceSpec extends ApiSpec {
             system,
             materializer,
             mockedRecordPersistence,
-            mockedEventPersistence
+            mockedEventPersistence,
+            mockedRedisClient
           )
 
           (mockedRecordPersistence

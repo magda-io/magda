@@ -1,14 +1,8 @@
 package au.csiro.data61.magda.registry
 
 import akka.http.scaladsl.model.{HttpRequest, StatusCodes}
-import au.csiro.data61.magda.model.Auth.{
-  AuthDecision,
-  ConciseExpression,
-  ConciseOperand,
-  ConciseRule,
-  UnconditionalFalseDecision,
-  UnconditionalTrueDecision
-}
+import au.csiro.data61.magda.client.RedisClient
+import au.csiro.data61.magda.model.Auth.{AuthDecision, ConciseExpression, ConciseOperand, ConciseRule, UnconditionalFalseDecision, UnconditionalTrueDecision}
 import au.csiro.data61.magda.model.Registry.{Record, _}
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
@@ -26,6 +20,10 @@ class RecordServiceAuthSpec extends ApiSpec {
        |db.default.url = "${databaseUrl}?currentSchema=test"
        |authorization.skip = false
        |authorization.skipOpaQuery = false
+       |redis.host = "localhost"
+       |redis.port = 6379
+       |redis.db = 0
+       |redis.keyPrefix = ""
        |akka.loglevel = ERROR
        |authApi.baseUrl = "http://localhost:6104"
        |webhooks.actorTickRate=0
@@ -2195,6 +2193,144 @@ class RecordServiceAuthSpec extends ApiSpec {
         ) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
           returnedRecordIds shouldEqual List("dup-id")
+        }
+      }
+    }
+
+    describe("accessibleIds API: {get} /v0/registry/records/accessibleIds:") {
+
+      it("should return a redis cache key and store accessible record ids") { param =>
+        settingUpTestData(
+          param,
+          List(
+            Record(
+              "hidden-id",
+              "hidden record",
+              aspects = Map(),
+              Some("blah")
+            ),
+            Record(
+              "visible-id",
+              "visible record",
+              aspects = Map(),
+              Some("blah")
+            )
+          )
+        )
+
+        param.authFetcher.setAuthDecision(
+          "object/record/read",
+          AuthDecision(
+            hasResidualRules = true,
+            result = None,
+            residualRules = Some(
+              List(
+                ConciseRule(
+                  fullName = "rule1",
+                  name = "rule1",
+                  value = JsTrue,
+                  expressions = List(
+                    ConciseExpression(
+                      negated = false,
+                      operator = Some("="),
+                      operands = Vector(
+                        ConciseOperand(
+                          isRef = true,
+                          value = JsString("input.object.record.name")
+                        ),
+                        ConciseOperand(
+                          isRef = false,
+                          value = JsString("visible record")
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        Get("/v0/records/accessibleIds") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> addUserId() ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val cacheKey = responseAs[String]
+
+          cacheKey should startWith("records:")
+          cacheKey should include("1")
+
+          val redisClient = new RedisClient(testConfig)
+          val cachedValue = redisClient.get(cacheKey)
+          cachedValue shouldBe Some("""["visible-id"]""")
+        }
+      }
+
+      it("should return the same cache key for the same tenant and auth decision") { param =>
+        settingUpTestData(
+          param,
+          List(
+            Record(
+              "hidden-id",
+              "hidden record",
+              aspects = Map(),
+              Some("blah")
+            ),
+            Record(
+              "visible-id",
+              "visible record",
+              aspects = Map(),
+              Some("blah")
+            )
+          )
+        )
+
+        param.authFetcher.setAuthDecision(
+          "object/record/read",
+          AuthDecision(
+            hasResidualRules = true,
+            result = None,
+            residualRules = Some(
+              List(
+                ConciseRule(
+                  fullName = "rule1",
+                  name = "rule1",
+                  value = JsTrue,
+                  expressions = List(
+                    ConciseExpression(
+                      negated = false,
+                      operator = Some("="),
+                      operands = Vector(
+                        ConciseOperand(
+                          isRef = true,
+                          value = JsString("input.object.record.name")
+                        ),
+                        ConciseOperand(
+                          isRef = false,
+                          value = JsString("visible record")
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        Get("/v0/records/accessibleIds") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> addUserId() ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val firstKey = responseAs[String]
+
+          Get("/v0/records/accessibleIds") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> addUserId() ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val secondKey = responseAs[String]
+            secondKey shouldEqual firstKey
+          }
         }
       }
     }

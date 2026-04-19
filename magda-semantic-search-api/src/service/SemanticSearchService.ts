@@ -2,6 +2,7 @@ import EmbeddingApiClient from "magda-typescript-common/src/EmbeddingApiClient.j
 import OpensearchApiClient from "magda-typescript-common/src/OpensearchApiClient.js";
 import RegistryClient from "magda-typescript-common/src/registry/RegistryClient.js";
 import SearchApiClient from "magda-typescript-common/src/SearchApiClient.js";
+import RedisClient from "magda-typescript-common/src/redis/RedisClient.js";
 import {
     buildSearchQueryBody,
     buildSingleRetrieveQueryBody,
@@ -28,6 +29,7 @@ export class SemanticSearchService {
         private openSearchClient: OpensearchApiClient,
         private registryClient: RegistryClient,
         private searchApiClient: SearchApiClient,
+        private redisClient: RedisClient,
         private semanticIndexerConfig: SemanticIndexerConfig
     ) {
         this.indexName = `${this.semanticIndexerConfig.indexName}-v${this.semanticIndexerConfig.indexVersion}`;
@@ -129,6 +131,76 @@ export class SemanticSearchService {
             queryBody
         );
         return mapSearchResults(searchResponse);
+    }
+
+    async searchAlt(searchParams: SearchParams): Promise<SearchResultItem[]> {
+        // Step 1: Get the Redis cache key for accessible record ids
+        const dataKeyResponse = await this.registryClient.getAccessibleIdsCacheKey(
+            searchParams.jwt,
+            searchParams.tenantId
+        );
+
+        if (typeof dataKeyResponse !== "string" || !dataKeyResponse.trim()) {
+            console.warn(
+                "[searchAlt] Failed to resolve accessible ids cache key, fallback to default search"
+            );
+            return this.search(searchParams);
+        }
+
+        const dataKey = dataKeyResponse;
+
+        // Step 2: Fetch record ids from Redis using the data key
+        let accessibleRecordIds: string[] = [];
+        try {
+            const cachedJson = await this.redisClient.get(dataKey);
+            if (cachedJson) {
+                accessibleRecordIds = JSON.parse(cachedJson);
+            }
+        } catch (e) {
+            console.warn(
+                `[searchAlt] Failed to fetch/parse accessible ids from Redis for key ${dataKey}:`,
+                e
+            );
+            // Fallback: if Redis fails, fall back to the original search method
+            return this.search(searchParams);
+        }
+
+        if (!accessibleRecordIds || accessibleRecordIds.length === 0) {
+            console.warn(
+                `[searchAlt] No accessible record ids found for key ${dataKey}, returning empty results`
+            );
+            return [];
+        }
+
+        // Step 3: Get the embedding vector for the query
+        const embeddingVector = await this.embeddingApiClient.get(
+            searchParams.query
+        );
+
+        // Step 4: Adjust search params based on index mode
+        const inMemoryMode = this.semanticIndexerConfig.mode === "in_memory";
+        const tempSearchParams = { ...searchParams };
+
+        if (!inMemoryMode) {
+            tempSearchParams.minScore = undefined;
+            tempSearchParams.max_num_results =
+                (searchParams.max_num_results ?? DEFAULT_MAX_NUM_RESULTS) * 2;
+        }
+
+        // Step 5: Execute vector search with pre-filtered record ids
+        let items = await this.executeVectorSearch(
+            embeddingVector,
+            tempSearchParams,
+            accessibleRecordIds
+        );
+
+        // Step 6: Apply score filtering and result limiting for on-disk mode
+        if (!inMemoryMode) {
+            items = filterByMinScore(items, searchParams.minScore);
+            items = keepTopK(items, searchParams.max_num_results);
+        }
+
+        return items;
     }
 
     private _toAllowedRecordIds(registryResponse: unknown): Set<string> {

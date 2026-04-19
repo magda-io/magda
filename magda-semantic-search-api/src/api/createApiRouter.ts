@@ -70,6 +70,29 @@ export function createRoutes(
         }
     }
 
+    async function handleSearchAlt(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) {
+        try {
+            const rawParams = ((req.method === "GET"
+                ? req.query
+                : req.body) as unknown) as SearchParams;
+            const jwt = req.header("X-Magda-Session");
+            const tenantId = req.header("X-Magda-Tenant-Id");
+            const params: SearchParams = {
+                ...(rawParams as SearchParams),
+                jwt: jwt || undefined,
+                tenantId: tenantId === undefined ? 0 : Number(tenantId)
+            };
+            const results = await semanticSearchService.searchAlt(params);
+            res.status(200).json(results);
+        } catch (err) {
+            next(err);
+        }
+    }
+
     const retrieveSchema = Joi.object({
         ids: Joi.array().items(Joi.string()).required(),
         mode: Joi.string().valid("full", "partial").default("full"),
@@ -113,6 +136,18 @@ export function createRoutes(
         "/search",
         validate({ body: searchSchema }, { context: true }, {}),
         handleSearch
+    );
+
+    router.get(
+        "/searchAlt",
+        validate({ query: searchSchema }, { context: true }, {}),
+        handleSearchAlt
+    );
+
+    router.post(
+        "/searchAlt",
+        validate({ body: searchSchema }, { context: true }, {}),
+        handleSearchAlt
     );
 
     router.use(

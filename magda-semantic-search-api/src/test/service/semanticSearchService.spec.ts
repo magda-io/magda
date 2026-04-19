@@ -117,11 +117,12 @@ describe("SemanticSearchService.search", () => {
     let mockOpenSearchClient: any;
     let mockRegistryClient: any;
     let mockSearchApiClient: any;
+    let mockRedisClient: any;
     let mockSemanticIndexerConfig: SemanticIndexerConfig;
 
     beforeEach(() => {
         mockEmbeddingApiClient = {
-            get: async (query: string) => [0.1, 0.2, 0.3, 0.4, 0.5]
+            get: async (_query: string) => [0.1, 0.2, 0.3, 0.4, 0.5]
         };
 
         mockOpenSearchClient = {
@@ -155,6 +156,11 @@ describe("SemanticSearchService.search", () => {
             }
         };
 
+        mockRedisClient = {
+            get: async (_key: string): Promise<string | null> =>
+                JSON.stringify(["record1", "record2", "record3"])
+        };
+
         mockSemanticIndexerConfig = {
             indexName: "test-index",
             indexVersion: 1,
@@ -166,6 +172,7 @@ describe("SemanticSearchService.search", () => {
             mockOpenSearchClient,
             mockRegistryClient,
             mockSearchApiClient,
+            mockRedisClient,
             mockSemanticIndexerConfig
         );
     });
@@ -188,6 +195,7 @@ describe("SemanticSearchService.search", () => {
                 mockOpenSearchClient,
                 mockRegistryClient,
                 mockSearchApiClient,
+                mockRedisClient,
                 mockSemanticIndexerConfig
             );
 
@@ -234,6 +242,7 @@ describe("SemanticSearchService.search", () => {
                 mockOpenSearchClient,
                 mockRegistryClient,
                 mockSearchApiClient,
+                mockRedisClient,
                 mockSemanticIndexerConfig
             );
 
@@ -288,6 +297,7 @@ describe("SemanticSearchService.search", () => {
                 mockOpenSearchClient,
                 mockRegistryClient,
                 mockSearchApiClient,
+                mockRedisClient,
                 mockSemanticIndexerConfig
             );
 
@@ -347,7 +357,7 @@ describe("SemanticSearchService.search", () => {
 
                     if (openSearchCallCount === 1) {
                         // Phase 1 vector search returns empty and triggers fallback.
-                        return { body: { hits: { hits: [] } } };
+                        return { body: { hits: { hits: [] as any[] } } };
                     }
 
                     // Phase 2 should include a terms filter on recordId.
@@ -414,6 +424,7 @@ describe("SemanticSearchService.search", () => {
                 mockOpenSearchClient,
                 mockRegistryClient,
                 mockSearchApiClient,
+                mockRedisClient,
                 mockSemanticIndexerConfig
             );
 
@@ -529,6 +540,7 @@ describe("SemanticSearchService.search", () => {
                 mockOpenSearchClient,
                 mockRegistryClient,
                 mockSearchApiClient,
+                mockRedisClient,
                 mockSemanticIndexerConfig
             );
 
@@ -631,6 +643,7 @@ describe("SemanticSearchService.search", () => {
                 mockOpenSearchClient,
                 mockRegistryClient,
                 mockSearchApiClient,
+                mockRedisClient,
                 mockSemanticIndexerConfig
             );
 
@@ -654,7 +667,7 @@ describe("SemanticSearchService.search", () => {
                 search: async (_indexName: string, _queryBody: any) => {
                     openSearchCallCount++;
                     // Phase 1 returns no vector hits
-                    return { body: { hits: { hits: [] } } };
+                    return { body: { hits: { hits: [] as any[] } } };
                 }
             };
 
@@ -686,6 +699,7 @@ describe("SemanticSearchService.search", () => {
                 mockOpenSearchClient,
                 mockRegistryClient,
                 mockSearchApiClient,
+                mockRedisClient,
                 mockSemanticIndexerConfig
             );
 
@@ -698,6 +712,117 @@ describe("SemanticSearchService.search", () => {
             expect(searchDatasetsCallCount).to.equal(1);
             // No Phase 2 vector re-search should happen
             expect(openSearchCallCount).to.equal(1);
+        });
+
+        it("searchAlt should query by accessible record ids from redis cache", async () => {
+            let capturedTerms: string[] = [];
+
+            mockRegistryClient = {
+                getAccessibleIdsCacheKey: async (
+                    _jwtToken?: string,
+                    _tenantId?: number
+                ) => "cache-key-1"
+            };
+
+            mockRedisClient = {
+                get: async (key: string): Promise<string | null> => {
+                    expect(key).to.equal("cache-key-1");
+                    return JSON.stringify(["record1", "record2"]);
+                }
+            };
+
+            mockOpenSearchClient = {
+                search: async (_indexName: string, queryBody: any) => {
+                    const mustClauses =
+                        queryBody?.query?.knn?.embedding?.filter?.bool?.must ??
+                        [];
+                    const termsClause = mustClauses.find(
+                        (c: any) => c.terms?.recordId
+                    );
+                    capturedTerms = termsClause?.terms?.recordId ?? [];
+                    return returnMockSearchResult(3, undefined);
+                }
+            };
+
+            semanticSearchService = new SemanticSearchService(
+                mockEmbeddingApiClient,
+                mockOpenSearchClient,
+                mockRegistryClient,
+                mockSearchApiClient,
+                mockRedisClient,
+                mockSemanticIndexerConfig
+            );
+
+            const result = await semanticSearchService.searchAlt({
+                query: "test query",
+                jwt: "mock-jwt",
+                tenantId: 0,
+                max_num_results: 3
+            });
+
+            expect(capturedTerms).to.have.members(["record1", "record2"]);
+            expect(result.length).to.be.greaterThan(0);
+        });
+
+        it("searchAlt should fallback to default search when cache key lookup fails", async () => {
+            let openSearchCallCount = 0;
+
+            mockRegistryClient = {
+                getAccessibleIdsCacheKey: async () => ({ message: "failed" }),
+                filterRecordsByAccess: async (
+                    records: string[],
+                    _jwtToken: string,
+                    _tenantId?: number
+                ): Promise<string[]> => records
+            };
+
+            mockOpenSearchClient = {
+                search: async (_indexName: string, queryBody: any) => {
+                    openSearchCallCount++;
+                    return returnMockSearchResult(queryBody.size, undefined);
+                }
+            };
+
+            semanticSearchService = new SemanticSearchService(
+                mockEmbeddingApiClient,
+                mockOpenSearchClient,
+                mockRegistryClient,
+                mockSearchApiClient,
+                mockRedisClient,
+                mockSemanticIndexerConfig
+            );
+
+            const result = await semanticSearchService.searchAlt({
+                query: "test query",
+                max_num_results: 2
+            });
+
+            expect(openSearchCallCount).to.equal(1);
+            expect(result).to.have.length(2);
+        });
+
+        it("searchAlt should return empty when redis has no accessible ids", async () => {
+            mockRegistryClient = {
+                getAccessibleIdsCacheKey: async () => "cache-key-2"
+            };
+            mockRedisClient = {
+                get: async (): Promise<string | null> => JSON.stringify([])
+            };
+
+            semanticSearchService = new SemanticSearchService(
+                mockEmbeddingApiClient,
+                mockOpenSearchClient,
+                mockRegistryClient,
+                mockSearchApiClient,
+                mockRedisClient,
+                mockSemanticIndexerConfig
+            );
+
+            const result = await semanticSearchService.searchAlt({
+                query: "test query"
+            });
+
+            expect(result).to.deep.equal([]);
         });
     });
 });
@@ -765,6 +890,7 @@ describe("SemanticSearchService.retrieve", () => {
     let mockEmbeddingApiClient: any;
     let mockRegistryClient: any;
     let mockSearchApiClient: any;
+    let mockRedisClient: any;
     let cfg: SemanticIndexerConfig;
 
     beforeEach(() => {
@@ -784,6 +910,10 @@ describe("SemanticSearchService.retrieve", () => {
             searchDatasets: async (): Promise<SearchDatasetsResult> => {
                 return returnMockSearchDatasetsResult([]);
             }
+        };
+
+        mockRedisClient = {
+            get: async (_key: string): Promise<string | null> => null
         };
 
         let call = 0;
@@ -808,6 +938,7 @@ describe("SemanticSearchService.retrieve", () => {
             mockOpenSearchClient,
             mockRegistryClient,
             mockSearchApiClient,
+            mockRedisClient,
             cfg
         );
     });
@@ -932,6 +1063,7 @@ describe("SemanticSearchService.retrieve", () => {
             mockOpenSearchClient,
             mockRegistryClient,
             mockSearchApiClient,
+            mockRedisClient,
             cfg
         );
 
@@ -982,6 +1114,7 @@ describe("SemanticSearchService.retrieve", () => {
             mockOpenSearchClient,
             mockRegistryClient,
             mockSearchApiClient,
+            mockRedisClient,
             cfg
         );
 

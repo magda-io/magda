@@ -319,4 +319,31 @@ export default class RegistryClient {
             .then((result) => ({ records: result.body }))
             .catch(toServerError("filterRecordsByAccess"));
     }
+
+    async getAccessibleIdsCacheKey(
+        jwtToken?: string,
+        tenantId?: number
+    ): Promise<string | ServerError> {
+        const resolvedTenantId = tenantId ?? this.tenantId;
+        const resolvedJwt = jwtToken ?? this.jwt;
+
+        const operation = () => () =>
+            this.recordsApi.accessibleIds(resolvedTenantId, resolvedJwt);
+
+        return <any>retry(
+            operation(),
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        "Failed to build/get accessible ids cache key.",
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("getAccessibleIdsCacheKey"));
+    }
 }

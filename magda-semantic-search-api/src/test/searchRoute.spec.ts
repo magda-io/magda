@@ -5,10 +5,12 @@ import { createRoutes } from "../api/createApiRouter.js";
 
 function buildApp(
     mockSearch: (params: any) => Promise<any[]>,
-    mockRetrieve: (params: any) => Promise<any[]> = async () => []
+    mockRetrieve: (params: any) => Promise<any[]> = async () => [],
+    mockSearchAlt: (params: any) => Promise<any[]> = mockSearch
 ) {
     const mockSemanticSearchService = {
         search: mockSearch,
+        searchAlt: mockSearchAlt,
         retrieve: mockRetrieve
     } as any;
 
@@ -118,6 +120,105 @@ describe("createRoutes /search API", () => {
         await supertest(app)
             .get("/search")
             .query({ query: "test", minScore: 1 })
+            .expect(500);
+    });
+
+    it("GET /searchAlt should return results and call service.searchAlt", async () => {
+        let capturedParams: any = null;
+        let searchCalled = 0;
+        let searchAltCalled = 0;
+
+        const app = buildApp(
+            async (_params) => {
+                searchCalled++;
+                return mockResults;
+            },
+            async () => [],
+            async (params) => {
+                searchAltCalled++;
+                capturedParams = params;
+                return mockResults;
+            }
+        );
+
+        await supertest(app)
+            .get("/searchAlt")
+            .set(SESSION_HEADER, "mock-alt-jwt")
+            .set(TENANT_HEADER, "11")
+            .query({ query: "alt keyword", max_num_results: 20, minScore: 0.3 })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body).to.deep.equal(mockResults);
+                expect(capturedParams.query).to.equal("alt keyword");
+                expect(capturedParams.max_num_results).to.equal(20);
+                expect(capturedParams.minScore).to.equal(0.3);
+                expect(capturedParams.jwt).to.equal("mock-alt-jwt");
+                expect(capturedParams.tenantId).to.equal(11);
+                expect(searchAltCalled).to.equal(1);
+                expect(searchCalled).to.equal(0);
+            });
+    });
+
+    it("POST /searchAlt should return results and call service.searchAlt", async () => {
+        let capturedParams: any = null;
+
+        const app = buildApp(
+            async () => mockResults,
+            async () => [],
+            async (params) => {
+                capturedParams = params;
+                return mockResults;
+            }
+        );
+
+        await supertest(app)
+            .post("/searchAlt")
+            .set(SESSION_HEADER, "mock-alt-jwt-2")
+            .set(TENANT_HEADER, "22")
+            .send({ query: "alt post test", max_num_results: 5 })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body).to.deep.equal(mockResults);
+                expect(capturedParams.query).to.equal("alt post test");
+                expect(capturedParams.max_num_results).to.equal(5);
+                expect(capturedParams.jwt).to.equal("mock-alt-jwt-2");
+                expect(capturedParams.tenantId).to.equal(22);
+            });
+    });
+
+    it("GET /searchAlt should return 400 if query is missing", async () => {
+        const app = buildApp(async () => mockResults);
+        await supertest(app).get("/searchAlt").expect(400);
+    });
+
+    it("GET /searchAlt should return 400 if max_num_results is invalid", async () => {
+        const app = buildApp(async () => mockResults);
+        await supertest(app)
+            .get("/searchAlt")
+            .query({ query: "test", max_num_results: -1 })
+            .expect(400);
+    });
+
+    it("GET /searchAlt should return 400 if minScore is invalid", async () => {
+        const app = buildApp(async () => mockResults);
+        await supertest(app)
+            .get("/searchAlt")
+            .query({ query: "test", minScore: -0.1 })
+            .expect(400);
+    });
+
+    it("GET /searchAlt should return 500 if service.searchAlt throws", async () => {
+        const app = buildApp(
+            async () => mockResults,
+            async () => [],
+            async () => {
+                throw new Error("searchAlt failed");
+            }
+        );
+
+        await supertest(app)
+            .get("/searchAlt")
+            .query({ query: "test" })
             .expect(500);
     });
 

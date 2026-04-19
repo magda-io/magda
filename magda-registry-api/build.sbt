@@ -25,6 +25,7 @@ libraryDependencies ++= {
     "org.flywaydb" % "flyway-core" % "4.2.0" % Test,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test,
     "com.github.everit-org.json-schema" % "org.everit.json.schema" % "1.12.0",
+    "redis.clients" % "jedis" % "5.1.5",
     "jakarta.xml.bind" % "jakarta.xml.bind-api" % "2.3.2",
     "org.glassfish.jaxb" % "jaxb-runtime" % "2.3.2"
   )

@@ -6,6 +6,7 @@ import EmbeddingApiClient from "@magda/typescript-common/dist/EmbeddingApiClient
 import OpensearchApiClient from "@magda/typescript-common/dist/OpensearchApiClient.js";
 import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient.js";
 import SearchApiClient from "@magda/typescript-common/dist/SearchApiClient.js";
+import RedisClient from "@magda/typescript-common/dist/redis/RedisClient.js";
 import { createRoutes } from "./api/createApiRouter.js";
 import retry from "magda-typescript-common/src/retry.js";
 
@@ -56,6 +57,21 @@ const argv = addJwtSecretFromEnvVar(
             describe: "The mode of the vector workload mode",
             type: "string",
             default: "in_memory"
+        })
+        .option("redisHost", {
+            describe: "Redis connection host",
+            type: "string",
+            default: process.env.REDIS_HOST || "localhost"
+        })
+        .option("redisPort", {
+            describe: "Redis connection port",
+            type: "number",
+            default: Number(process.env.REDIS_PORT) || 6379
+        })
+        .option("redisDb", {
+            describe: "Redis database number",
+            type: "number",
+            default: Number(process.env.REDIS_DB) || 0
         }).argv
 );
 
@@ -122,11 +138,18 @@ const searchApiClient = await retry(
         )
 );
 
+const redisClient = new RedisClient({
+    host: argv.redisHost as string,
+    port: argv.redisPort as number,
+    db: argv.redisDb as number
+});
+
 const semanticSearchService = new SemanticSearchService(
     embeddingApiClient,
     opensearchApiClient,
     registryClient,
     searchApiClient,
+    redisClient,
     {
         indexName: argv.semanticIndexName as string,
         indexVersion: argv.semanticIndexVersion as number,

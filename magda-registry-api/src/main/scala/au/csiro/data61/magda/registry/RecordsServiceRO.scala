@@ -12,16 +12,25 @@ import au.csiro.data61.magda.directives.AuthDirectives.withAuthDecision
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import io.swagger.annotations._
+import au.csiro.data61.magda.model.TenantId._
 
 import javax.ws.rs.Path
 import scalikejdbc.DB
-import au.csiro.data61.magda.client.{AuthDecisionReqConfig}
+import au.csiro.data61.magda.client.AuthDecisionReqConfig
 import au.csiro.data61.magda.model.AspectQuery
 import scalikejdbc.interpolation.SQLSyntax
 import au.csiro.data61.magda.directives.RouteDirectives.completeBlockingTask
 import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
 
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext
+import au.csiro.data61.magda.client.RedisClient
+import au.csiro.data61.magda.model.Auth.{AuthDecision, UnconditionalTrueDecision}
+import spray.json._
+import au.csiro.data61.magda.model.Auth.AuthProtocols
+object AuthJsonProtocol extends AuthProtocols
+import AuthJsonProtocol._
+import java.security.MessageDigest
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -31,7 +40,8 @@ class RecordsServiceRO(
     system: ActorSystem,
     materializer: Materializer,
     recordPersistence: RecordPersistence,
-    eventPersistence: EventPersistence
+    eventPersistence: EventPersistence,
+    redisClient: RedisClient
 ) extends Protocols
     with SprayJsonSupport {
 
@@ -1217,12 +1227,151 @@ class RecordsServiceRO(
     }
   }
 
+  private def sha256Hex(input: String): String = {
+    val md = MessageDigest.getInstance("SHA-256")
+    md.digest(input.getBytes("UTF-8")).map("%02x".format(_)).mkString
+  }
+
+  private def tenantIdToString(tenantId: TenantId): String = tenantId match {
+    case AllTenantsId           => "-1"
+    case SpecifiedTenantId(tid) => tid.toString
+  }
+
+  private def collectAccessibleRecordIds(
+                                          tenantId: TenantId,
+                                          authDecision: au.csiro.data61.magda.model.Auth.AuthDecision
+                                        )(implicit session: scalikejdbc.DBSession): Seq[String] = {
+    val ids = ListBuffer.empty[String]
+    var pageToken: Option[String] = None
+    var continue = true
+
+    while (continue) {
+      val page = recordPersistence.getAll(
+        tenantId = tenantId,
+        authDecision = authDecision,
+        pageToken = pageToken,
+        start = None,
+        limit = Some(1000),
+        reversePageTokenOrder = None,
+        fullTextSearchText = None
+      )
+      ids ++= page.records.map(_.id)
+      pageToken = page.nextPageToken
+      continue = page.hasMore && pageToken.isDefined
+    }
+
+    ids.distinct.toSeq
+  }
+
+  private def getLatestTenantEventId(
+                                      tenantId: TenantId
+                                    )(implicit session: scalikejdbc.DBSession): Long = {
+    eventPersistence
+      .getEvents(
+        tenantId = tenantId,
+        // Event queries should not reuse record-level residual rules.
+        authDecision = UnconditionalTrueDecision,
+        limit = Some(1),
+        reversePageTokenOrder = Some(true)
+      )
+      .events
+      .headOption
+      .flatMap(_.id)
+      .getOrElse(0L)
+  }
+
+  /**
+   * @apiGroup Registry Record Service
+   * @api {get} /v0/registry/records/accessibleIds Build and cache accessible record ids
+   * @apiDescription Build all readable record ids for the current user context, cache them in Redis, and return the generated cache key.
+   * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id (used for DB tenant scope)
+   * @apiHeader {string} X-Magda-Session Magda internal session id (used as tenant segment in Redis key when present)
+   * @apiSuccess (Success 200) {string} key Redis data key in format records:{tenantId}:{authDecisionHash}:{eventId}
+   * @apiUse GenericError
+   */
+  @Path("/accessibleIds")
+  @ApiOperation(
+    value = "Build and cache accessible record ids",
+    nickname = "accessibleIds",
+    httpMethod = "GET",
+    response = classOf[String],
+    notes =
+      "Collects all record ids readable by current auth decision, stores them as JSON array in Redis, updates index set, and returns the data key."
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "Magda internal tenant id"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      )
+    )
+  )
+  def accessibleIds: Route = get {
+    path("accessibleIds") {
+      pathEnd {
+        requiresTenantId { tenantId =>
+          optionalHeaderValueByName("X-Magda-Session") { sessionTenantId =>
+            withAuthDecision(
+              authApiClient,
+              AuthDecisionReqConfig("object/record/read")
+            ) { authDecision =>
+              completeBlockingTask {
+                DB readOnly { implicit dbSession =>
+                  dbSession.queryTimeout(this.defaultQueryTimeout)
+
+                  val latestEventId = getLatestTenantEventId(tenantId)
+                  val authDecisionHash = sha256Hex(authDecision.toJson.compactPrint)
+                  val tenantKeyPart = sessionTenantId
+                    .map(_.trim)
+                    .filter(_.nonEmpty)
+                    .getOrElse(tenantIdToString(tenantId))
+
+                  val dataKey =
+                    s"records:${tenantKeyPart}:${authDecisionHash}:${latestEventId}"
+                  val indexKey =
+                    s"records:idx:${tenantKeyPart}:${authDecisionHash}"
+
+                  redisClient.get(dataKey) match {
+                    case Some(_) =>
+                      dataKey
+                    case None =>
+                      val ids = collectAccessibleRecordIds(tenantId, authDecision)
+                      redisClient.set(dataKey, ids.toJson.compactPrint)
+
+                      // Index key stores all historical data keys for the same tenant+auth hash.
+                      // Future incremental flow can locate the newest cached key, call
+                      // streamEventsSince(latestEventId), patch only changed record IDs,
+                      // and write a new records:{tenant}:{authHash}:{newEventId} snapshot.
+                      redisClient.sAdd(indexKey, Seq(dataKey))
+
+                      dataKey
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   def route: Route =
     getAll ~
       getCount ~
       getAllSummary ~
       getPageTokens ~
       filterByAccess ~
+      accessibleIds ~
       getById ~
       getByIdSummary ~
       getByIdInFull ~

@@ -1596,6 +1596,58 @@ export class RecordsApi {
         this.authentications[RecordsApiApiKeys[key]].apiKey = value;
     }
     /**
+     * Build and cache accessible record ids
+     * Collects all record ids readable by current auth decision, stores them as JSON array in Redis, updates index set, and returns the data key.
+     * @param xMagdaTenantId Magda internal tenant id
+     * @param xMagdaSession Magda internal session id
+     */
+    public accessibleIds(
+        xMagdaTenantId: number,
+        xMagdaSession?: string
+    ): Promise<{ response: Response; body: string }> {
+        const localVarPath = this.basePath + "/records/accessibleIds";
+        let queryParameters: any = {};
+        let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
+        let formParams: any = {};
+
+        // verify required parameter 'xMagdaTenantId' is not null or undefined
+        if (xMagdaTenantId === null || xMagdaTenantId === undefined) {
+            throw new Error(
+                "Required parameter xMagdaTenantId was null or undefined when calling accessibleIds."
+            );
+        }
+
+        if (isNotEmpty(xMagdaTenantId)) {
+            headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+        }
+
+        if (isNotEmpty(xMagdaSession)) {
+            headerParams["X-Magda-Session"] = xMagdaSession;
+        }
+
+        let useFormData = false;
+
+        const requestOptions: RequestOptions = {
+            method: "GET",
+            qs: queryParameters,
+            headers: headerParams,
+            uri: localVarPath,
+            json: true
+        };
+
+        this.authentications.default.applyToRequest(requestOptions);
+
+        if (Object.keys(formParams).length) {
+            if (useFormData) {
+                (<any>requestOptions).formData = formParams;
+            } else {
+                requestOptions.form = formParams;
+            }
+        }
+
+        return fetchWithRequestOptions(requestOptions);
+    }
+    /**
      * Create a new record
      *
      * @param xMagdaTenantId 0
