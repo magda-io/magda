@@ -1182,32 +1182,34 @@ class RecordsServiceRO(
       )
     )
   )
-  def filterByAccess: Route = post {
+  def filterByAccess: Route =
     path("filterByAccess") {
-      pathEnd {
-        requiresTenantId { tenantId =>
-          entity(as[List[String]]) { requestData =>
-            withAuthDecision(
-              authApiClient,
-              AuthDecisionReqConfig("object/record/read")
-            ) { authDecision =>
-              completeBlockingTask {
-                val requestedRecordIds = requestData
-                  .map(_.trim)
-                  .filter(_.nonEmpty)
-                  .distinct
-                if (requestedRecordIds.isEmpty) {
-                  Seq.empty[String]
-                } else {
-                  DB readOnly { implicit session =>
-                    session.queryTimeout(this.defaultQueryTimeout)
-                    val validRecordIds = recordPersistence
-                      .getValidRecordIds(
-                        tenantId,
-                        authDecision,
-                        requestedRecordIds
-                      )
-                    validRecordIds.toSeq
+      post {
+        pathEnd {
+          requiresTenantId { tenantId =>
+            entity(as[List[String]]) { requestData =>
+              withAuthDecision(
+                authApiClient,
+                AuthDecisionReqConfig("object/record/read")
+              ) { authDecision =>
+                completeBlockingTask {
+                  val requestedRecordIds = requestData
+                    .map(_.trim)
+                    .filter(_.nonEmpty)
+                    .distinct
+                  if (requestedRecordIds.isEmpty) {
+                    Seq.empty[String]
+                  } else {
+                    DB readOnly { implicit session =>
+                      session.queryTimeout(this.defaultQueryTimeout)
+                      val validRecordIds = recordPersistence
+                        .getValidRecordIds(
+                          tenantId,
+                          authDecision,
+                          requestedRecordIds
+                        )
+                      validRecordIds.toSeq
+                    }
                   }
                 }
               }
@@ -1216,7 +1218,6 @@ class RecordsServiceRO(
         }
       }
     }
-  }
 
   def route: Route =
     getAll ~
