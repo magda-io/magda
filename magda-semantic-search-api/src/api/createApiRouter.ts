@@ -47,6 +47,17 @@ export function createRoutes(
         minScore: Joi.number().min(0).max(1)
     });
 
+    function parseTenantIdHeader(raw: string | undefined): number {
+        if (raw === undefined || raw.trim() === "") {
+            return 0;
+        }
+        const parsed = Number(raw);
+        if (!Number.isInteger(parsed) || parsed < 0) {
+            throw new Error("Invalid X-Magda-Tenant-Id");
+        }
+        return parsed;
+    }
+
     async function handleSearch(
         req: Request,
         res: Response,
@@ -61,7 +72,7 @@ export function createRoutes(
             const params: SearchParams = {
                 ...(rawParams as SearchParams),
                 jwt: jwt || undefined,
-                tenantId: tenantId === undefined ? 0 : Number(tenantId)
+                tenantId: parseTenantIdHeader(tenantId)
             };
             const results = await semanticSearchService.search(params);
             res.status(200).json(results);
@@ -89,7 +100,7 @@ export function createRoutes(
             const params: RetrieveParams = {
                 ...(rawParams as RetrieveParams),
                 jwt: jwt || undefined,
-                tenantId: tenantId === undefined ? 0 : Number(tenantId)
+                tenantId: parseTenantIdHeader(tenantId)
             };
             const results = await semanticSearchService.retrieve(params);
             res.status(200).json(results);
