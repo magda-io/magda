@@ -103,11 +103,13 @@ export default class SearchApiClient extends BaseApiClient {
 
         // auth + tenant headers
         const requestConfig = this.addAuthHeader();
-        requestConfig.headers = this.setHeader(
-            requestConfig.headers,
-            "X-Magda-Session",
-            jwtToken
-        );
+        if (jwtToken) {
+            requestConfig.headers = this.setHeader(
+                requestConfig.headers,
+                "X-Magda-Session",
+                jwtToken
+            );
+        }
         const resolvedTenantId = tenantId === undefined ? 0 : tenantId;
         requestConfig.headers = this.setHeader(
             requestConfig.headers,
