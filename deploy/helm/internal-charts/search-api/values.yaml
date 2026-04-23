@@ -13,7 +13,7 @@ defaultImage:
 autoPingJobImage: 
   name: "node"
   repository: "docker.io"
-  tag: "18-alpine"
+  tag: "22-alpine"
   pullPolicy: IfNotPresent
   pullSecrets: false
 
