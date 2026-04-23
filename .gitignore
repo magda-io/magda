@@ -69,3 +69,4 @@ magda-web-client/public/assets/libs/fetchWithCache.min.js
 */coverage/tmp/*
 
 sbt-cache/
+.worktrees/
