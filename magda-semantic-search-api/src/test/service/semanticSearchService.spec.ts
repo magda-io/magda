@@ -654,7 +654,7 @@ describe("SemanticSearchService.search", () => {
                 search: async (_indexName: string, _queryBody: any) => {
                     openSearchCallCount++;
                     // Phase 1 returns no vector hits
-                    return { body: { hits: { hits: [] as any } } };
+                    return { body: { hits: { hits: [] as any[] } } };
                 }
             };
 
