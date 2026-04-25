@@ -25,7 +25,10 @@ import au.csiro.data61.magda.directives.CommonDirectives.onCompleteBlockingTask
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.client.RedisClient
-import au.csiro.data61.magda.model.Auth.{AuthDecision, UnconditionalTrueDecision}
+import au.csiro.data61.magda.model.Auth.{
+  AuthDecision,
+  UnconditionalTrueDecision
+}
 import spray.json._
 import au.csiro.data61.magda.model.Auth.AuthProtocols
 object AuthJsonProtocol extends AuthProtocols
@@ -1240,9 +1243,9 @@ class RecordsServiceRO(
   }
 
   private def collectAccessibleRecordIds(
-                                          tenantId: TenantId,
-                                          authDecision: au.csiro.data61.magda.model.Auth.AuthDecision
-                                        )(implicit session: scalikejdbc.DBSession): Seq[String] = {
+      tenantId: TenantId,
+      authDecision: au.csiro.data61.magda.model.Auth.AuthDecision
+  )(implicit session: scalikejdbc.DBSession): Seq[String] = {
     val ids = ListBuffer.empty[String]
     var pageToken: Option[String] = None
     var continue = true
@@ -1266,8 +1269,8 @@ class RecordsServiceRO(
   }
 
   private def getLatestTenantEventId(
-                                      tenantId: TenantId
-                                    )(implicit session: scalikejdbc.DBSession): Long = {
+      tenantId: TenantId
+  )(implicit session: scalikejdbc.DBSession): Long = {
     eventPersistence
       .getEvents(
         tenantId = tenantId,
@@ -1283,14 +1286,14 @@ class RecordsServiceRO(
   }
 
   /**
-   * @apiGroup Registry Record Service
-   * @api {get} /v0/registry/records/accessibleIds Build and cache accessible record ids
-   * @apiDescription Build all readable record ids for the current user context, cache them in Redis, and return the generated cache key.
-   * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id (used for DB tenant scope)
-   * @apiHeader {string} X-Magda-Session Magda internal session id (used as tenant segment in Redis key when present)
-   * @apiSuccess (Success 200) {string} key Redis data key in format records:{tenantId}:{authDecisionHash}:{eventId}
-   * @apiUse GenericError
-   */
+    * @apiGroup Registry Record Service
+    * @api {get} /v0/registry/records/accessibleIds Build and cache accessible record ids
+    * @apiDescription Build all readable record ids for the current user context, cache them in Redis, and return the generated cache key.
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id (used for DB tenant scope)
+    * @apiHeader {string} X-Magda-Session Magda internal session id (used as tenant segment in Redis key when present)
+    * @apiSuccess (Success 200) {string} key Redis data key in format records:{tenantId}:{authDecisionHash}:{eventId}
+    * @apiUse GenericError
+    */
   @Path("/accessibleIds")
   @ApiOperation(
     value = "Build and cache accessible record ids",
@@ -1332,7 +1335,8 @@ class RecordsServiceRO(
                   dbSession.queryTimeout(this.defaultQueryTimeout)
 
                   val latestEventId = getLatestTenantEventId(tenantId)
-                  val authDecisionHash = sha256Hex(authDecision.toJson.compactPrint)
+                  val authDecisionHash =
+                    sha256Hex(authDecision.toJson.compactPrint)
                   val tenantKeyPart = sessionTenantId
                     .map(_.trim)
                     .filter(_.nonEmpty)
@@ -1347,7 +1351,8 @@ class RecordsServiceRO(
                     case Some(_) =>
                       dataKey
                     case None =>
-                      val ids = collectAccessibleRecordIds(tenantId, authDecision)
+                      val ids =
+                        collectAccessibleRecordIds(tenantId, authDecision)
                       redisClient.set(dataKey, ids.toJson.compactPrint)
 
                       // Index key stores all historical data keys for the same tenant+auth hash.

@@ -77,4 +77,3 @@ class RedisClient(
   def get(key: String): Option[String] =
     withClient(jedis => Option(jedis.get(namespaced(key))))
 }
-
