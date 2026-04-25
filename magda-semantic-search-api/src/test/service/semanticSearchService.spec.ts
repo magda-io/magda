@@ -136,7 +136,7 @@ describe("SemanticSearchService.search", () => {
         mockRegistryClient = {
             filterRecordsByAccess: async (
                 _records: string[],
-                _jwtToken: string,
+                _jwtToken?: string,
                 _tenantId?: number
             ): Promise<string[]> => {
                 return returnMockFilterRecordsByAccessResult([
@@ -149,7 +149,7 @@ describe("SemanticSearchService.search", () => {
         mockSearchApiClient = {
             searchDatasets: async (
                 _params: SearchDatasetsParams = {},
-                _jwtToken: string,
+                _jwtToken?: string,
                 _tenantId?: number
             ): Promise<SearchDatasetsResult> => {
                 return returnMockSearchDatasetsResult([]);
@@ -264,7 +264,7 @@ describe("SemanticSearchService.search", () => {
             mockRegistryClient = {
                 filterRecordsByAccess: async (
                     _records: string[],
-                    _jwtToken: string,
+                    _jwtToken?: string,
                     _tenantId?: number
                 ): Promise<string[]> => {
                     return returnMockFilterRecordsByAccessResult([
@@ -277,7 +277,7 @@ describe("SemanticSearchService.search", () => {
             mockSearchApiClient = {
                 searchDatasets: async (
                     _params: SearchDatasetsParams = {},
-                    _jwtToken: string,
+                    _jwtToken?: string,
                     _tenantId?: number
                 ): Promise<SearchDatasetsResult> => {
                     searchDatasetsCallCount++;
@@ -321,7 +321,7 @@ describe("SemanticSearchService.search", () => {
             mockRegistryClient = {
                 filterRecordsByAccess: async (
                     _records: string[],
-                    _jwtToken: string,
+                    _jwtToken?: string,
                     _tenantId?: number
                 ): Promise<string[]> => {
                     // When the first vector search is empty, this receives [].
@@ -332,7 +332,7 @@ describe("SemanticSearchService.search", () => {
             mockSearchApiClient = {
                 searchDatasets: async (
                     params: SearchDatasetsParams = {},
-                    jwtToken: string,
+                    jwtToken?: string,
                     _tenantId?: number
                 ): Promise<SearchDatasetsResult> => {
                     searchDatasetsCallCount++;
@@ -511,7 +511,7 @@ describe("SemanticSearchService.search", () => {
             mockRegistryClient = {
                 filterRecordsByAccess: async (
                     records: string[],
-                    _jwtToken: string,
+                    _jwtToken?: string,
                     _tenantId?: number
                 ): Promise<string[]> => {
                     filterRecordsCallCount++;
@@ -524,7 +524,7 @@ describe("SemanticSearchService.search", () => {
             mockSearchApiClient = {
                 searchDatasets: async (
                     _params: SearchDatasetsParams = {},
-                    _jwtToken: string,
+                    _jwtToken?: string,
                     _tenantId?: number
                 ): Promise<SearchDatasetsResult> => {
                     searchDatasetsCallCount++;
@@ -623,7 +623,7 @@ describe("SemanticSearchService.search", () => {
             mockRegistryClient = {
                 filterRecordsByAccess: async (
                     records: string[],
-                    _jwtToken: string,
+                    _jwtToken?: string,
                     _tenantId?: number
                 ): Promise<string[]> => {
                     capturedRecordIds = records;
@@ -674,7 +674,7 @@ describe("SemanticSearchService.search", () => {
             mockRegistryClient = {
                 filterRecordsByAccess: async (
                     records: string[],
-                    _jwtToken: string,
+                    _jwtToken?: string,
                     _tenantId?: number
                 ): Promise<string[]> => {
                     // Ensure Phase 1 recordIds are empty
@@ -899,7 +899,7 @@ describe("SemanticSearchService.retrieve", () => {
         mockRegistryClient = {
             filterRecordsByAccess: async (
                 records: string[],
-                _jwtToken: string,
+                _jwtToken?: string,
                 _tenantId?: number
             ): Promise<string[]> => {
                 return returnMockFilterRecordsByAccessResult(records);
@@ -1026,7 +1026,7 @@ describe("SemanticSearchService.retrieve", () => {
         mockRegistryClient = {
             filterRecordsByAccess: async (
                 records: string[],
-                _jwtToken: string,
+                _jwtToken?: string,
                 _tenantId?: number
             ): Promise<string[]> => {
                 expect(records).to.have.members(["record1", "record2"]);
@@ -1080,7 +1080,7 @@ describe("SemanticSearchService.retrieve", () => {
         mockRegistryClient = {
             filterRecordsByAccess: async (
                 records: string[],
-                _jwtToken: string,
+                _jwtToken?: string,
                 _tenantId?: number
             ): Promise<string[]> => {
                 expect(records).to.have.members(["record1", "record2"]);

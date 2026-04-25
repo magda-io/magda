@@ -1148,15 +1148,15 @@ class RecordsServiceRO(
   }
 
   /**
-   * @apiGroup Registry Record Service
-   * @api {post} /v0/registry/records/filterByAccess Filter record ids by access
-   * @apiDescription Filter the supplied record ids and return only those the current user can read.
-   * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
-   * @apiHeader {string} X-Magda-Session Magda internal session id
-   * @apiParam (body) {string[]} requestData JSON array of record ids, e.g. ["id1", "id2"]
-   * @apiSuccess (Success 200) {string[]} Response filtered record ids
-   * @apiUse GenericError
-   */
+    * @apiGroup Registry Record Service
+    * @api {post} /v0/registry/records/filterByAccess Filter record ids by access
+    * @apiDescription Filter the supplied record ids and return only those the current user can read.
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiParam (body) {string[]} requestData JSON array of record ids, e.g. ["id1", "id2"]
+    * @apiSuccess (Success 200) {string[]} Response filtered record ids
+    * @apiUse GenericError
+    */
   @Path("/filterByAccess")
   @ApiOperation(
     value = "Filter a list of record ids by access",
@@ -1164,7 +1164,8 @@ class RecordsServiceRO(
     httpMethod = "POST",
     response = classOf[String],
     responseContainer = "List",
-    notes = "Request body is a JSON array of record ids. Returns only readable record ids."
+    notes =
+      "Request body is a JSON array of record ids. Returns only readable record ids."
   )
   @ApiImplicitParams(
     Array(
@@ -1191,32 +1192,34 @@ class RecordsServiceRO(
       )
     )
   )
-  def filterByAccess: Route = post {
+  def filterByAccess: Route =
     path("filterByAccess") {
-      pathEnd {
-        requiresTenantId { tenantId =>
-          entity(as[List[String]]) { requestData =>
-            withAuthDecision(
-              authApiClient,
-              AuthDecisionReqConfig("object/record/read")
-            ) { authDecision =>
-              completeBlockingTask {
-                val requestedRecordIds = requestData
-                  .map(_.trim)
-                  .filter(_.nonEmpty)
-                  .distinct
-                if (requestedRecordIds.isEmpty) {
-                  Seq.empty[String]
-                } else {
-                  DB readOnly { implicit session =>
-                    session.queryTimeout(this.defaultQueryTimeout)
-                    val validRecordIds = recordPersistence
-                      .getValidRecordIds(
-                        tenantId,
-                        authDecision,
-                        requestedRecordIds
-                      )
-                    validRecordIds.toSeq
+      post {
+        pathEnd {
+          requiresTenantId { tenantId =>
+            entity(as[List[String]]) { requestData =>
+              withAuthDecision(
+                authApiClient,
+                AuthDecisionReqConfig("object/record/read")
+              ) { authDecision =>
+                completeBlockingTask {
+                  val requestedRecordIds = requestData
+                    .map(_.trim)
+                    .filter(_.nonEmpty)
+                    .distinct
+                  if (requestedRecordIds.isEmpty) {
+                    Seq.empty[String]
+                  } else {
+                    DB readOnly { implicit session =>
+                      session.queryTimeout(this.defaultQueryTimeout)
+                      val validRecordIds = recordPersistence
+                        .getValidRecordIds(
+                          tenantId,
+                          authDecision,
+                          requestedRecordIds
+                        )
+                      validRecordIds.toSeq
+                    }
                   }
                 }
               }
@@ -1225,7 +1228,6 @@ class RecordsServiceRO(
         }
       }
     }
-  }
 
   private def sha256Hex(input: String): String = {
     val md = MessageDigest.getInstance("SHA-256")

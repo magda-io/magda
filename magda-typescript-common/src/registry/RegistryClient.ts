@@ -316,7 +316,7 @@ export default class RegistryClient {
                     )
                 )
         )
-            .then((result) => ({ records: result.body }))
+            .then((result) => result.body as string[])
             .catch(toServerError("filterRecordsByAccess"));
     }
 
