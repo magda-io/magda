@@ -94,6 +94,16 @@ Commands:
 
 The login flow should create or import a MAGDA API key and store it in the local OS credential store where possible. A file-based fallback should use strict permissions. The CLI should support multiple MAGDA sites through named profiles, similar to `gh` and `aws`.
 
+For the first release, `mgd auth login` should keep the auth flow simple:
+
+1. Print instructions asking the user to log in to the MAGDA web UI.
+2. Ask the user to create an API key from their account settings.
+3. Prompt for the MAGDA site URL, API key ID, and API key.
+4. Verify the credentials through MAGDA's existing API-key auth path.
+5. Save the profile locally.
+
+This avoids building a device-code or browser-session login flow before the CLI has proven adoption.
+
 ### Search
 
 Commands:
@@ -210,6 +220,44 @@ MAGDA remains responsible for auth, authorization, metadata, search, storage, an
 - Mutating commands should support `--dry-run` where useful.
 - Destructive commands should require `--yes` or `--force`.
 - JSON errors should include fields such as `code`, `message`, `status`, `requestId`, and `details`.
+- Semantic search commands should remain visible even when semantic search is not enabled on the target MAGDA deployment. In that case, the command should fail with a clear message explaining that semantic search is unavailable for the active site.
+
+## Packaging and Installation
+
+The first release should target npm:
+
+```bash
+npm install -g @magda/mgd
+```
+
+The package should expose a `mgd` binary and be written in TypeScript. To keep installation simple, the published package should bundle the CLI implementation into a small JavaScript distribution using a tool such as `esbuild` or a similar bundler. Runtime dependencies should be kept minimal and pure JavaScript where possible.
+
+The initial CLI should avoid native dependencies unless they are optional. For example, local credential storage can start with a strict-permission profile file and later add OS keychain support as an optional enhancement. The CLI should use built-in Node.js features where practical, including `fetch`, streams, `readline`, `fs`, `os`, and `crypto`.
+
+Users who do not want a global install should be able to run:
+
+```bash
+npx @magda/mgd auth status
+```
+
+Homebrew and standalone binaries can be added later if npm installation becomes a barrier for non-Node users.
+
+## Audit Metadata
+
+Audit metadata means extra information attached to mutating API requests so MAGDA operators can understand that a change came from the local CLI, and optionally from a code-agent-assisted workflow. This is useful for support, security review, and incident diagnosis. It should not grant extra permissions or replace normal MAGDA authorization.
+
+For mutating operations, `mgd` should send lightweight metadata headers where the gateway and downstream services can preserve them in logs:
+
+- `User-Agent`: include `mgd/<version>` and the Node.js platform.
+- `X-Magda-Client-Name`: `mgd`.
+- `X-Magda-Client-Version`: the CLI version.
+- `X-Magda-Client-Mode`: `human`, `agent`, or `unknown`.
+- `X-Magda-Agent-Name`: optional, for example `codex` or `claude-code`.
+- `X-Magda-Invocation-Id`: a generated UUID for correlating a single CLI command across logs.
+
+The default mode should be `human`. Agent skills should set `--client-mode agent --agent-name <name>` on mutating commands when available, or configure equivalent environment variables such as `MGD_CLIENT_MODE=agent` and `MGD_AGENT_NAME=codex`.
+
+The CLI should avoid sending prompt text, analysis contents, local file paths, or other sensitive local context as audit metadata. Detailed provenance should stay in user-visible command output and final agent summaries unless the user explicitly uploads it.
 
 ## Testing Strategy
 
@@ -229,6 +277,7 @@ Phase 1 should create the CLI foundation:
 - Search, dataset get, distribution list, file download, and raw API request.
 - JSON/JSONL output conventions.
 - Initial Codex and Claude Code skill documents.
+- npm packaging for `@magda/mgd`.
 
 Phase 2 should add write workflows:
 
@@ -241,11 +290,11 @@ Phase 3 should broaden coverage:
 
 - Semantic search and retrieve commands.
 - Better generated command coverage from API documentation where useful.
-- Completion scripts, packaged installers, and expanded agent recipes.
+- Completion scripts, Homebrew or standalone installers, and expanded agent recipes.
 
-## Open Questions
+## Resolved Design Decisions
 
-- Should `mgd auth login` create API keys through the authenticated web session, device-code style flow, or manual paste from the MAGDA UI in the first release?
-- Which package manager and installer targets should be supported first: npm, Homebrew, standalone binaries, or all of them?
-- Should semantic search commands be hidden or marked experimental when the semantic search API is not enabled on a target deployment?
-- What audit metadata should `mgd` include on mutating operations to identify local agent usage?
+- Initial auth should use manual API key creation in the MAGDA web UI, followed by API key ID and API key entry into `mgd auth login`.
+- Initial packaging should target npm with a TypeScript/Node.js CLI published as `@magda/mgd`.
+- Semantic search commands should remain visible and return a clear unavailable-feature error when semantic search is not enabled.
+- Mutating commands should include lightweight client/audit headers that identify `mgd`, the CLI version, invocation ID, and optional agent mode/name without leaking local prompt or file context.
