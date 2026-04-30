@@ -28,6 +28,7 @@ The difficult parts of the current server/web-agent direction are operational ra
 - Use MAGDA's existing REST APIs and API-key model rather than introducing a new agent server protocol.
 - Provide an agent skill design for Codex and Claude Code.
 - Support large-file workflows by streaming files to local disk instead of pushing all analysis through the browser or server.
+- Allow users to install and run the CLI without cloning the MAGDA repository.
 
 ## Non-Goals
 
@@ -224,23 +225,46 @@ MAGDA remains responsible for auth, authorization, metadata, search, storage, an
 
 ## Packaging and Installation
 
-The first release should target npm:
+The first release should target npm and must not require users to clone the MAGDA repository:
 
 ```bash
 npm install -g @magda/mgd
 ```
 
-The package should expose a `mgd` binary and be written in TypeScript. To keep installation simple, the published package should bundle the CLI implementation into a small JavaScript distribution using a tool such as `esbuild` or a similar bundler. Runtime dependencies should be kept minimal and pure JavaScript where possible.
+The package should expose a `mgd` binary and be written in TypeScript. To keep installation simple, the published package should bundle the CLI implementation into a small JavaScript distribution using a tool such as `esbuild` or a similar bundler. Runtime dependencies should be kept minimal and pure JavaScript where possible. Any MAGDA client helpers used by `mgd` should either be bundled into the package or published as normal npm dependencies. The installed package must not rely on workspace-relative imports, local build steps, or files outside the published package.
 
 The initial CLI should avoid native dependencies unless they are optional. For example, local credential storage can start with a strict-permission profile file and later add OS keychain support as an optional enhancement. The CLI should use built-in Node.js features where practical, including `fetch`, streams, `readline`, `fs`, `os`, and `crypto`.
 
-Users who do not want a global install should be able to run:
+Users who do not want a global install should be able to run the CLI directly from npm:
 
 ```bash
-npx @magda/mgd auth status
+npx --yes @magda/mgd@latest auth status
 ```
 
-Homebrew and standalone binaries can be added later if npm installation becomes a barrier for non-Node users.
+or:
+
+```bash
+npm exec --yes @magda/mgd@latest -- auth status
+```
+
+The installation documentation should show three paths:
+
+```bash
+# Run once without installing globally
+npx --yes @magda/mgd@latest auth status
+
+# Install globally
+npm install -g @magda/mgd
+mgd auth status
+
+# Install as a project-local development tool
+npm install --save-dev @magda/mgd
+npm exec mgd -- auth status
+```
+
+This still requires Node.js and npm. To reduce friction, the package should declare the supported Node.js version clearly and should not require `yarn install`, `lerna`, `tsc`, or any MAGDA repository setup on the user's machine.
+
+Homebrew and standalone binaries can be added later if npm installation becomes a barrier for non-Node users. If this becomes important, the standalone package should wrap the same bundled CLI so all installation channels expose the same `mgd` behavior.
 
 ## Audit Metadata
 
@@ -278,6 +302,7 @@ Phase 1 should create the CLI foundation:
 - JSON/JSONL output conventions.
 - Initial Codex and Claude Code skill documents.
 - npm packaging for `@magda/mgd`.
+- No-clone installation through `npm install -g`, `npx`, and `npm exec`.
 
 Phase 2 should add write workflows:
 
@@ -295,6 +320,6 @@ Phase 3 should broaden coverage:
 ## Resolved Design Decisions
 
 - Initial auth should use manual API key creation in the MAGDA web UI, followed by API key ID and API key entry into `mgd auth login`.
-- Initial packaging should target npm with a TypeScript/Node.js CLI published as `@magda/mgd`.
+- Initial packaging should target npm with a TypeScript/Node.js CLI published as `@magda/mgd`, installable without cloning the MAGDA repository.
 - Semantic search commands should remain visible and return a clear unavailable-feature error when semantic search is not enabled.
 - Mutating commands should include lightweight client/audit headers that identify `mgd`, the CLI version, invocation ID, and optional agent mode/name without leaking local prompt or file context.
