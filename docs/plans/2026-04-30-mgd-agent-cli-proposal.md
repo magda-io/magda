@@ -264,7 +264,25 @@ npm exec mgd -- auth status
 
 This still requires Node.js and npm. To reduce friction, the package should declare the supported Node.js version clearly and should not require `yarn install`, `lerna`, `tsc`, or any MAGDA repository setup on the user's machine.
 
-Homebrew and standalone binaries can be added later if npm installation becomes a barrier for non-Node users. If this becomes important, the standalone package should wrap the same bundled CLI so all installation channels expose the same `mgd` behavior.
+Standalone binaries should be a planned follow-up packaging target so users can install `mgd` without installing Node.js or npm. The implementation should still come from the same TypeScript source: bundle the CLI to JavaScript, then package it with a Node.js runtime using Node single executable application support, `pkg`/`nexe`-style tooling, or another equivalent packaging tool.
+
+The standalone release should publish platform-specific assets such as:
+
+```text
+mgd-darwin-arm64
+mgd-darwin-x64
+mgd-linux-arm64
+mgd-linux-x64
+mgd-win-x64.exe
+```
+
+The installation documentation should eventually include a one-line installer for macOS/Linux and direct download links for all release assets:
+
+```bash
+curl -fsSL https://magda.io/install-mgd.sh | sh
+```
+
+Homebrew can be added later as another wrapper around the same release assets. All install channels should expose the same `mgd` behavior.
 
 ## Audit Metadata
 
@@ -291,6 +309,7 @@ The CLI should avoid sending prompt text, analysis contents, local file paths, o
 - Add golden-output tests for table, JSON, JSONL, and error formats.
 - Add shell-composition tests that pipe `mgd` output through common commands such as `jq`, `grep`, `sed`, and `xargs`.
 - Add agent skill smoke tests that validate a code agent can follow the documented workflow.
+- Add packaging smoke tests for npm, npx/npm exec, and standalone binaries once standalone packaging is introduced.
 
 ## Delivery Plan
 
@@ -310,16 +329,18 @@ Phase 2 should add write workflows:
 - Storage upload.
 - Record create/patch.
 - Safer dry-run and confirmation behavior.
+- Standalone binary packaging for users without Node.js or npm.
 
 Phase 3 should broaden coverage:
 
 - Semantic search and retrieve commands.
 - Better generated command coverage from API documentation where useful.
-- Completion scripts, Homebrew or standalone installers, and expanded agent recipes.
+- Completion scripts, Homebrew packaging, and expanded agent recipes.
 
 ## Resolved Design Decisions
 
 - Initial auth should use manual API key creation in the MAGDA web UI, followed by API key ID and API key entry into `mgd auth login`.
 - Initial packaging should target npm with a TypeScript/Node.js CLI published as `@magda/mgd`, installable without cloning the MAGDA repository.
+- Standalone binaries should be supported as a follow-up packaging target for users who do not have Node.js or npm installed.
 - Semantic search commands should remain visible and return a clear unavailable-feature error when semantic search is not enabled.
 - Mutating commands should include lightweight client/audit headers that identify `mgd`, the CLI version, invocation ID, and optional agent mode/name without leaking local prompt or file context.
