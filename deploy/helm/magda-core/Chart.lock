@@ -53,6 +53,9 @@ dependencies:
 - name: registry-db
   repository: file://../internal-charts/registry-db
   version: 5.6.0
+- name: registry-redis
+  repository: file://../internal-charts/registry-redis
+  version: 5.6.0
 - name: search-api
   repository: file://../internal-charts/search-api
   version: 5.6.0
@@ -89,5 +92,5 @@ dependencies:
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
   version: 5.6.0
-digest: sha256:5e1cd1c0a4c90137c99cbd43b8b9cefa1db9f0c36728567dd0b560a418b7902f
-generated: "2025-12-25T18:21:20.471962+11:00"
+digest: sha256:df8157220ac8af70c460682603d75a20217bf4f0ed3b324146d269317e276578
+generated: "2026-04-26T13:11:34.4025539+10:00"

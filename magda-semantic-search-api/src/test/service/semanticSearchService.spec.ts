@@ -713,9 +713,12 @@ describe("SemanticSearchService.search", () => {
             // No Phase 2 vector re-search should happen
             expect(openSearchCallCount).to.equal(1);
         });
+    });
 
+    describe("SemanticSearchService.searchAlt", () => {
         it("searchAlt should query by accessible record ids from redis cache", async () => {
             let capturedTerms: string[] = [];
+            let searchDatasetsCallCount = 0;
 
             mockRegistryClient = {
                 getAccessibleIdsCacheKey: async (
@@ -740,7 +743,7 @@ describe("SemanticSearchService.search", () => {
                         (c: any) => c.terms?.recordId
                     );
                     capturedTerms = termsClause?.terms?.recordId ?? [];
-                    return returnMockSearchResult(3, undefined);
+                    return returnMockSearchResult(2, undefined);
                 }
             };
 
@@ -761,7 +764,130 @@ describe("SemanticSearchService.search", () => {
             });
 
             expect(capturedTerms).to.have.members(["record1", "record2"]);
-            expect(result.length).to.be.greaterThan(0);
+            expect(searchDatasetsCallCount).to.equal(0);
+            expect(result).to.have.length(2);
+            expect(result.map((r) => r.recordId)).to.have.members([
+                "record1",
+                "record2"
+            ]);
+        });
+
+        it("searchAlt should return results when cache key lookup and redis data are valid", async () => {
+            let cacheKeyCalled = 0;
+            let redisGetCalled = 0;
+            let searchDatasetsCallCount = 0;
+
+            mockRegistryClient = {
+                getAccessibleIdsCacheKey: async (
+                    jwtToken?: string,
+                    tenantId?: number
+                ) => {
+                    cacheKeyCalled++;
+                    expect(jwtToken).to.equal("mock-jwt");
+                    expect(tenantId).to.equal(0);
+                    return "cache-key-success";
+                }
+            };
+
+            mockRedisClient = {
+                get: async (key: string): Promise<string | null> => {
+                    redisGetCalled++;
+                    expect(key).to.equal("cache-key-success");
+                    return JSON.stringify(["record1", "record2"]);
+                }
+            };
+
+            mockSearchApiClient = {
+                searchDatasets: async (): Promise<SearchDatasetsResult> => {
+                    searchDatasetsCallCount++;
+                    return returnMockSearchDatasetsResult([]);
+                }
+            };
+
+            mockOpenSearchClient = {
+                search: async (_indexName: string, queryBody: any) => {
+                    const mustClauses =
+                        queryBody?.query?.knn?.embedding?.filter?.bool?.must ??
+                        [];
+                    const termsClause = mustClauses.find(
+                        (c: any) => c.terms?.recordId
+                    );
+
+                    expect(termsClause).to.exist;
+                    expect(termsClause.terms.recordId).to.have.members([
+                        "record1",
+                        "record2"
+                    ]);
+
+                    return {
+                        body: {
+                            hits: {
+                                hits: [
+                                    {
+                                        _id: "doc1",
+                                        _score: 0.95,
+                                        _source: {
+                                            itemType: "storegeObject",
+                                            recordId: "record1",
+                                            parentRecordId: "parent1",
+                                            fileFormat: "PDF",
+                                            subObjectId: "sub1",
+                                            subObjectType: "graph",
+                                            text: "test text 1",
+                                            only_one_index_text_chunk: true,
+                                            index_text_chunk_length: 200,
+                                            index_text_chunk_position: 0,
+                                            index_text_chunk_overlap: 50
+                                        }
+                                    },
+                                    {
+                                        _id: "doc2",
+                                        _score: 0.85,
+                                        _source: {
+                                            itemType: "storegeObject",
+                                            recordId: "record2",
+                                            parentRecordId: "parent2",
+                                            fileFormat: "CSV",
+                                            subObjectId: "sub2",
+                                            subObjectType: "graph",
+                                            text: "test text 2",
+                                            only_one_index_text_chunk: false,
+                                            index_text_chunk_length: 150,
+                                            index_text_chunk_position: 10,
+                                            index_text_chunk_overlap: 0
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    };
+                }
+            };
+
+            semanticSearchService = new SemanticSearchService(
+                mockEmbeddingApiClient,
+                mockOpenSearchClient,
+                mockRegistryClient,
+                mockSearchApiClient,
+                mockRedisClient,
+                mockSemanticIndexerConfig
+            );
+
+            const result = await semanticSearchService.searchAlt({
+                query: "test query",
+                jwt: "mock-jwt",
+                tenantId: 0,
+                max_num_results: 3
+            });
+
+            expect(cacheKeyCalled).to.equal(1);
+            expect(redisGetCalled).to.equal(1);
+            expect(searchDatasetsCallCount).to.equal(0);
+            expect(result).to.have.length(2);
+            expect(result.map((r) => r.recordId)).to.have.members([
+                "record1",
+                "record2"
+            ]);
         });
 
         it("searchAlt should fallback to default search when cache key lookup fails", async () => {
