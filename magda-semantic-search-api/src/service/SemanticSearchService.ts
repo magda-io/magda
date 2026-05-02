@@ -68,7 +68,11 @@ export class SemanticSearchService {
             searchParams.jwt,
             searchParams.tenantId
         );
-
+        if (!Array.isArray(registryResponse)) {
+            throw new Error(
+                "Search access-filter failed or returned an invalid response"
+            );
+        }
         const allowedRecordIds = this._toAllowedRecordIds(registryResponse);
         items = items.filter((item) => allowedRecordIds.has(item.recordId));
 
@@ -131,12 +135,7 @@ export class SemanticSearchService {
         return mapSearchResults(searchResponse);
     }
 
-    private _toAllowedRecordIds(registryResponse: unknown): Set<string> {
-        if (!Array.isArray(registryResponse)) {
-            throw new Error(
-                "Invalid filterByAccess response: expected string[]"
-            );
-        }
+    private _toAllowedRecordIds(registryResponse: unknown[]): Set<string> {
         return new Set(
             registryResponse.filter(
                 (id): id is string => typeof id === "string" && id.length > 0
@@ -171,7 +170,11 @@ export class SemanticSearchService {
             jwt,
             tenantId
         );
-
+        if (!Array.isArray(registryResponse)) {
+            throw new Error(
+                "Registry access-filter failed or returned an invalid response"
+            );
+        }
         const allowedRecordIds = this._toAllowedRecordIds(registryResponse);
 
         const results: RetrieveResultItem[] = [];
