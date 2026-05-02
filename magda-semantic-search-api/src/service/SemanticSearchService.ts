@@ -151,21 +151,37 @@ export class SemanticSearchService {
 
         // Step 2: Fetch record ids from Redis using the data key
         let accessibleRecordIds: string[] = [];
+
         try {
             const cachedJson = await this.redisClient.get(dataKey);
+
             if (cachedJson) {
-                accessibleRecordIds = JSON.parse(cachedJson);
+                const parsed = JSON.parse(cachedJson);
+
+                if (!Array.isArray(parsed)) {
+                    throw new Error("Cached accessible ids must be an array");
+                }
+
+                accessibleRecordIds = Array.from(
+                    new Set(
+                        parsed.filter(
+                            (id): id is string =>
+                                typeof id === "string" && id.length > 0
+                        )
+                    )
+                );
             }
         } catch (e) {
             console.warn(
                 `[searchAlt] Failed to fetch/parse accessible ids from Redis for key ${dataKey}:`,
                 e
             );
-            // Fallback: if Redis fails, fall back to the original search method
+
+            // Fallback: if Redis fails or cached value is invalid, fall back to the original search method
             return this.search(searchParams);
         }
 
-        if (!accessibleRecordIds || accessibleRecordIds.length === 0) {
+        if (accessibleRecordIds.length === 0) {
             console.warn(
                 `[searchAlt] No accessible record ids found for key ${dataKey}, returning empty results`
             );

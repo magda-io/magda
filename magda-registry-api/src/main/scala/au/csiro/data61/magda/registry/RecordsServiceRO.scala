@@ -34,6 +34,7 @@ import au.csiro.data61.magda.model.Auth.AuthProtocols
 object AuthJsonProtocol extends AuthProtocols
 import AuthJsonProtocol._
 import java.security.MessageDigest
+import au.csiro.data61.magda.util.RichConfig._
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -57,7 +58,13 @@ class RecordsServiceRO(
       scala.concurrent.duration.SECONDS
     )
     .toInt
+  val accessibleIdsTtlSeconds = config
+    .getOptionalInt("registry.accessibleIdsCache.ttlSeconds")
+    .getOrElse(3600)
 
+  val accessibleIdsIndexTtlSeconds = config
+    .getOptionalInt("registry.accessibleIdsCache.indexTtlSeconds")
+    .getOrElse(accessibleIdsTtlSeconds * 2)
   /**
     * @apiGroup Registry Record Service
     * @api {get} /v0/registry/records Get a list of all records
@@ -1290,7 +1297,7 @@ class RecordsServiceRO(
     * @api {get} /v0/registry/records/accessibleIds Build and cache accessible record ids
     * @apiDescription Build all readable record ids for the current user context, cache them in Redis, and return the generated cache key.
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id (used for DB tenant scope)
-    * @apiHeader {string} X-Magda-Session Magda internal session id (used as tenant segment in Redis key when present)
+    * @apiHeader {string} X-Magda-Session Magda internal session id used to derive the current auth decision
     * @apiSuccess (Success 200) {string} key Redis data key in format records:{tenantId}:{authDecisionHash}:{eventId}
     * @apiUse GenericError
     */
@@ -1325,44 +1332,38 @@ class RecordsServiceRO(
     path("accessibleIds") {
       pathEnd {
         requiresTenantId { tenantId =>
-          optionalHeaderValueByName("X-Magda-Session") { sessionTenantId =>
-            withAuthDecision(
-              authApiClient,
-              AuthDecisionReqConfig("object/record/read")
-            ) { authDecision =>
-              completeBlockingTask {
-                DB readOnly { implicit dbSession =>
-                  dbSession.queryTimeout(this.defaultQueryTimeout)
+          withAuthDecision(
+            authApiClient,
+            AuthDecisionReqConfig("object/record/read")
+          ) { authDecision =>
+            completeBlockingTask {
+              DB readOnly { implicit dbSession =>
+                dbSession.queryTimeout(this.defaultQueryTimeout)
 
-                  val latestEventId = getLatestTenantEventId(tenantId)
-                  val authDecisionHash =
-                    sha256Hex(authDecision.toJson.compactPrint)
-                  val tenantKeyPart = sessionTenantId
-                    .map(_.trim)
-                    .filter(_.nonEmpty)
-                    .getOrElse(tenantIdToString(tenantId))
+                val latestEventId = getLatestTenantEventId(tenantId)
+                val authDecisionHash =
+                  sha256Hex(authDecision.toJson.compactPrint)
+                val tenantKeyPart = tenantIdToString(tenantId)
+                val dataKey =
+                  s"records:${tenantKeyPart}:${authDecisionHash}:${latestEventId}"
+                val indexKey =
+                  s"records:idx:${tenantKeyPart}:${authDecisionHash}"
 
-                  val dataKey =
-                    s"records:${tenantKeyPart}:${authDecisionHash}:${latestEventId}"
-                  val indexKey =
-                    s"records:idx:${tenantKeyPart}:${authDecisionHash}"
-
-                  redisClient.get(dataKey) match {
-                    case Some(_) =>
-                      dataKey
-                    case None =>
-                      val ids =
-                        collectAccessibleRecordIds(tenantId, authDecision)
-                      redisClient.set(dataKey, ids.toJson.compactPrint)
-
-                      // Index key stores all historical data keys for the same tenant+auth hash.
-                      // Future incremental flow can locate the newest cached key, call
-                      // streamEventsSince(latestEventId), patch only changed record IDs,
-                      // and write a new records:{tenant}:{authHash}:{newEventId} snapshot.
-                      redisClient.sAdd(indexKey, Seq(dataKey))
-
-                      dataKey
-                  }
+                redisClient.get(dataKey) match {
+                  case Some(_) =>
+                    dataKey
+                  case None =>
+                    val ids =
+                      collectAccessibleRecordIds(tenantId, authDecision)
+                    redisClient.setEx(dataKey, accessibleIdsTtlSeconds, ids.toJson.compactPrint)
+                    redisClient.set(dataKey, ids.toJson.compactPrint)
+                    // Index key stores all historical data keys for the same tenant+auth hash.
+                    // Future incremental flow can locate the newest cached key, call
+                    // streamEventsSince(latestEventId), patch only changed record IDs,
+                    // and write a new records:{tenant}:{authHash}:{newEventId} snapshot.
+                    redisClient.sAdd(indexKey, Seq(dataKey))
+                    redisClient.expire(indexKey, accessibleIdsIndexTtlSeconds)
+                    dataKey
                 }
               }
             }
