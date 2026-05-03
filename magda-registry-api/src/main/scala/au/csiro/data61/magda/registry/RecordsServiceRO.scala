@@ -58,6 +58,7 @@ class RecordsServiceRO(
       scala.concurrent.duration.SECONDS
     )
     .toInt
+
   val accessibleIdsTtlSeconds = config
     .getOptionalInt("registry.accessibleIdsCache.ttlSeconds")
     .getOrElse(3600)
@@ -65,6 +66,7 @@ class RecordsServiceRO(
   val accessibleIdsIndexTtlSeconds = config
     .getOptionalInt("registry.accessibleIdsCache.indexTtlSeconds")
     .getOrElse(accessibleIdsTtlSeconds * 2)
+
   /**
     * @apiGroup Registry Record Service
     * @api {get} /v0/registry/records Get a list of all records
@@ -1355,7 +1357,11 @@ class RecordsServiceRO(
                   case None =>
                     val ids =
                       collectAccessibleRecordIds(tenantId, authDecision)
-                    redisClient.setEx(dataKey, accessibleIdsTtlSeconds, ids.toJson.compactPrint)
+                    redisClient.setEx(
+                      dataKey,
+                      accessibleIdsTtlSeconds,
+                      ids.toJson.compactPrint
+                    )
                     redisClient.set(dataKey, ids.toJson.compactPrint)
                     // Index key stores all historical data keys for the same tenant+auth hash.
                     // Future incremental flow can locate the newest cached key, call

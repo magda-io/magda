@@ -7,22 +7,22 @@ import au.csiro.data61.magda.util.RichConfig._
 import scala.concurrent.duration.FiniteDuration
 
 /**
- * Minimal blocking Redis client wrapper for shared Scala services.
- *
- * Config paths:
- *   - redis.host
- *   - redis.port
- *   - redis.db
- *   - redis.timeout
- *   - redis.keyPrefix
- */
+  * Minimal blocking Redis client wrapper for shared Scala services.
+  *
+  * Config paths:
+  *   - redis.host
+  *   - redis.port
+  *   - redis.db
+  *   - redis.timeout
+  *   - redis.keyPrefix
+  */
 class RedisClient(
-                   host: String,
-                   port: Int,
-                   db: Int,
-                   timeout: FiniteDuration,
-                   keyPrefix: String = ""
-                 ) {
+    host: String,
+    port: Int,
+    db: Int,
+    timeout: FiniteDuration,
+    keyPrefix: String = ""
+) {
 
   def this(config: Config) = this(
     config.getString("redis.host"),
