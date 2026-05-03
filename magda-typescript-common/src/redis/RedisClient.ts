@@ -5,7 +5,6 @@ export interface RedisClientOptions {
     host: string;
     port: number;
     db?: number;
-    password?: string;
     keyPrefix?: string;
     // ms
     connectTimeout?: number;
@@ -15,7 +14,6 @@ export interface RedisClientEnvOptions {
     hostEnv?: string;
     portEnv?: string;
     dbEnv?: string;
-    passwordEnv?: string;
     keyPrefixEnv?: string;
     connectTimeoutEnv?: string;
 }
@@ -41,14 +39,12 @@ export default class RedisClient {
         const hostKey = map.hostEnv ?? "REDIS_HOST";
         const portKey = map.portEnv ?? "REDIS_PORT";
         const dbKey = map.dbEnv ?? "REDIS_DB";
-        const passwordKey = map.passwordEnv ?? "REDIS_PASSWORD";
         const keyPrefixKey = map.keyPrefixEnv ?? "REDIS_KEY_PREFIX";
         const timeoutKey = map.connectTimeoutEnv ?? "REDIS_CONNECT_TIMEOUT_MS";
 
         const host = env[hostKey] ?? "localhost";
         const port = Number(env[portKey] ?? 6379);
         const db = Number(env[dbKey] ?? 0);
-        const password = env[passwordKey];
         const keyPrefix = env[keyPrefixKey] ?? "";
         const connectTimeout = Number(env[timeoutKey] ?? 5000);
 
@@ -56,7 +52,6 @@ export default class RedisClient {
             host,
             port,
             db,
-            password,
             keyPrefix,
             connectTimeout
         });
@@ -76,7 +71,6 @@ export default class RedisClient {
             this.client = createClient({
                 url,
                 database: this.options.db,
-                password: this.options.password,
                 socket: {
                     connectTimeout: this.options.connectTimeout
                 }

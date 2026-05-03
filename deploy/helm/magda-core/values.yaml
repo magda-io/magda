@@ -46,7 +46,7 @@ global:
     # Set to `false` to use an external Redis and specify the `host` and `port`.
     enabled: true
     # -- Redis host address.
-    # When `enabled` is true, this can be left empty (defaults to service name `registry-redis`).
+    # When `enabled` is true, this can be left empty (defaults to service name `magda-redis`).
     # When `enabled` is false, this must be set to the external Redis address.
     host: ""
     # -- Redis port number
@@ -224,7 +224,7 @@ tags:
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   registry-db: false
 
-  # tags.registry-redis -- turn on / off [registry-redis](../internal-charts/registry-redis/README.md)
+  # tags.magda-redis -- turn on / off [magda-redis](../internal-charts/magda-redis/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   registry-redis: false
 

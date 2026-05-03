@@ -1,8 +1,8 @@
-# registry-redis
+# magda-redis
 
 ## Overview
 
-This Helm chart deploys a shared Redis instance used by `registry-api` and `semantic-search-api` for caching.
+This Helm chart deploys a shared Redis instance used by `magda-api` and `semantic-search-api` for caching.
 
 ## Configuration
 
@@ -14,7 +14,7 @@ Redis deployment is controlled by `global.redis.enabled` in the parent `magda-co
 ## Connection Details
 
 When deployed:
-- **Host**: `registry-redis` (Kubernetes service name)
+- **Host**: `magda-redis` (Kubernetes service name)
 - **Port**: `6379` (default Redis port)
 - **Password**: Optional, controlled by `global.redis.passwordSecret`
 
@@ -22,7 +22,7 @@ When deployed:
 
 To connect to this Redis from your service:
 
-1. Use the host: `registry-redis`
+1. Use the host: `magda-redis`
 2. Use the port: `6379`
 3. Retrieve password from the secret `{{ .Values.global.redis.passwordSecret }}` key `redis-password` if authentication is enabled
 

@@ -53,8 +53,8 @@ dependencies:
 - name: registry-db
   repository: file://../internal-charts/registry-db
   version: 5.6.0
-- name: registry-redis
-  repository: file://../internal-charts/registry-redis
+- name: magda-redis
+  repository: file://../internal-charts/magda-redis
   version: 5.6.0
 - name: search-api
   repository: file://../internal-charts/search-api
@@ -92,5 +92,5 @@ dependencies:
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
   version: 5.6.0
-digest: sha256:df8157220ac8af70c460682603d75a20217bf4f0ed3b324146d269317e276578
-generated: "2026-04-26T13:11:34.4025539+10:00"
+digest: sha256:00b093f789a0f32ad6536441df068b2e7459104fa3990a0160f06a8bb446bb2d
+generated: "2026-05-03T15:31:47.3019027+10:00"

@@ -47,7 +47,7 @@ spec:
           - "--semanticIndexerMode"
           - "{{ .Values.semanticSearchConfig.semanticIndexerMode | default (get $semanticIndexerKnn "mode") }}"
           - "--redisHost"
-          - '{{ if (get $redis "enabled" | default true) }}{{ .Values.redis.host | default "registry-redis" }}{{ else }}{{ get $redis "host" | default "registry-redis" }}{{ end }}'
+          - '{{ if (get $redis "enabled" | default true) }}{{ .Values.redis.host | default "magda-redis-master" }}{{ else }}{{ get $redis "host" | default "magda-redis-master" }}{{ end }}'
           - "--redisPort"
           - '{{ if (get $redis "enabled" | default true) }}{{ .Values.redis.port | default 6379 }}{{ else }}{{ get $redis "port" | default 6379 }}{{ end }}'
           - "--redisDb"

@@ -142,10 +142,10 @@ spec:
 {{- end }}
 {{- $redis := get $appConfigDictInVal "redis" | default dict | mustDeepCopy }}
 {{- if (get $globalRedis "enabled" | default true) }}
-{{- $_ := set $redis "host" ((get $redis "host") | default "registry-redis") }}
+{{- $_ := set $redis "host" ((get $redis "host") | default "magda-redis-master") }}
 {{- $_ := set $redis "port" ((get $redis "port") | default 6379) }}
 {{- else }}
-{{- $_ := set $redis "host" ((get $globalRedis "host") | default (get $redis "host") | default "registry-redis") }}
+{{- $_ := set $redis "host" ((get $globalRedis "host") | default (get $redis "host") | default "magda-redis-master") }}
 {{- $_ := set $redis "port" ((get $globalRedis "port") | default (get $redis "port") | default 6379) }}
 {{- end }}
 {{- $_ := set $redis "db" ((get $redis "db") | default 0) }}

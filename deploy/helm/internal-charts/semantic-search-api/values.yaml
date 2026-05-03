@@ -33,7 +33,7 @@ semanticSearchConfig:
   semanticIndexerMode:
 redis:
   # -- Redis connection host
-  host: registry-redis
+  host: magda-redis-master
   # -- Redis connection port
   port: 6379
   # -- Redis database number
