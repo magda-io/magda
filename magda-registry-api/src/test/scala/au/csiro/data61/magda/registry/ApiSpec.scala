@@ -108,13 +108,17 @@ abstract class ApiSpec
        |db.default.url = "${databaseUrl}?currentSchema=test"
        |authorization.skip = false
        |authorization.skipOpaQuery = true
+       |redis.host = "localhost"
+       |redis.port = 6379
+       |redis.db = 0
+       |redis.keyPrefix = ""
        |akka.loglevel = ERROR
        |authApi.baseUrl = "http://localhost:6104"
        |webhooks.actorTickRate=0
        |webhooks.eventPageSize=10
        |akka.test.timefactor=20.0
        |trimBySourceTagTimeoutThreshold=500
-    """.stripMargin
+  """.stripMargin
 
   override def withFixture(test: OneArgTest) = {
     val authHttpFetcher = new MockAuthHttpFetcher
