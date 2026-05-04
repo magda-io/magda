@@ -20,6 +20,9 @@ Kubernetes: `>= 1.14.0-0`
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | image.name | string | `"magda-semantic-search-api"` |  |
+| redis.db | int | `0` | Redis database number |
+| redis.host | string | `"magda-redis-master"` | Redis connection host |
+| redis.port | int | `6379` | Redis connection port |
 | resources.limits.cpu | string | `"50m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"60Mi"` |  |
