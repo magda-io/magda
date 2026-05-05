@@ -20,7 +20,7 @@ const returnMockSearchResult = (
             _id: "doc1",
             _score: 0.95,
             _source: {
-                itemType: "storegeObject",
+                itemType: "storageObject",
                 recordId: "record1",
                 parentRecordId: "parent1",
                 fileFormat: "PDF",
@@ -37,7 +37,7 @@ const returnMockSearchResult = (
             _id: "doc2",
             _score: 0.85,
             _source: {
-                itemType: "storegeObject",
+                itemType: "storageObject",
                 recordId: "record2",
                 parentRecordId: "parent2",
                 fileFormat: "CSV",
@@ -54,7 +54,7 @@ const returnMockSearchResult = (
             _id: "doc3",
             _score: 0.75,
             _source: {
-                itemType: "storegeObject",
+                itemType: "storageObject",
                 recordId: "record3",
                 parentRecordId: "parent3",
                 fileFormat: "CSV",
@@ -382,7 +382,7 @@ describe("SemanticSearchService.search", () => {
                                         _id: "doc1",
                                         _score: 0.95,
                                         _source: {
-                                            itemType: "storegeObject",
+                                            itemType: "storageObject",
                                             recordId: "record1",
                                             parentRecordId: "parent1",
                                             fileFormat: "PDF",
@@ -399,7 +399,7 @@ describe("SemanticSearchService.search", () => {
                                         _id: "doc2",
                                         _score: 0.85,
                                         _source: {
-                                            itemType: "storegeObject",
+                                            itemType: "storageObject",
                                             recordId: "record2",
                                             parentRecordId: "parent2",
                                             fileFormat: "CSV",
@@ -827,7 +827,7 @@ describe("SemanticSearchService.search", () => {
                                         _id: "doc1",
                                         _score: 0.95,
                                         _source: {
-                                            itemType: "storegeObject",
+                                            itemType: "storageObject",
                                             recordId: "record1",
                                             parentRecordId: "parent1",
                                             fileFormat: "PDF",
@@ -844,7 +844,7 @@ describe("SemanticSearchService.search", () => {
                                         _id: "doc2",
                                         _score: 0.85,
                                         _source: {
-                                            itemType: "storegeObject",
+                                            itemType: "storageObject",
                                             recordId: "record2",
                                             parentRecordId: "parent2",
                                             fileFormat: "CSV",
