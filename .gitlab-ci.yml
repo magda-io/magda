@@ -303,7 +303,10 @@ buildtest:registry:
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: "password"
-    SBT_OPTS: "-Dredis.host=redis -Dredis.port=6379 -Dredis.db=0 -Dredis.timeout=1h"
+    REDIS_HOST: "redis"
+    REDIS_PORT: "6379"
+    REDIS_DB: "0"
+    REDIS_TIMEOUT: "1h"
   script:
     - sbt "registryApi/testOnly au.csiro.data61.magda.registry.*"
   artifacts:
