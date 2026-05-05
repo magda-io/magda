@@ -58,17 +58,17 @@ build-builder-image:
     - docker:28.5.0-dind
   # Build all three builder images and push to gitlab registry
   script:
-    - cd magda-builder-nodejs && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-nodejs:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile . 
-    - cd .. 
-    - cd magda-builder-docker && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-docker:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile . 
-    - cd .. 
-    - cd magda-builder-scala && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-scala:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile . 
+    - cd magda-builder-nodejs && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-nodejs:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd ..
+    - cd magda-builder-docker && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-docker:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd ..
+    - cd magda-builder-scala && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-scala:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile .
     - cd ..
 
 # Make sure sbt dependencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
 sbt-prebuild:
   stage: prebuild
-  needs: 
+  needs:
     - build-builder-image
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   cache:
@@ -98,7 +98,7 @@ typescript-common-libs:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   retry: 1
-  needs: 
+  needs:
     - yarn-install
     - build-builder-image
     - registry-typescript-api
@@ -119,7 +119,7 @@ typescript-common-libs:
 check-scala-formatting:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
-  needs: 
+  needs:
     - build-builder-image
   script:
     - sbt scalafmtCheckAll
@@ -127,7 +127,7 @@ check-scala-formatting:
 registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
-  needs: 
+  needs:
     - yarn-install
     - sbt-prebuild
   script:
@@ -142,7 +142,7 @@ buildtest:search-with-index-cache:
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   retry: 2
   timeout: 18 minutes
-  needs: 
+  needs:
     - sbt-prebuild
   before_script:
     - |
@@ -158,7 +158,7 @@ buildtest:search-with-index-cache:
   services:
     - docker:28.5.0-dind
   variables:
-    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
+    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     # 2.5gb heap
@@ -205,7 +205,7 @@ buildtest:search-no-index-cache:
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
   retry: 2
   timeout: 18 minutes
-  needs: 
+  needs:
     - sbt-prebuild
   before_script:
     - |
@@ -222,7 +222,7 @@ buildtest:search-no-index-cache:
     - postgres:13.7
     - docker:28.5.0-dind
   variables:
-    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
+    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
@@ -267,7 +267,7 @@ buildtest:ui:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   retry: 1
-  needs: 
+  needs:
     - yarn-install
     - build-builder-image
     - typescript-common-libs
@@ -291,16 +291,19 @@ buildtest:registry:
   stage: buildtest
   retry: 2
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
-  needs: 
+  needs:
     - sbt-prebuild
   timeout: 30 minutes
   services:
     - postgres:13.7
+    - name: redis:7-alpine
+      alias: redis
   variables:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: "password"
+    SBT_OPTS: "-Dredis.host=redis -Dredis.port=6379 -Dredis.db=0 -Dredis.timeout=1h"
   script:
     - sbt "registryApi/testOnly au.csiro.data61.magda.registry.*"
   artifacts:
@@ -317,7 +320,7 @@ buildtest:scala-others:
   stage: buildtest
   retry: 2
   image: registry.gitlab.com/magda-data/magda/magda-builder-scala:$BUILDER_IMG_TAG
-  needs: 
+  needs:
     - sbt-prebuild
   timeout: 30 minutes
   script:
@@ -337,7 +340,7 @@ buildtest:typescript-apis-stateless:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   retry: 1
-  needs: 
+  needs:
     - yarn-install
     - build-builder-image
     - registry-typescript-api
@@ -360,7 +363,7 @@ buildtest:typescript-apis-with-pg:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
-  needs: 
+  needs:
     - yarn-install
     - build-builder-image
     - registry-typescript-api
@@ -380,7 +383,7 @@ buildtest:typescript-apis-with-pg:
     - postgres:13.7
     - docker:28.5.0-dind
   variables:
-    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
+    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     POSTGRES_HOST: postgres
@@ -428,7 +431,7 @@ buildtest:typescript-apis-with-es:
   services:
     - docker:28.5.0-dind
   variables:
-    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
+    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     TEST_ES_URL: "http://docker:9200"
@@ -473,7 +476,7 @@ buildtest:storage-api:
   services:
     - docker:28.5.0-dind
   variables:
-    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
+    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     MINIO_HOST: "docker"
@@ -580,7 +583,7 @@ buildtest:helm-charts:
 buildtest:helm-docs-check:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
-  needs: 
+  needs:
     - build-builder-image
   cache:
     paths: []
@@ -589,7 +592,7 @@ buildtest:helm-docs-check:
   script:
     - code=0
     - docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:v1.13.1 || code=$?;
-      if [ "$code" != "0" ]; then 
+      if [ "$code" != "0" ]; then
         echo "Failed to run helm-docs!";
         exit 1;
       fi;
@@ -600,7 +603,7 @@ buildtest:helm-docs-check:
         echo -e "Some of helm chart docs are required to be updated using the [helm-docs](https://github.com/norwoodj/helm-docs) tool. \n
         Please run helm-docs (v1.13.1) at project root, review & commit docs changes and push a new commit.";
         exit 1;
-      else 
+      else
         echo -e "helm docs check passed. helm docs update is not required.";
       fi;
 
@@ -679,8 +682,8 @@ dockerize:typescript:
     - buildtest:storage-api
   script:
     - ./gitlab-ci-buildx-setup.sh
-    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
-    - yarn run in-submodules -- -f categories.dockerizedTool=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
+    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
+    - yarn run in-submodules -- -f categories.dockerizedTool=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
 
 dockerize:migrators:
   stage: buildtest
@@ -695,13 +698,13 @@ dockerize:migrators:
     - docker:28.5.0-dind
   script:
     - ./gitlab-ci-buildx-setup.sh
-    - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
+    - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
 
 dockerize:opa:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
-  needs: 
+  needs:
     - yarn-install
     - build-builder-image
     - buildtest:opa-policies
@@ -729,7 +732,7 @@ dockerize:dockerExtensions:
   script:
     - ./gitlab-ci-buildx-setup.sh
     # disable multi-arch docker image build for postgreSQL for now
-    #- yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 
+    #- yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
     #- cd $CI_PROJECT_DIR/magda-elastic-search && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
     - cd $CI_PROJECT_DIR/magda-opensearch && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
     - cd $CI_PROJECT_DIR/magda-opensearch-dashboards && yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64
@@ -893,7 +896,7 @@ pre-release:check-release-version:
   script: |
     if [ "$SKIP_CHECK" == "true" ]; then
       echo "Release version is skipped."
-    else 
+    else
       yarn check-release-version
     fi
 
