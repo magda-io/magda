@@ -31,7 +31,8 @@ spec:
             "--listenPort", "{{ .Values.semanticSearchConfig.listenPort }}",
             "--opensearchApiURL", "{{ .Values.semanticSearchConfig.openSearchUrl }}",
             "--embeddingApiURL", "{{ .Values.semanticSearchConfig.embeddingApiUrl }}",
-            
+            "--registryApiURL", "{{ .Values.semanticSearchConfig.registryApiUrl }}",
+            "--searchApiURL", "{{ .Values.semanticSearchConfig.searchApiUrl }}",
             "--semanticIndexName",
             "{{ .Values.semanticSearchConfig.semanticIndexName | default .Values.global.searchEngine.semanticIndexer.indexName  }}",
 
