@@ -27,6 +27,8 @@ semanticSearchConfig:
   listenPort: 6123
   openSearchUrl: http://opensearch:9200
   embeddingApiUrl: http://magda-embedding-api
+  registryApiUrl: http://registry-api/v0
+  searchApiUrl: http://search-api/v0
   # The following fields will override the values in Global.searchEngine.semanticIndexer
   semanticIndexName:
   semanticIndexVersion:

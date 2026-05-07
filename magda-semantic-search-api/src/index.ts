@@ -28,11 +28,10 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: process.env.EMBEDDING_API_URL || "http://localhost:3000"
         })
-        .option("registryReadonlyURL", {
-            describe: "The URL of the registry readonly API.",
+        .option("registryApiURL", {
+            describe: "The URL of the registry API.",
             type: "string",
-            default:
-                process.env.REGISTRY_READ_ONLY_URL || "http://localhost:6101/v0"
+            default: process.env.REGISTRY_API_URL || "http://localhost:6101/v0"
         })
         .option("searchApiURL", {
             describe: "The URL of the Search API.",
@@ -109,7 +108,7 @@ const registryClient = await retry(
     () =>
         Promise.resolve(
             new RegistryClient({
-                baseUrl: argv.registryReadonlyURL as string,
+                baseUrl: argv.registryApiURL as string,
                 tenantId: 0
             })
         ),
