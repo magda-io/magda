@@ -26,6 +26,8 @@ Kubernetes: `>= 1.14.0-0`
 | semanticSearchConfig.embeddingApiUrl | string | `"http://magda-embedding-api"` |  |
 | semanticSearchConfig.listenPort | int | `6123` |  |
 | semanticSearchConfig.openSearchUrl | string | `"http://opensearch:9200"` |  |
+| semanticSearchConfig.registryApiUrl | string | `"http://registry-api/v0"` |  |
+| semanticSearchConfig.searchApiUrl | string | `"http://search-api/v0"` |  |
 | semanticSearchConfig.semanticIndexName | string | `nil` |  |
 | semanticSearchConfig.semanticIndexVersion | string | `nil` |  |
 | semanticSearchConfig.semanticIndexerMode | string | `nil` |  |
