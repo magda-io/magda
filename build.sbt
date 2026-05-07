@@ -12,7 +12,7 @@ lazy val packageJson = {
   val source = scala.io.Source.fromFile("lerna.json").mkString
   val jsonAst = source.parseJson.asJsObject
 
-   Map(
+  Map(
     "version" -> jsonAst.getFields("version").head.asInstanceOf[JsString].value
   )
 }
