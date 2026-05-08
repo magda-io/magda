@@ -221,6 +221,8 @@ buildtest:search-no-index-cache:
   services:
     - postgres:13.7
     - docker:28.5.0-dind
+    - name: redis:7-alpine
+      alias: redis
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
@@ -229,6 +231,10 @@ buildtest:search-no-index-cache:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: "password"
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
+    REDIS_HOST: "redis"
+    REDIS_PORT: "6379"
+    REDIS_DB: "0"
+    REDIS_TIMEOUT: "1h"
     # 2.5gb heap
     # unload classes we don't need
     # aim for < 1000ms gc pauses (largely ignored)

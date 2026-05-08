@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { SemanticSearchService } from "../service/SemanticSearchService.js";
 import type { SearchParams, RetrieveParams } from "../model.js";
 import { validate, Joi, ValidationError } from "express-validation";
+import { BadRequestError } from "@magda/typescript-common/dist/createServiceError.js";
 
 export interface ApiRouterOptions {
     jwtSecret: string;
@@ -51,10 +52,19 @@ export function createRoutes(
         if (raw === undefined || raw.trim() === "") {
             return 0;
         }
+
         const parsed = Number(raw);
+
         if (!Number.isInteger(parsed) || parsed < 0) {
-            throw new Error("Invalid X-Magda-Tenant-Id");
+            throw new BadRequestError(
+                400,
+                {
+                    message: "Invalid X-Magda-Tenant-Id"
+                },
+                undefined
+            );
         }
+
         return parsed;
     }
 
