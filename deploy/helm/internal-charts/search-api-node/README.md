@@ -1,6 +1,6 @@
 # search-api-node
 
-![Version: 5.6.0](https://img.shields.io/badge/Version-5.6.0-informational?style=flat-square)
+![Version: 6.0.0-alpha.16](https://img.shields.io/badge/Version-6.0.0--alpha.16-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
