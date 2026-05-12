@@ -55,7 +55,8 @@ build-builder-image:
   before_script:
     - ./gitlab-ci-buildx-setup.sh
   services:
-    - docker:28.5.0-dind
+    - name: docker:28.5.0-dind
+      command: ["--mtu=1400"]
   # Build all three builder images and push to gitlab registry
   script:
     - cd magda-builder-nodejs && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-nodejs:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile . 
