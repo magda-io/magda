@@ -4,8 +4,11 @@ import sys.process.Process
 import sbtdocker.DockerKeys
 
 object DeployKeys {
-  lazy val deployLocal = taskKey[Unit]("Deploy this service to the local Kubernetes cluster.")
-  lazy val deployLocalOnChange = taskKey[Unit]("Deploy this service to the local Kubernetes cluster when it has changes that trigger a compile.")
+  lazy val deployLocal =
+    taskKey[Unit]("Deploy this service to the local Kubernetes cluster.")
+  lazy val deployLocalOnChange = taskKey[Unit](
+    "Deploy this service to the local Kubernetes cluster when it has changes that trigger a compile."
+  )
 }
 
 object DeployPlugin extends AutoPlugin {
@@ -29,7 +32,12 @@ object DeployPlugin extends AutoPlugin {
 
       // Did the incremental compile actually do anything?
       // We need to look to see if any of this project's dependencies compiled.
-      val incrementalCompileDidSomething = (sbt.Keys.compileIncremental in Compile).all(ScopeFilter(inDependencies(ThisProject))).value.find(_.hasModified).nonEmpty
+      val incrementalCompileDidSomething =
+        (sbt.Keys.compileIncremental in Compile)
+          .all(ScopeFilter(inDependencies(ThisProject)))
+          .value
+          .find(_.hasModified)
+          .nonEmpty
 
       if (hasMainClass && incrementalCompileDidSomething) {
         Def.task {

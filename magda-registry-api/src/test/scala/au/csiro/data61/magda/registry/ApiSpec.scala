@@ -103,18 +103,30 @@ abstract class ApiSpec
     Map("clientUserName" -> "client", "clientPassword" -> "password").asJava
   )
 
-  override def testConfigSource =
+  override def testConfigSource = {
+    val redisHost = sys.env("REDIS_HOST")
+    val redisPort = sys.env("REDIS_PORT")
+    val redisDb = sys.env("REDIS_DB")
+    val redisTimeout = sys.env("REDIS_TIMEOUT")
+    val redisKeyPrefix = sys.env.getOrElse("REDIS_KEY_PREFIX", "")
+
     s"""
        |db.default.url = "${databaseUrl}?currentSchema=test"
        |authorization.skip = false
        |authorization.skipOpaQuery = true
+       |redis.host = "$redisHost"
+       |redis.port = $redisPort
+       |redis.db = $redisDb
+       |redis.timeout = "$redisTimeout"
+       |redis.keyPrefix = "$redisKeyPrefix"
        |akka.loglevel = ERROR
        |authApi.baseUrl = "http://localhost:6104"
        |webhooks.actorTickRate=0
        |webhooks.eventPageSize=10
        |akka.test.timefactor=20.0
        |trimBySourceTagTimeoutThreshold=500
-    """.stripMargin
+  """.stripMargin
+  }
 
   override def withFixture(test: OneArgTest) = {
     val authHttpFetcher = new MockAuthHttpFetcher

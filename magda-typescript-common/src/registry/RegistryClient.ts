@@ -287,4 +287,63 @@ export default class RegistryClient {
             .then((result) => result.body)
             .catch(toServerError("getRecordsPageTokens"));
     }
+
+    async filterRecordsByAccess(
+        records: string[],
+        jwtToken?: string,
+        tenantId?: number
+    ): Promise<string[] | ServerError> {
+        const resolvedTenantId = tenantId ?? this.tenantId;
+        const resolvedJwt = jwtToken ?? this.jwt;
+
+        const operation = () => () =>
+            this.recordsApi.filterByAccess(
+                records,
+                resolvedTenantId,
+                resolvedJwt
+            );
+
+        return <any>retry(
+            operation(),
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        "Failed to filter records by access.",
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body as string[])
+            .catch(toServerError("filterRecordsByAccess"));
+    }
+
+    async getAccessibleIdsCacheKey(
+        jwtToken?: string,
+        tenantId?: number
+    ): Promise<string | ServerError> {
+        const resolvedTenantId = tenantId ?? this.tenantId;
+        const resolvedJwt = jwtToken ?? this.jwt;
+
+        const operation = () => () =>
+            this.recordsApi.accessibleIds(resolvedTenantId, resolvedJwt);
+
+        return <any>retry(
+            operation(),
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError(
+                        "Failed to build/get accessible ids cache key.",
+                        e,
+                        retriesLeft
+                    )
+                )
+        )
+            .then((result) => result.body)
+            .catch(toServerError("getAccessibleIdsCacheKey"));
+    }
 }

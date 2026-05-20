@@ -1,11 +1,11 @@
 global:
   searchEngine:
-    hybridSearch: 
+    hybridSearch:
       # -- whether to enable hybrid search.
       # When `true`, Magda will combine the both LLM powered semantic (vector) & lexical (keyword) search to improve search relevance.
       # [magda-embedding-api](https://github.com/magda-io/magda-embedding-api) will be enabled and used for embedding generation at both indexing & search stage for the semantic search.
       # Please note: to turn on/off the hybrid search feature of a non-upgrade deployment, you need to:
-      # - manually delete the existing index, 
+      # - manually delete the existing index,
       # - deploy and reindex the data by requesting full index action via indexer `reindex` API.
       # When upgrade from older version, no manual actions are required (as a new index will be auto-created based on the index version number).
       enabled: true
@@ -28,7 +28,7 @@ global:
     # </ul>
     # for backward compatibility purposes. <br/><br/>
     # Please note: when supplying the secret manually, it's recommend to set `"helm.sh/resource-policy": keep` annotation on the secret to avoid the secret being removed by Helm.<br/><br/>
-    # e.g. you can set the annotation of the secret with the following command: 
+    # e.g. you can set the annotation of the secret with the following command:
     # `kubectl annotate --namespace [install namespace] secret db-main-account-secret 'helm.sh/resource-policy'=keep`
     existingSecret: "db-main-account-secret"
 
@@ -38,7 +38,23 @@ global:
     # And its content, for this case, will be copied from "cloudsql-db-credentials" secret, `password` field for backward compatibility purposes.
     # Please note: when the secret (specified by `existingSecret`) exists, the auto-create feature will leave the password unchanged.
     autoCreateSecret: true
-
+  # -- Redis configuration for accessing shared Redis cache used by registry-api and semantic-search-api.
+  # When `enabled` is true, an in-cluster Redis instance will be deployed.
+  # When `enabled` is false, services will connect to an external Redis via the provided `host`.
+  redis:
+    # -- Whether to deploy an internal Redis instance.
+    # Set to `false` to use an external Redis and specify the `host` and `port`.
+    enabled: true
+    # -- Redis host address.
+    # When `enabled` is true, this can be left empty (defaults to service name `magda-redis`).
+    # When `enabled` is false, this must be set to the external Redis address.
+    host: ""
+    # -- Redis port number
+    port: 6379
+    # -- Name of the Kubernetes Secret containing Redis password.
+    # The password will be loaded from the key `redis-password`.
+    # Leave empty if Redis requires no authentication.
+    passwordSecret: ""
   useCombinedDb: true
   # -- When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database.
   # Please note: you must set `useCombinedDb` = false before set any of the field to `true`.
@@ -50,24 +66,24 @@ global:
     session-db: false
     tenant-db: false
 
-  # -- whether to use Google Cloud SQL database. 
+  # -- whether to use Google Cloud SQL database.
   # When this option is on, all other database type e.g. `useCombinedDb` & `useAwsRdsDb` must be turned off.
   # When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret,
   # you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true).
   # Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true )
   useCloudSql: false
-  
-  # -- whether to use AWS RDS DB config. 
+
+  # -- whether to use AWS RDS DB config.
   # When this option is on, all other database type e.g. `useCombinedDb` & `useCloudSql` must be turned off.
   # When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret,
   # you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true).
   # Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true )
   useAwsRdsDb: false
-  
+
   # -- AWS RDS DB instance access endpoint. e.g. xxxx.xxxx.ap-southeast-2.rds.amazonaws.com.
   # Compulsory if `useAwsRdsDb` = true
-  awsRdsEndpoint: 
-  
+  awsRdsEndpoint:
+
   externalUrl: "http://localhost:6100"
   rollingUpdate:
     maxUnavailable: 0
@@ -83,12 +99,12 @@ global:
   logLevel: INFO
   namespace: default
   gapiIds: []
-  # -- whether enable magda priority class. 
+  # -- whether enable magda priority class.
   # When `true`, Magda will create priorityClassName from "magda-10" to "magda-0"
-  # where "magda-10" indicates the highest priority. 
+  # where "magda-10" indicates the highest priority.
   # At this moment, "magda-10" is only allocated to gateway.
-  # Please note: When you use in-k8s postgreSQL, you need to manually set the priority class for db instance to `magda-9` 
-  # as it currently has no priority class set by default. 
+  # Please note: When you use in-k8s postgreSQL, you need to manually set the priority class for db instance to `magda-9`
+  # as it currently has no priority class set by default.
   # Other components will be auto-assigned appropriate priority class when `enablePriorityClass` is on.
   enablePriorityClass: false
   # -- the redirection url after the whole authentication process is completed.
@@ -101,14 +117,14 @@ global:
   # The default built-in landing "/sign-in-redirect" route supports an additional `redirectTo` query parameter.
   # If this parameter not presents, the user will be redirected further to the frontend route `/account` which is the account page .
   # Otherwise, user will redirected to the url path specified by `redirectTo` query parameter.
-  # Please note: `redirectTo` only accept an URL path (e.g. `/a/b/c`). External domain urls are not supported. 
+  # Please note: `redirectTo` only accept an URL path (e.g. `/a/b/c`). External domain urls are not supported.
   # You can config `authPluginRedirectUrl` to an full URL string rather than a URL path (which imply current domain).
   # However, unless an external domain is added to `authPluginAllowedExternalRedirectDomains`, an auth plugin should never redirect the user to the external domain.
   authPluginRedirectUrl: "/sign-in-redirect"
 
-  # -- By default, at end of authentication process, an auth plugin will never redirect the user to an external domain, 
+  # -- By default, at end of authentication process, an auth plugin will never redirect the user to an external domain,
   # even if `authPluginRedirectUrl` is configured to an URL with an external domain.
-  # Unless an external domain is added to the whitelist i.e. this `authPluginAllowedExternalRedirectDomains` config, 
+  # Unless an external domain is added to the whitelist i.e. this `authPluginAllowedExternalRedirectDomains` config,
   # any auth plugins will always ignore the domain part of the url (if supplied) and only redirect the user to the URL path under the current domain.
   # Please note: you add a url host string to this list. e.g. "abc.com:8080"
   authPluginAllowedExternalRedirectDomains: []
@@ -127,53 +143,53 @@ global:
 # The auto generated secrets will be 32 chars (256bits) long.
 autoCreateAuthSecrets: true
 
-# -- (object) Control on/ off of each modules. 
+# -- (object) Control on/ off of each modules.
 # To turn on/off openfaas, please set value to `global.openfaas.enabled`
 # @default -- see default value of each individual tag below.
 tags:
   # tags.priorities -- whether or not deploy Magda defined PriorityClass. Useful to schedule different payload on different nodes.
   priorities: true
 
-  # tags.all -- Set to `true` to turn on all default modules. 
-  # When `tags.all` is `false`, a default module will only be turned off when the corresponding module tag is `false` as well. 
-  # Please note: since v1.0.0, correspondence-api is not part of default modules anymore. 
+  # tags.all -- Set to `true` to turn on all default modules.
+  # When `tags.all` is `false`, a default module will only be turned off when the corresponding module tag is `false` as well.
+  # Please note: since v1.0.0, correspondence-api is not part of default modules anymore.
   all: true
 
   # tags.cloud-sql-proxy -- turn on / off [cloud-sql-proxy](../internal-charts/cloud-sql-proxy/README.md)
   cloud-sql-proxy: false
-  
+
   # tags.apidocs-server -- turn on / off [apidocs-server](../internal-charts/apidocs-server/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   apidocs-server: false
-  
+
   # tags.admin-api -- turn on / off [admin-api](../internal-charts/admin-api/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   admin-api: false
-  
+
   # tags.authorization-api -- turn on / off [authorization-api](../internal-charts/authorization-api/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   authorization-api: false
-  
+
   # tags.authorization-db -- turn on / off [authorization-db](../internal-charts/authorization-db/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   authorization-db: false
-  
+
   # tags.combined-db -- turn on / off [combined-db](../internal-charts/combined-db/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
-  # Please not: unless you attempt to run logical DBs over seperate physical DBs (via `global.useInK8sDbInstance.xxx`), 
+  # Please not: unless you attempt to run logical DBs over seperate physical DBs (via `global.useInK8sDbInstance.xxx`),
   # you should always enable this module (even when you use cloud based DB service e.g. AWS RDS or Google Cloud SQL).
   combined-db: false
-  
+
   # tags.content-api -- turn on / off [content-api](../internal-charts/content-api/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   content-api: false
-  
+
   # tags.content-db -- turn on / off [content-db](../internal-charts/content-db/README.md)
   content-db: false
-  
+
   # tags.correspondence-api -- turn on / off [content-db](../internal-charts/correspondence-api/README.md)
   correspondence-api: false
-  
+
   # tags.elasticsearch -- turn on / off [elasticsearch](../internal-charts/elasticsearch/README.md)
   # Please note: this module is no longer used since v4.0.0. `opensearch` chart is used instead.
   # However, this module will still be kept for offering upgrade path for existing users v3 users.
@@ -207,6 +223,10 @@ tags:
   # tags.registry-db -- turn on / off [registry-db](../internal-charts/registry-db/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   registry-db: false
+
+  # tags.magda-redis -- turn on / off [magda-redis](../internal-charts/magda-redis/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
+  registry-redis: false
 
   # tags.search-api -- turn on / off [search-api](../internal-charts/search-api/README.md)
   # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
@@ -260,12 +280,12 @@ tags:
 #       matchLabels:
 #         app: my-app
 # - |
-#   # This is a manifest item written in template string. `|` is used to preserve the new lines. 
+#   # This is a manifest item written in template string. `|` is used to preserve the new lines.
 #   apiVersion: v1
 #   kind: PodDisruptionBudget
 #   metadata:
 #     name: my-pdb
-#     labels: 
+#     labels:
 #       {{- include "magda.common.labels.standard" (dict "root" .) | nindent 4 }}
 #   spec:
 #     maxUnavailable: 1
@@ -290,7 +310,7 @@ gateway:
         # geospatial search panel selection view vector tiles buckets
         - https://tiles.magda.io
   helmetPerPath:
-    "/preview-map/*": 
+    "/preview-map/*":
       contentSecurityPolicy:
         directives:
           scriptSrc:
@@ -310,7 +330,7 @@ gateway:
           - "'self'"
           - "blob:"
     # -- allow alasql to compile SQL query at frontend in its separate window/iframe
-    "/assets/alasql.html": 
+    "/assets/alasql.html":
       contentSecurityPolicy:
         directives:
           scriptSrc:

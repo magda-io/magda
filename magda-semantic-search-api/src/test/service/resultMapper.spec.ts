@@ -12,7 +12,7 @@ describe("ResultMapper", () => {
                                 _id: "doc1",
                                 _score: 0.95,
                                 _source: {
-                                    itemType: "storegeObject",
+                                    itemType: "storageObject",
                                     recordId: "record1",
                                     parentRecordId: "parent1",
                                     fileFormat: "pdf",
@@ -29,7 +29,7 @@ describe("ResultMapper", () => {
                                 _id: "doc2",
                                 _score: 0.85,
                                 _source: {
-                                    itemType: "storegeObject",
+                                    itemType: "storageObject",
                                     recordId: "record2",
                                     parentRecordId: "parent2",
                                     fileFormat: "jpg",
@@ -53,7 +53,7 @@ describe("ResultMapper", () => {
             expect(result[0]).to.deep.equal({
                 id: "doc1",
                 score: 0.95,
-                itemType: "storegeObject",
+                itemType: "storageObject",
                 recordId: "record1",
                 parentRecordId: "parent1",
                 fileFormat: "pdf",
@@ -68,7 +68,7 @@ describe("ResultMapper", () => {
             expect(result[1]).to.deep.equal({
                 id: "doc2",
                 score: 0.85,
-                itemType: "storegeObject",
+                itemType: "storageObject",
                 recordId: "record2",
                 parentRecordId: "parent2",
                 fileFormat: "jpg",

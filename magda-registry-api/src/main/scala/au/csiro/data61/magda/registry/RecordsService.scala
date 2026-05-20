@@ -40,6 +40,7 @@ import au.csiro.data61.magda.directives.CommonDirectives.{
   onCompleteBlockingTaskIn,
   sanitizedJsonEntity
 }
+import au.csiro.data61.magda.client.RedisClient
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -50,14 +51,16 @@ class RecordsService(
     system: ActorSystem,
     materializer: Materializer,
     recordPersistence: RecordPersistence,
-    eventPersistence: EventPersistence
+    eventPersistence: EventPersistence,
+    redisClient: RedisClient
 ) extends RecordsServiceRO(
       authClient,
       config,
       system,
       materializer,
       recordPersistence,
-      eventPersistence
+      eventPersistence,
+      redisClient
     ) {
   val logger = Logging(system, getClass)
   implicit val ec: ExecutionContext = system.dispatcher

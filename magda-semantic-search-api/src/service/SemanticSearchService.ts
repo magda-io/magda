@@ -1,18 +1,21 @@
 import EmbeddingApiClient from "magda-typescript-common/src/EmbeddingApiClient.js";
 import OpensearchApiClient from "magda-typescript-common/src/OpensearchApiClient.js";
+import RegistryClient from "magda-typescript-common/src/registry/RegistryClient.js";
+import SearchApiClient from "magda-typescript-common/src/SearchApiClient.js";
+import RedisClient from "magda-typescript-common/src/redis/RedisClient.js";
 import {
-    getIndexItemsByIdsQueryBody,
     buildSearchQueryBody,
-    buildSingleRetrieveQueryBody
+    buildSingleRetrieveQueryBody,
+    getIndexItemsByIdsQueryBody
 } from "./queryBuilder.js";
-import { mapToIndexItem, mapSearchResults } from "./resultMapper.js";
+import { mapSearchResults, mapToIndexItem } from "./resultMapper.js";
 import { filterByMinScore, keepTopK } from "./filters.js";
 import type {
     IndexItem,
-    SearchParams,
-    SearchResultItem,
     RetrieveParams,
     RetrieveResultItem,
+    SearchParams,
+    SearchResultItem,
     SemanticIndexerConfig
 } from "../model.js";
 
@@ -24,6 +27,9 @@ export class SemanticSearchService {
     constructor(
         private embeddingApiClient: EmbeddingApiClient,
         private openSearchClient: OpensearchApiClient,
+        private registryClient: RegistryClient,
+        private searchApiClient: SearchApiClient,
+        private redisClient: RedisClient,
         private semanticIndexerConfig: SemanticIndexerConfig
     ) {
         this.indexName = `${this.semanticIndexerConfig.indexName}-v${this.semanticIndexerConfig.indexVersion}`;
@@ -36,6 +42,7 @@ export class SemanticSearchService {
 
         const inMemoryMode = this.semanticIndexerConfig.mode === "in_memory";
         const tempSearchParams = { ...searchParams };
+
         if (!inMemoryMode) {
             // minScore is not used in on_disk mode
             tempSearchParams.minScore = undefined;
@@ -44,18 +51,166 @@ export class SemanticSearchService {
                 (searchParams.max_num_results ?? DEFAULT_MAX_NUM_RESULTS) * 2;
         }
 
-        const queryBody = buildSearchQueryBody(
+        let items = await this.executeVectorSearch(
             embeddingVector,
             tempSearchParams
         );
+
+        // Phase 1: Records Access Filtering
+        const recordIds = [
+            ...new Set(
+                items
+                    .map((item) => item.recordId)
+                    .filter((id): id is string => !!id)
+            )
+        ];
+
+        const registryResponse = await this.registryClient.filterRecordsByAccess(
+            recordIds,
+            searchParams.jwt,
+            searchParams.tenantId
+        );
+
+        const allowedRecordIds = this._toAllowedRecordIds(registryResponse);
+        items = items.filter((item) => allowedRecordIds.has(item.recordId));
+
+        // Phase 2: Access-Aware Narrowed Vector Search
+        if (items.length === 0) {
+            const searchDatasetResponse = await this.searchApiClient.searchDatasets(
+                {
+                    query: searchParams.query,
+                    start: 0,
+                    limit: 500
+                },
+                searchParams.jwt,
+                searchParams.tenantId
+            );
+
+            const newAllowedRecordIds = new Set<string>();
+
+            for (const dataset of searchDatasetResponse.dataSets) {
+                if (dataset.identifier) {
+                    newAllowedRecordIds.add(dataset.identifier);
+                }
+
+                for (const dist of dataset.distributions ?? []) {
+                    if (dist.identifier) {
+                        newAllowedRecordIds.add(dist.identifier);
+                    }
+                }
+            }
+
+            if (newAllowedRecordIds.size === 0) {
+                return [];
+            }
+
+            items = await this.executeVectorSearch(
+                embeddingVector,
+                tempSearchParams,
+                [...newAllowedRecordIds]
+            );
+        }
+        if (!inMemoryMode) {
+            items = filterByMinScore(items, searchParams.minScore);
+            items = keepTopK(items, searchParams.max_num_results);
+        }
+        return items;
+    }
+
+    private async executeVectorSearch(
+        embeddingVector: number[],
+        searchParams: SearchParams,
+        recordIds?: string[]
+    ): Promise<SearchResultItem[]> {
+        const queryBody = recordIds?.length
+            ? buildSearchQueryBody(embeddingVector, searchParams, recordIds)
+            : buildSearchQueryBody(embeddingVector, searchParams);
 
         const searchResponse = await this.openSearchClient.search(
             this.indexName,
             queryBody
         );
+        return mapSearchResults(searchResponse);
+    }
 
-        let items = mapSearchResults(searchResponse);
+    async searchAlt(searchParams: SearchParams): Promise<SearchResultItem[]> {
+        // Step 1: Get the Redis cache key for accessible record ids
+        const dataKeyResponse = await this.registryClient.getAccessibleIdsCacheKey(
+            searchParams.jwt,
+            searchParams.tenantId
+        );
 
+        if (typeof dataKeyResponse !== "string" || !dataKeyResponse.trim()) {
+            console.warn(
+                "[searchAlt] Failed to resolve accessible ids cache key, fallback to default search"
+            );
+            return this.search(searchParams);
+        }
+
+        const dataKey = dataKeyResponse;
+
+        // Step 2: Fetch record ids from Redis using the data key
+        let accessibleRecordIds: string[] = [];
+
+        try {
+            const cachedJson = await this.redisClient.get(dataKey);
+
+            if (cachedJson) {
+                const parsed = JSON.parse(cachedJson);
+
+                if (!Array.isArray(parsed)) {
+                    throw new Error("Cached accessible ids must be an array");
+                }
+
+                accessibleRecordIds = Array.from(
+                    new Set(
+                        parsed.filter(
+                            (id): id is string =>
+                                typeof id === "string" && id.length > 0
+                        )
+                    )
+                );
+            }
+        } catch (e) {
+            console.warn(
+                `[searchAlt] Failed to fetch/parse accessible ids from Redis for key ${dataKey}:`,
+                e
+            );
+
+            // Fallback: if Redis fails or cached value is invalid, fall back to the original search method
+            return this.search(searchParams);
+        }
+
+        if (accessibleRecordIds.length === 0) {
+            console.warn(
+                `[searchAlt] No accessible record ids found for key ${dataKey}, returning empty results`
+            );
+            return [];
+        }
+
+        // Step 3: Get the embedding vector for the query
+        const embeddingVector = await this.embeddingApiClient.get(
+            searchParams.query
+        );
+
+        // Step 4: Adjust search params based on index mode
+        const inMemoryMode = this.semanticIndexerConfig.mode === "in_memory";
+        const tempSearchParams = { ...searchParams };
+
+        if (!inMemoryMode) {
+            tempSearchParams.minScore = undefined;
+            tempSearchParams.max_num_results =
+                (searchParams.max_num_results ?? DEFAULT_MAX_NUM_RESULTS) * 2;
+        }
+
+        // Step 5: Execute vector search with pre-filtered record ids
+        let items = await this.executeVectorSearch(
+            embeddingVector,
+            tempSearchParams,
+            accessibleRecordIds
+        );
+
+        // Step 6: Apply score filtering and result limiting for on-disk mode
         if (!inMemoryMode) {
             items = filterByMinScore(items, searchParams.minScore);
             items = keepTopK(items, searchParams.max_num_results);
@@ -64,19 +219,54 @@ export class SemanticSearchService {
         return items;
     }
 
+    private _toAllowedRecordIds(registryResponse: unknown): Set<string> {
+        if (!Array.isArray(registryResponse)) {
+            throw new Error(
+                "Invalid filterByAccess response: expected string[]"
+            );
+        }
+        return new Set(
+            registryResponse.filter(
+                (id): id is string => typeof id === "string" && id.length > 0
+            )
+        );
+    }
+
     async retrieve(_params: RetrieveParams): Promise<RetrieveResultItem[]> {
         const {
             ids,
             mode = "full",
             precedingChunksNum = 0,
-            subsequentChunksNum = 0
+            subsequentChunksNum = 0,
+            jwt,
+            tenantId
         } = _params;
 
         // fetch recordIds
         const indexItems = await this._fetchIndexItemsByIds(ids);
 
+        // filter access - only keep items whose recordId is accessible
+        const recordIds = [
+            ...new Set(
+                indexItems
+                    .map((item) => item.recordId)
+                    .filter((id): id is string => !!id)
+            )
+        ];
+
+        const registryResponse = await this.registryClient.filterRecordsByAccess(
+            recordIds,
+            jwt,
+            tenantId
+        );
+
+        const allowedRecordIds = this._toAllowedRecordIds(registryResponse);
+
         const results: RetrieveResultItem[] = [];
         for (const item of indexItems) {
+            if (!item.recordId || !allowedRecordIds.has(item.recordId)) {
+                continue;
+            }
             // get all chunks for the record
             const allChunks = await this._fetchChunks(
                 item.recordId,

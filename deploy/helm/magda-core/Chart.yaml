@@ -115,6 +115,12 @@ dependencies:
     tags:
       - all
       - registry-db
+  - name: magda-redis
+    version: 5.6.0
+    repository: file://../internal-charts/magda-redis
+    tags:
+     - all
+     - magda-redis
   - name: search-api
     version: 5.6.0
     repository: file://../internal-charts/search-api

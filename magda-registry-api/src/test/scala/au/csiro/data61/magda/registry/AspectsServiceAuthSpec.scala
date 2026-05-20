@@ -18,11 +18,22 @@ import spray.json._
   */
 class AspectsServiceAuthSpec extends ApiSpec {
 
-  override def testConfigSource =
+  override def testConfigSource = {
+    val redisHost = sys.env("REDIS_HOST")
+    val redisPort = sys.env("REDIS_PORT")
+    val redisDb = sys.env("REDIS_DB")
+    val redisTimeout = sys.env("REDIS_TIMEOUT")
+    val redisKeyPrefix = sys.env.getOrElse("REDIS_KEY_PREFIX", "")
+
     s"""
        |db.default.url = "${databaseUrl}?currentSchema=test"
        |authorization.skip = false
        |authorization.skipOpaQuery = false
+       |redis.host = "$redisHost"
+       |redis.port = $redisPort
+       |redis.db = $redisDb
+       |redis.timeout = "$redisTimeout"
+       |redis.keyPrefix = "$redisKeyPrefix"
        |akka.loglevel = ERROR
        |authApi.baseUrl = "http://localhost:6104"
        |webhooks.actorTickRate=0
@@ -30,6 +41,7 @@ class AspectsServiceAuthSpec extends ApiSpec {
        |akka.test.timefactor=20.0
        |trimBySourceTagTimeoutThreshold=500
     """.stripMargin
+  }
 
   def testAspectQuery(
       testDesc: String,

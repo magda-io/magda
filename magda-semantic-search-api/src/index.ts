@@ -4,6 +4,9 @@ import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwt
 import { SemanticSearchService } from "./service/SemanticSearchService.js";
 import EmbeddingApiClient from "@magda/typescript-common/dist/EmbeddingApiClient.js";
 import OpensearchApiClient from "@magda/typescript-common/dist/OpensearchApiClient.js";
+import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient.js";
+import SearchApiClient from "@magda/typescript-common/dist/SearchApiClient.js";
+import RedisClient from "@magda/typescript-common/dist/redis/RedisClient.js";
 import { createRoutes } from "./api/createApiRouter.js";
 import retry from "magda-typescript-common/src/retry.js";
 
@@ -25,11 +28,15 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: process.env.EMBEDDING_API_URL || "http://localhost:3000"
         })
-        .option("registryReadonlyURL", {
-            describe: "The URL of the registry readonly API.",
+        .option("registryApiURL", {
+            describe: "The URL of the registry API.",
             type: "string",
-            default:
-                process.env.REGISTRY_READ_ONLY_URL || "http://localhost:6101/v0"
+            default: process.env.REGISTRY_API_URL || "http://localhost:6101/v0"
+        })
+        .option("searchApiURL", {
+            describe: "The URL of the Search API.",
+            type: "string",
+            default: process.env.SEARCH_API_URL || "http://localhost:6102/v0"
         })
         .option("jwtSecret", {
             describe: "Shared secret for intra-network JWT auth",
@@ -49,6 +56,21 @@ const argv = addJwtSecretFromEnvVar(
             describe: "The mode of the vector workload mode",
             type: "string",
             default: "in_memory"
+        })
+        .option("redisHost", {
+            describe: "Redis connection host",
+            type: "string",
+            default: process.env.REDIS_HOST || "localhost"
+        })
+        .option("redisPort", {
+            describe: "Redis connection port",
+            type: "number",
+            default: Number(process.env.REDIS_PORT) || 6379
+        })
+        .option("redisDb", {
+            describe: "Redis database number",
+            type: "number",
+            default: Number(process.env.REDIS_DB) || 0
         }).argv
 );
 
@@ -82,9 +104,51 @@ const embeddingApiClient = await retry(
         )
 );
 
+const registryClient = await retry(
+    () =>
+        Promise.resolve(
+            new RegistryClient({
+                baseUrl: argv.registryApiURL as string,
+                tenantId: 0
+            })
+        ),
+    5,
+    5,
+    (e, left) =>
+        console.error(
+            `Registry API connection failed, remaining retries: ${left}, error:`,
+            e.message
+        )
+);
+
+const searchApiClient = await retry(
+    () =>
+        Promise.resolve(
+            new SearchApiClient({
+                baseApiUrl: argv.searchApiURL
+            })
+        ),
+    5,
+    5,
+    (e, left) =>
+        console.error(
+            `Search API connection failed, remaining retries: ${left}, error:`,
+            e.message
+        )
+);
+
+const redisClient = new RedisClient({
+    host: argv.redisHost as string,
+    port: argv.redisPort as number,
+    db: argv.redisDb as number
+});
+
 const semanticSearchService = new SemanticSearchService(
     embeddingApiClient,
     opensearchApiClient,
+    registryClient,
+    searchApiClient,
+    redisClient,
     {
         indexName: argv.semanticIndexName as string,
         indexVersion: argv.semanticIndexVersion as number,

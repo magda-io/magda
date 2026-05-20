@@ -25,6 +25,7 @@ import scalikejdbc._
 
 import scala.util.control.NonFatal
 import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.client.RedisClient
 
 /**
   * @apiDefine GenericError
@@ -83,6 +84,7 @@ class Api(
 
   val recordPersistence = new DefaultRecordPersistence(config)
   val eventPersistence = new DefaultEventPersistence(recordPersistence)
+  val redisClient = new RedisClient(config)
 
   val roleDependentRoutes = webHookActorOption match {
     case Some(webHookActor) =>
@@ -103,7 +105,8 @@ class Api(
             system,
             materializer,
             recordPersistence,
-            eventPersistence
+            eventPersistence,
+            redisClient
           ).route
         } ~
         pathPrefix("hooks") {
@@ -127,7 +130,8 @@ class Api(
             system,
             materializer,
             recordPersistence,
-            eventPersistence
+            eventPersistence,
+            redisClient
           ).route
         }
   }

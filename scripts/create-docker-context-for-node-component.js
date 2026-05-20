@@ -359,6 +359,67 @@ function prepareNodeModules(packageDir, destDir, productionPackages) {
     });
 }
 
+//function getPackageList(packagePath, packageSearchRoot, resolvedSoFar = {}) {
+//    const dependencies = getPackageDependencies(packagePath);
+//    const result = [];
+//
+//    if (!dependencies || !dependencies.length) {
+//        return result;
+//    }
+//
+//    dependencies.forEach(function (dependencyName) {
+//        const dependencyNamePath = dependencyName.replace(/\//g, path.sep);
+//
+//        let currentBaseDir = packagePath;
+//        let dependencyDir;
+//
+//        do {
+//            dependencyDir = path.resolve(
+//                currentBaseDir,
+//                "node_modules",
+//                dependencyNamePath
+//            );
+//
+//            if (
+//                currentBaseDir === packageSearchRoot ||
+//                isSubDir(currentBaseDir, packageSearchRoot)
+//            ) {
+//                // --- will not look for packages outside project root directory
+//                break;
+//            }
+//
+//            // Does this directory exist?  If not, imitate node's module resolution by walking
+//            // up the directory tree.
+//            currentBaseDir = path.resolve(currentBaseDir, "..");
+//        } while (!fse.existsSync(dependencyDir));
+//
+//        if (!fse.existsSync(dependencyDir)) {
+//            throw new Error(
+//                "Could not find path for " +
+//                    dependencyName +
+//                    " @ " +
+//                    packagePath
+//            );
+//        }
+//
+//        // If we haven't already seen this
+//        if (!resolvedSoFar[dependencyDir]) {
+//            result.push({ name: dependencyName, path: dependencyDir });
+//
+//            // Now that we've added this package to the list to resolve, add all its children.
+//
+//            const childPackageResult = getPackageList(
+//                dependencyDir,
+//                packageSearchRoot,
+//                { ...resolvedSoFar, [dependencyDir]: true }
+//            );
+//
+//            Array.prototype.push.apply(result, childPackageResult);
+//        }
+//    });
+//
+//    return result;
+//}
 function getPackageList(packagePath, packageSearchRoot, resolvedSoFar = {}) {
     const dependencies = getPackageDependencies(packagePath);
     const result = [];
@@ -371,29 +432,34 @@ function getPackageList(packagePath, packageSearchRoot, resolvedSoFar = {}) {
         const dependencyNamePath = dependencyName.replace(/\//g, path.sep);
 
         let currentBaseDir = packagePath;
-        let dependencyDir;
+        let dependencyDir = null;
 
-        do {
-            dependencyDir = path.resolve(
+        while (true) {
+            const candidateDir = path.resolve(
                 currentBaseDir,
                 "node_modules",
                 dependencyNamePath
             );
 
-            if (
-                currentBaseDir === packageSearchRoot ||
-                isSubDir(currentBaseDir, packageSearchRoot)
-            ) {
-                // --- will not look for packages outside project root directory
+            if (fse.existsSync(candidateDir)) {
+                dependencyDir = candidateDir;
                 break;
             }
 
-            // Does this directory exist?  If not, imitate node's module resolution by walking
-            // up the directory tree.
-            currentBaseDir = path.resolve(currentBaseDir, "..");
-        } while (!fse.existsSync(dependencyDir));
+            if (currentBaseDir === packageSearchRoot) {
+                break;
+            }
 
-        if (!fse.existsSync(dependencyDir)) {
+            const parentDir = path.resolve(currentBaseDir, "..");
+
+            if (parentDir === currentBaseDir) {
+                break;
+            }
+
+            currentBaseDir = parentDir;
+        }
+
+        if (!dependencyDir || !fse.existsSync(dependencyDir)) {
             throw new Error(
                 "Could not find path for " +
                     dependencyName +

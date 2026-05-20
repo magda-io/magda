@@ -1,0 +1,23 @@
+# Redis Bitnami chart configuration
+redis:
+  image:
+    registry: docker.io
+    repository: bitnami/redis
+    tag: latest
+    pullPolicy: IfNotPresent
+  fullnameOverride: magda-redis
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: false
+  replica:
+    replicaCount: 0
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

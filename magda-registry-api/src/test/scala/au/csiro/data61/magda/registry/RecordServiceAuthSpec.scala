@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.registry
 
 import akka.http.scaladsl.model.{HttpRequest, StatusCodes}
+import au.csiro.data61.magda.client.RedisClient
 import au.csiro.data61.magda.model.Auth.{
   AuthDecision,
   ConciseExpression,
@@ -21,11 +22,22 @@ import java.time.OffsetDateTime
   */
 class RecordServiceAuthSpec extends ApiSpec {
 
-  override def testConfigSource =
+  override def testConfigSource = {
+    val redisHost = sys.env("REDIS_HOST")
+    val redisPort = sys.env("REDIS_PORT")
+    val redisDb = sys.env("REDIS_DB")
+    val redisTimeout = sys.env("REDIS_TIMEOUT")
+    val redisKeyPrefix = sys.env.getOrElse("REDIS_KEY_PREFIX", "")
+
     s"""
        |db.default.url = "${databaseUrl}?currentSchema=test"
        |authorization.skip = false
        |authorization.skipOpaQuery = false
+       |redis.host = "$redisHost"
+       |redis.port = $redisPort
+       |redis.db = $redisDb
+       |redis.timeout = "$redisTimeout"
+       |redis.keyPrefix = "$redisKeyPrefix"
        |akka.loglevel = ERROR
        |authApi.baseUrl = "http://localhost:6104"
        |webhooks.actorTickRate=0
@@ -33,6 +45,7 @@ class RecordServiceAuthSpec extends ApiSpec {
        |akka.test.timefactor=20.0
        |trimBySourceTagTimeoutThreshold=500
     """.stripMargin
+  }
 
   def settingUpTestData(param: FixtureParam, records: List[Record]) = {
 
@@ -2089,5 +2102,285 @@ class RecordServiceAuthSpec extends ApiSpec {
       }
     }
 
+    describe("filterByAccess API: {post} /v0/registry/records/filterByAccess:") {
+
+      def filterByAccessRequest(recordIds: Seq[String]): HttpRequest =
+        Post("/v0/records/filterByAccess", recordIds.toList)
+
+      def returnedRecordIds: List[String] =
+        responseAs[List[String]]
+
+      endpointStandardAuthTestCase(
+        request = filterByAccessRequest(Seq("test1", "test2", "missing-id")),
+        requiredOperationUris = List("object/record/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          returnedRecordIds shouldEqual List("test1", "test2")
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          // As designed: return 200 + empty list when read permission is denied.
+          status shouldEqual StatusCodes.OK
+          returnedRecordIds shouldEqual List.empty[String]
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          settingUpTestData(
+            param,
+            List(
+              Record(
+                "test1",
+                "test record 1",
+                aspects = Map("aspectA" -> JsObject("a" -> JsNumber(1))),
+                sourceTag = Some("blah")
+              ),
+              Record(
+                "test2",
+                "test record 2",
+                aspects = Map("aspectA" -> JsObject("a" -> JsNumber(2))),
+                sourceTag = Some("blah")
+              )
+            )
+          )
+        }
+      )
+
+      it(
+        "should return 200 with empty list when all requested record ids do not exist"
+      ) { param =>
+        param.authFetcher.setAuthDecision(
+          "object/record/read",
+          UnconditionalTrueDecision
+        )
+
+        filterByAccessRequest(Seq("missing-1", "missing-2")) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          returnedRecordIds shouldEqual List.empty[String]
+        }
+      }
+
+      it("should enforce tenant isolation when filtering ids") { param =>
+        val tenant1Record =
+          Record(
+            "tenant1-rec",
+            "tenant1 rec",
+            Map("aspectA" -> JsObject()),
+            Some("blah")
+          )
+        val tenant2Record =
+          Record(
+            "tenant2-rec",
+            "tenant2 rec",
+            Map("aspectA" -> JsObject()),
+            Some("blah")
+          )
+
+        // create same aspect in both tenants
+        param.authFetcher
+          .setAuthDecision("object/aspect/create", UnconditionalTrueDecision)
+        Post("/v0/aspects", AspectDefinition("aspectA", "aspectA", None)) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        Post("/v0/aspects", AspectDefinition("aspectA", "aspectA", None)) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_2
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        // create records in different tenants
+        param.authFetcher
+          .setAuthDecision("object/record/create", UnconditionalTrueDecision)
+        Post("/v0/records", tenant1Record) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        Post("/v0/records", tenant2Record) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_2
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        param.authFetcher
+          .setAuthDecision("object/record/read", UnconditionalTrueDecision)
+
+        filterByAccessRequest(Seq("tenant1-rec", "tenant2-rec")) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          returnedRecordIds shouldEqual List("tenant1-rec")
+        }
+      }
+
+      it("should trim, drop empty ids and de-duplicate input ids") { param =>
+        settingUpTestData(
+          param,
+          List(
+            Record(
+              "dup-id",
+              "dup rec",
+              Map("aspectA" -> JsObject("a" -> JsNumber(1))),
+              Some("blah")
+            )
+          )
+        )
+        param.authFetcher
+          .setAuthDecision("object/record/read", UnconditionalTrueDecision)
+
+        filterByAccessRequest(Seq("  dup-id  ", "", "dup-id", "   ")) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          returnedRecordIds shouldEqual List("dup-id")
+        }
+      }
+    }
+
+    describe("accessibleIds API: {get} /v0/registry/records/accessibleIds:") {
+
+      it("should return a redis cache key and store accessible record ids") {
+        param =>
+          settingUpTestData(
+            param,
+            List(
+              Record(
+                "hidden-id",
+                "hidden record",
+                aspects = Map(),
+                Some("blah")
+              ),
+              Record(
+                "visible-id",
+                "visible record",
+                aspects = Map(),
+                Some("blah")
+              )
+            )
+          )
+
+          param.authFetcher.setAuthDecision(
+            "object/record/read",
+            AuthDecision(
+              hasResidualRules = true,
+              result = None,
+              residualRules = Some(
+                List(
+                  ConciseRule(
+                    fullName = "rule1",
+                    name = "rule1",
+                    value = JsTrue,
+                    expressions = List(
+                      ConciseExpression(
+                        negated = false,
+                        operator = Some("="),
+                        operands = Vector(
+                          ConciseOperand(
+                            isRef = true,
+                            value = JsString("input.object.record.name")
+                          ),
+                          ConciseOperand(
+                            isRef = false,
+                            value = JsString("visible record")
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+
+          Get("/v0/records/accessibleIds") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> addUserId() ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val cacheKey = responseAs[String]
+
+            cacheKey should startWith("records:")
+            cacheKey should include("1")
+
+            val redisClient = new RedisClient(testConfig)
+            val cachedValue = redisClient.get(cacheKey)
+            cachedValue shouldBe Some("""["visible-id"]""")
+          }
+      }
+
+      it(
+        "should return the same cache key for the same tenant and auth decision"
+      ) { param =>
+        settingUpTestData(
+          param,
+          List(
+            Record(
+              "hidden-id",
+              "hidden record",
+              aspects = Map(),
+              Some("blah")
+            ),
+            Record(
+              "visible-id",
+              "visible record",
+              aspects = Map(),
+              Some("blah")
+            )
+          )
+        )
+
+        param.authFetcher.setAuthDecision(
+          "object/record/read",
+          AuthDecision(
+            hasResidualRules = true,
+            result = None,
+            residualRules = Some(
+              List(
+                ConciseRule(
+                  fullName = "rule1",
+                  name = "rule1",
+                  value = JsTrue,
+                  expressions = List(
+                    ConciseExpression(
+                      negated = false,
+                      operator = Some("="),
+                      operands = Vector(
+                        ConciseOperand(
+                          isRef = true,
+                          value = JsString("input.object.record.name")
+                        ),
+                        ConciseOperand(
+                          isRef = false,
+                          value = JsString("visible record")
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        Get("/v0/records/accessibleIds") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> addUserId() ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val firstKey = responseAs[String]
+
+          Get("/v0/records/accessibleIds") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> addUserId() ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val secondKey = responseAs[String]
+            secondKey shouldEqual firstKey
+          }
+        }
+      }
+    }
   }
 }

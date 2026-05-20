@@ -7,7 +7,7 @@ describe("filters", () => {
         {
             id: "1",
             score: 0.9,
-            itemType: "storegeObject",
+            itemType: "storageObject",
             recordId: "record1",
             parentRecordId: "parent1",
             fileFormat: "CSV",
@@ -22,7 +22,7 @@ describe("filters", () => {
         {
             id: "2",
             score: 0.7,
-            itemType: "storegeObject",
+            itemType: "storageObject",
             recordId: "record2",
             parentRecordId: "parent2",
             fileFormat: "PDF",
@@ -37,7 +37,7 @@ describe("filters", () => {
         {
             id: "3",
             score: 0.5,
-            itemType: "storegeObject",
+            itemType: "storageObject",
             recordId: "record3",
             parentRecordId: "parent3",
             fileFormat: "CSV",
