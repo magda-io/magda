@@ -181,10 +181,46 @@ export function createRoutes(
         }
     );
 
+    function isOpenSearchIndexNotFoundError(err: unknown): boolean {
+        const error = err as any;
+
+        return (
+            error?.meta?.body?.error?.type === "index_not_found_exception" ||
+            error?.body?.error?.type === "index_not_found_exception" ||
+            error?.message?.includes("index_not_found_exception")
+        );
+    }
+
+    function getOpenSearchErrorMessage(err: unknown): string {
+        const error = err as any;
+
+        return (
+            error?.meta?.body?.error?.reason ||
+            error?.body?.error?.reason ||
+            error?.message ||
+            "Unknown OpenSearch error"
+        );
+    }
+
     router.use(
         (err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+            if (isOpenSearchIndexNotFoundError(err)) {
+                const message =
+                    `OpenSearch index not found: ${getOpenSearchErrorMessage(
+                        err
+                    )} ` +
+                    "- Install at least one semantic indexer to create it automatically.";
+
+                console.error("Unhandled error:", message);
+
+                return res.status(500).json({
+                    error: "OpenSearch index not found",
+                    message
+                });
+            }
+
             console.error("Unhandled error:", (err as Error).message);
-            res.status(500).json({ error: "Internal Server Error" });
+            return res.status(500).json({ error: "Internal Server Error" });
         }
     );
 
