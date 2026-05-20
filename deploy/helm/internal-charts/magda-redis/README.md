@@ -1,6 +1,6 @@
 # magda-redis
 
-![Version: 5.6.0](https://img.shields.io/badge/Version-5.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+![Version: 6.0.0-pr.3646.2](https://img.shields.io/badge/Version-6.0.0--pr.3646.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 A Helm chart for deploying Redis as a shared cache for registry-api and semantic-search-api
 

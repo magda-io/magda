@@ -1,8 +1,9 @@
 apiVersion: v2
 name: magda-redis
-description: A Helm chart for deploying Redis as a shared cache for registry-api and semantic-search-api
+description: A Helm chart for deploying Redis as a shared cache for registry-api
+  and semantic-search-api
 type: application
-version: 5.6.0
+version: 6.0.0-pr.3646.2
 kubeVersion: ">= 1.21.0"
 annotations:
   magdaModuleType: "core"
@@ -11,4 +12,3 @@ dependencies:
     version: "17.11.3"
     repository: "oci://registry-1.docker.io/bitnamicharts"
     condition: global.redis.enabled
-
