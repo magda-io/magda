@@ -56,6 +56,7 @@ build-builder-image:
     - ./gitlab-ci-buildx-setup.sh
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   # Build all three builder images and push to gitlab registry
   script:
@@ -158,6 +159,7 @@ buildtest:search-with-index-cache:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
@@ -223,6 +225,7 @@ buildtest:search-no-index-cache:
   services:
     - postgres:13.7
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
     - name: redis:7-alpine
       alias: redis
@@ -394,6 +397,7 @@ buildtest:typescript-apis-with-pg:
   services:
     - postgres:13.7
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
@@ -443,6 +447,7 @@ buildtest:typescript-apis-with-es:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
@@ -489,6 +494,7 @@ buildtest:storage-api:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
@@ -531,6 +537,7 @@ buildtest:integration-tests:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   variables:
     POSTGRES_URL: "jdbc:postgresql://localhost/postgres"
@@ -560,6 +567,7 @@ buildtest:opa-policies:
     paths: []
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   script:
     - cd magda-opa
@@ -606,6 +614,7 @@ buildtest:helm-docs-check:
     paths: []
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   script:
     - code=0
@@ -637,6 +646,7 @@ dockerize:scala:
     - buildtest:search-with-index-cache
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   script:
     - ./gitlab-ci-buildx-setup.sh
@@ -654,6 +664,7 @@ dockerize:ui:
     paths: []
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   needs:
     - yarn-install
@@ -674,6 +685,7 @@ dockerize:ui-scss-compiler:
     paths: []
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   needs:
     - yarn-install
@@ -693,6 +705,7 @@ dockerize:typescript:
     paths: []
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   needs:
     - yarn-install
@@ -718,6 +731,7 @@ dockerize:migrators:
     paths: []
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   script:
     - ./gitlab-ci-buildx-setup.sh
@@ -737,6 +751,7 @@ dockerize:opa:
     - ./gitlab-ci-buildx-setup.sh
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   script:
   - cd magda-opa
@@ -753,6 +768,7 @@ dockerize:dockerExtensions:
     paths: []
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   script:
     - ./gitlab-ci-buildx-setup.sh
@@ -929,6 +945,7 @@ Release-to-Docker-Hub-Github-Container:
   stage: release
   services:
     - name: docker:28.5.0-dind
+      alias: docker
       command: ["--mtu=1400"]
   rules:
     # Strict Semvar validation. match any version string. Should release version tag
