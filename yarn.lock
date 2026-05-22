@@ -4084,9 +4084,9 @@
   resolved "https://registry.yarnpkg.com/@microsoft/tsdoc/-/tsdoc-0.14.2.tgz#c3ec604a0b54b9a9b87e9735dfc59e1a5da6a5fb"
   integrity sha512-9b8mPpKrfeGRuhFH5iO1iwCLeIIsV6+H1sRfxbkoGXIyQE2BTsPd9zqSqQJ+pv5sJ/hT5M1zvOFL02MnEezFug==
 
-"@mlc-ai/web-llm@https://github.com/KIT300-Project-Nine/web-llm/releases/download/v0.2.82/mlc-ai-web-llm-v0.2.82.tgz":
-  version "0.2.82"
-  resolved "https://github.com/KIT300-Project-Nine/web-llm/releases/download/v0.2.82/mlc-ai-web-llm-v0.2.82.tgz#0839de12e73ee00ce59479fdfa8f77fab1bb2b8c"
+"@mlc-ai/web-llm@https://github.com/magda-io/web-llm/releases/download/v0.2.83-magda/mlc-ai-web-llm-v0.2.83.tgz":
+  version "0.2.83-magda"
+  resolved "https://github.com/magda-io/web-llm/releases/download/v0.2.83-magda/mlc-ai-web-llm-v0.2.83.tgz#3e5892b31e1d83acaa0c8c2bbc0085613e251d88"
   dependencies:
     loglevel "^1.9.1"
 
