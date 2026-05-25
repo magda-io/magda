@@ -31,7 +31,7 @@
     "@magda/registry-aspects": "^5.6.0",
     "@magda/scripts": "^5.6.0",
     "@magda/typescript-common": "^5.6.0",
-    "@mlc-ai/web-llm": "0.2.73",
+    "@mlc-ai/web-llm": "https://github.com/magda-io/web-llm/releases/download/v0.2.83-magda/mlc-ai-web-llm-v0.2.83.tgz",
     "@types/debounce-promise": "^3.1.1",
     "@types/is-uuid": "^1.0.0",
     "@types/jsonpath": "^0.2.0",

@@ -7,7 +7,7 @@
     "plugins": ["@typescript-eslint", "prettier"],
     "rules": {
         "no-use-before-define": "off",
-        "prettier/prettier": "error",
+        "prettier/prettier": ["error", { "endOfLine": "auto" }],
         "no-var": "warn",
         "prefer-const": "warn",
         "no-unused-expressions": "off",
