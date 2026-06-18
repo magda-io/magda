@@ -169,6 +169,10 @@ export function createRoutes(
 
     router.use(
         (err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+            if (err instanceof BadRequestError) {
+                return res.status(err.statusCode).json(err.errorResponse);
+            }
+
             if (isOpenSearchIndexNotFoundError(err)) {
                 const message =
                     `OpenSearch index not found: ${getOpenSearchErrorMessage(

@@ -10,7 +10,11 @@ export class ServiceError extends Error {
 }
 
 export class BadRequestError extends ServiceError {
-    constructor(statusCode: number, errorResponse: ApiError, e: any) {
+    constructor(
+        public statusCode: number,
+        public errorResponse: ApiError,
+        e: any
+    ) {
         super(
             `Status code: ${statusCode}, body:\n${JSON.stringify(
                 errorResponse,

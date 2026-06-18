@@ -110,6 +110,19 @@ describe("createRoutes /search API", () => {
             .expect(400);
     });
 
+    it("should return 400 if X-Magda-Tenant-Id is not a non-negative integer", async () => {
+        const app = buildApp(async () => mockResults);
+
+        await supertest(app)
+            .get("/search")
+            .set(TENANT_HEADER, "not-a-number")
+            .query({ query: "test" })
+            .expect(400)
+            .expect((res) => {
+                expect(res.body.message).to.equal("Invalid X-Magda-Tenant-Id");
+            });
+    });
+
     it("should return 500 if service.search throws an error", async () => {
         const app = buildApp(async () => {
             throw new Error("test error");
