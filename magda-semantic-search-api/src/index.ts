@@ -4,6 +4,8 @@ import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwt
 import { SemanticSearchService } from "./service/SemanticSearchService.js";
 import EmbeddingApiClient from "@magda/typescript-common/dist/EmbeddingApiClient.js";
 import OpensearchApiClient from "@magda/typescript-common/dist/OpensearchApiClient.js";
+import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient.js";
+import SearchApiClient from "@magda/typescript-common/dist/SearchApiClient.js";
 import { createRoutes } from "./api/createApiRouter.js";
 import retry from "magda-typescript-common/src/retry.js";
 
@@ -25,11 +27,15 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: process.env.EMBEDDING_API_URL || "http://localhost:3000"
         })
-        .option("registryReadonlyURL", {
-            describe: "The URL of the registry readonly API.",
+        .option("registryApiURL", {
+            describe: "The URL of the registry API.",
             type: "string",
-            default:
-                process.env.REGISTRY_READ_ONLY_URL || "http://localhost:6101/v0"
+            default: process.env.REGISTRY_API_URL || "http://localhost:6101/v0"
+        })
+        .option("searchApiURL", {
+            describe: "The URL of the Search API.",
+            type: "string",
+            default: process.env.SEARCH_API_URL || "http://localhost:6102/v0"
         })
         .option("jwtSecret", {
             describe: "Shared secret for intra-network JWT auth",
@@ -82,9 +88,44 @@ const embeddingApiClient = await retry(
         )
 );
 
+const registryClient = await retry(
+    () =>
+        Promise.resolve(
+            new RegistryClient({
+                baseUrl: argv.registryApiURL as string,
+                tenantId: 0
+            })
+        ),
+    5,
+    5,
+    (e, left) =>
+        console.error(
+            `Registry API connection failed, remaining retries: ${left}, error:`,
+            e.message
+        )
+);
+
+const searchApiClient = await retry(
+    () =>
+        Promise.resolve(
+            new SearchApiClient({
+                baseApiUrl: argv.searchApiURL
+            })
+        ),
+    5,
+    5,
+    (e, left) =>
+        console.error(
+            `Search API connection failed, remaining retries: ${left}, error:`,
+            e.message
+        )
+);
+
 const semanticSearchService = new SemanticSearchService(
     embeddingApiClient,
     opensearchApiClient,
+    registryClient,
+    searchApiClient,
     {
         indexName: argv.semanticIndexName as string,
         indexVersion: argv.semanticIndexVersion as number,

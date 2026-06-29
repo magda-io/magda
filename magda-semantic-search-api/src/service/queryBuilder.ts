@@ -2,7 +2,8 @@ import type { SearchParams } from "../model.js";
 
 export function buildSearchQueryBody(
     embeddingVector: number[],
-    searchParams: SearchParams
+    searchParams: SearchParams,
+    allowedRecordIds?: string[]
 ) {
     const filterClauses: any[] = [];
 
@@ -18,6 +19,11 @@ export function buildSearchQueryBody(
         filterClauses.push({
             term: { subObjectType: searchParams.subObjectType }
         });
+
+    // Narrow search scope to allowed record IDs when provided.
+    if (allowedRecordIds?.length) {
+        filterClauses.push({ terms: { recordId: allowedRecordIds } });
+    }
 
     return {
         size: searchParams.max_num_results,

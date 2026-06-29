@@ -22,6 +22,8 @@ export interface SearchParams {
     subObjectId?: string;
     subObjectType?: string;
     minScore?: number;
+    jwt?: string;
+    tenantId?: number;
 }
 
 export type SearchResultItem = { score: number } & Pick<
@@ -45,6 +47,8 @@ export interface RetrieveParams {
     mode?: "full" | "partial";
     precedingChunksNum?: number;
     subsequentChunksNum?: number;
+    jwt?: string;
+    tenantId?: number;
 }
 
 export type RetrieveResultItem = Pick<

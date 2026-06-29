@@ -8,6 +8,8 @@ tags:
   minion-ckan-exporter: false
   pdf-semantic-indexer: true
   csv-semantic-indexer: true
+  magda-pdf-semantic-indexer: true
+  magda-csv-semantic-indexer: true
 
 global:
   connectors:
@@ -17,12 +19,12 @@ global:
     # -- turn on / off openfaas
     # All openfaas dependents should check this field to decide deployment logic (`tags` unfortunately not available to ).
     # They choose to simply not deploy or prompt an error message via [helm required function](https://helm.sh/docs/howto/charts_tips_and_tricks/#know-your-template-functions)
-    enabled: true 
+    enabled: true
     namespacePrefix: ""
     # -- Default namespace for functions
-    functionNamespace: openfaas-fn  
+    functionNamespace: openfaas-fn
     # -- Default namespace for gateway and other core modules
-    mainNamespace: openfaas 
+    mainNamespace: openfaas
     secrets:
       authSecrets: true
 
@@ -49,16 +51,16 @@ global:
         efSearch: 100
         # -- The maximum number of graph edges per vector. Higher values increase memory usage but may improve search quality.
         m: 16
-        
+
         # -- FAISS Encoder configuration (If compressionLevel is set, encoder will be ignored).
         encoder: null
           # name: "sq"
           # type: "fp16"
           # clip: false
     defaultDatasetBucket: "magda-datasets"
-    
+
 openfaas:
-  operator: 
+  operator:
     create: true
   serviceType: ClusterIP
   basic_auth: false

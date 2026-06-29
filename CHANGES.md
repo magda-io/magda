@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v6.0.0
+
+- #3608: Add new query API for the semantic index
+
 ## v5.6.1
 
 - Fix: use node 22 for auto jobs as it's required min. node engine
