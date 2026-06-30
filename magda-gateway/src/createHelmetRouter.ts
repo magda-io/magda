@@ -3,13 +3,25 @@ import helmet, { HelmetOptions } from "helmet";
 
 type ContentSecurityPolicyDirectiveValue = any;
 
-// helmet v7+ throws on null directive values; convert null → false to explicitly omit the directive
-// without triggering helmet's own defaults (absent key = use helmet default; false = omit entirely)
-function stripNullDirectives(
+// helmet v8 behaviour for CSP directive values:
+//   null for any directive other than default-src → explicitly disables that directive (no default applied)
+//   null for default-src → throws; must use the dangerouslyDisableDefaultSrc Symbol instead
+//   false → throws for all directives
+// So we only need to remap defaultSrc: null to the Symbol; all other nulls are valid.
+const dangerouslyDisableDefaultSrc = ((helmet.contentSecurityPolicy as unknown) as {
+    dangerouslyDisableDefaultSrc: symbol;
+}).dangerouslyDisableDefaultSrc;
+
+function sanitizeCspDirectives(
     directives: Record<string, unknown>
 ): Record<string, unknown> {
     return Object.fromEntries(
-        Object.entries(directives).map(([key, val]) => [key, val === null ? false : val])
+        Object.entries(directives).map(([key, val]) => [
+            key,
+            key === "defaultSrc" && val === null
+                ? dangerouslyDisableDefaultSrc
+                : val
+        ])
     );
 }
 
@@ -25,7 +37,7 @@ function sanitizeHelmetConfig(config: HelmetOptions): HelmetOptions {
             ...config,
             contentSecurityPolicy: {
                 ...csp,
-                directives: stripNullDirectives(
+                directives: sanitizeCspDirectives(
                     csp.directives as Record<string, unknown>
                 ) as typeof csp.directives
             }
