@@ -3,6 +3,37 @@ import helmet, { HelmetOptions } from "helmet";
 
 type ContentSecurityPolicyDirectiveValue = any;
 
+// helmet v7+ throws on null directive values; convert null → false to explicitly omit the directive
+// without triggering helmet's own defaults (absent key = use helmet default; false = omit entirely)
+function stripNullDirectives(
+    directives: Record<string, unknown>
+): Record<string, unknown> {
+    return Object.fromEntries(
+        Object.entries(directives).map(([key, val]) => [key, val === null ? false : val])
+    );
+}
+
+function sanitizeHelmetConfig(config: HelmetOptions): HelmetOptions {
+    const csp = config?.contentSecurityPolicy;
+    if (
+        csp &&
+        typeof csp === "object" &&
+        csp.directives &&
+        typeof csp.directives === "object"
+    ) {
+        return {
+            ...config,
+            contentSecurityPolicy: {
+                ...csp,
+                directives: stripNullDirectives(
+                    csp.directives as Record<string, unknown>
+                ) as typeof csp.directives
+            }
+        };
+    }
+    return config;
+}
+
 function createHelmetRouter(
     helmConfig: HelmetOptions,
     perPathHelmetConfig?: Record<string, HelmetOptions>,
@@ -28,26 +59,27 @@ function createHelmetRouter(
             ...csp
         };
     }
+    const sanitizedDefaultConfig = sanitizeHelmetConfig(defaultConfig);
     const paths =
         typeof perPathHelmetConfig === "object"
             ? Object.keys(perPathHelmetConfig)
             : [];
     if (!(paths.length > 0)) {
-        router.use(helmet(defaultConfig));
+        router.use(helmet(sanitizedDefaultConfig));
         return router;
     }
     paths.forEach((path) => {
-        const config = {
+        const config = sanitizeHelmetConfig({
             ...defaultConfig,
             ...(perPathHelmetConfig[path] as any)
-        };
+        });
         const helmetMiddleware = helmet(config);
         router.use(path, (req, res, next) => {
             res.locals.helmetUsed = true;
             helmetMiddleware(req, res, next);
         });
     });
-    const defaultHelmetMiddleware = helmet(defaultConfig);
+    const defaultHelmetMiddleware = helmet(sanitizedDefaultConfig);
     router.use((req, res, next) => {
         if (!res?.locals?.helmetUsed) {
             defaultHelmetMiddleware(req, res, next);
