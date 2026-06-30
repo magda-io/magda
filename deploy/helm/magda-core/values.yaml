@@ -1,6 +1,32 @@
 global:
   searchEngine:
-    hybridSearch: 
+    semanticIndexer:
+      indexName: "semantic-index"
+      # -- System wide agreed version.
+      indexVersion: 1
+      numberOfShards: 1
+      numberOfReplicas: 0
+      knnVectorFieldConfig:
+        # -- Vector workload mode: `on_disk` or `in_memory`.
+        mode: "on_disk"
+        # -- Dimension of the embedding vectors.
+        dimension: 768
+        # -- The compression_level mapping parameter selects a quantization encoder that reduces vector memory consumption by the given factor.
+        compressionLevel: 32x
+        # Supported values: l1, l2, innerProduct, cosine, linf
+        spaceType: "l2"
+        # -- Similar to efSearch but used during index construction. Higher values improve search quality but increase index build time.
+        efConstruction: 100
+        # -- The size of the candidate queue during search. Larger values may improve search quality but increase search latency.
+        efSearch: 100
+        # -- The maximum number of graph edges per vector. Higher values increase memory usage but may improve search quality.
+        m: 16
+        # -- FAISS Encoder configuration (If compressionLevel is set, encoder will be ignored).
+        encoder: null
+          # name: "sq"
+          # type: "fp16"
+          # clip: false
+    hybridSearch:
       # -- whether to enable hybrid search.
       # When `true`, Magda will combine the both LLM powered semantic (vector) & lexical (keyword) search to improve search relevance.
       # [magda-embedding-api](https://github.com/magda-io/magda-embedding-api) will be enabled and used for embedding generation at both indexing & search stage for the semantic search.
