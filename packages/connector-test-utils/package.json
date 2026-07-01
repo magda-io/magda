@@ -16,7 +16,7 @@
     "build-main": "node esbuild.js",
     "build-types": "tsc --emitDeclarationOnly",
     "build-types-bundle": "api-extractor run --local",
-    "release": "npm publish || echo \"Skip releasing npm package @magda/connector-test-utils.\""
+    "release": "npm publish 2>/tmp/npm-pub.log || grep -qE 'EPUBLISHCONFLICT|previously published|cannot publish over' /tmp/npm-pub.log || (cat /tmp/npm-pub.log >&2; false)"
   },
   "author": "",
   "license": "Apache-2.0",

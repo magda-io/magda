@@ -988,6 +988,9 @@ Release-to-Docker-Hub-Github-Container:
 
 Publish NPM Packages:
   stage: release
+  id_tokens:
+    OIDC_TOKEN:
+      aud: https://registry.npmjs.org
   only:
     # Strict Semvar validation
     - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
@@ -1012,7 +1015,12 @@ Publish NPM Packages:
     name: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   cache: {}
   script:
-    # Setup NPM token & scoped registry
+    # Exchange GitLab OIDC token for a short-lived npm publish token (Trusted Publishers)
+    - NPM_TOKEN=$(curl -sf -X POST https://registry.npmjs.org/-/npm/v1/login/oidc/token
+        -H "Content-Type: application/json"
+        -d "{\"oidcToken\":\"${OIDC_TOKEN}\"}" | jq -r '.token')
+    - '[[ -n "$NPM_TOKEN" ]] || { echo "ERROR: failed to obtain npm token via OIDC" >&2; exit 1; }'
+    # Setup scoped registry and auth token
     - npm config set @magda:registry https://registry.npmjs.org/
     - npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
     - yarn run in-submodules -f categories.npmPackage=true run release

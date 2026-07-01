@@ -17,7 +17,7 @@
     "acs-cmd": "./bin/acs-cmd.js",
     "prebuild": "rimraf bin",
     "build": "node esbuild.js",
-    "release": "npm publish || echo \"Skip releasing npm package @magda/acs-cmd.\""
+    "release": "npm publish 2>/tmp/npm-pub.log || grep -qE 'EPUBLISHCONFLICT|previously published|cannot publish over' /tmp/npm-pub.log || (cat /tmp/npm-pub.log >&2; false)"
   },
   "author": "",
   "license": "Apache-2.0",
