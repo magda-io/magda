@@ -990,7 +990,7 @@ Publish NPM Packages:
   stage: release
   id_tokens:
     OIDC_TOKEN:
-      aud: https://registry.npmjs.org
+      aud: npm:registry.npmjs.org
   only:
     # Strict Semvar validation
     - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
@@ -1016,9 +1016,17 @@ Publish NPM Packages:
   cache: {}
   script: |
     # Exchange GitLab OIDC token for a short-lived npm publish token (Trusted Publishers)
-    NPM_TOKEN=$(curl -sf -X POST https://registry.npmjs.org/-/npm/v1/login/oidc/token \
+    OIDC_EXCHANGE_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST https://registry.npmjs.org/-/npm/v1/login/oidc/token \
       -H "Content-Type: application/json" \
-      -d "{\"oidcToken\":\"${OIDC_TOKEN}\"}" | node -e "console.log(JSON.parse(require('fs').readFileSync(0,'utf8')).token)")
+      -d "{\"oidcToken\":\"${OIDC_TOKEN}\"}")
+    OIDC_HTTP_STATUS=$(echo "$OIDC_EXCHANGE_RESPONSE" | tail -n1)
+    OIDC_RESPONSE_BODY=$(echo "$OIDC_EXCHANGE_RESPONSE" | sed '$d')
+    if [ "$OIDC_HTTP_STATUS" != "200" ]; then
+      echo "ERROR: npm OIDC token exchange failed with HTTP $OIDC_HTTP_STATUS" >&2
+      echo "$OIDC_RESPONSE_BODY" >&2
+      exit 1
+    fi
+    NPM_TOKEN=$(echo "$OIDC_RESPONSE_BODY" | node -e "console.log(JSON.parse(require('fs').readFileSync(0,'utf8')).token)")
     if [ -z "$NPM_TOKEN" ]; then
       echo "ERROR: failed to obtain npm token via OIDC" >&2
       exit 1
