@@ -989,7 +989,7 @@ Release-to-Docker-Hub-Github-Container:
 Publish NPM Packages:
   stage: release
   id_tokens:
-    OIDC_TOKEN:
+    NPM_ID_TOKEN:
       aud: npm:registry.npmjs.org
   only:
     # Strict Semvar validation
@@ -1015,25 +1015,11 @@ Publish NPM Packages:
     name: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   cache: {}
   script: |
-    # Exchange GitLab OIDC token for a short-lived npm publish token (Trusted Publishers)
-    OIDC_EXCHANGE_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST https://registry.npmjs.org/-/npm/v1/login/oidc/token \
-      -H "Content-Type: application/json" \
-      -d "{\"oidcToken\":\"${OIDC_TOKEN}\"}")
-    OIDC_HTTP_STATUS=$(echo "$OIDC_EXCHANGE_RESPONSE" | tail -n1)
-    OIDC_RESPONSE_BODY=$(echo "$OIDC_EXCHANGE_RESPONSE" | sed '$d')
-    if [ "$OIDC_HTTP_STATUS" != "200" ]; then
-      echo "ERROR: npm OIDC token exchange failed with HTTP $OIDC_HTTP_STATUS" >&2
-      echo "$OIDC_RESPONSE_BODY" >&2
-      exit 1
-    fi
-    NPM_TOKEN=$(echo "$OIDC_RESPONSE_BODY" | node -e "console.log(JSON.parse(require('fs').readFileSync(0,'utf8')).token)")
-    if [ -z "$NPM_TOKEN" ]; then
-      echo "ERROR: failed to obtain npm token via OIDC" >&2
-      exit 1
-    fi
-    # Setup scoped registry and auth token
+    # npm CLI >=11.5.1 natively detects the NPM_ID_TOKEN env var (from id_tokens
+    # above) and exchanges it for a short-lived per-package publish token itself
+    # during `npm publish` - no manual token exchange needed.
+    npm --version
     npm config set @magda:registry https://registry.npmjs.org/
-    npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
     yarn run in-submodules -f categories.npmPackage=true run release
 
 Publish Helm Chart:
