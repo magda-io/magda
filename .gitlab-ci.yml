@@ -1014,14 +1014,19 @@ Publish NPM Packages:
   image:
     name: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   cache: {}
-  script:
+  script: |
     # Exchange GitLab OIDC token for a short-lived npm publish token (Trusted Publishers)
-    - 'NPM_TOKEN=$(curl -sf -X POST https://registry.npmjs.org/-/npm/v1/login/oidc/token -H "Content-Type: application/json" -d "{\"oidcToken\":\"${OIDC_TOKEN}\"}" | jq -r .token)'
-    - '[[ -n "$NPM_TOKEN" ]] || { echo "ERROR: failed to obtain npm token via OIDC" >&2; exit 1; }'
+    NPM_TOKEN=$(curl -sf -X POST https://registry.npmjs.org/-/npm/v1/login/oidc/token \
+      -H "Content-Type: application/json" \
+      -d "{\"oidcToken\":\"${OIDC_TOKEN}\"}" | node -e "console.log(JSON.parse(require('fs').readFileSync(0,'utf8')).token)")
+    if [ -z "$NPM_TOKEN" ]; then
+      echo "ERROR: failed to obtain npm token via OIDC" >&2
+      exit 1
+    fi
     # Setup scoped registry and auth token
-    - npm config set @magda:registry https://registry.npmjs.org/
-    - npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
-    - yarn run in-submodules -f categories.npmPackage=true run release
+    npm config set @magda:registry https://registry.npmjs.org/
+    npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
+    yarn run in-submodules -f categories.npmPackage=true run release
 
 Publish Helm Chart:
   stage: release
