@@ -1,6 +1,6 @@
 # storage-api
 
-![Version: 5.6.0](https://img.shields.io/badge/Version-5.6.0-informational?style=flat-square)
+![Version: 6.0.0-pr.3665.2](https://img.shields.io/badge/Version-6.0.0--pr.3665.2-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
