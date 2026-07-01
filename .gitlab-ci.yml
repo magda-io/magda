@@ -1016,9 +1016,7 @@ Publish NPM Packages:
   cache: {}
   script:
     # Exchange GitLab OIDC token for a short-lived npm publish token (Trusted Publishers)
-    - NPM_TOKEN=$(curl -sf -X POST https://registry.npmjs.org/-/npm/v1/login/oidc/token
-        -H "Content-Type: application/json"
-        -d "{\"oidcToken\":\"${OIDC_TOKEN}\"}" | jq -r '.token')
+    - 'NPM_TOKEN=$(curl -sf -X POST https://registry.npmjs.org/-/npm/v1/login/oidc/token -H "Content-Type: application/json" -d "{\"oidcToken\":\"${OIDC_TOKEN}\"}" | jq -r .token)'
     - '[[ -n "$NPM_TOKEN" ]] || { echo "ERROR: failed to obtain npm token via OIDC" >&2; exit 1; }'
     # Setup scoped registry and auth token
     - npm config set @magda:registry https://registry.npmjs.org/
