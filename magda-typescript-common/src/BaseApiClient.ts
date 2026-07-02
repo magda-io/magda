@@ -29,11 +29,9 @@ export default abstract class BaseApiClient {
     public readonly userId: string;
 
     constructor(options: BaseApiClientConfig) {
-        this.baseApiUrl = options.baseApiUrl
-            ? options.baseApiUrl
-            : "http://localhost:6103/v0";
+        this.baseApiUrl = options.baseApiUrl;
         if (!this.baseApiUrl) {
-            throw new Error("IndexerApiClient: baseApiUrl cannot be empty!");
+            throw new Error("baseApiUrl cannot be empty!");
         }
         this.baseApiUri = urijs(this.baseApiUrl);
 

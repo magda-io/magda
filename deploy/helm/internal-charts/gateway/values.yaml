@@ -148,6 +148,9 @@ defaultRoutes:
   "indexer/dataset":
     to: http://indexer/v0/dataset
     auth: true
+  semantic-search:
+    to: http://semantic-search-api/v0
+    auth: true
 
 # -- extra web routes.
 # See [Proxy Target Definition](#proxy-target-definition) section below for route format.

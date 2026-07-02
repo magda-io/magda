@@ -1,8 +1,5 @@
 name := "magda-scala-common"
 
-resolvers += "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
-resolvers += "Sonatype OSS Staging" at "https://oss.sonatype.org/content/repositories/staging"
-resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 resolvers += "elasticsearch-releases" at "https://artifacts.elastic.co/maven"
 resolvers += "jitpack" at "https://jitpack.io"
 
@@ -26,8 +23,8 @@ libraryDependencies ++= {
     "org.locationtech.spatial4j"   % "spatial4j"                    % "0.7",
     "org.locationtech.jts"         % "jts-core"                     % "1.15.0",
     "org.elasticsearch"            % "elasticsearch"                % "6.8.22" exclude ("org.apache.logging.log4j", "log4j-api"),
-    "io.github.t83714"       %% "elastic4s-core"              % "8.11.7",
-    "io.github.t83714"       %% "elastic4s-client-esjava"     % "8.11.7",
+    "io.github.t83714"       %% "elastic4s-core"              % "8.11.8",
+    "io.github.t83714"       %% "elastic4s-client-esjava"     % "8.11.8",
     "com.beachape"                 %% "enumeratum"                  % "1.5.10",
     "com.github.swagger-akka-http" %% "swagger-akka-http"           % "1.4.0",
     "net.virtual-void"             %% "json-lenses"                 % "0.6.2",
