@@ -33,7 +33,7 @@ ARG TARGETARCH
 RUN HELM_ARCH="${TARGETARCH:-amd64}" \
   && FILE="helm-v${HELM_VERSION}-linux-${HELM_ARCH}.tar.gz" \
   && (curl --retry 5 --retry-delay 10 -fsSLO "https://get.helm.sh/${FILE}" \
-      || curl --retry 5 --retry-delay 10 -fsSLO "https://repo.huaweicloud.com/helm/v${HELM_VERSION}/${FILE}") \
+      || curl --retry 5 --retry-delay 10 -fsSLO "https://github.com/helm/helm/releases/download/v${HELM_VERSION}/${FILE}") \
   && tar -xzf "$FILE" \
   && mv "linux-${HELM_ARCH}/helm" /usr/local/bin/helm \
   && chmod +x /usr/local/bin/helm \
