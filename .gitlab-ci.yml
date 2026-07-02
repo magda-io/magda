@@ -952,6 +952,9 @@ Release-to-Docker-Hub-Github-Container:
 
 Publish NPM Packages:
   stage: release
+  id_tokens:
+    NPM_ID_TOKEN:
+      aud: npm:registry.npmjs.org
   only:
     # Strict Semvar validation
     - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
@@ -975,11 +978,13 @@ Publish NPM Packages:
   image:
     name: registry.gitlab.com/magda-data/magda/magda-builder-nodejs:$BUILDER_IMG_TAG
   cache: {}
-  script:
-    # Setup NPM token & scoped registry
-    - npm config set @magda:registry https://registry.npmjs.org/
-    - npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
-    - yarn run in-submodules -f categories.npmPackage=true run release
+  script: |
+    # npm CLI >=11.5.1 natively detects the NPM_ID_TOKEN env var (from id_tokens
+    # above) and exchanges it for a short-lived per-package publish token itself
+    # during `npm publish` - no manual token exchange needed.
+    npm --version
+    npm config set @magda:registry https://registry.npmjs.org/
+    yarn run in-submodules -f categories.npmPackage=true run release
 
 Publish Helm Chart:
   stage: release

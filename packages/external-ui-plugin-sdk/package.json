@@ -6,7 +6,7 @@
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "api-extractor run -l",
     "docs": "which typedoc; if [ $? -eq 1 ]; then echo \"Error: typedoc is required.\";else typedoc;fi",
-    "release": "npm publish || echo \"Skip releasing npm package @magda/external-ui-plugin-sdk.\""
+    "release": "node \"$(git rev-parse --show-toplevel)/ci-scripts/npm-publish-release.js\""
   },
   "author": "Jacky Jiang",
   "license": "Apache-2.0",

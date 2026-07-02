@@ -17,7 +17,7 @@
     "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
     "test": "mocha",
-    "release": "npm publish || echo \"Skip releasing npm package @magda/minion-framework.\""
+    "release": "node \"$(git rev-parse --show-toplevel)/ci-scripts/npm-publish-release.js\""
   },
   "author": "",
   "license": "Apache-2.0",

@@ -19,7 +19,7 @@
     "generate": "generate-registry-typescript ./src/generated/registry",
     "test": "c8 mocha",
     "dev": "yarn run watch",
-    "release": "npm publish || echo \"Skip releasing npm package @magda/typescript-common.\""
+    "release": "node \"$(git rev-parse --show-toplevel)/ci-scripts/npm-publish-release.js\""
   },
   "devDependencies": {
     "@magda/esm-utils": "^1.0.1",
