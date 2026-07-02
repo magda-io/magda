@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## v6.0.0
+
+- #3598: Add configurable `on_disk` KNN vector workload mode for OpenSearch (foundation for semantic indexing); upgrade bundled OpenSearch and OpenSearch Dashboards from 2.17.1 to 2.19.1
+- #3618: Add reusable Semantic Indexing Minion SDK for building LLM-based vector-indexing minions (chunking, embedding, OpenSearch indexing), implementing the generic semantic index data structure & OpenSearch mapping design (#3536)
+- #3619: Add new `semantic-search-api` microservice with `/search` and `/retrieve` endpoints, gateway routing and Helm chart
+- #3629: Semantic indexer framework: include record ID in skip log messages
+- #3635: Add `filterByAccess` Registry API endpoint — takes a list of record IDs and an access operation (e.g. `object/record/read`) and returns only the records the current user can access
+- #3638: Harden semantic indexer `autoDownload` handling to avoid crashes on malformed compressed responses
+- #3643: Add access control to the semantic index query flow — filter semantic search results by the current user's read access, falling back to access-scoped retrieval when no authorised results are found (fixes #3608)
+- #3643: Harden the Node.js builder image's Helm install step with multi-arch support (`arm64`/`amd64`) and retry + mirror fallback for `get.helm.sh`
+- #3643: Add [`magda-pdf-semantic-indexer`](https://github.com/magda-io/magda-pdf-semantic-indexer) and [`magda-csv-semantic-indexer`](https://github.com/magda-io/magda-csv-semantic-indexer) as default `magda` chart dependencies, adding content-specific semantic indexing for PDF and CSV/tabular distributions (per #3608)
+- #3663: Fix `global.searchEngine.semanticIndexer` defaults missing from `magda-core` chart, causing a nil pointer when templating `semantic-search-api` standalone
+- #3664: Fix gateway `CrashLoopBackOff` caused by `null` CSP directives (e.g. `defaultSrc: null`) under helmet v8
+- #3665: Fix NPM package publishing to use OIDC trusted publishing and fail loudly on real publish errors; bump the Node.js builder image's npm from 10.5.2 to 11.5.1
+
 ## v5.6.1
 
 - Fix: use node 22 for auto jobs as it's required min. node engine

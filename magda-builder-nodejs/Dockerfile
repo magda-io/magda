@@ -39,7 +39,6 @@ RUN HELM_ARCH="${TARGETARCH:-amd64}" \
   && chmod +x /usr/local/bin/helm \
   && rm -rf "$FILE" "linux-${HELM_ARCH}" \
   && helm version
-
 # -----------------------------
 # Install kubectl v1.29.0 (pinned)
 # -----------------------------

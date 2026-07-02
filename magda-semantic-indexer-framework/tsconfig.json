@@ -1,0 +1,14 @@
+{
+    "extends": "../tsconfig-global.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "strictNullChecks": false,
+        "rootDir": "./src",
+        "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+    },
+    "include": ["./src"],
+    "references": [
+        { "path": "../magda-minion-framework" },
+        { "path": "../magda-typescript-common" }
+    ]
+}

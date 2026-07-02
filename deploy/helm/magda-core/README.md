@@ -35,6 +35,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | file://../internal-charts/registry-db | registry-db | 5.6.0 |
 | file://../internal-charts/search-api-node | search-api-node | 5.6.0 |
 | file://../internal-charts/search-api | search-api | 5.6.0 |
+| file://../internal-charts/semantic-search-api | semantic-search-api | 5.6.0 |
 | file://../internal-charts/session-db | session-db | 5.6.0 |
 | file://../internal-charts/storage-api | storage-api | 5.6.0 |
 | file://../internal-charts/tenant-api | tenant-api | 5.6.0 |
@@ -88,6 +89,18 @@ A complete solution for managing, publishing and discovering government data, pr
 | global.postgresql.postgresqlUsername | string | `"postgres"` | PostgreSQL username For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`. It's recommended use superuser `postgres` for both in-k8s PostgreSQL or cloud provider DB services (e.g. CloudSQL or AWS RDS). This user will only be used for DB schema migrators to cerate DB schema and restricted DB accounts that are used by Magda internal services to access DB. If you have to use a user account rather than `postgres`, the user account needs to have sufficient permissions to run all DB migration scripts ([e.g. here](https://github.com/magda-io/magda/tree/master/magda-migrator-registry-db/sql)). Note: Until the ticket #3126 is fixed, using a DB username rather than `postgres` will trigger an error when content DB migrate runs. |
 | global.rollingUpdate.maxUnavailable | int | `0` |  |
 | global.searchEngine.hybridSearch.enabled | bool | `true` | whether to enable hybrid search. When `true`, Magda will combine the both LLM powered semantic (vector) & lexical (keyword) search to improve search relevance. [magda-embedding-api](https://github.com/magda-io/magda-embedding-api) will be enabled and used for embedding generation at both indexing & search stage for the semantic search. Please note: to turn on/off the hybrid search feature of a non-upgrade deployment, you need to: - manually delete the existing index,  - deploy and reindex the data by requesting full index action via indexer `reindex` API. When upgrade from older version, no manual actions are required (as a new index will be auto-created based on the index version number). |
+| global.searchEngine.semanticIndexer.indexName | string | `"semantic-index"` |  |
+| global.searchEngine.semanticIndexer.indexVersion | int | `1` | System wide agreed version. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.compressionLevel | string | `"32x"` | The compression_level mapping parameter selects a quantization encoder that reduces vector memory consumption by the given factor. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.dimension | int | `768` | Dimension of the embedding vectors. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.efConstruction | int | `100` | Similar to efSearch but used during index construction. Higher values improve search quality but increase index build time. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.efSearch | int | `100` | The size of the candidate queue during search. Larger values may improve search quality but increase search latency. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.encoder | string | `nil` | FAISS Encoder configuration (If compressionLevel is set, encoder will be ignored). |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.m | int | `16` | The maximum number of graph edges per vector. Higher values increase memory usage but may improve search quality. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.mode | string | `"on_disk"` | Vector workload mode: `on_disk` or `in_memory`. |
+| global.searchEngine.semanticIndexer.knnVectorFieldConfig.spaceType | string | `"l2"` |  |
+| global.searchEngine.semanticIndexer.numberOfReplicas | int | `0` |  |
+| global.searchEngine.semanticIndexer.numberOfShards | int | `1` |  |
 | global.useAwsRdsDb | bool | `false` | whether to use AWS RDS DB config.  When this option is on, all other database type e.g. `useCombinedDb` & `useCloudSql` must be turned off. When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret, you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true). Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true ) |
 | global.useCloudSql | bool | `false` | whether to use Google Cloud SQL database.  When this option is on, all other database type e.g. `useCombinedDb` & `useAwsRdsDb` must be turned off. When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret, you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true). Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true ) |
 | global.useCombinedDb | bool | `true` |  |

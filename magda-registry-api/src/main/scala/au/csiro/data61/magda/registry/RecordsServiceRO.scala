@@ -1137,11 +1137,94 @@ class RecordsServiceRO(
     }
   }
 
+  /**
+    * @apiGroup Registry Record Service
+    * @api {post} /v0/registry/records/filterByAccess Filter record ids by access
+    * @apiDescription Filter the supplied record ids and return only those the current user can read.
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiParam (body) {string[]} requestData JSON array of record ids, e.g. ["id1", "id2"]
+    * @apiSuccess (Success 200) {string[]} Response filtered record ids
+    * @apiUse GenericError
+    */
+  @Path("/filterByAccess")
+  @ApiOperation(
+    value = "Filter a list of record ids by access",
+    nickname = "filterByAccess",
+    httpMethod = "POST",
+    response = classOf[String],
+    responseContainer = "List",
+    notes =
+      "Request body is a JSON array of record ids. Returns only readable record ids."
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "requestData",
+        required = true,
+        dataTypeClass = classOf[Array[String]],
+        paramType = "body",
+        value = """A JSON array of record ids, e.g. ["id1", "id2"]"""
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      )
+    )
+  )
+  def filterByAccess: Route =
+    path("filterByAccess") {
+      post {
+        pathEnd {
+          requiresTenantId { tenantId =>
+            entity(as[List[String]]) { requestData =>
+              withAuthDecision(
+                authApiClient,
+                AuthDecisionReqConfig("object/record/read")
+              ) { authDecision =>
+                completeBlockingTask {
+                  val requestedRecordIds = requestData
+                    .map(_.trim)
+                    .filter(_.nonEmpty)
+                    .distinct
+                  if (requestedRecordIds.isEmpty) {
+                    Seq.empty[String]
+                  } else {
+                    DB readOnly { implicit session =>
+                      session.queryTimeout(this.defaultQueryTimeout)
+                      val validRecordIds = recordPersistence
+                        .getValidRecordIds(
+                          tenantId,
+                          authDecision,
+                          requestedRecordIds
+                        )
+                      validRecordIds.toSeq
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
   def route: Route =
     getAll ~
       getCount ~
       getAllSummary ~
       getPageTokens ~
+      filterByAccess ~
       getById ~
       getByIdSummary ~
       getByIdInFull ~
