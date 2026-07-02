@@ -1,6 +1,9 @@
 # Magda Documentation
 
 - [How to build and run](./building-and-running.md)
+- [How to Release a New Version](./ci-version-release.md)
+- [Testing a PR with a Preview Release Before Merging](./pr-preview-release-testing.md)
+- [End-to-End Full Cluster Deployment Test](./e2e-cluster-deployment-test.md)
 - [Migration & Upgrade Documents](./migration/)
 - [Deploy Magda with helm charts release](https://github.com/magda-io/magda-config)
 - [Magda Helm Chart Reference](./helm-charts-docs-index.md)
