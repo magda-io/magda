@@ -22,7 +22,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
     node -v && npm -v
 
-RUN npm install -g npm@10.5.2 && npm install -g lerna@3.22.1 yarn@1.22.19
+RUN npm install -g npm@11.5.1 && npm install -g lerna@3.22.1 yarn@1.22.19
 
 # -----------------------------
 # Install Helm 3.13.2 (pinned)

@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "echo \"ok\"",
-    "release": "npm publish || echo \"Skip releasing npm package @magda/registry-aspects.\""
+    "release": "node \"$(git rev-parse --show-toplevel)/ci-scripts/npm-publish-release.js\""
   },
   "dependencies": {
     "@magda/esm-utils": "^1.0.1"
