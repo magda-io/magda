@@ -18,7 +18,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "node esbuild.js",
-    "release": "npm publish || echo \"Skip releasing npm package @magda/docker-utils.\""
+    "release": "node \"$(git rev-parse --show-toplevel)/ci-scripts/npm-publish-release.js\""
   },
   "author": "",
   "license": "Apache-2.0",

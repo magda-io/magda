@@ -28,7 +28,7 @@
   },
   "scripts": {
     "build": "echo \"ok\"",
-    "release": "npm publish || echo \"Skip releasing npm package @magda/scripts.\""
+    "release": "node \"$(git rev-parse --show-toplevel)/ci-scripts/npm-publish-release.js\""
   },
   "devDependencies": {
     "@types/pg": "^8.6.5"
