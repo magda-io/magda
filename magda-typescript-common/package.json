@@ -19,7 +19,7 @@
     "generate": "generate-registry-typescript ./src/generated/registry",
     "test": "c8 mocha",
     "dev": "yarn run watch",
-    "release": "npm publish 2>/tmp/npm-pub.log || grep -qE 'EPUBLISHCONFLICT|previously published|cannot publish over' /tmp/npm-pub.log || (cat /tmp/npm-pub.log >&2; false)"
+    "release": "node \"$(git rev-parse --show-toplevel)/ci-scripts/npm-publish-release.js\""
   },
   "devDependencies": {
     "@magda/esm-utils": "^1.0.1",
