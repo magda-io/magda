@@ -543,7 +543,7 @@ export default function registerMultipartRoutes(
                         uploadSession.s3UploadId
                     );
                 } catch (err) {
-                    if (err?.code !== "NoSuchUpload") {
+                    if ((err as any)?.code !== "NoSuchUpload") {
                         throw err;
                     }
                 }
