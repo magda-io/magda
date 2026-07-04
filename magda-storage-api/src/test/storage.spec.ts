@@ -156,7 +156,7 @@ describe("Storage API tests", () => {
             await mockAuthorization(
                 jwtSecret,
                 request(app)
-                    .put("/v0/" + dummyBucket)
+                    .put("/v0/buckets/" + dummyBucket)
                     .expect(201, {
                         message:
                             "Bucket " +
@@ -201,7 +201,7 @@ describe("Storage API tests", () => {
             return mockAuthorization(
                 jwtSecret,
                 request(app)
-                    .put("/v0/" + dummyBucket)
+                    .put("/v0/buckets/" + dummyBucket)
                     .expect(201, {
                         message: "Bucket " + dummyBucket + " already exists 👍"
                     })

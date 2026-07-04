@@ -112,7 +112,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.put(
-        "/:bucketid",
+        "/buckets/:bucketid",
         getUserId(options.jwtSecret),
         requireStorageBucketPermission(
             options.authDecisionClient,
