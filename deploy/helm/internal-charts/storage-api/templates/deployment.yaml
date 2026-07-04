@@ -41,6 +41,10 @@ spec:
             "--authApiUrl", {{ .Values.authApiUrl | quote }},
             "--tenantId", {{ .Values.tenantId | quote }},
             "--uploadLimit", {{ .Values.uploadLimit | quote }},
+            "--recommendedPartSize", {{ .Values.recommendedPartSize | quote }},
+            "--maxPartSize", {{ .Values.maxPartSize | quote }},
+            "--multipartUploadExpiry", {{ .Values.multipartUploadExpiry | quote }},
+            "--incompleteUploadExpiryDays", {{ .Values.incompleteUploadExpiryDays | quote }},
             "--registryApiUrl", {{ .Values.registryApiUrl | quote }},
 {{- if .Values.defaultBuckets }}
             "--defaultBuckets", {{ range .Values.defaultBuckets }} {{ . | quote }},  {{- end }}

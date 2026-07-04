@@ -109,7 +109,11 @@ describe("Storage API tests", () => {
                 tenantId: 0,
                 uploadLimit,
                 autoCreateBuckets: false,
-                defaultBuckets: []
+                defaultBuckets: [],
+                recommendedPartSize: "16mb",
+                maxPartSize: "64mb",
+                multipartUploadExpiry: "24h",
+                incompleteUploadExpiryDays: 7
             })
         );
         registryScope = nock(registryApiUrl);

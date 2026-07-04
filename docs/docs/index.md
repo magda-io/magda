@@ -1,12 +1,14 @@
 # Magda Documentation
 
 - [How to build and run](./building-and-running.md)
+- [Architecture Decision Records (ADRs)](./adrs/)
 - [How to Release a New Version](./ci-version-release.md)
 - [Testing a PR with a Preview Release Before Merging](./pr-preview-release-testing.md)
 - [End-to-End Full Cluster Deployment Test](./e2e-cluster-deployment-test.md)
 - [Migration & Upgrade Documents](./migration/)
 - [Deploy Magda with helm charts release](https://github.com/magda-io/magda-config)
 - [Magda Helm Chart Reference](./helm-charts-docs-index.md)
+- [How to update Helm chart docs (helm-docs)](./how-to-update-helm-chart-docs.md)
 - [How to deploy Magda on Google Cloud GKE](./deploying-for-production-on-gke.md)
 - [How to deploy Magda on Amazon AWS EKS](./deploy-to-aws.md)
 - [How to deploy Magda on Microsoft Azure Cloud AKS](./deploy-to-azure.md)

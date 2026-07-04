@@ -24,7 +24,9 @@ Kubernetes: `>= 1.14.0-0`
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | image.name | string | `"magda-storage-api"` |  |
+| incompleteUploadExpiryDays | int | `7` | Days after which incomplete multipart uploads are auto-aborted via a bucket lifecycle rule. |
 | listenPort | int | `6121` | The port for storage api to listen on |
+| maxPartSize | string | `"64mb"` | The maximum accepted size of a single multipart upload part. Bounds per-part memory in the pod. |
 | minio.DeploymentUpdate.type | string | `"Recreate"` |  |
 | minio.existingSecret | string | `"storage-secrets"` |  |
 | minio.fullnameOverride | string | `"magda-minio"` |  |
@@ -35,6 +37,8 @@ Kubernetes: `>= 1.14.0-0`
 | minio.resources.requests.memory | string | `"256Mi"` |  |
 | minioEnableSSL | bool | `false` | Whether or not to connect to minio server with SSL connection |
 | minioRegion | string | "unspecified-region" | specify bucket region |
+| multipartUploadExpiry | string | `"24h"` | Lifetime of a multipart upload session token (any jsonwebtoken expiry expression). |
+| recommendedPartSize | string | `"16mb"` | The multipart upload part size advertised to clients. |
 | registryApiUrl | string | `"http://registry-api/v0"` | The URL of the registry API |
 | resources.limits.cpu | string | `"50m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |

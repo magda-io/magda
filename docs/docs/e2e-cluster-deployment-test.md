@@ -171,6 +171,91 @@ Confirms the registry API accepts writes, the indexer picks up the change, and i
 
 The checks above are the baseline smoke test suite. If the PR under test changes a specific feature (semantic search access control, a connector, a minion), add targeted checks for that feature on top of this baseline rather than replacing it — e.g. creating a dataset with a distribution, waiting for the relevant indexer to build its index, and testing the feature's specific API/behavior with both anonymous and authenticated requests.
 
+### Feature-specific testing through the gateway with an API key
+
+The baseline checks above act as the internal admin using an `X-Magda-Session`
+JWT minted from the cluster secret — a convenient **internal** shortcut that
+bypasses the gateway's real authentication. To verify a feature the way an
+external client actually uses it, test **through the gateway authenticated with
+an API key** instead. (A minted JWT is an internal auth method; real external
+clients authenticate with an API key — see
+[How to create API key](./how-to-create-api-key.md) and the
+[Guide to Magda Internals](<./architecture/Guide to Magda Internals.md>).)
+
+The steps below establish that external path once — host → gateway
+(authentication + routing) → service. Concrete, repeatable feature checks that
+build on it live under [E2E test cases](./e2e-test-cases/) — for example
+[Large file storage (multipart upload + Range download)](./e2e-test-cases/large-file-storage.md).
+
+#### 1. Expose the gateway to the host via `minikube tunnel`
+
+On the docker driver the NodePort's `minikube ip` address isn't routable from the
+host, so switch the gateway to a `LoadBalancer` and run `minikube tunnel`. Use a
+**non-privileged port** (e.g. 8080) so the tunnel doesn't need `sudo` (privileged
+ports like 80 make `minikube tunnel` prompt for a password):
+
+```bash
+kubectl patch svc gateway -n magda -p '{"spec":{"type":"LoadBalancer"}}'
+kubectl patch svc gateway -n magda --type=json \
+  -p='[{"op":"replace","path":"/spec/ports/0/port","value":8080}]'
+minikube tunnel &            # keep running; serves the LB at 127.0.0.1:8080
+export BASE=http://127.0.0.1:8080
+curl -s -o /dev/null -w "%{http_code}\n" "$BASE/api/v0/auth/users/whoami"   # 200 = reachable
+```
+
+(`kubectl port-forward -n magda svc/gateway 18080:80 &` is a simpler alternative
+that also routes through the gateway if you can't use a tunnel.)
+
+#### 2. Bootstrap an admin API key (JWT used only to create the key)
+
+```bash
+ADMIN_ID=00000000-0000-4000-8000-000000000000
+JWT_SECRET=$(kubectl get secret -n magda auth-secrets -o jsonpath='{.data.jwt-secret}' | base64 -d)
+yarn --silent acs-cmd jwt "$ADMIN_ID" "$JWT_SECRET" | tail -1 > /tmp/admin.jwt
+curl -s -X POST "$BASE/api/v0/auth/users/$ADMIN_ID/apiKeys" \
+  -H "X-Magda-Session: $(cat /tmp/admin.jwt)" -H "Content-Type: application/json" -d '{}'
+# -> {"id":"<API_KEY_ID>","key":"<API_KEY>"}
+```
+
+Supply the key on subsequent requests as `X-Magda-API-Key-Id` / `X-Magda-API-Key`.
+
+#### 3. (Optional) create a dedicated admin test user via the API
+
+Using the admin API key from step 2 (`-H X-Magda-API-Key-Id:.. -H X-Magda-API-Key:..`):
+
+```bash
+# create user -> returns {"id": "<NEW_USER_ID>", ...}
+curl -s "${AUTH[@]}" -X POST "$BASE/api/v0/auth/users" -H "Content-Type: application/json" \
+  -d '{"displayName":"E2E Admin","email":"e2e@example.com","source":"e2e-test","sourceId":"e2e-1"}'
+# grant the "Admin Users" role (id 00000000-0000-0003-0000-000000000000)
+curl -s "${AUTH[@]}" -X POST "$BASE/api/v0/auth/users/<NEW_USER_ID>/roles" \
+  -H "Content-Type: application/json" -d '["00000000-0000-0003-0000-000000000000"]'
+# create an API key for the new user -> {"id":..,"key":..}
+curl -s "${AUTH[@]}" -X POST "$BASE/api/v0/auth/users/<NEW_USER_ID>/apiKeys" \
+  -H "Content-Type: application/json" -d '{}'
+```
+
+#### 4. Run your feature's checks
+
+With `$BASE` reachable and an API key in hand, exercise the feature's endpoints —
+always sending the `X-Magda-API-Key-Id` / `X-Magda-API-Key` headers. Prefer a
+scripted, checksum/assertion-based driver so the case is repeatable. Ready-to-run
+examples live under [E2E test cases](./e2e-test-cases/), e.g.
+[Large file storage (multipart upload + Range download)](./e2e-test-cases/large-file-storage.md).
+
+#### Cleanup
+
+Restore the gateway service and stop the tunnel when finished:
+
+```bash
+kubectl patch svc gateway -n magda --type=json -p='[{"op":"replace","path":"/spec/ports/0/port","value":80}]'
+kubectl patch svc gateway -n magda -p '{"spec":{"type":"NodePort"}}'
+# then stop the `minikube tunnel` process you started
+```
+
+Also remove any throwaway users / API keys you created and delete uploaded test
+objects (see each test case's own cleanup notes).
+
 ## Step 5: Retrieve DB Credentials Safely
 
 Several checks (e.g. running [`@magda/acs-cmd`](https://www.npmjs.com/package/@magda/acs-cmd) against Postgres) need the DB password from the `db-main-account-secret` Secret. Capture it into a shell variable — **do not print it to stdout/logs**:

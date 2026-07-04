@@ -2,6 +2,7 @@ import ObjectFromStore from "./ObjectFromStore.js";
 import { CreateBucketResponse } from "./ObjectStoreClient.js";
 import { Client, ClientOptions } from "minio";
 import urijs from "urijs";
+import { Readable } from "stream";
 
 export default class MagdaMinioClient {
     public readonly client: Client;
@@ -175,6 +176,194 @@ export default class MagdaMinioClient {
                 }
             }
         };
+    }
+
+    /**
+     * Build S3-style headers from a flat metadata map. Standard headers are
+     * passed through; everything else is prefixed with `X-Amz-Meta-` so that a
+     * later `statObject` exposes it under its bare name (matching how the
+     * existing single-shot upload metadata is read back).
+     */
+    toS3MetaHeaders(
+        metaData: Record<string, string | undefined>
+    ): {
+        [key: string]: string;
+    } {
+        const passthrough = new Set([
+            "content-type",
+            "content-encoding",
+            "cache-control",
+            "content-length"
+        ]);
+        const headers: { [key: string]: string } = {};
+        for (const [key, value] of Object.entries(metaData)) {
+            if (value === undefined || value === null || value === "") {
+                continue;
+            }
+            if (passthrough.has(key.toLowerCase())) {
+                headers[key] = String(value);
+            } else {
+                headers[`X-Amz-Meta-${key}`] = String(value);
+            }
+        }
+        return headers;
+    }
+
+    /**
+     * Stream a byte range of an object. `length` of 0 means "read to the end".
+     */
+    async getPartialObject(
+        bucket: string,
+        objectName: string,
+        offset: number,
+        length: number
+    ): Promise<Readable> {
+        return await this.client.getPartialObject(
+            bucket,
+            objectName,
+            offset,
+            length
+        );
+    }
+
+    /**
+     * Start a multipart upload. Returns the S3 uploadId.
+     * `initiateNewMultipartUpload` is marked `@internal` in the minio typings,
+     * hence the cast.
+     */
+    async initiateMultipartUpload(
+        bucket: string,
+        objectName: string,
+        metaHeaders: { [key: string]: string }
+    ): Promise<string> {
+        return await (this.client as any).initiateNewMultipartUpload(
+            bucket,
+            objectName,
+            metaHeaders
+        );
+    }
+
+    /**
+     * Upload a single part (a Buffer) and return its ETag.
+     *
+     * NOTE: minio v8's public `client.uploadPart` parses the ETag out of the
+     * response *body* (expecting a `CopyPartResult` XML element). A plain
+     * (non-copy) UploadPart returns an empty body with the ETag in the response
+     * `etag` *header*, so that code path throws
+     * "Cannot read properties of undefined (reading 'ETag')". We therefore issue
+     * the PUT part request directly (same request shape minio builds internally)
+     * and read the ETag from the response header.
+     */
+    async uploadPart(
+        bucket: string,
+        objectName: string,
+        uploadId: string,
+        partNumber: number,
+        body: Buffer
+    ): Promise<string> {
+        const query = `uploadId=${uploadId}&partNumber=${partNumber}`;
+        const res: any = await (this.client as any).makeRequestAsyncOmit(
+            {
+                method: "PUT",
+                bucketName: bucket,
+                objectName,
+                query,
+                headers: { "Content-Length": body.length }
+            },
+            body
+        );
+        const rawEtag: string | undefined =
+            res?.headers?.etag ?? res?.headers?.ETag;
+        if (!rawEtag) {
+            throw new Error(
+                `uploadPart did not return an ETag for part ${partNumber} of ${bucket}/${objectName}`
+            );
+        }
+        // strip the surrounding quotes S3 wraps ETags in
+        return rawEtag.replace(/^"/, "").replace(/"$/, "");
+    }
+
+    /**
+     * List the parts already uploaded for a multipart upload (for resume).
+     * `listParts` is `protected` in the minio typings, hence the cast.
+     */
+    async listParts(
+        bucket: string,
+        objectName: string,
+        uploadId: string
+    ): Promise<{ partNumber: number; etag: string; size: number }[]> {
+        const parts: any[] = await (this.client as any).listParts(
+            bucket,
+            objectName,
+            uploadId
+        );
+        return parts.map((p) => ({
+            partNumber: p.part,
+            etag: p.etag,
+            size: p.size
+        }));
+    }
+
+    /**
+     * Complete a multipart upload from a list of {partNumber, etag}.
+     */
+    async completeMultipartUpload(
+        bucket: string,
+        objectName: string,
+        uploadId: string,
+        parts: { partNumber: number; etag: string }[]
+    ): Promise<{ etag: string; versionId: string | null }> {
+        const etags = parts
+            .slice()
+            .sort((a, b) => a.partNumber - b.partNumber)
+            .map((p) => ({ part: p.partNumber, etag: p.etag }));
+        return await this.client.completeMultipartUpload(
+            bucket,
+            objectName,
+            uploadId,
+            etags
+        );
+    }
+
+    /**
+     * Abort a multipart upload, discarding any uploaded parts.
+     */
+    async abortMultipartUpload(
+        bucket: string,
+        objectName: string,
+        uploadId: string
+    ): Promise<void> {
+        await this.client.abortMultipartUpload(bucket, objectName, uploadId);
+    }
+
+    /**
+     * Ensure the bucket has a lifecycle rule that auto-aborts incomplete
+     * multipart uploads after `days`. Non-fatal: logs a warning on failure
+     * (e.g. gateway modes that don't support lifecycle config).
+     */
+    async ensureIncompleteUploadExpiryRule(
+        bucket: string,
+        days: number
+    ): Promise<void> {
+        try {
+            await this.client.setBucketLifecycle(bucket, {
+                Rule: [
+                    {
+                        ID: "magda-abort-incomplete-multipart-uploads",
+                        Status: "Enabled",
+                        Filter: { Prefix: "" },
+                        AbortIncompleteMultipartUpload: {
+                            DaysAfterInitiation: days
+                        }
+                    }
+                ]
+            } as any);
+        } catch (err) {
+            console.warn(
+                `Could not set incomplete-multipart-upload lifecycle rule on bucket ${bucket}:`,
+                err
+            );
+        }
     }
 
     /**

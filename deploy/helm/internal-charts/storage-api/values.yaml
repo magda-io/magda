@@ -56,6 +56,18 @@ tenantId: 0
 # -- the file upload size limit of the storage API
 uploadLimit: "100mb"
 
+# -- The multipart upload part size advertised to clients.
+recommendedPartSize: "16mb"
+
+# -- The maximum accepted size of a single multipart upload part. Bounds per-part memory in the pod.
+maxPartSize: "64mb"
+
+# -- Lifetime of a multipart upload session token (any jsonwebtoken expiry expression).
+multipartUploadExpiry: "24h"
+
+# -- Days after which incomplete multipart uploads are auto-aborted via a bucket lifecycle rule.
+incompleteUploadExpiryDays: 7
+
 # -- when set to true, API will not query policy engine for auth decision but assume it's always permitted. 
 # It's for debugging only.
 skipAuth: false
