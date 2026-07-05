@@ -102,7 +102,10 @@ async function createBucket(bucketName: string, userId?: string) {
         };
     }
     const res = await fetch(
-        urijs(storageApiUrl).segmentCoded(bucketName).toString(),
+        urijs(storageApiUrl)
+            .segmentCoded("buckets")
+            .segmentCoded(bucketName)
+            .toString(),
         config
     );
     return res;
