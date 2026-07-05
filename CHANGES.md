@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v6.1.0
+
+- #3672: Add large file upload & download support to `storage-api` — S3 multipart upload proxy endpoints (`/v0/storage/multipart/{initiate,part,parts,complete,abort}`) and HTTP Range support on object download, enabling resumable transfers of large (multi-GB) files without raising the ingress body-size limit. Adds `recommendedPartSize`, `maxPartSize`, `multipartUploadExpiry` & `incompleteUploadExpiryDays` chart options.
+- #3678: Fix `storage-api` create-bucket route being registered at `/v0/storage/{bucketid}` instead of the documented `/v0/storage/buckets/{bucketid}`
+
 ## v6.0.0
 
 - #3598: Add configurable `on_disk` KNN vector workload mode for OpenSearch (foundation for semantic indexing); upgrade bundled OpenSearch and OpenSearch Dashboards from 2.17.1 to 2.19.1
