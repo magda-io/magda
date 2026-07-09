@@ -13,6 +13,7 @@ scripted, assertion/checksum-based driver), and how to clean up.
 ## Cases
 
 - [Large file storage (multipart upload + Range download)](./large-file-storage.md)
+- [mgd CLI (auth, search, dataset/dist CRUD, large-file round-trip)](./mgd-cli.md)
 
 ## Adding a new case
 

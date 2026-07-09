@@ -1,0 +1,67 @@
+{
+  "name": "@magda/mgd",
+  "description": "MAGDA local command-line interface",
+  "version": "6.0.0",
+  "type": "module",
+  "bin": {
+    "mgd": "./bin/mgd.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "prebuild": "rimraf bin",
+    "build": "node esbuild.js",
+    "typecheck": "tsc --noEmit",
+    "test": "c8 mocha",
+    "release": "node \"$(git rev-parse --show-toplevel)/ci-scripts/npm-publish-release.js\""
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^22.0.0",
+    "c8": "^9.0.0",
+    "chai": "^5.0.0",
+    "esbuild": "^0.19.10",
+    "mocha": "^10.2.0",
+    "rimraf": "^3.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "~5.3.3"
+  },
+  "mocha": {
+    "import": "tsx/esm",
+    "spec": [
+      "src/test/**/*.spec.ts"
+    ]
+  },
+  "c8": {
+    "all": true,
+    "clean": true,
+    "src": [
+      "./src"
+    ],
+    "exclude": [
+      "src/test/**"
+    ]
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "npmPackage": true
+    }
+  },
+  "keywords": [
+    "Magda",
+    "CLI",
+    "mgd"
+  ],
+  "files": [
+    "bin",
+    "skills"
+  ]
+}

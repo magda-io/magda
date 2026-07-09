@@ -214,6 +214,7 @@ echo $(kubectl get svc --namespace magda gateway --template "{{ range (index .st
 
 If you are interested in playing more, you might find useful docs from [here](./docs/). Particularly:
 
+- [End-to-End Full Cluster Deployment Test](./docs/e2e-cluster-deployment-test.html) — the canonical runbook for deploying the published chart on a local (minikube) cluster, exposing the gateway, and accessing it with an admin API key
 - [Magda Charts Docs Index](./docs/helm-charts-docs-index.html)
 - [How to create a local testing user](./docs/how-to-create-local-users.html)
 - [How to set a user as admin user](./docs/how-to-set-user-as-admin-user.html)
@@ -250,6 +251,7 @@ We welcome new contributors too! please check out our [Contributor's Guide](http
 
 - [Our Github](https://github.com/magda-io/magda)
 - [Magda API Reference](https://magda-io.github.io/api-docs/index.html)
+- [`mgd` CLI (terminal & coding-agent catalog access)](https://github.com/magda-io/magda/tree/main/packages/mgd)
 - [Magda Helm Chart Reference](/docs/helm-charts-docs-index)
 - [Useful common documentations](./docs/index.md)
 - [Other documentations](https://github.com/magda-io/magda/tree/master/docs/docs)
