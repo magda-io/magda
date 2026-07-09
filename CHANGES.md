@@ -18,6 +18,7 @@
 ## v5.6.1
 
 - Fix: use node 22 for auto jobs as it's required min. node engine
+- Fix: resolve dark mode text inheritance bug in chatbot UI bubbles
 
 ## v5.6.0
 
