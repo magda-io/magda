@@ -13,7 +13,3 @@ When creating or editing datasets (metadata conversations), additionally
 follow `dataset-elicitation.md` — it defines the consultant behavior: infer
 before asking, quick path vs guided path, purpose-driven field suggestions,
 and the confirm-then-write discipline.
-
-Locate the skill files via the installed package: `npx @magda/mgd --version`
-confirms the CLI; the Markdown files ship in the package's `skills/` folder
-(e.g. `$(npm root -g)/@magda/mgd/skills/` for global installs).

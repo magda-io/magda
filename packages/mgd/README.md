@@ -276,24 +276,26 @@ echo '{"active":true}' | mgd api request PUT /v0/some/endpoint --body -
 
 ## Command reference
 
-| Command                                               | Description                                      |
-| ----------------------------------------------------- | ------------------------------------------------ |
-| `auth login` / `auth status` / `auth logout`          | Manage credentials for a site profile            |
-| `profile list` / `profile use <name>`                 | List / switch profiles                           |
-| `search datasets <query>`                             | Keyword dataset search                           |
-| `search semantic <query>`                             | Semantic (embedding) search                      |
-| `dataset get <id>`                                    | Fetch a dataset record                           |
-| `dataset distributions <id>`                          | List a dataset's distributions                   |
-| `dataset create`                                      | Create a dataset (draft by default)              |
-| `dataset update <id>`                                 | Update dataset metadata                          |
-| `dataset add-file <id> [file]`                        | Upload/attach a distribution (or `--access-url`) |
-| `dataset aspect get/set/delete <recordId> <aspectId>` | Read/write custom aspect data on any record      |
-| `dist get <id>` / `dist update <id>`                  | Inspect / edit a distribution                    |
-| `dist download <id>`                                  | Download a distribution's file (`--resume`)      |
-| `dist replace-file <id> <file>`                       | Replace a distribution's file, bump version      |
-| `file upload <file>` / `file download <bucket/key>`   | Direct storage transfer                          |
-| `aspect list` / `get <id>` / `create <id>`            | Manage aspect definitions                        |
-| `api request <method> <path>`                         | Call any MAGDA API endpoint                      |
+| Command                                               | Description                                             |
+| ----------------------------------------------------- | ------------------------------------------------------- |
+| `auth login` / `auth status` / `auth logout`          | Manage credentials for a site profile                   |
+| `profile list` / `profile use <name>`                 | List / switch profiles                                  |
+| `search datasets <query>`                             | Keyword dataset search                                  |
+| `search semantic <query>`                             | Semantic (embedding) search                             |
+| `dataset get <id>`                                    | Fetch a dataset record                                  |
+| `dataset distributions <id>`                          | List a dataset's distributions                          |
+| `dataset create`                                      | Create a dataset (draft by default)                     |
+| `dataset update <id>`                                 | Update dataset metadata                                 |
+| `dataset add-file <id> [file]`                        | Upload/attach a distribution (or `--access-url`)        |
+| `dataset aspect get/set/delete <recordId> <aspectId>` | Read/write custom aspect data on any record             |
+| `dist get <id>` / `dist update <id>`                  | Inspect / edit a distribution                           |
+| `dist download <id>`                                  | Download a distribution's file (`--resume`)             |
+| `dist replace-file <id> <file>`                       | Replace a distribution's file, bump version             |
+| `file upload <file>` / `file download <bucket/key>`   | Direct storage transfer                                 |
+| `aspect list` / `get <id>` / `create <id>`            | Manage aspect definitions                               |
+| `api request <method> <path>`                         | Call any MAGDA API endpoint                             |
+| `skills install [--agent <name>]`                     | Install the agent skill (all agents, global by default) |
+| `skills uninstall [--agent <name>]`                   | Remove the agent skill                                  |
 
 Run `mgd --help` or `mgd <command> --help` for full option documentation.
 
@@ -306,60 +308,40 @@ drive the catalog safely. The [`skills/`](./skills/) folder contains:
   safety rules and error triage;
 - **`dataset-elicitation.md`** — "metadata consultant" behaviour for guided
   dataset creation (infer before asking, quick vs guided path, confirm-then-write);
-- **`SKILL.md`** — the entry point declaring the `magda-mgd` skill (name +
-  description frontmatter that points at the two files above).
+- **`SKILL.md`** — the standard Agent-Skill wrapper (`name` + `description`
+  frontmatter pointing at the two files above); auto-discovered by Claude Code,
+  Codex and opencode.
 
-For a globally installed CLI the files live at
-`$(npm root -g)/@magda/mgd/skills/`. In every case, make sure `mgd` is on the
-agent's `PATH` and that credentials are configured (a saved profile, or the
-`MGD_*` environment variables) before starting the agent.
+### Installing the skill
 
-### Claude Code
-
-Claude Code auto-discovers skills under a project's `.claude/skills/` directory.
-Copy the skill in:
+Install it with the built-in installer. By default it installs for **all three
+agents, globally**, so the skill is available from any working directory:
 
 ```sh
-mkdir -p .claude/skills/magda-mgd
-cp "$(npm root -g)/@magda/mgd/skills/"*.md .claude/skills/magda-mgd/
+mgd skills install
 ```
 
-Start `claude` in that project and it can invoke the `magda-mgd` skill on demand.
-(For a personal, all-projects install, use `~/.claude/skills/magda-mgd/` instead.)
+This drops the skill into each agent's native skills directory:
 
-### Codex
+| Agent       | Global (default)                       | With `--project [dir]`              |
+| ----------- | -------------------------------------- | ----------------------------------- |
+| Claude Code | `~/.claude/skills/magda-mgd/`          | `<dir>/.claude/skills/magda-mgd/`   |
+| Codex       | `~/.codex/skills/magda-mgd/`           | `<dir>/.agents/skills/magda-mgd/`   |
+| opencode    | `~/.config/opencode/skills/magda-mgd/` | `<dir>/.opencode/skills/magda-mgd/` |
 
-Codex reads project instructions from an `AGENTS.md` file. Vendor the skill into
-your repo and point `AGENTS.md` at it so Codex loads the workflow rules as
-context:
+All three natively auto-discover `SKILL.md` skills and load the instructions on
+demand when a task matches the skill's description.
 
 ```sh
-mkdir -p .agent/magda-mgd
-cp "$(npm root -g)/@magda/mgd/skills/"{mgd-workflows.md,dataset-elicitation.md} .agent/magda-mgd/
+mgd skills install --agent codex        # just one agent
+mgd skills install --project            # into ./ (current repo) instead of globally
+mgd skills install --project ../app     # into a specific project directory
+mgd skills uninstall                    # remove (all agents, global) — --agent/--project mirror install
 ```
 
-```markdown
-<!-- AGENTS.md -->
-
-## MAGDA `mgd` CLI
-
-When working with a MAGDA catalog, use the `mgd` CLI and follow
-`.agent/magda-mgd/mgd-workflows.md`. When creating or editing datasets, also
-follow `.agent/magda-mgd/dataset-elicitation.md`. Always use `--json`/`--jsonl`
-when parsing output and rely on the documented exit codes.
-```
-
-### opencode
-
-opencode also reads an `AGENTS.md` rules file (and honours nested ones). Use the
-same vendoring approach as Codex above — copy `mgd-workflows.md` and
-`dataset-elicitation.md` into the repo and reference them from `AGENTS.md`.
-opencode will pick up the instructions and, with `mgd` on `PATH` and credentials
-set, can run the same discovery → analyse → publish workflows.
-
-> The canonical instructions are deliberately tool-agnostic, so any assistant
-> that loads a Markdown instructions/rules file can use them — the sections above
-> just show the idiomatic place to point each tool.
+Installs are idempotent — re-running refreshes the managed `magda-mgd/` folder.
+Make sure `mgd` is on the agent's `PATH` and that credentials are configured (a
+saved profile, or the `MGD_*` environment variables; check with `mgd auth status`) before starting the agent.
 
 ## Troubleshooting
 

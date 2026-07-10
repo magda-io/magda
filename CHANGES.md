@@ -3,6 +3,7 @@
 ## v6.1.0
 
 - Added `@magda/mgd`: a local MAGDA CLI (`mgd`) with profile/API-key auth, keyword & semantic search, dataset/distribution inspection and mutation commands, large-file upload/download (multipart + HTTP Range resume), custom aspect support, a raw API fallback, and coding-agent skills (tool-agnostic workflow + dataset-elicitation instructions, plus a Claude Code skill wrapper) that let AI coding assistants such as Claude Code, Codex and opencode drive the catalog (#3648, #3649, #3650)
+- `@magda/mgd`: added `mgd skills install` / `mgd skills uninstall` — installs the coding-agent skill (`SKILL.md`) into Claude Code, Codex and opencode; installs for all three globally by default (`--agent` to pick one, `--project` for repo-local), so the skill is available from any working directory (#3682)
 - #3672: Add large file upload & download support to `storage-api` — S3 multipart upload proxy endpoints (`/v0/storage/multipart/{initiate,part,parts,complete,abort}`) and HTTP Range support on object download, enabling resumable transfers of large (multi-GB) files without raising the ingress body-size limit. Adds `recommendedPartSize`, `maxPartSize`, `multipartUploadExpiry` & `incompleteUploadExpiryDays` chart options.
 - #3678: Fix `storage-api` create-bucket route being registered at `/v0/storage/{bucketid}` instead of the documented `/v0/storage/buckets/{bucketid}`
 

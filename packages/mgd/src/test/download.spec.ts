@@ -72,13 +72,20 @@ describe("downloadToFile", () => {
 
 describe("file download command", () => {
     const origBaseUrl = process.env.MGD_BASE_URL;
+    const origXdg = process.env.XDG_CONFIG_HOME;
     let tmp: string;
     beforeEach(async () => {
         tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mgd-dlc-"));
+        // Isolate the profile store: point config at an empty temp dir so the
+        // test runs against an anonymous profile regardless of the developer's
+        // real ~/.config/mgd (otherwise stored credentials leak into requests).
+        process.env.XDG_CONFIG_HOME = tmp;
     });
     afterEach(async () => {
         if (origBaseUrl === undefined) delete process.env.MGD_BASE_URL;
         else process.env.MGD_BASE_URL = origBaseUrl;
+        if (origXdg === undefined) delete process.env.XDG_CONFIG_HOME;
+        else process.env.XDG_CONFIG_HOME = origXdg;
         await fs.rm(tmp, { recursive: true, force: true });
     });
 
