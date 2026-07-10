@@ -12,7 +12,7 @@
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -b && rimraf \"dist/**/*.d.ts\" && ts-module-alias-transformer dist",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "MINIO_HOST=localhost MINIO_PORT=9000 MINIO_ACCESS_KEY=minio MINIO_SECRET_KEY=minio123  run-typescript-in-nodemon src/index.ts",

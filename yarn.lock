@@ -23975,10 +23975,10 @@ ts-loader@^9.5.1:
     semver "^7.3.4"
     source-map "^0.7.4"
 
-ts-module-alias-transformer@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/ts-module-alias-transformer/-/ts-module-alias-transformer-2.0.1.tgz#009c480e0ac9098d8863a62629327afcf1cc2c9f"
-  integrity sha512-YqTcaqGWdEmxKk6PAqUEzOJTSyUgBZdKt40o+L5c1DEnY2WEGmLAzPKvee9/obBhEb8es4B9c0QbNCMqRQ7fkA==
+ts-module-alias-transformer@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ts-module-alias-transformer/-/ts-module-alias-transformer-3.0.0.tgz#14afd1c7443fb253249d67cab09cee4b93c410b4"
+  integrity sha512-ttpUapq6O4Fbz5eg/4u8CREcjdNaEhwtnm87D6QHaSKVS7QiIX5RSH2i8KDjt3BMTRlJVmpDBkH4/nGBAGZCPg==
 
 ts-node@^10.7.0:
   version "10.9.1"
