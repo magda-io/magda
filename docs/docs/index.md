@@ -13,6 +13,7 @@
 - [How to deploy Magda on Amazon AWS EKS](./deploy-to-aws.md)
 - [How to deploy Magda on Microsoft Azure Cloud AKS](./deploy-to-azure.md)
 - [How to use APIs](./using-api.md)
+- [`mgd` CLI — terminal & coding-agent access to a catalog (search, download, create/edit datasets; Claude Code / Codex / opencode skills)](https://github.com/magda-io/magda/tree/main/packages/mgd)
 - [How to document APIs](./api-documentation-howto.md)
 - [How to create API key](./how-to-create-api-key.md)
 - [How to set/unset admin users](./how-to-set-user-as-admin-user.md)
