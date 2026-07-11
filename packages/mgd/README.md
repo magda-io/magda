@@ -97,6 +97,19 @@ mgd auth logout                                                # clear active pr
 `mgd auth status` reports the active profile, base URL and the identity returned
 by the server; it shows `anonymous` when no credentials are configured.
 
+The **active profile** is whichever `mgd profile use <name>` last selected (saved
+as `activeProfile` in the config). For any command, the profile is resolved in
+this order of precedence:
+
+1. **`MGD_PROFILE`** (environment) — use this named profile for a single
+   invocation, overriding the active profile;
+2. the **active profile** set by `mgd profile use`;
+3. the profile literally named **`default`**.
+
+Independently of which profile is selected, `MGD_BASE_URL` / `MGD_API_KEY_ID` /
+`MGD_API_KEY` override the corresponding fields of the resolved profile — and when
+all three are set, no config file is read or written (see below).
+
 ### Environment variables (CI / agents)
 
 Environment variables override the stored profile and are ideal for CI or
