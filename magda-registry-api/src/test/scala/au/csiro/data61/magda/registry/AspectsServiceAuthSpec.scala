@@ -6,6 +6,7 @@ import au.csiro.data61.magda.model.Auth.{
   ConciseExpression,
   ConciseOperand,
   ConciseRule,
+  UnconditionalFalseDecision,
   UnconditionalTrueDecision
 }
 import au.csiro.data61.magda.model.Registry._
@@ -683,6 +684,82 @@ class AspectsServiceAuthSpec extends ApiSpec {
               "Cannot locate aspect record by id"
             )
           }
+      }
+
+    }
+
+    describe("Delete endpoint {delete} /v0/registry/aspects/{id}: ") {
+
+      describe("When there is an existing aspect:") {
+
+        endpointStandardAuthTestCase(
+          Delete(s"/v0/aspects/testId"),
+          List("object/aspect/delete"),
+          hasPermissionCheck = param => {
+            status shouldEqual StatusCodes.OK
+            responseAs[DeleteResult].deleted shouldBe true
+
+            param.authFetcher
+              .callTimesByOperationUri("object/aspect/delete") shouldBe 1
+          },
+          noPermissionCheck = param => {
+            status shouldEqual StatusCodes.Forbidden
+            param.authFetcher
+              .callTimesByOperationUri("object/aspect/delete") shouldBe 1
+          },
+          beforeRequest = param => {
+            // create the aspect before deleting it
+            param.authFetcher.setAuthDecision(
+              "object/aspect/create",
+              UnconditionalTrueDecision
+            )
+            val aspectDefinition =
+              AspectDefinition("testId", "testName", Some(JsObject()))
+            Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+            param.authFetcher.resetMock()
+          },
+          requireUserId = true
+        )
+
+      }
+
+      describe("When the aspect doesn't exist:") {
+
+        endpointStandardAuthTestCase(
+          Delete(s"/v0/aspects/testId"),
+          List("object/aspect/delete"),
+          hasPermissionCheck = param => {
+            status shouldEqual StatusCodes.OK
+            responseAs[DeleteResult].deleted shouldBe false
+            param.authFetcher
+              .callTimesByOperationUri("object/aspect/delete") shouldBe 1
+          },
+          noPermissionCheck = param => {
+            status shouldEqual StatusCodes.Forbidden
+            param.authFetcher
+              .callTimesByOperationUri("object/aspect/delete") shouldBe 1
+          },
+          requireUserId = true
+        )
+
+        it(
+          "should respond 403 when a user doesn't have unconditional delete permission"
+        ) { param =>
+          param.authFetcher.setAuthDecision(
+            "object/aspect/delete",
+            UnconditionalFalseDecision
+          )
+          Delete(s"/v0/aspects/testId") ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.Forbidden
+          }
+        }
+
       }
 
     }

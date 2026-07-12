@@ -26,7 +26,8 @@ class AspectsServiceSpec extends ApiSpec {
     List(
       ("POST", Post.apply, "/v0/aspects"),
       ("PUT", Put.apply, "/v0/aspects/1"),
-      ("PATCH", Patch.apply, "/v0/aspects/1")
+      ("PATCH", Patch.apply, "/v0/aspects/1"),
+      ("DELETE", Delete.apply, "/v0/aspects/1")
     )
   )
 
@@ -362,6 +363,112 @@ class AspectsServiceSpec extends ApiSpec {
               )
             }
           }
+        }
+      }
+    }
+
+    describe("DELETE") {
+      it("can delete an aspect definition that is not referenced by any record") {
+        param =>
+          val aspectDefinition =
+            AspectDefinition("testId", "testName", Some(JsObject()))
+          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          var eventId: Option[String] = None
+          Delete("/v0/aspects/testId") ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[DeleteResult].deleted shouldBe true
+            eventId = header("x-magda-event-id").map(_.value())
+          }
+
+          // the delete response should carry a real (non-zero) event id
+          eventId.isDefined shouldBe true
+          eventId.get should not equal "0"
+
+          // the aspect should no longer exist
+          Get("/v0/aspects/testId") ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.NotFound
+          }
+
+          // exactly one DeleteAspectDefinition event should have been recorded
+          DB readOnly { implicit session =>
+            val count =
+              sql"""select count(*) from events
+                    where eventtypeid = ${DeleteAspectDefinitionEvent.Id}
+                    and data->>'aspectId' = 'testId'"""
+                .map(_.long(1))
+                .single
+                .apply()
+                .getOrElse(0L)
+            count shouldEqual 1
+          }
+      }
+
+      it(
+        "refuses with 409 and deletes nothing when record aspect data still references the aspect"
+      ) { param =>
+        val aspectDefinition = AspectDefinition("testId", "testName", None)
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        // a record that stores data under the aspect
+        val record =
+          Record("recId", "recName", Map("testId" -> JsObject()), Some("blah"))
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Delete("/v0/aspects/testId") ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.Conflict
+          responseAs[ApiError].message should include("1 record")
+        }
+
+        // the aspect must still exist (nothing deleted)
+        Get("/v0/aspects/testId") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        // no DeleteAspectDefinition event should have been recorded
+        DB readOnly { implicit session =>
+          val count =
+            sql"""select count(*) from events
+                  where eventtypeid = ${DeleteAspectDefinitionEvent.Id}
+                  and data->>'aspectId' = 'testId'"""
+              .map(_.long(1))
+              .single
+              .apply()
+              .getOrElse(0L)
+          count shouldEqual 0
+        }
+      }
+
+      it(
+        "returns 200 and deleted=false when asked to delete an aspect that doesn't exist"
+      ) { param =>
+        Delete("/v0/aspects/doesnotexist") ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[DeleteResult].deleted shouldBe false
+          // event id is 0 as no event is generated
+          header("x-magda-event-id").map(_.value()).get shouldEqual "0"
         }
       }
     }

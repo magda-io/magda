@@ -5,21 +5,28 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.client.AuthApiClient
+import akka.http.scaladsl.model.headers.RawHeader
+import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
 import au.csiro.data61.magda.directives.AuthDirectives.{
   requirePermission,
+  requireUnconditionalAuthDecision,
   requireUserId
 }
 import au.csiro.data61.magda.directives.TenantDirectives.requiresSpecifiedTenantId
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.registry.Directives.requireAspectUpdateOrCreateWhenNonExistPermission
+import au.csiro.data61.magda.registry.Directives.{
+  requireAspectUpdateOrCreateWhenNonExistPermission,
+  requireAspectPermission
+}
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
 import org.postgresql.util.PSQLException
 
 import javax.ws.rs.Path
-import scalikejdbc._
+// Hide scalikejdbc's `delete` so it does not clash with akka-http's `delete` route directive
+// (used by the deleteById route below). Everything else from scalikejdbc is still imported.
+import scalikejdbc.{delete => _, _}
 import spray.json.JsObject
 
 import scala.util.{Failure, Success}
@@ -390,9 +397,139 @@ class AspectsService(
     }
   }
 
+  /**
+    * @apiGroup Registry Aspects
+    * @api {delete} /v0/registry/aspects/{id} Delete an aspect definition by ID
+    *
+    * @apiDescription Deletes an aspect definition.
+    *
+    *   The aspect definition can only be deleted when no record aspect data references it
+    *   (within the current tenant). If any record still stores data under the aspect, the
+    *   request is refused with a `409 Conflict` response and nothing is deleted; delete the
+    *   referencing record aspect data first.
+    *
+    *   Deleting an aspect that does not exist responds with `200` and `{ "deleted": false }`
+    *   (rather than `404`), mirroring the behaviour of `DELETE /v0/registry/records/{recordId}`.
+    *
+    * @apiParam (path) {string} id ID of the aspect to be deleted.
+    * @apiHeader {number} X-Magda-Tenant-Id 0 unless it is a multi-tenant magda deployment.
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    *
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    *           If the operation did make changes and triggered an event (i.e. the aspect was actually deleted), the header value will be the eventId.
+    *           Otherwise (i.e. no aspect was deleted), this header value will be "0".
+    *
+    * @apiSuccess (Success 200) {json} Response the aspect definition deletion result
+    * @apiSuccessExample {json} Response:
+    *   {
+    *     "deleted": true
+    *   }
+    * @apiError (Error 409) {string} Response Returned when record aspect data still references the aspect; nothing is deleted.
+    * @apiErrorExample {json} 409-Conflict:
+    *   {
+    *     "message": "Cannot delete the aspect definition: 3 record(s) still reference it. Delete the referencing record aspect data first."
+    *   }
+    * @apiUse GenericError
+    */
+  @Path("/{id}")
+  @ApiOperation(
+    value = "Delete an aspect definition by ID",
+    nickname = "deleteById",
+    httpMethod = "DELETE",
+    response = classOf[DeleteResult],
+    notes =
+      "Deletes an aspect definition. The aspect definition can only be deleted when no record aspect data references it (within the tenant); otherwise a 409 response is returned and nothing is deleted."
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "id",
+        required = true,
+        dataType = "string",
+        paramType = "path",
+        value = "ID of the aspect to be deleted."
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = true,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      )
+    )
+  )
+  @ApiResponses(
+    Array(
+      new ApiResponse(
+        code = 409,
+        message =
+          "The aspect definition could not be deleted because record aspect data still references it.",
+        response = classOf[ApiError]
+      )
+    )
+  )
+  def deleteById: Route = delete {
+    path(Segment) { id: String =>
+      requireUserId { userId =>
+        requireAspectPermission(
+          authClient,
+          "object/aspect/delete",
+          id,
+          // when the aspect doesn't exist (or isn't accessible within the current tenant)
+          // we check the "unconditional" delete permission so behaviour matches record delete:
+          // a user with unconditional delete permission gets 200 + deleted=false;
+          // others won't be able to learn whether the aspect existed.
+          onAspectNotFound = Some(
+            () =>
+              requireUnconditionalAuthDecision(
+                authClient,
+                AuthDecisionReqConfig("object/aspect/delete")
+              ) & pass
+          )
+        ) {
+          requiresSpecifiedTenantId { tenantId =>
+            onCompleteBlockingTask {
+              val theResult = DB localTx { implicit session =>
+                session.queryTimeout(this.defaultQueryTimeout)
+                AspectPersistence.deleteById(id, tenantId, userId) match {
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(RawHeader("x-magda-event-id", result._2.toString)),
+                      DeleteResult(result._1)
+                    )
+                  case Failure(e: AspectInUseException) =>
+                    complete(
+                      StatusCodes.Conflict,
+                      ApiError(e.getMessage)
+                    )
+                  case Failure(exception) =>
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(exception.getMessage)
+                    )
+                }
+              }
+              webHookActor ! WebHookActor.Process()
+              theResult
+            }
+          }
+        }
+      }
+    }
+  }
+
   override def route: Route =
     super.route ~
       putById ~
       patchById ~
-      create
+      create ~
+      deleteById
 }
