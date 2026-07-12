@@ -26,10 +26,13 @@ export function registerAspectCommands(program: Command): void {
             }
         });
 
-    aspect.command("get <id>").action(async (id: string) => {
-        const client = await clientFromProfile();
-        printData("json", await client.json("GET", registryAspect(id)));
-    });
+    aspect
+        .command("get <id>")
+        .option("--json", "output JSON (default)")
+        .action(async (id: string) => {
+            const client = await clientFromProfile();
+            printData("json", await client.json("GET", registryAspect(id)));
+        });
 
     aspect
         .command("create <id>")
@@ -39,6 +42,7 @@ export function registerAspectCommands(program: Command): void {
             "--schema <schema>",
             "JSON schema: inline JSON, @file.json, or -"
         )
+        .option("--json", "output the result as JSON")
         .action(async (id: string, opts) => {
             const client = await clientFromProfile();
             const jsonSchema = await parseAspectValue(opts.schema);
@@ -46,6 +50,7 @@ export function registerAspectCommands(program: Command): void {
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ id, name: opts.name, jsonSchema })
             });
-            note(`Aspect definition "${id}" saved.`);
+            if (opts.json) printData("json", { aspectId: id, ok: true });
+            else note(`Aspect definition "${id}" saved.`);
         });
 }

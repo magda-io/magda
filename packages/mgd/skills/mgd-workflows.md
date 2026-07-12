@@ -17,7 +17,12 @@ your assistant environment, keep the rules.
    covers the endpoint, and mention that you did.
 3. **Always parse machine output.** Use `--json` (single document) or `--jsonl`
    (one JSON object per line) on every command whose output you consume.
-   Never scrape human-mode output.
+   Never scrape human-mode output. Read and list commands emit their data as
+   JSON; the aspect/record mutations (`aspect create`, `dataset aspect set`/
+   `delete`, `dataset`/`dist update`) print a compact `{…, "ok": true}` result in
+   `--json` mode; and `aspect get` / `dataset aspect get` emit JSON already (the
+   flag is optional there). Downloads write the file itself, so they take no
+   `--json`.
 4. **Respect exit codes.** `0` ok; `2` usage error (your command line is wrong);
    `3` auth error (key missing/invalid or no permission); `4` not found;
    `1` anything else. In `--json` mode a failing command prints
@@ -89,8 +94,9 @@ Custom / domain metadata:
 
 ```sh
 mgd aspect list --jsonl                     # what aspect types exist here?
-mgd aspect create my-domain --name "My Domain" --schema @schema.json
-mgd dataset aspect set ds-abc my-domain @values.json
+mgd aspect create my-domain --name "My Domain" --schema @schema.json --json
+mgd dataset aspect set ds-abc my-domain @values.json --json
+mgd dataset aspect get ds-abc my-domain     # already JSON; --json optional
 ```
 
 Raw fallback (documented REST endpoints only):

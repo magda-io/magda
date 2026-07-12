@@ -222,6 +222,7 @@ export function registerDatasetCommands(program: Command): void {
             collect,
             []
         )
+        .option("--json", "output the result as JSON")
         .action(async (datasetId: string, opts) => {
             const scalarPatch: Record<string, unknown> = {};
             if (opts.title) scalarPatch.title = opts.title;
@@ -256,7 +257,8 @@ export function registerDatasetCommands(program: Command): void {
                     throw withAspectHint(e);
                 }
             }
-            note(`Dataset ${datasetId} updated.`);
+            if (opts.json) printData("json", { datasetId, ok: true });
+            else note(`Dataset ${datasetId} updated.`);
         });
 
     const datasetAspect = dataset
@@ -267,6 +269,7 @@ export function registerDatasetCommands(program: Command): void {
 
     datasetAspect
         .command("get <recordId> <aspectId>")
+        .option("--json", "output JSON (default)")
         .action(async (recordId: string, aspectId: string) => {
             const client = await clientFromProfile();
             const data = await client.json(
@@ -279,26 +282,38 @@ export function registerDatasetCommands(program: Command): void {
     datasetAspect
         .command("set <recordId> <aspectId> <value>")
         .description("value: inline JSON, @file.json, or - for stdin")
-        .action(async (recordId: string, aspectId: string, value: string) => {
-            const client = await clientFromProfile();
-            const data = await parseAspectValue(value);
-            try {
-                await client.json("PUT", recordAspect(recordId, aspectId), {
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify(data)
-                });
-            } catch (e) {
-                throw withAspectHint(e);
+        .option("--json", "output the result as JSON")
+        .action(
+            async (
+                recordId: string,
+                aspectId: string,
+                value: string,
+                opts
+            ) => {
+                const client = await clientFromProfile();
+                const data = await parseAspectValue(value);
+                try {
+                    await client.json("PUT", recordAspect(recordId, aspectId), {
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+                } catch (e) {
+                    throw withAspectHint(e);
+                }
+                if (opts.json)
+                    printData("json", { recordId, aspectId, ok: true });
+                else note(`Aspect "${aspectId}" set on ${recordId}.`);
             }
-            note(`Aspect "${aspectId}" set on ${recordId}.`);
-        });
+        );
 
     datasetAspect
         .command("delete <recordId> <aspectId>")
-        .action(async (recordId: string, aspectId: string) => {
+        .option("--json", "output the result as JSON")
+        .action(async (recordId: string, aspectId: string, opts) => {
             const client = await clientFromProfile();
             await client.json("DELETE", recordAspect(recordId, aspectId));
-            note(`Aspect "${aspectId}" deleted from ${recordId}.`);
+            if (opts.json) printData("json", { recordId, aspectId, ok: true });
+            else note(`Aspect "${aspectId}" deleted from ${recordId}.`);
         });
 
     dataset
