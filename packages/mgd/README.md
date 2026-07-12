@@ -283,9 +283,15 @@ mgd aspect create <aspectId> --name "My Aspect" --schema @schema.json
 
 # aspect data on any record (dataset or distribution)
 mgd dataset aspect get    magda-ds-<uuid> <aspectId>
-mgd dataset aspect set    magda-ds-<uuid> <aspectId> @data.json    # inline JSON, @file, or - for stdin
+mgd dataset aspect set    magda-ds-<uuid> <aspectId> @data.json    # full replace: inline JSON, @file, or - for stdin
+mgd dataset aspect patch  magda-ds-<uuid> <aspectId> '{"keywords":["a","b"]}'  # partial: merge these fields, keep the rest
 mgd dataset aspect delete magda-ds-<uuid> <aspectId>
 ```
+
+Use `set` to **replace** the whole aspect and `patch` to change **only the
+supplied fields** (a server-side deep merge via the registry's `?merge=true`, so
+untouched fields survive). For advanced RFC 6902 operations (remove/test/move),
+call the raw endpoint: `mgd api request PATCH /v0/registry/records/<id>/aspects/<aspectId> --body @patch.json`.
 
 Every mutation command also accepts repeatable `--aspect <id>=<json|@file|->` to
 attach custom aspect data at create/update time.
@@ -329,7 +335,7 @@ echo '{"active":true}' | mgd api request PUT /v0/some/endpoint --body -
 | `dataset create`                                      | Create a dataset (draft by default)                     |
 | `dataset update <id>`                                 | Update dataset metadata                                 |
 | `dataset add-file <id> [file]`                        | Upload/attach a distribution (or `--access-url`)        |
-| `dataset aspect get/set/delete <recordId> <aspectId>` | Read/write custom aspect data on any record             |
+| `dataset aspect get/set/patch/delete <recordId> <aspectId>` | Read/write custom aspect data on any record (`set`=replace, `patch`=merge) |
 | `dist get <id>` / `dist update <id>`                  | Inspect / edit a distribution                           |
 | `dist download <id>`                                  | Download a distribution's file (`--resume`)             |
 | `dist replace-file <id> <file>`                       | Replace a distribution's file, bump version             |
