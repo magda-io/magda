@@ -28,7 +28,8 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
     List(
       ("POST", Post.apply, "/v0/aspects"),
       ("PUT", Put.apply, "/v0/aspects/1"),
-      ("PATCH", Patch.apply, "/v0/aspects/1")
+      ("PATCH", Patch.apply, "/v0/aspects/1"),
+      ("DELETE", Delete.apply, "/v0/aspects/1")
     )
   )
 
@@ -369,6 +370,58 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
               )
             }
           }
+        }
+      }
+    }
+
+    describe("DELETE") {
+      it(
+        "in-use check is tenant-scoped: deletes in an unaffected tenant, refuses in the referencing tenant"
+      ) { param =>
+        val aspectDefinition = AspectDefinition("shared", "shared", None)
+
+        // create the same aspect id in both tenants
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_2
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        // only TENANT_1 has a record that references the aspect
+        val record =
+          Record("recId", "recName", Map("shared" -> JsObject()), Some("blah"))
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        // TENANT_2 has no referencing record -> delete succeeds
+        Delete("/v0/aspects/shared") ~> addUserId() ~> addTenantIdHeader(
+          TENANT_2
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[DeleteResult].deleted shouldBe true
+        }
+
+        // TENANT_1 still has the referencing record -> delete refused with 409
+        Delete("/v0/aspects/shared") ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.Conflict
+          responseAs[ApiError].message should include("1 record")
+        }
+
+        // the TENANT_1 aspect must still exist
+        Get("/v0/aspects/shared") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
         }
       }
     }

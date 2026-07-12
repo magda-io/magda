@@ -6,6 +6,7 @@
 - `@magda/mgd`: added `mgd skills install` / `mgd skills uninstall` — installs the coding-agent skill (`SKILL.md`) into Claude Code, Codex and opencode; installs for all three globally by default (`--agent` to pick one, `--project` for repo-local), so the skill is available from any working directory (#3682)
 - #3672: Add large file upload & download support to `storage-api` — S3 multipart upload proxy endpoints (`/v0/storage/multipart/{initiate,part,parts,complete,abort}`) and HTTP Range support on object download, enabling resumable transfers of large (multi-GB) files without raising the ingress body-size limit. Adds `recommendedPartSize`, `maxPartSize`, `multipartUploadExpiry` & `incompleteUploadExpiryDays` chart options.
 - #3678: Fix `storage-api` create-bucket route being registered at `/v0/storage/{bucketid}` instead of the documented `/v0/storage/buckets/{bucketid}`
+- #3691: Add `DELETE /v0/registry/aspects/{id}` to `registry-api` — deletes an aspect definition only when no record aspect data still references it within the tenant; otherwise responds `409 Conflict` (including the referencing-record count) and deletes nothing. Deleting a non-existent aspect responds `200 {"deleted": false}` (mirroring record delete). Emits a `DeleteAspectDefinitionEvent`, is permission-gated via `object/aspect/delete` and tenant-scoped.
 
 ## v6.0.0
 
