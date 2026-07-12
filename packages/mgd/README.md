@@ -153,6 +153,11 @@ mgd auth status
   details. Suppress diagnostics with `2>/dev/null`.
 - `--json` prints one pretty JSON document. `--jsonl` prints one JSON object per
   line for list results — ideal for streaming into `jq`, `grep`, `xargs`, etc.
+- Read and list commands emit their data as JSON. The aspect/record mutations
+  (`aspect create`, `dataset aspect set`/`delete`, `dataset`/`dist update`) print a
+  compact `{…, "ok": true}` result in `--json` mode, while `aspect get` /
+  `dataset aspect get` emit JSON already (the flag is optional there). Downloads
+  write the file itself and take no `--json`.
 - In `--json`/`--jsonl` mode, errors are emitted to stderr as a structured object
   `{"error":{"code","message","status","hint"}}` so agents can parse failures.
 

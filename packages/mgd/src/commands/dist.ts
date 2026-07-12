@@ -66,6 +66,7 @@ export function registerDistCommands(program: Command): void {
             collect,
             []
         )
+        .option("--json", "output the result as JSON")
         .action(async (distributionId: string, opts) => {
             const scalarPatch: Record<string, unknown> = {};
             if (opts.title) scalarPatch.title = opts.title;
@@ -101,7 +102,8 @@ export function registerDistCommands(program: Command): void {
                     throw withAspectHint(e);
                 }
             }
-            note(`Distribution ${distributionId} updated.`);
+            if (opts.json) printData("json", { distributionId, ok: true });
+            else note(`Distribution ${distributionId} updated.`);
         });
 
     dist.command("replace-file <distributionId> <localFile>")
