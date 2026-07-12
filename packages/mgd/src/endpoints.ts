@@ -14,6 +14,11 @@ export const REGISTRY_ASPECTS = "/v0/registry/aspects";
 export const registryRecord = (id: string) =>
     `${REGISTRY_RECORDS}/${encodeURIComponent(id)}`;
 
+// Returns the record with ALL attached aspect data (including custom aspects),
+// filtered by the caller's read permission server-side.
+export const registryRecordInFull = (id: string) =>
+    `${REGISTRY_RECORDS}/inFull/${encodeURIComponent(id)}`;
+
 export const recordAspect = (recordId: string, aspectId: string) =>
     `${registryRecord(recordId)}/aspects/${encodeURIComponent(aspectId)}`;
 
