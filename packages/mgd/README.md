@@ -43,8 +43,8 @@ skill files under [`skills/`](./skills/).
 ## Quick start
 
 ```sh
-# 1. Log in (prompts for site URL, API key ID and key; or pass them as flags)
-mgd auth login
+# 1. Create a profile (prompts for site URL, API key ID and key; or pass them as flags)
+mgd profile create default
 
 # 2. Confirm who you are and where
 mgd auth status
@@ -61,38 +61,54 @@ mgd dist download magda-dist-<uuid> -o data.csv
 
 ## Authentication and profiles
 
-### Logging in
+### Setting up a profile
 
 Create an API key in the MAGDA web UI first
 ([**Settings → API Keys**](https://github.com/magda-io/magda/blob/main/docs/docs/how-to-create-api-key.md)),
-then:
+then create a profile:
 
 ```sh
-mgd auth login
+mgd profile create default
 # or non-interactively:
-mgd auth login --url https://dev.magda.io --key-id <id> --key <key> --profile default
+mgd profile create default --url https://dev.magda.io --key-id <id> --key <key>
 ```
 
+- The profile `<name>` is **required** — there is no implicit target, so you
+  can't accidentally set up the wrong profile.
 - `--url` accepts either a **site URL** (`https://dev.magda.io`) or a full **API
-  base URL** — `mgd` normalises it by probing `<url>/api/v0` then `<url>/v0`, so
+  base URL** — `mgd` normalises it by probing `<url>` first, then `<url>/api`, so
   non-standard gateway mounts work.
-- Credentials are verified against the API before being saved.
+- Any of `--url` / `--key-id` / `--key` you don't pass is **prompted for** (the
+  key is entered hidden). Credentials are verified against the API before saving.
 - Leave the API key ID empty to configure **anonymous** access (MAGDA supports
   anonymous read access to public data).
+- `create` **refuses to overwrite** an existing profile — use `profile update`
+  to change one, or `profile remove` to delete it first.
 
-### Profiles
+### Managing profiles
 
 Credentials are stored per named profile in `~/.config/mgd/config.json`
 (respecting `$XDG_CONFIG_HOME`), with restrictive permissions (`0600` file,
-`0700` directory). The default profile is named `default`.
+`0700` directory). The default profile is named `default`. Every `profile`
+subcommand **except `list`** takes a required positional `<name>`.
 
 ```sh
-mgd auth login --profile prod --url https://prod.example.com   # add a profile
-mgd profile list                                               # list profiles
-mgd profile use prod                                           # switch active profile
-mgd auth status                                                # who am I, where
-mgd auth logout                                                # clear active profile creds
+mgd profile create prod --url https://prod.example.com   # create a new profile
+mgd profile update prod --key-id <id> --key <key>        # patch only the given fields
+mgd profile list                                         # list profiles
+mgd profile use prod                                     # switch the active profile
+mgd profile remove prod                                  # delete a profile
+mgd auth status                                          # who am I, where
 ```
+
+- **`profile update <name>`** changes **only** the fields you pass
+  (`--url` / `--key-id` / `--key`); it does **not** prompt, errors if you pass no
+  field, and errors if the profile doesn't exist. Handy for rotating a key.
+- **`profile remove <name>`** deletes the profile; if it was the active one, the
+  active profile resets to `default`.
+- **`mgd auth login`** is a **deprecated** alias of `profile create` (it keeps
+  its `--profile <name>` flag, defaulting to `default`) and prints a notice.
+  **`mgd auth logout` has been removed** — use `mgd profile remove <name>`.
 
 `mgd auth status` reports the active profile, base URL and the identity returned
 by the server; it shows `anonymous` when no credentials are configured.
@@ -291,8 +307,10 @@ echo '{"active":true}' | mgd api request PUT /v0/some/endpoint --body -
 
 | Command                                               | Description                                             |
 | ----------------------------------------------------- | ------------------------------------------------------- |
-| `auth login` / `auth status` / `auth logout`          | Manage credentials for a site profile                   |
+| `profile create <name>` / `update <name>` / `remove <name>` | Create / patch / delete a site profile            |
 | `profile list` / `profile use <name>`                 | List / switch profiles                                  |
+| `auth status`                                         | Show the active profile and authenticated user          |
+| `auth login`                                          | Deprecated alias of `profile create` (`--profile`)      |
 | `search datasets <query>`                             | Keyword dataset search                                  |
 | `search semantic <query>`                             | Semantic (embedding) search                             |
 | `dataset get <id>`                                    | Fetch a dataset record                                  |
@@ -358,8 +376,10 @@ saved profile, or the `MGD_*` environment variables; check with `mgd auth status
 
 ## Troubleshooting
 
-- **`Authentication error` (exit 3)** — no or invalid credentials. Re-run
-  `mgd auth login`, or check `MGD_API_KEY_ID` / `MGD_API_KEY`.
+- **`Authentication error` (exit 3)** — no or invalid credentials. Recreate the
+  profile with `mgd profile create <name>` (or update it with
+  `mgd profile update <name> --key-id … --key …`), or check
+  `MGD_API_KEY_ID` / `MGD_API_KEY`.
 - **`semantic-search-unavailable` (exit 1)** — the target site doesn't have the
   semantic-search components installed; use `mgd search datasets` instead.
 - **`Not found` (exit 4)** — the record or storage object doesn't exist (or your

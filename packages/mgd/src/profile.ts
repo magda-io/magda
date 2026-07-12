@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { UsageError } from "./errors.js";
 
 export interface Profile {
     baseUrl: string;
@@ -69,4 +70,42 @@ export function resolveProfile(
         name: env.MGD_BASE_URL && !fromFile ? "env" : name,
         profile: overridden
     };
+}
+
+const ENV_HINT =
+    "set MGD_BASE_URL/MGD_API_KEY_ID/MGD_API_KEY for a one-off.";
+
+/**
+ * Build a context-aware error for when no usable profile could be resolved.
+ * Distinguishes "no profiles at all" from "profiles exist but none is active"
+ * (and the special case of MGD_PROFILE naming an unknown profile) so the
+ * message tells the user exactly what to do next.
+ */
+export function noProfileError(
+    cfg: ConfigFile,
+    env: NodeJS.ProcessEnv = process.env
+): UsageError {
+    const names = Object.keys(cfg.profiles);
+
+    if (names.length === 0) {
+        return new UsageError(
+            "No profiles configured. Run `mgd profile create <name>` to get " +
+                `started, or ${ENV_HINT}`
+        );
+    }
+
+    const available = `Available profiles: ${names.join(", ")}.`;
+
+    if (env.MGD_PROFILE) {
+        return new UsageError(
+            `Profile "${env.MGD_PROFILE}" (from MGD_PROFILE) not found. ` +
+                available
+        );
+    }
+
+    return new UsageError(
+        "No active profile. Set one with `mgd profile use <name>`, or select " +
+            `one per command via the MGD_PROFILE env var. ${available} ` +
+            `Alternatively, ${ENV_HINT}`
+    );
 }

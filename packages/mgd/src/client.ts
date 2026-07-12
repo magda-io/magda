@@ -1,7 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { setTimeout as sleep } from "node:timers/promises";
-import { MgdApiError, UsageError } from "./errors.js";
-import { loadConfig, resolveProfile, Profile } from "./profile.js";
+import { MgdApiError } from "./errors.js";
+import {
+    loadConfig,
+    resolveProfile,
+    noProfileError,
+    Profile
+} from "./profile.js";
 import { VERSION } from "./version.js";
 
 export interface ClientOptions {
@@ -131,9 +136,7 @@ export async function clientFromProfile(): Promise<MagdaClient> {
     const cfg = await loadConfig();
     const { profile } = resolveProfile(cfg);
     if (!profile?.baseUrl) {
-        throw new UsageError(
-            "No active profile. Run `mgd auth login` or set MGD_BASE_URL."
-        );
+        throw noProfileError(cfg);
     }
     return clientFor(profile);
 }

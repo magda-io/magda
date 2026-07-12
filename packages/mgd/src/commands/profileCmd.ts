@@ -2,6 +2,14 @@ import { Command } from "commander";
 import { UsageError } from "../errors.js";
 import { loadConfig, saveConfig } from "../profile.js";
 import { note, printData, resolveMode } from "../output.js";
+import { createProfile, updateProfile } from "./profileSetup.js";
+
+function requireName(name: string | undefined, usage: string): string {
+    if (!name) {
+        throw new UsageError(`Profile name is required. Usage: ${usage}`);
+    }
+    return name;
+}
 
 export function registerProfileCommands(program: Command): void {
     const profile = program.command("profile").description("Manage profiles");
@@ -30,6 +38,51 @@ export function registerProfileCommands(program: Command): void {
             } else {
                 printData(mode, rows);
             }
+        });
+
+    profile
+        .command("create [name]")
+        .description("Create a new profile with credentials")
+        .option("--url <url>", "MAGDA site or API base URL")
+        .option("--key-id <id>", "API key ID")
+        .option("--key <key>", "API key")
+        .action(async (name: string | undefined, opts) => {
+            const target = requireName(name, "mgd profile create <name>");
+            await createProfile(target, {
+                url: opts.url,
+                keyId: opts.keyId,
+                key: opts.key
+            });
+        });
+
+    profile
+        .command("update [name]")
+        .description("Update an existing profile's credentials")
+        .option("--url <url>", "MAGDA site or API base URL")
+        .option("--key-id <id>", "API key ID")
+        .option("--key <key>", "API key")
+        .action(async (name: string | undefined, opts) => {
+            const target = requireName(name, "mgd profile update <name>");
+            await updateProfile(target, {
+                url: opts.url,
+                keyId: opts.keyId,
+                key: opts.key
+            });
+        });
+
+    profile
+        .command("remove [name]")
+        .description("Delete a profile")
+        .action(async (name: string | undefined) => {
+            const target = requireName(name, "mgd profile remove <name>");
+            const cfg = await loadConfig();
+            if (!cfg.profiles[target])
+                throw new UsageError(`No such profile: ${target}`);
+            delete cfg.profiles[target];
+            // If the removed profile was active, fall back to `default`.
+            if (cfg.activeProfile === target) delete cfg.activeProfile;
+            await saveConfig(cfg);
+            note(`Removed profile "${target}".`);
         });
 
     profile
