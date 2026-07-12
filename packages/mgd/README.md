@@ -196,9 +196,15 @@ dataset ID.
 ```sh
 mgd dataset get magda-ds-<uuid>                       # dataset record
 mgd dataset get magda-ds-<uuid> --json                # full record as JSON
+mgd dataset get magda-ds-<uuid> --aspect <aspectId>   # just one aspect
 mgd dataset distributions magda-ds-<uuid> --jsonl     # its distributions
 mgd dist get magda-dist-<uuid> --json                 # a single distribution
 ```
+
+`--json` returns the **complete** record with every aspect attached to it,
+including any custom aspects you have set (`mgd aspect create` + `--aspect` /
+`mgd dataset aspect set`). Human-mode output shows the curated highlights only;
+pass `--json` (and pipe through `jq`) to see everything.
 
 Distribution records carry metadata under aspects such as
 `dcat-distribution-strings` (title, format, `downloadURL`/`accessURL`). Use

@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { clientFromProfile } from "../client.js";
 import {
     registryRecord,
+    registryRecordInFull,
     recordAspect,
     REGISTRY_RECORDS,
     storageObject
@@ -21,14 +22,6 @@ import {
     DATASETS_BUCKET_DEFAULT
 } from "../recordBuilders.js";
 
-export const DIST_OPTIONAL_ASPECTS = [
-    "dcat-distribution-strings",
-    "version",
-    "publishing",
-    "access-control",
-    "source"
-];
-
 export function registerDistCommands(program: Command): void {
     const dist = program.command("dist").description("Distribution records");
 
@@ -39,13 +32,7 @@ export function registerDistCommands(program: Command): void {
             const client = await clientFromProfile();
             const record = await client.json<any>(
                 "GET",
-                registryRecord(distributionId),
-                {
-                    query: DIST_OPTIONAL_ASPECTS.map((a): [string, string] => [
-                        "optionalAspect",
-                        a
-                    ])
-                }
+                registryRecordInFull(distributionId)
             );
             const mode = resolveMode(opts);
             if (mode === "human") {

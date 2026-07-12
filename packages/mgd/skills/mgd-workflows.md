@@ -51,7 +51,9 @@ jq -r '.identifier' kw.jsonl > ids.txt
 jq -r '.recordId' sem.jsonl | grep -v -x -F -f ids.txt >> ids.txt
 ```
 
-Then inspect the top candidates with `mgd dataset get <id> --json`.
+Then inspect the top candidates with `mgd dataset get <id> --json`. This returns
+the complete record with **all** aspects attached to it, including any custom
+aspects (`.aspects["<aspectId>"]`); use `--aspect <aspectId>` to fetch just one.
 
 ## Common recipes
 

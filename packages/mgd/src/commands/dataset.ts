@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { clientFromProfile, MagdaClient } from "../client.js";
 import {
     registryRecord,
+    registryRecordInFull,
     recordAspect,
     WHOAMI,
     REGISTRY_RECORDS,
@@ -24,21 +25,6 @@ import {
     DATASETS_BUCKET_DEFAULT
 } from "../recordBuilders.js";
 import { uploadFile } from "../transfer.js";
-
-export const DATASET_OPTIONAL_ASPECTS = [
-    "dcat-dataset-strings",
-    "dataset-distributions",
-    "publishing",
-    "access-control",
-    "source",
-    "version",
-    "currency",
-    "provenance",
-    "spatial-coverage",
-    "temporal-coverage",
-    "information-security",
-    "access"
-];
 
 export async function fetchOwner(
     client: MagdaClient
@@ -111,13 +97,7 @@ export function registerDatasetCommands(program: Command): void {
             }
             const record = await client.json<any>(
                 "GET",
-                registryRecord(datasetId),
-                {
-                    query: DATASET_OPTIONAL_ASPECTS.map((a): [
-                        string,
-                        string
-                    ] => ["optionalAspect", a])
-                }
+                registryRecordInFull(datasetId)
             );
             const mode = resolveMode(opts);
             if (mode === "human") {

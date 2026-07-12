@@ -11,11 +11,11 @@ describe("dataset read commands", () => {
         else process.env.MGD_BASE_URL = origBaseUrl;
     });
 
-    it("gets a dataset record with optional aspects", async () => {
+    it("gets a full dataset record via the inFull endpoint", async () => {
         const server = await startMockServer([
             {
                 method: "GET",
-                path: /^\/v0\/registry\/records\/ds-1$/,
+                path: /^\/v0\/registry\/records\/inFull\/ds-1$/,
                 body: {
                     id: "ds-1",
                     name: "Water Data",
@@ -39,8 +39,47 @@ describe("dataset read commands", () => {
             );
             expect(JSON.parse(out).id).to.equal("ds-1");
             expect(server.requests[0].url).to.contain(
-                "optionalAspect=dcat-dataset-strings"
+                "/v0/registry/records/inFull/ds-1"
             );
+        } finally {
+            await server.close();
+        }
+    });
+
+    it("includes custom aspects in dataset get --json", async () => {
+        const server = await startMockServer([
+            {
+                method: "GET",
+                path: /^\/v0\/registry\/records\/inFull\/ds-1$/,
+                body: {
+                    id: "ds-1",
+                    name: "Sensor Dataset",
+                    aspects: {
+                        "dcat-dataset-strings": { title: "Sensor Dataset" },
+                        "sensor-network": {
+                            sensorCount: 42,
+                            operator: "Acme Air"
+                        }
+                    }
+                }
+            }
+        ]);
+        process.env.MGD_BASE_URL = server.url;
+        try {
+            const program = new Command();
+            registerDatasetCommands(program);
+            const out = await captureStdout(() =>
+                program
+                    .parseAsync(["dataset", "get", "ds-1", "--json"], {
+                        from: "user"
+                    })
+                    .then(() => {})
+            );
+            const record = JSON.parse(out);
+            expect(record.aspects["sensor-network"]).to.deep.equal({
+                sensorCount: 42,
+                operator: "Acme Air"
+            });
         } finally {
             await server.close();
         }
