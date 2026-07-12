@@ -7,8 +7,10 @@ import {
     loadConfig,
     saveConfig,
     resolveProfile,
+    noProfileError,
     ConfigFile
 } from "../profile.js";
+import { UsageError, exitCodeFor } from "../errors.js";
 
 describe("profile store", () => {
     let tmp: string;
@@ -94,5 +96,47 @@ describe("profile store", () => {
         });
         expect(name).to.equal("p2");
         expect(profile?.baseUrl).to.equal("https://b/api");
+    });
+});
+
+describe("noProfileError", () => {
+    const env: NodeJS.ProcessEnv = {};
+
+    it("is a UsageError (exit 2)", () => {
+        const e = noProfileError({ profiles: {} }, env);
+        expect(e).to.be.instanceOf(UsageError);
+        expect(exitCodeFor(e)).to.equal(2);
+    });
+
+    it("points to `profile create` when no profiles exist", () => {
+        const e = noProfileError({ profiles: {} }, env);
+        expect(e.message).to.match(/profile create/);
+        expect(e.message).to.not.match(/profile use/);
+    });
+
+    it("points to `profile use` and lists profiles when some exist but none is active", () => {
+        const e = noProfileError(
+            {
+                profiles: {
+                    prod: { baseUrl: "https://a/api" },
+                    dev: { baseUrl: "https://b/api" }
+                }
+            },
+            env
+        );
+        expect(e.message).to.match(/profile use/);
+        expect(e.message).to.match(/MGD_PROFILE/);
+        expect(e.message).to.contain("prod");
+        expect(e.message).to.contain("dev");
+    });
+
+    it("names the missing profile when MGD_PROFILE points to an unknown one", () => {
+        const e = noProfileError(
+            { profiles: { prod: { baseUrl: "https://a/api" } } },
+            { ...env, MGD_PROFILE: "ghost" }
+        );
+        expect(e.message).to.contain("ghost");
+        expect(e.message).to.match(/MGD_PROFILE/);
+        expect(e.message).to.contain("prod");
     });
 });

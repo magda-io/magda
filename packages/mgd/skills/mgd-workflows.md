@@ -7,7 +7,9 @@ your assistant environment, keep the rules.
 ## Ground rules
 
 1. **Check auth first.** Before any MAGDA access, run `mgd auth status --json`.
-   If it fails with exit code 2, ask the user to run `mgd auth login`. If
+   If it fails with exit code 2, no usable profile is configured — relay the
+   error message, which says whether to run `mgd profile create <name>` (none
+   set up) or `mgd profile use <name>` (one exists but isn't active). If
    `authenticated` is `false`, read-only public commands may still work, but
    mutations will fail — say so up front.
 2. **Prefer curated commands** (`search`, `dataset`, `dist`, `file`, `aspect`)
@@ -97,8 +99,9 @@ mgd api request GET /v0/registry/records --query limit=3 --query aspect=dcat-dat
 
 ## Error triage
 
-- exit 3 + `unauthorized` → API key invalid/expired: ask the user to re-run
-  `mgd auth login`.
+- exit 3 + `unauthorized` → API key invalid/expired: ask the user to update the
+  profile (`mgd profile update <name> --key-id … --key …`) or recreate it
+  (`mgd profile create <name>`).
 - exit 3 + `forbidden` → the key works but lacks permission: report which
   operation was denied; do not retry.
 - exit 4 → record/object doesn't exist: re-check the ID (search again) before
