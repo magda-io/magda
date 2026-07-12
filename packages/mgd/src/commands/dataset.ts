@@ -307,6 +307,41 @@ export function registerDatasetCommands(program: Command): void {
         );
 
     datasetAspect
+        .command("patch <recordId> <aspectId> <value>")
+        .description(
+            "Merge a partial aspect object into the existing aspect " +
+                "(value: inline JSON, @file.json, or - for stdin). Only the " +
+                "supplied fields change; use `set` to replace the whole aspect."
+        )
+        .option("--json", "output the result as JSON")
+        .action(
+            async (
+                recordId: string,
+                aspectId: string,
+                value: string,
+                opts
+            ) => {
+                const client = await clientFromProfile();
+                const data = await parseAspectValue(value);
+                try {
+                    // ?merge=true asks the registry to deep-merge the partial
+                    // body into the existing aspect server-side (JsonUtils.merge),
+                    // so we never read-then-replace and can't drop fields.
+                    await client.json("PUT", recordAspect(recordId, aspectId), {
+                        query: { merge: true },
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+                } catch (e) {
+                    throw withAspectHint(e);
+                }
+                if (opts.json)
+                    printData("json", { recordId, aspectId, ok: true });
+                else note(`Aspect "${aspectId}" patched on ${recordId}.`);
+            }
+        );
+
+    datasetAspect
         .command("delete <recordId> <aspectId>")
         .option("--json", "output the result as JSON")
         .action(async (recordId: string, aspectId: string, opts) => {

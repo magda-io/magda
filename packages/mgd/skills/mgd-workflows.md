@@ -19,7 +19,7 @@ your assistant environment, keep the rules.
    (one JSON object per line) on every command whose output you consume.
    Never scrape human-mode output. Read and list commands emit their data as
    JSON; the aspect/record mutations (`aspect create`, `dataset aspect set`/
-   `delete`, `dataset`/`dist update`) print a compact `{…, "ok": true}` result in
+   `patch`/`delete`, `dataset`/`dist update`) print a compact `{…, "ok": true}` result in
    `--json` mode; and `aspect get` / `dataset aspect get` emit JSON already (the
    flag is optional there). Downloads write the file itself, so they take no
    `--json`.
@@ -27,7 +27,7 @@ your assistant environment, keep the rules.
    `3` auth error (key missing/invalid or no permission); `4` not found;
    `1` anything else. In `--json` mode a failing command prints
    `{"error": {"code", "message", "status", "hint"}}` on stderr.
-5. **Confirm before mutating or publishing.** Never run `dataset create --publish`, `add-file`, `replace-file`, `update`, `aspect create/set/delete`,
+5. **Confirm before mutating or publishing.** Never run `dataset create --publish`, `add-file`, `replace-file`, `update`, `aspect create/set/patch/delete`,
    or any `api request` with POST/PUT/PATCH/DELETE without the user's explicit
    go-ahead in this conversation. Uploading or attaching generated artifacts
    happens only when the user asked for it.
@@ -95,9 +95,16 @@ Custom / domain metadata:
 ```sh
 mgd aspect list --jsonl                     # what aspect types exist here?
 mgd aspect create my-domain --name "My Domain" --schema @schema.json --json
-mgd dataset aspect set ds-abc my-domain @values.json --json
+mgd dataset aspect set ds-abc my-domain @values.json --json   # replace the whole aspect
+mgd dataset aspect patch ds-abc dcat-dataset-strings '{"keywords":["a","b"]}' --json  # merge one field, keep the rest
 mgd dataset aspect get ds-abc my-domain     # already JSON; --json optional
 ```
+
+**`set` replaces the whole aspect; `patch` merges.** To change one field (e.g.
+add `keywords` to `dcat-dataset-strings`) use `patch` — it deep-merges your
+partial object server-side and leaves the other fields intact. Reach for `set`
+only when you intend to overwrite the entire aspect. For advanced RFC 6902 ops
+(remove/test/move), use `mgd api request PATCH …/aspects/<id> --body @patch.json`.
 
 Raw fallback (documented REST endpoints only):
 
