@@ -95,6 +95,7 @@ Custom / domain metadata:
 ```sh
 mgd aspect list --jsonl                     # what aspect types exist here?
 mgd aspect create my-domain --name "My Domain" --schema @schema.json --json
+mgd aspect delete my-domain                 # remove a definition; refused (409) if records still use it
 mgd dataset aspect set ds-abc my-domain @values.json --json   # replace the whole aspect
 mgd dataset aspect patch ds-abc dcat-dataset-strings '{"keywords":["a","b"]}' --json  # merge one field, keep the rest
 mgd dataset aspect get ds-abc my-domain     # already JSON; --json optional

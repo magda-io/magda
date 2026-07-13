@@ -53,4 +53,31 @@ export function registerAspectCommands(program: Command): void {
             if (opts.json) printData("json", { aspectId: id, ok: true });
             else note(`Aspect definition "${id}" saved.`);
         });
+
+    aspect
+        .command("delete <id>")
+        .description(
+            "Delete an aspect definition (only if no record data references it)"
+        )
+        .option("--json", "output the result as JSON")
+        .action(async (id: string, opts) => {
+            const client = await clientFromProfile();
+            const result = await client.json<{ deleted: boolean }>(
+                "DELETE",
+                registryAspect(id)
+            );
+            if (opts.json) {
+                printData("json", {
+                    aspectId: id,
+                    deleted: result.deleted,
+                    ok: true
+                });
+            } else {
+                note(
+                    result.deleted
+                        ? `Aspect definition "${id}" deleted.`
+                        : `Aspect definition "${id}" did not exist (nothing deleted).`
+                );
+            }
+        });
 }
