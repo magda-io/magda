@@ -13,6 +13,7 @@ import { printData, resolveMode, note } from "../output.js";
 import { resolveDownloadUrl, downloadToFile, uploadFile } from "../transfer.js";
 import { makeProgress } from "../progress.js";
 import { mergeAspect, collect, withAspectHint, fetchOwner } from "./dataset.js";
+import { publishDistribution, renderPublishResult } from "../publishing.js";
 import {
     parseAspectArg,
     appendVersion,
@@ -24,6 +25,22 @@ import {
 
 export function registerDistCommands(program: Command): void {
     const dist = program.command("dist").description("Distribution records");
+
+    for (const verb of ["publish", "unpublish"] as const) {
+        const state = verb === "publish" ? "published" : "draft";
+        dist.command(`${verb} <distributionId>`)
+            .description(`Set a distribution's publishing state to ${state}`)
+            .option("--json", "output the result as JSON")
+            .action(async (distributionId: string, opts) => {
+                const client = await clientFromProfile();
+                const records = await publishDistribution(
+                    client,
+                    distributionId,
+                    state
+                );
+                renderPublishResult(records, resolveMode(opts));
+            });
+    }
 
     dist.command("get <distributionId>")
         .description("Fetch a distribution record")
