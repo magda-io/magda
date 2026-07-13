@@ -280,6 +280,7 @@ exposes them (the web UI does not):
 mgd aspect list
 mgd aspect get <aspectId>
 mgd aspect create <aspectId> --name "My Aspect" --schema @schema.json
+mgd aspect delete <aspectId>                     # only if no record data references it
 
 # aspect data on any record (dataset or distribution)
 mgd dataset aspect get    magda-ds-<uuid> <aspectId>
@@ -340,7 +341,7 @@ echo '{"active":true}' | mgd api request PUT /v0/some/endpoint --body -
 | `dist download <id>`                                  | Download a distribution's file (`--resume`)             |
 | `dist replace-file <id> <file>`                       | Replace a distribution's file, bump version             |
 | `file upload <file>` / `file download <bucket/key>`   | Direct storage transfer                                 |
-| `aspect list` / `get <id>` / `create <id>`            | Manage aspect definitions                               |
+| `aspect list` / `get <id>` / `create <id>` / `delete <id>` | Manage aspect definitions                               |
 | `api request <method> <path>`                         | Call any MAGDA API endpoint                             |
 | `skills install [--agent <name>]`                     | Install the agent skill (all agents, global by default) |
 | `skills uninstall [--agent <name>]`                   | Remove the agent skill                                  |
