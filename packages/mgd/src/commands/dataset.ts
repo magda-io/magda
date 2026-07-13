@@ -25,6 +25,7 @@ import {
     DATASETS_BUCKET_DEFAULT
 } from "../recordBuilders.js";
 import { uploadFile } from "../transfer.js";
+import { publishDataset, renderPublishResult } from "../publishing.js";
 
 export async function fetchOwner(
     client: MagdaClient
@@ -260,6 +261,30 @@ export function registerDatasetCommands(program: Command): void {
             if (opts.json) printData("json", { datasetId, ok: true });
             else note(`Dataset ${datasetId} updated.`);
         });
+
+    for (const verb of ["publish", "unpublish"] as const) {
+        const state = verb === "publish" ? "published" : "draft";
+        dataset
+            .command(`${verb} <datasetId>`)
+            .description(
+                `Set the dataset's publishing state to ${state} and ` +
+                    `cascade to all its distributions (opt out with ` +
+                    `--without-distributions)`
+            )
+            .option(
+                "--without-distributions",
+                "change the dataset record only, not its distributions"
+            )
+            .option("--json", "output the result as JSON")
+            .action(async (datasetId: string, opts) => {
+                const client = await clientFromProfile();
+                const records = await publishDataset(client, datasetId, {
+                    state,
+                    withoutDistributions: Boolean(opts.withoutDistributions)
+                });
+                renderPublishResult(records, resolveMode(opts));
+            });
+    }
 
     const datasetAspect = dataset
         .command("aspect")

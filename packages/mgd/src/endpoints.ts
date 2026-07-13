@@ -22,6 +22,12 @@ export const registryRecordInFull = (id: string) =>
 export const recordAspect = (recordId: string, aspectId: string) =>
     `${registryRecord(recordId)}/aspects/${encodeURIComponent(aspectId)}`;
 
+// Bulk endpoint: set one aspect's data across a list of records in a single
+// (transactional) request. Body: { recordIds, data }; use ?merge=true to
+// deep-merge into existing aspect data instead of replacing it.
+export const recordsAspect = (aspectId: string) =>
+    `${REGISTRY_RECORDS}/aspects/${encodeURIComponent(aspectId)}`;
+
 export const registryAspect = (id: string) =>
     `${REGISTRY_ASPECTS}/${encodeURIComponent(id)}`;
 
