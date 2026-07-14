@@ -750,7 +750,7 @@ class RecordsService(
   }
 
   /**
-    * @apiGroup Registry Record Aspects
+    * @apiGroup Registry Record Service
     * @api {put} /v0/registry/records/aspects/:aspectId Modify a list of records's aspect with same new data
     *
     * @apiDescription  Modify a list of records's aspect with same new data
@@ -882,7 +882,7 @@ class RecordsService(
   }
 
   /**
-    * @apiGroup Registry Record Aspects
+    * @apiGroup Registry Record Service
     * @api {delete} /v0/registry/records/aspectArrayItems/:aspectId Remove items from records' aspect data
     *
     * @apiDescription  this API goes through the aspect data that is specified by aspectId of a list of registry records

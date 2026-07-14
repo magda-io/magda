@@ -7,6 +7,7 @@
 - #3672: Add large file upload & download support to `storage-api` — S3 multipart upload proxy endpoints (`/v0/storage/multipart/{initiate,part,parts,complete,abort}`) and HTTP Range support on object download, enabling resumable transfers of large (multi-GB) files without raising the ingress body-size limit. Adds `recommendedPartSize`, `maxPartSize`, `multipartUploadExpiry` & `incompleteUploadExpiryDays` chart options.
 - #3678: Fix `storage-api` create-bucket route being registered at `/v0/storage/{bucketid}` instead of the documented `/v0/storage/buckets/{bucketid}`
 - #3691: Add `DELETE /v0/registry/aspects/{id}` to `registry-api` — deletes an aspect definition only when no record aspect data still references it within the tenant; otherwise responds `409 Conflict` (including the referencing-record count) and deletes nothing. Deleting a non-existent aspect responds `200 {"deleted": false}` (mirroring record delete). Emits a `DeleteAspectDefinitionEvent`, is permission-gated via `object/aspect/delete` and tenant-scoped.
+- #3704: `registry-api` API docs — move the bulk (multi-record) aspect-write endpoints `PUT /v0/registry/records/aspects/{aspectId}` and `DELETE /v0/registry/records/aspectArrayItems/{aspectId}` from the "Registry Record Aspects" group into "Registry Record Service", so all "operate on a list of records" endpoints are grouped together with `PATCH /v0/registry/records`. Doc-comment (`@apiGroup`) change only; no route or behaviour change.
 
 ## v6.0.0
 
