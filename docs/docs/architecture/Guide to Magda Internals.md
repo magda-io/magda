@@ -535,7 +535,7 @@ The request sent to decision API can be simply like:
 
 The detailed document of the decision API can be found from [here](https://github.com/magda-io/magda/blob/e10a202de7cc0c3610b206ca9daaaabddb00e79f/magda-authorization-api/src/createOpaRouter.ts#L220)
 
-> The HTML version doc can be accessed via the footer link of a deployed Magda site. You can also build Magda's API doc manually to avoid the deployment. Just go to `magda-apidocs-server` module and run `yarn build`. The HTML version API docs will be available from `build` folder.
+> The HTML version doc can be accessed via the footer link of a deployed Magda site. You can also build Magda's API doc manually to avoid the deployment. Just go to `magda-apidocs-server` module and run `yarn build`. The HTML version API docs will be available from `build` folder. See [`magda-apidocs-server/README.md`](../../../magda-apidocs-server/README.md) for how the API docs are generated and served.
 
 > We implemented decision API integration code as [Directives](https://github.com/magda-io/magda/blob/next/magda-scala-common/src/main/scala/au/csiro/data61/magda/directives/AuthDirectives.scala) in scala code base and [middlewares](https://github.com/magda-io/magda/blob/e10a202de7cc0c3610b206ca9daaaabddb00e79f/magda-typescript-common/src/authorization-api/authMiddleware.ts#L83) in nodejs codebase. You can choose to reuse those code or write your own.
 

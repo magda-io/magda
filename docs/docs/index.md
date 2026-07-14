@@ -15,6 +15,7 @@
 - [How to use APIs](./using-api.md)
 - [`mgd` CLI — terminal & coding-agent access to a catalog (search, download, create/edit datasets; Claude Code / Codex / opencode skills)](https://github.com/magda-io/magda/tree/main/packages/mgd)
 - [How to document APIs](./api-documentation-howto.md)
+- [How API docs are generated & served (`magda-apidocs-server`)](../../magda-apidocs-server/README.md)
 - [How to create API key](./how-to-create-api-key.md)
 - [How to set/unset admin users](./how-to-set-user-as-admin-user.md)
 - [How to manage users, roles & permissions](https://www.npmjs.com/package/@magda/acs-cmd)
