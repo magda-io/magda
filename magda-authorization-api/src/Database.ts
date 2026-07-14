@@ -564,7 +564,7 @@ export default class Database {
         }
 
         await this.pool.query(
-            ...sqls`DELETE users WHERE id = ${userId}`.toQuery()
+            ...sqls`DELETE FROM users WHERE id = ${userId}`.toQuery()
         );
     }
 
