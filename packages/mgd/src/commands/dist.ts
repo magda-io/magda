@@ -1,6 +1,6 @@
 import path from "node:path";
 import { Command } from "commander";
-import { clientFromProfile } from "../client.js";
+import { clientFromProfile, eventIdFrom } from "../client.js";
 import {
     registryRecord,
     registryRecordInFull,
@@ -16,16 +16,24 @@ import { mergeAspect, collect, withAspectHint, fetchOwner } from "./dataset.js";
 import { publishDistribution, renderPublishResult } from "../publishing.js";
 import {
     parseAspectArg,
-    appendVersion,
     storageDownloadUrl,
     getValidObjectKey,
     detectFormat,
     DATASETS_BUCKET_DEFAULT
 } from "../recordBuilders.js";
+import {
+    reconcileVersion,
+    bumpRecordVersion,
+    writeVersionAspect,
+    VersionAspectData
+} from "../versionAspect.js";
 
 export function registerDistCommands(program: Command): void {
     const dist = program.command("dist").description("Distribution records");
 
+    // publish/unpublish deliberately do NOT bump the version aspect: a
+    // publishing-state flip is lifecycle metadata, not a content change. See
+    // issue #3687.
     for (const verb of ["publish", "unpublish"] as const) {
         const state = verb === "publish" ? "published" : "draft";
         dist.command(`${verb} <distributionId>`)
@@ -90,36 +98,71 @@ export function registerDistCommands(program: Command): void {
             if (opts.desc) scalarPatch.description = opts.desc;
             if (opts.format) scalarPatch.format = opts.format;
             if (opts.license) scalarPatch.license = opts.license;
+            const aspectArgs: { id: string; data: unknown }[] = [];
+            for (const arg of opts.aspect as string[]) {
+                aspectArgs.push(await parseAspectArg(arg));
+            }
             if (
                 Object.keys(scalarPatch).length === 0 &&
-                (opts.aspect as string[]).length === 0
+                aspectArgs.length === 0
             ) {
                 throw new UsageError(
                     "Nothing to update: pass --title/--desc/--format/--license or --aspect."
                 );
             }
             const client = await clientFromProfile();
+            let lastEventId = 0;
+            let mergedTitle: string | undefined;
             if (Object.keys(scalarPatch).length > 0) {
                 scalarPatch.modified = new Date().toISOString();
-                await mergeAspect(
+                const { eventId, merged } = await mergeAspect(
                     client,
                     distributionId,
                     "dcat-distribution-strings",
                     scalarPatch
                 );
+                lastEventId = Math.max(lastEventId, eventId);
+                mergedTitle =
+                    typeof merged.title === "string" ? merged.title : undefined;
             }
-            for (const arg of opts.aspect as string[]) {
-                const { id, data } = await parseAspectArg(arg);
+            for (const { id, data } of aspectArgs) {
                 try {
-                    await client.json("PUT", recordAspect(distributionId, id), {
-                        headers: { "content-type": "application/json" },
-                        body: JSON.stringify(data)
-                    });
+                    const res = await client.request(
+                        "PUT",
+                        recordAspect(distributionId, id),
+                        {
+                            headers: { "content-type": "application/json" },
+                            body: JSON.stringify(data)
+                        }
+                    );
+                    lastEventId = Math.max(lastEventId, eventIdFrom(res));
                 } catch (e) {
                     throw withAspectHint(e);
                 }
             }
-            if (opts.json) printData("json", { distributionId, ok: true });
+            let version: VersionAspectData | undefined;
+            // Divergence from the web client (deliberate, record-scoped model):
+            // a distribution-metadata edit bumps the DISTRIBUTION's version;
+            // the web client bumps nothing on such an edit (its session model
+            // folds it into the dataset-level bump). See issue #3687.
+            // An explicit user write to `version` always wins: skip auto-bump.
+            if (!aspectArgs.some((a) => a.id === "version")) {
+                version = await bumpRecordVersion(client, distributionId, {
+                    eventId: lastEventId,
+                    now: new Date(),
+                    title: (opts.title as string | undefined) ?? mergedTitle,
+                    creatorId: (await fetchOwner(client))?.id,
+                    description: "Distribution metadata updated"
+                });
+            }
+            if (opts.json)
+                printData("json", {
+                    distributionId,
+                    ok: true,
+                    ...(version
+                        ? { versionNumber: version.currentVersionNumber }
+                        : {})
+                });
             else note(`Distribution ${distributionId} updated.`);
         });
 
@@ -196,17 +239,10 @@ export function registerDistCommands(program: Command): void {
             progress.done();
 
             const title = opts.title ?? fileName;
-            const newVersionAspect = appendVersion(oldVersionAspect, {
-                title,
-                creatorId: owner?.id,
-                now,
-                internalDataFileUrl: newDownloadURL,
-                description: "Replaced superseded by a new distribution"
-            });
-
             const detectedFormat = detectFormat(fileName);
+            let contentEventId = 0;
             try {
-                await mergeAspect(
+                const { eventId } = await mergeAspect(
                     client,
                     distributionId,
                     "dcat-distribution-strings",
@@ -219,18 +255,7 @@ export function registerDistCommands(program: Command): void {
                         ...(detectedFormat ? { format: detectedFormat } : {})
                     }
                 );
-                try {
-                    await client.json(
-                        "PUT",
-                        recordAspect(distributionId, "version"),
-                        {
-                            headers: { "content-type": "application/json" },
-                            body: JSON.stringify(newVersionAspect)
-                        }
-                    );
-                } catch (e) {
-                    throw withAspectHint(e);
-                }
+                contentEventId = eventId;
             } catch (e) {
                 try {
                     await client.request(
@@ -251,6 +276,25 @@ export function registerDistCommands(program: Command): void {
                 }
                 throw e;
             }
+
+            // The content change is in; version maintenance is best-effort
+            // from here (a failure warns and the reconcile self-heals later).
+            //
+            // Divergence from the web client (deliberate): a file replacement
+            // bumps ONLY the distribution's version, not the parent dataset's
+            // (a web-client session would bump both). `forceBump` appends a new
+            // version even when the current one is untagged, so the new file's
+            // internalDataFileUrl is never lost from history. See issue #3687.
+            const newVersionAspect = reconcileVersion(oldVersionAspect, {
+                eventId: contentEventId,
+                title,
+                creatorId: owner?.id,
+                now,
+                internalDataFileUrl: newDownloadURL,
+                description: "Replaced superseded by a new distribution",
+                forceBump: true
+            }).data;
+            await writeVersionAspect(client, distributionId, newVersionAspect);
 
             let oldFileDeleted = false;
             if (
@@ -286,6 +330,143 @@ export function registerDistCommands(program: Command): void {
                 note(
                     `Replaced file of ${distributionId} (version ${newVersionAspect.currentVersionNumber}, ${uploaded.size} bytes).` +
                         (oldFileDeleted ? " Superseded object deleted." : "")
+                );
+            }
+        });
+
+    dist.command("remove <distributionId>")
+        .description(
+            "Remove a distribution from its dataset and delete it " +
+                "(bumps the dataset's version aspect)"
+        )
+        .option(
+            "--keep-files",
+            "do not delete the distribution's stored data files"
+        )
+        .option(
+            "--bucket <bucket>",
+            "storage bucket the data files live in",
+            DATASETS_BUCKET_DEFAULT
+        )
+        .option("--json", "output JSON result")
+        .action(async (distributionId: string, opts) => {
+            const client = await clientFromProfile();
+
+            // 1. find the parent dataset (with its distribution list, title)
+            const parents = await client.json<any>("GET", REGISTRY_RECORDS, {
+                query: [
+                    ["aspect", "dataset-distributions"],
+                    ["optionalAspect", "dcat-dataset-strings"],
+                    [
+                        "aspectQuery",
+                        `dataset-distributions.distributions:<|${distributionId}`
+                    ],
+                    ["limit", "1"]
+                ]
+            });
+            const parent = parents?.records?.[0];
+            if (!parent?.id) {
+                throw new MgdApiError(
+                    `Could not find the parent dataset of ${distributionId}.`,
+                    404,
+                    "parent-dataset-not-found",
+                    "If the distribution is unlinked, delete it directly: " +
+                        `mgd api request DELETE /v0/registry/records/${distributionId}`
+                );
+            }
+            const datasetId: string = parent.id;
+
+            // 2. fetch the distribution's stored-file URLs before deletion
+            const dist = await client.json<any>(
+                "GET",
+                registryRecord(distributionId),
+                {
+                    query: [
+                        ["optionalAspect", "dcat-distribution-strings"],
+                        ["optionalAspect", "version"]
+                    ]
+                }
+            );
+            const owner = await fetchOwner(client);
+            const now = new Date();
+
+            // 3. unlink from the dataset first so it never references a
+            //    deleted record
+            const current: string[] = (
+                parent.aspects?.["dataset-distributions"]?.distributions ?? []
+            ).map((d: any) => (typeof d === "string" ? d : d.id));
+            const { eventId: e1 } = await mergeAspect(
+                client,
+                datasetId,
+                "dataset-distributions",
+                { distributions: current.filter((id) => id !== distributionId) }
+            );
+            const { eventId: e2 } = await mergeAspect(
+                client,
+                datasetId,
+                "dcat-dataset-strings",
+                { modified: now.toISOString() }
+            );
+
+            // 4. removing a distribution is a new dataset version
+            const dsVersion = await bumpRecordVersion(client, datasetId, {
+                eventId: Math.max(e1, e2),
+                now,
+                title:
+                    parent.aspects?.["dcat-dataset-strings"]?.title ??
+                    parent.name,
+                creatorId: owner?.id,
+                description: "Distribution removed"
+            });
+
+            // 5. delete the distribution record
+            await client.request("DELETE", registryRecord(distributionId));
+
+            // 6. best-effort storage cleanup (current file + all versions)
+            const urls = new Set<string>();
+            const dl: unknown =
+                dist.aspects?.["dcat-distribution-strings"]?.downloadURL;
+            if (typeof dl === "string") urls.add(dl);
+            for (const v of dist.aspects?.version?.versions ?? []) {
+                if (typeof v?.internalDataFileUrl === "string")
+                    urls.add(v.internalDataFileUrl);
+            }
+            const filesDeleted: string[] = [];
+            if (!opts.keepFiles) {
+                for (const url of urls) {
+                    if (!url.startsWith("magda://storage-api/")) continue;
+                    const resolved = resolveDownloadUrl(url, opts.bucket);
+                    if (resolved.kind !== "storage") continue;
+                    try {
+                        await client.request("DELETE", resolved.path);
+                        filesDeleted.push(url);
+                    } catch {
+                        note(`Warning: could not delete stored object ${url}.`);
+                    }
+                }
+            }
+
+            if (opts.json) {
+                printData("json", {
+                    distributionId,
+                    datasetId,
+                    ...(dsVersion
+                        ? {
+                              datasetVersionNumber:
+                                  dsVersion.currentVersionNumber
+                          }
+                        : {}),
+                    filesDeleted
+                });
+            } else {
+                note(
+                    `Removed distribution ${distributionId} from dataset ${datasetId}` +
+                        (dsVersion
+                            ? ` (dataset version ${dsVersion.currentVersionNumber})`
+                            : "") +
+                        (filesDeleted.length
+                            ? `; deleted ${filesDeleted.length} stored file(s).`
+                            : ".")
                 );
             }
         });

@@ -263,4 +263,101 @@ describe("dataset add-file", () => {
             await server.close();
         }
     });
+
+    it("tags the distribution v0 and bumps the dataset version", async () => {
+        const local = path.join(tmp, "data.csv");
+        await fs.writeFile(local, "x,y\n");
+        const server = await startMockServer([
+            {
+                method: "GET",
+                path: "/v0/auth/users/whoami",
+                body: { id: "u1" }
+            },
+            {
+                method: "GET",
+                path: /^\/v0\/registry\/records\/ds-1$/,
+                body: {
+                    id: "ds-1",
+                    name: "My data",
+                    aspects: {
+                        publishing: { state: "draft" },
+                        "dataset-distributions": { distributions: [] },
+                        "dcat-dataset-strings": { title: "My data" }
+                    }
+                }
+            },
+            { method: "POST", path: /^\/v0\/storage\/upload\//, body: {} },
+            {
+                method: "POST",
+                path: "/v0/registry/records",
+                body: {},
+                headers: { "x-magda-event-id": "60" }
+            },
+            {
+                method: "GET",
+                path: /aspects\/dataset-distributions$/,
+                body: { distributions: [] }
+            },
+            {
+                method: "PUT",
+                path: /aspects\/dataset-distributions$/,
+                body: {},
+                headers: { "x-magda-event-id": "61" }
+            },
+            {
+                method: "GET",
+                path: /aspects\/dcat-dataset-strings$/,
+                body: { title: "My data" }
+            },
+            {
+                method: "PUT",
+                path: /aspects\/dcat-dataset-strings$/,
+                body: {},
+                headers: { "x-magda-event-id": "62" }
+            },
+            {
+                method: "GET",
+                path: /records\/ds-1\/aspects\/version$/,
+                status: 404,
+                body: { message: "not found" }
+            },
+            {
+                method: "PUT",
+                path: /aspects\/version$/,
+                body: {},
+                headers: { "x-magda-event-id": "63" }
+            }
+        ]);
+        process.env.MGD_BASE_URL = server.url;
+        try {
+            const program = new Command();
+            registerDatasetCommands(program);
+            await captureStdout(() =>
+                program.parseAsync(["dataset", "add-file", "ds-1", local], {
+                    from: "user"
+                })
+            );
+            const versionPuts = server.requests.filter(
+                (r) => r.method === "PUT" && r.url.includes("aspects/version")
+            );
+            // one tag write on the new distribution, one bump on the dataset
+            expect(versionPuts).to.have.length(2);
+            const distTag = JSON.parse(versionPuts[0].body.toString());
+            expect(distTag.currentVersionNumber).to.equal(0);
+            expect(distTag.versions[0].eventId).to.equal(60);
+            const dsPut = versionPuts.find((r) =>
+                r.url.includes("/records/ds-1/")
+            )!;
+            const dsVersion = JSON.parse(dsPut.body.toString());
+            // dataset had no version aspect: seeded v0, tagged with the
+            // max content event id (62)
+            expect(dsVersion.currentVersionNumber).to.equal(0);
+            expect(dsVersion.versions[0].eventId).to.equal(62);
+            expect(dsVersion.versions[0].description).to.equal(
+                "initial version"
+            );
+        } finally {
+            await server.close();
+        }
+    });
 });

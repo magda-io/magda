@@ -87,4 +87,5 @@ When asked to improve an existing dataset (or after a quick-path creation):
   marking which values were inferred vs provided.
 - After mutations, report the record IDs and what changed.
 - Replacing a file (`mgd dist replace-file`) preserves version history; tell
-  the user the new version number.
+  the user the new version number. Dataset/distribution metadata updates and
+  `dist remove` also bump the affected record's version automatically.

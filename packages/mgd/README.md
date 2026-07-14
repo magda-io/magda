@@ -270,6 +270,15 @@ metadata tools, with a distinct `name` marking their CLI provenance.
 > prints the exact commands to finish or undo — it never leaves silent partial
 > state.
 
+> **Versioning.** The CLI maintains the application-managed `version` aspect
+> automatically: `dataset create` / `add-file` seed and tag the initial
+> version, and `dataset update`, `dist update`, `dist replace-file`,
+> `add-file` and `dist remove` bump the changed record's version (tagged with
+> the registry event id, so past versions work with the registry's
+> time-travel API). `publish` / `unpublish` don't bump versions (lifecycle
+> state, not content). Don't hand-edit the `version` aspect; `dataset aspect set` / `aspect patch` / `aspect delete` are the manual escape hatch and
+> never auto-bump.
+
 ### Custom aspects
 
 The registry supports user-defined aspects with JSON-schema validation. `mgd`
@@ -323,28 +332,29 @@ echo '{"active":true}' | mgd api request PUT /v0/some/endpoint --body -
 
 ## Command reference
 
-| Command                                               | Description                                             |
-| ----------------------------------------------------- | ------------------------------------------------------- |
-| `profile create <name>` / `update <name>` / `remove <name>` | Create / patch / delete a site profile            |
-| `profile list` / `profile use <name>`                 | List / switch profiles                                  |
-| `auth status`                                         | Show the active profile and authenticated user          |
-| `auth login`                                          | Deprecated alias of `profile create` (`--profile`)      |
-| `search datasets <query>`                             | Keyword dataset search                                  |
-| `search semantic <query>`                             | Semantic (embedding) search                             |
-| `dataset get <id>`                                    | Fetch a dataset record                                  |
-| `dataset distributions <id>`                          | List a dataset's distributions                          |
-| `dataset create`                                      | Create a dataset (draft by default)                     |
-| `dataset update <id>`                                 | Update dataset metadata                                 |
-| `dataset add-file <id> [file]`                        | Upload/attach a distribution (or `--access-url`)        |
-| `dataset aspect get/set/patch/delete <recordId> <aspectId>` | Read/write custom aspect data on any record (`set`=replace, `patch`=merge) |
-| `dist get <id>` / `dist update <id>`                  | Inspect / edit a distribution                           |
-| `dist download <id>`                                  | Download a distribution's file (`--resume`)             |
-| `dist replace-file <id> <file>`                       | Replace a distribution's file, bump version             |
-| `file upload <file>` / `file download <bucket/key>`   | Direct storage transfer                                 |
-| `aspect list` / `get <id>` / `create <id>` / `delete <id>` | Manage aspect definitions                               |
-| `api request <method> <path>`                         | Call any MAGDA API endpoint                             |
-| `skills install [--agent <name>]`                     | Install the agent skill (all agents, global by default) |
-| `skills uninstall [--agent <name>]`                   | Remove the agent skill                                  |
+| Command                                                     | Description                                                                                         |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `profile create <name>` / `update <name>` / `remove <name>` | Create / patch / delete a site profile                                                              |
+| `profile list` / `profile use <name>`                       | List / switch profiles                                                                              |
+| `auth status`                                               | Show the active profile and authenticated user                                                      |
+| `auth login`                                                | Deprecated alias of `profile create` (`--profile`)                                                  |
+| `search datasets <query>`                                   | Keyword dataset search                                                                              |
+| `search semantic <query>`                                   | Semantic (embedding) search                                                                         |
+| `dataset get <id>`                                          | Fetch a dataset record                                                                              |
+| `dataset distributions <id>`                                | List a dataset's distributions                                                                      |
+| `dataset create`                                            | Create a dataset (draft by default)                                                                 |
+| `dataset update <id>`                                       | Update dataset metadata                                                                             |
+| `dataset add-file <id> [file]`                              | Upload/attach a distribution (or `--access-url`)                                                    |
+| `dataset aspect get/set/patch/delete <recordId> <aspectId>` | Read/write custom aspect data on any record (`set`=replace, `patch`=merge)                          |
+| `dist get <id>` / `dist update <id>`                        | Inspect / edit a distribution                                                                       |
+| `dist download <id>`                                        | Download a distribution's file (`--resume`)                                                         |
+| `dist replace-file <id> <file>`                             | Replace a distribution's file, bump version                                                         |
+| `dist remove <id>`                                          | Remove a distribution from its dataset (deletes record + stored files; `--keep-files` to keep them) |
+| `file upload <file>` / `file download <bucket/key>`         | Direct storage transfer                                                                             |
+| `aspect list` / `get <id>` / `create <id>` / `delete <id>`  | Manage aspect definitions                                                                           |
+| `api request <method> <path>`                               | Call any MAGDA API endpoint                                                                         |
+| `skills install [--agent <name>]`                           | Install the agent skill (all agents, global by default)                                             |
+| `skills uninstall [--agent <name>]`                         | Remove the agent skill                                                                              |
 
 Run `mgd --help` or `mgd <command> --help` for full option documentation.
 
