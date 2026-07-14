@@ -1,6 +1,12 @@
 import path from "node:path";
 import { Command } from "commander";
-import { clientFromProfile, MagdaClient } from "../client.js";
+import { clientFromProfile, MagdaClient, eventIdFrom } from "../client.js";
+import {
+    bumpRecordVersion,
+    tagCurrentVersion,
+    writeVersionAspect,
+    VersionAspectData
+} from "../versionAspect.js";
 import {
     registryRecord,
     registryRecordInFull,
@@ -65,17 +71,19 @@ export async function mergeAspect(
     recordId: string,
     aspectId: string,
     patch: Record<string, unknown>
-): Promise<void> {
+): Promise<{ eventId: number; merged: Record<string, unknown> }> {
     let current: Record<string, unknown> = {};
     try {
         current = await client.json("GET", recordAspect(recordId, aspectId));
     } catch (e) {
         if (!(e instanceof MgdApiError && e.status === 404)) throw e;
     }
-    await client.json("PUT", recordAspect(recordId, aspectId), {
+    const merged = { ...current, ...patch };
+    const res = await client.request("PUT", recordAspect(recordId, aspectId), {
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...current, ...patch })
+        body: JSON.stringify(merged)
     });
+    return { eventId: eventIdFrom(res), merged };
 }
 
 export function registerDatasetCommands(program: Command): void {
@@ -197,13 +205,27 @@ export function registerDatasetCommands(program: Command): void {
                 sourceUrl: deriveSiteUrl(client.opts.baseUrl),
                 extraAspects
             });
+            let createEventId = 0;
             try {
-                await client.json("POST", REGISTRY_RECORDS, {
+                const res = await client.request("POST", REGISTRY_RECORDS, {
                     headers: { "content-type": "application/json" },
                     body: JSON.stringify(record)
                 });
+                createEventId = eventIdFrom(res);
             } catch (e) {
                 throw withAspectHint(e);
+            }
+            // Tag the seeded v0 with the creation event so the next edit
+            // bumps to v1 (an explicit --aspect version=... wins untouched).
+            if (!("version" in extraAspects)) {
+                const tagged = tagCurrentVersion(
+                    record.aspects.version as VersionAspectData,
+                    createEventId
+                );
+                if (tagged) {
+                    record.aspects.version = tagged;
+                    await writeVersionAspect(client, record.id, tagged);
+                }
             }
             if (opts.json) printData("json", record);
             else process.stdout.write(record.id + "\n");
@@ -229,39 +251,73 @@ export function registerDatasetCommands(program: Command): void {
             if (opts.title) scalarPatch.title = opts.title;
             if (opts.desc) scalarPatch.description = opts.desc;
             if (opts.license) scalarPatch.defaultLicense = opts.license;
+            const aspectArgs: { id: string; data: unknown }[] = [];
+            for (const arg of opts.aspect as string[]) {
+                aspectArgs.push(await parseAspectArg(arg));
+            }
             if (
                 Object.keys(scalarPatch).length === 0 &&
-                (opts.aspect as string[]).length === 0
+                aspectArgs.length === 0
             ) {
                 throw new UsageError(
                     "Nothing to update: pass --title/--desc/--license or --aspect."
                 );
             }
             const client = await clientFromProfile();
+            let lastEventId = 0;
+            let mergedTitle: string | undefined;
             if (Object.keys(scalarPatch).length > 0) {
                 scalarPatch.modified = new Date().toISOString();
-                await mergeAspect(
+                const { eventId, merged } = await mergeAspect(
                     client,
                     datasetId,
                     "dcat-dataset-strings",
                     scalarPatch
                 );
+                lastEventId = Math.max(lastEventId, eventId);
+                mergedTitle =
+                    typeof merged.title === "string" ? merged.title : undefined;
             }
-            for (const arg of opts.aspect as string[]) {
-                const { id, data } = await parseAspectArg(arg);
+            for (const { id, data } of aspectArgs) {
                 try {
-                    await client.json("PUT", recordAspect(datasetId, id), {
-                        headers: { "content-type": "application/json" },
-                        body: JSON.stringify(data)
-                    });
+                    const res = await client.request(
+                        "PUT",
+                        recordAspect(datasetId, id),
+                        {
+                            headers: { "content-type": "application/json" },
+                            body: JSON.stringify(data)
+                        }
+                    );
+                    lastEventId = Math.max(lastEventId, eventIdFrom(res));
                 } catch (e) {
                     throw withAspectHint(e);
                 }
             }
-            if (opts.json) printData("json", { datasetId, ok: true });
+            let version: VersionAspectData | undefined;
+            // An explicit user write to `version` always wins: skip auto-bump.
+            if (!aspectArgs.some((a) => a.id === "version")) {
+                version = await bumpRecordVersion(client, datasetId, {
+                    eventId: lastEventId,
+                    now: new Date(),
+                    title: (opts.title as string | undefined) ?? mergedTitle,
+                    creatorId: (await fetchOwner(client))?.id,
+                    description: "Version created on update submission"
+                });
+            }
+            if (opts.json)
+                printData("json", {
+                    datasetId,
+                    ok: true,
+                    ...(version
+                        ? { versionNumber: version.currentVersionNumber }
+                        : {})
+                });
             else note(`Dataset ${datasetId} updated.`);
         });
 
+    // publish/unpublish deliberately do NOT bump the version aspect: a
+    // publishing-state flip is lifecycle metadata, not a content change, so a
+    // version entry per flip would be noise. See issue #3687.
     for (const verb of ["publish", "unpublish"] as const) {
         const state = verb === "publish" ? "published" : "draft";
         dataset
@@ -309,12 +365,7 @@ export function registerDatasetCommands(program: Command): void {
         .description("value: inline JSON, @file.json, or - for stdin")
         .option("--json", "output the result as JSON")
         .action(
-            async (
-                recordId: string,
-                aspectId: string,
-                value: string,
-                opts
-            ) => {
+            async (recordId: string, aspectId: string, value: string, opts) => {
                 const client = await clientFromProfile();
                 const data = await parseAspectValue(value);
                 try {
@@ -340,12 +391,7 @@ export function registerDatasetCommands(program: Command): void {
         )
         .option("--json", "output the result as JSON")
         .action(
-            async (
-                recordId: string,
-                aspectId: string,
-                value: string,
-                opts
-            ) => {
+            async (recordId: string, aspectId: string, value: string, opts) => {
                 const client = await clientFromProfile();
                 const data = await parseAspectValue(value);
                 try {
@@ -411,7 +457,8 @@ export function registerDatasetCommands(program: Command): void {
                     {
                         query: [
                             ["optionalAspect", "publishing"],
-                            ["optionalAspect", "dataset-distributions"]
+                            ["optionalAspect", "dataset-distributions"],
+                            ["optionalAspect", "dcat-dataset-strings"]
                         ]
                     }
                 );
@@ -477,17 +524,20 @@ export function registerDatasetCommands(program: Command): void {
                 });
 
                 let recordCreated = false;
+                let createEventId = 0;
+                let contentEventId = 0;
                 try {
-                    await client.json("POST", REGISTRY_RECORDS, {
+                    const res = await client.request("POST", REGISTRY_RECORDS, {
                         headers: { "content-type": "application/json" },
                         body: JSON.stringify(record)
                     });
+                    createEventId = eventIdFrom(res);
                     recordCreated = true;
                     const current: string[] = (
                         dataset.aspects?.["dataset-distributions"]
                             ?.distributions ?? []
                     ).map((d: any) => (typeof d === "string" ? d : d.id));
-                    await mergeAspect(
+                    const { eventId: e1 } = await mergeAspect(
                         client,
                         datasetId,
                         "dataset-distributions",
@@ -495,7 +545,7 @@ export function registerDatasetCommands(program: Command): void {
                             distributions: [...current, distId]
                         }
                     );
-                    await mergeAspect(
+                    const { eventId: e2 } = await mergeAspect(
                         client,
                         datasetId,
                         "dcat-dataset-strings",
@@ -503,6 +553,7 @@ export function registerDatasetCommands(program: Command): void {
                             modified: now.toISOString()
                         }
                     );
+                    contentEventId = Math.max(e1, e2);
                 } catch (e) {
                     if (recordCreated) {
                         try {
@@ -546,6 +597,29 @@ export function registerDatasetCommands(program: Command): void {
                     throw wrapped;
                 }
 
+                // Version maintenance (best-effort from here):
+                // 1. tag the new distribution's seeded v0 with its creation
+                //    event (skip when the user supplied the aspect);
+                if (!("version" in extraAspects)) {
+                    const tagged = tagCurrentVersion(
+                        record.aspects.version as VersionAspectData,
+                        createEventId
+                    );
+                    if (tagged) {
+                        await writeVersionAspect(client, distId, tagged);
+                    }
+                }
+                // 2. a new distribution is a new dataset version.
+                const dsVersion = await bumpRecordVersion(client, datasetId, {
+                    eventId: contentEventId,
+                    now,
+                    title:
+                        dataset.aspects?.["dcat-dataset-strings"]?.title ??
+                        dataset.name,
+                    creatorId: owner?.id,
+                    description: "Distribution added"
+                });
+
                 if (opts.json) {
                     printData("json", {
                         datasetId,
@@ -553,7 +627,15 @@ export function registerDatasetCommands(program: Command): void {
                         ...(downloadURL
                             ? { downloadURL, bytes: byteSize }
                             : {}),
-                        ...(opts.accessUrl ? { accessURL: opts.accessUrl } : {})
+                        ...(opts.accessUrl
+                            ? { accessURL: opts.accessUrl }
+                            : {}),
+                        ...(dsVersion
+                            ? {
+                                  datasetVersionNumber:
+                                      dsVersion.currentVersionNumber
+                              }
+                            : {})
                     });
                 } else {
                     process.stdout.write(distId + "\n");

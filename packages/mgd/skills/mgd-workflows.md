@@ -33,6 +33,11 @@ your assistant environment, keep the rules.
    happens only when the user asked for it.
 6. **Report identifiers.** Every user-facing summary must include the dataset
    IDs, distribution IDs, local file paths, and upload targets you touched.
+7. **Versioning is automatic.** The CLI maintains the `version` aspect on
+   high-level commands (`create`/`update`/`add-file`/`replace-file`/`remove`)
+   and tags versions with registry event ids. `publish`/`unpublish` never bump
+   versions. Never hand-edit the `version` aspect; raw `aspect set`/`patch`/
+   `delete` never auto-bump.
 
 ## Keyword vs semantic search — use both
 
@@ -88,6 +93,13 @@ the metadata conversation first):
 
 ```sh
 mgd dataset add-file ds-abc ./analysis/summary.parquet --title "2026 summary" --json
+```
+
+Remove a distribution (unlinks it, bumps the dataset version, deletes the
+record and its stored files; `--keep-files` keeps the objects):
+
+```sh
+mgd dist remove dist-xyz --json
 ```
 
 Custom / domain metadata:

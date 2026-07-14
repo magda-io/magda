@@ -148,3 +148,14 @@ export function clientFor(profile: Profile): MagdaClient {
         apiKey: profile.apiKey
     });
 }
+
+// Registry mutation responses carry the id of the event they created in the
+// `x-magda-event-id` header (same contract as the web client's
+// getEventIdFromHeaders). 0 means "unknown" and must never be written into
+// a version item.
+export function eventIdFrom(res: Response): number {
+    const v = res.headers.get("x-magda-event-id");
+    if (!v) return 0;
+    const n = parseInt(v, 10);
+    return Number.isNaN(n) ? 0 : n;
+}

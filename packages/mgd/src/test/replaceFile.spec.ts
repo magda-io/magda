@@ -150,4 +150,74 @@ describe("dist replace-file", () => {
             await server.close();
         }
     });
+
+    it("tags the new version with the dcat merge's event id", async () => {
+        const local = path.join(tmp, "new.csv");
+        await fs.writeFile(local, "x\n");
+        const server = await startMockServer([
+            {
+                method: "GET",
+                path: "/v0/auth/users/whoami",
+                body: { id: "u1" }
+            },
+            {
+                method: "GET",
+                path: /^\/v0\/registry\/records\/dist-1$/,
+                body: {
+                    id: "dist-1",
+                    aspects: {
+                        "dcat-distribution-strings": { title: "old.csv" },
+                        version: {
+                            currentVersionNumber: 0,
+                            versions: [
+                                {
+                                    versionNumber: 0,
+                                    createTime: "2026-01-01T00:00:00.000Z",
+                                    description: "initial version",
+                                    title: "old.csv"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                method: "GET",
+                path: "/v0/registry/records",
+                body: { records: [{ id: "ds-1" }] }
+            },
+            { method: "POST", path: /^\/v0\/storage\/upload\//, body: {} },
+            {
+                method: "GET",
+                path: /aspects\/dcat-distribution-strings$/,
+                body: { title: "old.csv" }
+            },
+            {
+                method: "PUT",
+                path: /aspects\/dcat-distribution-strings$/,
+                body: {},
+                headers: { "x-magda-event-id": "99" }
+            },
+            { method: "PUT", path: /aspects\/version$/, body: {} }
+        ]);
+        process.env.MGD_BASE_URL = server.url;
+        try {
+            const program = new Command();
+            registerDistCommands(program);
+            await captureStdout(() =>
+                program.parseAsync(["dist", "replace-file", "dist-1", local], {
+                    from: "user"
+                })
+            );
+            const versionPut = server.requests.find(
+                (r) => r.method === "PUT" && r.url.includes("aspects/version")
+            )!;
+            const version = JSON.parse(versionPut.body.toString());
+            // untagged v0 + forceBump: still appends a new version
+            expect(version.currentVersionNumber).to.equal(1);
+            expect(version.versions[1].eventId).to.equal(99);
+        } finally {
+            await server.close();
+        }
+    });
 });

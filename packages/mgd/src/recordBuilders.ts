@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import { randomUUID, createHash } from "node:crypto";
 import { UsageError } from "./errors.js";
+import { buildInitialVersionAspect } from "./versionAspect.js";
 
 export const DATASETS_BUCKET_DEFAULT = "magda-datasets";
 
@@ -188,59 +189,6 @@ function accessControlAspect(owner?: { id?: string; orgUnitId?: string }) {
             ...(owner.orgUnitId ? { orgUnitId: owner.orgUnitId } : {}),
             constraintExemption: false
         }
-    };
-}
-
-export function buildInitialVersionAspect(args: {
-    title: string;
-    creatorId?: string;
-    now: Date;
-    internalDataFileUrl?: string;
-}) {
-    return {
-        currentVersionNumber: 0,
-        versions: [
-            {
-                versionNumber: 0,
-                createTime: args.now.toISOString(),
-                ...(args.creatorId ? { creatorId: args.creatorId } : {}),
-                description: "initial version",
-                title: args.title,
-                ...(args.internalDataFileUrl
-                    ? { internalDataFileUrl: args.internalDataFileUrl }
-                    : {})
-            }
-        ]
-    };
-}
-
-export function appendVersion(
-    existing: { currentVersionNumber: number; versions: any[] } | undefined,
-    args: {
-        title: string;
-        creatorId?: string;
-        now: Date;
-        internalDataFileUrl?: string;
-        description: string;
-    }
-) {
-    const base = existing ?? { currentVersionNumber: -1, versions: [] };
-    const versionNumber = base.currentVersionNumber + 1;
-    return {
-        currentVersionNumber: versionNumber,
-        versions: [
-            ...base.versions,
-            {
-                versionNumber,
-                createTime: args.now.toISOString(),
-                ...(args.creatorId ? { creatorId: args.creatorId } : {}),
-                description: args.description,
-                title: args.title,
-                ...(args.internalDataFileUrl
-                    ? { internalDataFileUrl: args.internalDataFileUrl }
-                    : {})
-            }
-        ]
     };
 }
 

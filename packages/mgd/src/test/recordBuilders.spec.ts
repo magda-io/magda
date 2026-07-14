@@ -5,8 +5,6 @@ import {
     detectFormat,
     buildDatasetRecord,
     buildDistributionRecord,
-    buildInitialVersionAspect,
-    appendVersion,
     removeInvalidChars,
     getValidObjectKey,
     deriveSiteUrl
@@ -176,19 +174,5 @@ describe("recordBuilders", () => {
         expect(record.aspects.version.versions[0].internalDataFileUrl).to.equal(
             "magda://storage-api/ds/dist/data.csv"
         );
-    });
-
-    it("appends versions with an incremented number", () => {
-        const v0 = buildInitialVersionAspect({ title: "t", now: NOW });
-        const v1 = appendVersion(v0, {
-            title: "t2",
-            now: NOW,
-            internalDataFileUrl: "magda://storage-api/a/b/c",
-            description: "Replaced superseded by a new distribution"
-        });
-        expect(v1.currentVersionNumber).to.equal(1);
-        expect(v1.versions).to.have.length(2);
-        expect(v1.versions[1].versionNumber).to.equal(1);
-        expect(v0.versions).to.have.length(1); // input not mutated
     });
 });
