@@ -120,6 +120,7 @@ Great! Take a look at https://github.com/magda-io/magda/blob/master/.github/CONT
 ## Documentation links
 
 - [Magda API Reference](https://magda-io.github.io/api-docs/index.html)
+- [How API docs are generated & served (`magda-apidocs-server`)](magda-apidocs-server/README.md)
 - [Magda Helm Chart Reference](docs/docs/helm-charts-docs-index.md)
 - [Migration & Upgrade Documents](docs/docs/migration)
 - [Other documentations](docs/docs/index.md)
