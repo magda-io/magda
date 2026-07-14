@@ -1,0 +1,20 @@
+{{- /*
+Fail fast on unsupported Helm versions.
+
+Magda relies on a parent chart's `null` value overriding a subchart's
+populated map default when coalescing `global` values (e.g.
+`global.searchEngine.semanticIndexer.knnVectorFieldConfig.encoder` is set to
+`null` in the magda chart to disable it, overriding the populated default in the
+magda-{csv,pdf}-semantic-indexer subcharts). Helm <= 3.16 does NOT honour that
+`null` and keeps the subchart's map, producing an invalid semantic indexer
+config where both `compressionLevel` and `encoder` are set. The semantic indexer
+SDK rejects that combination and crash-loops, so the semantic index is never
+created. Helm 3.17.0+ coalesces the `null` correctly.
+
+See magda-io/magda#3711 and the hybrid search engine docs.
+*/ -}}
+{{- $required := "3.17.0" -}}
+{{- $current := .Capabilities.HelmVersion.Version -}}
+{{- if semverCompare (printf "< %s" $required) $current -}}
+{{-   fail (printf "\n\nMagda requires Helm >= %s, but Helm %s is in use.\nOlder Helm mishandles `null` overrides when coalescing global values, which produces an invalid semantic indexer configuration (both compressionLevel and encoder set) and crash-loops the semantic indexers.\nPlease upgrade Helm to >= %s and retry.\n" $required $current $required) -}}
+{{- end -}}

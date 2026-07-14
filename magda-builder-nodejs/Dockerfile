@@ -25,9 +25,18 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
 RUN npm install -g npm@11.5.1 && npm install -g lerna@3.22.1 yarn@1.22.19
 
 # -----------------------------
-# Install Helm 3.13.2 (pinned)
+# Install Helm 3.17.4 (pinned)
 # -----------------------------
-ARG HELM_VERSION=3.13.2
+# NOTE: must be >= 3.17.0. Helm <= 3.16 does not honour a parent chart's
+# `null` value when coalescing global values over a subchart's populated
+# map default. That caused `global.searchEngine.semanticIndexer.knnVectorFieldConfig.encoder`
+# (set to `null` in the magda chart to disable it) to be silently overridden
+# by the magda-{csv,pdf}-semantic-indexer charts' populated `encoder` default,
+# so the rendered config ended up with both `compressionLevel` and `encoder`
+# set. The semantic-indexer SDK rejects that combination, crash-looping the
+# indexers and leaving the semantic-index uncreated. Helm 3.17+ coalesces the
+# `null` correctly. See magda-io/magda#3711 / hybrid search engine docs.
+ARG HELM_VERSION=3.17.4
 ARG TARGETARCH
 
 RUN HELM_ARCH="${TARGETARCH:-amd64}" \

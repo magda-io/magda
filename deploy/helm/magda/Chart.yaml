@@ -93,7 +93,7 @@ dependencies:
       - magda-pdf-semantic-indexer
 
   - name: magda-csv-semantic-indexer
-    version: "1.0.0-alpha.0"
+    version: "1.0.0-alpha.2"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
