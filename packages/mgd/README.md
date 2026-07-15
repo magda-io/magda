@@ -257,6 +257,10 @@ mgd dataset update magda-ds-<uuid> --title "River gauge readings (2025, v2)"
 
 # 5. Replace the file behind a distribution (adds a new version entry)
 mgd dist replace-file magda-dist-<uuid> ./readings-corrected.csv
+
+# 6. Publish — cascades to the dataset's distributions (--without-distributions to opt out)
+mgd dataset publish magda-ds-<uuid>          # unpublish the same way
+mgd dist publish magda-dist-<uuid>           # or flip a single distribution
 ```
 
 Datasets created by the CLI are stamped with a `source` aspect
@@ -278,6 +282,23 @@ metadata tools, with a distinct `name` marking their CLI provenance.
 > time-travel API). `publish` / `unpublish` don't bump versions (lifecycle
 > state, not content). Don't hand-edit the `version` aspect; `dataset aspect set` / `aspect patch` / `aspect delete` are the manual escape hatch and
 > never auto-bump.
+
+### Common aspects
+
+Records carry data in named **aspects**. The ones the CLI reads or writes most:
+
+| Aspect | Record | Holds / notes |
+| --- | --- | --- |
+| `dcat-dataset-strings` | dataset | `title`, `description`, `keywords`, `themes`, `languages`, `issued`/`modified` |
+| `dcat-distribution-strings` | distribution | per-file `title`, `format`, `downloadURL`, `accessURL`, `byteSize` |
+| `publishing` | dataset & distribution | `{ "state": "draft" \| "published" }` — use `publish`/`unpublish`, don't hand-edit |
+| `dataset-distributions` | dataset | `{ "distributions": [<distId>, …] }` — CLI-managed by `add-file`/`dist remove`; don't hand-edit |
+| `version` | dataset & distribution | CLI-managed history — don't hand-edit |
+| `access-control` | dataset | `ownerId`, `orgUnitId`, `constraintExemption` |
+| `source` | dataset | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`) |
+| `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI; the CLI does not set it yet ([#3715](https://github.com/magda-io/magda/issues/3715)) |
+| `temporal-coverage` | dataset | *optional* — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range |
+| `spatial-coverage` | dataset | *optional* — bounding box / named region; set manually when the data has a spatial extent |
 
 ### Custom aspects
 
@@ -364,6 +385,7 @@ Run `mgd --help` or `mgd <command> --help` for full option documentation.
 drive the catalog safely. The [`skills/`](./skills/) folder contains:
 
 - **`mgd-workflows.md`** — command usage, output modes, search strategy, recipes,
+  the create → enrich → add-file → publish workflow, a common-aspects reference,
   safety rules and error triage;
 - **`dataset-elicitation.md`** — "metadata consultant" behaviour for guided
   dataset creation (infer before asking, quick vs guided path, confirm-then-write);
