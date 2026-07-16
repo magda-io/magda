@@ -1,7 +1,7 @@
 {
   "name": "@magda/mgd",
   "description": "MAGDA local command-line interface",
-  "version": "6.0.0",
+  "version": "6.1.0-alpha.1",
   "type": "module",
   "bin": {
     "mgd": "./bin/mgd.js"
