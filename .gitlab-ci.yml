@@ -30,7 +30,7 @@ stages:
 
 yarn-install:
   stage: builders
-  image: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
+  image: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20-july-2026
   retry: 1
   needs: []
   cache:
@@ -49,7 +49,7 @@ yarn-install:
 
 build-builder-image:
   stage: builders
-  image: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
+  image: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20-july-2026
   retry: 1
   needs: []
   before_script:
@@ -781,7 +781,7 @@ dockerize:dockerExtensions:
   cache:
     paths: []
   image:
-    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
+    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20-july-2026
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -859,7 +859,7 @@ Stop Preview: &stopPreview
   cache:
     paths: []
   image:
-    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
+    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20-july-2026
   retry: 1
   before_script: []
   environment:
@@ -888,7 +888,7 @@ Deploy Main Branch To Dev:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
+    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20-july-2026
   retry: 1
   before_script: []
   environment:
@@ -1040,7 +1040,7 @@ Publish Helm Chart:
     - dockerize:dockerExtensions
     - buildtest:integration-tests
   image:
-    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20
+    name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20-july-2026
   retry: 1
   script: |
     # release helm charts to github container registry
