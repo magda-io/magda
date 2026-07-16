@@ -23,6 +23,119 @@ coding agents such as Claude Code can drive it — see
 
 ## Installation
 
+Choose the installation path that suits you.
+
+### Install with a coding agent — easiest
+
+Copy the prompt for your coding agent and paste it into a new task. The agent
+will guide you through installing both the `mgd` CLI and its MAGDA skill.
+
+<details>
+<summary><strong>Claude Code</strong> — copy this prompt</summary>
+
+```text
+Help me install and configure the MAGDA mgd CLI for use with Claude Code.
+
+1. Detect my operating system and check `node --version` and `npm --version`.
+   mgd requires Node.js 22 or newer. If Node.js is missing or too old, explain
+   the recommended installation or upgrade and ask for my confirmation before
+   changing my system. Prefer my existing version manager or an official
+   Node.js distribution. Do not use sudo, change my shell configuration, or
+   execute a remote installation script without explicit approval.
+2. Install the CLI with `npm install -g @magda/mgd`, then verify it with
+   `mgd --version`. If npm reports a permissions problem, explain it and
+   recommend a user-level Node.js/npm setup instead of escalating privileges.
+3. Install only the Claude Code skill with
+   `mgd skills install --agent claude`. Tell me if I need to start a new Claude
+   Code session before the skill will be discovered.
+4. When I am ready to configure MAGDA access, offer to open a new visible,
+   interactive terminal window and start `mgd profile create default`. Ask
+   before opening it. Launch only that command: do not automate keystrokes,
+   capture the terminal contents, or inspect credential entry. If you cannot
+   open a suitable terminal, give me the exact command to run myself.
+5. Never ask me to paste an API key into chat and never put credentials in
+   command arguments, source files, or shell history. I will enter the site URL,
+   API-key ID, and masked API key directly in the interactive terminal. Empty
+   key fields should configure anonymous access.
+6. After I confirm that profile setup finished, run `mgd auth status` and report
+   whether installation and connection succeeded. If any step fails, stop and
+   explain the failed command and the next action; do not claim completion.
+```
+
+</details>
+
+<details>
+<summary><strong>Codex</strong> — copy this prompt</summary>
+
+```text
+Help me install and configure the MAGDA mgd CLI for use with Codex.
+
+1. Detect my operating system and check `node --version` and `npm --version`.
+   mgd requires Node.js 22 or newer. If Node.js is missing or too old, explain
+   the recommended installation or upgrade and ask for my confirmation before
+   changing my system. Prefer my existing version manager or an official
+   Node.js distribution. Do not use sudo, change my shell configuration, or
+   execute a remote installation script without explicit approval.
+2. Install the CLI with `npm install -g @magda/mgd`, then verify it with
+   `mgd --version`. If npm reports a permissions problem, explain it and
+   recommend a user-level Node.js/npm setup instead of escalating privileges.
+3. Install only the Codex skill with `mgd skills install --agent codex`. Tell me
+   if I need to start a new Codex session before the skill will be discovered.
+4. When I am ready to configure MAGDA access, offer to open a new visible,
+   interactive terminal window and start `mgd profile create default`. Ask
+   before opening it. Launch only that command: do not automate keystrokes,
+   capture the terminal contents, or inspect credential entry. If you cannot
+   open a suitable terminal, give me the exact command to run myself.
+5. Never ask me to paste an API key into chat and never put credentials in
+   command arguments, source files, or shell history. I will enter the site URL,
+   API-key ID, and masked API key directly in the interactive terminal. Empty
+   key fields should configure anonymous access.
+6. After I confirm that profile setup finished, run `mgd auth status` and report
+   whether installation and connection succeeded. If any step fails, stop and
+   explain the failed command and the next action; do not claim completion.
+```
+
+</details>
+
+<details>
+<summary><strong>opencode</strong> — copy this prompt</summary>
+
+```text
+Help me install and configure the MAGDA mgd CLI for use with opencode.
+
+1. Detect my operating system and check `node --version` and `npm --version`.
+   mgd requires Node.js 22 or newer. If Node.js is missing or too old, explain
+   the recommended installation or upgrade and ask for my confirmation before
+   changing my system. Prefer my existing version manager or an official
+   Node.js distribution. Do not use sudo, change my shell configuration, or
+   execute a remote installation script without explicit approval.
+2. Install the CLI with `npm install -g @magda/mgd`, then verify it with
+   `mgd --version`. If npm reports a permissions problem, explain it and
+   recommend a user-level Node.js/npm setup instead of escalating privileges.
+3. Install only the opencode skill with
+   `mgd skills install --agent opencode`. Tell me if I need to start a new
+   opencode session before the skill will be discovered.
+4. When I am ready to configure MAGDA access, offer to open a new visible,
+   interactive terminal window and start `mgd profile create default`. Ask
+   before opening it. Launch only that command: do not automate keystrokes,
+   capture the terminal contents, or inspect credential entry. If you cannot
+   open a suitable terminal, give me the exact command to run myself.
+5. Never ask me to paste an API key into chat and never put credentials in
+   command arguments, source files, or shell history. I will enter the site URL,
+   API-key ID, and masked API key directly in the interactive terminal. Empty
+   key fields should configure anonymous access.
+6. After I confirm that profile setup finished, run `mgd auth status` and report
+   whether installation and connection succeeded. If any step fails, stop and
+   explain the failed command and the next action; do not claim completion.
+```
+
+</details>
+
+For skill installation locations, project-scoped installs, refreshes and
+removal, see [Installing the skill](#installing-the-skill).
+
+### Install manually
+
 `mgd` requires **Node.js ≥ 22**. Install it globally so the `mgd` command is on
 your `PATH`:
 
@@ -36,6 +149,9 @@ Or run it without installing:
 ```sh
 npx @magda/mgd <command>
 ```
+
+Global installation is recommended when using `mgd` with a coding agent because
+the installed skill expects the command to remain available on your `PATH`.
 
 The package is self-contained (one runtime dependency) and ships the assistant
 skill files under [`skills/`](./skills/).
