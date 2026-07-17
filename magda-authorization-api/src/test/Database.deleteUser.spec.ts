@@ -10,23 +10,23 @@ describe("Database.deleteUser (integration)", function (this: Mocha.Suite) {
     let pool: pg.Pool = null;
     let database: Database;
     const dbConfig = getTestDBConfig();
+    // --- Use a uniquely-named, throwaway database so this test is fully
+    // --- isolated from other suites that share the same Postgres instance in
+    // --- CI. Rebuilding the schema in a shared db (e.g. dropping every table)
+    // --- deadlocks against those concurrent sessions.
+    const testDbName = `test_delete_user_${Date.now()}_${Math.floor(
+        Math.random() * 1e6
+    )}`;
 
     before(async function () {
-        // --- connect to the default db first so we can (re)create the test db
-        pool = new pg.Pool({ ...dbConfig });
-        try {
-            await pool.query("CREATE database test");
-        } catch (e) {
-            // --- ignore the error if database `test` already exists
-            if ((e as any)?.code !== "42P04") {
-                throw e;
-            }
-        }
-        await pool.end();
+        // --- connect to the default db first so we can create our own db
+        let adminPool = new pg.Pool({ ...dbConfig });
+        await adminPool.query(`CREATE DATABASE "${testDbName}"`);
+        await adminPool.end();
 
-        // --- reconnect to the test db & rebuild a clean auth schema in it
-        pool = new pg.Pool({ ...dbConfig, database: "test" });
-        await runMigrationSql(pool, true);
+        // --- connect to the fresh db & build a clean auth schema in it
+        pool = new pg.Pool({ ...dbConfig, database: testDbName });
+        await runMigrationSql(pool);
 
         // --- `Database` builds its own pool (pointing at the `auth` db) in the
         // --- constructor. Swap in our test-db pool so we exercise the real SQL
@@ -41,6 +41,15 @@ describe("Database.deleteUser (integration)", function (this: Mocha.Suite) {
         if (pool) {
             await pool.end();
             pool = null;
+        }
+        // --- best-effort cleanup of the throwaway database
+        const adminPool = new pg.Pool({ ...dbConfig });
+        try {
+            await adminPool.query(`DROP DATABASE IF EXISTS "${testDbName}"`);
+        } catch (e) {
+            // --- ignore cleanup failures; the db is disposable
+        } finally {
+            await adminPool.end();
         }
     });
 
