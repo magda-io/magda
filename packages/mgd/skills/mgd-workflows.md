@@ -203,8 +203,12 @@ record ID: `mgd dataset aspect set <id> dataset-publisher '{"publisher":"<orgId>
 - exit 3 + `unauthorized` → API key invalid/expired: ask the user to update the
   profile (`mgd profile update <name> --key-id … --key …`) or recreate it
   (`mgd profile create <name>`).
-- exit 3 + `forbidden` → the key works but lacks permission: report which
-  operation was denied; do not retry.
+- exit 3 + `forbidden` → the key is valid but the account lacks permission for
+  that operation. Common cause: the user assumed they could create/upload/publish
+  but haven't been granted those rights. Report which operation was denied,
+  explain it's a permissions grant (not a missing record or a bug), and advise
+  them to ask their MAGDA system administrator to grant the relevant
+  permission/role. Do not retry.
 - exit 4 → record/object doesn't exist: re-check the ID (search again) before
   reporting data as missing.
 - `semantic-search-unavailable` → use keyword search only.

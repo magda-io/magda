@@ -302,6 +302,8 @@ Magda also supports API key based authentication. It's designed for the single r
 
 API Keys are created up-front - one user can have zero-to-many API Keys associated with it. An API Key consists of an ID, and the key itself. To create an API key, please refer to the [How to Create API Key Document](../how-to-create-api-key.md). Once the API key is created, you can attach `X-Magda-API-Key` and `X-Magda-API-Key-Id` headers to your request in order to get authenticated.
 
+Regardless of the authentication option used, you can call `GET /v0/auth/users/whoami` to retrieve the current user's profile, which includes the user's access-control metadata — the resolved `roles` & `permissions` plus the organisation unit(s) the user belongs to (an anonymous user for unauthenticated requests).
+
 ![Diagram explaining API key auth](./_resources/b7da510d241d4b13a4f6e1ab08e45be7.png)
 
 # Authorization (authz)
@@ -485,6 +487,8 @@ Since v2.0.0, we introduced a decision API as a new additional to the Auth API s
 - auto-create policy evaluation context data with user's profile including user's roles, permissions & user's current organisational unit.
 - auto-select OPA API endpoints (either for partial evaluation or making unconditional decision) based on information provided.
 - further evaluate the OPA decision response AST and resolve any possible cross references
+
+> Note: Magda's authorisation follows an attribute-based access control (ABAC) model, so the user's own access-control metadata (the `roles`, `permissions` & organisation units returned by `whoami`) is only one set of inputs. For a decision on a specific resource, the endpoint also injects the **subject (resource) attributes** the policy needs — e.g. a registry record's `access-control` aspect, or any other record field the policy logic references — and evaluates both together. So you should not try to compute access yourself from the permission list alone; the outcome is the policy engine's call over the user *and* resource attributes. When filtering a set of records we instead leave the record attributes `unknown` and let the engine partially evaluate the policy, which yields residual rules (referencing those record attributes) that translate into storage-engine query conditions such as an SQL `WHERE` clause — see [Policy Engine & Partial Evaluation](#policy-engine--partial-evaluation) above.
 
 #### Types of Decision Queries
 
