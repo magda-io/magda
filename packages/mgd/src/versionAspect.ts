@@ -19,8 +19,10 @@ import { note } from "./output.js";
 //    a commit), which is what powers the registry time-travel API. `create`/
 //    `add-file` tag the seeded v0 so the first later edit bumps to v1 instead
 //    of staying "stuck at 0".
-//  - Tag both datasets AND distributions (the web client tags datasets only;
-//    uniform tagging is simpler and gives distributions time-travel too).
+//  - Tag both datasets AND distributions with the mutation's event id. (The
+//    web client does the same at submission via updateDataset's
+//    tagDistributionVersion flag — an earlier note here claiming it tags
+//    datasets only was wrong.)
 
 export type VersionItem = {
     versionNumber: number;
