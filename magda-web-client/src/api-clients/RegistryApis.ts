@@ -26,6 +26,16 @@ import ckanExportAspect from "@magda/registry-aspects/ckan-export.schema.json";
 import versionAspect from "@magda/registry-aspects/version.schema.json";
 import createNoCacheFetchOptions from "./createNoCacheFetchOptions";
 import formUrlencode from "./formUrlencode";
+import { VersionAspectData, findCurrentVersion } from "./recordVersionUtils";
+
+// Version types/helpers moved to recordVersionUtils.ts (see #3713);
+// re-exported here so existing import sites keep working.
+export {
+    getInitialVersionAspectData,
+    findCurrentVersion,
+    appendVersion
+} from "./recordVersionUtils";
+export type { VersionItem, VersionAspectData } from "./recordVersionUtils";
 
 export const aspectSchemas = {
     publishing: datasetPublishingAspect,
@@ -47,16 +57,6 @@ export const aspectSchemas = {
     version: versionAspect
 };
 
-export type VersionItem = {
-    versionNumber: number;
-    createTime: string;
-    creatorId?: string;
-    description: string;
-    title: string;
-    internalDataFileUrl?: string;
-    eventId?: number;
-};
-
 export type CurrencyData = {
     status: "CURRENT" | "SUPERSEDED" | "RETIRED";
     retireReason?: string;
@@ -64,11 +64,6 @@ export type CurrencyData = {
         id?: string[];
         name?: string;
     }[];
-};
-
-export type VersionAspectData = {
-    currentVersionNumber: number;
-    versions: VersionItem[];
 };
 
 export const getEventIdFromHeaders = (headers: Headers): number => {
@@ -84,24 +79,6 @@ export const getEventIdFromHeaders = (headers: Headers): number => {
         }
     }
 };
-
-export const getInitialVersionAspectData = (
-    title: string,
-    creatorId?: string,
-    internalDataFileUrl?: string
-) => ({
-    currentVersionNumber: 0,
-    versions: [
-        {
-            versionNumber: 0,
-            createTime: new Date().toISOString(),
-            creatorId,
-            description: "initial version",
-            title,
-            ...(internalDataFileUrl ? { internalDataFileUrl } : {})
-        }
-    ]
-});
 
 export type DatasetTypes = "drafts" | "published";
 
@@ -887,17 +864,20 @@ export async function tagRecordVersionEventId(record: Record, eventId: number) {
         return null;
     }
     const versionData = record.aspects["version"] as VersionAspectData;
-    const currentVersion =
-        versionData?.versions?.[versionData?.currentVersionNumber];
-    if (!currentVersion) {
+    // look the current version up by versionNumber — never by array position,
+    // which silently breaks on gappy histories (see #3713)
+    const currentVersion = findCurrentVersion(versionData);
+    if (!currentVersion || currentVersion.eventId) {
         return null;
     }
-    if (currentVersion.eventId) {
-        return null;
-    }
-    versionData.versions[versionData.currentVersionNumber].eventId = eventId;
-
-    return await updateRecordAspect(record.id, "version", versionData);
+    const newVersionData: VersionAspectData = {
+        ...versionData,
+        versions: versionData.versions.map((v) =>
+            v === currentVersion ? { ...v, eventId } : v
+        )
+    };
+    record.aspects["version"] = newVersionData;
+    return await updateRecordAspect(record.id, "version", newVersionData);
 }
 
 export async function fetchRecordById(recordId: string, noCache = false) {

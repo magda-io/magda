@@ -141,10 +141,10 @@ export function registerDistCommands(program: Command): void {
                 }
             }
             let version: VersionAspectData | undefined;
-            // Divergence from the web client (deliberate, record-scoped model):
-            // a distribution-metadata edit bumps the DISTRIBUTION's version;
-            // the web client bumps nothing on such an edit (its session model
-            // folds it into the dataset-level bump). See issue #3687.
+            // Record-scoped model: a distribution-metadata edit bumps the
+            // DISTRIBUTION's version. The web client does the same at
+            // submission since #3713 (its per-submission dataset bump still
+            // applies on top — an intended model difference, see #3687).
             // An explicit user write to `version` always wins: skip auto-bump.
             if (!aspectArgs.some((a) => a.id === "version")) {
                 version = await bumpRecordVersion(client, distributionId, {

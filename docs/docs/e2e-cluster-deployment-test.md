@@ -8,6 +8,8 @@ CI runs `helm template`/`helm lint` and unit/integration tests against individua
 
 Run this test before merging any PR whose CI test plan can't otherwise prove it (chart/template changes, CronJob changes, anything touching startup/middleware), and as part of validating a [PR preview release](./pr-preview-release-testing.md) before merging.
 
+> **Feature-specific cases:** this doc is the baseline cluster smoke test. Concrete, repeatable checks for individual features (API, mgd CLI, agent skill, and Web UI) live in the [E2E test cases](./e2e-test-cases/) folder — see its [index](./e2e-test-cases/README.md). Add a case there when a PR needs feature-level verification on top of this baseline.
+
 ## Prerequisites
 
 - A local `minikube` cluster (docker driver recommended; 8+ CPU / 16GB+ RAM for the full default stack, which includes OpenSearch and the semantic search components).
@@ -148,6 +150,52 @@ A JWT built directly with `acs-cmd jwt` only works for API calls — there's no 
 5. **Log into the UI** with that user's email/password.
 
 This last step needs real HTTPS access to the local minikube deployment — see [How to setup HTTPS access to Local Dev Cluster](./how-to-setup-https-to-local-cluster.md). It's not optional: the plugin's session cookie is configured `secure: true`, and `express-session` silently withholds `Set-Cookie` on a non-HTTPS connection (confirmed by testing the login POST over a plain `kubectl port-forward` — it redirects with `result=success` but no session cookie is ever set, so a subsequent `whoami` call comes back anonymous). A `kubectl port-forward` tunnel is enough to validate the plugin/API wiring (steps 1-4 above), but not enough to get a working browser session.
+
+#### Quick local UI check without a real login (JWT-injecting dev proxy)
+
+When you only need to _exercise_ the UI locally against the cluster — not validate the real browser login/session path above — you can skip `magda-auth-internal`, cert-manager and HTTPS entirely (and need no `sudo`) by running the **local web-client dev build** behind a small dev-only proxy that injects an admin session JWT. Like the `X-Magda-Session` shortcut for API calls, this bypasses the gateway's real authentication and is for local testing only — never a real access path.
+
+1. Port-forward the gateway and mint an admin JWT (as in [Authenticated request round trip](#authenticated-request-round-trip)):
+   ```bash
+   kubectl port-forward -n magda svc/gateway 18080:80 &
+   JWT_SECRET=$(kubectl get secret -n magda auth-secrets -o jsonpath='{.data.jwt-secret}' | base64 -d)
+   yarn --silent acs-cmd jwt 00000000-0000-4000-8000-000000000000 "$JWT_SECRET" | tail -1 > /tmp/magda-admin.jwt
+   ```
+2. Add a **throwaway** `magda-web-client/src/setupProxy.js` (Create React App loads it automatically; **do not commit**) that serves a same-origin `server-config.js` and proxies `/api` to the gateway, injecting the JWT:
+   ```js
+   const fs = require("fs");
+   const { createProxyMiddleware } = require("http-proxy-middleware");
+   const JWT = fs.readFileSync("/tmp/magda-admin.jwt", "utf8").trim();
+   module.exports = function (app) {
+     app.get("/server-config.js", (_req, res) =>
+       res.type("application/javascript").send(
+         "window.magda_server_config = " +
+           JSON.stringify({
+             baseUrl: "http://localhost:6108/",
+             featureFlags: { cataloguing: true }
+           }) +
+           ";"
+       )
+     );
+     app.use(
+       "/api",
+       createProxyMiddleware({
+         target: "http://localhost:18080",
+         changeOrigin: true,
+         onProxyReq: (r) => r.setHeader("X-Magda-Session", JWT)
+       })
+     );
+   };
+   ```
+3. Point the web client's API fallback at the dev server (throwaway edit; **do not commit**): in `magda-web-client/src/config.ts` set `fallbackApiHost = "http://localhost:6108/"`.
+4. Start it and confirm it's authenticated:
+   ```bash
+   cd magda-web-client && BROWSER=none yarn start          # serves http://localhost:6108
+   curl -s http://localhost:6108/api/v0/auth/users/whoami   # -> the admin user, not anonymous
+   ```
+   The UI at <http://localhost:6108> is now "logged in" as admin. Undo the two throwaway edits when done: `git checkout -- magda-web-client/src/config.ts` and `rm magda-web-client/src/setupProxy.js`.
+
+This is enough to drive UI flows that only need an authenticated session (e.g. the [Distribution version aspect in the Web UI](./e2e-test-cases/distribution-version-web-ui.md) case). It does **not** exercise the real login/cookie path — use the full setup above for that.
 
 ### Data round trip (registry → indexer → search)
 
