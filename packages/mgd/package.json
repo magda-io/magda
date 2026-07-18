@@ -12,8 +12,10 @@
   "scripts": {
     "prebuild": "rimraf bin",
     "build": "node esbuild.js",
+    "prepack": "npm run build",
     "typecheck": "tsc --noEmit",
     "test": "c8 mocha",
+    "smoke:pack": "node scripts/smoke-pack.mjs",
     "release": "node \"$(git rev-parse --show-toplevel)/ci-scripts/npm-publish-release.js\""
   },
   "author": "",
@@ -52,7 +54,8 @@
   "magda": {
     "language": "typescript",
     "categories": {
-      "npmPackage": true
+      "npmPackage": true,
+      "cli": true
     }
   },
   "keywords": [

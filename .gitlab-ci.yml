@@ -353,6 +353,10 @@ buildtest:typescript-apis-stateless:
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run test --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useCommonLib=true -- run build
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useMinionLib=true -- run build
+    # Build, unit-test and packaging smoke-test the CLI npm package (@magda/mgd)
+    # so a broken or incomplete release tarball fails here, before publish. See #3723.
+    - yarn run in-submodules -- -f categories.npmPackage=true -f categories.cli=true -- run test
+    - yarn run in-submodules -- -f categories.npmPackage=true -f categories.cli=true -- run smoke:pack
     - yarn run in-submodules -- -f language=typescript -f categories.dockerizedTool=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f language=typescript -f categories.dockerizedTool=true -- run test --include-filtered-dependencies
   artifacts:
