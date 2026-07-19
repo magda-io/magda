@@ -40,10 +40,11 @@ function globalBase(agent: AgentName, env: NodeJS.ProcessEnv): string {
         case "claude":
             return path.join(homeDir(env), ".claude", "skills");
         case "codex":
-            return path.join(
-                env.CODEX_HOME || path.join(homeDir(env), ".codex"),
-                "skills"
-            );
+            // Current Codex discovers global (user-level) skills in
+            // ~/.agents/skills (project skills live in <repo>/.agents/skills).
+            // This is NOT under CODEX_HOME. See legacyCodexGlobalDir() for the
+            // location older mgd versions used.
+            return path.join(homeDir(env), ".agents", "skills");
         case "opencode":
             return path.join(
                 env.XDG_CONFIG_HOME || path.join(homeDir(env), ".config"),
@@ -51,6 +52,17 @@ function globalBase(agent: AgentName, env: NodeJS.ProcessEnv): string {
                 "skills"
             );
     }
+}
+
+// Where mgd <= 6.1.x installed the GLOBAL Codex skill: ${CODEX_HOME:-~/.codex}/skills.
+// Codex does not discover skills there, so we clean it up on install/uninstall to
+// avoid leaving an orphaned, undiscovered copy behind.
+function legacyCodexGlobalDir(env: NodeJS.ProcessEnv): string {
+    return path.join(
+        env.CODEX_HOME || path.join(homeDir(env), ".codex"),
+        "skills",
+        SKILL_SUBDIR
+    );
 }
 
 // Per-agent PROJECT skills dir (each tool's native project location).
@@ -117,6 +129,9 @@ export async function installSkill(opts: {
             path.join(dir, name)
         );
     }
+    if (opts.agent === "codex" && opts.scope === "global") {
+        await removeLegacyCodexGlobal(dir, opts.env);
+    }
     return {
         agent: opts.agent,
         scope: opts.scope,
@@ -135,11 +150,28 @@ export async function uninstallSkill(opts: {
     const dir = resolveSkillDir(opts);
     const existed = existsSync(dir);
     if (existed) await fs.rm(dir, { recursive: true, force: true });
+    let legacyRemoved = false;
+    if (opts.agent === "codex" && opts.scope === "global") {
+        legacyRemoved = await removeLegacyCodexGlobal(dir, opts.env);
+    }
     return {
         agent: opts.agent,
         scope: opts.scope,
         dir,
         files: [],
-        action: existed ? "removed" : "absent"
+        action: existed || legacyRemoved ? "removed" : "absent"
     };
+}
+
+// Remove the legacy global Codex skill copy, unless it happens to resolve to the
+// same path as the current install dir (never true today, but keep it safe).
+// Returns whether a legacy copy was actually removed.
+async function removeLegacyCodexGlobal(
+    currentDir: string,
+    env: NodeJS.ProcessEnv
+): Promise<boolean> {
+    const legacy = legacyCodexGlobalDir(env);
+    if (legacy === currentDir || !existsSync(legacy)) return false;
+    await fs.rm(legacy, { recursive: true, force: true });
+    return true;
 }
