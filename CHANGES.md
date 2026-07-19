@@ -3,6 +3,7 @@
 ## v6.1.1
 
 - #3723: Fix `@magda/mgd` npm package publishing without its `bin/mgd.js` CLI bundle, which made `npm install -g @magda/mgd` install a broken `mgd` executable.
+- #3724: Fix `mgd skills install --agent codex` installing the global Codex skill to `~/.codex/skills` instead of the discovered `~/.agents/skills` location (install/uninstall now also clean up the legacy path), and harden the coding-agent install prompts in the README to resolve a Node.js 22+ runtime via an existing version manager in non-interactive shells where bare `node`/`npm` is not on `PATH`.
 
 ## v6.1.0
 

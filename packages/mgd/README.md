@@ -36,18 +36,27 @@ will guide you through installing both the `mgd` CLI and its MAGDA skill.
 ```text
 Help me install and configure the MAGDA mgd CLI for use with Claude Code.
 
-1. Detect my operating system and check `node --version` and `npm --version`.
-   mgd requires Node.js 22 or newer. If Node.js is missing or too old, explain
-   the recommended installation or upgrade and ask for my confirmation before
-   changing my system. Prefer my existing version manager or an official
-   Node.js distribution. Do not use sudo, change my shell configuration, or
-   execute a remote installation script without explicit approval.
-2. Install the CLI with `npm install -g @magda/mgd`, then verify it with
-   `mgd --version`. If npm reports a permissions problem, explain it and
-   recommend a user-level Node.js/npm setup instead of escalating privileges.
-3. Install only the Claude Code skill with
-   `mgd skills install --agent claude`. Tell me if I need to start a new Claude
-   Code session before the skill will be discovered.
+1. Detect my operating system and resolve a Node.js 22+ runtime. First try
+   `node --version` and `npm --version`. If they report missing or too old —
+   common in a non-interactive agent shell that has not loaded my login/shell
+   startup files — check for an already-installed version manager (fnm, nvm,
+   volta, asdf, or mise) and any Node.js 22+ it manages before proposing any
+   system change. If a suitable managed runtime exists, make it available to this
+   session's commands only (resolve its `node`/`npm` bin path, or use the
+   manager's own `exec`/`run` form); do not modify my shell configuration. Settle
+   on one concrete runtime and reuse the same `node`/`npm` for every later step.
+   Only if no compatible runtime is found, explain the recommended install or
+   upgrade and ask for my confirmation before changing my system, preferring my
+   existing version manager or an official Node.js distribution. Do not use sudo
+   or execute a remote installation script without explicit approval.
+2. Using that resolved runtime, install the CLI with `npm install -g @magda/mgd`,
+   then verify it with `mgd --version` — invoke `mgd` through the same resolved
+   runtime/PATH so a global install performed via a version manager is actually
+   found. If npm reports a permissions problem, explain it and recommend a
+   user-level Node.js/npm setup instead of escalating privileges.
+3. Install only the Claude Code skill with `mgd skills install --agent claude`
+   (using the same resolved runtime). Then start a new Claude Code session so the
+   newly installed skill is discovered.
 4. When I am ready to configure MAGDA access, offer to open a new visible,
    interactive terminal window and start `mgd profile create default`. Ask
    before opening it. Launch only that command: do not automate keystrokes,
@@ -70,17 +79,28 @@ Help me install and configure the MAGDA mgd CLI for use with Claude Code.
 ```text
 Help me install and configure the MAGDA mgd CLI for use with Codex.
 
-1. Detect my operating system and check `node --version` and `npm --version`.
-   mgd requires Node.js 22 or newer. If Node.js is missing or too old, explain
-   the recommended installation or upgrade and ask for my confirmation before
-   changing my system. Prefer my existing version manager or an official
-   Node.js distribution. Do not use sudo, change my shell configuration, or
-   execute a remote installation script without explicit approval.
-2. Install the CLI with `npm install -g @magda/mgd`, then verify it with
-   `mgd --version`. If npm reports a permissions problem, explain it and
-   recommend a user-level Node.js/npm setup instead of escalating privileges.
-3. Install only the Codex skill with `mgd skills install --agent codex`. Tell me
-   if I need to start a new Codex session before the skill will be discovered.
+1. Detect my operating system and resolve a Node.js 22+ runtime. First try
+   `node --version` and `npm --version`. If they report missing or too old —
+   common in a non-interactive agent shell that has not loaded my login/shell
+   startup files — check for an already-installed version manager (fnm, nvm,
+   volta, asdf, or mise) and any Node.js 22+ it manages before proposing any
+   system change. If a suitable managed runtime exists, make it available to this
+   session's commands only (resolve its `node`/`npm` bin path, or use the
+   manager's own `exec`/`run` form); do not modify my shell configuration. Settle
+   on one concrete runtime and reuse the same `node`/`npm` for every later step.
+   Only if no compatible runtime is found, explain the recommended install or
+   upgrade and ask for my confirmation before changing my system, preferring my
+   existing version manager or an official Node.js distribution. Do not use sudo
+   or execute a remote installation script without explicit approval.
+2. Using that resolved runtime, install the CLI with `npm install -g @magda/mgd`,
+   then verify it with `mgd --version` — invoke `mgd` through the same resolved
+   runtime/PATH so a global install performed via a version manager is actually
+   found. If npm reports a permissions problem, explain it and recommend a
+   user-level Node.js/npm setup instead of escalating privileges.
+3. Install only the Codex skill with `mgd skills install --agent codex` (using
+   the same resolved runtime). The global Codex skill installs to
+   `~/.agents/skills/magda-mgd/`. Then start a new Codex task/session so the newly
+   installed skill metadata is discovered.
 4. When I am ready to configure MAGDA access, offer to open a new visible,
    interactive terminal window and start `mgd profile create default`. Ask
    before opening it. Launch only that command: do not automate keystrokes,
@@ -103,18 +123,27 @@ Help me install and configure the MAGDA mgd CLI for use with Codex.
 ```text
 Help me install and configure the MAGDA mgd CLI for use with opencode.
 
-1. Detect my operating system and check `node --version` and `npm --version`.
-   mgd requires Node.js 22 or newer. If Node.js is missing or too old, explain
-   the recommended installation or upgrade and ask for my confirmation before
-   changing my system. Prefer my existing version manager or an official
-   Node.js distribution. Do not use sudo, change my shell configuration, or
-   execute a remote installation script without explicit approval.
-2. Install the CLI with `npm install -g @magda/mgd`, then verify it with
-   `mgd --version`. If npm reports a permissions problem, explain it and
-   recommend a user-level Node.js/npm setup instead of escalating privileges.
-3. Install only the opencode skill with
-   `mgd skills install --agent opencode`. Tell me if I need to start a new
-   opencode session before the skill will be discovered.
+1. Detect my operating system and resolve a Node.js 22+ runtime. First try
+   `node --version` and `npm --version`. If they report missing or too old —
+   common in a non-interactive agent shell that has not loaded my login/shell
+   startup files — check for an already-installed version manager (fnm, nvm,
+   volta, asdf, or mise) and any Node.js 22+ it manages before proposing any
+   system change. If a suitable managed runtime exists, make it available to this
+   session's commands only (resolve its `node`/`npm` bin path, or use the
+   manager's own `exec`/`run` form); do not modify my shell configuration. Settle
+   on one concrete runtime and reuse the same `node`/`npm` for every later step.
+   Only if no compatible runtime is found, explain the recommended install or
+   upgrade and ask for my confirmation before changing my system, preferring my
+   existing version manager or an official Node.js distribution. Do not use sudo
+   or execute a remote installation script without explicit approval.
+2. Using that resolved runtime, install the CLI with `npm install -g @magda/mgd`,
+   then verify it with `mgd --version` — invoke `mgd` through the same resolved
+   runtime/PATH so a global install performed via a version manager is actually
+   found. If npm reports a permissions problem, explain it and recommend a
+   user-level Node.js/npm setup instead of escalating privileges.
+3. Install only the opencode skill with `mgd skills install --agent opencode`
+   (using the same resolved runtime). Then start a new opencode session so the
+   newly installed skill is discovered.
 4. When I am ready to configure MAGDA access, offer to open a new visible,
    interactive terminal window and start `mgd profile create default`. Ask
    before opening it. Launch only that command: do not automate keystrokes,
@@ -523,7 +552,7 @@ This drops the skill into each agent's native skills directory:
 | Agent       | Global (default)                       | With `--project [dir]`              |
 | ----------- | -------------------------------------- | ----------------------------------- |
 | Claude Code | `~/.claude/skills/magda-mgd/`          | `<dir>/.claude/skills/magda-mgd/`   |
-| Codex       | `~/.codex/skills/magda-mgd/`           | `<dir>/.agents/skills/magda-mgd/`   |
+| Codex       | `~/.agents/skills/magda-mgd/`          | `<dir>/.agents/skills/magda-mgd/`   |
 | opencode    | `~/.config/opencode/skills/magda-mgd/` | `<dir>/.opencode/skills/magda-mgd/` |
 
 All three natively auto-discover `SKILL.md` skills and load the instructions on

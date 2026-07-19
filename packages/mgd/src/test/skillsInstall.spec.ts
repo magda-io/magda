@@ -54,7 +54,7 @@ describe("skills install", () => {
                 projectDir: tmp,
                 env
             })
-        ).to.equal(path.join(tmp, "codexhome", "skills", "magda-mgd"));
+        ).to.equal(path.join(tmp, ".agents", "skills", "magda-mgd"));
         expect(
             resolveSkillDir({
                 agent: "opencode",
@@ -171,6 +171,59 @@ describe("skills install", () => {
             env
         });
         expect(second.action).to.equal("absent");
+    });
+
+    it("codex global skill installs into ~/.agents/skills", async () => {
+        const res = await installSkill({
+            agent: "codex",
+            scope: "global",
+            projectDir: tmp,
+            skillsDir: SKILLS_DIR,
+            env
+        });
+        expect(res.dir).to.equal(
+            path.join(tmp, ".agents", "skills", "magda-mgd")
+        );
+        expect(existsSync(path.join(res.dir, "SKILL.md"))).to.equal(true);
+    });
+
+    it("codex global install cleans up a legacy ~/.codex/skills copy", async () => {
+        // Simulate a skill installed by an older mgd under the (now wrong)
+        // ${CODEX_HOME:-~/.codex}/skills location.
+        const legacy = path.join(tmp, "codexhome", "skills", "magda-mgd");
+        await fs.mkdir(legacy, { recursive: true });
+        await fs.writeFile(path.join(legacy, "SKILL.md"), "stale");
+
+        const res = await installSkill({
+            agent: "codex",
+            scope: "global",
+            projectDir: tmp,
+            skillsDir: SKILLS_DIR,
+            env
+        });
+
+        expect(existsSync(path.join(res.dir, "SKILL.md"))).to.equal(true);
+        expect(existsSync(legacy)).to.equal(false);
+    });
+
+    it("codex global uninstall removes both current and legacy locations", async () => {
+        const current = path.join(tmp, ".agents", "skills", "magda-mgd");
+        const legacy = path.join(tmp, "codexhome", "skills", "magda-mgd");
+        await fs.mkdir(current, { recursive: true });
+        await fs.writeFile(path.join(current, "SKILL.md"), "x");
+        await fs.mkdir(legacy, { recursive: true });
+        await fs.writeFile(path.join(legacy, "SKILL.md"), "x");
+
+        const res = await uninstallSkill({
+            agent: "codex",
+            scope: "global",
+            projectDir: tmp,
+            env
+        });
+
+        expect(res.action).to.equal("removed");
+        expect(existsSync(current)).to.equal(false);
+        expect(existsSync(legacy)).to.equal(false);
     });
 
     it("parseAgents: default all, single, and bad value", () => {
