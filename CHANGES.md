@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v6.1.1
+
+- #3723: Fix `@magda/mgd` npm package publishing without its `bin/mgd.js` CLI bundle, which made `npm install -g @magda/mgd` install a broken `mgd` executable.
+
 ## v6.1.0
 
 - Added `@magda/mgd`, an installable local CLI for working with MAGDA catalogs, including profile and API-key authentication, keyword and semantic search, dataset and distribution management, resumable file transfers, custom aspects, publishing workflows, version tracking, machine-readable output and installable coding-agent skills (#3648, #3683).
