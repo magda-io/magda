@@ -32,6 +32,12 @@ kubectl get ns magda        # should return NotFound
 kubectl get pv | grep magda # should return nothing
 ```
 
+> **On minikube, the checks above are not sufficient.** minikube's default hostpath provisioner keys volume directories by namespace and PVC name, and deleting the namespace/PVCs does **not** reliably erase the underlying data on the node — so `kubectl get pv` can come back clean while stale PostgreSQL/MinIO/OpenSearch data survives on disk. Reusing it on a fresh install produces confusing failures, most notably MinIO crash-looping with `Unable to initialize config system: Invalid credentials` (the volume still holds config encrypted with the previous install's secrets). For a genuinely clean run, either `minikube delete` and start a fresh cluster, or clear the leftover data explicitly:
+>
+> ```bash
+> minikube ssh -- 'sudo rm -rf /tmp/hostpath-provisioner/magda'
+> ```
+
 ## Step 2: Fresh Install
 
 ```bash
