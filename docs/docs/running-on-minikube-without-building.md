@@ -1,103 +1,82 @@
-# Running Magda on Minikube without building Docker images
+# Running Magda on Minikube (published chart, no build required)
 
-These instructions will help you to set up Magda without building
-any of the docker images. These instructions were tested on a Mac
-running MacOS 10.15.7 (Catalina).
+This guide sets up a local Magda instance on [minikube](https://minikube.sigs.k8s.io/) using the **published Helm chart** — you don't need to clone the repository or build any Docker images. It's aimed at evaluating Magda or trying it out locally.
 
-These instructions install Magda into its own `magda` namespace.
+> Setting up a developer/debug environment (building images, deploying the chart from a source checkout) is a different, heavier workflow. For thorough end-to-end verification of a release, see the [End-to-End Full Cluster Deployment Test](./e2e-cluster-deployment-test.md), which is written for contributors.
+
+Magda is installed into its own `magda` namespace throughout.
 
 ## Prerequisites
 
-(Installed via homebrew unless otherwise noted)
+Install these (via Homebrew or your package manager of choice):
 
-1. [minikube](https://minikube.sigs.k8s.io/docs/start/)
-2. [Docker Desktop](https://www.docker.com/products/docker-desktop): Docker Desktop comes wit the hyperkit driver that used by minikube
+1. [Docker](https://www.docker.com/products/docker-desktop) — used as the minikube driver
+2. [minikube](https://minikube.sigs.k8s.io/docs/start/)
 3. [kubectl](https://kubernetes.io/docs/tasks/tools/)
-4. [nvm](https://github.com/nvm-sh/nvm): nvm is used for managing NodeJs version. We need either NodeJs 22
-5. [helm](https://helm.sh/)
+4. [helm](https://helm.sh/) (v3)
 
-Optional, but highly recommended:
+Optional, but handy for watching pods start up:
 
 - [k9s](https://github.com/derailed/k9s)
 
-## Preparation
+## Step 1: Start minikube
 
-### Starting Kubernetes
-
-```bash
-minikube config set driver hyperkit
-
-# you can lower / higher CPU / memory depends on your hardware.
-# Min. requirement: memory 6GB & CPU: 2
-minikube config set kubernetes-version 1.28.12
-minikube config set memory 16384
-minikube config set cpus 4
-minikube config set dashboard true
-minikube config set disk-size 60G
-minikube start
-```
-
-Install the prerequisites.
-Then:
+A default Magda install runs the full stack (search, semantic search, embedding API, PDF/CSV indexers, PostgreSQL, MinIO and OpenSearch) — around two dozen pods. Give the cluster enough resources:
 
 ```bash
-helm repo add twuni https://helm.twun.io
-# Get update from repos
-helm repo update
+minikube start --driver=docker --memory=16384 --cpus=4 --disk-size=60g
 ```
 
-And:
+> Minimum is roughly 8 GB memory / 2 CPUs, but the full stack is happier with more. On a constrained machine, see the chart's `values.yaml` for how to disable optional components (for example, the semantic-search stack).
+
+## Step 2: Install the published chart
 
 ```bash
-git clone https://github.com/magda-io/magda.git
-cd magda
-```
-
-Then, following the instructions:
-
-```bash
-helm install docker-registry -f deploy/helm/docker-registry.yml twuni/docker-registry
-helm repo add mittwald https://helm.mittwald.de
-helm repo update
-kubectl create namespace kubernetes-replicator
-helm upgrade --namespace kubernetes-replicator --install kubernetes-replicator mittwald/kubernetes-replicator
-```
-
-Edit the file at `deploy/helm/minikube-dev.yaml` to comment out these lines:
-
-```yaml
-# image:
-#   repository: "localhost:5000/data61"
-#   tag: "latest"
-#   pullPolicy: Always
-```
-
-Then:
-
-```bash
-# update magda helm repo
-helm repo update
-
-# update magda chart dependencies
-yarn update-all-charts
-
-# deploy the magda chart from magda helm repo
 kubectl create namespace magda
-helm upgrade --install --timeout 9999s -n magda -f deploy/helm/minikube-dev.yml magda deploy/helm/local-deployment
+helm install magda oci://ghcr.io/magda-io/charts/magda --version <VERSION> -n magda
 ```
 
-You can use `k9s` to monitor the start-up of Magda.
+Replace `<VERSION>` with the release you want — see the [latest release](https://github.com/magda-io/magda/releases) (for example, `6.1.1`). Installing with default values deploys the full stack.
 
-> Please note: you need to provide working SMTP server credentials to get correspondence-api pod running properly. You can simply ignore its error status for simply demo purpose.
+> Since v2, Magda's Helm charts are published to the GitHub Container Registry: `oci://ghcr.io/magda-io/charts`.
 
-### SSL/HTTPS access to Magda
+## Step 3: Wait for the pods to be ready
 
-In order to have https access, you can follow the [setup instruction doc](./how-to-setup-https-to-local-cluster.md).
+```bash
+kubectl get pods -n magda -w
+```
 
-### Setting up a local admin user
+The full install brings up ~24 pods and can take several minutes on first run (image pulls, database migrations, OpenSearch cluster formation). A few early restarts on the `indexer` and semantic-indexer pods are normal — they retry until OpenSearch is accepting connections. Once things settle, nothing should remain outside `Running`/`Completed`:
 
-You can follow the [instruction doc here](./how-to-create-local-users.md).
+```bash
+kubectl get pods -n magda --no-headers | grep -vE "Running|Completed"
+# should print nothing
+```
 
-### Generate API keys for the user
+## Step 4: Access Magda in your browser
 
-You can follow the [instruction doc here](./how-to-create-api-key.md).
+The lowest-friction way to reach the local instance is to port-forward the gateway (which fronts the whole platform):
+
+```bash
+kubectl port-forward -n magda svc/gateway 8080:80
+```
+
+Then open <http://localhost:8080> in your browser. You can search and browse the catalogue straight away — no `sudo`, LoadBalancer or DNS setup required.
+
+## Next steps
+
+- **Create a local admin user:** [How to create local users](./how-to-create-local-users.md), then [set a user as admin](./how-to-set-user-as-admin-user.md).
+- **Generate an API key** (for example, to use with `mgd` or the REST API): [How to create an API key](./how-to-create-api-key.md).
+- **Enable HTTPS access** to the local cluster (needed for some login flows): [How to set up HTTPS to a local cluster](./how-to-setup-https-to-local-cluster.md).
+- **Use the `mgd` CLI** against your instance or the public demo catalogue: [`mgd` guide](https://github.com/magda-io/magda/blob/main/packages/mgd/README.md).
+
+## Cleaning up
+
+```bash
+# remove Magda but keep the cluster
+helm uninstall magda -n magda
+kubectl delete namespace magda
+
+# or remove the whole minikube cluster
+minikube delete
+```
