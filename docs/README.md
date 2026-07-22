@@ -31,7 +31,31 @@ This results in squandered opportunities as small datasets go undiscovered by ot
 
 Magda is designed with the flexibility to work with _all_ of an organisation's data assets, big or small - it can be used as a catalog for big data in a data lake, an easily-searchable repository for an organization's small data files, an aggregator for multiple external data sources, or all at once.
 
-## ✨ What’s New in Magda v5.0.0
+## ✨ What’s New in Magda 6
+
+Magda 6 makes the catalogue accessible not only to people through the browser, but to coding agents working on their behalf — while keeping people accountable for judgement and consequential decisions.
+
+### 🤖 `mgd` — the Magda command-line interface
+
+[`mgd`](https://github.com/magda-io/magda/blob/main/packages/mgd/README.md) is a governed interface to the catalogue for the terminal and for coding agents. It lets a person — or an agent acting under their direction — move from discovering data to producing inspectable work. `mgd` supports:
+
+- catalogue search and record inspection;
+- distribution discovery and downloads;
+- data API access;
+- machine-readable output for automation and inspection;
+- authenticated catalogue operations;
+- custom-aspect discovery, reuse and management;
+- skills that help coding agents discover the relevant workflows and domain guidance without loading every operation into context at once.
+
+Agents carry operational work and return inspectable evidence — sources, methods, assumptions, errors and open questions. People remain responsible for purpose, desirability, domain judgement and consequential decisions.
+
+See it in action — a coding agent using `mgd` turns a 1.74 GB text grid into interactive terrain:
+
+<p class="center">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/zy7YZeGD3uk" title="Claude Code + Magda CLI: From a 1.74 GB Text Grid to Interactive Terrain with an AI Agent" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</p>
+
+> Read the story behind this workflow: [Data Is Available. Can Your AI Assistant Help You Actually Use It?](https://jacky-jiang.medium.com/data-is-available-can-your-ai-assistant-help-you-actually-use-it-464241e996ce)
 
 ### 🧠 In-Browser LLM Chatbot
 
@@ -45,14 +69,6 @@ Explore your data with natural language:
 - Perform tabular analysis and get charts & summaries
 - All processed **privately in-browser** via WebGPU
 
-### 🔍 Hybrid Search Engine
-
-Combine keyword precision and semantic understanding:
-
-- Vector + lexical search with BM25 ranking
-- Handles synonyms, fuzzy phrasing, and structured filters
-- Ideal for technical and natural language queries alike
-
 ### 📊 SQL Console in Your Browser
 
 Query data without backend setup:
@@ -64,6 +80,33 @@ Query data without backend setup:
 <p class="center">
     <img src="./docs/sql-console.png">
 </p>
+
+## Search and semantic indexing
+
+Magda combines complementary retrieval strategies so results match the meaning of a query, not just its keywords:
+
+- **Hybrid catalogue search** — vector similarity combined with lexical BM25 ranking, handling synonyms, fuzzy phrasing and structured filters.
+- **Semantic search** — retrieval over meaning, so related datasets surface even when they don't share exact terms.
+- **PDF and CSV indexers** supplied with a standard Magda 6 deployment, so common document and tabular content becomes searchable out of the box.
+- **A semantic-indexer framework and published SDK** for teams that need format-specific or custom indexing strategies: [`@magda/semantic-indexer-sdk`](https://www.npmjs.com/package/@magda/semantic-indexer-sdk).
+
+An indexer's job is *representation*: turning useful domain content into text suitable for retrieval, rather than treating every file format identically. Not every possible format becomes content-searchable automatically — the SDK exists precisely so teams can add the representations that matter to them.
+
+## Try Magda
+
+You don't need to deploy anything to try Magda. [**dev.magda.io**](https://dev.magda.io/) is Magda's public demo catalogue — it currently federates more than 100,000 public dataset records from government and research organisations, and anyone can search and inspect it in the browser.
+
+To explore it from the terminal or with a coding agent, configure an anonymous [`mgd`](https://github.com/magda-io/magda/blob/main/packages/mgd/README.md) profile — no API key or deployment required.
+
+Start with a topic that matters to your own work, and see how far you can get from discovery to a first useful inspection.
+
+### Where to go next
+
+- **Read the story:** [Data Is Available. Can Your AI Assistant Help You Actually Use It?](https://jacky-jiang.medium.com/data-is-available-can-your-ai-assistant-help-you-actually-use-it-464241e996ce)
+- **Try it live:** [dev.magda.io](https://dev.magda.io/)
+- **Use `mgd`:** [the Magda command-line interface](https://github.com/magda-io/magda/blob/main/packages/mgd/README.md)
+- **Install Magda:** [run it locally on minikube](./docs/running-on-minikube-without-building.html)
+- **Latest release notes:** [github.com/magda-io/magda/releases](https://github.com/magda-io/magda/releases)
 
 ## Features
 
@@ -139,7 +182,7 @@ You can also develop your own authentication plugins to customise the authentica
 
 ### A better way to manually catalog datasets
 
-Authoring a quality dataset is hard - not only does it involve a lot of manual work, but it also requires a great deal of up-front knowledge and data literacy. We're building a guided, opinionated and heavily automated publishing process into Magda that will result in an easier time for those who publish data, and higher metadata quality to make it easier to search and use datasets for data users downstream.
+Authoring a quality dataset is hard - not only does it involve a lot of manual work, but it also requires a great deal of up-front knowledge and data literacy. Magda provides a guided, opinionated and heavily automated publishing process that makes publishing easier and improves metadata quality, so datasets are easier to search and use for data users downstream.
 
 <p class="center">
     <video autoplay="false" loop="true" controls>
@@ -149,15 +192,15 @@ Authoring a quality dataset is hard - not only does it involve a lot of manual w
 
 ### Reducing duplication
 
-Often the use of ad-hoc sharing mechanisms such as email or USB disks results in multiple copies of a dataset being modified in parallel, and poor historical visibility of an organization's data holdings leads to external data being bought multiple times by different teams. We're adding features to automatically identify and mitigate duplication, without the need for the data to actually be stored on Magda itself.
+Often the use of ad-hoc sharing mechanisms such as email or USB disks results in multiple copies of a dataset being modified in parallel, and poor historical visibility of an organization's data holdings leads to external data being bought multiple times by different teams. Magda helps identify and mitigate duplication, without the need for the data itself to be stored on Magda.
 
 ### Authorization: Share data with confidence
 
-We're adding an integrated, customizable authorization system into Magda based on [Open Policy Agent](https://www.openpolicyagent.org/), which will allow:
+Magda includes an integrated, customizable authorization system based on [Open Policy Agent](https://www.openpolicyagent.org/), which allows:
 
-- Datasets to be restricted based on established access-control frameworks (e.g. role-based), or custom policies specified by your organization
-- Federated authorization - Magda will be able not only to pull data from an external source, but also mimic the same authorization policies, so that what you see from that system on Magda is exactly the same as if you logged into it directly
-- Seamless integration with search - only get back results that you have access to
+- Datasets can be restricted based on established access-control frameworks (e.g. role-based), or custom policies specified by your organization
+- Federated authorization lets Magda not only pull data from an external source, but also mimic the same authorization policies, so that what you see from that system on Magda is exactly the same as if you logged into it directly
+- Integrates seamlessly with search - only get back results that you have access to
 
 ## Work with us
 
@@ -186,22 +229,22 @@ Magda is used in a variety of contexts — from open data portals serving nation
     <img src="./assets/magdascreenshots.png">
 </p>
 
-Alongside our open-source work, we’ve been developing Magda++, a proprietary platform built on top of the Magda open-source core, tailored for scientific research applications. While Magda provides a general-purpose federated data catalog, Magda++ extends this with specialized AI/ML capabilities designed to support interactive scientific discovery and decision-making. Unlike Magda’s lightweight, in-browser AI, Magda++ integrates more powerful models, enabling deeper analysis and domain-specific insights across scientific fields.
+Alongside the open-source project, we develop **Magda++**, a proprietary platform built on the Magda open-source core and tailored for scientific research. Open-source Magda is a general-purpose, federated catalogue for open and enterprise data — and, with `mgd`, increasingly accessible to coding agents working alongside the people responsible for the outcome. Magda++ builds on that core with specialised AI/ML capabilities and more powerful models for interactive scientific discovery and domain-specific analysis — for example, AI-assisted food value chain optimisation spanning genomic, agricultural and environmental data.
 
-Magda++ is designed to bridge AI and scientific research, enabling researchers to integrate, analyse, and apply complex data more effectively. A key focus is Food Value Chain Optimization with AI Insights, where AI helps uncover hidden patterns in agricultural data, from genomic traits to environmental impacts, to improve crop yields and sustainability. Magda++ also facilitates interactive knowledge discovery, allowing researchers to navigate scientific challenges through AI-assisted reasoning and data fusion. Magda++ is redefining how AI powers scientific discovery, combining advanced AI models, interactive data exploration, and domain expertise to tackle real-world research challenges.
+Magda++ also brings traditional ML models into the same workflow, treating a trained model as another view of the data. Such models can expose hundreds of dimensions that are hard to steer by hand, so an agent helps translate high-level concepts — for example, a stronger La Niña — into the concrete model inputs they map to, such as higher rainfall and temperature, and interpret the results back into terms a researcher can reason about. Research organisations interested in Magda++ can [get in touch](mailto:contact@magda.io).
 
 > _These deployments shaped Magda’s evolution and validated its capabilities in real-world, mission-critical environments._
 
 ## Want to get it running yourself?
 
-If you just want to install a local testing version, installing Magda using [Helm](https://helm.sh/) is relatively easier (you can use [minikube](https://minikube.sigs.k8s.io/docs/) to install a local k8s test cluster):
+Install Magda with [Helm](https://helm.sh/) (use [minikube](https://minikube.sigs.k8s.io/docs/) for a local test cluster). To evaluate Magda locally with the published chart — no repository checkout or image builds required — follow the [Running Magda on Minikube](./docs/running-on-minikube-without-building.html) guide. The example below shows the shape of the command:
 
 ```bash
 # create a namespace "magda" in your cluster
 kubectl create namespace magda
 
-# install Magda version v5.0.1 to namespace "magda", turn off openfass function and expose the service via loadBalancer
-helm upgrade --namespace magda --install --version 5.3.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
+# install Magda version v6.1.1 to namespace "magda", turn off openfaas function and expose the service via loadBalancer
+helm upgrade --namespace magda --install --version 6.1.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
 ```
 
 > Since v2, we release our helm charts to Github container registry: `oci://ghcr.io/magda-io/charts`
@@ -209,12 +252,13 @@ helm upgrade --namespace magda --install --version 5.3.1 --timeout 9999s --set m
 You can find out the load balancer IP and access it:
 
 ```bash
-echo $(kubectl get svc --namespace magda gateway --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
+{% raw %}echo $(kubectl get svc --namespace magda gateway --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}"){% endraw %}
 ```
 
 If you are interested in playing more, you might find useful docs from [here](./docs/). Particularly:
 
-- [End-to-End Full Cluster Deployment Test](./docs/e2e-cluster-deployment-test.html) — the canonical runbook for deploying the published chart on a local (minikube) cluster, exposing the gateway, and accessing it with an admin API key
+- [Running Magda on Minikube](./docs/running-on-minikube-without-building.html) — evaluate Magda locally with the published chart, no build required
+- [End-to-End Full Cluster Deployment Test](./docs/e2e-cluster-deployment-test.html) — a contributor-focused runbook for verifying a release end-to-end (purge, fresh install, health checks, authenticated round trips)
 - [Magda Charts Docs Index](./docs/helm-charts-docs-index.html)
 - [How to create a local testing user](./docs/how-to-create-local-users.html)
 - [How to set a user as admin user](./docs/how-to-set-user-as-admin-user.html)
@@ -227,7 +271,7 @@ Or find out more on: [https://magda.io/docs/building-and-running](https://magda.
 
 ## Want to build your connectors / minions?
 
-You can extend Madga's functionality by [building your own customised connectors / minions](https://magda.io/docs/how-to-build-your-own-connectors-minions).
+You can extend Magda's functionality by [building your own customised connectors / minions](https://magda.io/docs/how-to-build-your-own-connectors-minions).
 
 ## Want to build your authentication plugins?
 
@@ -251,7 +295,7 @@ We welcome new contributors too! please check out our [Contributor's Guide](http
 
 - [Our Github](https://github.com/magda-io/magda)
 - [Magda API Reference](https://magda-io.github.io/api-docs/index.html)
-- [`mgd` CLI (terminal & coding-agent catalog access)](https://github.com/magda-io/magda/tree/main/packages/mgd)
+- [`mgd` CLI (terminal & coding-agent catalog access)](https://github.com/magda-io/magda/blob/main/packages/mgd/README.md)
 - [Magda Helm Chart Reference](/docs/helm-charts-docs-index)
 - [Useful common documentations](./docs/index.md)
 - [Other documentations](https://github.com/magda-io/magda/tree/master/docs/docs)
