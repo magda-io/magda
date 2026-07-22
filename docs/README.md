@@ -214,7 +214,7 @@ Magda is also completely open-source and can be used for free - to get it runnin
 
 ## Who’s Used Magda
 
-Magda has powered national- and state-level data portals, research infrastructure, and public sector data ecosystems. Some of the organizations who have previously deployed Magda include:
+Magda has powered national- and state-level data portals, research infrastructure, and public sector data ecosystems. Some of the organizations that have deployed or are using Magda include:
 
 - [Digital Transformation Agency](https://www.dta.gov.au/) and later the [Australian Bureau of Statistics](https://www.abs.gov.au/) – Deployed & Managed Magda platform for [data.gov.au](https://data.gov.au) from 2019 to June 2025
 - [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF) – Knowledge Network V2
@@ -222,6 +222,7 @@ Magda has powered national- and state-level data portals, research infrastructur
 - [Department of the Environment and Energy](https://www.environment.gov.au/) – Private instance
 - [NSW Department of Customer Service](https://www.customerservice.nsw.gov.au/) – NSW Spatial Digital Twin
 - [QLD Department of Natural Resources, Mines and Energy](https://www.dnrme.qld.gov.au/) – QLD Spatial Digital Twin
+- [NSW Audit Office](https://www.audit.nsw.gov.au/) – Council Risk IQ Project
 
 Magda is used in a variety of contexts — from open data portals serving national audiences, to private, domain-specific platforms supporting research workflows and scientific discovery. Its flexibility makes it a good fit for governments, research agencies, and enterprises that need to integrate diverse datasets across complex technical landscapes.
 
@@ -243,8 +244,9 @@ Install Magda with [Helm](https://helm.sh/) (use [minikube](https://minikube.sig
 # create a namespace "magda" in your cluster
 kubectl create namespace magda
 
-# install Magda version v6.1.1 to namespace "magda", turn off openfaas function and expose the service via loadBalancer
-helm upgrade --namespace magda --install --version 6.1.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
+# install the latest Magda release to namespace "magda", turn off openfaas function and expose the service via loadBalancer
+# (Helm installs the latest stable version by default; add --version <x.y.z> to pin a specific release)
+helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
 ```
 
 > Since v2, we release our helm charts to Github container registry: `oci://ghcr.io/magda-io/charts`

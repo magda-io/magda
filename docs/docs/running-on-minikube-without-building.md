@@ -33,10 +33,12 @@ minikube start --driver=docker --memory=16384 --cpus=4 --disk-size=60g
 
 ```bash
 kubectl create namespace magda
-helm install magda oci://ghcr.io/magda-io/charts/magda --version <VERSION> -n magda
+helm install magda oci://ghcr.io/magda-io/charts/magda --version <VERSION> --timeout 9999s -n magda
 ```
 
 Replace `<VERSION>` with the release you want — see the [latest release](https://github.com/magda-io/magda/releases) (for example, `6.1.1`). Installing with default values deploys the full stack.
+
+> **Why `--timeout 9999s`?** A first-time full-stack install runs post-install hooks (database migrations) that wait for OpenSearch, PostgreSQL and MinIO to come up. On a fresh cluster this can take longer than Helm's default 5-minute timeout, and without the flag `helm install` may report `failed post-install: timed out waiting for the condition` even though the deployment is still coming up correctly. The long timeout lets Helm wait it out and report success.
 
 > Since v2, Magda's Helm charts are published to the GitHub Container Registry: `oci://ghcr.io/magda-io/charts`.
 
@@ -80,3 +82,9 @@ kubectl delete namespace magda
 # or remove the whole minikube cluster
 minikube delete
 ```
+
+> **Reinstalling on the same cluster?** minikube's default hostpath storage provisioner keys volume directories by namespace and PVC name, so deleting the `magda` namespace does **not** always erase the underlying data on the node. Reusing that stale data on a fresh install causes hard-to-diagnose failures — most notably MinIO crash-looping with `Unable to initialize config system: Invalid credentials`, because the volume still holds config encrypted with the previous install's secrets. For a genuinely clean reinstall, either run `minikube delete` and start fresh, or clear the leftover data on the node:
+>
+> ```bash
+> minikube ssh -- 'sudo rm -rf /tmp/hostpath-provisioner/magda'
+> ```
