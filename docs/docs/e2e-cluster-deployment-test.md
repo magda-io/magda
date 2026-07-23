@@ -12,9 +12,13 @@ Run this test before merging any PR whose CI test plan can't otherwise prove it 
 
 ## Prerequisites
 
-- A local `minikube` cluster (docker driver recommended; 8+ CPU / 16GB+ RAM for the full default stack, which includes OpenSearch and the semantic search components).
+- A local `minikube` cluster (docker driver recommended). Size it for the **full default stack** (OpenSearch + the semantic-search components): **~12 GiB / 4 CPU is comfortable**, ~10 GiB works for a fresh / lightly-used instance, and below ~8 GiB risks OOM under load. A minimal deploy (see [Step 2](#step-2-fresh-install)) fits in roughly 4–5 GiB / 2 CPU.
 - Helm v3 (`helm version`) and `kubectl` configured against the `minikube` context.
 - A published build to test — either a real release/alpha tag, or a [PR preview release](./pr-preview-release-testing.md) (e.g. `v6.0.0-pr.3665.5`).
+
+> **On sizing (measured, magda full default stack, docker driver, Apple Silicon).** A fresh install settles at ~7 GiB node RAM and idles at well under one CPU; a long-running instance drifts toward ~10 GiB as JVM/OpenSearch working sets and indexed data grow. CPU only spikes transiently (install, indexing) — `magda-embedding-api` in particular is CPU-bound rather than memory-bound (it stays around 0.5 GiB even under heavy embedding load but will use every core it's given during bulk semantic indexing). The Helm chart's scheduler *requests* only sum to ~1.6 CPU / ~5.75 GiB, so `minikube` will happily schedule the whole stack onto an undersized node and then OOM-kill under load — size for the actual usage above, not for requests. (An earlier revision of this doc suggested 8 CPU / 16 GB; that is safe but conservative.)
+>
+> **docker-driver gotcha:** `minikube start --memory/--cpus` is enforced at the container cgroup, but `kubectl get node` reports the *host* Docker VM's capacity (e.g. 24 GB / 9 CPU), not your cap — so an over-commit surfaces as raw cgroup OOM-kills rather than graceful Kubernetes eviction. Confirm the real limit with `docker inspect minikube --format '{{.HostConfig.Memory}}'` (bytes) / `'{{.HostConfig.NanoCpus}}'`.
 
 ## Step 1: Fully Purge Any Existing Deployment
 
