@@ -38,11 +38,17 @@ global:
   postgresql:
     # -- PostgreSQL username
     # For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`.
-    # It's recommended use superuser `postgres` for both in-k8s PostgreSQL or cloud provider DB services (e.g. CloudSQL or AWS RDS).
+    # It's recommended use superuser `postgres` for in-k8s PostgreSQL deployments.
+    # For cloud provider DB services (e.g. CloudSQL or AWS RDS), set this value to your external privileged DB account username.
     # This user will only be used for DB schema migrators to cerate DB schema and restricted DB accounts that are used by Magda internal services to access DB.
     # If you have to use a user account rather than `postgres`, the user account needs to have sufficient permissions to run all DB migration scripts ([e.g. here](https://github.com/magda-io/magda/tree/master/magda-migrator-registry-db/sql)).
     # Note: Until the ticket #3126 is fixed, using a DB username rather than `postgres` will trigger an error when content DB migrate runs.
     postgresqlUsername: "postgres"
+
+    # -- When using external DB services (`useCloudSql` or `useAwsRdsDb`), chart rendering fails by default if
+    # `postgresqlUsername` is left as `postgres` to prevent accidental use of the wrong privileged account.
+    # Set this to `true` only when your external privileged account is intentionally named `postgres`.
+    allowDefaultExternalDbPostgresUser: false
 
     # -- the secret that contains privileged PostgreSQL account password.
     # The password will be loaded from key "postgresql-password" of the secret data.

@@ -45,7 +45,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 
 {{- define "magda.postgres-superuser-env" }}
 - name: PGUSER
-  value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
+  value: {{ include "magda.postgres-privileged-username" . | quote }}
 - name: PGPASSWORD
   valueFrom:
     secretKeyRef:
@@ -53,9 +53,19 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
       key: "postgresql-password"
 {{- end }}
 
+{{- define "magda.postgres-privileged-username" }}
+{{- $username := .Values.global.postgresql.postgresqlUsername | default "postgres" -}}
+{{- $usesExternalDb := or .Values.global.useAwsRdsDb .Values.global.useCloudSql -}}
+{{- $allowDefaultExternalDbPostgresUser := .Values.global.postgresql.allowDefaultExternalDbPostgresUser | default false -}}
+{{- if and $usesExternalDb (eq $username "postgres") (not $allowDefaultExternalDbPostgresUser) -}}
+{{- fail "When global.useAwsRdsDb or global.useCloudSql is enabled, set global.postgresql.postgresqlUsername to the privileged external DB account. If the privileged account is intentionally named \"postgres\", set global.postgresql.allowDefaultExternalDbPostgresUser=true." -}}
+{{- end -}}
+{{- $username -}}
+{{- end }}
+
 {{- define "magda.postgres-migrator-env" }}
 - name: PGUSER
-  value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
+  value: {{ include "magda.postgres-privileged-username" . | quote }}
 - name: PGPASSWORD
   valueFrom:
     secretKeyRef:
