@@ -15,6 +15,7 @@
     - [Webhooks](#webhooks)
   - [Search API](#search-api)
   - [Search Indexer](#search-indexer)
+  - [Semantic Search & Semantic Indexers](#semantic-search--semantic-indexers)
   - [Storage API](#storage-api)
   - [Web Server](#web-server)
 - [Authentication (authn)](#authentication-authn)
@@ -219,7 +220,9 @@ It's implemented as a wrapper around the search engine [ElasticSearch](https://w
 
 > Note that unlike the Registry, we didn't implement the similar generic "record" / "aspect" based model in ElasticSearch. Instead, the data model is specifically designed to search datasets and "dataset oriented".
 
-> That's also the reason we introduced a more generic authorisation model in v2.0.0 - allows a single authorisation policy to cover the same data in different storage targets: Registry & ElasticSearch regardless the data model differences.
+> That's also the reason we introduced a more generic authorisation model in v2.0.0 - allows a single authorisation policy to cover the same data in different storage targets: Registry & OpenSearch regardless the data model differences.
+
+See also [Semantic Search & Semantic Indexers](#semantic-search--semantic-indexers) for content-level (vector) search, which complements this metadata search.
 
 ## Search Indexer
 
@@ -236,6 +239,50 @@ On first startup, the Indexer will also try to set up the regions index - at the
 The index definitions used by the Indexer change over time - within the code itself there are index definitions, and these have an integer describing their version. When the indexer starts up, it'll check for the existence of an index with its current version - if it can't find one, it'll create it and start populating it. Because the version used by the Search API is specified elsewhere, this means that you can have the indexer working on setting up `datasets41`, for instance, while the Search API is still querying against version `datasets40`.
 
 > You can config the index versions that search API uses via [search API Helm Chart config](../../../deploy/helm/internal-charts/search-api/README.md).
+
+This indexer covers dataset metadata only; see [Semantic Search & Semantic Indexers](#semantic-search--semantic-indexers) for indexing distribution content and custom aspects.
+
+## Semantic Search & Semantic Indexers
+
+Since v5/v6, Magda has **two indexing tiers** that serve different retrieval needs:
+
+| Tier | Indexes | Target index | Served by |
+|---|---|---|---|
+| `magda-indexer` (the [Search Indexer](#search-indexer) above) | Standard dataset **metadata** from the Registry | Main datasets index | [Search API](#search-api) — lexical, and (since v5) hybrid lexical+vector |
+| **Semantic indexers** | Vector **representations** of a chosen source | Semantic (knn-vector) index | `magda-semantic-search-api` (`/retrieve`, `/search`) |
+
+`magda-indexer` is fixed to the dataset metadata model. The **semantic-indexer
+framework** (`@magda/semantic-indexer-sdk`) is instead a general, minion-based
+toolkit: you write a strategy that turns *some source* into text, and it chunks,
+embeds and writes that into the semantic index. Its `itemType` is either:
+
+- `registryRecord` — index registry metadata, including **custom aspects** that
+  `magda-indexer` does not cover (e.g. a project-specific aspect); or
+- `storageObject` — index distribution **file content**. The shipped examples are
+  [`magda-pdf-semantic-indexer`](https://github.com/magda-io/magda-pdf-semantic-indexer)
+  (PDF → markdown) and [`magda-csv-semantic-indexer`](https://github.com/magda-io/magda-csv-semantic-indexer)
+  (CSV → data dictionary).
+
+A semantic indexer's core design decision is **representation**: what text should
+stand for the source, chosen with the intended retrieval use in mind. See
+[How to build a semantic indexer](../how-to-build-a-semantic-indexer.md).
+
+### Authorization for semantic queries
+
+The semantic index deliberately stores **no dataset/distribution metadata**, so
+access control cannot be evaluated from it alone. Instead it is delegated back to
+the Registry (the authoritative metadata store, with the existing OPA /
+partial-evaluation authz) at query time:
+
+- The Registry API exposes a **"filter records by access"** endpoint that returns,
+  from a list of record IDs, only those the current user can read.
+- **Phase 1:** `magda-semantic-search-api` retrieves semantically, then filters the
+  returned record IDs through that endpoint.
+- **Phase 2 (fallback):** if Phase 1 yields no authorised results, it narrows the
+  semantic retrieval to accessible records and retries.
+
+This was implemented in [PR #3643](https://github.com/magda-io/magda/pull/3643)
+(fixing [#3608](https://github.com/magda-io/magda/issues/3608)).
 
 ## Storage API
 

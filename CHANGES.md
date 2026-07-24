@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v6.1.2
+
+- Add a "How to build a semantic indexer" developer guide (`docs/docs/how-to-build-a-semantic-indexer.md`) and a "Semantic Search & Semantic Indexers" section in the [Guide to Magda Internals](./docs/docs/architecture/Guide%20to%20Magda%20Internals.md), documenting the two indexing tiers, the representation-first design approach (designing the indexed text backward from retrieval), and the semantic query API.
+- Add a `README.md` for the [`@magda/semantic-indexer-sdk`](https://www.npmjs.com/package/@magda/semantic-indexer-sdk) package, which was previously blank on npm, linking to the new how-to guide.
+- #3730: Add apidoc annotations for the semantic search query API (`magda-semantic-search-api`) — `POST`/`GET /v0/semantic-search/search` and `POST /v0/semantic-search/retrieve` now appear in the generated API docs and OpenAPI spec. Doc-comment (`@apiGroup`/`@api`) change only; no route or behaviour change.
+
 ## v6.1.1
 
 - #3723: Fix `@magda/mgd` npm package publishing without its `bin/mgd.js` CLI bundle, which made `npm install -g @magda/mgd` install a broken `mgd` executable.
