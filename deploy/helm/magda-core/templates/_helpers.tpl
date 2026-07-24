@@ -43,9 +43,18 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
   {{- end -}}
 {{- end }}
 
+{{- define "magda.postgres-superuser-username" -}}
+{{- $postgresUser := .Values.global.postgresql.postgresqlUsername | default "postgres" -}}
+{{- if and (or .Values.global.useAwsRdsDb .Values.global.useCloudSql) (eq $postgresUser "postgres") (ne (.Values.global.dbUser | default "postgres") "postgres") -}}
+{{- .Values.global.dbUser -}}
+{{- else -}}
+{{- $postgresUser -}}
+{{- end -}}
+{{- end }}
+
 {{- define "magda.postgres-superuser-env" }}
 - name: PGUSER
-  value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
+  value: {{ include "magda.postgres-superuser-username" . | quote }}
 - name: PGPASSWORD
   valueFrom:
     secretKeyRef:
@@ -55,7 +64,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 
 {{- define "magda.postgres-migrator-env" }}
 - name: PGUSER
-  value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
+  value: {{ include "magda.postgres-superuser-username" . | quote }}
 - name: PGPASSWORD
   valueFrom:
     secretKeyRef:
