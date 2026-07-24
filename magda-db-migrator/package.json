@@ -13,7 +13,7 @@
   "config": {
     "docker": {
       "name": "magda-db-migrator",
-      "include": "Dockerfile flyway-commandline-4.2.0-linux-x64.tar.gz migrate.sh"
+      "include": "Dockerfile migrate.sh"
     }
   },
   "devDependencies": {
