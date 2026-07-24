@@ -89,6 +89,7 @@ Magda combines complementary retrieval strategies so results match the meaning o
 - **Semantic search** — retrieval over meaning, so related datasets surface even when they don't share exact terms.
 - **PDF and CSV indexers** supplied with a standard Magda 6 deployment, so common document and tabular content becomes searchable out of the box.
 - **A semantic-indexer framework and published SDK** for teams that need format-specific or custom indexing strategies: [`@magda/semantic-indexer-sdk`](https://www.npmjs.com/package/@magda/semantic-indexer-sdk).
+- **Building a custom indexer?** See [How to build a semantic indexer](./docs/how-to-build-a-semantic-indexer.md).
 
 An indexer's job is *representation*: turning useful domain content into text suitable for retrieval, rather than treating every file format identically. Not every possible format becomes content-searchable automatically — the SDK exists precisely so teams can add the representations that matter to them.
 
