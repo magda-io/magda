@@ -26,7 +26,13 @@ run_scalar () {
 for d in "${FLYWAY_HOME}"/sql/*; do
     if [[ -d "$d" ]]; then
         dbName="$(basename "$d")"
+        # psql picks PGSSLMODE up from the environment on its own, but Flyway
+        # connects via pgjdbc, which does not read it. Carry it in the URL so both
+        # the baseline and migrate invocations below use the same TLS settings.
         dbUrl="jdbc:postgresql://${DB_HOST}/${dbName}"
+        if [[ -n "${PGSSLMODE:-}" ]]; then
+            dbUrl="${dbUrl}?sslmode=${PGSSLMODE}"
+        fi
 
         echo "Creating database ${dbName} (ignored if it already exists)"
         # CREATE DATABASE fails when the database already exists (every re-run / upgrade).
