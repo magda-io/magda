@@ -28,6 +28,7 @@ Kubernetes: `>= 1.21.0`
 | magda-postgres.postgresql.persistence.size | string | `"100Gi"` |  |
 | magda-postgres.postgresql.resources.requests.cpu | string | `"100m"` |  |
 | magda-postgres.postgresql.resources.requests.memory | string | `"128Mi"` |  |
+| magda-postgres.postgresql.tls.certificatesSecret | string | `"registry-db-postgresql-crt"` | Must match `fullnameOverride` above: the postgresql subchart does not run `certificatesSecret` through `tpl`, so it cannot be derived automatically. See `magda-postgres/values.yaml` for the full explanation. |
 | migratorBackoffLimit | int | `6` | No. of retries before the migrator job is considered as failed. Failed Pods associated with the Job are recreated by the Job controller with an exponential back-off delay (10s, 20s, 40s ...) capped at six minutes. |
 | vacuumJobImage.name | string | `"magda-postgres"` |  |
 

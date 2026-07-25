@@ -39,7 +39,9 @@ postgresql:
     # `combined-db`, `authorization-db`, `content-db`, `registry-db`, `session-db`,
     # `tenant-db`.
     certificatesSecret: "default-db-postgresql-crt"
+    # -- Filename (within the mounted certificate secret) of the server certificate.
     certFilename: "tls.crt"
+    # -- Filename (within the mounted certificate secret) of the server private key.
     certKeyFilename: "tls.key"
     # NOTE: deliberately NOT setting certCAFilename. Setting it makes bitnami write a
     # `hostssl all all 0.0.0.0/0 cert` pg_hba rule requiring client certificates,
@@ -55,14 +57,20 @@ postgresql:
     # Note this init container runs as root (`securityContext.runAsUser: 0`).
     enabled: true
     image:
-      # -- The subchart's default is `docker.io/bitnami/bitnami-shell`, which has been
+      # -- Registry hosting the `volumePermissions` init container image.
+      # The subchart's default is `docker.io/bitnami/bitnami-shell`, which has been
       # WITHDRAWN from Docker Hub — leaving it would produce `ImagePullBackOff` and the
       # database would never start. Point it at the same base image magda-postgres is
       # built FROM, which Magda mirrors. Pinned deliberately: unlike the postgresql
       # image tag, this does not track the Magda release version.
       registry: "ghcr.io"
+      # -- Repository (within `registry`) of the `volumePermissions` init container image.
       repository: "magda-io/postgresql"
+      # -- Tag of the `volumePermissions` init container image. Pinned independently of
+      # `postgresql.image.tag` (see `registry` note above) and not auto-updated by
+      # `yarn set-version`.
       tag: "13.7.0-debian-11-r33"
+      # -- Pull policy for the `volumePermissions` init container image.
       pullPolicy: "IfNotPresent"
 
   image:

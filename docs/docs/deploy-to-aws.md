@@ -40,6 +40,55 @@ To make EKS cluster be able to connect to the RDS database created, you need to 
 
 > You can use RDS Endpoint domain e.g. `xxxx.xxx.[region name].rds.amazonaws.com` to connect to the RDS from your EKS cluster.
 
+#### PostgreSQL client SSL/TLS mode (`sslmode`)
+
+By default, all Magda services, the DB migrators and the registry-db
+auto-vacuum job connect to PostgreSQL with `global.postgresql.client.sslmode`
+resolved to `require` — i.e. the connection is encrypted, though the server
+certificate is not verified. This is set via the standard libpq
+`PGSSLMODE` environment variable for the Node services, and as an
+`sslmode=` JDBC URL parameter for the JVM-based DB migrator (Flyway).
+
+This default satisfies RDS instances with `rds.force_ssl=1` set in their
+parameter group with **no extra configuration required** — `require` is
+exactly what `force_ssl` demands, so a stock Magda install already works
+against an RDS instance that enforces SSL.
+
+Only two values are supported for `global.postgresql.client.sslmode`:
+`disable` and `require`.
+
+- `prefer` / `allow` are rejected at chart render time. node-postgres (used
+  by the Node services) cannot negotiate these modes consistently with the
+  other client libraries in the stack, so accepting them would give the Node
+  services different effective behaviour from the JVM migrator and `psql`.
+  Use `require` instead.
+- `verify-ca` / `verify-full` (certificate/hostname verification against a
+  supplied CA) are not supported yet — there is currently no way to deliver a
+  CA certificate to every DB-connecting pod. Track this at
+  [issue #3739](https://github.com/magda-io/magda/issues/3739).
+
+Note this does not mean the DB migrator was previously sending plaintext
+traffic: the migrator connects via Flyway, which bundles the pgjdbc driver
+(pgjdbc 42.7.12 as of Flyway 12.11.0), and pgjdbc's own default `sslmode` is
+`prefer` — it already opportunistically upgraded to TLS whenever the server
+offered it, just without certificate verification or enforcement, and it
+would silently fall back to plaintext if the server refused. Setting
+`global.postgresql.client.sslmode` makes this behaviour explicit and
+consistent across every component, and lets you enforce it (`require`)
+instead of relying on the permissive default.
+
+**Rollback:** if you need to revert to the previous (unenforced) client
+behaviour, set `--set global.postgresql.client.sslmode=disable` at install
+time. This is independent of the in-cluster PostgreSQL server's own TLS
+listener (`global.postgresql.tls.enabled`, default `true`, only relevant when
+using the in-pod database rather than RDS) — set that to `false` to restore
+the previous in-cluster server behaviour.
+
+> `global.useCloudSql` deployments auto-resolve `sslmode` to `disable`
+> regardless of this setting, because the `cloud_sql_proxy` sidecar presents a
+> plaintext local listener by design and performs its own TLS connection to
+> Cloud SQL — there is nothing for the client-side `sslmode` to encrypt.
+
 ### 4> Install kubernetes-replicator
 
 > It’s only required by the OpenFaas part of Magda which can be turned off via [global.openfaas.enabled](https://github.com/magda-io/magda/tree/master/deploy/helm/magda).
