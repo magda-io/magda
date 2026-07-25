@@ -132,5 +132,20 @@ spec:
 {{- if hasKey .Values "validateJsonSchema" }}
 {{- $_ := set $appConfigDict "validateJsonSchema" .Values.validateJsonSchema }}
 {{- end }}
+{{- /*
+  registry-api connects via pgjdbc, which does not read PGSSLMODE. Carry the
+  resolved sslmode as a JDBC URL parameter instead. Only append when the URL
+  doesn't already specify one, so a user who hand-writes the full URL keeps
+  control.
+*/}}
+{{- $dbSection := (get $appConfigDict "db") | default dict }}
+{{- $dbDefault := (get $dbSection "default") | default dict }}
+{{- $dbUrl := (get $dbDefault "url") | default "" | toString }}
+{{- if and $dbUrl (not (contains "sslmode=" $dbUrl)) }}
+{{- $separator := ternary "&" "?" (contains "?" $dbUrl) }}
+{{- $_ := set $dbDefault "url" (printf "%s%ssslmode=%s" $dbUrl $separator (include "magda.postgres-client-sslmode" .)) }}
+{{- $_ := set $dbSection "default" $dbDefault }}
+{{- $_ := set $appConfigDict "db" $dbSection }}
+{{- end }}
 {{- mustToRawJson $appConfigDict }}
 {{- end -}}

@@ -51,6 +51,8 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     secretKeyRef:
       name: {{ .Values.global.postgresql.existingSecret | quote }}
       key: "postgresql-password"
+- name: PGSSLMODE
+  value: {{ include "magda.postgres-client-sslmode" . | quote }}
 {{- end }}
 
 {{- define "magda.postgres-privileged-username" }}
@@ -71,6 +73,8 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     secretKeyRef:
       name: {{ .Values.global.postgresql.existingSecret | quote }}
       key: "postgresql-password"
+- name: PGSSLMODE
+  value: {{ include "magda.postgres-client-sslmode" . | quote }}
 - name: CLIENT_USERNAME
   value: client
 - name: CLIENT_PASSWORD

@@ -4,6 +4,9 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../" && pwd)"
 HELPERS_FILE="${ROOT_DIR}/deploy/helm/magda-core/templates/_helpers.tpl"
+# magda.postgres-superuser-env now also includes magda.postgres-client-sslmode,
+# which lives in magda-common. Pull it into this isolated fixture chart too.
+DB_SECRETS_FILE="${ROOT_DIR}/deploy/helm/magda-common/templates/_db-secrets.tpl"
 
 if ! command -v helm >/dev/null 2>&1; then
     echo "helm is required for this test"
@@ -21,6 +24,7 @@ EOF
 
 mkdir -p "${TMP_DIR}/templates"
 cp "${HELPERS_FILE}" "${TMP_DIR}/templates/_helpers.tpl"
+cp "${DB_SECRETS_FILE}" "${TMP_DIR}/templates/_db-secrets.tpl"
 
 cat > "${TMP_DIR}/templates/render.yaml" <<'EOF'
 apiVersion: v1
