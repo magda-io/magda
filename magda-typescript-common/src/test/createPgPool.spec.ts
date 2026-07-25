@@ -1,5 +1,8 @@
 import "mocha";
 import { expect } from "chai";
+import fs from "fs";
+import os from "os";
+import path from "path";
 import { getPgSslConfigFromEnv } from "../createPgPool.js";
 
 describe("getPgSslConfigFromEnv", function () {
@@ -48,6 +51,12 @@ describe("getPgSslConfigFromEnv", function () {
         expect(() => getPgSslConfigFromEnv({ PGSSLMODE: "prefer" })).to.throw(
             /Unsupported PGSSLMODE/
         );
+        // `prefer` is rejected for a specific reason: libpq silently falls back
+        // to plaintext, whereas node-postgres hard-fails. Pin that it is this
+        // value being reported, so this test cannot pass for another input.
+        expect(() => getPgSslConfigFromEnv({ PGSSLMODE: "prefer" })).to.throw(
+            /"prefer"/
+        );
     });
 
     it("should throw for an unknown value", function () {
@@ -71,4 +80,78 @@ describe("getPgSslConfigFromEnv", function () {
             }
         }
     });
+
+    describe("PGSSLROOTCERT handling", function () {
+        const CA_CONTENTS =
+            "-----BEGIN CERTIFICATE-----\nnot-a-real-cert\n-----END CERTIFICATE-----\n";
+        let tempDir: string;
+        let caFilePath: string;
+
+        before(function () {
+            tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "magda-pg-ca-"));
+            caFilePath = path.join(tempDir, "ca.crt");
+            fs.writeFileSync(caFilePath, CA_CONTENTS, "utf-8");
+        });
+
+        after(function () {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+        });
+
+        it("should not read the CA file for `require`, even if PGSSLROOTCERT points at a missing file", function () {
+            // `require` verifies nothing, so the CA is irrelevant. A stale or
+            // not-yet-mounted PGSSLROOTCERT must not stop the service booting.
+            const missingPath = path.join(tempDir, "does-not-exist.crt");
+            expect(
+                getPgSslConfigFromEnv({
+                    PGSSLMODE: "require",
+                    PGSSLROOTCERT: missingPath
+                })
+            ).to.deep.equal({ rejectUnauthorized: false });
+        });
+
+        it("should read the CA file for `verify-ca`", function () {
+            const config = getPgSslConfigFromEnv({
+                PGSSLMODE: "verify-ca",
+                PGSSLROOTCERT: caFilePath
+            });
+            expect(config).to.have.property("rejectUnauthorized", true);
+            expect(config).to.have.property("ca", CA_CONTENTS);
+        });
+
+        it("should read the CA file for `verify-full`", function () {
+            const config = getPgSslConfigFromEnv({
+                PGSSLMODE: "verify-full",
+                PGSSLROOTCERT: caFilePath
+            });
+            expect(config).to.have.property("rejectUnauthorized", true);
+            expect(config).to.have.property("ca", CA_CONTENTS);
+        });
+
+        it("should leave `ca` undefined for `verify-full` when PGSSLROOTCERT is unset", function () {
+            // Falls back to Node's built-in trust store.
+            const config = getPgSslConfigFromEnv({ PGSSLMODE: "verify-full" });
+            expect(config).to.have.property("rejectUnauthorized", true);
+            expect((config as any).ca).to.equal(undefined);
+        });
+
+        it("should report PGSSLROOTCERT and the path when the CA file cannot be read on a verify- mode", function () {
+            const missingPath = path.join(tempDir, "does-not-exist.crt");
+            expect(() =>
+                getPgSslConfigFromEnv({
+                    PGSSLMODE: "verify-full",
+                    PGSSLROOTCERT: missingPath
+                })
+            ).to.throw(/PGSSLROOTCERT/);
+            expect(() =>
+                getPgSslConfigFromEnv({
+                    PGSSLMODE: "verify-full",
+                    PGSSLROOTCERT: missingPath
+                })
+            ).to.throw(new RegExp(escapeRegExp(missingPath)));
+        });
+    });
 });
+
+function escapeRegExp(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}

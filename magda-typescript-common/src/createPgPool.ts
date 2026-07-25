@@ -42,8 +42,26 @@ export function getPgSslConfigFromEnv(
         return false;
     }
 
-    const caFilePath = env.PGSSLROOTCERT;
-    const ca = caFilePath ? fs.readFileSync(caFilePath, "utf-8") : undefined;
+    // Read lazily: only the `verify-*` modes consult the CA. Reading eagerly
+    // would let a stale or not-yet-mounted PGSSLROOTCERT abort startup under
+    // `require`, which verifies nothing and never looks at the file.
+    const readCa = (): string | undefined => {
+        const caFilePath = env.PGSSLROOTCERT;
+        if (!caFilePath) {
+            // Fall back to Node's built-in trust store.
+            return undefined;
+        }
+        try {
+            return fs.readFileSync(caFilePath, "utf-8");
+        } catch (e) {
+            throw new Error(
+                `Failed to read the CA file specified by PGSSLROOTCERT ` +
+                    `("${caFilePath}") required by PGSSLMODE=${sslMode}: ` +
+                    `${e instanceof Error ? e.message : String(e)}`,
+                { cause: e }
+            );
+        }
+    };
 
     switch (sslMode) {
         case "require":
@@ -54,12 +72,12 @@ export function getPgSslConfigFromEnv(
             // Verify the certificate chain but not the hostname.
             return {
                 rejectUnauthorized: true,
-                ca,
+                ca: readCa(),
                 checkServerIdentity: () => undefined
             };
         case "verify-full":
             // Node's TLS stack verifies the hostname by default.
-            return { rejectUnauthorized: true, ca };
+            return { rejectUnauthorized: true, ca: readCa() };
         default:
             throw new Error(
                 `Unsupported PGSSLMODE value: "${env.PGSSLMODE}". ` +
