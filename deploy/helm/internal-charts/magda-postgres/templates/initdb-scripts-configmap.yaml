@@ -1,0 +1,15 @@
+{{- $username := .Values.global.postgresql.postgresqlUsername | default "postgres" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.postgresql.fullnameOverride }}-initdb-scripts"
+data:
+  # Runs once, at first boot, as the built-in `postgres` superuser (via the bitnami
+  # PostgreSQL initdb mechanism). Grants the privileged DB user the DDL privileges the
+  # Magda DB migrators need — `CREATEDB` (create per-service databases) and `CREATEROLE`
+  # (create the restricted `client` role). This matches the privilege level managed
+  # providers grant their admin account (RDS `rds_superuser`, Azure `azure_pg_admin`,
+  # GCP `cloudsqlsuperuser`) so a non-default privileged username works without a true
+  # superuser. For the default `postgres` user this grant is a harmless no-op.
+  10-grant-privileged-user.sql: |
+    ALTER ROLE "{{ $username }}" WITH CREATEDB CREATEROLE;

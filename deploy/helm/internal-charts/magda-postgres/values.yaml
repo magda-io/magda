@@ -39,6 +39,16 @@ postgresql:
   # See more: https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function
   extraEnvVarsCM: "{{ .Values.fullnameOverride }}-extra-env-vars"
 
+  # -- the name of config map contains initdb scripts run at first boot.
+  # You should not change this value as this configMap is auto-generated (see `initdb-scripts-configmap.yaml`).
+  # The script grants `CREATEDB` & `CREATEROLE` to the privileged DB user so that, when a
+  # non-default (non-`postgres`) username is used, it can still create databases and the
+  # restricted `client` role for the DB migrators — matching the privilege level that
+  # managed providers (RDS `rds_superuser`, Azure `azure_pg_admin`, GCP `cloudsqlsuperuser`)
+  # grant their admin account, without requiring a true superuser. For the default `postgres`
+  # user the grant is a harmless no-op.
+  initdbScriptsConfigMap: "{{ .Values.fullnameOverride }}-initdb-scripts"
+
   primary:
     # -- extra volumes can be set here. 
     # e.g. map backup storage config secret as files in /etc/wal-g.d/env
