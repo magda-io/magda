@@ -4,8 +4,10 @@ kind: ConfigMap
 metadata:
   name: "{{ .Values.postgresql.fullnameOverride }}-initdb-scripts"
 data:
-  # Runs once, at first boot, as the built-in `postgres` superuser (via the bitnami
-  # PostgreSQL initdb mechanism). Grants the privileged DB user the DDL privileges the
+  # Runs once, at first boot, as the built-in `postgres` superuser (this requires
+  # `postgresql.initdbUser: "postgres"` in values.yaml — bitnami otherwise runs initdb
+  # scripts as `postgresqlUsername`, which cannot grant these privileges to itself).
+  # Grants the privileged DB user the DDL privileges the
   # Magda DB migrators need — `CREATEDB` (create per-service databases) and `CREATEROLE`
   # (create the restricted `client` role). This matches the privilege level managed
   # providers grant their admin account (RDS `rds_superuser`, Azure `azure_pg_admin`,

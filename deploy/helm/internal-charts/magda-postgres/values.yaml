@@ -49,6 +49,15 @@ postgresql:
   # user the grant is a harmless no-op.
   initdbScriptsConfigMap: "{{ .Values.fullnameOverride }}-initdb-scripts"
 
+  # -- the DB user used to run the initdb scripts (see `initdbScriptsConfigMap`).
+  # Must be the built-in `postgres` superuser: the script grants CREATEDB/CREATEROLE
+  # to the privileged user, which that user cannot grant to itself. Bitnami defaults
+  # this to `postgresqlUsername`, which is wrong for our purposes whenever a
+  # non-default privileged username is in use.
+  # No password is needed — bitnami's init-time pg_hba.conf trusts local socket
+  # connections, and the init scripts connect over the local socket.
+  initdbUser: "postgres"
+
   primary:
     # -- extra volumes can be set here. 
     # e.g. map backup storage config secret as files in /etc/wal-g.d/env
