@@ -32,12 +32,16 @@ fi
 render --set global.useCombinedDb=false --set global.useCloudSql=true \
     --set global.postgresql.postgresqlUsername=magda_admin \
     > "${TMP_DIR}/cloudsql.yaml"
-if grep -q 'name: "PGSSLMODE"' -A 1 "${TMP_DIR}/cloudsql.yaml" \
+#    Note: the producing grep must NOT use -q -- -q suppresses its stdout, so
+#    piping it into a second grep would hand that grep an empty stream and make
+#    this assertion vacuously true.
+if grep -A1 'name: "PGSSLMODE"' "${TMP_DIR}/cloudsql.yaml" \
     | grep -q 'value: "require"'; then
     echo "expected the cloud-sql-proxy path to resolve sslmode to disable"
     exit 1
 fi
-if ! grep -q 'value: "disable"' "${TMP_DIR}/cloudsql.yaml"; then
+if ! grep -A1 'name: "PGSSLMODE"' "${TMP_DIR}/cloudsql.yaml" \
+    | grep -q 'value: "disable"'; then
     echo "expected the cloud-sql-proxy path to emit sslmode disable"
     exit 1
 fi
@@ -51,7 +55,17 @@ if ! grep -q 'value: "require"' "${TMP_DIR}/explicit.yaml"; then
     exit 1
 fi
 
-# 4. `prefer` is rejected: node-postgres cannot negotiate it consistently.
+# 4. Case is normalised, matching the `.trim().toLowerCase()` the TypeScript
+#    side (magda-typescript-common/src/createPgPool.ts) applies, so both layers
+#    accept the same vocabulary.
+render --set global.postgresql.client.sslmode=ReQuIrE > "${TMP_DIR}/mixedcase.yaml"
+if ! grep -A1 'name: "PGSSLMODE"' "${TMP_DIR}/mixedcase.yaml" \
+    | grep -q 'value: "require"'; then
+    echo "expected a mixed-case sslmode to normalise to require"
+    exit 1
+fi
+
+# 5. `prefer` is rejected: node-postgres cannot negotiate it consistently.
 for bad in prefer allow verify-ca verify-full banana; do
     if render --set global.postgresql.client.sslmode="${bad}" \
         > /dev/null 2> "${TMP_DIR}/fail.stderr"; then

@@ -182,7 +182,9 @@ data:
 {{- $globalVals := (get .Values "global") | default dict -}}
 {{- $pgVals := (get $globalVals "postgresql") | default dict -}}
 {{- $clientVals := (get $pgVals "client") | default dict -}}
-{{- $sslmode := (get $clientVals "sslmode") | default "" | toString | trim -}}
+{{- /* Normalised the same way magda-typescript-common/src/createPgPool.ts does
+       (`.trim().toLowerCase()`), so both layers accept the same vocabulary. */ -}}
+{{- $sslmode := (get $clientVals "sslmode") | default "" | toString | trim | lower -}}
 {{- if empty $sslmode -}}
   {{- if get $globalVals "useCloudSql" -}}
     {{- $sslmode = "disable" -}}
