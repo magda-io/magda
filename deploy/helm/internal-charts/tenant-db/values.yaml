@@ -25,6 +25,11 @@ magda-postgres:
   postgresql: 
     fullnameOverride: "tenant-db-postgresql"
     nameOverride: "tenant-db-postgresql"
+    tls:
+      # -- Must match `fullnameOverride` above: the postgresql subchart does not run
+      # `certificatesSecret` through `tpl`, so it cannot be derived automatically.
+      # See `magda-postgres/values.yaml` for the full explanation.
+      certificatesSecret: "tenant-db-postgresql-crt"
     persistence:
       size: "25Gi"
     resources:
