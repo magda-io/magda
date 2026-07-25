@@ -142,6 +142,8 @@ data:
 {{- $globalVals := (get $vals "global" ) | default dict }}
 - name: {{ $dbUserEnvName | default "PGUSER" | quote }}
   value: client
+- name: "PGSSLMODE"
+  value: {{ include "magda.postgres-client-sslmode" . | quote }}
     {{- /* `noDbAuth` is not supported since Magda v1.0.0. Still check it for the backward compatibility reason. */}}
     {{- if empty (get $globalVals "noDbAuth") }}
 - name: {{ $dbPasswordEnvName | default "PGPASSWORD" | quote }}
@@ -152,3 +154,44 @@ data:
     {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+  Resolve the PostgreSQL client `sslmode` for all DB connections.
+
+  Magda supports exactly `disable` and `require`:
+  - `prefer` / `allow` cannot be honoured consistently. libpq (psql, wal-g) and
+    pgjdbc (registry-api, Flyway) implement them natively, but node-postgres maps
+    `prefer` to `ssl: true` and hard-fails against a server that doesn't offer
+    TLS instead of falling back. Rejecting them is better than giving the Node
+    services different semantics from every other component.
+  - `verify-ca` / `verify-full` need a CA certificate delivered into each pod,
+    and no DB-connecting component exposes an extension point for that yet.
+
+  Resolution order:
+  1. An explicitly configured value always wins.
+  2. `useCloudSql` resolves to `disable` — cloud_sql_proxy presents a plaintext
+     listener and performs TLS to Cloud SQL itself.
+  3. Everything else (in-cluster, RDS, Azure, direct Cloud SQL) resolves to
+     `require`.
+
+  Parameters: the root scope. i.e. .
+  Usage:
+  {{ include "magda.postgres-client-sslmode" . }}
+*/}}
+{{- define "magda.postgres-client-sslmode" -}}
+{{- $globalVals := (get .Values "global") | default dict -}}
+{{- $pgVals := (get $globalVals "postgresql") | default dict -}}
+{{- $clientVals := (get $pgVals "client") | default dict -}}
+{{- $sslmode := (get $clientVals "sslmode") | default "" | toString | trim -}}
+{{- if empty $sslmode -}}
+  {{- if get $globalVals "useCloudSql" -}}
+    {{- $sslmode = "disable" -}}
+  {{- else -}}
+    {{- $sslmode = "require" -}}
+  {{- end -}}
+{{- end -}}
+{{- if not (has $sslmode (list "disable" "require")) -}}
+{{- fail (printf "Unsupported global.postgresql.client.sslmode value %q. Magda supports \"disable\" and \"require\" only. \"prefer\"/\"allow\" are not supported because node-postgres cannot negotiate them consistently — use \"require\". \"verify-ca\"/\"verify-full\" require CA distribution, which is not implemented yet (see issue #3739)." $sslmode) -}}
+{{- end -}}
+{{- $sslmode -}}
+{{- end -}}

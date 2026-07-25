@@ -71,6 +71,30 @@ global:
     # Please note: when the secret (specified by `existingSecret`) exists, the auto-create feature will leave the password unchanged.
     autoCreateSecret: true
 
+    # -- Controls TLS on the in-cluster PostgreSQL server.
+    # When `true`, the in-cluster database serves TLS using a self-signed certificate
+    # that Magda generates and preserves across upgrades.
+    # Has no effect when an external DB (`useAwsRdsDb` / `useCloudSql`) is in use —
+    # those providers manage their own TLS.
+    tls:
+      enabled: true
+
+    client:
+      # -- The `sslmode` used by all Magda services, DB migrators and the backup job
+      # when connecting to PostgreSQL. Injected as the standard libpq `PGSSLMODE`
+      # environment variable, and as an `sslmode=` JDBC URL parameter for the
+      # JVM-based components.
+      # Supported values are `require` (encrypt, without verifying the server
+      # certificate) and `disable` (plaintext). `prefer` and `allow` are rejected:
+      # node-postgres cannot negotiate them consistently, so accepting them would give
+      # the Node services different semantics from every other component.
+      # `verify-ca` / `verify-full` are not supported yet — they require distributing a
+      # CA certificate to every pod.
+      # Leave empty to auto-resolve: `disable` when `useCloudSql` is enabled (the
+      # cloud_sql_proxy listener is plaintext by design and performs TLS to Cloud SQL
+      # itself), `require` otherwise.
+      sslmode: ""
+
   useCombinedDb: true
   # -- When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database.
   # Please note: you must set `useCombinedDb` = false before set any of the field to `true`.
