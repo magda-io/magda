@@ -3,6 +3,10 @@ import fse from "fs-extra";
 import recursive from "recursive-readdir";
 import getTestDBConfig from "./getTestDBConfig.js";
 import path from "path";
+import { fileURLToPath } from "url";
+
+// --- `__dirname` is not available in ESM; derive it from `import.meta.url`
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function getVersionNumber(fileName: string) {
     const matches = fileName.match(/^V(\d+(_\d+)*)/i);

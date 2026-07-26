@@ -24,7 +24,7 @@
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
     "rimraf": "^3.0.0",
-    "ts-module-alias-transformer": "^2.0.1",
+    "ts-module-alias-transformer": "^3.0.0",
     "typescript": "~5.3.3",
     "tsx": "^4.7.0",
     "type-fest": "~2.18.0",

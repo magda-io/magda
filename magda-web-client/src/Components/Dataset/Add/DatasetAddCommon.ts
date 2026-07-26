@@ -15,7 +15,8 @@ import {
     VersionAspectData,
     updateRecordAspect,
     tagRecordVersionEventId,
-    VersionItem
+    findCurrentVersion,
+    appendVersion
 } from "../../../api-clients/RegistryApis";
 import { config } from "../../../config";
 import { User } from "../../../reducers/userManagementReducer";
@@ -38,6 +39,7 @@ import {
 import sendEventToOpener, {
     EVENT_TYPE_DATASET_DRAFT_SAVED
 } from "libs/sendEventToOpener";
+import { reconcileDistributionVersionOnSubmit } from "../../../api-clients/recordVersionUtils";
 
 export type Distribution = {
     title: string;
@@ -102,6 +104,15 @@ export type Distribution = {
      * @type {VersionAspectData}
      */
     version?: VersionAspectData;
+
+    /**
+     * Transient session flag: set when the user edits this distribution's
+     * metadata during the current editing session. Drives the distribution
+     * version bump at submission (see #3713). Never written to the registry —
+     * stripped in convertStateToDistributionRecords — but it DOES persist
+     * inside the `dataset-draft` JSON, so a resumed session still knows.
+     */
+    metadataEditedDuringSession?: boolean;
 };
 
 export enum DistributionSource {
@@ -1311,17 +1322,22 @@ async function convertStateToDistributionRecords(state: State) {
     const { dataset, distributions, licenseLevel } = state;
 
     const distributionRecords = distributions.map((distribution) => {
-        const aspect =
-            licenseLevel === "dataset"
-                ? {
-                      ...distribution,
-                      license: dataset.defaultLicense
-                  }
-                : distribution;
+        // Always clone so we never mutate the live `distribution` state object
+        // (the strips below would otherwise clobber the values the version
+        // reconcile reads, defeating the bump — see #3713).
+        const aspect = {
+            ...distribution,
+            ...(licenseLevel === "dataset"
+                ? { license: dataset.defaultLicense }
+                : {})
+        };
 
         // --- version property should be created as a separate version aspect
         // --- rather than part of `dcat-distribution-strings`
         aspect.version = undefined;
+
+        // --- transient session flag; never write it into the aspect
+        aspect.metadataEditedDuringSession = undefined;
 
         return {
             id: distribution.id ? distribution.id : createId("dist"),
@@ -1332,17 +1348,20 @@ async function convertStateToDistributionRecords(state: State) {
                 "information-security": state.informationSecurity,
                 publishing: getPublishingAspectData(state),
                 source: getInternalDatasetSourceAspectData(),
-                // --- set distribution initial version if not exist
-                // --- the version will be bumped when it's superseded by a new file / distribution
-                version: distribution?.version
-                    ? distribution.version
-                    : getInitialVersionAspectData(
-                          distribution.title,
-                          state.dataset.editingUserId,
-                          distribution.useStorageApi
-                              ? distribution.downloadURL
-                              : undefined
-                      )
+                // --- seed the initial version for new distributions; bump
+                // --- when this distribution's metadata was edited during the
+                // --- session (mirrors the mgd CLI's `dist update`, #3713).
+                // --- The submission PUT's event id then tags the new version
+                // --- via tagRecordVersionEventId.
+                version: reconcileDistributionVersionOnSubmit({
+                    version: distribution?.version,
+                    metadataEdited: distribution?.metadataEditedDuringSession,
+                    title: distribution.title,
+                    creatorId: state.dataset.editingUserId,
+                    internalDataFileUrl: distribution.useStorageApi
+                        ? distribution.downloadURL
+                        : undefined
+                })
             }
         };
     });
@@ -1529,28 +1548,17 @@ function createVersionForDatasetSubmission(
         ? datasetData.aspects["version"]
         : getInitialVersionAspectData(state.dataset.title, editorId);
 
-    let currentVersion: VersionItem | undefined = version.versions.find(
-        (ver) => ver.versionNumber === version.currentVersionNumber
-    );
-    if (
+    const currentVersion = findCurrentVersion(version);
+    datasetData.aspects["version"] =
         !currentVersion ||
         (currentVersion.eventId && currentVersion.eventId !== eventId)
-    ) {
-        currentVersion = {
-            versionNumber:
-                version.versions.reduce(
-                    (acc, curVer) => Math.max(acc, curVer.versionNumber),
-                    0
-                ) + 1,
-            createTime: new Date().toISOString(),
-            creatorId: editorId,
-            title: state.dataset.title,
-            description: "Version created on update submission"
-        };
-        version.versions.push(currentVersion);
-        version.currentVersionNumber = currentVersion.versionNumber;
-    }
-    datasetData.aspects["version"] = version;
+            ? appendVersion(version, {
+                  createTime: new Date().toISOString(),
+                  creatorId: editorId,
+                  title: state.dataset.title,
+                  description: "Version created on update submission"
+              })
+            : version;
     return datasetData;
 }
 
@@ -1610,6 +1618,17 @@ export async function submitDatasetFromState(
         state.uploadedFileUrls,
         state.distributions
     );
+
+    // --- the submission has landed: clear the transient per-distribution
+    // --- edit flags so re-submitting an unchanged session doesn't bump again
+    setState((state) => ({
+        ...state,
+        distributions: state.distributions.map((d) =>
+            d.metadataEditedDuringSession
+                ? { ...d, metadataEditedDuringSession: undefined }
+                : d
+        )
+    }));
 
     try {
         const indexResult = await indexDatasetById(datasetId);

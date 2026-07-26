@@ -62,7 +62,15 @@ class AddFilesPage extends React.Component<Props> {
         this.props.setState((state: State) => ({
             ...state,
             distributions: [...state.distributions].map((item) =>
-                item.id === distId ? updater(item) : item
+                item.id === distId
+                    ? {
+                          ...updater(item),
+                          // drives the version bump at submission (#3713);
+                          // harmless for new/replaced distributions — the
+                          // reconcile guard skips them
+                          metadataEditedDuringSession: true
+                      }
+                    : item
             )
         }));
         updateLastModifyDate(this.props.setState);

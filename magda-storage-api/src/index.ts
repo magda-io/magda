@@ -80,6 +80,30 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "100mb"
         })
+        .option("recommendedPartSize", {
+            describe:
+                "The multipart upload part size advertised to clients (e.g. '16mb').",
+            type: "string",
+            default: "16mb"
+        })
+        .option("maxPartSize", {
+            describe:
+                "The maximum accepted size of a single multipart upload part (e.g. '64mb'). Bounds per-part memory.",
+            type: "string",
+            default: "64mb"
+        })
+        .option("multipartUploadExpiry", {
+            describe:
+                "Lifetime of a multipart upload session token (any jsonwebtoken expiry expression, e.g. '24h').",
+            type: "string",
+            default: "24h"
+        })
+        .option("incompleteUploadExpiryDays", {
+            describe:
+                "Days after which incomplete multipart uploads are auto-aborted via a bucket lifecycle rule.",
+            type: "number",
+            default: 7
+        })
         .option("defaultBuckets", {
             describe: "Buckets to create on startup.",
             type: "array",
@@ -137,7 +161,11 @@ app.use(
         authDecisionClient,
         jwtSecret: argv.jwtSecret as string,
         autoCreateBuckets: argv.autoCreateBuckets,
-        defaultBuckets: argv.defaultBuckets
+        defaultBuckets: argv.defaultBuckets,
+        recommendedPartSize: argv.recommendedPartSize,
+        maxPartSize: argv.maxPartSize,
+        multipartUploadExpiry: argv.multipartUploadExpiry,
+        incompleteUploadExpiryDays: argv.incompleteUploadExpiryDays
     })
 );
 

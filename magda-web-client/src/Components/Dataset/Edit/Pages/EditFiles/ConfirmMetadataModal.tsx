@@ -9,7 +9,7 @@ import {
     Distribution,
     saveRuntimeStateToStorage
 } from "Components/Dataset/Add/DatasetAddCommon";
-import { VersionItem } from "api-clients/RegistryApis";
+import { appendVersion } from "api-clients/RegistryApis";
 import Tooltip from "Components/Dataset/Add/ToolTip";
 import TwoOptionsButton from "Components/Common/TwoOptionsButton";
 import moment from "moment";
@@ -203,29 +203,23 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                             // --- replace the distribution and make a new version (only if it's already versioned)
                             let newItem = { ...item };
                             if (newItem?.version?.versions?.length) {
-                                // --- the version data is valid then bump version
-                                const newVersion: VersionItem = {
-                                    versionNumber:
-                                        1 +
-                                        newItem.version.currentVersionNumber,
-                                    createTime: new Date().toISOString(),
-                                    creatorId: state.dataset.editingUserId,
-                                    description: `Replaced superseded by a new distribution`,
-                                    title: replaceDist.title,
-                                    ...(replaceDist.useStorageApi
-                                        ? {
-                                              internalDataFileUrl:
-                                                  replaceDist.downloadURL
-                                          }
-                                        : {})
-                                };
-
-                                newItem.version.currentVersionNumber =
-                                    newVersion.versionNumber;
-                                newItem.version.versions = [
-                                    ...newItem.version.versions,
-                                    newVersion
-                                ];
+                                // appendVersion uses max(versionNumber)+1 and
+                                // never mutates the input (see #3713)
+                                newItem.version = appendVersion(
+                                    newItem.version,
+                                    {
+                                        createTime: new Date().toISOString(),
+                                        creatorId: state.dataset.editingUserId,
+                                        description: `Replaced superseded by a new distribution`,
+                                        title: replaceDist.title,
+                                        ...(replaceDist.useStorageApi
+                                            ? {
+                                                  internalDataFileUrl:
+                                                      replaceDist.downloadURL
+                                              }
+                                            : {})
+                                    }
+                                );
                             }
 
                             const {

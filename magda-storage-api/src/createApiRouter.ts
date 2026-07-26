@@ -12,6 +12,8 @@ import {
 import { StorageBucketMetaData, StorageObjectMetaData } from "./common.js";
 import ServerError from "magda-typescript-common/src/ServerError.js";
 import { isValidS3ObjectKey } from "magda-typescript-common/src/getStorageUrl.js";
+import { parseRangeHeader } from "./rangeHeader.js";
+import registerMultipartRoutes from "./registerMultipartRoutes.js";
 export interface ApiRouterOptions {
     registryClient: AuthorizedRegistryClient;
     objectStoreClient: MagdaMinioClient;
@@ -21,6 +23,10 @@ export interface ApiRouterOptions {
     authDecisionClient: AuthDecisionQueryClient;
     autoCreateBuckets: boolean;
     defaultBuckets: string[];
+    recommendedPartSize: string;
+    maxPartSize: string;
+    multipartUploadExpiry: string;
+    incompleteUploadExpiryDays: number;
 }
 
 interface FileRequest extends Request {
@@ -45,6 +51,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 for (const bucket of options.defaultBuckets) {
                     console.info(`Creating default bucket ${bucket}`);
                     await options.objectStoreClient.createBucket(bucket);
+                    await options.objectStoreClient.ensureIncompleteUploadExpiryRule(
+                        bucket,
+                        options.incompleteUploadExpiryDays
+                    );
                 }
                 console.info("Finished creating default buckets");
             } else {
@@ -79,6 +89,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     });
 
+    // Multipart upload routes MUST be registered before the global body parsers
+    // (so the part route controls its own body parsing) and before the generic
+    // `/:bucket/*` routes (so `multipart` isn't matched as a bucket name).
+    registerMultipartRoutes(router, options);
+
     // JSON files are interpreted as text
     router.use(express.text({ type: ["text/*", "application/json"] }));
     router.use(express.raw({ type: ["image/*", "application/octet-stream"] }));
@@ -86,7 +101,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {PUT} /v0/storage/buckets/{bucketid} Request to create a new bucket
+     * @api {put} /v0/storage/buckets/{bucketid} Request to create a new bucket
      *
      * @apiDescription Creates a new bucket with a specified name.
      *
@@ -112,7 +127,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.put(
-        "/:bucketid",
+        "/buckets/:bucketid",
         getUserId(options.jwtSecret),
         requireStorageBucketPermission(
             options.authDecisionClient,
@@ -143,6 +158,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 const createBucketRes = await options.objectStoreClient.createBucket(
                     encodedBucketname
                 );
+                await options.objectStoreClient.ensureIncompleteUploadExpiryRule(
+                    encodedBucketname,
+                    options.incompleteUploadExpiryDays
+                );
                 return res.status(201).send({
                     message: createBucketRes.message
                 });
@@ -165,7 +184,17 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @api {get} /v0/storage/{bucket}/{path} Request to download an object in {bucket} at path {path}
      *
-     * @apiDescription Downloads an object
+     * @apiDescription Downloads an object.
+     *
+     * Supports HTTP range requests. The response always advertises an
+     * `Accept-Ranges: bytes` header. When the request carries a `Range` header
+     * with a single satisfiable byte range (e.g. `bytes=0-1023`, `bytes=1024-`,
+     * or `bytes=-512`), the response is `206 Partial Content` containing only the
+     * requested bytes plus a `Content-Range: bytes {start}-{end}/{size}` header —
+     * enabling resumable and seekable downloads of large objects. A request with
+     * no `Range` header returns the full object with `200`. Only a single range is
+     * supported (multipart/byteranges responses are not returned).
+     *
      * Please note:
      * Besides users have `storage/object/read` permission, a user also has access to a file when:
      * - the file is associated with a record
@@ -173,12 +202,19 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @apiParam (Request path) {string} bucket The name of the bucket under which the requested object is
      * @apiParam (Request path) {string} path The name of the object being requested
+     * @apiParam (Request header) {string} [Range] Optional single byte range (e.g. `bytes=0-1023`). When present and satisfiable, the response is `206 Partial Content`.
      *
      * @apiSuccessExample {binary} 200
-     *      <Contents of a file>
+     *      <Full contents of the file. Response includes `Accept-Ranges: bytes`.>
+     *
+     * @apiSuccessExample {binary} 206
+     *      <Requested byte range of the file. Response includes `Content-Range: bytes {start}-{end}/{size}`.>
      *
      * @apiErrorExample {text} 404
-     *      "No such object with path {path} in bucket {bucket}"
+     *      "Cannot locate storage object: {bucket}/{path}"
+     *
+     * @apiErrorExample {text} 416
+     *      (Requested range not satisfiable. Empty body; the `Content-Range` response header reports the total object size.)
      *
      * @apiErrorExample {text} 500
      *      "Unknown error"
@@ -214,15 +250,68 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 );
 
                 const headers = await object.headers();
+
+                const rawContentLength = headers["Content-Length"];
+                const totalSize =
+                    typeof rawContentLength === "number"
+                        ? rawContentLength
+                        : parseInt(rawContentLength as any, 10);
+
+                res.setHeader("Accept-Ranges", "bytes");
+
+                // copy through all headers except Content-Length (set per response type)
                 if (typeof headers === "object") {
                     Object.keys(headers).forEach((headerName) => {
                         const value = headers[headerName];
-                        if (typeof value !== "undefined") {
-                            res.setHeader(headerName, headers[headerName]);
+                        if (
+                            typeof value !== "undefined" &&
+                            headerName !== "Content-Length"
+                        ) {
+                            res.setHeader(headerName, value as any);
                         }
                     });
                 }
 
+                const parsedRange = parseRangeHeader(
+                    req.headers.range,
+                    totalSize
+                );
+
+                if (parsedRange === "invalid") {
+                    res.setHeader("Content-Range", `bytes */${totalSize}`);
+                    res.status(416).end();
+                    return;
+                }
+
+                if (parsedRange) {
+                    const { start, end } = parsedRange;
+                    const chunkLength = end - start + 1;
+                    res.status(206);
+                    res.setHeader(
+                        "Content-Range",
+                        `bytes ${start}-${end}/${totalSize}`
+                    );
+                    res.setHeader("Content-Length", chunkLength);
+                    const stream = await options.objectStoreClient.getPartialObject(
+                        encodeBucketname,
+                        path,
+                        start,
+                        chunkLength
+                    );
+                    stream.on("error", (_e: any) => {
+                        if (!res.headersSent) {
+                            res.status(500);
+                        }
+                        res.end();
+                    });
+                    stream.pipe(res);
+                    return;
+                }
+
+                // no range → full object
+                if (!isNaN(totalSize)) {
+                    res.setHeader("Content-Length", totalSize);
+                }
                 const stream = await object.createStream();
                 if (stream) {
                     stream.on("error", (_e: any) => {

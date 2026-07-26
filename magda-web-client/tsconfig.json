@@ -24,5 +24,11 @@
         "jsx": "react-jsx"
     },
     "include": ["src"],
-    "exclude": ["**/node_modules/**/*"]
+    "exclude": [
+        "**/node_modules/**/*",
+        // Test files are excluded from tsc because @types/jest is not installed in this package.
+        // They are still type-checked by the jest runner (craco test). Add @types/jest to restore tsc coverage.
+        "**/*.test.ts",
+        "**/*.test.tsx"
+    ]
 }

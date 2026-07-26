@@ -15,6 +15,7 @@
     - [Webhooks](#webhooks)
   - [Search API](#search-api)
   - [Search Indexer](#search-indexer)
+  - [Semantic Search & Semantic Indexers](#semantic-search--semantic-indexers)
   - [Storage API](#storage-api)
   - [Web Server](#web-server)
 - [Authentication (authn)](#authentication-authn)
@@ -219,7 +220,9 @@ It's implemented as a wrapper around the search engine [ElasticSearch](https://w
 
 > Note that unlike the Registry, we didn't implement the similar generic "record" / "aspect" based model in ElasticSearch. Instead, the data model is specifically designed to search datasets and "dataset oriented".
 
-> That's also the reason we introduced a more generic authorisation model in v2.0.0 - allows a single authorisation policy to cover the same data in different storage targets: Registry & ElasticSearch regardless the data model differences.
+> That's also the reason we introduced a more generic authorisation model in v2.0.0 - allows a single authorisation policy to cover the same data in different storage targets: Registry & OpenSearch regardless the data model differences.
+
+See also [Semantic Search & Semantic Indexers](#semantic-search--semantic-indexers) for content-level (vector) search, which complements this metadata search.
 
 ## Search Indexer
 
@@ -236,6 +239,50 @@ On first startup, the Indexer will also try to set up the regions index - at the
 The index definitions used by the Indexer change over time - within the code itself there are index definitions, and these have an integer describing their version. When the indexer starts up, it'll check for the existence of an index with its current version - if it can't find one, it'll create it and start populating it. Because the version used by the Search API is specified elsewhere, this means that you can have the indexer working on setting up `datasets41`, for instance, while the Search API is still querying against version `datasets40`.
 
 > You can config the index versions that search API uses via [search API Helm Chart config](../../../deploy/helm/internal-charts/search-api/README.md).
+
+This indexer covers dataset metadata only; see [Semantic Search & Semantic Indexers](#semantic-search--semantic-indexers) for indexing distribution content and custom aspects.
+
+## Semantic Search & Semantic Indexers
+
+Since v5/v6, Magda has **two indexing tiers** that serve different retrieval needs:
+
+| Tier | Indexes | Target index | Served by |
+|---|---|---|---|
+| `magda-indexer` (the [Search Indexer](#search-indexer) above) | Standard dataset **metadata** from the Registry | Main datasets index | [Search API](#search-api) — lexical, and (since v5) hybrid lexical+vector |
+| **Semantic indexers** | Vector **representations** of a chosen source | Semantic (knn-vector) index | `magda-semantic-search-api` (`/retrieve`, `/search`) |
+
+`magda-indexer` is fixed to the dataset metadata model. The **semantic-indexer
+framework** (`@magda/semantic-indexer-sdk`) is instead a general, minion-based
+toolkit: you write a strategy that turns *some source* into text, and it chunks,
+embeds and writes that into the semantic index. Its `itemType` is either:
+
+- `registryRecord` — index registry metadata, including **custom aspects** that
+  `magda-indexer` does not cover (e.g. a project-specific aspect); or
+- `storageObject` — index distribution **file content**. The shipped examples are
+  [`magda-pdf-semantic-indexer`](https://github.com/magda-io/magda-pdf-semantic-indexer)
+  (PDF → markdown) and [`magda-csv-semantic-indexer`](https://github.com/magda-io/magda-csv-semantic-indexer)
+  (CSV → data dictionary).
+
+A semantic indexer's core design decision is **representation**: what text should
+stand for the source, chosen with the intended retrieval use in mind. See
+[How to build a semantic indexer](../how-to-build-a-semantic-indexer.md).
+
+### Authorization for semantic queries
+
+The semantic index deliberately stores **no dataset/distribution metadata**, so
+access control cannot be evaluated from it alone. Instead it is delegated back to
+the Registry (the authoritative metadata store, with the existing OPA /
+partial-evaluation authz) at query time:
+
+- The Registry API exposes a **"filter records by access"** endpoint that returns,
+  from a list of record IDs, only those the current user can read.
+- **Phase 1:** `magda-semantic-search-api` retrieves semantically, then filters the
+  returned record IDs through that endpoint.
+- **Phase 2 (fallback):** if Phase 1 yields no authorised results, it narrows the
+  semantic retrieval to accessible records and retries.
+
+This was implemented in [PR #3643](https://github.com/magda-io/magda/pull/3643)
+(fixing [#3608](https://github.com/magda-io/magda/issues/3608)).
 
 ## Storage API
 
@@ -301,6 +348,8 @@ In this way, the external authentication process is transparent to internal serv
 Magda also supports API key based authentication. It's designed for the single request use case - more likely initiated by a program rather than an actual user. Because of it, it's designed to be light-weight with no session being created after the authentication. Once a request is authenticated, the request will be forwarded with an `X-Magda-Session` JWT token header to internal services straightaway. API key based authentication is handled by Gateway module without any auth plugin involved.
 
 API Keys are created up-front - one user can have zero-to-many API Keys associated with it. An API Key consists of an ID, and the key itself. To create an API key, please refer to the [How to Create API Key Document](../how-to-create-api-key.md). Once the API key is created, you can attach `X-Magda-API-Key` and `X-Magda-API-Key-Id` headers to your request in order to get authenticated.
+
+Regardless of the authentication option used, you can call `GET /v0/auth/users/whoami` to retrieve the current user's profile, which includes the user's access-control metadata — the resolved `roles` & `permissions` plus the organisation unit(s) the user belongs to (an anonymous user for unauthenticated requests).
 
 ![Diagram explaining API key auth](./_resources/b7da510d241d4b13a4f6e1ab08e45be7.png)
 
@@ -486,6 +535,8 @@ Since v2.0.0, we introduced a decision API as a new additional to the Auth API s
 - auto-select OPA API endpoints (either for partial evaluation or making unconditional decision) based on information provided.
 - further evaluate the OPA decision response AST and resolve any possible cross references
 
+> Note: Magda's authorisation follows an attribute-based access control (ABAC) model, so the user's own access-control metadata (the `roles`, `permissions` & organisation units returned by `whoami`) is only one set of inputs. For a decision on a specific resource, the endpoint also injects the **subject (resource) attributes** the policy needs — e.g. a registry record's `access-control` aspect, or any other record field the policy logic references — and evaluates both together. So you should not try to compute access yourself from the permission list alone; the outcome is the policy engine's call over the user *and* resource attributes. When filtering a set of records we instead leave the record attributes `unknown` and let the engine partially evaluate the policy, which yields residual rules (referencing those record attributes) that translate into storage-engine query conditions such as an SQL `WHERE` clause — see [Policy Engine & Partial Evaluation](#policy-engine--partial-evaluation) above.
+
 #### Types of Decision Queries
 
 Depends on whether you want a decision for a single resource object (e.g. the user attempts to update a record) or a set of resource objects (e.g. retrieve all records that the user is allowed to read), you can request the decision API in different ways.
@@ -535,7 +586,7 @@ The request sent to decision API can be simply like:
 
 The detailed document of the decision API can be found from [here](https://github.com/magda-io/magda/blob/e10a202de7cc0c3610b206ca9daaaabddb00e79f/magda-authorization-api/src/createOpaRouter.ts#L220)
 
-> The HTML version doc can be accessed via the footer link of a deployed Magda site. You can also build Magda's API doc manually to avoid the deployment. Just go to `magda-apidocs-server` module and run `yarn build`. The HTML version API docs will be available from `build` folder.
+> The HTML version doc can be accessed via the footer link of a deployed Magda site. You can also build Magda's API doc manually to avoid the deployment. Just go to `magda-apidocs-server` module and run `yarn build`. The HTML version API docs will be available from `build` folder. See [`magda-apidocs-server/README.md`](../../../magda-apidocs-server/README.md) for how the API docs are generated and served.
 
 > We implemented decision API integration code as [Directives](https://github.com/magda-io/magda/blob/next/magda-scala-common/src/main/scala/au/csiro/data61/magda/directives/AuthDirectives.scala) in scala code base and [middlewares](https://github.com/magda-io/magda/blob/e10a202de7cc0c3610b206ca9daaaabddb00e79f/magda-typescript-common/src/authorization-api/authMiddleware.ts#L83) in nodejs codebase. You can choose to reuse those code or write your own.
 

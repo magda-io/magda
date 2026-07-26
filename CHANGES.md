@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## v6.1.2
+
+- Add a "How to build a semantic indexer" developer guide (`docs/docs/how-to-build-a-semantic-indexer.md`) and a "Semantic Search & Semantic Indexers" section in the [Guide to Magda Internals](./docs/docs/architecture/Guide%20to%20Magda%20Internals.md), documenting the two indexing tiers, the representation-first design approach (designing the indexed text backward from retrieval), and the semantic query API.
+- Add a `README.md` for the [`@magda/semantic-indexer-sdk`](https://www.npmjs.com/package/@magda/semantic-indexer-sdk) package, which was previously blank on npm, linking to the new how-to guide.
+- #3730: Add apidoc annotations for the semantic search query API (`magda-semantic-search-api`) — `POST`/`GET /v0/semantic-search/search` and `POST /v0/semantic-search/retrieve` now appear in the generated API docs and OpenAPI spec. Doc-comment (`@apiGroup`/`@api`) change only; no route or behaviour change.
+
+## v6.1.1
+
+- #3723: Fix `@magda/mgd` npm package publishing without its `bin/mgd.js` CLI bundle, which made `npm install -g @magda/mgd` install a broken `mgd` executable.
+- #3724: Fix `mgd skills install --agent codex` installing the global Codex skill to `~/.codex/skills` instead of the discovered `~/.agents/skills` location (install/uninstall now also clean up the legacy path), and harden the coding-agent install prompts in the README to resolve a Node.js 22+ runtime via an existing version manager in non-interactive shells where bare `node`/`npm` is not on `PATH`.
+
+## v6.1.0
+
+- Added `@magda/mgd`, an installable local CLI for working with MAGDA catalogs, including profile and API-key authentication, keyword and semantic search, dataset and distribution management, resumable file transfers, custom aspects, publishing workflows, version tracking, machine-readable output and installable coding-agent skills (#3648, #3683).
+- Added resumable large-file support to `storage-api` using S3 multipart uploads and HTTP Range downloads (#3681).
+- #3678: Fix `storage-api` create-bucket route being registered at `/v0/storage/{bucketid}` instead of the documented `/v0/storage/buckets/{bucketid}`.
+- Added tenant-scoped deletion of unused registry aspect definitions through `DELETE /v0/registry/aspects/{id}`, with conflict protection when records still reference the aspect (#3699).
+- #3704: `registry-api` API docs — move the bulk (multi-record) aspect-write endpoints `PUT /v0/registry/records/aspects/{aspectId}` and `DELETE /v0/registry/records/aspectArrayItems/{aspectId}` from the "Registry Record Aspects" group into "Registry Record Service", so all "operate on a list of records" endpoints are grouped together with `PATCH /v0/registry/records`. Doc-comment (`@apiGroup`) change only; no route or behaviour change.
+- Fixed `DELETE /api/v0/auth/users/:userId`, which previously failed with invalid SQL instead of deleting the user and cascading related data (#3708).
+- Fixed semantic indexers failing to start with an invalid vector configuration by requiring Helm 3.17 or later, updating the CSV semantic indexer chart, and rolling the Helm 3.17.4 builder image into CI and downstream builder images (#3712, #3718).
+- Updated the web client to advance a distribution's version when its metadata is edited, and made version-history handling robust to non-contiguous version numbers (#3721).
+
 ## v6.0.0
 
 - #3598: Add configurable `on_disk` KNN vector workload mode for OpenSearch (foundation for semantic indexing); upgrade bundled OpenSearch and OpenSearch Dashboards from 2.17.1 to 2.19.1

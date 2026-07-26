@@ -8,11 +8,17 @@ CI runs `helm template`/`helm lint` and unit/integration tests against individua
 
 Run this test before merging any PR whose CI test plan can't otherwise prove it (chart/template changes, CronJob changes, anything touching startup/middleware), and as part of validating a [PR preview release](./pr-preview-release-testing.md) before merging.
 
+> **Feature-specific cases:** this doc is the baseline cluster smoke test. Concrete, repeatable checks for individual features (API, mgd CLI, agent skill, and Web UI) live in the [E2E test cases](./e2e-test-cases/) folder — see its [index](./e2e-test-cases/README.md). Add a case there when a PR needs feature-level verification on top of this baseline.
+
 ## Prerequisites
 
-- A local `minikube` cluster (docker driver recommended; 8+ CPU / 16GB+ RAM for the full default stack, which includes OpenSearch and the semantic search components).
+- A local `minikube` cluster (docker driver recommended). Size it for the **full default stack** (OpenSearch + the semantic-search components): **~12 GiB / 4 CPU is comfortable**, ~10 GiB works for a fresh / lightly-used instance, and below ~8 GiB risks OOM under load. A minimal deploy (see [Step 2](#step-2-fresh-install)) fits in roughly 4–5 GiB / 2 CPU.
 - Helm v3 (`helm version`) and `kubectl` configured against the `minikube` context.
 - A published build to test — either a real release/alpha tag, or a [PR preview release](./pr-preview-release-testing.md) (e.g. `v6.0.0-pr.3665.5`).
+
+> **On sizing (measured, magda full default stack, docker driver, Apple Silicon).** A fresh install settles at ~7 GiB node RAM and idles at well under one CPU; a long-running instance drifts toward ~10 GiB as JVM/OpenSearch working sets and indexed data grow. CPU only spikes transiently (install, indexing) — `magda-embedding-api` in particular is CPU-bound rather than memory-bound (it stays around 0.5 GiB even under heavy embedding load but will use every core it's given during bulk semantic indexing). The Helm chart's scheduler *requests* only sum to ~1.6 CPU / ~5.75 GiB, so `minikube` will happily schedule the whole stack onto an undersized node and then OOM-kill under load — size for the actual usage above, not for requests. (An earlier revision of this doc suggested 8 CPU / 16 GB; that is safe but conservative.)
+>
+> **docker-driver gotcha:** `minikube start --memory/--cpus` is enforced at the container cgroup, but `kubectl get node` reports the *host* Docker VM's capacity (e.g. 24 GB / 9 CPU), not your cap — so an over-commit surfaces as raw cgroup OOM-kills rather than graceful Kubernetes eviction. Confirm the real limit with `docker inspect minikube --format '{{.HostConfig.Memory}}'` (bytes) / `'{{.HostConfig.NanoCpus}}'`.
 
 ## Step 1: Fully Purge Any Existing Deployment
 
@@ -29,6 +35,12 @@ kubectl delete namespace magda --wait=true --timeout=180s
 kubectl get ns magda        # should return NotFound
 kubectl get pv | grep magda # should return nothing
 ```
+
+> **On minikube, the checks above are not sufficient.** minikube's default hostpath provisioner keys volume directories by namespace and PVC name, and deleting the namespace/PVCs does **not** reliably erase the underlying data on the node — so `kubectl get pv` can come back clean while stale PostgreSQL/MinIO/OpenSearch data survives on disk. Reusing it on a fresh install produces confusing failures, most notably MinIO crash-looping with `Unable to initialize config system: Invalid credentials` (the volume still holds config encrypted with the previous install's secrets). For a genuinely clean run, either `minikube delete` and start a fresh cluster, or clear the leftover data explicitly:
+>
+> ```bash
+> minikube ssh -- 'sudo rm -rf /tmp/hostpath-provisioner/magda'
+> ```
 
 ## Step 2: Fresh Install
 
@@ -149,6 +161,52 @@ A JWT built directly with `acs-cmd jwt` only works for API calls — there's no 
 
 This last step needs real HTTPS access to the local minikube deployment — see [How to setup HTTPS access to Local Dev Cluster](./how-to-setup-https-to-local-cluster.md). It's not optional: the plugin's session cookie is configured `secure: true`, and `express-session` silently withholds `Set-Cookie` on a non-HTTPS connection (confirmed by testing the login POST over a plain `kubectl port-forward` — it redirects with `result=success` but no session cookie is ever set, so a subsequent `whoami` call comes back anonymous). A `kubectl port-forward` tunnel is enough to validate the plugin/API wiring (steps 1-4 above), but not enough to get a working browser session.
 
+#### Quick local UI check without a real login (JWT-injecting dev proxy)
+
+When you only need to _exercise_ the UI locally against the cluster — not validate the real browser login/session path above — you can skip `magda-auth-internal`, cert-manager and HTTPS entirely (and need no `sudo`) by running the **local web-client dev build** behind a small dev-only proxy that injects an admin session JWT. Like the `X-Magda-Session` shortcut for API calls, this bypasses the gateway's real authentication and is for local testing only — never a real access path.
+
+1. Port-forward the gateway and mint an admin JWT (as in [Authenticated request round trip](#authenticated-request-round-trip)):
+   ```bash
+   kubectl port-forward -n magda svc/gateway 18080:80 &
+   JWT_SECRET=$(kubectl get secret -n magda auth-secrets -o jsonpath='{.data.jwt-secret}' | base64 -d)
+   yarn --silent acs-cmd jwt 00000000-0000-4000-8000-000000000000 "$JWT_SECRET" | tail -1 > /tmp/magda-admin.jwt
+   ```
+2. Add a **throwaway** `magda-web-client/src/setupProxy.js` (Create React App loads it automatically; **do not commit**) that serves a same-origin `server-config.js` and proxies `/api` to the gateway, injecting the JWT:
+   ```js
+   const fs = require("fs");
+   const { createProxyMiddleware } = require("http-proxy-middleware");
+   const JWT = fs.readFileSync("/tmp/magda-admin.jwt", "utf8").trim();
+   module.exports = function (app) {
+     app.get("/server-config.js", (_req, res) =>
+       res.type("application/javascript").send(
+         "window.magda_server_config = " +
+           JSON.stringify({
+             baseUrl: "http://localhost:6108/",
+             featureFlags: { cataloguing: true }
+           }) +
+           ";"
+       )
+     );
+     app.use(
+       "/api",
+       createProxyMiddleware({
+         target: "http://localhost:18080",
+         changeOrigin: true,
+         onProxyReq: (r) => r.setHeader("X-Magda-Session", JWT)
+       })
+     );
+   };
+   ```
+3. Point the web client's API fallback at the dev server (throwaway edit; **do not commit**): in `magda-web-client/src/config.ts` set `fallbackApiHost = "http://localhost:6108/"`.
+4. Start it and confirm it's authenticated:
+   ```bash
+   cd magda-web-client && BROWSER=none yarn start          # serves http://localhost:6108
+   curl -s http://localhost:6108/api/v0/auth/users/whoami   # -> the admin user, not anonymous
+   ```
+   The UI at <http://localhost:6108> is now "logged in" as admin. Undo the two throwaway edits when done: `git checkout -- magda-web-client/src/config.ts` and `rm magda-web-client/src/setupProxy.js`.
+
+This is enough to drive UI flows that only need an authenticated session (e.g. the [Distribution version aspect in the Web UI](./e2e-test-cases/distribution-version-web-ui.md) case). It does **not** exercise the real login/cookie path — use the full setup above for that.
+
 ### Data round trip (registry → indexer → search)
 
 ```bash
@@ -170,6 +228,91 @@ Confirms the registry API accepts writes, the indexer picks up the change, and i
 ### Deeper feature-specific testing
 
 The checks above are the baseline smoke test suite. If the PR under test changes a specific feature (semantic search access control, a connector, a minion), add targeted checks for that feature on top of this baseline rather than replacing it — e.g. creating a dataset with a distribution, waiting for the relevant indexer to build its index, and testing the feature's specific API/behavior with both anonymous and authenticated requests.
+
+### Feature-specific testing through the gateway with an API key
+
+The baseline checks above act as the internal admin using an `X-Magda-Session`
+JWT minted from the cluster secret — a convenient **internal** shortcut that
+bypasses the gateway's real authentication. To verify a feature the way an
+external client actually uses it, test **through the gateway authenticated with
+an API key** instead. (A minted JWT is an internal auth method; real external
+clients authenticate with an API key — see
+[How to create API key](./how-to-create-api-key.md) and the
+[Guide to Magda Internals](<./architecture/Guide to Magda Internals.md>).)
+
+The steps below establish that external path once — host → gateway
+(authentication + routing) → service. Concrete, repeatable feature checks that
+build on it live under [E2E test cases](./e2e-test-cases/) — for example
+[Large file storage (multipart upload + Range download)](./e2e-test-cases/large-file-storage.md).
+
+#### 1. Expose the gateway to the host via `minikube tunnel`
+
+On the docker driver the NodePort's `minikube ip` address isn't routable from the
+host, so switch the gateway to a `LoadBalancer` and run `minikube tunnel`. Use a
+**non-privileged port** (e.g. 8080) so the tunnel doesn't need `sudo` (privileged
+ports like 80 make `minikube tunnel` prompt for a password):
+
+```bash
+kubectl patch svc gateway -n magda -p '{"spec":{"type":"LoadBalancer"}}'
+kubectl patch svc gateway -n magda --type=json \
+  -p='[{"op":"replace","path":"/spec/ports/0/port","value":8080}]'
+minikube tunnel &            # keep running; serves the LB at 127.0.0.1:8080
+export BASE=http://127.0.0.1:8080
+curl -s -o /dev/null -w "%{http_code}\n" "$BASE/api/v0/auth/users/whoami"   # 200 = reachable
+```
+
+(`kubectl port-forward -n magda svc/gateway 18080:80 &` is a simpler alternative
+that also routes through the gateway if you can't use a tunnel.)
+
+#### 2. Bootstrap an admin API key (JWT used only to create the key)
+
+```bash
+ADMIN_ID=00000000-0000-4000-8000-000000000000
+JWT_SECRET=$(kubectl get secret -n magda auth-secrets -o jsonpath='{.data.jwt-secret}' | base64 -d)
+yarn --silent acs-cmd jwt "$ADMIN_ID" "$JWT_SECRET" | tail -1 > /tmp/admin.jwt
+curl -s -X POST "$BASE/api/v0/auth/users/$ADMIN_ID/apiKeys" \
+  -H "X-Magda-Session: $(cat /tmp/admin.jwt)" -H "Content-Type: application/json" -d '{}'
+# -> {"id":"<API_KEY_ID>","key":"<API_KEY>"}
+```
+
+Supply the key on subsequent requests as `X-Magda-API-Key-Id` / `X-Magda-API-Key`.
+
+#### 3. (Optional) create a dedicated admin test user via the API
+
+Using the admin API key from step 2 (`-H X-Magda-API-Key-Id:.. -H X-Magda-API-Key:..`):
+
+```bash
+# create user -> returns {"id": "<NEW_USER_ID>", ...}
+curl -s "${AUTH[@]}" -X POST "$BASE/api/v0/auth/users" -H "Content-Type: application/json" \
+  -d '{"displayName":"E2E Admin","email":"e2e@example.com","source":"e2e-test","sourceId":"e2e-1"}'
+# grant the "Admin Users" role (id 00000000-0000-0003-0000-000000000000)
+curl -s "${AUTH[@]}" -X POST "$BASE/api/v0/auth/users/<NEW_USER_ID>/roles" \
+  -H "Content-Type: application/json" -d '["00000000-0000-0003-0000-000000000000"]'
+# create an API key for the new user -> {"id":..,"key":..}
+curl -s "${AUTH[@]}" -X POST "$BASE/api/v0/auth/users/<NEW_USER_ID>/apiKeys" \
+  -H "Content-Type: application/json" -d '{}'
+```
+
+#### 4. Run your feature's checks
+
+With `$BASE` reachable and an API key in hand, exercise the feature's endpoints —
+always sending the `X-Magda-API-Key-Id` / `X-Magda-API-Key` headers. Prefer a
+scripted, checksum/assertion-based driver so the case is repeatable. Ready-to-run
+examples live under [E2E test cases](./e2e-test-cases/), e.g.
+[Large file storage (multipart upload + Range download)](./e2e-test-cases/large-file-storage.md).
+
+#### Cleanup
+
+Restore the gateway service and stop the tunnel when finished:
+
+```bash
+kubectl patch svc gateway -n magda --type=json -p='[{"op":"replace","path":"/spec/ports/0/port","value":80}]'
+kubectl patch svc gateway -n magda -p '{"spec":{"type":"NodePort"}}'
+# then stop the `minikube tunnel` process you started
+```
+
+Also remove any throwaway users / API keys you created and delete uploaded test
+objects (see each test case's own cleanup notes).
 
 ## Step 5: Retrieve DB Credentials Safely
 

@@ -18,6 +18,18 @@ import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.util.SQLUtils
 import scalikejdbc.interpolation.SQLSyntax
 
+/**
+  * Thrown by `AspectPersistence.deleteById` when the aspect definition is still referenced by
+  * record aspect data and therefore must not be deleted. A dedicated exception type lets the
+  * `AspectsService` delete route distinguish this "in use" case (mapped to `409 Conflict`) from
+  * other failures (mapped to `400`). `recordCount` is the number of referencing records and is
+  * surfaced in the error message.
+  */
+class AspectInUseException(val recordCount: Long)
+    extends Exception(
+      s"Cannot delete the aspect definition: $recordCount record(s) still reference it. Delete the referencing record aspect data first."
+    )
+
 object AspectPersistence extends Protocols with DiffsonProtocol {
 
   def getAll(
@@ -218,6 +230,58 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
         .apply()
       aspect
     }
+  }
+
+  /**
+    * Delete an aspect definition, tenant-scoped. Mirrors `RecordPersistence.deleteRecord`.
+    *
+    * Safety guard: the definition is deleted only when NO record aspect data references the
+    * aspect within the tenant. If any does, this returns `Failure(AspectInUseException)` and
+    * nothing is deleted (no event emitted). When the aspect does not exist, nothing is deleted
+    * and no event is emitted either.
+    *
+    * A `DeleteAspectDefinitionEvent` is emitted only when a row is actually removed. The whole
+    * operation runs in the caller's transaction (`DB localTx`), so the in-use check and the
+    * delete are atomic with respect to that transaction.
+    *
+    * @return `(deleted, eventId)` — `deleted` is true iff a row was removed; `eventId` is the
+    *         generated event id, or `0L` when nothing was deleted.
+    */
+  def deleteById(
+      aspectId: String,
+      tenantId: SpecifiedTenantId,
+      userId: String
+  )(implicit session: DBSession): Try[(Boolean, Long)] = {
+    for {
+      // count record-aspect data referencing this aspect within the tenant
+      referencingCount <- Try {
+        sql"select count(*) from RecordAspects where (aspectId, tenantId)=($aspectId, ${tenantId.tenantId})"
+          .map(_.long(1))
+          .single
+          .apply()
+          .getOrElse(0L)
+      }
+      // refuse (and delete nothing) when the aspect is still in use
+      _ <- if (referencingCount > 0)
+        Failure(new AspectInUseException(referencingCount))
+      else Success(referencingCount)
+      rowsDeleted <- Try {
+        sql"""delete from Aspects where (aspectId, tenantId)=($aspectId, ${tenantId.tenantId})""".update
+          .apply()
+      }
+      eventId <- Try {
+        if (rowsDeleted > 0) {
+          // --- only generate event when the aspect was actually removed
+          val eventJson =
+            DeleteAspectDefinitionEvent(aspectId, tenantId.tenantId).toJson.compactPrint
+          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteAspectDefinitionEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
+            .apply()
+        } else {
+          // --- No aspect was deleted, return 0 as event ID
+          0L
+        }
+      }
+    } yield (rowsDeleted > 0, eventId)
   }
 
   private def rowToAspect(rs: WrappedResultSet): AspectDefinition = {

@@ -555,13 +555,21 @@ object Directives extends Protocols with SprayJsonSupport {
     * @param authApiClient
     * @param operationUri
     * @param aspectId
+    * @param onAspectNotFound Optional fallthrough for when the aspect does not exist (or is not
+    *        accessible within the current tenant). Mirrors `requireRecordPermission`'s
+    *        `onRecordNotFound`. When supplied, it runs instead of failing the request, so a
+    *        caller (e.g. the delete route) can, for example, check the unconditional permission
+    *        and let the request proceed to a "nothing to do" result. When `None` (the default,
+    *        used by all pre-existing callers), a missing aspect yields the previous
+    *        InternalServerError behaviour.
     * @param session
     * @return
     */
   def requireAspectPermission(
       authApiClient: AuthApiClient,
       operationUri: String,
-      aspectId: String
+      aspectId: String,
+      onAspectNotFound: Option[() => Directive0] = None
   ): Directive0 =
     (extractLog & extractActorSystem & requiresTenantId)
       .tflatMap { t =>
@@ -582,6 +590,22 @@ object Directives extends Protocols with SprayJsonSupport {
               input =
                 Some(JsObject("object" -> JsObject("aspect" -> aspectData)))
             )
+          case Tuple1(Failure(e: NoRecordFoundException)) =>
+            if (onAspectNotFound.isDefined) {
+              onAspectNotFound.get()
+            } else {
+              log.error(
+                "Failed to create aspect context data for auth decision. aspect ID: {}. Error: {}",
+                aspectId,
+                e
+              )
+              complete(
+                InternalServerError,
+                ApiError(
+                  s"An error occurred while creating aspect context data for auth decision."
+                )
+              )
+            }
           case Tuple1(Failure(e)) =>
             log.error(
               "Failed to create aspect context data for auth decision. aspect ID: {}. Error: {}",

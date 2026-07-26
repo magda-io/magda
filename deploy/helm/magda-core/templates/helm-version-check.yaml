@@ -1,0 +1,6 @@
+{{- /* Enforce the minimum Helm version required to deploy Magda. See magda-io/magda#3711. */ -}}
+{{- $required := "3.17.0" -}}
+{{- $current := .Capabilities.HelmVersion.Version -}}
+{{- if semverCompare (printf "< %s" $required) $current -}}
+{{-   fail (printf "\n\nMagda requires Helm >= %s, but Helm %s is in use.\nPlease upgrade Helm to >= %s and retry.\n" $required $current $required) -}}
+{{- end -}}
