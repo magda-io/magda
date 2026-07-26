@@ -47,11 +47,30 @@ negotiated TLS for that connection; `ssl = f` confirms it did not.
 
 ## Setup
 
-These cases exec directly into the primary PostgreSQL pod rather than port-forwarding, since several assertions need the in-pod `$POSTGRES_POSTGRES_PASSWORD` environment variable (the built-in `postgres` superuser's password, distinct from the custom privileged user's password when one is configured):
+These cases exec directly into the primary PostgreSQL pod rather than
+port-forwarding, since the assertions authenticate using a password that the
+chart injects into the pod as an environment variable:
 
 ```bash
 DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql -o name | head -1)
 ```
+
+**Which password variable to use depends on the case**, because the two are not
+both always present:
+
+| Case       | Privileged username         | Use                           |
+| ---------- | --------------------------- | ----------------------------- |
+| C1, C3, C4 | default (`postgres`)        | `$POSTGRES_PASSWORD`          |
+| C2, C5     | custom (e.g. `magda_admin`) | `$POSTGRES_POSTGRES_PASSWORD` |
+
+`POSTGRES_POSTGRES_PASSWORD` holds the built-in `postgres` superuser's password
+and exists **only when a non-default privileged username is configured** — the
+chart generates the `postgresql-postgres-password` secret key solely in that
+case (`db-main-account-secret.yaml`), and the PostgreSQL subchart wires the
+matching environment variable under the same condition. On a stock-default
+install that variable is unset, so `PGPASSWORD` would expand to an empty string
+and `psql` would fail to authenticate. Each case below already uses the correct
+one; if you adapt a command, check this table first.
 
 (Substitute the appropriate pod selector if you're running against a
 non-combined DB topology.)
@@ -69,7 +88,7 @@ kubectl get pods -n magda --no-headers | grep -vE "Running|Completed"   # expect
 
 DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql -o name | head -1)
 kubectl exec -n magda $DBPOD -- bash -c \
-  'PGPASSWORD=$POSTGRES_POSTGRES_PASSWORD psql -U postgres -c "
+  'PGPASSWORD=$POSTGRES_PASSWORD psql -U postgres -c "
     SELECT a.datname, a.usename, s.ssl, s.version
     FROM pg_stat_ssl s JOIN pg_stat_activity a USING (pid)
     WHERE a.usename IS NOT NULL ORDER BY 1,2;"'
@@ -127,7 +146,7 @@ helm install magda oci://ghcr.io/magda-io/charts/magda --version <prior-release>
 
 DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql -o name | head -1)
 kubectl exec -n magda $DBPOD -- bash -c \
-  'PGPASSWORD=$POSTGRES_POSTGRES_PASSWORD psql -U postgres -d registry -tAc \
+  'PGPASSWORD=$POSTGRES_PASSWORD psql -U postgres -d registry -tAc \
    "SELECT max(version) FROM schema_version WHERE success"'
 # record this value as BASELINE_VERSION
 
@@ -139,13 +158,13 @@ Assertions after the upgrade settles:
 ```bash
 # migration history was baselined at the recorded version -- nothing re-applied, nothing failed
 kubectl exec -n magda $DBPOD -- bash -c \
-  'PGPASSWORD=$POSTGRES_POSTGRES_PASSWORD psql -U postgres -d registry -c \
+  'PGPASSWORD=$POSTGRES_PASSWORD psql -U postgres -d registry -c \
    "SELECT installed_rank, version, description, type, success FROM flyway_schema_history ORDER BY installed_rank"'
 # expect: rank 1 is the baseline at BASELINE_VERSION; zero rows with success = false
 
 # TLS now in force
 kubectl exec -n magda $DBPOD -- bash -c \
-  'PGPASSWORD=$POSTGRES_POSTGRES_PASSWORD psql -U postgres -tAc \
+  'PGPASSWORD=$POSTGRES_PASSWORD psql -U postgres -tAc \
    "SELECT count(*) FILTER (WHERE s.ssl), count(*) FROM pg_stat_ssl s JOIN pg_stat_activity a USING (pid) WHERE a.usename = '"'"'client'"'"';"'
 
 # the seeded dataset is still readable through the API; nothing crash-looped
@@ -166,7 +185,7 @@ helm upgrade magda oci://ghcr.io/magda-io/charts/magda -n magda \
 # wait until settled
 DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql -o name | head -1)
 kubectl exec -n magda $DBPOD -- bash -c \
-  'PGPASSWORD=$POSTGRES_POSTGRES_PASSWORD psql -U postgres -tAc \
+  'PGPASSWORD=$POSTGRES_PASSWORD psql -U postgres -tAc \
    "SELECT DISTINCT s.ssl FROM pg_stat_ssl s JOIN pg_stat_activity a USING (pid) WHERE a.usename = '"'"'client'"'"';"'
 ```
 

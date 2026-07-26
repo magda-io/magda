@@ -57,11 +57,14 @@ against an RDS instance that enforces SSL.
 Only two values are supported for `global.postgresql.client.sslmode`:
 `disable` and `require`.
 
-- `prefer` / `allow` are rejected at chart render time. node-postgres (used
-  by the Node services) cannot negotiate these modes consistently with the
-  other client libraries in the stack, so accepting them would give the Node
-  services different effective behaviour from the JVM migrator and `psql`.
-  Use `require` instead.
+- `prefer` / `allow` are rejected at chart render time. libpq (`psql`) and
+  pgjdbc implement `prefer` by attempting TLS and silently falling back to
+  plaintext if the server refuses. node-postgres, used by the Node services,
+  does not: it maps `prefer` to `ssl: true` and **hard-fails** against a
+  server that does not offer TLS. Accepting these values would therefore give
+  the Node services different effective behaviour from the JVM migrator and
+  `psql` — and would break them outright against a plaintext server. Use
+  `require` instead.
 - `verify-ca` / `verify-full` (certificate/hostname verification against a
   supplied CA) are not supported yet — there is currently no way to deliver a
   CA certificate to every DB-connecting pod. Track this at
@@ -84,10 +87,15 @@ listener (`global.postgresql.tls.enabled`, default `true`, only relevant when
 using the in-pod database rather than RDS) — set that to `false` to restore
 the previous in-cluster server behaviour.
 
-> `global.useCloudSql` deployments auto-resolve `sslmode` to `disable`
-> regardless of this setting, because the `cloud_sql_proxy` sidecar presents a
-> plaintext local listener by design and performs its own TLS connection to
-> Cloud SQL — there is nothing for the client-side `sslmode` to encrypt.
+> **Cloud SQL.** When `global.useCloudSql` is enabled and `sslmode` is left
+> **unset**, it auto-resolves to `disable`, because the `cloud_sql_proxy`
+> sidecar presents a plaintext local listener by design and performs its own
+> TLS connection to Cloud SQL — there is nothing for the client-side `sslmode`
+> to encrypt.
+>
+> An explicitly configured `sslmode` always takes precedence over that
+> auto-resolution. Do not set `require` on the Cloud SQL proxy path: the proxy
+> does not accept TLS from its clients, so the connection would fail.
 
 ### 4> Install kubernetes-replicator
 
