@@ -58,19 +58,30 @@ DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresq
 **Which password variable to use depends on the case**, because the two are not
 both always present:
 
-| Case       | Privileged username         | Use                           |
-| ---------- | --------------------------- | ----------------------------- |
-| C1, C3, C4 | default (`postgres`)        | `$POSTGRES_PASSWORD`          |
-| C2, C5     | custom (e.g. `magda_admin`) | `$POSTGRES_POSTGRES_PASSWORD` |
+| Case       | Database   | Privileged username         | Use                               |
+| ---------- | ---------- | --------------------------- | --------------------------------- |
+| C1, C3, C4 | in-cluster | default (`postgres`)        | `$POSTGRES_PASSWORD`              |
+| C2         | in-cluster | custom (e.g. `magda_admin`) | `$POSTGRES_POSTGRES_PASSWORD`     |
+| C5         | external   | custom (e.g. `magda_admin`) | the external DB's own credentials |
 
-`POSTGRES_POSTGRES_PASSWORD` holds the built-in `postgres` superuser's password
-and exists **only when a non-default privileged username is configured** — the
-chart generates the `postgresql-postgres-password` secret key solely in that
-case (`db-main-account-secret.yaml`), and the PostgreSQL subchart wires the
-matching environment variable under the same condition. On a stock-default
-install that variable is unset, so `PGPASSWORD` would expand to an empty string
-and `psql` would fail to authenticate. Each case below already uses the correct
-one; if you adapt a command, check this table first.
+`POSTGRES_POSTGRES_PASSWORD` holds the built-in `postgres` superuser's password,
+and it exists only when **both** conditions hold: a non-default privileged
+username is configured **and** the database is in-cluster. The chart gates the
+`postgresql-postgres-password` secret key on exactly that pair
+(`db-main-account-secret.yaml`: `(ne $username "postgres")` **and**
+`(not $usesExternalDb)`), and the PostgreSQL subchart wires the matching
+environment variable under an equivalent condition. Where it does not exist,
+`PGPASSWORD` would expand to an empty string and `psql` would fail to
+authenticate.
+
+C5 falls outside this entirely: it runs against an external database
+(`global.useAwsRdsDb=true`), so Magda neither creates nor injects that key —
+connect with whatever credentials the external instance was provisioned with.
+Its assertions run against the standalone PostgreSQL you stand up, not the
+in-cluster pod.
+
+Each case below already uses the correct variable; if you adapt a command,
+check this table first.
 
 (Substitute the appropriate pod selector if you're running against a
 non-combined DB topology.)
