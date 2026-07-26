@@ -72,6 +72,7 @@ spec:
         - name: USER_ID
           value: {{ .Values.global.defaultAdminUserId }}
         {{- include "magda.db-client-credential-env" (dict "dbName" "authorization-db" "root" .) | indent 8 }}
+        {{- include "magda.db-client-sslmode-env" . | indent 8 }}
       - name: opa
         {{- $imageEnv := omit . "Values" }}
         {{- $_ := set $imageEnv "Values" (omit .Values "image") }}

@@ -79,3 +79,42 @@ for bad in prefer allow verify-ca verify-full banana; do
 done
 
 echo "postgres sslmode resolution checks passed"
+
+# --- Umbrella-chart regression check -----------------------------------------
+# The checks above render `magda-core`. Users install the `magda` umbrella, which
+# additionally pulls in ~12 third-party subcharts (connectors, minions, semantic
+# indexers) that each VENDOR THEIR OWN older copy of the `magda-common` library
+# chart. Helm merges every chart's templates into one flat, global namespace and
+# the last definition of a name wins, so a template defined in `magda-common` can
+# be silently shadowed by a stale vendored copy.
+#
+# That is exactly what happened: emitting PGSSLMODE from `magda-common`'s
+# `magda.db-client-credential-env` rendered correctly under `magda-core` but was
+# dropped under the umbrella, and the Node services connected in PLAINTEXT while
+# appearing fine in every magda-core-based test. The env var is now emitted by
+# `magda.db-client-sslmode-env`, defined in `magda-core` (never vendored).
+#
+# Rendering magda-core alone cannot catch a regression of this class.
+UMBRELLA_DIR="${ROOT_DIR}/deploy/helm/magda"
+if [ -d "${UMBRELLA_DIR}/charts" ]; then
+    UMBRELLA_OUT="${TMP_DIR}/umbrella.yaml"
+    helm template sslmode-umbrella "${UMBRELLA_DIR}" \
+        --set global.postgresql.postgresqlUsername=magda_admin \
+        > "${UMBRELLA_OUT}"
+
+    # Every component that receives DB client credentials must also receive PGSSLMODE.
+    cred_count=$(grep -cE '^\s+- name: "?PGUSER"?$' "${UMBRELLA_OUT}" || true)
+    ssl_count=$(grep -cE '^\s+- name: "?PGSSLMODE"?$' "${UMBRELLA_OUT}" || true)
+    if [ "${ssl_count}" -lt "${cred_count}" ]; then
+        echo "umbrella chart: ${cred_count} components get PGUSER but only ${ssl_count} get PGSSLMODE."
+        echo "A magda-common template is probably being shadowed by a vendored copy."
+        exit 1
+    fi
+    if [ "${ssl_count}" -eq 0 ]; then
+        echo "umbrella chart: no PGSSLMODE emitted at all"
+        exit 1
+    fi
+    echo "umbrella chart: PGSSLMODE present on all ${ssl_count} DB-connecting components"
+else
+    echo "umbrella chart dependencies not built (run 'cd deploy && yarn update-all-charts'); skipping umbrella check"
+fi

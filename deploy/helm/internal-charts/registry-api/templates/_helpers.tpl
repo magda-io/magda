@@ -33,6 +33,7 @@ spec:
               name: auth-secrets
               key: jwt-secret
         {{- include "magda.db-client-credential-env" (dict "dbName" "registry-db" "dbUserEnvName" "POSTGRES_USER" "dbPasswordEnvName" "POSTGRES_PASSWORD" "root" .root)  | indent 8 }}
+        {{- include "magda.db-client-sslmode-env" .root | indent 8 }}
         image: {{ include "magda.image" .root | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" .root | quote }}
         ports:

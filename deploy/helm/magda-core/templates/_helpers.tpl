@@ -83,3 +83,94 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
       name: {{ include "magda.db-client-secret-name" (dict "dbName" .Chart.Name "root" .) | quote }}
       key: {{ include "magda.db-client-secret-key" (dict "dbName" .Chart.Name "root" .) | quote }}
 {{- end }}
+
+{{/*
+  NOTE ON PLACEMENT — these live here, in magda-core, NOT in the magda-common
+  library chart.
+
+  Helm merges every chart's templates into one flat, global namespace, and the
+  LAST definition of a given name wins. A dozen third-party subcharts
+  (connectors, minions, semantic indexers) vendor their own older copies of
+  magda-common, so any template defined there can be silently shadowed by a
+  stale copy at render time. That is not hypothetical: defining the sslmode env
+  var inside magda-common's `magda.db-client-credential-env` meant the Node
+  services rendered WITHOUT `PGSSLMODE` and connected in plaintext, while the
+  components whose helpers live here got it correctly.
+
+  magda-core is not vendored by anything, so definitions here cannot be
+  shadowed. Keep it that way: do not move these into magda-common, and prefer
+  adding to `magda.db-client-sslmode-env` over extending the shared credential
+  helper.
+*/}}
+{{/*
+  Resolve the PostgreSQL client `sslmode` for all DB connections.
+
+  Magda supports exactly `disable` and `require`:
+  - `prefer` / `allow` cannot be honoured consistently. libpq (psql, wal-g) and
+    pgjdbc (registry-api, Flyway) implement them natively, but node-postgres maps
+    `prefer` to `ssl: true` and hard-fails against a server that doesn't offer
+    TLS instead of falling back. Rejecting them is better than giving the Node
+    services different semantics from every other component.
+  - `verify-ca` / `verify-full` need a CA certificate delivered into each pod,
+    and no DB-connecting component exposes an extension point for that yet.
+
+  Resolution order:
+  1. An explicitly configured value always wins.
+  2. `useCloudSql` resolves to `disable` — cloud_sql_proxy presents a plaintext
+     listener and performs TLS to Cloud SQL itself.
+  3. Everything else (in-cluster, RDS, Azure, direct Cloud SQL) resolves to
+     `require`.
+
+  Note on the in-cluster server: `require` is always correct for it because the
+  in-cluster PostgreSQL serves TLS by default and its listener can only be turned
+  off per DB chart (`<db-chart>.magda-postgres.postgresql.tls.enabled` — a
+  subchart value, which no `global.*` switch can drive). This resolution
+  therefore cannot see the server-side setting; instead the `magda-postgres`
+  chart — the one place that sees both sides — rejects the contradictory
+  combination at render time (`magda-postgres/templates/validate-tls.yaml`).
+
+  Parameters: the root scope. i.e. .
+  Usage:
+  {{ include "magda.postgres-client-sslmode" . }}
+*/}}
+{{- define "magda.postgres-client-sslmode" -}}
+{{- $globalVals := (get .Values "global") | default dict -}}
+{{- $pgVals := (get $globalVals "postgresql") | default dict -}}
+{{- /* `global.postgresql.tls.enabled` briefly existed on the DB-TLS development
+       branch and never worked: it could not reach the subchart value the
+       StatefulSet actually consumes, so it silently did nothing while appearing
+       to control the server's TLS listener. Reject it loudly rather than let it
+       be a no-op again. */ -}}
+{{- if hasKey $pgVals "tls" -}}
+{{- fail "`global.postgresql.tls` is not a supported Magda value. The in-cluster PostgreSQL TLS listener is controlled per DB chart by `<db-chart>.magda-postgres.postgresql.tls.enabled` (e.g. `combined-db.magda-postgres.postgresql.tls.enabled`); client-side TLS is controlled by `global.postgresql.client.sslmode`. See the `magda-postgres` chart README." -}}
+{{- end -}}
+{{- $clientVals := (get $pgVals "client") | default dict -}}
+{{- /* Normalised the same way magda-typescript-common/src/createPgPool.ts does
+       (`.trim().toLowerCase()`), so both layers accept the same vocabulary. */ -}}
+{{- $sslmode := (get $clientVals "sslmode") | default "" | toString | trim | lower -}}
+{{- if empty $sslmode -}}
+  {{- if get $globalVals "useCloudSql" -}}
+    {{- $sslmode = "disable" -}}
+  {{- else -}}
+    {{- $sslmode = "require" -}}
+  {{- end -}}
+{{- end -}}
+{{- if not (has $sslmode (list "disable" "require")) -}}
+{{- fail (printf "Unsupported global.postgresql.client.sslmode value %q. Magda supports \"disable\" and \"require\" only. \"prefer\"/\"allow\" are not supported because node-postgres cannot negotiate them consistently — use \"require\". \"verify-ca\"/\"verify-full\" require CA distribution, which is not implemented yet (see issue #3739)." $sslmode) -}}
+{{- end -}}
+{{- $sslmode -}}
+{{- end -}}
+
+{{/*
+  Emit the `PGSSLMODE` env var for a DB *client* (a service connecting as the
+  restricted `client` role). Included alongside `magda.db-client-credential-env`
+  rather than being part of it — see the placement note above.
+
+  Parameters: the root scope. i.e. .
+  Usage:
+  {{ include "magda.db-client-sslmode-env" . | indent 8 }}
+*/}}
+{{- define "magda.db-client-sslmode-env" }}
+- name: "PGSSLMODE"
+  value: {{ include "magda.postgres-client-sslmode" . | quote }}
+{{- end }}
