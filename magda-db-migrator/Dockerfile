@@ -30,8 +30,12 @@ ARG FLYWAY_SHA256=d88552bb3aedc2ab2faa98fb2a50906e50fb8fb1c22b71cc3acd6d91c2f40a
 # `/usr/sbin/ldconfig.real` — moving the wrapper onto that name overwrites the real
 # binary and leaves the image with no working ldconfig at all.
 #
-# The final `ldconfig --version` is a self-check: it fails the build if the restore
-# did not put a working binary back.
+# The trailing assertions verify the restore WITHOUT executing ldconfig. Running it
+# here would segfault on the emulated architecture for exactly the reason this block
+# exists, so the check inspects the file instead: it must be a real, executable ELF
+# binary — not the `/bin/true` symlink left behind by a failed restore, and not the
+# ~400-byte wrapper script (moving the wrapper onto this name destroys the real
+# binary and leaves the image with no working ldconfig at all).
 RUN set -eux; \
     mv /usr/sbin/ldconfig.real /usr/sbin/ldconfig.real.disabled; \
     ln -s /bin/true /usr/sbin/ldconfig.real; \
@@ -40,7 +44,9 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/*; \
     rm /usr/sbin/ldconfig.real; \
     mv /usr/sbin/ldconfig.real.disabled /usr/sbin/ldconfig.real; \
-    ldconfig --version > /dev/null
+    test ! -L /usr/sbin/ldconfig.real; \
+    test -x /usr/sbin/ldconfig.real; \
+    test "$(stat -c '%s' /usr/sbin/ldconfig.real)" -gt 100000
 
 # Use the platform-independent Flyway distribution (no bundled JRE) so the image stays
 # multi-arch and small; Flyway runs on the base image's JRE 17. Flyway 12 requires Java 17+.
