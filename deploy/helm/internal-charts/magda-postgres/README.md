@@ -1,6 +1,6 @@
 # magda-postgres
 
-![Version: 6.1.1](https://img.shields.io/badge/Version-6.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+![Version: 7.0.0-pr.3637.2](https://img.shields.io/badge/Version-7.0.0--pr.3637.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 A helm wrapper chart that provides in-kubernetes postgreSQL for Magda.
 
@@ -78,7 +78,7 @@ More config postgreSQL related options, please refer to: https://github.com/bitn
 | postgresql.fullnameOverride | string | `"default-db-postgresql"` | Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern. And point k8s service to DB instance. |
 | postgresql.image.registry | string | `"ghcr.io"` |  |
 | postgresql.image.repository | string | `"magda-io/magda-postgres"` |  |
-| postgresql.image.tag | string | `"6.1.1"` | the default docker image tag/version used by the postgresql chart.  When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number. |
+| postgresql.image.tag | string | `"7.0.0-pr.3637.2"` | the default docker image tag/version used by the postgresql chart.  When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number. |
 | postgresql.initdbScriptsConfigMap | string | `"{{ .Values.fullnameOverride }}-initdb-scripts"` | the name of config map contains initdb scripts run at first boot. You should not change this value as this configMap is auto-generated (see `initdb-scripts-configmap.yaml`). The script grants `CREATEDB` & `CREATEROLE` to the privileged DB user so that, when a non-default (non-`postgres`) username is used, it can still create databases and the restricted `client` role for the DB migrators — matching the privilege level that managed providers (RDS `rds_superuser`, Azure `azure_pg_admin`, GCP `cloudsqlsuperuser`) grant their admin account, without requiring a true superuser. For the default `postgres` user the grant is a harmless no-op. |
 | postgresql.initdbUser | string | `"postgres"` | the DB user used to run the initdb scripts (see `initdbScriptsConfigMap`). Must be the built-in `postgres` superuser: the script grants CREATEDB/CREATEROLE to the privileged user, which that user cannot grant to itself. Bitnami defaults this to `postgresqlUsername`, which is wrong for our purposes whenever a non-default privileged username is in use. No password is needed — bitnami's init-time pg_hba.conf trusts local socket connections, and the init scripts connect over the local socket. |
 | postgresql.livenessProbe.enabled | bool | `false` | `customLivenessProbe` will only be used when `enabled`=`false` Otherwise, default livenessProbe will be used. |
