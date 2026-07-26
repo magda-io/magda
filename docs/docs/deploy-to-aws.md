@@ -82,10 +82,21 @@ instead of relying on the permissive default.
 
 **Rollback:** if you need to revert to the previous (unenforced) client
 behaviour, set `--set global.postgresql.client.sslmode=disable` at install
-time. This is independent of the in-cluster PostgreSQL server's own TLS
-listener (`global.postgresql.tls.enabled`, default `true`, only relevant when
-using the in-pod database rather than RDS) — set that to `false` to restore
-the previous in-cluster server behaviour.
+time. On an RDS deployment that is all you need — the server's TLS listener is
+RDS's own concern, not Magda's.
+
+For the **in-cluster** database, the server's TLS listener is a separate,
+per-DB-chart switch: `<db-chart>.magda-postgres.postgresql.tls.enabled`
+(default `true`). It is not a `global.*` value, because it is consumed directly
+by the packaged PostgreSQL subchart's own templates and a wrapper chart cannot
+compute a subchart value from another value — a `global.*` switch could only be
+a second source of truth that silently disagreed with what the StatefulSet
+actually does. Turning the listener off therefore means overriding it on every
+DB chart that deploys an in-cluster instance (`combined-db`, or the individual
+`*-db` charts when using `global.useInK8sDbInstance`), **and** setting
+`global.postgresql.client.sslmode: disable`. Turning off the server while
+leaving clients on `require` is rejected at render time with an explanatory
+error rather than failing at runtime.
 
 > **Cloud SQL.** When `global.useCloudSql` is enabled and `sslmode` is left
 > **unset**, it auto-resolves to `disable`, because the `cloud_sql_proxy`

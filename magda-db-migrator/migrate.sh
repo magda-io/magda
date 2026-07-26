@@ -17,10 +17,38 @@ fi
 cd "${FLYWAY_DIR}"
 
 # Run a scalar SQL query against a specific database and print the single value.
-# Prints an empty string (never aborts under `set -e`) if the query fails, e.g.
-# because the database or the referenced table does not exist.
+#
+# Distinguishes "the query legitimately found nothing" from "could not talk to the
+# database":
+#   - a missing relation/database (expected: that is exactly what the legacy-history
+#     probes below are testing for) prints nothing and returns 0;
+#   - any other psql failure — connectivity, auth, TLS negotiation, a DB pod still
+#     rolling — prints the error and returns non-zero so the caller can abort.
+# Swallowing the second kind would let the legacy-history detection below silently
+# conclude "no legacy Flyway 4 history", after which `flyway migrate
+# -baselineOnMigrate=true` baselines at Flyway's DEFAULT version 1 and re-applies
+# V1_1..Vn onto an already-migrated schema, permanently poisoning
+# flyway_schema_history.
 run_scalar () {
-    psql -tA -h "${DB_HOST}" -c "${2}" "${1}" 2>/dev/null || true
+    local db="${1}" query="${2}" out rc err_file
+    err_file="$(mktemp)"
+    set +e
+    out="$(psql -tA -h "${DB_HOST}" -c "${query}" "${db}" 2>"${err_file}")"
+    rc=$?
+    set -e
+    if [[ ${rc} -ne 0 ]]; then
+        if grep -qiE '(relation|database|table|schema|column)[^:]*does not exist' "${err_file}"; then
+            # Nothing to report, and nothing wrong: the object simply isn't there.
+            rm -f "${err_file}"
+            return 0
+        fi
+        echo "Failed to query database ${db} (psql exited ${rc}):" >&2
+        cat "${err_file}" >&2
+        rm -f "${err_file}"
+        return 1
+    fi
+    rm -f "${err_file}"
+    printf '%s' "${out}"
 }
 
 for d in "${FLYWAY_HOME}"/sql/*; do
@@ -48,11 +76,28 @@ for d in "${FLYWAY_HOME}"/sql/*; do
         # Flyway run would baseline at v1 and try to re-apply already-applied migrations
         # against the existing schema (which fails, e.g. "column ... already exists").
         # When the legacy table exists but the new one does not, baseline the new history
-        # at the highest version already applied so only newer migrations are run.
-        has_legacy="$(run_scalar "${dbName}" "SELECT to_regclass('public.schema_version') IS NOT NULL")"
-        has_new="$(run_scalar "${dbName}" "SELECT to_regclass('public.flyway_schema_history') IS NOT NULL")"
+        # at the last-installed version so only newer migrations are run.
+        #
+        # A failed probe must never be mistaken for "no legacy history": that would
+        # skip the baseline below and let Flyway baseline at its default version 1,
+        # re-applying already-applied migrations. Abort instead — the next run (or a
+        # retried hook) can try again against a healthy database.
+        if ! has_legacy="$(run_scalar "${dbName}" "SELECT to_regclass('public.schema_version') IS NOT NULL")"; then
+            echo "Aborting: could not determine whether ${dbName} has a legacy Flyway 4 history table." >&2
+            exit 1
+        fi
+        if ! has_new="$(run_scalar "${dbName}" "SELECT to_regclass('public.flyway_schema_history') IS NOT NULL")"; then
+            echo "Aborting: could not determine whether ${dbName} has a flyway_schema_history table." >&2
+            exit 1
+        fi
         if [[ "${has_legacy}" == "t" && "${has_new}" != "t" ]]; then
-            legacy_version="$(run_scalar "${dbName}" "SELECT version FROM schema_version WHERE success = true AND version IS NOT NULL ORDER BY installed_rank DESC LIMIT 1")"
+            # `ORDER BY installed_rank DESC LIMIT 1` is the LAST-INSTALLED version, not
+            # necessarily the numerically highest. They coincide for Magda's history,
+            # which has only ever been applied in version order.
+            if ! legacy_version="$(run_scalar "${dbName}" "SELECT version FROM schema_version WHERE success = true AND version IS NOT NULL ORDER BY installed_rank DESC LIMIT 1")"; then
+                echo "Aborting: ${dbName} has a legacy Flyway 4 history table but its last-installed version could not be read; baselining without it would re-apply every migration." >&2
+                exit 1
+            fi
             if [[ -n "${legacy_version}" ]]; then
                 echo "Detected legacy Flyway 4 history in ${dbName}; baselining flyway_schema_history at version ${legacy_version} (already-applied migrations are not re-run)."
                 ./flyway baseline \

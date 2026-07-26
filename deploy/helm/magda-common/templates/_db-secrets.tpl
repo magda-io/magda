@@ -174,6 +174,14 @@ data:
   3. Everything else (in-cluster, RDS, Azure, direct Cloud SQL) resolves to
      `require`.
 
+  Note on the in-cluster server: `require` is always correct for it because the
+  in-cluster PostgreSQL serves TLS by default and its listener can only be turned
+  off per DB chart (`<db-chart>.magda-postgres.postgresql.tls.enabled` — a
+  subchart value, which no `global.*` switch can drive). This resolution
+  therefore cannot see the server-side setting; instead the `magda-postgres`
+  chart — the one place that sees both sides — rejects the contradictory
+  combination at render time (`magda-postgres/templates/validate-tls.yaml`).
+
   Parameters: the root scope. i.e. .
   Usage:
   {{ include "magda.postgres-client-sslmode" . }}
@@ -181,6 +189,14 @@ data:
 {{- define "magda.postgres-client-sslmode" -}}
 {{- $globalVals := (get .Values "global") | default dict -}}
 {{- $pgVals := (get $globalVals "postgresql") | default dict -}}
+{{- /* `global.postgresql.tls.enabled` briefly existed on the DB-TLS development
+       branch and never worked: it could not reach the subchart value the
+       StatefulSet actually consumes, so it silently did nothing while appearing
+       to control the server's TLS listener. Reject it loudly rather than let it
+       be a no-op again. */ -}}
+{{- if hasKey $pgVals "tls" -}}
+{{- fail "`global.postgresql.tls` is not a supported Magda value. The in-cluster PostgreSQL TLS listener is controlled per DB chart by `<db-chart>.magda-postgres.postgresql.tls.enabled` (e.g. `combined-db.magda-postgres.postgresql.tls.enabled`); client-side TLS is controlled by `global.postgresql.client.sslmode`. See the `magda-postgres` chart README." -}}
+{{- end -}}
 {{- $clientVals := (get $pgVals "client") | default dict -}}
 {{- /* Normalised the same way magda-typescript-common/src/createPgPool.ts does
        (`.trim().toLowerCase()`), so both layers accept the same vocabulary. */ -}}
