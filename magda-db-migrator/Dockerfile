@@ -6,9 +6,41 @@ ENV FLYWAY_VERSION=${FLYWAY_VERSION}
 # from the official Flyway GitHub release. Must be updated whenever FLYWAY_VERSION changes.
 ARG FLYWAY_SHA256=d88552bb3aedc2ab2faa98fb2a50906e50fb8fb1c22b71cc3acd6d91c2f40a55
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends postgresql-client curl ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+# `ldconfig` is deliberately neutralised for the duration of this install.
+#
+# The image is built for linux/amd64 and linux/arm64 from a single runner, so one
+# architecture is always emulated by qemu. glibc 2.35's `ldconfig` segfaults under
+# qemu-user, and it runs as a dpkg trigger for `libc-bin`, so installing anything
+# at all fails the build:
+#
+#   Processing triggers for libc-bin ...
+#   Segmentation fault (core dumped)
+#   dpkg: error processing package libc-bin (--configure): ... exit status 139
+#
+# (The previous base image was Debian buster / glibc 2.28, which predates the bug.)
+#
+# Nothing installed here needs the shared-library cache rebuilt at build time —
+# these are client binaries, not libraries other packages link against — and the
+# real `ldconfig` is restored immediately afterwards, so runtime behaviour on real
+# hardware is unchanged. Revisit when the base image moves to a glibc/qemu
+# combination without this bug.
+# Only the real binary is swapped, never `/usr/sbin/ldconfig` itself: on Debian and
+# Ubuntu that path is a trigger *wrapper* script which execs `/sbin/ldconfig.real`,
+# and because the base image is usr-merged `/sbin/ldconfig.real` IS
+# `/usr/sbin/ldconfig.real` — moving the wrapper onto that name overwrites the real
+# binary and leaves the image with no working ldconfig at all.
+#
+# The final `ldconfig --version` is a self-check: it fails the build if the restore
+# did not put a working binary back.
+RUN set -eux; \
+    mv /usr/sbin/ldconfig.real /usr/sbin/ldconfig.real.disabled; \
+    ln -s /bin/true /usr/sbin/ldconfig.real; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends postgresql-client curl ca-certificates; \
+    rm -rf /var/lib/apt/lists/*; \
+    rm /usr/sbin/ldconfig.real; \
+    mv /usr/sbin/ldconfig.real.disabled /usr/sbin/ldconfig.real; \
+    ldconfig --version > /dev/null
 
 # Use the platform-independent Flyway distribution (no bundled JRE) so the image stays
 # multi-arch and small; Flyway runs on the base image's JRE 17. Flyway 12 requires Java 17+.
