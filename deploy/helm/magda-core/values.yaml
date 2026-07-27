@@ -43,6 +43,15 @@ global:
     # This user will only be used for DB schema migrators to cerate DB schema and restricted DB accounts that are used by Magda internal services to access DB.
     # If you have to use a user account rather than `postgres`, the user account needs to have sufficient permissions to run all DB migration scripts ([e.g. here](https://github.com/magda-io/magda/tree/master/magda-migrator-registry-db/sql)).
     # Note: Until the ticket #3126 is fixed, using a DB username rather than `postgres` will trigger an error when content DB migrate runs.
+    # <br/><br/>
+    # For the in-cluster PostgreSQL this value <b>cannot be changed after the first
+    # boot</b>. The `CREATEDB`/`CREATEROLE` grant that makes a non-default privileged
+    # user workable is applied by an initdb script, and initdb scripts run only once,
+    # against an empty data directory. Pointing an existing deployment at a new
+    # username therefore leaves that account without the privileges the DB migrators
+    # need, and the migrators will fail with `permission denied to create role`.
+    # Choose the username at install time, or grant the privileges by hand
+    # (`ALTER ROLE <name> CREATEDB CREATEROLE;`) after changing it.
     postgresqlUsername: "postgres"
 
     # -- When using external DB services (`useCloudSql` or `useAwsRdsDb`), chart rendering fails by default if
@@ -62,6 +71,19 @@ global:
     # Please note: when supplying the secret manually, it's recommend to set `"helm.sh/resource-policy": keep` annotation on the secret to avoid the secret being removed by Helm.<br/><br/>
     # e.g. you can set the annotation of the secret with the following command: 
     # `kubectl annotate --namespace [install namespace] secret db-main-account-secret 'helm.sh/resource-policy'=keep`
+    # <br/><br/>
+    # When you supply this secret yourself AND use a non-default `postgresqlUsername`
+    # with the in-cluster PostgreSQL, it must contain <b>two</b> keys, not one:
+    # <ul>
+    #   <li>`postgresql-password` - the privileged user's password</li>
+    #   <li>`postgresql-postgres-password` - the built-in `postgres` superuser's password</li>
+    # </ul>
+    # The packaged PostgreSQL subchart references the second key without marking it
+    # optional, so if it is missing every database pod stops at
+    # `CreateContainerConfigError` and never starts. Magda generates both keys for you
+    # when `autoCreateSecret` is `true` and the secret is either absent or owned by the
+    # release; a pre-existing secret you manage is never modified. External databases
+    # (`useAwsRdsDb` / `useCloudSql`) do not use the second key.
     existingSecret: "db-main-account-secret"
 
     # -- When `true`, secret with name specified by `existingSecret` will be auto-created.

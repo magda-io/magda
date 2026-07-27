@@ -80,41 +80,84 @@ done
 
 echo "postgres sslmode resolution checks passed"
 
-# --- Umbrella-chart regression check -----------------------------------------
-# The checks above render `magda-core`. Users install the `magda` umbrella, which
-# additionally pulls in ~12 third-party subcharts (connectors, minions, semantic
-# indexers) that each VENDOR THEIR OWN older copy of the `magda-common` library
-# chart. Helm merges every chart's templates into one flat, global namespace and
-# the last definition of a name wins, so a template defined in `magda-common` can
-# be silently shadowed by a stale vendored copy.
+# --- Per-container PGSSLMODE coverage across the real deployment charts --------
 #
-# That is exactly what happened: emitting PGSSLMODE from `magda-common`'s
+# The checks above render `magda-core`. That is not enough on its own: users
+# install `magda` (or `local-deployment`), which additionally pull in ~12
+# third-party subcharts that each VENDOR THEIR OWN older copy of the
+# `magda-common` library chart. Helm merges every chart's templates into one
+# flat, global namespace and the LAST definition of a name wins, so a template
+# defined in `magda-common` can be silently shadowed by a stale vendored copy.
+#
+# That is not hypothetical. Emitting PGSSLMODE from `magda-common`'s
 # `magda.db-client-credential-env` rendered correctly under `magda-core` but was
 # dropped under the umbrella, and the Node services connected in PLAINTEXT while
-# appearing fine in every magda-core-based test. The env var is now emitted by
-# `magda.db-client-sslmode-env`, defined in `magda-core` (never vendored).
+# every magda-core-based test still passed.
 #
-# Rendering magda-core alone cannot catch a regression of this class.
-UMBRELLA_DIR="${ROOT_DIR}/deploy/helm/magda"
-if [ -d "${UMBRELLA_DIR}/charts" ]; then
-    UMBRELLA_OUT="${TMP_DIR}/umbrella.yaml"
-    helm template sslmode-umbrella "${UMBRELLA_DIR}" \
-        --set global.postgresql.postgresqlUsername=magda_admin \
-        > "${UMBRELLA_OUT}"
+# The assertion is per-container, not an aggregate count: a container that gets
+# DB credentials must also get PGSSLMODE. Aggregate totals hide the case where
+# one component loses it while another gains one.
+assert_sslmode_coverage () {
+    local chart_dir="$1" label="$2" allow="$3"
+    [ -d "${chart_dir}/charts" ] || {
+        echo "${label}: dependencies not built (run 'cd deploy && yarn update-all-charts'); skipping"
+        return 0
+    }
+    local out="${TMP_DIR}/$(basename "${chart_dir}")-cov.yaml"
+    helm template cov "${chart_dir}" --set global.postgresql.postgresqlUsername=magda_admin > "${out}"
+    ALLOW="${allow}" python3 - "${out}" "${label}" <<'PY'
+import os, sys, re
+path, label = sys.argv[1], sys.argv[2]
+allow = {a for a in os.environ.get("ALLOW", "").split(",") if a}
+# Per-workload attribution. A real YAML parse would let us go per-container, but
+# PyYAML is not guaranteed in the CI image; per-document is the robust
+# alternative and still catches the case aggregate counts miss, where one
+# component loses PGSSLMODE while another gains one. The residual blind spot is
+# a multi-container pod where a sidecar carries the env var and the app does
+# not, which does not occur in this chart.
+bad, checked = [], 0
+for d in open(path).read().split("\n---\n"):
+    km = re.search(r'^kind:\s*(\S+)', d, re.M)
+    if not km:
+        continue
+    nm = re.search(r'^\s{0,2}name:\s*"?([\w.-]+)"?', d, re.M)
+    kind, name = km.group(1), (nm.group(1) if nm else "?")
+    # Only DB *clients* are checked. The PostgreSQL server itself is a
+    # StatefulSet whose POSTGRES_USER is its own bootstrap configuration - the
+    # account it creates - not a connection to somewhere else, so it neither
+    # has nor needs PGSSLMODE. Every DB client in these charts is a Deployment,
+    # Job or CronJob.
+    if kind not in ("Deployment", "Job", "CronJob"):
+        continue
+    envs = set(re.findall(r'-\s+name:\s*"?(PGUSER|POSTGRES_USER|PGSSLMODE)"?\s*$', d, re.M))
+    if not (envs & {"PGUSER", "POSTGRES_USER"}):
+        continue
+    checked += 1
+    if "PGSSLMODE" not in envs:
+        key = "%s/%s" % (kind, name)
+        if key not in allow:
+            bad.append(key)
+if checked == 0:
+    print("%s: FAIL - found no DB-credential workloads at all" % label); sys.exit(1)
+if bad:
+    print("%s: FAIL - %d workload(s) receive DB credentials but no PGSSLMODE:" % (label, len(set(bad))))
+    for b in sorted(set(bad)):
+        print("    " + b)
+    print("  A magda-common template is probably being shadowed by a vendored copy.")
+    sys.exit(1)
+print("%s: PGSSLMODE present on all %d DB-credential workloads%s"
+      % (label, checked, (" (%d known-gap exemption(s))" % len(allow)) if allow else ""))
+PY
+}
 
-    # Every component that receives DB client credentials must also receive PGSSLMODE.
-    cred_count=$(grep -cE '^\s+- name: "?PGUSER"?$' "${UMBRELLA_OUT}" || true)
-    ssl_count=$(grep -cE '^\s+- name: "?PGSSLMODE"?$' "${UMBRELLA_OUT}" || true)
-    if [ "${ssl_count}" -lt "${cred_count}" ]; then
-        echo "umbrella chart: ${cred_count} components get PGUSER but only ${ssl_count} get PGSSLMODE."
-        echo "A magda-common template is probably being shadowed by a vendored copy."
-        exit 1
-    fi
-    if [ "${ssl_count}" -eq 0 ]; then
-        echo "umbrella chart: no PGSSLMODE emitted at all"
-        exit 1
-    fi
-    echo "umbrella chart: PGSSLMODE present on all ${ssl_count} DB-connecting components"
-else
-    echo "umbrella chart dependencies not built (run 'cd deploy && yarn update-all-charts'); skipping umbrella check"
-fi
+assert_sslmode_coverage "${ROOT_DIR}/deploy/helm/magda" "umbrella (magda)" ""
+
+# `local-deployment` additionally pulls in the authentication plugins. Those call
+# `magda.db-client-credential-env` from their own vendored `magda-common` and do
+# NOT yet emit PGSSLMODE, so they connect to the session DB in plaintext. That is
+# pre-existing (nothing set PGSSLMODE before this change) and is tracked
+# separately; the plugins need both a chart release and an SDK bump. They are
+# exempted by name here rather than by weakening the check, so that any NEW
+# regression still fails and this list doubles as the outstanding work.
+AUTH_PLUGIN_EXEMPTIONS="Deployment/magda-auth-google,Deployment/magda-auth-internal,Deployment/magda-auth-oidc,Deployment/magda-auth-arcgis,Deployment/magda-auth-facebook"
+assert_sslmode_coverage "${ROOT_DIR}/deploy/helm/local-deployment" "local-deployment" "${AUTH_PLUGIN_EXEMPTIONS}"
