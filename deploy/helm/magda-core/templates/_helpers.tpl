@@ -174,3 +174,46 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 - name: "PGSSLMODE"
   value: {{ include "magda.postgres-client-sslmode" . | quote }}
 {{- end }}
+
+{{/*
+  Compatibility handshake between this Magda version and the versioned helper
+  templates that external charts (authentication plugins in particular) vendor
+  from `magda-common`.
+
+  WHY THIS EXISTS. Magda cannot enumerate the charts installed alongside it:
+  plugins are SIBLINGS of the `magda` chart, and Helm gives a subchart no way to
+  see its parent's siblings. So detection is inverted — the plugin calls in here,
+  announcing which helper contract it was built against, and this template
+  decides whether this Magda version still honours it.
+
+  WHY IT LIVES IN magda-core. Helm merges every chart's templates into one flat,
+  global namespace and the LAST definition of a name wins, ordered by chart name.
+  A dozen third-party charts vendor their own copies of `magda-common`, and they
+  sort AFTER `magda` (e.g. `magda-auth-oidc` > `magda`), so anything defined in
+  `magda-common` can be silently overridden by a stale vendored copy — that is
+  exactly how the Node services once ended up connecting in plaintext. Nothing
+  vendors `magda-core`, so a check defined here cannot be shadowed. Do NOT move
+  this, and do not add a no-op fallback copy anywhere: a fallback would win over
+  this definition and the check would silently stop running.
+
+  Parameters (dict):
+  - helper: the versioned helper name the caller was built against,
+            e.g. "db-client-sslmode-env-v1"
+  - chart:  the calling chart's name, used to make the error actionable
+  Usage (from a versioned magda-common helper):
+  {{ include "magda.compatibility-check" (dict "helper" "db-client-sslmode-env-v1" "chart" .Chart.Name) }}
+*/}}
+{{- define "magda.compatibility-check" -}}
+{{- $helper := .helper | default "<unknown>" -}}
+{{- $chart := .chart | default "<unknown chart>" -}}
+{{- /*
+  Helper contracts this Magda version honours. Add a name here when introducing
+  a new versioned helper; REMOVE one when dropping support, which turns silent
+  misbehaviour into a loud, actionable failure at render time.
+*/ -}}
+{{- $supported := list "db-client-sslmode-env-v1" -}}
+{{- if not (has $helper $supported) -}}
+{{- fail (printf "Chart %q uses the Magda helper contract %q, which this version of Magda does not support (supported: %s). Upgrade or downgrade %q to a release built for this Magda version. If you are intentionally running a mismatched pair and accept the consequences, set `global.magdaCompatibilityCheck=false` to skip this check." $chart $helper (join ", " $supported) $chart) -}}
+{{- end -}}
+{{- end -}}
+

@@ -152,3 +152,51 @@ data:
     {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+  Versioned PGSSLMODE env-var helper for EXTERNAL charts (authentication plugins
+  and anything else that connects to a Magda database as the restricted `client`
+  role). Magda's own charts do NOT use this — they call
+  `magda.db-client-sslmode-env`, which is defined in `magda-core` where nothing
+  can vendor and therefore shadow it.
+
+  This is deliberately a THIN SHIM with no logic of its own. Everything it needs
+  lives in `magda-core`, so there is no second copy of the resolution rules to
+  drift out of sync, and a stale vendored copy of this file cannot change what
+  gets emitted — it can only delegate to the same place.
+
+  FROZEN CONTRACT. Once released, the behaviour of `-v1` must never change: many
+  charts will vendor their own copy, and Helm's last-definition-wins ordering
+  means any of them may be the one that runs. Changing behaviour means adding
+  `-v2` and leaving this untouched.
+
+  REQUIRES MAGDA v7+. Both templates it delegates to live in `magda-core` v7 or
+  later. Calling it in a release without that — including a standalone
+  `helm template` / `helm lint` of the plugin chart in CI — fails with
+  `no template "magda.compatibility-check" associated`. Charts using this MUST
+  therefore default `global.magdaCompatibilityCheck` to `true` in their own
+  values.yaml and document that CI runs need `--set global.magdaCompatibilityCheck=false`.
+  The flag is read as a GLOBAL so an operator can disable it once for every
+  plugin rather than per chart.
+
+  Usage (from an external chart's deployment template):
+  {{- include "magda.db-client-sslmode-env-v1" . | indent 8 }}
+*/}}
+{{- define "magda.db-client-sslmode-env-v1" -}}
+{{- $globalVals := (get .Values "global") | default dict -}}
+{{- /*
+  Default to enabled when the key is absent, so forgetting to declare it fails
+  closed (loudly) rather than silently skipping the check. `default` is not used
+  here because Helm treats an explicit `false` as empty and would flip it back
+  to `true`.
+*/ -}}
+{{- $enabled := true -}}
+{{- if hasKey $globalVals "magdaCompatibilityCheck" -}}
+{{- $enabled = (get $globalVals "magdaCompatibilityCheck") -}}
+{{- end -}}
+{{- if $enabled -}}
+{{- include "magda.compatibility-check" (dict "helper" "db-client-sslmode-env-v1" "chart" .Chart.Name) -}}
+{{- include "magda.db-client-sslmode-env" . -}}
+{{- end -}}
+{{- end -}}
+

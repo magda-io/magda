@@ -601,6 +601,11 @@ buildtest:helm-charts:
     - echo "chart assertions: privileged postgres username validation"
     - bash deploy/helm/magda-core/tests/postgres-username-validation.sh
 
+    # The plugin<->Magda helper-contract handshake. Magda's own charts never
+    # exercise it, so without this it would first run in a user's cluster.
+    - echo "chart assertions: plugin compatibility handshake"
+    - bash deploy/helm/magda-core/tests/compatibility-check.sh
+
   artifacts:
     paths:
       - "deploy/helm/magda/charts"
