@@ -1,6 +1,6 @@
 # magda-local-auth-test-deployment
 
-![Version: 6.1.1](https://img.shields.io/badge/Version-6.1.1-informational?style=flat-square)
+![Version: 7.0.0-pr.3637.4](https://img.shields.io/badge/Version-7.0.0--pr.3637.4-informational?style=flat-square)
 
 ## Requirements
 
@@ -8,7 +8,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-core | magda-core | 6.1.1 |
+| file://../magda-core | magda-core | 7.0.0-pr.3637.4 |
 
 ## Values
 
