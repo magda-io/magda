@@ -595,15 +595,15 @@ buildtest:helm-charts:
     # shadowed by one of the ~12 older copies vendored by third-party subcharts,
     # which previously caused Magda's services to connect to PostgreSQL in
     # plaintext while every magda-core-only test still passed.
-    - echo "chart assertions: postgres sslmode resolution + PGSSLMODE coverage"
+    - echo "chart assertions - postgres sslmode resolution and PGSSLMODE coverage"
     - bash deploy/helm/magda-core/tests/postgres-sslmode.sh
 
-    - echo "chart assertions: privileged postgres username validation"
+    - echo "chart assertions - privileged postgres username validation"
     - bash deploy/helm/magda-core/tests/postgres-username-validation.sh
 
     # The plugin<->Magda helper-contract handshake. Magda's own charts never
     # exercise it, so without this it would first run in a user's cluster.
-    - echo "chart assertions: plugin compatibility handshake"
+    - echo "chart assertions - plugin compatibility handshake"
     - bash deploy/helm/magda-core/tests/compatibility-check.sh
 
   artifacts:
