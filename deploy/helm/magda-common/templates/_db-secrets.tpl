@@ -154,30 +154,25 @@ data:
 {{- end }}
 
 {{/*
-  Versioned PGSSLMODE env-var helper for EXTERNAL charts (authentication plugins
-  and anything else that connects to a Magda database as the restricted `client`
-  role). Magda's own charts do NOT use this — they call
-  `magda.db-client-sslmode-env`, which is defined in `magda-core` where nothing
-  can vendor and therefore shadow it.
+  Versioned PGSSLMODE env-var helper for EXTERNAL charts (auth plugins and
+  anything connecting to a Magda DB as the restricted `client` role). Magda's own
+  charts do NOT use this — they call `magda.db-client-sslmode-env` in magda-core.
 
-  This is deliberately a THIN SHIM with no logic of its own. Everything it needs
-  lives in `magda-core`, so there is no second copy of the resolution rules to
-  drift out of sync, and a stale vendored copy of this file cannot change what
-  gets emitted — it can only delegate to the same place.
+  A THIN SHIM with no logic of its own: it only runs the compatibility check and
+  delegates to magda-core, so no vendored copy can change what gets emitted.
 
-  FROZEN CONTRACT. Once released, the behaviour of `-v1` must never change: many
-  charts will vendor their own copy, and Helm's last-definition-wins ordering
-  means any of them may be the one that runs. Changing behaviour means adding
-  `-v2` and leaving this untouched.
+  FROZEN CONTRACT — once released, `-v1` behaviour must never change (many charts
+  vendor their own copy and any may be the one that runs). Change behaviour by
+  adding `-v2` and leaving this untouched.
 
-  REQUIRES MAGDA v7+. Both templates it delegates to live in `magda-core` v7 or
-  later. Calling it in a release without that — including a standalone
-  `helm template` / `helm lint` of the plugin chart in CI — fails with
-  `no template "magda.compatibility-check" associated`. Charts using this MUST
-  therefore default `global.magdaCompatibilityCheck` to `true` in their own
-  values.yaml and document that CI runs need `--set global.magdaCompatibilityCheck=false`.
-  The flag is read as a GLOBAL so an operator can disable it once for every
-  plugin rather than per chart.
+  REQUIRES MAGDA v7+. In a release without magda-core v7+ — including a standalone
+  `helm template`/`helm lint` of the plugin in CI — it fails with
+  `no template "magda.compatibility-check" associated`. Plugin charts MUST default
+  `global.magdaCompatibilityCheck` to `true` in their values.yaml (read as a
+  GLOBAL so an operator can disable it once for every plugin) and set it `false`
+  for standalone CI renders.
+
+  Full rationale, failure matrix and rules: docs/docs/helm-helper-contracts.md
 
   Usage (from an external chart's deployment template):
   {{- include "magda.db-client-sslmode-env-v1" . | indent 8 }}

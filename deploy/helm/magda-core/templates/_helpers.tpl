@@ -85,22 +85,13 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end }}
 
 {{/*
-  NOTE ON PLACEMENT — these live here, in magda-core, NOT in the magda-common
-  library chart.
-
-  Helm merges every chart's templates into one flat, global namespace, and the
-  LAST definition of a given name wins. A dozen third-party subcharts
-  (connectors, minions, semantic indexers) vendor their own older copies of
-  magda-common, so any template defined there can be silently shadowed by a
-  stale copy at render time. That is not hypothetical: defining the sslmode env
-  var inside magda-common's `magda.db-client-credential-env` meant the Node
-  services rendered WITHOUT `PGSSLMODE` and connected in plaintext, while the
-  components whose helpers live here got it correctly.
-
-  magda-core is not vendored by anything, so definitions here cannot be
-  shadowed. Keep it that way: do not move these into magda-common, and prefer
-  adding to `magda.db-client-sslmode-env` over extending the shared credential
-  helper.
+  PLACEMENT — these MUST stay in magda-core, never magda-common: magda-common is
+  vendored by a dozen third-party charts and Helm's flat namespace lets a stale
+  vendored copy silently shadow it (that is how the Node services once connected
+  to PostgreSQL in plaintext). Prefer extending `magda.db-client-sslmode-env`
+  over the shared credential helper; external charts reach it through the
+  versioned shim `magda.db-client-sslmode-env-v1` in magda-common.
+  Full rationale, failure matrix and change rules: docs/docs/helm-helper-contracts.md
 */}}
 {{/*
   Resolve the PostgreSQL client `sslmode` for all DB connections.
@@ -176,25 +167,14 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end }}
 
 {{/*
-  Compatibility handshake between this Magda version and the versioned helper
-  templates that external charts (authentication plugins in particular) vendor
-  from `magda-common`.
-
-  WHY THIS EXISTS. Magda cannot enumerate the charts installed alongside it:
-  plugins are SIBLINGS of the `magda` chart, and Helm gives a subchart no way to
-  see its parent's siblings. So detection is inverted — the plugin calls in here,
-  announcing which helper contract it was built against, and this template
-  decides whether this Magda version still honours it.
-
-  WHY IT LIVES IN magda-core. Helm merges every chart's templates into one flat,
-  global namespace and the LAST definition of a name wins, ordered by chart name.
-  A dozen third-party charts vendor their own copies of `magda-common`, and they
-  sort AFTER `magda` (e.g. `magda-auth-oidc` > `magda`), so anything defined in
-  `magda-common` can be silently overridden by a stale vendored copy — that is
-  exactly how the Node services once ended up connecting in plaintext. Nothing
-  vendors `magda-core`, so a check defined here cannot be shadowed. Do NOT move
-  this, and do not add a no-op fallback copy anywhere: a fallback would win over
-  this definition and the check would silently stop running.
+  Compatibility handshake for the versioned helper templates that external charts
+  (authentication plugins in particular) vendor from `magda-common`. Detection is
+  inverted — Magda cannot see its own siblings, so the plugin calls in here
+  announcing which contract it was built against and this template adjudicates.
+  It MUST stay in magda-core (nothing vendors it, so nothing can shadow it); never
+  add a no-op fallback copy — the fallback would win the shadowing race and the
+  check would silently stop running.
+  Full rationale, failure matrix and add/retire rules: docs/docs/helm-helper-contracts.md
 
   Parameters (dict):
   - helper: the versioned helper name the caller was built against,
