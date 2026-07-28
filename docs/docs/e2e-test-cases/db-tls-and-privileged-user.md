@@ -13,9 +13,9 @@ right in isolation.
 
 By default, Magda now:
 
-- Serves TLS on the in-cluster PostgreSQL instance (`global.postgresql.tls.enabled`,
-  default `true`), using a self-signed certificate Magda generates and
-  preserves across upgrades.
+- Serves TLS on the in-cluster PostgreSQL instance (per DB chart, e.g.
+  `combined-db.magda-postgres.postgresql.tls.enabled`, default `true`), using a
+  self-signed certificate Magda generates and preserves across upgrades.
 - Encrypts every service-to-database connection (`global.postgresql.client.sslmode`,
   resolved to `require` by default), injected as `PGSSLMODE` for the Node
   services and the backup/auto-vacuum jobs, and as an `sslmode=` JDBC URL
@@ -203,9 +203,14 @@ kubectl exec -n magda $DBPOD -- bash -c \
 Expected: `f` only. The stack remains fully functional — confirm with a
 search and a dataset fetch through the gateway (shared setup, as above).
 
-`global.postgresql.tls.enabled=false` is the corresponding rollback for the
-in-cluster **server**'s TLS listener, independent of the client-side setting
-above.
+The corresponding rollback for the in-cluster **server**'s TLS listener is a
+per-DB-chart setting — `<db-chart>.magda-postgres.postgresql.tls.enabled=false`,
+e.g. `combined-db.magda-postgres.postgresql.tls.enabled=false`. It is not a
+`global.*` value: it is consumed directly by the packaged PostgreSQL subchart's
+own templates, and a wrapper chart cannot compute a subchart value from another
+value, so a global switch could only ever be a second source of truth that
+disagreed with what the StatefulSet actually does. Turning the listener off
+while clients still resolve `sslmode` to `require` is rejected at render time.
 
 ## Case C5 — enforced-SSL external DB simulation
 
