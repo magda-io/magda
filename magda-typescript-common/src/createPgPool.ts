@@ -1,6 +1,7 @@
 import pg from "pg";
 import fs from "fs";
 
+// >>> BEGIN shared:pg-ssl — keep in sync with packages/authentication-plugin-sdk/src/createPool.ts (drift enforced by createPgPool.spec.ts, comments excluded) >>>
 /**
  * The `ssl` option value handed to node-postgres.
  * `false` means "connect in plaintext".
@@ -85,6 +86,7 @@ export function getPgSslConfigFromEnv(
             );
     }
 }
+// <<< END shared:pg-ssl >>>
 
 export interface PgPoolCreationOptions {
     dbHost: string;

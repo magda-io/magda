@@ -9,6 +9,7 @@ export interface PoolCreationOptions {
     database?: string;
 }
 
+// >>> BEGIN shared:pg-ssl — keep in sync with magda-typescript-common/src/createPgPool.ts (drift enforced by @magda/typescript-common createPgPool.spec.ts, comments excluded) >>>
 /**
  * The `ssl` option value handed to node-postgres.
  * `false` means "connect in plaintext".
@@ -98,6 +99,7 @@ export function getPgSslConfigFromEnv(
             );
     }
 }
+// <<< END shared:pg-ssl >>>
 
 function createPool(options: PoolCreationOptions) {
     const { dbUser, dbPassword } = options;

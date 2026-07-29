@@ -66,7 +66,14 @@ for d in "${FLYWAY_HOME}"/sql/*; do
         # CREATE DATABASE fails when the database already exists (every re-run / upgrade).
         # Under `set -e` that failure would abort the migrator before Flyway runs, so tolerate
         # it here and let the Flyway step below be the real gate for genuine connectivity/auth errors.
-        if ! psql -h "${DB_HOST}" -c "CREATE DATABASE ${dbName} WITH OWNER = ${MIGRATOR_USERNAME} CONNECTION LIMIT = -1;" postgres; then
+        #
+        # dbName and MIGRATOR_USERNAME are SQL identifiers here, so quote them: unquoted,
+        # PostgreSQL folds them to lower case, so a privileged username with upper case
+        # (e.g. PGUSER=MyAdmin) would target the wrong role and CREATE DATABASE would fail
+        # with "role does not exist". For the simple lower-case names in use today this is a
+        # no-op. (The Flyway `-user=`/`-url=` flags below are connection parameters, not SQL,
+        # and must stay unquoted.)
+        if ! psql -h "${DB_HOST}" -c "CREATE DATABASE \"${dbName}\" WITH OWNER = \"${MIGRATOR_USERNAME}\" CONNECTION LIMIT = -1;" postgres; then
             echo "Database ${dbName} already exists (or could not be created); continuing to migration."
         fi
 

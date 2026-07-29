@@ -3,6 +3,7 @@ import { expect } from "chai";
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { fileURLToPath } from "url";
 import { getPgSslConfigFromEnv } from "../createPgPool.js";
 
 describe("getPgSslConfigFromEnv", function () {
@@ -155,3 +156,92 @@ describe("getPgSslConfigFromEnv", function () {
 function escapeRegExp(str: string): string {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+
+/**
+ * `getPgSslConfigFromEnv` is deliberately duplicated in the
+ * `@magda/authentication-plugin-sdk` package (see the comment there): the SDK
+ * ships as a self-contained bundle depending only on `pg`, so it cannot import
+ * this module. The two copies together define the `sslmode` vocabulary Magda
+ * accepts, and if they drift, plugins and core services would interpret the
+ * same `PGSSLMODE` differently. Nothing else stops that drift, so this test
+ * does: both copies are wrapped in `BEGIN/END shared:pg-ssl` markers and their
+ * logic (comments and whitespace excluded) must stay identical.
+ */
+describe("getPgSslConfigFromEnv source parity with the auth-plugin SDK", function () {
+    // Anchor to this test file's own location so the check works whether the
+    // suite runs from `src` (ts-node) or `dist` (compiled), then walk up to the
+    // monorepo root.
+    function findRepoRoot(startDir: string): string {
+        let dir = startDir;
+        for (let i = 0; i < 12; i++) {
+            if (
+                fs.existsSync(
+                    path.join(dir, "magda-typescript-common")
+                ) &&
+                fs.existsSync(path.join(dir, "packages"))
+            ) {
+                return dir;
+            }
+            const parent = path.dirname(dir);
+            if (parent === dir) {
+                break;
+            }
+            dir = parent;
+        }
+        throw new Error(
+            `could not locate the monorepo root starting from ${startDir}`
+        );
+    }
+
+    // Return the code between the `BEGIN shared:pg-ssl` / `END shared:pg-ssl`
+    // marker lines (the marker lines themselves excluded), with comments and
+    // runs of whitespace collapsed so only the logic is compared.
+    function extractSharedLogic(file: string): string {
+        const src = fs.readFileSync(file, "utf-8");
+        const beginIdx = src.indexOf("BEGIN shared:pg-ssl");
+        const endIdx = src.indexOf("END shared:pg-ssl");
+        expect(
+            beginIdx,
+            `BEGIN shared:pg-ssl marker not found in ${file}`
+        ).to.be.greaterThan(-1);
+        expect(
+            endIdx,
+            `END shared:pg-ssl marker not found in ${file}`
+        ).to.be.greaterThan(-1);
+        const beginLineEnd = src.indexOf("\n", beginIdx);
+        const endLineStart = src.lastIndexOf("\n", endIdx);
+        const body = src.slice(beginLineEnd + 1, endLineStart);
+        return body
+            .replace(/\/\*[\s\S]*?\*\//g, " ") // block comments
+            .replace(/\/\/[^\n]*/g, " ") // line comments
+            .replace(/\s+/g, " ") // collapse whitespace
+            .trim();
+    }
+
+    it("keeps the shared block byte-identical (comments excluded)", function () {
+        const repoRoot = findRepoRoot(
+            path.dirname(fileURLToPath(import.meta.url))
+        );
+        const canonical = path.join(
+            repoRoot,
+            "magda-typescript-common/src/createPgPool.ts"
+        );
+        const sdkCopy = path.join(
+            repoRoot,
+            "packages/authentication-plugin-sdk/src/createPool.ts"
+        );
+
+        const canonicalLogic = extractSharedLogic(canonical);
+        // Sanity check the extraction actually captured the function, so an
+        // empty-vs-empty match can never pass vacuously.
+        expect(canonicalLogic).to.contain("getPgSslConfigFromEnv");
+        expect(canonicalLogic).to.contain("SUPPORTED_SSL_MODES");
+
+        expect(
+            extractSharedLogic(sdkCopy),
+            "getPgSslConfigFromEnv has drifted between @magda/typescript-common " +
+                "(createPgPool.ts) and @magda/authentication-plugin-sdk (createPool.ts). " +
+                "Update BOTH copies so the shared:pg-ssl blocks match."
+        ).to.equal(canonicalLogic);
+    });
+});

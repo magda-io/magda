@@ -142,7 +142,23 @@ spec:
 {{- $dbSection := (get $appConfigDict "db") | default dict }}
 {{- $dbDefault := (get $dbSection "default") | default dict }}
 {{- $dbUrl := (get $dbDefault "url") | default "" | toString }}
-{{- if and $dbUrl (not (contains "sslmode=" $dbUrl)) }}
+{{- /*
+  Detect an existing `sslmode` *query parameter*, not merely the substring
+  `sslmode=` anywhere in the URL — a password or path that happens to contain
+  `sslmode=` must not suppress the append. Split off the query string (everything
+  after the first `?`) and look for a parameter whose key is `sslmode`
+  (case-insensitively, since pgjdbc treats property names case-insensitively).
+*/}}
+{{- $hasSslmode := false }}
+{{- if contains "?" $dbUrl }}
+{{- $query := $dbUrl | splitList "?" | rest | join "?" }}
+{{- range ($query | splitList "&") }}
+{{- if hasPrefix "sslmode=" (. | lower) }}
+{{- $hasSslmode = true }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if and $dbUrl (not $hasSslmode) }}
 {{- $separator := ternary "&" "?" (contains "?" $dbUrl) }}
 {{- $_ := set $dbDefault "url" (printf "%s%ssslmode=%s" $dbUrl $separator (include "magda.postgres-client-sslmode" .)) }}
 {{- $_ := set $dbSection "default" $dbDefault }}
