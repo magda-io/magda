@@ -152,3 +152,46 @@ data:
     {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+  Versioned PGSSLMODE env-var helper for EXTERNAL charts (auth plugins and
+  anything connecting to a Magda DB as the restricted `client` role). Magda's own
+  charts do NOT use this — they call `magda.db-client-sslmode-env` in magda-core.
+
+  A THIN SHIM with no logic of its own: it only runs the compatibility check and
+  delegates to magda-core, so no vendored copy can change what gets emitted.
+
+  FROZEN CONTRACT — once released, `-v1` behaviour must never change (many charts
+  vendor their own copy and any may be the one that runs). Change behaviour by
+  adding `-v2` and leaving this untouched.
+
+  REQUIRES MAGDA v7+. In a release without magda-core v7+ — including a standalone
+  `helm template`/`helm lint` of the plugin in CI — it fails with
+  `no template "magda.compatibility-check" associated`. Plugin charts MUST default
+  `global.magdaCompatibilityCheck` to `true` in their values.yaml (read as a
+  GLOBAL so an operator can disable it once for every plugin) and set it `false`
+  for standalone CI renders.
+
+  Full rationale, failure matrix and rules: docs/docs/helm-helper-contracts.md
+
+  Usage (from an external chart's deployment template):
+  {{- include "magda.db-client-sslmode-env-v1" . | indent 8 }}
+*/}}
+{{- define "magda.db-client-sslmode-env-v1" -}}
+{{- $globalVals := (get .Values "global") | default dict -}}
+{{- /*
+  Default to enabled when the key is absent, so forgetting to declare it fails
+  closed (loudly) rather than silently skipping the check. `default` is not used
+  here because Helm treats an explicit `false` as empty and would flip it back
+  to `true`.
+*/ -}}
+{{- $enabled := true -}}
+{{- if hasKey $globalVals "magdaCompatibilityCheck" -}}
+{{- $enabled = (get $globalVals "magdaCompatibilityCheck") -}}
+{{- end -}}
+{{- if $enabled -}}
+{{- include "magda.compatibility-check" (dict "helper" "db-client-sslmode-env-v1" "chart" .Chart.Name) -}}
+{{- include "magda.db-client-sslmode-env" . -}}
+{{- end -}}
+{{- end -}}
+

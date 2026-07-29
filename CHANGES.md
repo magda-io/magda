@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v7.0.0
+
+- #3637: Provider-agnostic PostgreSQL support — one connection contract that holds on in-cluster PostgreSQL, AWS RDS, Azure Database for PostgreSQL and GCP Cloud SQL alike (closes #3636, #3734, #3735, #3736):
+  - Encrypt every service-to-database connection by default. A new `global.postgresql.client.sslmode` (supported values `require` and `disable`; defaults to `require`, and to `disable` when `global.useCloudSql` is set) is injected as the `PGSSLMODE` environment variable for the Node services and the backup/auto-vacuum jobs, and as an `sslmode=` JDBC URL parameter for the Flyway DB migrators and `registry-api`. Set `global.postgresql.client.sslmode=disable` to roll back to the previous plaintext behaviour.
+  - Serve TLS on the in-cluster PostgreSQL by default (controlled per DB chart, e.g. `combined-db.magda-postgres.postgresql.tls.enabled`), using a self-signed certificate Magda generates and preserves across `helm upgrade`. Existing plaintext clients keep working during a rollout, so enabling it locks nobody out.
+  - Support a non-default privileged database username via `global.postgresql.postgresqlUsername`. An initdb hook grants it `CREATEDB`/`CREATEROLE` (never `SUPERUSER`), matching the privilege level managed providers grant their admin account (RDS `rds_superuser`, Azure `azure_pg_admin`, GCP `cloudsqlsuperuser`); the `postgresql-postgres-password` secret key is auto-created when needed. The privileged-username validation also rejects the default `postgres` account for external databases unless explicitly allowed.
+  - Upgrade the DB migrator's Flyway from 4.2 to 12.11 for SCRAM authentication support on PostgreSQL 14/15+ defaults, with a no-gap history baseline so existing Flyway-4 deployments upgrade in place without re-applying already-applied migrations.
+  - Add a plugin↔Magda Helm helper-contract compatibility handshake (`global.magdaCompatibilityCheck`) so a version-mismatched authentication plugin fails at render time with an actionable message rather than misbehaving at runtime.
+
 ## v6.1.2
 
 - Add a "How to build a semantic indexer" developer guide (`docs/docs/how-to-build-a-semantic-indexer.md`) and a "Semantic Search & Semantic Indexers" section in the [Guide to Magda Internals](./docs/docs/architecture/Guide%20to%20Magda%20Internals.md), documenting the two indexing tiers, the representation-first design approach (designing the indexed text backward from retrieval), and the semantic query API.

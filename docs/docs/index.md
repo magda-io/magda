@@ -9,6 +9,7 @@
 - [Deploy Magda with helm charts release](https://github.com/magda-io/magda-config)
 - [Magda Helm Chart Reference](./helm-charts-docs-index.md)
 - [How to update Helm chart docs (helm-docs)](./how-to-update-helm-chart-docs.md)
+- [Magda Helm Helper Contracts (versioned templates for plugin/DB charts)](./helm-helper-contracts.md)
 - [How to deploy Magda on Google Cloud GKE](./deploying-for-production-on-gke.md)
 - [How to deploy Magda on Amazon AWS EKS](./deploy-to-aws.md)
 - [How to deploy Magda on Microsoft Azure Cloud AKS](./deploy-to-azure.md)

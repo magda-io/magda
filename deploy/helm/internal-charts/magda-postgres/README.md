@@ -10,6 +10,31 @@ The docker image used by the chart is built from [bitnami postgreSQL Docker Imag
 
 `wal-g` is used for [Continuous Archive Backup & Point-in-Time Recovery (PITR)](https://www.postgresql.org/docs/13/continuous-archiving.html).
 
+## TLS
+
+When `global.postgresql.tls.enabled` is `true` (the default for the in-cluster
+database), `templates/tls-secret.yaml` generates a self-signed CA and server
+certificate and preserves them across `helm upgrade` using Helm's `lookup`
+function to read back the existing secret, re-using it instead of minting a
+new one (mirroring the pattern `db-main-account-secret.yaml` already uses for
+passwords in the `magda-core` chart).
+
+**Known limitation:** `lookup` only works against a live cluster during
+`helm upgrade`/`helm install`. It returns an empty result on any **offline**
+render — a bare `helm template` with no cluster context, or a GitOps
+controller (e.g. ArgoCD) that does not have live lookups enabled. In that
+situation the condition that would normally reuse the existing certificate
+data is never true, so a **fresh CA and server certificate are minted on
+every render**. If that rendered output is then applied to a live cluster,
+it churns the certificate in the `*-crt` secret on every sync, despite the
+secret carrying the `helm.sh/resource-policy: keep` annotation (that
+annotation only stops Helm from deleting the secret on uninstall/rollback; it
+does not stop a new `apply` from overwriting its contents). This is not a new
+regression introduced by TLS support — `db-main-account-secret.yaml` has
+relied on the same `lookup`-based preservation for the database password
+since before this change — but it is worth calling out explicitly for
+GitOps-managed deployments.
+
 ## Requirements
 
 Kubernetes: `>= 1.21.0`
@@ -54,12 +79,24 @@ More config postgreSQL related options, please refer to: https://github.com/bitn
 | postgresql.image.registry | string | `"ghcr.io"` |  |
 | postgresql.image.repository | string | `"magda-io/magda-postgres"` |  |
 | postgresql.image.tag | string | `"6.1.1"` | the default docker image tag/version used by the postgresql chart.  When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number. |
+| postgresql.initdbScriptsConfigMap | string | `"{{ .Values.fullnameOverride }}-initdb-scripts"` | the name of config map contains initdb scripts run at first boot. You should not change this value as this configMap is auto-generated (see `initdb-scripts-configmap.yaml`). The script grants `CREATEDB` & `CREATEROLE` to the privileged DB user so that, when a non-default (non-`postgres`) username is used, it can still create databases and the restricted `client` role for the DB migrators — matching the privilege level that managed providers (RDS `rds_superuser`, Azure `azure_pg_admin`, GCP `cloudsqlsuperuser`) grant their admin account, without requiring a true superuser. For the default `postgres` user the grant is a harmless no-op. |
+| postgresql.initdbUser | string | `"postgres"` | the DB user used to run the initdb scripts (see `initdbScriptsConfigMap`). Must be the built-in `postgres` superuser: the script grants CREATEDB/CREATEROLE to the privileged user, which that user cannot grant to itself. Bitnami defaults this to `postgresqlUsername`, which is wrong for our purposes whenever a non-default privileged username is in use. No password is needed — bitnami's init-time pg_hba.conf trusts local socket connections, and the init scripts connect over the local socket. |
 | postgresql.livenessProbe.enabled | bool | `false` | `customLivenessProbe` will only be used when `enabled`=`false` Otherwise, default livenessProbe will be used. |
 | postgresql.nameOverride | string | `"default-db-postgresql"` | Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern. And point k8s service to DB instance. |
 | postgresql.persistence.size | string | `"50Gi"` | set the persistence volume size of the postgresql statefulset |
 | postgresql.primary.extraVolumeMounts | list | `[]` | extra volume mount can be set here.  e.g. mount backup storage config secret and map as files in /etc/wal-g.d/env |
-| postgresql.primary.extraVolumes | list | `[]` | extra volumes can be set here.  e.g. map backup storage config secret as files in /etc/wal-g.d/env |
+| postgresql.primary.extraVolumes | list | `[]` | extra volumes can be set here. e.g. map backup storage config secret as files in /etc/wal-g.d/env |
 | postgresql.primary.priorityClassName | string | `""` | - Set priority class of the primary database instance. When `global.enablePriorityClass` is `true`. We should set this config to "magda-9" to make sure db instance get appropriate schedule priority. By default, Magda will create priorityClassName from "magda-10" to "magda-0" where "magda-10" indicates the highest priority.  |
 | postgresql.readinessProbe.enabled | bool | `false` | `customReadinessProbe` will only be used when `enabled`=`false` Otherwise, default livenessProbe will be used. |
 | postgresql.resources | object | `{"requests":{"cpu":"200m","memory":"500Mi"}}` | Set the resource config for the postgresql container |
+| postgresql.tls.autoGenerated | bool | `false` | Use Magda's own certificate secret rather than bitnami's `autoGenerated`, which mints a new CA on every `helm upgrade`. |
+| postgresql.tls.certFilename | string | `"tls.crt"` | Filename (within the mounted certificate secret) of the server certificate. |
+| postgresql.tls.certKeyFilename | string | `"tls.key"` | Filename (within the mounted certificate secret) of the server private key. |
+| postgresql.tls.certificatesSecret | string | `"default-db-postgresql-crt"` | Name of the secret holding the server certificate, created by `tls-secret.yaml`. NOTE: unlike `extendedConfConfigMap` / `extraEnvVarsCM` / `initdbScriptsConfigMap` below, the postgresql subchart does NOT run this value through `tpl` — its `postgresql.tlsSecretName` helper uses a bare `required` — so a "{{ .Values.fullnameOverride }}" template string would be emitted literally and break the StatefulSet YAML. It must be a plain string, and every chart that overrides `postgresql.fullnameOverride` must override this to match: `combined-db`, `authorization-db`, `content-db`, `registry-db`, `session-db`, `tenant-db`. |
+| postgresql.tls.enabled | bool | `true` | Whether the in-cluster PostgreSQL serves TLS. This is THE switch for the server's TLS listener — `tls-secret.yaml` is gated on this exact value, so the certificate secret is created if and only if the subchart's StatefulSet mounts it. There is deliberately no `global.*` equivalent: this is a subchart value consumed directly by bitnami's own templates, and a wrapper chart's `values.yaml` cannot compute a subchart value from another value, so a global switch could only ever be a second source of truth that silently disagrees with what the StatefulSet actually does. To turn the listener off, override it on every DB chart that deploys an in-cluster instance, and switch the clients to plaintext as well (see `templates/validate-tls.yaml`, which rejects the inconsistent combination): ```yaml global:   postgresql:     client:       sslmode: disable combined-db: &dbTlsOff   magda-postgres:     postgresql:       tls:         enabled: false authorization-db: *dbTlsOff content-db: *dbTlsOff registry-db: *dbTlsOff session-db: *dbTlsOff tenant-db: *dbTlsOff ``` |
+| postgresql.volumePermissions.enabled | bool | `true` | Mandatory when `tls.enabled` is true. The postgresql subchart hard-fails rendering otherwise (`postgresql.validateValues`: "When TLS is enabled you must enable volumePermissions as well"), because the init container that stages the certificate into the `postgresql-certificates` emptyDir — and chmods the private key to 0600, which PostgreSQL requires — is gated on this flag rather than on `tls.enabled`. Note this init container runs as root (`securityContext.runAsUser: 0`). |
+| postgresql.volumePermissions.image.pullPolicy | string | `"IfNotPresent"` | Pull policy for the `volumePermissions` init container image. |
+| postgresql.volumePermissions.image.registry | string | `"ghcr.io"` | Registry hosting the `volumePermissions` init container image. The subchart's default is `docker.io/bitnami/bitnami-shell`, which has been WITHDRAWN from Docker Hub — leaving it would produce `ImagePullBackOff` and the database would never start. Point it at the same base image magda-postgres is built FROM, which Magda mirrors. Pinned deliberately: unlike the postgresql image tag, this does not track the Magda release version. |
+| postgresql.volumePermissions.image.repository | string | `"magda-io/postgresql"` | Repository (within `registry`) of the `volumePermissions` init container image. |
+| postgresql.volumePermissions.image.tag | string | `"13.7.0-debian-11-r33"` | Tag of the `volumePermissions` init container image. Pinned independently of `postgresql.image.tag` (see `registry` note above) and not auto-updated by `yarn set-version`. |
 

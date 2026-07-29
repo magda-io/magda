@@ -11,6 +11,31 @@ The docker image used by the chart is built from [bitnami postgreSQL Docker Imag
 
 `wal-g` is used for [Continuous Archive Backup & Point-in-Time Recovery (PITR)](https://www.postgresql.org/docs/13/continuous-archiving.html).
 
+## TLS
+
+When `global.postgresql.tls.enabled` is `true` (the default for the in-cluster
+database), `templates/tls-secret.yaml` generates a self-signed CA and server
+certificate and preserves them across `helm upgrade` using Helm's `lookup`
+function to read back the existing secret, re-using it instead of minting a
+new one (mirroring the pattern `db-main-account-secret.yaml` already uses for
+passwords in the `magda-core` chart).
+
+**Known limitation:** `lookup` only works against a live cluster during
+`helm upgrade`/`helm install`. It returns an empty result on any **offline**
+render — a bare `helm template` with no cluster context, or a GitOps
+controller (e.g. ArgoCD) that does not have live lookups enabled. In that
+situation the condition that would normally reuse the existing certificate
+data is never true, so a **fresh CA and server certificate are minted on
+every render**. If that rendered output is then applied to a live cluster,
+it churns the certificate in the `*-crt` secret on every sync, despite the
+secret carrying the `helm.sh/resource-policy: keep` annotation (that
+annotation only stops Helm from deleting the secret on uninstall/rollback; it
+does not stop a new `apply` from overwriting its contents). This is not a new
+regression introduced by TLS support — `db-main-account-secret.yaml` has
+relied on the same `lookup`-based preservation for the database password
+since before this change — but it is worth calling out explicitly for
+GitOps-managed deployments.
+
 {{ template "chart.homepageLine" . }}
 
 {{ template "chart.maintainersSection" . }}

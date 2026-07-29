@@ -10,7 +10,7 @@ You can follow the AWS tutorial document below to create an EKS cluster using `e
 
 https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
 
-More usage info of `eksctk` can be found from: https://eksctl.io/
+More usage info of `eksctl` can be found from: https://eksctl.io/
 
 ### 2> Create a kubeconfig for Amazon EKS
 
@@ -24,9 +24,9 @@ More details can be found from: https://docs.aws.amazon.com/eks/latest/userguide
 
 ### 3> Create AWS PostgreSQL Database (Optional)
 
-> You can also choose to use the in-pod PostgreSQL database that comes with Magda helm charts. But for production deployment, it's recommanded to use cloud provider hosted database i.e. Create AWS PostgreSQL Database
+> You can also choose to use the in-pod PostgreSQL database that comes with Magda helm charts. But for production deployment, it's recommended to use a cloud provider hosted database, i.e. create an AWS RDS PostgreSQL database.
 
-> Please note: you need to create master db user in name "postgres" due to [this issue](https://github.com/magda-io/magda/issues/3126).
+> Magda supports PostgreSQL 13 - 17. RDS uses `scram-sha-256` password encryption by default (PostgreSQL 14+), which is fully supported by the DB migrator. You can name the master user account anything you like (e.g. `magda_admin`) — you no longer need to name it `postgres`. Whatever name you choose, set `global.postgresql.postgresqlUsername` to it at install time (see step 7); the chart will otherwise fail fast to stop you from accidentally using the wrong privileged account.
 
 To make EKS cluster be able to connect to the RDS database created, you need to make sure the followings are in place:
 
@@ -39,6 +39,74 @@ To make EKS cluster be able to connect to the RDS database created, you need to 
   - Enable `DNS resolution from requester VPC to private IP`
 
 > You can use RDS Endpoint domain e.g. `xxxx.xxx.[region name].rds.amazonaws.com` to connect to the RDS from your EKS cluster.
+
+#### PostgreSQL client SSL/TLS mode (`sslmode`)
+
+By default, all Magda services, the DB migrators and the registry-db
+auto-vacuum job connect to PostgreSQL with `global.postgresql.client.sslmode`
+resolved to `require` — i.e. the connection is encrypted, though the server
+certificate is not verified. This is set via the standard libpq
+`PGSSLMODE` environment variable for the Node services, and as an
+`sslmode=` JDBC URL parameter for the JVM-based DB migrator (Flyway).
+
+This default satisfies RDS instances with `rds.force_ssl=1` set in their
+parameter group with **no extra configuration required** — `require` is
+exactly what `force_ssl` demands, so a stock Magda install already works
+against an RDS instance that enforces SSL.
+
+Only two values are supported for `global.postgresql.client.sslmode`:
+`disable` and `require`.
+
+- `prefer` / `allow` are rejected at chart render time. libpq (`psql`) and
+  pgjdbc implement `prefer` by attempting TLS and silently falling back to
+  plaintext if the server refuses. node-postgres, used by the Node services,
+  does not: it maps `prefer` to `ssl: true` and **hard-fails** against a
+  server that does not offer TLS. Accepting these values would therefore give
+  the Node services different effective behaviour from the JVM migrator and
+  `psql` — and would break them outright against a plaintext server. Use
+  `require` instead.
+- `verify-ca` / `verify-full` (certificate/hostname verification against a
+  supplied CA) are not supported yet — there is currently no way to deliver a
+  CA certificate to every DB-connecting pod. Track this at
+  [issue #3739](https://github.com/magda-io/magda/issues/3739).
+
+Note this does not mean the DB migrator was previously sending plaintext
+traffic: the migrator connects via Flyway, which bundles the pgjdbc driver
+(pgjdbc 42.7.12 as of Flyway 12.11.0), and pgjdbc's own default `sslmode` is
+`prefer` — it already opportunistically upgraded to TLS whenever the server
+offered it, just without certificate verification or enforcement, and it
+would silently fall back to plaintext if the server refused. Setting
+`global.postgresql.client.sslmode` makes this behaviour explicit and
+consistent across every component, and lets you enforce it (`require`)
+instead of relying on the permissive default.
+
+**Rollback:** if you need to revert to the previous (unenforced) client
+behaviour, set `--set global.postgresql.client.sslmode=disable` at install
+time. On an RDS deployment that is all you need — the server's TLS listener is
+RDS's own concern, not Magda's.
+
+For the **in-cluster** database, the server's TLS listener is a separate,
+per-DB-chart switch: `<db-chart>.magda-postgres.postgresql.tls.enabled`
+(default `true`). It is not a `global.*` value, because it is consumed directly
+by the packaged PostgreSQL subchart's own templates and a wrapper chart cannot
+compute a subchart value from another value — a `global.*` switch could only be
+a second source of truth that silently disagreed with what the StatefulSet
+actually does. Turning the listener off therefore means overriding it on every
+DB chart that deploys an in-cluster instance (`combined-db`, or the individual
+`*-db` charts when using `global.useInK8sDbInstance`), **and** setting
+`global.postgresql.client.sslmode: disable`. Turning off the server while
+leaving clients on `require` is rejected at render time with an explanatory
+error rather than failing at runtime.
+
+> **Cloud SQL.** When `global.useCloudSql` is enabled and `sslmode` is left
+> **unset**, it auto-resolves to `disable`, because the `cloud_sql_proxy`
+> sidecar presents a plaintext local listener by design and performs its own
+> TLS connection to Cloud SQL — there is nothing for the client-side `sslmode`
+> to encrypt.
+>
+> An explicitly configured `sslmode` always takes precedence over that
+> auto-resolution. Do not set `require` on the Cloud SQL proxy path: the proxy
+> does not accept TLS from its clients, so the connection would fail.
 
 ### 4> Install kubernetes-replicator
 
@@ -68,47 +136,25 @@ kubectl create namespace magda
 
 > Please note: since Magda v1.0.0, Magda's helm chart can auto-generate internal secrets for core modules. You don't have to manually generate secrets unless it's external key / secret that is supplied by external providers. e.g. smtp username & password or authentication plugin credentials (if you use any)
 
-> You need [pwgen](https://linux.die.net/man/1/pwgen) command line tool to follow the instruction below. If it's not availble on nyour system, you need to install one.
+Magda auto-generates all of its internal secrets by default — the auth/session secrets (`auth-secrets`), the object storage credentials (`storage-secrets`), and the restricted (`client`) DB account secret. You therefore only need to supply secrets that come from outside the cluster:
+
+- **The privileged (master) DB account password** — required when using an external database (RDS / Cloud SQL), because Magda only auto-generates this for the in-pod PostgreSQL database. The DB migrator connects as `global.postgresql.postgresqlUsername` (see step 7) with this password.
+- **SMTP credentials** — only if you enable outbound email (`correspondence-api`).
 
 ```bash
-export JWT_SECRET="$(pwgen 32 1)"
-export SESSION_SECRET="$(pwgen 32 1)"
-# this is the password for a DB account auto created by Magda using master DB account
-export DB_PASSWORD="$(pwgen 32 1)"
-export MINIO_ACCESS_KEY="$(pwgen 32 1)"
-export MINIO_SECRET_KEY="$(pwgen 32 1)"
+# The master (privileged) user account password of your external RDS database.
+# This is the ONLY secret you must supply manually for a standard external-DB deployment.
+export DB_MASTER_PASSWORD="Your Master DB Password"
 
-# This is your DB master user account password
-export DB_MASTER_PASSWORD="Your Master DB PASSWORD"
-# for sending inquiry emails
-export SMTP_USERNAME="Your SMTP USERNAME"
-export SMTP_PASSWORD="Your SMTP PASSWORD"
+kubectl create secret generic db-main-account-secret --namespace magda \
+--from-literal=postgresql-password=$DB_MASTER_PASSWORD
 
-
-kubectl create secret generic cloudsql-db-credentials --namespace magda --from-literal=password=$DB_MASTER_PASSWORD
-
-kubectl create secret generic auth-secrets --namespace magda --from-literal=jwt-secret=$JWT_SECRET --from-literal=session-secret=$SESSION_SECRET
-
-kubectl --namespace magda annotate --overwrite secret auth-secrets replicator.v1.mittwald.de/replication-allowed=true replicator.v1.mittwald.de/replication-allowed-namespaces=magda-openfaas-fn
-
-kubectl create secret generic db-passwords --namespace magda \
---from-literal=combined-db=$DB_PASSWORD \
---from-literal=authorization-db=$DB_PASSWORD \
---from-literal=content-db=$DB_PASSWORD \
---from-literal=session-db=$DB_PASSWORD  \
---from-literal=registry-db=$DB_PASSWORD \
---from-literal=combined-db-client=$DB_PASSWORD \
---from-literal=authorization-db-client=$DB_PASSWORD \
---from-literal=content-db-client=$DB_PASSWORD \
---from-literal=session-db-client=$DB_PASSWORD \
---from-literal=registry-db-client=$DB_PASSWORD \
---from-literal=tenant-db=$DB_PASSWORD \
---from-literal=tenant-db-client=$DB_PASSWORD
-
-kubectl create secret generic storage-secrets --namespace magda --from-literal=accesskey=$MINIO_ACCESS_KEY --from-literal=secretkey=$MINIO_SECRET_KEY
-
-kubectl create secret generic smtp-secret --namespace magda --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD
+# Optional: only needed if you enable outbound email (correspondence-api).
+# kubectl create secret generic smtp-secret --namespace magda \
+# --from-literal=username="Your SMTP USERNAME" --from-literal=password="Your SMTP PASSWORD"
 ```
+
+> You do not need to create the `auth-secrets`, `storage-secrets`, or the per-service `db-passwords` secrets manually — the chart generates them (and the DB migrator creates the restricted `client` DB account for you). You only supply the privileged (master) DB password above.
 
 > If you use [authentication plugins](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md), you might need to create extra secrets as required.
 
@@ -125,14 +171,18 @@ helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gatewa
 ```bash
 # Set RDS endpoint domain
 export RDS_ENDPOINT=xxxx.xxx.[region name].rds.amazonaws.com
+# Set the master (privileged) user name you created on the RDS instance (see step 3)
+export DB_MASTER_USER=magda_admin
 
-helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer,global.useCombinedDb=false,global.useCloudSql=false,global.useAwsRdsDb=true,global.awsRdsEndpoint=$RDS_ENDPOINT magda oci://ghcr.io/magda-io/charts/magda
+helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer,global.useCombinedDb=false,global.useCloudSql=false,global.useAwsRdsDb=true,global.awsRdsEndpoint=$RDS_ENDPOINT,global.postgresql.postgresqlUsername=$DB_MASTER_USER magda oci://ghcr.io/magda-io/charts/magda
 ```
+
+> `global.postgresql.postgresqlUsername` is required when `global.useAwsRdsDb=true`. It must match the RDS master user you created and whose password you stored in the `db-main-account-secret` secret (step 6). If it is left as the default `postgres` the chart will fail to render, unless your privileged account is genuinely named `postgres`, in which case set `global.postgresql.allowDefaultExternalDbPostgresUser=true`.
 
 > By default, Helm will install the latest production version of Magda. You can use `--version` to specify the exact chart version to use. e.g.:
 
 ```bash
-helm upgrade --namespace magda --install --version 0.0.60-rc.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
+helm upgrade --namespace magda --install --version 6.1.1 --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda oci://ghcr.io/magda-io/charts/magda
 ```
 
 The value `--set magda-core.gateway.service.type=LoadBalancer` will expose Magda via load balancer (AWS ELB).
