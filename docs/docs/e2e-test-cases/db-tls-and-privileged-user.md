@@ -230,6 +230,27 @@ kubectl create namespace extdb
 #   "no pg_hba.conf entry ... no encryption"
 ```
 
+**Privileges the external admin account needs.** `CREATEDB` + `CREATEROLE`
+alone are **not** sufficient. The registry migrator keeps its data in the
+`postgres` database and its `V2_4` migration runs
+`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`, which requires **`CREATE`
+privilege on that database** (the extension is trusted in PostgreSQL 13+, so a
+non-superuser with `CREATE` on the current database can install it). For the
+in-cluster database Magda grants this automatically — its bundled PostgreSQL is
+configured with `postgresqlDatabase: postgres`, so the chart runs
+`GRANT ALL PRIVILEGES ON DATABASE postgres TO <privileged user>` at first boot.
+Managed providers grant the equivalent to their admin account (RDS
+`rds_superuser`, etc.). For this **simulation** you must grant it yourself, or
+the `registry-db` migrator fails with
+`permission denied to create extension "uuid-ossp"` and the install aborts with
+`BackoffLimitExceeded`:
+
+```bash
+# as the built-in postgres superuser, matching what the in-cluster chart does:
+psql -U postgres -c 'ALTER ROLE magda_admin WITH CREATEDB CREATEROLE'
+psql -U postgres -c 'GRANT ALL PRIVILEGES ON DATABASE postgres TO magda_admin'
+```
+
 Then install Magda against it:
 
 ```bash
