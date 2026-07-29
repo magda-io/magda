@@ -1,6 +1,6 @@
 # combined-db
 
-![Version: 6.1.1](https://img.shields.io/badge/Version-6.1.1-informational?style=flat-square)
+![Version: 7.0.0-pr.3637.5](https://img.shields.io/badge/Version-7.0.0--pr.3637.5-informational?style=flat-square)
 
 The combined database target module for Magda.
 Unless you attempt to run logical DBs over seperate physical DBs (via `global.useInK8sDbInstance.xxx`),
@@ -12,7 +12,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-postgres | magda-postgres | 6.1.1 |
+| file://../magda-postgres | magda-postgres | 7.0.0-pr.3637.5 |
 
 ## Values
 
