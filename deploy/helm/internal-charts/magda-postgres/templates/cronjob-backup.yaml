@@ -33,8 +33,13 @@ spec:
                 # more details see the docker image repo
                 /usr/local/bin/adduser.sh
                 /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-push
+                # Capture the backup-push status immediately: any statement in
+                # between (e.g. a variable assignment) resets $? and would make a
+                # failed backup look successful -- which previously also let the
+                # retention step below prune the existing chain after a failure.
+                BACKUP_PUSH_RC=$?
                 RETAIN_BACKUP_NUM="{{ .Values.backupRestore.backup.numberOfBackupToRetain | default 7 }}"
-                if [[ $? = "0" ]] 
+                if [[ $BACKUP_PUSH_RC = "0" ]] 
                 then 
                   echo "New Base Backup Creation Completed!"
                   echo "Start to trim old backups and retain the recent $RETAIN_BACKUP_NUM backups..."
@@ -45,6 +50,10 @@ spec:
                   echo $OUTPUT
                   if [[ $ERROR_CODE = "1" ]]
                   then 
+                    # NOTE: this distinguishes "fewer backups than the retention
+                    # count" from a real error by matching wal-g's English output
+                    # text, which is fragile across wal-g versions. Revisit when
+                    # wal-g is upgraded (see epic #3740, sub-project 3).
                     if [[ ${OUTPUT: -9} = "not found" ]]
                     then
                       echo "There are less than $RETAIN_BACKUP_NUM backups available. Nothing needs to be deleted!"
