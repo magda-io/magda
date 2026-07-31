@@ -606,6 +606,9 @@ buildtest:helm-charts:
     - echo "chart assertions - plugin compatibility handshake"
     - bash deploy/helm/magda-core/tests/compatibility-check.sh
 
+    - echo "chart assertions - wal-g backup CronJob exit-code handling"
+    - bash deploy/helm/magda-core/tests/walg-backup-cronjob.sh
+
   artifacts:
     paths:
       - "deploy/helm/magda/charts"
