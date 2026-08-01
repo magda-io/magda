@@ -16,7 +16,7 @@ import child_process, { ChildProcess } from "child_process";
 import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 import urijs from "urijs";
 import { requireResolve } from "@magda/esm-utils";
-import { Readable } from "node:stream";
+import { Readable, PassThrough } from "node:stream";
 import fetchRequest from "magda-typescript-common/src/fetchRequest.js";
 import treeKill from "magda-typescript-common/src/treeKill.js";
 
@@ -73,6 +73,7 @@ export default class ServiceRunner {
     private indexerSetupProcess: ChildProcess;
     private searchApiProcess: ChildProcess;
     private embeddingApiCompose: DockerCompose;
+    private walgPostgresCompose: DockerCompose;
 
     public shouldExit = false;
 
@@ -89,6 +90,15 @@ export default class ServiceRunner {
     // however, indexer will auto exit if this field is set to false.
     public enableIndexer = false;
     public searchApiConfig: string | null = null;
+
+    // when set to true, `create()` will only start MinIO + the wal-g test
+    // postgres (no OPA / registry / auth / ES / embedding) so that the
+    // wal-g backup/restore integration tests can drive them directly via
+    // `runWalg()`.
+    public enableWalg = false;
+    public walgImgTag: string = "1.1.0";
+    public walgBucket: string = "walg-test";
+    public walgS3Prefix: string = "";
 
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
@@ -113,7 +123,7 @@ export default class ServiceRunner {
         [key: string]: ChildProcess;
     } = {};
 
-    private minioClient?: MinioClient;
+    public minioClient?: MinioClient;
     public minioAccessKey: string = "minio";
     public minioSecretKey: string = "minio123";
     public minioDefaultRegion: string = "unspecified-region";
@@ -184,6 +194,16 @@ export default class ServiceRunner {
         try {
             await this.docker.info();
 
+            if (this.enableWalg) {
+                await this.createMinio();
+                await this.minioClient!.makeBucket(
+                    this.walgBucket,
+                    this.minioDefaultRegion
+                );
+                await this.createWalgPostgres();
+                return;
+            }
+
             if (this.enableAuthService) {
                 await Promise.all([this.createOpa(), this.createPostgres()]);
                 await this.createAuthApi();
@@ -242,7 +262,10 @@ export default class ServiceRunner {
             ...(this.enableStorageApi
                 ? [this.destroyMinio(), this.destroyStorageApi()]
                 : []),
-            ...(this.enableSearchApi ? [this.destroySearchApi()] : [])
+            ...(this.enableSearchApi ? [this.destroySearchApi()] : []),
+            ...(this.enableWalg
+                ? [this.destroyWalgPostgres(), this.destroyMinio()]
+                : [])
         ]);
         try {
             await Promise.all([
@@ -999,6 +1022,134 @@ export default class ServiceRunner {
         if (this.dockerServiceForwardHost) {
             await this.destroyPortForward(5432);
         }
+    }
+
+    async createWalgPostgres() {
+        // Absolute host path to the init scripts dir. The compose file is
+        // rewritten to a tmp path by createTmpDockerComposeFile, so a relative
+        // volume path would break - inject an absolute bind mount instead.
+        const initdbHostDir = path.resolve(
+            this.workspaceRoot,
+            "./magda-int-test-ts/src/walg-postgres/initdb.d"
+        );
+        const dockerComposeFile = this.createTmpDockerComposeFile(
+            path.resolve(
+                this.workspaceRoot,
+                "./magda-int-test-ts/src/walg-postgres/docker-compose.yml"
+            ),
+            undefined,
+            false,
+            (configData) => {
+                configData["services"]["test-walg-postgres"]["volumes"] = [
+                    `${initdbHostDir}:/docker-entrypoint-initdb.d:ro`
+                ];
+            }
+        );
+        this.walgPostgresCompose = new DockerCompose(
+            this.docker,
+            dockerComposeFile,
+            "test-walg-postgres"
+        );
+        try {
+            await Promise.all([
+                this.walgPostgresCompose.down({ volumes: true }),
+                this.pullImage(this.walgPostgresCompose)
+            ]);
+            await this.walgPostgresCompose.up();
+            await this.waitAlive(
+                "WalgPostgres",
+                this.testAlivePostgres.bind(this)
+            );
+            if (this.dockerServiceForwardHost) {
+                await this.createPortForward(5432);
+            }
+        } catch (e) {
+            await this.destroyWalgPostgres();
+            throw e;
+        }
+    }
+
+    async destroyWalgPostgres() {
+        if (this.walgPostgresCompose) {
+            await this.walgPostgresCompose.down({ volumes: true });
+        }
+        if (this.dockerServiceForwardHost) {
+            await this.destroyPortForward(5432);
+        }
+    }
+
+    /**
+     * Build the env (as `KEY=VALUE` strings, like `runMigrator`'s `Env`) that
+     * points wal-g at the host-published wal-g test postgres and the MinIO
+     * instance started by this ServiceRunner.
+     */
+    walgConfigEnv(): string[] {
+        const host = this.dockerServiceForwardHost || "localhost";
+        const s3Prefix = this.walgS3Prefix || `s3://${this.walgBucket}/pg`;
+        return [
+            `PGHOST=${host}`,
+            "PGUSER=postgres",
+            "PGPASSWORD=password",
+            `WALG_S3_PREFIX=${s3Prefix}`,
+            `AWS_ACCESS_KEY_ID=${this.minioAccessKey}`,
+            `AWS_SECRET_ACCESS_KEY=${this.minioSecretKey}`,
+            `AWS_ENDPOINT=http://${host}:9000`,
+            "AWS_S3_FORCE_PATH_STYLE=true",
+            `AWS_REGION=${this.minioDefaultRegion}`
+        ];
+    }
+
+    /**
+     * Run the `magda-wal-g` image as a one-shot container invoking the
+     * `wal-g` binary with `args` (e.g. `["backup-list"]`). The image's
+     * default uid (1001) is not present in `/etc/passwd`, so the container
+     * must run as root (`User: "0"`). Runs with `NetworkMode: "host"` so it
+     * can reach the host-published wal-g postgres / MinIO ports via
+     * `localhost` (or `dockerServiceForwardHost`), mirroring `runMigrator`.
+     *
+     * @param args arguments to pass to the `wal-g` binary, e.g. `["backup-list"]`
+     * @param extraEnv additional env vars merged on top of `walgConfigEnv()`
+     * @param binds optional host binds (e.g. to share a postgres data dir)
+     */
+    async runWalg(
+        args: string[],
+        extraEnv: Record<string, string> = {},
+        binds?: string[]
+    ): Promise<{ exitCode: number; output: string }> {
+        const walgImg = `${this.publicImgRegistry}/magda-wal-g:${this.walgImgTag}`;
+        await this.pullImage(walgImg);
+
+        const outputChunks: Buffer[] = [];
+        const outStream = new PassThrough();
+        outStream.on("data", (chunk: Buffer) => {
+            outputChunks.push(chunk);
+        });
+
+        const [data] = (await this.docker.run(
+            walgImg,
+            ["wal-g", ...args],
+            outStream,
+            {
+                Tty: true,
+                User: "0",
+                HostConfig: {
+                    NetworkMode: "host",
+                    AutoRemove: true,
+                    Binds: binds
+                },
+                Env: [
+                    ...this.walgConfigEnv(),
+                    ...Object.entries(extraEnv).map(
+                        ([key, value]) => `${key}=${value}`
+                    )
+                ]
+            }
+        )) as [any, Container];
+
+        return {
+            exitCode: data?.StatusCode,
+            output: Buffer.concat(outputChunks).toString("utf8")
+        };
     }
 
     async createElasticSearch() {
