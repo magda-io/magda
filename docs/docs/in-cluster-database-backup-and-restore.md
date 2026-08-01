@@ -30,7 +30,7 @@ Template: [`deploy/helm/internal-charts/magda-postgres/templates/cronjob-backup.
 
 A Kubernetes `CronJob` (`concurrencyPolicy: Forbid`, `backoffLimit: 3`, `restartPolicy: OnFailure`) runs the `magda-wal-g` image on `backup.schedule` (default `0 15 * * 6` — 15:00 UTC every Saturday). Each run:
 
-1. **`adduser.sh`** — adds a uid-1001 entry to `/etc/passwd`. The PostgreSQL client library refuses to run under a uid that is not present in `/etc/passwd`; without this, every wal-g command fails.
+1. **`adduser.sh`** — adds a uid-1001 entry to `/etc/passwd`. `wal-g` (dynamically linked to libc) looks up the running uid on startup. The CronJob's pod spec sets a Kubernetes `command:`, which **overrides the image's bitnami entrypoint** — so, unlike the DB pod, nss_wrapper is not initialised and uid 1001 would be unresolved. `adduser.sh` writes the missing entry so `wal-g` can run. (The DB pod keeps the entrypoint, so it does not need this — see Mechanism 2.)
 2. **`wal-g backup-push`** — a **remote** base backup over PostgreSQL's replication protocol (`PGHOST` points at the DB service; no local data directory needed). This streams a full base backup to `basebackups_005/` in the store.
 3. **Capture the exit code immediately** (`BACKUP_PUSH_RC=$?`). This is deliberate: any statement between `backup-push` and reading `$?` would reset it and make a **failed** backup look successful — which previously also let the retention step below prune the existing backup chain after a failure. (See issue [#3746](https://github.com/magda-io/magda/issues/3746).)
 4. **Retention (success only)** — `wal-g delete --confirm retain FULL <numberOfBackupToRetain>` (default keep **7**) trims older base backups. It distinguishes "fewer backups than the retention count" from a real error by string-matching wal-g's `"not found"` output (fragile across wal-g versions; revisit on upgrade). On backup failure it **exits 1** and does **not** prune.
@@ -55,6 +55,8 @@ archive_timeout = 600   # seconds; values.yaml default = 10 minutes
 ```
 
 Whenever PostgreSQL fills (or, via `archive_timeout`, force-closes) a 16 MB WAL segment, `archive_command` runs `wal-g wal-push` to upload it to `wal_005/` in the store. `archive_timeout = 600` guarantees at least one segment is closed and archived every ~10 minutes even on an idle database — this is the knob that bounds how much recent change can be *un-archived* at any instant.
+
+> The DB pod runs the image's default bitnami entrypoint, which sets up **nss_wrapper** (`LD_PRELOAD` + `NSS_WRAPPER_PASSWD`). Because `wal-g` is dynamically linked to libc, its uid lookup is resolved by nss_wrapper even though uid 1001 is absent from `/etc/passwd` — so the DB pod's `archive_command` works without the CronJob's `adduser.sh` step. (Verified end-to-end: `pg_stat_archiver` reports archived segments with zero failures, and WAL objects land under `wal_005/`.)
 
 Also, at DB startup [`start.sh`](../../magda-postgres/start.sh) ensures a `host replication all 0.0.0.0/0 md5` entry exists in `pg_hba.conf` so the CronJob's remote `backup-push` can connect. (PostgreSQL's `all` database keyword does **not** match physical-replication connections, so an explicit `replication` entry is required.)
 
