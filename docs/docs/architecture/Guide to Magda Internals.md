@@ -737,6 +737,12 @@ While Kubernetes and Helm can handle a lot of what makes Magda work, there are s
 
 This gap is optionally handled by Terraform - it can be used to provision the actual, vendor-specific cloud infrastructure that's needed in order to run Kubernetes so that we can start using tools like Helm. Potentially everything that Terraform currently does for us can also be done via tools like the GCloud command line or web control panel, but using a tool like Terraform allows us to easily write down and reproduce these configurations.
 
+## Database Backup & Restore
+
+When using the in-cluster PostgreSQL option, Magda backs up the database with two cooperating mechanisms: periodic full **base backups** (a CronJob running `wal-g backup-push`) and **continuous WAL archiving** (PostgreSQL's `archive_command` pushing each WAL segment via `wal-g`). Restore is an opt-in recovery mode that fetches a base backup and (optionally) replays archived WAL.
+
+For how this machinery works end-to-end — the scripts involved, the recovery flow, and the **data-loss window (RPO)** to expect in each failure scenario — see [In-cluster Database Backup & Restore — How It Works](../in-cluster-database-backup-and-restore.md). For how to configure it (storage secrets, helm values), see [How to Config Continuous Archiving and PITR](../how-to-recover-with-continuous-archive-backup.md).
+
 # Architectural Decisions
 
 ## Macro
