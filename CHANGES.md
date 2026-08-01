@@ -15,6 +15,7 @@
 - Add a `README.md` for the [`@magda/semantic-indexer-sdk`](https://www.npmjs.com/package/@magda/semantic-indexer-sdk) package, which was previously blank on npm, linking to the new how-to guide.
 - #3730: Add apidoc annotations for the semantic search query API (`magda-semantic-search-api`) — `POST`/`GET /v0/semantic-search/search` and `POST /v0/semantic-search/retrieve` now appear in the generated API docs and OpenAPI spec. Doc-comment (`@apiGroup`/`@api`) change only; no route or behaviour change.
 - #3746: Fix silently-succeeding wal-g backup CronJob
+- #3747: Add a wal-g backup/restore integration test harness (`magda-int-test-ts`) that exercises the real `magda-wal-g` image against PostgreSQL 13.7 + MinIO — base-backup round-trip with data-fidelity assertions, WAL push/fetch byte-identity, and point-in-time recovery (roll-forward vs `recovery_target=immediate`) — as a regression oracle for the in-cluster PostgreSQL modernisation baseline. Adds in-cluster DB backup/restore mechanics & RPO documentation (`docs/docs/in-cluster-database-backup-and-restore.md`).
 
 ## v6.1.1
 
