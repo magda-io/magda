@@ -26,6 +26,7 @@
 - [Plugin UI Component SDK Doc](https://github.com/magda-io/magda/tree/master/packages/external-ui-plugin-sdk/docs/modules.md)
 - [How to build your own connectors / minions](./how-to-build-your-own-connectors-minions.md)
 - [Authentication Plugin Spec Document](./authentication-plugin-spec.md)
+- [In-cluster Database Backup & Restore — How It Works (mechanics & RPO)](./in-cluster-database-backup-and-restore.md)
 - [How to recover with continuous archive backup](./how-to-recover-with-continuous-archive-backup.md)
 - [Ports used when running locally](./local-ports.md)
 - [Windows Setup Instructions](./windows-instructions.md)
