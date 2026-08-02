@@ -40,6 +40,86 @@ function docker(args: string[], ignoreError = false): string {
     }
 }
 
+// Host-path bind mounts do NOT work when the docker daemon is remote (e.g.
+// GitLab dind: the daemon cannot see this test runner's filesystem). Files are
+// therefore moved to/from the runWalg containers through NAMED VOLUMES, using
+// `docker cp` (which streams through the daemon) against a short-lived helper.
+
+/** Copy a host file into a named volume at `volPath` (dind-safe). */
+function cpIntoVolume(vol: string, hostFile: string, volPath: string) {
+    const h = `walg-cp-${uuidV4().slice(0, 8)}`;
+    docker(["run", "-d", "--name", h, "-v", `${vol}:/vol`, "busybox", "sleep", "300"]);
+    try {
+        docker(["cp", hostFile, `${h}:/vol/${volPath}`]);
+    } finally {
+        docker(["rm", "-f", h], true);
+    }
+}
+
+/** Copy a file out of a named volume to a host path (dind-safe). */
+function cpFromVolume(vol: string, volPath: string, hostFile: string) {
+    const h = `walg-cp-${uuidV4().slice(0, 8)}`;
+    docker(["run", "-d", "--name", h, "-v", `${vol}:/vol`, "busybox", "sleep", "300"]);
+    try {
+        docker(["cp", `${h}:/vol/${volPath}`, hostFile]);
+    } finally {
+        docker(["rm", "-f", h], true);
+    }
+}
+
+/**
+ * Copy a completed WAL segment out of the source container and `wal-push` it,
+ * sharing the file into the runWalg container via a named volume. Returns the
+ * wal-g result and the host path of the segment copy (a byte-identity reference).
+ */
+async function walPushSegment(
+    serviceRunner: ServiceRunner,
+    container: string,
+    seg: string,
+    hostTmpDirs: string[],
+    volumesToClean: string[]
+): Promise<{ result: { exitCode: number; output: string }; hostSegPath: string }> {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "walg-seg-"));
+    hostTmpDirs.push(tmp);
+    const hostSegPath = path.join(tmp, seg);
+    docker([
+        "cp",
+        `${container}:/var/lib/postgresql/data/pg_wal/${seg}`,
+        hostSegPath
+    ]);
+    const vol = `walg-share-${uuidV4().slice(0, 8)}`;
+    volumesToClean.push(vol);
+    docker(["volume", "create", vol]);
+    cpIntoVolume(vol, hostSegPath, seg);
+    const result = await serviceRunner.runWalg(
+        ["wal-push", `/share/${seg}`],
+        {},
+        [`${vol}:/share:ro`]
+    );
+    return { result, hostSegPath };
+}
+
+/** `wal-fetch` a segment into a named volume, then copy it out to `hostFile`. */
+async function walFetchToHost(
+    serviceRunner: ServiceRunner,
+    seg: string,
+    hostFile: string,
+    volumesToClean: string[]
+): Promise<{ exitCode: number; output: string }> {
+    const vol = `walg-fetch-${uuidV4().slice(0, 8)}`;
+    volumesToClean.push(vol);
+    docker(["volume", "create", vol]);
+    const result = await serviceRunner.runWalg(
+        ["wal-fetch", seg, `/dest/${seg}`],
+        {},
+        [`${vol}:/dest`]
+    );
+    if (result.exitCode === 0) {
+        cpFromVolume(vol, seg, hostFile);
+    }
+    return result;
+}
+
 /**
  * List object names under `prefix` in the wal-g bucket via the structured
  * MinIO client (NOT the CRLF-laden `runWalg().output`).
@@ -236,6 +316,8 @@ describe("wal-g backup / restore integration tests", () => {
     const hostTmpDirs: string[] = [];
     // additional restore instances (name/vol/port) to tear down in `after`.
     const extraRestores: { name: string; vol: string; port: number }[] = [];
+    // named volumes used to shuttle WAL segments to/from the runWalg containers.
+    const volumesToClean: string[] = [];
 
     before(async function (this) {
         this.timeout(ENV_SETUP_TIME_OUT);
@@ -261,6 +343,9 @@ describe("wal-g backup / restore integration tests", () => {
             }
             docker(["rm", "-f", r.name], true);
             docker(["volume", "rm", r.vol], true);
+        }
+        for (const vol of volumesToClean) {
+            docker(["volume", "rm", "-f", vol], true);
         }
         for (const dir of hostTmpDirs) {
             try {
@@ -325,34 +410,18 @@ describe("wal-g backup / restore integration tests", () => {
             await switchClient.end();
         }
 
-        const sourceContainer = docker([
-            "ps",
-            "--filter",
-            "name=test-walg-postgres",
-            "--format",
-            "{{.Names}}"
-        ])
-            .split("\n")
-            .map((s) => s.trim())
-            .filter(Boolean)[0];
-        expect(sourceContainer, "source walg-postgres container not found").to
-            .not.be.undefined;
-
-        const walPushDir = fs.mkdtempSync(
-            path.join(os.tmpdir(), "walg-walpush-")
+        const sourceContainer = sourceWalgContainer();
+        const { result: walPush } = await walPushSegment(
+            serviceRunner,
+            sourceContainer,
+            seg,
+            hostTmpDirs,
+            volumesToClean
         );
-        hostTmpDirs.push(walPushDir);
-        docker([
-            "cp",
-            `${sourceContainer}:/var/lib/postgresql/data/pg_wal/${seg}`,
-            path.join(walPushDir, seg)
-        ]);
-        const walPush = await serviceRunner.runWalg(
-            ["wal-push", `/share/${seg}`],
-            {},
-            [`${walPushDir}:/share:ro`]
-        );
-        expect(walPush.exitCode).to.equal(0);
+        expect(
+            walPush.exitCode,
+            `wal-push failed: ${walPush.output}`
+        ).to.equal(0);
 
         const walObjects = await listWalgObjects(serviceRunner, "pg/wal_005/");
         expect(walObjects).to.include(`pg/wal_005/${seg}.lz4`);
@@ -483,71 +552,50 @@ describe("wal-g backup / restore integration tests", () => {
             await source.end();
         }
 
-        // 2. Copy the now-completed segment out of the running source
-        // container into a fresh host tmp dir; this is the byte-identity
-        // reference copy.
-        const sourceContainer = docker([
-            "ps",
-            "--filter",
-            "name=test-walg-postgres",
-            "--format",
-            "{{.Names}}"
-        ])
-            .split("\n")
-            .map((s) => s.trim())
-            .filter(Boolean)[0];
-        expect(sourceContainer, "source walg-postgres container not found").to
-            .not.be.undefined;
+        // 2. Copy the now-completed segment out of the source container and
+        // wal-push it (through a named volume). The returned host path is the
+        // byte-identity reference copy.
+        const sourceContainer = sourceWalgContainer();
+        const { result: walPush, hostSegPath: referencePath } =
+            await walPushSegment(
+                serviceRunner,
+                sourceContainer,
+                seg,
+                hostTmpDirs,
+                volumesToClean
+            );
+        expect(
+            walPush.exitCode,
+            `wal-push failed: ${walPush.output}`
+        ).to.equal(0);
 
-        const walSrcDir = fs.mkdtempSync(
-            path.join(os.tmpdir(), "walg-wal-src-")
-        );
-        hostTmpDirs.push(walSrcDir);
-        docker([
-            "cp",
-            `${sourceContainer}:/var/lib/postgresql/data/pg_wal/${seg}`,
-            path.join(walSrcDir, seg)
-        ]);
-
-        // 3. wal-push the segment.
-        const walPush = await serviceRunner.runWalg(
-            ["wal-push", `/share/${seg}`],
-            {},
-            [`${walSrcDir}:/share:ro`]
-        );
-        expect(walPush.exitCode, `wal-push failed: ${walPush.output}`).to.equal(
-            0
-        );
-
-        // 4. Assert the pushed segment object exists in MinIO.
+        // 3. Assert the pushed segment object exists in MinIO.
         const walObjects = await listWalgObjects(serviceRunner, "pg/wal_005/");
         expect(walObjects).to.include(`pg/wal_005/${seg}.lz4`);
 
-        // 5. wal-fetch it back into a fresh host dest dir.
-        const walDestDir = fs.mkdtempSync(
+        // 4. wal-fetch it back out to a host file.
+        const fetchDir = fs.mkdtempSync(
             path.join(os.tmpdir(), "walg-wal-dest-")
         );
-        hostTmpDirs.push(walDestDir);
-        const walFetch = await serviceRunner.runWalg(
-            ["wal-fetch", seg, `/dest/${seg}`],
-            {},
-            [`${walDestDir}:/dest`]
+        hostTmpDirs.push(fetchDir);
+        const fetchedPath = path.join(fetchDir, seg);
+        const walFetch = await walFetchToHost(
+            serviceRunner,
+            seg,
+            fetchedPath,
+            volumesToClean
         );
         expect(
             walFetch.exitCode,
             `wal-fetch failed: ${walFetch.output}`
         ).to.equal(0);
 
-        // 6. Byte-identity assertion: fetched file matches the reference copy
+        // 5. Byte-identity assertion: fetched file matches the reference copy
         // taken directly from the source's pg_wal, and is a sane WAL segment
         // size.
-        const fetchedPath = path.join(walDestDir, seg);
-        const referencePath = path.join(walSrcDir, seg);
-
         const fetchedSize = fs.statSync(fetchedPath).size;
         expect(fetchedSize).to.be.greaterThan(0);
         expect(fetchedSize % WAL_SEGMENT_SIZE).to.equal(0);
-
         expect(sha256File(fetchedPath)).to.equal(sha256File(referencePath));
     });
 
@@ -639,18 +687,13 @@ describe("wal-g backup / restore integration tests", () => {
             "expected at least one completed WAL segment to archive"
         ).to.be.greaterThan(0);
 
-        const walDir = fs.mkdtempSync(path.join(os.tmpdir(), "walg-rollfwd-"));
-        hostTmpDirs.push(walDir);
         for (const seg of segments) {
-            docker([
-                "cp",
-                `${container}:/var/lib/postgresql/data/pg_wal/${seg}`,
-                path.join(walDir, seg)
-            ]);
-            const walPush = await serviceRunner.runWalg(
-                ["wal-push", `/share/${seg}`],
-                {},
-                [`${walDir}:/share:ro`]
+            const { result: walPush } = await walPushSegment(
+                serviceRunner,
+                container,
+                seg,
+                hostTmpDirs,
+                volumesToClean
             );
             expect(
                 walPush.exitCode,
@@ -751,20 +794,13 @@ describe("wal-g backup / restore integration tests", () => {
             .filter((s) => s >= startSeg && s <= lastSeg)
             .sort();
 
-        const walDir = fs.mkdtempSync(
-            path.join(os.tmpdir(), "walg-immediate-")
-        );
-        hostTmpDirs.push(walDir);
         for (const seg of segments) {
-            docker([
-                "cp",
-                `${container}:/var/lib/postgresql/data/pg_wal/${seg}`,
-                path.join(walDir, seg)
-            ]);
-            const walPush = await serviceRunner.runWalg(
-                ["wal-push", `/share/${seg}`],
-                {},
-                [`${walDir}:/share:ro`]
+            const { result: walPush } = await walPushSegment(
+                serviceRunner,
+                container,
+                seg,
+                hostTmpDirs,
+                volumesToClean
             );
             expect(
                 walPush.exitCode,
