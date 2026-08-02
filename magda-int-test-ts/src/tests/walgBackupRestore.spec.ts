@@ -839,4 +839,86 @@ describe("wal-g backup / restore integration tests", () => {
             await restored.end();
         }
     });
+
+    it("cross-version: a base backup + WAL pushed by 1.1.0 restores under 3.0.8", async function (this) {
+        this.timeout(ENV_SETUP_TIME_OUT);
+        const host = serviceRunner.dockerServiceForwardHost || "localhost";
+
+        // Seed a known fixture.
+        const source = new pg.Client(pgConfig(host, 5432, "password"));
+        await source.connect();
+        try {
+            await source.query(
+                "CREATE TABLE xver(id bigserial primary key, v text);"
+            );
+            await source.query(
+                "INSERT INTO xver(v) SELECT 'row ' || g FROM generate_series(1, 200) g;"
+            );
+            await source.query("CHECKPOINT;");
+        } finally {
+            await source.end();
+        }
+
+        // PUSH with the OLD version (1.1.0): base backup + the start segment.
+        serviceRunner.walgImgTag = "1.1.0";
+        const push = await serviceRunner.runWalg(["backup-push"]);
+        expect(push.exitCode, `1.1.0 backup-push failed: ${push.output}`).to.equal(0);
+
+        const baseObjects = await listWalgObjects(
+            serviceRunner,
+            "pg/basebackups_005/"
+        );
+        const startSeg = baseObjects
+            .map((n) => n.match(/base_([0-9A-Fa-f]{24})/))
+            .filter((m): m is RegExpMatchArray => m !== null)
+            .map((m) => m[1])
+            .sort()
+            .reverse()[0];
+        expect(startSeg, "no base_<segment> object found").to.not.be.undefined;
+
+        const switchClient = new pg.Client(pgConfig(host, 5432, "password"));
+        await switchClient.connect();
+        try {
+            await switchClient.query("SELECT pg_switch_wal();");
+        } finally {
+            await switchClient.end();
+        }
+        const container = sourceWalgContainer();
+        const { result: walPush } = await walPushSegment(
+            serviceRunner,
+            container,
+            startSeg,
+            hostTmpDirs,
+            volumesToClean
+        );
+        expect(walPush.exitCode, `1.1.0 wal-push failed: ${walPush.output}`).to.equal(0);
+
+        // RESTORE with the NEW version (3.0.8): fetch + start postgres.
+        serviceRunner.walgImgTag = "3.0.8";
+        const vol = `walg-xver-vol-${runId}`;
+        const name = `walg-xver-pg-${runId}`;
+        const port = 5436;
+        extraRestores.push({ name, vol, port });
+        await restoreLatestBackup(serviceRunner, {
+            vol,
+            name,
+            port,
+            segments: [startSeg]
+        });
+
+        const restored = new pg.Client(
+            pgConfig(serviceRunner.dockerServiceForwardHost || "localhost", port)
+        );
+        await restored.connect();
+        try {
+            const countRes = await restored.query(
+                "SELECT count(*)::int AS c FROM xver"
+            );
+            expect(countRes.rows[0].c).to.equal(200);
+        } finally {
+            await restored.end();
+            // leave the default tag as the suite default for any later specs
+            serviceRunner.walgImgTag = "3.0.8";
+        }
+    });
 });
