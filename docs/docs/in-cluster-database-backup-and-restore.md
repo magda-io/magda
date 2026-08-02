@@ -30,7 +30,7 @@ Template: [`deploy/helm/internal-charts/magda-postgres/templates/cronjob-backup.
 
 A Kubernetes `CronJob` (`concurrencyPolicy: Forbid`, `backoffLimit: 3`, `restartPolicy: OnFailure`) runs the `magda-wal-g` image on `backup.schedule` (default `0 15 * * 6` — 15:00 UTC every Saturday). Each run:
 
-1. **`adduser.sh`** — adds a uid-1001 entry to `/etc/passwd`. The PostgreSQL client library refuses to run under a uid that is not present in `/etc/passwd`; without this, every wal-g command fails.
+1. **`adduser.sh`** — adds a uid-1001 entry to `/etc/passwd`. `wal-g` (dynamically linked to libc) looks up the running uid on startup. The CronJob's pod spec sets a Kubernetes `command:`, which **overrides the image's bitnami entrypoint** — so, unlike the DB pod, nss_wrapper is not initialised and uid 1001 would be unresolved. `adduser.sh` writes the missing entry so `wal-g` can run. (The DB pod keeps the entrypoint, so it does not need this — see Mechanism 2.)
 2. **`wal-g backup-push`** — a **remote** base backup over PostgreSQL's replication protocol (`PGHOST` points at the DB service; no local data directory needed). This streams a full base backup to `basebackups_005/` in the store.
 3. **Capture the exit code immediately** (`BACKUP_PUSH_RC=$?`). This is deliberate: any statement between `backup-push` and reading `$?` would reset it and make a **failed** backup look successful — which previously also let the retention step below prune the existing backup chain after a failure. (See issue [#3746](https://github.com/magda-io/magda/issues/3746).)
 4. **Retention (success only)** — `wal-g delete --confirm retain FULL <numberOfBackupToRetain>` (default keep **7**) trims older base backups. It distinguishes "fewer backups than the retention count" from a real error by string-matching wal-g's `"not found"` output (fragile across wal-g versions; revisit on upgrade). On backup failure it **exits 1** and does **not** prune.
@@ -56,6 +56,8 @@ archive_timeout = 600   # seconds; values.yaml default = 10 minutes
 
 Whenever PostgreSQL fills (or, via `archive_timeout`, force-closes) a 16 MB WAL segment, `archive_command` runs `wal-g wal-push` to upload it to `wal_005/` in the store. `archive_timeout = 600` guarantees at least one segment is closed and archived every ~10 minutes even on an idle database — this is the knob that bounds how much recent change can be *un-archived* at any instant.
 
+> The DB pod runs the image's default bitnami entrypoint, which sets up **nss_wrapper** (`LD_PRELOAD` + `NSS_WRAPPER_PASSWD`). Because `wal-g` is dynamically linked to libc, its uid lookup is resolved by nss_wrapper even though uid 1001 is absent from `/etc/passwd` — so the DB pod's `archive_command` works without the CronJob's `adduser.sh` step. (Verified end-to-end: `pg_stat_archiver` reports archived segments with zero failures, and WAL objects land under `wal_005/`.)
+
 Also, at DB startup [`start.sh`](../../magda-postgres/start.sh) ensures a `host replication all 0.0.0.0/0 md5` entry exists in `pg_hba.conf` so the CronJob's remote `backup-push` can connect. (PostgreSQL's `all` database keyword does **not** match physical-replication connections, so an explicit `replication` entry is required.)
 
 ## Restore / recovery flow
@@ -63,37 +65,40 @@ Also, at DB startup [`start.sh`](../../magda-postgres/start.sh) ensures a `host 
 Recovery is **opt-in** and only happens when an operator sets `backupRestore.recoveryMode.enabled = true` (→ env `MAGDA_RECOVERY_MODE=true`). On the next DB pod start, [`start.sh`](../../magda-postgres/start.sh) sees the flag (and that `/wal-g/recovery.complete` is absent) and runs the restore scripts baked into the image under `magda-postgres/wal-g/`:
 
 1. **[`recover.sh`](../../magda-postgres/wal-g/recover.sh)**:
-   - copies [`recovery.conf`](../../magda-postgres/wal-g/recovery.conf) into `conf.d`;
+   - **generates** `recovery.conf` into `conf.d` from `MAGDA_RECOVERY_TARGET` (via [`gen-recovery-conf.sh`](../../magda-postgres/wal-g/gen-recovery-conf.sh));
    - swaps in a **local-only** [`pg_hba.conf`](../../magda-postgres/wal-g/pg_hba.conf) (blocks application traffic while recovering);
    - **saves** the current `$PGDATA/pg_wal` aside (preserving any WAL not yet archived);
    - wipes `$PGDATA`;
    - `wal-g backup-fetch $PGDATA LATEST` (or a pinned `MAGDA_RECOVERY_BASE_BACKUP_NAME`);
    - restores the saved `pg_wal` back over the fetched (empty) one;
    - `touch recovery.signal` → PostgreSQL enters archive recovery.
-2. **[`recovery.conf`](../../magda-postgres/wal-g/recovery.conf)** governs replay:
+2. **The generated `recovery.conf`** governs replay. It always sets:
    ```
-   restore_command  = wal-g wal-fetch "%f" "$PGDATA/%p"   # pulls archived WAL as needed
-   recovery_target  = 'immediate'
-   recovery_target_action = 'promote'
-   recovery_end_command   = /wal-g/post-recovery.sh
+   restore_command      = wal-g wal-fetch "%f" "$PGDATA/%p"   # pulls archived WAL as needed
+   recovery_end_command = /wal-g/post-recovery.sh
    ```
+   and the target depends on `recoveryMode.recoveryTarget` (→ `MAGDA_RECOVERY_TARGET`, default `latest`):
+   - `latest` → **no** `recovery_target` (replay to the end of the archived WAL, then promote);
+   - `immediate` → `recovery_target = 'immediate'` (stop at the base backup);
+   - a timestamp → `recovery_target_time = '<value>'` (point-in-time recovery). A target adds `recovery_target_action = 'promote'`.
 3. **[`post-recovery.sh`](../../magda-postgres/wal-g/post-recovery.sh)** runs after promotion: marks `/wal-g/recovery.complete` (so a later pod restart won't re-enter recovery), removes `recovery.conf`, restores the normal `pg_hba.conf`, and reloads to re-open remote connections. Backup, if it was on, resumes automatically.
 
 You choose *which* base backup with `recoveryMode.baseBackupName` (default `LATEST`).
 
 ## Data at risk (RPO) — the important part
 
-The recovery-point objective (maximum data loss) depends on the failure mode **and** on one config detail in `recovery.conf`:
+The recovery-point objective (maximum data loss) depends on the failure mode **and** on `recoveryMode.recoveryTarget` (default `latest`):
 
 | Scenario | Data-loss window |
 | --- | --- |
 | **Pod restart / reschedule, data volume (PVC) intact** | **≈ 0.** Recovery mode is off by default; PostgreSQL just does normal crash recovery from its own `pg_wal`. Nothing is discarded. |
-| **Disaster, restore via the shipped auto-recovery** | **Up to one base-backup interval — default ≈ 7 days.** |
-| **Disaster, manual full point-in-time recovery (roll-forward)** | **≈ `archive_timeout` (~10 min)** of the most recent, not-yet-archived WAL. |
+| **Disaster, default recovery (`recoveryTarget: latest`)** | **≈ `archive_timeout` (~10 min)** of the most recent, not-yet-archived WAL — or **~0** if the pod's local `pg_wal` survived and was replayed. |
+| **Disaster, `recoveryTarget: immediate`** | **Up to one base-backup interval — default ≈ 7 days.** |
+| **Point-in-time (`recoveryTarget: <timestamp>`)** | recovers to the chosen instant (data after it is intentionally discarded). |
 
-The critical detail is **`recovery_target = 'immediate'`**: it tells PostgreSQL to end replay the instant it reaches a consistent state — the **end of the base backup** — and promote. It does **not** roll forward through the WAL archived *since* that backup, even though that WAL is in the store every ~10 minutes. So the shipped automated restore lands you at the **latest base backup** (weekly by default). This matches the existing how-to's wording that recovery restores "with the LATEST base backup".
+By default (`recoveryTarget: latest`) recovery **rolls forward** through the archived WAL to the newest segment and promotes, so the RPO is bounded by `archive_timeout` (~10 min) — the cadence at which WAL is archived — or ~0 when the failure preserved the pod's local `pg_wal`.
 
-To actually exploit the ~10-minute WAL cadence you perform a **manual, full point-in-time recovery**: drop `recovery_target = immediate` (or set an explicit `recovery_target_time`) so replay rolls forward through the archived WAL to (or near) the moment of failure — bringing the RPO down to roughly `archive_timeout`, or to 0 if the local `pg_wal` survived and is replayed.
+Setting `recoveryTarget: immediate` restores to the **base backup only** and does not roll forward, so the RPO grows to one base-backup interval (weekly by default) — useful when you deliberately want a known-good older state. A **timestamp** target performs point-in-time recovery to that instant (pair it with a `baseBackupName` taken before the target time). Two levers still shrink the windows: shorten `backup.schedule` (smaller base-backup interval) and lower `archiveTimeout` (smaller un-archived WAL tail).
 
 Two levers to shrink the default window:
 

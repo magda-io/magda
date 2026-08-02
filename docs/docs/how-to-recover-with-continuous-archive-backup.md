@@ -163,11 +163,27 @@ combined-db:
 
 By default, it will recover with the "LATEST" base backup. However, you can specify a different backup name with helm config option: `combined-db.magda-postgres.backupRestore.backup.recoveryMode.baseBackupName` or manually set environment variable `MAGDA_RECOVERY_BASE_BACKUP_NAME` on the relevant postgreSQL instance statefulset.
 
-> **Important — what "recovery" restores to.** The automated recovery restores the database to the state at the **end of the chosen base backup**, and then promotes. It does **not** roll forward through the WAL archived *since* that base backup, even though that WAL is present in the store. This is because the recovery config baked into the image (`magda-postgres/wal-g/recovery.conf`) sets `recovery_target = 'immediate'`, which ends replay as soon as a consistent state (the base-backup end) is reached. In other words, the "point-in-time" granularity you get today is **per base backup** (pick which one via `baseBackupName`), not an arbitrary transaction or timestamp.
+> **Recovery target — how far recovery replays.** `combined-db.magda-postgres.backupRestore.recoveryMode.recoveryTarget` controls where WAL replay stops:
+> <ul>
+> <li><code>"latest"</code> (<strong>default</strong>): roll forward through the archived WAL to the newest segment, then promote — the least data loss (recovery-point objective ≈ <code>archiveTimeout</code>, ~10 min, or ~0 when the pod's local <code>pg_wal</code> survives).</li>
+> <li><code>"immediate"</code>: restore to the chosen base backup only, without rolling forward (this was the behaviour before this option existed; RPO up to one base-backup interval — e.g. ~1 week with the default weekly <code>backup.schedule</code>).</li>
+> <li>any other value: treated as a PostgreSQL <code>recovery_target_time</code>, i.e. point-in-time recovery to that timestamp (e.g. <code>"2026-08-01 12:00:00+00"</code>).</li>
+> </ul>
 >
-> The practical consequence is the **recovery-point objective (RPO)**: automated recovery can lose up to one base-backup interval of data (e.g. up to ~1 week with the default weekly `backup.schedule`). Continuous WAL archiving still runs, but the shipped automated recovery does not replay it forward. To understand the failure scenarios and how to shrink the window, see [In-cluster Database Backup & Restore — How It Works (mechanics & RPO)](./in-cluster-database-backup-and-restore.md).
+> `recoveryTarget` composes with `baseBackupName` (which base backup recovery starts from): for point-in-time recovery to a *past* time, choose a `baseBackupName` taken **before** that time (recovery cannot replay backward). For the failure scenarios and RPO details, see [In-cluster Database Backup & Restore — How It Works (mechanics & RPO)](./in-cluster-database-backup-and-restore.md).
 >
-> There is currently **no helm/config option to enable roll-forward** (recover to the base backup *plus* the latest archived WAL) — it would require a change to the image's `recovery.conf` (making `recovery_target` configurable, or dropping `recovery_target = 'immediate'` so replay runs to the end of the archived WAL). Until then, rolling forward to (or near) the point of failure is a **manual** operation.
+> **Note:** rolling forward replays *all* committed transactions up to the target, including a bad change you might be trying to escape — for that case, set a timestamp `recoveryTarget` (or an earlier `baseBackupName`) to stop before it.
+
+Here is a recovery example that rolls forward to the latest WAL (the default):
+
+```yaml
+combined-db:
+  magda-postgres:
+    backupRestore:
+      recoveryMode:
+        enabled: true
+        recoveryTarget: "latest"   # or "immediate", or a timestamp for PITR
+```
 
 More info can also be found from [wal-g backup fetch document](https://github.com/wal-g/wal-g/blob/master/docs/PostgreSQL.md#backup-fetch).
 

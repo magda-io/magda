@@ -1084,16 +1084,21 @@ export default class ServiceRunner {
      * instance started by this ServiceRunner.
      */
     walgConfigEnv(): string[] {
-        const host = this.dockerServiceForwardHost || "localhost";
+        // runWalg runs the wal-g container with NetworkMode: host, so it reaches
+        // the host-published postgres / MinIO ports at `localhost` on the docker
+        // daemon's host -- the same reason runMigrator uses DB_HOST=localhost.
+        // It must NOT use dockerServiceForwardHost (e.g. "docker" under GitLab
+        // dind): that is a client-side service alias that does not resolve inside
+        // a container running on the daemon's host network.
         const s3Prefix = this.walgS3Prefix || `s3://${this.walgBucket}/pg`;
         return [
-            `PGHOST=${host}`,
+            "PGHOST=localhost",
             "PGUSER=postgres",
             "PGPASSWORD=password",
             `WALG_S3_PREFIX=${s3Prefix}`,
             `AWS_ACCESS_KEY_ID=${this.minioAccessKey}`,
             `AWS_SECRET_ACCESS_KEY=${this.minioSecretKey}`,
-            `AWS_ENDPOINT=http://${host}:9000`,
+            "AWS_ENDPOINT=http://localhost:9000",
             "AWS_S3_FORCE_PATH_STYLE=true",
             `AWS_REGION=${this.minioDefaultRegion}`
         ];
