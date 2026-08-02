@@ -10,8 +10,8 @@
 # Load PostgreSQL environment variables
 . /opt/bitnami/scripts/postgresql-env.sh
 
-# Turn on recovery conf
-cp -f /wal-g/recovery.conf /opt/bitnami/postgresql/conf/conf.d/recovery.conf
+# Generate recovery conf from MAGDA_RECOVERY_TARGET (roll-forward / PITR / immediate)
+bash /wal-g/gen-recovery-conf.sh > /opt/bitnami/postgresql/conf/conf.d/recovery.conf
 
 # disable remote connections
 mv -f /opt/bitnami/postgresql/conf/pg_hba.conf /opt/bitnami/postgresql/conf/pg_hba.conf.orig

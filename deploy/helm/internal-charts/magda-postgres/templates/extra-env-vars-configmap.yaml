@@ -6,6 +6,7 @@ data:
 {{- if .Values.backupRestore.recoveryMode.enabled }}
   MAGDA_RECOVERY_MODE: "true"
   MAGDA_RECOVERY_BASE_BACKUP_NAME: {{ .Values.backupRestore.recoveryMode.baseBackupName | quote }}
+  MAGDA_RECOVERY_TARGET: {{ .Values.backupRestore.recoveryMode.recoveryTarget | default "latest" | quote }}
 {{- else }}
   MAGDA_RECOVERY_MODE: "false"
 {{- end }}
