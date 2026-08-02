@@ -153,7 +153,7 @@ backupRestore:
     # -- wal-g docker image name
     name: "magda-wal-g"
     # -- wal-g docker image tag
-    tag: "1.1.0"
+    tag: "3.0.8"
     # -- wal-g docker image repo
     repository: "ghcr.io/magda-io"
     # -- wal-g docker image pull policy

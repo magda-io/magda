@@ -1,7 +1,7 @@
 FROM ghcr.io/magda-io/postgresql:13.7.0-debian-11-r33
 
 # copy wal-g from pre-built image
-COPY --from=ghcr.io/magda-io/magda-wal-g:1.1.0 /usr/local/bin/wal-g /usr/local/bin/wal-g
+COPY --from=ghcr.io/magda-io/magda-wal-g:3.0.8 /usr/local/bin/wal-g /usr/local/bin/wal-g
 
 USER root
 # Install [envdir](https://cr.yp.to/daemontools/envdir.html)
