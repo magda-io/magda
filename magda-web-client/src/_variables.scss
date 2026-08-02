@@ -70,3 +70,21 @@ $minimum: 300px;
 $small: 768px;
 $medium: 992px;
 $large: 1200px;
+
+:root {
+    --chat-bot-bg: #e7e7e7;
+    --chat-bot-text: #1a1a1a;
+
+    --chat-user-bg: var(--rs-btn-primary-bg);
+    --chat-user-text: #f7f7f7;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --chat-bot-bg: #2b2b2b;
+        --chat-bot-text: #f7f7f7;
+
+        --chat-user-bg: var(--rs-btn-primary-bg);
+        --chat-user-text: #ffffff;
+    }
+}

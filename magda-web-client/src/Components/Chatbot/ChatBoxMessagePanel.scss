@@ -33,17 +33,23 @@
             float: left;
             border-radius: 10px;
             border: none;
-            background-color: #e7e7e7;
+            background-color: var(--chat-bot-bg);
+            color: var(--chat-bot-text);
+            pre,
+            p {
+                color: var(--chat-bot-text);
+            }
         }
 
         .rs-list-item.user-message {
             float: right;
             border-radius: 10px;
             border: none;
-            background-color: var(--rs-btn-primary-bg);
+            background-color: var(--chat-user-bg);
+            color: var(--chat-user-text);
             pre,
             p {
-                color: #f7f7f7;
+                color: var(--chat-user-text);
             }
         }
     }
