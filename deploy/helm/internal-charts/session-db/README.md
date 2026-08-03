@@ -1,6 +1,6 @@
 # session-db
 
-![Version: 6.1.1](https://img.shields.io/badge/Version-6.1.1-informational?style=flat-square)
+![Version: 6.1.2-pr.3759.1](https://img.shields.io/badge/Version-6.1.2--pr.3759.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -10,7 +10,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-postgres | magda-postgres | 6.1.1 |
+| file://../magda-postgres | magda-postgres | 6.1.2-pr.3759.1 |
 
 ## Values
 
