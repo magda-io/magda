@@ -1,8 +1,11 @@
 # CHANGELOG
 
+## v6.2.0
+
+- #3758: Upgraded the in-cluster PostgreSQL backup tool wal-g to 3.0.8.
+
 ## v6.1.2
 
-- Upgraded the in-cluster PostgreSQL backup tool **wal-g 1.1.0 → 3.0.8** (`magda-postgres`). The S3/storage env vars, `storageConfig` contract, and backup/restore commands are unchanged, and existing wal-g 1.1.0 backups remain restorable under 3.0.8 — verified end-to-end on minikube including cross-version roll-forward and point-in-time recovery — so no re-backup is required on upgrade. This also moves the wal-g WAL prefetch directory (`WALG_PREFETCH_DIR`) onto the data volume (`/bitnami/postgresql/wal-g-prefetch`): wal-g 3.x moves prefetched WAL segments into `$PGDATA/pg_wal` with `rename(2)`, which fails ("invalid cross-device link") when the prefetch dir is on a different filesystem than PGDATA and would otherwise break roll-forward/PITR recovery. Handled automatically by the chart. (#3758)
 - Add a "How to build a semantic indexer" developer guide (`docs/docs/how-to-build-a-semantic-indexer.md`) and a "Semantic Search & Semantic Indexers" section in the [Guide to Magda Internals](./docs/docs/architecture/Guide%20to%20Magda%20Internals.md), documenting the two indexing tiers, the representation-first design approach (designing the indexed text backward from retrieval), and the semantic query API.
 - Add a `README.md` for the [`@magda/semantic-indexer-sdk`](https://www.npmjs.com/package/@magda/semantic-indexer-sdk) package, which was previously blank on npm, linking to the new how-to guide.
 - #3730: Add apidoc annotations for the semantic search query API (`magda-semantic-search-api`) — `POST`/`GET /v0/semantic-search/search` and `POST /v0/semantic-search/retrieve` now appear in the generated API docs and OpenAPI spec. Doc-comment (`@apiGroup`/`@api`) change only; no route or behaviour change.
