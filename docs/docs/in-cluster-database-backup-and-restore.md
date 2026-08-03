@@ -6,7 +6,7 @@ If you are looking for **how to configure** backup/restore (storage secrets, hel
 
 > Applies to the in-cluster PostgreSQL option (the [`magda-postgres`](../../deploy/helm/internal-charts/magda-postgres) chart, included by [`combined-db`](../../deploy/helm/internal-charts/combined-db)). If you use a managed cloud database service instead, backup/restore is handled by your provider and this document does not apply.
 >
-> Backup/restore is powered by [wal-g](https://github.com/wal-g/wal-g). The behaviour described here is for the currently shipped **wal-g 1.1.0**; the mechanics (command names, env, storage layout) may shift with future wal-g upgrades.
+> Backup/restore is powered by [wal-g](https://github.com/wal-g/wal-g). The behaviour described here is for the currently shipped **wal-g 3.0.8**; the mechanics (command names, env, storage layout) may shift with future wal-g upgrades.
 
 ## Overview: two mechanisms, one scheme
 
@@ -105,7 +105,7 @@ Two levers to shrink the default window:
 - **Shorten `backupRestore.backup.schedule`** → more frequent base backups → smaller auto-recovery RPO.
 - **Lower `backupRestore.backup.archiveTimeout`** → smaller un-archived WAL tail (at the cost of more, smaller WAL objects), which is the floor a roll-forward recovery can reach.
 
-## Object-store layout (wal-g 1.1.0)
+## Object-store layout (wal-g 3.0.8)
 
 Under your configured `WALG_S3_PREFIX`:
 

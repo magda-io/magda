@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v6.2.0
+
+- #3758: Upgraded the in-cluster PostgreSQL backup tool wal-g to 3.0.8.
+
 ## v6.1.2
 
 - Add a "How to build a semantic indexer" developer guide (`docs/docs/how-to-build-a-semantic-indexer.md`) and a "Semantic Search & Semantic Indexers" section in the [Guide to Magda Internals](./docs/docs/architecture/Guide%20to%20Magda%20Internals.md), documenting the two indexing tiers, the representation-first design approach (designing the indexed text backward from retrieval), and the semantic query API.

@@ -96,7 +96,7 @@ export default class ServiceRunner {
     // wal-g backup/restore integration tests can drive them directly via
     // `runWalg()`.
     public enableWalg = false;
-    public walgImgTag: string = "1.1.0";
+    public walgImgTag: string = "3.0.8";
     public walgBucket: string = "walg-test";
     public walgS3Prefix: string = "";
 

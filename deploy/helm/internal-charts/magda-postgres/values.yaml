@@ -126,9 +126,12 @@ config: {}
 
 # -- any extra env vars that will be avialable in DB pod.
 envVars:
-  # -- we move wal-g prefetch location outside PGDATA to avoid pg_rewind issue in postgresql 13.
+  # -- wal-g's WAL prefetch dir. Must be on the SAME filesystem as PGDATA: wal-g 3.x moves
+  # prefetched segments into `$PGDATA/pg_wal` with rename(2), which fails across filesystems
+  # ("invalid cross-device link"). Kept on the data PVC (mounts at `/bitnami/postgresql`) but
+  # OUTSIDE PGDATA (`/bitnami/postgresql/data`) so it also avoids the postgresql-13 pg_rewind issue.
   # See: https://github.com/wal-g/wal-g/blob/master/docs/PostgreSQL.md
-  WALG_PREFETCH_DIR: "/wal-g/prefetch"
+  WALG_PREFETCH_DIR: "/bitnami/postgresql/wal-g-prefetch"
 
 backupRestore:
   # -- Storage config for backup & restore.
@@ -153,7 +156,7 @@ backupRestore:
     # -- wal-g docker image name
     name: "magda-wal-g"
     # -- wal-g docker image tag
-    tag: "1.1.0"
+    tag: "3.0.8"
     # -- wal-g docker image repo
     repository: "ghcr.io/magda-io"
     # -- wal-g docker image pull policy
