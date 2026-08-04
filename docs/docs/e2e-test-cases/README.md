@@ -18,6 +18,7 @@ scripted, assertion/checksum-based driver), and how to clean up.
 - [mgd CLI (auth, search, dataset/dist CRUD, large-file round-trip)](./mgd-cli.md)
 - [mgd agent skill auto-use](./mgd-skill-auto-use.md)
 - [Distribution version aspect in the Web UI](./distribution-version-web-ui.md)
+- [In-cluster PostgreSQL wal-g cross-version backup / restore (roll-forward + PITR)](./postgres-walg-cross-version-restore.md)
 
 ## Adding a new case
 

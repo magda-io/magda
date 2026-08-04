@@ -8,6 +8,9 @@
   - Support a non-default privileged database username via `global.postgresql.postgresqlUsername`. An initdb hook grants it `CREATEDB`/`CREATEROLE` (never `SUPERUSER`), matching the privilege level managed providers grant their admin account (RDS `rds_superuser`, Azure `azure_pg_admin`, GCP `cloudsqlsuperuser`); the `postgresql-postgres-password` secret key is auto-created when needed. The privileged-username validation also rejects the default `postgres` account for external databases unless explicitly allowed.
   - Upgrade the DB migrator's Flyway from 4.2 to 12.11 for SCRAM authentication support on PostgreSQL 14/15+ defaults, with a no-gap history baseline so existing Flyway-4 deployments upgrade in place without re-applying already-applied migrations.
   - Add a plugin↔Magda Helm helper-contract compatibility handshake (`global.magdaCompatibilityCheck`) so a version-mismatched authentication plugin fails at render time with an actionable message rather than misbehaving at runtime.
+## v6.2.0
+
+- #3758: Upgraded the in-cluster PostgreSQL backup tool wal-g to 3.0.8.
 
 ## v6.1.2
 

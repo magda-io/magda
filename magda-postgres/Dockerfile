@@ -1,7 +1,7 @@
 FROM ghcr.io/magda-io/postgresql:13.7.0-debian-11-r33
 
 # copy wal-g from pre-built image
-COPY --from=ghcr.io/magda-io/magda-wal-g:1.1.0 /usr/local/bin/wal-g /usr/local/bin/wal-g
+COPY --from=ghcr.io/magda-io/magda-wal-g:3.0.8 /usr/local/bin/wal-g /usr/local/bin/wal-g
 
 USER root
 # Install [envdir](https://cr.yp.to/daemontools/envdir.html)
@@ -25,13 +25,14 @@ RUN mkdir -p /etc/wal-g.d/env && \
     chgrp -R 0 /wal-g && \
     chmod -R g=u /wal-g && \
     # Allow user to add use record (for user 1001) in /etc/passwd
-    chmod g=u /etc/passwd && \
-    # create alternative wal-g prefetch path for postgresql 13
-    mkdir -p /wal-g/prefetch && \
-    chgrp -R 0 /wal-g/prefetch && \
-    chmod -R g=u /wal-g/prefetch
+    chmod g=u /etc/passwd
 
-ENV WALG_PREFETCH_DIR="/wal-g/prefetch"
+# wal-g's WAL prefetch during recovery moves segments into $PGDATA/pg_wal with
+# rename(2), which fails across filesystems ("invalid cross-device link") on
+# wal-g 3.x. Keep the prefetch dir on the SAME filesystem as PGDATA (the data
+# PVC mounts at /bitnami/postgresql) but OUTSIDE PGDATA (/bitnami/postgresql/data)
+# so it still avoids the postgresql-13 pg_rewind issue. wal-g creates it at runtime.
+ENV WALG_PREFETCH_DIR="/bitnami/postgresql/wal-g-prefetch"
 
 USER 1001
 
