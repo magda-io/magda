@@ -1,16 +1,12 @@
-FROM ghcr.io/magda-io/postgresql:13.7.0-debian-11-r33
+FROM ghcr.io/magda-io/postgresql:17.5.0-debian-12-r20
 
 # copy wal-g from pre-built image
-COPY --from=ghcr.io/magda-io/magda-wal-g:3.0.8 /usr/local/bin/wal-g /usr/local/bin/wal-g
+COPY --from=ghcr.io/magda-io/magda-wal-g:3.0.8-magda-edcda8b /usr/local/bin/wal-g /usr/local/bin/wal-g
 
 USER root
 # Install [envdir](https://cr.yp.to/daemontools/envdir.html)
 # Used to set up env vars based on files mounted from configMap or secret
-RUN sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list && \
-    sed -i 's|http://security.debian.org|http://deb.debian.org/debian-security|g' /etc/apt/sources.list && \
-    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until && \
-    apt-get update && \
-    install_packages daemontools
+RUN install_packages daemontools
 
 COPY component/start.sh /usr/local/bin/
 COPY component/adduser.sh /usr/local/bin/

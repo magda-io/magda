@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Recovery script that implements the recommended recovery steps here:
-# https://www.postgresql.org/docs/13/continuous-archiving.html#BACKUP-PITR-RECOVERY
+# https://www.postgresql.org/docs/17/continuous-archiving.html#BACKUP-PITR-RECOVERY
 
 # Load libraries
 . /opt/bitnami/scripts/liblog.sh

@@ -96,9 +96,17 @@ export default class ServiceRunner {
     // wal-g backup/restore integration tests can drive them directly via
     // `runWalg()`.
     public enableWalg = false;
-    public walgImgTag: string = "3.0.8";
+    public walgImgTag: string = "3.0.8-magda-edcda8b";
     public walgBucket: string = "walg-test";
     public walgS3Prefix: string = "";
+    // postgres image tag used by createWalgPostgres() for the wal-g fixture.
+    // Tests default to this suite's postgres:17.5 fixture; the cross-version
+    // wal-g test temporarily overrides this to stand up a dedicated
+    // postgres:13.7 fixture (see walgBackupRestore.spec.ts), since a base
+    // backup taken by an old wal-g on one PG major version cannot be
+    // restored on a different PG major version -- that is a fundamental
+    // PostgreSQL limit, not a wal-g one.
+    public walgPostgresImgTag: string = "17.5";
 
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
@@ -1040,6 +1048,9 @@ export default class ServiceRunner {
             undefined,
             false,
             (configData) => {
+                configData["services"]["test-walg-postgres"][
+                    "image"
+                ] = `postgres:${this.walgPostgresImgTag}`;
                 configData["services"]["test-walg-postgres"]["volumes"] = [
                     `${initdbHostDir}:/docker-entrypoint-initdb.d:ro`
                 ];
