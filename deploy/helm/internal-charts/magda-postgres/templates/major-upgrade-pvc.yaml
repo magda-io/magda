@@ -1,0 +1,54 @@
+{{- if .Values.majorUpgrade.enabled }}
+{{- /*
+  Staging volume for the logical dump produced by `major-upgrade-dump-job.yaml` and
+  consumed by `major-upgrade-restore-job.yaml`.
+
+  A `pre-upgrade` hook at a lower weight than the dump Job, so it exists before the Job
+  that writes to it. It is deliberately NOT a normal chart resource: normal resources are
+  created in the main pass, which runs AFTER pre-upgrade hooks, and the whole point of
+  dumping in `pre-upgrade` is that the old server is still guaranteed to be running.
+
+  Helm's hook waiter only blocks on Job and Pod kinds, so a PVC that stays `Pending`
+  under a WaitForFirstConsumer storage class does not stall the upgrade -- the dump Job's
+  pod is what triggers binding.
+
+  `before-hook-creation` rather than `hook-succeeded`, and it is not optional: a hook
+  resource that is NOT deleted before the hook fires again makes Helm fail on the next
+  upgrade trying to create a resource that already exists. `hook-succeeded` is equally
+  unusable -- it would delete the staging volume the moment the pre-upgrade phase
+  finished, i.e. before the post-upgrade restore Job could read the dump off it.
+
+  The consequence, which the two Jobs are written around: this PVC is DESTROYED AND
+  RECREATED EMPTY on every `helm upgrade` while `majorUpgrade.enabled` is true. Nothing
+  on it is durable across upgrades, so it can hold the dump for the current upgrade but
+  can NOT hold "has this migration already completed?" state -- that lives in the target
+  database as `public.magda_major_upgrade` (see major-upgrade-restore-job.yaml).
+
+  For that delete-recreate to work, no pod may still reference this PVC when the next
+  upgrade starts: Kubernetes' `pvc-protection` finalizer holds a PVC open while any pod
+  that mounts it exists, and Helm waits for the deletion, so a leftover hook pod turns
+  the next upgrade into a full-`--timeout` "context deadline exceeded" failure. That is
+  why BOTH Jobs that mount this volume carry `hook-succeeded` in their delete policy.
+
+  Within a single upgrade the dump survives from the pre-upgrade dump Job to the
+  post-upgrade restore Job. If you need to keep a dump beyond that, copy it off the
+  volume; delete the volume once the migration is verified.
+*/}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "{{ .Values.postgresql.fullnameOverride }}-major-upgrade"
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-20"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.majorUpgrade.stagingStorageClass }}
+  storageClassName: {{ .Values.majorUpgrade.stagingStorageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.majorUpgrade.stagingVolumeSize | quote }}
+{{- end }}

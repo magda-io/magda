@@ -376,3 +376,44 @@ backupRestore:
     # <li>any other value: treated as a PostgreSQL `recovery_target_time` (point-in-time recovery to that timestamp, e.g. `"2026-08-01 12:00:00+00"`). Note: the chosen `baseBackupName` must predate the target time.</li>
     # </ul>
     recoveryTarget: "latest"
+
+majorUpgrade:
+  # -- One-shot PostgreSQL major upgrade (logical dump/restore) from a previous
+  # in-cluster instance into this one. Turn on for the single `helm upgrade` that
+  # crosses the major boundary, then turn it off again.
+  # Safe to leave on: once a migration completes and passes its own verification, the
+  # restore Job records that fact durably inside the new instance (a one-row
+  # `public.magda_major_upgrade` table in its `postgres` database). On any later
+  # `helm upgrade` the dump Job checks that marker on the target FIRST and exits without
+  # dumping, and the restore Job checks it and exits without restoring — so a repeat
+  # upgrade is a genuine no-op rather than an attempt to re-dump from a source Service
+  # that no longer exists. Turning it off is still recommended, so the Jobs stop being
+  # scheduled at all.
+  # PostgreSQL data files are NOT readable across majors, and the pod labels this chart
+  # emits land in the StatefulSet's immutable `spec.selector` -- so without this, a
+  # cross-major `helm upgrade` either fails outright or brings up an empty database.
+  # See the PostgreSQL major upgrade runbook.
+  enabled: false
+  # -- Hostname of the PREVIOUS major's in-cluster instance to dump from, i.e. its
+  # `postgresql.fullnameOverride`. Defaulted per DB chart. Override it if you customised
+  # `fullnameOverride` on the previous version, or the dump Job fails on an unresolvable
+  # host.
+  sourceHost: ""
+  # -- Size of the staging volume that holds the gzipped logical dump. A compressed SQL
+  # dump is far smaller than the data directory (no indexes, no bloat), but check it
+  # against your actual database size before starting: running out of space mid-dump
+  # fails the upgrade. The volume is created as a pre-upgrade hook and left behind after
+  # the upgrade for inspection, but it is NOT durable across upgrades: while
+  # `majorUpgrade.enabled` is true every `helm upgrade` deletes and recreates it empty.
+  # Copy `dumpall.sql.gz` off it if you need to keep a dump; delete it once you have
+  # verified the migration.
+  stagingVolumeSize: "20Gi"
+  # -- storageClass for the staging volume. Empty means the cluster default.
+  stagingStorageClass: ""
+  # -- How long each Job waits for its PostgreSQL server to start accepting connections.
+  # This does NOT bound the dump or restore itself -- Helm's own `--timeout` does. Pass
+  # `--timeout` comfortably larger than the expected dump + restore duration, or Helm
+  # fails the upgrade while the Job is still working.
+  waitTimeoutSeconds: 900
+  # -- Resource config for the dump and restore Job containers.
+  resources: {}

@@ -120,6 +120,24 @@ Under your configured `WALG_S3_PREFIX`:
 <prefix>/wal_005/<segment>.lz4          # one lz4 object per archived WAL segment
 ```
 
+## Caveat: wal-g backups do not cross PostgreSQL majors
+
+Everything above operates on a **physical** copy of the data directory
+(`wal-g backup-push`/`backup-fetch`), which only a server running the _same_
+PostgreSQL major version can produce or consume. A base backup (and its
+associated WAL) taken from a PostgreSQL 13 server can only ever be restored into
+a PostgreSQL 13 server — never into PostgreSQL 17, and never into a managed/
+external database.
+
+Concretely: the wal-g backup chain accumulated on Magda v6 (PostgreSQL 13) is
+**rollback material for PostgreSQL 13 only**, not a path for moving data into the
+PostgreSQL 17 instance introduced in v7. Migrating existing data across that
+major version boundary uses a different, logical (`pg_dumpall`-based) mechanism
+instead — see the
+[PostgreSQL major upgrade runbook](./postgres-major-upgrade-runbook.md). After
+cutting over to PostgreSQL 17, take a fresh base backup: the v6 chain does not
+continue against the new instance.
+
 ## Automated test coverage
 
 The wal-g mechanics are exercised as a regression oracle in `magda-int-test-ts` (`src/tests/walgBackupRestore.spec.ts`, added under [#3747](https://github.com/magda-io/magda/issues/3747)): base-backup → restore fidelity, WAL push/fetch byte-identity, and a point-in-time **roll-forward** restore that recovers writes made _after_ the base backup (the property that gives continuous archiving its value). Those tests deliberately drive wal-g directly against a plain `postgres:17.5` + MinIO (a dedicated `postgres:13.7` fixture is used only for the cross-version test, which restores a backup taken by the old, pre-PG15-protocol-fix wal-g 1.1.0) — they validate the wal-g command behaviour, not the in-cluster automation wiring (the CronJob manifest and PostgreSQL's `archive_command`), which is covered by the manual end-to-end scenario under [#3750](https://github.com/magda-io/magda/issues/3750) against the real `magda-postgres` image.
