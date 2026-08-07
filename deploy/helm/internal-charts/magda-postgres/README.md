@@ -1,6 +1,6 @@
 # magda-postgres
 
-![Version: 6.1.1](https://img.shields.io/badge/Version-6.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+![Version: 7.0.0-pr.3762.0](https://img.shields.io/badge/Version-7.0.0--pr.3762.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 A helm wrapper chart that provides in-kubernetes postgreSQL for Magda.
 
@@ -84,7 +84,7 @@ More config postgreSQL related options, please refer to: https://github.com/bitn
 | postgresql.fullnameOverride | string | `"default-db-postgresql-pg17"` | Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern. And point k8s service to DB instance. The `-pg17` suffix names the PostgreSQL *major generation*, not the Magda version. It exists so a major upgrade can run the new instance side-by-side with the old one: the pod labels this chart emits land in the StatefulSet's immutable `spec.selector`, so an in-place `helm upgrade` across a subchart major is impossible. Bump the suffix (and `majorUpgrade.sourceHost` in each wrapper chart) at the next major upgrade. |
 | postgresql.image.registry | string | `"ghcr.io"` |  |
 | postgresql.image.repository | string | `"magda-io/magda-postgres"` |  |
-| postgresql.image.tag | string | `"6.1.1"` | the default docker image tag/version used by the postgresql chart.  When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number. |
+| postgresql.image.tag | string | `"7.0.0-pr.3762.0"` | the default docker image tag/version used by the postgresql chart.  When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number. |
 | postgresql.metrics.image.pullPolicy | string | `"IfNotPresent"` | Pull policy for the metrics sidecar image. |
 | postgresql.metrics.image.registry | string | `"ghcr.io"` | Registry hosting the postgres-exporter metrics sidecar image. |
 | postgresql.metrics.image.repository | string | `"magda-io/third-party/bitnami/postgres-exporter"` | Repository (within `registry`) of the metrics sidecar image. Magda's mirror. Only pulled when `metrics.enabled` is true (off by default), but overridden anyway so no configuration can reach `docker.io/bitnami`. |
