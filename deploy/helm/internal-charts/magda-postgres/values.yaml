@@ -51,7 +51,8 @@ postgresql:
       # `postgresql-postgres-password` unconditionally makes the DB come up with a
       # password no Magda client knows, and pointing it at `postgresql-password`
       # unconditionally gives the `postgres` superuser the custom user's password.
-      adminPasswordKey: '{{ if eq (include "postgresql.v1.username" .) "postgres" }}postgresql-password{{ else }}postgresql-postgres-password{{ end }}'
+      adminPasswordKey: '{{ if eq (include "postgresql.v1.username" .) "postgres"
+        }}postgresql-password{{ else }}postgresql-postgres-password{{ end }}'
       # -- Secret key holding the privileged (custom) user's password.
       userPasswordKey: "postgresql-password"
 
@@ -143,7 +144,7 @@ postgresql:
   image:
     # -- the default docker image tag/version used by the postgresql chart. 
     # When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number.
-    tag: "6.1.1"
+    tag: "7.0.0-pr.3762.2"
     repository: "magda-io/magda-postgres"
     registry: "ghcr.io"
 
