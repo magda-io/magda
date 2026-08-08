@@ -270,6 +270,87 @@ spec:
                 exit 1
               fi
 
+              # RESTORED/EXPECTED above deliberately exclude "postgres" -- that exclusion is
+              # correct there (a fresh PG17 target always has a "postgres" database, so
+              # counting it would make EXISTING above always non-zero and destroy the "no
+              # databases -> proceed" path). But Magda's default (useCombinedDb: true)
+              # topology has no separate "registry" database: registry-api sets
+              # POSTGRES_USER=client with no POSTGRES_DB, so registry-db-migrator's Flyway
+              # migrations -- and therefore records, aspects, events, recordaspects,
+              # webhooks, webhookevents, eventtypes -- land in the DEFAULT "postgres"
+              # database, the one both counts above skip. A restore that recreated every
+              # OTHER database but silently lost "postgres" itself would still print "N of
+              # N database(s) now present" and go on to write the completion marker. Guard
+              # against that here, separately, using a count DERIVED FROM THE DUMP rather
+              # than a hardcoded expectation, so a topology where "postgres" legitimately
+              # holds nothing doesn't false-positive.
+              #
+              # Isolate the dump's "postgres" section: pg_dumpall emits one `\connect <db>`
+              # block per database, so the "postgres" block runs from its own `\connect
+              # postgres` line up to (but not including) the NEXT `\connect ` line, or EOF
+              # if postgres happens to be the last database dumped (both observed against a
+              # real postgres:17.5 server -- its position among the `\connect` blocks is not
+              # guaranteed). Count `CREATE TABLE public.<name>` lines in that range (the
+              # schema-qualified form pg_dump always emits, `UNLOGGED` included) -- a plain
+              # table count, not a row count, deliberately: this check exists to catch a
+              # LOST TABLE (the same class of gap RESTORED/EXPECTED closes for whole
+              # databases), not to police row-level drift, which is not this Job's job.
+              #
+              # Excludes public.magda_major_upgrade itself: `pg_dumpall` dumps the
+              # "postgres" database like any other, so if a PREVIOUS generation's marker
+              # row is present it appears in this very dump section (see the unconditional
+              # DROP above and the mechanism doc, §5). That drop is deliberate, not data
+              # loss -- counting the marker table here would make this check fail on
+              # exactly the case the drop exists to handle correctly.
+              DUMP_POSTGRES_TABLES=$(gunzip -c "$DUMP" | awk '
+                  /^\\connect postgres$/ { indb = 1; next }
+                  indb && /^\\connect / { exit }
+                  indb && /^CREATE (UNLOGGED )?TABLE public\.magda_major_upgrade[ (]/ { next }
+                  indb && /^CREATE (UNLOGGED )?TABLE public\./ { n++ }
+                  END { print n + 0 }')
+              # `[` conditions are exempt from `errexit`: validate before comparison. See
+              # the mechanism doc, §7.
+              case "$DUMP_POSTGRES_TABLES" in
+                ''|*[!0-9]*)
+                  echo "ERROR: could not count public-schema tables in the dump's \"postgres\" section, got: '${DUMP_POSTGRES_TABLES}'." >&2
+                  echo "  Refusing to declare a restore verified on an unreadable count." >&2
+                  exit 1
+                  ;;
+              esac
+              if [ "$DUMP_POSTGRES_TABLES" = "0" ]; then
+                echo "The dump's \"postgres\" database defines no public-schema tables (other than the completion marker, if any); skipping the postgres-content check (considered, not silently skipped)."
+              else
+                # Excludes public.magda_major_upgrade for the same reason as the dump-side
+                # count above: at this point in the script it never exists anyway (the
+                # unconditional DROP above ran before this, and the INSERT below runs only
+                # after this whole check passes), but excluding it explicitly keeps the two
+                # sides of this comparison symmetric regardless of where either query runs.
+                POSTGRES_TABLES=$(psql -h "$PGHOST" -d postgres -v ON_ERROR_STOP=1 -tAc \
+                  "SELECT count(*) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p') AND c.relname <> 'magda_major_upgrade'")
+                # `[` conditions are exempt from `errexit`: validate before comparison. See
+                # the mechanism doc, §7.
+                case "$POSTGRES_TABLES" in
+                  ''|*[!0-9]*)
+                    echo "ERROR: expected a public-schema table count from ${PGHOST}'s \"postgres\" database, got: '${POSTGRES_TABLES}'." >&2
+                    echo "  Refusing to declare a restore verified on an unreadable count." >&2
+                    exit 1
+                    ;;
+                esac
+                echo "postgres database content check: ${POSTGRES_TABLES} of ${DUMP_POSTGRES_TABLES} expected public-schema table(s) present."
+                if [ "$POSTGRES_TABLES" != "$DUMP_POSTGRES_TABLES" ]; then
+                  echo "ERROR: the dump's \"postgres\" database section defines ${DUMP_POSTGRES_TABLES} public-schema" >&2
+                  echo "  table(s), but the restored target's \"postgres\" database has ${POSTGRES_TABLES}." >&2
+                  echo "  In Magda's default topology (useCombinedDb: true) \"postgres\" is where the" >&2
+                  echo "  registry data lives -- records, aspects, events, recordaspects, webhooks," >&2
+                  echo "  webhookevents, eventtypes -- because registry-db-migrator connects with no" >&2
+                  echo "  POSTGRES_DB set. RESTORED/EXPECTED above only count DATABASES and both" >&2
+                  echo "  deliberately exclude \"postgres\", so they cannot see this. A restore that" >&2
+                  echo "  recreated every other database but lost this one's tables must not be" >&2
+                  echo "  reported as a success." >&2
+                  exit 1
+                fi
+              fi
+
               # HAZARD: this INSERT must stay strictly AFTER the RESTORED-vs-EXPECTED
               # verification above passes -- it is what makes the marker mean "verified,"
               # not just "attempted." CREATE TABLE + INSERT in one `psql -c` (one

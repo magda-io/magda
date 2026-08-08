@@ -304,6 +304,31 @@ for prefix in prefixes:
             errs.append("%s: does not reference the public.magda_major_upgrade completion marker"
                          % jname)
 
+    # -- the "postgres" database content check must be present, and must run in the
+    # right place: after the RESTORED-vs-EXPECTED database-count verification (so it
+    # sees a fully-loaded target) but strictly before the marker INSERT (so a target
+    # whose "postgres" database lost its tables cannot be recorded as migrated). In
+    # Magda's default (useCombinedDb: true) topology "postgres" is where registry-db-
+    # migrator's Flyway migrations land (registry-api sets POSTGRES_USER=client with no
+    # POSTGRES_DB) -- RESTORED/EXPECTED above deliberately exclude "postgres", so
+    # without this separate check a restore that lost every table in it would still
+    # report "N of N database(s) now present" and write the completion marker.
+    if "DUMP_POSTGRES_TABLES" not in restore_doc:
+        errs.append("%s: does not derive an expected public-schema table count for the "
+                    "\"postgres\" database from the dump -- a restore that recreated every "
+                    "other database but lost this one's tables would report success"
+                     % restore_name)
+    else:
+        idx_db_check = restore_doc.find("A partial restore must not be reported as a success")
+        idx_pg_check = restore_doc.find("DUMP_POSTGRES_TABLES")
+        idx_marker_insert = restore_doc.find("CREATE TABLE IF NOT EXISTS public.magda_major_upgrade")
+        if not (idx_db_check != -1 and idx_pg_check != -1 and idx_marker_insert != -1
+                and idx_db_check < idx_pg_check < idx_marker_insert):
+            errs.append("%s: the \"postgres\" content check must run AFTER the RESTORED-vs-"
+                        "EXPECTED database check and BEFORE the marker INSERT -- found at "
+                        "positions db_check=%d, postgres_check=%d, marker_insert=%d"
+                         % (restore_name, idx_db_check, idx_pg_check, idx_marker_insert))
+
     # -- PVC name / claimName agreement, computed from the rendered YAML --
     dump_claims = re.findall(r'claimName:\s*"?([^"\n]+?)"?\s*$', dump_doc, re.M)
     restore_claims = re.findall(r'claimName:\s*"?([^"\n]+?)"?\s*$', restore_doc, re.M)

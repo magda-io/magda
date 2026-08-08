@@ -259,6 +259,58 @@ If `RESTORED` is `0`, or `RESTORED != EXPECTED`, the Job hard-errors: "a partial
 restore must not be reported as a success." Only once this passes does the Job
 record completion — see §5.
 
+**The `postgres` database content check**, immediately after the above (still
+before the marker is written): `RESTORED`/`EXPECTED` deliberately exclude the
+`postgres` database itself — a fresh PostgreSQL 17 target always has one, so
+counting it would make `EXISTING` (§ above, the idempotency check) always
+non-zero and defeat the "no databases → proceed" path. But **Magda's default
+(`useCombinedDb: true`) topology has no separate `registry` database**:
+`registry-api` sets `POSTGRES_USER=client` with no `POSTGRES_DB`, so
+`registry-db-migrator`'s Flyway migrations — and the registry's actual data
+(`records`, `aspects`, `events`, `recordaspects`, `webhooks`,
+`webhookevents`, `eventtypes`) — land in the connecting role's default
+database, i.e. `postgres`. Without a dedicated check, a restore that
+recreated every _other_ database but silently lost everything inside
+`postgres` would still print `RESTORED of EXPECTED database(s) now present`
+and go on to record a completion marker over what is, for Magda's purposes,
+an unrestored instance.
+
+The check:
+
+- Isolates the dump's own `postgres` section the same way the `awk` role
+  filter (§4 above) isolates the globals header: `pg_dumpall` emits one
+  `\connect <db>` block per database, so the `postgres` section runs from its
+  own `\connect postgres` line up to (but not including) the next `\connect`
+  line, or EOF if `postgres` happens to be the last database dumped (its
+  position among the `\connect` blocks is not guaranteed and was observed to
+  vary against a real `postgres:17.5` server).
+- Counts `CREATE TABLE public.<name>` lines in that range — `DUMP_POSTGRES_TABLES`
+  — the schema-qualified form `pg_dump` always emits. This is a **table**
+  count, not a row count, deliberately: the check exists to catch a lost
+  _table_ (the same class of gap `RESTORED`/`EXPECTED` closes for whole
+  databases), not to police row-level drift.
+- Excludes `public.magda_major_upgrade` itself from that count. `pg_dumpall`
+  dumps the `postgres` database like any other, so if a _previous_
+  generation's marker row was present on the source, it appears in this very
+  dump section (see §5) — and the restore Job unconditionally drops that
+  table right after the pipeline runs, before this check, as intended
+  behaviour (not data loss). Counting it here would make this check fail on
+  exactly the case that drop exists to handle correctly.
+- If `DUMP_POSTGRES_TABLES` is `0` (the dump's `postgres` section defines no
+  public-schema tables at all, other than possibly the marker), the check is
+  **skipped**, not silently omitted — the Job logs that it considered and
+  skipped it. This keeps the check from false-positiving on a topology where
+  `postgres` legitimately holds nothing.
+- Otherwise it queries the target's actual public-schema table count the same
+  way (excluding `magda_major_upgrade`, via `pg_catalog.pg_class`/
+  `pg_namespace` restricted to ordinary and partitioned tables, `relkind IN ('r', 'p')` — deliberately narrower than `information_schema.tables`, which
+  also counts views), and hard-errors if the two counts don't match:
+  "the dump's \"postgres\" database section defines N public-schema table(s),
+  but the restored target's \"postgres\" database has M." Exactly like the
+  `RESTORED`/`EXPECTED` check above, this exits non-zero **before** the
+  marker INSERT is ever reached, so a failed content check leaves no
+  completion marker for a retry to misread as success.
+
 ## 5. The marker table lifecycle
 
 `public.magda_major_upgrade` is a one-row table in the **target's `postgres`
@@ -338,6 +390,8 @@ restore pipeline (awk | psql)
   → DROP TABLE IF EXISTS public.magda_major_upgrade   (unconditional)
   → compute RESTORED, EXPECTED
   → verify RESTORED != 0 and RESTORED == EXPECTED       (hard error if not)
+  → compute DUMP_POSTGRES_TABLES, POSTGRES_TABLES (§4, "postgres" content check)
+  → verify they match, unless DUMP_POSTGRES_TABLES == 0  (hard error if not)
   → CREATE TABLE + INSERT, one psql -c                  (only reached on success)
 ```
 
@@ -418,16 +472,17 @@ one of these guards.
 
 ## 8. Failure modes and where to recover
 
-| Symptom                                                                                                                         | Cause                                                                                                              | Recovery                                                                                                                                                                                                                                                                                       |
-| ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Error: UPGRADE FAILED: pre-upgrade hooks failed: context deadline exceeded`, staging PVC stuck `Terminating`                   | A previous dump/restore Job failed and was left in place (by design — see §7); its pod still pins the staging PVC  | `kubectl delete job <db>-postgresql-pg17-major-upgrade-dump <db>-postgresql-pg17-major-upgrade-restore --ignore-not-found`, **after** reading their logs, then retry. Runbook [§8](./postgres-major-upgrade-runbook.md#8-rolling-back).                                                        |
-| Dump Job: `ERROR: could not reach the source PostgreSQL server "<host>"`                                                        | `majorUpgrade.sourceHost` is wrong, or the old instance isn't running                                              | Fix `sourceHost`; nothing has changed yet (fails before any resource is touched). Runbook §5.                                                                                                                                                                                                  |
-| Dump Job: `ERROR: the source server <host> reports server_version_num=..., i.e. it is already running PostgreSQL 17 (or later)` | `sourceHost` points at the _new_ instance instead of the old one                                                   | Fix `sourceHost` to name the previous major's Service. Runbook §5.                                                                                                                                                                                                                             |
-| Dump Job: `ERROR: could not determine the PostgreSQL version of <host>`                                                         | `SHOW server_version_num` didn't return a plain integer (unreachable mid-query, unexpected output)                 | Investigate connectivity/credentials to the source; nothing has changed.                                                                                                                                                                                                                       |
-| Restore Job: `ERROR: majorUpgrade requires global.postgresql.auth.username=postgres`                                            | A non-default privileged username is configured                                                                    | Set `global.postgresql.auth.username: postgres` for the duration of the migration. Runbook §4.                                                                                                                                                                                                 |
-| Restore Job: `ERROR: the target holds N database(s) but public.magda_major_upgrade ... is absent`                               | A previous restore attempt started but was interrupted partway through                                             | **Do not just retry.** Inspect the target by hand — drop the incomplete databases and re-run the restore Job, or restore `dumpall.sql.gz` manually, or fall back to `helm rollback` and start over from a clean staging PVC. Runbook [§8](./postgres-major-upgrade-runbook.md#8-rolling-back). |
-| Restore Job: `ERROR: restored N database(s) but the dump names M`                                                               | The restore pipeline ran but didn't fully replay (dump truncated, a mid-stream error `ON_ERROR_STOP` didn't catch) | Investigate the restore Job's logs for the actual `psql` error; the target is left in the "databases present, marker absent" state above on the next attempt.                                                                                                                                  |
-| `helm upgrade` exceeds the default 5-minute timeout while the restore Job is still running underneath it                        | `--timeout` wasn't sized for a real dump + restore                                                                 | Always pass an explicit, generous `--timeout` (e.g. `3600s`). Runbook §5. Whatever the restore pod ends up doing, it still pins the staging PVC — see the first row of this table before retrying.                                                                                             |
+| Symptom                                                                                                                                            | Cause                                                                                                                                                                                                     | Recovery                                                                                                                                                                                                                                                                                        |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Error: UPGRADE FAILED: pre-upgrade hooks failed: context deadline exceeded`, staging PVC stuck `Terminating`                                      | A previous dump/restore Job failed and was left in place (by design — see §7); its pod still pins the staging PVC                                                                                         | `kubectl delete job <db>-postgresql-pg17-major-upgrade-dump <db>-postgresql-pg17-major-upgrade-restore --ignore-not-found`, **after** reading their logs, then retry. Runbook [§8](./postgres-major-upgrade-runbook.md#8-rolling-back).                                                         |
+| Dump Job: `ERROR: could not reach the source PostgreSQL server "<host>"`                                                                           | `majorUpgrade.sourceHost` is wrong, or the old instance isn't running                                                                                                                                     | Fix `sourceHost`; nothing has changed yet (fails before any resource is touched). Runbook §5.                                                                                                                                                                                                   |
+| Dump Job: `ERROR: the source server <host> reports server_version_num=..., i.e. it is already running PostgreSQL 17 (or later)`                    | `sourceHost` points at the _new_ instance instead of the old one                                                                                                                                          | Fix `sourceHost` to name the previous major's Service. Runbook §5.                                                                                                                                                                                                                              |
+| Dump Job: `ERROR: could not determine the PostgreSQL version of <host>`                                                                            | `SHOW server_version_num` didn't return a plain integer (unreachable mid-query, unexpected output)                                                                                                        | Investigate connectivity/credentials to the source; nothing has changed.                                                                                                                                                                                                                        |
+| Restore Job: `ERROR: majorUpgrade requires global.postgresql.auth.username=postgres`                                                               | A non-default privileged username is configured                                                                                                                                                           | Set `global.postgresql.auth.username: postgres` for the duration of the migration. Runbook §4.                                                                                                                                                                                                  |
+| Restore Job: `ERROR: the target holds N database(s) but public.magda_major_upgrade ... is absent`                                                  | A previous restore attempt started but was interrupted partway through                                                                                                                                    | **Do not just retry.** Inspect the target by hand — drop the incomplete databases and re-run the restore Job, or restore `dumpall.sql.gz` manually, or fall back to `helm rollback` and start over from a clean staging PVC. Runbook [§8](./postgres-major-upgrade-runbook.md#8-rolling-back).  |
+| Restore Job: `ERROR: restored N database(s) but the dump names M`                                                                                  | The restore pipeline ran but didn't fully replay (dump truncated, a mid-stream error `ON_ERROR_STOP` didn't catch)                                                                                        | Investigate the restore Job's logs for the actual `psql` error; the target is left in the "databases present, marker absent" state above on the next attempt.                                                                                                                                   |
+| Restore Job: `ERROR: the dump's "postgres" database section defines N public-schema table(s), but the restored target's "postgres" database has M` | Same class of gap as the row above, but for the `postgres` database specifically -- excluded from `RESTORED`/`EXPECTED`, and in Magda's default topology it's where the registry's actual data lives (§4) | No completion marker was written (this check runs before the marker INSERT). Treat it exactly like a `RESTORED`/`EXPECTED` mismatch: investigate the restore Job's logs, then either drop the incomplete databases and re-run the restore Job, or fall back to `helm rollback`. Runbook §6, §8. |
+| `helm upgrade` exceeds the default 5-minute timeout while the restore Job is still running underneath it                                           | `--timeout` wasn't sized for a real dump + restore                                                                                                                                                        | Always pass an explicit, generous `--timeout` (e.g. `3600s`). Runbook §5. Whatever the restore pod ends up doing, it still pins the staging PVC — see the first row of this table before retrying.                                                                                              |
 
 For the full operator-facing procedure (prerequisites, verification steps,
 rollback, per-service instances), see the

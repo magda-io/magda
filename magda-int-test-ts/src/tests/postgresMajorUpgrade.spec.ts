@@ -416,6 +416,14 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
         expect(restoreScript).to.include("magda_major_upgrade");
         expect(restoreScript).to.not.include("/staging/restore.complete");
         expect(dumpScript).to.include("TARGET_PGHOST");
+
+        // The "postgres" database content check: RESTORED/EXPECTED above
+        // only count DATABASES and both deliberately exclude "postgres", so
+        // without this separate, dump-derived table-count check a restore
+        // that lost every table in Magda's default registry database would
+        // still be reported as a success.
+        expect(restoreScript).to.include("DUMP_POSTGRES_TABLES");
+        expect(restoreScript).to.include("POSTGRES_TABLES");
     });
 
     describe("live dump + restore against real postgres:13.7 -> postgres:17.5", function () {
@@ -526,6 +534,30 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
                 await c.query("CREATE DATABASE db_alpha");
                 await c.query("CREATE DATABASE db_beta");
                 await c.query("CREATE DATABASE db_gamma");
+
+                // Magda's default (useCombinedDb: true) topology has no
+                // separate "registry" database: registry-api sets
+                // POSTGRES_USER=client with no POSTGRES_DB, so
+                // registry-db-migrator's Flyway migrations -- and therefore
+                // the registry's actual data (records, aspects, events,
+                // recordaspects, webhooks, webhookevents, eventtypes) --
+                // land in this DEFAULT "postgres" database. RESTORED/
+                // EXPECTED (the whole-database count) deliberately exclude
+                // "postgres", so only the dedicated postgres-content check
+                // added alongside this test can catch a restore that lost
+                // it. Two small tables here exercise that check's PASSING
+                // path against the REAL rendered script.
+                await c.query(
+                    "CREATE TABLE records (id text primary key, data text)"
+                );
+                await c.query(
+                    "INSERT INTO records (id, data) VALUES ($1, $2), ($3, $4)",
+                    ["rec-1", "hello registry", "rec-2", "world registry"]
+                );
+                await c.query("CREATE TABLE aspects (id text primary key)");
+                await c.query("INSERT INTO aspects (id) VALUES ($1)", [
+                    "aspect-1"
+                ]);
             });
 
             await withClient(host, sourcePort, "db_alpha", async (c) => {
@@ -676,6 +708,13 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
             expect(restoreResult.stdout).to.match(
                 /Restore complete: 3 of 3 database\(s\) now present\./
             );
+            // The dedicated "postgres" database content check (records +
+            // aspects, seeded above) must also have run and passed -- the
+            // whole-database count above cannot see this, since it
+            // deliberately excludes "postgres" itself.
+            expect(restoreResult.stdout).to.match(
+                /postgres database content check: 2 of 2 expected public-schema table\(s\) present\./
+            );
 
             // 5. Assert full data integrity on the RESTORED target -- exit
             // codes and the Job's own "3 of 3" line are necessary but not
@@ -689,6 +728,26 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
                     dbs.rows.map((r) => r.datname),
                     "restored database set"
                 ).to.deep.equal(["db_alpha", "db_beta", "db_gamma"]);
+
+                // The registry-shaped content that lives directly in the
+                // "postgres" database in Magda's default topology -- this is
+                // exactly what RESTORED/EXPECTED above cannot see, and what
+                // the postgres-content check exists to verify.
+                const records = await c.query(
+                    "SELECT id, data FROM records ORDER BY id"
+                );
+                expect(
+                    records.rows,
+                    'records table in the "postgres" database'
+                ).to.deep.equal([
+                    { id: "rec-1", data: "hello registry" },
+                    { id: "rec-2", data: "world registry" }
+                ]);
+                const aspects = await c.query("SELECT id FROM aspects");
+                expect(
+                    aspects.rows,
+                    'aspects table in the "postgres" database'
+                ).to.deep.equal([{ id: "aspect-1" }]);
 
                 const role = await c.query(
                     "SELECT rolsuper, rolcreatedb, rolcreaterole, rolcanlogin FROM pg_roles WHERE rolname = 'role_owner_x'"
@@ -1081,6 +1140,156 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
                 expect(
                     marker.rows[0].reg,
                     "a failed RESTORED-vs-EXPECTED verification must leave no completion marker table -- otherwise a retry would read the partial restore as already migrated"
+                ).to.equal(null);
+            });
+        });
+
+        it('a restore whose "postgres" database loses content that the dump implies it should have writes no completion marker, even though RESTORED equals EXPECTED', async function (this) {
+            // WHY THIS TEST EXISTS: RESTORED/EXPECTED only count DATABASES,
+            // and both deliberately exclude "postgres" (a fresh PG17 target
+            // always has one, so counting it would make the Job's own
+            // idempotency check always see a non-empty target). In Magda's
+            // default (useCombinedDb: true) topology, "postgres" is where
+            // the registry's actual data lives (registry-api sets
+            // POSTGRES_USER=client with no POSTGRES_DB), so a restore that
+            // recreated every OTHER database but silently lost everything in
+            // "postgres" would still print "N of N database(s) now present"
+            // and, before this fix, go on to write the completion marker.
+            // The restore Job now derives an expected public-schema table
+            // count for "postgres" from the dump itself and compares it to
+            // what's actually on the target after the restore.
+            //
+            // To prove that comparison fires without physically corrupting
+            // the dump or racing the restore pipeline, this engineers the
+            // SAME kind of adversarial input the test above uses for
+            // EXPECTED: the table-count derivation is a naive text scan
+            // (`awk` over `CREATE TABLE public.<name>` lines), not
+            // SQL-aware, so a COPY data row that happens to read
+            // "CREATE TABLE public.ghost_table (" inside a real table in
+            // "postgres" inflates the dump-derived count one above the
+            // number of tables the restore actually creates -- the same
+            // "structurally complete (psql exits 0) but semantically
+            // incomplete" signature RESTORED/EXPECTED itself exists to
+            // catch, now demonstrated for the database RESTORED/EXPECTED
+            // cannot see.
+            this.timeout(ENV_SETUP_TIME_OUT);
+
+            docker([
+                "run",
+                "-d",
+                "--name",
+                sourceHost,
+                "--network",
+                network,
+                "-p",
+                `${sourcePort}:5432`,
+                "-e",
+                `POSTGRES_PASSWORD=${PGPASSWORD}`,
+                "-e",
+                "POSTGRES_HOST_AUTH_METHOD=md5",
+                SOURCE_IMAGE
+            ]);
+            docker([
+                "run",
+                "-d",
+                "--name",
+                restoreHost,
+                "--network",
+                network,
+                "-p",
+                `${targetPort}:5432`,
+                "-e",
+                `POSTGRES_PASSWORD=${PGPASSWORD}`,
+                "-e",
+                "POSTGRES_HOST_AUTH_METHOD=md5",
+                TARGET_IMAGE
+            ]);
+            await serviceRunner.createPortForward(sourcePort);
+            await serviceRunner.createPortForward(targetPort);
+            const host = serviceRunner.dockerServiceForwardHost || "localhost";
+            await waitForPg(pgConfig(host, sourcePort, "postgres"));
+            await waitForPg(pgConfig(host, targetPort, "postgres"));
+
+            // Seed the source's "postgres" database with a real table (the
+            // content this check exists to protect), plus a second real
+            // table whose row content is engineered to be misread as an
+            // extra `CREATE TABLE` line by the dump-side text scan.
+            await withClient(host, sourcePort, "postgres", async (c) => {
+                await c.query(
+                    "CREATE TABLE records (id text primary key, data text)"
+                );
+                await c.query(
+                    "INSERT INTO records (id, data) VALUES ($1, $2)",
+                    ["rec-1", "registry content that must survive"]
+                );
+                await c.query("CREATE TABLE adversarial_ddl_lines (v text)");
+                await c.query(
+                    "INSERT INTO adversarial_ddl_lines (v) VALUES ($1)",
+                    ["CREATE TABLE public.ghost_table ("]
+                );
+                await c.query("CREATE DATABASE db_one");
+            });
+
+            const dumpEnv = {
+                PGHOST: sourceHost,
+                TARGET_PGHOST: dumpTargetHost,
+                PGUSER: "postgres",
+                PGPASSWORD,
+                PGSSLMODE: "disable",
+                PGCONNECT_TIMEOUT: "10"
+            };
+            const dumpResult = runRealScript({
+                image: RUNNER_IMAGE,
+                network,
+                env: dumpEnv,
+                stagingVolume,
+                script: dumpScript
+            });
+            expect(
+                dumpResult.status,
+                `dump script failed:\nSTDOUT:\n${dumpResult.stdout}\nSTDERR:\n${dumpResult.stderr}`
+            ).to.equal(0);
+
+            const restoreEnv = {
+                PGHOST: restoreHost,
+                PGUSER: "postgres",
+                PGPASSWORD,
+                PGSSLMODE: "disable",
+                PGCONNECT_TIMEOUT: "10"
+            };
+            const restoreResult = runRealScript({
+                image: RUNNER_IMAGE,
+                network,
+                env: restoreEnv,
+                stagingVolume,
+                script: restoreScript
+            });
+
+            // The whole-database check still passes (one database, "db_one",
+            // both restored and expected) -- proving RESTORED/EXPECTED alone
+            // cannot see this class of loss.
+            expect(restoreResult.stdout).to.match(
+                /Restore complete: 1 of 1 database\(s\) now present\./
+            );
+            expect(
+                restoreResult.status,
+                `a "postgres" database table-count mismatch must be a hard failure, never exit 0:\nSTDOUT:\n${restoreResult.stdout}\nSTDERR:\n${restoreResult.stderr}`
+            ).to.not.equal(0);
+            expect(restoreResult.stdout).to.match(
+                /postgres database content check: 2 of 3 expected public-schema table\(s\) present\./
+            );
+            expect(restoreResult.stderr).to.include(
+                'the dump\'s "postgres" database section defines 3 public-schema'
+            );
+            expect(restoreResult.stderr).to.include("registry data lives");
+
+            await withClient(host, targetPort, "postgres", async (c) => {
+                const marker = await c.query(
+                    "SELECT to_regclass('public.magda_major_upgrade') AS reg"
+                );
+                expect(
+                    marker.rows[0].reg,
+                    "a failed postgres-content verification must leave no completion marker table -- otherwise a retry would read this restore as already migrated over a target that (as far as this check could tell) lost content"
                 ).to.equal(null);
             });
         });

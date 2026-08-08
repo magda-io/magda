@@ -14,8 +14,12 @@ for the operator-facing explanation of what each step does and why.
 
 ## What it covers
 
-1. **Install v6, seed data** in both the `registry` and `auth` databases so the
-   migration is proven for more than one logical database.
+1. **Install v6, seed data** via the registry API and the auth API. In the
+   default (`useCombinedDb: true`) topology this exercises two distinct
+   databases even though only one is named `auth`: `registry-api` connects
+   with no `POSTGRES_DB` set, so registry records land in the cluster's
+   default `postgres` database, not in a database named `registry` (there
+   isn't one) — see the note under step 1 below.
 2. **Upgrade to v7 with `majorUpgrade.enabled=true`** and a generous `--timeout`.
 3. **Assert the migration ran correctly**: both hook Jobs succeeded in the right
    order, the seeded rows are present in PostgreSQL 17 with the exact counts
@@ -47,9 +51,30 @@ export V7_VERSION=7.0.0-pr.3750.1  # branch build carrying majorUpgrade
 
 ```bash
 kubectl create namespace "$NS"
-helm install magda oci://ghcr.io/magda-io/charts/magda --version "$V6_VERSION" -n "$NS"
+helm install magda oci://ghcr.io/magda-io/charts/magda --version "$V6_VERSION" -n "$NS" \
+  --wait --timeout 3600s
 kubectl -n "$NS" rollout status statefulset/combined-db-postgresql --timeout=600s
 ```
+
+`--timeout 3600s` matters here as much as it does for the upgrade in step 2. The five
+DB migrators are `post-install` hooks that run in sequence, and Helm's default 5-minute
+timeout is not enough — especially on an emulated architecture (an `x86_64` image on an
+ARM host), where a single migrator can take ~9 minutes on a cold image cache. A timeout
+here does not fail loudly and obviously: Helm reports
+`Release "magda" failed: context canceled`, leaves the release in `failed` state, and
+the migrators that never ran leave their databases **missing** — which looks like a
+partially working install rather than a timeout.
+
+So verify the databases exist before seeding, rather than trusting Helm's exit code:
+
+```bash
+kubectl -n "$NS" exec combined-db-postgresql-0 -- env PGPASSWORD="$PGPASSWORD" \
+  psql -U postgres -h 127.0.0.1 -d postgres -tAc \
+  "SELECT datname FROM pg_database WHERE datname NOT IN ('template0','template1') ORDER BY 1"
+```
+
+Expect `auth`, `content`, `postgres` and `session` (plus `tenant` if multi-tenancy is
+enabled). Remember the registry's tables live in `postgres` — see step 3.
 
 Expected: the v6 (PostgreSQL 13) instance, not the renamed one.
 
@@ -97,10 +122,21 @@ Record exact counts in both databases — these are the numbers step 3 must repr
 
 ```bash
 kubectl -n "$NS" exec combined-db-postgresql-0 -- env PGPASSWORD="$PGPASSWORD" \
-  psql -U postgres -h 127.0.0.1 -d registry -tAc "SELECT count(*) FROM records;" | tee /tmp/registry-count-v6.txt
+  psql -U postgres -h 127.0.0.1 -d postgres -tAc "SELECT count(*) FROM records;" | tee /tmp/registry-count-v6.txt
 kubectl -n "$NS" exec combined-db-postgresql-0 -- env PGPASSWORD="$PGPASSWORD" \
   psql -U postgres -h 127.0.0.1 -d auth -tAc "SELECT count(*) FROM users;" | tee /tmp/auth-count-v6.txt
 ```
+
+> **Note on `-d postgres` above:** in the default (`useCombinedDb: true`)
+> topology there is no database named `registry` — `registry-api` connects
+> with `POSTGRES_USER=client` and no `POSTGRES_DB`, so `registry-db-migrator`'s
+> Flyway migrations, and the registry's actual data (`records`, `aspects`,
+> `events`, `recordaspects`, `webhooks`, `webhookevents`, `eventtypes`), land
+> in the connecting role's default database: `postgres`. This is exactly the
+> data the restore Job's `postgres` database content check (added alongside
+> this test case) exists to verify — `RESTORED`/`EXPECTED` in step 3a below
+> deliberately exclude `postgres` from the whole-database count, so without
+> that separate check this class of data loss would go unnoticed.
 
 ## 2. Upgrade to the v7 build with the migration enabled
 
@@ -146,10 +182,17 @@ WATCHER=$!
 Then read `/tmp/*major-upgrade-dump*.log` and `/tmp/*major-upgrade-restore*.log`.
 
 Expected: the dump log ends with `Dump complete: <size> at /staging/dumpall.sql.gz`;
-the restore log ends with `Restore complete: N of N database(s) now present.`
-where `N` matches the databases the v6 install created (`registry`, `auth`, plus
-any others your topology enables), followed by
-`Recording the completed migration in public.magda_major_upgrade ...`.
+the restore log has, in order:
+
+- `Restore complete: N of N database(s) now present.` where `N` matches the
+  databases the v6 install created (`auth`, `content`, `session`, plus any
+  others your topology enables) — this count deliberately excludes `postgres`
+  itself (§4 of the mechanism doc), so it says nothing about the registry
+  data below;
+- `postgres database content check: M of M expected public-schema table(s) present.` — this is the line that actually verifies the registry data
+  (`records`, `aspects`, etc., all living in `postgres` — see the note under
+  step 1) survived the restore;
+- `Recording the completed migration in public.magda_major_upgrade ...`.
 
 Remember `kill $WATCHER` at cleanup.
 
@@ -168,13 +211,13 @@ the actual point of the exercise:
 
 ```bash
 kubectl -n "$NS" exec combined-db-postgresql-pg17-0 -- env PGPASSWORD="$PGPASSWORD" \
-  psql -U postgres -h 127.0.0.1 -d registry -tAc "SELECT count(*) FROM records;"
+  psql -U postgres -h 127.0.0.1 -d postgres -tAc "SELECT count(*) FROM records;"
 # expect: equals the value in /tmp/registry-count-v6.txt
 kubectl -n "$NS" exec combined-db-postgresql-pg17-0 -- env PGPASSWORD="$PGPASSWORD" \
   psql -U postgres -h 127.0.0.1 -d auth -tAc "SELECT count(*) FROM users;"
 # expect: equals the value in /tmp/auth-count-v6.txt
 kubectl -n "$NS" exec combined-db-postgresql-pg17-0 -- env PGPASSWORD="$PGPASSWORD" \
-  psql -U postgres -h 127.0.0.1 -d registry -tAc "SELECT name FROM records WHERE recordid = '$DATASET_ID';" 2>/dev/null || true
+  psql -U postgres -h 127.0.0.1 -d postgres -tAc "SELECT name FROM records WHERE recordid = '$DATASET_ID';" 2>/dev/null || true
 ```
 
 **c. The server is really PostgreSQL 17:**
@@ -198,7 +241,7 @@ have appended to (or found already up to date) without any failed entries:
 
 ```bash
 kubectl -n "$NS" exec combined-db-postgresql-pg17-0 -- env PGPASSWORD="$PGPASSWORD" \
-  psql -U postgres -h 127.0.0.1 -d registry -c \
+  psql -U postgres -h 127.0.0.1 -d postgres -c \
   "SELECT installed_rank, version, description, success FROM flyway_schema_history ORDER BY installed_rank;"
 ```
 
@@ -227,7 +270,7 @@ kubectl -n "$NS" get statefulset          # expect BOTH combined-db-postgresql a
 kubectl -n "$NS" get pvc                  # expect BOTH data-combined-db-postgresql-0 (old, untouched)
                                            # and data-combined-db-postgresql-pg17-0 (new)
 kubectl -n "$NS" exec combined-db-postgresql-0 -- env PGPASSWORD="$PGPASSWORD" \
-  psql -U postgres -h 127.0.0.1 -d registry -tAc "SELECT count(*) FROM records;"
+  psql -U postgres -h 127.0.0.1 -d postgres -tAc "SELECT count(*) FROM records;"
 # expect: still equals /tmp/registry-count-v6.txt -- the old PostgreSQL 13 data was never written to
 ```
 
@@ -279,7 +322,7 @@ Expected:
 kubectl -n "$NS" get statefulset combined-db-postgresql   # back and Ready
 kubectl -n "$NS" get pvc data-combined-db-postgresql-0     # same PVC, bound to the rolled-back StatefulSet
 kubectl -n "$NS" exec combined-db-postgresql-0 -- env PGPASSWORD="$PGPASSWORD" \
-  psql -U postgres -h 127.0.0.1 -d registry -tAc "SELECT count(*) FROM records;"
+  psql -U postgres -h 127.0.0.1 -d postgres -tAc "SELECT count(*) FROM records;"
 # expect: still equals /tmp/registry-count-v6.txt -- rollback did not lose data
 kubectl -n "$NS" exec combined-db-postgresql-0 -- env PGPASSWORD="$PGPASSWORD" \
   psql -U postgres -h 127.0.0.1 -d auth -tAc "SELECT count(*) FROM users;"

@@ -164,7 +164,12 @@ immune to the on-disk format change.
 After the upgrade command returns successfully:
 
 1. **Read both hook Jobs' logs.** The dump log reports the compressed dump size;
-   the restore log reports `Restore complete: N of N database(s) now present.`
+   the restore log reports `Restore complete: N of N database(s) now present.`,
+   followed by a second line for the `postgres` database's own content --
+   `postgres database content check: N of N expected public-schema table(s) present.` (or, if the dump's `postgres` section defined no public-schema
+   tables at all, a line saying the check was skipped rather than silently
+   omitted). See the note on the `postgres` database in step 3 below for why
+   this second check exists.
 
    Both Jobs carry `hook-delete-policy: before-hook-creation,hook-succeeded`, so
    **a Job that SUCCEEDS is deleted as soon as it finishes** and
@@ -194,12 +199,37 @@ After the upgrade command returns successfully:
    is what makes a repeat `helm upgrade` a no-op (§7), so do not drop the table
    unless you intend the migration to run again.
 3. **List the databases on the new instance**:
+
    ```bash
    kubectl exec <db>-postgresql-pg17-0 -- env PGPASSWORD=<password> \
      psql -U postgres -c '\l'
    ```
-   and confirm every database you expect (e.g. `registry`, `auth`/`authorization`,
-   `content`, `session`, `tenant`) is present.
+
+   and confirm every database you expect is present. **There is no `registry`
+   database in the default topology.** `registry-api` connects with
+   `POSTGRES_USER=client` and no `POSTGRES_DB`, so `registry-db-migrator`'s
+   Flyway migrations -- and the registry's actual data (`records`, `aspects`,
+   `events`, `recordaspects`, `webhooks`, `webhookevents`, `eventtypes`) --
+   land in the cluster's **default `postgres` database**, alongside whatever
+   else uses it. In a combined-db (`useCombinedDb: true`) install you should
+   see `auth`, `content` and `session` here as separate databases, with the
+   registry data living in `postgres` itself; in a per-service
+   (`useInK8sDbInstance`) topology each `*-db` instance's own `postgres`
+   database plays the same role for that service.
+
+   Because `postgres` is excluded from the whole-database `RESTORED`/
+   `EXPECTED` count above (a fresh PostgreSQL 17 instance always has a
+   `postgres` database, so counting it would break the Job's own "target is
+   empty, proceed" check), that count cannot see whether the registry data
+   inside it actually survived the restore. The restore Job's separate
+   `postgres database content check` line (step 1 above) is what verifies
+   this instead: it derives an expected public-schema table count from the
+   dump's own `postgres` section and compares it to what actually landed on
+   the target, and hard-fails the Job -- writing no completion marker -- if
+   they don't match. If you ever see a restore report `N of N database(s) now present` immediately followed by an `ERROR: the dump's "postgres" database section defines ...` line, treat it exactly like a `RESTORED`/`EXPECTED`
+   mismatch (§8): the restore is incomplete and must not be treated as
+   migrated.
+
 4. **Check application health** — the gateway is reachable, dataset search
    returns your existing data, and login/authentication works.
 5. **Confirm the DB migrator Jobs ran and succeeded, in the right order.** They
