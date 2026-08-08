@@ -16,9 +16,9 @@ Run this test before merging any PR whose CI test plan can't otherwise prove it 
 - Helm v3 (`helm version`) and `kubectl` configured against the `minikube` context.
 - A published build to test — either a real release/alpha tag, or a [PR preview release](./pr-preview-release-testing.md) (e.g. `v6.0.0-pr.3665.5`).
 
-> **On sizing (measured, magda full default stack, docker driver, Apple Silicon).** A fresh install settles at ~7 GiB node RAM and idles at well under one CPU; a long-running instance drifts toward ~10 GiB as JVM/OpenSearch working sets and indexed data grow. CPU only spikes transiently (install, indexing) — `magda-embedding-api` in particular is CPU-bound rather than memory-bound (it stays around 0.5 GiB even under heavy embedding load but will use every core it's given during bulk semantic indexing). The Helm chart's scheduler *requests* only sum to ~1.6 CPU / ~5.75 GiB, so `minikube` will happily schedule the whole stack onto an undersized node and then OOM-kill under load — size for the actual usage above, not for requests. (An earlier revision of this doc suggested 8 CPU / 16 GB; that is safe but conservative.)
+> **On sizing (measured, magda full default stack, docker driver, Apple Silicon).** A fresh install settles at ~7 GiB node RAM and idles at well under one CPU; a long-running instance drifts toward ~10 GiB as JVM/OpenSearch working sets and indexed data grow. CPU only spikes transiently (install, indexing) — `magda-embedding-api` in particular is CPU-bound rather than memory-bound (it stays around 0.5 GiB even under heavy embedding load but will use every core it's given during bulk semantic indexing). The Helm chart's scheduler _requests_ only sum to ~1.6 CPU / ~5.75 GiB, so `minikube` will happily schedule the whole stack onto an undersized node and then OOM-kill under load — size for the actual usage above, not for requests. (An earlier revision of this doc suggested 8 CPU / 16 GB; that is safe but conservative.)
 >
-> **docker-driver gotcha:** `minikube start --memory/--cpus` is enforced at the container cgroup, but `kubectl get node` reports the *host* Docker VM's capacity (e.g. 24 GB / 9 CPU), not your cap — so an over-commit surfaces as raw cgroup OOM-kills rather than graceful Kubernetes eviction. Confirm the real limit with `docker inspect minikube --format '{{.HostConfig.Memory}}'` (bytes) / `'{{.HostConfig.NanoCpus}}'`.
+> **docker-driver gotcha:** `minikube start --memory/--cpus` is enforced at the container cgroup, but `kubectl get node` reports the _host_ Docker VM's capacity (e.g. 24 GB / 9 CPU), not your cap — so an over-commit surfaces as raw cgroup OOM-kills rather than graceful Kubernetes eviction. Confirm the real limit with `docker inspect minikube --format '{{.HostConfig.Memory}}'` (bytes) / `'{{.HostConfig.NanoCpus}}'`.
 
 ## Step 1: Fully Purge Any Existing Deployment
 
@@ -144,7 +144,7 @@ A JWT built directly with `acs-cmd jwt` only works for API calls — there's no 
    #   npm rebuild bcrypt --build-from-source
 
    export PGPASSWORD=$(kubectl get secret -n magda db-main-account-secret -o jsonpath='{.data.postgresql-password}' | base64 -d)
-   kubectl port-forward -n magda svc/combined-db-postgresql 15432:5432 &
+   kubectl port-forward -n magda svc/combined-db-postgresql-pg17 15432:5432 &
    POSTGRES_HOST=localhost POSTGRES_PORT=15432 POSTGRES_DB=auth POSTGRES_USER=postgres POSTGRES_PASSWORD="$PGPASSWORD" \
      yarn set-user-password -c e2e-test-admin@example.com -p "<a real password>" -n "E2E Test Admin" -a
    ```
@@ -320,7 +320,7 @@ Several checks (e.g. running [`@magda/acs-cmd`](https://www.npmjs.com/package/@m
 
 ```bash
 export PGPASSWORD=$(kubectl get secret -n magda db-main-account-secret -o jsonpath='{.data.postgresql-password}' | base64 -d)
-kubectl port-forward -n magda svc/combined-db-postgresql 15432:5432 &
+kubectl port-forward -n magda svc/combined-db-postgresql-pg17 15432:5432 &
 POSTGRES_HOST=localhost POSTGRES_PORT=15432 POSTGRES_DB=auth POSTGRES_USER=postgres POSTGRES_PASSWORD="$PGPASSWORD" \
   yarn acs-cmd list users
 ```

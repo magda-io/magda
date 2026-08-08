@@ -1,0 +1,390 @@
+{{- if .Values.majorUpgrade.enabled }}
+{{- /*
+  Loads the dump produced by `major-upgrade-dump-job.yaml` into the new major's
+  instance, as a `post-upgrade` hook weighted BELOW the DB migrators (-10 vs their -5)
+  so Flyway runs against restored data, not an empty database.
+
+  Idempotency is a data check (a database count) PLUS a durable completion marker
+  (a one-row `public.magda_major_upgrade` table in the target's `postgres` database),
+  because a database count alone can't distinguish "fully restored" from "a previous
+  restore died partway through" -- marker present: no-op; databases present but marker
+  absent: hard error (do not guess over a partial restore); neither: proceed.
+
+  Full rationale for where the marker lives, why it's a table (not e.g.
+  `COMMENT ON DATABASE`), the two-query existence probe, why it's created only after
+  verification, and why it's unconditionally dropped before that verification runs:
+  docs/docs/postgres-major-upgrade-mechanism.md, §5 ("The marker table lifecycle")
+  and §6 ("Why the marker lives in the database, not a ConfigMap").
+
+  A fresh install never reaches any of this: `majorUpgrade` renders nothing unless
+  enabled, and these are `upgrade`-only hooks.
+*/}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Values.postgresql.fullnameOverride }}-major-upgrade-restore"
+  annotations:
+    "helm.sh/hook": post-upgrade
+    # Below the DB migrators' -5, so restored data is in place before Flyway runs.
+    "helm.sh/hook-weight": "-10"
+    # `hook-succeeded` is REQUIRED (same reason as the dump Job): this pod also mounts
+    # the staging PVC, so a leftover pod pins it and hangs the NEXT upgrade's PVC hook
+    # with "context deadline exceeded". `hook-failed` is deliberately NOT included --
+    # a FAILED run's logs must survive for `kubectl logs`. A SUCCESSFUL run's durable
+    # record is `public.magda_major_upgrade` in the target, not the Job's logs. See
+    # docs/docs/postgres-major-upgrade-mechanism.md#7-idempotency-and-the-delete-policies.
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: "{{ .Values.postgresql.fullnameOverride }}-major-upgrade-restore"
+    spec:
+      restartPolicy: Never
+      # MUST be called bare-root (`.`), NOT `(dict "image" ...)`: the dict-literal form
+      # has no `Values` key, so `magda.image.getConsolidatedPullSecretList` silently
+      # drops `global.image.pullSecrets` from the rendered Job. See the mechanism doc, §2.
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
+      # Without `fsGroup` the Jobs cannot use the staging PVC on a real CSI cluster
+      # (minikube's 0777 hostPath hides this). See the mechanism doc, §2.
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+      containers:
+        - name: restore
+          # Composed from `.Values.postgresql.image` (not an unprefixed `postgres`
+          # helper, which reads `.Values.image`/`global.image` -- unset here and
+          # decoupled from the actual server image) so the restore container is
+          # byte-for-byte the PG17 primary's own image, i.e. the same `psql` client.
+          image: {{ printf "%s/%s:%s" .Values.postgresql.image.registry .Values.postgresql.image.repository .Values.postgresql.image.tag | quote }}
+          imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsGroup: 0
+            runAsNonRoot: true
+            runAsUser: 1001
+            seccompProfile:
+              type: RuntimeDefault
+          {{- if not (empty .Values.majorUpgrade.resources) }}
+          resources:
+{{ .Values.majorUpgrade.resources | toYaml | indent 12 }}
+          {{- end }}
+          command:
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -o errexit
+              set -o nounset
+              set -o pipefail
+              # Keeps the awk filter and the zgrep/grep count below byte-for-byte
+              # deterministic -- glibc's locale-aware scanning can otherwise decide a
+              # legitimate UTF-8 dump "looks binary" and skip lines it should match.
+              export LC_ALL=C
+
+              # postgres client libs look the invoking uid up in /etc/passwd; under an
+              # arbitrary assigned uid it is not there.
+              /usr/local/bin/adduser.sh
+
+              # Required: the role filter below only special-cases the literal name
+              # "postgres" (it does not reproduce pg_dumpall's identifier-quoting for an
+              # arbitrary username), so any other PGUSER would hit the dump's unfiltered
+              # "DROP ROLE IF EXISTS postgres;" and abort under ON_ERROR_STOP. Fail fast
+              # here instead. See the mechanism doc, §4.
+              if [ "$PGUSER" != "postgres" ]; then
+                echo "ERROR: majorUpgrade requires global.postgresql.auth.username=postgres." >&2
+                echo "  The connecting privileged role is \"${PGUSER}\", but this restore" >&2
+                echo "  path only strips the bootstrap \"postgres\" role's own DROP/CREATE" >&2
+                echo "  ROLE statements from the dump. With any other username the dump" >&2
+                echo "  still carries \"DROP ROLE IF EXISTS postgres;\", which PostgreSQL" >&2
+                echo "  refuses (it is required by the database system) and that aborts" >&2
+                echo "  the restore. Set global.postgresql.auth.username=postgres for this" >&2
+                echo "  migration, then re-run the upgrade." >&2
+                exit 1
+              fi
+
+              DUMP=/staging/dumpall.sql.gz
+              MARKER="${DUMP}.complete"
+              # A table INSIDE the target database, not a file on the staging volume --
+              # see the mechanism doc, §5, for why. Written only after this Job's own
+              # RESTORED-vs-EXPECTED check (below) passes.
+              MIGRATION_MARKER="public.magda_major_upgrade (in the \"postgres\" database on ${PGHOST})"
+              # Two queries, not one CASE-wrapped query: PostgreSQL resolves every table
+              # name at parse time for ALL CASE branches, so a single-query form still
+              # errors "relation ... does not exist" on a never-migrated target. Counts
+              # ROWS, not just existence, for the same reason as the doc explains. These
+              # two strings must stay byte-identical to major-upgrade-dump-job.yaml's.
+              MARKER_EXISTS_SQL="SELECT to_regclass('public.magda_major_upgrade') IS NOT NULL"
+              MARKER_COUNT_SQL="SELECT count(*) FROM public.magda_major_upgrade"
+
+              DEADLINE=$(( SECONDS + {{ .Values.majorUpgrade.waitTimeoutSeconds | int }} ))
+              echo "Waiting for the target server ${PGHOST} to accept connections..."
+              until pg_isready -q -h "$PGHOST" -p 5432; do
+                if [ "$SECONDS" -ge "$DEADLINE" ]; then
+                  echo "ERROR: the target PostgreSQL server \"${PGHOST}\" did not become ready." >&2
+                  exit 1
+                fi
+                sleep 5
+              done
+
+              # Refuse to load over existing data -- safe only once the marker proves
+              # the existing data is a completed restore, not a partial one. See §5.
+              EXISTING=$(psql -h "$PGHOST" -d postgres -v ON_ERROR_STOP=1 -tAc \
+                "SELECT count(*) FROM pg_database WHERE datname NOT IN ('postgres','template0','template1')")
+              # `[` conditions are exempt from `errexit`: validate before this value is
+              # compared or interpolated into user-facing text (the e2e gate matches on
+              # the exact string below). See the mechanism doc, §7.
+              case "$EXISTING" in
+                ''|*[!0-9]*)
+                  echo "ERROR: expected a database count from ${PGHOST}, got: '${EXISTING}'." >&2
+                  echo "  Refusing to proceed with an unreadable count." >&2
+                  exit 1
+                  ;;
+              esac
+              MARKER_EXISTS=$(psql -h "$PGHOST" -d postgres -v ON_ERROR_STOP=1 -tAc "$MARKER_EXISTS_SQL")
+              case "$MARKER_EXISTS" in
+                t)
+                  ALREADY_MIGRATED=$(psql -h "$PGHOST" -d postgres -v ON_ERROR_STOP=1 -tAc "$MARKER_COUNT_SQL")
+                  ;;
+                f)
+                  ALREADY_MIGRATED=0
+                  ;;
+                *)
+                  ALREADY_MIGRATED="$MARKER_EXISTS"
+                  ;;
+              esac
+              # `[` conditions are exempt from `errexit`: an unexpected value here must
+              # be rejected explicitly, not silently read as "no marker". See §7.
+              case "$ALREADY_MIGRATED" in
+                ''|*[!0-9]*)
+                  echo "ERROR: could not determine whether ${PGHOST} has already been migrated." >&2
+                  echo "  Expected a row count from the marker query, got: '${ALREADY_MIGRATED}'." >&2
+                  echo "  Refusing to restore into a target whose migration state is unknown." >&2
+                  exit 1
+                  ;;
+              esac
+              if [ "$ALREADY_MIGRATED" != "0" ]; then
+                echo "The target already holds ${EXISTING} database(s); the migration has already run."
+                echo "  Recorded by ${MIGRATION_MARKER}:"
+                psql -h "$PGHOST" -d postgres -v ON_ERROR_STOP=1 -c \
+                  "SELECT completed_at, databases_restored, server_version FROM public.magda_major_upgrade ORDER BY completed_at" || true
+                echo "Nothing to do. Set majorUpgrade.enabled=false to stop scheduling this Job."
+                exit 0
+              fi
+              if [ "$EXISTING" != "0" ]; then
+                echo "ERROR: the target holds ${EXISTING} database(s) but ${MIGRATION_MARKER} is absent." >&2
+                echo "  That means a previous restore attempt started but never finished --" >&2
+                echo "  some of these databases may be fully loaded, one may have been" >&2
+                echo "  created and left empty mid-stream, and others may be missing" >&2
+                echo "  entirely. Treating this as an already-migrated target would let the" >&2
+                echo "  DB migrators build schema over incomplete data and report success." >&2
+                echo "  Manual recovery required: inspect ${PGHOST}, drop whatever is" >&2
+                echo "  incomplete, then either delete those databases and re-run this Job," >&2
+                echo "  or restore ${DUMP} by hand." >&2
+                exit 1
+              fi
+
+              if [ ! -f "$MARKER" ]; then
+                echo "ERROR: no completed dump found at ${DUMP}." >&2
+                echo "  The pre-upgrade dump Job must run and succeed first. If it was" >&2
+                echo "  skipped, the staging volume was deleted, or the dump was truncated," >&2
+                echo "  the marker file is absent and this Job will not guess." >&2
+                exit 1
+              fi
+
+              if [ ! -s "$DUMP" ]; then
+                echo "ERROR: ${DUMP} is missing or empty even though ${MARKER} is present." >&2
+                echo "  The marker alone is not treated as proof of a usable dump; refusing" >&2
+                echo "  to restore from a truncated or deleted file." >&2
+                exit 1
+              fi
+
+              # `--clean` makes the dump DROP+recreate "postgres"/"template1", which
+              # aborts under ON_ERROR_STOP if another session holds either open
+              # (deterministic with postgresql.metrics.enabled=true). Terminating a
+              # session this role can't see/signal just returns false, so this can't
+              # itself mask a real failure.
+              psql -h "$PGHOST" -d postgres -v ON_ERROR_STOP=1 -c \
+                "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname IN ('postgres','template1') AND pid <> pg_backend_pid()" \
+                > /dev/null
+
+              echo "Restoring into ${PGHOST}..."
+              # Strips the bootstrap "postgres" role's own DROP/CREATE ROLE lines: without
+              # this, `pg_dumpall --clean --if-exists`'s unconditional "DROP ROLE IF
+              # EXISTS postgres;" aborts the restore under ON_ERROR_STOP (PostgreSQL
+              # refuses to drop the role it's connected as -- verified against a real
+              # PostgreSQL 17.5 server). Every other role is unaffected.
+              #
+              # HAZARD: the filter is scoped to OUTSIDE the first `\connect` (`indb`)
+              # deliberately -- after `\connect`, lines are DDL or literal `COPY ... FROM
+              # stdin` DATA, and a data row can coincide with one of the two filtered
+              # strings. An unconditional filter silently drops that ROW instead of a
+              # statement (`psql` still exits 0) -- reproduced as a 3-row table restoring
+              # as 1 row. Do not remove the `indb` guard. See the mechanism doc, §4.
+              gunzip -c "$DUMP" \
+                | awk -v u="$PGUSER" '
+                    BEGIN { d = "DROP ROLE IF EXISTS " u ";"; c = "CREATE ROLE " u ";" }
+                    /^\\connect / { indb = 1 }
+                    !indb && ($0 == d || $0 == c) { next }
+                    { print }' \
+                | psql -h "$PGHOST" -d postgres -v ON_ERROR_STOP=1
+
+              # HAZARD: this DROP must stay HERE -- unconditional, after the restore
+              # pipeline, and strictly BEFORE RESTORED/EXPECTED are computed or this
+              # run's own marker is written. `pg_dumpall --clean --if-exists` replays
+              # the "postgres" database, including any row a PREVIOUS generation's
+              # restore already wrote into this very table. Without this drop, an
+              # inherited marker would bless a future partial restore as "already
+              # migrated" on a retry. Do not move or make this conditional. See the
+              # mechanism doc, §5.
+              psql -h "$PGHOST" -d postgres -v ON_ERROR_STOP=1 -c \
+                "DROP TABLE IF EXISTS public.magda_major_upgrade" \
+                > /dev/null
+
+              RESTORED=$(psql -h "$PGHOST" -d postgres -tAc \
+                "SELECT count(*) FROM pg_database WHERE datname NOT IN ('postgres','template0','template1')")
+              # `[` conditions are exempt from `errexit`: validate before comparison and
+              # before interpolation into the marker INSERT below. See the mechanism
+              # doc, §7.
+              case "$RESTORED" in
+                ''|*[!0-9]*)
+                  echo "ERROR: expected a database count from ${PGHOST}, got: '${RESTORED}'." >&2
+                  echo "  Refusing to declare a restore verified on an unreadable count." >&2
+                  exit 1
+                  ;;
+              esac
+              # Excludes postgres/template1 (which `--clean` always emits alongside the
+              # per-database CREATE DATABASE lines) to stay apples-to-apples with
+              # RESTORED's own exclusions above.
+              EXPECTED=$(zgrep -a '^CREATE DATABASE ' "$DUMP" \
+                | grep -a -vcE '^CREATE DATABASE (postgres|template1) ' || true)
+              echo "Restore complete: ${RESTORED} of ${EXPECTED} database(s) now present."
+              if [ "$RESTORED" = "0" ]; then
+                echo "ERROR: the restore reported success but created no databases." >&2
+                exit 1
+              fi
+              if [ "$RESTORED" != "$EXPECTED" ]; then
+                echo "ERROR: restored ${RESTORED} database(s) but the dump names ${EXPECTED}." >&2
+                echo "  A partial restore must not be reported as a success." >&2
+                exit 1
+              fi
+
+              # RESTORED/EXPECTED above deliberately exclude "postgres" -- that exclusion is
+              # correct there (a fresh PG17 target always has a "postgres" database, so
+              # counting it would make EXISTING above always non-zero and destroy the "no
+              # databases -> proceed" path). But Magda's default (useCombinedDb: true)
+              # topology has no separate "registry" database: registry-api sets
+              # POSTGRES_USER=client with no POSTGRES_DB, so registry-db-migrator's Flyway
+              # migrations -- and therefore records, aspects, events, recordaspects,
+              # webhooks, webhookevents, eventtypes -- land in the DEFAULT "postgres"
+              # database, the one both counts above skip. A restore that recreated every
+              # OTHER database but silently lost "postgres" itself would still print "N of
+              # N database(s) now present" and go on to write the completion marker. Guard
+              # against that here, separately, using a count DERIVED FROM THE DUMP rather
+              # than a hardcoded expectation, so a topology where "postgres" legitimately
+              # holds nothing doesn't false-positive.
+              #
+              # Isolate the dump's "postgres" section: pg_dumpall emits one `\connect <db>`
+              # block per database, so the "postgres" block runs from its own `\connect
+              # postgres` line up to (but not including) the NEXT `\connect ` line, or EOF
+              # if postgres happens to be the last database dumped (both observed against a
+              # real postgres:17.5 server -- its position among the `\connect` blocks is not
+              # guaranteed). Count `CREATE TABLE public.<name>` lines in that range (the
+              # schema-qualified form pg_dump always emits, `UNLOGGED` included) -- a plain
+              # table count, not a row count, deliberately: this check exists to catch a
+              # LOST TABLE (the same class of gap RESTORED/EXPECTED closes for whole
+              # databases), not to police row-level drift, which is not this Job's job.
+              #
+              # Excludes public.magda_major_upgrade itself: `pg_dumpall` dumps the
+              # "postgres" database like any other, so if a PREVIOUS generation's marker
+              # row is present it appears in this very dump section (see the unconditional
+              # DROP above and the mechanism doc, §5). That drop is deliberate, not data
+              # loss -- counting the marker table here would make this check fail on
+              # exactly the case the drop exists to handle correctly.
+              DUMP_POSTGRES_TABLES=$(gunzip -c "$DUMP" | awk '
+                  /^\\connect postgres$/ { indb = 1; next }
+                  indb && /^\\connect / { exit }
+                  indb && /^CREATE (UNLOGGED )?TABLE public\.magda_major_upgrade[ (]/ { next }
+                  indb && /^CREATE (UNLOGGED )?TABLE public\./ { n++ }
+                  END { print n + 0 }')
+              # `[` conditions are exempt from `errexit`: validate before comparison. See
+              # the mechanism doc, §7.
+              case "$DUMP_POSTGRES_TABLES" in
+                ''|*[!0-9]*)
+                  echo "ERROR: could not count public-schema tables in the dump's \"postgres\" section, got: '${DUMP_POSTGRES_TABLES}'." >&2
+                  echo "  Refusing to declare a restore verified on an unreadable count." >&2
+                  exit 1
+                  ;;
+              esac
+              if [ "$DUMP_POSTGRES_TABLES" = "0" ]; then
+                echo "The dump's \"postgres\" database defines no public-schema tables (other than the completion marker, if any); skipping the postgres-content check (considered, not silently skipped)."
+              else
+                # Excludes public.magda_major_upgrade for the same reason as the dump-side
+                # count above: at this point in the script it never exists anyway (the
+                # unconditional DROP above ran before this, and the INSERT below runs only
+                # after this whole check passes), but excluding it explicitly keeps the two
+                # sides of this comparison symmetric regardless of where either query runs.
+                POSTGRES_TABLES=$(psql -h "$PGHOST" -d postgres -v ON_ERROR_STOP=1 -tAc \
+                  "SELECT count(*) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p') AND c.relname <> 'magda_major_upgrade'")
+                # `[` conditions are exempt from `errexit`: validate before comparison. See
+                # the mechanism doc, §7.
+                case "$POSTGRES_TABLES" in
+                  ''|*[!0-9]*)
+                    echo "ERROR: expected a public-schema table count from ${PGHOST}'s \"postgres\" database, got: '${POSTGRES_TABLES}'." >&2
+                    echo "  Refusing to declare a restore verified on an unreadable count." >&2
+                    exit 1
+                    ;;
+                esac
+                echo "postgres database content check: ${POSTGRES_TABLES} of ${DUMP_POSTGRES_TABLES} expected public-schema table(s) present."
+                if [ "$POSTGRES_TABLES" != "$DUMP_POSTGRES_TABLES" ]; then
+                  echo "ERROR: the dump's \"postgres\" database section defines ${DUMP_POSTGRES_TABLES} public-schema" >&2
+                  echo "  table(s), but the restored target's \"postgres\" database has ${POSTGRES_TABLES}." >&2
+                  echo "  In Magda's default topology (useCombinedDb: true) \"postgres\" is where the" >&2
+                  echo "  registry data lives -- records, aspects, events, recordaspects, webhooks," >&2
+                  echo "  webhookevents, eventtypes -- because registry-db-migrator connects with no" >&2
+                  echo "  POSTGRES_DB set. RESTORED/EXPECTED above only count DATABASES and both" >&2
+                  echo "  deliberately exclude \"postgres\", so they cannot see this. A restore that" >&2
+                  echo "  recreated every other database but lost this one's tables must not be" >&2
+                  echo "  reported as a success." >&2
+                  exit 1
+                fi
+              fi
+
+              # HAZARD: this INSERT must stay strictly AFTER the RESTORED-vs-EXPECTED
+              # verification above passes -- it is what makes the marker mean "verified,"
+              # not just "attempted." CREATE TABLE + INSERT in one `psql -c` (one
+              # implicit transaction) so the table can never exist without the row that
+              # explains it; the table is guaranteed empty here because of the
+              # unconditional DROP earlier in this script. See the mechanism doc, §5.
+              echo "Recording the completed migration in ${MIGRATION_MARKER}..."
+              psql -h "$PGHOST" -d postgres -v ON_ERROR_STOP=1 -c \
+                "CREATE TABLE IF NOT EXISTS public.magda_major_upgrade (
+                   completed_at timestamptz NOT NULL DEFAULT now(),
+                   databases_restored integer NOT NULL,
+                   server_version text NOT NULL
+                 );
+                 COMMENT ON TABLE public.magda_major_upgrade IS
+                   'Written by the magda-postgres majorUpgrade restore hook after a verified logical major-version migration. Its presence makes a repeat helm upgrade with majorUpgrade.enabled=true a no-op. Do not drop it unless you intend the migration to run again.';
+                 INSERT INTO public.magda_major_upgrade (databases_restored, server_version)
+                   VALUES (${RESTORED}, version());" \
+                > /dev/null
+              echo "Migration recorded. A repeat \`helm upgrade\` with majorUpgrade.enabled=true"
+              echo "is now a no-op; set majorUpgrade.enabled=false to stop scheduling these Jobs."
+          env:
+            - name: PGHOST
+              value: {{ .Values.postgresql.fullnameOverride | quote }}
+            # Bounds `psql`'s own connection attempts beyond the `pg_isready` TCP check
+            # above, so a stalled handshake fails fast instead of hanging until Helm's
+            # `--timeout`. Matches major-upgrade-dump-job.yaml.
+            - name: PGCONNECT_TIMEOUT
+              value: "10"
+{{- include "magda.postgres-superuser-env" . | indent 12 }}
+          volumeMounts:
+            - name: staging
+              mountPath: /staging
+      volumes:
+        - name: staging
+          persistentVolumeClaim:
+            claimName: "{{ .Values.postgresql.fullnameOverride }}-major-upgrade"
+{{- end }}

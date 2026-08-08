@@ -20,7 +20,7 @@ By default, Magda now:
   resolved to `require` by default), injected as `PGSSLMODE` for the Node
   services and the backup/auto-vacuum jobs, and as an `sslmode=` JDBC URL
   parameter for the Flyway-based DB migrators.
-- Supports a non-default privileged (`postgresqlUsername`) account for the
+- Supports a non-default privileged (`auth.username`) account for the
   in-cluster database via an initdb hook that grants it `CREATEDB` /
   `CREATEROLE` (not `SUPERUSER`) — matching the privilege level managed
   providers (RDS `rds_superuser`, Azure `azure_pg_admin`, GCP
@@ -52,7 +52,7 @@ port-forwarding, since the assertions authenticate using a password that the
 chart injects into the pod as an environment variable:
 
 ```bash
-DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql -o name | head -1)
+DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql-pg17 -o name | head -1)
 ```
 
 **Which password variable to use depends on the case**, because the two are not
@@ -97,7 +97,7 @@ helm install magda oci://ghcr.io/magda-io/charts/magda -n magda
 # wait until settled
 kubectl get pods -n magda --no-headers | grep -vE "Running|Completed"   # expect empty
 
-DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql -o name | head -1)
+DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql-pg17 -o name | head -1)
 kubectl exec -n magda $DBPOD -- bash -c \
   'PGPASSWORD=$POSTGRES_PASSWORD psql -U postgres -c "
     SELECT a.datname, a.usename, s.ssl, s.version
@@ -116,7 +116,7 @@ together, with no manually created secret and no manual grant.
 ```bash
 kubectl create namespace magda
 helm install magda oci://ghcr.io/magda-io/charts/magda -n magda \
-  --set global.postgresql.postgresqlUsername=magda_admin
+  --set global.postgresql.auth.username=magda_admin
 ```
 
 ```bash
@@ -125,7 +125,7 @@ kubectl get secret -n magda db-main-account-secret -o jsonpath='{.data}' | tr ',
 # expect BOTH postgresql-password (magda_admin's) AND postgresql-postgres-password (the built-in postgres superuser's)
 
 # magda_admin has Create role + Create DB, but is NOT a superuser
-DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql -o name | head -1)
+DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql-pg17 -o name | head -1)
 kubectl exec -n magda $DBPOD -- bash -c \
   'PGPASSWORD=$POSTGRES_POSTGRES_PASSWORD psql -U postgres -tAc "\du magda_admin"'
 # expect: Create role, Create DB -- and NOT Superuser
@@ -155,7 +155,7 @@ helm install magda oci://ghcr.io/magda-io/charts/magda --version <prior-release>
 # wait until settled, then seed a dataset through the API so there is data to lose
 # (see docs/docs/e2e-cluster-deployment-test.md for the gateway + API key setup)
 
-DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql -o name | head -1)
+DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql-pg17 -o name | head -1)
 kubectl exec -n magda $DBPOD -- bash -c \
   'PGPASSWORD=$POSTGRES_PASSWORD psql -U postgres -d registry -tAc \
    "SELECT max(version) FROM schema_version WHERE success"'
@@ -194,7 +194,7 @@ previous (plaintext) client behaviour, for operators who need to roll back.
 helm upgrade magda oci://ghcr.io/magda-io/charts/magda -n magda \
   --set global.postgresql.client.sslmode=disable
 # wait until settled
-DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql -o name | head -1)
+DBPOD=$(kubectl get pod -n magda -l app.kubernetes.io/name=combined-db-postgresql-pg17 -o name | head -1)
 kubectl exec -n magda $DBPOD -- bash -c \
   'PGPASSWORD=$POSTGRES_PASSWORD psql -U postgres -tAc \
    "SELECT DISTINCT s.ssl FROM pg_stat_ssl s JOIN pg_stat_activity a USING (pid) WHERE a.usename = '"'"'client'"'"';"'
@@ -237,7 +237,7 @@ alone are **not** sufficient. The registry migrator keeps its data in the
 privilege on that database** (the extension is trusted in PostgreSQL 13+, so a
 non-superuser with `CREATE` on the current database can install it). For the
 in-cluster database Magda grants this automatically — its bundled PostgreSQL is
-configured with `postgresqlDatabase: postgres`, so the chart runs
+configured with `auth.database: postgres`, so the chart runs
 `GRANT ALL PRIVILEGES ON DATABASE postgres TO <privileged user>` at first boot.
 Managed providers grant the equivalent to their admin account (RDS
 `rds_superuser`, etc.). For this **simulation** you must grant it yourself, or
@@ -259,12 +259,12 @@ helm install magda oci://ghcr.io/magda-io/charts/magda -n magda \
   --set global.useCombinedDb=false \
   --set global.useAwsRdsDb=true \
   --set global.awsRdsEndpoint=<extdb service DNS name> \
-  --set global.postgresql.postgresqlUsername=magda_admin
+  --set global.postgresql.auth.username=magda_admin
 ```
 
 Expected: all migrators complete and every service connects successfully —
 **without** relaxing the server's SSL enforcement. This also exercises the
-`ExternalName` service path and the `postgresqlUsername` validation that
+`ExternalName` service path and the `auth.username` validation that
 rejects the default `postgres` account for external databases.
 
 ## Known limitation: `CREATEDB`/`CREATEROLE` grant only runs on first boot
@@ -274,7 +274,7 @@ restricted `client` role (case C2) is delivered via a PostgreSQL **initdb**
 script, which the bitnami chart only runs once, when the data directory is
 first initialised. If you take an **existing** in-cluster deployment that was
 installed with the default `postgres` user and later switch
-`global.postgresql.postgresqlUsername` to a custom value, the grant will
+`global.postgresql.auth.username` to a custom value, the grant will
 **not** be applied retroactively — the new user will exist (or fail to,
 depending on how it was provisioned) without the `CREATEDB`/`CREATEROLE`
 privileges the chart assumes it has, and the DB migrators will fail with a

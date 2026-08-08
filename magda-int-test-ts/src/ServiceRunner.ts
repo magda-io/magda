@@ -96,9 +96,17 @@ export default class ServiceRunner {
     // wal-g backup/restore integration tests can drive them directly via
     // `runWalg()`.
     public enableWalg = false;
-    public walgImgTag: string = "3.0.8";
+    public walgImgTag: string = "3.0.8-magda-edcda8b";
     public walgBucket: string = "walg-test";
     public walgS3Prefix: string = "";
+    // postgres image tag used by createWalgPostgres() for the wal-g fixture.
+    // Tests default to this suite's postgres:17.5 fixture; the cross-version
+    // wal-g test temporarily overrides this to stand up a dedicated
+    // postgres:13.7 fixture (see walgBackupRestore.spec.ts), since a base
+    // backup taken by an old wal-g on one PG major version cannot be
+    // restored on a different PG major version -- that is a fundamental
+    // PostgreSQL limit, not a wal-g one.
+    public walgPostgresImgTag: string = "17.5";
 
     public jwtSecret: string = uuidV4();
     public authApiDebugMode = false;
@@ -852,7 +860,20 @@ export default class ServiceRunner {
     }
 
     async runMigrator(name: string, dbName: string) {
-        const mainMigratorImg = "ghcr.io/magda-io/magda-db-migrator:main";
+        // Pinned to `:next`, not `:main`. This image is published per branch, so the
+        // tag has to track the branch the code under test targets -- otherwise the
+        // suite silently validates against a migrator built from different source.
+        //
+        // That is not hypothetical: `:main` still carries Flyway 4.2.0, whose bundled
+        // JDBC driver predates SCRAM. PostgreSQL 14 made `scram-sha-256` the default
+        // `password_encryption`, so against the PostgreSQL 17 fixture every migrator
+        // fails with "The authentication type 10 is not supported", the `client` role
+        // is never created, and every suite that needs it then fails with
+        // "password authentication failed for user client" -- PostgreSQL returns that
+        // same message for a role that does not exist, so the real cause is well
+        // hidden. `:next` carries Flyway 12.11.0 (see magda-db-migrator/Dockerfile,
+        // which is what ships), and authenticates fine.
+        const mainMigratorImg = "ghcr.io/magda-io/magda-db-migrator:next";
         await this.pullImage(mainMigratorImg);
         const volBind = `${this.workspaceRoot}/magda-migrator-${name}/sql:/flyway/sql/${dbName}`;
         const [, container] = (await this.docker.run(
@@ -1040,6 +1061,9 @@ export default class ServiceRunner {
             undefined,
             false,
             (configData) => {
+                configData["services"]["test-walg-postgres"][
+                    "image"
+                ] = `postgres:${this.walgPostgresImgTag}`;
                 configData["services"]["test-walg-postgres"]["volumes"] = [
                     `${initdbHostDir}:/docker-entrypoint-initdb.d:ro`
                 ];

@@ -57,7 +57,7 @@ spec:
                 - name: PGPASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.global.postgresql.existingSecret | quote }}
+                      name: {{ .Values.global.postgresql.auth.existingSecret | quote }}
                       key: "postgresql-password"
                 - name: PGSSLMODE
                   value: {{ include "magda.postgres-client-sslmode" . | quote }}

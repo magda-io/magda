@@ -54,6 +54,7 @@
   - [Kubernetes](#kubernetes)
   - [Helm](#helm-1)
   - [Terraform](#terraform)
+  - [PostgreSQL Major Upgrade](#postgresql-major-upgrade)
 - [Architectural Decisions](#architectural-decisions)
   - [Macro](#macro)
     - [Why Microservice?](#why-microservices-)
@@ -246,14 +247,14 @@ This indexer covers dataset metadata only; see [Semantic Search & Semantic Index
 
 Since v5/v6, Magda has **two indexing tiers** that serve different retrieval needs:
 
-| Tier | Indexes | Target index | Served by |
-|---|---|---|---|
-| `magda-indexer` (the [Search Indexer](#search-indexer) above) | Standard dataset **metadata** from the Registry | Main datasets index | [Search API](#search-api) — lexical, and (since v5) hybrid lexical+vector |
-| **Semantic indexers** | Vector **representations** of a chosen source | Semantic (knn-vector) index | `magda-semantic-search-api` (`/retrieve`, `/search`) |
+| Tier                                                          | Indexes                                         | Target index                | Served by                                                                 |
+| ------------------------------------------------------------- | ----------------------------------------------- | --------------------------- | ------------------------------------------------------------------------- |
+| `magda-indexer` (the [Search Indexer](#search-indexer) above) | Standard dataset **metadata** from the Registry | Main datasets index         | [Search API](#search-api) — lexical, and (since v5) hybrid lexical+vector |
+| **Semantic indexers**                                         | Vector **representations** of a chosen source   | Semantic (knn-vector) index | `magda-semantic-search-api` (`/retrieve`, `/search`)                      |
 
 `magda-indexer` is fixed to the dataset metadata model. The **semantic-indexer
 framework** (`@magda/semantic-indexer-sdk`) is instead a general, minion-based
-toolkit: you write a strategy that turns *some source* into text, and it chunks,
+toolkit: you write a strategy that turns _some source_ into text, and it chunks,
 embeds and writes that into the semantic index. Its `itemType` is either:
 
 - `registryRecord` — index registry metadata, including **custom aspects** that
@@ -535,7 +536,7 @@ Since v2.0.0, we introduced a decision API as a new additional to the Auth API s
 - auto-select OPA API endpoints (either for partial evaluation or making unconditional decision) based on information provided.
 - further evaluate the OPA decision response AST and resolve any possible cross references
 
-> Note: Magda's authorisation follows an attribute-based access control (ABAC) model, so the user's own access-control metadata (the `roles`, `permissions` & organisation units returned by `whoami`) is only one set of inputs. For a decision on a specific resource, the endpoint also injects the **subject (resource) attributes** the policy needs — e.g. a registry record's `access-control` aspect, or any other record field the policy logic references — and evaluates both together. So you should not try to compute access yourself from the permission list alone; the outcome is the policy engine's call over the user *and* resource attributes. When filtering a set of records we instead leave the record attributes `unknown` and let the engine partially evaluate the policy, which yields residual rules (referencing those record attributes) that translate into storage-engine query conditions such as an SQL `WHERE` clause — see [Policy Engine & Partial Evaluation](#policy-engine--partial-evaluation) above.
+> Note: Magda's authorisation follows an attribute-based access control (ABAC) model, so the user's own access-control metadata (the `roles`, `permissions` & organisation units returned by `whoami`) is only one set of inputs. For a decision on a specific resource, the endpoint also injects the **subject (resource) attributes** the policy needs — e.g. a registry record's `access-control` aspect, or any other record field the policy logic references — and evaluates both together. So you should not try to compute access yourself from the permission list alone; the outcome is the policy engine's call over the user _and_ resource attributes. When filtering a set of records we instead leave the record attributes `unknown` and let the engine partially evaluate the policy, which yields residual rules (referencing those record attributes) that translate into storage-engine query conditions such as an SQL `WHERE` clause — see [Policy Engine & Partial Evaluation](#policy-engine--partial-evaluation) above.
 
 #### Types of Decision Queries
 
@@ -742,6 +743,37 @@ This gap is optionally handled by Terraform - it can be used to provision the ac
 When using the in-cluster PostgreSQL option, Magda backs up the database with two cooperating mechanisms: periodic full **base backups** (a CronJob running `wal-g backup-push`) and **continuous WAL archiving** (PostgreSQL's `archive_command` pushing each WAL segment via `wal-g`). Restore is an opt-in recovery mode that fetches a base backup and (optionally) replays archived WAL.
 
 For how this machinery works end-to-end — the scripts involved, the recovery flow, and the **data-loss window (RPO)** to expect in each failure scenario — see [In-cluster Database Backup & Restore — How It Works](../in-cluster-database-backup-and-restore.md). For how to configure it (storage secrets, helm values), see [How to Config Continuous Archiving and PITR](../how-to-recover-with-continuous-archive-backup.md).
+
+## PostgreSQL Major Upgrade
+
+The `postgresql` subchart that `magda-postgres` bundles for the in-cluster
+database option sets `app.kubernetes.io/component: primary` on the pod
+template, which lands in the StatefulSet's `spec.selector` — and that field is
+immutable once the StatefulSet exists. A subchart major bump that changes this
+label therefore can't be rolled onto the existing StatefulSet by any
+`helm upgrade`, in-place, ever. On top of that, PostgreSQL doesn't guarantee
+on-disk data-file compatibility across major versions in the first place.
+
+`magda-postgres` works around both by standing up the new major's instance as a
+**second, side-by-side StatefulSet** (`<db>-postgresql-pg17` next to the
+existing `<db>-postgresql`) rather than attempting to reuse the old one. Turning
+on `majorUpgrade.enabled` schedules three Helm hook resources around a single
+`helm upgrade` — a staging PVC, a `pre-upgrade` Job that takes a `pg_dumpall`
+logical dump of the still-running old instance, and a `post-upgrade` Job
+(ordered ahead of the DB migrator Jobs) that replays that dump into the new
+instance. The old StatefulSet's data PVC is never part of the Helm release
+manifest, so it's left untouched throughout, which is what makes
+`helm rollback` a safe way out if anything goes wrong. Idempotency (so a repeat
+upgrade with the flag left on is a safe no-op) is tracked by a small marker
+table written _inside_ the new instance's own `postgres` database, rather than
+by anything Kubernetes-side — the marker has to travel with the data it
+describes, or a restored/snapshotted volume could disagree with it.
+
+See [How the PostgreSQL Major Upgrade Mechanism Works](../postgres-major-upgrade-mechanism.md)
+for the full mechanics (hook ordering, the dump/restore scripts, the marker
+table's lifecycle, and known failure modes), and the
+[PostgreSQL major upgrade runbook](../postgres-major-upgrade-runbook.md) for the
+operator-facing upgrade procedure.
 
 # Architectural Decisions
 

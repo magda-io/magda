@@ -1,0 +1,20 @@
+{{- /*
+  `primary.extraEnvVarsCM` is the one name this chart hands the postgresql subchart that
+  the subchart no longer resolves through `tpl` — bitnami 10.9.1 did
+  (`statefulset.yaml:362`), 16.7.24 does not (`primary/statefulset.yaml:403`). It
+  therefore cannot be derived from `fullnameOverride` and has to be repeated as a literal
+  in every wrapper chart, which makes it the one name that can drift.
+
+  Drift is not silent at install time (Kubernetes rejects a ConfigMap reference
+  containing `{{`, and a merely *wrong* name leaves the pod in
+  CreateContainerConfigError) but it is deeply unobvious, and it costs a cluster
+  round-trip to discover. Fail at render time with the two names side by side instead.
+
+  Emits no manifest.
+*/}}
+{{- $fullname := .Values.postgresql.fullnameOverride | required "postgresql.fullnameOverride is required" }}
+{{- $expected := printf "%s-extra-env-vars" $fullname }}
+{{- $actual := .Values.postgresql.primary.extraEnvVarsCM | default "" }}
+{{- if ne $actual $expected }}
+{{- fail (printf "postgresql.primary.extraEnvVarsCM is %q but `extra-env-vars-configmap.yaml` creates %q. The postgresql subchart does not run `primary.extraEnvVarsCM` through `tpl`, so it must be set to the literal `<postgresql.fullnameOverride>-extra-env-vars` in every chart that overrides `fullnameOverride`. Set it to %q." $actual $expected $expected) }}
+{{- end }}
