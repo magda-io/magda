@@ -140,11 +140,31 @@ immune to the on-disk format change.
    resource, so nothing has been changed when you see the error.
 
 2. Run `helm upgrade` with an **explicit, generous `--timeout`**:
+
    ```bash
    helm upgrade magda <chart> -n <namespace> \
-     --set combined-db.magda-postgres.majorUpgrade.enabled=true \
+     --set magda-core.combined-db.magda-postgres.majorUpgrade.enabled=true \
      --timeout 3600s
    ```
+
+   **Get the value path right — a wrong one fails silently.** Helm accepts any
+   `--set` path, known or not, so a mistyped or mis-nested path sets a value nothing
+   reads: the migration is skipped, the PostgreSQL 17 instance comes up empty, and
+   the upgrade reports success. The prefix depends on which chart you install:
+
+   | Installing                                    | Path                                                  |
+   | --------------------------------------------- | ----------------------------------------------------- |
+   | `magda` (the umbrella chart — the usual case) | `magda-core.<db>.magda-postgres.majorUpgrade.enabled` |
+   | `magda-core` directly                         | `<db>.magda-postgres.majorUpgrade.enabled`            |
+
+   Confirm before you rely on it, rather than trusting the flag was accepted:
+
+   ```bash
+   helm template magda <chart> \
+     --set magda-core.combined-db.magda-postgres.majorUpgrade.enabled=true \
+     | grep -c major-upgrade      # expect a non-zero count, not 0
+   ```
+
    **Helm's `--timeout` is what aborts a long migration, not
    `majorUpgrade.waitTimeoutSeconds`.** `waitTimeoutSeconds` only bounds how long
    each hook Job waits for its PostgreSQL server to start accepting connections

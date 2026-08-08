@@ -143,9 +143,20 @@ kubectl -n "$NS" exec combined-db-postgresql-0 -- env PGPASSWORD="$PGPASSWORD" \
 ```bash
 helm upgrade magda oci://ghcr.io/magda-io/charts/magda --version "$V7_VERSION" -n "$NS" \
   --reuse-values \
-  --set combined-db.magda-postgres.majorUpgrade.enabled=true \
+  --set magda-core.combined-db.magda-postgres.majorUpgrade.enabled=true \
   --timeout 3600s
 ```
+
+> **The `magda-core.` prefix is load-bearing.** `magda` is an umbrella chart whose
+> only real content is the `magda-core` subchart, so a value destined for
+> `magda-postgres` has to be addressed through it. Omitting the prefix does **not**
+> error — Helm accepts any `--set` path, known or not — it simply sets a value nothing
+> reads. The migration is then silently skipped, the PostgreSQL 17 instance comes up
+> empty, and the upgrade reports success. Verified against the published chart:
+> `combined-db.magda-postgres.majorUpgrade.enabled=true` renders **0** migration
+> objects; `magda-core.combined-db.…` renders **16**. If you are templating
+> `magda-core` directly rather than the umbrella (as the chart's own render tests do),
+> drop the prefix.
 
 `--timeout 3600s` is deliberately generous — Helm's default (5 minutes) is far
 too short for a real dump + restore, and it is Helm's own `--timeout`, not
@@ -282,7 +293,7 @@ Delete the captured logs from step (a) first so the watcher refills them, then:
 rm -f /tmp/*major-upgrade-dump*.log /tmp/*major-upgrade-restore*.log
 helm upgrade magda oci://ghcr.io/magda-io/charts/magda --version "$V7_VERSION" -n "$NS" \
   --reuse-values \
-  --set combined-db.magda-postgres.majorUpgrade.enabled=true \
+  --set magda-core.combined-db.magda-postgres.majorUpgrade.enabled=true \
   --timeout 3600s
 cat /tmp/*major-upgrade-dump*.log /tmp/*major-upgrade-restore*.log
 ```
