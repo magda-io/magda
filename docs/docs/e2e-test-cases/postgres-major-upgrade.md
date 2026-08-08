@@ -142,10 +142,17 @@ kubectl -n "$NS" exec combined-db-postgresql-0 -- env PGPASSWORD="$PGPASSWORD" \
 
 ```bash
 helm upgrade magda oci://ghcr.io/magda-io/charts/magda --version "$V7_VERSION" -n "$NS" \
-  --reuse-values \
   --set magda-core.combined-db.magda-postgres.majorUpgrade.enabled=true \
   --timeout 3600s
 ```
+
+> **Do not use `--reuse-values` for this upgrade.** It reuses the v6 release's
+> _computed_ values as the base, so the v7 chart's own defaults never apply — and v7
+> deliberately restructured the PostgreSQL values contract (`auth.*`, `primary.*`, TLS).
+> In practice the reused v6 `tls` shape leaves the new instance's TLS listener off while
+> clients still resolve `sslmode: require`, and the chart's `validate-tls` guard aborts
+> the upgrade before any hook runs. If you have custom values, re-supply them explicitly
+> (`-f my-values.yaml`) rather than reusing the old release's.
 
 > **The `magda-core.` prefix is load-bearing.** `magda` is an umbrella chart whose
 > only real content is the `magda-core` subchart, so a value destined for
@@ -292,7 +299,6 @@ Delete the captured logs from step (a) first so the watcher refills them, then:
 ```bash
 rm -f /tmp/*major-upgrade-dump*.log /tmp/*major-upgrade-restore*.log
 helm upgrade magda oci://ghcr.io/magda-io/charts/magda --version "$V7_VERSION" -n "$NS" \
-  --reuse-values \
   --set magda-core.combined-db.magda-postgres.majorUpgrade.enabled=true \
   --timeout 3600s
 cat /tmp/*major-upgrade-dump*.log /tmp/*major-upgrade-restore*.log

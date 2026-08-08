@@ -145,9 +145,22 @@ spec:
                 exit 0
               fi
 
+              # The SOURCE is the PREVIOUS major's instance, and it predates this chart's
+              # TLS support -- a v6 PostgreSQL 13 pod serves no TLS at all. The pod-level
+              # PGSSLMODE comes from `magda.postgres-superuser-env`, i.e. the CURRENT
+              # chart's `global.postgresql.client.sslmode` (default "require"), which is
+              # right for the new instance and impossible for the old one: every source
+              # connection below would fail with
+              #   "server does not support SSL, but SSL was required".
+              # So source-facing commands use `majorUpgrade.sourceSslMode` instead
+              # (default "prefer": TLS when the source offers it, plaintext when it does
+              # not). The TARGET probe above deliberately keeps the pod-level PGSSLMODE --
+              # the new instance does serve TLS, and it should be held to it.
+              SOURCE_SSLMODE={{ .Values.majorUpgrade.sourceSslMode | default "prefer" | quote }}
+
               DEADLINE=$(( SECONDS + {{ .Values.majorUpgrade.waitTimeoutSeconds | int }} ))
               echo "Waiting for the source server ${PGHOST} to accept connections..."
-              until pg_isready -q -h "$PGHOST" -p 5432; do
+              until PGSSLMODE="$SOURCE_SSLMODE" pg_isready -q -h "$PGHOST" -p 5432; do
                 if [ "$SECONDS" -ge "$DEADLINE" ]; then
                   echo "ERROR: could not reach the source PostgreSQL server \"${PGHOST}\"." >&2
                   echo "  majorUpgrade.sourceHost must name the PREVIOUS major's in-cluster" >&2
@@ -162,7 +175,7 @@ spec:
               # A reachable-but-wrong sourceHost (most dangerously the new PG17 instance
               # itself) would otherwise produce a valid, non-empty-looking dump of an
               # empty database and exit 0. Guarded below by server_version_num.
-              SOURCE_VERSION_NUM="$(psql --host="$PGHOST" --tuples-only --no-align --command="SHOW server_version_num" postgres)"
+              SOURCE_VERSION_NUM="$(PGSSLMODE="$SOURCE_SSLMODE" psql --host="$PGHOST" --tuples-only --no-align --command="SHOW server_version_num" postgres)"
               # `[` conditions are exempt from `errexit`: a non-numeric value here would
               # make `[ ... -ge ]` exit 2, which `if` reads as false -- silently skipping
               # the guard and dumping from an unverified host. Validate first, always.
@@ -194,7 +207,7 @@ spec:
               # mistaken for a usable dump. See the mechanism doc, §3.
               echo "Dumping globals and all databases from ${PGHOST}..."
               rm -f "$DUMP"
-              pg_dumpall --host="$PGHOST" --clean --if-exists | gzip > "$DUMP"
+              PGSSLMODE="$SOURCE_SSLMODE" pg_dumpall --host="$PGHOST" --clean --if-exists | gzip > "$DUMP"
 
               if [ ! -s "$DUMP" ]; then
                 echo "ERROR: the dump at ${DUMP} is empty." >&2

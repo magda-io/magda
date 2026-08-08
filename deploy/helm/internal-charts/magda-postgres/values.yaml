@@ -415,5 +415,13 @@ majorUpgrade:
   # `--timeout` comfortably larger than the expected dump + restore duration, or Helm
   # fails the upgrade while the Job is still working.
   waitTimeoutSeconds: 900
+  # -- `sslmode` for connections to the PREVIOUS major's instance (`sourceHost`).
+  # Deliberately NOT `global.postgresql.client.sslmode`: that describes the NEW
+  # instance, which serves TLS. The source predates this chart's TLS support -- a v6
+  # PostgreSQL 13 pod serves none -- so `require` fails every source connection with
+  # "server does not support SSL, but SSL was required". `prefer` uses TLS when the
+  # source offers it and plaintext when it does not. Set `require` only if you know
+  # the source serves TLS.
+  sourceSslMode: "prefer"
   # -- Resource config for the dump and restore Job containers.
   resources: {}

@@ -147,6 +147,13 @@ immune to the on-disk format change.
      --timeout 3600s
    ```
 
+   **Do not pass `--reuse-values`.** It uses the previous release's _computed_
+   values as the base, so this chart's new defaults never apply — and v7 deliberately
+   restructured the PostgreSQL values contract (`auth.*`, `primary.*`, TLS). The reused
+   v6 `tls` shape leaves the new instance's TLS listener off while clients still resolve
+   `sslmode: require`, and the `validate-tls` guard aborts the upgrade before any hook
+   runs. Re-supply your own values explicitly with `-f` instead.
+
    **Get the value path right — a wrong one fails silently.** Helm accepts any
    `--set` path, known or not, so a mistyped or mis-nested path sets a value nothing
    reads: the migration is skipped, the PostgreSQL 17 instance comes up empty, and
