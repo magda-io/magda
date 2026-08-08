@@ -860,7 +860,20 @@ export default class ServiceRunner {
     }
 
     async runMigrator(name: string, dbName: string) {
-        const mainMigratorImg = "ghcr.io/magda-io/magda-db-migrator:main";
+        // Pinned to `:next`, not `:main`. This image is published per branch, so the
+        // tag has to track the branch the code under test targets -- otherwise the
+        // suite silently validates against a migrator built from different source.
+        //
+        // That is not hypothetical: `:main` still carries Flyway 4.2.0, whose bundled
+        // JDBC driver predates SCRAM. PostgreSQL 14 made `scram-sha-256` the default
+        // `password_encryption`, so against the PostgreSQL 17 fixture every migrator
+        // fails with "The authentication type 10 is not supported", the `client` role
+        // is never created, and every suite that needs it then fails with
+        // "password authentication failed for user client" -- PostgreSQL returns that
+        // same message for a role that does not exist, so the real cause is well
+        // hidden. `:next` carries Flyway 12.11.0 (see magda-db-migrator/Dockerfile,
+        // which is what ships), and authenticates fine.
+        const mainMigratorImg = "ghcr.io/magda-io/magda-db-migrator:next";
         await this.pullImage(mainMigratorImg);
         const volBind = `${this.workspaceRoot}/magda-migrator-${name}/sql:/flyway/sql/${dbName}`;
         const [, container] = (await this.docker.run(
