@@ -6,7 +6,7 @@
 //
 // Treats "version already published" as a non-fatal outcome, since release
 // pipelines may be re-run against a version that was already published.
-const { execSync } = require("child_process");
+const { execFileSync } = require("child_process");
 const path = require("path");
 
 const pkg = require(path.join(process.cwd(), "package.json"));
@@ -14,7 +14,7 @@ const match = pkg.version.match(/-([a-zA-Z]+)/);
 const tag = match ? match[1] : "latest";
 
 try {
-    execSync(`npm publish --tag ${tag}`, {
+    execFileSync("npm", ["publish", "--tag", tag], {
         stdio: ["ignore", "inherit", "pipe"]
     });
 } catch (e) {
