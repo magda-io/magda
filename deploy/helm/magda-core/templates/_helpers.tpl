@@ -33,13 +33,13 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
   {{- else if and .Values.global.useCombinedDb (empty (get .Values.global.useInK8sDbInstance .Chart.Name)) }}
   selector:
     app.kubernetes.io/instance: "{{ .Release.Name }}"
-    app.kubernetes.io/name: "combined-db-postgresql"
-    role: primary
+    app.kubernetes.io/name: "combined-db-postgresql-pg17"
+    app.kubernetes.io/component: primary
   {{- else }}
   selector:
     app.kubernetes.io/instance: "{{ .Release.Name }}"
-    app.kubernetes.io/name: "{{ .Chart.Name }}-postgresql"
-    role: primary
+    app.kubernetes.io/name: "{{ .Chart.Name }}-postgresql-pg17"
+    app.kubernetes.io/component: primary
   {{- end -}}
 {{- end }}
 
@@ -49,18 +49,18 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 - name: PGPASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.global.postgresql.existingSecret | quote }}
+      name: {{ .Values.global.postgresql.auth.existingSecret | quote }}
       key: "postgresql-password"
 - name: PGSSLMODE
   value: {{ include "magda.postgres-client-sslmode" . | quote }}
 {{- end }}
 
 {{- define "magda.postgres-privileged-username" }}
-{{- $username := .Values.global.postgresql.postgresqlUsername | default "postgres" -}}
+{{- $username := .Values.global.postgresql.auth.username | default "postgres" -}}
 {{- $usesExternalDb := or .Values.global.useAwsRdsDb .Values.global.useCloudSql -}}
 {{- $allowDefaultExternalDbPostgresUser := .Values.global.postgresql.allowDefaultExternalDbPostgresUser | default false -}}
 {{- if and $usesExternalDb (eq $username "postgres") (not $allowDefaultExternalDbPostgresUser) -}}
-{{- fail "When global.useAwsRdsDb or global.useCloudSql is enabled, set global.postgresql.postgresqlUsername to the privileged external DB account. If the privileged account is intentionally named \"postgres\", set global.postgresql.allowDefaultExternalDbPostgresUser=true." -}}
+{{- fail "When global.useAwsRdsDb or global.useCloudSql is enabled, set global.postgresql.auth.username to the privileged external DB account. If the privileged account is intentionally named \"postgres\", set global.postgresql.allowDefaultExternalDbPostgresUser=true." -}}
 {{- end -}}
 {{- $username -}}
 {{- end }}
@@ -71,7 +71,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 - name: PGPASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.global.postgresql.existingSecret | quote }}
+      name: {{ .Values.global.postgresql.auth.existingSecret | quote }}
       key: "postgresql-password"
 - name: PGSSLMODE
   value: {{ include "magda.postgres-client-sslmode" . | quote }}
@@ -194,6 +194,39 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- $supported := list "db-client-sslmode-env-v1" -}}
 {{- if not (has $helper $supported) -}}
 {{- fail (printf "Chart %q uses the Magda helper contract %q, which this version of Magda does not support (supported: %s). Upgrade or downgrade %q to a release built for this Magda version. If you are intentionally running a mismatched pair and accept the consequences, set `global.magdaCompatibilityCheck=false` to skip this check." $chart $helper (join ", " $supported) $chart) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Reject the `global.postgresql.*` keys removed in v7.
+
+  The bundled PostgreSQL subchart (bitnami postgresql 16.x) reads the username, database
+  and secret name from `global.postgresql.auth.*`. A v6 values file that still sets the
+  old paths RENDERS CLEANLY and silently ignores them: the database comes up as the
+  default `postgres` account reading a different secret, and nothing says so until a
+  migrator fails to authenticate. `auth.username` in particular cannot be shimmed —
+  unlike `auth.database` and `auth.existingSecret`, the subchart does not run it through
+  `tpl`, so it cannot be derived from a Magda-named global.
+
+  Invoked from `templates/validate-postgres-values.yaml`, which is unconditional. Do NOT
+  move this call into `magda.postgres-client-sslmode`: that helper is only reached via
+  DB-connecting components, so `tags.all=false` would switch the guard off.
+
+  Parameters: the root scope. i.e. .
+  Usage:
+  {{ include "magda.postgres-validate-legacy-values" . }}
+*/}}
+{{- define "magda.postgres-validate-legacy-values" -}}
+{{- $globalVals := (get .Values "global") | default dict -}}
+{{- $pgVals := (get $globalVals "postgresql") | default dict -}}
+{{- $moved := dict
+      "postgresqlUsername" "global.postgresql.auth.username"
+      "postgresqlDatabase" "global.postgresql.auth.database"
+      "existingSecret"     "global.postgresql.auth.existingSecret" -}}
+{{- range $old, $new := $moved -}}
+{{- if hasKey $pgVals $old -}}
+{{- fail (printf "`global.postgresql.%s` was removed in Magda v7. The bundled PostgreSQL subchart now reads this setting from `%s`, so leaving it at the old path silently ignores it: the database would come up with the default `postgres` account against a different secret. Move the value to `%s`. See the magda-core chart README and CHANGES.md for the full v7 PostgreSQL values migration." $old $new $new) -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 

@@ -1,0 +1,244 @@
+{{- if .Values.majorUpgrade.enabled }}
+{{- $sourceHost := .Values.majorUpgrade.sourceHost | required "majorUpgrade.sourceHost is required when majorUpgrade.enabled is true: set it to the previous major's postgresql.fullnameOverride (e.g. \"combined-db-postgresql\")" }}
+{{- /*
+  Logical `pg_dumpall` dump of the PREVIOUS major's in-cluster instance, taken as a
+  `pre-upgrade` hook (weight -10) so the old server is still running and still in the
+  release manifest -- Helm deletes it in the main pass that follows this hook. A
+  logical dump (not `pg_upgrade`/wal-g `backup-fetch`) avoids the glibc/collation break
+  across the debian-11 -> debian-12 bump. This Job's first action is to check the
+  TARGET (the new instance, not the source) for a completed-migration marker and no-op
+  if present, which is what makes a repeat upgrade with `majorUpgrade.enabled=true`
+  safe. Full mechanics: docs/docs/postgres-major-upgrade-mechanism.md.
+*/}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Values.postgresql.fullnameOverride }}-major-upgrade-dump"
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    # `hook-succeeded` is REQUIRED, not stylistic: this Job's pod mounts the staging
+    # PVC, so a leftover pod pins it via `pvc-protection` and hangs the NEXT upgrade's
+    # PVC-recreate hook with "pre-upgrade hooks failed: context deadline exceeded"
+    # (reproduced on a live cluster). `hook-failed` is deliberately NOT included -- a
+    # FAILED Job's logs are the only record of what went wrong and must survive; an
+    # operator must delete a failed Job by hand before retrying. See the runbook and
+    # docs/docs/postgres-major-upgrade-mechanism.md#7-idempotency-and-the-delete-policies.
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: "{{ .Values.postgresql.fullnameOverride }}-major-upgrade-dump"
+    spec:
+      restartPolicy: Never
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
+      # Without `fsGroup` the Jobs cannot use the staging PVC on a real CSI cluster
+      # (minikube's 0777 hostPath hides this). See the mechanism doc, §2.
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+      containers:
+        - name: dump
+          # Composed from `.Values.postgresql.image` (not an unprefixed `postgres`
+          # helper, which reads `.Values.image`/`global.image` -- unset here and
+          # decoupled from the actual server image) so the dump container is
+          # byte-for-byte the PG17 primary's own image, i.e. the same `pg_dumpall`.
+          image: {{ printf "%s/%s:%s" .Values.postgresql.image.registry .Values.postgresql.image.repository .Values.postgresql.image.tag | quote }}
+          imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsGroup: 0
+            runAsNonRoot: true
+            runAsUser: 1001
+            seccompProfile:
+              type: RuntimeDefault
+          {{- if not (empty .Values.majorUpgrade.resources) }}
+          resources:
+{{ .Values.majorUpgrade.resources | toYaml | indent 12 }}
+          {{- end }}
+          command:
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -o errexit
+              set -o nounset
+              set -o pipefail
+
+              # postgres client libs look the invoking uid up in /etc/passwd; under an
+              # arbitrary assigned uid it is not there.
+              /usr/local/bin/adduser.sh
+
+              DUMP=/staging/dumpall.sql.gz
+              MARKER="${DUMP}.complete"
+
+              # --- repeat-upgrade no-op -------------------------------------------
+              # Ask the TARGET (the new PG17 instance, NOT PGHOST -- the previous
+              # major's Service, gone after the first upgrade) whether a verified
+              # migration marker row already exists in public.magda_major_upgrade.
+              # Two queries, not one CASE-wrapped query: PostgreSQL resolves every
+              # table name at parse time for ALL CASE branches, so a single-query form
+              # still errors "relation ... does not exist" on a never-migrated target.
+              # Full rationale (marker semantics, why row-count not just existence):
+              # docs/docs/postgres-major-upgrade-mechanism.md#5-the-marker-table-lifecycle.
+              # These two strings must stay byte-identical to
+              # major-upgrade-restore-job.yaml's copies.
+              MARKER_EXISTS_SQL="SELECT to_regclass('public.magda_major_upgrade') IS NOT NULL"
+              MARKER_COUNT_SQL="SELECT count(*) FROM public.magda_major_upgrade"
+              echo "Checking the target ${TARGET_PGHOST} for a completed-migration marker..."
+              if pg_isready -q -h "$TARGET_PGHOST" -p 5432 -t 5; then
+                # `|| echo` keeps errexit from killing the script here so the failure can
+                # be reported with an actionable message; the value is validated below.
+                MARKER_EXISTS="$(psql --host="$TARGET_PGHOST" --dbname=postgres -v ON_ERROR_STOP=1 --tuples-only --no-align --command="$MARKER_EXISTS_SQL" || echo 'QUERY_FAILED')"
+                case "$MARKER_EXISTS" in
+                  t)
+                    ALREADY_MIGRATED="$(psql --host="$TARGET_PGHOST" --dbname=postgres -v ON_ERROR_STOP=1 --tuples-only --no-align --command="$MARKER_COUNT_SQL" || echo 'QUERY_FAILED')"
+                    ;;
+                  f)
+                    ALREADY_MIGRATED=0
+                    ;;
+                  *)
+                    ALREADY_MIGRATED="$MARKER_EXISTS"
+                    ;;
+                esac
+                # `[` conditions are exempt from `errexit`: a non-numeric value here
+                # would make the check below exit 2, which `if` reads as false and
+                # silently skips -- this exact bug has shipped once already. Validate
+                # first, always. See the mechanism doc, §7.
+                case "$ALREADY_MIGRATED" in
+                  ''|*[!0-9]*)
+                    echo "ERROR: the target ${TARGET_PGHOST} is accepting connections but the" >&2
+                    echo "  completed-migration marker could not be queried (got: '${ALREADY_MIGRATED}')." >&2
+                    echo "  This is almost always a credentials or permissions problem, and the" >&2
+                    echo "  restore Job would hit exactly the same problem after a full dump has" >&2
+                    echo "  been taken. Refusing to dump against a target whose migration state" >&2
+                    echo "  cannot be determined. Nothing has been changed; the upgrade has been" >&2
+                    echo "  aborted before touching any resource." >&2
+                    exit 1
+                    ;;
+                esac
+                if [ "$ALREADY_MIGRATED" != "0" ]; then
+                  echo "The target ${TARGET_PGHOST} carries the public.magda_major_upgrade marker:"
+                  echo "  a previous run of this migration completed AND passed its own"
+                  echo "  post-restore verification. Nothing to dump."
+                  echo "Set majorUpgrade.enabled=false to stop scheduling these Jobs."
+                  exit 0
+                fi
+                echo "The target is reachable and carries no marker; proceeding with the dump."
+              else
+                # Do NOT block here: on the first upgrade the target doesn't exist yet
+                # (created in Helm's main pass, after this hook), so "unreachable" is
+                # the normal first-upgrade state. The restore Job re-checks the same
+                # marker before loading anything, so the worst case here is an unneeded
+                # dump.
+                echo "The target ${TARGET_PGHOST} is not accepting connections."
+                echo "  Expected on the first upgrade -- the PostgreSQL 17 instance is created"
+                echo "  in Helm's main pass, which runs after this pre-upgrade hook."
+                echo "  Proceeding with the dump."
+              fi
+
+              if [ -f "$MARKER" ] && [ -s "$DUMP" ]; then
+                echo "A completed dump is already present at ${DUMP}; nothing to do."
+                echo "Delete the staging volume if you intend to re-dump."
+                exit 0
+              fi
+
+              # The SOURCE is the PREVIOUS major's instance, and it predates this chart's
+              # TLS support -- a v6 PostgreSQL 13 pod serves no TLS at all. The pod-level
+              # PGSSLMODE comes from `magda.postgres-superuser-env`, i.e. the CURRENT
+              # chart's `global.postgresql.client.sslmode` (default "require"), which is
+              # right for the new instance and impossible for the old one: every source
+              # connection below would fail with
+              #   "server does not support SSL, but SSL was required".
+              # So source-facing commands use `majorUpgrade.sourceSslMode` instead
+              # (default "prefer": TLS when the source offers it, plaintext when it does
+              # not). The TARGET probe above deliberately keeps the pod-level PGSSLMODE --
+              # the new instance does serve TLS, and it should be held to it.
+              SOURCE_SSLMODE={{ .Values.majorUpgrade.sourceSslMode | default "prefer" | quote }}
+
+              DEADLINE=$(( SECONDS + {{ .Values.majorUpgrade.waitTimeoutSeconds | int }} ))
+              echo "Waiting for the source server ${PGHOST} to accept connections..."
+              until PGSSLMODE="$SOURCE_SSLMODE" pg_isready -q -h "$PGHOST" -p 5432; do
+                if [ "$SECONDS" -ge "$DEADLINE" ]; then
+                  echo "ERROR: could not reach the source PostgreSQL server \"${PGHOST}\"." >&2
+                  echo "  majorUpgrade.sourceHost must name the PREVIOUS major's in-cluster" >&2
+                  echo "  instance (its postgresql.fullnameOverride), and that instance must" >&2
+                  echo "  still be running when the upgrade starts. Nothing has been changed;" >&2
+                  echo "  the upgrade has been aborted before touching any resource." >&2
+                  exit 1
+                fi
+                sleep 5
+              done
+
+              # A reachable-but-wrong sourceHost (most dangerously the new PG17 instance
+              # itself) would otherwise produce a valid, non-empty-looking dump of an
+              # empty database and exit 0. Guarded below by server_version_num.
+              SOURCE_VERSION_NUM="$(PGSSLMODE="$SOURCE_SSLMODE" psql --host="$PGHOST" --tuples-only --no-align --command="SHOW server_version_num" postgres)"
+              # `[` conditions are exempt from `errexit`: a non-numeric value here would
+              # make `[ ... -ge ]` exit 2, which `if` reads as false -- silently skipping
+              # the guard and dumping from an unverified host. Validate first, always.
+              # See the mechanism doc, §7.
+              case "$SOURCE_VERSION_NUM" in
+                ''|*[!0-9]*)
+                  echo "ERROR: could not determine the PostgreSQL version of ${PGHOST}." >&2
+                  echo "  Expected server_version_num to be an integer, got: '${SOURCE_VERSION_NUM}'." >&2
+                  echo "  Refusing to dump from a server whose version could not be verified." >&2
+                  echo "  Nothing has been changed; the upgrade has been aborted before touching" >&2
+                  echo "  any resource." >&2
+                  exit 1
+                  ;;
+              esac
+              if [ "$SOURCE_VERSION_NUM" -ge 170000 ]; then
+                echo "ERROR: the source server ${PGHOST} reports server_version_num=${SOURCE_VERSION_NUM}," >&2
+                echo "  i.e. it is already running PostgreSQL 17 (or later)." >&2
+                echo "  majorUpgrade.sourceHost appears to point at the NEW PostgreSQL 17 instance rather" >&2
+                echo "  than the PREVIOUS major's instance. Dumping from the new (empty) database would" >&2
+                echo "  silently produce a valid-looking but empty dump. Nothing has been changed; the" >&2
+                echo "  upgrade has been aborted before touching any resource." >&2
+                exit 1
+              fi
+
+              # `set -o pipefail` (top of script) is what makes a `pg_dumpall` failure
+              # here fail the pipe, not just `gzip`'s own exit code. The completion
+              # marker below is touched only after THIS pipeline, the non-empty check,
+              # AND `gzip -t` have all succeeded -- partial output must never be
+              # mistaken for a usable dump. See the mechanism doc, §3.
+              echo "Dumping globals and all databases from ${PGHOST}..."
+              rm -f "$DUMP"
+              PGSSLMODE="$SOURCE_SSLMODE" pg_dumpall --host="$PGHOST" --clean --if-exists | gzip > "$DUMP"
+
+              if [ ! -s "$DUMP" ]; then
+                echo "ERROR: the dump at ${DUMP} is empty." >&2
+                exit 1
+              fi
+
+              if ! gzip -t "$DUMP"; then
+                echo "ERROR: the dump at ${DUMP} failed gzip integrity check (truncated or corrupt)." >&2
+                exit 1
+              fi
+
+              touch "$MARKER"
+              echo "Dump complete: $(du -h "$DUMP" | cut -f1) at ${DUMP}"
+          env:
+            - name: PGHOST
+              value: {{ $sourceHost | quote }}
+            # The NEW major's instance. Only the repeat-upgrade check talks to it; every
+            # dump operation uses PGHOST (the previous major).
+            - name: TARGET_PGHOST
+              value: {{ .Values.postgresql.fullnameOverride | quote }}
+            # Bounds `psql`/`pg_dumpall`'s own connection attempt beyond the `pg_isready`
+            # TCP check above, so a stalled handshake fails fast instead of hanging until
+            # Helm's `--timeout`.
+            - name: PGCONNECT_TIMEOUT
+              value: "10"
+{{- include "magda.postgres-superuser-env" . | indent 12 }}
+          volumeMounts:
+            - name: staging
+              mountPath: /staging
+      volumes:
+        - name: staging
+          persistentVolumeClaim:
+            claimName: "{{ .Values.postgresql.fullnameOverride }}-major-upgrade"
+{{- end }}

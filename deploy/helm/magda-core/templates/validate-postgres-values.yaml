@@ -1,0 +1,11 @@
+{{- /*
+  Render-time rejection of the `global.postgresql.*` keys removed in v7.
+
+  This file exists solely to make the check unconditional. Hanging it off a helper that
+  only DB-connecting components reach (or off a template gated on a feature flag) means
+  `tags.all=false`, or an external-DB deployment, silently skips it — and the failure it
+  guards against is silent to begin with.
+
+  Emits no manifest; Helm tolerates an empty document.
+*/}}
+{{- include "magda.postgres-validate-legacy-values" . -}}

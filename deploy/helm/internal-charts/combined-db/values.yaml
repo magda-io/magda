@@ -1,18 +1,24 @@
 magda-postgres:
-  postgresql: 
-    fullnameOverride: "combined-db-postgresql"
-    nameOverride: "combined-db-postgresql"
-    tls:
-      # -- Must match `fullnameOverride` above: the postgresql subchart does not run
-      # `certificatesSecret` through `tpl`, so it cannot be derived automatically.
-      # See `magda-postgres/values.yaml` for the full explanation.
-      certificatesSecret: "combined-db-postgresql-crt"
-    persistence:
-      size: "100Gi"
-    resources:
-      requests:
-        cpu: 200m
-        memory: 500Mi
+  postgresql:
+    fullnameOverride: "combined-db-postgresql-pg17"
+    nameOverride: "combined-db-postgresql-pg17"
+    primary:
+      # -- Must match `fullnameOverride` above. The postgresql subchart stopped running
+      # `primary.extraEnvVarsCM` through `tpl` in chart 12+, so this one name cannot be
+      # derived and has to be repeated here. `magda-postgres/templates/validate-names.yaml`
+      # fails the render if the two drift apart.
+      extraEnvVarsCM: "combined-db-postgresql-pg17-extra-env-vars"
+      persistence:
+        size: "100Gi"
+      resources:
+        requests:
+          cpu: 200m
+          memory: 500Mi
+  majorUpgrade:
+    # -- The v6 (PostgreSQL 13) instance this chart's PG17 instance migrates from.
+    # Only read when `majorUpgrade.enabled` is true. Override if you customised
+    # `fullnameOverride` on v6.
+    sourceHost: "combined-db-postgresql"
 
 # -- whether auto-create secret for client account password.
 # After the migrator runs properly, a non-superuser DB account (named `client`) will be created.

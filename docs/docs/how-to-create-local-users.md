@@ -9,8 +9,8 @@ Before start to use the `set-user-password script, you need to:
 - Clone [magda-auth-internal repo](https://github.com/magda-io/magda-auth-internal)
 - Run `yarn install` to install all dependencies
 - Port forward the Magda database to local:
-  - `kubectl port-forward combined-db-postgresql-0 5432:5432`
-  - If you didn't install magda to the default namespace, you can use: `kubectl port-forward -n [namespace] combined-db-postgresql-0 5432:5432`
+  - `kubectl port-forward combined-db-postgresql-pg17-0 5432:5432`
+  - If you didn't install magda to the default namespace, you can use: `kubectl port-forward -n [namespace] combined-db-postgresql-pg17-0 5432:5432`
 
 > Prior to Magda v1.0.0, you should port-forward pod combined-db-0
 

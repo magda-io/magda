@@ -3,11 +3,16 @@
 ## v7.0.0
 
 - #3637: Provider-agnostic PostgreSQL support — one connection contract that holds on in-cluster PostgreSQL, AWS RDS, Azure Database for PostgreSQL and GCP Cloud SQL alike (closes #3636, #3734, #3735, #3736):
-  - Encrypt every service-to-database connection by default. A new `global.postgresql.client.sslmode` (supported values `require` and `disable`; defaults to `require`, and to `disable` when `global.useCloudSql` is set) is injected as the `PGSSLMODE` environment variable for the Node services and the backup/auto-vacuum jobs, and as an `sslmode=` JDBC URL parameter for the Flyway DB migrators and `registry-api`. Set `global.postgresql.client.sslmode=disable` to roll back to the previous plaintext behaviour.
-  - Serve TLS on the in-cluster PostgreSQL by default (controlled per DB chart, e.g. `combined-db.magda-postgres.postgresql.tls.enabled`), using a self-signed certificate Magda generates and preserves across `helm upgrade`. Existing plaintext clients keep working during a rollout, so enabling it locks nobody out.
-  - Support a non-default privileged database username via `global.postgresql.postgresqlUsername`. An initdb hook grants it `CREATEDB`/`CREATEROLE` (never `SUPERUSER`), matching the privilege level managed providers grant their admin account (RDS `rds_superuser`, Azure `azure_pg_admin`, GCP `cloudsqlsuperuser`); the `postgresql-postgres-password` secret key is auto-created when needed. The privileged-username validation also rejects the default `postgres` account for external databases unless explicitly allowed.
-  - Upgrade the DB migrator's Flyway from 4.2 to 12.11 for SCRAM authentication support on PostgreSQL 14/15+ defaults, with a no-gap history baseline so existing Flyway-4 deployments upgrade in place without re-applying already-applied migrations.
+  - Encrypt every service-to-database connection by default.
+  - Serve TLS on the in-cluster PostgreSQL by default.
+  - Support a non-default privileged database username via `global.postgresql.auth.username`.
+  - Upgrade the DB migrator's Flyway from 4.2 to 12.11 for SCRAM authentication support on PostgreSQL 14/15+ defaults, with a no-gap history baseline so existing deployments upgrade in place without re-applying already-applied migrations.
   - Add a plugin↔Magda Helm helper-contract compatibility handshake (`global.magdaCompatibilityCheck`) so a version-mismatched authentication plugin fails at render time with an actionable message rather than misbehaving at runtime.
+- #3749: Upgrade the bundled in-cluster PostgreSQL from 13.7 to 17.5 (bitnami `postgresql` subchart 10.9.1 → 16.7.24). **This is a breaking change — please refer to the official version release notes for upgrading instructions.**
+  - The bundled wal-g is a custom Magda build (`ghcr.io/magda-io/magda-wal-g:3.0.8-magda-edcda8b`), not an upstream release: no released wal-g can back up PostgreSQL 15+ in the mode Magda uses. Temporary, pending an upstream release containing [wal-g/wal-g#2262](https://github.com/wal-g/wal-g/pull/2262).
+  - Every `helm template`/`helm install` now prints a pair of `coalesce.go:316: warning: cannot overwrite table with non table` lines per bundled-PostgreSQL instance (32 lines for a default `magda-core` render, more via the umbrella chart), because `primary.customLivenessProbe`/`customReadinessProbe` are set as plain strings (they embed subchart `{{ }}` helpers) where the subchart schema declares them as maps. This is expected and harmless — the string still wins and renders correctly — not a bug report.
+- #3750: Add an automated in-cluster PostgreSQL major-upgrade path for v6 to v7. See the [PostgreSQL major upgrade runbook](./docs/docs/postgres-major-upgrade-runbook.md).
+
 ## v6.2.0
 
 - #3758: Upgraded the in-cluster PostgreSQL backup tool wal-g to 3.0.8.

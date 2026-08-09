@@ -26,11 +26,11 @@ fi
 
 # 2. The Cloud SQL proxy path resolves to `disable`: cloud_sql_proxy presents a
 #    plaintext listener and performs TLS to Cloud SQL itself.
-#    (postgresqlUsername is overridden here to route around the unrelated
+#    (auth.username is overridden here to route around the unrelated
 #    external-DB privileged-username validation, which requires a non-default
 #    username whenever useCloudSql/useAwsRdsDb is enabled.)
 render --set global.useCombinedDb=false --set global.useCloudSql=true \
-    --set global.postgresql.postgresqlUsername=magda_admin \
+    --set global.postgresql.auth.username=magda_admin \
     > "${TMP_DIR}/cloudsql.yaml"
 #    Note: the producing grep must NOT use -q -- -q suppresses its stdout, so
 #    piping it into a second grep would hand that grep an empty stream and make
@@ -48,7 +48,7 @@ fi
 
 # 3. An explicit value always wins, even on the Cloud SQL path.
 render --set global.useCombinedDb=false --set global.useCloudSql=true \
-    --set global.postgresql.postgresqlUsername=magda_admin \
+    --set global.postgresql.auth.username=magda_admin \
     --set global.postgresql.client.sslmode=require > "${TMP_DIR}/explicit.yaml"
 if ! grep -q 'value: "require"' "${TMP_DIR}/explicit.yaml"; then
     echo "expected an explicit sslmode to override the cloud-sql default"
@@ -104,7 +104,7 @@ assert_sslmode_coverage () {
         return 0
     }
     local out="${TMP_DIR}/$(basename "${chart_dir}")-cov.yaml"
-    helm template cov "${chart_dir}" --set global.postgresql.postgresqlUsername=magda_admin > "${out}"
+    helm template cov "${chart_dir}" --set global.postgresql.auth.username=magda_admin > "${out}"
     ALLOW="${allow}" python3 - "${out}" "${label}" <<'PY'
 import os, sys, re
 path, label = sys.argv[1], sys.argv[2]

@@ -40,8 +40,8 @@ PASS_OUTPUT="${TMP_DIR}/pass.yaml"
 FAIL_STDERR="${TMP_DIR}/fail.stderr"
 
 helm template pass "${TMP_DIR}" \
-    --set global.postgresql.existingSecret=db-main-account-secret \
-    --set global.postgresql.postgresqlUsername=magda_admin \
+    --set global.postgresql.auth.existingSecret=db-main-account-secret \
+    --set global.postgresql.auth.username=magda_admin \
     --set global.useAwsRdsDb=true \
     --set global.awsRdsEndpoint=db.example.com \
     > "${PASS_OUTPUT}"
@@ -52,8 +52,8 @@ if ! grep -q 'value: "magda_admin"' "${PASS_OUTPUT}"; then
 fi
 
 if helm template fail "${TMP_DIR}" \
-    --set global.postgresql.existingSecret=db-main-account-secret \
-    --set global.postgresql.postgresqlUsername=postgres \
+    --set global.postgresql.auth.existingSecret=db-main-account-secret \
+    --set global.postgresql.auth.username=postgres \
     --set global.useAwsRdsDb=true \
     --set global.awsRdsEndpoint=db.example.com \
     > /dev/null 2> "${FAIL_STDERR}"; then
@@ -61,15 +61,15 @@ if helm template fail "${TMP_DIR}" \
     exit 1
 fi
 
-if ! grep -q "global.postgresql.postgresqlUsername" "${FAIL_STDERR}"; then
-    echo "expected failure message to mention global.postgresql.postgresqlUsername"
+if ! grep -q "global.postgresql.auth.username" "${FAIL_STDERR}"; then
+    echo "expected failure message to mention global.postgresql.auth.username"
     exit 1
 fi
 
 OVERRIDE_OUTPUT="${TMP_DIR}/override.yaml"
 helm template override "${TMP_DIR}" \
-    --set global.postgresql.existingSecret=db-main-account-secret \
-    --set global.postgresql.postgresqlUsername=postgres \
+    --set global.postgresql.auth.existingSecret=db-main-account-secret \
+    --set global.postgresql.auth.username=postgres \
     --set global.postgresql.allowDefaultExternalDbPostgresUser=true \
     --set global.useAwsRdsDb=true \
     --set global.awsRdsEndpoint=db.example.com \

@@ -29,20 +29,26 @@ autoCreateSecret: true
 migratorBackoffLimit: 6
 
 magda-postgres:
-  postgresql: 
-    fullnameOverride: "registry-db-postgresql"
-    nameOverride: "registry-db-postgresql"
-    tls:
-      # -- Must match `fullnameOverride` above: the postgresql subchart does not run
-      # `certificatesSecret` through `tpl`, so it cannot be derived automatically.
-      # See `magda-postgres/values.yaml` for the full explanation.
-      certificatesSecret: "registry-db-postgresql-crt"
-    persistence:
-      size: "100Gi"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
+  postgresql:
+    fullnameOverride: "registry-db-postgresql-pg17"
+    nameOverride: "registry-db-postgresql-pg17"
+    primary:
+      # -- Must match `fullnameOverride` above. The postgresql subchart stopped running
+      # `primary.extraEnvVarsCM` through `tpl` in chart 12+, so this one name cannot be
+      # derived and has to be repeated here. `magda-postgres/templates/validate-names.yaml`
+      # fails the render if the two drift apart.
+      extraEnvVarsCM: "registry-db-postgresql-pg17-extra-env-vars"
+      persistence:
+        size: "100Gi"
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+  majorUpgrade:
+    # -- The v6 (PostgreSQL 13) instance this chart's PG17 instance migrates from.
+    # Only read when `majorUpgrade.enabled` is true. Override if you customised
+    # `fullnameOverride` on v6.
+    sourceHost: "registry-db-postgresql"
 autoVacuum:
   enable: true
   # -- auto vacuum cronjob schedule string. specified using unix-cron format (in UTC timezone by default).

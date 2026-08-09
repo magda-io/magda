@@ -1,6 +1,6 @@
 # How to Config Continuous Archiving and Point-in-Time Recovery (PITR)
 
-You can choose use managed postgreSQL database services from cloud providers or Magda's built-in in-k8s dataset instance. If you opt to the in-k8s dataset instance option, you can leverage [PostgreSQL's Continuous Archive Backup feature to achieve Point-in-Time Recovery (PITR)](https://www.postgresql.org/docs/13/continuous-archiving.html). This document explains how to:
+You can choose use managed postgreSQL database services from cloud providers or Magda's built-in in-k8s dataset instance. If you opt to the in-k8s dataset instance option, you can leverage [PostgreSQL's Continuous Archive Backup feature to achieve Point-in-Time Recovery (PITR)](https://www.postgresql.org/docs/17/continuous-archiving.html). This document explains how to:
 
 - Config Magda to auto-create base backups and turn on continuous archiving backup
 - Config Magda to enter the recover from a backup created earlier.
@@ -164,15 +164,16 @@ combined-db:
 By default, it will recover with the "LATEST" base backup. However, you can specify a different backup name with helm config option: `combined-db.magda-postgres.backupRestore.backup.recoveryMode.baseBackupName` or manually set environment variable `MAGDA_RECOVERY_BASE_BACKUP_NAME` on the relevant postgreSQL instance statefulset.
 
 > **Recovery target — how far recovery replays.** `combined-db.magda-postgres.backupRestore.recoveryMode.recoveryTarget` controls where WAL replay stops:
+>
 > <ul>
 > <li><code>"latest"</code> (<strong>default</strong>): roll forward through the archived WAL to the newest segment, then promote — the least data loss (recovery-point objective ≈ <code>archiveTimeout</code>, ~10 min, or ~0 when the pod's local <code>pg_wal</code> survives).</li>
 > <li><code>"immediate"</code>: restore to the chosen base backup only, without rolling forward (this was the behaviour before this option existed; RPO up to one base-backup interval — e.g. ~1 week with the default weekly <code>backup.schedule</code>).</li>
 > <li>any other value: treated as a PostgreSQL <code>recovery_target_time</code>, i.e. point-in-time recovery to that timestamp (e.g. <code>"2026-08-01 12:00:00+00"</code>).</li>
 > </ul>
 >
-> `recoveryTarget` composes with `baseBackupName` (which base backup recovery starts from): for point-in-time recovery to a *past* time, choose a `baseBackupName` taken **before** that time (recovery cannot replay backward). For the failure scenarios and RPO details, see [In-cluster Database Backup & Restore — How It Works (mechanics & RPO)](./in-cluster-database-backup-and-restore.md).
+> `recoveryTarget` composes with `baseBackupName` (which base backup recovery starts from): for point-in-time recovery to a _past_ time, choose a `baseBackupName` taken **before** that time (recovery cannot replay backward). For the failure scenarios and RPO details, see [In-cluster Database Backup & Restore — How It Works (mechanics & RPO)](./in-cluster-database-backup-and-restore.md).
 >
-> **Note:** rolling forward replays *all* committed transactions up to the target, including a bad change you might be trying to escape — for that case, set a timestamp `recoveryTarget` (or an earlier `baseBackupName`) to stop before it.
+> **Note:** rolling forward replays _all_ committed transactions up to the target, including a bad change you might be trying to escape — for that case, set a timestamp `recoveryTarget` (or an earlier `baseBackupName`) to stop before it.
 
 Here is a recovery example that rolls forward to the latest WAL (the default):
 
@@ -182,7 +183,7 @@ combined-db:
     backupRestore:
       recoveryMode:
         enabled: true
-        recoveryTarget: "latest"   # or "immediate", or a timestamp for PITR
+        recoveryTarget: "latest" # or "immediate", or a timestamp for PITR
 ```
 
 More info can also be found from [wal-g backup fetch document](https://github.com/wal-g/wal-g/blob/master/docs/PostgreSQL.md#backup-fetch).

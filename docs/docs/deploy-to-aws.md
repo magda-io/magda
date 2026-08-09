@@ -26,7 +26,7 @@ More details can be found from: https://docs.aws.amazon.com/eks/latest/userguide
 
 > You can also choose to use the in-pod PostgreSQL database that comes with Magda helm charts. But for production deployment, it's recommended to use a cloud provider hosted database, i.e. create an AWS RDS PostgreSQL database.
 
-> Magda supports PostgreSQL 13 - 17. RDS uses `scram-sha-256` password encryption by default (PostgreSQL 14+), which is fully supported by the DB migrator. You can name the master user account anything you like (e.g. `magda_admin`) — you no longer need to name it `postgres`. Whatever name you choose, set `global.postgresql.postgresqlUsername` to it at install time (see step 7); the chart will otherwise fail fast to stop you from accidentally using the wrong privileged account.
+> Magda supports PostgreSQL 13 - 17. RDS uses `scram-sha-256` password encryption by default (PostgreSQL 14+), which is fully supported by the DB migrator. You can name the master user account anything you like (e.g. `magda_admin`) — you no longer need to name it `postgres`. Whatever name you choose, set `global.postgresql.auth.username` to it at install time (see step 7); the chart will otherwise fail fast to stop you from accidentally using the wrong privileged account.
 
 To make EKS cluster be able to connect to the RDS database created, you need to make sure the followings are in place:
 
@@ -138,7 +138,7 @@ kubectl create namespace magda
 
 Magda auto-generates all of its internal secrets by default — the auth/session secrets (`auth-secrets`), the object storage credentials (`storage-secrets`), and the restricted (`client`) DB account secret. You therefore only need to supply secrets that come from outside the cluster:
 
-- **The privileged (master) DB account password** — required when using an external database (RDS / Cloud SQL), because Magda only auto-generates this for the in-pod PostgreSQL database. The DB migrator connects as `global.postgresql.postgresqlUsername` (see step 7) with this password.
+- **The privileged (master) DB account password** — required when using an external database (RDS / Cloud SQL), because Magda only auto-generates this for the in-pod PostgreSQL database. The DB migrator connects as `global.postgresql.auth.username` (see step 7) with this password.
 - **SMTP credentials** — only if you enable outbound email (`correspondence-api`).
 
 ```bash
@@ -174,10 +174,10 @@ export RDS_ENDPOINT=xxxx.xxx.[region name].rds.amazonaws.com
 # Set the master (privileged) user name you created on the RDS instance (see step 3)
 export DB_MASTER_USER=magda_admin
 
-helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer,global.useCombinedDb=false,global.useCloudSql=false,global.useAwsRdsDb=true,global.awsRdsEndpoint=$RDS_ENDPOINT,global.postgresql.postgresqlUsername=$DB_MASTER_USER magda oci://ghcr.io/magda-io/charts/magda
+helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer,global.useCombinedDb=false,global.useCloudSql=false,global.useAwsRdsDb=true,global.awsRdsEndpoint=$RDS_ENDPOINT,global.postgresql.auth.username=$DB_MASTER_USER magda oci://ghcr.io/magda-io/charts/magda
 ```
 
-> `global.postgresql.postgresqlUsername` is required when `global.useAwsRdsDb=true`. It must match the RDS master user you created and whose password you stored in the `db-main-account-secret` secret (step 6). If it is left as the default `postgres` the chart will fail to render, unless your privileged account is genuinely named `postgres`, in which case set `global.postgresql.allowDefaultExternalDbPostgresUser=true`.
+> `global.postgresql.auth.username` is required when `global.useAwsRdsDb=true`. It must match the RDS master user you created and whose password you stored in the `db-main-account-secret` secret (step 6). If it is left as the default `postgres` the chart will fail to render, unless your privileged account is genuinely named `postgres`, in which case set `global.postgresql.allowDefaultExternalDbPostgresUser=true`.
 
 > By default, Helm will install the latest production version of Magda. You can use `--version` to specify the exact chart version to use. e.g.:
 

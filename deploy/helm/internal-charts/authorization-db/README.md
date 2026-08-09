@@ -21,12 +21,13 @@ Kubernetes: `>= 1.14.0-0`
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"ghcr.io/magda-io"` |  |
 | image | object | `{"name":"magda-migrator-authorization-db"}` | migrator docker image settings |
-| magda-postgres.postgresql.fullnameOverride | string | `"authorization-db-postgresql"` |  |
-| magda-postgres.postgresql.nameOverride | string | `"authorization-db-postgresql"` |  |
-| magda-postgres.postgresql.persistence.size | string | `"25Gi"` |  |
-| magda-postgres.postgresql.resources.requests.cpu | string | `"100m"` |  |
-| magda-postgres.postgresql.resources.requests.memory | string | `"128Mi"` |  |
-| magda-postgres.postgresql.tls.certificatesSecret | string | `"authorization-db-postgresql-crt"` | Must match `fullnameOverride` above: the postgresql subchart does not run `certificatesSecret` through `tpl`, so it cannot be derived automatically. See `magda-postgres/values.yaml` for the full explanation. |
+| magda-postgres.majorUpgrade.sourceHost | string | `"authorization-db-postgresql"` | The v6 (PostgreSQL 13) instance this chart's PG17 instance migrates from. Only read when `majorUpgrade.enabled` is true. Override if you customised `fullnameOverride` on v6. |
+| magda-postgres.postgresql.fullnameOverride | string | `"authorization-db-postgresql-pg17"` |  |
+| magda-postgres.postgresql.nameOverride | string | `"authorization-db-postgresql-pg17"` |  |
+| magda-postgres.postgresql.primary.extraEnvVarsCM | string | `"authorization-db-postgresql-pg17-extra-env-vars"` | Must match `fullnameOverride` above. The postgresql subchart stopped running `primary.extraEnvVarsCM` through `tpl` in chart 12+, so this one name cannot be derived and has to be repeated here. `magda-postgres/templates/validate-names.yaml` fails the render if the two drift apart. |
+| magda-postgres.postgresql.primary.persistence.size | string | `"25Gi"` |  |
+| magda-postgres.postgresql.primary.resources.requests.cpu | string | `"100m"` |  |
+| magda-postgres.postgresql.primary.resources.requests.memory | string | `"128Mi"` |  |
 | migratorBackoffLimit | int | `6` | No. of retries before the migrator job is considered as failed. Failed Pods associated with the Job are recreated by the Job controller with an exponential back-off delay (10s, 20s, 40s ...) capped at six minutes. |
 
 ----------------------------------------------

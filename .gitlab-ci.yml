@@ -223,7 +223,7 @@ buildtest:search-no-index-cache:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - postgres:13.7
+    - postgres:17.5
     - name: docker:28.5.0-dind
       alias: docker
       command: ["--mtu=1400"]
@@ -301,7 +301,7 @@ buildtest:registry:
     - sbt-prebuild
   timeout: 30 minutes
   services:
-    - postgres:13.7
+    - postgres:17.5
   variables:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
@@ -387,7 +387,7 @@ buildtest:typescript-apis-with-pg:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - postgres:13.7
+    - postgres:17.5
     - name: docker:28.5.0-dind
       alias: docker
       command: ["--mtu=1400"]
@@ -516,6 +516,13 @@ buildtest:integration-tests:
     - typescript-common-libs
     - sbt-prebuild
     - dockerize:dockerExtensions
+    # `src/tests/postgresMajorUpgrade.spec.ts` renders `deploy/helm/magda-core`
+    # via `helm template` to extract the real major-upgrade dump/restore
+    # scripts. The subchart dependencies (`deploy/helm/**/charts/*.tgz`) are
+    # gitignored and only materialise via `yarn update-all-charts`, which
+    # `buildtest:helm-charts` already runs; pulling its artifacts here avoids
+    # this job also needing its own network access to the chart repositories.
+    - buildtest:helm-charts
   before_script:
     - |
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
@@ -608,6 +615,29 @@ buildtest:helm-charts:
 
     - echo "chart assertions - wal-g backup CronJob exit-code handling"
     - bash deploy/helm/magda-core/tests/walg-backup-cronjob.sh
+
+    # The v6 -> v7 PostgreSQL values migration. Every key below moved, and a stale v6
+    # values file renders CLEANLY while ignoring the operator's privileged username and
+    # secret name -- so the rejection has to be tested, not just written.
+    - echo "chart assertions - removed v6 postgresql globals are rejected"
+    - bash deploy/helm/magda-core/tests/postgres-legacy-values.sh
+
+    # bitnami postgresql 12 replaced the `role: primary` pod label with
+    # `app.kubernetes.io/component: primary`. A Service left selecting the old label
+    # renders fine, lints fine, and reaches zero pods.
+    - echo "chart assertions - DB Service selectors match the rendered pod labels"
+    - bash deploy/helm/magda-core/tests/postgres-selector-labels.sh
+
+    # Which of the four Magda-created object names the subchart resolves through `tpl`
+    # changed in BOTH directions across the 10.9.1 -> 16.7.24 bump.
+    - echo "chart assertions - no dangling ConfigMap/Secret references from the DB pod"
+    - bash deploy/helm/magda-core/tests/postgres-object-refs.sh
+
+    # The one-shot major-upgrade migration. Its correctness is almost entirely about
+    # Helm hook phases and weights -- the dump must precede the upgrade, and the restore
+    # must precede Flyway -- none of which any other test observes.
+    - echo "chart assertions - PostgreSQL major-upgrade hook ordering"
+    - bash deploy/helm/magda-core/tests/postgres-major-upgrade.sh
 
   artifacts:
     paths:
