@@ -302,9 +302,20 @@ spec:
               # DROP above and the mechanism doc, §5). That drop is deliberate, not data
               # loss -- counting the marker table here would make this check fail on
               # exactly the case the drop exists to handle correctly.
+              # HAZARD: this awk must read the dump to EOF. It must NOT `exit` at the end
+              # of the "postgres" section, however tempting -- `pg_dumpall` orders
+              # databases `ORDER BY (datname <> 'template1'), datname`, so anything
+              # sorting after "postgres" (`session`, `tenant`, ...) still follows. Exiting
+              # early closes the pipe, `gunzip` dies with SIGPIPE, and `set -o pipefail`
+              # (top of script) aborts the whole restore with exit 141 -- AFTER the data
+              # is restored and the inherited marker dropped, but BEFORE this run's marker
+              # is written. Helm then reports UPGRADE FAILED over a restore that actually
+              # succeeded, and the retry path tells the operator to drop "incomplete"
+              # databases that are in fact complete. It only shows up once the trailing
+              # section exceeds the 64 KiB pipe buffer, so a small test fixture hides it.
               DUMP_POSTGRES_TABLES=$(gunzip -c "$DUMP" | awk '
                   /^\\connect postgres$/ { indb = 1; next }
-                  indb && /^\\connect / { exit }
+                  indb && /^\\connect / { indb = 0 }
                   indb && /^CREATE (UNLOGGED )?TABLE public\.magda_major_upgrade[ (]/ { next }
                   indb && /^CREATE (UNLOGGED )?TABLE public\./ { n++ }
                   END { print n + 0 }')

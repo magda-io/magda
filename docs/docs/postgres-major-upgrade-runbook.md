@@ -36,9 +36,14 @@ PVC (`data-<db>-postgresql-pg17-0`).
 
 **If you run a plain `helm upgrade` to v7 without anything described in this
 runbook, you get a new, empty database.** Nothing dumps or restores your v6 data
-automatically. The old PostgreSQL 13 StatefulSet and its data PVC
-(`data-<db>-postgresql-0`) are simply left in place, untouched, alongside the new,
-empty one.
+automatically.
+
+The old PostgreSQL 13 **StatefulSet is removed** — v7 renders no object by that
+name, so Helm deletes it in the main pass. What survives, untouched, is its **data
+PVC** (`data-<db>-postgresql-0`): StatefulSet-managed PVCs are not garbage-collected
+when the StatefulSet goes away. That surviving PVC is the whole basis of the rollback
+in section 8 — `helm rollback` re-creates the PostgreSQL 13 StatefulSet and it rebinds
+the same volume.
 
 ## 3. The wal-g caveat — backups do not cross majors
 
@@ -100,19 +105,28 @@ immune to the on-disk format change.
    `true`), set:
 
    ```yaml
-   <db>:
-     magda-postgres:
-       majorUpgrade:
-         enabled: true
+   magda-core:
+     <db>:
+       magda-postgres:
+         majorUpgrade:
+           enabled: true
    ```
+
+   The `magda-core:` top level is required when you install the **umbrella `magda`
+   chart** (the usual case), because that chart's real content is the `magda-core`
+   subchart. Drop it only if you install `magda-core` directly. Getting this wrong does
+   not error — Helm accepts any values path — it silently skips the migration, and the
+   PostgreSQL 17 instance comes up empty while the upgrade reports success. See the
+   table in step 2 and verify with `helm template ... | grep -c major-upgrade`.
 
    e.g. for a combined database:
 
    ```yaml
-   combined-db:
-     magda-postgres:
-       majorUpgrade:
-         enabled: true
+   magda-core:
+     combined-db:
+       magda-postgres:
+         majorUpgrade:
+           enabled: true
    ```
 
    Also set `majorUpgrade.sourceHost` if you customised
@@ -395,27 +409,31 @@ run `global.useInK8sDbInstance.<db>: true` for individual services instead of
 data you want migrated:
 
 ```yaml
-authorization-db:
-  magda-postgres:
-    majorUpgrade:
-      enabled: true
-content-db:
-  magda-postgres:
-    majorUpgrade:
-      enabled: true
-registry-db:
-  magda-postgres:
-    majorUpgrade:
-      enabled: true
-session-db:
-  magda-postgres:
-    majorUpgrade:
-      enabled: true
-tenant-db:
-  magda-postgres:
-    majorUpgrade:
-      enabled: true
+magda-core:
+  authorization-db:
+    magda-postgres:
+      majorUpgrade:
+        enabled: true
+  content-db:
+    magda-postgres:
+      majorUpgrade:
+        enabled: true
+  registry-db:
+    magda-postgres:
+      majorUpgrade:
+        enabled: true
+  session-db:
+    magda-postgres:
+      majorUpgrade:
+        enabled: true
+  tenant-db:
+    magda-postgres:
+      majorUpgrade:
+        enabled: true
 ```
+
+(Again, the `magda-core:` top level applies to the umbrella `magda` chart; drop it if
+you install `magda-core` directly.)
 
 This is by design — nothing automatically enables it across every instance in
 your topology, so review your topology and enable it on each instance

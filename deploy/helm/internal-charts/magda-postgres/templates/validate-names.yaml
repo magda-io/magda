@@ -18,3 +18,28 @@
 {{- if ne $actual $expected }}
 {{- fail (printf "postgresql.primary.extraEnvVarsCM is %q but `extra-env-vars-configmap.yaml` creates %q. The postgresql subchart does not run `primary.extraEnvVarsCM` through `tpl`, so it must be set to the literal `<postgresql.fullnameOverride>-extra-env-vars` in every chart that overrides `fullnameOverride`. Set it to %q." $actual $expected $expected) }}
 {{- end }}
+
+{{- /*
+  Guard the per-chart values that moved under `primary.*` in subchart 16.7.24.
+
+  These are silent, not loud: the subchart simply never reads a key left at the old
+  top-level path. An operator carrying a v6 override of `postgresql.persistence.size`
+  gets a default-sized PVC and no warning -- exactly the defect this upgrade already
+  produced once during development (a 50Gi PVC where 100Gi was configured).
+
+  Safe to key on the top-level name: chart 16.7.24 declares none of these at the top
+  level of its own values (its top-level keys are architecture, audit, auth, backup,
+  ... primary, tls, volumePermissions and friends), so a value present here can only
+  have come from a stale override.
+*/}}
+{{- $moved := dict
+      "persistence"     "primary.persistence"
+      "resources"       "primary.resources"
+      "livenessProbe"   "primary.livenessProbe"
+      "readinessProbe"  "primary.readinessProbe"
+      "initdbUser"      "primary.initdb.user" }}
+{{- range $old, $new := $moved }}
+{{- if hasKey $.Values.postgresql $old }}
+{{- fail (printf "postgresql.%s is set, but subchart 16.7.24 moved it to postgresql.%s and no longer reads the old path. It would be silently ignored -- e.g. a stale `persistence.size` yields a default-sized PVC with no warning. Move the value to postgresql.%s." $old $new $new) }}
+{{- end }}
+{{- end }}

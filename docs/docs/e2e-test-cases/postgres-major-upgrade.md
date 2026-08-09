@@ -284,13 +284,17 @@ change that.)
 untouched:**
 
 ```bash
-kubectl -n "$NS" get statefulset          # expect BOTH combined-db-postgresql and combined-db-postgresql-pg17
-kubectl -n "$NS" get pvc                  # expect BOTH data-combined-db-postgresql-0 (old, untouched)
-                                           # and data-combined-db-postgresql-pg17-0 (new)
-kubectl -n "$NS" exec combined-db-postgresql-0 -- env PGPASSWORD="$PGPASSWORD" \
-  psql -U postgres -h 127.0.0.1 -d postgres -tAc "SELECT count(*) FROM records;"
-# expect: still equals /tmp/registry-count-v6.txt -- the old PostgreSQL 13 data was never written to
+kubectl -n "$NS" get statefulset   # expect ONLY combined-db-postgresql-pg17
+kubectl -n "$NS" get pvc           # expect BOTH data-combined-db-postgresql-0 (old, untouched)
+                                   # and data-combined-db-postgresql-pg17-0 (new)
 ```
+
+> The old **StatefulSet is gone**, not retained: v7 renders no `combined-db-postgresql`
+> object, so Helm deletes it in the main pass. Its **PVC** survives, because
+> StatefulSet-managed PVCs are not garbage-collected with the StatefulSet — and that is
+> what makes step 4's rollback work. You therefore cannot `kubectl exec` into the old
+> pod to check the PostgreSQL 13 data at this point; verify it after the rollback in
+> step 4 instead.
 
 **g. Idempotency — re-run `helm upgrade` with the flag still on:**
 
