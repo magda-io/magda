@@ -20,6 +20,7 @@ scripted, assertion/checksum-based driver), and how to clean up.
 - [Distribution version aspect in the Web UI](./distribution-version-web-ui.md)
 - [In-cluster PostgreSQL wal-g cross-version backup / restore (roll-forward + PITR)](./postgres-walg-cross-version-restore.md)
 - [In-cluster PostgreSQL major upgrade (PG 13 → 17 logical dump / restore)](./postgres-major-upgrade.md)
+- [Migrate the in-cluster PostgreSQL to a managed/cloud database (Pathway B)](./postgres-in-cluster-to-managed-db-migration.md)
 - [Fresh install on PostgreSQL 17 — client authentication (SCRAM)](./postgres-fresh-install-auth.md)
 
 ## Adding a new case

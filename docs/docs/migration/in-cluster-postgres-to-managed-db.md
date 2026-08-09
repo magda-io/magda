@@ -351,3 +351,4 @@ single `awsRdsEndpoint`.
 - [Deploy Magda on AWS EKS](../deploy-to-aws.md) / [Azure AKS](../deploy-to-azure.md) — external-database provisioning and the value contract.
 - [Upgrading Google Cloud SQL using Google DMS](./upgrade-google-cloud-sql-using-google-dms.md) — a provider-driven major upgrade of an already-managed database.
 - [In-cluster Database Backup & Restore — How It Works](../in-cluster-database-backup-and-restore.md) — why wal-g is a rollback net, not a migration tool.
+- [E2E test case: migrate the in-cluster PostgreSQL to a managed/cloud database](../e2e-test-cases/postgres-in-cluster-to-managed-db-migration.md) — a repeatable gate for this procedure against a simulated (TLS-enforced, non-superuser-master) managed DB.
