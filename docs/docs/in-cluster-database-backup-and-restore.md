@@ -144,6 +144,7 @@ The wal-g mechanics are exercised as a regression oracle in `magda-int-test-ts` 
 
 ## Related
 
+- [PostgreSQL Upgrade & Migration Pathways (v6 → v7)](./postgres-upgrade-migration-pathways.md) — pick the right route when moving to v7; explains why wal-g is a rollback net, not a migration tool.
 - [How to Config Continuous Archiving and Point-in-Time Recovery (PITR)](./how-to-recover-with-continuous-archive-backup.md) — configuration how-to (storage, helm values).
 - [`magda-postgres` chart reference](../../deploy/helm/internal-charts/magda-postgres) — all `backupRestore.*` options.
 - [PostgreSQL Continuous Archiving & PITR](https://www.postgresql.org/docs/17/continuous-archiving.html) — upstream reference.

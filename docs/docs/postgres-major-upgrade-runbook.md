@@ -7,6 +7,11 @@ Magda v7 upgrades the **bundled, in-cluster** PostgreSQL from 13.7 to 17.5 (the
 `postgresql` subchart). This runbook covers moving your **existing v6 data** into
 the new PostgreSQL 17 instance as part of a v6 → v7 `helm upgrade`.
 
+This is **Pathway A** of the
+[PostgreSQL Upgrade & Migration Pathways](./postgres-upgrade-migration-pathways.md) —
+keeping the database in-cluster. If you instead want to move to a managed / cloud
+database, see that overview for Pathways B and C.
+
 It applies only to the in-cluster option — every database chart
 (`combined-db`, `registry-db`, `authorization-db`, `content-db`, `session-db`,
 `tenant-db`) that embeds `magda-postgres` and runs its own PostgreSQL pod. If you
