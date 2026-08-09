@@ -534,6 +534,22 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
                 await c.query("CREATE DATABASE db_alpha");
                 await c.query("CREATE DATABASE db_beta");
                 await c.query("CREATE DATABASE db_gamma");
+                // Sorts AFTER "postgres", and that is the point. `pg_dumpall`
+                // orders databases `ORDER BY (datname <> 'template1'), datname`,
+                // so a real install always has `session`/`tenant` following the
+                // `postgres` section -- but every other fixture here sorts
+                // before it, which once left the dump's `postgres` section as
+                // the last `\connect` block in the stream.
+                //
+                // That hid a real bug: the restore's postgres-content check
+                // used to `exit` at the end of that section, closing the pipe,
+                // killing `gunzip` with SIGPIPE and aborting the whole restore
+                // under `pipefail` -- after the data was loaded but before the
+                // completion marker was written. It only fires once the
+                // trailing section exceeds the 64 KiB pipe buffer, so this
+                // database is deliberately filled past that below. Do not
+                // rename it to sort before "postgres", and do not shrink it.
+                await c.query("CREATE DATABASE z_after_postgres");
 
                 // Magda's default (useCombinedDb: true) topology has no
                 // separate "registry" database: registry-api sets
@@ -559,6 +575,25 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
                     "aspect-1"
                 ]);
             });
+
+            await withClient(
+                host,
+                sourcePort,
+                "z_after_postgres",
+                async (c) => {
+                    // Deliberately bulky. The SIGPIPE this fixture guards against
+                    // only fires once the dump section trailing "postgres" exceeds
+                    // the 64 KiB pipe buffer, so a handful of rows here would let
+                    // the bug back in unnoticed. ~1 MB clears it with room to spare
+                    // and still dumps/restores in about a second.
+                    await c.query(
+                        "CREATE TABLE trailing_bulk (id int primary key, payload text)"
+                    );
+                    await c.query(
+                        "INSERT INTO trailing_bulk SELECT g, repeat('x', 200) || g FROM generate_series(1, 5000) g"
+                    );
+                }
+            );
 
             await withClient(host, sourcePort, "db_alpha", async (c) => {
                 // The exact case that broke before: a single-column table
@@ -706,7 +741,7 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
                 `restore script (real, extracted from the rendered chart) failed:\nSTDOUT:\n${restoreResult.stdout}\nSTDERR:\n${restoreResult.stderr}`
             ).to.equal(0);
             expect(restoreResult.stdout).to.match(
-                /Restore complete: 3 of 3 database\(s\) now present\./
+                /Restore complete: 4 of 4 database\(s\) now present\./
             );
             // The dedicated "postgres" database content check (records +
             // aspects, seeded above) must also have run and passed -- the
@@ -717,7 +752,7 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
             );
 
             // 5. Assert full data integrity on the RESTORED target -- exit
-            // codes and the Job's own "3 of 3" line are necessary but not
+            // codes and the Job's own "4 of 4" line are necessary but not
             // sufficient; a restore that exits 0 having silently dropped a
             // row must fail THIS test.
             await withClient(host, targetPort, "postgres", async (c) => {
@@ -727,7 +762,37 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
                 expect(
                     dbs.rows.map((r) => r.datname),
                     "restored database set"
-                ).to.deep.equal(["db_alpha", "db_beta", "db_gamma"]);
+                ).to.deep.equal([
+                    "db_alpha",
+                    "db_beta",
+                    "db_gamma",
+                    "z_after_postgres"
+                ]);
+
+                // The database that sorts AFTER "postgres". Its size is what
+                // makes this assertion meaningful: the restore's
+                // postgres-content check reads the dump through a pipe, and an
+                // early `exit` there used to kill `gunzip` with SIGPIPE once
+                // this trailing section passed the 64 KiB buffer -- aborting
+                // the restore AFTER loading data but BEFORE the marker. If that
+                // regresses, the restore never reaches the marker and step 6
+                // below fails.
+                let trailingRows = -1;
+                await withClient(
+                    host,
+                    targetPort,
+                    "z_after_postgres",
+                    async (c2) => {
+                        const r = await c2.query(
+                            "SELECT count(*)::int AS c FROM trailing_bulk"
+                        );
+                        trailingRows = r.rows[0].c;
+                    }
+                );
+                expect(
+                    trailingRows,
+                    "trailing_bulk rows in the database sorting after postgres"
+                ).to.equal(5000);
 
                 // The registry-shaped content that lives directly in the
                 // "postgres" database in Magda's default topology -- this is
@@ -926,7 +991,7 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
                 expect(
                     marker.rows[0].databases_restored,
                     "marker.databases_restored"
-                ).to.equal(3);
+                ).to.equal(4);
                 expect(marker.rows[0].server_version).to.include("PostgreSQL");
                 markerCompletedAt = marker.rows[0].completed_at.toISOString();
             });
@@ -986,7 +1051,7 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
                 `repeat restore must be a no-op, not a failure:\nSTDOUT:\n${repeatRestore.stdout}\nSTDERR:\n${repeatRestore.stderr}`
             ).to.equal(0);
             expect(repeatRestore.stdout).to.match(
-                /The target already holds 3 database\(s\); the migration has already run\./
+                /The target already holds 4 database\(s\); the migration has already run\./
             );
 
             // Nothing was re-restored: the marker is still the original row.
@@ -1005,7 +1070,7 @@ describe("PostgreSQL major-upgrade dump/restore -- adversarial, against the real
                 const rows = await c.query(
                     "SELECT count(*)::int AS c FROM pg_database WHERE datname NOT IN ('postgres','template0','template1')"
                 );
-                expect(rows.rows[0].c).to.equal(3);
+                expect(rows.rows[0].c).to.equal(4);
             });
 
             // 8. The partial-restore case must still HARD ERROR: databases
