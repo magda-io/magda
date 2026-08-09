@@ -12,7 +12,7 @@ The docker image used by the chart is built from [bitnami postgreSQL Docker Imag
 
 ## TLS
 
-When `global.postgresql.tls.enabled` is `true` (the default for the in-cluster
+When `postgresql.tls.enabled` is `true` (the default for the in-cluster
 database), `templates/tls-secret.yaml` generates a self-signed CA and server
 certificate and preserves them across `helm upgrade` using Helm's `lookup`
 function to read back the existing secret, re-using it instead of minting a
