@@ -35,9 +35,10 @@ one vendor's exact privilege model (see Notes).
    `pg_dump --no-owner --no-privileges` each database, grant `client` — and assert
    every database, its row counts, sequences, and `client`'s own read/write access
    landed on the managed DB over TLS.
-5. **Reconfigure Magda (still v6)** to the managed DB and assert the application is
-   healthy against it.
-6. **Upgrade to v7** as an external-DB upgrade and assert data and health.
+5. **Cut over by upgrading to v7** pointed at the managed DB, and assert the
+   migrators connect over TLS, the application is healthy, and the seeded dataset
+   is served through the API from the managed DB. (Includes the verified reason to
+   cut over at v7 rather than pointing an earlier version at the managed DB first.)
 
 ## Prerequisites
 
@@ -148,11 +149,18 @@ helm install magda oci://ghcr.io/magda-io/charts/magda --version "$V6_VERSION" -
 export PGPASSWORD=$(kubectl get secret -n "$NS" db-main-account-secret -o jsonpath='{.data.postgresql-password}' | base64 -d)
 export CLIENT_PW=$(kubectl get secret -n "$NS" combined-db-password -o jsonpath='{.data.password}' | base64 -d)
 # ... seed a registry record + auth user via the gateway (see Pathway A step 1) ...
+# capture the dataset id you PUT — step 5 reads it back through the API:
+echo "<your-dataset-id>" > /tmp/dsid.txt
 kubectl -n "$NS" exec combined-db-postgresql-0 -- env PGPASSWORD="$PGPASSWORD" \
   psql -U postgres -h 127.0.0.1 -d postgres -tAc "SELECT count(*) FROM records;" | tee /tmp/registry-count.txt
 kubectl -n "$NS" exec combined-db-postgresql-0 -- env PGPASSWORD="$PGPASSWORD" \
   psql -U postgres -h 127.0.0.1 -d auth -tAc "SELECT count(*) FROM users;" | tee /tmp/auth-count.txt
 ```
+
+> The admin session JWT (`X-Magda-Session`) is `jwt.sign({userId, session:{}}, jwtSecret)`
+> for the built-in admin `00000000-0000-4000-8000-000000000000`. If `acs-cmd` isn't
+> handy, mint it with the `jwt-secret` from the `auth-secrets` secret:
+> `node -e "console.log(require('jsonwebtoken').sign({userId:'00000000-0000-4000-8000-000000000000',session:{}}, process.argv[1]))" "$JWT_SECRET"`.
 
 ## 2. Stop application writes
 
@@ -190,12 +198,17 @@ kubectl exec -n "$NS" managed-pg -- env PGPASSWORD=bootstrap psql -U postgres -v
   DROP DATABASE IF EXISTS auth; DROP DATABASE IF EXISTS content;
   DROP DATABASE IF EXISTS session; DROP DATABASE IF EXISTS tenant;
   REASSIGN OWNED BY client TO postgres; DROP OWNED BY client; DROP ROLE IF EXISTS client;
-  GRANT CREATE, USAGE ON SCHEMA public TO $MASTER_USER;"   # let the master manage the shared postgres db
+  GRANT CREATE, USAGE ON SCHEMA public TO $MASTER_USER;
+  GRANT CREATE ON DATABASE postgres TO $MASTER_USER;"   # let the master manage the shared postgres db
 ```
 
-> The final `GRANT` models what a managed provider's admin (e.g. `rds_superuser`)
-> can do to the shared `postgres` database. On a real provider you either already
-> have this or run it once from the provider console; see the how-to's Step 3 note.
+> The two `GRANT`s model what a managed provider's admin (e.g. `rds_superuser`) can
+> do to the shared `postgres` database. Both were needed in verification: the
+> schema grant so the master can create the registry tables in `public`, and the
+> database grant so it can `CREATE EXTENSION "uuid-ossp"` (a trusted extension —
+> no superuser required, but `CREATE` on the database is). On a real provider you
+> either already have these or run them once from the provider console; see the
+> how-to's Step 3 note.
 
 ## 4. Migrate with the documented per-database procedure
 
@@ -244,68 +257,64 @@ kubectl run verify -n "$NS" --rm -i --restart=Never --image=postgres:17 \
 #         databases auth/content/postgres/session/tenant present, NO 'registry' db.
 ```
 
-## 5. Reconfigure Magda (still v6) to the managed database
+## 5. Cut over to the managed database (upgrade to v7)
 
-Point the master-account secret and the external-DB values at the managed DB:
+Point the master-account secret at the managed master, then **upgrade straight to
+v7** with the external-DB values — do not point v6 at the managed DB first (see the
+caveat below):
 
 ```bash
 kubectl create secret generic db-main-account-secret -n "$NS" \
   --from-literal=postgresql-password="$MASTER_PW" --dry-run=client -o yaml | kubectl apply -f -
 
-helm upgrade magda oci://ghcr.io/magda-io/charts/magda --version "$V6_VERSION" -n "$NS" \
-  --reuse-values \
+helm upgrade magda oci://ghcr.io/magda-io/charts/magda --version "$V7_VERSION" -n "$NS" \
   --set global.useCombinedDb=false \
   --set global.useAwsRdsDb=true \
   --set global.awsRdsEndpoint="$MANAGED_HOST" \
-  --set global.postgresql.postgresqlUsername="$MASTER_USER" \
-  --timeout 3600s
-kubectl -n "$NS" scale deployment --replicas=1 \
-  $(kubectl -n "$NS" get deploy -o name | grep -E 'registry-api|authorization-api|content-api|tenant-api|gateway' | paste -sd' ' -)
+  --set global.postgresql.auth.username="$MASTER_USER" \
+  --wait --timeout 3600s
 ```
 
-Assert the `*-db` Services are now `ExternalName` aliases and the app is healthy
-against the managed DB:
+> Do **not** pass `--reuse-values` (v7 restructured the values contract and it trips
+> the `validate-tls` guard), and do **not** set any `majorUpgrade.*` value (no effect
+> on an external DB). The upgrade must **succeed** — its post-upgrade migrator hooks
+> connect to the managed DB over TLS.
+
+Assert the switch and health:
 
 ```bash
 kubectl -n "$NS" get svc authorization-db content-db session-db registry-db -o \
   custom-columns=NAME:.metadata.name,TYPE:.spec.type,TO:.spec.externalName
 # expect: all type ExternalName -> $MANAGED_HOST
+kubectl -n "$NS" port-forward svc/gateway 18080:80 & sleep 6
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:18080/api/v0/auth/users/whoami   # 200
-curl -s "http://localhost:18080/api/v0/registry/records?limit=1" -H "X-Magda-Tenant-Id: 0" | head -c 200
-```
-
-## 6. Upgrade to v7 (external-DB upgrade)
-
-```bash
-helm upgrade magda oci://ghcr.io/magda-io/charts/magda --version "$V7_VERSION" -n "$NS" \
-  --reuse-values \
-  --set global.postgresql.auth.username="$MASTER_USER" \
-  --timeout 3600s
-```
-
-> The master-username key moved from `global.postgresql.postgresqlUsername` (v6)
-> to `global.postgresql.auth.username` (v7). Do **not** set any `majorUpgrade.*`
-> value — it has no effect on an external database.
-
-Assert data and health after the upgrade:
-
-```bash
+curl -s "http://localhost:18080/api/v0/registry/records/$(cat /tmp/dsid.txt)" -H "X-Magda-Tenant-Id: 0" | head -c 200
+# expect: the seeded record, served THROUGH THE APP from the managed DB over TLS
 kubectl run verify7 -n "$NS" --rm -i --restart=Never --image=postgres:17 \
   --env=CP="$CLIENT_PW" --command -- sh -c "
     PGPASSWORD=\$CP psql 'host=managed-pg user=client dbname=postgres sslmode=require' -tAc 'SELECT count(*) FROM records;'
   "
 # expect: still == /tmp/registry-count.txt
-curl -s "http://localhost:18080/api/v0/search/datasets?query=PG%20Upgrade%20E2E" \
-  -H "X-Magda-Session: $(cat /tmp/admin.jwt)"   # expect the seeded dataset
 ```
+
+> **Why cut over at the v7 upgrade, not by pointing v6 at the managed DB first?**
+> Verified negative result: a `helm upgrade` that points a **pre-v7** release at a
+> TLS-enforcing managed DB **fails** at the `registry-db-migrator` post-upgrade hook
+> with `FATAL: no pg_hba.conf entry ... no encryption`. Pre-v7 migrators build their
+> Flyway (pgjdbc) URL without an `sslmode` parameter, so they connect in plaintext
+> and the managed DB rejects them — even though the running services (which append
+> `sslmode`) connect fine. v7 migrators set `PGSSLMODE=require` and carry it into the
+> Flyway URL, so the v7 upgrade's migrators connect over TLS. (If you want to
+> reproduce the failure: run the v6 `helm upgrade` with the external-DB values and
+> observe the `registry-db-migrator` job fail.)
 
 ## Cleanup
 
 ```bash
-kill %1 2>/dev/null   # the gateway port-forward from step 1
+kill %1 2>/dev/null   # the gateway port-forward
 helm uninstall magda -n "$NS"
-kubectl delete namespace "$NS" --wait=true --timeout=180s
-rm -f /tmp/registry-count.txt /tmp/auth-count.txt /tmp/admin.jwt
+kubectl delete namespace "$NS" --wait=true --timeout=300s
+rm -f /tmp/registry-count.txt /tmp/auth-count.txt /tmp/admin.jwt /tmp/dsid.txt
 ```
 
 ## Notes
@@ -316,14 +325,19 @@ rm -f /tmp/registry-count.txt /tmp/auth-count.txt /tmp/admin.jwt
   against a specific vendor's exact privilege model (RDS `rds_superuser`, Cloud
   SQL's `cloudsqlsuperuser`, Azure's `azure_pg_admin`); the shared-`postgres`-db
   `GRANT` in step 3 approximates what those admin roles allow.
-- **What has been exercised locally.** Steps 0, 3 and 4 (TLS enforcement, the
-  negative `pg_dumpall` control, and the per-database migration with `client`
-  read/write over TLS) were verified on minikube. Steps 5–6 (reconfiguring the
-  full Magda release and the v7 external-DB upgrade) are the broader gate this
-  case defines: run them when validating a release. In particular, watch whether
-  the v7 DB **migrators** run cleanly as the non-superuser master against the
-  already-migrated, pre-populated databases — that is the highest-risk assertion
-  and the main reason to run the full flow.
+- **What has been exercised locally.** The **whole flow was run end-to-end on
+  minikube** (v6 `6.1.2-pr.3759.0` → simulated managed PG17 → v7 `7.0.0-pr.3762.4`):
+  TLS enforcement, the negative `pg_dumpall` control, the per-database migration
+  with `client` read/write over TLS, and the v7 cutover — after which `whoami`
+  returned 200 and the seeded dataset was served through the registry API from the
+  managed DB, row counts intact. Two findings came out of it and are baked into the
+  steps above and the how-to:
+  - The registry restore needs **`CREATE ON DATABASE`** on the target (for the
+    trusted `uuid-ossp` extension) in addition to `CREATE ON SCHEMA public` — a
+    non-superuser master has neither by default (step 3 grants both).
+  - **Pre-v7 migrators cannot reach a TLS-enforcing managed DB** (Flyway URL omits
+    `sslmode`), so the cutover must happen **at** the v7 upgrade, not before it
+    (step 5 caveat).
 - Run this whenever the Pathway B how-to or the external-DB value contract
   (`useAwsRdsDb`/`awsRdsEndpoint`, the master-username key, `sslmode` handling)
   changes.
