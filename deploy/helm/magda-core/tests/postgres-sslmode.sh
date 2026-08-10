@@ -174,6 +174,41 @@ print("%s: PGSSLMODE present on all %d DB-credential workloads%s"
 PY
 }
 
+# --- CA delivery fixtures (owned by this task; Tasks 5 and 6 extend the counts) ---
+# tenant-api is conditional on global.enableMultiTenants (default false) in
+# magda-core's Chart.yaml, so it must be explicitly enabled here or one of the
+# four Node CA mounts this task wires would be silently absent from the count.
+render --set global.postgresql.client.sslmode=verify-full \
+       --set global.postgresql.client.sslRootCertSecret.name=my-ca \
+       --set global.enableMultiTenants=true \
+       > "${TMP_DIR}/ca.yaml"
+
+# Secret projection: the configured key is remapped to the constant filename root.crt.
+# (secretName is rendered through `quote`, hence the literal quotes below.)
+grep -q 'secretName: "my-ca"' "${TMP_DIR}/ca.yaml" || { echo "expected CA secret volume"; exit 1; }
+grep -q 'path: root.crt' "${TMP_DIR}/ca.yaml" || { echo "expected CA key remapped to root.crt"; exit 1; }
+grep -q 'mountPath: /etc/magda/postgresql-ca' "${TMP_DIR}/ca.yaml" || { echo "expected CA mountPath"; exit 1; }
+grep -A1 'name: "PGSSLROOTCERT"' "${TMP_DIR}/ca.yaml" | grep -q '/etc/magda/postgresql-ca/root.crt' \
+  || { echo "expected PGSSLROOTCERT to point at the mounted CA"; exit 1; }
+
+# `system` is never a valid PGSSLROOTCERT value in this chart, for ANY client class:
+# libpq < 16 in the migrator image cannot use it, and a Node pod would
+# fs.readFileSync("system") and crash on boot. Assert its absence, don't tolerate it.
+if grep -A1 'name: "PGSSLROOTCERT"' "${TMP_DIR}/ca.yaml" | grep -q 'value: "system"'; then
+    echo "PGSSLROOTCERT=system must never be rendered"; exit 1
+fi
+
+# 12 in-scope workloads mount the CA; registry-api ships two Deployments (full+ro),
+# so expect 13 mountPath occurrences total once Tasks 5 and 6 are done. Node subset check:
+mounts=$(grep -c 'mountPath: /etc/magda/postgresql-ca' "${TMP_DIR}/ca.yaml")
+[ "$mounts" -ge 4 ] || { echo "expected >=4 CA mounts after Node wiring, got $mounts"; exit 1; }
+
+# --- No-secret render: sslmode=require, since verify-* without a secret now fails at render ---
+render --set global.postgresql.client.sslmode=require > "${TMP_DIR}/noca.yaml"
+if grep -q 'postgresql-ca' "${TMP_DIR}/noca.yaml"; then
+    echo "expected no CA volume/mount/env without a CA secret"; exit 1
+fi
+
 assert_sslmode_coverage "${ROOT_DIR}/deploy/helm/magda" "umbrella (magda)" ""
 
 # `local-deployment` additionally pulls in the authentication plugins. Those call

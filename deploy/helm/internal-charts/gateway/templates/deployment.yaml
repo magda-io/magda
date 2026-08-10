@@ -115,6 +115,9 @@ spec:
         volumeMounts:
           - name: config
             mountPath: /etc/config
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+          {{- include "magda.postgres-client-ca-volumemount" . | nindent 10 }}
+{{- end }}
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
@@ -162,7 +165,11 @@ spec:
           value: {{ .Values.global.defaultAdminUserId }}
         {{- include "magda.db-client-credential-env" (dict "dbName" "session-db" "root" .) | indent 8 }}
         {{- include "magda.db-client-sslmode-env" . | indent 8 }}
+        {{- include "magda.db-client-ca-env-node" . | indent 8 }}
       volumes:
         - name: config
           configMap:
             name: gateway-config
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+        {{- include "magda.postgres-client-ca-volume" . | nindent 8 }}
+{{- end }}
