@@ -173,6 +173,56 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end }}
 
 {{/*
+  CA delivery for `sslmode=verify-ca`/`verify-full`. See
+  docs/docs/helm-helper-contracts.md. The secret is mounted read-only at a
+  FIXED path (/etc/magda/postgresql-ca/root.crt) regardless of the configured
+  key, so every consumer references one constant path.
+*/}}
+{{- define "magda.postgres-client-ca-enabled" -}}
+{{- $c := ((.Values.global.postgresql).client) | default dict -}}
+{{- $s := (get $c "sslRootCertSecret") | default dict -}}
+{{- if (get $s "name") -}}true{{- end -}}
+{{- end -}}
+
+{{- define "magda.postgres-client-ca-volume" -}}
+{{- $s := ((.Values.global.postgresql).client).sslRootCertSecret -}}
+- name: postgresql-ca
+  secret:
+    secretName: {{ $s.name | quote }}
+    items:
+      - key: {{ ($s.key | default "ca.crt") | quote }}
+        path: root.crt
+{{- end -}}
+
+{{- define "magda.postgres-client-ca-volumemount" -}}
+- name: postgresql-ca
+  mountPath: /etc/magda/postgresql-ca
+  readOnly: true
+{{- end -}}
+
+{{/* Node services: point PGSSLROOTCERT at the mounted CA only when one exists;
+     leaving it unset makes getPgSslConfigFromEnv fall back to Node's bundle.
+     NEVER emit `system` here — Node would fs.readFileSync("system") and crash. */}}
+{{- define "magda.db-client-ca-env-node" -}}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+- name: "PGSSLROOTCERT"
+  value: "/etc/magda/postgresql-ca/root.crt"
+{{- end }}
+{{- end -}}
+
+{{/* libpq consumers (psql, wal-g): mounted path when a CA secret is set,
+     otherwise nothing. There is deliberately NO `else` branch: Task 1 measured
+     psql 11.22/14 in the migrator image and `sslrootcert=system` needs
+     libpq >= 16, so a fallback is impossible. `verify-*` without the secret is
+     rejected at render time instead (Decision 2). */}}
+{{- define "magda.db-client-ca-env-libpq" -}}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+- name: "PGSSLROOTCERT"
+  value: "/etc/magda/postgresql-ca/root.crt"
+{{- end }}
+{{- end -}}
+
+{{/*
   Compatibility handshake for the versioned helper templates that external charts
   (authentication plugins in particular) vendor from `magda-common`. Detection is
   inverted — Magda cannot see its own siblings, so the plugin calls in here
