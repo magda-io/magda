@@ -128,7 +128,7 @@ Once the backup is turn on, base backup will created by the schedule defined by 
 
 ## 4> Point-in-Time Recovery (PITR)
 
-To recovery from a backup, you can simply set `combined-db.magda-postgres.backupRestore.backup.recoveryMode.enabled`=`true`. Other backup related config options can be found from [magda-postgres](../../deploy/helm/internal-charts/magda-postgres) chart document.
+To recovery from a backup, you can simply set `combined-db.magda-postgres.backupRestore.recoveryMode.enabled`=`true`. Other backup related config options can be found from [magda-postgres](../../deploy/helm/internal-charts/magda-postgres) chart document.
 
 Here is a complete example with recovery mode turned on:
 
@@ -161,7 +161,7 @@ combined-db:
 
 > You don't have to turn off the backup function in order to turn on recovery mode. The backup will be temporarily disabled when the recovery is in progress and will be auto turned back on (if it was on) once the recovery is complete.
 
-By default, it will recover with the "LATEST" base backup. However, you can specify a different backup name with helm config option: `combined-db.magda-postgres.backupRestore.backup.recoveryMode.baseBackupName` or manually set environment variable `MAGDA_RECOVERY_BASE_BACKUP_NAME` on the relevant postgreSQL instance statefulset.
+By default, it will recover with the "LATEST" base backup. However, you can specify a different backup name with helm config option: `combined-db.magda-postgres.backupRestore.recoveryMode.baseBackupName` or manually set environment variable `MAGDA_RECOVERY_BASE_BACKUP_NAME` on the relevant postgreSQL instance statefulset.
 
 > **Recovery target — how far recovery replays.** `combined-db.magda-postgres.backupRestore.recoveryMode.recoveryTarget` controls where WAL replay stops:
 > <ul>
