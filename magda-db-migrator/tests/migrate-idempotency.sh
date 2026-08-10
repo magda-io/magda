@@ -155,4 +155,115 @@ fi
 
 echo "case 2 passed (unreachable database aborts the migrator before Flyway runs)"
 
+# --- Case 3: the Flyway JDBC URL must carry sslmode/sslrootcert as URL params --
+# (hybrid-client finding: Flyway connects via pgjdbc, which reads neither
+# PGSSLMODE nor PGSSLROOTCERT from the environment. migrate.sh must place both
+# in the JDBC URL -url= it passes to Flyway, using the same `?`/`&` separator
+# rules regardless of which of the two are set, so a `verify-*` mode always has
+# a CA to check the server certificate against.)
+#
+# The flyway stub is extended here to record its full argv (one arg per line,
+# via `printf '%s\n' "$@"`) so the exact `-url=` value can be inspected.
+FLYWAY_ARGV_FILE="${TMP_DIR}/flyway_argv"
+cat > "${FLYWAY_DIR}/flyway" <<EOF
+#!/usr/bin/env bash
+echo "flyway stub called: \$*"
+printf '%s\n' "\$@" > "${FLYWAY_ARGV_FILE}"
+exit 0
+EOF
+chmod +x "${FLYWAY_DIR}/flyway"
+
+# psql shim: tolerate "already exists" like the other cases; succeed (empty
+# result) on every probe so the run falls straight through to Flyway migrate
+# without a legacy-history baseline muddying the argv capture.
+BIN_DIR3="${TMP_DIR}/bin3"
+mkdir -p "${BIN_DIR3}"
+cat > "${BIN_DIR3}/psql" <<'EOF'
+#!/usr/bin/env bash
+args="$*"
+if [[ "$args" == *"CREATE DATABASE"* ]]; then
+    echo "ERROR:  database already exists" >&2
+    exit 1
+fi
+exit 0
+EOF
+chmod +x "${BIN_DIR3}/psql"
+
+extract_url () {
+    # argv was recorded one-arg-per-line, so the -url= arg is a whole line.
+    grep '^-url=' "${FLYWAY_ARGV_FILE}" | sed 's/^-url=//'
+}
+
+# 3a: both PGSSLMODE and PGSSLROOTCERT exported -> both appear, joined by `&`.
+rm -f "${FLYWAY_ARGV_FILE}"
+set +e
+PATH="${BIN_DIR3}:${PATH}" \
+FLYWAY_HOME="${FLYWAY_HOME}" \
+FLYWAY_VERSION="${FLYWAY_VERSION}" \
+DB_HOST="db.example.test" \
+PGUSER="magda_admin" \
+PGPASSWORD="secret" \
+CLIENT_USERNAME="client" \
+CLIENT_PASSWORD="client_secret" \
+PGSSLMODE="verify-full" \
+PGSSLROOTCERT="/etc/magda/postgresql-ca/root.crt" \
+    bash "${MIGRATE_SH}" > "${TMP_DIR}/out3.log" 2>&1
+rc=$?
+set -e
+
+if [[ $rc -ne 0 ]]; then
+    echo "FAIL: migrate.sh exited ${rc} with PGSSLMODE+PGSSLROOTCERT set (expected 0)."
+    echo "----- output -----"; cat "${TMP_DIR}/out3.log"
+    exit 1
+fi
+if [[ ! -f "${FLYWAY_ARGV_FILE}" ]]; then
+    echo "FAIL: flyway was never invoked; cannot check the JDBC URL."
+    echo "----- output -----"; cat "${TMP_DIR}/out3.log"
+    exit 1
+fi
+url="$(extract_url)"
+expected_url="jdbc:postgresql://db.example.test/testdb?sslmode=verify-full&sslrootcert=/etc/magda/postgresql-ca/root.crt"
+if [[ "${url}" != "${expected_url}" ]]; then
+    echo "FAIL: expected Flyway -url= to be '${expected_url}', got '${url}'"
+    exit 1
+fi
+
+echo "case 3 passed (Flyway URL carries both sslmode and sslrootcert)"
+
+# 3b: only PGSSLMODE exported (PGSSLROOTCERT unset) -> sslmode only, no stray
+#     trailing/leading `?`/`&` and no `sslrootcert=` at all.
+rm -f "${FLYWAY_ARGV_FILE}"
+set +e
+PATH="${BIN_DIR3}:${PATH}" \
+FLYWAY_HOME="${FLYWAY_HOME}" \
+FLYWAY_VERSION="${FLYWAY_VERSION}" \
+DB_HOST="db.example.test" \
+PGUSER="magda_admin" \
+PGPASSWORD="secret" \
+CLIENT_USERNAME="client" \
+CLIENT_PASSWORD="client_secret" \
+PGSSLMODE="verify-full" \
+    bash "${MIGRATE_SH}" > "${TMP_DIR}/out4.log" 2>&1
+rc=$?
+set -e
+
+if [[ $rc -ne 0 ]]; then
+    echo "FAIL: migrate.sh exited ${rc} with only PGSSLMODE set (expected 0)."
+    echo "----- output -----"; cat "${TMP_DIR}/out4.log"
+    exit 1
+fi
+if [[ ! -f "${FLYWAY_ARGV_FILE}" ]]; then
+    echo "FAIL: flyway was never invoked; cannot check the JDBC URL."
+    echo "----- output -----"; cat "${TMP_DIR}/out4.log"
+    exit 1
+fi
+url="$(extract_url)"
+expected_url="jdbc:postgresql://db.example.test/testdb?sslmode=verify-full"
+if [[ "${url}" != "${expected_url}" ]]; then
+    echo "FAIL: expected Flyway -url= to be '${expected_url}' with PGSSLROOTCERT unset, got '${url}'"
+    exit 1
+fi
+
+echo "case 3b passed (Flyway URL carries sslmode only when PGSSLROOTCERT is unset, no stray separators)"
+
 echo "migrate idempotency checks passed"

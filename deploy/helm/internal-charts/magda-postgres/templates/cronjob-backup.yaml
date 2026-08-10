@@ -72,10 +72,15 @@ spec:
             resources:
 {{ .Values.backupRestore.backup.jobResourceConfig | toYaml | indent 14 }}
 {{- end }}
-{{- if not (empty .Values.backupRestore.storageSecretName) }}
+{{- if or (not (empty .Values.backupRestore.storageSecretName)) (eq (include "magda.postgres-client-ca-enabled" .) "true") }}
             volumeMounts:
+{{- if not (empty .Values.backupRestore.storageSecretName) }}
               - name: storage-secret
                 mountPath: /etc/wal-g.d/env
+{{- end }}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+              {{- include "magda.postgres-client-ca-volumemount" . | nindent 14 }}
+{{- end }}
 {{- end }}
             env:
               - name: PGHOST
@@ -83,6 +88,7 @@ spec:
               - name: WALG_TAR_SIZE_THRESHOLD
                 value: {{ .Values.backupRestore.backup.walgTarSizeThreshold | quote }}
 {{- include "magda.postgres-superuser-env" . | indent 14 }}
+{{- include "magda.db-client-ca-env-libpq" . | indent 14 }}
 {{- if not (empty .Values.backupRestore.storageConfig) }}
             {{- range $key, $value := .Values.backupRestore.storageConfig }}
             {{- if not (empty $key) }}
@@ -92,10 +98,15 @@ spec:
             {{- end }}
 {{- end }}
           restartPolicy: OnFailure
-{{- if not (empty .Values.backupRestore.storageSecretName) }}
+{{- if or (not (empty .Values.backupRestore.storageSecretName)) (eq (include "magda.postgres-client-ca-enabled" .) "true") }}
           volumes:
+{{- if not (empty .Values.backupRestore.storageSecretName) }}
             - name: storage-secret
               secret:
                 secretName: "{{ .Values.backupRestore.storageSecretName }}"
+{{- end }}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+            {{- include "magda.postgres-client-ca-volume" . | nindent 12 }}
+{{- end }}
 {{- end }}
 {{- end }}

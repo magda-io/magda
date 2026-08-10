@@ -178,9 +178,15 @@ PY
 # tenant-api is conditional on global.enableMultiTenants (default false) in
 # magda-core's Chart.yaml, so it must be explicitly enabled here or one of the
 # four Node CA mounts this task wires would be silently absent from the count.
+# combined-db.magda-postgres.backupRestore.backup.enabled is likewise off by
+# default (magda-postgres/values.yaml), so the backup CronJob (Task 5) must be
+# switched on here too, or its CA mount goes uncounted. useCombinedDb defaults
+# true, so the in-scope magda-postgres instance is combined-db's, not one of
+# the per-service *-db charts' own (condition-gated, normally off) instances.
 render --set global.postgresql.client.sslmode=verify-full \
        --set global.postgresql.client.sslRootCertSecret.name=my-ca \
        --set global.enableMultiTenants=true \
+       --set combined-db.magda-postgres.backupRestore.backup.enabled=true \
        > "${TMP_DIR}/ca.yaml"
 
 # Secret projection: the configured key is remapped to the constant filename root.crt.
@@ -207,6 +213,22 @@ mounts=$(grep -c 'mountPath: /etc/magda/postgresql-ca' "${TMP_DIR}/ca.yaml")
 render --set global.postgresql.client.sslmode=require > "${TMP_DIR}/noca.yaml"
 if grep -q 'postgresql-ca' "${TMP_DIR}/noca.yaml"; then
     echo "expected no CA volume/mount/env without a CA secret"; exit 1
+fi
+
+# With a secret, every libpq consumer gets the mounted path.
+# Total CA mounts across all 12 in-scope workloads (registry-api = 2 Deployments) == 13.
+mounts=$(grep -c 'mountPath: /etc/magda/postgresql-ca' "${TMP_DIR}/ca.yaml")
+[ "$mounts" -ge 11 ] || { echo "expected >=11 CA mounts after libpq wiring, got $mounts"; exit 1; }
+
+# Decision 1 (LIBPQ_FALLBACK=secret-required): with no CA secret, NOTHING carries
+# PGSSLROOTCERT — no mounted path, and no `system` fallback for any client class.
+if grep -q 'name: "PGSSLROOTCERT"' "${TMP_DIR}/noca.yaml"; then
+    echo "expected no PGSSLROOTCERT anywhere in the no-secret render"; exit 1
+fi
+# The literal `system` must never be emitted (libpq < 16 in the migrator image; Node would
+# fs.readFileSync("system") and crash on boot).
+if grep -A1 'name: "PGSSLROOTCERT"' "${TMP_DIR}/ca.yaml" | grep -q 'value: "system"'; then
+    echo "PGSSLROOTCERT=system must never be rendered"; exit 1
 fi
 
 assert_sslmode_coverage "${ROOT_DIR}/deploy/helm/magda" "umbrella (magda)" ""
