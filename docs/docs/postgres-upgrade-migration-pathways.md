@@ -62,17 +62,20 @@ Downtime lasts for the duration of the dump plus the restore; size your
 ## Pathway B — in-cluster PostgreSQL 13 → managed / cloud database
 
 Use this when v7 is the point at which you want to stop running PostgreSQL
-in-cluster and hand it to a cloud provider. You do the database move **while still
-on v6**, then upgrade Magda to v7 pointed at the managed database — at which point
-the version of PostgreSQL is owned by your provider and the in-cluster
-`majorUpgrade` mechanism does not apply.
+in-cluster and hand it to a cloud provider. You copy the data out of the
+still-running in-cluster database into the managed database, then **cut over as
+part of the v7 upgrade** — pointing Magda at the managed database in the same
+`helm upgrade` that moves you to v7. At that point the version of PostgreSQL is
+owned by your provider and the in-cluster `majorUpgrade` mechanism does not apply.
 
 The move is a **logical** `pg_dump` of each database over the network from the
 still-running in-cluster database into the managed database (plus recreating the
-`client` role and its grants), followed by reconfiguring Magda to use the external
-database and decommissioning the in-cluster instance. (A single `pg_dumpall` is
-deliberately **not** used — managed services provide no superuser, so its role and
-ownership assumptions fail; the how-to explains why.)
+`client` role and its grants). Two things are worth knowing up front, both because
+managed services give you **no PostgreSQL superuser**: a single `pg_dumpall` is
+deliberately **not** used (its role/ownership assumptions fail), and you should
+**cut over at the v7 upgrade rather than pointing an earlier version at the managed
+database first** — only v7's DB migrators connect to a TLS-enforcing managed
+database. The how-to explains both.
 
 - **[How to migrate the in-cluster database to a managed / cloud database](./migration/in-cluster-postgres-to-managed-db.md)** —
   the full procedure, including the wal-g caveat, the exact dump/restore commands,
