@@ -103,11 +103,14 @@ global:
       # environment variable, and as an `sslmode=` JDBC URL parameter for the
       # JVM-based components.
       # Supported values are `require` (encrypt, without verifying the server
-      # certificate) and `disable` (plaintext). `prefer` and `allow` are rejected:
+      # certificate), `disable` (plaintext), `verify-ca` and `verify-full`
+      # (verify the server certificate). `prefer` and `allow` are rejected:
       # node-postgres cannot negotiate them consistently, so accepting them would give
       # the Node services different semantics from every other component.
-      # `verify-ca` / `verify-full` are not supported yet — they require distributing a
-      # CA certificate to every pod.
+      # `verify-ca` / `verify-full` REQUIRE `sslRootCertSecret.name` below —
+      # rendering fails without it, even for a publicly-trusted CA, because
+      # Magda's DB migrator images ship libpq < 16 and have no system
+      # trust-store fallback.
       # Leave empty to auto-resolve: `disable` when `useCloudSql` is enabled (the
       # cloud_sql_proxy listener is plaintext by design and performs TLS to Cloud SQL
       # itself), `require` otherwise.
