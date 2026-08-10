@@ -6,6 +6,7 @@
 - [Testing a PR with a Preview Release Before Merging](./pr-preview-release-testing.md)
 - [End-to-End Full Cluster Deployment Test](./e2e-cluster-deployment-test.md)
 - [Migration & Upgrade Documents](./migration/)
+- [PostgreSQL Upgrade & Migration Pathways (v6 → v7)](./postgres-upgrade-migration-pathways.md)
 - [Deploy Magda with helm charts release](https://github.com/magda-io/magda-config)
 - [Magda Helm Chart Reference](./helm-charts-docs-index.md)
 - [How to update Helm chart docs (helm-docs)](./how-to-update-helm-chart-docs.md)
