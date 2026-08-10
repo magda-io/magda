@@ -31,9 +31,8 @@ service you do not control the file system of. This migration is a **logical**
    running in-cluster server and load it into the managed database, and grant
    `client` its privileges.
 4. Verify every database restored and `client` can read its data.
-5. Reconfigure Magda (still v6) to use the managed database; verify.
-6. Upgrade Magda to v7.
-7. Decommission the in-cluster database.
+5. Cut over: `helm upgrade` to **v7** pointed at the managed database, and verify.
+6. Decommission the in-cluster database.
 
 Steps 2–5 are the downtime window. Plan for it: the dump reads the whole database
 over the network and the load replays it, so the window scales with your data
@@ -173,11 +172,21 @@ PGPASSWORD="$SRC_PASSWORD" pg_dump "$SRC dbname=postgres" --no-owner --no-privil
   | PGPASSWORD="$DST_PASSWORD" psql "$DST dbname=postgres" -v ON_ERROR_STOP=1
 ```
 
-> If a `CREATE TABLE` in the `postgres` database is rejected with
-> `permission denied for schema public`, your master account cannot create objects
-> in that database's `public` schema. Grant it first (as the master, or via your
-> provider's console): `GRANT CREATE, USAGE ON SCHEMA public TO "<MASTER_USER>";`
-> then re-run the registry restore.
+> **Two grants the registry restore into `postgres` may need on a managed DB**,
+> because your master is not a superuser. Apply them once (as the master if it has
+> the rights, or via your provider's console / admin role such as RDS
+> `rds_superuser`), then re-run the registry restore:
+>
+> - **`permission denied for schema public`** — the master cannot create objects
+>   in the `postgres` database's `public` schema:
+>   `GRANT CREATE, USAGE ON SCHEMA public TO "<MASTER_USER>";`
+> - **`permission denied to create extension "uuid-ossp"`** — the registry schema
+>   creates the `uuid-ossp` extension. It is a *trusted* extension (PostgreSQL 13+),
+>   so no superuser is required, but the master needs `CREATE` on the database:
+>   `GRANT CREATE ON DATABASE postgres TO "<MASTER_USER>";` (On some providers you
+>   instead pre-create it from the console: `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`.)
+>
+> Both were needed in the minikube verification against a non-superuser master.
 
 **3. Grant `client` its privileges** in every database — this replaces the grants
 the in-cluster migrators normally set up, and includes default privileges so
@@ -234,25 +243,26 @@ Confirm that:
   (key `password`) you used in Step 3, so Magda's services authenticate after
   cutover without any secret change.
 
-## Step 5 — Reconfigure Magda to use the managed database (still v6)
+## Step 5 — Cut over to the managed database (upgrade to v7)
 
-Switch the release over to the managed database with a `helm upgrade` that keeps
-your current Magda version and changes only the database configuration.
+Cut over by upgrading **straight to v7** with the external-database values — do
+**not** run an intermediate `helm upgrade` that points your *current* version at
+the managed database first (see the caveat below for why). This single upgrade
+switches every service to the managed instance and re-runs the schema migrators
+against it.
 
-First, create the master-account secret Magda's migrators use (it is separate from
-the app's `client` credentials):
+First, create (or update) the master-account secret the migrators use — it holds
+the **managed master** password and is separate from the app's `client`
+credentials:
 
 ```bash
 kubectl create secret generic db-main-account-secret --namespace magda \
-  --from-literal=postgresql-password='<MASTER_PASSWORD>'
-# If the secret already exists (in-cluster installs create it), update it instead:
-#   kubectl create secret generic db-main-account-secret -n magda \
-#     --from-literal=postgresql-password='<MASTER_PASSWORD>' \
-#     --dry-run=client -o yaml | kubectl apply -f -
+  --from-literal=postgresql-password='<MASTER_PASSWORD>' \
+  --dry-run=client -o yaml | kubectl apply -f -
 ```
 
-Then set the external-database values. On **v6** the master username key is
-`global.postgresql.postgresqlUsername`:
+Then upgrade to v7 with the external-database values (the v7 master-username key is
+`global.postgresql.auth.username`):
 
 ```yaml
 global:
@@ -261,57 +271,54 @@ global:
   useAwsRdsDb: true                       # generic direct-endpoint path — RDS and Azure DB
   awsRdsEndpoint: "<MANAGED_ENDPOINT>"    # e.g. mydb.abc123.ap-southeast-2.rds.amazonaws.com
   postgresql:
-    postgresqlUsername: "<MASTER_USER>"   # v6 key
+    auth:
+      username: "<MASTER_USER>"           # master/admin role on the managed instance
     # client sslmode: `require` (default) suits RDS/Azure; use `disable` only for a plaintext DB
     # client:
     #   sslmode: require
 ```
 
-Leave **`tags.combined-db: true`** (the default). Even with no in-cluster database,
-the `combined-db` chart is what creates and preserves the `combined-db-password`
-secret holding the `client` credentials your services use — turning it off would
-drop those credentials.
-
-Setting `useCombinedDb: false` + `useAwsRdsDb: true` turns every `*-db` Service
-(`authorization-db`, `content-db`, `session-db`, `registry-db`, `tenant-db`) into a
-Kubernetes `ExternalName` alias for `awsRdsEndpoint`, so all services resolve to
-your single managed instance. **The value paths above are `global.*` and apply
-unprefixed even on the umbrella `magda` chart.**
-
-Apply it, then scale the services you stopped back up and verify: the gateway is
-reachable, dataset search returns your existing data, and login works. Do not
-proceed to v7 until Magda v6 is healthy against the managed database.
-
-## Step 6 — Upgrade to v7
-
-With Magda running on the managed database, upgrade to v7 as a normal external-DB
-upgrade — this is [Pathway C](../postgres-upgrade-migration-pathways.md#pathway-c--already-on-a-managed--cloud-database).
-The only value change is the master-username key, which v7 moved from
-`global.postgresql.postgresqlUsername` to **`global.postgresql.auth.username`**:
-
-```yaml
-global:
-  useCombinedDb: false
-  useAwsRdsDb: true
-  awsRdsEndpoint: "<MANAGED_ENDPOINT>"
-  postgresql:
-    auth:
-      username: "<MASTER_USER>"           # v7 key (renamed from postgresqlUsername)
-```
-
-Do **not** set any `majorUpgrade.*` value — it applies only to the in-cluster
-option and has no effect on an external database. Use a generous `--timeout` so the
-schema migrators have time to run:
-
 ```bash
 helm upgrade magda <chart> --namespace magda -f your-values.yaml --timeout 3600s
 ```
 
-The v7 upgrade re-applies the Magda schema migrations against the managed database;
-because the data is already present, these are effectively no-ops or forward
+- Leave **`tags.combined-db: true`** (the default). Even with no in-cluster
+  database, the `combined-db` chart is what creates and preserves the
+  `combined-db-password` secret holding the `client` credentials your services use.
+- Do **not** pass `--reuse-values` — v7 restructured the PostgreSQL values contract
+  (`auth.*`, TLS), and reusing the old computed values trips the `validate-tls`
+  guard. Re-supply your values with `-f`.
+- Do **not** set any `majorUpgrade.*` value — it applies only to the in-cluster
+  option and has no effect on an external database.
+- Use a generous `--timeout`; the schema migrators run as hooks and the default 5
+  minutes is too short.
+
+Setting `useCombinedDb: false` + `useAwsRdsDb: true` turns every `*-db` Service
+(`authorization-db`, `content-db`, `session-db`, `registry-db`, `tenant-db`) into a
+Kubernetes `ExternalName` alias for `awsRdsEndpoint`, so all services resolve to
+your single managed instance. The value paths above are `global.*` and apply
+unprefixed even on the umbrella `magda` chart. The migrators find the schema and
+data already present (from Step 3), so they are effectively no-ops or forward
 migrations, not a reload.
 
-## Step 7 — Decommission the in-cluster database
+Then verify: the gateway is reachable, dataset search returns your existing data,
+`GET /api/v0/registry/records/<a known id>` returns it from the managed DB, and
+login works.
+
+> **Why go straight to v7 rather than switching the managed DB in while still on
+> your current version?** Magda's **v7** DB migrators are TLS-aware — they set
+> `PGSSLMODE=require` and carry it into the Flyway (pgjdbc) connection URL, so they
+> connect to a TLS-enforcing managed database. **Pre-v7 migrators do not**: their
+> Flyway URL omits `sslmode`, so against a managed database that enforces TLS (AWS
+> RDS `rds.force_ssl`, Azure) the migrator hook fails with
+> `FATAL: no pg_hba.conf entry ... no encryption` and the upgrade fails — even
+> though the running services (which do append `sslmode`) would connect fine. So a
+> "point my current version at the managed DB first, then upgrade" sequence only
+> works if the managed database does not enforce TLS during that window; with an
+> enforced-TLS managed database, cut over at the v7 upgrade as above. (Verified on
+> minikube against a non-superuser, TLS-enforcing PostgreSQL 17 target.)
+
+## Step 6 — Decommission the in-cluster database
 
 Once v7 is healthy on the managed database and you are confident you will not roll
 back:
