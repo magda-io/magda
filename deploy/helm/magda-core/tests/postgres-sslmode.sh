@@ -183,10 +183,15 @@ PY
 # switched on here too, or its CA mount goes uncounted. useCombinedDb defaults
 # true, so the in-scope magda-postgres instance is combined-db's, not one of
 # the per-service *-db charts' own (condition-gated, normally off) instances.
+# registry-api.deployments.readOnly.enable is off by default too (registry-api
+# only ships its `full` Deployment out of the box), so the read-only Deployment
+# (Task 6's second registry-api mount) must be switched on here or the count
+# undershoots by one.
 render --set global.postgresql.client.sslmode=verify-full \
        --set global.postgresql.client.sslRootCertSecret.name=my-ca \
        --set global.enableMultiTenants=true \
        --set combined-db.magda-postgres.backupRestore.backup.enabled=true \
+       --set registry-api.deployments.readOnly.enable=true \
        > "${TMP_DIR}/ca.yaml"
 
 # Secret projection: the configured key is remapped to the constant filename root.crt.
@@ -230,6 +235,19 @@ fi
 if grep -A1 'name: "PGSSLROOTCERT"' "${TMP_DIR}/ca.yaml" | grep -q 'value: "system"'; then
     echo "PGSSLROOTCERT=system must never be rendered"; exit 1
 fi
+
+# registry-api carries both sslmode and sslrootcert in its JDBC URL when a CA is set.
+grep -q 'sslmode=verify-full' "${TMP_DIR}/ca.yaml" || { echo "expected JDBC sslmode=verify-full"; exit 1; }
+grep -q 'sslrootcert=/etc/magda/postgresql-ca/root.crt' "${TMP_DIR}/ca.yaml" \
+  || { echo "expected JDBC sslrootcert param"; exit 1; }
+# Without a CA secret, no sslrootcert is appended. (Reachable only for sslmode
+# disable/require — verify-* without a secret is rejected at render time.)
+if grep -q 'sslrootcert=' "${TMP_DIR}/noca.yaml"; then
+  echo "expected no sslrootcert when no CA secret"; exit 1
+fi
+# registry-api ships two Deployments; total CA mounts now 13.
+mounts=$(grep -c 'mountPath: /etc/magda/postgresql-ca' "${TMP_DIR}/ca.yaml")
+[ "$mounts" -eq 13 ] || { echo "expected exactly 13 CA mounts, got $mounts"; exit 1; }
 
 assert_sslmode_coverage "${ROOT_DIR}/deploy/helm/magda" "umbrella (magda)" ""
 
