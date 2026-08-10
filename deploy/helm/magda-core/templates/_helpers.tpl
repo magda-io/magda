@@ -200,26 +200,35 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
   readOnly: true
 {{- end -}}
 
-{{/* Node services: point PGSSLROOTCERT at the mounted CA only when one exists;
-     leaving it unset makes getPgSslConfigFromEnv fall back to Node's bundle.
-     NEVER emit `system` here — Node would fs.readFileSync("system") and crash. */}}
-{{- define "magda.db-client-ca-env-node" -}}
+{{/* INTERNAL — not a pod-facing contract. Shared body for the two class-aware
+     PGSSLROOTCERT helpers below: emit the mounted CA path when a CA secret is
+     configured, otherwise nothing. Do NOT include this directly from a
+     workload template; include the class-specific helper instead, so the
+     class's constraint is documented at the call site. */}}
+{{- define "magda.db-client-ca-env-common" -}}
 {{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
 - name: "PGSSLROOTCERT"
   value: "/etc/magda/postgresql-ca/root.crt"
 {{- end }}
 {{- end -}}
 
+{{/* Node services: point PGSSLROOTCERT at the mounted CA only when one exists;
+     leaving it unset makes getPgSslConfigFromEnv fall back to Node's bundle.
+     NEVER emit `system` here — Node would fs.readFileSync("system") and crash.
+     Kept as its own name (delegating to -common) so the two client classes can
+     diverge without hunting for a second copy. */}}
+{{- define "magda.db-client-ca-env-node" -}}
+{{- include "magda.db-client-ca-env-common" . -}}
+{{- end -}}
+
 {{/* libpq consumers (psql, wal-g): mounted path when a CA secret is set,
      otherwise nothing. There is deliberately NO `else` branch: Task 1 measured
      psql 11.22/14 in the migrator image and `sslrootcert=system` needs
      libpq >= 16, so a fallback is impossible. `verify-*` without the secret is
-     rejected at render time instead (Decision 2). */}}
+     rejected at render time instead (Decision 2). If a future image bump puts
+     libpq >= 16 in every libpq consumer, this is the one helper that changes. */}}
 {{- define "magda.db-client-ca-env-libpq" -}}
-{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
-- name: "PGSSLROOTCERT"
-  value: "/etc/magda/postgresql-ca/root.crt"
-{{- end }}
+{{- include "magda.db-client-ca-env-common" . -}}
 {{- end -}}
 
 {{/*
