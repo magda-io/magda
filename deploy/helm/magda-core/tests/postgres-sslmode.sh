@@ -78,6 +78,30 @@ for bad in prefer allow verify-ca verify-full banana; do
     fi
 done
 
+# verify-ca / verify-full are accepted now that CA delivery exists — but ONLY with a CA secret.
+for mode in verify-ca verify-full; do
+    if ! render --set global.postgresql.client.sslmode=$mode \
+                --set global.postgresql.client.sslRootCertSecret.name=my-ca > "${TMP_DIR}/${mode}.yaml"; then
+        echo "expected sslmode=$mode + CA secret to render successfully"
+        exit 1
+    fi
+    if ! grep -q "value: \"$mode\"" "${TMP_DIR}/${mode}.yaml"; then
+        echo "expected PGSSLMODE to carry $mode"
+        exit 1
+    fi
+    # Decision 2: verify-* with NO CA secret must fail fast at render time.
+    if render --set global.postgresql.client.sslmode=$mode > "${TMP_DIR}/${mode}-nosecret.yaml" 2>/dev/null; then
+        echo "expected sslmode=$mode without sslRootCertSecret.name to be rejected at render time"
+        exit 1
+    fi
+done
+
+# An unsupported mode still fails fast.
+if render --set global.postgresql.client.sslmode=bogus > "${TMP_DIR}/bogus.yaml" 2>/dev/null; then
+    echo "expected sslmode=bogus to be rejected at render time"
+    exit 1
+fi
+
 echo "postgres sslmode resolution checks passed"
 
 # --- Per-container PGSSLMODE coverage across the real deployment charts --------

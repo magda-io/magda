@@ -96,14 +96,17 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{/*
   Resolve the PostgreSQL client `sslmode` for all DB connections.
 
-  Magda supports exactly `disable` and `require`:
+  Magda supports `disable`, `require`, `verify-ca` and `verify-full`:
   - `prefer` / `allow` cannot be honoured consistently. libpq (psql, wal-g) and
     pgjdbc (registry-api, Flyway) implement them natively, but node-postgres maps
     `prefer` to `ssl: true` and hard-fails against a server that doesn't offer
     TLS instead of falling back. Rejecting them is better than giving the Node
     services different semantics from every other component.
-  - `verify-ca` / `verify-full` need a CA certificate delivered into each pod,
-    and no DB-connecting component exposes an extension point for that yet.
+  - `verify-ca` / `verify-full` verify the server certificate. The CA MUST be
+    supplied via `global.postgresql.client.sslRootCertSecret` (mounted at
+    /etc/magda/postgresql-ca/root.crt); rendering fails without it, because the
+    libpq consumers (migrator/auto-vacuum psql < 16) have no trust-store
+    fallback. See docs/docs/helm-helper-contracts.md.
 
   Resolution order:
   1. An explicitly configured value always wins.
@@ -146,8 +149,11 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     {{- $sslmode = "require" -}}
   {{- end -}}
 {{- end -}}
-{{- if not (has $sslmode (list "disable" "require")) -}}
-{{- fail (printf "Unsupported global.postgresql.client.sslmode value %q. Magda supports \"disable\" and \"require\" only. \"prefer\"/\"allow\" are not supported because node-postgres cannot negotiate them consistently — use \"require\". \"verify-ca\"/\"verify-full\" require CA distribution, which is not implemented yet (see issue #3739)." $sslmode) -}}
+{{- if not (has $sslmode (list "disable" "require" "verify-ca" "verify-full")) -}}
+{{- fail (printf "Unsupported global.postgresql.client.sslmode value %q. Magda supports \"disable\", \"require\", \"verify-ca\" and \"verify-full\". \"prefer\"/\"allow\" are not supported because node-postgres cannot negotiate them consistently — use \"require\"." $sslmode) -}}
+{{- end -}}
+{{- if and (hasPrefix "verify-" $sslmode) (not (.Values.global.postgresql.client.sslRootCertSecret).name) -}}
+{{- fail (printf "global.postgresql.client.sslmode=%q requires a server CA certificate: set global.postgresql.client.sslRootCertSecret.name to a Secret holding the CA PEM (and .key, default \"ca.crt\"). Magda cannot fall back to a system trust store here — the DB migrator/auto-vacuum images ship libpq < 16, which has no `sslrootcert=system` support, so those Jobs would fail at connect time even for a publicly-trusted CA such as Azure's DigiCert Global Root G2. Download your provider's CA bundle (RDS: rds-ca bundle; Azure: DigiCert Global Root G2 / Microsoft RSA Root CA 2017; CloudSQL: server-ca.pem) and create the Secret." $sslmode) -}}
 {{- end -}}
 {{- $sslmode -}}
 {{- end -}}

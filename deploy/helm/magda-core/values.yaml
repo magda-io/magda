@@ -120,6 +120,18 @@ global:
       # rejected at render time rather than failing at runtime.
       sslmode: ""
 
+      # -- Kubernetes Secret supplying the CA certificate used to verify the
+      # PostgreSQL server certificate. REQUIRED whenever `sslmode` is
+      # `verify-ca` or `verify-full` — the chart fails to render without it,
+      # even if your server's CA is a publicly-trusted root, because Magda's
+      # DB migrator images ship libpq < 16 and cannot use a system trust
+      # store. Mounted read-only at /etc/magda/postgresql-ca/root.crt.
+      sslRootCertSecret:
+        # -- Name of the Secret holding the CA bundle. Empty disables CA mounting.
+        name: ""
+        # -- Key within the Secret whose value is the PEM CA bundle.
+        key: "ca.crt"
+
   useCombinedDb: true
   # -- When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database.
   # Please note: you must set `useCombinedDb` = false before set any of the field to `true`.
