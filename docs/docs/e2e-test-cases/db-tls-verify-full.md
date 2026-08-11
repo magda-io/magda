@@ -24,9 +24,19 @@ which already proves — automatically, in CI, on every build — that
 causes a real `pg` client and a real `psql` client to verify a real TLS
 certificate correctly, including rejecting an unrelated CA. What that spec
 cannot reach is the **cluster** level: a real Helm install, the CA `Secret`
-delivered to all 13 DB-connecting workloads through the chart, and the chart's
+delivered to the DB-connecting workloads through the chart, and the chart's
 render-time guard that refuses to let an operator configure `verify-full`
 without a CA at all. This case covers that gap.
+
+On the default render this case builds (`useAwsRdsDb=true`, single-tenant),
+the CA `Secret` is mounted into **9** workloads: the 4 Node services that talk
+to Postgres directly (`authorization-api`, `content-api`, `gateway`,
+`registry-api`), the 4 DB migrator Jobs (`authorization-db`, `content-db`,
+`registry-db`, `session-db`), and the `registry-db` auto-vacuum CronJob. With
+`global.enableMultiTenants=true`, `tenant-api` and its migrator Job also mount
+it, and enabling `registry-api`'s read-only Deployment
+(`registry-api.deployments.readOnly.enable`) adds one more — neither is part
+of this case's default install.
 
 ## The one thing to get right: the certificate's SAN
 
@@ -167,10 +177,16 @@ kubectl -n "$NS" exec managed-pg -- openssl x509 -in /certs/server.crt -noout -t
 # expect: DNS:managed-pg, DNS:registry-db, DNS:authorization-db, DNS:content-db, DNS:session-db
 ```
 
-Also create the master account secret. Magda does **not** auto-create
-`db-main-account-secret` for an external database (that auto-create path is
-only for the in-cluster PostgreSQL, or when a legacy `cloudsql-db-credentials`
-secret already exists), so it must exist before `helm install`:
+Also create the master account secret **before** installing. Helm auto-creates
+`db-main-account-secret` if it's missing — that auto-create is not gated on
+`useAwsRdsDb`/`useCloudSql` at all, it just fills the `postgresql-password` key
+with a random value when nothing already exists. For the in-cluster database
+that's fine, because the same install also creates the account with that
+password; for an external database it is not, because the account already
+exists on the far end with a password Helm doesn't know. If you skip this
+step, the migrator Jobs won't fail with an obvious "missing secret" error —
+they'll fail with a password-authentication error, because Helm generated a
+password that doesn't match `$MASTER_PW`:
 
 ```bash
 kubectl -n "$NS" create secret generic db-main-account-secret \
