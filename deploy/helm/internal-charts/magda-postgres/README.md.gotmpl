@@ -70,6 +70,13 @@ recipe, update `sslRootCertSecret.name` to match the new name as part of the
 same upgrade — see the
 [PostgreSQL major upgrade runbook](https://github.com/magda-io/magda/blob/main/docs/docs/postgres-major-upgrade-runbook.md).
 
+**Major upgrades:** the runbook's dump/restore Jobs only ever talk to the
+in-cluster instance, and in-cluster `verify-full` is intended as
+defense-in-depth rather than a hard requirement for that maintenance path —
+set `global.postgresql.client.sslmode: require` for the duration of a major
+upgrade if this recipe is active, then switch back to `verify-full` (with the
+new instance's `-crt` secret name, per above) once it completes.
+
 This recipe is **combined-db only**. A per-service topology
 (`global.useInK8sDbInstance`) runs one PostgreSQL instance — and therefore one
 self-signed CA — per logical database, so a single

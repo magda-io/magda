@@ -29,10 +29,13 @@ render-time guard that refuses to let an operator configure `verify-full`
 without a CA at all. This case covers that gap.
 
 On the default render this case builds (`useAwsRdsDb=true`, single-tenant),
-the CA `Secret` is mounted into **9** workloads: the 4 Node services that talk
-to Postgres directly (`authorization-api`, `content-api`, `gateway`,
-`registry-api`), the 4 DB migrator Jobs (`authorization-db`, `content-db`,
-`registry-db`, `session-db`), and the `registry-db` auto-vacuum CronJob. With
+the CA `Secret` is mounted into **9** workloads: 3 of the 4 Node services that
+talk to Postgres directly (`authorization-api`, `content-api`, `gateway` — the
+fourth, `tenant-api`, only exists with multi-tenancy, see below), `registry-api`
+(a separate Scala/JVM service using pgjdbc rather than Node — see below — but
+mounting the same CA), the 4 DB migrator Jobs (`authorization-db`,
+`content-db`, `registry-db`, `session-db`), and the `registry-db` auto-vacuum
+CronJob. With
 `global.enableMultiTenants=true`, `tenant-api` and its migrator Job also mount
 it, and enabling `registry-api`'s read-only Deployment
 (`registry-api.deployments.readOnly.enable`) adds one more — neither is part
@@ -59,7 +62,9 @@ hostname.
 
 `verify-full` checks the certificate's Subject Alternative Names against
 exactly that string. So the simulated managed database's certificate must
-carry **`registry-db`, `authorization-db`, `content-db` and `session-db`** in
+carry **`registry-db`, `authorization-db`, `content-db` and `session-db`**
+(plus **`tenant-db`** if this case is built with `global.enableMultiTenants=true`,
+since `tenant-api` also mounts the CA and dials that Service directly) in
 its SAN — not the pod's own name, and not the "real" endpoint name a managed
 provider would use. Missing one of them fails only _that_ component with a
 hostname/`ALTNAME` mismatch while the others succeed, which is a confusing

@@ -93,7 +93,12 @@ the issuing CA is:
   Root CA 2017 for newer instances — see
   [Azure's TLS certificate documentation](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-connect-tls-ssl).
 - **Cloud SQL**: the instance's `server-ca.pem`, downloadable from the
-  connection settings of the Cloud SQL instance.
+  connection settings of the Cloud SQL instance. This only matters if you
+  connect directly (`global.useCloudSql=false` with an external endpoint) —
+  when `global.useCloudSql=true`, Magda talks to the `cloud_sql_proxy`
+  sidecar's plaintext local listener, not to Cloud SQL's TLS listener
+  directly, so `verify-ca`/`verify-full` cannot be satisfied on that path (see
+  the Cloud SQL callout below).
 
 ```yaml
 global:
@@ -183,11 +188,13 @@ kubectl create namespace magda
 Magda auto-generates all of its internal secrets by default — the auth/session secrets (`auth-secrets`), the object storage credentials (`storage-secrets`), and the restricted (`client`) DB account secret. You therefore only need to supply secrets that come from outside the cluster:
 
 - **The privileged (master) DB account password** — required when using an external database (RDS / Cloud SQL), because Magda only auto-generates this for the in-pod PostgreSQL database. The DB migrator connects as `global.postgresql.auth.username` (see step 7) with this password.
+- **The DB server CA certificate** (`sslRootCertSecret`) — required when `global.postgresql.client.sslmode` is `verify-ca` or `verify-full`. There is no auto-generation and no trust-store fallback for this one; see [`verify-ca` / `verify-full`: the CA secret is mandatory, with no fallback](#verify-ca--verify-full-the-ca-secret-is-mandatory-with-no-fallback) above for how to create it.
 - **SMTP credentials** — only if you enable outbound email (`correspondence-api`).
 
 ```bash
 # The master (privileged) user account password of your external RDS database.
-# This is the ONLY secret you must supply manually for a standard external-DB deployment.
+# This is the ONLY secret you must supply manually for a standard external-DB deployment
+# using the default `sslmode: require` — see the CA secret bullet above if you use `verify-*`.
 export DB_MASTER_PASSWORD="Your Master DB Password"
 
 kubectl create secret generic db-main-account-secret --namespace magda \
@@ -222,6 +229,8 @@ helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gatewa
 ```
 
 > `global.postgresql.auth.username` is required when `global.useAwsRdsDb=true`. It must match the RDS master user you created and whose password you stored in the `db-main-account-secret` secret (step 6). If it is left as the default `postgres` the chart will fail to render, unless your privileged account is genuinely named `postgres`, in which case set `global.postgresql.allowDefaultExternalDbPostgresUser=true`.
+
+> The example above leaves `global.postgresql.client.sslmode` unset, which resolves to `require` (encrypted, unverified). If you instead set it to `verify-full` (recommended once you have the RDS CA bundle), you must also add `--set global.postgresql.client.sslRootCertSecret.name=<your-ca-secret>` — the chart already fails at render time without it, per the CA secret section above.
 
 > By default, Helm will install the latest production version of Magda. You can use `--version` to specify the exact chart version to use. e.g.:
 

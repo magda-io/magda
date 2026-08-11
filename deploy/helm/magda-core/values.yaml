@@ -102,6 +102,10 @@ global:
       # when connecting to PostgreSQL. Injected as the standard libpq `PGSSLMODE`
       # environment variable, and as an `sslmode=` JDBC URL parameter for the
       # JVM-based components.
+      # Exception: the external authentication plugins (magda-auth-*) do not yet
+      # read this value and connect to the session DB in plaintext regardless
+      # (a pre-existing, separately tracked gap) -- this value is not a blanket
+      # guarantee across every workload that talks to PostgreSQL.
       # Supported values are `require` (encrypt, without verifying the server
       # certificate), `disable` (plaintext), `verify-ca` and `verify-full`
       # (verify the server certificate). `prefer` and `allow` are rejected:
