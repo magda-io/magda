@@ -16,8 +16,10 @@ export type PgSslConfig =
 
 /**
  * The sslmode values Magda's Helm chart is allowed to inject.
- * `verify-ca` / `verify-full` are implemented here but currently rejected by
- * the chart, which has no way to deliver a CA file to the pod yet.
+ * `verify-ca` / `verify-full` are supported end-to-end: the chart delivers the
+ * CA via `global.postgresql.client.sslRootCertSecret`, mounted at
+ * `/etc/magda/postgresql-ca/root.crt`, with `PGSSLROOTCERT` pointed at that
+ * path.
  */
 const SUPPORTED_SSL_MODES = ["disable", "require", "verify-ca", "verify-full"];
 

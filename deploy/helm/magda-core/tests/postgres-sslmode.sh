@@ -240,6 +240,19 @@ fi
 grep -q 'sslmode=verify-full' "${TMP_DIR}/ca.yaml" || { echo "expected JDBC sslmode=verify-full"; exit 1; }
 grep -q 'sslrootcert=/etc/magda/postgresql-ca/root.crt' "${TMP_DIR}/ca.yaml" \
   || { echo "expected JDBC sslrootcert param"; exit 1; }
+# The two params must be joined by the SAME separator the chart actually
+# renders, not an assumed literal ampersand character. `mustToRawJson`
+# HTML-escapes the ampersand to its JSON unicode escape sequence, and that
+# escape is itself embedded in a YAML double-quoted scalar (registry-api's
+# ConfigMap wraps deploy-application.conf as a JSON-ish string), so the
+# backslash introducing the escape is itself escaped once more -- the bytes
+# that land in the rendered manifest double that backslash. Typesafe Config
+# (HOCON) decodes what's left after YAML-unescaping back into a literal
+# ampersand for pgjdbc at runtime. This assertion locks the rendered bytes so
+# a future change to the escaping (e.g. switching JSON encoders) fails loudly
+# here instead of only breaking registry-api's TLS in production.
+grep -qF 'sslmode=verify-full\\u0026sslrootcert=/etc/magda/postgresql-ca/root.crt' "${TMP_DIR}/ca.yaml" \
+  || { echo "expected registry-api's JDBC URL to join sslmode and sslrootcert with the chart's actual escaped separator (\\\\u0026)"; exit 1; }
 # Without a CA secret, no sslrootcert is appended. (Reachable only for sslmode
 # disable/require — verify-* without a secret is rejected at render time.)
 if grep -q 'sslrootcert=' "${TMP_DIR}/noca.yaml"; then
