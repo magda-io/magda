@@ -14,6 +14,7 @@ scripted, assertion/checksum-based driver), and how to clean up.
 ## Cases
 
 - [DB TLS + non-default privileged user](./db-tls-and-privileged-user.md)
+- [`sslmode=verify-full` server-certificate verification against a simulated managed database](./db-tls-verify-full.md)
 - [Large file storage (multipart upload + Range download)](./large-file-storage.md)
 - [mgd CLI (auth, search, dataset/dist CRUD, large-file round-trip)](./mgd-cli.md)
 - [mgd agent skill auto-use](./mgd-skill-auto-use.md)
