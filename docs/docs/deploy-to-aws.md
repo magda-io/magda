@@ -54,8 +54,8 @@ parameter group with **no extra configuration required** — `require` is
 exactly what `force_ssl` demands, so a stock Magda install already works
 against an RDS instance that enforces SSL.
 
-Only two values are supported for `global.postgresql.client.sslmode`:
-`disable` and `require`.
+Four values are supported for `global.postgresql.client.sslmode`: `disable`,
+`require`, `verify-ca` and `verify-full`.
 
 - `prefer` / `allow` are rejected at chart render time. libpq (`psql`) and
   pgjdbc implement `prefer` by attempting TLS and silently falling back to
@@ -65,10 +65,54 @@ Only two values are supported for `global.postgresql.client.sslmode`:
   the Node services different effective behaviour from the JVM migrator and
   `psql` — and would break them outright against a plaintext server. Use
   `require` instead.
-- `verify-ca` / `verify-full` (certificate/hostname verification against a
-  supplied CA) are not supported yet — there is currently no way to deliver a
-  CA certificate to every DB-connecting pod. Track this at
-  [issue #3739](https://github.com/magda-io/magda/issues/3739).
+- `verify-ca` / `verify-full` verify the server's certificate (and, for
+  `verify-full`, its hostname) against a CA you supply. See the next section —
+  the CA secret is mandatory, with no fallback, which is the single most
+  surprising part of this for a new operator.
+
+#### `verify-ca` / `verify-full`: the CA secret is mandatory, with no fallback
+
+Set `global.postgresql.client.sslRootCertSecret.name` to a Kubernetes Secret
+holding your database provider's CA certificate PEM (key `ca.crt` by default,
+override via `sslRootCertSecret.key`). `helm install`/`helm upgrade` **fails at
+render time** — with an explanatory guard message, not a runtime crash loop —
+if `sslmode` resolves to `verify-ca` or `verify-full` and this value is left
+empty.
+
+This is required **even when your provider's CA chains to a public root**.
+Magda deliberately does **not** fall back to a system/bundled trust store for
+`verify-*`, because the DB migrator image ships a libpq older than version 16,
+which has no `sslrootcert=system` support — so a fallback would only turn a
+loud, actionable render-time failure into a connect-time crash loop. Download
+your provider's CA bundle and create the Secret regardless of how well-known
+the issuing CA is:
+
+- **AWS RDS**: the `global-bundle.pem` from
+  [Amazon RDS certificate bundles](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html).
+- **Azure Database for PostgreSQL**: DigiCert Global Root G2, or Microsoft RSA
+  Root CA 2017 for newer instances — see
+  [Azure's TLS certificate documentation](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-connect-tls-ssl).
+- **Cloud SQL**: the instance's `server-ca.pem`, downloadable from the
+  connection settings of the Cloud SQL instance.
+
+```yaml
+global:
+  postgresql:
+    client:
+      sslmode: verify-full
+      sslRootCertSecret: { name: rds-ca, key: ca.crt } # kubectl create secret from the RDS global bundle
+```
+
+```bash
+curl -o global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+kubectl create secret generic rds-ca --namespace magda \
+  --from-file=ca.crt=global-bundle.pem
+```
+
+A full worked example — deploying against a TLS-enforcing PostgreSQL instance,
+confirming the render-time guard, and a negative case proving a mismatched CA
+is rejected rather than silently accepted — is in the
+[`verify-full` end-to-end test case](./e2e-test-cases/db-tls-verify-full.md).
 
 Note this does not mean the DB migrator was previously sending plaintext
 traffic: the migrator connects via Flyway, which bundles the pgjdbc driver

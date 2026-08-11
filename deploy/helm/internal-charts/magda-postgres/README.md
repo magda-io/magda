@@ -35,6 +35,35 @@ relied on the same `lookup`-based preservation for the database password
 since before this change — but it is worth calling out explicitly for
 GitOps-managed deployments.
 
+### Client verification of the in-cluster CA (`verify-full`), combined-db only
+
+This chart's self-signed server certificate (above) can also be used as the
+CA for `global.postgresql.client.sslmode: verify-full`, so an operator can get
+verified in-cluster TLS without standing up an external database:
+
+```yaml
+# In-cluster verify-full (combined-db): point at the CA the chart already generates.
+global:
+  postgresql:
+    client:
+      sslmode: verify-full
+      sslRootCertSecret: { name: combined-db-postgresql-pg17-crt, key: ca.crt }
+```
+
+`combined-db-postgresql-pg17-crt` is `postgresql.tls.certificatesSecret`'s
+default name for the `combined-db` instance — `postgresql.fullnameOverride`
+(`combined-db-postgresql-pg17`) with `-crt` appended. It is the same secret
+`tls-secret.yaml` creates and the StatefulSet mounts for the server side,
+holding `ca.crt`/`tls.crt`/`tls.key`.
+
+This recipe is **combined-db only**. A per-service topology
+(`global.useInK8sDbInstance`) runs one PostgreSQL instance — and therefore one
+self-signed CA — per logical database, so a single
+`global.postgresql.client.sslRootCertSecret` cannot cover all of them at once;
+`require` (the default) is the only client mode that works uniformly across a
+per-service in-cluster topology. `require` remains the chart-wide default
+regardless of this recipe.
+
 ## Requirements
 
 Kubernetes: `>= 1.21.0`

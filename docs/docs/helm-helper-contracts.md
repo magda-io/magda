@@ -202,6 +202,75 @@ For what `PGSSLMODE` resolves to and how to configure it, see
 [Magda Helm Chart Reference](./helm-charts-docs-index.md) and the
 [AWS deployment guide](./deploy-to-aws.md).
 
+## The PostgreSQL client CA delivery helpers
+
+`sslmode: verify-ca` / `verify-full` require every DB-connecting workload to
+be able to read the PostgreSQL server's CA certificate. `magda-core`'s
+`templates/_helpers.tpl` publishes a small set of helpers, alongside the
+`sslmode` ones above, that every workload template uses to do this
+consistently. Unlike the `-v1` contract above, these are not (yet) exposed to
+external charts through a versioned `magda-common` shim — no plugin needs them
+today, so they are internal to `magda-core` and used only by Magda's own
+workload templates. Treat their names as an implementation detail rather than
+a stable external API until a versioned shim exists.
+
+**The render-time contract.** `magda.postgres-client-sslmode` — the helper
+that resolves `global.postgresql.client.sslmode` — fails the render if the
+resolved mode has the `verify-` prefix and
+`global.postgresql.client.sslRootCertSecret.name` is empty. There is
+deliberately **no** trust-store fallback, even when the server's CA is a
+publicly-trusted root (for example Azure Database for PostgreSQL's DigiCert
+Global Root G2): Magda's DB migrator image ships libpq older than 16, which
+has no `sslrootcert=system` support, so a fallback would only defer the
+failure from `helm install` to a connect-time crash loop. The secret is
+mandatory for `verify-*`, full stop.
+
+**The five public helpers:**
+
+| Helper                                 | Emits                                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `magda.postgres-client-ca-enabled`     | The literal string `"true"` when `global.postgresql.client.sslRootCertSecret.name` is set, otherwise nothing. Used as an `if` condition (`eq (include "magda.postgres-client-ca-enabled" .) "true"`), never rendered directly into a manifest.                                                                                                            |
+| `magda.postgres-client-ca-volume`      | A `secret` volume named `postgresql-ca`, remapping whichever key holds the CA (`sslRootCertSecret.key`, default `ca.crt`) to the fixed file name `root.crt` via the volume's `items:` list. **Does not self-guard** — it renders unconditionally, so every caller must wrap it in `{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}`.   |
+| `magda.postgres-client-ca-volumemount` | The matching `volumeMount` for the `postgresql-ca` volume, read-only, mounted at `/etc/magda/postgresql-ca`. Also does not self-guard; gate it the same way.                                                                                                                                                                                              |
+| `magda.db-client-ca-env-node`          | `PGSSLROOTCERT` pointed at `/etc/magda/postgresql-ca/root.crt`, for Node services that read the standard libpq environment variables (`gateway`, `authorization-api`, `content-api`, `tenant-api`). Emits nothing when no CA secret is configured, leaving `PGSSLROOTCERT` unset so `getPgSslConfigFromEnv` falls back to Node's own bundled trust store. |
+| `magda.db-client-ca-env-libpq`         | Same output as `-node`, for libpq-based consumers: `psql` inside the DB migrator Jobs and the `registry-db` auto-vacuum CronJob, and `wal-g`. Kept as a separate name from `-node` so the two client classes can diverge in the future without hunting for a second copy.                                                                                 |
+
+**The one internal helper:**
+
+`magda.db-client-ca-env-common` is the shared body both class helpers
+delegate to — it is the only place that actually decides whether to emit
+`PGSSLROOTCERT`. It is marked **INTERNAL — do not include from a workload
+template**; always include the class-specific helper (`-node` or `-libpq`)
+instead, so the class's constraint is documented at the call site rather than
+requiring every reader to know which classes are safe.
+
+**Never `system`, for either class.** No helper ever emits the literal value
+`system` for `PGSSLROOTCERT`. For libpq this is because the migrator/auto-vacuum
+images ship libpq older than 16, which rejects `sslrootcert=system` outright.
+For Node it would be actively worse: `getPgSslConfigFromEnv` would call
+`fs.readFileSync("system")`, which is not a path to anything, and the pod would
+crash on boot. If a future image bump puts libpq ≥ 16 everywhere, only
+`magda.db-client-ca-env-libpq` needs to change — the `-node` and `-common`
+helpers are unaffected.
+
+**The class split, restated.** Node services consume the CA through the
+`PGSSLROOTCERT` environment variable. `registry-api` is the one exception:
+it connects via Flyway/pgjdbc-derived JDBC URLs, and pgjdbc ignores `PG*`
+environment variables entirely, so `registry-api`'s own helpers bake the CA
+path into the JDBC URL as an `sslrootcert=` parameter instead of calling
+`magda.db-client-ca-env-node`. The DB migrator Jobs need **both** forms at
+once — `migrate.sh` drives plain `psql` (which honours `PGSSLROOTCERT`, via
+`magda.db-client-ca-env-libpq`) and also runs Flyway over pgjdbc (which needs
+the JDBC `sslrootcert=` parameter, appended the same way `registry-api` does
+it).
+
+**The fixed mount path.** Regardless of which key in the Secret holds the PEM
+(`sslRootCertSecret.key`, default `ca.crt`), `magda.postgres-client-ca-volume`
+always remaps it to `root.crt` inside the `postgresql-ca` volume, so every
+consumer references the same constant path,
+`/etc/magda/postgresql-ca/root.crt`. Callers never need to know or template
+the configured key name.
+
 ## Maintainer checklist
 
 When adding a contract:
