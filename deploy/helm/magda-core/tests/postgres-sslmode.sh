@@ -249,6 +249,50 @@ fi
 mounts=$(grep -c 'mountPath: /etc/magda/postgresql-ca' "${TMP_DIR}/ca.yaml")
 [ "$mounts" -eq 13 ] || { echo "expected exactly 13 CA mounts, got $mounts"; exit 1; }
 
+# --- magda-postgres major-upgrade dump/restore Jobs: deliberately CA-free -------
+#
+# These two Jobs are in-cluster-only major-upgrade machinery (dump/restore of the
+# PREVIOUS major's local instance during an in-place PG13->17 upgrade); a
+# verify-* deployment targets an EXTERNAL managed DB, where these Jobs never
+# run, so wiring a client CA into them would be dead config. See
+# docs/design/2026-08-10-db-ca-verification-design.md §5.
+#
+# The Jobs are gated behind `majorUpgrade.enabled` (off by default), so a render
+# that doesn't turn that flag on would make an "absence of CA mount" assertion
+# pass vacuously -- it would prove nothing, because the Jobs wouldn't be in the
+# output to check in the first place. Render with the flag on AND a CA secret
+# configured (the case where an accidental mount could appear), confirm the
+# Jobs are actually present, and only then assert they carry none of the CA
+# wiring.
+render --set combined-db.magda-postgres.majorUpgrade.enabled=true \
+       --set combined-db.magda-postgres.majorUpgrade.sourceHost=old-db \
+       --set global.postgresql.client.sslmode=verify-full \
+       --set global.postgresql.client.sslRootCertSecret.name=my-ca \
+       > "${TMP_DIR}/upgrade.yaml"
+
+# Non-vacuousness check: confirm both Jobs actually rendered under these values.
+for job_name in major-upgrade-dump major-upgrade-restore; do
+    if ! grep -q "name: \".*-${job_name}\"" "${TMP_DIR}/upgrade.yaml"; then
+        echo "expected the ${job_name} Job to render with majorUpgrade.enabled=true (the CA-absence check below would be vacuous otherwise)"
+        exit 1
+    fi
+done
+
+# The two major-upgrade Jobs are in-cluster-only and deliberately carry NO CA
+# mount, volume, or PGSSLROOTCERT env var. Split the render into per-resource
+# documents (helm separates each rendered resource with a `---` line) and check
+# only the documents whose Job name matches *-major-upgrade-(dump|restore) --
+# a whole-file grep would also match CA wiring belonging to unrelated
+# workloads that render later in the same manifest.
+if awk -v RS='\n---\n' '
+    /name: ".*-major-upgrade-(dump|restore)"/ {
+      if ($0 ~ /postgresql-ca/ || $0 ~ /PGSSLROOTCERT/) { print; hit=1 }
+    }
+    END { exit hit ? 0 : 1 }
+' "${TMP_DIR}/upgrade.yaml"; then
+  echo "major-upgrade Jobs must not mount the DB client CA"; exit 1
+fi
+
 assert_sslmode_coverage "${ROOT_DIR}/deploy/helm/magda" "umbrella (magda)" ""
 
 # `local-deployment` additionally pulls in the authentication plugins. Those call

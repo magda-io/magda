@@ -390,6 +390,10 @@ spec:
             # `--timeout`. Matches major-upgrade-dump-job.yaml.
             - name: PGCONNECT_TIMEOUT
               value: "10"
+            # NOTE (#3739): deliberately NO client-CA (sslRootCertSecret) plumbing here.
+            # These Jobs are in-cluster-only major-upgrade machinery; a verify-* deployment
+            # targets an EXTERNAL managed DB, where these Jobs never run. An external CA here
+            # would be dead config. See docs/design (db-ca-verification) §5.
 {{- include "magda.postgres-superuser-env" . | indent 12 }}
           volumeMounts:
             - name: staging
