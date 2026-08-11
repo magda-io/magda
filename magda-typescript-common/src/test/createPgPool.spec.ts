@@ -128,7 +128,7 @@ describe("getPgSslConfigFromEnv", function () {
             expect(config).to.have.property("ca", CA_CONTENTS);
         });
 
-        it("should leave `ca` undefined for `verify-full` when PGSSLROOTCERT is unset", function () {
+        it("verify-full with no PGSSLROOTCERT falls back to the built-in trust store (ca undefined)", function () {
             // Falls back to Node's built-in trust store.
             const config = getPgSslConfigFromEnv({ PGSSLMODE: "verify-full" });
             expect(config).to.have.property("rejectUnauthorized", true);
@@ -152,10 +152,7 @@ describe("getPgSslConfigFromEnv", function () {
         });
 
         it("verify-full reads the CA from PGSSLROOTCERT and enables full verification", function () {
-            const caPath = path.join(
-                os.tmpdir(),
-                `ca-${Date.now()}-full.pem`
-            );
+            const caPath = path.join(os.tmpdir(), `ca-${Date.now()}-full.pem`);
             fs.writeFileSync(
                 caPath,
                 "-----BEGIN CERTIFICATE-----\nAAA\n-----END CERTIFICATE-----\n"
@@ -195,14 +192,6 @@ describe("getPgSslConfigFromEnv", function () {
             }
         });
 
-        it("verify-full with no PGSSLROOTCERT falls back to the built-in trust store (ca undefined)", function () {
-            const ssl = getPgSslConfigFromEnv({
-                PGSSLMODE: "verify-full"
-            }) as any;
-            expect(ssl.rejectUnauthorized).to.equal(true);
-            expect(ssl.ca).to.equal(undefined);
-        });
-
         it("verify-full with an unreadable PGSSLROOTCERT throws a clear error", function () {
             expect(() =>
                 getPgSslConfigFromEnv({
@@ -236,9 +225,7 @@ describe("getPgSslConfigFromEnv source parity with the auth-plugin SDK", functio
         let dir = startDir;
         for (let i = 0; i < 12; i++) {
             if (
-                fs.existsSync(
-                    path.join(dir, "magda-typescript-common")
-                ) &&
+                fs.existsSync(path.join(dir, "magda-typescript-common")) &&
                 fs.existsSync(path.join(dir, "packages"))
             ) {
                 return dir;
