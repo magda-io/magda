@@ -172,8 +172,8 @@ spec:
 {{- end }}
 {{- /*
   When a CA secret is configured, also carry its mounted path as pgjdbc's
-  `sslrootcert` parameter (pgjdbc ignores PGSSLROOTCERT). No secret => rely on
-  the JVM default truststore. Only append when not already present.
+  `sslrootcert` parameter (pgjdbc ignores PGSSLROOTCERT). No secret => no
+  `sslrootcert=` is appended. Only append when not already present.
 */}}
 {{- $dbUrl2 := (get $dbDefault "url") | default "" | toString }}
 {{- if and (eq (include "magda.postgres-client-ca-enabled" .) "true") $dbUrl2 (not (contains "sslrootcert=" ($dbUrl2 | lower))) }}
