@@ -130,8 +130,18 @@ CREATE ROLE $MASTER_USER WITH LOGIN CREATEDB CREATEROLE PASSWORD '$MASTER_PW';
 -- (magda-postgres's initdb hook); for an external DB the operator normally
 -- does this once via the provider's admin account -- here, this init.sql
 -- stands in for that step. Required for the registry-db migrator's
--- `CREATE EXTENSION "uuid-ossp"` (trusted, but needs CREATE on the database).
+-- \`CREATE EXTENSION "uuid-ossp"\` (trusted, but needs CREATE on the database).
 GRANT ALL PRIVILEGES ON DATABASE postgres TO $MASTER_USER;
+-- PostgreSQL 15+ ONLY: the pre-existing \`postgres\` database's \`public\`
+-- schema is owned by the bootstrap superuser, and PG15 revoked the old
+-- world-writable default, so \`GRANT ALL ... ON DATABASE\` above is NOT enough
+-- for the registry-db migrator (which connects here as $MASTER_USER and lands
+-- its tables in \`postgres\`, there being no \`registry\` database -- see the
+-- major-upgrade runbook). Without this it connects fine over verify-full but
+-- then fails Flyway with \`ERROR: permission denied for schema public\`.
+-- Hand \`public\` to the master so it can create tables and grant the client
+-- role, mirroring how a managed-provider master owns its default schema.
+ALTER SCHEMA public OWNER TO $MASTER_USER;
 EOF
 kubectl -n "$NS" create configmap managed-pgcfg \
   --from-file=pg_hba.conf=pg_hba.conf --from-file=init.sql=init.sql
