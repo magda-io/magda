@@ -158,6 +158,28 @@ function getHostPort(container: string, containerPort: number): number {
 }
 
 /**
+ * Fail loudly, with the container's own logs, if `container` is not running.
+ * A server that crashes during startup (a bad cert, an OOM kill, a future
+ * cert-delivery regression) otherwise only surfaces later as getHostPort's
+ * opaque "no public port '5432' published" -- which is exactly how the
+ * Docker-in-Docker bind-mount bug (see the create/cp/start note in `before`)
+ * hid as a mysterious CI "flake". Checking here turns that into a one-line
+ * diagnosis.
+ */
+function assertContainerRunning(container: string): void {
+    const status = docker(
+        ["inspect", "-f", "{{.State.Status}}", container],
+        true
+    );
+    if (status !== "running") {
+        const logs = docker(["logs", container], true);
+        throw new Error(
+            `server container ${container} is not running (status: "${status}"); its logs were:\n${logs}`
+        );
+    }
+}
+
+/**
  * Poll until the server accepts a TLS connection. This deliberately does NOT
  * validate the certificate (`rejectUnauthorized: false`, i.e. libpq's
  * `require`) -- it exists only to detect "the server is up", not to exercise
@@ -268,16 +290,28 @@ describe("DB client CA verification -- real getPgSslConfigFromEnv against a real
         // drops to the "postgres" OS user via gosu. This overrides the
         // container's default command (keeping the image's own
         // docker-entrypoint.sh as the ENTRYPOINT is not possible once we
-        // override it, so it is invoked explicitly below) to first copy the
-        // bind-mounted certs out of the read-only host mount and fix their
-        // ownership/permissions as root -- a host-owned bind-mounted key
-        // file is owned by an arbitrary host uid inside the container, which
-        // PostgreSQL refuses to start with (the key must be owned by the
-        // server's effective user or root, mode <= 0600).
+        // override it, so it is invoked explicitly below) so that, as root, it
+        // copies EVERYTHING the server reads -- the certs AND pg_hba.conf --
+        // out of /ca-verify-certs and into the postgres-owned home, then hands
+        // over to the real entrypoint pointing only at those copies.
+        //
+        // Copying pg_hba.conf out (rather than pointing hba_file straight at
+        // /ca-verify-certs/pg_hba.conf) is REQUIRED, not tidiness: `docker cp`
+        // (see the create/cp/start note below) creates /ca-verify-certs owned
+        // by root with the mode of the SOURCE dir, and the source is
+        // `fs.mkdtempSync` -- mode 0700. The unprivileged "postgres" user the
+        // server runs as therefore cannot even traverse /ca-verify-certs, so it
+        // could not open a pg_hba.conf left there ("could not open file ...:
+        // Permission denied", FATAL at startup). Only root (which runs this
+        // bootScript) can read the 0700 dir, so root must be the one to relay
+        // the files into postgres-owned space. The same reasoning is why the
+        // certs are copied+chowned rather than read in place; pg_hba.conf was
+        // the one file previously read in place, which broke once cert delivery
+        // moved from a (perms-remapped) bind mount to `docker cp`.
         const bootScript = [
             "set -e",
-            "cp /ca-verify-certs/server.crt /ca-verify-certs/server.key /ca-verify-certs/ca.crt /var/lib/postgresql/",
-            "chown postgres:postgres /var/lib/postgresql/server.crt /var/lib/postgresql/server.key /var/lib/postgresql/ca.crt",
+            "cp /ca-verify-certs/server.crt /ca-verify-certs/server.key /ca-verify-certs/ca.crt /ca-verify-certs/pg_hba.conf /var/lib/postgresql/",
+            "chown postgres:postgres /var/lib/postgresql/server.crt /var/lib/postgresql/server.key /var/lib/postgresql/ca.crt /var/lib/postgresql/pg_hba.conf",
             "chmod 600 /var/lib/postgresql/server.key",
             [
                 "exec docker-entrypoint.sh postgres",
@@ -285,13 +319,26 @@ describe("DB client CA verification -- real getPgSslConfigFromEnv against a real
                 "-c ssl_cert_file=/var/lib/postgresql/server.crt",
                 "-c ssl_key_file=/var/lib/postgresql/server.key",
                 "-c ssl_ca_file=/var/lib/postgresql/ca.crt",
-                "-c hba_file=/ca-verify-certs/pg_hba.conf"
+                "-c hba_file=/var/lib/postgresql/pg_hba.conf"
             ].join(" ")
         ].join(" && ");
 
+        // Deliver the certs and start the server WITHOUT a host bind-mount.
+        // In CI the docker daemon is a SEPARATE `docker:dind` service, so
+        // `-v ${certsDir}:/ca-verify-certs` would be resolved on the daemon's
+        // OWN filesystem -- where this test's mkdtemp dir does not exist -- and
+        // would silently mount an EMPTY directory. The bootScript's `cp` would
+        // then fail under `set -e`, the container would exit before postgres
+        // ever started, and getHostPort's `docker port` would report the opaque
+        // "no public port '5432' published" (observed as a CI "flake"; it
+        // passes locally only because a local daemon shares this filesystem).
+        // `docker cp` streams the files to the daemon over the Docker API, so
+        // it works whether or not the daemon shares our filesystem -- the same
+        // reason postgresMajorUpgrade.spec.ts uses a named volume, not a
+        // bind-mount. Files must exist before `start` (postgres reads them at
+        // initdb), so the order is create -> cp -> start.
         docker([
-            "run",
-            "-d",
+            "create",
             "--name",
             PG,
             "--network",
@@ -300,8 +347,6 @@ describe("DB client CA verification -- real getPgSslConfigFromEnv against a real
             PG,
             "-p",
             "5432",
-            "-v",
-            `${certsDir}:/ca-verify-certs:ro`,
             "-e",
             `POSTGRES_PASSWORD=${PGPASSWORD}`,
             "--entrypoint",
@@ -310,6 +355,11 @@ describe("DB client CA verification -- real getPgSslConfigFromEnv against a real
             "-c",
             bootScript
         ]);
+        // `${certsDir}/.` copies the directory CONTENTS into /ca-verify-certs
+        // (docker cp creates the dir if absent), matching the bootScript paths.
+        docker(["cp", `${certsDir}/.`, `${PG}:/ca-verify-certs`]);
+        docker(["start", PG]);
+        assertContainerRunning(PG);
 
         hostPort = getHostPort(PG, 5432);
         await waitForPg(hostPort);
