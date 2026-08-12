@@ -27,7 +27,16 @@ for the operator-facing explanation of what each step does and why.
    _after_ the restore without failing on pre-existing schema, the application is
    healthy, the old PostgreSQL 13 StatefulSet/PVC are untouched, and a repeat
    `helm upgrade` with the flag still on is a no-op (idempotency).
-4. **Assert rollback**: `helm rollback` brings the PostgreSQL 13 StatefulSet back
+4. **(Optional) Re-enable in-cluster `verify-full` on the new instance**: point
+   `global.postgresql.client.sslRootCertSecret.name` at the PostgreSQL 17
+   generation's `-crt` secret (`combined-db-postgresql-pg17-crt`, **not** the v6
+   `combined-db-postgresql-crt`, which no longer exists) and confirm every DB
+   client verifies the server certificate against it. This exercises the
+   [runbook §4](../postgres-major-upgrade-runbook.md#4-prerequisites) /
+   `magda-postgres` README "Client verification of the in-cluster CA" guidance —
+   the generation-specific secret rename that an operator must apply as part of
+   the upgrade.
+5. **Assert rollback**: `helm rollback` brings the PostgreSQL 13 StatefulSet back
    bound to its original PVC, with the seeded rows intact.
 
 ## Prerequisites
@@ -43,8 +52,8 @@ for the operator-facing explanation of what each step does and why.
 
 ```bash
 export NS=pg-major-upgrade-e2e
-export V6_VERSION=6.2.0            # last PostgreSQL-13 release
-export V7_VERSION=7.0.0-pr.3750.1  # branch build carrying majorUpgrade
+export V6_VERSION=6.2.0            # the planned last v6 (PostgreSQL 13) release
+export V7_VERSION=7.0.0-alpha.0    # the first v7 (PostgreSQL 17) alpha, cut after this work merges
 ```
 
 ## 1. Install v6 and seed data
@@ -292,9 +301,9 @@ kubectl -n "$NS" get pvc           # expect BOTH data-combined-db-postgresql-0 (
 > The old **StatefulSet is gone**, not retained: v7 renders no `combined-db-postgresql`
 > object, so Helm deletes it in the main pass. Its **PVC** survives, because
 > StatefulSet-managed PVCs are not garbage-collected with the StatefulSet — and that is
-> what makes step 4's rollback work. You therefore cannot `kubectl exec` into the old
+> what makes step 5's rollback work. You therefore cannot `kubectl exec` into the old
 > pod to check the PostgreSQL 13 data at this point; verify it after the rollback in
-> step 4 instead.
+> step 5 instead.
 
 **g. Idempotency — re-run `helm upgrade` with the flag still on:**
 
@@ -330,12 +339,128 @@ staging PVC's `uid` changes on each of these upgrades
 that is the delete-and-recreate completing, which is exactly what a leftover hook
 pod used to prevent.
 
-## 4. Assert rollback works
+## 4. (Optional) Re-enable in-cluster `verify-full` on the PostgreSQL 17 instance
+
+This step proves the one piece of the
+[runbook §4](../postgres-major-upgrade-runbook.md#4-prerequisites) verify-full
+guidance that a major upgrade actually exercises: after the upgrade, an operator
+who runs the `magda-postgres` README's
+[Client verification of the in-cluster CA](../../../deploy/helm/internal-charts/magda-postgres/README.md)
+recipe must **re-point `sslRootCertSecret.name` at the new PostgreSQL
+generation's `-crt` secret**, because that secret name is tied to the PostgreSQL
+major version, not the Magda version, and the old one is gone.
+
+Run it **while still on PostgreSQL 17** — i.e. before the step 5 rollback, which
+tears this instance down. Reuse the live release from step 3; nothing here needs
+a fresh install.
+
+> **Why this isn't tested going _into_ the upgrade.** In-cluster client
+> `verify-full` is a v7 feature (issue #3739), so the v6/PostgreSQL 13 source in
+> step 1 could not have had it on — there is nothing to turn down for the dump
+> window. The step 2 upgrade therefore already ran at the chart default
+> `sslmode: require`, which is exactly what the runbook prescribes for the
+> dump/restore Jobs: they only ever talk to the local instance, so server
+> authentication is optional for them (issue #3739 confirms this). `verify-full`
+> is a post-upgrade opt-in, which is what this step covers.
+
+**a. The generation-specific secret exists; the old one is gone.** This rename is
+the whole hazard the recipe warns about — an operator who leaves
+`sslRootCertSecret.name` pointing at the v6 name after the upgrade points at a
+secret that no longer exists, and every DB client fails to start:
 
 ```bash
-helm rollback magda -n "$NS"
+kubectl -n "$NS" get secret combined-db-postgresql-pg17-crt   # exists: holds ca.crt/tls.crt/tls.key
+kubectl -n "$NS" get secret combined-db-postgresql-crt        # expect: NotFound (the v6 generation's secret is gone)
+```
+
+The chart auto-generates that certificate with SANs covering every logical
+Service name Magda dials (`combined-db`, `authorization-db`, `content-db`,
+`registry-db`, `session-db`) plus `localhost`/`127.0.0.1`, so `verify-full`
+works against it with no certificate wrangling — the CA the clients trust is the
+same `-crt` secret the StatefulSet already mounts.
+
+**b. Enable `verify-full` pointed at the new secret.** Keep `majorUpgrade`
+**off** now (the migration is already done and recorded; leaving it on would only
+schedule no-op dump/restore Jobs):
+
+```bash
+helm upgrade magda oci://ghcr.io/magda-io/charts/magda --version "$V7_VERSION" -n "$NS" \
+  --set global.postgresql.client.sslmode=verify-full \
+  --set global.postgresql.client.sslRootCertSecret.name=combined-db-postgresql-pg17-crt \
+  --timeout 3600s
+```
+
+`sslRootCertSecret.key` defaults to `ca.crt` — the key `tls-secret.yaml` writes —
+so it needs no override. This upgrade re-runs the DB migrator `post-upgrade`
+Jobs; **their success is itself the proof** that a verified connection works
+end-to-end — the migrators are the hybrid clients that use both `psql`
+(honouring `PGSSLROOTCERT`) and Flyway/pgjdbc (honouring the `sslrootcert=` URL
+parameter). A failed hook fails the release, so a green `helm upgrade` already
+means both verified-connection paths succeeded.
+
+**c. Spot-check the CA mount and confirm the server sees only TLS connections:**
+
+```bash
+# CA mounted read-only at the fixed path in a DB-connecting workload:
+kubectl -n "$NS" exec deploy/authorization-api -- ls -l /etc/magda/postgresql-ca/root.crt
+# server side: no non-SSL client connection exists
+kubectl -n "$NS" exec combined-db-postgresql-pg17-0 -- env PGPASSWORD="$PGPASSWORD" \
+  psql -U postgres -h 127.0.0.1 -tAc \
+  "SELECT count(*) FROM pg_stat_ssl s JOIN pg_stat_activity a USING (pid)
+   WHERE a.usename IS NOT NULL AND NOT s.ssl;"
+# expect: 0
+```
+
+And confirm the application still serves the seeded data over the now-verified
+connection (the port-forward from step 1 is still up):
+
+```bash
+curl -s "http://localhost:18080/api/v0/registry/records/$DATASET_ID" -H "X-Magda-Tenant-Id: 0"
+# expect: the record seeded in step 1, served through registry-api's verify-full connection
+```
+
+**d. (Optional negative) Prove verification is real, not silently disabled.**
+Point the client at a CA that does **not** match the server and confirm it fails
+with a certificate error rather than connecting anyway. This mirrors the
+external-DB case's negative check; keep it brief here since that case covers the
+wrong-CA path in depth:
+
+```bash
+openssl req -new -x509 -days 1 -nodes -subj "/CN=unrelated-ca" -out /tmp/wrong-ca.crt -keyout /tmp/wrong-ca.key 2>/dev/null
+kubectl -n "$NS" create secret generic pg-ca-wrong --from-file=ca.crt=/tmp/wrong-ca.crt
+helm upgrade magda oci://ghcr.io/magda-io/charts/magda --version "$V7_VERSION" -n "$NS" \
+  --set global.postgresql.client.sslmode=verify-full \
+  --set global.postgresql.client.sslRootCertSecret.name=pg-ca-wrong \
+  --timeout 300s
+# expect: the upgrade FAILS -- the post-upgrade migrator hooks error out
+kubectl -n "$NS" logs job/authorization-db-migrator --tail=30 2>/dev/null | grep -iE "certificate|self-signed|verify failed"
+# expect: an SSL/certificate-verification error, NOT connection-refused/timeout
+```
+
+Revert to the correct CA before continuing to the rollback:
+
+```bash
+helm upgrade magda oci://ghcr.io/magda-io/charts/magda --version "$V7_VERSION" -n "$NS" \
+  --set global.postgresql.client.sslmode=verify-full \
+  --set global.postgresql.client.sslRootCertSecret.name=combined-db-postgresql-pg17-crt \
+  --timeout 3600s
+kubectl -n "$NS" delete secret pg-ca-wrong
+rm -f /tmp/wrong-ca.crt /tmp/wrong-ca.key
+```
+
+## 5. Assert rollback works
+
+```bash
+helm rollback magda 1 -n "$NS"
 kubectl -n "$NS" rollout status statefulset/combined-db-postgresql --timeout=300s
 ```
+
+> **Roll back to revision 1 explicitly**, not with a bare `helm rollback`. Each
+> idempotency repeat in step 3g, and the `verify-full` upgrade(s) in step 4, adds
+> another v7 (PostgreSQL 17) revision, so a bare `helm rollback` (previous
+> revision) would only land on another PostgreSQL 17 release, not the original
+> v6/PostgreSQL 13 install. Revision 1 is that first install; confirm with
+> `helm history magda -n "$NS"` if unsure.
 
 Expected:
 
@@ -366,6 +491,12 @@ rm -f /tmp/*major-upgrade-dump*.log /tmp/*major-upgrade-restore*.log
 - Run this whenever the `majorUpgrade` mechanism (the dump/restore Jobs, the
   staging PVC, or the values contract) changes, and once per release cycle that
   bumps the bundled PostgreSQL major version.
+- **Step 4 (in-cluster `verify-full` re-enable) is combined-db only**, matching
+  both this case's topology and the recipe itself — a per-service
+  (`global.useInK8sDbInstance`) topology runs one self-signed CA per instance, so
+  a single `global.postgresql.client.sslRootCertSecret` cannot cover them all and
+  `require` is the only client mode that works uniformly there (see the recipe's
+  "combined-db only" note). Skip step 4 when validating a per-service upgrade.
 - This case exercises the **combined-db** topology
   (`global.useCombinedDb: true`). If your deployment uses per-service instances
   (`global.useInK8sDbInstance.<db>: true`), repeat steps 2–4 with
