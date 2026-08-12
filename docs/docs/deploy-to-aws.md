@@ -70,6 +70,19 @@ Four values are supported for `global.postgresql.client.sslmode`: `disable`,
   the CA secret is mandatory, with no fallback, which is the single most
   surprising part of this for a new operator.
 
+**Choosing a mode.** For the **in-cluster** database, `require` is the
+recommended default: it encrypts the connection — defeating passive
+eavesdropping on the pod network — and the residual active-MITM risk it leaves
+open requires an attacker already inside the pod network _and_ able to redirect
+service traffic, which is a high bar behind NetworkPolicies and cluster-only
+traffic. In-cluster `verify-full` is available as defense-in-depth (worthwhile
+for multi-tenant clusters or a regulatory requirement to authenticate the
+server), not as a default. For an **external / managed** database the calculus
+inverts — the traffic leaves the cluster and crosses networks you do not
+control — so `verify-full` with the provider's CA bundle is the recommended
+mode there. The full threat-model rationale is recorded in
+[issue #3739](https://github.com/magda-io/magda/issues/3739).
+
 #### `verify-ca` / `verify-full`: the CA secret is mandatory, with no fallback
 
 Set `global.postgresql.client.sslRootCertSecret.name` to a Kubernetes Secret

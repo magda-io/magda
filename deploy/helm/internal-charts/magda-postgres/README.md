@@ -39,7 +39,11 @@ GitOps-managed deployments.
 
 This chart's self-signed server certificate (above) can also be used as the
 CA for `global.postgresql.client.sslmode: verify-full`, so an operator can get
-verified in-cluster TLS without standing up an external database:
+verified in-cluster TLS without standing up an external database. In-cluster
+`verify-full` is defense-in-depth rather than a default — `require` already
+defeats passive eavesdropping, and the residual active-MITM risk is low inside
+the cluster; see [Choosing a mode](https://github.com/magda-io/magda/blob/main/docs/docs/deploy-to-aws.md#postgresql-client-ssltls-mode-sslmode)
+for the reasoning:
 
 ```yaml
 # In-cluster verify-full (combined-db): point at the CA the chart already generates.
