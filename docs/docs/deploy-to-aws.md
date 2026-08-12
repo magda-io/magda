@@ -28,6 +28,59 @@ More details can be found from: https://docs.aws.amazon.com/eks/latest/userguide
 
 > Magda supports PostgreSQL 13 - 17. RDS uses `scram-sha-256` password encryption by default (PostgreSQL 14+), which is fully supported by the DB migrator. You can name the master user account anything you like (e.g. `magda_admin`) — you no longer need to name it `postgres`. Whatever name you choose, set `global.postgresql.auth.username` to it at install time (see step 7); the chart will otherwise fail fast to stop you from accidentally using the wrong privileged account.
 
+> **PostgreSQL 15+: make sure your master account can create objects in the `public` schema.**
+>
+> PostgreSQL 15 changed a long-standing default. In PostgreSQL 14 and earlier,
+> every role automatically had `CREATE` permission on the `public` schema of
+> every database (the schema was, in effect, world-writable), so any account
+> that could connect could also create tables. PostgreSQL 15 **revoked that
+> default** and made the `public` schema owned by the database's owner instead
+> — from 15 onward, only the schema's owner, or a role explicitly granted
+> `CREATE ON SCHEMA public`, may create objects in it. See the
+> [PostgreSQL 15 release notes](https://www.postgresql.org/docs/release/15.0/)
+> ("Remove PUBLIC creation permission on the public schema"). **RDS now creates
+> new instances on PostgreSQL 15 or later by default**, so new deployments will
+> almost always be on the new behaviour.
+>
+> Why this matters for Magda: the `registry-db` migrator (Flyway) creates the
+> registry's tables in the `public` schema of the instance's **default
+> `postgres` database** — the registry service connects without naming a
+> specific database — and it does so as the master account you set in
+> `global.postgresql.auth.username`. If that account neither owns nor has been
+> granted `CREATE` on that `public` schema, the migrator will **connect
+> successfully** (both TLS and password authentication pass) and then fail
+> part-way through with:
+>
+> ```
+> ERROR: permission denied for schema public
+> ```
+>
+> Because this appears immediately after a fully established (and, if you use
+> `verify-ca` / `verify-full`, certificate-verified) connection, it is easy to
+> misdiagnose as an SSL / CA problem — but it is purely a schema-privilege
+> issue introduced by the PostgreSQL 15 change, unrelated to TLS.
+>
+> On a stock RDS instance you often do **not** need to do anything: the master
+> user you create typically owns the initial `postgres` database, and AWS
+> adjusts these grants for you. You **do** need to act if you point Magda at a
+> database the master account does not own — for example a pre-created
+> application database, a shared instance, or a server provisioned by hand. In
+> that case, connect to the database Magda will use (the `postgres` database
+> unless you have overridden it) as the database owner (on RDS, the master
+> account itself can usually do this) and run **one** of:
+>
+> ```sql
+> -- Preferred: let the master own the schema, so it can also grant the
+> -- non-privileged "client" role the access Magda's migrations set up.
+> ALTER SCHEMA public OWNER TO magda_admin;   -- magda_admin = your master user
+>
+> -- Or, to leave ownership unchanged but still allow object creation:
+> GRANT CREATE ON SCHEMA public TO magda_admin;
+> ```
+>
+> This is a one-time setup step on the database side, in the same spirit as
+> creating the master-account password secret in step 6.
+
 To make EKS cluster be able to connect to the RDS database created, you need to make sure the followings are in place:
 
 - EKS cluster with its own VPC
