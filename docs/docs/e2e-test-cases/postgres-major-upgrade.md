@@ -508,6 +508,18 @@ rm -f /tmp/*major-upgrade-dump*.log /tmp/*major-upgrade-restore*.log
   rosetta/qemu, so pod startup and the dump/restore itself are slower than on a
   native amd64 node — size `--timeout` and the rollout timeouts above with that
   in mind.
+- **If `--wait` hangs indefinitely on a constrained/emulated cluster**, check
+  _which_ pods are not Ready before assuming the DB work failed. Non-DB
+  components (the `indexer`, the `minion-*` pods, the semantic-search indexers)
+  can `CrashLoopBackOff` on startup — e.g. webhook registration against a
+  registry-api that is slow to accept under emulation — and never stabilise,
+  which stalls `helm install/upgrade --wait` even though combined-db, the DB
+  migrators, and the `majorUpgrade` dump/restore Jobs all succeeded. Those Jobs
+  are **Helm hooks and run regardless of `--wait`** (Helm always waits for
+  hooks), so you can drop `--wait` and verify readiness directly instead:
+  `kubectl rollout status statefulset/combined-db-postgresql[-pg17]` for the DB,
+  and the marker/row-count checks in step 3 for the migration. This does not
+  affect a healthy cluster where those components come up normally.
 - See also [PostgreSQL major upgrade runbook](../postgres-major-upgrade-runbook.md)
   for what each step means operationally, and
   [In-cluster PostgreSQL wal-g cross-version backup / restore](./postgres-walg-cross-version-restore.md)
