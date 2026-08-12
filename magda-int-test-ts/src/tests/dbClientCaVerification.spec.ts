@@ -47,6 +47,29 @@ const PG = `ca-verify-pg-${runId}`;
 const PGPASSWORD = "CaVerify#1";
 const SERVER_IMAGE = "postgres:17";
 
+/**
+ * The host on which a container's docker-PUBLISHED port (`-p`) is reachable
+ * from THIS test process. Locally the daemon shares our network namespace, so
+ * that is `localhost`. In CI the daemon is a separate `docker:dind` service,
+ * so a published port lives on the daemon's own host -- the DOCKER_HOST
+ * hostname (e.g. `docker`), NOT this job container's localhost. Connecting to
+ * `localhost` there fails with ECONNREFUSED. This mirrors ServiceRunner's
+ * `dockerServiceForwardHost` derivation so this spec reaches its own container
+ * exactly the way the rest of the integration suite reaches its docker
+ * services. (The in-container psql legs below sidestep this entirely by joining
+ * the container's own docker network and dialing it by name.)
+ */
+function dockerForwardHost(): string {
+    const dockerHost = process.env.DOCKER_HOST;
+    if (!dockerHost) {
+        return "localhost";
+    }
+    const m = dockerHost.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/([^:/?#]+)/);
+    const h = m ? m[1] : "";
+    return !h || h === "127.0.0.1" ? "localhost" : h;
+}
+const FORWARD_HOST = dockerForwardHost();
+
 // --- small local helpers, mirroring postgresMajorUpgrade.spec.ts's idioms -----
 
 /** Run the docker CLI, ignoring failures when `ignoreError` (best-effort cleanup). */
@@ -99,9 +122,12 @@ function makeCa(dir: string, cn: string): void {
 /**
  * Generate a server key + certificate in `dir`, signed by the CA already in
  * `dir` (from `makeCa`). The SAN must cover every name used to reach the
- * server: `localhost`/`127.0.0.1` for the host-side node-postgres leg (via
- * the mapped port) and the container name (`PG`) for the in-container `psql`
- * leg -- a SAN mismatch fails `verify-full` for the wrong reason entirely.
+ * server: the container name (`PG`) for the in-container `psql` leg on the
+ * shared docker network, and -- for the host-side node-postgres leg dialing
+ * the published port -- whatever host that port is reachable on. That is
+ * `localhost`/`127.0.0.1` locally, but the DOCKER_HOST hostname under CI's
+ * dind (`FORWARD_HOST`), so it is added too; a SAN mismatch fails `verify-full`
+ * for the wrong reason entirely.
  */
 function makeServerCert(dir: string): void {
     opensslOrThrow(["genrsa", "-out", `${dir}/server.key`, "2048"]);
@@ -115,9 +141,17 @@ function makeServerCert(dir: string): void {
         "-out",
         `${dir}/server.csr`
     ]);
+    const sanEntries = ["DNS:localhost", "IP:127.0.0.1", `DNS:${PG}`];
+    if (FORWARD_HOST !== "localhost" && FORWARD_HOST !== "127.0.0.1") {
+        sanEntries.push(
+            /^\d+\.\d+\.\d+\.\d+$/.test(FORWARD_HOST)
+                ? `IP:${FORWARD_HOST}`
+                : `DNS:${FORWARD_HOST}`
+        );
+    }
     fs.writeFileSync(
         `${dir}/ext.cnf`,
-        `subjectAltName=DNS:localhost,IP:127.0.0.1,DNS:${PG}\n`
+        `subjectAltName=${sanEntries.join(",")}\n`
     );
     opensslOrThrow([
         "x509",
@@ -188,12 +222,16 @@ function assertContainerRunning(container: string): void {
  * non-TLS startup packet is rejected outright rather than merely refused for
  * "not ready yet".
  */
-async function waitForPg(hostPort: number, timeoutMs = 60000): Promise<void> {
+async function waitForPg(
+    host: string,
+    hostPort: number,
+    timeoutMs = 60000
+): Promise<void> {
     const start = Date.now();
     // eslint-disable-next-line no-constant-condition
     while (true) {
         const client = new pg.Client({
-            host: "localhost",
+            host,
             port: hostPort,
             user: "postgres",
             password: PGPASSWORD,
@@ -214,7 +252,7 @@ async function waitForPg(hostPort: number, timeoutMs = 60000): Promise<void> {
             }
             if (Date.now() - start >= timeoutMs) {
                 throw new Error(
-                    `postgres at localhost:${hostPort} failed to accept TLS connections in ${
+                    `postgres at ${host}:${hostPort} failed to accept TLS connections in ${
                         timeoutMs / 1000
                     }s: ${e}`
                 );
@@ -249,6 +287,44 @@ function isCertVerificationError(err: unknown): boolean {
     }
     const message = err instanceof Error ? err.message : String(err);
     return /certificate/i.test(message);
+}
+
+/**
+ * Run a one-shot libpq (`psql`) verify-full connection from a SEPARATE
+ * container joined to the server's docker network, dialing the server by name
+ * (`PG`, covered by the cert SAN) -- the leg that mirrors how a migrator/backup
+ * Job talks to the DB. The CA in `caDir` is delivered WITHOUT a host bind-mount
+ * (which resolves on the possibly-separate dind daemon's filesystem, not ours):
+ * it is streamed in as a base64 env var and written to the chart's fixed mount
+ * path inside the container before psql runs. Returns the spawnSync result.
+ */
+function psqlVerifyFull(caDir: string) {
+    const caB64 = fs.readFileSync(`${caDir}/ca.crt`).toString("base64");
+    const script = [
+        "set -e",
+        "mkdir -p /etc/magda/postgresql-ca",
+        'printf %s "$CA_B64" | base64 -d > /etc/magda/postgresql-ca/root.crt',
+        `exec psql "host=${PG} port=5432 user=postgres dbname=postgres sslmode=verify-full sslrootcert=/etc/magda/postgresql-ca/root.crt" -c "SELECT 1 AS ok"`
+    ].join(" && ");
+    return spawnSync(
+        "docker",
+        [
+            "run",
+            "--rm",
+            "--network",
+            NET,
+            "-e",
+            `PGPASSWORD=${PGPASSWORD}`,
+            "-e",
+            `CA_B64=${caB64}`,
+            "--entrypoint",
+            "bash",
+            SERVER_IMAGE,
+            "-c",
+            script
+        ],
+        { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 }
+    );
 }
 
 describe("DB client CA verification -- real getPgSslConfigFromEnv against a real TLS-enforcing PostgreSQL", function () {
@@ -362,7 +438,28 @@ describe("DB client CA verification -- real getPgSslConfigFromEnv against a real
         assertContainerRunning(PG);
 
         hostPort = getHostPort(PG, 5432);
-        await waitForPg(hostPort);
+        try {
+            await waitForPg(FORWARD_HOST, hostPort);
+        } catch (e) {
+            // Surface the server container's own logs + state -- a crash during
+            // initdb, or a published port unreachable on FORWARD_HOST, otherwise
+            // shows only as an opaque connect timeout with no hint of the cause.
+            const state = docker(
+                [
+                    "inspect",
+                    "-f",
+                    "{{.State.Status}} exit={{.State.ExitCode}}",
+                    PG
+                ],
+                true
+            );
+            const logs = docker(["logs", "--tail", "40", PG], true);
+            throw new Error(
+                `${
+                    (e as Error).message
+                }\n--- ${PG} state: ${state} ---\n${logs}`
+            );
+        }
     });
 
     after(function (this) {
@@ -385,7 +482,7 @@ describe("DB client CA verification -- real getPgSslConfigFromEnv against a real
             PGSSLROOTCERT: `${certsDir}/ca.crt`
         });
         const client = new pg.Client({
-            host: "localhost",
+            host: FORWARD_HOST,
             port: hostPort,
             user: "postgres",
             password: PGPASSWORD,
@@ -411,7 +508,7 @@ describe("DB client CA verification -- real getPgSslConfigFromEnv against a real
             PGSSLROOTCERT: `${bogusDir}/ca.crt`
         });
         const client = new pg.Client({
-            host: "localhost",
+            host: FORWARD_HOST,
             port: hostPort,
             user: "postgres",
             password: PGPASSWORD,
@@ -454,7 +551,7 @@ describe("DB client CA verification -- real getPgSslConfigFromEnv against a real
             PGSSLROOTCERT: `${certsDir}/ca.crt`
         });
         const client = new pg.Client({
-            host: "localhost",
+            host: FORWARD_HOST,
             port: 1, // reserved/unused port: connection refused, not a TLS handshake
             user: "postgres",
             password: PGPASSWORD,
@@ -547,25 +644,7 @@ describe("DB client CA verification -- real getPgSslConfigFromEnv against a real
         // against a CA delivered at that exact path, dialing the server by
         // its container name (covered by the cert's SAN) over the shared
         // docker network.
-        const res = spawnSync(
-            "docker",
-            [
-                "run",
-                "--rm",
-                "--network",
-                NET,
-                "-v",
-                `${certsDir}/ca.crt:/etc/magda/postgresql-ca/root.crt:ro`,
-                "-e",
-                `PGPASSWORD=${PGPASSWORD}`,
-                SERVER_IMAGE,
-                "psql",
-                `host=${PG} port=5432 user=postgres dbname=postgres sslmode=verify-full sslrootcert=/etc/magda/postgresql-ca/root.crt`,
-                "-c",
-                "SELECT 1 AS ok"
-            ],
-            { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 }
-        );
+        const res = psqlVerifyFull(certsDir);
         expect(
             res.status,
             `psql verify-full failed:\nSTDOUT:\n${res.stdout}\nSTDERR:\n${res.stderr}`
@@ -575,25 +654,7 @@ describe("DB client CA verification -- real getPgSslConfigFromEnv against a real
 
     it("psql (libpq) is likewise rejected by the wrong CA (the libpq leg verifies too, not just node-postgres)", function (this) {
         this.timeout(ENV_SETUP_TIME_OUT);
-        const res = spawnSync(
-            "docker",
-            [
-                "run",
-                "--rm",
-                "--network",
-                NET,
-                "-v",
-                `${bogusDir}/ca.crt:/etc/magda/postgresql-ca/root.crt:ro`,
-                "-e",
-                `PGPASSWORD=${PGPASSWORD}`,
-                SERVER_IMAGE,
-                "psql",
-                `host=${PG} port=5432 user=postgres dbname=postgres sslmode=verify-full sslrootcert=/etc/magda/postgresql-ca/root.crt`,
-                "-c",
-                "SELECT 1"
-            ],
-            { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 }
-        );
+        const res = psqlVerifyFull(bogusDir);
         expect(
             res.status,
             "expected psql verify-full to fail against a server not signed by the trusted CA"
