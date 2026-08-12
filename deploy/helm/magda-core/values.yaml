@@ -90,11 +90,20 @@ global:
     # Set this to `true` only when your external privileged account is intentionally named `postgres`.
     allowDefaultExternalDbPostgresUser: false
 
-    # -- When `true`, secret with name specified by `auth.existingSecret` will be auto-created.
-    # When in-k8s PostgreSQL instance is used, the secret will be filled with auto-generated random password.
-    # Otherwise, the secret will only be auto created when "cloudsql-db-credentials" secret exist.
-    # And its content, for this case, will be copied from "cloudsql-db-credentials" secret, `password` field for backward compatibility purposes.
-    # Please note: when the secret (specified by `auth.existingSecret`) exists, the auto-create feature will leave the password unchanged.
+    # -- When `true`, the secret named by `auth.existingSecret` is auto-created
+    # whenever it is absent (or is owned by the current Helm release); a
+    # pre-existing secret you manage is left unchanged. Creation applies to
+    # <b>both</b> the in-cluster and external-DB (`useAwsRdsDb` / `useCloudSql`)
+    # cases — it is <b>not</b> gated on the database type. Only the password
+    # <i>value</i> differs: for an external DB it is copied from the legacy
+    # "cloudsql-db-credentials" secret's `password` field when that secret exists
+    # (backward compatibility); in every other case a random password is generated.<br/><br/>
+    # <b>Important for external databases:</b> if you do not pre-create this secret
+    # with your real master-account password, Helm auto-creates it with a
+    # <i>random</i> password that will not match your managed DB account — services
+    # and migrator Jobs then fail with a password-authentication error rather than an
+    # obvious missing-secret error. Pre-create it (see `existingSecret` above) when
+    # pointing Magda at an external database.
     autoCreateSecret: true
 
     client:
