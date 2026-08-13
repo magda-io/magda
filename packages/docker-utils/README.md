@@ -41,6 +41,14 @@ Options:
   --platform          A list of platform that the docker image build should
                       target. Specify this value will enable multi-arch image
                       build.                                            [string]
+  --provenance        Value passed through to `docker buildx build
+                      --provenance`. Only applied to a multi-arch buildx build
+                      (i.e. when --platform is set). Left unset by default so
+                      buildx's own default behaviour is unchanged; set to
+                      `false` to skip the SLSA provenance attestation (e.g. for
+                      registries that reject it with `blob unknown to
+                      registry`). Defaults to the MAGDA_DOCKER_PROVENANCE env
+                      var.                                              [string]
   --noCache           Disable the cache during the docker image build.
                                                       [boolean] [default: false]
   --cacheFromVersion  Version to cache from when building, using the
