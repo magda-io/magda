@@ -68,6 +68,12 @@ const argv = yargs
                 "A list of platform that the docker image build should target. Specify this value will enable multi-arch image build.",
             type: "string"
         },
+        provenance: {
+            description:
+                "Value passed through to `docker buildx build --provenance`. Only applied to a multi-arch buildx build (i.e. when --platform is set). Left unset by default so buildx's own default behaviour is unchanged; set to `false` to skip the SLSA provenance attestation (e.g. for registries that reject it with `blob unknown to registry`, see https://github.com/moby/buildkit/issues/7007). Requires --tag=auto style buildx build; ignored otherwise. Defaults to the MAGDA_DOCKER_PROVENANCE env var.",
+            type: "string",
+            default: process.env.MAGDA_DOCKER_PROVENANCE
+        },
         noCache: {
             description: "Disable the cache during the docker image build.",
             type: "boolean",
@@ -183,6 +189,16 @@ if (argv.build) {
             ...cacheFromArgs,
             ...(argv.noCache ? ["--no-cache"] : []),
             ...(argv.platform ? ["--platform", argv.platform, "--push"] : []),
+            // Pass `--provenance` through to buildx only when explicitly set
+            // (via --provenance or MAGDA_DOCKER_PROVENANCE) and only for a
+            // multi-arch buildx build. Unset by default, so buildx's own default
+            // is unchanged for existing consumers of this published tool.
+            // Setting it to `false` skips the SLSA provenance attestation that
+            // some registries reject with `blob unknown to registry`
+            // (https://github.com/moby/buildkit/issues/7007).
+            ...(argv.platform && typeof argv.provenance !== "undefined"
+                ? [`--provenance=${argv.provenance}`]
+                : []),
             "-f",
             `./component/Dockerfile`,
             "-"
