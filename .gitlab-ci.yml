@@ -15,6 +15,14 @@ variables:
   DOCKER_TLS_VERIFY: 1
   DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   BUILDER_IMG_TAG: "$CI_COMMIT_REF_SLUG"
+  # Skip buildx's default provenance/SLSA attestation for the component images
+  # built via `create-docker-context-for-node-component` (read by that tool's
+  # --provenance option). Since BuildKit v0.32.0 the attestation is a separate
+  # manifest whose `subject` references the image manifest, which GitLab's
+  # container registry rejects with `blob unknown to registry` when the image
+  # manifest is new. The inline `docker buildx build` commands below pass
+  # `--provenance=false` directly. See https://github.com/moby/buildkit/issues/7007
+  MAGDA_DOCKER_PROVENANCE: "false"
 
 stages:
   - builders
@@ -58,13 +66,20 @@ build-builder-image:
     - name: docker:28.5.0-dind
       alias: docker
       command: ["--mtu=1400"]
-  # Build all three builder images and push to gitlab registry
+  # Build all three builder images and push to gitlab registry.
+  # `--provenance=false` on every `docker buildx build` (here and in the
+  # component-image jobs) disables buildx's default provenance/SLSA attestation.
+  # Since BuildKit v0.32.0 that attestation is pushed as a separate manifest
+  # whose `subject` references the image manifest; GitLab's registry enforces
+  # referential integrity and rejects the push with `blob unknown to registry`
+  # whenever the image manifest is new to the registry (i.e. effectively every
+  # fresh commit). See https://github.com/moby/buildkit/issues/7007
   script:
-    - cd magda-builder-nodejs && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-nodejs:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd magda-builder-nodejs && docker buildx build --provenance=false --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-nodejs:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile .
     - cd ..
-    - cd magda-builder-docker && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-docker:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd magda-builder-docker && docker buildx build --provenance=false --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-docker:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile .
     - cd ..
-    - cd magda-builder-scala && docker buildx build --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-scala:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd magda-builder-scala && docker buildx build --provenance=false --push -t "${CI_REGISTRY}/magda-data/magda/magda-builder-scala:${CI_COMMIT_REF_SLUG}" --platform linux/arm64,linux/amd64 -f Dockerfile .
     - cd ..
 
 # Make sure sbt dependencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
@@ -644,9 +659,9 @@ dockerize:scala:
     - ./gitlab-ci-buildx-setup.sh
     # output stage docker image content without build it
     - sbt docker:stage
-    - cd $CI_PROJECT_DIR/magda-search-api/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-search-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
-    - cd $CI_PROJECT_DIR/magda-registry-api/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-registry-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
-    - cd $CI_PROJECT_DIR/magda-indexer/target/docker/stage && docker buildx build --push -t $CI_REGISTRY/magda-data/magda/magda-indexer:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd $CI_PROJECT_DIR/magda-search-api/target/docker/stage && docker buildx build --provenance=false --push -t $CI_REGISTRY/magda-data/magda/magda-search-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd $CI_PROJECT_DIR/magda-registry-api/target/docker/stage && docker buildx build --provenance=false --push -t $CI_REGISTRY/magda-data/magda/magda-registry-api:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
+    - cd $CI_PROJECT_DIR/magda-indexer/target/docker/stage && docker buildx build --provenance=false --push -t $CI_REGISTRY/magda-data/magda/magda-indexer:$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 -f Dockerfile .
 
 dockerize:ui:
   stage: dockerize
