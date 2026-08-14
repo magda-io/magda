@@ -191,11 +191,83 @@ For the same reason the implementation uses `hasKey` rather than `default`,
 since Helm's `default` treats an explicit `false` as empty and would flip it
 back to `true`.
 
+### Delivering the server CA (`verify-ca`/`verify-full`)
+
+`magda.db-client-sslmode-env-v1` gives your pod `PGSSLMODE`, but under
+`sslmode: verify-ca`/`verify-full` that is not enough on its own: the client
+must also read the PostgreSQL server's CA certificate to verify it. Emitting
+`PGSSLMODE=verify-full` without the CA fails at connect time with
+`UNABLE_TO_VERIFY_LEAF_SIGNATURE` — a runtime failure the render cannot catch,
+because the operator configured the CA on the magda-core side.
+
+The `db-client-ca-env-v1` contract closes that gap. It is three templates
+sharing one contract version, one per YAML position your `deployment.yaml`
+needs:
+
+| Include                                   | Goes under                | Emits                                              |
+| ----------------------------------------- | ------------------------- | -------------------------------------------------- |
+| `magda.db-client-ca-env-v1`               | container `env:`          | `PGSSLROOTCERT=/etc/magda/postgresql-ca/root.crt`  |
+| `magda.postgres-client-ca-volumemount-v1` | container `volumeMounts:` | the read-only mount for the `postgresql-ca` volume |
+| `magda.postgres-client-ca-volume-v1`      | pod `volumes:`            | the `postgresql-ca` secret volume holding the CA   |
+
+Add all three alongside your existing `-sslmode-env-v1` include (this is for a
+Node/`node-postgres` client, which reads the standard libpq `PGSSLROOTCERT`
+variable — the only client class an auth plugin is):
+
+```gotemplate
+containers:
+  - name: my-plugin
+    env:
+      {{- include "magda.db-client-credential-env" (dict "dbName" "session-db" "root" .) | indent 6 }}
+      {{- include "magda.db-client-sslmode-env-v1" . | indent 6 }}
+      {{- include "magda.db-client-ca-env-v1" . | indent 6 }}
+    volumeMounts:
+      {{- include "magda.postgres-client-ca-volumemount-v1" . | nindent 6 }}
+volumes:
+  {{- include "magda.postgres-client-ca-volume-v1" . | nindent 2 }}
+```
+
+Three things to know:
+
+- **They self-guard.** Unlike the raw `magda-core` `magda.postgres-client-ca-*`
+  helpers (which render unconditionally and require every caller to wrap them in
+  an `if magda.postgres-client-ca-enabled`), these shims emit **nothing** when no
+  CA secret is configured — i.e. under `sslmode: disable`/`require`. Include them
+  unconditionally; a `require` pod simply gets no `PGSSLROOTCERT` and no volume,
+  which is correct because `require` never reads a CA. You do **not** need to
+  know or call the internal `magda.postgres-client-ca-enabled` helper. (If your
+  `volumeMounts:`/`volumes:` keys would otherwise be empty, guard the whole
+  block yourself as usual — an empty `volumes:` is invalid YAML.)
+- **Same contract version, same handshake.** All three call
+  `magda.compatibility-check` with `db-client-ca-env-v1`, so everything under
+  [Requires Magda v7+](#requires-magda-v7) and
+  [The opt-out flag](#the-opt-out-flag) applies unchanged — including that a
+  standalone `helm template`/`helm lint` needs
+  `--set global.magdaCompatibilityCheck=false`.
+- **Every DB connection needs it.** If your plugin opens more than one pool
+  (`magda-auth-internal`, for example, connects to both `session-db` and the
+  `auth` DB), the single pod-wide `PGSSLROOTCERT` and mounted volume serve all
+  of them — you emit the includes once, and every pool in that pod verifies the
+  server.
+
 ## Available contracts
 
-| Contract                         | Since        | Emits                                                   | Replaces |
-| -------------------------------- | ------------ | ------------------------------------------------------- | -------- |
-| `magda.db-client-sslmode-env-v1` | Magda v7.0.0 | `PGSSLMODE` env var for the restricted `client` DB role | —        |
+| Contract                                  | Since        | Emits                                                                    | Replaces |
+| ----------------------------------------- | ------------ | ------------------------------------------------------------------------ | -------- |
+| `magda.db-client-sslmode-env-v1`          | Magda v7.0.0 | `PGSSLMODE` env var for the restricted `client` DB role                  | —        |
+| `magda.db-client-ca-env-v1`               | Magda v7.0.0 | `PGSSLROOTCERT` env var pointing at the mounted server CA (Node clients) | —        |
+| `magda.postgres-client-ca-volumemount-v1` | Magda v7.0.0 | The read-only `volumeMount` for the mounted server CA                    | —        |
+| `magda.postgres-client-ca-volume-v1`      | Magda v7.0.0 | The `postgresql-ca` secret `volume` holding the server CA                | —        |
+
+The last three form one **CA-delivery contract**, versioned together as
+`db-client-ca-env-v1` (they share a single `magda.compatibility-check` entry).
+They are split into three templates only because a plugin's `deployment.yaml`
+emits them in three different YAML positions — container `env`, container
+`volumeMounts`, and pod `volumes`. All three **self-guard**: when no CA secret
+is configured (`sslmode: disable`/`require`) they emit nothing, so a plugin can
+include them unconditionally. See
+[Delivering the server CA (`verify-ca`/`verify-full`)](#delivering-the-server-ca-verify-caverify-full)
+below.
 
 For what `PGSSLMODE` resolves to and how to configure it, see
 `global.postgresql.client.sslmode` in the
@@ -208,11 +280,14 @@ For what `PGSSLMODE` resolves to and how to configure it, see
 be able to read the PostgreSQL server's CA certificate. `magda-core`'s
 `templates/_helpers.tpl` publishes a small set of helpers, alongside the
 `sslmode` ones above, that every workload template uses to do this
-consistently. Unlike the `-v1` contract above, these are not (yet) exposed to
-external charts through a versioned `magda-common` shim — no plugin needs them
-today, so they are internal to `magda-core` and used only by Magda's own
-workload templates. Treat their names as an implementation detail rather than
-a stable external API until a versioned shim exists.
+consistently. These names are an **internal `magda-core` implementation
+detail** — Magda's own workload templates call them directly, and external
+charts must **not** call them by name (a future refactor may rename them). An
+external chart that needs the CA — an authentication plugin connecting as the
+restricted `client` role — reaches it through the versioned
+`magda.db-client-ca-env-v1` contract described under
+[For plugin authors](#for-plugin-authors), which is a thin `magda-common` shim
+over these same helpers.
 
 **The render-time contract.** `magda.postgres-client-sslmode` — the helper
 that resolves `global.postgresql.client.sslmode` — fails the render if the
@@ -276,8 +351,12 @@ the configured key name.
 When adding a contract:
 
 - [ ] Implementation goes in `magda-core`, never `magda-common`.
-- [ ] Shim goes in `magda-common`, contains no logic beyond the check and one
-      `include`.
+- [ ] Shim goes in `magda-common`, and stays thin — the compatibility check plus
+      delegation to the magda-core implementation, no behaviour of its own. A
+      self-guard that merely decides whether to delegate is fine (the CA
+      volume/volumeMount shims skip their `include` when no CA secret is
+      configured), but the emitted content must come from magda-core so no
+      vendored copy can change it.
 - [ ] Add the name to `$supported` in `magda.compatibility-check`.
 - [ ] Add a row to the _Available contracts_ table above.
 - [ ] Add coverage to `deploy/helm/magda-core/tests/compatibility-check.sh` —

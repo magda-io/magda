@@ -52,6 +52,11 @@ metadata:
 data:
   env: |
 {{ include "magda.db-client-sslmode-env-v1" . | indent 4 }}
+{{ include "magda.db-client-ca-env-v1" . | indent 4 }}
+  volumemount: |
+{{ include "magda.postgres-client-ca-volumemount-v1" . | indent 4 }}
+  volume: |
+{{ include "magda.postgres-client-ca-volume-v1" . | indent 4 }}
 EOF
 
 UMB="${TMP_DIR}/umbrella"
@@ -68,11 +73,44 @@ if ! grep -q 'value: "require"' "${OUT}"; then
     exit 1
 fi
 
+# 1b. CA-delivery contract, self-guard: the default render has no CA secret
+#     (sslmode resolves to `require`), so the three CA shims must emit NOTHING.
+#     This is what lets a plugin include them unconditionally - `require`/`disable`
+#     pods get no PGSSLROOTCERT and no `postgresql-ca` volume, exactly as intended.
+if grep -q 'PGSSLROOTCERT' "${OUT}" || grep -q 'postgresql-ca' "${OUT}"; then
+    echo "expected the CA shims to emit nothing when no CA secret is configured"
+    exit 1
+fi
+
+# 1c. CA-delivery contract, active: with a CA secret and sslmode=verify-full the
+#     three CA shims must deliver the CA the same way magda-core does for its own
+#     Node workloads - PGSSLROOTCERT env, the read-only volumeMount, and the
+#     `postgresql-ca` secret volume remapped to the fixed `root.crt` path.
+CAOUT="${TMP_DIR}/ca.yaml"
+helm template compat "${UMB}" \
+    --set global.postgresql.client.sslmode=verify-full \
+    --set global.postgresql.client.sslRootCertSecret.name=my-ca > "${CAOUT}"
+grep -q 'name: "PGSSLROOTCERT"' "${CAOUT}" || {
+    echo "expected the CA env shim to emit PGSSLROOTCERT under verify-full"; exit 1; }
+grep -A1 'name: "PGSSLROOTCERT"' "${CAOUT}" | grep -q '/etc/magda/postgresql-ca/root.crt' || {
+    echo "expected PGSSLROOTCERT to point at the mounted CA path"; exit 1; }
+grep -q 'mountPath: /etc/magda/postgresql-ca' "${CAOUT}" || {
+    echo "expected the CA volumeMount shim to mount the CA"; exit 1; }
+grep -q 'secretName: "my-ca"' "${CAOUT}" || {
+    echo "expected the CA volume shim to mount the configured CA secret"; exit 1; }
+grep -q 'path: root.crt' "${CAOUT}" || {
+    echo "expected the CA volume shim to remap the CA key to root.crt"; exit 1; }
+
 # 2. `global.magdaCompatibilityCheck=false` must skip the check entirely - this is
 #    what lets a plugin repo run `helm template`/`helm lint` standalone, and what
 #    lets an operator deliberately run a mismatched pair.
-helm template compat "${UMB}" --set global.magdaCompatibilityCheck=false > /dev/null || {
+OFFOUT="${TMP_DIR}/off.yaml"
+helm template compat "${UMB}" --set global.magdaCompatibilityCheck=false > "${OFFOUT}" || {
     echo "expected global.magdaCompatibilityCheck=false to skip the check"; exit 1; }
+# The flag gates every versioned shim, CA ones included: with it off they all
+# short-circuit and emit nothing rather than reaching into magda-core.
+if grep -q 'PGSSLMODE' "${OFFOUT}" || grep -q 'PGSSLROOTCERT' "${OFFOUT}"; then
+    echo "expected magdaCompatibilityCheck=false to make the shims emit nothing"; exit 1; fi
 
 # 3. The check must actually be capable of failing. Point the fixture at a
 #    contract this Magda version does not support and require a hard error that
@@ -93,4 +131,4 @@ grep -q "zz-fixture-plugin" "${TMP_DIR}/fail.stderr" || {
 grep -q "db-client-sslmode-env-v0" "${TMP_DIR}/fail.stderr" || {
     echo "compatibility failure must name the unsupported helper contract"; exit 1; }
 
-echo "compatibility check: supported contract renders, unsupported fails with an actionable message, opt-out works"
+echo "compatibility check: supported contracts (sslmode + CA) render and self-guard, unsupported fails with an actionable message, opt-out works"
