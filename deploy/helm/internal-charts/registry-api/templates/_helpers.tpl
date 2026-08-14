@@ -84,10 +84,16 @@ spec:
         volumeMounts:
         - name: app-config-volume
           mountPath: /etc/config
+{{- if eq (include "magda.postgres-client-ca-enabled" .root) "true" }}
+        {{- include "magda.postgres-client-ca-volumemount" .root | nindent 8 }}
+{{- end }}
       volumes:
       - name: app-config-volume
         configMap:
           name: registry-api-app-conf
+{{- if eq (include "magda.postgres-client-ca-enabled" .root) "true" }}
+      {{- include "magda.postgres-client-ca-volume" .root | nindent 6 }}
+{{- end }}
 {{- end }}
         
 {{/*
@@ -161,6 +167,18 @@ spec:
 {{- if and $dbUrl (not $hasSslmode) }}
 {{- $separator := ternary "&" "?" (contains "?" $dbUrl) }}
 {{- $_ := set $dbDefault "url" (printf "%s%ssslmode=%s" $dbUrl $separator (include "magda.postgres-client-sslmode" .)) }}
+{{- $_ := set $dbSection "default" $dbDefault }}
+{{- $_ := set $appConfigDict "db" $dbSection }}
+{{- end }}
+{{- /*
+  When a CA secret is configured, also carry its mounted path as pgjdbc's
+  `sslrootcert` parameter (pgjdbc ignores PGSSLROOTCERT). No secret => no
+  `sslrootcert=` is appended. Only append when not already present.
+*/}}
+{{- $dbUrl2 := (get $dbDefault "url") | default "" | toString }}
+{{- if and (eq (include "magda.postgres-client-ca-enabled" .) "true") $dbUrl2 (not (contains "sslrootcert=" ($dbUrl2 | lower))) }}
+{{- $sep := ternary "&" "?" (contains "?" $dbUrl2) }}
+{{- $_ := set $dbDefault "url" (printf "%s%ssslrootcert=/etc/magda/postgresql-ca/root.crt" $dbUrl2 $sep) }}
 {{- $_ := set $dbSection "default" $dbDefault }}
 {{- $_ := set $appConfigDict "db" $dbSection }}
 {{- end }}

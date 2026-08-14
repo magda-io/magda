@@ -36,6 +36,59 @@ relied on the same `lookup`-based preservation for the database password
 since before this change — but it is worth calling out explicitly for
 GitOps-managed deployments.
 
+### Client verification of the in-cluster CA (`verify-full`), combined-db only
+
+This chart's self-signed server certificate (above) can also be used as the
+CA for `global.postgresql.client.sslmode: verify-full`, so an operator can get
+verified in-cluster TLS without standing up an external database. In-cluster
+`verify-full` is defense-in-depth rather than a default — `require` already
+defeats passive eavesdropping, and the residual active-MITM risk is low inside
+the cluster; see [Choosing a mode](https://github.com/magda-io/magda/blob/main/docs/docs/deploy-to-aws.md#postgresql-client-ssltls-mode-sslmode)
+for the reasoning:
+
+```yaml
+# In-cluster verify-full (combined-db): point at the CA the chart already generates.
+global:
+  postgresql:
+    client:
+      sslmode: verify-full
+      sslRootCertSecret: { name: combined-db-postgresql-pg17-crt, key: ca.crt }
+```
+
+`combined-db-postgresql-pg17-crt` is `postgresql.tls.certificatesSecret`'s
+default name for the `combined-db` instance — `postgresql.fullnameOverride`
+(`combined-db-postgresql-pg17`) with `-crt` appended. It is the same secret
+`tls-secret.yaml` creates and the StatefulSet mounts for the server side,
+holding `ca.crt`/`tls.crt`/`tls.key`.
+
+**This name is tied to the PostgreSQL major generation, not to a Magda
+version — update it whenever you perform a major upgrade.** The `-pg17`
+suffix names the bundled PostgreSQL major version, not Magda's own; a major
+upgrade deliberately renders the new instance under a **new** name (e.g.
+`combined-db-postgresql-pg18`), leaving the old one in place as the
+side-by-side rollback target. So derive the secret name rather than treating
+`combined-db-postgresql-pg17-crt` as permanent: it is always
+`<combined-db's postgresql.fullnameOverride>-crt`, and the current value of
+that override is set in `combined-db`'s own `values.yaml`. If you adopt this
+recipe, update `sslRootCertSecret.name` to match the new name as part of the
+same upgrade — see the
+[PostgreSQL major upgrade runbook](https://github.com/magda-io/magda/blob/main/docs/docs/postgres-major-upgrade-runbook.md).
+
+**Major upgrades:** the runbook's dump/restore Jobs only ever talk to the
+in-cluster instance, and in-cluster `verify-full` is intended as
+defense-in-depth rather than a hard requirement for that maintenance path —
+set `global.postgresql.client.sslmode: require` for the duration of a major
+upgrade if this recipe is active, then switch back to `verify-full` (with the
+new instance's `-crt` secret name, per above) once it completes.
+
+This recipe is **combined-db only**. A per-service topology
+(`global.useInK8sDbInstance`) runs one PostgreSQL instance — and therefore one
+self-signed CA — per logical database, so a single
+`global.postgresql.client.sslRootCertSecret` cannot cover all of them at once;
+`require` (the default) is the only client mode that works uniformly across a
+per-service in-cluster topology. `require` remains the chart-wide default
+regardless of this recipe.
+
 {{ template "chart.homepageLine" . }}
 
 {{ template "chart.maintainersSection" . }}

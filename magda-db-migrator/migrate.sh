@@ -54,13 +54,19 @@ run_scalar () {
 for d in "${FLYWAY_HOME}"/sql/*; do
     if [[ -d "$d" ]]; then
         dbName="$(basename "$d")"
-        # psql picks PGSSLMODE up from the environment on its own, but Flyway
-        # connects via pgjdbc, which does not read it. Carry it in the URL so both
-        # the baseline and migrate invocations below use the same TLS settings.
+        # psql picks PGSSLMODE/PGSSLROOTCERT up from the environment on its own, but
+        # Flyway connects via pgjdbc, which reads neither. Carry both in the URL so the
+        # baseline and migrate invocations below use the same TLS settings as the psql
+        # probes above — otherwise sslmode=verify-* would have no CA to verify against.
         dbUrl="jdbc:postgresql://${DB_HOST}/${dbName}"
+        dbParams=""
         if [[ -n "${PGSSLMODE:-}" ]]; then
-            dbUrl="${dbUrl}?sslmode=${PGSSLMODE}"
+            dbParams="sslmode=${PGSSLMODE}"
         fi
+        if [[ -n "${PGSSLROOTCERT:-}" ]]; then
+            dbParams="${dbParams:+${dbParams}&}sslrootcert=${PGSSLROOTCERT}"
+        fi
+        dbUrl="${dbUrl}${dbParams:+?${dbParams}}"
 
         echo "Creating database ${dbName} (ignored if it already exists)"
         # CREATE DATABASE fails when the database already exists (every re-run / upgrade).

@@ -111,12 +111,19 @@ global:
       # when connecting to PostgreSQL. Injected as the standard libpq `PGSSLMODE`
       # environment variable, and as an `sslmode=` JDBC URL parameter for the
       # JVM-based components.
+      # Exception: the external authentication plugins (magda-auth-*) do not yet
+      # read this value and connect to the session DB in plaintext regardless
+      # (a pre-existing, separately tracked gap) -- this value is not a blanket
+      # guarantee across every workload that talks to PostgreSQL.
       # Supported values are `require` (encrypt, without verifying the server
-      # certificate) and `disable` (plaintext). `prefer` and `allow` are rejected:
+      # certificate), `disable` (plaintext), `verify-ca` and `verify-full`
+      # (verify the server certificate). `prefer` and `allow` are rejected:
       # node-postgres cannot negotiate them consistently, so accepting them would give
       # the Node services different semantics from every other component.
-      # `verify-ca` / `verify-full` are not supported yet — they require distributing a
-      # CA certificate to every pod.
+      # `verify-ca` / `verify-full` REQUIRE `sslRootCertSecret.name` below —
+      # rendering fails without it, even for a publicly-trusted CA, because
+      # Magda's DB migrator images ship libpq < 16 and have no system
+      # trust-store fallback.
       # Leave empty to auto-resolve: `disable` when `useCloudSql` is enabled (the
       # cloud_sql_proxy listener is plaintext by design and performs TLS to Cloud SQL
       # itself), `require` otherwise.
@@ -128,6 +135,18 @@ global:
       # Turning that listener off while this value still resolves to `require` is
       # rejected at render time rather than failing at runtime.
       sslmode: ""
+
+      # -- Kubernetes Secret supplying the CA certificate used to verify the
+      # PostgreSQL server certificate. REQUIRED whenever `sslmode` is
+      # `verify-ca` or `verify-full` — the chart fails to render without it,
+      # even if your server's CA is a publicly-trusted root, because Magda's
+      # DB migrator images ship libpq < 16 and cannot use a system trust
+      # store. Mounted read-only at /etc/magda/postgresql-ca/root.crt.
+      sslRootCertSecret:
+        # -- Name of the Secret holding the CA bundle. Empty disables CA mounting.
+        name: ""
+        # -- Key within the Secret whose value is the PEM CA bundle.
+        key: "ca.crt"
 
   useCombinedDb: true
   # -- When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database.

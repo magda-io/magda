@@ -65,3 +65,12 @@ spec:
               key: jwt-secret
         {{- include "magda.db-client-credential-env" (dict "dbName" "tenant-db" "root" .) | indent 8 }}
         {{- include "magda.db-client-sslmode-env" . | indent 8 }}
+        {{- include "magda.db-client-ca-env-node" . | indent 8 }}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+        volumeMounts:
+        {{- include "magda.postgres-client-ca-volumemount" . | nindent 8 }}
+{{- end }}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+      volumes:
+      {{- include "magda.postgres-client-ca-volume" . | nindent 6 }}
+{{- end }}

@@ -96,14 +96,17 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{/*
   Resolve the PostgreSQL client `sslmode` for all DB connections.
 
-  Magda supports exactly `disable` and `require`:
+  Magda supports `disable`, `require`, `verify-ca` and `verify-full`:
   - `prefer` / `allow` cannot be honoured consistently. libpq (psql, wal-g) and
     pgjdbc (registry-api, Flyway) implement them natively, but node-postgres maps
     `prefer` to `ssl: true` and hard-fails against a server that doesn't offer
     TLS instead of falling back. Rejecting them is better than giving the Node
     services different semantics from every other component.
-  - `verify-ca` / `verify-full` need a CA certificate delivered into each pod,
-    and no DB-connecting component exposes an extension point for that yet.
+  - `verify-ca` / `verify-full` verify the server certificate. The CA MUST be
+    supplied via `global.postgresql.client.sslRootCertSecret` (mounted at
+    /etc/magda/postgresql-ca/root.crt); rendering fails without it, because the
+    libpq consumers (migrator/auto-vacuum psql < 16) have no trust-store
+    fallback. See docs/docs/helm-helper-contracts.md.
 
   Resolution order:
   1. An explicitly configured value always wins.
@@ -146,8 +149,11 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     {{- $sslmode = "require" -}}
   {{- end -}}
 {{- end -}}
-{{- if not (has $sslmode (list "disable" "require")) -}}
-{{- fail (printf "Unsupported global.postgresql.client.sslmode value %q. Magda supports \"disable\" and \"require\" only. \"prefer\"/\"allow\" are not supported because node-postgres cannot negotiate them consistently — use \"require\". \"verify-ca\"/\"verify-full\" require CA distribution, which is not implemented yet (see issue #3739)." $sslmode) -}}
+{{- if not (has $sslmode (list "disable" "require" "verify-ca" "verify-full")) -}}
+{{- fail (printf "Unsupported global.postgresql.client.sslmode value %q. Magda supports \"disable\", \"require\", \"verify-ca\" and \"verify-full\". \"prefer\"/\"allow\" are not supported because node-postgres cannot negotiate them consistently — use \"require\"." $sslmode) -}}
+{{- end -}}
+{{- if and (hasPrefix "verify-" $sslmode) (not (.Values.global.postgresql.client.sslRootCertSecret).name) -}}
+{{- fail (printf "global.postgresql.client.sslmode=%q requires a server CA certificate: set global.postgresql.client.sslRootCertSecret.name to a Secret holding the CA PEM (and .key, default \"ca.crt\"). Magda cannot fall back to a system trust store here — the DB migrator/auto-vacuum images ship libpq < 16, which has no `sslrootcert=system` support, so those Jobs would fail at connect time even for a publicly-trusted CA such as Azure's DigiCert Global Root G2. Download your provider's CA bundle (RDS: rds-ca bundle; Azure: DigiCert Global Root G2 / Microsoft RSA Root CA 2017; CloudSQL: server-ca.pem) and create the Secret." $sslmode) -}}
 {{- end -}}
 {{- $sslmode -}}
 {{- end -}}
@@ -165,6 +171,65 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 - name: "PGSSLMODE"
   value: {{ include "magda.postgres-client-sslmode" . | quote }}
 {{- end }}
+
+{{/*
+  CA delivery for `sslmode=verify-ca`/`verify-full`. See
+  docs/docs/helm-helper-contracts.md. The secret is mounted read-only at a
+  FIXED path (/etc/magda/postgresql-ca/root.crt) regardless of the configured
+  key, so every consumer references one constant path.
+*/}}
+{{- define "magda.postgres-client-ca-enabled" -}}
+{{- $c := ((.Values.global.postgresql).client) | default dict -}}
+{{- $s := (get $c "sslRootCertSecret") | default dict -}}
+{{- if (get $s "name") -}}true{{- end -}}
+{{- end -}}
+
+{{- define "magda.postgres-client-ca-volume" -}}
+{{- $s := ((.Values.global.postgresql).client).sslRootCertSecret -}}
+- name: postgresql-ca
+  secret:
+    secretName: {{ $s.name | quote }}
+    items:
+      - key: {{ ($s.key | default "ca.crt") | quote }}
+        path: root.crt
+{{- end -}}
+
+{{- define "magda.postgres-client-ca-volumemount" -}}
+- name: postgresql-ca
+  mountPath: /etc/magda/postgresql-ca
+  readOnly: true
+{{- end -}}
+
+{{/* INTERNAL — not a pod-facing contract. Shared body for the two class-aware
+     PGSSLROOTCERT helpers below: emit the mounted CA path when a CA secret is
+     configured, otherwise nothing. Do NOT include this directly from a
+     workload template; include the class-specific helper instead, so the
+     class's constraint is documented at the call site. */}}
+{{- define "magda.db-client-ca-env-common" -}}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+- name: "PGSSLROOTCERT"
+  value: "/etc/magda/postgresql-ca/root.crt"
+{{- end }}
+{{- end -}}
+
+{{/* Node services: point PGSSLROOTCERT at the mounted CA only when one exists;
+     leaving it unset makes getPgSslConfigFromEnv fall back to Node's bundle.
+     NEVER emit `system` here — Node would fs.readFileSync("system") and crash.
+     Kept as its own name (delegating to -common) so the two client classes can
+     diverge without hunting for a second copy. */}}
+{{- define "magda.db-client-ca-env-node" -}}
+{{- include "magda.db-client-ca-env-common" . -}}
+{{- end -}}
+
+{{/* libpq consumers (psql, wal-g): mounted path when a CA secret is set,
+     otherwise nothing. There is deliberately NO `else` branch: Task 1 measured
+     psql 11.22/14 in the migrator image and `sslrootcert=system` needs
+     libpq >= 16, so a fallback is impossible. `verify-*` without the secret is
+     rejected at render time instead (Decision 2). If a future image bump puts
+     libpq >= 16 in every libpq consumer, this is the one helper that changes. */}}
+{{- define "magda.db-client-ca-env-libpq" -}}
+{{- include "magda.db-client-ca-env-common" . -}}
+{{- end -}}
 
 {{/*
   Compatibility handshake for the versioned helper templates that external charts

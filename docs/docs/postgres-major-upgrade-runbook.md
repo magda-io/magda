@@ -75,6 +75,13 @@ immune to the on-disk format change.
 
 ## 4. Prerequisites
 
+- **If you've opted into in-cluster `verify-full`** (the `magda-postgres` chart
+  README's "Client verification of the in-cluster CA" recipe), set
+  `global.postgresql.client.sslmode: require` for the duration of the upgrade.
+  The dump/restore Jobs only ever talk to the local instance, and in-cluster
+  `verify-full` is defense-in-depth rather than a requirement for them; switch
+  back to `verify-full` afterwards, updating `sslRootCertSecret.name` to the
+  new PostgreSQL major's `-crt` secret.
 - **`global.postgresql.auth.username` must be `postgres`.** The restore Job
   connects as the privileged user named by this value and fails fast, with an
   explicit error, if it is anything else. `pg_dumpall --clean --if-exists` always
