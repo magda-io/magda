@@ -256,7 +256,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
   a new versioned helper; REMOVE one when dropping support, which turns silent
   misbehaviour into a loud, actionable failure at render time.
 */ -}}
-{{- $supported := list "db-client-sslmode-env-v1" -}}
+{{- $supported := list "db-client-sslmode-env-v1" "db-client-ca-env-v1" -}}
 {{- if not (has $helper $supported) -}}
 {{- fail (printf "Chart %q uses the Magda helper contract %q, which this version of Magda does not support (supported: %s). Upgrade or downgrade %q to a release built for this Magda version. If you are intentionally running a mismatched pair and accept the consequences, set `global.magdaCompatibilityCheck=false` to skip this check." $chart $helper (join ", " $supported) $chart) -}}
 {{- end -}}
