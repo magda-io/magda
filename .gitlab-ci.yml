@@ -858,9 +858,16 @@ dockerize:dockerExtensions:
   image:
     name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20-july-2026
   retry: 1
+  # `environment.url` is YAML, not shell, so it cannot read the bash-computed
+  # RELEASE_NAME directly. The before_script writes the resolved preview URL to a
+  # dotenv report and GitLab expands $DYNAMIC_ENVIRONMENT_URL from it, so the GitLab
+  # environment link matches the host the deployment actually serves on.
+  artifacts:
+    reports:
+      dotenv: deploy.env
   environment:
     name: preview/$CI_COMMIT_REF_NAME
-    url: https://${CI_COMMIT_REF_SLUG}-dev.magda.io
+    url: $DYNAMIC_ENVIRONMENT_URL
     on_stop: Stop Preview
   before_script:
     # Add PWGEN for generating passwords
@@ -874,30 +881,55 @@ dockerize:dockerExtensions:
     - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
     - export KUBECONFIG=kubectlconfig.yaml
 
+    # Derive a Helm release / namespace name that is safe against the 63-char limit on
+    # generated resource names. The release name prefixes every in-cluster object name and
+    # the longest suffix these charts append is "-magda-embedding-api-appconfig" (30 chars),
+    # so the release name must be <= 33; we cap at 30 for headroom (worst case 30+30 = 60).
+    # When the branch slug is longer we keep its tail (the feature/ticket end), align it to a
+    # word boundary, and append a 6-char sha1 of the FULL slug. The hash is deterministic --
+    # so `helm upgrade` and `Stop Preview` stay idempotent across pipeline runs -- and makes
+    # similar branches that share a tail resolve to distinct names. The public subdomain keeps
+    # the full slug (its DNS label is well under 63), so preview URLs stay unique and readable.
+    - |
+      RELEASE_NAME="$CI_COMMIT_REF_SLUG"
+      MAX_RELEASE_NAME_LEN=30
+      if [ ${#RELEASE_NAME} -gt "$MAX_RELEASE_NAME_LEN" ]; then
+        RELEASE_HASH=$(printf '%s' "$CI_COMMIT_REF_SLUG" | sha1sum | cut -c1-6)
+        RELEASE_BASE=$(printf '%s' "$CI_COMMIT_REF_SLUG" | tail -c $((MAX_RELEASE_NAME_LEN - 7)) | sed 's/^-*//')
+        case "$RELEASE_BASE" in
+          *-*) RELEASE_TRIMMED="${RELEASE_BASE#*-}"; [ -n "$RELEASE_TRIMMED" ] && RELEASE_BASE="$RELEASE_TRIMMED" ;;
+        esac
+        RELEASE_NAME="${RELEASE_BASE}-${RELEASE_HASH}"
+      fi
+      export RELEASE_NAME
+      PREVIEW_URL="https://${RELEASE_NAME}-dev.magda.io"
+      echo "DYNAMIC_ENVIRONMENT_URL=${PREVIEW_URL}" > deploy.env
+      echo "Helm release/namespace: $RELEASE_NAME | preview URL: $PREVIEW_URL (branch slug: $CI_COMMIT_REF_SLUG)"
+
     # Create kube namespace
-    - kubectl get namespace $CI_COMMIT_REF_SLUG || kubectl create namespace $CI_COMMIT_REF_SLUG
+    - kubectl get namespace $RELEASE_NAME || kubectl create namespace $RELEASE_NAME
 
     # Create kube secrets
-    - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=magdabot --docker-password=$GITLAB_DOCKER_PASSWORD --docker-email=contact@magda.io --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl create secret generic oauth-secrets --from-literal=facebook-client-secret=$FACEBOOK_CLIENT_SECRET --from-literal=google-client-secret=$GOOGLE_CLIENT_SECRET --from-literal arcgis-client-secret=$ARCGIS_CLIENT_SECRET --from-literal aaf-client-secret=$AAF_SECRET --namespace $CI_COMMIT_REF_SLUG --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl create secret generic vanguard-secrets --from-literal certificate="$VANGUARD_CERT" --namespace $CI_COMMIT_REF_SLUG --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $CI_COMMIT_REF_SLUG --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret docker-registry regcred --namespace $RELEASE_NAME --docker-server=registry.gitlab.com --docker-username=magdabot --docker-password=$GITLAB_DOCKER_PASSWORD --docker-email=contact@magda.io --dry-run=client -o json | kubectl apply --namespace $RELEASE_NAME -f -
+    - kubectl create secret generic oauth-secrets --from-literal=facebook-client-secret=$FACEBOOK_CLIENT_SECRET --from-literal=google-client-secret=$GOOGLE_CLIENT_SECRET --from-literal arcgis-client-secret=$ARCGIS_CLIENT_SECRET --from-literal aaf-client-secret=$AAF_SECRET --namespace $RELEASE_NAME --dry-run=client -o json | kubectl apply --namespace $RELEASE_NAME -f -
+    - kubectl create secret generic vanguard-secrets --from-literal certificate="$VANGUARD_CERT" --namespace $RELEASE_NAME --dry-run=client -o json | kubectl apply --namespace $RELEASE_NAME -f -
+    - kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $RELEASE_NAME --dry-run=client -o json | kubectl apply --namespace $RELEASE_NAME -f -
     - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > backup-storage-account.json
-    - kubectl create secret generic backup-storage-account --from-file backup-storage-account.json --from-literal=GOOGLE_APPLICATION_CREDENTIALS=/etc/wal-g.d/env/backup-storage-account.json --namespace $CI_COMMIT_REF_SLUG --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret generic backup-storage-account --from-file backup-storage-account.json --from-literal=GOOGLE_APPLICATION_CREDENTIALS=/etc/wal-g.d/env/backup-storage-account.json --namespace $RELEASE_NAME --dry-run=client -o json | kubectl apply --namespace $RELEASE_NAME -f -
   script:
     # Copy db secrets from master deployment (where backup is created) so that there won't be password issues after db recovery
     - CLIENT_DB_PASSWORD=$(kubectl --namespace=default get secret combined-db-password --template={{.data.password}} | base64 -d)
     - SUPER_DB_PASSWORD=$(kubectl --namespace=default get secret db-main-account-secret --template='{{index .data "postgresql-password"}}' | base64 -d)
-    - kubectl create secret generic combined-db-password --from-literal=password=$CLIENT_DB_PASSWORD --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl create secret generic db-main-account-secret --from-literal=postgresql-password=$SUPER_DB_PASSWORD --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set magda.magda-core.authorization-db.migratorBackoffLimit=10,magda.magda-core.registry-db.migratorBackoffLimit=10,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,global.externalUrl=https://${CI_COMMIT_REF_SLUG}-dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
-    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}-dev.magda.io"
+    - kubectl create secret generic combined-db-password --from-literal=password=$CLIENT_DB_PASSWORD --dry-run=client -o json | kubectl apply --namespace $RELEASE_NAME -f -
+    - kubectl create secret generic db-main-account-secret --from-literal=postgresql-password=$SUPER_DB_PASSWORD --dry-run=client -o json | kubectl apply --namespace $RELEASE_NAME -f -
+    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set magda.magda-core.authorization-db.migratorBackoffLimit=10,magda.magda-core.registry-db.migratorBackoffLimit=10,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,global.externalUrl=https://${RELEASE_NAME}-dev.magda.io,global.namespace=$RELEASE_NAME --timeout 3600m --wait
+    - echo "Successfully deployed to https://${RELEASE_NAME}-dev.magda.io"
 
 (UI) Run As Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.searchEngine.hybridSearch.enabled=false,global.openfaas.enabled=false,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,tags.correspondence-api=false,tags.minion-linked-data-rating=false,tags.minion-visualization=false,tags.minion-format=false,magda.magda-core.web-server.registryApiBaseUrlInternal=https://dev.magda.io/api/v0/registry,magda.magda-core.web-server.baseUrl=https://dev.magda.io,global.externalUrl=https://${CI_COMMIT_REF_SLUG}-dev.magda.io,magda.magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
-    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}-dev.magda.io"
+    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set global.searchEngine.hybridSearch.enabled=false,global.openfaas.enabled=false,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,tags.correspondence-api=false,tags.minion-linked-data-rating=false,tags.minion-visualization=false,tags.minion-format=false,magda.magda-core.web-server.registryApiBaseUrlInternal=https://dev.magda.io/api/v0/registry,magda.magda-core.web-server.baseUrl=https://dev.magda.io,global.externalUrl=https://${RELEASE_NAME}-dev.magda.io,magda.magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
+    - echo "Successfully deployed to https://${RELEASE_NAME}-dev.magda.io"
 
 (UI - Auto) Run As Preview:
   <<: *runAsPreview
@@ -906,19 +938,19 @@ dockerize:dockerExtensions:
     variables:
       - $CI_COMMIT_MESSAGE =~ /#deploy-ui-preview/
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.openfaas.enabled=false,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,tags.correspondence-api=false,magda.magda-core.web-server.baseUrl=https://dev.magda.io,global.externalUrl=https://${CI_COMMIT_REF_SLUG}-dev.magda.io,magda.magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
-    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}-dev.magda.io"
+    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set global.openfaas.enabled=false,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,tags.correspondence-api=false,magda.magda-core.web-server.baseUrl=https://dev.magda.io,global.externalUrl=https://${RELEASE_NAME}-dev.magda.io,magda.magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
+    - echo "Successfully deployed to https://${RELEASE_NAME}-dev.magda.io"
 
 (No Data) Run As Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,global.externalUrl=https://${CI_COMMIT_REF_SLUG}-dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
-    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}-dev.magda.io"
+    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,global.externalUrl=https://${RELEASE_NAME}-dev.magda.io,global.namespace=$RELEASE_NAME --timeout 3600m --wait
+    - echo "Successfully deployed to https://${RELEASE_NAME}-dev.magda.io"
 (No Data) Run As Multi-tenant Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview-multi-tenant.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,global.externalUrl=https://${CI_COMMIT_REF_SLUG}-dev.magda.io,global.magdaAdminPortalName=${CI_COMMIT_REF_SLUG}-dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
-    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}-dev.magda.io"
+    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview-multi-tenant.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,global.externalUrl=https://${RELEASE_NAME}-dev.magda.io,global.magdaAdminPortalName=${RELEASE_NAME}-dev.magda.io,global.namespace=$RELEASE_NAME --timeout 3600m --wait
+    - echo "Successfully deployed to https://${RELEASE_NAME}-dev.magda.io"
 
 
 Stop Preview: &stopPreview
@@ -943,8 +975,23 @@ Stop Preview: &stopPreview
   script:
     - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
     - export KUBECONFIG=kubectlconfig.yaml
-    - helm --namespace $CI_COMMIT_REF_SLUG del $CI_COMMIT_REF_SLUG
-    - kubectl delete namespace $CI_COMMIT_REF_SLUG
+    # Recompute the same release/namespace name the deploy jobs used (see the note in
+    # `(Full) Run As Preview`). Must stay identical so the right release/namespace is torn down.
+    - |
+      RELEASE_NAME="$CI_COMMIT_REF_SLUG"
+      MAX_RELEASE_NAME_LEN=30
+      if [ ${#RELEASE_NAME} -gt "$MAX_RELEASE_NAME_LEN" ]; then
+        RELEASE_HASH=$(printf '%s' "$CI_COMMIT_REF_SLUG" | sha1sum | cut -c1-6)
+        RELEASE_BASE=$(printf '%s' "$CI_COMMIT_REF_SLUG" | tail -c $((MAX_RELEASE_NAME_LEN - 7)) | sed 's/^-*//')
+        case "$RELEASE_BASE" in
+          *-*) RELEASE_TRIMMED="${RELEASE_BASE#*-}"; [ -n "$RELEASE_TRIMMED" ] && RELEASE_BASE="$RELEASE_TRIMMED" ;;
+        esac
+        RELEASE_NAME="${RELEASE_BASE}-${RELEASE_HASH}"
+      fi
+      export RELEASE_NAME
+      echo "Tearing down release/namespace: $RELEASE_NAME (branch slug: $CI_COMMIT_REF_SLUG)"
+    - helm --namespace $RELEASE_NAME del $RELEASE_NAME
+    - kubectl delete namespace $RELEASE_NAME
 
 Deploy Main Branch To Dev:
   stage: deploy-dev
