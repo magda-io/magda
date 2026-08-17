@@ -18,17 +18,21 @@ cd "${FLYWAY_DIR}"
 
 # Run a scalar SQL query against a specific database and print the single value.
 #
-# Distinguishes "the query legitimately found nothing" from "could not talk to the
-# database":
-#   - a missing relation/database (expected: that is exactly what the legacy-history
-#     probes below are testing for) prints nothing and returns 0;
-#   - any other psql failure — connectivity, auth, TLS negotiation, a DB pod still
-#     rolling — prints the error and returns non-zero so the caller can abort.
-# Swallowing the second kind would let the legacy-history detection below silently
+# ANY psql failure — connectivity, auth, TLS negotiation, a DB pod still rolling,
+# or a query error — is fatal: print it and return non-zero so the caller aborts.
+# Swallowing a failure would let the legacy-history detection below silently
 # conclude "no legacy Flyway 4 history", after which `flyway migrate
 # -baselineOnMigrate=true` baselines at Flyway's DEFAULT version 1 and re-applies
 # V1_1..Vn onto an already-migrated schema, permanently poisoning
 # flyway_schema_history.
+#
+# Expected "object does not exist" conditions are avoided by the CALLER, not
+# classified here: the table probes use `to_regclass(...)` and database existence
+# is checked against `pg_database`, both of which return an empty/false scalar
+# WITHOUT raising. This deliberately no longer inspects the error text —
+# PostgreSQL localizes messages via the server's `lc_messages`, so the old
+# `... does not exist` match was English-only and misclassified a genuinely
+# missing object as fatal on a non-English server. (#3744)
 run_scalar () {
     local db="${1}" query="${2}" out rc err_file
     err_file="$(mktemp)"
@@ -37,11 +41,6 @@ run_scalar () {
     rc=$?
     set -e
     if [[ ${rc} -ne 0 ]]; then
-        if grep -qiE '(relation|database|table|schema|column)[^:]*does not exist' "${err_file}"; then
-            # Nothing to report, and nothing wrong: the object simply isn't there.
-            rm -f "${err_file}"
-            return 0
-        fi
         echo "Failed to query database ${db} (psql exited ${rc}):" >&2
         cat "${err_file}" >&2
         rm -f "${err_file}"
@@ -49,6 +48,58 @@ run_scalar () {
     fi
     rm -f "${err_file}"
     printf '%s' "${out}"
+}
+
+# Run the Flyway CLI and, on the PostgreSQL 15+ `public`-schema privilege failure,
+# translate Flyway's raw error into actionable guidance instead of leaving it to
+# look like a TLS/connectivity problem.
+#
+# PostgreSQL 15 removed the implicit CREATE grant every role used to have on a
+# database's `public` schema. A migrator user that does not own — or hold CREATE
+# on — the target database's `public` schema now connects fine (password + TLS
+# both pass) and then fails mid-migration with `permission denied for schema
+# public`. Because that lands immediately after a fully established and — under
+# sslmode=verify-ca/verify-full — certificate-verified connection, it is very
+# easy to misdiagnose as an SSL/CA problem. It is not. See magda-io/magda#3770.
+#
+# Matched on the SQLSTATE (`42501`, insufficient_privilege), NOT the message text
+# `permission denied for schema public`: the SQLSTATE is stable, the message is
+# localised by the server's `lc_messages`. (Same rationale as #3744.)
+run_flyway () {
+    local db="${1}"; shift
+    local out_file rc
+    out_file="$(mktemp)"
+    set +e
+    ./flyway "$@" 2>&1 | tee "${out_file}"
+    rc=${PIPESTATUS[0]}
+    set -e
+    if [[ ${rc} -ne 0 ]]; then
+        if grep -qE 'SQL State[[:space:]]*:[[:space:]]*42501' "${out_file}"; then
+            {
+                echo ""
+                echo "=============================================================================="
+                echo "The migrator connected to database \"${db}\" successfully but is not permitted"
+                echo "to create objects in its \"public\" schema (PostgreSQL SQLSTATE 42501,"
+                echo "insufficient_privilege). This is NOT a TLS/SSL problem -- the connection was"
+                echo "established. Since PostgreSQL 15, only the database owner, or a role granted"
+                echo "CREATE on the schema, may create objects in \"public\"."
+                echo ""
+                echo "Grant the migrator user \"${MIGRATOR_USERNAME}\" the privilege on database"
+                echo "\"${db}\" -- run as that database's owner or a superuser:"
+                echo ""
+                echo "    ALTER SCHEMA public OWNER TO \"${MIGRATOR_USERNAME}\";"
+                echo "    -- or, without transferring ownership:"
+                echo "    GRANT CREATE ON SCHEMA public TO \"${MIGRATOR_USERNAME}\";"
+                echo ""
+                echo "See https://github.com/magda-io/magda/issues/3770 and the deploy-to-aws /"
+                echo "deploy-to-azure guides for details."
+                echo "=============================================================================="
+                echo ""
+            } >&2
+        fi
+    fi
+    rm -f "${out_file}"
+    return ${rc}
 }
 
 for d in "${FLYWAY_HOME}"/sql/*; do
@@ -95,13 +146,39 @@ for d in "${FLYWAY_HOME}"/sql/*; do
         # skip the baseline below and let Flyway baseline at its default version 1,
         # re-applying already-applied migrations. Abort instead — the next run (or a
         # retried hook) can try again against a healthy database.
-        if ! has_legacy="$(run_scalar "${dbName}" "SELECT to_regclass('public.schema_version') IS NOT NULL")"; then
-            echo "Aborting: could not determine whether ${dbName} has a legacy Flyway 4 history table." >&2
+        # Does the per-service database actually exist? The legacy-history probes
+        # below connect directly to ${dbName}; if the CREATE DATABASE above genuinely
+        # failed to create it, that connection fails with `database "…" does not exist`
+        # (SQLSTATE 3D000) — a *connection*-level failure whose SQLSTATE psql does not
+        # surface, so it can't be classified from the error the way a query error can.
+        # Ask the catalog on the maintenance `postgres` database instead: a boolean
+        # that returns empty WITHOUT raising, exactly like the `to_regclass` table
+        # probes. An error HERE (couldn't reach `postgres`) is a genuine
+        # connectivity/auth/TLS failure and aborts. (#3744)
+        #
+        # (${dbName} is interpolated into a SQL string literal; a single quote in it
+        # would need doubling, but Magda's per-service database names never contain one.)
+        if ! db_exists="$(run_scalar postgres "SELECT 1 FROM pg_database WHERE datname = '${dbName}'")"; then
+            echo "Aborting: could not check whether database ${dbName} exists." >&2
             exit 1
         fi
-        if ! has_new="$(run_scalar "${dbName}" "SELECT to_regclass('public.flyway_schema_history') IS NOT NULL")"; then
-            echo "Aborting: could not determine whether ${dbName} has a flyway_schema_history table." >&2
-            exit 1
+
+        has_legacy=""
+        has_new=""
+        if [[ -z "${db_exists}" ]]; then
+            # No database in place (a real CREATE DATABASE failure was already logged
+            # above). Skip legacy-history detection; the Flyway step below surfaces the
+            # connection failure clearly.
+            echo "Database ${dbName} does not exist after the create step; skipping legacy Flyway 4 history detection."
+        else
+            if ! has_legacy="$(run_scalar "${dbName}" "SELECT to_regclass('public.schema_version') IS NOT NULL")"; then
+                echo "Aborting: could not determine whether ${dbName} has a legacy Flyway 4 history table." >&2
+                exit 1
+            fi
+            if ! has_new="$(run_scalar "${dbName}" "SELECT to_regclass('public.flyway_schema_history') IS NOT NULL")"; then
+                echo "Aborting: could not determine whether ${dbName} has a flyway_schema_history table." >&2
+                exit 1
+            fi
         fi
         if [[ "${has_legacy}" == "t" && "${has_new}" != "t" ]]; then
             # `ORDER BY installed_rank DESC LIMIT 1` is the LAST-INSTALLED version, not
@@ -113,7 +190,7 @@ for d in "${FLYWAY_HOME}"/sql/*; do
             fi
             if [[ -n "${legacy_version}" ]]; then
                 echo "Detected legacy Flyway 4 history in ${dbName}; baselining flyway_schema_history at version ${legacy_version} (already-applied migrations are not re-run)."
-                ./flyway baseline \
+                run_flyway "${dbName}" baseline \
                     -url="${dbUrl}" \
                     -user="${MIGRATOR_USERNAME}" -password="${PGPASSWORD}" \
                     -baselineVersion="${legacy_version}" \
@@ -125,7 +202,7 @@ for d in "${FLYWAY_HOME}"/sql/*; do
         # -ignoreMigrationPatterns="*:missing" is the Flyway 10+ replacement for the
         # removed -ignoreMissingMigrations flag: tolerate history entries whose files
         # are no longer present. (The legacy `-n` flag was dropped in Flyway 10+.)
-        ./flyway migrate -ignoreMigrationPatterns="*:missing" -baselineOnMigrate=true \
+        run_flyway "${dbName}" migrate -ignoreMigrationPatterns="*:missing" -baselineOnMigrate=true \
             -url="${dbUrl}" \
             -locations="filesystem:${d}" \
             -user="${MIGRATOR_USERNAME}" -password="${PGPASSWORD}" \
