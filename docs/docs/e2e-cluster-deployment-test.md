@@ -112,6 +112,51 @@ curl -s -H "X-Magda-Session: $(cat /tmp/admin.jwt)" http://localhost:18080/api/v
 
 A JWT built directly with `acs-cmd jwt` only works for API calls — there's no way to paste it into the browser to log into the UI as that user. If the smoke test needs to exercise the UI while logged in, install the [`magda-auth-internal`](https://github.com/magda-io/magda-auth-internal) plugin and create a dedicated test admin account instead. This flow was verified against a real minikube deployment as follows:
 
+> **⚠️ Version note — v7+ auth plugins must share the `magda` Helm release.**
+>
+> The separate-release install in step 1 below (`helm install magda-auth-internal …` as its _own_ release) is valid **only for pre-v7 plugin versions**. A **v7+** plugin — one that adopts the `magda.db-client-sslmode-env-v1` helper contract (the enforced-TLS `session-db` work in [#3742](https://github.com/magda-io/magda/issues/3742)) — renders `magda.db-client-sslmode-env-v1`, whose shim calls `magda.compatibility-check`, a template that lives in `magda-core`. Helm's template namespace is **per release**, so a plugin installed as a _separate_ release can't see that template and the render fails closed with:
+>
+> ```
+> no template "magda.compatibility-check" associated with template "gotpl"
+> ```
+>
+> This is the contract behaving as designed (see [helm-helper-contracts.md](./helm-helper-contracts.md)). A v7+ plugin must instead be installed **in the same Helm release as `magda`**, as a chart **dependency** (an umbrella/wrapper chart), so the compatibility check resolves _and_ the pod receives `PGSSLMODE`. The current `magda-auth-internal` (v4.0.0-alpha.0+) is a v7 plugin, so use this approach:
+>
+> ```yaml
+> # umbrella/Chart.yaml
+> apiVersion: v2
+> name: magda-e2e
+> version: 0.1.0
+> dependencies:
+>   - name: magda
+>     version: <VERSION>
+>     repository: oci://ghcr.io/magda-io/charts
+>   - name: magda-auth-internal
+>     version: <PLUGIN_VERSION> # a v7-line release, e.g. 4.0.0-alpha.0
+>     repository: oci://ghcr.io/magda-io/charts
+> ```
+>
+> ```yaml
+> # umbrella/values.yaml — register the plugin with the gateway (note the nesting under `magda:`)
+> magda:
+>   magda-core:
+>     gateway:
+>       authPlugins:
+>         - key: internal
+>           baseUrl: http://magda-auth-internal
+> ```
+>
+> ```bash
+> helm dep up ./umbrella
+> helm install magda ./umbrella -n magda   # ...plus the same --set/-f values you'd pass to the magda chart
+> ```
+>
+> With the umbrella approach, steps 1 and 2 below (the separate `helm install` + gateway-registration `helm upgrade`) are already covered by the chart, so skip them and continue from step 3 (`set-user-password`). A full worked example lives in [`magda-auth-internal/docs/e2e-test-cases/session-db-tls-and-login.md`](https://github.com/magda-io/magda-auth-internal/blob/main/docs/e2e-test-cases/session-db-tls-and-login.md).
+>
+> Setting `global.magdaCompatibilityCheck=false` will make the separate-release install render, but it also **disables the `PGSSLMODE` injection** — so it is _not_ a valid way to test a real TLS deployment.
+
+**For a pre-v7 plugin** (separate Helm release):
+
 1. **Install the plugin as its own Helm release in the `magda` namespace**, pointed at the officially published chart (don't build from a local checkout — see the version-skew warning below):
    ```bash
    helm install magda-auth-internal oci://ghcr.io/magda-io/charts/magda-auth-internal --version <VERSION> \
