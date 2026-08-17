@@ -858,9 +858,16 @@ dockerize:dockerExtensions:
   image:
     name: ghcr.io/magda-io/magda-builder-docker:node22-ubuntu20-july-2026
   retry: 1
+  # `environment.url` is YAML, not shell, so it cannot read the bash-computed
+  # RELEASE_NAME directly. The before_script writes the resolved preview URL to a
+  # dotenv report and GitLab expands $DYNAMIC_ENVIRONMENT_URL from it, so the GitLab
+  # environment link matches the host the deployment actually serves on.
+  artifacts:
+    reports:
+      dotenv: deploy.env
   environment:
     name: preview/$CI_COMMIT_REF_NAME
-    url: https://${CI_COMMIT_REF_SLUG}-dev.magda.io
+    url: $DYNAMIC_ENVIRONMENT_URL
     on_stop: Stop Preview
   before_script:
     # Add PWGEN for generating passwords
@@ -895,7 +902,9 @@ dockerize:dockerExtensions:
         RELEASE_NAME="${RELEASE_BASE}-${RELEASE_HASH}"
       fi
       export RELEASE_NAME
-      echo "Helm release/namespace: $RELEASE_NAME (branch slug: $CI_COMMIT_REF_SLUG)"
+      PREVIEW_URL="https://${RELEASE_NAME}-dev.magda.io"
+      echo "DYNAMIC_ENVIRONMENT_URL=${PREVIEW_URL}" > deploy.env
+      echo "Helm release/namespace: $RELEASE_NAME | preview URL: $PREVIEW_URL (branch slug: $CI_COMMIT_REF_SLUG)"
 
     # Create kube namespace
     - kubectl get namespace $RELEASE_NAME || kubectl create namespace $RELEASE_NAME
@@ -913,14 +922,14 @@ dockerize:dockerExtensions:
     - SUPER_DB_PASSWORD=$(kubectl --namespace=default get secret db-main-account-secret --template='{{index .data "postgresql-password"}}' | base64 -d)
     - kubectl create secret generic combined-db-password --from-literal=password=$CLIENT_DB_PASSWORD --dry-run=client -o json | kubectl apply --namespace $RELEASE_NAME -f -
     - kubectl create secret generic db-main-account-secret --from-literal=postgresql-password=$SUPER_DB_PASSWORD --dry-run=client -o json | kubectl apply --namespace $RELEASE_NAME -f -
-    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set magda.magda-core.authorization-db.migratorBackoffLimit=10,magda.magda-core.registry-db.migratorBackoffLimit=10,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,global.externalUrl=https://${CI_COMMIT_REF_SLUG}-dev.magda.io,global.namespace=$RELEASE_NAME --timeout 3600m --wait
-    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}-dev.magda.io"
+    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set magda.magda-core.authorization-db.migratorBackoffLimit=10,magda.magda-core.registry-db.migratorBackoffLimit=10,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,global.externalUrl=https://${RELEASE_NAME}-dev.magda.io,global.namespace=$RELEASE_NAME --timeout 3600m --wait
+    - echo "Successfully deployed to https://${RELEASE_NAME}-dev.magda.io"
 
 (UI) Run As Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set global.searchEngine.hybridSearch.enabled=false,global.openfaas.enabled=false,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,tags.correspondence-api=false,tags.minion-linked-data-rating=false,tags.minion-visualization=false,tags.minion-format=false,magda.magda-core.web-server.registryApiBaseUrlInternal=https://dev.magda.io/api/v0/registry,magda.magda-core.web-server.baseUrl=https://dev.magda.io,global.externalUrl=https://${CI_COMMIT_REF_SLUG}-dev.magda.io,magda.magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
-    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}-dev.magda.io"
+    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set global.searchEngine.hybridSearch.enabled=false,global.openfaas.enabled=false,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,tags.correspondence-api=false,tags.minion-linked-data-rating=false,tags.minion-visualization=false,tags.minion-format=false,magda.magda-core.web-server.registryApiBaseUrlInternal=https://dev.magda.io/api/v0/registry,magda.magda-core.web-server.baseUrl=https://dev.magda.io,global.externalUrl=https://${RELEASE_NAME}-dev.magda.io,magda.magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
+    - echo "Successfully deployed to https://${RELEASE_NAME}-dev.magda.io"
 
 (UI - Auto) Run As Preview:
   <<: *runAsPreview
@@ -929,19 +938,19 @@ dockerize:dockerExtensions:
     variables:
       - $CI_COMMIT_MESSAGE =~ /#deploy-ui-preview/
   script:
-    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set global.openfaas.enabled=false,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,tags.correspondence-api=false,magda.magda-core.web-server.baseUrl=https://dev.magda.io,global.externalUrl=https://${CI_COMMIT_REF_SLUG}-dev.magda.io,magda.magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
-    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}-dev.magda.io"
+    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set global.openfaas.enabled=false,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,tags.correspondence-api=false,magda.magda-core.web-server.baseUrl=https://dev.magda.io,global.externalUrl=https://${RELEASE_NAME}-dev.magda.io,magda.magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
+    - echo "Successfully deployed to https://${RELEASE_NAME}-dev.magda.io"
 
 (No Data) Run As Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,global.externalUrl=https://${CI_COMMIT_REF_SLUG}-dev.magda.io,global.namespace=$RELEASE_NAME --timeout 3600m --wait
-    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}-dev.magda.io"
+    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,global.externalUrl=https://${RELEASE_NAME}-dev.magda.io,global.namespace=$RELEASE_NAME --timeout 3600m --wait
+    - echo "Successfully deployed to https://${RELEASE_NAME}-dev.magda.io"
 (No Data) Run As Multi-tenant Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview-multi-tenant.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,global.externalUrl=https://${CI_COMMIT_REF_SLUG}-dev.magda.io,global.magdaAdminPortalName=${CI_COMMIT_REF_SLUG}-dev.magda.io,global.namespace=$RELEASE_NAME --timeout 3600m --wait
-    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}-dev.magda.io"
+    - helm upgrade $RELEASE_NAME deploy/helm/local-deployment --install --recreate-pods --namespace $RELEASE_NAME -f deploy/helm/preview-multi-tenant.yml --set global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,global.externalUrl=https://${RELEASE_NAME}-dev.magda.io,global.magdaAdminPortalName=${RELEASE_NAME}-dev.magda.io,global.namespace=$RELEASE_NAME --timeout 3600m --wait
+    - echo "Successfully deployed to https://${RELEASE_NAME}-dev.magda.io"
 
 
 Stop Preview: &stopPreview
