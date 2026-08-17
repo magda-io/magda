@@ -51,6 +51,58 @@ run_scalar () {
     printf '%s' "${out}"
 }
 
+# Run the Flyway CLI and, on the PostgreSQL 15+ `public`-schema privilege failure,
+# translate Flyway's raw error into actionable guidance instead of leaving it to
+# look like a TLS/connectivity problem.
+#
+# PostgreSQL 15 removed the implicit CREATE grant every role used to have on a
+# database's `public` schema. A migrator user that does not own — or hold CREATE
+# on — the target database's `public` schema now connects fine (password + TLS
+# both pass) and then fails mid-migration with `permission denied for schema
+# public`. Because that lands immediately after a fully established and — under
+# sslmode=verify-ca/verify-full — certificate-verified connection, it is very
+# easy to misdiagnose as an SSL/CA problem. It is not. See magda-io/magda#3770.
+#
+# Matched on the SQLSTATE (`42501`, insufficient_privilege), NOT the message text
+# `permission denied for schema public`: the SQLSTATE is stable, the message is
+# localised by the server's `lc_messages`. (Same rationale as #3744.)
+run_flyway () {
+    local db="${1}"; shift
+    local out_file rc
+    out_file="$(mktemp)"
+    set +e
+    ./flyway "$@" 2>&1 | tee "${out_file}"
+    rc=${PIPESTATUS[0]}
+    set -e
+    if [[ ${rc} -ne 0 ]]; then
+        if grep -qE 'SQL State[[:space:]]*:[[:space:]]*42501' "${out_file}"; then
+            {
+                echo ""
+                echo "=============================================================================="
+                echo "The migrator connected to database \"${db}\" successfully but is not permitted"
+                echo "to create objects in its \"public\" schema (PostgreSQL SQLSTATE 42501,"
+                echo "insufficient_privilege). This is NOT a TLS/SSL problem -- the connection was"
+                echo "established. Since PostgreSQL 15, only the database owner, or a role granted"
+                echo "CREATE on the schema, may create objects in \"public\"."
+                echo ""
+                echo "Grant the migrator user \"${MIGRATOR_USERNAME}\" the privilege on database"
+                echo "\"${db}\" -- run as that database's owner or a superuser:"
+                echo ""
+                echo "    ALTER SCHEMA public OWNER TO \"${MIGRATOR_USERNAME}\";"
+                echo "    -- or, without transferring ownership:"
+                echo "    GRANT CREATE ON SCHEMA public TO \"${MIGRATOR_USERNAME}\";"
+                echo ""
+                echo "See https://github.com/magda-io/magda/issues/3770 and the deploy-to-aws /"
+                echo "deploy-to-azure guides for details."
+                echo "=============================================================================="
+                echo ""
+            } >&2
+        fi
+    fi
+    rm -f "${out_file}"
+    return ${rc}
+}
+
 for d in "${FLYWAY_HOME}"/sql/*; do
     if [[ -d "$d" ]]; then
         dbName="$(basename "$d")"
@@ -113,7 +165,7 @@ for d in "${FLYWAY_HOME}"/sql/*; do
             fi
             if [[ -n "${legacy_version}" ]]; then
                 echo "Detected legacy Flyway 4 history in ${dbName}; baselining flyway_schema_history at version ${legacy_version} (already-applied migrations are not re-run)."
-                ./flyway baseline \
+                run_flyway "${dbName}" baseline \
                     -url="${dbUrl}" \
                     -user="${MIGRATOR_USERNAME}" -password="${PGPASSWORD}" \
                     -baselineVersion="${legacy_version}" \
@@ -125,7 +177,7 @@ for d in "${FLYWAY_HOME}"/sql/*; do
         # -ignoreMigrationPatterns="*:missing" is the Flyway 10+ replacement for the
         # removed -ignoreMissingMigrations flag: tolerate history entries whose files
         # are no longer present. (The legacy `-n` flag was dropped in Flyway 10+.)
-        ./flyway migrate -ignoreMigrationPatterns="*:missing" -baselineOnMigrate=true \
+        run_flyway "${dbName}" migrate -ignoreMigrationPatterns="*:missing" -baselineOnMigrate=true \
             -url="${dbUrl}" \
             -locations="filesystem:${d}" \
             -user="${MIGRATOR_USERNAME}" -password="${PGPASSWORD}" \

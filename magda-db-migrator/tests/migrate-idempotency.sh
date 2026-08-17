@@ -266,4 +266,69 @@ fi
 
 echo "case 3b passed (Flyway URL carries sslmode only when PGSSLROOTCERT is unset, no stray separators)"
 
+# --- Case 4: a PostgreSQL 15+ `public`-schema privilege failure (SQLSTATE 42501)
+# during migrate must FAIL the migrator AND print actionable guidance, rather than
+# leaving Flyway's raw error to look like a TLS/connectivity problem (#3770).
+cat > "${FLYWAY_DIR}/flyway" <<'EOF'
+#!/usr/bin/env bash
+echo "flyway stub called: $*"
+# Only the migrate step simulates the failure. Flyway prints the SQLSTATE on its
+# own line ("SQL State  : 42501"), which is what migrate.sh keys off.
+case "$*" in
+  *migrate*)
+    cat >&2 <<'FLYERR'
+ERROR: Migration V1__init.sql failed
+-------------------------------------
+SQL State  : 42501
+Error Code : 0
+Message    : ERROR: permission denied for schema public
+FLYERR
+    exit 1
+    ;;
+esac
+exit 0
+EOF
+chmod +x "${FLYWAY_DIR}/flyway"
+
+# psql shim: succeed at everything (CREATE DATABASE ok; legacy-history probes
+# return empty -> no baseline) so the run reaches the migrate step, where the
+# flyway stub raises the 42501 failure.
+BIN_DIR4="${TMP_DIR}/bin4"
+mkdir -p "${BIN_DIR4}"
+cat > "${BIN_DIR4}/psql" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "${BIN_DIR4}/psql"
+
+set +e
+PATH="${BIN_DIR4}:${PATH}" \
+FLYWAY_HOME="${FLYWAY_HOME}" \
+FLYWAY_VERSION="${FLYWAY_VERSION}" \
+DB_HOST="db.example.test" \
+PGUSER="magda_admin" \
+PGPASSWORD="secret" \
+CLIENT_USERNAME="client" \
+CLIENT_PASSWORD="client_secret" \
+    bash "${MIGRATE_SH}" > "${TMP_DIR}/out5.log" 2>&1
+rc=$?
+set -e
+
+# The migrator must still fail — the error is translated, not swallowed.
+if [[ $rc -eq 0 ]]; then
+    echo "FAIL: migrate.sh exited 0 despite the migrate step failing with SQLSTATE 42501."
+    echo "----- output -----"; cat "${TMP_DIR}/out5.log"
+    exit 1
+fi
+# ...and it must surface the actionable guidance (keyed on the SQLSTATE).
+for needle in "SQLSTATE 42501" "ALTER SCHEMA public OWNER TO" "NOT a TLS/SSL problem"; do
+    if ! grep -qF "${needle}" "${TMP_DIR}/out5.log"; then
+        echo "FAIL: expected the 42501 guidance to contain '${needle}', but it did not."
+        echo "----- output -----"; cat "${TMP_DIR}/out5.log"
+        exit 1
+    fi
+done
+
+echo "case 4 passed (PG15+ public-schema 42501 failure surfaces actionable guidance)"
+
 echo "migrate idempotency checks passed"
