@@ -308,12 +308,13 @@ fi
 
 assert_sslmode_coverage "${ROOT_DIR}/deploy/helm/magda" "umbrella (magda)" ""
 
-# `local-deployment` additionally pulls in the authentication plugins. Those call
-# `magda.db-client-credential-env` from their own vendored `magda-common` and do
-# NOT yet emit PGSSLMODE, so they connect to the session DB in plaintext. That is
-# pre-existing (nothing set PGSSLMODE before this change) and is tracked
-# separately; the plugins need both a chart release and an SDK bump. They are
-# exempted by name here rather than by weakening the check, so that any NEW
-# regression still fails and this list doubles as the outstanding work.
-AUTH_PLUGIN_EXEMPTIONS="Deployment/magda-auth-google,Deployment/magda-auth-internal,Deployment/magda-auth-oidc,Deployment/magda-auth-arcgis,Deployment/magda-auth-facebook"
-assert_sslmode_coverage "${ROOT_DIR}/deploy/helm/local-deployment" "local-deployment" "${AUTH_PLUGIN_EXEMPTIONS}"
+# `local-deployment` additionally pulls in the authentication plugins. As of the
+# v7 rollout (magda-io/magda#3742) every bundled plugin adopts the versioned
+# `magda.db-client-sslmode-env-v1` (and `magda.db-client-ca-env-v1`) helper
+# contract, so each one now emits PGSSLMODE on its session-db client just like
+# every other DB-credential workload. There is therefore no exemption list any
+# more: the plugins are held to the same coverage check as the core services, so
+# any future plugin that regresses to a plaintext session-db connection fails
+# here. (This depends on local-deployment pinning plugin chart versions that
+# carry the contract — see deploy/helm/local-deployment/Chart.yaml.)
+assert_sslmode_coverage "${ROOT_DIR}/deploy/helm/local-deployment" "local-deployment" ""
