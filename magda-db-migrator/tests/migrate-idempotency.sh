@@ -57,6 +57,10 @@ if [[ "$args" == *"CREATE DATABASE"* ]]; then
     echo "ERROR:  database already exists" >&2
     exit 1
 fi
+if [[ "$args" == *"pg_database"* ]]; then
+    echo "1"   # database exists (re-run)
+    exit 0
+fi
 if [[ "$args" == *"SELECT script"* ]]; then
     echo "ERROR:  relation \"schema_version\" does not exist" >&2
     exit 1
@@ -113,7 +117,9 @@ if [[ "$args" == *"CREATE DATABASE"* ]]; then
     echo "ERROR:  database already exists" >&2
     exit 1
 fi
-if [[ "$args" == *"to_regclass"* ]]; then
+if [[ "$args" == *"pg_database"* || "$args" == *"to_regclass"* ]]; then
+    # Unreachable: every probe connection fails (the pg_database existence
+    # pre-check is the first one migrate.sh runs).
     echo "psql: error: connection to server at \"db.example.test\" failed: Connection refused" >&2
     exit 2
 fi
@@ -184,6 +190,10 @@ args="$*"
 if [[ "$args" == *"CREATE DATABASE"* ]]; then
     echo "ERROR:  database already exists" >&2
     exit 1
+fi
+if [[ "$args" == *"pg_database"* ]]; then
+    echo "1"   # database exists
+    exit 0
 fi
 exit 0
 EOF
@@ -297,6 +307,11 @@ BIN_DIR4="${TMP_DIR}/bin4"
 mkdir -p "${BIN_DIR4}"
 cat > "${BIN_DIR4}/psql" <<'EOF'
 #!/usr/bin/env bash
+args="$*"
+if [[ "$args" == *"pg_database"* ]]; then
+    echo "1"   # database exists -> the run proceeds to the migrate step
+    exit 0
+fi
 exit 0
 EOF
 chmod +x "${BIN_DIR4}/psql"
@@ -330,5 +345,78 @@ for needle in "SQLSTATE 42501" "ALTER SCHEMA public OWNER TO" "NOT a TLS/SSL pro
 done
 
 echo "case 4 passed (PG15+ public-schema 42501 failure surfaces actionable guidance)"
+
+# --- Case 5: on a NON-ENGLISH server, a per-service database that does not exist
+# must be classified benign via the pg_database catalog check — NOT aborted the way
+# the old English-only "does not exist" text match would on a translated message
+# (#3744). CREATE DATABASE and a direct connect both emit German here, and the
+# catalog reports the database missing. The old text-matching code would misread
+# the German connect error as fatal and abort; the catalog check must not.
+FLYWAY_MARKER5="${TMP_DIR}/flyway_invoked_5"
+cat > "${FLYWAY_DIR}/flyway" <<EOF
+#!/usr/bin/env bash
+echo "flyway stub called: \$*"
+touch "${FLYWAY_MARKER5}"
+exit 0
+EOF
+chmod +x "${FLYWAY_DIR}/flyway"
+
+BIN_DIR5="${TMP_DIR}/bin5"
+mkdir -p "${BIN_DIR5}"
+cat > "${BIN_DIR5}/psql" <<'EOF'
+#!/usr/bin/env bash
+args="$*"
+if [[ "$args" == *"CREATE DATABASE"* ]]; then
+    # German lc_messages: "database ... already exists" (always tolerated).
+    echo "FEHLER:  Datenbank »testdb« existiert bereits" >&2
+    exit 1
+fi
+if [[ "$args" == *"pg_database"* ]]; then
+    # Catalog says the database does not exist: empty result, NO error. This is how
+    # the fix detects non-existence, independent of the server message locale.
+    exit 0
+fi
+if [[ "$args" == *"to_regclass"* ]]; then
+    # A direct connect to the (missing) database fails in German. The fix must NOT
+    # reach here (the catalog check short-circuits); a translated error proves the
+    # classification does not depend on English text -- the old code would abort here.
+    echo "psql: Fehler: Verbindung fehlgeschlagen: FATAL:  Datenbank »testdb« existiert nicht" >&2
+    exit 2
+fi
+exit 0
+EOF
+chmod +x "${BIN_DIR5}/psql"
+
+set +e
+PATH="${BIN_DIR5}:${PATH}" \
+FLYWAY_HOME="${FLYWAY_HOME}" \
+FLYWAY_VERSION="${FLYWAY_VERSION}" \
+DB_HOST="db.example.test" \
+PGUSER="magda_admin" \
+PGPASSWORD="secret" \
+CLIENT_USERNAME="client" \
+CLIENT_PASSWORD="client_secret" \
+    bash "${MIGRATE_SH}" > "${TMP_DIR}/out6.log" 2>&1
+rc=$?
+set -e
+
+# Benign: a missing database must NOT abort the migrator on a non-English server.
+if [[ $rc -ne 0 ]]; then
+    echo "FAIL: migrate.sh aborted (${rc}) on a non-English 'database does not exist'; a missing DB should be benign via the pg_database catalog check."
+    echo "----- output -----"; cat "${TMP_DIR}/out6.log"
+    exit 1
+fi
+if grep -q "Aborting:" "${TMP_DIR}/out6.log"; then
+    echo "FAIL: migrate.sh printed an abort message for a benign missing database."
+    echo "----- output -----"; cat "${TMP_DIR}/out6.log"
+    exit 1
+fi
+if [[ ! -f "${FLYWAY_MARKER5}" ]]; then
+    echo "FAIL: Flyway was not reached; the benign missing-DB path should fall through to Flyway."
+    echo "----- output -----"; cat "${TMP_DIR}/out6.log"
+    exit 1
+fi
+
+echo "case 5 passed (non-English 'database does not exist' is benign via the pg_database catalog check)"
 
 echo "migrate idempotency checks passed"
