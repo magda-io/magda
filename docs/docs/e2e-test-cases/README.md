@@ -23,6 +23,7 @@ scripted, assertion/checksum-based driver), and how to clean up.
 - [In-cluster PostgreSQL major upgrade (PG 13 → 17 logical dump / restore)](./postgres-major-upgrade.md)
 - [Migrate the in-cluster PostgreSQL to a managed/cloud database (Pathway B)](./postgres-in-cluster-to-managed-db-migration.md)
 - [Fresh install on PostgreSQL 17 — client authentication (SCRAM)](./postgres-fresh-install-auth.md)
+- [DB migrator surfaces the PG15+ `public`-schema privilege failure (and classifies a missing database locale-independently)](./migrator-public-schema-privilege-error.md)
 
 ## Adding a new case
 
