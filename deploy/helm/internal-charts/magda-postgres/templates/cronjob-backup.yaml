@@ -49,7 +49,8 @@ spec:
                   # `${OUTPUT: -9} = "not found"` suffix match misread as an error.
                   # Count the FULL backups from `backup-list` and only trim when there
                   # are more than we retain -- then any non-zero `delete` exit is
-                  # unambiguously a real error, no prose parsing involved. (#3763)
+                  # unambiguously a real error, no prose parsing involved. (#3763;
+                  # output-classification convention: #3778.)
                   BACKUP_LIST=$(/usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-list 2>&1)
                   BACKUP_LIST_RC=$?
                   if [[ $BACKUP_LIST_RC != "0" ]]
