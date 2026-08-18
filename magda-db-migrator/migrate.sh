@@ -32,7 +32,9 @@ cd "${FLYWAY_DIR}"
 # WITHOUT raising. This deliberately no longer inspects the error text —
 # PostgreSQL localizes messages via the server's `lc_messages`, so the old
 # `... does not exist` match was English-only and misclassified a genuinely
-# missing object as fatal on a non-English server. (#3744)
+# missing object as fatal on a non-English server. (#3744; see ADR
+# docs/docs/adrs/0002-classify-outcomes-by-stable-signal.md -- classify by
+# SQLSTATE/state, not by output text.)
 run_scalar () {
     local db="${1}" query="${2}" out rc err_file
     err_file="$(mktemp)"
@@ -64,7 +66,8 @@ run_scalar () {
 #
 # Matched on the SQLSTATE (`42501`, insufficient_privilege), NOT the message text
 # `permission denied for schema public`: the SQLSTATE is stable, the message is
-# localised by the server's `lc_messages`. (Same rationale as #3744.)
+# localised by the server's `lc_messages`. (Same rationale as #3744; see ADR
+# docs/docs/adrs/0002-classify-outcomes-by-stable-signal.md.)
 run_flyway () {
     local db="${1}"; shift
     local out_file rc

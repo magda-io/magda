@@ -19,3 +19,4 @@ wondering "why was it done this way?".
 ## Index
 
 - [0001 — Large file upload/download support for magda-storage-api](./0001-large-file-storage-support.md)
+- [0002 — Classify outcomes by a stable signal, not by a tool's output text](./0002-classify-outcomes-by-stable-signal.md)
