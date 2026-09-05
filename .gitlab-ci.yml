@@ -65,7 +65,7 @@ build-builder-image:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   # Build all three builder images and push to gitlab registry.
   # `--provenance=false` on every `docker buildx build` (here and in the
   # component-image jobs) disables buildx's default provenance/SLSA attestation.
@@ -175,7 +175,7 @@ buildtest:search-with-index-cache:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
@@ -241,7 +241,7 @@ buildtest:search-no-index-cache:
     - postgres:13.7
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
@@ -405,7 +405,7 @@ buildtest:typescript-apis-with-pg:
     - postgres:13.7
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
@@ -455,7 +455,7 @@ buildtest:typescript-apis-with-es:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
@@ -502,7 +502,7 @@ buildtest:storage-api:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9
     CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
@@ -545,7 +545,7 @@ buildtest:integration-tests:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   variables:
     POSTGRES_URL: "jdbc:postgresql://localhost/postgres"
     POSTGRES_DB: postgres
@@ -575,7 +575,7 @@ buildtest:opa-policies:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   script:
     - cd magda-opa
     - yarn test
@@ -622,7 +622,7 @@ buildtest:helm-docs-check:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   script:
     - code=0
     - docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:v1.13.1 || code=$?;
@@ -654,7 +654,7 @@ dockerize:scala:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   script:
     - ./gitlab-ci-buildx-setup.sh
     # output stage docker image content without build it
@@ -672,7 +672,7 @@ dockerize:ui:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   needs:
     - yarn-install
     - registry-typescript-api
@@ -693,7 +693,7 @@ dockerize:ui-scss-compiler:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   needs:
     - yarn-install
     - registry-typescript-api
@@ -713,7 +713,7 @@ dockerize:typescript:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   needs:
     - yarn-install
     - registry-typescript-api
@@ -739,7 +739,7 @@ dockerize:migrators:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   script:
     - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
@@ -759,7 +759,7 @@ dockerize:opa:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   script:
   - cd magda-opa
   - yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
@@ -776,7 +776,7 @@ dockerize:dockerExtensions:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   script:
     - ./gitlab-ci-buildx-setup.sh
     # disable multi-arch docker image build for postgreSQL for now
@@ -953,7 +953,7 @@ Release-to-Docker-Hub-Github-Container:
   services:
     - name: docker:28.5.0-dind
       alias: docker
-      command: ["--mtu=1400"]
+      command: ["--mtu=1360"]
   rules:
     # Strict Semvar validation. match any version string. Should release version tag
     - if: $CI_COMMIT_TAG =~ /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
