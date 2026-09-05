@@ -1,6 +1,6 @@
 # magda-local-deployment
 
-![Version: 6.2.0](https://img.shields.io/badge/Version-6.2.0-informational?style=flat-square)
+![Version: 7.0.0-alpha.2](https://img.shields.io/badge/Version-7.0.0--alpha.2-informational?style=flat-square)
 
 ## Requirements
 
@@ -8,11 +8,11 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda | magda | 6.2.0 |
-| oci://ghcr.io/magda-io/charts | magda-auth-arcgis | 2.0.1 |
-| oci://ghcr.io/magda-io/charts | magda-auth-facebook | 2.0.0 |
-| oci://ghcr.io/magda-io/charts | magda-auth-google | 3.0.0 |
-| oci://ghcr.io/magda-io/charts | magda-auth-internal | 3.0.0 |
+| file://../magda | magda | 7.0.0-alpha.2 |
+| oci://ghcr.io/magda-io/charts | magda-auth-arcgis | 3.0.0-alpha.0 |
+| oci://ghcr.io/magda-io/charts | magda-auth-facebook | 3.0.0-alpha.0 |
+| oci://ghcr.io/magda-io/charts | magda-auth-google | 4.0.0-alpha.1 |
+| oci://ghcr.io/magda-io/charts | magda-auth-internal | 4.0.0-alpha.0 |
 | oci://ghcr.io/magda-io/charts | connector-nsw(magda-ckan-connector) | 2.1.0 |
 | oci://ghcr.io/magda-io/charts | connector-dga(magda-ckan-connector) | 2.1.0 |
 | oci://ghcr.io/magda-io/charts | connector-ditrdca(magda-ckan-connector) | 2.1.0 |
