@@ -117,6 +117,21 @@ describe("recordBuilders", () => {
         expect(record.aspects.version.currentVersionNumber).to.equal(0);
     });
 
+    it("writes the publisher reference and dcat name mirror", () => {
+        const record = buildDatasetRecord({
+            id: "x",
+            title: "t",
+            now: NOW,
+            publisher: { id: "org-1", name: "Data Agency" }
+        });
+        expect(record.aspects["dataset-publisher"]).to.deep.equal({
+            publisher: "org-1"
+        });
+        expect(record.aspects["dcat-dataset-strings"].publisher).to.equal(
+            "Data Agency"
+        );
+    });
+
     it("omits source.url when no sourceUrl is given", () => {
         const record = buildDatasetRecord({ id: "x", title: "t", now: NOW });
         expect(record.aspects.source).to.deep.equal({

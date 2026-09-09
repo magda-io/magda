@@ -122,6 +122,96 @@ describe("dataset create", () => {
         }
     });
 
+    it("uses the site's default publisher and writes both publisher fields", async () => {
+        const server = await startMockServer([
+            {
+                method: "GET",
+                path: "/v0/auth/users/whoami",
+                body: { id: "u1" }
+            },
+            {
+                method: "GET",
+                path: "/server-config.js",
+                body: 'window.magda_server_config = {"defaultOrganizationId":"org-default"};'
+            },
+            {
+                method: "GET",
+                path: "/v0/registry/records/org-default",
+                body: {
+                    id: "org-default",
+                    name: "Default Agency",
+                    aspects: {
+                        "organization-details": { title: "Default Agency" }
+                    }
+                }
+            },
+            { method: "POST", path: "/v0/registry/records", body: {} }
+        ]);
+        process.env.MGD_BASE_URL = server.url;
+        try {
+            const program = new Command();
+            registerDatasetCommands(program);
+            await captureStdout(() =>
+                program.parseAsync(
+                    ["dataset", "create", "--title", "My data"],
+                    { from: "user" }
+                )
+            );
+            const posted = JSON.parse(
+                server.requests
+                    .find((r) => r.method === "POST")!
+                    .body.toString()
+            );
+            expect(posted.aspects["dataset-publisher"]).to.deep.equal({
+                publisher: "org-default"
+            });
+            expect(posted.aspects["dcat-dataset-strings"].publisher).to.equal(
+                "Default Agency"
+            );
+        } finally {
+            await server.close();
+        }
+    });
+
+    for (const aspectId of ["dataset-publisher", "dcat-dataset-strings"]) {
+        it(`rejects managed publisher aspect ${aspectId}`, async () => {
+            const server = await startMockServer([
+                { method: "GET", path: "/v0/auth/users/whoami", body: {} }
+            ]);
+            process.env.MGD_BASE_URL = server.url;
+            try {
+                const program = new Command();
+                registerDatasetCommands(program);
+                let error: unknown;
+                try {
+                    await captureStdout(() =>
+                        program.parseAsync(
+                            [
+                                "dataset",
+                                "create",
+                                "--title",
+                                "My data",
+                                "--aspect",
+                                `${aspectId}={}`
+                            ],
+                            { from: "user" }
+                        )
+                    );
+                } catch (e) {
+                    error = e;
+                }
+                expect((error as Error).message).to.contain(
+                    "does not accept --aspect"
+                );
+                expect(
+                    server.requests.some((r) => r.method === "POST")
+                ).to.equal(false);
+            } finally {
+                await server.close();
+            }
+        });
+    }
+
     it("skips v0 tagging when the response has no event id header", async () => {
         const server = await startMockServer([
             {

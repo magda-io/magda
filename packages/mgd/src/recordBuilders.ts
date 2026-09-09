@@ -200,6 +200,7 @@ export function buildDatasetRecord(args: {
     owner?: { id?: string; orgUnitId?: string };
     now: Date;
     sourceUrl?: string;
+    publisher?: { id: string; name: string };
     extraAspects?: Record<string, unknown>;
 }) {
     const iso = args.now.toISOString();
@@ -212,9 +213,17 @@ export function buildDatasetRecord(args: {
                 description: args.description ?? "",
                 issued: iso,
                 modified: iso,
-                languages: ["eng"]
+                languages: ["eng"],
+                ...(args.publisher ? { publisher: args.publisher.name } : {})
             },
             publishing: { state: args.publish ? "published" : "draft" },
+            ...(args.publisher
+                ? {
+                      "dataset-publisher": {
+                          publisher: args.publisher.id
+                      }
+                  }
+                : {}),
             ...accessControlAspect(args.owner),
             source: sourceAspect(args.sourceUrl),
             version: buildInitialVersionAspect({

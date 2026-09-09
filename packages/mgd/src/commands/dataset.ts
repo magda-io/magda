@@ -32,6 +32,12 @@ import {
 } from "../recordBuilders.js";
 import { uploadFile } from "../transfer.js";
 import { publishDataset, renderPublishResult } from "../publishing.js";
+import {
+    getDatasetPublisherId,
+    resolveDefaultPublisher,
+    resolvePublisher,
+    ResolvedPublisher
+} from "../publisher.js";
 
 export async function fetchOwner(
     client: MagdaClient
@@ -84,6 +90,59 @@ export async function mergeAspect(
         body: JSON.stringify(merged)
     });
     return { eventId: eventIdFrom(res), merged };
+}
+
+async function updatePublisherMetadata(
+    client: MagdaClient,
+    datasetId: string,
+    publisher: ResolvedPublisher,
+    dcatPatch: Record<string, unknown>
+): Promise<{ eventId: number; merged: Record<string, unknown> }> {
+    let current: Record<string, unknown> = {};
+    try {
+        current = await client.json(
+            "GET",
+            recordAspect(datasetId, "dcat-dataset-strings")
+        );
+    } catch (e) {
+        if (!(e instanceof MgdApiError && e.status === 404)) throw e;
+    }
+    const merged = {
+        ...current,
+        ...dcatPatch,
+        publisher: publisher.name
+    };
+    const res = await client.request("PATCH", REGISTRY_RECORDS, {
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+            recordIds: [datasetId],
+            jsonPath: [
+                {
+                    op: "add",
+                    path: "/aspects/dcat-dataset-strings",
+                    value: merged
+                },
+                {
+                    op: "add",
+                    path: "/aspects/dataset-publisher",
+                    value: { publisher: publisher.id }
+                }
+            ]
+        })
+    });
+    let eventId = eventIdFrom(res);
+    try {
+        const eventIds = (await res.json()) as unknown;
+        if (Array.isArray(eventIds)) {
+            eventId = Math.max(
+                eventId,
+                ...eventIds.map((value) => Number(value) || 0)
+            );
+        }
+    } catch {
+        // Older registry versions may return no JSON body; use the header.
+    }
+    return { eventId, merged };
 }
 
 export function registerDatasetCommands(program: Command): void {
@@ -179,6 +238,10 @@ export function registerDatasetCommands(program: Command): void {
         .description("Create a new dataset record (draft by default)")
         .requiredOption("--title <title>", "dataset title")
         .option("--desc <description>", "dataset description")
+        .option(
+            "--publisher <nameOrOrgId>",
+            "publishing organisation name or record id (default: site configuration)"
+        )
         .option("--publish", "create as published instead of draft")
         .option(
             "--aspect <id=json...>",
@@ -195,6 +258,17 @@ export function registerDatasetCommands(program: Command): void {
                 const { id, data } = await parseAspectArg(arg);
                 extraAspects[id] = data;
             }
+            if (
+                "dataset-publisher" in extraAspects ||
+                "dcat-dataset-strings" in extraAspects
+            ) {
+                throw new UsageError(
+                    "dataset create does not accept --aspect dataset-publisher or --aspect dcat-dataset-strings; use --publisher, --title and --desc so managed metadata stays consistent."
+                );
+            }
+            const publisher = opts.publisher
+                ? await resolvePublisher(client, opts.publisher)
+                : await resolveDefaultPublisher(client);
             const record = buildDatasetRecord({
                 id: createId("ds"),
                 title: opts.title,
@@ -203,6 +277,7 @@ export function registerDatasetCommands(program: Command): void {
                 owner,
                 now: new Date(),
                 sourceUrl: deriveSiteUrl(client.opts.baseUrl),
+                publisher,
                 extraAspects
             });
             let createEventId = 0;
@@ -240,6 +315,10 @@ export function registerDatasetCommands(program: Command): void {
         .option("--desc <description>")
         .option("--license <license>")
         .option(
+            "--publisher <nameOrOrgId>",
+            "publishing organisation name or record id"
+        )
+        .option(
             "--aspect <id=json...>",
             "replace an aspect entirely (repeatable)",
             collect,
@@ -256,17 +335,47 @@ export function registerDatasetCommands(program: Command): void {
                 aspectArgs.push(await parseAspectArg(arg));
             }
             if (
-                Object.keys(scalarPatch).length === 0 &&
-                aspectArgs.length === 0
+                aspectArgs.some(
+                    ({ id }) =>
+                        id === "dataset-publisher" ||
+                        id === "dcat-dataset-strings"
+                )
             ) {
                 throw new UsageError(
-                    "Nothing to update: pass --title/--desc/--license or --aspect."
+                    "dataset update does not accept --aspect dataset-publisher or --aspect dcat-dataset-strings; use --publisher, --title, --desc and --license so managed metadata stays consistent."
+                );
+            }
+            if (
+                Object.keys(scalarPatch).length === 0 &&
+                aspectArgs.length === 0 &&
+                !opts.publisher
+            ) {
+                throw new UsageError(
+                    "Nothing to update: pass --title/--desc/--license/--publisher or --aspect."
                 );
             }
             const client = await clientFromProfile();
+            let publisher: ResolvedPublisher | undefined;
+            if (opts.publisher) {
+                publisher = await resolvePublisher(client, opts.publisher);
+            } else if (!(await getDatasetPublisherId(client, datasetId))) {
+                publisher = await resolveDefaultPublisher(client);
+            }
+
             let lastEventId = 0;
             let mergedTitle: string | undefined;
-            if (Object.keys(scalarPatch).length > 0) {
+            if (publisher) {
+                scalarPatch.modified = new Date().toISOString();
+                const { eventId, merged } = await updatePublisherMetadata(
+                    client,
+                    datasetId,
+                    publisher,
+                    scalarPatch
+                );
+                lastEventId = Math.max(lastEventId, eventId);
+                mergedTitle =
+                    typeof merged.title === "string" ? merged.title : undefined;
+            } else if (Object.keys(scalarPatch).length > 0) {
                 scalarPatch.modified = new Date().toISOString();
                 const { eventId, merged } = await mergeAspect(
                     client,

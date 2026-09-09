@@ -2,6 +2,7 @@
 
 ## v6.2.0
 
+- #3715: Add publishing organisation support to `mgd dataset create` and `mgd dataset update`, including site defaults, organisation name resolution/creation, and synchronized publisher aspects.
 - #3758: Upgraded the in-cluster PostgreSQL backup tool wal-g to 3.0.8.
 
 ## v6.1.2

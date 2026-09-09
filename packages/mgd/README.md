@@ -389,6 +389,7 @@ web UI. New datasets are created as **drafts** unless you pass `--publish`.
 mgd dataset create \
   --title "River gauge readings 2025" \
   --desc "Daily river height and flow measurements." \
+  --publisher "Department of Water" \
   --json                                              # -> magda-ds-<uuid>
 
 # 2. Upload a file and attach it as a distribution
@@ -397,8 +398,9 @@ mgd dataset add-file magda-ds-<uuid> ./readings.csv --title "2025 readings" --fo
 # 3. Register a link-only distribution (no upload)
 mgd dataset add-file magda-ds-<uuid> --access-url https://example.org/data.csv --title "Source data"
 
-# 4. Update metadata
-mgd dataset update magda-ds-<uuid> --title "River gauge readings (2025, v2)"
+# 4. Update metadata (publisher accepts an organisation name or record ID)
+mgd dataset update magda-ds-<uuid> --title "River gauge readings (2025, v2)" \
+  --publisher org-dga-<uuid>
 
 # 5. Replace the file behind a distribution (adds a new version entry)
 mgd dist replace-file magda-dist-<uuid> ./readings-corrected.csv
@@ -412,6 +414,18 @@ Datasets created by the CLI are stamped with a `source` aspect
 (`{"id":"magda","name":"Magda CLI (mgd)","type":"internal","url":<site>}`) — the
 same `id` the web client uses, so they show up as editable records in the web
 metadata tools, with a distinct `name` marking their CLI provenance.
+
+`--publisher` accepts an existing `organisation` record ID or a name. A name is
+matched exactly (case-insensitively) against existing publishers; if no match
+exists, `mgd` creates an `organisation` record with an `organization-details`
+aspect, matching the web client's behaviour. When the flag is omitted, `create`
+uses the site's `defaultOrganizationId` when configured; `update` preserves the
+current publisher, or uses that default for older publisher-less datasets. The
+CLI keeps the `dataset-publisher` reference and the
+`dcat-dataset-strings.publisher` display-name mirror in sync. Consequently,
+`dataset create/update --aspect` rejects those two managed aspect IDs; use the
+dedicated metadata options (or the low-level `dataset aspect` commands when you
+intentionally need a manual escape hatch).
 
 > **Publishing is a deliberate step.** Create as a draft, review, then publish
 > explicitly. `add-file` / `replace-file` are multi-step operations; if a step
@@ -432,18 +446,18 @@ metadata tools, with a distinct `name` marking their CLI provenance.
 
 Records carry data in named **aspects**. The ones the CLI reads or writes most:
 
-| Aspect | Record | Holds / notes |
-| --- | --- | --- |
-| `dcat-dataset-strings` | dataset | `title`, `description`, `keywords`, `themes`, `languages`, `issued`/`modified` |
-| `dcat-distribution-strings` | distribution | per-file `title`, `format`, `downloadURL`, `accessURL`, `byteSize` |
-| `publishing` | dataset & distribution | `{ "state": "draft" \| "published" }` — use `publish`/`unpublish`, don't hand-edit |
-| `dataset-distributions` | dataset | `{ "distributions": [<distId>, …] }` — CLI-managed by `add-file`/`dist remove`; don't hand-edit |
-| `version` | dataset & distribution | CLI-managed history — don't hand-edit |
-| `access-control` | dataset | `ownerId`, `orgUnitId`, `constraintExemption` |
-| `source` | dataset | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`) |
-| `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI; the CLI does not set it yet ([#3715](https://github.com/magda-io/magda/issues/3715)) |
-| `temporal-coverage` | dataset | *optional* — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range |
-| `spatial-coverage` | dataset | *optional* — bounding box / named region; set manually when the data has a spatial extent |
+| Aspect                      | Record                 | Holds / notes                                                                                                                                                     |
+| --------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dcat-dataset-strings`      | dataset                | `title`, `description`, `keywords`, `themes`, `languages`, `issued`/`modified`, and the publisher name mirror                                                     |
+| `dcat-distribution-strings` | distribution           | per-file `title`, `format`, `downloadURL`, `accessURL`, `byteSize`                                                                                                |
+| `publishing`                | dataset & distribution | `{ "state": "draft" \| "published" }` — use `publish`/`unpublish`, don't hand-edit                                                                                |
+| `dataset-distributions`     | dataset                | `{ "distributions": [<distId>, …] }` — CLI-managed by `add-file`/`dist remove`; don't hand-edit                                                                   |
+| `version`                   | dataset & distribution | CLI-managed history — don't hand-edit                                                                                                                             |
+| `access-control`            | dataset                | `ownerId`, `orgUnitId`, `constraintExemption`                                                                                                                     |
+| `source`                    | dataset                | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`)                                                                                              |
+| `dataset-publisher`         | dataset                | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI; use `dataset create/update --publisher` so its name mirror stays synchronized |
+| `temporal-coverage`         | dataset                | _optional_ — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range                                                               |
+| `spatial-coverage`          | dataset                | _optional_ — bounding box / named region; set manually when the data has a spatial extent                                                                         |
 
 ### Custom aspects
 
@@ -469,8 +483,10 @@ supplied fields** (a server-side deep merge via the registry's `?merge=true`, so
 untouched fields survive). For advanced RFC 6902 operations (remove/test/move),
 call the raw endpoint: `mgd api request PATCH /v0/registry/records/<id>/aspects/<aspectId> --body @patch.json`.
 
-Every mutation command also accepts repeatable `--aspect <id>=<json|@file|->` to
-attach custom aspect data at create/update time.
+Dataset and distribution create/update commands also accept repeatable
+`--aspect <id>=<json|@file|->` to attach custom aspect data. On dataset
+create/update, publisher-bearing standard aspects are reserved as described
+above; use the dedicated metadata options instead.
 
 ## Uploading files directly to storage
 
@@ -508,8 +524,8 @@ echo '{"active":true}' | mgd api request PUT /v0/some/endpoint --body -
 | `search semantic <query>`                                   | Semantic (embedding) search                                                                         |
 | `dataset get <id>`                                          | Fetch a dataset record                                                                              |
 | `dataset distributions <id>`                                | List a dataset's distributions                                                                      |
-| `dataset create`                                            | Create a dataset (draft by default)                                                                 |
-| `dataset update <id>`                                       | Update dataset metadata                                                                             |
+| `dataset create`                                            | Create a dataset (draft by default; `--publisher` or site default)                                  |
+| `dataset update <id>`                                       | Update dataset metadata, including its publishing organisation                                      |
 | `dataset add-file <id> [file]`                              | Upload/attach a distribution (or `--access-url`)                                                    |
 | `dataset aspect get/set/patch/delete <recordId> <aspectId>` | Read/write custom aspect data on any record (`set`=replace, `patch`=merge)                          |
 | `dist get <id>` / `dist update <id>`                        | Inspect / edit a distribution                                                                       |

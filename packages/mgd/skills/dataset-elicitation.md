@@ -84,7 +84,10 @@ When asked to improve an existing dataset (or after a quick-path creation):
 - Datasets are created as **drafts**. `--publish` (or publishing-state changes)
   only after explicit user confirmation.
 - Before any mutation, show a compact summary of exactly what will be written,
-  marking which values were inferred vs provided.
+  marking which values were inferred vs provided. Use the dedicated
+  `--publisher <name|orgId>` option for the publishing organisation. Explain
+  that a previously unknown name will create an `organisation` record, and
+  include that additional mutation in the confirmation.
 - After mutations, report the record IDs and what changed.
 - Replacing a file (`mgd dist replace-file`) preserves version history; tell
   the user the new version number. Dataset/distribution metadata updates and
