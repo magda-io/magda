@@ -14,22 +14,18 @@ Before start to use the [acs-cmd](https://www.npmjs.com/package/@magda/acs-cmd) 
   - `kubectl port-forward combined-db-postgresql-pg17-0 5432:5432`
     - If you didn't install magda to the default namespace, you can use: `kubectl port-forward -n [namespace] combined-db-postgresql-pg17-0 5432:5432`
 
+> Prior to Magda v7.0.0, you should port-forward pod combined-db-postgresql-0
+>
 > Prior to Magda v1.0.0, you should port-forward pod combined-db-0
 
 `acs-cmd` connects to the authorization database using the standard `libpq` `PG*` environment variables.
-Point it at the forwarded port using the database superuser (`postgres`) credentials — the `magda-core`
-chart stores that password in the `db-main-account-secret` secret (key `postgresql-password`):
+Set `PGHOST`, `PGPORT`, `PGUSER` and `PGPASSWORD` to match your deployment — e.g. the port-forwarded
+in-cluster database above, or an external database such as AWS RDS with its own host and credentials.
 
-```bash
-export PGHOST=127.0.0.1 PGPORT=5432 PGUSER=postgres PGDATABASE=auth
-export PGPASSWORD=$(kubectl get secret db-main-account-secret -o jsonpath='{.data.postgresql-password}' | base64 --decode)
-# add `-n [namespace]` to the kubectl command above if Magda is not installed in the default namespace
-```
-
-From Magda v7, the combined database enforces **TLS with a self-signed certificate**. Over a
-`kubectl port-forward` that certificate cannot be verified (its subject will not match `127.0.0.1`), so the
-connection fails with `Error: unable to verify the first certificate`. For this local, one-off connection,
-enable TLS without certificate verification:
+If you use the in-cluster combined database, from Magda v7.0.0 it enforces **TLS with a self-signed
+certificate**. Over a `kubectl port-forward` that certificate cannot be verified (its subject will not match
+`127.0.0.1`), so the connection fails with `Error: unable to verify the first certificate`. For this local,
+one-off connection, enable TLS without certificate verification:
 
 ```bash
 export PGSSLMODE=require
