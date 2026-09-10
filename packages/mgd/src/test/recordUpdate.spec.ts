@@ -163,32 +163,138 @@ describe("dataset update", () => {
         }
     });
 
-    for (const aspectId of ["dataset-publisher", "dcat-dataset-strings"]) {
-        it(`rejects managed publisher aspect ${aspectId}`, async () => {
+    it("rejects a raw dataset-publisher aspect", async () => {
+        const program = new Command();
+        registerDatasetCommands(program);
+        let error: unknown;
+        try {
+            await captureStdout(() =>
+                program.parseAsync(
+                    [
+                        "dataset",
+                        "update",
+                        "ds-1",
+                        "--aspect",
+                        "dataset-publisher={}"
+                    ],
+                    { from: "user" }
+                )
+            );
+        } catch (e) {
+            error = e;
+        }
+        expect((error as Error).message).to.contain(
+            "does not accept --aspect dataset-publisher"
+        );
+    });
+
+    it("allows other dcat fields and preserves the publisher mirror", async () => {
+        const server = await startMockServer([
+            {
+                method: "GET",
+                path: /aspects\/dataset-publisher$/,
+                body: { publisher: "org-1" }
+            },
+            {
+                method: "GET",
+                path: "/v0/registry/records/org-1",
+                body: {
+                    id: "org-1",
+                    aspects: {
+                        "organization-details": { title: "Data Agency" }
+                    }
+                }
+            },
+            {
+                method: "PUT",
+                path: /aspects\/dcat-dataset-strings$/,
+                body: {},
+                headers: { "x-magda-event-id": "5" }
+            },
+            {
+                method: "GET",
+                path: /aspects\/version$/,
+                status: 404,
+                body: { message: "not found" }
+            },
+            { method: "GET", path: "/v0/auth/users/whoami", body: {} },
+            { method: "PUT", path: /aspects\/version$/, body: {} }
+        ]);
+        process.env.MGD_BASE_URL = server.url;
+        try {
             const program = new Command();
             registerDatasetCommands(program);
-            let error: unknown;
-            try {
-                await captureStdout(() =>
-                    program.parseAsync(
-                        [
-                            "dataset",
-                            "update",
-                            "ds-1",
-                            "--aspect",
-                            `${aspectId}={}`
-                        ],
-                        { from: "user" }
-                    )
-                );
-            } catch (e) {
-                error = e;
-            }
-            expect((error as Error).message).to.contain(
-                "does not accept --aspect"
+            await captureStdout(() =>
+                program.parseAsync(
+                    [
+                        "dataset",
+                        "update",
+                        "ds-1",
+                        "--aspect",
+                        'dcat-dataset-strings={"keywords":["water"]}'
+                    ],
+                    { from: "user" }
+                )
             );
-        });
-    }
+            const dcatPut = server.requests.find(
+                (r) =>
+                    r.method === "PUT" &&
+                    r.url.includes("aspects/dcat-dataset-strings")
+            )!;
+            expect(JSON.parse(dcatPut.body.toString())).to.deep.equal({
+                keywords: ["water"],
+                publisher: "Data Agency"
+            });
+        } finally {
+            await server.close();
+        }
+    });
+
+    it("does not backfill a publisher for a custom-aspect-only update", async () => {
+        const server = await startMockServer([
+            {
+                method: "PUT",
+                path: /aspects\/my-aspect$/,
+                body: {},
+                headers: { "x-magda-event-id": "5" }
+            },
+            {
+                method: "GET",
+                path: /aspects\/version$/,
+                status: 404,
+                body: { message: "not found" }
+            },
+            { method: "GET", path: "/v0/auth/users/whoami", body: {} },
+            { method: "PUT", path: /aspects\/version$/, body: {} }
+        ]);
+        process.env.MGD_BASE_URL = server.url;
+        try {
+            const program = new Command();
+            registerDatasetCommands(program);
+            await captureStdout(() =>
+                program.parseAsync(
+                    [
+                        "dataset",
+                        "update",
+                        "ds-1",
+                        "--aspect",
+                        'my-aspect={"value":1}'
+                    ],
+                    { from: "user" }
+                )
+            );
+            expect(
+                server.requests.some(
+                    (r) =>
+                        r.url.includes("dataset-publisher") ||
+                        r.url.includes("server-config.js") ||
+                        r.method === "PATCH"
+                )
+            ).to.equal(false);
+        } finally {
+            await server.close();
+        }
+    });
 
     it("merges scalar fields into dcat-dataset-strings", async () => {
         const server = await startMockServer([

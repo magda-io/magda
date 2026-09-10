@@ -34,8 +34,10 @@ import { uploadFile } from "../transfer.js";
 import { publishDataset, renderPublishResult } from "../publishing.js";
 import {
     getDatasetPublisherId,
+    removeCreatedPublisher,
     resolveDefaultPublisher,
     resolvePublisher,
+    resolvePublisherId,
     ResolvedPublisher
 } from "../publisher.js";
 
@@ -96,16 +98,19 @@ async function updatePublisherMetadata(
     client: MagdaClient,
     datasetId: string,
     publisher: ResolvedPublisher,
-    dcatPatch: Record<string, unknown>
+    dcatPatch: Record<string, unknown>,
+    replaceDcat = false
 ): Promise<{ eventId: number; merged: Record<string, unknown> }> {
     let current: Record<string, unknown> = {};
-    try {
-        current = await client.json(
-            "GET",
-            recordAspect(datasetId, "dcat-dataset-strings")
-        );
-    } catch (e) {
-        if (!(e instanceof MgdApiError && e.status === 404)) throw e;
+    if (!replaceDcat) {
+        try {
+            current = await client.json(
+                "GET",
+                recordAspect(datasetId, "dcat-dataset-strings")
+            );
+        } catch (e) {
+            if (!(e instanceof MgdApiError && e.status === 404)) throw e;
+        }
     }
     const merged = {
         ...current,
@@ -251,24 +256,43 @@ export function registerDatasetCommands(program: Command): void {
         )
         .option("--json", "output the created record as JSON")
         .action(async (opts) => {
-            const client = await clientFromProfile();
-            const owner = await fetchOwner(client);
             const extraAspects: Record<string, unknown> = {};
             for (const arg of opts.aspect as string[]) {
                 const { id, data } = await parseAspectArg(arg);
                 extraAspects[id] = data;
             }
-            if (
-                "dataset-publisher" in extraAspects ||
-                "dcat-dataset-strings" in extraAspects
-            ) {
+            if ("dataset-publisher" in extraAspects) {
                 throw new UsageError(
-                    "dataset create does not accept --aspect dataset-publisher or --aspect dcat-dataset-strings; use --publisher, --title and --desc so managed metadata stays consistent."
+                    "dataset create does not accept --aspect dataset-publisher; use --publisher so the reference and name mirror stay consistent."
                 );
             }
-            const publisher = opts.publisher
-                ? await resolvePublisher(client, opts.publisher)
-                : await resolveDefaultPublisher(client);
+            const customDcat = extraAspects["dcat-dataset-strings"];
+            if (
+                customDcat !== undefined &&
+                (typeof customDcat !== "object" ||
+                    customDcat === null ||
+                    Array.isArray(customDcat))
+            ) {
+                throw new UsageError(
+                    "--aspect dcat-dataset-strings must contain a JSON object."
+                );
+            }
+            if (
+                customDcat &&
+                Object.prototype.hasOwnProperty.call(customDcat, "publisher")
+            ) {
+                throw new UsageError(
+                    "Set the dcat-dataset-strings publisher field with --publisher instead."
+                );
+            }
+
+            const client = await clientFromProfile();
+            const owner = await fetchOwner(client);
+            const publisher =
+                opts.publisher !== undefined
+                    ? await resolvePublisher(client, opts.publisher)
+                    : await resolveDefaultPublisher(client);
+            delete extraAspects["dcat-dataset-strings"];
             const record = buildDatasetRecord({
                 id: createId("ds"),
                 title: opts.title,
@@ -280,6 +304,12 @@ export function registerDatasetCommands(program: Command): void {
                 publisher,
                 extraAspects
             });
+            if (customDcat) {
+                record.aspects["dcat-dataset-strings"] = {
+                    ...record.aspects["dcat-dataset-strings"],
+                    ...customDcat
+                };
+            }
             let createEventId = 0;
             try {
                 const res = await client.request("POST", REGISTRY_RECORDS, {
@@ -288,6 +318,14 @@ export function registerDatasetCommands(program: Command): void {
                 });
                 createEventId = eventIdFrom(res);
             } catch (e) {
+                if (
+                    publisher?.created &&
+                    !(await removeCreatedPublisher(client, publisher))
+                ) {
+                    note(
+                        `Warning: dataset creation failed and the newly created organisation ${publisher.id} could not be removed.`
+                    );
+                }
                 throw withAspectHint(e);
             }
             // Tag the seeded v0 with the creation event so the next edit
@@ -334,21 +372,36 @@ export function registerDatasetCommands(program: Command): void {
             for (const arg of opts.aspect as string[]) {
                 aspectArgs.push(await parseAspectArg(arg));
             }
+            if (aspectArgs.some(({ id }) => id === "dataset-publisher")) {
+                throw new UsageError(
+                    "dataset update does not accept --aspect dataset-publisher; use --publisher so the reference and name mirror stay consistent."
+                );
+            }
+            const dcatArg = aspectArgs.find(
+                ({ id }) => id === "dcat-dataset-strings"
+            );
             if (
-                aspectArgs.some(
-                    ({ id }) =>
-                        id === "dataset-publisher" ||
-                        id === "dcat-dataset-strings"
-                )
+                dcatArg &&
+                (typeof dcatArg.data !== "object" ||
+                    dcatArg.data === null ||
+                    Array.isArray(dcatArg.data))
             ) {
                 throw new UsageError(
-                    "dataset update does not accept --aspect dataset-publisher or --aspect dcat-dataset-strings; use --publisher, --title, --desc and --license so managed metadata stays consistent."
+                    "--aspect dcat-dataset-strings must contain a JSON object."
+                );
+            }
+            if (
+                dcatArg &&
+                Object.prototype.hasOwnProperty.call(dcatArg.data, "publisher")
+            ) {
+                throw new UsageError(
+                    "Set the dcat-dataset-strings publisher field with --publisher instead."
                 );
             }
             if (
                 Object.keys(scalarPatch).length === 0 &&
                 aspectArgs.length === 0 &&
-                !opts.publisher
+                opts.publisher === undefined
             ) {
                 throw new UsageError(
                     "Nothing to update: pass --title/--desc/--license/--publisher or --aspect."
@@ -356,25 +409,74 @@ export function registerDatasetCommands(program: Command): void {
             }
             const client = await clientFromProfile();
             let publisher: ResolvedPublisher | undefined;
-            if (opts.publisher) {
+            let existingPublisherId: string | undefined;
+            const touchesDatasetMetadata =
+                Object.keys(scalarPatch).length > 0 || Boolean(dcatArg);
+            if (opts.publisher !== undefined) {
                 publisher = await resolvePublisher(client, opts.publisher);
-            } else if (!(await getDatasetPublisherId(client, datasetId))) {
-                publisher = await resolveDefaultPublisher(client);
+            } else if (touchesDatasetMetadata) {
+                existingPublisherId = await getDatasetPublisherId(
+                    client,
+                    datasetId
+                );
+                if (!existingPublisherId) {
+                    publisher = await resolveDefaultPublisher(client);
+                }
+            }
+
+            if (dcatArg) {
+                const publisherName =
+                    publisher?.name ??
+                    (existingPublisherId
+                        ? (
+                              await resolvePublisherId(
+                                  client,
+                                  existingPublisherId
+                              )
+                          ).name
+                        : undefined);
+                if (publisherName) {
+                    dcatArg.data = {
+                        ...(dcatArg.data as Record<string, unknown>),
+                        publisher: publisherName
+                    };
+                }
             }
 
             let lastEventId = 0;
             let mergedTitle: string | undefined;
             if (publisher) {
                 scalarPatch.modified = new Date().toISOString();
-                const { eventId, merged } = await updatePublisherMetadata(
-                    client,
-                    datasetId,
-                    publisher,
-                    scalarPatch
-                );
-                lastEventId = Math.max(lastEventId, eventId);
-                mergedTitle =
-                    typeof merged.title === "string" ? merged.title : undefined;
+                const publisherDcatPatch = dcatArg
+                    ? {
+                          ...(dcatArg.data as Record<string, unknown>),
+                          ...scalarPatch
+                      }
+                    : scalarPatch;
+                try {
+                    const { eventId, merged } = await updatePublisherMetadata(
+                        client,
+                        datasetId,
+                        publisher,
+                        publisherDcatPatch,
+                        Boolean(dcatArg)
+                    );
+                    lastEventId = Math.max(lastEventId, eventId);
+                    mergedTitle =
+                        typeof merged.title === "string"
+                            ? merged.title
+                            : undefined;
+                } catch (e) {
+                    if (
+                        publisher.created &&
+                        !(await removeCreatedPublisher(client, publisher))
+                    ) {
+                        note(
+                            `Warning: the dataset update failed and the newly created organisation ${publisher.id} could not be removed.`
+                        );
+                    }
+                    throw e;
+                }
             } else if (Object.keys(scalarPatch).length > 0) {
                 scalarPatch.modified = new Date().toISOString();
                 const { eventId, merged } = await mergeAspect(
@@ -388,6 +490,7 @@ export function registerDatasetCommands(program: Command): void {
                     typeof merged.title === "string" ? merged.title : undefined;
             }
             for (const { id, data } of aspectArgs) {
+                if (publisher && id === "dcat-dataset-strings") continue;
                 try {
                     const res = await client.request(
                         "PUT",

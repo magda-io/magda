@@ -418,14 +418,17 @@ metadata tools, with a distinct `name` marking their CLI provenance.
 `--publisher` accepts an existing `organisation` record ID or a name. A name is
 matched exactly (case-insensitively) against existing publishers; if no match
 exists, `mgd` creates an `organisation` record with an `organization-details`
-aspect, matching the web client's behaviour. When the flag is omitted, `create`
-uses the site's `defaultOrganizationId` when configured; `update` preserves the
-current publisher, or uses that default for older publisher-less datasets. The
-CLI keeps the `dataset-publisher` reference and the
-`dcat-dataset-strings.publisher` display-name mirror in sync. Consequently,
-`dataset create/update --aspect` rejects those two managed aspect IDs; use the
-dedicated metadata options (or the low-level `dataset aspect` commands when you
-intentionally need a manual escape hatch).
+aspect, matching the web client's behaviour. The lookup queries organisation
+records directly, so it is not limited by search-facet pagination or indexing
+lag. When the flag is omitted, `create` uses the site's
+`defaultOrganizationId` when configured; a dataset-metadata `update` preserves
+the current publisher or backfills that default for an older publisher-less
+dataset. A custom-aspect-only update has no publisher side effects. The CLI
+keeps the `dataset-publisher` reference and the
+`dcat-dataset-strings.publisher` display-name mirror in sync. Raw
+`dataset-publisher` values and a `publisher` field inside a raw
+`dcat-dataset-strings` value are therefore rejected; other DCAT fields remain
+supported through `--aspect`.
 
 > **Publishing is a deliberate step.** Create as a draft, review, then publish
 > explicitly. `add-file` / `replace-file` are multi-step operations; if a step
@@ -485,8 +488,8 @@ call the raw endpoint: `mgd api request PATCH /v0/registry/records/<id>/aspects/
 
 Dataset and distribution create/update commands also accept repeatable
 `--aspect <id>=<json|@file|->` to attach custom aspect data. On dataset
-create/update, publisher-bearing standard aspects are reserved as described
-above; use the dedicated metadata options instead.
+create/update, use `--publisher` for publishing-organisation metadata; other
+fields in `dcat-dataset-strings` remain available through `--aspect`.
 
 ## Uploading files directly to storage
 

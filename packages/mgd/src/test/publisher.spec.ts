@@ -89,11 +89,19 @@ describe("publisher resolution", () => {
             },
             {
                 method: "GET",
-                path: "/v0/search/facets/publisher/options",
+                path: "/v0/registry/records",
                 body: {
-                    options: [
-                        { identifier: "org-other", value: "Other" },
-                        { identifier: "org-1", value: "Data Agency" }
+                    hasMore: false,
+                    records: [
+                        {
+                            id: "org-1",
+                            name: "data-agency",
+                            aspects: {
+                                "organization-details": {
+                                    title: "Data Agency"
+                                }
+                            }
+                        }
                     ]
                 }
             }
@@ -105,16 +113,118 @@ describe("publisher resolution", () => {
             );
             expect(result).to.deep.equal({ id: "org-1", name: "Data Agency" });
             const search = server.requests.find((r) =>
-                r.url.startsWith("/v0/search/facets/publisher/options?")
+                r.url.startsWith("/v0/registry/records?")
             )!;
             const query = new URL(search.url, server.url).searchParams;
-            expect(query.get("generalQuery")).to.equal("*");
-            expect(query.get("start")).to.equal("0");
-            expect(query.get("limit")).to.equal("10");
-            expect(query.get("facetQuery")).to.equal("data agency");
+            expect(query.get("aspect")).to.equal("organization-details");
+            expect(query.get("limit")).to.equal("100");
+            expect(query.getAll("aspectOrQuery")).to.have.length(2);
+            expect(query.getAll("aspectOrQuery")[0]).to.contain(
+                "organization-details.title:?"
+            );
             expect(server.requests.some((r) => r.method === "POST")).to.equal(
                 false
             );
+        } finally {
+            await server.close();
+        }
+    });
+
+    it("escapes special characters in registry name queries", async () => {
+        const server = await startMockServer([
+            {
+                method: "GET",
+                path: /\/v0\/registry\/records\//,
+                status: 404,
+                body: { message: "not found" }
+            },
+            {
+                method: "GET",
+                path: "/v0/registry/records",
+                body: { hasMore: false, records: [] }
+            },
+            { method: "POST", path: "/v0/registry/records", body: {} }
+        ]);
+        try {
+            await resolvePublisher(
+                new MagdaClient({ baseUrl: server.url }),
+                "100%_\\ Agency"
+            );
+            const request = server.requests.find((r) =>
+                r.url.startsWith("/v0/registry/records?")
+            )!;
+            const encodedQuery = new URL(
+                request.url,
+                server.url
+            ).searchParams.getAll("aspectOrQuery")[0];
+            expect(encodedQuery).to.contain("%25");
+            expect(decodeURIComponent(encodedQuery)).to.equal(
+                "organization-details.title:?%100\\%\\_\\\\ Agency%"
+            );
+        } finally {
+            await server.close();
+        }
+    });
+
+    it("continues registry name lookup across pages", async () => {
+        let page = 0;
+        const server = await startMockServer([
+            {
+                method: "GET",
+                path: /\/v0\/registry\/records\//,
+                status: 404,
+                body: { message: "not found" }
+            },
+            {
+                method: "GET",
+                path: "/v0/registry/records",
+                handler: (_req, res) => {
+                    page++;
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify(
+                            page === 1
+                                ? {
+                                      hasMore: true,
+                                      nextPageToken: "101",
+                                      records: []
+                                  }
+                                : {
+                                      hasMore: false,
+                                      records: [
+                                          {
+                                              id: "org-page-2",
+                                              aspects: {
+                                                  "organization-details": {
+                                                      title: "Paged Agency"
+                                                  }
+                                              }
+                                          }
+                                      ]
+                                  }
+                        )
+                    );
+                }
+            }
+        ]);
+        try {
+            const result = await resolvePublisher(
+                new MagdaClient({ baseUrl: server.url }),
+                "Paged Agency"
+            );
+            expect(result).to.deep.equal({
+                id: "org-page-2",
+                name: "Paged Agency"
+            });
+            const registryQueries = server.requests.filter((r) =>
+                r.url.startsWith("/v0/registry/records?")
+            );
+            expect(registryQueries).to.have.length(2);
+            expect(
+                new URL(registryQueries[1].url, server.url).searchParams.get(
+                    "pageToken"
+                )
+            ).to.equal("101");
         } finally {
             await server.close();
         }
@@ -130,8 +240,8 @@ describe("publisher resolution", () => {
             },
             {
                 method: "GET",
-                path: "/v0/search/facets/publisher/options",
-                body: { options: [] }
+                path: "/v0/registry/records",
+                body: { hasMore: false, records: [] }
             },
             { method: "POST", path: "/v0/registry/records", body: {} }
         ]);
@@ -159,6 +269,24 @@ describe("publisher resolution", () => {
                     }
                 }
             });
+        } finally {
+            await server.close();
+        }
+    });
+
+    it("ignores an unparseable 200 response from server-config.js", async () => {
+        const server = await startMockServer([
+            {
+                method: "GET",
+                path: "/server-config.js",
+                body: "<!doctype html><title>SPA fallback</title>"
+            }
+        ]);
+        try {
+            const result = await fetchDefaultOrganizationId(
+                new MagdaClient({ baseUrl: server.url })
+            );
+            expect(result).to.equal(undefined);
         } finally {
             await server.close();
         }

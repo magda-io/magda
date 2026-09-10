@@ -157,14 +157,14 @@ mgd dataset publish magda-ds-<uuid> --json
 
 **Publishing organisation:** `dataset create/update --publisher <name|orgId>`
 sets both the `dataset-publisher` reference and its DCAT name mirror. An exact,
-case-insensitive name match reuses the existing organisation; otherwise the CLI
-creates an `organisation` record. With no flag, create uses the site's configured
-default; update preserves the current publisher, or backfills that default on an
-older publisher-less dataset. `dataset create/update --aspect` rejects the
-managed `dataset-publisher` and `dcat-dataset-strings` aspect IDs; use the
-dedicated metadata options so the two publisher fields cannot diverge. Because
-a new name can create another record, include that possible mutation in the
-confirmation required by ground rule 5.
+case-insensitive registry match reuses the existing organisation; otherwise the
+CLI creates an `organisation` record. With no flag, create uses the site's
+configured default; a dataset-metadata update preserves the current publisher or
+backfills that default on an older publisher-less dataset, while a
+custom-aspect-only update has no publisher side effects. Use `--publisher` for
+the publisher reference/name; other `dcat-dataset-strings` fields remain
+available through `--aspect`. Because a new name can create another record,
+include that possible mutation in the confirmation required by ground rule 5.
 
 **Publishing commands:**
 

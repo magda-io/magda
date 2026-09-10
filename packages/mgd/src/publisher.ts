@@ -7,6 +7,7 @@ import { deriveSiteUrl } from "./recordBuilders.js";
 export interface ResolvedPublisher {
     id: string;
     name: string;
+    created?: boolean;
 }
 
 interface OrganisationRecord {
@@ -51,29 +52,50 @@ async function fetchOrganisation(
     }
 }
 
+function aspectPattern(path: string, value: string): string {
+    const escaped = value.replace(/\\/g, "\\\\").replace(/[%_]/g, "\\$&");
+    return `${encodeURIComponent(path)}:?${encodeURIComponent(`%${escaped}%`)}`;
+}
+
 async function findPublisherByName(
     client: MagdaClient,
     name: string
 ): Promise<ResolvedPublisher | undefined> {
-    const result = await client.json<{
-        options?: { identifier?: string; value?: string }[];
-    }>("GET", "/v0/search/facets/publisher/options", {
-        query: {
-            generalQuery: "*",
-            start: 0,
-            limit: 10,
-            facetQuery: name
-        }
-    });
     const normalized = name.toLowerCase().trim();
-    const match = result.options?.find(
-        (option) =>
-            typeof option.identifier === "string" &&
-            option.identifier.length > 0 &&
-            typeof option.value === "string" &&
-            option.value.toLowerCase().trim() === normalized
-    );
-    return match ? { id: match.identifier!, name: match.value! } : undefined;
+    let pageToken: string | undefined;
+
+    do {
+        const query: [string, string][] = [
+            ["aspect", "organization-details"],
+            [
+                "aspectOrQuery",
+                aspectPattern("organization-details.title", name)
+            ],
+            ["aspectOrQuery", aspectPattern("organization-details.name", name)],
+            ["limit", "100"]
+        ];
+        if (pageToken) query.push(["pageToken", pageToken]);
+
+        const page = await client.json<{
+            hasMore?: boolean;
+            nextPageToken?: string;
+            records?: OrganisationRecord[];
+        }>("GET", REGISTRY_RECORDS, { query });
+        const match = page.records?.find((record) => {
+            const details = record.aspects?.["organization-details"];
+            return [details?.title, details?.name].some(
+                (candidate) =>
+                    typeof candidate === "string" &&
+                    candidate.toLowerCase().trim() === normalized
+            );
+        });
+        if (match) {
+            return { id: match.id, name: organisationName(match) };
+        }
+        pageToken = page.hasMore ? page.nextPageToken : undefined;
+    } while (pageToken);
+
+    return undefined;
 }
 
 async function createPublisher(
@@ -96,7 +118,7 @@ async function createPublisher(
             }
         })
     });
-    return { id, name };
+    return { id, name, created: true };
 }
 
 /**
@@ -115,27 +137,37 @@ export async function fetchDefaultOrganizationId(
     }
     if (!response.ok) return undefined;
 
-    const script = await response.text();
-    const match = /window\.magda_server_config\s*=\s*([\s\S]*?)\s*;\s*$/.exec(
-        script
-    );
-    if (!match) {
-        throw new Error(`Could not parse MAGDA site config from ${url}`);
+    try {
+        const script = await response.text();
+        const match =
+            /window\.magda_server_config\s*=\s*([\s\S]*?)\s*;\s*$/.exec(script);
+        if (!match) return undefined;
+        const config = JSON.parse(match[1]) as {
+            defaultOrganizationId?: unknown;
+        };
+        return typeof config.defaultOrganizationId === "string" &&
+            config.defaultOrganizationId.trim()
+            ? config.defaultOrganizationId.trim()
+            : undefined;
+    } catch {
+        return undefined;
     }
-    const config = JSON.parse(match[1]) as { defaultOrganizationId?: unknown };
-    return typeof config.defaultOrganizationId === "string" &&
-        config.defaultOrganizationId.trim()
-        ? config.defaultOrganizationId.trim()
-        : undefined;
 }
 
-function looksLikeOrganisationId(value: string): boolean {
-    return (
-        /^org-/i.test(value) ||
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-            value
-        )
-    );
+export async function resolvePublisherId(
+    client: MagdaClient,
+    id: string
+): Promise<ResolvedPublisher> {
+    const publisher = await fetchOrganisation(client, id);
+    if (!publisher) {
+        throw new MgdApiError(
+            `Publishing organisation record not found: ${id}`,
+            404,
+            "not-found",
+            "Check the organisation record ID or pass its name instead."
+        );
+    }
+    return publisher;
 }
 
 /** Resolve an explicit publisher as an existing record id or an exact name. */
@@ -147,17 +179,22 @@ export async function resolvePublisher(
     if (!input) throw new UsageError("--publisher must not be empty.");
     const byId = await fetchOrganisation(client, input);
     if (byId) return byId;
-    if (looksLikeOrganisationId(input)) {
-        throw new MgdApiError(
-            `Publishing organisation record not found: ${input}`,
-            404,
-            "not-found",
-            "Check the organisation record ID or pass its name instead."
-        );
-    }
 
     const byName = await findPublisherByName(client, input);
     return byName ?? createPublisher(client, input);
+}
+
+export async function removeCreatedPublisher(
+    client: MagdaClient,
+    publisher: ResolvedPublisher | undefined
+): Promise<boolean> {
+    if (!publisher?.created) return false;
+    try {
+        await client.request("DELETE", registryRecord(publisher.id));
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 /** Resolve the site's configured default publisher, when one is available. */

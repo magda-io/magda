@@ -173,44 +173,204 @@ describe("dataset create", () => {
         }
     });
 
-    for (const aspectId of ["dataset-publisher", "dcat-dataset-strings"]) {
-        it(`rejects managed publisher aspect ${aspectId}`, async () => {
-            const server = await startMockServer([
-                { method: "GET", path: "/v0/auth/users/whoami", body: {} }
-            ]);
-            process.env.MGD_BASE_URL = server.url;
+    it("rejects a raw dataset-publisher aspect", async () => {
+        const program = new Command();
+        registerDatasetCommands(program);
+        let error: unknown;
+        try {
+            await captureStdout(() =>
+                program.parseAsync(
+                    [
+                        "dataset",
+                        "create",
+                        "--title",
+                        "My data",
+                        "--aspect",
+                        "dataset-publisher={}"
+                    ],
+                    { from: "user" }
+                )
+            );
+        } catch (e) {
+            error = e;
+        }
+        expect((error as Error).message).to.contain(
+            "does not accept --aspect dataset-publisher"
+        );
+    });
+
+    it("rejects an empty publisher value", async () => {
+        const server = await startMockServer([
+            { method: "GET", path: "/v0/auth/users/whoami", body: {} }
+        ]);
+        process.env.MGD_BASE_URL = server.url;
+        try {
+            const program = new Command();
+            registerDatasetCommands(program);
+            let error: unknown;
             try {
-                const program = new Command();
-                registerDatasetCommands(program);
-                let error: unknown;
-                try {
-                    await captureStdout(() =>
-                        program.parseAsync(
-                            [
-                                "dataset",
-                                "create",
-                                "--title",
-                                "My data",
-                                "--aspect",
-                                `${aspectId}={}`
-                            ],
-                            { from: "user" }
-                        )
-                    );
-                } catch (e) {
-                    error = e;
-                }
-                expect((error as Error).message).to.contain(
-                    "does not accept --aspect"
+                await captureStdout(() =>
+                    program.parseAsync(
+                        [
+                            "dataset",
+                            "create",
+                            "--title",
+                            "My data",
+                            "--publisher",
+                            ""
+                        ],
+                        { from: "user" }
+                    )
                 );
-                expect(
-                    server.requests.some((r) => r.method === "POST")
-                ).to.equal(false);
-            } finally {
-                await server.close();
+            } catch (e) {
+                error = e;
             }
-        });
-    }
+            expect((error as Error).message).to.equal(
+                "--publisher must not be empty."
+            );
+        } finally {
+            await server.close();
+        }
+    });
+
+    it("allows other dcat fields while managing the publisher mirror", async () => {
+        const server = await startMockServer([
+            { method: "GET", path: "/v0/auth/users/whoami", body: {} },
+            {
+                method: "GET",
+                path: "/v0/registry/records/org-1",
+                body: {
+                    id: "org-1",
+                    aspects: {
+                        "organization-details": { title: "Data Agency" }
+                    }
+                }
+            },
+            { method: "POST", path: "/v0/registry/records", body: {} }
+        ]);
+        process.env.MGD_BASE_URL = server.url;
+        try {
+            const program = new Command();
+            registerDatasetCommands(program);
+            await captureStdout(() =>
+                program.parseAsync(
+                    [
+                        "dataset",
+                        "create",
+                        "--title",
+                        "My data",
+                        "--publisher",
+                        "org-1",
+                        "--aspect",
+                        'dcat-dataset-strings={"keywords":["water"]}'
+                    ],
+                    { from: "user" }
+                )
+            );
+            const posted = JSON.parse(
+                server.requests
+                    .find((r) => r.method === "POST")!
+                    .body.toString()
+            );
+            expect(posted.aspects["dcat-dataset-strings"]).to.include({
+                title: "My data",
+                description: ""
+            });
+            expect(
+                posted.aspects["dcat-dataset-strings"].keywords
+            ).to.deep.equal(["water"]);
+            expect(posted.aspects["dcat-dataset-strings"].publisher).to.equal(
+                "Data Agency"
+            );
+            expect(posted.aspects["dcat-dataset-strings"].issued).to.be.a(
+                "string"
+            );
+            expect(posted.aspects["dataset-publisher"]).to.deep.equal({
+                publisher: "org-1"
+            });
+        } finally {
+            await server.close();
+        }
+    });
+
+    it("removes a newly created organisation when dataset creation fails", async () => {
+        let postCount = 0;
+        const server = await startMockServer([
+            { method: "GET", path: "/v0/auth/users/whoami", body: {} },
+            {
+                method: "GET",
+                path: /\/v0\/registry\/records\//,
+                status: 404,
+                body: { message: "not found" }
+            },
+            {
+                method: "GET",
+                path: "/v0/registry/records",
+                body: { hasMore: false, records: [] }
+            },
+            {
+                method: "POST",
+                path: "/v0/registry/records",
+                handler: (_req, res) => {
+                    postCount++;
+                    if (postCount === 1) {
+                        res.writeHead(200, {
+                            "content-type": "application/json"
+                        });
+                        res.end("{}");
+                    } else {
+                        res.writeHead(500, {
+                            "content-type": "application/json"
+                        });
+                        res.end(JSON.stringify({ message: "create failed" }));
+                    }
+                }
+            },
+            {
+                method: "DELETE",
+                path: /\/v0\/registry\/records\/[0-9a-f-]{36}$/,
+                body: {}
+            }
+        ]);
+        process.env.MGD_BASE_URL = server.url;
+        try {
+            const program = new Command();
+            registerDatasetCommands(program);
+            let error: unknown;
+            try {
+                await captureStdout(() =>
+                    program.parseAsync(
+                        [
+                            "dataset",
+                            "create",
+                            "--title",
+                            "My data",
+                            "--publisher",
+                            "New Agency"
+                        ],
+                        { from: "user" }
+                    )
+                );
+            } catch (e) {
+                error = e;
+            }
+            expect((error as Error).message).to.equal("create failed");
+            const organisation = JSON.parse(
+                server.requests
+                    .filter((r) => r.method === "POST")[0]
+                    .body.toString()
+            );
+            expect(
+                server.requests.some(
+                    (r) =>
+                        r.method === "DELETE" &&
+                        r.url.endsWith(`/records/${organisation.id}`)
+                )
+            ).to.equal(true);
+        } finally {
+            await server.close();
+        }
+    });
 
     it("skips v0 tagging when the response has no event id header", async () => {
         const server = await startMockServer([
