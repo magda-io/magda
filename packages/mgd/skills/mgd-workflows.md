@@ -184,7 +184,10 @@ aspects directly.
 | `version` | dataset & distribution | CLI-managed history — never hand-edit (ground rule 7) |
 | `access-control` | dataset | `ownerId`, `orgUnitId`, `constraintExemption` |
 | `source` | dataset | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`) |
-| `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — the web UI shows this org before the dates. **The CLI does not set it** (see note below) |
+| `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — the web UI shows this org before the dates. The value is an organisation **record id**, not a name — see "Assigning a publisher" below |
+| `dataset-format` | distribution | `{ "format": "<str>", "confidenceLevel": <0–100> }` — the **effective** format. Written by `magda-minion-format`; **takes precedence over** `dcat-distribution-strings.format` for previews and search (see "Cataloguing remote/link distributions" below) |
+| `visualization-info` | distribution | `{ "timeseries": <bool>, "fields": { "<CsvHeader>": { "time": <bool>, "numeric": <bool> } } }` — controls a CSV chart's default axes/series |
+| `preview-tabular-data-settings` | distribution | *optional* — `{ "enableChart": <bool>, "enableTable": <bool> }` to force chart/table previews on or off |
 | `temporal-coverage` | dataset | *optional* — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range |
 | `spatial-coverage` | dataset | *optional* — bounding box / named region; set manually when the data has a spatial extent |
 
@@ -192,11 +195,244 @@ aspects directly.
 aspect — `mgd aspect create <id> --name "…" --schema @schema.json`, then attach
 data with `dataset aspect set`/`patch` (see "Custom / domain metadata" above).
 
-**Publisher gap.** CLI-created datasets omit `dataset-publisher`, so the web UI
-shows no publishing organisation. Populating it correctly needs an
-`organisation` record ID (not a name), which the CLI doesn't yet resolve —
-tracked in issue #3715. Interim workaround, only if you already know the org's
-record ID: `mgd dataset aspect set <id> dataset-publisher '{"publisher":"<orgId>"}'`.
+### Assigning a publisher
+
+CLI-created datasets omit `dataset-publisher`, so the web UI shows no publishing
+organisation. There is **no `--publisher` flag and no `dataset publisher set`
+command** — by design. Assign a publisher by composing the existing aspect/API
+primitives through the workflow below. `dataset-publisher.publisher` is an
+organisation **record id**, never a free-text name.
+
+**1. Resolve the organisation before writing anything.** Treat the name the user
+gave you as a lookup key, not a value to store. Search existing records carrying
+the `organization-details` aspect (there is no curated `search organisations`
+command — use the raw registry API):
+
+```sh
+# exact case-insensitive match on the organisation's canonical title.
+# ":?" without % wildcards is a case-insensitive exact match (ILIKE, no pattern).
+mgd api request GET /v0/registry/records \
+  --query aspect=organization-details \
+  --query 'aspectQuery=organization-details.title:?Bureau of Meteorology' \
+  --query optionalAspect=organization-details --json \
+  | jq -r '.records[] | [.id, .aspects["organization-details"].title] | @tsv'
+```
+
+For a broader **contains/substring** search, use the case-insensitive regex
+operator `:~` (not ILIKE `%…%`, which the registry rejects with a 500):
+
+```sh
+mgd api request GET /v0/registry/records \
+  --query aspect=organization-details \
+  --query 'aspectQuery=organization-details.title:~Bureau of Meteorology' \
+  --query optionalAspect=organization-details --json \
+  | jq -r '.records[] | [.id, .aspects["organization-details"].title] | @tsv'
+```
+
+- Prefer an **exact case-insensitive** match on `organization-details.title` (or
+  `name`). Use that record's **id** as the publisher value.
+- If several plausible matches come back, **show them and ask the user** which
+  record to use — never guess.
+- If nothing matches, do **not** create an organisation automatically. A failed
+  lookup never means "create".
+
+If the user supplies an organisation **record id** directly, verify it exists and
+has an `organization-details` aspect (`mgd dataset aspect get <orgId>
+organization-details`), and read its canonical title for the DCAT mirror.
+
+**2. Creating a new organisation is an explicit, confirmed mutation.** Only when
+the user wants a publisher that doesn't exist: tell them this creates a new
+**global** `organisation` record (not dataset-scoped), show the proposed name and
+the exact record to be written, get explicit go-ahead (ground rule 5), then
+create it via the raw API — note `POST` needs **`--body-file`**, not `--body @file`:
+
+```sh
+cat > /tmp/org.json <<'JSON'
+{ "name": "bom", "aspects": { "organization-details": { "title": "Bureau of Meteorology", "name": "bom" } } }
+JSON
+mgd api request POST /v0/registry/records --body-file /tmp/org.json --json   # -> .id
+```
+
+Use the returned id as the publisher value.
+
+**3. Write the reference with `aspect set`** — `dataset-publisher` is a small,
+complete reference aspect, so replacing it wholesale is correct:
+
+```sh
+mgd dataset aspect set <datasetId> dataset-publisher '{"publisher":"<organisationId>"}' --json
+```
+
+**4. Keep the DCAT display mirror in sync with `aspect patch`.** Some deployments
+also show `dcat-dataset-strings.publisher` (a mirrored *name*). Update only that
+field — **never `aspect set` here**, or you'll drop title/description/keywords/
+license/dates:
+
+```sh
+mgd dataset aspect patch <datasetId> dcat-dataset-strings '{"publisher":"<canonical organisation title>"}' --json
+```
+
+Derive the mirror name from the resolved organisation record, not from a
+separately typed string.
+
+**At create time** you may fold both into the initial record once the org is
+resolved and confirmed — but don't replace the standard DCAT aspect with a
+partial object; if composing it safely is awkward, create first and then run
+steps 3–4:
+
+```sh
+mgd dataset create --title "…" \
+  --aspect 'dataset-publisher={"publisher":"<organisationId>"}' --json
+```
+
+**Don't backfill.** Publisher assignment happens only when the user asks for it
+or as part of a confirmed create/enrich plan. Changing `--title`, `--desc`,
+`--license` or any unrelated field must **never** silently assign or default a
+publisher, and a missing `dataset-publisher` must not auto-become a site default.
+
+**Versioning.** Steps 3–4 use raw `aspect set`/`patch`, which (per ground rule 7
+and #3687) deliberately do **not** bump the application-managed `version` aspect.
+Registry event history still records the mutations. Don't hand-edit `version` to
+compensate — a raw-aspect publisher change is intentionally not a new semantic
+version.
+
+## Cataloguing remote/link distributions & making previews work
+
+This section is about **remote/link distributions** — datasets whose data lives
+at an external URL (ArcGIS/WMS/WFS endpoints, remote CSV/JSON/API) rather than an
+uploaded file. Getting such a distribution to **preview** (map / table+chart /
+JSON records) in the web UI is dominated by one non-obvious fact:
+
+> **The `dataset-format` aspect — not `dcat-distribution-strings.format` —
+> governs both preview selection and the search index.** The web client reads the
+> effective format from `dataset-format` first and only falls back to the DCAT
+> `format`. `add-file --format` sets the **DCAT** format; when `magda-minion-format`
+> is enabled it writes a `dataset-format` aspect that **overrides** it. So
+> `--format csv` alone may be silently overridden and no table preview appears.
+
+**To force the effective format, set the aspect** (confidence `100` beats the
+minion's guess):
+
+```sh
+mgd dataset aspect set <distId> dataset-format '{"format":"csv","confidenceLevel":100}' --json
+```
+
+### Ordering & the minion re-clobber trap
+
+`magda-minion-format` re-runs whenever `dcat-distribution-strings` changes and
+re-derives `dataset-format` from URL/content sniffing — sometimes **wrongly**
+(a `…DataDrillDataset.php?…&format=csv` endpoint got tagged `X-HTTPD-PHP` from the
+server MIME; an ArcGIS `…/FeatureServer/0/query?f=geojson` endpoint got tagged
+`ESRI FEATURESERVER` because the URL contains "FeatureServer", clobbering an
+explicit `GEOJSON` — see magda-io/magda-minion-format#25).
+
+So: **set `dataset-format` last**, after every `dcat-distribution-strings` edit.
+Any later DCAT patch re-triggers the minion and can clobber it again. Confirm the
+effective format stuck by **polling the search API** (see "Verifying", below), not
+the registry.
+
+### Format → preview matrix
+
+The effective (`dataset-format`) value drives which preview renders:
+
+| Preview | Effective format that triggers it | Notes |
+| --- | --- | --- |
+| **Table + chart** | matches `csv` as a whole word (`/(^\|\W+)csv(\W+\|$)/i`) | also needs a fetchable URL (see "remote direct files") and passes the proxy allow-list |
+| **Map** | one of (in preference order) `WMS`, `ESRI MAPSERVER`, `WFS`, `ESRI FEATURESERVER`, `GeoJSON`, `csv-geo-au`, `KML`, `KMZ` | first match in that order wins |
+| **JSON records** | JSON served at a fetchable URL | rendered by the JSON tree viewer on the distribution page |
+
+**Map specifics:**
+
+- **WMS with a working `GetCapabilities` is the most reliable map path.**
+- **ArcGIS FeatureServer** must point at a *specific layer* (`…/FeatureServer/0`,
+  not the service root) — and even then the current preview-map can fail to
+  render it (magda-io/magda-preview-map#26). The reliable workaround is to add a
+  **second GeoJSON distribution** pointing at the layer's query endpoint and
+  classify it `GeoJSON`:
+
+  ```sh
+  mgd dataset add-file <datasetId> \
+    --access-url 'https://…/FeatureServer/0/query?where=1=1&outFields=*&f=geojson' \
+    --title "… (GeoJSON)" --json
+  mgd dataset aspect set <newDistId> dataset-format '{"format":"GeoJSON","confidenceLevel":100}' --json
+  ```
+
+### "The preview says the file is there but nothing loads" (403 = proxy allow-list)
+
+CSV/JSON/map previews fetch the remote URL **through the preview-map proxy**
+(`/preview-map/proxy/`), which only proxies hosts whitelisted in
+`magda-preview-map.serverConfig.allowProxyFor` (suffix match; defaults include
+`gov.au`, `arcgis.com`, `csiro.au`). A source on a non-listed host (e.g.
+`ala.org.au`, `gbif.org`) returns **403** and the preview stays empty. This is a
+**deployment config** change (add the host to `allowProxyFor`), **not** a metadata
+fix — tell the user that rather than fiddling with aspects.
+
+### Remote direct-download files (downloadURL + license)
+
+For a remote file the preview should fetch and render (e.g. a remote CSV), the
+preview loader prefers **`downloadURL`**, but `add-file --access-url` only sets
+`accessURL`; and `add-file` has **no `--license`**. The working recipe (note the
+ordering — `dataset-format` last):
+
+```sh
+DIST=$(mgd dataset add-file <datasetId> --access-url 'https://host.gov.au/data.csv' --format csv --json | jq -r '.distributionId')
+mgd dataset aspect patch "$DIST" dcat-distribution-strings '{"downloadURL":"https://host.gov.au/data.csv"}' --json
+mgd dist update "$DIST" --license "CC-BY-4.0" --json
+mgd dataset aspect set "$DIST" dataset-format '{"format":"csv","confidenceLevel":100}' --json  # set dataset-format last
+```
+
+### Default chart axes (`visualization-info`)
+
+A CSV chart's default X/Y come from the `visualization-info` aspect. Without it
+(and without the visualisation minion) the chart encoder guesses badly. Set
+`timeseries` and per-field `{ "time" | "numeric" }` flags, with keys **matching
+the CSV headers exactly**:
+
+```sh
+mgd dataset aspect set <distId> visualization-info \
+  '{"timeseries":true,"fields":{"Date":{"time":true},"Rainfall_mm":{"numeric":true}}}' --json
+```
+
+`preview-tabular-data-settings` (`{"enableChart":bool,"enableTable":bool}`) force
+the chart/table previews on or off independently.
+
+### Resolving the id of a just-added distribution
+
+`mgd dataset add-file --json` returns the new id in the **`distributionId`**
+field (and in plain mode it prints the id to stdout), so capture it directly:
+
+```sh
+DIST=$(mgd dataset add-file <datasetId> --access-url 'https://host.gov.au/data.csv' --format csv --json | jq -r '.distributionId')
+```
+
+Fallback only if you've lost it — re-list and match on the URL you added:
+
+```sh
+mgd dataset distributions <datasetId> --jsonl \
+  | jq -r 'select(.aspects["dcat-distribution-strings"].accessURL=="https://host.gov.au/data.csv") | .id'
+```
+
+### Verifying changes
+
+- **State** lives in the `publishing` aspect — check it directly; search hitCount
+  and admin-visible drafts don't prove published state.
+- **Drafts aren't in the public search index** — only published datasets are. To
+  confirm the effective format on a *draft*, read the registry aspect directly:
+
+  ```sh
+  mgd dist get <distId> --json | jq -r '.aspects["dataset-format"].format'
+  ```
+
+  Bear in mind `magda-minion-format` may still re-derive `dataset-format`
+  asynchronously (the re-clobber trap above), so re-read after a moment if a DCAT
+  edit could have re-triggered it.
+- **Once published**, the **search index lags the registry** after any mutation —
+  the delay ranges from seconds to a few minutes depending on the deployment's
+  indexer schedule, so poll (don't assume one read is final) to confirm what
+  previews actually read (they use the indexed effective value):
+
+  ```sh
+  mgd search datasets "<dataset title>" --jsonl | jq -r 'select(.identifier=="<datasetId>") | .distributions[].format'
+  ```
 
 ## Error triage
 

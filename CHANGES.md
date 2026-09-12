@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v6.2.1
+
+- #3783: Document how to assign a dataset publisher through the `mgd` coding-agent skill.
+- #3784: Document how to make remote/link distributions previewable through the `mgd` coding-agent skill.
+
 ## v6.2.0
 
 - #3758: Upgraded the in-cluster PostgreSQL backup tool wal-g to 3.0.8.
