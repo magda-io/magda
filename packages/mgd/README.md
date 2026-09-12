@@ -441,7 +441,7 @@ Records carry data in named **aspects**. The ones the CLI reads or writes most:
 | `version` | dataset & distribution | CLI-managed history — don't hand-edit |
 | `access-control` | dataset | `ownerId`, `orgUnitId`, `constraintExemption` |
 | `source` | dataset | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`) |
-| `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI; the CLI does not set it yet ([#3715](https://github.com/magda-io/magda/issues/3715)) |
+| `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI. The value is an organisation **record id**, not a name; assign it by resolving/reusing an organisation and writing the aspect (see the skill's "Assigning a publisher" workflow). There is no `--publisher` flag by design |
 | `temporal-coverage` | dataset | *optional* — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range |
 | `spatial-coverage` | dataset | *optional* — bounding box / named region; set manually when the data has a spatial extent |
 
@@ -531,7 +531,14 @@ drive the catalog safely. The [`skills/`](./skills/) folder contains:
 
 - **`mgd-workflows.md`** — command usage, output modes, search strategy, recipes,
   the create → enrich → add-file → publish workflow, a common-aspects reference,
-  safety rules and error triage;
+  safety rules and error triage. It also covers two workflows that compose
+  existing primitives rather than adding new commands:
+  **"Assigning a publisher"** (resolve an organisation to a record id, reuse
+  before create, confirm new-org creation, sync the DCAT mirror with `aspect
+  patch`) and **"Cataloguing remote/link distributions & making previews work"**
+  (the `dataset-format`-beats-`dcat-distribution-strings.format` precedence rule,
+  a format → preview matrix, the ArcGIS FeatureServer/GeoJSON workaround, the
+  proxy allow-list 403 symptom, and `visualization-info` chart axes);
 - **`dataset-elicitation.md`** — "metadata consultant" behaviour for guided
   dataset creation (infer before asking, quick vs guided path, confirm-then-write);
 - **`SKILL.md`** — the standard Agent-Skill wrapper (`name` + `description`
