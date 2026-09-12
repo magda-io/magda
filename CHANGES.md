@@ -4,6 +4,7 @@
 
 - #3783: Document how to assign a dataset publisher through the `mgd` coding-agent skill.
 - #3784: Document how to make remote/link distributions previewable through the `mgd` coding-agent skill.
+- #3785: Restructure the `mgd` coding-agent skill for progressive loading to keep its context footprint scalable.
 
 ## v6.2.0
 

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -15,7 +15,15 @@ import {
 import { UsageError } from "../errors.js";
 
 const SKILLS_DIR = fileURLToPath(new URL("../../skills/", import.meta.url));
-const BUNDLE = ["SKILL.md", "mgd-workflows.md", "dataset-elicitation.md"];
+
+// The installer bundles every *.md file in the skills dir (globbed, sorted), so
+// new reference files ship automatically. Derive the expected set the same way
+// rather than hardcoding it, so this test survives adding/splitting files.
+function expectedBundle(dir: string = SKILLS_DIR): string[] {
+    return readdirSync(dir)
+        .filter((f) => f.endsWith(".md"))
+        .sort();
+}
 
 describe("skills install", () => {
     let tmp: string;
@@ -104,8 +112,8 @@ describe("skills install", () => {
             });
             expect(res.action).to.equal("created");
             expect(res.scope).to.equal("global");
-            expect(res.files).to.deep.equal(BUNDLE);
-            for (const f of BUNDLE) {
+            expect(res.files).to.deep.equal(expectedBundle());
+            for (const f of expectedBundle()) {
                 expect(existsSync(path.join(res.dir, f))).to.equal(true);
             }
         }
@@ -143,9 +151,66 @@ describe("skills install", () => {
             env
         });
         expect(second.action).to.equal("updated");
-        for (const f of BUNDLE) {
+        for (const f of expectedBundle()) {
             expect(existsSync(path.join(second.dir, f))).to.equal(true);
         }
+    });
+
+    it("bundles every *.md in the skills dir (globbed, not a fixed list)", async () => {
+        const src = path.join(tmp, "src-skills");
+        await fs.mkdir(src, { recursive: true });
+        const mdFiles = ["SKILL.md", "core.md", "extra-reference.md"];
+        for (const f of mdFiles) await fs.writeFile(path.join(src, f), `# ${f}`);
+        // a non-markdown file must be ignored
+        await fs.writeFile(path.join(src, "notes.txt"), "ignore me");
+
+        const res = await installSkill({
+            agent: "claude",
+            scope: "global",
+            projectDir: tmp,
+            skillsDir: src,
+            env
+        });
+
+        expect(res.files).to.deep.equal([...mdFiles].sort());
+        for (const f of mdFiles) {
+            expect(existsSync(path.join(res.dir, f))).to.equal(true);
+        }
+        expect(existsSync(path.join(res.dir, "notes.txt"))).to.equal(false);
+    });
+
+    it("re-install cleans up files no longer in the bundle", async () => {
+        const src = path.join(tmp, "src-skills");
+        await fs.mkdir(src, { recursive: true });
+        await fs.writeFile(path.join(src, "SKILL.md"), "# SKILL");
+        await fs.writeFile(path.join(src, "old-monolith.md"), "# old");
+
+        const first = await installSkill({
+            agent: "claude",
+            scope: "global",
+            projectDir: tmp,
+            skillsDir: src,
+            env
+        });
+        expect(existsSync(path.join(first.dir, "old-monolith.md"))).to.equal(
+            true
+        );
+
+        // the monolith is replaced by split reference files in the source
+        await fs.rm(path.join(src, "old-monolith.md"));
+        await fs.writeFile(path.join(src, "part-a.md"), "# a");
+
+        const second = await installSkill({
+            agent: "claude",
+            scope: "global",
+            projectDir: tmp,
+            skillsDir: src,
+            env
+        });
+        expect(existsSync(path.join(second.dir, "old-monolith.md"))).to.equal(
+            false
+        );
+        expect(existsSync(path.join(second.dir, "part-a.md"))).to.equal(true);
     });
 
     it("uninstall removes the folder, then is a no-op", async () => {

@@ -72,8 +72,8 @@ metadata?".
 **Publisher.** When the user wants a publishing organisation, don't imply a
 `--publisher` flag (there isn't one). Resolve the organisation to a record id,
 reuse an existing one where possible, and confirm before creating a new org —
-follow the full "Assigning a publisher" workflow in `mgd-workflows.md`. Never
-silently backfill a default publisher on an unrelated edit.
+follow the full workflow in `publisher.md`. Never silently backfill a default
+publisher on an unrelated edit.
 
 ## Enrichment loop for existing datasets
 
