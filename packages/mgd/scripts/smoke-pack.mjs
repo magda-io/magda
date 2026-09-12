@@ -27,7 +27,10 @@ const expectedVersion = pkg.version;
 const REQUIRED_FILES = [
     "package/bin/mgd.js",
     "package/skills/SKILL.md",
-    "package/skills/mgd-workflows.md",
+    "package/skills/search.md",
+    "package/skills/authoring.md",
+    "package/skills/publisher.md",
+    "package/skills/preview.md",
     "package/skills/dataset-elicitation.md"
 ];
 

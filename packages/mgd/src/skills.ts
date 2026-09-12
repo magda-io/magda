@@ -21,11 +21,19 @@ export interface InstallResult {
     action: "created" | "updated" | "removed" | "absent";
 }
 
-// The whole magda-mgd/ folder is a managed unit: install overwrites it, uninstall
-// removes it. SKILL.md references the other two files "in the same directory", so
-// the three ship and install together.
+// The whole magda-mgd/ folder is a managed unit: install replaces it, uninstall
+// removes it. SKILL.md references its sibling reference files "in the same
+// directory", so every *.md in the skills dir ships and installs together —
+// globbed (not a hardcoded list) so new reference files are bundled
+// automatically without editing this module.
 const SKILL_SUBDIR = "magda-mgd";
-const BUNDLE = ["SKILL.md", "mgd-workflows.md", "dataset-elicitation.md"];
+
+// The skill files to install: every *.md in the source skills dir, sorted for a
+// deterministic result.
+async function bundleFiles(skillsDir: string): Promise<string[]> {
+    const entries = await fs.readdir(skillsDir);
+    return entries.filter((f) => f.endsWith(".md")).sort();
+}
 
 function homeDir(env: NodeJS.ProcessEnv): string {
     const home = env.HOME;
@@ -122,8 +130,12 @@ export async function installSkill(opts: {
 }): Promise<InstallResult> {
     const dir = resolveSkillDir(opts);
     const action = existsSync(dir) ? "updated" : "created";
+    // Replace the managed folder wholesale so files dropped from the bundle
+    // (e.g. a reference file that was split or renamed) don't linger on upgrade.
+    await fs.rm(dir, { recursive: true, force: true });
     await fs.mkdir(dir, { recursive: true });
-    for (const name of BUNDLE) {
+    const bundle = await bundleFiles(opts.skillsDir);
+    for (const name of bundle) {
         await fs.copyFile(
             path.join(opts.skillsDir, name),
             path.join(dir, name)
@@ -136,7 +148,7 @@ export async function installSkill(opts: {
         agent: opts.agent,
         scope: opts.scope,
         dir,
-        files: [...BUNDLE],
+        files: bundle,
         action
     };
 }

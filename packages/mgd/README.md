@@ -527,23 +527,27 @@ Run `mgd --help` or `mgd <command> --help` for full option documentation.
 ## Using `mgd` with a coding agent
 
 `mgd` ships with a tool-agnostic assistant **skill** so an LLM coding agent can
-drive the catalog safely. The [`skills/`](./skills/) folder contains:
+drive the catalog safely. The skill uses **progressive loading**: `SKILL.md`
+holds the always-needed core plus a router, and the agent reads only the
+reference file its current task needs — so adding procedures keeps the
+per-task context footprint small. The [`skills/`](./skills/) folder contains:
 
-- **`mgd-workflows.md`** — command usage, output modes, search strategy, recipes,
-  the create → enrich → add-file → publish workflow, a common-aspects reference,
-  safety rules and error triage. It also covers two workflows that compose
-  existing primitives rather than adding new commands:
-  **"Assigning a publisher"** (resolve an organisation to a record id, reuse
-  before create, confirm new-org creation, sync the DCAT mirror with `aspect
-  patch`) and **"Cataloguing remote/link distributions & making previews work"**
-  (the `dataset-format`-beats-`dcat-distribution-strings.format` precedence rule,
-  a format → preview matrix, the ArcGIS FeatureServer/GeoJSON workaround, the
+- **`SKILL.md`** — the Agent-Skill wrapper (`name` + `description` frontmatter)
+  **and** the always-loaded core: ground rules, the `set` vs `patch` safety
+  rule, a command index, error triage, and a router mapping each task to the
+  reference file to read. Auto-discovered by Claude Code, Codex and opencode;
+- **`search.md`** — keyword vs semantic search, inspect, and download recipes;
+- **`authoring.md`** — create → enrich → add-file → publish, the common-aspects
+  reference, and custom/domain aspects;
+- **`publisher.md`** — assigning a dataset publisher by composing existing
+  primitives (resolve/reuse an organisation record, confirm new-org creation,
+  write `dataset-publisher`, sync the DCAT mirror with `aspect patch`);
+- **`preview.md`** — making remote/link distributions preview (the
+  `dataset-format`-beats-`dcat-distribution-strings.format` precedence rule, a
+  format → preview matrix, the ArcGIS FeatureServer/GeoJSON workaround, the
   proxy allow-list 403 symptom, and `visualization-info` chart axes);
 - **`dataset-elicitation.md`** — "metadata consultant" behaviour for guided
-  dataset creation (infer before asking, quick vs guided path, confirm-then-write);
-- **`SKILL.md`** — the standard Agent-Skill wrapper (`name` + `description`
-  frontmatter pointing at the two files above); auto-discovered by Claude Code,
-  Codex and opencode.
+  dataset creation (infer before asking, quick vs guided path, confirm-then-write).
 
 ### Installing the skill
 
