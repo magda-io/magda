@@ -441,7 +441,7 @@ Records carry data in named **aspects**. The ones the CLI reads or writes most:
 | `version` | dataset & distribution | CLI-managed history — don't hand-edit |
 | `access-control` | dataset | `ownerId`, `orgUnitId`, `constraintExemption` |
 | `source` | dataset | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`) |
-| `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI; the CLI does not set it yet ([#3715](https://github.com/magda-io/magda/issues/3715)) |
+| `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI. The value is an organisation **record id**, not a name; assign it by resolving/reusing an organisation and writing the aspect (see the skill's "Assigning a publisher" workflow). There is no `--publisher` flag by design |
 | `temporal-coverage` | dataset | *optional* — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range |
 | `spatial-coverage` | dataset | *optional* — bounding box / named region; set manually when the data has a spatial extent |
 
@@ -527,16 +527,27 @@ Run `mgd --help` or `mgd <command> --help` for full option documentation.
 ## Using `mgd` with a coding agent
 
 `mgd` ships with a tool-agnostic assistant **skill** so an LLM coding agent can
-drive the catalog safely. The [`skills/`](./skills/) folder contains:
+drive the catalog safely. The skill uses **progressive loading**: `SKILL.md`
+holds the always-needed core plus a router, and the agent reads only the
+reference file its current task needs — so adding procedures keeps the
+per-task context footprint small. The [`skills/`](./skills/) folder contains:
 
-- **`mgd-workflows.md`** — command usage, output modes, search strategy, recipes,
-  the create → enrich → add-file → publish workflow, a common-aspects reference,
-  safety rules and error triage;
+- **`SKILL.md`** — the Agent-Skill wrapper (`name` + `description` frontmatter)
+  **and** the always-loaded core: ground rules, the `set` vs `patch` safety
+  rule, a command index, error triage, and a router mapping each task to the
+  reference file to read. Auto-discovered by Claude Code, Codex and opencode;
+- **`search.md`** — keyword vs semantic search, inspect, and download recipes;
+- **`authoring.md`** — create → enrich → add-file → publish, the common-aspects
+  reference, and custom/domain aspects;
+- **`publisher.md`** — assigning a dataset publisher by composing existing
+  primitives (resolve/reuse an organisation record, confirm new-org creation,
+  write `dataset-publisher`, sync the DCAT mirror with `aspect patch`);
+- **`preview.md`** — making remote/link distributions preview (the
+  `dataset-format`-beats-`dcat-distribution-strings.format` precedence rule, a
+  format → preview matrix, the ArcGIS FeatureServer/GeoJSON workaround, the
+  proxy allow-list 403 symptom, and `visualization-info` chart axes);
 - **`dataset-elicitation.md`** — "metadata consultant" behaviour for guided
-  dataset creation (infer before asking, quick vs guided path, confirm-then-write);
-- **`SKILL.md`** — the standard Agent-Skill wrapper (`name` + `description`
-  frontmatter pointing at the two files above); auto-discovered by Claude Code,
-  Codex and opencode.
+  dataset creation (infer before asking, quick vs guided path, confirm-then-write).
 
 ### Installing the skill
 

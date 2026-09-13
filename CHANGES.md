@@ -12,6 +12,11 @@
   - The bundled wal-g is a custom Magda build (`ghcr.io/magda-io/magda-wal-g:3.0.8-magda-edcda8b`), not an upstream release: no released wal-g can back up PostgreSQL 15+ in the mode Magda uses. Temporary, pending an upstream release containing [wal-g/wal-g#2262](https://github.com/wal-g/wal-g/pull/2262).
   - Every `helm template`/`helm install` now prints a pair of `coalesce.go:316: warning: cannot overwrite table with non table` lines per bundled-PostgreSQL instance (32 lines for a default `magda-core` render, more via the umbrella chart), because `primary.customLivenessProbe`/`customReadinessProbe` are set as plain strings (they embed subchart `{{ }}` helpers) where the subchart schema declares them as maps. This is expected and harmless — the string still wins and renders correctly — not a bug report.
 - #3750: Add an automated in-cluster PostgreSQL major-upgrade path for v6 to v7. See the [PostgreSQL major upgrade runbook](./docs/docs/postgres-major-upgrade-runbook.md).
+## v6.2.1
+
+- #3783: Document how to assign a dataset publisher through the `mgd` coding-agent skill.
+- #3784: Document how to make remote/link distributions previewable through the `mgd` coding-agent skill.
+- #3785: Restructure the `mgd` coding-agent skill for progressive loading to keep its context footprint scalable.
 
 ## v6.2.0
 
