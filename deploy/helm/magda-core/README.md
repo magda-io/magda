@@ -73,7 +73,7 @@ doc for how the CA is delivered to each workload.
 | file://../internal-charts/web-server | web-server | 6.2.1 |
 | file://../magda-common | magda-common | 6.2.1 |
 | oci://ghcr.io/magda-io/charts | magda-embedding-api | 1.1.0 |
-| oci://ghcr.io/magda-io/charts | preview-map(magda-preview-map) | 1.1.3 |
+| oci://ghcr.io/magda-io/charts | preview-map(magda-preview-map) | 2.0.0-alpha.1 |
 
 ## Values
 
@@ -93,6 +93,9 @@ doc for how the CA is delivered to each workload.
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.imgSrc[0] | string | `"*"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.imgSrc[1] | string | `"data:"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.scriptSrc[0] | string | `"'self'"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.scriptSrc[1] | string | `"'unsafe-eval'"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.scriptSrc[2] | string | `"'unsafe-inline'"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.scriptSrc[3] | string | `"blob:"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.styleSrc[0] | string | `"'self'"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.styleSrc[1] | string | `"blob:"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.styleSrc[2] | string | `"'unsafe-inline'"` |  |

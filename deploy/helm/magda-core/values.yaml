@@ -399,11 +399,18 @@ gateway:
         # geospatial search panel selection view vector tiles buckets
         - https://tiles.magda.io
   helmetPerPath:
-    "/preview-map/*": 
+    "/preview-map/*":
       contentSecurityPolicy:
         directives:
+          # TerriaJS 8 / Cesium (preview-map >= 2.0.0) needs 'unsafe-eval' for
+          # dynamic code and blob: workers, and the built client uses an inline
+          # bootstrap script, so 'unsafe-inline' is required too. Without these
+          # the map viewer fails to initialise behind the gateway.
           scriptSrc:
           - "'self'"
+          - "'unsafe-eval'"
+          - "'unsafe-inline'"
+          - "blob:"
           styleSrc:
           - "'self'"
           - "blob:"
