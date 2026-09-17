@@ -93,6 +93,9 @@ doc for how the CA is delivered to each workload.
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.imgSrc[0] | string | `"*"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.imgSrc[1] | string | `"data:"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.scriptSrc[0] | string | `"'self'"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.scriptSrc[1] | string | `"'unsafe-eval'"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.scriptSrc[2] | string | `"'unsafe-inline'"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.scriptSrc[3] | string | `"blob:"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.styleSrc[0] | string | `"'self'"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.styleSrc[1] | string | `"blob:"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.styleSrc[2] | string | `"'unsafe-inline'"` |  |
