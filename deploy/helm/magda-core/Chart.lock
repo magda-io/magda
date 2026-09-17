@@ -46,7 +46,7 @@ dependencies:
   version: 6.2.1
 - name: magda-preview-map
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0-alpha.0
+  version: 2.0.0-alpha.1
 - name: registry-api
   repository: file://../internal-charts/registry-api
   version: 6.2.1
@@ -89,5 +89,5 @@ dependencies:
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
   version: 6.2.1
-digest: sha256:dca81586a3b1c7cc3326b05901974690fa0ae876f8507d073ccf613ccedabffa
-generated: "2026-09-17T11:38:37.111793+10:00"
+digest: sha256:7c2fc8734f2e75d671d703a79d423a96d66da5491278b424dadd2433452fee7b
+generated: "2026-09-17T17:18:57.318944+10:00"
