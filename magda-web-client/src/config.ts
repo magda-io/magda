@@ -261,6 +261,15 @@ export interface ConfigDataType {
     searchApiBaseUrl: string;
 
     /**
+     * The semantic search API base URL config value that is supplied by the web server.
+     * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
+     *
+     * @type {string}
+     * @memberof ConfigDataType
+     */
+    semanticSearchApiBaseUrl: string;
+
+    /**
      * The correspondence API base URL config value that is supplied by the web server.
      * When this value is not available from the server (e.g. when run web client locally), the default "fallback" API server url will be used to generate this value.
      *
@@ -966,6 +975,9 @@ export const config: ConfigDataType = {
     contentApiBaseUrl,
     searchApiBaseUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
+    semanticSearchApiBaseUrl:
+        serverConfig.semanticSearchApiBaseUrl ||
+        fallbackApiHost + "api/v0/semantic-search/",
     indexerApiBaseUrl:
         serverConfig?.indexerApiBaseUrl || fallbackApiHost + "api/v0/indexer/",
     registryApiReadOnlyBaseUrl:
