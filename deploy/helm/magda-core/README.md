@@ -73,7 +73,7 @@ doc for how the CA is delivered to each workload.
 | file://../internal-charts/web-server | web-server | 6.2.1 |
 | file://../magda-common | magda-common | 6.2.1 |
 | oci://ghcr.io/magda-io/charts | magda-embedding-api | 1.1.0 |
-| oci://ghcr.io/magda-io/charts | preview-map(magda-preview-map) | 2.0.0-alpha.1 |
+| oci://ghcr.io/magda-io/charts | preview-map(magda-preview-map) | 2.0.0-alpha.2 |
 
 ## Values
 
