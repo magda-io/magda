@@ -419,6 +419,14 @@ gateway:
           connectSrc:
           - "'self'"
           - "*.cesium.com"
+          # preview-map >= 2.0.0 default base map is OpenStreetMap
+          # (https://tile.openstreetmap.org/). Cesium fetches tiles via
+          # connect (XHR) for the WebGL texture, so the host must be allowed
+          # here or the base map fails to load behind the gateway. The bare
+          # host is required (a `*.tile.openstreetmap.org` wildcard would not
+          # match it).
+          - "https://tile.openstreetmap.org"
+          - "https://*.tile.openstreetmap.org"
           imgSrc:
           - "*"
           - "data:"

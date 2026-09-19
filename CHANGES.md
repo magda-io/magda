@@ -2,6 +2,7 @@
 
 ## v7.0.0
 
+- Allow the OpenStreetMap base map tile host (`tile.openstreetmap.org`) in the gateway `/preview-map/*` Content-Security-Policy `connectSrc`, so the preview-map (>= 2.0.0) default OSM base map loads behind the gateway.
 - #3637: Provider-agnostic PostgreSQL support — one connection contract that holds on in-cluster PostgreSQL, AWS RDS, Azure Database for PostgreSQL and GCP Cloud SQL alike (closes #3636, #3734, #3735, #3736):
   - Encrypt every service-to-database connection by default.
   - Serve TLS on the in-cluster PostgreSQL by default.

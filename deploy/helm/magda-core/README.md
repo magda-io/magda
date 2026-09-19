@@ -90,6 +90,8 @@ doc for how the CA is delivered to each workload.
 | gateway.helmetPerPath."/assets/alasql.html" | object | `{"contentSecurityPolicy":{"directives":{"scriptSrc":["'self'","'unsafe-eval'"]}}}` | allow alasql to compile SQL query at frontend in its separate window/iframe |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[0] | string | `"'self'"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[1] | string | `"*.cesium.com"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[2] | string | `"https://tile.openstreetmap.org"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[3] | string | `"https://*.tile.openstreetmap.org"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.imgSrc[0] | string | `"*"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.imgSrc[1] | string | `"data:"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.scriptSrc[0] | string | `"'self'"` |  |
