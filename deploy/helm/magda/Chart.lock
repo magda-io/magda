@@ -13,7 +13,7 @@ dependencies:
   version: 3.0.0
 - name: magda-minion-format
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.1
+  version: 2.0.2
 - name: magda-minion-linked-data-rating
   repository: oci://ghcr.io/magda-io/charts
   version: 2.0.0
@@ -35,5 +35,5 @@ dependencies:
 - name: magda-csv-semantic-indexer
   repository: oci://ghcr.io/magda-io/charts
   version: 1.0.0-alpha.2
-digest: sha256:1617934b78945e6239a58f436c640b1217d81a7a9f564ac000121347e250f7f0
-generated: "2026-09-13T06:21:11.384860924Z"
+digest: sha256:feaa95d2585638666b36b7918f1b8f231492f7e77fa6d0a106ae68a1324cc59a
+generated: "2026-09-19T13:59:26.961573+10:00"
