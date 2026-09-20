@@ -180,8 +180,10 @@ supportExternalTerriaMapV7: false
 # -- When set, the string here will replace the text of the `Open in National Map` button in Map Preview area.
 openInExternalTerriaMapButtonText:
 
-# -- When set, the `Open in National Map` button in Map Preview area will sent map data to the URL provided and open the map preview there.
-# When not set, UI will by default send to the National Map.
+# -- When set, the `Open in National Map` button in Map Preview area will send map data to the URL provided and open the map preview there.
+# When not set (the default), the button is hidden. The historical default target
+# (nationalmap.gov.au) has been discontinued; a built-in full-map view is tracked
+# separately (magda-preview-map#53).
 openInExternalTerriaMapTargetUrl:
 
 # -- Extra config data for external plugins.
