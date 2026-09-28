@@ -2,19 +2,25 @@
 
 ## v7.0.0
 
-- #3792: Bump bundled `magda-minion-format` to `2.0.2` (ArcGIS FeatureServer `f=geojson` query format-detection fix).
-- #3792: Bump bundled `magda-preview-map` to `2.0.0` (magda-item relative-baseUrl preview fix).
-- #3792: Allow the OpenStreetMap base map tile host (`tile.openstreetmap.org`) in the gateway `/preview-map/*` Content-Security-Policy `connectSrc`, so the preview-map (>= 2.0.0) default OSM base map loads behind the gateway.
-- #3637: Provider-agnostic PostgreSQL support — one connection contract that holds on in-cluster PostgreSQL, AWS RDS, Azure Database for PostgreSQL and GCP Cloud SQL alike (closes #3636, #3734, #3735, #3736):
-  - Encrypt every service-to-database connection by default.
-  - Serve TLS on the in-cluster PostgreSQL by default.
-  - Support a non-default privileged database username via `global.postgresql.auth.username`.
-  - Upgrade the DB migrator's Flyway from 4.2 to 12.11 for SCRAM authentication support on PostgreSQL 14/15+ defaults, with a no-gap history baseline so existing deployments upgrade in place without re-applying already-applied migrations.
-  - Add a plugin↔Magda Helm helper-contract compatibility handshake (`global.magdaCompatibilityCheck`) so a version-mismatched authentication plugin fails at render time with an actionable message rather than misbehaving at runtime.
+- #3637: Provider-agnostic PostgreSQL support — Magda now runs against in-cluster PostgreSQL, AWS RDS, Azure Database for PostgreSQL and GCP Cloud SQL through one connection contract (closes #3636, #3734, #3735, #3736):
+  - Service-to-database traffic is encrypted by default, and the in-cluster PostgreSQL serves TLS by default.
+  - Deployments can run under a non-default privileged database username (`global.postgresql.auth.username`).
+  - Works with SCRAM authentication on PostgreSQL 14/15+ (DB migrator Flyway upgraded 4.2 → 12.11), and existing deployments upgrade in place without re-applying already-applied migrations.
+  - A version-mismatched authentication plugin now fails at render time with an actionable message instead of misbehaving at runtime (`global.magdaCompatibilityCheck`).
+- #3767: Support strict TLS certificate verification (`sslmode=verify-ca` / `verify-full`) for database connections, so managed-DB connections can be protected against man-in-the-middle attacks (#3739).
+- #3773: Let external authentication-plugin charts receive the PostgreSQL server CA so they too can use `verify-ca`/`verify-full`; previously only magda-core's own workloads got the CA (#3772).
 - #3749: Upgrade the bundled in-cluster PostgreSQL from 13.7 to 17.5 (bitnami `postgresql` subchart 10.9.1 → 16.7.24). **This is a breaking change — please refer to the official version release notes for upgrading instructions.**
-  - The bundled wal-g is a custom Magda build (`ghcr.io/magda-io/magda-wal-g:3.0.8-magda-edcda8b`), not an upstream release: no released wal-g can back up PostgreSQL 15+ in the mode Magda uses. Temporary, pending an upstream release containing [wal-g/wal-g#2262](https://github.com/wal-g/wal-g/pull/2262).
-  - Every `helm template`/`helm install` now prints a pair of `coalesce.go:316: warning: cannot overwrite table with non table` lines per bundled-PostgreSQL instance (32 lines for a default `magda-core` render, more via the umbrella chart), because `primary.customLivenessProbe`/`customReadinessProbe` are set as plain strings (they embed subchart `{{ }}` helpers) where the subchart schema declares them as maps. This is expected and harmless — the string still wins and renders correctly — not a bug report.
+  - registry-api can now authenticate against PostgreSQL 15+ (SCRAM); its previous JDBC driver failed every connection with "authentication type 10 is not supported", blocking fresh v7 installs.
+  - The bundled wal-g is a custom Magda build (`ghcr.io/magda-io/magda-wal-g:3.0.8-magda-edcda8b`) because no released wal-g can back up PostgreSQL 15+ in the mode Magda uses. Temporary, pending an upstream release containing [wal-g/wal-g#2262](https://github.com/wal-g/wal-g/pull/2262).
+  - `helm template`/`helm install` prints harmless `coalesce.go:316: warning: cannot overwrite table with non table` warnings per bundled-PostgreSQL instance. This is expected — the chart still renders correctly — and is not a bug.
 - #3750: Add an automated in-cluster PostgreSQL major-upgrade path for v6 to v7. See the [PostgreSQL major upgrade runbook](./docs/docs/postgres-major-upgrade-runbook.md).
+- #3776: Report clear, actionable guidance when the migrator's database user lacks CREATE on the `public` schema (removed as an implicit grant in PostgreSQL 15+), instead of a mid-migration "permission denied" that was easily mistaken for a TLS/CA failure; error detection no longer depends on the server's message language (#3744, closes #3770).
+- #3777: Fix backup-retention pruning that could misreport a benign empty result as an error, or silently hide a real deletion failure, because it relied on wal-g's exact output wording (#3763).
+- #3752: Fix the backup CronJob silently succeeding — and still pruning the existing backup chain — after a failed `wal-g backup-push` (#3746).
+- #3792: Fix broken data previews:
+  - ArcGIS FeatureServer distributions now preview correctly (bundled `magda-minion-format` 2.0.2 fixes `f=geojson` format detection).
+  - Map preview for magda-item distributions works behind the gateway again (bundled `magda-preview-map` 2.0.0 relative-baseUrl fix), and the default OpenStreetMap base map now loads (gateway `/preview-map/*` CSP allows `tile.openstreetmap.org`).
+
 ## v6.2.1
 
 - #3783: Document how to assign a dataset publisher through the `mgd` coding-agent skill.
