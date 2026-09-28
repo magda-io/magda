@@ -1,0 +1,45 @@
+{{- /*
+  `primary.extraEnvVarsCM` is the one name this chart hands the postgresql subchart that
+  the subchart no longer resolves through `tpl` — bitnami 10.9.1 did
+  (`statefulset.yaml:362`), 16.7.24 does not (`primary/statefulset.yaml:403`). It
+  therefore cannot be derived from `fullnameOverride` and has to be repeated as a literal
+  in every wrapper chart, which makes it the one name that can drift.
+
+  Drift is not silent at install time (Kubernetes rejects a ConfigMap reference
+  containing `{{`, and a merely *wrong* name leaves the pod in
+  CreateContainerConfigError) but it is deeply unobvious, and it costs a cluster
+  round-trip to discover. Fail at render time with the two names side by side instead.
+
+  Emits no manifest.
+*/}}
+{{- $fullname := .Values.postgresql.fullnameOverride | required "postgresql.fullnameOverride is required" }}
+{{- $expected := printf "%s-extra-env-vars" $fullname }}
+{{- $actual := .Values.postgresql.primary.extraEnvVarsCM | default "" }}
+{{- if ne $actual $expected }}
+{{- fail (printf "postgresql.primary.extraEnvVarsCM is %q but `extra-env-vars-configmap.yaml` creates %q. The postgresql subchart does not run `primary.extraEnvVarsCM` through `tpl`, so it must be set to the literal `<postgresql.fullnameOverride>-extra-env-vars` in every chart that overrides `fullnameOverride`. Set it to %q." $actual $expected $expected) }}
+{{- end }}
+
+{{- /*
+  Guard the per-chart values that moved under `primary.*` in subchart 16.7.24.
+
+  These are silent, not loud: the subchart simply never reads a key left at the old
+  top-level path. An operator carrying a v6 override of `postgresql.persistence.size`
+  gets a default-sized PVC and no warning -- exactly the defect this upgrade already
+  produced once during development (a 50Gi PVC where 100Gi was configured).
+
+  Safe to key on the top-level name: chart 16.7.24 declares none of these at the top
+  level of its own values (its top-level keys are architecture, audit, auth, backup,
+  ... primary, tls, volumePermissions and friends), so a value present here can only
+  have come from a stale override.
+*/}}
+{{- $moved := dict
+      "persistence"     "primary.persistence"
+      "resources"       "primary.resources"
+      "livenessProbe"   "primary.livenessProbe"
+      "readinessProbe"  "primary.readinessProbe"
+      "initdbUser"      "primary.initdb.user" }}
+{{- range $old, $new := $moved }}
+{{- if hasKey $.Values.postgresql $old }}
+{{- fail (printf "postgresql.%s is set, but subchart 16.7.24 moved it to postgresql.%s and no longer reads the old path. It would be silently ignored -- e.g. a stale `persistence.size` yields a default-sized PVC with no warning. Move the value to postgresql.%s." $old $new $new) }}
+{{- end }}
+{{- end }}

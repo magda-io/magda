@@ -4,16 +4,16 @@ dependencies:
   version: 6.2.1
 - name: magda-auth-google
   repository: oci://ghcr.io/magda-io/charts
-  version: 3.0.0
+  version: 4.0.0-alpha.1
 - name: magda-auth-internal
   repository: oci://ghcr.io/magda-io/charts
-  version: 3.0.0
+  version: 4.0.0-alpha.0
 - name: magda-auth-arcgis
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.1
+  version: 3.0.0-alpha.0
 - name: magda-auth-facebook
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 3.0.0-alpha.0
 - name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
   version: 2.1.0

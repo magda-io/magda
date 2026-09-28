@@ -36,34 +36,117 @@ global:
       # When upgrade from older version, no manual actions are required (as a new index will be auto-created based on the index version number).
       enabled: true
   postgresql:
-    # -- PostgreSQL username
-    # For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`.
-    # It's recommended use superuser `postgres` for both in-k8s PostgreSQL or cloud provider DB services (e.g. CloudSQL or AWS RDS).
-    # This user will only be used for DB schema migrators to cerate DB schema and restricted DB accounts that are used by Magda internal services to access DB.
-    # If you have to use a user account rather than `postgres`, the user account needs to have sufficient permissions to run all DB migration scripts ([e.g. here](https://github.com/magda-io/magda/tree/master/magda-migrator-registry-db/sql)).
-    # Note: Until the ticket #3126 is fixed, using a DB username rather than `postgres` will trigger an error when content DB migrate runs.
-    postgresqlUsername: "postgres"
+    auth:
+      # -- PostgreSQL username
+      # For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`.
+      # It's recommended use superuser `postgres` for in-k8s PostgreSQL deployments.
+      # For cloud provider DB services (e.g. CloudSQL or AWS RDS), set this value to your external privileged DB account username.
+      # This user will only be used for DB schema migrators to cerate DB schema and restricted DB accounts that are used by Magda internal services to access DB.
+      # If you have to use a user account rather than `postgres`, the user account needs to have sufficient permissions to run all DB migration scripts ([e.g. here](https://github.com/magda-io/magda/tree/master/magda-migrator-registry-db/sql)).
+      # Note: Until the ticket #3126 is fixed, using a DB username rather than `postgres` will trigger an error when content DB migrate runs.
+      # <br/><br/>
+      # For the in-cluster PostgreSQL this value <b>cannot be changed after the first
+      # boot</b>. The `CREATEDB`/`CREATEROLE` grant that makes a non-default privileged
+      # user workable is applied by an initdb script, and initdb scripts run only once,
+      # against an empty data directory. Pointing an existing deployment at a new
+      # username therefore leaves that account without the privileges the DB migrators
+      # need, and the migrators will fail with `permission denied to create role`.
+      # Choose the username at install time, or grant the privileges by hand
+      # (`ALTER ROLE <name> CREATEDB CREATEROLE;`) after changing it.
+      username: "postgres"
 
-    # -- the secret that contains privileged PostgreSQL account password.
-    # The password will be loaded from key "postgresql-password" of the secret data.
-    # Previously (before v1.0.0), we used to load the password from "cloudsql-db-credentials" secret `password` field when use cloud provider DB services.
-    # Since v1.0.0, our helm chart can auto-create the secret and copy the content of "cloudsql-db-credentials" secret when:
-    # <ul>
-    #   <li> "autoCreateSecret" is set to true</li>
-    #   <li> "cloudsql-db-credentials" exists </li>
-    # </ul>
-    # for backward compatibility purposes. <br/><br/>
-    # Please note: when supplying the secret manually, it's recommend to set `"helm.sh/resource-policy": keep` annotation on the secret to avoid the secret being removed by Helm.<br/><br/>
-    # e.g. you can set the annotation of the secret with the following command: 
-    # `kubectl annotate --namespace [install namespace] secret db-main-account-secret 'helm.sh/resource-policy'=keep`
-    existingSecret: "db-main-account-secret"
+      # -- the secret that contains privileged PostgreSQL account password.
+      # The password will be loaded from key "postgresql-password" of the secret data.
+      # Previously (before v1.0.0), we used to load the password from "cloudsql-db-credentials" secret `password` field when use cloud provider DB services.
+      # Since v1.0.0, our helm chart can auto-create the secret and copy the content of "cloudsql-db-credentials" secret when:
+      # <ul>
+      #   <li> "autoCreateSecret" is set to true</li>
+      #   <li> "cloudsql-db-credentials" exists </li>
+      # </ul>
+      # for backward compatibility purposes. <br/><br/>
+      # Please note: when supplying the secret manually, it's recommend to set `"helm.sh/resource-policy": keep` annotation on the secret to avoid the secret being removed by Helm.<br/><br/>
+      # e.g. you can set the annotation of the secret with the following command:
+      # `kubectl annotate --namespace [install namespace] secret db-main-account-secret 'helm.sh/resource-policy'=keep`
+      # <br/><br/>
+      # When you supply this secret yourself AND use a non-default `username`
+      # with the in-cluster PostgreSQL, it must contain <b>two</b> keys, not one:
+      # <ul>
+      #   <li>`postgresql-password` - the privileged user's password</li>
+      #   <li>`postgresql-postgres-password` - the built-in `postgres` superuser's password</li>
+      # </ul>
+      # The packaged PostgreSQL subchart references the second key without marking it
+      # optional, so if it is missing every database pod stops at
+      # `CreateContainerConfigError` and never starts. Magda generates both keys for you
+      # when `autoCreateSecret` is `true` and the secret is either absent or owned by the
+      # release; a pre-existing secret you manage is never modified. External databases
+      # (`useAwsRdsDb` / `useCloudSql`) do not use the second key.
+      # The two data keys are unchanged from v6 (`postgresql-password` and, for a
+      # non-default username, `postgresql-postgres-password`) — only the values path that
+      # names the secret moved under `auth`.
+      existingSecret: "db-main-account-secret"
 
-    # -- When `true`, secret with name specified by `existingSecret` will be auto-created.
-    # When in-k8s PostgreSQL instance is used, the secret will be filled with auto-generated random password.
-    # Otherwise, the secret will only be auto created when "cloudsql-db-credentials" secret exist.
-    # And its content, for this case, will be copied from "cloudsql-db-credentials" secret, `password` field for backward compatibility purposes.
-    # Please note: when the secret (specified by `existingSecret`) exists, the auto-create feature will leave the password unchanged.
+    # -- When using external DB services (`useCloudSql` or `useAwsRdsDb`), chart rendering fails by default if
+    # `auth.username` is left as `postgres` to prevent accidental use of the wrong privileged account.
+    # Set this to `true` only when your external privileged account is intentionally named `postgres`.
+    allowDefaultExternalDbPostgresUser: false
+
+    # -- When `true`, the secret named by `auth.existingSecret` is auto-created
+    # whenever it is absent (or is owned by the current Helm release); a
+    # pre-existing secret you manage is left unchanged. Creation applies to
+    # <b>both</b> the in-cluster and external-DB (`useAwsRdsDb` / `useCloudSql`)
+    # cases — it is <b>not</b> gated on the database type. Only the password
+    # <i>value</i> differs: for an external DB it is copied from the legacy
+    # "cloudsql-db-credentials" secret's `password` field when that secret exists
+    # (backward compatibility); in every other case a random password is generated.<br/><br/>
+    # <b>Important for external databases:</b> if you do not pre-create this secret
+    # with your real master-account password, Helm auto-creates it with a
+    # <i>random</i> password that will not match your managed DB account — services
+    # and migrator Jobs then fail with a password-authentication error rather than an
+    # obvious missing-secret error. Pre-create it (see `existingSecret` above) when
+    # pointing Magda at an external database.
     autoCreateSecret: true
+
+    client:
+      # -- The `sslmode` used by all Magda services, DB migrators and the backup job
+      # when connecting to PostgreSQL. Injected as the standard libpq `PGSSLMODE`
+      # environment variable, and as an `sslmode=` JDBC URL parameter for the
+      # JVM-based components.
+      # Exception: the external authentication plugins (magda-auth-*) do not yet
+      # read this value and connect to the session DB in plaintext regardless
+      # (a pre-existing, separately tracked gap) -- this value is not a blanket
+      # guarantee across every workload that talks to PostgreSQL.
+      # Supported values are `require` (encrypt, without verifying the server
+      # certificate), `disable` (plaintext), `verify-ca` and `verify-full`
+      # (verify the server certificate). `prefer` and `allow` are rejected:
+      # node-postgres cannot negotiate them consistently, so accepting them would give
+      # the Node services different semantics from every other component.
+      # `verify-ca` / `verify-full` REQUIRE `sslRootCertSecret.name` below —
+      # rendering fails without it, even for a publicly-trusted CA, because
+      # Magda's DB migrator images ship libpq < 16 and have no system
+      # trust-store fallback.
+      # Leave empty to auto-resolve: `disable` when `useCloudSql` is enabled (the
+      # cloud_sql_proxy listener is plaintext by design and performs TLS to Cloud SQL
+      # itself), `require` otherwise.
+      # Setting this to `disable` is the single-flag rollback to the previous
+      # (unenforced, plaintext) client behaviour.
+      # The in-cluster PostgreSQL server always serves TLS by default; its listener is
+      # controlled per DB chart by `<db-chart>.magda-postgres.postgresql.tls.enabled`
+      # (there is no `global` equivalent — see the `magda-postgres` chart README).
+      # Turning that listener off while this value still resolves to `require` is
+      # rejected at render time rather than failing at runtime.
+      sslmode: ""
+
+      # -- Kubernetes Secret supplying the CA certificate used to verify the
+      # PostgreSQL server certificate. REQUIRED whenever `sslmode` is
+      # `verify-ca` or `verify-full` — the chart fails to render without it,
+      # even if your server's CA is a publicly-trusted root, because Magda's
+      # DB migrator images ship libpq < 16 and cannot use a system trust
+      # store. Mounted read-only at /etc/magda/postgresql-ca/root.crt.
+      sslRootCertSecret:
+        # -- Name of the Secret holding the CA bundle. Empty disables CA mounting.
+        name: ""
+        # -- Key within the Secret whose value is the PEM CA bundle.
+        key: "ca.crt"
 
   useCombinedDb: true
   # -- When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database.
@@ -316,11 +399,18 @@ gateway:
         # geospatial search panel selection view vector tiles buckets
         - https://tiles.magda.io
   helmetPerPath:
-    "/preview-map/*": 
+    "/preview-map/*":
       contentSecurityPolicy:
         directives:
+          # TerriaJS 8 / Cesium (preview-map >= 2.0.0) needs 'unsafe-eval' for
+          # dynamic code and blob: workers, and the built client uses an inline
+          # bootstrap script, so 'unsafe-inline' is required too. Without these
+          # the map viewer fails to initialise behind the gateway.
           scriptSrc:
           - "'self'"
+          - "'unsafe-eval'"
+          - "'unsafe-inline'"
+          - "blob:"
           styleSrc:
           - "'self'"
           - "blob:"
@@ -329,6 +419,14 @@ gateway:
           connectSrc:
           - "'self'"
           - "*.cesium.com"
+          # preview-map >= 2.0.0 default base map is OpenStreetMap
+          # (https://tile.openstreetmap.org/). Cesium fetches tiles via
+          # connect (XHR) for the WebGL texture, so the host must be allowed
+          # here or the base map fails to load behind the gateway. The bare
+          # host is required (a `*.tile.openstreetmap.org` wildcard would not
+          # match it).
+          - "https://tile.openstreetmap.org"
+          - "https://*.tile.openstreetmap.org"
           imgSrc:
           - "*"
           - "data:"

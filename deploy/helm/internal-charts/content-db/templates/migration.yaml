@@ -25,3 +25,12 @@ spec:
         - name: DB_HOST
           value: content-db
         {{- include "magda.postgres-migrator-env" . | indent 8 }}
+        {{- include "magda.db-client-ca-env-libpq" . | indent 8 }}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+        volumeMounts:
+        {{- include "magda.postgres-client-ca-volumemount" . | nindent 8 }}
+{{- end }}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+      volumes:
+      {{- include "magda.postgres-client-ca-volume" . | nindent 6 }}
+{{- end }}

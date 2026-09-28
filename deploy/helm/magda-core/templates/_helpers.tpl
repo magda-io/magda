@@ -33,34 +33,48 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
   {{- else if and .Values.global.useCombinedDb (empty (get .Values.global.useInK8sDbInstance .Chart.Name)) }}
   selector:
     app.kubernetes.io/instance: "{{ .Release.Name }}"
-    app.kubernetes.io/name: "combined-db-postgresql"
-    role: primary
+    app.kubernetes.io/name: "combined-db-postgresql-pg17"
+    app.kubernetes.io/component: primary
   {{- else }}
   selector:
     app.kubernetes.io/instance: "{{ .Release.Name }}"
-    app.kubernetes.io/name: "{{ .Chart.Name }}-postgresql"
-    role: primary
+    app.kubernetes.io/name: "{{ .Chart.Name }}-postgresql-pg17"
+    app.kubernetes.io/component: primary
   {{- end -}}
 {{- end }}
 
 {{- define "magda.postgres-superuser-env" }}
 - name: PGUSER
-  value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
+  value: {{ include "magda.postgres-privileged-username" . | quote }}
 - name: PGPASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.global.postgresql.existingSecret | quote }}
+      name: {{ .Values.global.postgresql.auth.existingSecret | quote }}
       key: "postgresql-password"
+- name: PGSSLMODE
+  value: {{ include "magda.postgres-client-sslmode" . | quote }}
+{{- end }}
+
+{{- define "magda.postgres-privileged-username" }}
+{{- $username := .Values.global.postgresql.auth.username | default "postgres" -}}
+{{- $usesExternalDb := or .Values.global.useAwsRdsDb .Values.global.useCloudSql -}}
+{{- $allowDefaultExternalDbPostgresUser := .Values.global.postgresql.allowDefaultExternalDbPostgresUser | default false -}}
+{{- if and $usesExternalDb (eq $username "postgres") (not $allowDefaultExternalDbPostgresUser) -}}
+{{- fail "When global.useAwsRdsDb or global.useCloudSql is enabled, set global.postgresql.auth.username to the privileged external DB account. If the privileged account is intentionally named \"postgres\", set global.postgresql.allowDefaultExternalDbPostgresUser=true." -}}
+{{- end -}}
+{{- $username -}}
 {{- end }}
 
 {{- define "magda.postgres-migrator-env" }}
 - name: PGUSER
-  value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
+  value: {{ include "magda.postgres-privileged-username" . | quote }}
 - name: PGPASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.global.postgresql.existingSecret | quote }}
+      name: {{ .Values.global.postgresql.auth.existingSecret | quote }}
       key: "postgresql-password"
+- name: PGSSLMODE
+  value: {{ include "magda.postgres-client-sslmode" . | quote }}
 - name: CLIENT_USERNAME
   value: client
 - name: CLIENT_PASSWORD
@@ -69,3 +83,215 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
       name: {{ include "magda.db-client-secret-name" (dict "dbName" .Chart.Name "root" .) | quote }}
       key: {{ include "magda.db-client-secret-key" (dict "dbName" .Chart.Name "root" .) | quote }}
 {{- end }}
+
+{{/*
+  PLACEMENT — these MUST stay in magda-core, never magda-common: magda-common is
+  vendored by a dozen third-party charts and Helm's flat namespace lets a stale
+  vendored copy silently shadow it (that is how the Node services once connected
+  to PostgreSQL in plaintext). Prefer extending `magda.db-client-sslmode-env`
+  over the shared credential helper; external charts reach it through the
+  versioned shim `magda.db-client-sslmode-env-v1` in magda-common.
+  Full rationale, failure matrix and change rules: docs/docs/helm-helper-contracts.md
+*/}}
+{{/*
+  Resolve the PostgreSQL client `sslmode` for all DB connections.
+
+  Magda supports `disable`, `require`, `verify-ca` and `verify-full`:
+  - `prefer` / `allow` cannot be honoured consistently. libpq (psql, wal-g) and
+    pgjdbc (registry-api, Flyway) implement them natively, but node-postgres maps
+    `prefer` to `ssl: true` and hard-fails against a server that doesn't offer
+    TLS instead of falling back. Rejecting them is better than giving the Node
+    services different semantics from every other component.
+  - `verify-ca` / `verify-full` verify the server certificate. The CA MUST be
+    supplied via `global.postgresql.client.sslRootCertSecret` (mounted at
+    /etc/magda/postgresql-ca/root.crt); rendering fails without it, because the
+    libpq consumers (migrator/auto-vacuum psql < 16) have no trust-store
+    fallback. See docs/docs/helm-helper-contracts.md.
+
+  Resolution order:
+  1. An explicitly configured value always wins.
+  2. `useCloudSql` resolves to `disable` — cloud_sql_proxy presents a plaintext
+     listener and performs TLS to Cloud SQL itself.
+  3. Everything else (in-cluster, RDS, Azure, direct Cloud SQL) resolves to
+     `require`.
+
+  Note on the in-cluster server: `require` is always correct for it because the
+  in-cluster PostgreSQL serves TLS by default and its listener can only be turned
+  off per DB chart (`<db-chart>.magda-postgres.postgresql.tls.enabled` — a
+  subchart value, which no `global.*` switch can drive). This resolution
+  therefore cannot see the server-side setting; instead the `magda-postgres`
+  chart — the one place that sees both sides — rejects the contradictory
+  combination at render time (`magda-postgres/templates/validate-tls.yaml`).
+
+  Parameters: the root scope. i.e. .
+  Usage:
+  {{ include "magda.postgres-client-sslmode" . }}
+*/}}
+{{- define "magda.postgres-client-sslmode" -}}
+{{- $globalVals := (get .Values "global") | default dict -}}
+{{- $pgVals := (get $globalVals "postgresql") | default dict -}}
+{{- /* `global.postgresql.tls.enabled` briefly existed on the DB-TLS development
+       branch and never worked: it could not reach the subchart value the
+       StatefulSet actually consumes, so it silently did nothing while appearing
+       to control the server's TLS listener. Reject it loudly rather than let it
+       be a no-op again. */ -}}
+{{- if hasKey $pgVals "tls" -}}
+{{- fail "`global.postgresql.tls` is not a supported Magda value. The in-cluster PostgreSQL TLS listener is controlled per DB chart by `<db-chart>.magda-postgres.postgresql.tls.enabled` (e.g. `combined-db.magda-postgres.postgresql.tls.enabled`); client-side TLS is controlled by `global.postgresql.client.sslmode`. See the `magda-postgres` chart README." -}}
+{{- end -}}
+{{- $clientVals := (get $pgVals "client") | default dict -}}
+{{- /* Normalised the same way magda-typescript-common/src/createPgPool.ts does
+       (`.trim().toLowerCase()`), so both layers accept the same vocabulary. */ -}}
+{{- $sslmode := (get $clientVals "sslmode") | default "" | toString | trim | lower -}}
+{{- if empty $sslmode -}}
+  {{- if get $globalVals "useCloudSql" -}}
+    {{- $sslmode = "disable" -}}
+  {{- else -}}
+    {{- $sslmode = "require" -}}
+  {{- end -}}
+{{- end -}}
+{{- if not (has $sslmode (list "disable" "require" "verify-ca" "verify-full")) -}}
+{{- fail (printf "Unsupported global.postgresql.client.sslmode value %q. Magda supports \"disable\", \"require\", \"verify-ca\" and \"verify-full\". \"prefer\"/\"allow\" are not supported because node-postgres cannot negotiate them consistently — use \"require\"." $sslmode) -}}
+{{- end -}}
+{{- if and (hasPrefix "verify-" $sslmode) (not (.Values.global.postgresql.client.sslRootCertSecret).name) -}}
+{{- fail (printf "global.postgresql.client.sslmode=%q requires a server CA certificate: set global.postgresql.client.sslRootCertSecret.name to a Secret holding the CA PEM (and .key, default \"ca.crt\"). Magda cannot fall back to a system trust store here — the DB migrator/auto-vacuum images ship libpq < 16, which has no `sslrootcert=system` support, so those Jobs would fail at connect time even for a publicly-trusted CA such as Azure's DigiCert Global Root G2. Download your provider's CA bundle (RDS: rds-ca bundle; Azure: DigiCert Global Root G2 / Microsoft RSA Root CA 2017; CloudSQL: server-ca.pem) and create the Secret." $sslmode) -}}
+{{- end -}}
+{{- $sslmode -}}
+{{- end -}}
+
+{{/*
+  Emit the `PGSSLMODE` env var for a DB *client* (a service connecting as the
+  restricted `client` role). Included alongside `magda.db-client-credential-env`
+  rather than being part of it — see the placement note above.
+
+  Parameters: the root scope. i.e. .
+  Usage:
+  {{ include "magda.db-client-sslmode-env" . | indent 8 }}
+*/}}
+{{- define "magda.db-client-sslmode-env" }}
+- name: "PGSSLMODE"
+  value: {{ include "magda.postgres-client-sslmode" . | quote }}
+{{- end }}
+
+{{/*
+  CA delivery for `sslmode=verify-ca`/`verify-full`. See
+  docs/docs/helm-helper-contracts.md. The secret is mounted read-only at a
+  FIXED path (/etc/magda/postgresql-ca/root.crt) regardless of the configured
+  key, so every consumer references one constant path.
+*/}}
+{{- define "magda.postgres-client-ca-enabled" -}}
+{{- $c := ((.Values.global.postgresql).client) | default dict -}}
+{{- $s := (get $c "sslRootCertSecret") | default dict -}}
+{{- if (get $s "name") -}}true{{- end -}}
+{{- end -}}
+
+{{- define "magda.postgres-client-ca-volume" -}}
+{{- $s := ((.Values.global.postgresql).client).sslRootCertSecret -}}
+- name: postgresql-ca
+  secret:
+    secretName: {{ $s.name | quote }}
+    items:
+      - key: {{ ($s.key | default "ca.crt") | quote }}
+        path: root.crt
+{{- end -}}
+
+{{- define "magda.postgres-client-ca-volumemount" -}}
+- name: postgresql-ca
+  mountPath: /etc/magda/postgresql-ca
+  readOnly: true
+{{- end -}}
+
+{{/* INTERNAL — not a pod-facing contract. Shared body for the two class-aware
+     PGSSLROOTCERT helpers below: emit the mounted CA path when a CA secret is
+     configured, otherwise nothing. Do NOT include this directly from a
+     workload template; include the class-specific helper instead, so the
+     class's constraint is documented at the call site. */}}
+{{- define "magda.db-client-ca-env-common" -}}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+- name: "PGSSLROOTCERT"
+  value: "/etc/magda/postgresql-ca/root.crt"
+{{- end }}
+{{- end -}}
+
+{{/* Node services: point PGSSLROOTCERT at the mounted CA only when one exists;
+     leaving it unset makes getPgSslConfigFromEnv fall back to Node's bundle.
+     NEVER emit `system` here — Node would fs.readFileSync("system") and crash.
+     Kept as its own name (delegating to -common) so the two client classes can
+     diverge without hunting for a second copy. */}}
+{{- define "magda.db-client-ca-env-node" -}}
+{{- include "magda.db-client-ca-env-common" . -}}
+{{- end -}}
+
+{{/* libpq consumers (psql, wal-g): mounted path when a CA secret is set,
+     otherwise nothing. There is deliberately NO `else` branch: Task 1 measured
+     psql 11.22/14 in the migrator image and `sslrootcert=system` needs
+     libpq >= 16, so a fallback is impossible. `verify-*` without the secret is
+     rejected at render time instead (Decision 2). If a future image bump puts
+     libpq >= 16 in every libpq consumer, this is the one helper that changes. */}}
+{{- define "magda.db-client-ca-env-libpq" -}}
+{{- include "magda.db-client-ca-env-common" . -}}
+{{- end -}}
+
+{{/*
+  Compatibility handshake for the versioned helper templates that external charts
+  (authentication plugins in particular) vendor from `magda-common`. Detection is
+  inverted — Magda cannot see its own siblings, so the plugin calls in here
+  announcing which contract it was built against and this template adjudicates.
+  It MUST stay in magda-core (nothing vendors it, so nothing can shadow it); never
+  add a no-op fallback copy — the fallback would win the shadowing race and the
+  check would silently stop running.
+  Full rationale, failure matrix and add/retire rules: docs/docs/helm-helper-contracts.md
+
+  Parameters (dict):
+  - helper: the versioned helper name the caller was built against,
+            e.g. "db-client-sslmode-env-v1"
+  - chart:  the calling chart's name, used to make the error actionable
+  Usage (from a versioned magda-common helper):
+  {{ include "magda.compatibility-check" (dict "helper" "db-client-sslmode-env-v1" "chart" .Chart.Name) }}
+*/}}
+{{- define "magda.compatibility-check" -}}
+{{- $helper := .helper | default "<unknown>" -}}
+{{- $chart := .chart | default "<unknown chart>" -}}
+{{- /*
+  Helper contracts this Magda version honours. Add a name here when introducing
+  a new versioned helper; REMOVE one when dropping support, which turns silent
+  misbehaviour into a loud, actionable failure at render time.
+*/ -}}
+{{- $supported := list "db-client-sslmode-env-v1" "db-client-ca-env-v1" -}}
+{{- if not (has $helper $supported) -}}
+{{- fail (printf "Chart %q uses the Magda helper contract %q, which this version of Magda does not support (supported: %s). Upgrade or downgrade %q to a release built for this Magda version. If you are intentionally running a mismatched pair and accept the consequences, set `global.magdaCompatibilityCheck=false` to skip this check." $chart $helper (join ", " $supported) $chart) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Reject the `global.postgresql.*` keys removed in v7.
+
+  The bundled PostgreSQL subchart (bitnami postgresql 16.x) reads the username, database
+  and secret name from `global.postgresql.auth.*`. A v6 values file that still sets the
+  old paths RENDERS CLEANLY and silently ignores them: the database comes up as the
+  default `postgres` account reading a different secret, and nothing says so until a
+  migrator fails to authenticate. `auth.username` in particular cannot be shimmed —
+  unlike `auth.database` and `auth.existingSecret`, the subchart does not run it through
+  `tpl`, so it cannot be derived from a Magda-named global.
+
+  Invoked from `templates/validate-postgres-values.yaml`, which is unconditional. Do NOT
+  move this call into `magda.postgres-client-sslmode`: that helper is only reached via
+  DB-connecting components, so `tags.all=false` would switch the guard off.
+
+  Parameters: the root scope. i.e. .
+  Usage:
+  {{ include "magda.postgres-validate-legacy-values" . }}
+*/}}
+{{- define "magda.postgres-validate-legacy-values" -}}
+{{- $globalVals := (get .Values "global") | default dict -}}
+{{- $pgVals := (get $globalVals "postgresql") | default dict -}}
+{{- $moved := dict
+      "postgresqlUsername" "global.postgresql.auth.username"
+      "postgresqlDatabase" "global.postgresql.auth.database"
+      "existingSecret"     "global.postgresql.auth.existingSecret" -}}
+{{- range $old, $new := $moved -}}
+{{- if hasKey $pgVals $old -}}
+{{- fail (printf "`global.postgresql.%s` was removed in Magda v7. The bundled PostgreSQL subchart now reads this setting from `%s`, so leaving it at the old path silently ignores it: the database would come up with the default `postgres` account against a different secret. Move the value to `%s`. See the magda-core chart README and CHANGES.md for the full v7 PostgreSQL values migration." $old $new $new) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+

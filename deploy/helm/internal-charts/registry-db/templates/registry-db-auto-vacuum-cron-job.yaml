@@ -53,11 +53,22 @@ spec:
                 - name: PGDATABASE
                   value: postgres
                 - name: PGUSER
-                  value: postgres
+                  value: {{ include "magda.postgres-privileged-username" . | quote }}
                 - name: PGPASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.global.postgresql.existingSecret | quote }}
+                      name: {{ .Values.global.postgresql.auth.existingSecret | quote }}
                       key: "postgresql-password"
+                - name: PGSSLMODE
+                  value: {{ include "magda.postgres-client-sslmode" . | quote }}
+                {{- include "magda.db-client-ca-env-libpq" . | indent 16 }}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+              volumeMounts:
+              {{- include "magda.postgres-client-ca-volumemount" . | nindent 16 }}
+{{- end }}
           restartPolicy: "OnFailure"
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+          volumes:
+          {{- include "magda.postgres-client-ca-volume" . | nindent 12 }}
+{{- end }}
 {{- end }}

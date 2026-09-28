@@ -48,7 +48,17 @@ function docker(args: string[], ignoreError = false): string {
 /** Copy a host file into a named volume at `volPath` (dind-safe). */
 function cpIntoVolume(vol: string, hostFile: string, volPath: string) {
     const h = `walg-cp-${uuidV4().slice(0, 8)}`;
-    docker(["run", "-d", "--name", h, "-v", `${vol}:/vol`, "busybox", "sleep", "300"]);
+    docker([
+        "run",
+        "-d",
+        "--name",
+        h,
+        "-v",
+        `${vol}:/vol`,
+        "busybox",
+        "sleep",
+        "300"
+    ]);
     try {
         docker(["cp", hostFile, `${h}:/vol/${volPath}`]);
     } finally {
@@ -59,7 +69,17 @@ function cpIntoVolume(vol: string, hostFile: string, volPath: string) {
 /** Copy a file out of a named volume to a host path (dind-safe). */
 function cpFromVolume(vol: string, volPath: string, hostFile: string) {
     const h = `walg-cp-${uuidV4().slice(0, 8)}`;
-    docker(["run", "-d", "--name", h, "-v", `${vol}:/vol`, "busybox", "sleep", "300"]);
+    docker([
+        "run",
+        "-d",
+        "--name",
+        h,
+        "-v",
+        `${vol}:/vol`,
+        "busybox",
+        "sleep",
+        "300"
+    ]);
     try {
         docker(["cp", `${h}:/vol/${volPath}`, hostFile]);
     } finally {
@@ -78,7 +98,10 @@ async function walPushSegment(
     seg: string,
     hostTmpDirs: string[],
     volumesToClean: string[]
-): Promise<{ result: { exitCode: number; output: string }; hostSegPath: string }> {
+): Promise<{
+    result: { exitCode: number; output: string };
+    hostSegPath: string;
+}> {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "walg-seg-"));
     hostTmpDirs.push(tmp);
     const hostSegPath = path.join(tmp, seg);
@@ -230,8 +253,15 @@ async function restoreLatestBackup(
         // replay at the base-backup consistency point). Omit to roll forward
         // to the end of the staged WAL.
         recoveryTarget?: string;
+        // postgres image tag to run the restored data dir under. Must match
+        // the major version the base backup was taken from -- a base backup
+        // can never be restored under a different PG major version (control
+        // file / catalog version mismatch). Defaults to this suite's
+        // postgres:17.5 fixture.
+        pgImgTag?: string;
     }
 ): Promise<void> {
+    const pgImgTag = opts.pgImgTag ?? "17.5";
     docker(["volume", "create", opts.vol]);
     const fetched = await serviceRunner.runWalg(
         ["backup-fetch", "/restore", "LATEST"],
@@ -264,11 +294,11 @@ async function restoreLatestBackup(
         "0",
         "--entrypoint",
         "sh",
-        "postgres:13.7",
+        `postgres:${pgImgTag}`,
         "-c",
         "touch /restore/recovery.signal && chown -R 999:999 /restore && chmod 700 /restore"
     ]);
-    // PG13 refuses archive recovery without a restore_command. The plain image
+    // PG17 refuses archive recovery without a restore_command. The plain image
     // has no wal-g, so we point it at `/bin/false`: every archive fetch "misses",
     // postgres falls back to the segments pre-staged in pg_wal, replays them, and
     // ends recovery (promotes) once the next segment is neither in the archive nor
@@ -282,7 +312,7 @@ async function restoreLatestBackup(
         `${opts.port}:5432`,
         "-v",
         `${opts.vol}:/var/lib/postgresql/data`,
-        "postgres:13.7",
+        `postgres:${pgImgTag}`,
         "-c",
         "restore_command=/bin/false"
     ];
@@ -395,8 +425,8 @@ describe("wal-g backup / restore integration tests", () => {
         const baseNameMatch = baseObjects
             .map((name) => name.match(/base_([0-9A-Fa-f]{24})/))
             .find((m) => m !== null);
-        expect(baseNameMatch, "could not find base_<segment> object").to.not
-            .be.undefined;
+        expect(baseNameMatch, "could not find base_<segment> object").to.not.be
+            .undefined;
         const seg = baseNameMatch![1];
 
         // 4. backup-push does NOT archive WAL (archive_mode off). Complete the
@@ -418,10 +448,9 @@ describe("wal-g backup / restore integration tests", () => {
             hostTmpDirs,
             volumesToClean
         );
-        expect(
-            walPush.exitCode,
-            `wal-push failed: ${walPush.output}`
-        ).to.equal(0);
+        expect(walPush.exitCode, `wal-push failed: ${walPush.output}`).to.equal(
+            0
+        );
 
         const walObjects = await listWalgObjects(serviceRunner, "pg/wal_005/");
         expect(walObjects).to.include(`pg/wal_005/${seg}.lz4`);
@@ -458,7 +487,7 @@ describe("wal-g backup / restore integration tests", () => {
             "0",
             "--entrypoint",
             "sh",
-            "postgres:13.7",
+            "postgres:17.5",
             "-c",
             "chown -R 999:999 /restore && chmod 700 /restore"
         ]);
@@ -474,7 +503,7 @@ describe("wal-g backup / restore integration tests", () => {
             `${restorePort}:5432`,
             "-v",
             `${restoreVol}:/var/lib/postgresql/data`,
-            "postgres:13.7"
+            "postgres:17.5"
         ]);
 
         // In the k8s/dind CI runner, published ports need the same socat bridge
@@ -556,18 +585,19 @@ describe("wal-g backup / restore integration tests", () => {
         // wal-push it (through a named volume). The returned host path is the
         // byte-identity reference copy.
         const sourceContainer = sourceWalgContainer();
-        const { result: walPush, hostSegPath: referencePath } =
-            await walPushSegment(
-                serviceRunner,
-                sourceContainer,
-                seg,
-                hostTmpDirs,
-                volumesToClean
-            );
-        expect(
-            walPush.exitCode,
-            `wal-push failed: ${walPush.output}`
-        ).to.equal(0);
+        const {
+            result: walPush,
+            hostSegPath: referencePath
+        } = await walPushSegment(
+            serviceRunner,
+            sourceContainer,
+            seg,
+            hostTmpDirs,
+            volumesToClean
+        );
+        expect(walPush.exitCode, `wal-push failed: ${walPush.output}`).to.equal(
+            0
+        );
 
         // 3. Assert the pushed segment object exists in MinIO.
         const walObjects = await listWalgObjects(serviceRunner, "pg/wal_005/");
@@ -631,9 +661,10 @@ describe("wal-g backup / restore integration tests", () => {
             .map((n) => n.match(/base_([0-9A-Fa-f]{24})/))
             .filter((m): m is RegExpMatchArray => m !== null)
             .map((m) => m[1]);
-        expect(baseSegments.length, "no base_<segment> object found").to.be.greaterThan(
-            0
-        );
+        expect(
+            baseSegments.length,
+            "no base_<segment> object found"
+        ).to.be.greaterThan(0);
         const startSeg = baseSegments.sort().reverse()[0];
 
         // 2. Write MORE rows AFTER the base backup - these exist ONLY in the WAL,
@@ -712,7 +743,10 @@ describe("wal-g backup / restore integration tests", () => {
         // 5. Assert the post-backup rows were recovered via WAL replay: 100 base
         // rows + 50 rows that existed ONLY in the archived WAL.
         const restored = new pg.Client(
-            pgConfig(serviceRunner.dockerServiceForwardHost || "localhost", port)
+            pgConfig(
+                serviceRunner.dockerServiceForwardHost || "localhost",
+                port
+            )
         );
         await restored.connect();
         try {
@@ -827,7 +861,10 @@ describe("wal-g backup / restore integration tests", () => {
         // recovers only to the base backup (the RPO gap #3754 addresses). This is
         // the same setup as the roll-forward test, changing ONLY recovery_target.
         const restored = new pg.Client(
-            pgConfig(serviceRunner.dockerServiceForwardHost || "localhost", port)
+            pgConfig(
+                serviceRunner.dockerServiceForwardHost || "localhost",
+                port
+            )
         );
         await restored.connect();
         try {
@@ -840,85 +877,137 @@ describe("wal-g backup / restore integration tests", () => {
         }
     });
 
-    it("cross-version: a base backup + WAL pushed by 1.1.0 restores under 3.0.8", async function (this) {
+    it("cross-version: a base backup + WAL pushed by wal-g 1.1.0 restores under the current wal-g", async function (this) {
         this.timeout(ENV_SETUP_TIME_OUT);
-        const host = serviceRunner.dockerServiceForwardHost || "localhost";
 
-        // Seed a known fixture.
-        const source = new pg.Client(pgConfig(host, 5432, "password"));
-        await source.connect();
+        // wal-g 1.1.0 cannot write a backup on PG17 in remote mode at all
+        // (remote-mode backup-push dies with a PostgreSQL 42601
+        // replication-grammar error -- 1.1.0 predates PG15's BASE_BACKUP
+        // protocol change). And a base backup taken on one PG major version
+        // can never be restored on a different PG major version (control
+        // file / catalog version mismatch, a fundamental PostgreSQL limit,
+        // not a wal-g one). So this test runs BOTH the old-wal-g write and
+        // the current-wal-g read against a dedicated postgres:13.7 fixture,
+        // decoupled from the suite's postgres:17.5 default, to isolate the
+        // property it actually checks: does a backup written by an older
+        // wal-g remain restorable by a newer wal-g.
+        //
+        // This is the LAST test in the suite: swap the shared wal-g postgres
+        // fixture down to 13.7 for its duration, then restore it to 17.5
+        // afterwards so the fixture is left in the suite's documented
+        // default state for any future spec added after this one.
+        //
+        // Also give it its own S3 prefix: the earlier tests already pushed
+        // base backups + WAL to the shared `pg` prefix against the
+        // long-lived 17.5 fixture, reaching much higher WAL segment numbers
+        // than this freshly-initdb'd 13.7 fixture starts from. Sharing the
+        // prefix would make `baseObjects.sort().reverse()[0]` below pick up
+        // a leftover high-numbered segment name from a PREVIOUS test's
+        // backup instead of the one just written here.
+        await serviceRunner.destroyWalgPostgres();
+        serviceRunner.walgPostgresImgTag = "13.7";
+        await serviceRunner.createWalgPostgres();
+        const savedS3Prefix = serviceRunner.walgS3Prefix;
+        serviceRunner.walgS3Prefix = `s3://${serviceRunner.walgBucket}/pg-xver-${runId}`;
+
         try {
-            await source.query(
-                "CREATE TABLE xver(id bigserial primary key, v text);"
+            const host = serviceRunner.dockerServiceForwardHost || "localhost";
+
+            // Seed a known fixture.
+            const source = new pg.Client(pgConfig(host, 5432, "password"));
+            await source.connect();
+            try {
+                await source.query(
+                    "CREATE TABLE xver(id bigserial primary key, v text);"
+                );
+                await source.query(
+                    "INSERT INTO xver(v) SELECT 'row ' || g FROM generate_series(1, 200) g;"
+                );
+                await source.query("CHECKPOINT;");
+            } finally {
+                await source.end();
+            }
+
+            // PUSH with the OLD version (1.1.0): base backup + the start segment.
+            serviceRunner.walgImgTag = "1.1.0";
+            const push = await serviceRunner.runWalg(["backup-push"]);
+            expect(
+                push.exitCode,
+                `1.1.0 backup-push failed: ${push.output}`
+            ).to.equal(0);
+
+            const baseObjects = await listWalgObjects(
+                serviceRunner,
+                `pg-xver-${runId}/basebackups_005/`
             );
-            await source.query(
-                "INSERT INTO xver(v) SELECT 'row ' || g FROM generate_series(1, 200) g;"
+            const startSeg = baseObjects
+                .map((n) => n.match(/base_([0-9A-Fa-f]{24})/))
+                .filter((m): m is RegExpMatchArray => m !== null)
+                .map((m) => m[1])
+                .sort()
+                .reverse()[0];
+            expect(startSeg, "no base_<segment> object found").to.not.be
+                .undefined;
+
+            const switchClient = new pg.Client(
+                pgConfig(host, 5432, "password")
             );
-            await source.query("CHECKPOINT;");
-        } finally {
-            await source.end();
-        }
-
-        // PUSH with the OLD version (1.1.0): base backup + the start segment.
-        serviceRunner.walgImgTag = "1.1.0";
-        const push = await serviceRunner.runWalg(["backup-push"]);
-        expect(push.exitCode, `1.1.0 backup-push failed: ${push.output}`).to.equal(0);
-
-        const baseObjects = await listWalgObjects(
-            serviceRunner,
-            "pg/basebackups_005/"
-        );
-        const startSeg = baseObjects
-            .map((n) => n.match(/base_([0-9A-Fa-f]{24})/))
-            .filter((m): m is RegExpMatchArray => m !== null)
-            .map((m) => m[1])
-            .sort()
-            .reverse()[0];
-        expect(startSeg, "no base_<segment> object found").to.not.be.undefined;
-
-        const switchClient = new pg.Client(pgConfig(host, 5432, "password"));
-        await switchClient.connect();
-        try {
-            await switchClient.query("SELECT pg_switch_wal();");
-        } finally {
-            await switchClient.end();
-        }
-        const container = sourceWalgContainer();
-        const { result: walPush } = await walPushSegment(
-            serviceRunner,
-            container,
-            startSeg,
-            hostTmpDirs,
-            volumesToClean
-        );
-        expect(walPush.exitCode, `1.1.0 wal-push failed: ${walPush.output}`).to.equal(0);
-
-        // RESTORE with the NEW version (3.0.8): fetch + start postgres.
-        serviceRunner.walgImgTag = "3.0.8";
-        const vol = `walg-xver-vol-${runId}`;
-        const name = `walg-xver-pg-${runId}`;
-        const port = 5436;
-        extraRestores.push({ name, vol, port });
-        await restoreLatestBackup(serviceRunner, {
-            vol,
-            name,
-            port,
-            segments: [startSeg]
-        });
-
-        const restored = new pg.Client(
-            pgConfig(serviceRunner.dockerServiceForwardHost || "localhost", port)
-        );
-        await restored.connect();
-        try {
-            const countRes = await restored.query(
-                "SELECT count(*)::int AS c FROM xver"
+            await switchClient.connect();
+            try {
+                await switchClient.query("SELECT pg_switch_wal();");
+            } finally {
+                await switchClient.end();
+            }
+            const container = sourceWalgContainer();
+            const { result: walPush } = await walPushSegment(
+                serviceRunner,
+                container,
+                startSeg,
+                hostTmpDirs,
+                volumesToClean
             );
-            expect(countRes.rows[0].c).to.equal(200);
+            expect(
+                walPush.exitCode,
+                `1.1.0 wal-push failed: ${walPush.output}`
+            ).to.equal(0);
+
+            // RESTORE with the CURRENT version: fetch + start postgres, on the
+            // same postgres:13.7 fixture the backup was taken from.
+            serviceRunner.walgImgTag = "3.0.8-magda-edcda8b";
+            const vol = `walg-xver-vol-${runId}`;
+            const name = `walg-xver-pg-${runId}`;
+            const port = 5436;
+            extraRestores.push({ name, vol, port });
+            await restoreLatestBackup(serviceRunner, {
+                vol,
+                name,
+                port,
+                segments: [startSeg],
+                pgImgTag: "13.7"
+            });
+
+            const restored = new pg.Client(
+                pgConfig(
+                    serviceRunner.dockerServiceForwardHost || "localhost",
+                    port
+                )
+            );
+            await restored.connect();
+            try {
+                const countRes = await restored.query(
+                    "SELECT count(*)::int AS c FROM xver"
+                );
+                expect(countRes.rows[0].c).to.equal(200);
+            } finally {
+                await restored.end();
+            }
         } finally {
-            await restored.end();
-            // leave the default tag as the suite default for any later specs
-            serviceRunner.walgImgTag = "3.0.8";
+            // leave the defaults as the suite default for any later specs
+            serviceRunner.walgImgTag = "3.0.8-magda-edcda8b";
+            serviceRunner.walgS3Prefix = savedS3Prefix;
+            await serviceRunner.destroyWalgPostgres();
+            serviceRunner.walgPostgresImgTag = "17.5";
+            await serviceRunner.createWalgPostgres();
         }
     });
 });

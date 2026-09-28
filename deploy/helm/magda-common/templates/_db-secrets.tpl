@@ -152,3 +152,101 @@ data:
     {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+  Versioned PGSSLMODE env-var helper for EXTERNAL charts (auth plugins and
+  anything connecting to a Magda DB as the restricted `client` role). Magda's own
+  charts do NOT use this — they call `magda.db-client-sslmode-env` in magda-core.
+
+  A THIN SHIM with no logic of its own: it only runs the compatibility check and
+  delegates to magda-core, so no vendored copy can change what gets emitted.
+
+  FROZEN CONTRACT — once released, `-v1` behaviour must never change (many charts
+  vendor their own copy and any may be the one that runs). Change behaviour by
+  adding `-v2` and leaving this untouched.
+
+  REQUIRES MAGDA v7+. In a release without magda-core v7+ — including a standalone
+  `helm template`/`helm lint` of the plugin in CI — it fails with
+  `no template "magda.compatibility-check" associated`. Plugin charts MUST default
+  `global.magdaCompatibilityCheck` to `true` in their values.yaml (read as a
+  GLOBAL so an operator can disable it once for every plugin) and set it `false`
+  for standalone CI renders.
+
+  Full rationale, failure matrix and rules: docs/docs/helm-helper-contracts.md
+
+  Usage (from an external chart's deployment template):
+  {{- include "magda.db-client-sslmode-env-v1" . | indent 8 }}
+*/}}
+{{- define "magda.db-client-sslmode-env-v1" -}}
+{{- $globalVals := (get .Values "global") | default dict -}}
+{{- /*
+  Default to enabled when the key is absent, so forgetting to declare it fails
+  closed (loudly) rather than silently skipping the check. `default` is not used
+  here because Helm treats an explicit `false` as empty and would flip it back
+  to `true`.
+*/ -}}
+{{- $enabled := true -}}
+{{- if hasKey $globalVals "magdaCompatibilityCheck" -}}
+{{- $enabled = (get $globalVals "magdaCompatibilityCheck") -}}
+{{- end -}}
+{{- if $enabled -}}
+{{- include "magda.compatibility-check" (dict "helper" "db-client-sslmode-env-v1" "chart" .Chart.Name) -}}
+{{- include "magda.db-client-sslmode-env" . -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Versioned server-CA delivery for EXTERNAL charts (auth plugins), the companion
+  to `magda.db-client-sslmode-env-v1`. Three thin shims sharing ONE contract
+  version (`db-client-ca-env-v1`), one per YAML position a plugin's
+  `deployment.yaml` needs — container `env:` (PGSSLROOTCERT), container
+  `volumeMounts:`, pod `volumes:` — each running the compatibility check and
+  delegating to the magda-core implementation. They SELF-GUARD: emit nothing
+  when no CA secret is configured (`sslmode: disable`/`require`), so a plugin can
+  include them unconditionally. FROZEN once released — add `-v2` to change.
+
+  Rationale, usage snippet, failure matrix and the Magda-v7+/opt-out rules (all
+  identical to `-sslmode-env-v1`): docs/docs/helm-helper-contracts.md
+  ("Delivering the server CA").
+*/}}
+{{- define "magda.db-client-ca-env-v1" -}}
+{{- if include "magda.magdaCompatibilityCheckEnabled" . -}}
+{{- include "magda.compatibility-check" (dict "helper" "db-client-ca-env-v1" "chart" .Chart.Name) -}}
+{{- include "magda.db-client-ca-env-node" . -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "magda.postgres-client-ca-volumemount-v1" -}}
+{{- if include "magda.magdaCompatibilityCheckEnabled" . -}}
+{{- include "magda.compatibility-check" (dict "helper" "db-client-ca-env-v1" "chart" .Chart.Name) -}}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" -}}
+{{- include "magda.postgres-client-ca-volumemount" . -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "magda.postgres-client-ca-volume-v1" -}}
+{{- if include "magda.magdaCompatibilityCheckEnabled" . -}}
+{{- include "magda.compatibility-check" (dict "helper" "db-client-ca-env-v1" "chart" .Chart.Name) -}}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" -}}
+{{- include "magda.postgres-client-ca-volume" . -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Shared gate for the versioned shims above: is the compatibility check enabled?
+  Returns a non-empty string (truthy) when it is, empty when the operator set
+  `global.magdaCompatibilityCheck: false`. Uses `hasKey` rather than `default`
+  because Helm's `default` treats an explicit `false` as empty and would flip it
+  back to `true` — the same fail-closed reasoning as `-sslmode-env-v1` above.
+*/}}
+{{- define "magda.magdaCompatibilityCheckEnabled" -}}
+{{- $globalVals := (get .Values "global") | default dict -}}
+{{- $enabled := true -}}
+{{- if hasKey $globalVals "magdaCompatibilityCheck" -}}
+{{- $enabled = (get $globalVals "magdaCompatibilityCheck") -}}
+{{- end -}}
+{{- if $enabled -}}true{{- end -}}
+{{- end -}}
+

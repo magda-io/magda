@@ -51,3 +51,84 @@ gateway:
     - key: internal
       baseUrl: http://magda-auth-internal
 ```
+
+## Magda version compatibility (plugin authors)
+
+Magda v7 encrypts service-to-database connections by default. Authentication
+plugins connect to the session database, so a plugin has to opt in to that
+behaviour — and because Helm merges every chart's templates into one flat,
+global namespace where the last definition wins (ordered by chart name), a
+plugin's own vendored copy of `magda-common` would otherwise silently override
+Magda's. `magda-auth-*` sorts after `magda`, so the plugin copy always wins.
+
+### What a plugin needs to do
+
+Call the versioned helper from your deployment template, alongside the existing
+credential helper:
+
+```yaml
+{{- include "magda.db-client-credential-env" (dict "dbName" "session-db" "root" .) | indent 8 }}
+{{- include "magda.db-client-sslmode-env-v1" . | indent 8 }}
+```
+
+and declare the compatibility flag in your chart's `values.yaml`:
+
+```yaml
+global:
+  # Verifies this plugin was built for the Magda version it is deployed with.
+  # Must default to `true`; see below for why CI sets it to `false`.
+  magdaCompatibilityCheck: true
+```
+
+`magda.db-client-sslmode-env-v1` is a thin shim that delegates to Magda's own
+implementation, so there is no copy of the TLS logic in your chart to drift out
+of sync. Its behaviour is frozen: if Magda ever changes what the helper emits,
+it will publish `-v2` and leave `-v1` alone, so a vendored copy of `-v1` is
+always safe.
+
+### This requires Magda v7 or later
+
+The shim delegates to templates that only exist in `magda-core` v7+. Deployed
+against an older Magda, the render fails with:
+
+```
+no template "magda.compatibility-check" associated with template "gotpl"
+```
+
+That is deliberate — the alternative (a no-op fallback in `magda-common`) would
+be overridden by the plugin's own copy and silently disable the check. State the
+requirement in your plugin's README and release notes:
+
+> Requires Magda v7+. To run against Magda v6, set
+> `global.magdaCompatibilityCheck=false` — the plugin will then connect to the
+> session database without TLS, matching v6 behaviour.
+
+Because the flag is a **global**, an operator sets it once for all plugins
+rather than per chart.
+
+### CI, `helm lint` and `helm template`
+
+Rendering a plugin chart on its own has no `magda-core` present, so those
+templates are missing and the render fails. Pass the flag in your plugin repo's
+chart test steps:
+
+```bash
+helm lint ./deploy/my-plugin --set global.magdaCompatibilityCheck=false
+helm template test ./deploy/my-plugin --set global.magdaCompatibilityCheck=false
+```
+
+Only plugin repositories need this. The main Magda repository does not — its own
+charts call `magda.db-client-sslmode-env` directly, and the handshake itself is
+covered by `deploy/helm/magda-core/tests/compatibility-check.sh`.
+
+### If the versions do not match
+
+When a plugin declares a contract this Magda version no longer supports, the
+install fails at render time with a message naming both the chart and the
+contract, rather than starting a deployment that misbehaves:
+
+```
+Chart "magda-auth-oidc" uses the Magda helper contract "db-client-sslmode-env-v0",
+which this version of Magda does not support (supported: db-client-sslmode-env-v1).
+Upgrade or downgrade "magda-auth-oidc" to a release built for this Magda version.
+```

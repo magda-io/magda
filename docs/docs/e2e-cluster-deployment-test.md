@@ -16,9 +16,9 @@ Run this test before merging any PR whose CI test plan can't otherwise prove it 
 - Helm v3 (`helm version`) and `kubectl` configured against the `minikube` context.
 - A published build to test — either a real release/alpha tag, or a [PR preview release](./pr-preview-release-testing.md) (e.g. `v6.0.0-pr.3665.5`).
 
-> **On sizing (measured, magda full default stack, docker driver, Apple Silicon).** A fresh install settles at ~7 GiB node RAM and idles at well under one CPU; a long-running instance drifts toward ~10 GiB as JVM/OpenSearch working sets and indexed data grow. CPU only spikes transiently (install, indexing) — `magda-embedding-api` in particular is CPU-bound rather than memory-bound (it stays around 0.5 GiB even under heavy embedding load but will use every core it's given during bulk semantic indexing). The Helm chart's scheduler *requests* only sum to ~1.6 CPU / ~5.75 GiB, so `minikube` will happily schedule the whole stack onto an undersized node and then OOM-kill under load — size for the actual usage above, not for requests. (An earlier revision of this doc suggested 8 CPU / 16 GB; that is safe but conservative.)
+> **On sizing (measured, magda full default stack, docker driver, Apple Silicon).** A fresh install settles at ~7 GiB node RAM and idles at well under one CPU; a long-running instance drifts toward ~10 GiB as JVM/OpenSearch working sets and indexed data grow. CPU only spikes transiently (install, indexing) — `magda-embedding-api` in particular is CPU-bound rather than memory-bound (it stays around 0.5 GiB even under heavy embedding load but will use every core it's given during bulk semantic indexing). The Helm chart's scheduler _requests_ only sum to ~1.6 CPU / ~5.75 GiB, so `minikube` will happily schedule the whole stack onto an undersized node and then OOM-kill under load — size for the actual usage above, not for requests. (An earlier revision of this doc suggested 8 CPU / 16 GB; that is safe but conservative.)
 >
-> **docker-driver gotcha:** `minikube start --memory/--cpus` is enforced at the container cgroup, but `kubectl get node` reports the *host* Docker VM's capacity (e.g. 24 GB / 9 CPU), not your cap — so an over-commit surfaces as raw cgroup OOM-kills rather than graceful Kubernetes eviction. Confirm the real limit with `docker inspect minikube --format '{{.HostConfig.Memory}}'` (bytes) / `'{{.HostConfig.NanoCpus}}'`.
+> **docker-driver gotcha:** `minikube start --memory/--cpus` is enforced at the container cgroup, but `kubectl get node` reports the _host_ Docker VM's capacity (e.g. 24 GB / 9 CPU), not your cap — so an over-commit surfaces as raw cgroup OOM-kills rather than graceful Kubernetes eviction. Confirm the real limit with `docker inspect minikube --format '{{.HostConfig.Memory}}'` (bytes) / `'{{.HostConfig.NanoCpus}}'`.
 
 ## Step 1: Fully Purge Any Existing Deployment
 
@@ -112,6 +112,51 @@ curl -s -H "X-Magda-Session: $(cat /tmp/admin.jwt)" http://localhost:18080/api/v
 
 A JWT built directly with `acs-cmd jwt` only works for API calls — there's no way to paste it into the browser to log into the UI as that user. If the smoke test needs to exercise the UI while logged in, install the [`magda-auth-internal`](https://github.com/magda-io/magda-auth-internal) plugin and create a dedicated test admin account instead. This flow was verified against a real minikube deployment as follows:
 
+> **⚠️ Version note — v7+ auth plugins must share the `magda` Helm release.**
+>
+> The separate-release install in step 1 below (`helm install magda-auth-internal …` as its _own_ release) is valid **only for pre-v7 plugin versions**. A **v7+** plugin — one that adopts the `magda.db-client-sslmode-env-v1` helper contract (the enforced-TLS `session-db` work in [#3742](https://github.com/magda-io/magda/issues/3742)) — renders `magda.db-client-sslmode-env-v1`, whose shim calls `magda.compatibility-check`, a template that lives in `magda-core`. Helm's template namespace is **per release**, so a plugin installed as a _separate_ release can't see that template and the render fails closed with:
+>
+> ```
+> no template "magda.compatibility-check" associated with template "gotpl"
+> ```
+>
+> This is the contract behaving as designed (see [helm-helper-contracts.md](./helm-helper-contracts.md)). A v7+ plugin must instead be installed **in the same Helm release as `magda`**, as a chart **dependency** (an umbrella/wrapper chart), so the compatibility check resolves _and_ the pod receives `PGSSLMODE`. The current `magda-auth-internal` (v4.0.0-alpha.0+) is a v7 plugin, so use this approach:
+>
+> ```yaml
+> # umbrella/Chart.yaml
+> apiVersion: v2
+> name: magda-e2e
+> version: 0.1.0
+> dependencies:
+>   - name: magda
+>     version: <VERSION>
+>     repository: oci://ghcr.io/magda-io/charts
+>   - name: magda-auth-internal
+>     version: <PLUGIN_VERSION> # a v7-line release, e.g. 4.0.0-alpha.0
+>     repository: oci://ghcr.io/magda-io/charts
+> ```
+>
+> ```yaml
+> # umbrella/values.yaml — register the plugin with the gateway (note the nesting under `magda:`)
+> magda:
+>   magda-core:
+>     gateway:
+>       authPlugins:
+>         - key: internal
+>           baseUrl: http://magda-auth-internal
+> ```
+>
+> ```bash
+> helm dep up ./umbrella
+> helm install magda ./umbrella -n magda   # ...plus the same --set/-f values you'd pass to the magda chart
+> ```
+>
+> With the umbrella approach, steps 1 and 2 below (the separate `helm install` + gateway-registration `helm upgrade`) are already covered by the chart, so skip them and continue from step 3 (`set-user-password`). A full worked example lives in [`magda-auth-internal/docs/e2e-test-cases/session-db-tls-and-login.md`](https://github.com/magda-io/magda-auth-internal/blob/main/docs/e2e-test-cases/session-db-tls-and-login.md).
+>
+> Setting `global.magdaCompatibilityCheck=false` will make the separate-release install render, but it also **disables the `PGSSLMODE` injection** — so it is _not_ a valid way to test a real TLS deployment.
+
+**For a pre-v7 plugin** (separate Helm release):
+
 1. **Install the plugin as its own Helm release in the `magda` namespace**, pointed at the officially published chart (don't build from a local checkout — see the version-skew warning below):
    ```bash
    helm install magda-auth-internal oci://ghcr.io/magda-io/charts/magda-auth-internal --version <VERSION> \
@@ -144,7 +189,7 @@ A JWT built directly with `acs-cmd jwt` only works for API calls — there's no 
    #   npm rebuild bcrypt --build-from-source
 
    export PGPASSWORD=$(kubectl get secret -n magda db-main-account-secret -o jsonpath='{.data.postgresql-password}' | base64 -d)
-   kubectl port-forward -n magda svc/combined-db-postgresql 15432:5432 &
+   kubectl port-forward -n magda svc/combined-db-postgresql-pg17 15432:5432 &
    POSTGRES_HOST=localhost POSTGRES_PORT=15432 POSTGRES_DB=auth POSTGRES_USER=postgres POSTGRES_PASSWORD="$PGPASSWORD" \
      yarn set-user-password -c e2e-test-admin@example.com -p "<a real password>" -n "E2E Test Admin" -a
    ```
@@ -320,7 +365,7 @@ Several checks (e.g. running [`@magda/acs-cmd`](https://www.npmjs.com/package/@m
 
 ```bash
 export PGPASSWORD=$(kubectl get secret -n magda db-main-account-secret -o jsonpath='{.data.postgresql-password}' | base64 -d)
-kubectl port-forward -n magda svc/combined-db-postgresql 15432:5432 &
+kubectl port-forward -n magda svc/combined-db-postgresql-pg17 15432:5432 &
 POSTGRES_HOST=localhost POSTGRES_PORT=15432 POSTGRES_DB=auth POSTGRES_USER=postgres POSTGRES_PASSWORD="$PGPASSWORD" \
   yarn acs-cmd list users
 ```

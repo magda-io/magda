@@ -33,6 +33,7 @@ spec:
               name: auth-secrets
               key: jwt-secret
         {{- include "magda.db-client-credential-env" (dict "dbName" "registry-db" "dbUserEnvName" "POSTGRES_USER" "dbPasswordEnvName" "POSTGRES_PASSWORD" "root" .root)  | indent 8 }}
+        {{- include "magda.db-client-sslmode-env" .root | indent 8 }}
         image: {{ include "magda.image" .root | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" .root | quote }}
         ports:
@@ -83,10 +84,16 @@ spec:
         volumeMounts:
         - name: app-config-volume
           mountPath: /etc/config
+{{- if eq (include "magda.postgres-client-ca-enabled" .root) "true" }}
+        {{- include "magda.postgres-client-ca-volumemount" .root | nindent 8 }}
+{{- end }}
       volumes:
       - name: app-config-volume
         configMap:
           name: registry-api-app-conf
+{{- if eq (include "magda.postgres-client-ca-enabled" .root) "true" }}
+      {{- include "magda.postgres-client-ca-volume" .root | nindent 6 }}
+{{- end }}
 {{- end }}
         
 {{/*
@@ -131,6 +138,49 @@ spec:
 {{- $appConfigDict = mergeOverwrite dict $appConfigDictInVal (deepCopy $appConfigDict) }}
 {{- if hasKey .Values "validateJsonSchema" }}
 {{- $_ := set $appConfigDict "validateJsonSchema" .Values.validateJsonSchema }}
+{{- end }}
+{{- /*
+  registry-api connects via pgjdbc, which does not read PGSSLMODE. Carry the
+  resolved sslmode as a JDBC URL parameter instead. Only append when the URL
+  doesn't already specify one, so a user who hand-writes the full URL keeps
+  control.
+*/}}
+{{- $dbSection := (get $appConfigDict "db") | default dict }}
+{{- $dbDefault := (get $dbSection "default") | default dict }}
+{{- $dbUrl := (get $dbDefault "url") | default "" | toString }}
+{{- /*
+  Detect an existing `sslmode` *query parameter*, not merely the substring
+  `sslmode=` anywhere in the URL — a password or path that happens to contain
+  `sslmode=` must not suppress the append. Split off the query string (everything
+  after the first `?`) and look for a parameter whose key is `sslmode`
+  (case-insensitively, since pgjdbc treats property names case-insensitively).
+*/}}
+{{- $hasSslmode := false }}
+{{- if contains "?" $dbUrl }}
+{{- $query := $dbUrl | splitList "?" | rest | join "?" }}
+{{- range ($query | splitList "&") }}
+{{- if hasPrefix "sslmode=" (. | lower) }}
+{{- $hasSslmode = true }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if and $dbUrl (not $hasSslmode) }}
+{{- $separator := ternary "&" "?" (contains "?" $dbUrl) }}
+{{- $_ := set $dbDefault "url" (printf "%s%ssslmode=%s" $dbUrl $separator (include "magda.postgres-client-sslmode" .)) }}
+{{- $_ := set $dbSection "default" $dbDefault }}
+{{- $_ := set $appConfigDict "db" $dbSection }}
+{{- end }}
+{{- /*
+  When a CA secret is configured, also carry its mounted path as pgjdbc's
+  `sslrootcert` parameter (pgjdbc ignores PGSSLROOTCERT). No secret => no
+  `sslrootcert=` is appended. Only append when not already present.
+*/}}
+{{- $dbUrl2 := (get $dbDefault "url") | default "" | toString }}
+{{- if and (eq (include "magda.postgres-client-ca-enabled" .) "true") $dbUrl2 (not (contains "sslrootcert=" ($dbUrl2 | lower))) }}
+{{- $sep := ternary "&" "?" (contains "?" $dbUrl2) }}
+{{- $_ := set $dbDefault "url" (printf "%s%ssslrootcert=/etc/magda/postgresql-ca/root.crt" $dbUrl2 $sep) }}
+{{- $_ := set $dbSection "default" $dbDefault }}
+{{- $_ := set $appConfigDict "db" $dbSection }}
 {{- end }}
 {{- mustToRawJson $appConfigDict }}
 {{- end -}}

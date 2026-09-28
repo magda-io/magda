@@ -13,11 +13,17 @@ scripted, assertion/checksum-based driver), and how to clean up.
 
 ## Cases
 
+- [DB TLS + non-default privileged user](./db-tls-and-privileged-user.md)
+- [`sslmode=verify-full` server-certificate verification against a simulated managed database](./db-tls-verify-full.md)
 - [Large file storage (multipart upload + Range download)](./large-file-storage.md)
 - [mgd CLI (auth, search, dataset/dist CRUD, large-file round-trip)](./mgd-cli.md)
 - [mgd agent skill auto-use](./mgd-skill-auto-use.md)
 - [Distribution version aspect in the Web UI](./distribution-version-web-ui.md)
 - [In-cluster PostgreSQL wal-g cross-version backup / restore (roll-forward + PITR)](./postgres-walg-cross-version-restore.md)
+- [In-cluster PostgreSQL major upgrade (PG 13 → 17 logical dump / restore)](./postgres-major-upgrade.md)
+- [Migrate the in-cluster PostgreSQL to a managed/cloud database (Pathway B)](./postgres-in-cluster-to-managed-db-migration.md)
+- [Fresh install on PostgreSQL 17 — client authentication (SCRAM)](./postgres-fresh-install-auth.md)
+- [DB migrator surfaces the PG15+ `public`-schema privilege failure (and classifies a missing database locale-independently)](./migrator-public-schema-privilege-error.md)
 
 ## Adding a new case
 

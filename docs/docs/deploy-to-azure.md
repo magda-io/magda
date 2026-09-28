@@ -79,6 +79,53 @@ kubectl create secret generic storage-secrets --namespace magda --from-literal=a
 kubectl create secret generic smtp-secret --namespace magda --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD
 ```
 
+> **Using an external Azure Database for PostgreSQL (Flexible Server)? Grant your admin account rights on the `public` schema (PostgreSQL 15+).**
+>
+> The steps above install Magda with its bundled in-cluster PostgreSQL. If you
+> instead point Magda at a managed **Azure Database for PostgreSQL — Flexible
+> Server** (recommended for production), be aware of a PostgreSQL 15 change that
+> commonly trips up first-time deployments.
+>
+> In PostgreSQL 14 and earlier, every role automatically had `CREATE` permission
+> on the `public` schema of every database — it was effectively world-writable,
+> so any account that could connect could create tables. PostgreSQL 15 **removed
+> that default** and made `public` owned by the database's owner; from 15 onward
+> only the schema owner, or a role explicitly granted `CREATE ON SCHEMA public`,
+> may create objects there (see the
+> [PostgreSQL 15 release notes](https://www.postgresql.org/docs/release/15.0/),
+> "Remove PUBLIC creation permission on the public schema"). Azure Database for
+> PostgreSQL Flexible Server runs PostgreSQL 15 or newer, and — unlike some
+> providers — the administrator login it gives you is a member of
+> `azure_pg_admin` but is **not** a superuser and does **not** own the built-in
+> `postgres` database's `public` schema, so on Azure this grant is usually
+> **required**, not optional.
+>
+> Magda's `registry-db` migrator creates the registry's tables in the `public`
+> schema of the server's **default `postgres` database** (the registry service
+> connects without naming a specific database), using the admin account you set
+> as `global.postgresql.auth.username`. If that account cannot create in that
+> `public` schema, the migrator will **connect successfully** (both TLS and
+> password authentication pass) and then fail part-way through with:
+>
+> ```
+> ERROR: permission denied for schema public
+> ```
+>
+> Because this happens right after a fully established (and, with `verify-ca` /
+> `verify-full`, certificate-verified) connection, it is easy to misread as an
+> SSL / CA problem — but it is purely the PostgreSQL 15 schema-privilege change,
+> unrelated to TLS. Fix it once, connected to the target database as the admin
+> login, with **one** of:
+>
+> ```sql
+> -- Preferred: let the admin own the schema, so it can also grant the
+> -- non-privileged "client" role the access Magda's migrations set up.
+> ALTER SCHEMA public OWNER TO magda_admin;   -- magda_admin = your admin login
+>
+> -- Or, to leave ownership unchanged but still allow object creation:
+> GRANT CREATE ON SCHEMA public TO magda_admin;
+> ```
+
 8> Install Magda via Helm
 
 ```bash

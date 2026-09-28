@@ -219,7 +219,7 @@ It's also possible to run what you're working on your host, and the services you
 This is super-easy, just run
 
 ```bash
-kubectl port-forward combined-db-postgresql-0 5432:5432
+kubectl port-forward combined-db-postgresql-pg17-0 5432:5432
 # or kubectl port-forward combined-db-0 5432:5432 prior to Magda v1.0.0
 ```
 
@@ -334,7 +334,7 @@ helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --se
 ```bash
 # Port forward database
 # this command doesn't terminate, so run it in a separate terminal
-kubectl port-forward combined-db-postgresql-0 5432:5432
+kubectl port-forward combined-db-postgresql-pg17-0 5432:5432
 # or kubectl port-forward combined-db-0 5432:5432 prior to Magda v1.0.0
 ```
 

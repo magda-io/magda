@@ -1,6 +1,6 @@
 dependencies:
 - name: postgresql
   repository: oci://ghcr.io/magda-io/third-party/bitnami/charts
-  version: 10.9.1
-digest: sha256:a62301a35ba84a6a1958d283adcd1a9855ac89ecd1ffeedd59ffcae026a4025d
-generated: "2024-05-06T21:02:20.412739+10:00"
+  version: 16.7.24
+digest: sha256:01b1ab7603aee91ebb6f37c2bff42bc5a2bbd569895830caf0495b18640811ed
+generated: "2026-08-05T22:12:56.57582+10:00"

@@ -16,7 +16,7 @@ The chart is deployed twice against one shared in-cluster MinIO bucket:
    timestamp **T**, write **C**, and force a WAL switch so B and C are archived.
 2. **Restore** (new wal-g), into a fresh volume, in recovery mode:
    - `recoveryTarget: latest` → must recover **A + B + C** (full roll-forward
-     through WAL produced by the *other* version).
+     through WAL produced by the _other_ version).
    - `recoveryTarget: <T>` → must recover **A + B** only, stopping before **C**.
 
 The restore drives `wal-g wal-fetch` as PostgreSQL's `restore_command`, so it
@@ -32,8 +32,8 @@ up as roll-forward recovering only the base-backup rows.
 
 - A cluster with your `kubectl` context pointed at it (e.g. `minikube start`), plus
   `helm` and `docker`.
-- Two `magda-postgres` images to compare — one carrying the *old* wal-g, one the
-  *new* wal-g (e.g. a PR testing build; see
+- Two `magda-postgres` images to compare — one carrying the _old_ wal-g, one the
+  _new_ wal-g (e.g. a PR testing build; see
   [How to Release a New Version](../ci-version-release.md)). Set them, and the tags
   (the chart's image `registry`/`repository` defaults already point at
   `ghcr.io/magda-io/magda-postgres`, so only the tag varies):
@@ -129,23 +129,23 @@ helm install walg-e2e /tmp/walg-e2e-chart -n "$NS" -f /tmp/walg-e2e-storage.yaml
   --set postgresql.image.tag="$PROD_TAG" \
   --set backupRestore.backup.enabled=true \
   --set backupRestore.backup.archiveTimeout=30
-kubectl -n "$NS" rollout status statefulset/default-db-postgresql --timeout=360s
+kubectl -n "$NS" rollout status statefulset/default-db-postgresql-pg17 --timeout=360s
 
 # sanity: this pod runs the OLD wal-g
-kubectl -n "$NS" exec default-db-postgresql-0 -- wal-g --version
+kubectl -n "$NS" exec default-db-postgresql-pg17-0 -- wal-g --version
 ```
 
 Seed rows **A** and confirm WAL is being archived (expect `failed_count = 0` after
 `archiveTimeout`):
 
 ```bash
-kubectl -n "$NS" exec default-db-postgresql-0 -- env PGPASSWORD="$DB_PW" \
+kubectl -n "$NS" exec default-db-postgresql-pg17-0 -- env PGPASSWORD="$DB_PW" \
   psql -U postgres -h 127.0.0.1 -c \
   "CREATE TABLE xver(id bigserial primary key, tag text, v text);
    INSERT INTO xver(tag,v) SELECT 'A','a'||g FROM generate_series(1,100) g;
    CHECKPOINT;"
 sleep 35
-kubectl -n "$NS" exec default-db-postgresql-0 -- env PGPASSWORD="$DB_PW" \
+kubectl -n "$NS" exec default-db-postgresql-pg17-0 -- env PGPASSWORD="$DB_PW" \
   psql -U postgres -h 127.0.0.1 -c \
   "SELECT archived_count, failed_count FROM pg_stat_archiver;"
 ```
@@ -156,24 +156,40 @@ the bitnami entrypoint's `nss_wrapper`, so it can't resolve its uid (1001) until
 entrypoint and don't need this):
 
 ```bash
-kubectl -n "$NS" exec default-db-postgresql-0 -- /usr/local/bin/adduser.sh
-kubectl -n "$NS" exec default-db-postgresql-0 -- \
+kubectl -n "$NS" exec default-db-postgresql-pg17-0 -- /usr/local/bin/adduser.sh
+kubectl -n "$NS" exec default-db-postgresql-pg17-0 -- \
   bash -c 'PGHOST=127.0.0.1 PGUSER=postgres PGPASSWORD='"$DB_PW"' wal-g backup-push $PGDATA'
 ```
 
 Write **B**, capture the PITR target **T**, write **C**, and force a WAL switch so
 they archive. Note the printed `T` — you'll use it in step 5:
 
+Each statement group below is a **separate `-c`**, and that matters: `psql -c` sends a
+multi-statement string as one simple-query message, which PostgreSQL wraps in a single
+implicit transaction. Bundled together, B and C would commit at the same instant, and
+`now()` — which returns _transaction start_ time, not wall clock — would yield a `T`
+earlier than B's commit. The step-5 PITR would then recover neither B nor C (100 rows),
+silently passing through a procedure that no longer tests point-in-time granularity at
+all. Separate `-c` flags run as separate transactions, and `clock_timestamp()` is read
+at execution time rather than transaction start.
+
 ```bash
-kubectl -n "$NS" exec default-db-postgresql-0 -- env PGPASSWORD="$DB_PW" \
-  psql -U postgres -h 127.0.0.1 -c \
-  "INSERT INTO xver(tag,v) SELECT 'B','b'||g FROM generate_series(1,50) g;
-   CHECKPOINT;
-   SELECT now() AS pitr_target_T;
-   SELECT pg_sleep(3);
-   INSERT INTO xver(tag,v) SELECT 'C','c'||g FROM generate_series(1,50) g;
-   CHECKPOINT;
-   SELECT pg_switch_wal();"
+# B commits on its own, before T is taken.
+kubectl -n "$NS" exec default-db-postgresql-pg17-0 -- env PGPASSWORD="$DB_PW" \
+  psql -U postgres -h 127.0.0.1 \
+  -c "INSERT INTO xver(tag,v) SELECT 'B','b'||g FROM generate_series(1,50) g;" \
+  -c "CHECKPOINT;" \
+  -c "SELECT clock_timestamp() AS pitr_target_T;"
+
+sleep 3    # keep T strictly between B's and C's commits
+
+# C commits strictly after T.
+kubectl -n "$NS" exec default-db-postgresql-pg17-0 -- env PGPASSWORD="$DB_PW" \
+  psql -U postgres -h 127.0.0.1 \
+  -c "INSERT INTO xver(tag,v) SELECT 'C','c'||g FROM generate_series(1,50) g;" \
+  -c "CHECKPOINT;" \
+  -c "SELECT pg_switch_wal();"
+
 sleep 35   # let the last segment archive
 export T='<paste the pitr_target_T value here>'
 ```
@@ -185,16 +201,16 @@ Restore into a **fresh** volume (delete the producer's PVC) in recovery mode wit
 
 ```bash
 helm uninstall walg-e2e -n "$NS"
-kubectl -n "$NS" delete pvc data-default-db-postgresql-0
+kubectl -n "$NS" delete pvc data-default-db-postgresql-pg17-0
 
 helm install walg-e2e /tmp/walg-e2e-chart -n "$NS" -f /tmp/walg-e2e-storage.yaml \
   --set postgresql.image.tag="$REST_TAG" \
   --set backupRestore.recoveryMode.enabled=true \
   --set backupRestore.recoveryMode.recoveryTarget=latest
-kubectl -n "$NS" rollout status statefulset/default-db-postgresql --timeout=360s
+kubectl -n "$NS" rollout status statefulset/default-db-postgresql-pg17 --timeout=360s
 
-kubectl -n "$NS" exec default-db-postgresql-0 -- wal-g --version   # NEW wal-g
-kubectl -n "$NS" exec default-db-postgresql-0 -- env PGPASSWORD="$DB_PW" \
+kubectl -n "$NS" exec default-db-postgresql-pg17-0 -- wal-g --version   # NEW wal-g
+kubectl -n "$NS" exec default-db-postgresql-pg17-0 -- env PGPASSWORD="$DB_PW" \
   psql -U postgres -h 127.0.0.1 -c "SELECT count(*) FROM xver;"   # expect 200
 ```
 
@@ -208,15 +224,15 @@ Same again, but target the timestamp **T** (between B and C). Expect **150** row
 
 ```bash
 helm uninstall walg-e2e -n "$NS"
-kubectl -n "$NS" delete pvc data-default-db-postgresql-0
+kubectl -n "$NS" delete pvc data-default-db-postgresql-pg17-0
 
 helm install walg-e2e /tmp/walg-e2e-chart -n "$NS" -f /tmp/walg-e2e-storage.yaml \
   --set postgresql.image.tag="$REST_TAG" \
   --set backupRestore.recoveryMode.enabled=true \
   --set backupRestore.recoveryMode.recoveryTarget="$T"
-kubectl -n "$NS" rollout status statefulset/default-db-postgresql --timeout=360s
+kubectl -n "$NS" rollout status statefulset/default-db-postgresql-pg17 --timeout=360s
 
-kubectl -n "$NS" exec default-db-postgresql-0 -- env PGPASSWORD="$DB_PW" \
+kubectl -n "$NS" exec default-db-postgresql-pg17-0 -- env PGPASSWORD="$DB_PW" \
   psql -U postgres -h 127.0.0.1 -c \
   "SELECT count(*) AS total FROM xver;
    SELECT count(*) AS c_rows FROM xver WHERE tag='C';"   # expect total=150, c_rows=0

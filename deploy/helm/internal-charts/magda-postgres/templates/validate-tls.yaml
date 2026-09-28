@@ -1,0 +1,24 @@
+{{- /*
+  Render-time consistency check between the in-cluster PostgreSQL server's TLS
+  listener and the client `sslmode` every Magda component uses.
+
+  `postgresql.tls.enabled` is a subchart value, so it is per-DB-chart and cannot
+  be driven from a `global.*` switch (a wrapper chart's values.yaml cannot
+  compute a subchart value). This chart is therefore the only place that can see
+  BOTH sides of the contract, and this is where they get checked.
+
+  Turning the server listener off while clients still resolve to
+  `sslmode=require` is a whole-stack outage: libpq/pgjdbc/node-postgres all
+  refuse to connect to a server that does not offer TLS. Catch it here, at
+  render time, with an actionable message rather than at runtime.
+
+  Skipped when an external DB is in use: the StatefulSet this chart deploys is
+  idle in that case and the client `sslmode` describes the connection to the
+  external provider, not to it.
+*/}}
+{{- if and (not .Values.postgresql.tls.enabled) (not .Values.global.useAwsRdsDb) (not .Values.global.useCloudSql) }}
+{{- $sslmode := include "magda.postgres-client-sslmode" . }}
+{{- if ne $sslmode "disable" }}
+{{- fail (printf "%s: the in-cluster PostgreSQL TLS listener is turned off (`magda-postgres.postgresql.tls.enabled: false`) but Magda clients resolve `global.postgresql.client.sslmode` to %q, which requires TLS — every service, DB migrator and backup job would fail to connect. Either leave `magda-postgres.postgresql.tls.enabled` at its default `true`, or also set `global.postgresql.client.sslmode: disable` to run the whole stack in plaintext." .Values.postgresql.fullnameOverride $sslmode) }}
+{{- end }}
+{{- end }}

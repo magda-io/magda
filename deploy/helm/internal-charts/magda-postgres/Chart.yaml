@@ -8,5 +8,5 @@ annotations:
   magdaModuleType: "core"
 dependencies:
   - name: postgresql
-    version: "10.9.1"
+    version: "16.7.24"
     repository: "oci://ghcr.io/magda-io/third-party/bitnami/charts"
