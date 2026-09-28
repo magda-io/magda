@@ -4,6 +4,7 @@ import { config } from "../../config";
 import "./DataPreviewMapOpenInNationalMapButton.scss";
 import { BrowserDetectInfo } from "browser-detect/dist/types/browser-detect.interface";
 import { ParsedDistribution } from "../../helpers/record";
+import { getExternalTerriaMapTargetUrl } from "../../helpers/externalTerriaMap";
 import URI from "urijs";
 
 type PropsType = {
@@ -14,12 +15,12 @@ type PropsType = {
     };
 };
 
-const DEFAULT_TARGET_URL = "https://nationalmap.gov.au/";
-
 class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     private browser: BrowserDetectInfo;
     private winRef: Window | null;
     private shouldRender: boolean;
+    // The external TerriaMap target URL, or undefined when none is configured.
+    private externalTargetUrl: string | undefined;
 
     constructor(props) {
         super(props);
@@ -27,14 +28,19 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
         this.onPopUpMessageReceived = this.onPopUpMessageReceived.bind(this);
         this.winRef = null;
         this.browser = browser();
+        // The historical default (nationalmap.gov.au) has been discontinued, so
+        // the button is only shown when an operator has configured a remote
+        // TerriaMap to send data to. Otherwise it is hidden.
+        this.externalTargetUrl = getExternalTerriaMapTargetUrl(config);
         // support v7 turned on or not IE 11
-        this.shouldRender =
+        const browserSupported =
             config?.supportExternalTerriaMapV7 === true ||
             !(
                 this.browser.name === "ie" &&
                 this.browser?.versionNumber &&
                 this.browser.versionNumber < 12
             );
+        this.shouldRender = !!this.externalTargetUrl && browserSupported;
     }
 
     componentDidMount() {
@@ -151,9 +157,12 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     }
 
     onButtonClick() {
-        const targetUrl = config?.openInExternalTerriaMapTargetUrl
-            ? config.openInExternalTerriaMapTargetUrl
-            : DEFAULT_TARGET_URL;
+        const targetUrl = this.externalTargetUrl;
+        if (!targetUrl) {
+            // Button is only rendered when a target URL is configured; guard
+            // defensively in case of an unexpected click.
+            return;
+        }
         if (
             this.browser.name === "ie" &&
             this.browser?.versionNumber &&
