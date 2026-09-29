@@ -1,15 +1,25 @@
 import React, { Component } from "react";
 import browser from "browser-detect";
-import { config } from "../../config";
+import { config, DATASETS_BUCKET } from "../../config";
 import "./DataPreviewMapOpenInNationalMapButton.scss";
 import { BrowserDetectInfo } from "browser-detect/dist/types/browser-detect.interface";
 import { ParsedDistribution } from "../../helpers/record";
-import { getExternalTerriaMapTargetUrl } from "../../helpers/externalTerriaMap";
+import {
+    FullMapTarget,
+    getFullMapTarget,
+    getTargetOrigin
+} from "../../helpers/externalTerriaMap";
+import { createPreviewMapStartData } from "../../helpers/previewMapStartData";
 import URI from "urijs";
+
+const DEFAULT_BUILT_IN_BUTTON_TEXT = "Open full map";
 
 type PropsType = {
     distribution: ParsedDistribution;
+    /** Label for the legacy external-TerriaMap path. */
     buttonText: string;
+    selectedWmsWfsGroupItemName?: string;
+    isWms?: boolean;
     style: {
         [key: string]: any;
     };
@@ -19,8 +29,8 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     private browser: BrowserDetectInfo;
     private winRef: Window | null;
     private shouldRender: boolean;
-    // The external TerriaMap target URL, or undefined when none is configured.
-    private externalTargetUrl: string | undefined;
+    // Built-in full map, a configured external TerriaMap, or undefined.
+    private target: FullMapTarget | undefined;
 
     constructor(props) {
         super(props);
@@ -28,19 +38,45 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
         this.onPopUpMessageReceived = this.onPopUpMessageReceived.bind(this);
         this.winRef = null;
         this.browser = browser();
-        // The historical default (nationalmap.gov.au) has been discontinued, so
-        // the button is only shown when an operator has configured a remote
-        // TerriaMap to send data to. Otherwise it is hidden.
-        this.externalTargetUrl = getExternalTerriaMapTargetUrl(config);
+        // Without a configured remote TerriaMap, open the deployment's own
+        // preview-map module in full mode (the historical nationalmap.gov.au
+        // default has been discontinued).
+        this.target = getFullMapTarget(config);
+        this.shouldRender = this.target
+            ? this.target.kind === "builtIn"
+                ? // needs the postMessage handshake, which legacy IE skips
+                  !this.isLegacyIe()
+                : this.externalTargetSupported()
+            : false;
+    }
+
+    private isLegacyIe() {
+        return !!(
+            this.browser.name === "ie" &&
+            this.browser?.versionNumber &&
+            this.browser.versionNumber < 12
+        );
+    }
+
+    private externalTargetSupported() {
         // support v7 turned on or not IE 11
-        const browserSupported =
-            config?.supportExternalTerriaMapV7 === true ||
-            !(
-                this.browser.name === "ie" &&
-                this.browser?.versionNumber &&
-                this.browser.versionNumber < 12
-            );
-        this.shouldRender = !!this.externalTargetUrl && browserSupported;
+        return (
+            config?.supportExternalTerriaMapV7 === true || !this.isLegacyIe()
+        );
+    }
+
+    createBuiltInStartData() {
+        const { distribution, selectedWmsWfsGroupItemName, isWms } = this.props;
+        return createPreviewMapStartData({
+            title: distribution?.title,
+            distributionId: distribution?.identifier,
+            baseUrl: config.baseUrl,
+            storageApiUrl: config.storageApiBaseUrl,
+            defaultBucket: DATASETS_BUCKET,
+            corsDomain: URI(config.baseExternalUrl).hostname(),
+            selectedWmsWfsGroupItemName,
+            isWms
+        });
     }
 
     componentDidMount() {
@@ -157,17 +193,29 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     }
 
     onButtonClick() {
-        const targetUrl = this.externalTargetUrl;
-        if (!targetUrl) {
-            // Button is only rendered when a target URL is configured; guard
-            // defensively in case of an unexpected click.
+        const target = this.target;
+        if (!target) {
+            // Button is only rendered when a target exists; guard defensively
+            // in case of an unexpected click.
             return;
         }
-        if (
-            this.browser.name === "ie" &&
-            this.browser?.versionNumber &&
-            this.browser.versionNumber < 12
-        ) {
+        const targetUrl = target.url;
+        if (target.kind === "builtIn") {
+            // Load without `#mode=preview` so the full TerriaJS chrome is shown.
+            // The opened window posts "ready" to its opener (us), and we reply
+            // with the same `magda-item` start data as the embedded preview.
+            const newWinRef = window.open(targetUrl, "_blank");
+            if (!newWinRef) {
+                this.winRef = null;
+                alert(
+                    "Unable to open the full map as it was blocked by a popup blocker. Please allow this site to open popups in your browser and try again."
+                );
+                return;
+            }
+            this.winRef = newWinRef;
+            return;
+        }
+        if (this.isLegacyIe()) {
             window.open(
                 `${targetUrl}#start=` +
                     encodeURIComponent(
@@ -191,17 +239,34 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     }
 
     onPopUpMessageReceived(e) {
-        if (this.winRef !== e.source || e.data !== "ready") return;
-        this?.winRef?.postMessage(
-            this.createCatalogItemFromDistribution(),
-            "*"
-        );
+        if (!this.winRef || this.winRef !== e.source || e.data !== "ready") {
+            return;
+        }
+        if (this.target?.kind === "builtIn") {
+            const targetOrigin = getTargetOrigin(
+                this.target.url,
+                window.location.href
+            );
+            // Only answer our own full-map window, never another origin.
+            if (e.origin !== targetOrigin) return;
+            this.winRef.postMessage(
+                this.createBuiltInStartData(),
+                targetOrigin
+            );
+            return;
+        }
+        this.winRef.postMessage(this.createCatalogItemFromDistribution(), "*");
     }
 
     render() {
         if (!this.shouldRender) {
             return null;
         }
+        const buttonText =
+            config?.openInExternalTerriaMapButtonText ||
+            (this.target?.kind === "builtIn"
+                ? DEFAULT_BUILT_IN_BUTTON_TEXT
+                : this.props.buttonText);
         return (
             <div style={this.props.style}>
                 <button
@@ -211,9 +276,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                     <div className="rectangle-2" />
                     <div className="rectangle-1" />
                     <div className="open-national-map-button-text">
-                        {config?.openInExternalTerriaMapButtonText
-                            ? config.openInExternalTerriaMapButtonText
-                            : this.props.buttonText}
+                        {buttonText}
                     </div>
                 </button>
             </div>

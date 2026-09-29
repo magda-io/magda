@@ -174,16 +174,18 @@ externalCssFiles: []
 # You can set a different URL here to take users to a different landing page.
 homePageUrl:
 
-# -- When set to true, the `Open in National Map` button in Map Preview area will send data in v7 format.
+# -- When set to true, the Map Preview area's open-map button will send data in v7 format to the external TerriaMap configured by `openInExternalTerriaMapTargetUrl`.
+# Has no effect on the built-in full map view.
 supportExternalTerriaMapV7: false
 
-# -- When set, the string here will replace the text of the `Open in National Map` button in Map Preview area.
+# -- When set, the string here will replace the text of the Map Preview area's open-map button
+# (default: `Open full map` for the built-in full map view, `Open in NationalMap` for an external TerriaMap).
 openInExternalTerriaMapButtonText:
 
-# -- When set, the `Open in National Map` button in Map Preview area will send map data to the URL provided and open the map preview there.
-# When not set (the default), the button is hidden. The historical default target
-# (nationalmap.gov.au) has been discontinued; a built-in full-map view is tracked
-# separately (magda-preview-map#53).
+# -- When set, the Map Preview area's open-map button will send map data to the external TerriaMap URL provided and open the map there.
+# When not set (the default), the button opens the built-in full map view: the deployment's own
+# magda-preview-map module in a new window with the full TerriaJS UI (workbench, Add data, tools).
+# The historical default target (nationalmap.gov.au) has been discontinued.
 openInExternalTerriaMapTargetUrl:
 
 # -- Extra config data for external plugins.

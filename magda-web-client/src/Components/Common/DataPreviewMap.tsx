@@ -24,6 +24,7 @@ import {
 import DataPreviewSizeWarning from "./DataPreviewSizeWarning";
 import urijs from "urijs";
 import isStorageApiUrl from "../../helpers/isStorageApiUrl";
+import { createPreviewMapStartData } from "../../helpers/previewMapStartData";
 import { useAsync } from "react-async-hook";
 import fetch from "cross-fetch";
 import xml2json from "../../helpers/xml2json";
@@ -474,6 +475,10 @@ const DataPreviewMapWrapper: FunctionComponent<{
                         <Small>
                             <DataPreviewMapOpenInNationalMapButton
                                 distribution={bestDist.dist}
+                                selectedWmsWfsGroupItemName={
+                                    selectedWmsWfsGroupItemName
+                                }
+                                isWms={isWms}
                                 style={{
                                     position: "relative",
                                     top: "10px",
@@ -612,39 +617,16 @@ class DataPreviewMapTerria extends Component<
         selectedWmsWfsGroupItemName: string,
         isWms: boolean
     ) {
-        const catalogData: any = {
-            name: selectedDistribution.title,
-            type: "magda-item",
-            url: config.baseUrl,
-            storageApiUrl: config.storageApiBaseUrl,
+        return createPreviewMapStartData({
+            title: selectedDistribution.title,
             distributionId: selectedDistribution.identifier,
-            // --- default internal storage bucket name
+            baseUrl: config.baseUrl,
+            storageApiUrl: config.storageApiBaseUrl,
             defaultBucket: DATASETS_BUCKET,
-            isEnabled: true,
-            zoomOnEnable: true
-        };
-        if (selectedWmsWfsGroupItemName) {
-            if (isWms) {
-                catalogData.selectedWmsLayerName = selectedWmsWfsGroupItemName;
-            } else {
-                catalogData.selectedWfsFeatureTypeName = selectedWmsWfsGroupItemName;
-            }
-        }
-        return {
-            initSources: [
-                {
-                    catalog: [catalogData],
-                    baseMapName: "Positron (Light)",
-                    homeCamera: {
-                        north: -8,
-                        east: 158,
-                        south: -45,
-                        west: 109
-                    },
-                    corsDomains: [urijs(config.baseExternalUrl).hostname()]
-                }
-            ]
-        };
+            corsDomain: urijs(config.baseExternalUrl).hostname(),
+            selectedWmsWfsGroupItemName,
+            isWms
+        });
     }
 
     onIframeMessageReceived = (e) => {
@@ -723,6 +705,10 @@ class DataPreviewMapTerria extends Component<
                 {shouldHideOpenNationalMapButton ? null : (
                     <DataPreviewMapOpenInNationalMapButton
                         distribution={this.props.distribution}
+                        selectedWmsWfsGroupItemName={
+                            this.props.selectedWmsWfsGroupItemName
+                        }
+                        isWms={this.props.isWms}
                         buttonText="Open in NationalMap"
                         style={{
                             position: "absolute",

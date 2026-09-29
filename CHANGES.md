@@ -21,6 +21,8 @@
   - ArcGIS FeatureServer distributions now preview correctly (bundled `magda-minion-format` 2.0.2 fixes `f=geojson` format detection).
   - Map preview for magda-item distributions works behind the gateway again (bundled `magda-preview-map` 2.0.0 relative-baseUrl fix), and the default OpenStreetMap base map now loads (gateway `/preview-map/*` CSP allows `tile.openstreetmap.org`).
 - #3793: Fix the map preview's "Open in National Map" button sending users to a dead site: its default target, nationalmap.gov.au, has been discontinued. The button is now hidden unless a remote TerriaMap is configured via `openInExternalTerriaMapTargetUrl` (magda-io/magda-preview-map#54).
+- #3800: Replace the map preview's hidden "Open in National Map" button with a built-in **Open full map** button: when no external TerriaMap is configured, it opens the deployment's own preview map with the full TerriaJS UI (workbench, Add data, tools) in a new window, loaded with the same dataset and selected WMS layer / WFS feature type as the preview. A configured `openInExternalTerriaMapTargetUrl` keeps the external behaviour (magda-io/magda-preview-map#53).
+  - Upgrade magda-preview-map to 2.1.0, which adds a lazy **Magda data catalog** to the full map so users can add further datasets beside the one they opened; the Registry decides which datasets each viewer sees (magda-io/magda-preview-map#55).
 
 ## v6.2.1
 
