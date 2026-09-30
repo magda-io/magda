@@ -23,6 +23,7 @@
 - #3793: Fix the map preview's "Open in National Map" button sending users to a dead site: its default target, nationalmap.gov.au, has been discontinued. The button is now hidden unless a remote TerriaMap is configured via `openInExternalTerriaMapTargetUrl` (magda-io/magda-preview-map#54).
 - #3800: Replace the map preview's hidden "Open in National Map" button with a built-in **Open full map** button: when no external TerriaMap is configured, it opens the deployment's own preview map with the full TerriaJS UI (workbench, Add data, tools) in a new window, loaded with the same dataset and selected WMS layer / WFS feature type as the preview. A configured `openInExternalTerriaMapTargetUrl` keeps the external behaviour (magda-io/magda-preview-map#53).
   - Upgrade magda-preview-map to 2.1.0, which adds a lazy **Magda data catalog** to the full map so users can add further datasets beside the one they opened; the Registry decides which datasets each viewer sees (magda-io/magda-preview-map#55).
+- #3801: Fix map preview and full map features blocked by the gateway's `/preview-map/*` Content Security Policy: local file upload ("Upload data"), region-mapped CSVs (state / LGA / SA2 columns) and the "Natural Earth II" base map now work. Preview-map's own duplicate report-only policy is turned off so the gateway is the single source of the policy. See the new [Map Preview & Full Map: Content Security Policy](./docs/docs/preview-map-content-security-policy.md) doc (magda-io/magda-preview-map#56).
 
 ## v6.2.1
 
