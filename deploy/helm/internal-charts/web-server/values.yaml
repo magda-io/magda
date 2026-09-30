@@ -300,6 +300,19 @@ sqlConsoleCacheMaxSize: 10
 # @default -- 86400 seconds (1 day)
 sqlConsoleCacheExpiration: 86400
 
+# -- The base map (raster tile layer) used by the dataset search "Any Location" (region) facet map.
+# When `url` is not set, OpenStreetMap tiles (`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`) are used.
+# Supported fields:
+# <ul>
+#   <li>url: Leaflet tile URL template, e.g. `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?api_key=xxx`.</li>
+#   <li>attribution: HTML attribution text shown on the map. Most tile providers' terms of use require it.</li>
+#   <li>subdomains: Optional. A list of subdomains used to fill the `{s}` placeholder. Default to `["a", "b", "c"]`.</li>
+# </ul>
+# When a non-OpenStreetMap tile server is used, remember to add its origin to the gateway's Content Security Policy `imgSrc` directive
+# (`gateway.helmet.contentSecurityPolicy.directives.imgSrc`).
+# @default -- `{}` (OpenStreetMap tiles)
+regionFacetBaseMap: {}
+
 # -- The target origin used when UI need to post message to another window.
 # By default, only send to the same origin.
 postMessageTargetOrigin: ""

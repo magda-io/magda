@@ -5,6 +5,7 @@ import L from "leaflet";
 // eslint-disable-next-line
 import MVTSource from "leaflet-mapbox-vector-tile";
 import defined from "helpers/defined";
+import { config } from "config";
 
 class RegionMap extends Component {
     constructor(props) {
@@ -27,13 +28,11 @@ class RegionMap extends Component {
             });
         }
 
-        L.tileLayer(
-            "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-            {
-                attribution:
-                    '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            }
-        ).addTo(this.map);
+        const { url, attribution, subdomains } = config.regionFacetBaseMap;
+        L.tileLayer(url, {
+            attribution,
+            ...(subdomains?.length ? { subdomains } : {})
+        }).addTo(this.map);
 
         if (this.props.interaction === false) {
             this.map.dragging.disable();

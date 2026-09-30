@@ -390,10 +390,8 @@ gateway:
         imgSrc:
         - "'self'"
         - "data:"
-        # metadata editor map display
+        # metadata editor map display & search panel region selection view base map
         - https://*.tile.openstreetmap.org
-        # for search panel region selection view
-        - https://*.basemaps.cartocdn.com
         connectSrc:
         - "'self'"
         # geospatial search panel selection view vector tiles buckets

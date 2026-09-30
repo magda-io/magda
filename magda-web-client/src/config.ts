@@ -83,6 +83,44 @@ export interface RawPreviewMapFormatPerferenceItem {
     urlRegex?: string;
 }
 
+/**
+ * Base map (raster tile layer) settings for the dataset search "Any Location" (region) facet map.
+ *
+ * @export
+ * @interface RegionFacetBaseMapConfig
+ */
+export interface RegionFacetBaseMapConfig {
+    /**
+     * Leaflet tile URL template, e.g. `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`.
+     *
+     * @type {string}
+     * @memberof RegionFacetBaseMapConfig
+     */
+    url: string;
+
+    /**
+     * HTML attribution text shown on the map. Required by most tile providers' terms of use.
+     *
+     * @type {string}
+     * @memberof RegionFacetBaseMapConfig
+     */
+    attribution?: string;
+
+    /**
+     * Subdomains used to fill the `{s}` placeholder of the tile URL template. Default to `["a", "b", "c"]`.
+     *
+     * @type {string[]}
+     * @memberof RegionFacetBaseMapConfig
+     */
+    subdomains?: string[];
+}
+
+export const DEFAULT_REGION_FACET_BASE_MAP: RegionFacetBaseMapConfig = {
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+};
+
 export interface FacetConfigItem {
     id: string;
     component: Component<any>;
@@ -805,6 +843,16 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     postMessageTargetOrigin: string;
+
+    /**
+     * The base map (raster tile layer) used by the dataset search "Any Location" (region) facet map.
+     * Default to OpenStreetMap tiles. Set it to use another tile provider (e.g. a licensed CARTO basemap with an API key).
+     * Please note: you will also need to add the tile server's origin to the gateway's CSP `imgSrc` directive.
+     *
+     * @type {RegionFacetBaseMapConfig}
+     * @memberof ConfigDataType
+     */
+    regionFacetBaseMap: RegionFacetBaseMapConfig;
 }
 
 const serverConfig: ConfigDataType = window.magda_server_config || {};
@@ -1164,7 +1212,10 @@ export const config: ConfigDataType = {
             : SQL_CONSOLE_CACHE_EXPIRATION,
     postMessageTargetOrigin: serverConfig?.postMessageTargetOrigin
         ? serverConfig.postMessageTargetOrigin
-        : ""
+        : "",
+    regionFacetBaseMap: serverConfig?.regionFacetBaseMap?.url
+        ? serverConfig.regionFacetBaseMap
+        : DEFAULT_REGION_FACET_BASE_MAP
 };
 
 export type Config = typeof config;

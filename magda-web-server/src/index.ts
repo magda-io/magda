@@ -397,6 +397,15 @@ const argv = yargs
         default: 86400,
         type: "number"
     })
+    .option("regionFacetBaseMap", {
+        describe:
+            "The base map (raster tile layer) used by the dataset search region facet map. " +
+            "An object with `url` (Leaflet tile URL template), `attribution` and optional `subdomains` fields. " +
+            "Default to OpenStreetMap tiles.",
+        type: "string",
+        coerce: coerceJson("regionFacetBaseMap"),
+        default: undefined
+    })
     .option("postMessageTargetOrigin", {
         describe:
             "The target origin used when UI need to post message to another window." +
