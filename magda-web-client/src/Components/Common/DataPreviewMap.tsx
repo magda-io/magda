@@ -23,7 +23,6 @@ import {
 } from "../../helpers/DistributionPreviewUtils";
 import DataPreviewSizeWarning from "./DataPreviewSizeWarning";
 import urijs from "urijs";
-import isStorageApiUrl from "../../helpers/isStorageApiUrl";
 import { createPreviewMapStartData } from "../../helpers/previewMapStartData";
 import { useAsync } from "react-async-hook";
 import fetch from "cross-fetch";
@@ -670,10 +669,6 @@ class DataPreviewMapTerria extends Component<
     };
 
     render() {
-        const shouldHideOpenNationalMapButton =
-            this.props.distribution.downloadURL &&
-            isStorageApiUrl(this.props.distribution.downloadURL);
-
         if (this.state.loaded && this.state.errorMessage) {
             return (
                 <div className="error-message-box au-body au-page-alerts au-page-alerts--warning">
@@ -702,21 +697,19 @@ class DataPreviewMapTerria extends Component<
                 onMouseLeave={this.handleMapMouseLeave}
             >
                 {!this.state.loaded && <Spinner width="100%" height="420px" />}
-                {shouldHideOpenNationalMapButton ? null : (
-                    <DataPreviewMapOpenInNationalMapButton
-                        distribution={this.props.distribution}
-                        selectedWmsWfsGroupItemName={
-                            this.props.selectedWmsWfsGroupItemName
-                        }
-                        isWms={this.props.isWms}
-                        buttonText="Open in NationalMap"
-                        style={{
-                            position: "absolute",
-                            right: "10px",
-                            top: "10px"
-                        }}
-                    />
-                )}
+                <DataPreviewMapOpenInNationalMapButton
+                    distribution={this.props.distribution}
+                    selectedWmsWfsGroupItemName={
+                        this.props.selectedWmsWfsGroupItemName
+                    }
+                    isWms={this.props.isWms}
+                    buttonText="Open in NationalMap"
+                    style={{
+                        position: "absolute",
+                        right: "10px",
+                        top: "10px"
+                    }}
+                />
                 {this.props.distribution.identifier != null && (
                     <iframe
                         key={this.props.distribution.identifier}
