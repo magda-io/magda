@@ -116,6 +116,37 @@ describe("built-in full map (no external TerriaMap configured)", () => {
         expect(renderButton()?.textContent).toBe("Explore on map");
     });
 
+    it("is shown for Storage API files, which the same-origin full map can load", () => {
+        const popup = { postMessage: jest.fn() };
+        jest.spyOn(window, "open").mockReturnValue(popup as any);
+
+        for (const downloadURL of [
+            "magda://storage-api/ds-1/dist-1/file.geojson",
+            "http://localhost/api/v0/storage/magda-datasets/ds-1/dist-1/file.geojson"
+        ]) {
+            const button = renderButton({
+                distribution: { ...distribution, downloadURL }
+            });
+            expect(button?.textContent).toBe("Open full map");
+        }
+
+        const button = renderButton({
+            distribution: {
+                ...distribution,
+                downloadURL: "magda://storage-api/ds-1/dist-1/file.geojson"
+            }
+        });
+        act(() => button!.click());
+        dispatchMessage(popup, window.location.origin, "ready");
+        expect(
+            popup.postMessage.mock.calls[0][0].initSources[0].catalog[0]
+        ).toMatchObject({
+            distributionId: "dist-1",
+            storageApiUrl: "/api/v0/storage/",
+            defaultBucket: "magda-datasets"
+        });
+    });
+
     it("shows the popup-blocked message", () => {
         jest.spyOn(window, "open").mockReturnValue(null);
         const alert = jest
@@ -151,5 +182,16 @@ describe("external TerriaMap (legacy)", () => {
         const [startData, targetOrigin] = popup.postMessage.mock.calls[0];
         expect(targetOrigin).toBe("*");
         expect(startData.initSources[0].catalog[0].type).toBe("magda");
+    });
+
+    it("stays hidden for Storage API files the remote map cannot read", () => {
+        for (const downloadURL of [
+            "magda://storage-api/ds-1/dist-1/file.geojson",
+            "http://localhost/api/v0/storage/magda-datasets/ds-1/dist-1/file.geojson"
+        ]) {
+            expect(
+                renderButton({ distribution: { ...distribution, downloadURL } })
+            ).toBeNull();
+        }
     });
 });

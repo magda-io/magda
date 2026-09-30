@@ -10,6 +10,7 @@ import {
     getTargetOrigin
 } from "../../helpers/externalTerriaMap";
 import { createPreviewMapStartData } from "../../helpers/previewMapStartData";
+import isStorageApiUrl from "../../helpers/isStorageApiUrl";
 import URI from "urijs";
 
 const DEFAULT_BUILT_IN_BUTTON_TEXT = "Open full map";
@@ -258,8 +259,21 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
         this.winRef.postMessage(this.createCatalogItemFromDistribution(), "*");
     }
 
+    private get isRenderable() {
+        if (!this.shouldRender) return false;
+        const downloadURL = this.props.distribution?.downloadURL;
+        // A remote TerriaMap can't read this deployment's Storage API files.
+        // The same-origin built-in full map loads them like the embedded
+        // preview does, with the viewer's own session.
+        return !(
+            this.target?.kind === "external" &&
+            downloadURL &&
+            isStorageApiUrl(downloadURL)
+        );
+    }
+
     render() {
-        if (!this.shouldRender) {
+        if (!this.isRenderable) {
             return null;
         }
         const buttonText =
