@@ -390,12 +390,9 @@ gateway:
         imgSrc:
         - "'self'"
         - "data:"
-        # OpenStreetMap base map tiles:
-        # - search panel region selection view (bare host; a
-        #   `*.tile.openstreetmap.org` wildcard would not match it)
-        # - metadata editor map display (legacy a/b/c subdomains)
+        # OpenStreetMap base map tiles (search panel region selection view &
+        # metadata editor map display)
         - https://tile.openstreetmap.org
-        - https://*.tile.openstreetmap.org
         connectSrc:
         - "'self'"
         # geospatial search panel selection view vector tiles buckets
