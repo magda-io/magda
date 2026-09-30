@@ -33,5 +33,6 @@
 - [Ports used when running locally](./local-ports.md)
 - [Windows Setup Instructions](./windows-instructions.md)
 - [Regions Config](./region-files.md)
+- [Map Preview & Full Map: Content Security Policy](./preview-map-content-security-policy.md)
 
 More documentation, please check [here](https://github.com/magda-io/magda/tree/master/docs/docs)

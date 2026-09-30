@@ -92,6 +92,10 @@ doc for how the CA is delivered to each workload.
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[1] | string | `"*.cesium.com"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[2] | string | `"https://tile.openstreetmap.org"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[3] | string | `"https://*.tile.openstreetmap.org"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[4] | string | `"blob:"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[5] | string | `"https://tiles.terria.io"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[6] | string | `"https://vector-tiles.terria.io"` |  |
+| gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[7] | string | `"https://storage.googleapis.com/terria-datasets-public/"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.imgSrc[0] | string | `"*"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.imgSrc[1] | string | `"data:"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.scriptSrc[0] | string | `"'self'"` |  |
@@ -145,6 +149,7 @@ doc for how the CA is delivered to each workload.
 | global.useCloudSql | bool | `false` | whether to use Google Cloud SQL database.  When this option is on, all other database type e.g. `useCombinedDb` & `useAwsRdsDb` must be turned off. When this option is on and you want to set `autoCreateSecret` = true in order to auto create DB client password secret, you need to make sure magda.combined-db chart is selected (i.e. tags.combined-db = true). Otherwise, there will be no DB client password secret to be created (although `autoCreateSecret` = true ) |
 | global.useCombinedDb | bool | `true` |  |
 | global.useInK8sDbInstance | object | `{"authorization-db":false,"content-db":false,"registry-db":false,"session-db":false,"tenant-db":false}` | When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database. Please note: you must set `useCombinedDb` = false before set any of the field to `true`. Otherwise, all db requests will still be forwarded to the combined DB instance other than each individual database instance. |
+| preview-map.serverConfig.securityHeaders.contentSecurityPolicy | bool | `false` | Turn off terriajs-server's own Content-Security-Policy header. Behind the Magda gateway, the policy for `/preview-map/*` is set by `gateway.helmetPerPath."/preview-map/*"`; terriajs-server would add a second, report-only policy whose `/csp-report` reports never reach preview-map through the gateway. terriajs-server's other security headers are unchanged. |
 | tags | object | see default value of each individual tag below. | Control on/ off of each modules.  To turn on/off openfaas, please set value to `global.openfaas.enabled` |
 | tags.admin-api | bool | `false` | turn on / off [admin-api](../internal-charts/admin-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.all | bool | `true` | Set to `true` to turn on all default modules.  When `tags.all` is `false`, a default module will only be turned off when the corresponding module tag is `false` as well.  Please note: since v1.0.0, correspondence-api is not part of default modules anymore.  |
