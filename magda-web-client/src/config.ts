@@ -5,6 +5,10 @@ import Temporal from "./Components/Dataset/Search/Facets/Temporal";
 import { ValidationFieldList } from "./Components/Dataset/Add/ValidationManager";
 import urijs from "urijs";
 import removePathPrefix from "./helpers/removePathPrefix";
+import {
+    RegionFacetBaseMapConfig,
+    getRegionFacetBaseMap
+} from "./helpers/regionFacetBaseMap";
 import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
 import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient.js";
 import { Component } from "react";
@@ -805,6 +809,17 @@ export interface ConfigDataType {
      * @memberof ConfigDataType
      */
     postMessageTargetOrigin: string;
+
+    /**
+     * The base map (raster tile layer) of the dataset search "Any Location" (region) facet map.
+     * Default to OpenStreetMap tiles. A deployment can switch to another (e.g. licensed) tile provider
+     * by setting `url`, `attribution` and optional `subdomains`.
+     * The tile server's origin must also be allowed by the gateway's CSP `imgSrc` directive.
+     *
+     * @type {RegionFacetBaseMapConfig}
+     * @memberof ConfigDataType
+     */
+    regionFacetBaseMap: RegionFacetBaseMapConfig;
 }
 
 const serverConfig: ConfigDataType = window.magda_server_config || {};
@@ -1164,7 +1179,8 @@ export const config: ConfigDataType = {
             : SQL_CONSOLE_CACHE_EXPIRATION,
     postMessageTargetOrigin: serverConfig?.postMessageTargetOrigin
         ? serverConfig.postMessageTargetOrigin
-        : ""
+        : "",
+    regionFacetBaseMap: getRegionFacetBaseMap(serverConfig?.regionFacetBaseMap)
 };
 
 export type Config = typeof config;
