@@ -390,10 +390,12 @@ gateway:
         imgSrc:
         - "'self'"
         - "data:"
-        # metadata editor map display
+        # OpenStreetMap base map tiles:
+        # - search panel region selection view (bare host; a
+        #   `*.tile.openstreetmap.org` wildcard would not match it)
+        # - metadata editor map display (legacy a/b/c subdomains)
+        - https://tile.openstreetmap.org
         - https://*.tile.openstreetmap.org
-        # for search panel region selection view
-        - https://*.basemaps.cartocdn.com
         connectSrc:
         - "'self'"
         # geospatial search panel selection view vector tiles buckets

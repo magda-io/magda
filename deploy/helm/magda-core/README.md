@@ -85,8 +85,8 @@ doc for how the CA is delivered to each workload.
 | gateway.helmet.contentSecurityPolicy.directives.connectSrc[1] | string | `"https://tiles.magda.io"` |  |
 | gateway.helmet.contentSecurityPolicy.directives.imgSrc[0] | string | `"'self'"` |  |
 | gateway.helmet.contentSecurityPolicy.directives.imgSrc[1] | string | `"data:"` |  |
-| gateway.helmet.contentSecurityPolicy.directives.imgSrc[2] | string | `"https://*.tile.openstreetmap.org"` |  |
-| gateway.helmet.contentSecurityPolicy.directives.imgSrc[3] | string | `"https://*.basemaps.cartocdn.com"` |  |
+| gateway.helmet.contentSecurityPolicy.directives.imgSrc[2] | string | `"https://tile.openstreetmap.org"` |  |
+| gateway.helmet.contentSecurityPolicy.directives.imgSrc[3] | string | `"https://*.tile.openstreetmap.org"` |  |
 | gateway.helmetPerPath."/assets/alasql.html" | object | `{"contentSecurityPolicy":{"directives":{"scriptSrc":["'self'","'unsafe-eval'"]}}}` | allow alasql to compile SQL query at frontend in its separate window/iframe |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[0] | string | `"'self'"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.connectSrc[1] | string | `"*.cesium.com"` |  |
