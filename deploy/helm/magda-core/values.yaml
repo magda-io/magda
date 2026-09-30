@@ -427,6 +427,21 @@ gateway:
           # match it).
           - "https://tile.openstreetmap.org"
           - "https://*.tile.openstreetmap.org"
+          # "Upload data" (local files): TerriaJS reads the chosen file
+          # through a same-origin `blob:` URL.
+          - "blob:"
+          # Region-mapped CSVs (state / LGA / SA2 ... columns): region
+          # definitions and boundary vector tiles hosted by Terria.
+          - "https://tiles.terria.io"
+          - "https://vector-tiles.terria.io"
+          # "Natural Earth II" base map (Map Settings). The path limits this
+          # to Terria's public base map bucket.
+          - "https://storage.googleapis.com/terria-datasets-public/"
+          # External data sources are not listed here: preview-map loads
+          # them through its same-origin proxy (covered by 'self'). To let
+          # the full map's "Add web data" load a new host, add the host to
+          # `preview-map.serverConfig.allowProxyFor` instead of widening
+          # connectSrc.
           imgSrc:
           - "*"
           - "data:"
@@ -440,3 +455,14 @@ gateway:
           scriptSrc:
           - "'self'"
           - "'unsafe-eval'"
+
+preview-map:
+  serverConfig:
+    securityHeaders:
+      # -- Turn off terriajs-server's own Content-Security-Policy header.
+      # Behind the Magda gateway, the policy for `/preview-map/*` is set by
+      # `gateway.helmetPerPath."/preview-map/*"`; terriajs-server would add a
+      # second, report-only policy whose `/csp-report` reports never reach
+      # preview-map through the gateway. terriajs-server's other security
+      # headers are unchanged.
+      contentSecurityPolicy: false
