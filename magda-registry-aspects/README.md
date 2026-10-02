@@ -28,3 +28,6 @@ This package includes all built-in [Magda](https://github.com/magda-io/magda) re
 - spatial-coverage.schema.json
 - dataset-quality-rating.schema.json
 - temporal-coverage.schema.json
+- data-dictionary.schema.json (distribution records): normalized, provenance-aware data dictionary (entities, fields, keys, relationships, dimensions). See the [design](../docs/design/data-dictionary-design.md), the [authoring guide](../docs/docs/data-dictionary.md) and the [example payloads](./examples/data-dictionary/) for the documented v1 source families (CSV, multi-sheet Excel, OpenAPI request/response, ArcGIS feature layer, relational composite keys, Parquet/Arrow, NetCDF/Zarr, mixed-origin manual overrides, reserved-character paths).
+
+Built-in aspect definitions are discovered automatically by `magda-migrator-registry-aspects` from the `*.schema.json` files in this package: adding a schema file is enough to register a new built-in aspect.

@@ -1,0 +1,92 @@
+{
+    "schemaVersion": "1.0",
+    "source": {
+        "type": "json-schema",
+        "documentationUrl": "https://example.org/docs/survey-database"
+    },
+    "provenance": {
+        "method": "harvested",
+        "reviewStatus": "reviewed"
+    },
+    "entities": [
+        {
+            "id": "survey-visit",
+            "name": "Survey visit",
+            "role": "database-table",
+            "sourceIdentifier": "public.survey_visit",
+            "primaryKey": ["site_code", "visit_date"],
+            "fields": [
+                {
+                    "path": "site_code",
+                    "name": "site_code",
+                    "type": "string",
+                    "sourceType": "varchar(16)",
+                    "required": true
+                },
+                {
+                    "path": "visit_date",
+                    "name": "visit_date",
+                    "type": "date",
+                    "sourceType": "date",
+                    "required": true
+                },
+                {
+                    "path": "observer",
+                    "name": "observer",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "id": "survey-count",
+            "name": "Survey count",
+            "role": "database-table",
+            "sourceIdentifier": "public.survey_count",
+            "primaryKey": ["site_code", "visit_date", "species_code"],
+            "fields": [
+                {
+                    "path": "site_code",
+                    "name": "site_code",
+                    "type": "string",
+                    "roles": ["reference"]
+                },
+                {
+                    "path": "visit_date",
+                    "name": "visit_date",
+                    "type": "date",
+                    "roles": ["reference"]
+                },
+                {
+                    "path": "species_code",
+                    "name": "species_code",
+                    "type": "string",
+                    "valueDomain": {
+                        "type": "codelist",
+                        "uri": "https://example.org/codelists/species"
+                    }
+                },
+                {
+                    "path": "count",
+                    "name": "count",
+                    "type": "integer",
+                    "minimum": 0
+                }
+            ]
+        }
+    ],
+    "relationships": [
+        {
+            "id": "count-visit",
+            "type": "foreign-key",
+            "description": "Each count belongs to one survey visit",
+            "source": {
+                "entity": "survey-count",
+                "fields": ["site_code", "visit_date"]
+            },
+            "target": {
+                "entity": "survey-visit",
+                "fields": ["site_code", "visit_date"]
+            }
+        }
+    ]
+}

@@ -1,0 +1,76 @@
+{
+    "schemaVersion": "1.0",
+    "source": {
+        "type": "arcgis-layer-definition",
+        "url": "https://example.org/arcgis/rest/services/TreeCrops/FeatureServer/0?f=pjson",
+        "fingerprint": "sha256:9c1f7e5d3b2a19087f6e5d4c3b2a19087f6e5d4c3b2a19087f6e5d4c3b2a1908"
+    },
+    "provenance": {
+        "method": "authoritative-import",
+        "generator": "example-arcgis-import/1.0",
+        "reviewStatus": "unreviewed"
+    },
+    "entities": [
+        {
+            "id": "layer-0",
+            "name": "Tree crops",
+            "sourceIdentifier": "0",
+            "role": "feature",
+            "primaryKey": ["OBJECTID"],
+            "geometry": {
+                "type": "Polygon",
+                "crs": "EPSG:4326",
+                "spatialDimension": 2,
+                "fieldPath": "geometry"
+            },
+            "fields": [
+                {
+                    "path": "OBJECTID",
+                    "name": "OBJECTID",
+                    "type": "integer",
+                    "sourceType": "esriFieldTypeOID",
+                    "roles": ["identifier"],
+                    "required": true,
+                    "nullable": false
+                },
+                {
+                    "path": "STATUS",
+                    "name": "STATUS",
+                    "title": "Status",
+                    "type": "string",
+                    "sourceType": "esriFieldTypeString",
+                    "maxLength": 1,
+                    "valueDomain": {
+                        "type": "codelist",
+                        "name": "StatusDomain",
+                        "values": [
+                            { "value": "A", "label": "Active" },
+                            { "value": "I", "label": "Inactive" }
+                        ]
+                    }
+                },
+                {
+                    "path": "HECTARES",
+                    "name": "HECTARES",
+                    "title": "Area (ha)",
+                    "type": "number",
+                    "sourceType": "esriFieldTypeDouble",
+                    "unit": "ha",
+                    "valueDomain": {
+                        "type": "range",
+                        "minimum": 0,
+                        "maximum": 100000
+                    }
+                },
+                {
+                    "path": "geometry",
+                    "name": "geometry",
+                    "type": "geometry",
+                    "format": "polygon",
+                    "sourceType": "esriGeometryPolygon",
+                    "roles": ["primary-geometry"]
+                }
+            ]
+        }
+    ]
+}

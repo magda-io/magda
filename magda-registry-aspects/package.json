@@ -37,6 +37,7 @@
     "Json Schema"
   ],
   "files": [
-    "*.schema.json"
+    "*.schema.json",
+    "examples/**/*.json"
   ]
 }
