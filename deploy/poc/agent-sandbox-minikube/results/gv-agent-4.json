@@ -1,0 +1,97 @@
+{
+ "pool": "magda-agent",
+ "n": 4,
+ "workload": "agent",
+ "rows": 5000000,
+ "all_ready_and_serving_s": 7.9,
+ "idle": {
+  "lt-gv-ag-184152-0": {
+   "current": 178,
+   "peak": 198,
+   "anon": 46,
+   "file": 119
+  },
+  "lt-gv-ag-184152-1": {
+   "current": 179,
+   "peak": 200,
+   "anon": 46,
+   "file": 122
+  },
+  "lt-gv-ag-184152-2": {
+   "current": 171,
+   "peak": 192,
+   "anon": 46,
+   "file": 114
+  },
+  "lt-gv-ag-184152-3": {
+   "current": 180,
+   "peak": 200,
+   "anon": 46,
+   "file": 122
+  }
+ },
+ "run_wall_s": 73.0,
+ "sum_of_concurrent_mem_peak_mib": 1250,
+ "pods": {
+  "lt-gv-ag-184152-0": {
+   "idle_current_mib": 178,
+   "idle_anon_mib": 46,
+   "cgroup_peak_mib": 355,
+   "sampled": {
+    "max_mem_mib": 326,
+    "avg_cores": 0.09,
+    "max_cores": 1.44
+   },
+   "result": {
+    "rc": 0,
+    "answer_tail": "Search: \u201cocean\u201d; no CSV found in the top 10 keyword results, so I used the suggested fallback.\nDataset: Geoscience Australia Resources (`ds-dga-d60fde7c-a938-4de7-897d-0c3e4d0e3a38`).\nDistribution: `dist-dga-4328a11d-775f-4530-8aae-e0c5b19d1a1b`; downloaded via mgd to `/data/workspace/ocean-data.csv`.\nPandas: 6,920 rows; columns: `id`, `title`, `description`, `metadataURL`, `dataURL`, `licence`.\n`description` lengths: mean 703.53, median 912.5, minimum 20, maximum 3,755 characters.\n",
+    "wall_s": 53.4
+   }
+  },
+  "lt-gv-ag-184152-1": {
+   "idle_current_mib": 179,
+   "idle_anon_mib": 46,
+   "cgroup_peak_mib": 354,
+   "sampled": {
+    "max_mem_mib": 335,
+    "avg_cores": 0.09,
+    "max_cores": 1.4
+   },
+   "result": {
+    "rc": 0,
+    "answer_tail": "Search: \u201cocean\u201d; no CSV among the top 20 results, so I used the suggested fallback.\nDataset: Geoscience Australia Resources (`ds-dga-d60fde7c-a938-4de7-897d-0c3e4d0e3a38`).\nDistribution: `dist-dga-4328a11d-775f-4530-8aae-e0c5b19d1a1b`; downloaded to `/data/workspace/ocean.csv`.\nPandas analysis: 6,920 rows; columns: id, title, description, metadataURL, dataURL, licence.\n`description` length: min 20, mean 703.53, median 912.5, max 3,755 characters (6,920 non-null).\n",
+    "wall_s": 49.5
+   }
+  },
+  "lt-gv-ag-184152-2": {
+   "idle_current_mib": 171,
+   "idle_anon_mib": 46,
+   "cgroup_peak_mib": 356,
+   "sampled": {
+    "max_mem_mib": 323,
+    "avg_cores": 0.11,
+    "max_cores": 1.43
+   },
+   "result": {
+    "rc": 0,
+    "answer_tail": "Search: \u201cocean\u201d; first CSV (`ds-dga-5abdf023-ad1a-4f34-9166-29bb91e89e12`, `dist-dga-ead11e7b-fb98-461b-90c4-3c7fe7983a2b`) returned HTML at `/data/workspace/ocean_trawl_sled_operations.csv`.\nFallback dataset: \u201cGeoscience Australia Resources\u201d (`ds-dga-d60fde7c-a938-4de7-897d-0c3e4d0e3a38`).\nDownloaded distribution `dist-dga-4328a11d-775f-4530-8aae-e0c5b19d1a1b` to `/data/workspace/ocean_metadata_gateway.csv`.\nPandas analysis: 6,920 rows; columns: id, title, description, metadataURL, dataURL, licence.\n`description` length: mean 703.5, median 912.5, min 20, max 3,755 characters.\n",
+    "wall_s": 73.0
+   }
+  },
+  "lt-gv-ag-184152-3": {
+   "idle_current_mib": 180,
+   "idle_anon_mib": 46,
+   "cgroup_peak_mib": 361,
+   "sampled": {
+    "max_mem_mib": 323,
+    "avg_cores": 0.1,
+    "max_cores": 1.41
+   },
+   "result": {
+    "rc": 0,
+    "answer_tail": "Search: \u201cocean\u201d; first CSV download failed (404), so fallback \u201cGeoscience Australia Resources\u201d was used.\nDataset: `ds-dga-d60fde7c-a938-4de7-897d-0c3e4d0e3a38`; distribution: `dist-dga-4328a11d-775f-4530-8aae-e0c5b19d1a1b`.\nDownloaded with mgd to `/data/workspace/ga_metadata_gateway_export.csv` (6,672,854 bytes).\nPandas: 6,920 rows; columns: `id`, `title`, `description`, `metadataURL`, `dataURL`, `licence`.\n`description` length: min 20, mean 703.53, median 912.5, max 3,755 characters.\n",
+    "wall_s": 49.4
+   }
+  }
+ }
+}

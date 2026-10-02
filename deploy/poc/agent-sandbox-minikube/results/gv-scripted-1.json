@@ -1,0 +1,82 @@
+{
+ "pool": "magda-agent",
+ "n": 1,
+ "workload": "scripted",
+ "rows": 5000000,
+ "all_ready_and_serving_s": 2.4,
+ "idle": {
+  "lt-gv-sc-183448-0": {
+   "current": 182,
+   "peak": 202,
+   "anon": 48,
+   "file": 122
+  }
+ },
+ "run_wall_s": 23.9,
+ "sum_of_concurrent_mem_peak_mib": 888,
+ "pods": {
+  "lt-gv-sc-183448-0": {
+   "idle_current_mib": 182,
+   "idle_anon_mib": 48,
+   "cgroup_peak_mib": 1072,
+   "sampled": {
+    "max_mem_mib": 888,
+    "avg_cores": 0.6,
+    "max_cores": 2.0
+   },
+   "result": {
+    "steps": {
+     "mgd_search": {
+      "s": 0.251,
+      "bytes": 179838
+     },
+     "mgd_download": {
+      "s": 1.85,
+      "bytes": 6672854
+     },
+     "pandas_generate_csv": {
+      "s": 5.164,
+      "rows": 5000000,
+      "bytes": 135832468
+     },
+     "pandas_analyse": {
+      "s": 1.395,
+      "groups": 500,
+      "real_rows": 6920
+     },
+     "cpu_python_loop": {
+      "s": 0.557,
+      "x": 1
+     },
+     "files_create_20k": {
+      "s": 0.656
+     },
+     "files_stat_walk": {
+      "s": 0.796,
+      "stats": 100000
+     },
+     "files_delete_20k": {
+      "s": 0.191
+     },
+     "disk_write_read_512MB": {
+      "s": 0.219
+     },
+     "spawn_500_processes": {
+      "s": 0.304
+     },
+     "syscalls_getpid_1M": {
+      "s": 1.913
+     },
+     "loopback_tcp_1k_conns": {
+      "s": 0.095
+     },
+     "gateway_http_200_requests": {
+      "s": 10.277
+     },
+     "total_s": 23.668
+    },
+    "wall_s": 23.9
+   }
+  }
+ }
+}

@@ -1,0 +1,24 @@
+# One SandboxClaim per (user, active session). Two claims (A and B) are used
+# for the cross-sandbox isolation test; deleting and recreating a claim is the
+# analogue of "Start new session".
+apiVersion: extensions.agents.x-k8s.io/v1beta1
+kind: SandboxClaim
+metadata:
+  name: user-a
+  namespace: magda-agent-poc
+  labels:
+    magda.io/agent-user: user-a
+spec:
+  warmPoolRef:
+    name: magda-agent
+---
+apiVersion: extensions.agents.x-k8s.io/v1beta1
+kind: SandboxClaim
+metadata:
+  name: user-b
+  namespace: magda-agent-poc
+  labels:
+    magda.io/agent-user: user-b
+spec:
+  warmPoolRef:
+    name: magda-agent

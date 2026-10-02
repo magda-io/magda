@@ -1,0 +1,29 @@
+# Magda agent PoC overlay, applied with `dsh web --patch` after the shipped
+# dsh-base + dsh-web-app bundle layers. A patch replaces a row's whole
+# `config`, so each row restates every key it owns.
+
+# OpenAI-compatible model route. The key is read from the OPENAI_API_KEY
+# environment variable at request time; it is injected into the Pod from a
+# Kubernetes Secret and is never stored in the image or on the workspace PVC.
+- id: llm-pi-ai
+  config:
+    providers:
+      openai-poc:
+        displayName: OpenAI (PoC)
+        apiKeyEnv: OPENAI_API_KEY
+        api: openai-responses
+        baseURL: !!js process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
+        models:
+          - id: !!js process.env.MAGDA_AGENT_MODEL || 'gpt-5.6-sol'
+
+- id: agent-default-model
+  config:
+    provider: openai-poc
+    model: !!js process.env.MAGDA_AGENT_MODEL || 'gpt-5.6-sol'
+
+# Never contribute session logs to the DeepSeek API (only applies to official
+# DeepSeek requests, disabled defensively).
+- id: session-log-deepseek
+  config:
+    enabled: false
+    maxBytes: 8388608
