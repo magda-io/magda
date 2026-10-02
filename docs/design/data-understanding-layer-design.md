@@ -323,6 +323,7 @@ This sequence makes the normalized contracts useful early and avoids coupling th
 - Query exploration must be bounded and restricted to explicitly supported safe operations.
 - Generated metadata must expose provenance and review state.
 - Manual/custodian-reviewed metadata is first-class and automatic producers must not silently overwrite it.
+- Property-level provenance should be available where mixed-origin metadata is expected so a producer can refresh source-derived structure while preserving reviewed descriptive/semantic properties.
 - Sampling must be bounded by row/byte/time limits and respect existing Magda/source access controls.
 - A source specification URL is not automatically trusted content; harvesters must apply normal network/security controls.
 

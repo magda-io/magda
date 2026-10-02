@@ -423,9 +423,13 @@ The dictionary may record:
 
 These properties should reflect the native schema when authoritative. When inferred from samples, the provenance must make that distinction visible.
 
-### Field-level provenance overrides
+### Node- and property-level provenance overrides
 
-Entities and fields inherit dictionary-level provenance. An entity or field may override it when its metadata came from a different source or has a different review state.
+Entities and fields inherit dictionary-level provenance. An entity or field may override it when the node as a whole came from a different source or has a different review state.
+
+A node may also carry optional `propertyProvenance` when only particular properties have a different origin/review state. This is important for mixed-origin metadata: for example, a field's type/nullability may come from an authoritative ArcGIS definition while its description or semantic concept is manually curated.
+
+For v1, `propertyProvenance` keys are direct property names on the node. Nested objects can either carry their own provenance where the model supports it, or be treated as one property for override/merge purposes.
 
 Example:
 
@@ -436,14 +440,21 @@ Example:
   "type": "number",
   "unit": "ha",
   "description": "Mapped feature area",
-  "provenance": {
-    "method": "agent-generated",
-    "reviewStatus": "unreviewed"
+  "semanticConcept": "area",
+  "propertyProvenance": {
+    "description": {
+      "method": "manual",
+      "reviewStatus": "custodian-approved"
+    },
+    "semanticConcept": {
+      "method": "manual",
+      "reviewStatus": "custodian-approved"
+    }
   }
 }
 ```
 
-This allows Magda to express, for example, that most of the dictionary came from an authoritative ArcGIS schema while an entity or field was later curated by a human or agent.
+This allows Magda to express that structural facts such as `type` and `nullable` remain source-derived while selected descriptive/semantic properties are human-curated. A later producer can update source-derived structure without silently replacing the reviewed properties.
 
 ## API request and response modelling
 
@@ -699,6 +710,50 @@ A CSV with an authoritative table schema or a bounded inferred schema maps to a 
 ```
 
 If the schema is inferred from rows instead of supplied authoritatively, the same logical shape can be used with `provenance.method: "inferred"` and a bounded `sample` description.
+
+### Manual enrichment of harvested structure
+
+The final aspect may combine authoritative/harvested structure with human-curated properties without losing which values are protected from automatic refresh:
+
+```json
+{
+  "schemaVersion": "1.0",
+  "provenance": {
+    "method": "authoritative-import",
+    "sourceType": "arcgis-layer-definition",
+    "reviewStatus": "unreviewed"
+  },
+  "entities": [
+    {
+      "id": "layer-0",
+      "name": "Tree crops",
+      "role": "feature",
+      "fields": [
+        {
+          "path": "commodity",
+          "name": "COMMODITY",
+          "type": "string",
+          "sourceType": "esriFieldTypeString",
+          "description": "Commercial crop classification used by the survey",
+          "semanticConcept": "https://example.org/concepts/crop-type",
+          "propertyProvenance": {
+            "description": {
+              "method": "manual",
+              "reviewStatus": "custodian-approved"
+            },
+            "semanticConcept": {
+              "method": "manual",
+              "reviewStatus": "custodian-approved"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+If the ArcGIS field later changes type, an automatic producer may refresh the source-derived `type`/`sourceType`. It must preserve the reviewed `description` and `semanticConcept` unless a reviewer explicitly replaces them. If a source change invalidates a reviewed property, record/surface a conflict rather than silently choosing one side.
 
 ### Multi-sheet Excel workbook
 
@@ -1179,8 +1234,8 @@ On change:
 
 1. produce a newly harvested candidate dictionary;
 2. compare it with the stored dictionary using stable entity IDs/field paths and native identifiers where available;
-3. preserve manual/custodian-reviewed annotations where they still map unambiguously;
-4. update machine-derived structural facts where the mapping is safe;
+3. preserve manual/custodian-reviewed nodes and `propertyProvenance` values where they still map unambiguously;
+4. update machine-derived structural facts/properties where the mapping is safe and no protected property override applies;
 5. mark changed/conflicting/ambiguous entries for review rather than silently replacing human input or presenting stale annotations as current;
 6. update generated metadata timestamps/fingerprints while retaining provenance/review state.
 
@@ -1287,7 +1342,7 @@ Within schema version 1:
 - Nested fields have stable paths.
 - Types, formats, descriptions, units, constraints and semantic concepts can be represented independently.
 - Request/response body structures can be represented without duplicating scalar API invocation parameters.
-- Dictionary-, entity- and field-level inherited provenance/review state can distinguish authoritative, manual/custodian and inferred/agent-generated content.
+- Dictionary-, entity- and field-level inherited provenance plus property-level overrides can distinguish mixed authoritative, manual/custodian and inferred/agent-generated content.
 - CSV/Excel inference records the bounded sample used.
 - ArcGIS dictionaries can be generated from layer definitions without requiring feature downloads.
 - NetCDF variables/dimensions can be represented without requiring a universal visualisation.

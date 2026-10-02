@@ -287,11 +287,13 @@ Each operation may contain:
 
 `operation.id` must be stable within the contract and should remain stable across re-harvesting while the source operation is logically the same.
 
-Contract nodes inherit aspect-level `provenance`. An operation may provide its own `provenance` override when it has been manually curated/reviewed or came from a different source. A parameter may also provide a provenance override when needed for mixed-origin metadata.
+Contract nodes inherit aspect-level `provenance`. An operation may provide its own `provenance` override when the node as a whole was manually curated/reviewed or came from a different source. A parameter may do the same.
+
+Operations and parameters may additionally carry optional `propertyProvenance` maps when only selected properties differ in origin/review state. For example, `method`, `path` and parameter type may remain authoritative source metadata while a human-reviewed `purpose` or parameter `description` is preserved across automatic refresh.
 
 For refresh/merge purposes, parameters should use a stable native identifier when one exists; otherwise the initial matching identity is the pair `location + name`.
 
-A reviewed/manual node should not be silently overwritten by an automatic producer. If source structure changes in a way that cannot be reconciled safely, preserve the reviewed value and surface the conflict for review.
+A reviewed/manual node or property should not be silently overwritten by an automatic producer. If source structure changes in a way that cannot be reconciled safely, preserve the reviewed value and surface the conflict for review.
 
 ### Parameters
 
@@ -597,6 +599,6 @@ A future incompatible model should use a new major schema version and provide a 
 - Native specification URL, fingerprint/retrieval information and provenance can be recorded.
 - The web client can render useful read-only API/service documentation solely from the aspect.
 - The same aspect is suitable for later agent/query-adapter consumption.
-- Aspect-, operation- and parameter-level inherited provenance is sufficient to preserve reviewed/manual curation across later automatic refresh.
+- Aspect-, operation- and parameter-level inherited provenance plus property-level overrides are sufficient to preserve mixed reviewed/manual curation across later automatic refresh.
 - The core aspect/UI is useful with manually populated contracts; automatic harvesting is not required for the first usable v7 milestone.
 - Automatic refresh can preserve human-authored/reviewed annotations rather than requiring whole-aspect replacement.
