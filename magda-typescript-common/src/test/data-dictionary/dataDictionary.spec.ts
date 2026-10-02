@@ -16,6 +16,7 @@ import {
     getParentFieldPath,
     isAdvisoryProvenance,
     isProtectedProvenance,
+    hasProvenanceStatement,
     isValidFieldPath,
     normalizeDataDictionary,
     parseFieldPath,
@@ -179,9 +180,60 @@ describe("data-dictionary aspect", () => {
             ],
             [
                 "negative sample row count",
-                (d) => (d.provenance = { sample: { rows: -1 } })
+                (d) =>
+                    (d.provenance = {
+                        method: "inferred",
+                        sample: { rows: -1 }
+                    })
+            ],
+            ["empty dictionary provenance", (d) => (d.provenance = {})],
+            [
+                "provenance stating neither method nor reviewStatus",
+                (d) => (d.entities[0].fields[0].provenance = { generator: "x" })
+            ],
+            [
+                "empty property-level provenance",
+                (d) =>
+                    (d.entities[0].fields[0].propertyProvenance = {
+                        description: {}
+                    })
+            ],
+            [
+                "inferred provenance without a sample extent",
+                (d) => (d.provenance = { method: "inferred" })
+            ],
+            [
+                "inferred provenance with an empty sample",
+                (d) => (d.provenance = { method: "inferred", sample: {} })
+            ],
+            [
+                "inferred property-level provenance without a sample extent",
+                (d) =>
+                    (d.entities[0].fields[0].propertyProvenance = {
+                        type: { method: "inferred", reviewStatus: "unreviewed" }
+                    })
             ]
         ];
+
+        it("should accept inferred provenance with a sample extent", () => {
+            const data: any = loadFixture("excel-multi-sheet.json");
+            data.provenance = { method: "inferred", sample: { bytes: 65536 } };
+            data.entities[0].fields[0].provenance = {
+                reviewStatus: "reviewed"
+            };
+            expect(isValid(data).result).to.be.true;
+        });
+
+        it("should accept any JSON value in enum/missingValues/default/example", () => {
+            const data: any = loadFixture("excel-multi-sheet.json");
+            Object.assign(data.entities[0].fields[0], {
+                enum: [null, { code: "A" }, [1, 2], "x"],
+                missingValues: [null, ""],
+                default: null,
+                example: { lat: -35.3, lon: 149.1 }
+            });
+            expect(isValid(data).result).to.be.true;
+        });
 
         invalidCases.forEach(([title, mutate]) => {
             it(`should reject ${title}`, () => {
@@ -308,6 +360,35 @@ describe("data-dictionary aspect", () => {
                 getEffectiveProvenance(dictionary, [entity, notes], "type")
                     ?.method
             ).to.equal("manual");
+        });
+
+        it("should not let provenance without method/reviewStatus mask inherited provenance", () => {
+            const human = {
+                provenance: {
+                    method: "manual",
+                    reviewStatus: "custodian-approved"
+                }
+            };
+            const field = {
+                provenance: {},
+                propertyProvenance: { description: { generator: "x" } }
+            };
+            [
+                getEffectiveProvenance(human, [{ provenance: {} }, field]),
+                getEffectiveProvenance(human, [field], "description"),
+                getEffectiveProvenance(human, [
+                    { provenance: { generator: "x", note: "n" } }
+                ])
+            ].forEach((p) => {
+                expect(p).to.equal(human.provenance);
+                expect(isProtectedProvenance(p)).to.be.true;
+            });
+            expect(getEffectiveProvenance({ provenance: {} }, [])).to.be
+                .undefined;
+            expect(hasProvenanceStatement({})).to.be.false;
+            expect(hasProvenanceStatement({ method: "" })).to.be.false;
+            expect(hasProvenanceStatement({ reviewStatus: "reviewed" })).to.be
+                .true;
         });
 
         it("should return undefined when nothing is recorded", () => {
@@ -518,34 +599,130 @@ describe("data-dictionary aspect", () => {
             );
         });
 
-        it("should repair missing identities and drop unusable nodes", () => {
+        it("should never invent identities", () => {
             const normalized = normalizeDataDictionary({
                 schemaVersion: "1.0",
                 entities: [
                     null,
+                    // no id: dropped rather than given a made-up one
+                    { name: "No id", fields: [{ path: "x", type: "string" }] },
+                    { id: "", name: "Empty id", fields: [] },
                     {
+                        id: "e",
                         fields: [
-                            { name: "a" },
-                            { path: "b", type: "integer", roles: "x" },
+                            // a flat column named `a.b` without a path must not
+                            // become the nested path `a` → `b`
+                            { name: "a.b", type: "string" },
+                            { path: "a..b", name: "bad", type: "string" },
+                            { path: "a\\.b", type: "integer", roles: "x" },
+                            { path: "items[].a\\.b", type: "string" },
                             "junk",
                             {},
                             { path: {}, name: [] }
                         ],
-                        primaryKey: "a"
+                        primaryKey: "a\\.b"
                     }
                 ],
-                relationships: [{ id: "x" }]
+                relationships: [
+                    {
+                        source: { entity: "e", fields: ["a\\.b"] },
+                        target: { entity: "e", fields: ["a\\.b"] }
+                    },
+                    {
+                        id: "invalid-path",
+                        source: { entity: "e", fields: ["a..b"] },
+                        target: { entity: "e", fields: ["a\\.b"] }
+                    }
+                ]
             });
             expect(normalized.entities).to.have.length(1);
             const entity = normalized.entities[0];
-            expect(entity.id).to.equal("entity-1");
-            expect(entity.name).to.equal("entity-1");
+            expect(entity.id).to.equal("e");
+            // display label only
+            expect(entity.name).to.equal("e");
             expect(entity.primaryKey).to.be.undefined;
             expect(entity.fields).to.deep.equal([
-                { path: "a", name: "a", type: "unknown" },
-                { path: "b", name: "b", type: "integer" }
+                { path: "a\\.b", name: "a.b", type: "integer" },
+                { path: "items[].a\\.b", name: "a.b", type: "string" }
             ]);
             expect(normalized.relationships).to.be.undefined;
+        });
+
+        it("should keep arbitrary JSON values the schema allows", () => {
+            const values: { [key: string]: unknown } = {
+                enum: [null, "A", 1, true, { code: "B" }, ["C"]],
+                missingValues: [null, "", "NA"],
+                default: null,
+                example: { lat: -35.3, lon: 149.1 }
+            };
+            const normalized = normalizeDataDictionary({
+                schemaVersion: "1.0",
+                entities: [
+                    {
+                        id: "e",
+                        name: "E",
+                        fields: [
+                            { path: "a", name: "a", type: "object", ...values },
+                            {
+                                path: "b",
+                                name: "b",
+                                type: "string",
+                                default: false,
+                                example: []
+                            }
+                        ]
+                    }
+                ]
+            });
+            expect(normalized.entities[0].fields[0]).to.deep.equal({
+                path: "a",
+                name: "a",
+                type: "object",
+                ...values
+            });
+            expect(normalized.entities[0].fields[1].default).to.equal(false);
+            expect(normalized.entities[0].fields[1].example).to.deep.equal([]);
+        });
+
+        it("should drop provenance that cannot override inherited provenance", () => {
+            const normalized = normalizeDataDictionary({
+                schemaVersion: "1.0",
+                provenance: {
+                    method: "manual",
+                    reviewStatus: "custodian-approved"
+                },
+                entities: [
+                    {
+                        id: "e",
+                        name: "E",
+                        provenance: { generator: "x" },
+                        fields: [
+                            {
+                                path: "a",
+                                name: "a",
+                                type: "string",
+                                provenance: {},
+                                propertyProvenance: {
+                                    description: { method: {} },
+                                    unit: { reviewStatus: "reviewed" }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            });
+            const entity = normalized.entities[0];
+            const field = entity.fields[0];
+            expect(entity).to.not.have.property("provenance");
+            expect(field).to.not.have.property("provenance");
+            expect(field.propertyProvenance).to.deep.equal({
+                unit: { reviewStatus: "reviewed" }
+            });
+            expect(
+                isProtectedProvenance(
+                    getEffectiveProvenance(normalized, [entity, field])
+                )
+            ).to.be.true;
         });
 
         it("should deeply sanitize malformed nested values", () => {
@@ -562,7 +739,7 @@ describe("data-dictionary aspect", () => {
                 provenance,
                 entities: [
                     {
-                        id: bad,
+                        id: "e0",
                         name: bad,
                         role: bad,
                         description: [],
@@ -589,10 +766,12 @@ describe("data-dictionary aspect", () => {
                                 semanticConcept: bad,
                                 unit: bad,
                                 unitSystem: bad,
+                                // any JSON value is valid here; non-JSON
+                                // values (NaN, functions) are not
                                 enum: [bad, "a", [1], 2, null],
-                                missingValues: [bad, ""],
+                                missingValues: [NaN, ""],
                                 default: bad,
-                                example: [],
+                                example: () => 1,
                                 minimum: bad,
                                 maximum: [],
                                 minLength: "1",
@@ -626,35 +805,34 @@ describe("data-dictionary aspect", () => {
                     {
                         id: "r1",
                         source: { entity: bad, fields: ["id"] },
-                        target: { entity: "entity-0", fields: ["id"] }
+                        target: { entity: "e0", fields: ["id"] }
                     },
                     {
                         id: "r2",
-                        source: { entity: "entity-0", fields: [bad] },
-                        target: { entity: "entity-0", fields: ["id"] }
+                        source: { entity: "e0", fields: [bad] },
+                        target: { entity: "e0", fields: ["id"] }
                     },
                     {
-                        id: bad,
+                        id: "r3",
                         type: bad,
                         description: bad,
-                        source: { entity: "entity-0", fields: ["id"] },
-                        target: { entity: "entity-0", fields: ["id"] }
+                        source: { entity: "e0", fields: ["id"] },
+                        target: { entity: "e0", fields: ["id"] }
                     },
                     {
                         id: "r4",
-                        source: { entity: "entity-0", fields: [bad, "id"] },
-                        target: { entity: "entity-0", fields: ["id", "id"] }
+                        source: { entity: "e0", fields: [bad, "id"] },
+                        target: { entity: "e0", fields: ["id", "id"] }
                     }
                 ]
             });
             expect(normalized).to.deep.equal({
                 schemaVersion: "1.0",
                 source: { fingerprint: "f" },
-                provenance: { sample: {} },
                 entities: [
                     {
-                        id: "entity-0",
-                        name: "entity-0",
+                        id: "e0",
+                        name: "e0",
                         geometry: {},
                         dimensions: [{ id: "t" }],
                         fields: [
@@ -663,15 +841,10 @@ describe("data-dictionary aspect", () => {
                                 name: "id",
                                 type: "unknown",
                                 roles: ["identifier"],
-                                enum: ["a", 2],
-                                missingValues: [""],
+                                enum: [bad, "a", [1], 2, null],
+                                default: bad,
                                 valueDomain: {
                                     values: [{ value: "A" }]
-                                },
-                                provenance: { sample: {} },
-                                propertyProvenance: {
-                                    description: { sample: {} },
-                                    unit: {}
                                 }
                             }
                         ]
@@ -679,9 +852,9 @@ describe("data-dictionary aspect", () => {
                 ],
                 relationships: [
                     {
-                        id: "relationship-3",
-                        source: { entity: "entity-0", fields: ["id"] },
-                        target: { entity: "entity-0", fields: ["id"] }
+                        id: "r3",
+                        source: { entity: "e0", fields: ["id"] },
+                        target: { entity: "e0", fields: ["id"] }
                     }
                 ]
             });

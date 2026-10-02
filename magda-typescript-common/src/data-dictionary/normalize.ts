@@ -13,6 +13,8 @@ import {
     DataDictionaryValueDomain,
     DataDictionaryValueDomainValue
 } from "./model.js";
+import { isValidFieldPath, parseFieldPath } from "./fieldPath.js";
+import { hasProvenanceStatement } from "./provenance.js";
 
 const SUPPORTED_SCHEMA_VERSION_REGEX = /^1(\.[0-9]+)*$/;
 
@@ -74,34 +76,73 @@ function strArray(value: unknown): string[] | undefined {
     return items.length ? items : undefined;
 }
 
+function fieldPath(value: unknown): string | undefined {
+    return isValidFieldPath(value) ? value : undefined;
+}
+
 /**
  * Ordered references (key/relationship field paths, dimension IDs) where every
  * element matters: dropping one invalid element would silently change the
  * meaning (e.g. turn a composite key into a different single-field key), so
  * the whole list is dropped instead.
  */
-function orderedRefArray(value: unknown): string[] | undefined {
-    if (
-        !Array.isArray(value) ||
-        !value.length ||
-        !value.every((item) => typeof item === "string" && item.length)
-    ) {
+function orderedRefArray(
+    value: unknown,
+    isValidItem: (item: unknown) => boolean
+): string[] | undefined {
+    if (!Array.isArray(value) || !value.length || !value.every(isValidItem)) {
         return undefined;
     }
     return value as string[];
 }
 
-function plainObject(value: unknown): JsonObject | undefined {
-    return isObject(value) ? value : undefined;
+function isNonEmptyString(value: unknown): boolean {
+    return typeof value === "string" && value.length > 0;
 }
 
-/** Arrays of scalar values only (e.g. `enum`, `missingValues`). */
-function scalarArray(value: unknown): DataDictionaryScalar[] | undefined {
-    if (!Array.isArray(value)) {
-        return undefined;
+const MAX_JSON_DEPTH = 64;
+
+/** Whether a value is plain JSON data (as parsed from a registry response). */
+function isJsonValue(value: unknown, depth = 0): boolean {
+    if (depth > MAX_JSON_DEPTH) {
+        return false;
     }
-    const items = value.filter(isScalar);
-    return items.length ? items : undefined;
+    if (
+        value === null ||
+        typeof value === "string" ||
+        typeof value === "boolean"
+    ) {
+        return true;
+    }
+    if (typeof value === "number") {
+        return Number.isFinite(value);
+    }
+    if (Array.isArray(value)) {
+        return value.every((item) => isJsonValue(item, depth + 1));
+    }
+    if (isObject(value)) {
+        return Object.keys(value).every((key) =>
+            isJsonValue(value[key], depth + 1)
+        );
+    }
+    return false;
+}
+
+/**
+ * Arbitrary JSON values (`default`, `example`), including `null`, objects and
+ * arrays: the schema allows any JSON value, so none may be lost.
+ */
+function jsonValue(value: unknown): unknown {
+    return isJsonValue(value) ? value : undefined;
+}
+
+/** Arrays of arbitrary JSON values (`enum`, `missingValues`), kept whole. */
+function jsonArray(value: unknown): unknown[] | undefined {
+    return Array.isArray(value) && isJsonValue(value) ? value : undefined;
+}
+
+function plainObject(value: unknown): JsonObject | undefined {
+    return isObject(value) ? value : undefined;
 }
 
 /** Drop `undefined` values so the result only has meaningful keys. */
@@ -127,18 +168,21 @@ function normalizeProvenance(
               strategy: str(value.sample.strategy)
           })
         : undefined;
-    return compact({
+    const provenance = compact({
         method: str(value.method),
         reviewStatus: str(value.reviewStatus),
         generator: str(value.generator),
         generatedAt: str(value.generatedAt),
         sourceType: str(value.sourceType),
         sourceFingerprint: str(value.sourceFingerprint),
-        sample,
+        sample: sample && Object.keys(sample).length ? sample : undefined,
         reviewedBy: str(value.reviewedBy),
         reviewedAt: str(value.reviewedAt),
         note: str(value.note)
     });
+    // a provenance object that states neither `method` nor `reviewStatus`
+    // (e.g. `{}`) must not mask the provenance inherited from a parent node
+    return hasProvenanceStatement(provenance) ? provenance : undefined;
 }
 
 function normalizePropertyProvenance(
@@ -213,7 +257,7 @@ function normalizeGeometry(value: unknown): DataDictionaryGeometry | undefined {
         type: str(value.type),
         crs: str(value.crs),
         spatialDimension: num(value.spatialDimension),
-        fieldPath: nonEmptyStr(value.fieldPath)
+        fieldPath: fieldPath(value.fieldPath)
     });
 }
 
@@ -231,7 +275,7 @@ function normalizeDimension(
         unlimited: bool(value.unlimited),
         semanticConcept: str(value.semanticConcept),
         unit: str(value.unit),
-        fieldPath: nonEmptyStr(value.fieldPath),
+        fieldPath: fieldPath(value.fieldPath),
         provenance: normalizeProvenance(value.provenance),
         propertyProvenance: normalizePropertyProvenance(
             value.propertyProvenance
@@ -243,13 +287,18 @@ function normalizeField(value: unknown): DataDictionaryField | undefined {
     if (!isObject(value)) {
         return undefined;
     }
-    const path = nonEmptyStr(value.path) ?? nonEmptyStr(value.name);
+    // `path` is the field's identity: never guess it (e.g. from `name`, which
+    // may contain reserved characters such as a flat column named `a.b`)
+    const path = fieldPath(value.path);
     if (!path) {
         return undefined;
     }
+    const segments = parseFieldPath(path);
     return compact({
         path,
-        name: nonEmptyStr(value.name) ?? path,
+        // display/source name; default to the unescaped last path segment, as
+        // in the design's examples (`location.latitude` → `latitude`)
+        name: nonEmptyStr(value.name) ?? segments[segments.length - 1].name,
         type: nonEmptyStr(value.type) ?? "unknown",
         title: str(value.title),
         sourcePath: str(value.sourcePath),
@@ -263,11 +312,11 @@ function normalizeField(value: unknown): DataDictionaryField | undefined {
         unit: str(value.unit),
         unitConcept: str(value.unitConcept),
         unitSystem: str(value.unitSystem),
-        enum: scalarArray(value.enum),
+        enum: jsonArray(value.enum),
         valueDomain: normalizeValueDomain(value.valueDomain),
-        missingValues: scalarArray(value.missingValues),
-        default: isScalar(value.default) ? value.default : undefined,
-        example: isScalar(value.example) ? value.example : undefined,
+        missingValues: jsonArray(value.missingValues),
+        default: jsonValue(value.default),
+        example: jsonValue(value.example),
         minimum: numOrStr(value.minimum),
         maximum: numOrStr(value.maximum),
         minLength: num(value.minLength),
@@ -277,7 +326,7 @@ function normalizeField(value: unknown): DataDictionaryField | undefined {
         nullable: bool(value.nullable),
         unique: bool(value.unique),
         constraints: plainObject(value.constraints),
-        dimensions: orderedRefArray(value.dimensions),
+        dimensions: orderedRefArray(value.dimensions, isNonEmptyString),
         provenance: normalizeProvenance(value.provenance),
         propertyProvenance: normalizePropertyProvenance(
             value.propertyProvenance
@@ -285,14 +334,16 @@ function normalizeField(value: unknown): DataDictionaryField | undefined {
     });
 }
 
-function normalizeEntity(
-    value: unknown,
-    idx: number
-): DataDictionaryEntity | undefined {
+function normalizeEntity(value: unknown): DataDictionaryEntity | undefined {
     if (!isObject(value)) {
         return undefined;
     }
-    const id = nonEmptyStr(value.id) ?? `entity-${idx}`;
+    // `id` is the entity's identity (referenced by relationships and
+    // `distribution-contract`): never invent one
+    const id = nonEmptyStr(value.id);
+    if (!id) {
+        return undefined;
+    }
     const fields = Array.isArray(value.fields)
         ? value.fields
               .map(normalizeField)
@@ -310,7 +361,7 @@ function normalizeEntity(
         role: str(value.role),
         sourceIdentifier: str(value.sourceIdentifier),
         fields,
-        primaryKey: orderedRefArray(value.primaryKey),
+        primaryKey: orderedRefArray(value.primaryKey, isValidFieldPath),
         geometry: normalizeGeometry(value.geometry),
         dimensions: dimensions.length ? dimensions : undefined,
         constraints: plainObject(value.constraints),
@@ -327,7 +378,7 @@ function normalizeEndpoint(
     if (!isObject(value) || !nonEmptyStr(value.entity)) {
         return undefined;
     }
-    const fields = orderedRefArray(value.fields);
+    const fields = orderedRefArray(value.fields, isValidFieldPath);
     if (!fields) {
         return undefined;
     }
@@ -335,10 +386,9 @@ function normalizeEndpoint(
 }
 
 function normalizeRelationship(
-    value: unknown,
-    idx: number
+    value: unknown
 ): DataDictionaryRelationship | undefined {
-    if (!isObject(value)) {
+    if (!isObject(value) || !nonEmptyStr(value.id)) {
         return undefined;
     }
     const source = normalizeEndpoint(value.source);
@@ -347,7 +397,7 @@ function normalizeRelationship(
         return undefined;
     }
     return compact({
-        id: nonEmptyStr(value.id) ?? `relationship-${idx}`,
+        id: value.id as string,
         type: str(value.type),
         name: str(value.name),
         description: str(value.description),
@@ -370,8 +420,15 @@ function normalizeRelationship(
  *   version is never interpreted with v1 semantics.
  * - Deeply sanitizes every documented property: values of the wrong type are
  *   dropped (e.g. a non-string role, a codelist value that is not a scalar, a
- *   relationship endpoint without an entity/field list), nodes without a
- *   usable identity are skipped, and a missing field `type` becomes `unknown`.
+ *   relationship endpoint without an entity/field list) and a missing field
+ *   `type` becomes `unknown`. Properties the schema allows to hold any JSON
+ *   value (`enum`, `missingValues`, `default`, `example`) are kept as-is.
+ * - Never invents identities: entities and relationships without a non-empty
+ *   `id`, and fields without a valid normalized `path`, are skipped. (Display
+ *   labels are filled in: a missing entity `name` becomes its `id`, a missing
+ *   field `name` the unescaped last path segment.)
+ * - Provenance objects stating neither `method` nor `reviewStatus` are
+ *   dropped, so they cannot mask inherited provenance.
  * - Ordered reference lists (`primaryKey`, relationship endpoint `fields`,
  *   field `dimensions`) are kept whole or dropped whole, never shortened, so a
  *   malformed composite key/reference cannot turn into a different one.
@@ -391,11 +448,11 @@ export function normalizeDataDictionary(
         return undefined;
     }
     const entities = aspect.entities
-        .map(normalizeEntity)
+        .map((entity) => normalizeEntity(entity))
         .filter((entity): entity is DataDictionaryEntity => !!entity);
     const relationships = Array.isArray(aspect.relationships)
         ? aspect.relationships
-              .map(normalizeRelationship)
+              .map((rel) => normalizeRelationship(rel))
               .filter((rel): rel is DataDictionaryRelationship => !!rel)
         : [];
     return compact({

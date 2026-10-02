@@ -62,7 +62,10 @@ Provenance is inherited, **nearest wins** (no merging):
 2. the node's own `provenance` (field → entity);
 3. the dictionary-level `provenance`.
 
-`method` is one of `authoritative-import`, `harvested`, `inferred`, `manual`, `agent-generated` (open vocabulary); `reviewStatus` is one of `unreviewed`, `reviewed`, `custodian-approved`, `rejected`. Inferred dictionaries must record the `sample` extent (`rows`/`bytes`).
+`method` is one of `authoritative-import`, `harvested`, `inferred`, `manual`, `agent-generated` (open vocabulary); `reviewStatus` is one of `unreviewed`, `reviewed`, `custodian-approved`, `rejected`. The schema enforces two rules:
+
+- Every provenance object must state `method` and/or `reviewStatus`. An object without either (e.g. `{}` or `{"generator": "x"}`) would otherwise hide the provenance inherited from its parent, and with it any manual/reviewed protection.
+- `method: "inferred"` requires a `sample` with `rows` and/or `bytes`, recording the extent the inference is based on (the whole source when it was fully scanned).
 
 Use property-level provenance for mixed-origin metadata, e.g. a type harvested from ArcGIS with a custodian-written description:
 
@@ -136,7 +139,12 @@ import {
 ```
 
 - Validate the payload against `data-dictionary.schema.json` (any draft-07 validator), then call `validateDataDictionary()` for the cross-reference rules a JSON Schema cannot express: unique entity ids / field paths / dimension ids / relationship ids, `primaryKey` and relationship field paths that exist, field `dimensions` that exist, and matching source/target field counts. It returns `[]` when no issue is found, otherwise issues with a JSON Pointer `location`.
-- `normalizeDataDictionary()` defensively converts unvalidated registry data into a safe, typed value (the web client uses it). It fails closed — returning `undefined` — unless `schemaVersion` is a supported `1.x` version, so a future major version is never read with v1 semantics. Values of the wrong type anywhere in the documented structure are dropped, nodes without a usable identity are skipped, and undocumented extension properties are not carried over (read the raw aspect for those).
-- `getEffectiveProvenance(dictionary, [entity, field], "description")` resolves inherited / property-level provenance; `isAdvisoryProvenance()` tells a client (or agent) to treat inferred, agent-generated or rejected values as advisory rather than authoritative.
+- `normalizeDataDictionary()` defensively converts unvalidated registry data into a safe, typed value (the web client uses it):
+  - It fails closed, returning `undefined`, unless `schemaVersion` is a supported `1.x` version, so a future major version is never read with v1 semantics.
+  - Values of the wrong type anywhere in the documented structure are dropped. `enum`, `missingValues`, `default` and `example` accept any JSON value, so they are kept as-is.
+  - It never invents identities: entities and relationships without an `id`, and fields without a valid `path`, are skipped. Key, relationship and dimension reference lists are kept whole or dropped whole.
+  - Provenance objects stating neither `method` nor `reviewStatus` are dropped, so they can't mask inherited provenance.
+  - Undocumented extension properties are not carried over; read the raw aspect for those.
+- `getEffectiveProvenance(dictionary, [entity, field], "description")` resolves inherited / property-level provenance, skipping provenance objects that state neither `method` nor `reviewStatus`; `isAdvisoryProvenance()` tells a client (or agent) to treat inferred, agent-generated or rejected values as advisory rather than authoritative.
 
 Agents should use the dictionary to pick valid field paths and entity shapes, reason about types/units/semantic concepts, and avoid inventing fields the source does not expose.

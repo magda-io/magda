@@ -1330,7 +1330,8 @@ The core capability is implemented by:
 
 Additive details settled during implementation:
 
-- provenance inheritance is "nearest wins" without merging (property override → node → entity → dictionary);
+- provenance inheritance is "nearest wins" without merging (property override → node → entity → dictionary). Every provenance object must state `method` and/or `reviewStatus`, so an empty or detail-only object cannot mask inherited (possibly protected) provenance;
+- `method: "inferred"` requires a `sample` extent with `rows` and/or `bytes`, enforced by the schema;
 - `provenance.sourceFingerprint` records which source version a value was generated from / reviewed against;
 - no storage representation for drift conflicts is defined yet: the shared merge/conflict policy (and any additive property recording conflicts for review) is left to the first automatic producer (#3813);
 - `geometry.spatialDimension`, field `unique`/`aliases`/`sourceIdentifier`, `dimensions[].fieldPath` (coordinate variable) and `source.documentationUrl`/`profile`/`identifier`/`version` are available as optional properties;

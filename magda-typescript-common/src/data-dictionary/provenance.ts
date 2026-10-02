@@ -5,6 +5,29 @@ import {
 } from "./model.js";
 
 /**
+ * Whether a provenance object states an origin (`method`) or review state
+ * (`reviewStatus`). Only such objects override inherited provenance: an empty
+ * or detail-only object (e.g. `{}` or `{ "generator": "x" }`) must not mask the
+ * parent's provenance, or human-owned metadata could lose its protection.
+ */
+export function hasProvenanceStatement(
+    provenance: unknown
+): provenance is DataDictionaryProvenance {
+    if (
+        typeof provenance !== "object" ||
+        provenance === null ||
+        Array.isArray(provenance)
+    ) {
+        return false;
+    }
+    const { method, reviewStatus } = provenance as DataDictionaryProvenance;
+    return (
+        (typeof method === "string" && method.length > 0) ||
+        (typeof reviewStatus === "string" && reviewStatus.length > 0)
+    );
+}
+
+/**
  * Resolve the effective provenance of a node (or of one of its properties).
  *
  * `nodes` is the ancestor chain below the dictionary, outermost first, e.g.
@@ -17,6 +40,9 @@ import {
  * 2. the nearest `provenance` on the node chain (innermost first);
  * 3. the dictionary-level `provenance`.
  *
+ * At each step, only provenance that states a `method` or `reviewStatus`
+ * counts (see `hasProvenanceStatement`); anything else is skipped.
+ *
  * Returns `undefined` when no provenance is recorded anywhere.
  */
 export function getEffectiveProvenance(
@@ -28,16 +54,18 @@ export function getEffectiveProvenance(
     const innermost = chain.length ? chain[chain.length - 1] : undefined;
     if (property && innermost?.propertyProvenance) {
         const propProvenance = innermost.propertyProvenance[property];
-        if (propProvenance && typeof propProvenance === "object") {
+        if (hasProvenanceStatement(propProvenance)) {
             return propProvenance;
         }
     }
     for (let i = chain.length - 1; i >= 0; i--) {
-        if (chain[i].provenance && typeof chain[i].provenance === "object") {
+        if (hasProvenanceStatement(chain[i].provenance)) {
             return chain[i].provenance;
         }
     }
-    return dictionary?.provenance;
+    return hasProvenanceStatement(dictionary?.provenance)
+        ? dictionary.provenance
+        : undefined;
 }
 
 /**

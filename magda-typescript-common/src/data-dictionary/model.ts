@@ -151,6 +151,10 @@ export interface DataDictionarySample {
  * Inheritance is "nearest wins" without merging: a property-level override
  * replaces the node's provenance for that property, a node's `provenance`
  * replaces its parent's, and the dictionary-level provenance is the default.
+ *
+ * The schema requires `method` and/or `reviewStatus` (only such objects
+ * override inherited provenance), and a `sample` extent when `method` is
+ * `inferred`.
  */
 export interface DataDictionaryProvenance {
     method?: DataDictionaryProvenanceMethod;
@@ -161,7 +165,7 @@ export interface DataDictionaryProvenance {
     sourceType?: DataDictionarySourceType;
     /** Fingerprint of the native source this was generated from / reviewed against. */
     sourceFingerprint?: string;
-    /** Sample extent. Required in practice for sample-based inference. */
+    /** Sample extent (`rows` and/or `bytes`). Required when `method` is `inferred`. */
     sample?: DataDictionarySample;
     reviewedBy?: string;
     /** ISO 8601 / RFC 3339 date-time. */

@@ -343,7 +343,7 @@ describe("DataDictionarySection", () => {
             provenance,
             entities: [
                 {
-                    id: bad,
+                    id: "e1",
                     name: bad,
                     role: bad,
                     description: bad,
@@ -366,7 +366,7 @@ describe("DataDictionarySection", () => {
                 },
                 {
                     id: "r",
-                    source: { entity: "entity-0", fields: ["x"] },
+                    source: { entity: "e1", fields: ["x"] },
                     target: { entity: "e2", fields: ["x"] }
                 }
             ]
@@ -375,7 +375,9 @@ describe("DataDictionarySection", () => {
         expect(fieldPaths()).toEqual(["x"]);
         expect(rowFor("x").textContent).toContain("identifier");
         expect(rowFor("x").textContent).toContain("Codes: A");
-        expect(container.textContent).toContain("entity-0 (x) → Second (x)");
+        expect(container.textContent).toContain("e1 (x) → Second (x)");
+        // structured enum values are kept and shown as JSON
+        expect(rowFor("x").textContent).toContain('{"nested":{"object":true}}');
         search("x");
         act(() => entityTabs()[1].click());
         expect(fieldPaths()).toEqual(["x"]);

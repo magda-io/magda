@@ -90,6 +90,7 @@ mgd dataset aspect set dist-xyz data-dictionary @dict.json --json   # create/rep
 
 - Field `path` is a stable id: nested `a.b`, arrays `items[].x`; escape literal `\ . [ ]` in names with `\` (`"a\\.b"` in JSON for a column named `a.b`).
 - Mark what you write: `"provenance": {"method": "agent-generated", "reviewStatus": "unreviewed"}` (or `"manual"` for values the user dictated).
+  Every provenance object needs `method` and/or `reviewStatus`; `"method": "inferred"` also needs `"sample": {"rows": N}` (and/or `bytes`).
   Never overwrite values whose provenance is `manual` or `reviewed`/`custodian-approved` (check `propertyProvenance` per property too).
 - Don't `aspect patch` anything inside `entities`/`fields`/`relationships`: arrays are combined, not merged by id, and duplicate entries result.
   Read the aspect, edit the JSON, then `aspect set` it back (or use a JSON Patch via `mgd api request PATCH …`).

@@ -119,8 +119,19 @@
         },
         "provenance": {
             "title": "Provenance",
-            "description": "How the metadata was produced or curated, and its review state. Dictionary-level provenance is inherited by entities, fields, dimensions and relationships unless they carry their own `provenance` (nearest wins, no merging). `propertyProvenance` overrides apply to individual properties of a node.",
+            "description": "How the metadata was produced or curated, and its review state. Dictionary-level provenance is inherited by entities, fields, dimensions and relationships unless they carry their own `provenance` (nearest wins, no merging). `propertyProvenance` overrides apply to individual properties of a node. A provenance object must state `method` and/or `reviewStatus`. When `method` is `inferred`, the `sample` extent is required.",
             "type": "object",
+            "anyOf": [
+                { "required": ["method"] },
+                { "required": ["reviewStatus"] }
+            ],
+            "if": {
+                "required": ["method"],
+                "properties": { "method": { "const": "inferred" } }
+            },
+            "then": {
+                "required": ["sample"]
+            },
             "properties": {
                 "method": {
                     "title": "Method",
@@ -167,8 +178,12 @@
                 },
                 "sample": {
                     "title": "Sample extent",
-                    "description": "Extent of the sample used when metadata was inferred from data. Must be recorded for sample-based inference so consumers do not mistake it for complete-source authority.",
+                    "description": "Extent of the sample used when metadata was inferred from data (the whole source when it was fully scanned). Required when `method` is `inferred` so consumers do not mistake it for complete-source authority. Must record `rows` and/or `bytes`.",
                     "type": "object",
+                    "anyOf": [
+                        { "required": ["rows"] },
+                        { "required": ["bytes"] }
+                    ],
                     "properties": {
                         "rows": {
                             "type": "integer",
