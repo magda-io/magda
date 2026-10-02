@@ -266,7 +266,7 @@ Each entity should have:
 - `name` — human-readable label;
 - optional `description`;
 - optional `role`;
-- optional source/native identifier;
+- optional `sourceIdentifier` — stable source/native entity identifier where available;
 - `fields`;
 - optional entity-level constraints or geometry metadata;
 - optional `primaryKey` as an ordered array of field paths for single or composite keys;
@@ -311,6 +311,33 @@ items[].measurements[].value
 ```
 
 The first version should use a documented lightweight path notation suitable for display and machine matching. It does not need to implement the full JSONPath language.
+
+### Normalized path rules
+
+`path` is a stable normalized schema path, not an executable JSONPath/query expression.
+
+For v1:
+
+- object/nested property segments are separated by `.`;
+- `[]` after a segment means traversal into array items;
+- the backslash character escapes the next reserved character;
+- literal `\`, `.`, `[` and `]` characters in source names must therefore be escaped;
+- a producer should preserve the same normalized path across re-harvesting while the logical source field is unchanged.
+
+Examples:
+
+```text
+scientificName                    # simple field
+properties.location.latitude      # nested object
+items[].measurements[].value      # nested arrays
+a\.b                              # literal flat/source field named "a.b"
+items[].a\.b                      # nested property literally named "a.b"
+field\[\]                         # literal field named "field[]"
+```
+
+`sourcePath` may preserve a native path/addressing form where useful. For flat tabular resources, `name` remains the exact source column name even when `path` must escape reserved characters.
+
+The normalized path grammar exists for identity/matching and UI/agent consumption. A query adapter is responsible for translating it into JSONPath, SQL identifiers, ArcGIS field references or another source-specific expression.
 
 ### Type and format
 
@@ -590,6 +617,440 @@ A dimension descriptor may include `id`, `name`, optional fixed `size`, `unlimit
 
 This is sufficient for a useful NetCDF/Zarr/raster logical dictionary while leaving storage layout, chunking/compression and other physical details in the authoritative native metadata.
 
+## Producer mapping rules
+
+Source adapters should follow the same mapping rules so equivalent source concepts produce equivalent Magda metadata:
+
+1. Prefer authoritative machine-readable schema metadata over inference. Use bounded inspection only when stronger metadata is unavailable.
+2. Normalize common logical facts such as field identity, type, nullability, units, codelists, keys, relationships, geometry, dimensions and semantics.
+3. Preserve source-specific precision through `sourceType`, `sourceIdentifier`, `sourcePath`, source/specification metadata and provenance rather than expanding the normalized vocabulary for every native type.
+4. Do not copy whole native specifications into the aspect. OpenAPI/JSON Schema combinators, Parquet physical encoding, NetCDF chunking/compression and similar source-specific details remain in the authoritative native schema.
+5. Do not infer relationships, identifiers or semantic equivalence from names alone. Record them only when supported by authoritative metadata, explicit manual input or reviewed evidence.
+6. Keep invocation/access concerns in `distribution-contract` and fitness/limitations in `dataset-usage`.
+7. Prefer stable source/native identifiers for entity identity. Where none exist, use a deterministic producer-specific ID and preserve the original source name/identifier separately.
+8. When information is unknown, omit optional properties or use the documented `unknown` logical type rather than inventing certainty.
+
+### Normalized versus native/source metadata
+
+| Put in `data-dictionary` | Keep in native/source metadata or another aspect |
+| --- | --- |
+| Logical field/entity identity and stable paths | Complete OpenAPI/JSON Schema/ArcGIS/CF/etc. document |
+| Normalized type + useful `sourceType` | Every source-specific type-system detail |
+| Description, semantic concept, unit | Full domain ontology/specification |
+| Required/nullability, simple constraints | Arbitrary validation/programming logic |
+| Primary/composite keys and explicit relationships | Inferred joins based only on similar names |
+| Geometry/CRS summary | Full rendering/style definition |
+| Named dimensions/axes | Physical array chunks/compression/storage layout |
+| Codelist values/labels or authoritative URI | Large duplicated external vocabularies |
+| Provenance/review state | Credentials or execution authority |
+| Request/response body entities | Scalar API invocation parameters (`distribution-contract`) |
+
+## Worked source-family examples
+
+These examples are illustrative **normalized projections**, not lossless copies of the native schemas. They show how different source families map into the same v1 concepts and are intended to double as the basis for compatibility fixtures/tests.
+
+### CSV / simple tabular data
+
+A CSV with an authoritative table schema or a bounded inferred schema maps to a single table entity:
+
+```json
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "type": "frictionless-table-schema",
+    "url": "https://example.org/observations.schema.json"
+  },
+  "provenance": {
+    "method": "authoritative-import",
+    "reviewStatus": "unreviewed"
+  },
+  "entities": [
+    {
+      "id": "observations",
+      "name": "Observations",
+      "role": "table",
+      "primaryKey": ["observation_id"],
+      "fields": [
+        {
+          "path": "observation_id",
+          "name": "observation_id",
+          "type": "string",
+          "roles": ["identifier"],
+          "required": true
+        },
+        {
+          "path": "observed_at",
+          "name": "observed_at",
+          "type": "datetime"
+        },
+        {
+          "path": "temperature",
+          "name": "temperature",
+          "type": "number",
+          "sourceType": "number",
+          "unit": "Cel",
+          "unitSystem": "UCUM",
+          "nullable": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+If the schema is inferred from rows instead of supplied authoritatively, the same logical shape can be used with `provenance.method: "inferred"` and a bounded `sample` description.
+
+### Multi-sheet Excel workbook
+
+Each sheet becomes an entity. Relationships are recorded only when explicitly known or reviewed:
+
+```json
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "type": "file-inspection"
+  },
+  "provenance": {
+    "method": "manual",
+    "reviewStatus": "reviewed"
+  },
+  "entities": [
+    {
+      "id": "observations",
+      "name": "Observations",
+      "sourceIdentifier": "Observations",
+      "role": "sheet",
+      "primaryKey": ["observation_id"],
+      "fields": [
+        {
+          "path": "observation_id",
+          "name": "observation_id",
+          "type": "string",
+          "roles": ["identifier"]
+        },
+        {
+          "path": "site_id",
+          "name": "site_id",
+          "type": "string",
+          "roles": ["reference"]
+        },
+        {
+          "path": "value",
+          "name": "value",
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "id": "sites",
+      "name": "Sites",
+      "sourceIdentifier": "Sites",
+      "role": "sheet",
+      "primaryKey": ["id"],
+      "fields": [
+        {
+          "path": "id",
+          "name": "id",
+          "type": "string",
+          "roles": ["identifier"]
+        },
+        {
+          "path": "name",
+          "name": "name",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "observations-site",
+      "type": "foreign-key",
+      "source": {
+        "entity": "observations",
+        "fields": ["site_id"]
+      },
+      "target": {
+        "entity": "sites",
+        "fields": ["id"]
+      }
+    }
+  ]
+}
+```
+
+The same representation works for a relational database or a Frictionless/CSVW table group.
+
+### ArcGIS feature layer
+
+ArcGIS layer metadata maps native field types, geometry, identifiers and coded-value domains without downloading feature records:
+
+```json
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "type": "arcgis-layer-definition",
+    "url": "https://example.org/arcgis/rest/services/TreeCrops/FeatureServer/0?f=pjson"
+  },
+  "provenance": {
+    "method": "authoritative-import",
+    "reviewStatus": "unreviewed"
+  },
+  "entities": [
+    {
+      "id": "layer-0",
+      "name": "Tree crops",
+      "sourceIdentifier": "0",
+      "role": "feature",
+      "primaryKey": ["OBJECTID"],
+      "geometry": {
+        "type": "Polygon",
+        "crs": "EPSG:4326",
+        "fieldPath": "geometry"
+      },
+      "fields": [
+        {
+          "path": "OBJECTID",
+          "name": "OBJECTID",
+          "type": "integer",
+          "sourceType": "esriFieldTypeOID",
+          "roles": ["identifier"],
+          "required": true
+        },
+        {
+          "path": "status",
+          "name": "STATUS",
+          "title": "Status",
+          "type": "string",
+          "sourceType": "esriFieldTypeString",
+          "valueDomain": {
+            "type": "codelist",
+            "values": [
+              { "value": "A", "label": "Active" },
+              { "value": "I", "label": "Inactive" }
+            ]
+          }
+        },
+        {
+          "path": "geometry",
+          "name": "geometry",
+          "type": "geometry",
+          "format": "polygon",
+          "sourceType": "esriGeometryPolygon",
+          "roles": ["primary-geometry"]
+        }
+      ]
+    }
+  ]
+}
+```
+
+Service/query operations themselves belong in the companion `distribution-contract`.
+
+### OpenAPI / nested JSON API
+
+Structured request and response bodies become dictionary entities. Scalar query/path/header parameters remain in `distribution-contract`.
+
+```json
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "type": "openapi",
+    "url": "https://example.org/openapi.json"
+  },
+  "provenance": {
+    "method": "authoritative-import",
+    "reviewStatus": "unreviewed"
+  },
+  "entities": [
+    {
+      "id": "search-request",
+      "name": "Search request",
+      "role": "request-body",
+      "fields": [
+        {
+          "path": "filters.species",
+          "name": "species",
+          "type": "string"
+        },
+        {
+          "path": "filters.boundingBox[]",
+          "name": "boundingBox",
+          "type": "number",
+          "format": "coordinate"
+        }
+      ]
+    },
+    {
+      "id": "occurrence-record",
+      "name": "Occurrence",
+      "role": "response-record",
+      "fields": [
+        {
+          "path": "id",
+          "name": "id",
+          "type": "string",
+          "roles": ["identifier"]
+        },
+        {
+          "path": "scientificName",
+          "name": "scientificName",
+          "type": "string"
+        },
+        {
+          "path": "location.latitude",
+          "name": "latitude",
+          "type": "number",
+          "semanticConcept": "latitude"
+        },
+        {
+          "path": "location.longitude",
+          "name": "longitude",
+          "type": "number",
+          "semanticConcept": "longitude"
+        },
+        {
+          "path": "tags[]",
+          "name": "tags",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}
+```
+
+A companion operation in `distribution-contract` might reference the entities as:
+
+```json
+{
+  "request": {
+    "mediaTypes": ["application/json"],
+    "dictionaryEntity": "search-request"
+  },
+  "response": {
+    "mediaTypes": ["application/json"],
+    "recordsPath": "items",
+    "dictionaryEntity": "occurrence-record"
+  }
+}
+```
+
+### NetCDF / Zarr multidimensional data
+
+Named dimensions and coordinate/data-variable roles describe scientific arrays without copying physical storage/chunking metadata:
+
+```json
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "type": "netcdf-metadata"
+  },
+  "provenance": {
+    "method": "authoritative-import",
+    "reviewStatus": "unreviewed"
+  },
+  "entities": [
+    {
+      "id": "climate",
+      "name": "Climate variables",
+      "role": "variable-set",
+      "dimensions": [
+        { "id": "time", "name": "time", "size": 365 },
+        { "id": "lat", "name": "latitude", "size": 720 },
+        { "id": "lon", "name": "longitude", "size": 1440 }
+      ],
+      "fields": [
+        {
+          "path": "time",
+          "name": "time",
+          "type": "number",
+          "sourceType": "float64",
+          "dimensions": ["time"],
+          "roles": ["coordinate"],
+          "semanticConcept": "time"
+        },
+        {
+          "path": "lat",
+          "name": "lat",
+          "type": "number",
+          "sourceType": "float32",
+          "dimensions": ["lat"],
+          "roles": ["coordinate"],
+          "semanticConcept": "latitude",
+          "unit": "degrees_north"
+        },
+        {
+          "path": "lon",
+          "name": "lon",
+          "type": "number",
+          "sourceType": "float32",
+          "dimensions": ["lon"],
+          "roles": ["coordinate"],
+          "semanticConcept": "longitude",
+          "unit": "degrees_east"
+        },
+        {
+          "path": "temperature",
+          "name": "temperature",
+          "type": "number",
+          "sourceType": "float32",
+          "dimensions": ["time", "lat", "lon"],
+          "roles": ["data-variable"],
+          "unit": "K"
+        }
+      ]
+    }
+  ]
+}
+```
+
+CF standard names or other authoritative semantic identifiers should be retained in `semanticConcept` or source metadata where available.
+
+### Arrow / Parquet nested columnar data
+
+The normalized model captures logical structure while preserving the native logical type in `sourceType`:
+
+```json
+{
+  "schemaVersion": "1.0",
+  "entities": [
+    {
+      "id": "records",
+      "name": "Records",
+      "role": "table",
+      "fields": [
+        {
+          "path": "customer.id",
+          "name": "id",
+          "type": "string",
+          "sourceType": "arrow:utf8"
+        },
+        {
+          "path": "amount",
+          "name": "amount",
+          "type": "number",
+          "format": "decimal",
+          "sourceType": "parquet:DECIMAL(18,2)"
+        },
+        {
+          "path": "events[].occurredAt",
+          "name": "occurredAt",
+          "type": "datetime",
+          "sourceType": "arrow:timestamp[us,UTC]"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Physical encoding, row groups, compression, dictionary encoding and chunk layout stay in Parquet/Arrow metadata rather than the normalized dictionary.
+
+### When no useful data dictionary exists
+
+The aspect is optional. For example, a pure WMS distribution may expose layer/rendering capabilities but no useful row/feature schema. In that case it is better to omit `data-dictionary` (or provide only genuinely useful structural metadata) than to invent an empty or misleading field model.
+
 ## Delivery and metadata production model
 
 The core v7 Data Dictionary capability consists of:
@@ -799,7 +1260,8 @@ At minimum, fixtures should cover:
 5. relational-style composite primary and foreign keys;
 6. Arrow/Parquet-style nested/native logical type preservation;
 7. NetCDF/Zarr-style named dimensions with coordinate and data variables;
-8. absence of the aspect on existing distributions.
+8. reserved-character path handling (for example a literal flat field named `a.b`);
+9. absence of the aspect on existing distributions.
 
 These fixtures are not intended to prove lossless support for every native schema feature. They define the minimum normalized v1 interoperability envelope and prevent later schema tightening from accidentally breaking one of the documented source families.
 
