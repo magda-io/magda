@@ -37,8 +37,9 @@ Kubernetes Agent Sandbox       per-sandbox bridge
   |                                  |
   | configurable RuntimeClass        | loopback proxy
   v                                  v
-runc (trusted dev)             DSH 127.0.0.1:3080
-or gVisor (production)                |
+runc (trusted local dev)      DSH 127.0.0.1:3080
+gVisor (local PoC / GKE prod)         |
+or Kata (AKS prod)                    |
                                       +--> mgd / Python / tools
                                              |
                                              | opaque agent-session token
@@ -55,7 +56,7 @@ Key decisions:
 | Area | Decision |
 | --- | --- |
 | Sandbox lifecycle | Kubernetes SIG Apps Agent Sandbox is the lifecycle abstraction in all environments. |
-| Runtime isolation | RuntimeClass is configurable. Trusted local development may use the default runtime/runc. Shared, staging and production deployments use gVisor by default. Kata remains a future stronger-isolation option. |
+| Runtime isolation | Agent Sandbox remains runtime-neutral. Trusted local development may use the default runtime/runc. Local security PoCs use gVisor. Supported production targets are GKE + gVisor and AKS + Kata Pod Sandboxing; GKE is the recommended/reference production profile. EKS production is not part of the initial support commitment and is tracked separately in #3821. |
 | DSH location | DSH runs inside the per-user sandbox. There is no shared privileged DSH host. |
 | DSH command confinement | Default DSH permission mode is `workspace-write` with approval/ask semantics. Under gVisor the PoC proved DSH selects bubblewrap; under runc it falls back to Landlock. |
 | Session model | One active long-lived agent session per user by default. Every session gets a unique immutable session id and SandboxClaim name. |
@@ -141,9 +142,9 @@ The application architecture must not assume gVisor-specific APIs. The same Agen
 
 ### 3. Production and trusted development are intentionally different profiles
 
-Local development optimises for iteration speed and may use runc. Production optimises for hostile-code containment and uses gVisor by default.
+Local development optimises for iteration speed and may use runc. Production optimises for hostile-code containment and uses a provider-supported strong isolation runtime rather than ordinary runc. The initial supported production profiles are GKE + gVisor and AKS + Kata Pod Sandboxing, with GKE + gVisor as the recommended/reference production option.
 
-This difference must be explicit and continuously tested rather than hidden behind environment detection.
+This difference must be explicit and continuously tested rather than hidden behind environment detection. The application must not infer the cloud provider at runtime; deployment/Helm configuration selects the profile and RuntimeClass.
 
 ### 4. Keep reusable knowledge outside disposable execution state
 
@@ -333,7 +334,7 @@ Real Magda API-key secret material is encrypted at rest with an Agent Manager en
               v                  v                  v
 +------------------------------------------------------------------+
 | UNTRUSTED EXECUTION: Agent Sandbox                               |
-| RuntimeClass: runc (trusted dev) / gVisor (production)           |
+| RuntimeClass: runc (trusted dev) / gVisor (GKE) / Kata (AKS)   |
 |                                                                  |
 | +---------------------------+   +------------------------------+ |
 | | agent container           |   | bridge sidecar               | |
@@ -373,9 +374,25 @@ This profile is faster for syscall-heavy coding workflows and avoids requiring g
 
 It is **not** an appropriate default for a shared environment that executes untrusted/model-generated code from multiple users.
 
-### Production/shared environments: Agent Sandbox + gVisor
+### Supported deployment profiles
 
-Production and shared staging environments use gVisor by default:
+The initial support matrix is intentionally explicit:
+
+| Environment | Agent Sandbox runtime | Support position |
+| --- | --- | --- |
+| Local development | default runtime / runc | Supported for trusted single-developer use only |
+| Local security / PoC | gVisor | Supported for validating the production-style isolation path locally |
+| GKE production | GKE Sandbox / gVisor | **Recommended/reference production option** |
+| AKS production | AKS Pod Sandboxing / Kata Containers | Supported production target |
+| EKS production | Fargate candidate | Not in the initial support commitment; future PoC #3821 |
+
+The Agent Manager and SandboxClaim lifecycle stay identical across these profiles. Runtime selection is deployment policy.
+
+Ordinary runc is **not** an acceptable production fallback for the Magda agent merely because a cloud does not offer one of the supported strong-isolation profiles.
+
+### Local security / PoC: Agent Sandbox + gVisor
+
+Local security/integration testing uses gVisor:
 
 ```yaml
 agent:
@@ -384,7 +401,7 @@ agent:
     runtimeClassName: gvisor
 ```
 
-The PoC verified:
+The Minikube PoC verified:
 
 - gVisor is active under Agent Sandbox;
 - DSH selects bubblewrap;
@@ -393,9 +410,53 @@ The PoC verified:
 - gVisor adds approximately 55-70 MiB memory per sandbox;
 - syscall-heavy workloads can be significantly slower.
 
-The chart must fail validation when `securityProfile: production` is selected with no RuntimeClass.
+This profile exists to reproduce the gVisor security/runtime behaviour locally; it does not make Minikube a production deployment target.
 
-The RuntimeClass value is not hard-coded to `gvisor`; operators may choose a supported Kata RuntimeClass later.
+### GKE production: Agent Sandbox + gVisor
+
+GKE + gVisor is the recommended/reference production deployment for the first v8 Agent Platform.
+
+GKE provides first-class Agent Sandbox and GKE Sandbox integration. The production SandboxTemplate uses:
+
+```yaml
+runtimeClassName: gvisor
+```
+
+and must satisfy the GKE Agent Sandbox admission/security requirements.
+
+References:
+
+- https://docs.cloud.google.com/kubernetes-engine/docs/how-to/how-install-agent-sandbox
+- https://docs.cloud.google.com/kubernetes-engine/docs/how-to/sandbox-pods
+
+The GKE production profile is the primary environment for production qualification, documentation examples and sizing guidance.
+
+### AKS production: Agent Sandbox + Kata
+
+AKS production uses the upstream Agent Sandbox lifecycle abstraction with AKS Pod Sandboxing as the isolation runtime.
+
+The SandboxTemplate uses the AKS-provided Kata RuntimeClass:
+
+```yaml
+runtimeClassName: kata-vm-isolation
+```
+
+AKS Pod Sandboxing runs each selected Pod in a lightweight VM with its own guest kernel. The Magda Agent Manager must not depend on gVisor-specific behaviour so the same SandboxClaim/session model works unchanged.
+
+References:
+
+- https://learn.microsoft.com/azure/aks/concepts-pod-sandboxing
+- https://learn.microsoft.com/azure/aks/use-pod-sandboxing
+
+The AKS profile requires release qualification of DSH + `mgd`, bridge routing, storage, networking and resource sizing under Kata. gVisor-specific PoC findings such as bubblewrap behaviour are not automatically assumed to apply to Kata.
+
+### EKS production: future portability investigation
+
+EKS is not part of the initial officially supported Magda Agent production matrix.
+
+Do not document ordinary runc as the production fallback. A future PoC will evaluate Agent Sandbox with Fargate-backed Sandbox Pods and determine whether EKS can be added without weakening the isolation model:
+
+- #3821 — **PoC: Validate Magda Agent Sandbox on Amazon EKS Fargate**
 
 ### Common hardening
 
@@ -433,15 +494,17 @@ A production sandbox that cannot obtain the expected DSH confinement should be r
 
 ### Required runtime test matrix
 
-The project must keep both paths tested:
+The project must keep the portable Agent Sandbox control plane tested separately from provider-specific production isolation.
 
-| Test tier | Runtime | Purpose |
+| Test tier | Runtime / platform | Purpose |
 | --- | --- | --- |
 | fast/local | runc | developer inner loop |
-| integration | gVisor | production parity |
-| release/security | gVisor | isolation, network and adversarial checks |
+| local integration/security | Minikube + gVisor | reproduce gVisor confinement and catch runtime-specific regressions |
+| production qualification | GKE + gVisor | recommended/reference production path |
+| production qualification | AKS + Kata | supported AKS production path |
+| future portability | EKS + Fargate | tracked by #3821; not a release blocker initially |
 
-A successful runc test is not sufficient evidence for production because DSH selects a different inner backend and gVisor changes networking/PTY behaviour.
+A successful runc test is not sufficient evidence for production. Likewise, passing the local gVisor suite does not prove the AKS/Kata profile. Provider-specific release/security qualification must exercise isolation, bridge/networking, lifecycle and DSH confinement for each supported production profile.
 
 ## Sandbox template
 
@@ -1062,9 +1125,10 @@ Important rules:
 
 **Sandbox escape**
 
-- gVisor RuntimeClass in production;
-- common Pod hardening;
-- optional future Kata.
+- GKE production: gVisor RuntimeClass;
+- AKS production: Kata Pod Sandboxing RuntimeClass;
+- common Pod hardening in every profile;
+- runc restricted to trusted development/test use.
 
 **Cross-tenant**
 
@@ -1136,6 +1200,8 @@ agent:
     replicas: 1
 
   sandbox:
+    # Recommended/reference production example: GKE + gVisor.
+    # AKS production uses runtimeClassName: kata-vm-isolation.
     securityProfile: production       # production | trusted-dev
     runtimeClassName: gvisor
     image: ghcr.io/magda-io/magda-agent:<version>
@@ -1182,15 +1248,21 @@ Chart validation:
 - trusted-dev profile emits a warning that runc is not a strong untrusted-code boundary;
 - no profile enables privileged/host mounts.
 
-Agent Sandbox CRDs/controller and the configured RuntimeClass are explicit installation prerequisites.
+Initial production support/documentation maps the RuntimeClass as follows:
 
-gVisor must be pinned by release rather than relying on a moving "latest" installer URL; #3812 demonstrated that the Minikube addon download path can drift/break.
+- GKE: `gvisor` (**recommended/reference production profile**);
+- AKS: `kata-vm-isolation`;
+- EKS: no initial production profile; #3821 evaluates Fargate.
+
+Agent Sandbox CRDs/controller and the configured runtime/provider prerequisites are explicit installation prerequisites. On GKE, deployments may use GKE's managed Agent Sandbox integration; on AKS, use the upstream Agent Sandbox controller with AKS Pod Sandboxing.
+
+For local gVisor testing, gVisor must be pinned by release rather than relying on a moving "latest" installer URL; #3812 demonstrated that the Minikube addon download path can drift/break.
 
 ## DSH version and integration policy
 
 Pin DSH in the agent runtime image.
 
-Upgrading DSH is treated like upgrading an execution runtime and requires the runc + gVisor integration suite.
+Upgrading DSH is treated like upgrading an execution runtime and requires the local runc + gVisor integration suite plus production qualification on the supported GKE/gVisor and AKS/Kata profiles before release.
 
 Magda-specific integration should live in a small DSH plugin/profile plus the bridge/launcher rather than a large permanent fork.
 
@@ -1237,7 +1309,7 @@ The design should be implemented in this order.
 
 1. **Productionise the agent runtime image and SandboxTemplate**
    - move PoC image conventions into supported deployment assets;
-   - runc/gVisor runtime profiles;
+   - trusted-dev runc, local gVisor, GKE/gVisor and AKS/Kata runtime profiles;
    - Service FQDN;
    - bridge sidecar;
    - DSH workspace-write health;
@@ -1324,7 +1396,7 @@ The design should be implemented in this order.
 
 14. **Observability/security integration tests**
     - multi-user isolation;
-    - runc/gVisor matrix;
+    - runc/gVisor local matrix plus GKE/gVisor and AKS/Kata production qualification;
     - credential exfiltration attempts;
     - reset/storage GC;
     - authz load.
@@ -1351,7 +1423,7 @@ This document makes concrete decisions for all #3811 scope areas:
 - persistence: session PVC vs Manager DB separated;
 - security/network/resource controls: defined;
 - web UX: migration and production restrictions defined;
-- deployment/Helm: runtime profiles and validation defined;
+- deployment/Helm: trusted-dev/local-gVisor plus GKE/gVisor and AKS/Kata production profiles and validation defined;
 - observability/audit: defined;
 - migration: coexistence with WebGPU mode selected.
 
