@@ -459,11 +459,14 @@ This is preferred over caching Pod IPs because the Service is lifecycle-bound to
 Other important template properties:
 
 - one `ReadWriteOnce` PVC generated per Sandbox;
-- no per-claim volume override;
-- no per-claim environment override for identity/credentials;
-- restart policy appropriate for a long-running interactive agent;
+- `envVarsInjectionPolicy: Disallowed`;
+- `volumeClaimTemplatesPolicy: Disallowed`;
+- no per-claim environment/volume override for identity or credentials;
+- `restartPolicy: OnFailure` for the long-running coding-agent workload;
 - labels identifying agent-runtime version and runtime profile;
 - NetworkPolicy admitting Agent Manager to the bridge port only.
+
+`OnFailure` is intentional: Agent Sandbox lifecycle guidance recommends it for coding-agent/interactive workloads. Crashes restart, while a deliberate clean exit remains observable instead of being restarted forever. The initial long-lived-session design does not rely on `ttlSecondsAfterFinished` for normal cleanup; Agent Manager owns explicit reset/deletion.
 
 ## Session model
 
