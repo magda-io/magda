@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed design for a future Magda v7 capability.
+Proposed design for a Magda v7 capability. Implementation targets the `main` branch.
 
 This document defines the `data-dictionary` distribution aspect introduced by the [data understanding layer](./data-understanding-layer-design.md).
 
@@ -447,7 +447,29 @@ Optional field/entity metadata may mark:
 
 The initial UI should present this information descriptively. It must not assume that two similarly named identifier fields are join-compatible without explicit evidence.
 
-## Source-specific harvesting
+## Delivery and metadata production model
+
+The core v7 Data Dictionary capability consists of:
+
+- the built-in `data-dictionary` aspect schema;
+- typed model/client access;
+- read-only Structure/Data Dictionary UI;
+- a supported manual population path through Registry APIs, `mgd`, project tooling or an agent.
+
+Automatic harvesting is deliberately **not a prerequisite** for this core capability. Projects can author useful dictionaries immediately and add source-specific automation later. Automatic producer work is tracked separately from the core implementation so source coverage can evolve incrementally.
+
+Manual/custodian metadata is a first-class source. Users may need to correct or enrich harvested structure with descriptions, semantic concepts, units or other annotations. A later producer run must not blindly replace those human-authored/reviewed values.
+
+Automatic production should be pluggable:
+
+- use a **minion-style enrichment producer** for post-ingestion inspection/inference, such as CSV/Excel;
+- allow **connector-native generation** when a connector already possesses authoritative schema/service metadata;
+- allow project/domain-specific producers for specialised source types;
+- keep shared normalization/validation/merge semantics reusable across producers.
+
+A source adapter may populate both `data-dictionary` and `distribution-contract` in one pass where the same native source provides both structure and interface metadata, for example OpenAPI or ArcGIS.
+
+## Source-specific automatic producers
 
 ### CSV
 
@@ -529,7 +551,9 @@ CF convention identifiers should be retained when available.
 
 ### Manual/agent-assisted sources
 
-When a machine-readable schema is unavailable, an agent or editor may create a dictionary from bounded inspection/documentation. Provenance must state that origin clearly.
+Manual or agent-assisted population is supported even when automatic producers also exist. An editor/agent may create a dictionary from documentation or bounded inspection and may add/correct annotations that a producer cannot infer reliably. Provenance must state that origin clearly.
+
+Automatic producer output must be merged with existing human-authored/reviewed metadata rather than treated as an unconditional whole-aspect replacement.
 
 ## Updating and drift
 
@@ -538,12 +562,13 @@ If the source exposes a stable schema/specification, the harvester should retain
 On change:
 
 1. produce a newly harvested candidate dictionary;
-2. compare it with the stored dictionary;
-3. preserve reviewed manual annotations where they still map unambiguously;
-4. mark changed/conflicting entries for review rather than silently presenting stale annotations as current;
-5. update generated metadata timestamps/fingerprints.
+2. compare it with the stored dictionary using stable entity IDs/field paths and native identifiers where available;
+3. preserve manual/custodian-reviewed annotations where they still map unambiguously;
+4. update machine-derived structural facts where the mapping is safe;
+5. mark changed/conflicting/ambiguous entries for review rather than silently replacing human input or presenting stale annotations as current;
+6. update generated metadata timestamps/fingerprints while retaining provenance/review state.
 
-Detailed merge UX can be implemented later, but the storage design must not make provenance impossible to preserve.
+The first automatic producer should establish and test a consistent merge policy for later producers. Detailed merge/review UX can be implemented later, but the storage design must not make provenance or human overrides impossible to preserve.
 
 ## Web-client design
 
@@ -631,3 +656,5 @@ Within schema version 1:
 - NetCDF variables/dimensions can be represented without requiring a universal visualisation.
 - The web client can render a useful searchable dictionary without needing the native source schema format.
 - Existing distributions without the aspect remain unaffected.
+- The core aspect/UI is useful with manually populated dictionaries; automatic harvesting is not required for the first usable v7 milestone.
+- Automatic re-harvesting can preserve human-authored/reviewed annotations rather than requiring whole-aspect replacement.
