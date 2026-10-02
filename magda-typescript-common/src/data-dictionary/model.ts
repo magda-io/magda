@@ -175,27 +175,6 @@ export type DataDictionaryPropertyProvenance = {
     [propertyName: string]: DataDictionaryProvenance;
 };
 
-/**
- * A change a producer could not apply safely (e.g. it would overwrite manual or
- * reviewed metadata after source drift, or the mapping is ambiguous).
- */
-export interface DataDictionaryConflict {
-    /** Affected direct property; omitted when the whole node is affected. */
-    property?: string;
-    reason?: OpenVocabulary<
-        | "source-changed"
-        | "source-removed"
-        | "ambiguous-mapping"
-        | "type-changed"
-    >;
-    candidateValue?: unknown;
-    detectedAt?: string;
-    generator?: string;
-    sourceFingerprint?: string;
-    note?: string;
-    [key: string]: unknown;
-}
-
 /** Properties shared by every node that can carry its own provenance. */
 export interface DataDictionaryProvenanceAware {
     provenance?: DataDictionaryProvenance;
@@ -279,7 +258,6 @@ export interface DataDictionaryField extends DataDictionaryProvenanceAware {
     constraints?: { [key: string]: unknown };
     /** Ordered IDs of the entity's `dimensions`. */
     dimensions?: string[];
-    conflicts?: DataDictionaryConflict[];
     [key: string]: unknown;
 }
 
@@ -296,7 +274,6 @@ export interface DataDictionaryEntity extends DataDictionaryProvenanceAware {
     geometry?: DataDictionaryGeometry;
     dimensions?: DataDictionaryDimension[];
     constraints?: { [key: string]: unknown };
-    conflicts?: DataDictionaryConflict[];
     [key: string]: unknown;
 }
 
@@ -317,7 +294,6 @@ export interface DataDictionaryRelationship
     description?: string;
     source: DataDictionaryRelationshipEndpoint;
     target: DataDictionaryRelationshipEndpoint;
-    conflicts?: DataDictionaryConflict[];
     [key: string]: unknown;
 }
 

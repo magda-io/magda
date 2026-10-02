@@ -337,9 +337,9 @@ const FieldRow: FunctionComponent<{
                                     primary key
                                 </span>
                             ) : null}
-                            {(field.roles ?? []).map((role) => (
+                            {(field.roles ?? []).map((role, idx) => (
                                 <span
-                                    key={role}
+                                    key={idx}
                                     className="data-dictionary__tag"
                                 >
                                     {role}
@@ -418,23 +418,6 @@ const FieldRow: FunctionComponent<{
                         />
                     </div>
                 ))}
-                {field.conflicts?.length ? (
-                    <div>
-                        <span
-                            className="data-dictionary__provenance data-dictionary__provenance--conflict"
-                            title={field.conflicts
-                                .map(
-                                    (conflict) =>
-                                        `${conflict.property ?? "field"}: ${
-                                            conflict.reason ?? "changed"
-                                        }`
-                                )
-                                .join("; ")}
-                        >
-                            Needs review: source changed
-                        </span>
-                    </div>
-                ) : null}
             </td>
         </tr>
     );
@@ -465,8 +448,8 @@ const EntityRelationships: FunctionComponent<{
         <div className="data-dictionary__relationships">
             <span>Declared relationships:</span>
             <ul>
-                {relationships.map((rel) => (
-                    <li key={rel.id}>
+                {relationships.map((rel, idx) => (
+                    <li key={idx}>
                         {getEntityName(dictionary, rel.source.entity)}{" "}
                         <code>({rel.source.fields.join(", ")})</code> →{" "}
                         {getEntityName(dictionary, rel.target.entity)}{" "}
@@ -539,7 +522,7 @@ const EntityDetails: FunctionComponent<{
                     <li>
                         Dimensions:{" "}
                         {entity.dimensions.map((dim, idx) => (
-                            <React.Fragment key={dim.id}>
+                            <React.Fragment key={idx}>
                                 {idx ? ", " : ""}
                                 <code>{dim.id}</code>
                                 {dim.name && dim.name !== dim.id
@@ -575,9 +558,11 @@ const EntityDetails: FunctionComponent<{
                             </tr>
                         </thead>
                         <tbody>
-                            {fields.map((field) => (
+                            {fields.map((field, idx) => (
                                 <FieldRow
-                                    key={field.path}
+                                    // paths should be unique, but unvalidated
+                                    // data may repeat them
+                                    key={idx}
                                     dictionary={dictionary}
                                     entity={entity}
                                     field={field}
@@ -660,24 +645,22 @@ const DataDictionarySection: FunctionComponent<{
     dataDictionary: DataDictionaryAspect;
 }> = ({ dataDictionary }) => {
     const entities = dataDictionary.entities;
-    const [selectedEntityId, setSelectedEntityId] = useState<string>(
-        entities[0]?.id
-    );
+    // selection/keys are index based: entity ids should be unique, but
+    // unvalidated data may repeat them
+    const [selectedIdx, setSelectedIdx] = useState<number>(0);
     const [query, setQuery] = useState<string>("");
 
-    const matchedFields = useMemo(() => {
-        const result: { [entityId: string]: DataDictionaryField[] } = {};
-        entities.forEach((entity) => {
-            result[entity.id] = entity.fields.filter((field) =>
-                fieldMatchesQuery(field, query)
-            );
-        });
-        return result;
-    }, [entities, query]);
+    const matchedFields: DataDictionaryField[][] = useMemo(
+        () =>
+            entities.map((entity) =>
+                entity.fields.filter((field) => fieldMatchesQuery(field, query))
+            ),
+        [entities, query]
+    );
 
-    const selectedEntity =
-        entities.find((entity) => entity.id === selectedEntityId) ??
-        entities[0];
+    const selectedEntity = entities[selectedIdx] ?? entities[0];
+    const selectedEntityFields =
+        matchedFields[entities[selectedIdx] ? selectedIdx : 0] ?? [];
     const totalFields = entities.reduce(
         (total, entity) => total + entity.fields.length,
         0
@@ -722,15 +705,14 @@ const DataDictionarySection: FunctionComponent<{
                             role="tablist"
                             aria-label="Entities"
                         >
-                            {entities.map((entity) => {
-                                const selected =
-                                    entity.id === selectedEntity?.id;
+                            {entities.map((entity, idx) => {
+                                const selected = entity === selectedEntity;
                                 const count = isSearching
-                                    ? matchedFields[entity.id].length
+                                    ? matchedFields[idx].length
                                     : entity.fields.length;
                                 return (
                                     <button
-                                        key={entity.id}
+                                        key={idx}
                                         type="button"
                                         role="tab"
                                         aria-selected={selected}
@@ -739,9 +721,7 @@ const DataDictionarySection: FunctionComponent<{
                                                 ? " data-dictionary__entity-tab--selected"
                                                 : ""
                                         }`}
-                                        onClick={() =>
-                                            setSelectedEntityId(entity.id)
-                                        }
+                                        onClick={() => setSelectedIdx(idx)}
                                     >
                                         {entity.name}{" "}
                                         <span className="data-dictionary__count">
@@ -760,7 +740,7 @@ const DataDictionarySection: FunctionComponent<{
                         <EntityDetails
                             dictionary={dataDictionary}
                             entity={selectedEntity}
-                            fields={matchedFields[selectedEntity.id] ?? []}
+                            fields={selectedEntityFields}
                             query={query}
                         />
                     ) : null}

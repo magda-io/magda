@@ -86,7 +86,7 @@ Rules for anything that writes the aspect, including future automatic producers 
 
 - Keep entity `id`s and field `path`s stable; prefer native identifiers (`sourceIdentifier`, `sourcePath`).
 - Metadata whose effective provenance is `method: "manual"` or `reviewStatus: "reviewed" | "custodian-approved"` is **protected** (`isProtectedProvenance()`): do not overwrite it automatically. Refresh only unprotected, source-derived properties.
-- When a source change cannot be applied safely, keep the protected value and record a `conflicts` entry on the node (`property`, `reason`, `candidateValue`, `sourceFingerprint`, ...). The UI flags such fields as "Needs review".
+- When a source change cannot be applied safely, keep the protected value rather than silently replacing it. How such changes are recorded and surfaced for review (the shared merge/conflict policy) is defined by the first automatic producer ([#3813](https://github.com/magda-io/magda/issues/3813)).
 - Record `source.fingerprint` (and optionally `provenance.sourceFingerprint` on reviewed values) so source drift can be detected.
 - Mark agent-written content `method: "agent-generated"`; it is shown as advisory until reviewed.
 - Only declare `relationships` / `reference` roles backed by authoritative metadata, explicit user input or reviewed evidence: similar field names are not evidence of a join.
@@ -122,12 +122,13 @@ EOF
 mgd api request PATCH /v0/registry/records/<distribution-id>/aspects/data-dictionary --body-file patch.json
 ```
 
-The registry only validates aspect data against the JSON schema when `validateJsonSchema` is enabled, so validate before writing.
+The registry validates aspect data against the JSON schema only when its `validateJsonSchema` option is enabled (the normal Helm deployment enables it; local/custom deployments may not), so validate before writing.
 
 ## Validating and consuming programmatically
 
 ```ts
 import { validateDataDictionary } from "@magda/typescript-common/dist/data-dictionary/validate.js";
+import { normalizeDataDictionary } from "@magda/typescript-common/dist/data-dictionary/normalize.js";
 import {
   getEffectiveProvenance,
   isAdvisoryProvenance
@@ -135,7 +136,7 @@ import {
 ```
 
 - Validate the payload against `data-dictionary.schema.json` (any draft-07 validator), then call `validateDataDictionary()` for the cross-reference rules a JSON Schema cannot express: unique entity ids / field paths / dimension ids / relationship ids, `primaryKey` and relationship field paths that exist, field `dimensions` that exist, and matching source/target field counts. It returns `[]` when no issue is found, otherwise issues with a JSON Pointer `location`.
-- `normalizeDataDictionary()` leniently coerces unvalidated registry data for display (the web client uses it).
+- `normalizeDataDictionary()` defensively converts unvalidated registry data into a safe, typed value (the web client uses it). It fails closed — returning `undefined` — unless `schemaVersion` is a supported `1.x` version, so a future major version is never read with v1 semantics. Values of the wrong type anywhere in the documented structure are dropped, nodes without a usable identity are skipped, and undocumented extension properties are not carried over (read the raw aspect for those).
 - `getEffectiveProvenance(dictionary, [entity, field], "description")` resolves inherited / property-level provenance; `isAdvisoryProvenance()` tells a client (or agent) to treat inferred, agent-generated or rejected values as advisory rather than authoritative.
 
 Agents should use the dictionary to pick valid field paths and entity shapes, reason about types/units/semantic concepts, and avoid inventing fields the source does not expose.

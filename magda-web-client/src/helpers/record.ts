@@ -10,7 +10,7 @@ import {
 import { config } from "../config";
 import { AccessControlAspect } from "@magda/typescript-common/dist/registry/model";
 import { DataDictionaryAspect } from "@magda/typescript-common/dist/data-dictionary/model.js";
-import { normalizeDataDictionary } from "@magda/typescript-common/dist/data-dictionary/validate.js";
+import { normalizeDataDictionary } from "@magda/typescript-common/dist/data-dictionary/normalize.js";
 
 export type RecordAction = {
     json?: any;

@@ -9,6 +9,7 @@ import arcgis from "@magda/registry-aspects/examples/data-dictionary/arcgis-feat
 import mixedProvenance from "@magda/registry-aspects/examples/data-dictionary/manual-override-mixed-provenance.json";
 import reservedPaths from "@magda/registry-aspects/examples/data-dictionary/reserved-character-paths.json";
 import netcdf from "@magda/registry-aspects/examples/data-dictionary/netcdf-dimensions.json";
+import { normalizeDataDictionary } from "@magda/typescript-common/dist/data-dictionary/normalize.js";
 import DataDictionarySection, {
     describeProvenance,
     describeSample,
@@ -228,7 +229,7 @@ describe("DataDictionarySection", () => {
         );
     });
 
-    it("shows node-, property-level provenance and conflicts", () => {
+    it("shows node- and property-level provenance", () => {
         render(mixedProvenance);
         const commodity = rowFor("commodity");
         const badges = Array.from(
@@ -243,7 +244,6 @@ describe("DataDictionarySection", () => {
         expect(year.textContent).toContain(
             "description: Agent-generated · Unreviewed"
         );
-        expect(year.textContent).toContain("Needs review");
         expect(
             year.querySelector(".data-dictionary__provenance--advisory")
         ).not.toBeNull();
@@ -275,6 +275,110 @@ describe("DataDictionarySection", () => {
                 ".data-dictionary__source .data-dictionary__provenance--advisory"
             )
         ).not.toBeNull();
+    });
+
+    it("selects entities by position when ids are duplicated", () => {
+        render(
+            normalizeDataDictionary({
+                schemaVersion: "1.0",
+                entities: [
+                    {
+                        id: "dup",
+                        name: "First",
+                        fields: [
+                            { path: "a", name: "a", type: "string" },
+                            { path: "a", name: "a", type: "integer" }
+                        ]
+                    },
+                    {
+                        id: "dup",
+                        name: "Second",
+                        fields: [{ path: "b", name: "b", type: "string" }]
+                    }
+                ]
+            })
+        );
+        expect(fieldPaths()).toEqual(["a", "a"]);
+        act(() => entityTabs()[1].click());
+        expect(entityTabs()[1].getAttribute("aria-selected")).toBe("true");
+        expect(entityTabs()[0].getAttribute("aria-selected")).toBe("false");
+        expect(fieldPaths()).toEqual(["b"]);
+    });
+
+    it("cannot be crashed by malformed nested metadata once normalized", () => {
+        const bad = { nested: { object: true } };
+        const provenance = { method: bad, reviewStatus: [bad], sample: bad };
+        const hostileField = {
+            path: "x",
+            name: bad,
+            type: bad,
+            title: bad,
+            roles: [bad, "identifier"],
+            aliases: [bad],
+            format: bad,
+            sourceType: bad,
+            description: bad,
+            semanticConcept: bad,
+            unit: bad,
+            enum: [bad, "ok"],
+            missingValues: [bad],
+            minimum: bad,
+            maximum: bad,
+            minLength: bad,
+            pattern: bad,
+            required: bad,
+            dimensions: [bad, "t"],
+            valueDomain: {
+                uri: bad,
+                name: bad,
+                values: [bad, { value: bad, label: bad }, { value: "A" }],
+                minimum: bad
+            },
+            provenance,
+            propertyProvenance: { description: bad, unit: provenance }
+        };
+        const raw = {
+            schemaVersion: "1.0",
+            source: { type: bad, url: bad, retrievedAt: bad },
+            provenance,
+            entities: [
+                {
+                    id: bad,
+                    name: bad,
+                    role: bad,
+                    description: bad,
+                    primaryKey: [bad, "x"],
+                    geometry: { type: bad, crs: bad, fieldPath: bad },
+                    dimensions: [bad, { id: "t", name: bad, size: bad }],
+                    provenance,
+                    fields: [hostileField, bad, null]
+                },
+                { id: "e2", name: "Second", fields: [hostileField] }
+            ],
+            relationships: [
+                bad,
+                {
+                    id: bad,
+                    type: bad,
+                    description: bad,
+                    source: { entity: "e2", fields: [bad, "x"] },
+                    target: { entity: bad, fields: ["x"] }
+                },
+                {
+                    id: "r",
+                    source: { entity: "entity-0", fields: ["x"] },
+                    target: { entity: "e2", fields: ["x"] }
+                }
+            ]
+        };
+        expect(() => render(normalizeDataDictionary(raw))).not.toThrow();
+        expect(fieldPaths()).toEqual(["x"]);
+        expect(rowFor("x").textContent).toContain("identifier");
+        expect(rowFor("x").textContent).toContain("Codes: A");
+        expect(container.textContent).toContain("entity-0 (x) → Second (x)");
+        search("x");
+        act(() => entityTabs()[1].click());
+        expect(fieldPaths()).toEqual(["x"]);
     });
 
     it("handles a dictionary without entities", () => {

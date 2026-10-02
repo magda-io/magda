@@ -12,6 +12,7 @@ import {
     formatFieldPath,
     getEffectiveProvenance,
     getFieldPathDepth,
+    isSupportedSchemaVersion,
     getParentFieldPath,
     isAdvisoryProvenance,
     isProtectedProvenance,
@@ -454,24 +455,55 @@ describe("data-dictionary aspect", () => {
         it("should return undefined for unusable data", () => {
             expect(normalizeDataDictionary(undefined)).to.be.undefined;
             expect(normalizeDataDictionary("x")).to.be.undefined;
+            expect(normalizeDataDictionary([])).to.be.undefined;
             expect(normalizeDataDictionary({ schemaVersion: "1.0" })).to.be
                 .undefined;
-        });
-
-        it("should keep valid dictionaries intact", () => {
-            const data = loadFixture("netcdf-dimensions.json");
-            const normalized = normalizeDataDictionary(data);
             expect(
-                normalized.entities[0].fields.map((f) => f.path)
-            ).to.deep.equal(data.entities[0].fields.map((f) => f.path));
-            expect(normalized.entities[0].dimensions).to.deep.equal(
-                data.entities[0].dimensions
-            );
-            expect(normalized.source).to.deep.equal(data.source);
+                normalizeDataDictionary({ schemaVersion: "1.0", entities: {} })
+            ).to.be.undefined;
         });
 
-        it("should defensively repair malformed data for display", () => {
+        it("should fail closed for missing or unsupported schema versions", () => {
+            const data: any = loadFixture("csv-table.json");
+            [undefined, "", "2.0", "2", "10.0", "1.x", "v1", 1, { major: 1 }]
+                .map((schemaVersion) => ({ ...data, schemaVersion }))
+                .forEach((candidate) => {
+                    expect(
+                        normalizeDataDictionary(candidate),
+                        JSON.stringify(candidate.schemaVersion)
+                    ).to.be.undefined;
+                });
+            ["1", "1.0", "1.1", "1.0.2"].forEach((schemaVersion) => {
+                expect(
+                    normalizeDataDictionary({ ...data, schemaVersion })
+                        ?.schemaVersion
+                ).to.equal(schemaVersion);
+            });
+            expect(isSupportedSchemaVersion(DATA_DICTIONARY_SCHEMA_VERSION)).to
+                .be.true;
+            expect(isSupportedSchemaVersion("2.0")).to.be.false;
+        });
+
+        fixtureFiles.forEach((file: string) => {
+            it(`should leave valid fixture ${file} unchanged`, () => {
+                const data = loadFixture(file);
+                expect(normalizeDataDictionary(data)).to.deep.equal(data);
+            });
+        });
+
+        it("should drop undocumented extension properties", () => {
+            const data: any = loadFixture("csv-table.json");
+            data.extension = { a: 1 };
+            data.entities[0].extension = true;
+            data.entities[0].fields[0].extension = "x";
+            expect(normalizeDataDictionary(data)).to.deep.equal(
+                loadFixture("csv-table.json")
+            );
+        });
+
+        it("should repair missing identities and drop unusable nodes", () => {
             const normalized = normalizeDataDictionary({
+                schemaVersion: "1.0",
                 entities: [
                     null,
                     {
@@ -479,34 +511,160 @@ describe("data-dictionary aspect", () => {
                             { name: "a" },
                             { path: "b", type: "integer", roles: "x" },
                             "junk",
-                            {}
+                            {},
+                            { path: {}, name: [] }
                         ],
                         primaryKey: "a"
                     }
                 ],
                 relationships: [{ id: "x" }]
             });
-            expect(normalized.schemaVersion).to.equal(
-                DATA_DICTIONARY_SCHEMA_VERSION
-            );
             expect(normalized.entities).to.have.length(1);
             const entity = normalized.entities[0];
             expect(entity.id).to.equal("entity-1");
             expect(entity.name).to.equal("entity-1");
             expect(entity.primaryKey).to.be.undefined;
-            expect(entity.fields).to.have.length(2);
-            expect(entity.fields[0]).to.include({
-                path: "a",
-                name: "a",
-                type: "unknown"
+            expect(entity.fields).to.deep.equal([
+                { path: "a", name: "a", type: "unknown" },
+                { path: "b", name: "b", type: "integer" }
+            ]);
+            expect(normalized.relationships).to.be.undefined;
+        });
+
+        it("should deeply sanitize malformed nested values", () => {
+            const bad = {};
+            const provenance = {
+                method: bad,
+                reviewStatus: ["reviewed"],
+                generator: 1,
+                sample: { rows: "100", bytes: bad }
+            };
+            const normalized = normalizeDataDictionary({
+                schemaVersion: "1.0",
+                source: { type: bad, url: ["https://x"], fingerprint: "f" },
+                provenance,
+                entities: [
+                    {
+                        id: bad,
+                        name: bad,
+                        role: bad,
+                        description: [],
+                        primaryKey: [bad, "id"],
+                        geometry: { type: bad, crs: 4326, fieldPath: bad },
+                        dimensions: [
+                            bad,
+                            { id: bad },
+                            { id: "t", name: bad, size: "3", unlimited: "yes" }
+                        ],
+                        provenance: "manual",
+                        propertyProvenance: { description: "manual", x: [] },
+                        fields: [
+                            {
+                                path: "id",
+                                name: bad,
+                                type: bad,
+                                title: bad,
+                                roles: [bad, "identifier", 1, null],
+                                aliases: [bad],
+                                format: bad,
+                                sourceType: bad,
+                                description: bad,
+                                semanticConcept: bad,
+                                unit: bad,
+                                unitSystem: bad,
+                                enum: [bad, "a", [1], 2, null],
+                                missingValues: [bad, ""],
+                                default: bad,
+                                example: [],
+                                minimum: bad,
+                                maximum: [],
+                                minLength: "1",
+                                maxLength: bad,
+                                pattern: bad,
+                                required: "true",
+                                nullable: 0,
+                                dimensions: [bad, "t"],
+                                valueDomain: {
+                                    type: bad,
+                                    uri: bad,
+                                    values: [
+                                        bad,
+                                        { value: bad, label: "x" },
+                                        { value: "A", label: bad },
+                                        { label: "no value" }
+                                    ],
+                                    minimum: bad
+                                },
+                                provenance,
+                                propertyProvenance: {
+                                    description: provenance,
+                                    unit: bad
+                                }
+                            }
+                        ]
+                    }
+                ],
+                relationships: [
+                    bad,
+                    {
+                        id: "r1",
+                        source: { entity: bad, fields: ["id"] },
+                        target: { entity: "entity-0", fields: ["id"] }
+                    },
+                    {
+                        id: "r2",
+                        source: { entity: "entity-0", fields: [bad] },
+                        target: { entity: "entity-0", fields: ["id"] }
+                    },
+                    {
+                        id: bad,
+                        type: bad,
+                        description: bad,
+                        source: { entity: "entity-0", fields: [bad, "id"] },
+                        target: { entity: "entity-0", fields: ["id"] }
+                    }
+                ]
             });
-            expect(entity.fields[1]).to.include({
-                path: "b",
-                name: "b",
-                type: "integer"
+            expect(normalized).to.deep.equal({
+                schemaVersion: "1.0",
+                source: { fingerprint: "f" },
+                provenance: { sample: {} },
+                entities: [
+                    {
+                        id: "entity-0",
+                        name: "entity-0",
+                        primaryKey: ["id"],
+                        geometry: {},
+                        dimensions: [{ id: "t" }],
+                        fields: [
+                            {
+                                path: "id",
+                                name: "id",
+                                type: "unknown",
+                                roles: ["identifier"],
+                                enum: ["a", 2],
+                                missingValues: [""],
+                                dimensions: ["t"],
+                                valueDomain: {
+                                    values: [{ value: "A" }]
+                                },
+                                provenance: { sample: {} },
+                                propertyProvenance: {
+                                    description: { sample: {} },
+                                    unit: {}
+                                }
+                            }
+                        ]
+                    }
+                ],
+                relationships: [
+                    {
+                        id: "relationship-3",
+                        source: { entity: "entity-0", fields: ["id"] },
+                        target: { entity: "entity-0", fields: ["id"] }
+                    }
+                ]
             });
-            expect(entity.fields[1].roles).to.be.undefined;
-            expect(normalized.relationships).to.deep.equal([]);
         });
     });
 });

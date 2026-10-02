@@ -1,9 +1,6 @@
-import {
-    DataDictionaryAspect,
-    DataDictionaryEntity,
-    DataDictionaryField
-} from "./model.js";
+import { DataDictionaryEntity, DataDictionaryField } from "./model.js";
 import { isValidFieldPath } from "./fieldPath.js";
+import { isSupportedSchemaVersion } from "./normalize.js";
 
 export type DataDictionaryIssueSeverity = "error" | "warning";
 
@@ -71,7 +68,7 @@ export function validateDataDictionary(aspect: unknown): DataDictionaryIssue[] {
             "`schemaVersion` is required",
             pointer("schemaVersion")
         );
-    } else if (!/^1(\.[0-9]+)*$/.test(aspect.schemaVersion)) {
+    } else if (!isSupportedSchemaVersion(aspect.schemaVersion)) {
         error(
             "unsupported-schema-version",
             `Unsupported schemaVersion \`${aspect.schemaVersion}\`: expected 1.x`,
@@ -342,108 +339,4 @@ export function validateDataDictionary(aspect: unknown): DataDictionaryIssue[] {
     }
 
     return issues;
-}
-
-/**
- * Leniently coerce raw aspect data (which the registry may not have validated)
- * into a `DataDictionaryAspect` that is safe for display: non-object entities,
- * fields without a usable `path`/`name`, and non-array collections are dropped
- * or defaulted rather than throwing. Unknown properties are preserved.
- *
- * Returns `undefined` when the value is not usable as a data dictionary at all
- * (not an object, or without an `entities` array).
- */
-export function normalizeDataDictionary(
-    aspect: unknown
-): DataDictionaryAspect | undefined {
-    if (!isObject(aspect) || !Array.isArray(aspect.entities)) {
-        return undefined;
-    }
-    const entities = aspect.entities
-        .map((entity: unknown, idx: number) => {
-            if (!isObject(entity)) {
-                return undefined;
-            }
-            const id = isNonEmptyString(entity.id)
-                ? entity.id
-                : `entity-${idx}`;
-            const fields = (Array.isArray(entity.fields) ? entity.fields : [])
-                .filter(
-                    (field: unknown) =>
-                        isObject(field) &&
-                        (isNonEmptyString(field.path) ||
-                            isNonEmptyString(field.name))
-                )
-                .map((field: { [key: string]: any }) => ({
-                    ...field,
-                    path: isNonEmptyString(field.path)
-                        ? field.path
-                        : field.name,
-                    name: isNonEmptyString(field.name)
-                        ? field.name
-                        : field.path,
-                    type: isNonEmptyString(field.type) ? field.type : "unknown",
-                    roles: Array.isArray(field.roles) ? field.roles : undefined,
-                    aliases: Array.isArray(field.aliases)
-                        ? field.aliases
-                        : undefined,
-                    dimensions: Array.isArray(field.dimensions)
-                        ? field.dimensions
-                        : undefined,
-                    propertyProvenance: isObject(field.propertyProvenance)
-                        ? field.propertyProvenance
-                        : undefined,
-                    provenance: isObject(field.provenance)
-                        ? field.provenance
-                        : undefined,
-                    conflicts: Array.isArray(field.conflicts)
-                        ? field.conflicts
-                        : undefined
-                })) as DataDictionaryField[];
-            return {
-                ...entity,
-                id,
-                name: isNonEmptyString(entity.name) ? entity.name : id,
-                fields,
-                primaryKey: Array.isArray(entity.primaryKey)
-                    ? entity.primaryKey
-                    : undefined,
-                dimensions: Array.isArray(entity.dimensions)
-                    ? entity.dimensions.filter((dim: unknown) => isObject(dim))
-                    : undefined,
-                geometry: isObject(entity.geometry)
-                    ? entity.geometry
-                    : undefined,
-                provenance: isObject(entity.provenance)
-                    ? entity.provenance
-                    : undefined,
-                propertyProvenance: isObject(entity.propertyProvenance)
-                    ? entity.propertyProvenance
-                    : undefined,
-                conflicts: Array.isArray(entity.conflicts)
-                    ? entity.conflicts
-                    : undefined
-            } as DataDictionaryEntity;
-        })
-        .filter((entity) => !!entity);
-    const relationships = Array.isArray(aspect.relationships)
-        ? aspect.relationships.filter(
-              (rel: unknown) =>
-                  isObject(rel) &&
-                  isObject(rel.source) &&
-                  isObject(rel.target) &&
-                  Array.isArray(rel.source.fields) &&
-                  Array.isArray(rel.target.fields)
-          )
-        : undefined;
-    return {
-        ...aspect,
-        schemaVersion: isNonEmptyString(aspect.schemaVersion)
-            ? aspect.schemaVersion
-            : "1.0",
-        source: isObject(aspect.source) ? aspect.source : undefined,
-        provenance: isObject(aspect.provenance) ? aspect.provenance : undefined,
-        entities,
-        relationships
-    } as DataDictionaryAspect;
 }

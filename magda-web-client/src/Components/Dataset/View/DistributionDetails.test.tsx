@@ -125,4 +125,53 @@ describe("DistributionDetails data dictionary section", () => {
         render(rawDistribution({}, { "data-dictionary": { foo: "bar" } }));
         expect(container.querySelector(".data-dictionary")).toBeNull();
     });
+
+    it("does not interpret an unsupported schema version with v1 semantics", () => {
+        render(
+            rawDistribution(
+                { downloadURL: "https://example.com/a.csv" },
+                { "data-dictionary": { ...csvTable, schemaVersion: "2.0" } }
+            )
+        );
+        expect(container.querySelector(".data-dictionary")).toBeNull();
+        // the rest of the page still renders
+        expect(container.querySelector(".mock-preview-vis")).not.toBeNull();
+    });
+
+    it("renders malformed nested aspect data without crashing", () => {
+        const bad = { not: "a string" };
+        render(
+            rawDistribution(
+                {},
+                {
+                    "data-dictionary": {
+                        schemaVersion: "1.0",
+                        provenance: { method: bad },
+                        entities: [
+                            {
+                                id: "e",
+                                name: bad,
+                                fields: [
+                                    {
+                                        path: "a",
+                                        name: "a",
+                                        type: bad,
+                                        roles: [bad],
+                                        valueDomain: {
+                                            values: [{ value: bad }]
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        relationships: [{ source: bad, target: bad }]
+                    }
+                }
+            )
+        );
+        expect(
+            container.querySelectorAll("tr.data-dictionary__field")
+        ).toHaveLength(1);
+        expect(container.textContent).toContain("unknown");
+    });
 });

@@ -55,17 +55,7 @@
                             "generator": "example-agent/0.1",
                             "reviewStatus": "unreviewed"
                         }
-                    },
-                    "conflicts": [
-                        {
-                            "property": "type",
-                            "reason": "type-changed",
-                            "candidateValue": "string",
-                            "detectedAt": "2026-09-30T00:00:00Z",
-                            "generator": "example-arcgis-import/1.1",
-                            "sourceFingerprint": "sha256:aa11"
-                        }
-                    ]
+                    }
                 },
                 {
                     "path": "notes",

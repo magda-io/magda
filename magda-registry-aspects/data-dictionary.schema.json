@@ -208,42 +208,6 @@
                 "$ref": "#/definitions/provenance"
             }
         },
-        "conflict": {
-            "title": "Conflict / drift marker",
-            "description": "A change detected by a producer (e.g. on re-harvest after source drift) that could not be applied safely because it would overwrite protected (manual/reviewed) metadata or is ambiguous. Recorded for review rather than silently applied.",
-            "type": "object",
-            "properties": {
-                "property": {
-                    "description": "Name of the affected direct property of the node, if any. Omitted when the whole node is affected (e.g. removed/renamed in the source).",
-                    "type": "string"
-                },
-                "reason": {
-                    "description": "Reason for the conflict. Open vocabulary, e.g. `source-changed`, `source-removed`, `ambiguous-mapping`, `type-changed`.",
-                    "type": "string"
-                },
-                "candidateValue": {
-                    "description": "The value the producer would have written."
-                },
-                "detectedAt": {
-                    "type": "string"
-                },
-                "generator": {
-                    "type": "string"
-                },
-                "sourceFingerprint": {
-                    "type": "string"
-                },
-                "note": {
-                    "type": "string"
-                }
-            }
-        },
-        "conflicts": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/conflict"
-            }
-        },
         "valueDomain": {
             "title": "Value domain",
             "description": "Rich value domain, e.g. a code list with labels or an authoritative external vocabulary. `values` may be omitted when `uri` is authoritative and enumeration would be impractical.",
@@ -510,9 +474,6 @@
                 },
                 "propertyProvenance": {
                     "$ref": "#/definitions/propertyProvenance"
-                },
-                "conflicts": {
-                    "$ref": "#/definitions/conflicts"
                 }
             }
         },
@@ -570,9 +531,6 @@
                 },
                 "propertyProvenance": {
                     "$ref": "#/definitions/propertyProvenance"
-                },
-                "conflicts": {
-                    "$ref": "#/definitions/conflicts"
                 }
             }
         },
@@ -624,9 +582,6 @@
                 },
                 "propertyProvenance": {
                     "$ref": "#/definitions/propertyProvenance"
-                },
-                "conflicts": {
-                    "$ref": "#/definitions/conflicts"
                 }
             }
         }
