@@ -242,6 +242,20 @@ Shared normalization, validation and merge helpers may live in the main Magda re
 
 `DistributionDetails.tsx` currently presents source/access information and then mounts `DataPreviewVis`, `DataPreviewMap` and plugin visualisation sections. The new renderer should sit alongside those components and work even when the distribution is not previewable.
 
+The current preview block is gated by `distribution.downloadURL || distribution.accessURL`. The new `data-dictionary` and `distribution-contract` sections must **not** be placed inside that gate: query-only/restricted/service distributions may have useful Data Understanding metadata even when the existing preview path cannot run.
+
+### Implementation map for the v7 core
+
+The following current code paths are important for implementation and should be treated as part of the core tickets rather than left for source-specific producer work:
+
+- **Built-in aspect definitions:** add the three `*.schema.json` files under `magda-registry-aspects/`. `magda-migrator-registry-aspects` discovers built-in definitions automatically from `*.schema.json`, so no separate hard-coded registration list is required. Keep `magda-registry-aspects/README.md` in sync.
+- **Web-client record fetches:** `magda-web-client/src/api-clients/RegistryApis.ts` uses explicit optional-aspect lists. Add `data-dictionary` and `distribution-contract` to `DEFAULT_OPTIONAL_DISTRIBUTION_FETCH_ASPECT_LIST`, and add `dataset-usage` to `DEFAULT_OPTIONAL_FETCH_ASPECT_LIST`. Otherwise the normal dataset/distribution page fetch path will not request these aspects.
+- **Typed record model:** extend the raw/parsed record model and parsing path in `magda-web-client/src/helpers/record.ts`. Prefer reusable Data Understanding types in a shared `@magda/typescript-common` module where practical so web-client, `mgd`, minions/connectors and future agents can share one contract. UI code should consume typed parsed properties rather than arbitrary `rawData` reads.
+- **Distribution UI:** render Structure/Data Dictionary and How to use from `magda-web-client/src/Components/Dataset/View/DistributionDetails.tsx` or dedicated child components, independently of preview availability.
+- **Dataset Usage UI:** render Using this dataset from the dataset details path, currently `magda-web-client/src/Components/Dataset/View/DatasetPageDetails.js`, or a dedicated child component.
+- **Manual authoring:** existing `mgd dataset aspect get|set|patch` commands work with any record, including distribution records. The core v7 capability does not require new aspect-specific `mgd` commands.
+- **Tests:** cover absence of the new optional aspects, representative valid payloads, typed parsing and UI rendering. Existing datasets/distributions without the aspects must remain unchanged.
+
 ### Preview plugins
 
 Existing preview systems remain useful. They consume the same distribution but are not made responsible for explaining generic structure, provenance or API usage.

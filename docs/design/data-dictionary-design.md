@@ -99,7 +99,7 @@ Each entity contains fields addressed by stable field paths.
     "retrievedAt": "2026-09-14T10:00:00Z",
     "fingerprint": "sha256:..."
   },
-  "generation": {
+  "provenance": {
     "method": "authoritative-import",
     "generator": "magda-data-dictionary-harvester/1.0",
     "generatedAt": "2026-09-14T10:00:00Z",
@@ -150,6 +150,18 @@ Initial value:
 
 Consumers should tolerate unknown additive properties in the same major version.
 
+## Minimum v1 structural requirements
+
+For schema version 1:
+
+- the top-level object requires `schemaVersion` and `entities`;
+- each entity requires `id`, `name` and `fields`;
+- each field requires `path`, `name` and `type`; use `"unknown"` when a useful normalized type cannot be established;
+- `source` and `provenance` are optional, but generated/inferred content should provide them whenever the origin can be determined;
+- arrays may be empty; the aspect need not pretend that every source exposes row-level fields.
+
+These requirements keep the machine contract predictable without requiring every optional descriptive/semantic property to be known.
+
 ## Source metadata
 
 The `source` object describes the schema/metadata source used to build the dictionary.
@@ -176,9 +188,9 @@ Example source types:
 - `manual`;
 - `agent-inspection`.
 
-## Generation metadata
+## Provenance metadata
 
-The `generation` object explains how the normalized dictionary was produced.
+The `provenance` object explains how the normalized dictionary was produced or curated and carries the dictionary-level review state.
 
 Suggested fields:
 
@@ -222,7 +234,8 @@ Each entity should have:
 - optional `role`;
 - optional source/native identifier;
 - `fields`;
-- optional entity-level constraints or geometry metadata.
+- optional entity-level constraints or geometry metadata;
+- optional `provenance` override when the entity has a different origin/review state from the dictionary.
 
 Initial `role` examples:
 
@@ -327,7 +340,7 @@ These properties should reflect the native schema when authoritative. When infer
 
 ### Field-level provenance overrides
 
-Most fields inherit dictionary-level provenance, but a field may override it when the description or semantic mapping came from a different source.
+Entities and fields inherit dictionary-level provenance. An entity or field may override it when its metadata came from a different source or has a different review state.
 
 Example:
 
@@ -345,7 +358,7 @@ Example:
 }
 ```
 
-This allows Magda to express, for example, that the field type came from an authoritative ArcGIS schema while the human-readable description was added later by an agent.
+This allows Magda to express, for example, that most of the dictionary came from an authoritative ArcGIS schema while an entity or field was later curated by a human or agent.
 
 ## API request and response modelling
 
@@ -468,6 +481,18 @@ Automatic production should be pluggable:
 - keep shared normalization/validation/merge semantics reusable across producers.
 
 A source adapter may populate both `data-dictionary` and `distribution-contract` in one pass where the same native source provides both structure and interface metadata, for example OpenAPI or ArcGIS.
+
+### Manual population with `mgd`
+
+The generic aspect commands are sufficient for the core/manual workflow, for example:
+
+```text
+mgd dataset aspect set <distribution-id> data-dictionary @data-dictionary.json
+mgd dataset aspect get <distribution-id> data-dictionary --json
+mgd dataset aspect patch <distribution-id> data-dictionary @patch.json
+```
+
+`set` replaces the aspect; `patch` is useful for partial object updates. Source-specific automatic producers remain a separate concern.
 
 ## Source-specific automatic producers
 
@@ -650,7 +675,7 @@ Within schema version 1:
 - Nested fields have stable paths.
 - Types, formats, descriptions, units, constraints and semantic concepts can be represented independently.
 - Request/response body structures can be represented without duplicating scalar API invocation parameters.
-- Dictionary-level and field-level provenance/review state can distinguish authoritative from inferred/agent-generated content.
+- Dictionary-, entity- and field-level inherited provenance/review state can distinguish authoritative, manual/custodian and inferred/agent-generated content.
 - CSV/Excel inference records the bounded sample used.
 - ArcGIS dictionaries can be generated from layer definitions without requiring feature downloads.
 - NetCDF variables/dimensions can be represented without requiring a universal visualisation.
