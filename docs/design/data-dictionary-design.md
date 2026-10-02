@@ -60,12 +60,12 @@ There is no single existing schema standard that cleanly covers all of Magda's t
 
 Relevant standards/conventions include:
 
-- **JSON Schema 2020-12** — generic structural types, arrays/objects, constraints, enums and extensibility. This is a useful baseline for generic schema semantics, but Magda should not embed/reimplement arbitrary JSON Schema as its normalized model.
-- **W3C CSV on the Web (CSVW)** — stable W3C tabular metadata vocabulary covering table groups, columns, datatypes, constraints, primary keys and foreign keys.
-- **Frictionless Table Schema / Data Package** — pragmatic tabular field/type/constraint conventions, primary/composite keys, foreign keys and multiple resources.
-- **OGC API - Common Part 3 / Features Part 5: Schemas** — logical geospatial schemas based on JSON Schema, including property roles, geometry/temporal roles, units, semantic definitions, references and codelists.
-- **Apache Arrow / Parquet logical schemas** — useful mapping references for nested/columnar fields, nullability and native logical types.
-- **CF/netCDF conventions and the netCDF/Zarr data models** — dimensions, coordinate variables/axes, multidimensional variables, units and standard names.
+- **[JSON Schema 2020-12](https://json-schema.org/draft/2020-12/)** — generic structural types, arrays/objects, constraints, enums and extensibility. This is a useful baseline for generic schema semantics, but Magda should not embed/reimplement arbitrary JSON Schema as its normalized model.
+- **[W3C CSV on the Web (CSVW)](https://www.w3.org/TR/tabular-metadata/)** — stable W3C tabular metadata vocabulary covering table groups, columns, datatypes, constraints, primary keys and foreign keys.
+- **[Frictionless Table Schema / Data Package](https://specs.frictionlessdata.io/table-schema/)** — pragmatic tabular field/type/constraint conventions, primary/composite keys, foreign keys and multiple resources.
+- **[OGC API - Common Part 3 / Features Part 5: Schemas](https://docs.ogc.org/is/23-058r2/23-058r2.html)** — logical geospatial schemas based on JSON Schema, including property roles, geometry/temporal roles, units, semantic definitions, references and codelists.
+- **[Apache Arrow](https://arrow.apache.org/docs/format/index.html) / Parquet logical schemas** — useful mapping references for nested/columnar fields, nullability and native logical types.
+- **CF/netCDF conventions and the [netCDF](https://docs.unidata.ucar.edu/netcdf-c/current/netcdf_data_model.html) / [Zarr](https://zarr-specs.readthedocs.io/en/latest/v3/core/) data models** — dimensions, coordinate variables/axes, multidimensional variables, units and standard names.
 
 The normalized aspect does **not** claim conformance to all of these standards. Instead, producers should map authoritative source metadata into common Magda concepts and retain the native source/specification reference for details that cannot be represented losslessly.
 
