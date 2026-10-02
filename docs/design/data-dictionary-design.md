@@ -786,6 +786,23 @@ An agent should be able to use the dictionary to:
 
 Generated/inferred metadata remains advisory unless backed by an authoritative source or review state.
 
+## Compatibility fixtures
+
+The v1 compatibility claim should be verified with representative aspect fixtures validated against the built-in JSON Schema and exercised through typed parsing/UI tests.
+
+At minimum, fixtures should cover:
+
+1. simple CSV/tabular fields;
+2. a multi-sheet Excel-style dictionary with multiple entities and an explicit relationship;
+3. nested JSON/OpenAPI request/response entities;
+4. an ArcGIS feature layer with geometry, identifier role and coded-value domain;
+5. relational-style composite primary and foreign keys;
+6. Arrow/Parquet-style nested/native logical type preservation;
+7. NetCDF/Zarr-style named dimensions with coordinate and data variables;
+8. absence of the aspect on existing distributions.
+
+These fixtures are not intended to prove lossless support for every native schema feature. They define the minimum normalized v1 interoperability envelope and prevent later schema tightening from accidentally breaking one of the documented source families.
+
 ## Compatibility and evolution
 
 The aspect is optional and additive.
@@ -816,3 +833,4 @@ Within schema version 1:
 - Existing distributions without the aspect remain unaffected.
 - The core aspect/UI is useful with manually populated dictionaries; automatic harvesting is not required for the first usable v7 milestone.
 - Automatic re-harvesting can preserve human-authored/reviewed annotations rather than requiring whole-aspect replacement.
+- Representative compatibility fixtures for the documented v1 source families validate against the built-in schema and remain covered by tests.
