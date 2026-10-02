@@ -1,0 +1,260 @@
+{
+ "gvisor": {
+  "auth_status": 303,
+  "index_status": 200,
+  "asset": "/plugins/??@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client.js,@deepseek-ai/dsh-client-hmr/client.js,@deepseek-ai/dsh-cordis-client-runner/client.js,@deepseek-ai/dsh-client-ui-theme/client.js,@deepseek-ai/dsh-client-locale/client.js,@deepseek-ai/dsh-client-shortcuts/client.js,@deepseek-ai/dsh-client-ui-shortcuts/client.js,@deepseek-ai/dsh-client-ui-layout/client.js,@deepseek-ai/dsh-client-ui-renderer/client.js,@deepseek-ai/dsh-client-ui-session/client.js,@deepseek-ai/dsh-client-resources/client.js,@deepseek-ai/dsh-client-ui-sidebar/client.js,@deepseek-ai/dsh-client-ui-sidebar-right/client.js,@deepseek-ai/dsh-client-ui-sidebar-documentpreview/client.js,@deepseek-ai/dsh-client-ui-sidebar-terminal/client.js,@deepseek-ai/dsh-client-ui-sidebar-files/client.js,@deepseek-ai/dsh-client-ui-settings/client.js,@deepseek-ai/dsh-client-ui-settings-general/client.js,@deepseek-ai/dsh-client-ui-settings-models/client.js,@deepseek-ai/dsh-client-ui-plugin-manager/client.js,@deepseek-ai/dsh-client-ui-settings-plugin-inventory/client.js,@deepseek-ai/dsh-client-ui-conversation/client.js,@deepseek-ai/dsh-client-ui-approval/client.js,@deepseek-ai/dsh-client-ui-chat/client.js,@deepseek-ai/dsh-client-ui-brand-official/client.js,@deepseek-ai/dsh-client-ui-attachment/client.js,@deepseek-ai/dsh-client-ui-tool/client.js,@deepseek-ai/dsh-client-ui-cordis/client.js,@deepseek-ai/dsh-client-ui-workspace/client.js,@deepseek-ai/dsh-client-ui-workflow-run/client.js,@deepseek-ai/dsh-client-ui-input-trigger/client.js,@deepseek-ai/dsh-client-ui-commands/client.js,@deepseek-ai/dsh-client-ui-skill/client.js,@deepseek-ai/dsh-client-ui-subagent/client.js,@deepseek-ai/dsh-client-ui-reference/client.js,@deepseek-ai/dsh-client-ui-jobs/client.js,@deepseek-ai/dsh-client-ui-goal/client.js,@deepseek-ai/dsh-client-ui-message-feedback/client.js,@deepseek-ai/dsh-client-ui-model-selection/client.js,@deepseek-ai/dsh-client-ui-permission-presets/client.js,@deepseek-ai/dsh-client-ui-agent-preset/client.js,@deepseek-ai/dsh-client-ui-settings-session-log/client.js,@deepseek-ai/dsh-client-ui-settings-plugins/client.js,@deepseek-ai/dsh-client-ui-settings-shell/client.js,@deepseek-ai/dsh-client-ui-settings-agent-loop/client.js,@deepseek-ai/dsh-client-ui-settings-subagent/client.js,@deepseek-ai/dsh-client-ui-settings-web-search/client.js,@deepseek-ai/dsh-client-ui-plan/client.js,@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-session-log-export/client.js,@deepseek-ai/dsh-client-file-upload/client.js&rev=09a73bbaf75d",
+  "assetBytes": 10422192,
+  "http": [
+   {
+    "path": "index",
+    "conc": 1,
+    "reqs": 24150,
+    "rps": 1610,
+    "mb_s": 56.1,
+    "p50_ms": 0.6,
+    "p95_ms": 0.8,
+    "p99_ms": 1.1,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 29,
+     "avg_cores": 0.1
+    },
+    "sandbox": {
+     "max_mem_mib": 273,
+     "avg_cores": 1.48
+    }
+   },
+   {
+    "path": "index",
+    "conc": 10,
+    "reqs": 49145,
+    "rps": 3276,
+    "mb_s": 114.2,
+    "p50_ms": 2.4,
+    "p95_ms": 3.6,
+    "p99_ms": 21.8,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 30,
+     "avg_cores": 0.17
+    },
+    "sandbox": {
+     "max_mem_mib": 269,
+     "avg_cores": 2.0
+    }
+   },
+   {
+    "path": "index",
+    "conc": 50,
+    "reqs": 58763,
+    "rps": 3918,
+    "mb_s": 136.5,
+    "p50_ms": 10.1,
+    "p95_ms": 30.6,
+    "p99_ms": 33.9,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 48,
+     "avg_cores": 0.17
+    },
+    "sandbox": {
+     "max_mem_mib": 313,
+     "avg_cores": 1.99
+    }
+   },
+   {
+    "path": "asset",
+    "conc": 1,
+    "reqs": 625,
+    "rps": 42,
+    "mb_s": 434.3,
+    "p50_ms": 8.7,
+    "p95_ms": 50.4,
+    "p99_ms": 51.7,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 50,
+     "avg_cores": 0.18
+    },
+    "sandbox": {
+     "max_mem_mib": 321,
+     "avg_cores": 0.73
+    }
+   },
+   {
+    "path": "asset",
+    "conc": 10,
+    "reqs": 2244,
+    "rps": 150,
+    "mb_s": 1559.2,
+    "p50_ms": 69,
+    "p95_ms": 101.6,
+    "p99_ms": 112.1,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 50,
+     "avg_cores": 0.47
+    },
+    "sandbox": {
+     "max_mem_mib": 392,
+     "avg_cores": 1.92
+    }
+   },
+   {
+    "path": "asset",
+    "conc": 50,
+    "reqs": 2669,
+    "rps": 178,
+    "mb_s": 1854.5,
+    "p50_ms": 278.4,
+    "p95_ms": 323.9,
+    "p99_ms": 373.6,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 57,
+     "avg_cores": 0.53
+    },
+    "sandbox": {
+     "max_mem_mib": 650,
+     "avg_cores": 1.99
+    }
+   }
+  ],
+  "idle_conns_ok": 500,
+  "idle500_relay": {
+   "max_mem_mib": 57,
+   "avg_cores": 0.03
+  },
+  "relay_idle_mib": 8,
+  "sandbox_idle_mib": 181
+ },
+ "runc": {
+  "auth_status": 303,
+  "index_status": 200,
+  "asset": "/plugins/??@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client.js,@deepseek-ai/dsh-client-hmr/client.js,@deepseek-ai/dsh-cordis-client-runner/client.js,@deepseek-ai/dsh-client-ui-theme/client.js,@deepseek-ai/dsh-client-locale/client.js,@deepseek-ai/dsh-client-shortcuts/client.js,@deepseek-ai/dsh-client-ui-shortcuts/client.js,@deepseek-ai/dsh-client-ui-layout/client.js,@deepseek-ai/dsh-client-ui-renderer/client.js,@deepseek-ai/dsh-client-ui-session/client.js,@deepseek-ai/dsh-client-resources/client.js,@deepseek-ai/dsh-client-ui-sidebar/client.js,@deepseek-ai/dsh-client-ui-sidebar-right/client.js,@deepseek-ai/dsh-client-ui-sidebar-documentpreview/client.js,@deepseek-ai/dsh-client-ui-sidebar-terminal/client.js,@deepseek-ai/dsh-client-ui-sidebar-files/client.js,@deepseek-ai/dsh-client-ui-settings/client.js,@deepseek-ai/dsh-client-ui-settings-general/client.js,@deepseek-ai/dsh-client-ui-settings-models/client.js,@deepseek-ai/dsh-client-ui-plugin-manager/client.js,@deepseek-ai/dsh-client-ui-settings-plugin-inventory/client.js,@deepseek-ai/dsh-client-ui-conversation/client.js,@deepseek-ai/dsh-client-ui-approval/client.js,@deepseek-ai/dsh-client-ui-chat/client.js,@deepseek-ai/dsh-client-ui-brand-official/client.js,@deepseek-ai/dsh-client-ui-attachment/client.js,@deepseek-ai/dsh-client-ui-tool/client.js,@deepseek-ai/dsh-client-ui-cordis/client.js,@deepseek-ai/dsh-client-ui-workspace/client.js,@deepseek-ai/dsh-client-ui-workflow-run/client.js,@deepseek-ai/dsh-client-ui-input-trigger/client.js,@deepseek-ai/dsh-client-ui-commands/client.js,@deepseek-ai/dsh-client-ui-skill/client.js,@deepseek-ai/dsh-client-ui-subagent/client.js,@deepseek-ai/dsh-client-ui-reference/client.js,@deepseek-ai/dsh-client-ui-jobs/client.js,@deepseek-ai/dsh-client-ui-goal/client.js,@deepseek-ai/dsh-client-ui-message-feedback/client.js,@deepseek-ai/dsh-client-ui-model-selection/client.js,@deepseek-ai/dsh-client-ui-permission-presets/client.js,@deepseek-ai/dsh-client-ui-agent-preset/client.js,@deepseek-ai/dsh-client-ui-settings-session-log/client.js,@deepseek-ai/dsh-client-ui-settings-plugins/client.js,@deepseek-ai/dsh-client-ui-settings-shell/client.js,@deepseek-ai/dsh-client-ui-settings-agent-loop/client.js,@deepseek-ai/dsh-client-ui-settings-subagent/client.js,@deepseek-ai/dsh-client-ui-settings-web-search/client.js,@deepseek-ai/dsh-client-ui-plan/client.js,@deepseek-ai/dsh-client-ui-user-questions/client.js,@deepseek-ai/dsh-client-ui-trajectory/client.js,@deepseek-ai/dsh-session-log-export/client.js,@deepseek-ai/dsh-client-file-upload/client.js&rev=09a73bbaf75d",
+  "assetBytes": 10422192,
+  "http": [
+   {
+    "path": "index",
+    "conc": 1,
+    "reqs": 33600,
+    "rps": 2240,
+    "mb_s": 78.1,
+    "p50_ms": 0.4,
+    "p95_ms": 0.5,
+    "p99_ms": 0.7,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 28,
+     "avg_cores": 0.11
+    },
+    "sandbox": {
+     "max_mem_mib": 196,
+     "avg_cores": 0.8
+    }
+   },
+   {
+    "path": "index",
+    "conc": 10,
+    "reqs": 83784,
+    "rps": 5586,
+    "mb_s": 194.6,
+    "p50_ms": 1.7,
+    "p95_ms": 2.2,
+    "p99_ms": 2.4,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 30,
+     "avg_cores": 0.24
+    },
+    "sandbox": {
+     "max_mem_mib": 215,
+     "avg_cores": 1.44
+    }
+   },
+   {
+    "path": "index",
+    "conc": 50,
+    "reqs": 92595,
+    "rps": 6173,
+    "mb_s": 215.1,
+    "p50_ms": 8,
+    "p95_ms": 9,
+    "p99_ms": 11.2,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 48,
+     "avg_cores": 0.23
+    },
+    "sandbox": {
+     "max_mem_mib": 240,
+     "avg_cores": 1.43
+    }
+   },
+   {
+    "path": "asset",
+    "conc": 1,
+    "reqs": 2071,
+    "rps": 138,
+    "mb_s": 1439,
+    "p50_ms": 3.2,
+    "p95_ms": 44.7,
+    "p99_ms": 46.1,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 54,
+     "avg_cores": 0.41
+    },
+    "sandbox": {
+     "max_mem_mib": 247,
+     "avg_cores": 0.56
+    }
+   },
+   {
+    "path": "asset",
+    "conc": 10,
+    "reqs": 6385,
+    "rps": 426,
+    "mb_s": 4436.4,
+    "p50_ms": 22,
+    "p95_ms": 33.8,
+    "p99_ms": 64,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 72,
+     "avg_cores": 0.93
+    },
+    "sandbox": {
+     "max_mem_mib": 341,
+     "avg_cores": 1.33
+    }
+   },
+   {
+    "path": "asset",
+    "conc": 50,
+    "reqs": 6470,
+    "rps": 431,
+    "mb_s": 4495.4,
+    "p50_ms": 108.6,
+    "p95_ms": 144.1,
+    "p99_ms": 531.9,
+    "errors": 0,
+    "relay": {
+     "max_mem_mib": 70,
+     "avg_cores": 0.97
+    },
+    "sandbox": {
+     "max_mem_mib": 417,
+     "avg_cores": 1.37
+    }
+   }
+  ],
+  "idle_conns_ok": 500,
+  "idle500_relay": {
+   "max_mem_mib": 54,
+   "avg_cores": 0.04
+  },
+  "relay_idle_mib": 8,
+  "sandbox_idle_mib": 128
+ }
+}

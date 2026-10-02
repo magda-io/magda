@@ -1,0 +1,13 @@
+# Phase 1: trivial Pod that must run under gVisor (runsc).
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gvisor-smoke
+  namespace: default
+spec:
+  runtimeClassName: gvisor
+  restartPolicy: Never
+  containers:
+    - name: smoke
+      image: busybox:1.36
+      command: ["sh", "-c", "dmesg; echo '---'; uname -a; cat /proc/version; sleep 3600"]

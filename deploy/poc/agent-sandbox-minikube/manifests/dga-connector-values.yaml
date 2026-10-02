@@ -1,0 +1,13 @@
+# Small data.gov.au harvest for the PoC (separate Helm release in the magda
+# namespace). Limited to two organisations to keep indexing load low.
+includeInitialJobs: true
+includeCronJobs: false
+config:
+  id: dga
+  name: "data.gov.au"
+  sourceUrl: "https://data.gov.au/data/"
+  pageSize: 100
+  ignoreHarvestSources: ["*"]
+  allowedOrganisationNames:
+    - csiro-oceans-and-atmosphere-information-and-data-centre
+    - geoscienceaustralia

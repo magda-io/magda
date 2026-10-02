@@ -1,0 +1,144 @@
+# Phase 3/4: SandboxTemplate + SandboxWarmPool for the Magda agent PoC.
+#
+# Agent Sandbox v1.0.4: a SandboxClaim can only reference a SandboxWarmPool
+# (spec.warmPoolRef is required), never a template directly, so every
+# deployment needs a pool even when replicas is 0.
+apiVersion: extensions.agents.x-k8s.io/v1beta1
+kind: SandboxTemplate
+metadata:
+  name: magda-agent
+  namespace: magda-agent-poc
+spec:
+  # Per-session workspace volume. Each Sandbox gets its own PVC from this
+  # template (claims may not override it: volumeClaimTemplatesPolicy defaults
+  # to Disallowed).
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2Gi
+  # Managed (default) creates one shared NetworkPolicy per template. Without a
+  # networkPolicy block the controller's secure default allows ingress only
+  # from the sandbox router and egress to the public Internet only, which would
+  # block the in-cluster Magda gateway. NOTE: minikube's default CNI (kindnet)
+  # may not enforce NetworkPolicy; see the PoC write-up for what was observed.
+  networkPolicyManagement: Managed
+  networkPolicy:
+    ingress:
+      # Future Agent Manager / PoC access relay only, relay port only.
+      - from:
+          - podSelector:
+              matchLabels:
+                app.kubernetes.io/name: magda-agent-access
+        ports:
+          - port: 8080
+            protocol: TCP
+    egress:
+      - to:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: kube-system
+            podSelector:
+              matchLabels:
+                k8s-app: kube-dns
+        ports:
+          - {port: 53, protocol: UDP}
+          - {port: 53, protocol: TCP}
+      # Magda gateway only (not the rest of the magda namespace).
+      - to:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: magda
+            podSelector:
+              matchLabels:
+                service: gateway
+        ports:
+          - {port: 80, protocol: TCP}
+      # Public Internet (LLM API, external data downloads); no private ranges,
+      # no link-local / cloud metadata.
+      - to:
+          - ipBlock:
+              cidr: 0.0.0.0/0
+              except:
+                - 10.0.0.0/8
+                - 172.16.0.0/12
+                - 192.168.0.0/16
+                - 169.254.0.0/16
+                - 100.64.0.0/10
+  podTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: magda-agent-sandbox
+    spec:
+      runtimeClassName: gvisor
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: agent
+          image: magda-agent-poc:dev
+          imagePullPolicy: Never
+          ports:
+            - name: relay
+              containerPort: 8080
+          env:
+            - name: MGD_BASE_URL
+              value: http://gateway.magda.svc.cluster.local/api
+            - name: MAGDA_AGENT_MODEL
+              value: gpt-5.6-sol
+            # PoC only: one shared LLM key for every sandbox. Production must
+            # replace this with a per-user/session-scoped credential or an
+            # Agent-Manager-mediated LLM proxy (see #3811).
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: magda-agent-llm
+                  key: OPENAI_API_KEY
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+              ephemeral-storage: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+              ephemeral-storage: 2Gi
+          readinessProbe:
+            # DSH listens on loopback only (and answers 401 without its token),
+            # so probe the loopback socket from inside the sandbox.
+            exec:
+              command: ["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/3080"]
+            periodSeconds: 5
+            failureThreshold: 60
+          volumeMounts:
+            - name: data
+              mountPath: /data
+---
+apiVersion: extensions.agents.x-k8s.io/v1beta1
+kind: SandboxWarmPool
+metadata:
+  name: magda-agent
+  namespace: magda-agent-poc
+spec:
+  # 0 = every claim cold-starts a fresh Sandbox. Set to 1+ to measure warm
+  # adoption (see scripts/05-measure.sh).
+  replicas: 0
+  sandboxTemplateRef:
+    name: magda-agent
