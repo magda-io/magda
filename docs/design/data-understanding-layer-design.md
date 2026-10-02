@@ -104,6 +104,18 @@ The data-understanding layer may describe authentication mechanisms, access mode
 
 The design should make heterogeneous sources easier to compare without forcing all custodians into one source schema. Normalised field descriptions, semantic concept identifiers, units and stable paths provide a standards-lite mediation layer.
 
+### 7. Align with established schema standards without adopting one universal schema language
+
+No single existing standard covers all target sources. The normalized aspects should reuse/mirror mature concepts where practical:
+
+- JSON Schema for generic structural/type/constraint concepts;
+- CSVW and Frictionless Table Schema/Data Package for tabular metadata and explicit relationships;
+- OGC API schema conventions for geospatial roles, units, codelists and references;
+- Arrow/Parquet for columnar logical types;
+- CF/netCDF/Zarr for multidimensional variables, dimensions and coordinates.
+
+Magda remains a mediation layer: native specifications stay authoritative and the normalized aspects expose the common subset needed by people and software agents.
+
 ## Architecture
 
 ```text

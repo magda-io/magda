@@ -54,6 +54,39 @@ The data dictionary does not:
 - automatically prove that fields from two datasets can be joined;
 - require every source type to populate every possible property.
 
+## Standards alignment
+
+There is no single existing schema standard that cleanly covers all of Magda's target sources. The `data-dictionary` should therefore remain a compact **normalised logical projection**, but its concepts should align with established standards so source adapters can map deterministically rather than inventing new semantics.
+
+Relevant standards/conventions include:
+
+- **JSON Schema 2020-12** — generic structural types, arrays/objects, constraints, enums and extensibility. This is a useful baseline for generic schema semantics, but Magda should not embed/reimplement arbitrary JSON Schema as its normalized model.
+- **W3C CSV on the Web (CSVW)** — stable W3C tabular metadata vocabulary covering table groups, columns, datatypes, constraints, primary keys and foreign keys.
+- **Frictionless Table Schema / Data Package** — pragmatic tabular field/type/constraint conventions, primary/composite keys, foreign keys and multiple resources.
+- **OGC API - Common Part 3 / Features Part 5: Schemas** — logical geospatial schemas based on JSON Schema, including property roles, geometry/temporal roles, units, semantic definitions, references and codelists.
+- **Apache Arrow / Parquet logical schemas** — useful mapping references for nested/columnar fields, nullability and native logical types.
+- **CF/netCDF conventions and the netCDF/Zarr data models** — dimensions, coordinate variables/axes, multidimensional variables, units and standard names.
+
+The normalized aspect does **not** claim conformance to all of these standards. Instead, producers should map authoritative source metadata into common Magda concepts and retain the native source/specification reference for details that cannot be represented losslessly.
+
+### Compatibility contract
+
+For v1, compatibility means that Magda can represent a useful logical description of a source for discovery, UI and agent/query planning. It does **not** mean lossless round-trip reconstruction of every native schema.
+
+The v1 model should be able to represent, at a useful logical level:
+
+- flat tabular resources such as CSV;
+- multiple related tables/sheets such as Excel workbooks;
+- relational/database tables with explicit primary/composite keys and declared references;
+- nested JSON/API request and response shapes;
+- ArcGIS/OGC feature schemas including geometry, identifiers, units and coded domains;
+- Arrow/Parquet-style columnar data, retaining native logical types where necessary;
+- multidimensional scientific arrays such as NetCDF/Zarr using named dimensions/axes and variable-to-dimension references;
+- raster/band-oriented data using entities/fields plus dimensions, units and spatial metadata;
+- future source types through additive optional properties plus `sourceType` / native specification references.
+
+Unknown/native details should remain available through source metadata rather than forcing the normalized contract to become a replacement for every source schema language.
+
 ## Aspect ID and placement
 
 Aspect ID:
@@ -172,7 +205,8 @@ Suggested properties:
 - `url` where applicable;
 - `retrievedAt`;
 - `fingerprint`;
-- native version/identifier where available.
+- native version/identifier where available;
+- optional schema language/profile identifier where useful (for example JSON Schema 2020-12, CSVW, Frictionless Table Schema, CF).
 
 Example source types:
 
@@ -235,6 +269,8 @@ Each entity should have:
 - optional source/native identifier;
 - `fields`;
 - optional entity-level constraints or geometry metadata;
+- optional `primaryKey` as an ordered array of field paths for single or composite keys;
+- optional `dimensions` for named array/scientific dimensions;
 - optional `provenance` override when the entity has a different origin/review state from the dictionary.
 
 Initial `role` examples:
@@ -259,7 +295,9 @@ A normalized field should support the following core properties.
 
 - `path` — stable path within the entity;
 - `name` — display/source field name;
-- optional `title`.
+- optional `title`;
+- optional `sourcePath` / native field identifier where the source addressing differs from the normalized `path`;
+- optional `roles` describing structural meaning such as identifier, reference, primary geometry, primary temporal value, coordinate or data variable.
 
 `path` is required because nested JSON cannot be represented reliably by `name` alone.
 
@@ -319,6 +357,7 @@ Useful optional properties:
 
 - `unit`;
 - `unitConcept`;
+- optional `unitSystem` / vocabulary identifier (for example `UCUM` or `QUDT`);
 - `enum` / code list;
 - `missingValues`;
 - `default`;
@@ -327,6 +366,25 @@ Useful optional properties:
 - string length/pattern constraints.
 
 For tabular resources, these concepts intentionally align with Frictionless Table Schema where practical.
+
+### Value domains and codelists
+
+A plain `enum` is sufficient when only machine codes matter. Some sources, especially ArcGIS/OGC and domain datasets, expose richer code lists with labels/descriptions or an authoritative external vocabulary.
+
+An optional `valueDomain` may therefore contain:
+
+```json
+{
+  "type": "codelist",
+  "uri": "https://example.org/codelists/status",
+  "values": [
+    { "value": "A", "label": "Active" },
+    { "value": "I", "label": "Inactive" }
+  ]
+}
+```
+
+`values` may be omitted when `uri` is authoritative and enumeration would be impractical. Producers should preserve native coded-value domains rather than reducing them to unlabeled values when labels are available.
 
 ### Nullability/requiredness
 
@@ -454,11 +512,83 @@ This information may later help cross-dataset spatial mediation.
 
 Optional field/entity metadata may mark:
 
-- primary/key-like fields;
+- primary/key-like fields and entity-level `primaryKey` field-path arrays, including composite keys;
 - external identifiers;
-- semantic identifier schemes.
+- semantic identifier schemes;
+- explicit reference roles.
 
 The initial UI should present this information descriptively. It must not assume that two similarly named identifier fields are join-compatible without explicit evidence.
+
+## Explicit relationships between entities
+
+Multiple entities alone are not enough to describe a workbook/database/table group when relationships are explicitly known.
+
+The dictionary may therefore contain optional top-level `relationships`. The initial form should support declared references/foreign keys without implying that arbitrary same-named fields are join-compatible.
+
+Example:
+
+```json
+{
+  "relationships": [
+    {
+      "id": "observations-site",
+      "type": "foreign-key",
+      "source": {
+        "entity": "observations",
+        "fields": ["site_id"]
+      },
+      "target": {
+        "entity": "sites",
+        "fields": ["id"]
+      }
+    }
+  ]
+}
+```
+
+Composite references use multiple field paths in the same order. Relationships may carry provenance/review metadata. This aligns with CSVW/Frictionless foreign-key concepts and is also useful for relational databases and multi-sheet Excel workbooks.
+
+A relationship should be recorded only when supported by authoritative metadata, explicit user input or reviewed evidence. Similar names alone are not enough.
+
+## Multidimensional arrays and axes
+
+For array-oriented scientific data, an entity may define named `dimensions`:
+
+```json
+{
+  "id": "climate",
+  "name": "Climate variables",
+  "role": "variable-set",
+  "dimensions": [
+    { "id": "time", "name": "time", "size": 365, "unlimited": true },
+    { "id": "lat", "name": "latitude", "size": 720 },
+    { "id": "lon", "name": "longitude", "size": 1440 }
+  ],
+  "fields": [
+    {
+      "path": "temperature",
+      "name": "temperature",
+      "type": "number",
+      "sourceType": "float32",
+      "dimensions": ["time", "lat", "lon"],
+      "unit": "K",
+      "roles": ["data-variable"]
+    },
+    {
+      "path": "lat",
+      "name": "lat",
+      "type": "number",
+      "dimensions": ["lat"],
+      "roles": ["coordinate"],
+      "semanticConcept": "latitude"
+    }
+  ]
+}
+```
+
+A dimension descriptor may include `id`, `name`, optional fixed `size`, `unlimited`, description/semantic metadata and provenance. A field may reference dimension IDs in source order.
+
+This is sufficient for a useful NetCDF/Zarr/raster logical dictionary while leaving storage layout, chunking/compression and other physical details in the authoritative native metadata.
 
 ## Delivery and metadata production model
 
@@ -670,8 +800,11 @@ Within schema version 1:
 
 ## Acceptance criteria
 
-- One model can represent CSV columns, nested API fields and ArcGIS layer fields.
+- One model can represent CSV/tabular columns, multiple Excel sheets/tables, nested API fields, ArcGIS/OGC feature fields, columnar schemas and multidimensional variables at a useful logical level.
 - Multiple sheets/layers/entities are supported without flattening.
+- Explicit primary/composite keys and declared inter-entity relationships can be represented without inferring joins from field-name similarity.
+- Rich coded-value domains can preserve labels/descriptions and/or an authoritative codelist URI.
+- Multidimensional variables can reference named dimensions/axes.
 - Nested fields have stable paths.
 - Types, formats, descriptions, units, constraints and semantic concepts can be represented independently.
 - Request/response body structures can be represented without duplicating scalar API invocation parameters.
