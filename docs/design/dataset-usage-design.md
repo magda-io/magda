@@ -434,6 +434,18 @@ An editor may directly create the aspect from known documentation and domain exp
 
 This is the preferred path for high-stakes claims such as explicit non-inferences.
 
+### Manual population with `mgd`
+
+The initial implementation can use the existing generic aspect commands:
+
+```text
+mgd dataset aspect set <dataset-id> dataset-usage @dataset-usage.json
+mgd dataset aspect get <dataset-id> dataset-usage --json
+mgd dataset aspect patch <dataset-id> dataset-usage @patch.json
+```
+
+A bespoke review workflow is not required for the first release; provenance/review state remains part of the payload.
+
 ### Agent-assisted authoring
 
 An agent may read:

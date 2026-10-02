@@ -280,13 +280,26 @@ Each operation may contain:
 - request-body dictionary reference;
 - response metadata;
 - source constraints relevant to the operation;
-- `safeForInteractiveExample`.
+- `safeForInteractiveExample`;
+- optional operation-level `provenance` override.
+
+### Stable identity and provenance inheritance
+
+`operation.id` must be stable within the contract and should remain stable across re-harvesting while the source operation is logically the same.
+
+Contract nodes inherit aspect-level `provenance`. An operation may provide its own `provenance` override when the node as a whole was manually curated/reviewed or came from a different source. A parameter may do the same.
+
+Operations and parameters may additionally carry optional `propertyProvenance` maps when only selected properties differ in origin/review state. For example, `method`, `path` and parameter type may remain authoritative source metadata while a human-reviewed `purpose` or parameter `description` is preserved across automatic refresh.
+
+For refresh/merge purposes, parameters should use a stable native identifier when one exists; otherwise the initial matching identity is the pair `location + name`.
+
+A reviewed/manual node or property should not be silently overwritten by an automatic producer. If source structure changes in a way that cannot be reconciled safely, preserve the reviewed value and surface the conflict for review.
 
 ### Parameters
 
 Scalar path/query/header parameters belong in the contract because they describe how an operation is invoked.
 
-A parameter may contain:
+A parameter may contain the invocation metadata below and may additionally carry an optional `provenance` override when its origin/review state differs from the operation:
 
 ```json
 {
@@ -477,6 +490,18 @@ Automatic production should be pluggable:
 
 A single source adapter may populate both `distribution-contract` and `data-dictionary` when one native source provides both interface and structure metadata, avoiding duplicate fetch/parse work.
 
+### Manual population with `mgd`
+
+The generic aspect commands are sufficient for the core/manual workflow, for example:
+
+```text
+mgd dataset aspect set <distribution-id> distribution-contract @distribution-contract.json
+mgd dataset aspect get <distribution-id> distribution-contract --json
+mgd dataset aspect patch <distribution-id> distribution-contract @patch.json
+```
+
+No protocol-specific `mgd` execution command is implied by this metadata-authoring path.
+
 ## Automatic producers
 
 ### OpenAPI
@@ -574,5 +599,6 @@ A future incompatible model should use a new major schema version and provide a 
 - Native specification URL, fingerprint/retrieval information and provenance can be recorded.
 - The web client can render useful read-only API/service documentation solely from the aspect.
 - The same aspect is suitable for later agent/query-adapter consumption.
+- Aspect-, operation- and parameter-level inherited provenance plus property-level overrides are sufficient to preserve mixed reviewed/manual curation across later automatic refresh.
 - The core aspect/UI is useful with manually populated contracts; automatic harvesting is not required for the first usable v7 milestone.
 - Automatic refresh can preserve human-authored/reviewed annotations rather than requiring whole-aspect replacement.
