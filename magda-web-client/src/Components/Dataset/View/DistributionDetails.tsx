@@ -12,6 +12,7 @@ import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessU
 import "./DatasetDetails.scss";
 import { config } from "config";
 import DiscourseComments from "Components/Dataset/View/DiscourseComments";
+import DataDictionarySection from "Components/Dataset/View/DataDictionarySection";
 import { getPluginExtraVisualisationSections } from "../../../externalPluginComponents";
 
 const extraVisualisationSections = getPluginExtraVisualisationSections();
@@ -136,6 +137,20 @@ class DistributionDetails extends Component<{
                         )}
                     </div>
                 </div>
+
+                {/* Rendered independently of the preview gate below: a
+                    non-previewable / query-only distribution can still be
+                    understood through its data dictionary. */}
+                {distribution?.dataDictionary ? (
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <DataDictionarySection
+                                key={distribution.identifier}
+                                dataDictionary={distribution.dataDictionary}
+                            />
+                        </div>
+                    </div>
+                ) : null}
 
                 {(distribution?.downloadURL || distribution?.accessURL) && (
                     <div className="distribution-preview">

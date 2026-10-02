@@ -237,7 +237,8 @@ export const DEFAULT_OPTIONAL_DISTRIBUTION_FETCH_ASPECT_LIST = [
     "ckan-resource",
     "publishing",
     "version",
-    "preview-tabular-data-settings"
+    "preview-tabular-data-settings",
+    "data-dictionary"
 ];
 
 export const DEFAULT_COMPULSORY_FETCH_ASPECT_LIST = ["dcat-dataset-strings"];

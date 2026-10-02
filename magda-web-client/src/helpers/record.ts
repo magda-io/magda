@@ -9,6 +9,8 @@ import {
 } from "../api-clients/RegistryApis";
 import { config } from "../config";
 import { AccessControlAspect } from "@magda/typescript-common/dist/registry/model";
+import { DataDictionaryAspect } from "@magda/typescript-common/dist/data-dictionary/model.js";
+import { normalizeDataDictionary } from "@magda/typescript-common/dist/data-dictionary/normalize.js";
 
 export type RecordAction = {
     json?: any;
@@ -152,6 +154,7 @@ export type RawDistribution = {
         };
         version?: VersionAspectData;
         "access-control"?: AccessControlAspect;
+        "data-dictionary"?: DataDictionaryAspect;
     };
 };
 
@@ -249,6 +252,11 @@ export type ParsedDistribution = {
     accessControl?: AccessControlAspect;
     version?: VersionAspectData;
     byteSize?: number;
+    /**
+     * The `data-dictionary` aspect (normalized for safe display), or
+     * `undefined` when the distribution has no (usable) data dictionary.
+     */
+    dataDictionary?: DataDictionaryAspect;
     rawData: RawDistribution;
 };
 
@@ -500,6 +508,7 @@ export function parseDistribution(
         publishingState: publishing["state"],
         version: aspects["version"],
         byteSize: info?.byteSize,
+        dataDictionary: normalizeDataDictionary(aspects["data-dictionary"]),
         rawData: record as RawDistribution
     };
 }
@@ -634,6 +643,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             sourceDetails: distributionAspects["source"],
             ckanResource: distributionAspects["ckan-resource"],
             byteSize: info?.byteSize,
+            dataDictionary: normalizeDataDictionary(
+                distributionAspects["data-dictionary"]
+            ),
             rawData: d
         };
     });
