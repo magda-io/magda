@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed design for a future Magda v7 capability.
+Proposed design for a Magda v7 capability. Implementation targets the `main` branch.
 
 This document defines the `distribution-contract` aspect introduced by the [data understanding layer](./data-understanding-layer-design.md).
 
@@ -455,7 +455,29 @@ Initial `reviewStatus` values:
 
 `lastVerified` records when the endpoint/interface was last checked successfully. It should not be interpreted as a guarantee of availability.
 
-## Harvesting
+## Delivery and metadata production model
+
+The core v7 Distribution Contract capability consists of:
+
+- the built-in `distribution-contract` aspect schema;
+- typed model/client access;
+- read-only **How to use** UI;
+- a supported manual population path through Registry APIs, `mgd`, project tooling or an agent.
+
+Automatic source-specific harvesting is deliberately **not a prerequisite** for the core contract. Projects can curate operation/access metadata immediately, which also allows downstream machine consumers such as the v8 Agent Platform (#3810) to use deterministic contract metadata before every protocol has an automatic producer.
+
+Manual/custodian metadata is first-class. Human-authored operation purposes, descriptions, safety hints and other reviewed annotations must not be silently overwritten by later producer runs.
+
+Automatic production should be pluggable:
+
+- use **connector-native generation** when a connector already possesses authoritative service/specification metadata;
+- use a **minion-style enrichment producer** when an existing distribution can be inspected after ingestion;
+- allow project/domain-specific producers for specialised protocols;
+- keep shared normalization/validation/merge semantics reusable across producers.
+
+A single source adapter may populate both `distribution-contract` and `data-dictionary` when one native source provides both interface and structure metadata, avoiding duplicate fetch/parse work.
+
+## Automatic producers
 
 ### OpenAPI
 
@@ -485,7 +507,9 @@ A harvester should prefer machine-readable collection, schema and capabilities d
 
 ### Manual/agent-assisted authoring
 
-When no native specification exists, an editor or agent may create a contract from documentation and bounded inspection. Such contracts must clearly report their provenance.
+Manual or agent-assisted population is supported regardless of whether an automatic producer exists. An editor/agent may create or curate a contract from documentation and bounded inspection. Such contracts must clearly report their provenance.
+
+Later producer runs must merge source-derived facts with existing reviewed human annotations rather than unconditionally replacing the whole contract.
 
 ## Web-client behaviour
 
@@ -521,9 +545,11 @@ The contract may therefore become a source for tool definitions, but it must not
 
 ## Drift detection
 
-Where a native specification exists, harvesters may calculate a fingerprint and periodically compare it with the stored value.
+Where a native specification exists, producers may calculate a fingerprint and periodically compare it with the stored value.
 
-A detected change should trigger re-harvesting and mark the contract/dictionary as changed or requiring review. Schema drift detection should not silently rewrite custodian-reviewed descriptions without preserving provenance/review state.
+A detected change should trigger re-harvesting/re-generation and comparison with the stored contract. Stable operation IDs/paths/parameter identities should be used where possible to preserve reviewed human annotations while updating source-derived structural/capability facts. Ambiguous/conflicting changes should be marked for review rather than silently replacing custodian-reviewed metadata.
+
+The first automatic producer should establish and test a consistent merge policy that later protocol/source producers can reuse.
 
 ## Compatibility and evolution
 
@@ -548,3 +574,5 @@ A future incompatible model should use a new major schema version and provide a 
 - Native specification URL, fingerprint/retrieval information and provenance can be recorded.
 - The web client can render useful read-only API/service documentation solely from the aspect.
 - The same aspect is suitable for later agent/query-adapter consumption.
+- The core aspect/UI is useful with manually populated contracts; automatic harvesting is not required for the first usable v7 milestone.
+- Automatic refresh can preserve human-authored/reviewed annotations rather than requiring whole-aspect replacement.

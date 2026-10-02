@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed design for a future Magda v7 capability.
+Proposed design for a Magda v7 capability. Implementation targets the `main` branch.
 
 This document defines the dataset-level `dataset-usage` aspect introduced by the [data understanding layer](./data-understanding-layer-design.md).
 

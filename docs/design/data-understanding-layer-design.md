@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed design for a future Magda v7 capability.
+Proposed design for a Magda v7 capability. Implementation targets the `main` branch. The Magda v8 AI Agent Platform (#3810) is developed on `next` and is a downstream consumer of these v7 capabilities.
 
 This document defines the overall architecture and user experience for helping people and machine clients understand what a dataset can tell them, what it contains, how it can be accessed, and how it may participate in broader analysis. Detailed contracts are defined in the companion designs:
 
@@ -132,6 +132,8 @@ Optional specialised previews
 
 Harvesting is intentionally decoupled from rendering. A source adapter can populate normalised metadata even when the web client has no specialised preview implementation for that source type.
 
+The core aspect contracts, typed client access and read-only UI must also be useful **without automatic harvesting**. A deployment/project may initially populate the aspects manually through Registry APIs, `mgd`, project tooling or an agent, then add automatic producers incrementally.
+
 ## Registry model
 
 The proposed aspect IDs are:
@@ -194,6 +196,12 @@ The exact visual layout can evolve, but the information architecture should not 
 
 The same aspects may be populated through multiple paths.
 
+### Core-first delivery
+
+The first usable v7 milestone should establish the built-in aspect contracts, typed client/model support and read-only UI independently of source-specific automation. Manual/custodian authoring is a first-class production path, not merely a temporary fallback.
+
+Automatic producers can then be added incrementally according to project/source needs. Complete CSV/Excel/OpenAPI/ArcGIS/OGC/NetCDF coverage is not a prerequisite for the normalized contracts to be useful to people, `mgd` or agents.
+
 ### Authoritative import
 
 A connector or harvester reads a native specification and produces normalised metadata. Examples: OpenAPI, ArcGIS layer JSON, JSON Schema or Frictionless Table Schema.
@@ -218,7 +226,17 @@ Custodians or catalogue editors can correct or approve generated metadata. The d
 
 ### Minions/connectors
 
-Magda already uses connectors to transform external metadata into aspects and minions to enrich records. Schema harvesters should follow those patterns rather than placing protocol-specific crawling logic in the React web client.
+Magda already uses connectors to transform external metadata into aspects and minions to enrich records. Automatic data-understanding producers should follow those patterns rather than placing protocol-specific crawling logic in the React web client.
+
+Preferred production patterns are:
+
+- **minion-style enrichment** for post-ingestion inspection/inference of existing distributions, such as bounded CSV/Excel inspection;
+- **connector-native generation** when a connector already has authoritative schema/service metadata available while harvesting;
+- project/domain-specific producers where deployments need specialised formats or protocols.
+
+A source-specific producer may emit more than one normalized aspect in a single pass. For example, an OpenAPI or ArcGIS adapter may populate both `distribution-contract` and `data-dictionary` rather than fetching/parsing the same source twice.
+
+Shared normalization, validation and merge helpers may live in the main Magda repository, while source-specific producers remain independently evolvable.
 
 ### Web client
 
@@ -262,15 +280,15 @@ Any such relationship should remain a proposal unless backed by explicit mapping
 The recommended implementation sequence is:
 
 1. add the three built-in aspect schemas and typed client/model support;
-2. render `data-dictionary` in the distribution page;
-3. add dictionary harvesting for high-value source types, starting with CSV/Excel, OpenAPI/JSON Schema and ArcGIS;
-4. render `distribution-contract` and add a read-only "How to use" experience;
-5. add bounded API/service examples and query exploration with explicit safety policy;
-6. render and author `dataset-usage`, including provenance/review state;
+2. render `data-dictionary` and support manual/project/agent population;
+3. render `distribution-contract` and support manual/project/agent population;
+4. render and author `dataset-usage`, including provenance/review state;
+5. add automatic source-specific producers incrementally through minions/connectors as needs arise; one producer may populate both dictionary and contract where appropriate;
+6. add bounded API/service examples and query exploration with explicit safety policy;
 7. add semantic indexing/search integration for selected fields;
-8. add machine consumption for agents and future query adapters.
+8. expand machine consumption for agents and future query adapters.
 
-This sequence delivers useful catalogue understanding before requiring a federated query gateway.
+This sequence makes the normalized contracts useful early and avoids coupling the v7 core capability to complete automatic source coverage. Automatic producers remain v7 work, but individual source types can be added over time according to project demand. The v8 Agent Platform (#3810) can consume manually or automatically populated v7 metadata as it becomes available.
 
 ## Safety and trust boundaries
 
@@ -278,6 +296,7 @@ This sequence delivers useful catalogue understanding before requiring a federat
 - Never interpret descriptive `authentication` metadata as proof that a caller is authorised.
 - Query exploration must be bounded and restricted to explicitly supported safe operations.
 - Generated metadata must expose provenance and review state.
+- Manual/custodian-reviewed metadata is first-class and automatic producers must not silently overwrite it.
 - Sampling must be bounded by row/byte/time limits and respect existing Magda/source access controls.
 - A source specification URL is not automatically trusted content; harvesters must apply normal network/security controls.
 
