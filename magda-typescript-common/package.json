@@ -41,6 +41,7 @@
     "@types/urijs": "^1.19.19",
     "@types/uuid": "^8.0.0",
     "@types/yargs": "^12.0.8",
+    "ajv": "^6.12.6",
     "c8": "^9.0.0",
     "chai": "^5.0.0-rc.0",
     "chai-as-promised": "^7.1.1",
