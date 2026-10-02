@@ -1,0 +1,162 @@
+@import "variables";
+
+.data-dictionary {
+    margin-top: 24px;
+    margin-bottom: 24px;
+
+    code {
+        font-size: 0.9em;
+        word-break: break-word;
+    }
+
+    &__summary {
+        margin-bottom: 4px;
+    }
+
+    &__muted {
+        color: #636363;
+        font-size: 0.9em;
+    }
+
+    &__source {
+        margin-bottom: 12px;
+    }
+
+    &__source-links {
+        a {
+            margin-right: 16px;
+        }
+    }
+
+    &__provenance {
+        display: inline-block;
+        padding: 0 6px;
+        border-radius: 3px;
+        border: 1px solid #b7d7b7;
+        background: #edf7ed;
+        font-size: 0.85em;
+        line-height: 1.6;
+        white-space: nowrap;
+
+        &--advisory {
+            border-color: #e6d28f;
+            background: #fff8e1;
+        }
+
+        &--rejected,
+        &--conflict {
+            border-color: #e3a3a3;
+            background: #fdecec;
+        }
+    }
+
+    &__search {
+        margin: 12px 0;
+
+        input {
+            width: 100%;
+            max-width: 480px;
+        }
+    }
+
+    &__entity-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    &__entity-tab {
+        border: 1px solid $AU-color-foreground-action;
+        background: #fff;
+        color: $AU-color-foreground-action;
+        border-radius: 3px;
+        padding: 4px 10px;
+        cursor: pointer;
+
+        &--selected {
+            background: $AU-color-foreground-action;
+            color: #fff;
+        }
+    }
+
+    &__count {
+        opacity: 0.8;
+        font-size: 0.85em;
+    }
+
+    &__entity-name {
+        margin-top: 8px;
+    }
+
+    &__entity-meta {
+        list-style: none;
+        padding-left: 0;
+        margin: 4px 0 8px;
+
+        li {
+            margin: 2px 0;
+        }
+    }
+
+    &__relationships {
+        margin-bottom: 8px;
+
+        ul {
+            margin: 2px 0;
+        }
+    }
+
+    &__tags {
+        margin-top: 2px;
+    }
+
+    &__tag {
+        display: inline-block;
+        margin: 0 4px 2px 0;
+        padding: 0 6px;
+        border-radius: 3px;
+        background: #f0eef1;
+        font-size: 0.8em;
+        font-weight: normal;
+        vertical-align: middle;
+    }
+
+    &__entity-name &__tag {
+        margin-left: 8px;
+    }
+
+    &__table-wrapper {
+        overflow-x: auto;
+    }
+
+    &__table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95em;
+
+        th,
+        td {
+            text-align: left;
+            vertical-align: top;
+            padding: 6px 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            border-bottom-width: 2px;
+            white-space: nowrap;
+        }
+    }
+
+    &__constraints {
+        list-style: none;
+        padding-left: 0;
+        margin: 4px 0 0;
+        font-size: 0.9em;
+    }
+
+    &__empty {
+        font-style: italic;
+    }
+}

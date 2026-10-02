@@ -1,0 +1,634 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "Data Dictionary",
+    "description": "A normalized, provenance-aware logical description of the structure (entities, fields, keys, relationships and dimensions) of the data exposed by a distribution. It is a compact, standards-aligned projection for discovery, UI and machine clients, not a lossless replacement for native schemas (JSON Schema, OpenAPI, ArcGIS layer definitions, CF/netCDF, Parquet, etc.), which remain authoritative. Consumers must ignore unknown properties: within schema version 1 the contract only grows additively. See docs/design/data-dictionary-design.md.",
+    "type": "object",
+    "required": ["schemaVersion", "entities"],
+    "properties": {
+        "schemaVersion": {
+            "title": "Normalized data dictionary contract version",
+            "description": "Version of the normalized data dictionary contract. This schema accepts version 1.x payloads (initial value: `1.0`).",
+            "type": "string",
+            "pattern": "^1(\\.[0-9]+)*$",
+            "examples": ["1.0"]
+        },
+        "source": {
+            "$ref": "#/definitions/source"
+        },
+        "provenance": {
+            "$ref": "#/definitions/provenance"
+        },
+        "entities": {
+            "title": "Entities",
+            "description": "Logical record shapes contained in the distribution, e.g. a CSV table, an Excel sheet, an ArcGIS layer feature, an API request/response body, a database table or a NetCDF variable collection. Multiple entities are kept separate rather than flattened. May be empty.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/entity"
+            }
+        },
+        "relationships": {
+            "title": "Relationships",
+            "description": "Explicitly declared references/foreign keys between entities of this dictionary. Record a relationship only when it is supported by authoritative metadata, explicit user input or reviewed evidence. Similar field names alone are not evidence of a relationship.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/relationship"
+            }
+        }
+    },
+    "definitions": {
+        "nonEmptyString": {
+            "type": "string",
+            "minLength": 1
+        },
+        "fieldPath": {
+            "title": "Normalized field path",
+            "description": "Stable normalized schema path of a field within its entity (not an executable JSONPath/query expression). Object property segments are separated by `.`; `[]` after a segment means traversal into array items; a backslash escapes the next reserved character, so literal `\\`, `.`, `[` and `]` characters in source names must be escaped. Examples: `scientificName`, `properties.location.latitude`, `items[].measurements[].value`, `a\\.b` (a field literally named `a.b`).",
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?:[^\\\\.\\[\\]]|\\\\[\\\\.\\[\\]])+(?:\\[\\])*(?:\\.(?:[^\\\\.\\[\\]]|\\\\[\\\\.\\[\\]])+(?:\\[\\])*)*$"
+        },
+        "fieldPathList": {
+            "description": "An ordered, non-empty list of normalized field paths. Order is significant for composite keys/references.",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/fieldPath"
+            }
+        },
+        "source": {
+            "title": "Source metadata",
+            "description": "The schema/metadata source used to build the dictionary. The native schema/specification remains the authority for details the normalized dictionary does not carry.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "title": "Source type",
+                    "description": "Kind of source the dictionary was built from. Open vocabulary.",
+                    "type": "string",
+                    "examples": [
+                        "frictionless-table-schema",
+                        "csvw",
+                        "openapi",
+                        "json-schema",
+                        "arcgis-layer-definition",
+                        "ogc-schema",
+                        "stac",
+                        "netcdf-metadata",
+                        "parquet-schema",
+                        "file-inspection",
+                        "sample-inference",
+                        "manual",
+                        "agent-inspection"
+                    ]
+                },
+                "url": {
+                    "title": "Source/native specification URL",
+                    "description": "URL of the native schema/specification/metadata document, where applicable.",
+                    "type": "string"
+                },
+                "documentationUrl": {
+                    "title": "Documentation URL",
+                    "description": "Optional URL of human-readable documentation describing the source structure.",
+                    "type": "string"
+                },
+                "identifier": {
+                    "title": "Native identifier",
+                    "description": "Native identifier of the source schema/document where available.",
+                    "type": "string"
+                },
+                "version": {
+                    "title": "Native version",
+                    "description": "Native version of the source schema/document where available.",
+                    "type": "string"
+                },
+                "profile": {
+                    "title": "Schema language/profile",
+                    "description": "Optional schema language/profile identifier, e.g. `https://json-schema.org/draft/2020-12/schema`, `csvw`, `frictionless-table-schema`, `CF-1.8`.",
+                    "type": "string"
+                },
+                "retrievedAt": {
+                    "title": "Retrieved at",
+                    "description": "When the source was retrieved (ISO 8601 / RFC 3339 date-time).",
+                    "type": "string"
+                },
+                "fingerprint": {
+                    "title": "Fingerprint",
+                    "description": "Fingerprint (e.g. `sha256:<hex>`) of the retrieved native source structure. Used to detect source schema drift on re-harvest.",
+                    "type": "string"
+                }
+            }
+        },
+        "provenance": {
+            "title": "Provenance",
+            "description": "How the metadata was produced or curated, and its review state. Dictionary-level provenance is inherited by entities, fields, dimensions and relationships unless they carry their own `provenance` (nearest wins, no merging). `propertyProvenance` overrides apply to individual properties of a node.",
+            "type": "object",
+            "properties": {
+                "method": {
+                    "title": "Method",
+                    "description": "Origin of the metadata. Initial values: `authoritative-import` (normalized from an authoritative native schema), `harvested` (derived deterministically from source metadata), `inferred` (inferred from sampled data), `manual` (manually authored by a custodian/editor) and `agent-generated`. Open vocabulary: consumers should treat unknown values as unreviewed/advisory.",
+                    "type": "string",
+                    "examples": [
+                        "authoritative-import",
+                        "harvested",
+                        "inferred",
+                        "manual",
+                        "agent-generated"
+                    ]
+                },
+                "reviewStatus": {
+                    "title": "Review status",
+                    "description": "Review state. Initial values: `unreviewed`, `reviewed`, `custodian-approved`, `rejected`. Automatic producers must not silently overwrite manually authored or reviewed/custodian-approved values.",
+                    "type": "string",
+                    "examples": [
+                        "unreviewed",
+                        "reviewed",
+                        "custodian-approved",
+                        "rejected"
+                    ]
+                },
+                "generator": {
+                    "title": "Generator",
+                    "description": "Producer/tool (and version) that generated the metadata, e.g. `magda-csv-inspector/1.0`.",
+                    "type": "string"
+                },
+                "generatedAt": {
+                    "title": "Generated at",
+                    "description": "When the metadata was generated (ISO 8601 / RFC 3339 date-time).",
+                    "type": "string"
+                },
+                "sourceType": {
+                    "title": "Source type",
+                    "description": "Optional source type the metadata was derived from, where it differs from or refines the dictionary-level `source.type`.",
+                    "type": "string"
+                },
+                "sourceFingerprint": {
+                    "title": "Source fingerprint",
+                    "description": "Fingerprint of the native source structure this metadata was generated from or reviewed against. Allows a producer to detect that reviewed metadata predates a source change.",
+                    "type": "string"
+                },
+                "sample": {
+                    "title": "Sample extent",
+                    "description": "Extent of the sample used when metadata was inferred from data. Must be recorded for sample-based inference so consumers do not mistake it for complete-source authority.",
+                    "type": "object",
+                    "properties": {
+                        "rows": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "bytes": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "strategy": {
+                            "description": "Optional description of how the sample was selected, e.g. `head`, `random`.",
+                            "type": "string"
+                        }
+                    }
+                },
+                "reviewedBy": {
+                    "title": "Reviewed by",
+                    "description": "Optional identifier/name of the reviewer.",
+                    "type": "string"
+                },
+                "reviewedAt": {
+                    "title": "Reviewed at",
+                    "description": "When the review happened (ISO 8601 / RFC 3339 date-time).",
+                    "type": "string"
+                },
+                "note": {
+                    "title": "Note",
+                    "type": "string"
+                }
+            }
+        },
+        "propertyProvenance": {
+            "title": "Property-level provenance overrides",
+            "description": "Provenance overrides for individual direct properties of this node, keyed by property name (e.g. `description`, `semanticConcept`, `unit`). Used for mixed-origin metadata, e.g. a source-derived `type` with a custodian-approved `description`.",
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/provenance"
+            }
+        },
+        "conflict": {
+            "title": "Conflict / drift marker",
+            "description": "A change detected by a producer (e.g. on re-harvest after source drift) that could not be applied safely because it would overwrite protected (manual/reviewed) metadata or is ambiguous. Recorded for review rather than silently applied.",
+            "type": "object",
+            "properties": {
+                "property": {
+                    "description": "Name of the affected direct property of the node, if any. Omitted when the whole node is affected (e.g. removed/renamed in the source).",
+                    "type": "string"
+                },
+                "reason": {
+                    "description": "Reason for the conflict. Open vocabulary, e.g. `source-changed`, `source-removed`, `ambiguous-mapping`, `type-changed`.",
+                    "type": "string"
+                },
+                "candidateValue": {
+                    "description": "The value the producer would have written."
+                },
+                "detectedAt": {
+                    "type": "string"
+                },
+                "generator": {
+                    "type": "string"
+                },
+                "sourceFingerprint": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                }
+            }
+        },
+        "conflicts": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/conflict"
+            }
+        },
+        "valueDomain": {
+            "title": "Value domain",
+            "description": "Rich value domain, e.g. a code list with labels or an authoritative external vocabulary. `values` may be omitted when `uri` is authoritative and enumeration would be impractical.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Kind of value domain. Open vocabulary, e.g. `codelist`, `range`.",
+                    "type": "string",
+                    "examples": ["codelist", "range"]
+                },
+                "name": {
+                    "description": "Native name of the domain where available.",
+                    "type": "string"
+                },
+                "uri": {
+                    "description": "URI of an authoritative external code list/vocabulary.",
+                    "type": "string"
+                },
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["value"],
+                        "properties": {
+                            "value": {
+                                "description": "The machine code/value as it appears in the data.",
+                                "type": [
+                                    "string",
+                                    "number",
+                                    "integer",
+                                    "boolean"
+                                ]
+                            },
+                            "label": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "minimum": {
+                    "description": "Lower bound of a range domain.",
+                    "type": ["number", "string"]
+                },
+                "maximum": {
+                    "description": "Upper bound of a range domain.",
+                    "type": ["number", "string"]
+                }
+            }
+        },
+        "geometry": {
+            "title": "Geometry metadata",
+            "description": "Summary of feature geometry for feature-oriented entities.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Geometry type, e.g. `Point`, `LineString`, `Polygon`, `MultiPolygon`.",
+                    "type": "string"
+                },
+                "crs": {
+                    "description": "Coordinate reference system, e.g. `EPSG:4326` or a CRS URI.",
+                    "type": "string"
+                },
+                "spatialDimension": {
+                    "description": "Spatial (coordinate) dimension of the geometry, e.g. 2 or 3.",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "fieldPath": {
+                    "description": "Path of the field holding the geometry, where applicable.",
+                    "$ref": "#/definitions/fieldPath"
+                }
+            }
+        },
+        "dimension": {
+            "title": "Dimension",
+            "description": "A named dimension/axis of array-oriented data (e.g. NetCDF/Zarr). Physical storage details (chunking, compression) stay in native metadata.",
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+                "id": {
+                    "description": "Dimension identifier, unique within the entity. Referenced from `fields[].dimensions`.",
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "size": {
+                    "description": "Fixed/current size of the dimension, where known.",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "unlimited": {
+                    "description": "Whether the dimension is unlimited/growable.",
+                    "type": "boolean"
+                },
+                "semanticConcept": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "fieldPath": {
+                    "description": "Path of the coordinate variable/field describing this axis, where one exists.",
+                    "$ref": "#/definitions/fieldPath"
+                },
+                "provenance": {
+                    "$ref": "#/definitions/provenance"
+                },
+                "propertyProvenance": {
+                    "$ref": "#/definitions/propertyProvenance"
+                }
+            }
+        },
+        "field": {
+            "title": "Field",
+            "description": "A normalized field addressed by a stable path within its entity. Only `path`, `name` and `type` are required; all descriptive, semantic and constraint properties are optional and independent.",
+            "type": "object",
+            "required": ["path", "name", "type"],
+            "properties": {
+                "path": {
+                    "description": "Stable normalized path within the entity. Must be unique within the entity and preserved across re-harvesting while the logical source field is unchanged.",
+                    "$ref": "#/definitions/fieldPath"
+                },
+                "name": {
+                    "description": "Display/source field name. For flat tabular resources this is the exact source column name, even when `path` escapes reserved characters.",
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "title": {
+                    "description": "Optional human-readable title/alias.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "Native path/addressing form where it differs from the normalized `path`.",
+                    "type": "string"
+                },
+                "sourceIdentifier": {
+                    "description": "Stable native field identifier where available.",
+                    "type": "string"
+                },
+                "roles": {
+                    "description": "Structural roles of the field. Open vocabulary, e.g. `identifier`, `reference`, `primary-geometry`, `primary-temporal`, `coordinate`, `data-variable`.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "description": "Normalized logical type. Suggested values: `string`, `integer`, `number`, `boolean`, `date`, `datetime`, `time`, `object`, `array`, `geometry`, `binary`, `unknown`. Use `unknown` when a useful normalized type cannot be established; consumers should treat unrecognised values as `unknown`.",
+                    "type": "string",
+                    "minLength": 1,
+                    "examples": [
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean",
+                        "date",
+                        "datetime",
+                        "time",
+                        "object",
+                        "array",
+                        "geometry",
+                        "binary",
+                        "unknown"
+                    ]
+                },
+                "format": {
+                    "description": "Optional refinement of the normalized type, e.g. `uri`, `uuid`, `email`, `decimal`, `int64`, `geojson-geometry` or a source date format string.",
+                    "type": "string"
+                },
+                "sourceType": {
+                    "description": "Original native type, e.g. `esriFieldTypeString`, `float32`, `arrow:timestamp[us,UTC]`, `parquet:DECIMAL(18,2)`.",
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "semanticConcept": {
+                    "description": "Stable URI or controlled identifier of the concept the field represents (e.g. a Darwin Core term URI or CF standard name).",
+                    "type": "string"
+                },
+                "aliases": {
+                    "description": "Alternative names/labels for the field.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "unit": {
+                    "description": "Unit of measure, e.g. `ha`, `K`, `Cel`, `degrees_north`.",
+                    "type": "string"
+                },
+                "unitConcept": {
+                    "description": "URI/identifier of the unit concept.",
+                    "type": "string"
+                },
+                "unitSystem": {
+                    "description": "Unit vocabulary/system identifier, e.g. `UCUM`, `QUDT`, `UDUNITS`.",
+                    "type": "string"
+                },
+                "enum": {
+                    "description": "Allowed machine values when only codes matter. Prefer `valueDomain` when labels/descriptions or an authoritative code list URI are available.",
+                    "type": "array"
+                },
+                "valueDomain": {
+                    "$ref": "#/definitions/valueDomain"
+                },
+                "missingValues": {
+                    "description": "Values used in the data to represent missing values.",
+                    "type": "array"
+                },
+                "default": {},
+                "example": {},
+                "minimum": {
+                    "type": ["number", "string"]
+                },
+                "maximum": {
+                    "type": ["number", "string"]
+                },
+                "minLength": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "maxLength": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "pattern": {
+                    "type": "string"
+                },
+                "required": {
+                    "description": "Whether the field must be present.",
+                    "type": "boolean"
+                },
+                "nullable": {
+                    "description": "Whether the field may be null/empty.",
+                    "type": "boolean"
+                },
+                "unique": {
+                    "description": "Whether values must be unique within the entity.",
+                    "type": "boolean"
+                },
+                "constraints": {
+                    "description": "Additional simple source constraints that have no dedicated property.",
+                    "type": "object"
+                },
+                "dimensions": {
+                    "description": "Ordered IDs of the entity `dimensions` this (array) variable is indexed by, in source order.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/nonEmptyString"
+                    }
+                },
+                "provenance": {
+                    "$ref": "#/definitions/provenance"
+                },
+                "propertyProvenance": {
+                    "$ref": "#/definitions/propertyProvenance"
+                },
+                "conflicts": {
+                    "$ref": "#/definitions/conflicts"
+                }
+            }
+        },
+        "entity": {
+            "title": "Entity",
+            "description": "A logical record shape within the distribution (table, sheet, feature layer, request/response body, database table, variable set, ...).",
+            "type": "object",
+            "required": ["id", "name", "fields"],
+            "properties": {
+                "id": {
+                    "description": "Identifier, unique and stable within the dictionary. Prefer a stable source/native identifier; otherwise use a deterministic producer-specific ID. Referenced by `relationships` and by `distribution-contract` (`dictionaryEntity`).",
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "name": {
+                    "description": "Human-readable label.",
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "role": {
+                    "description": "Descriptive role. Open vocabulary, e.g. `table`, `sheet`, `response-record`, `response-envelope`, `request-body`, `feature`, `database-table`, `variable-set`, `other`.",
+                    "type": "string"
+                },
+                "sourceIdentifier": {
+                    "description": "Stable source/native entity identifier (e.g. sheet name, layer id, table name, schema `$ref`) where available.",
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/field"
+                    }
+                },
+                "primaryKey": {
+                    "description": "Ordered field paths forming the entity's primary key (single or composite).",
+                    "$ref": "#/definitions/fieldPathList"
+                },
+                "geometry": {
+                    "$ref": "#/definitions/geometry"
+                },
+                "dimensions": {
+                    "description": "Named dimensions/axes for array-oriented data.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dimension"
+                    }
+                },
+                "constraints": {
+                    "description": "Additional simple entity-level constraints that have no dedicated property.",
+                    "type": "object"
+                },
+                "provenance": {
+                    "$ref": "#/definitions/provenance"
+                },
+                "propertyProvenance": {
+                    "$ref": "#/definitions/propertyProvenance"
+                },
+                "conflicts": {
+                    "$ref": "#/definitions/conflicts"
+                }
+            }
+        },
+        "relationshipEndpoint": {
+            "type": "object",
+            "required": ["entity", "fields"],
+            "properties": {
+                "entity": {
+                    "description": "ID of an entity in this dictionary.",
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "fields": {
+                    "description": "Ordered field paths within the entity. Composite references list multiple paths in the same order on both sides.",
+                    "$ref": "#/definitions/fieldPathList"
+                }
+            }
+        },
+        "relationship": {
+            "title": "Relationship",
+            "description": "An explicitly declared reference between entities (aligned with CSVW/Frictionless foreign keys).",
+            "type": "object",
+            "required": ["id", "source", "target"],
+            "properties": {
+                "id": {
+                    "description": "Identifier, unique within the dictionary.",
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "type": {
+                    "description": "Relationship type. Open vocabulary; defaults to `foreign-key` when omitted.",
+                    "type": "string",
+                    "examples": ["foreign-key", "reference"]
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "source": {
+                    "description": "The referencing entity/fields.",
+                    "$ref": "#/definitions/relationshipEndpoint"
+                },
+                "target": {
+                    "description": "The referenced entity/fields.",
+                    "$ref": "#/definitions/relationshipEndpoint"
+                },
+                "provenance": {
+                    "$ref": "#/definitions/provenance"
+                },
+                "propertyProvenance": {
+                    "$ref": "#/definitions/propertyProvenance"
+                },
+                "conflicts": {
+                    "$ref": "#/definitions/conflicts"
+                }
+            }
+        }
+    }
+}

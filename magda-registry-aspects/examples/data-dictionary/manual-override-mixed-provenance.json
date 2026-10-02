@@ -1,0 +1,83 @@
+{
+    "schemaVersion": "1.0",
+    "source": {
+        "type": "arcgis-layer-definition",
+        "url": "https://example.org/arcgis/rest/services/TreeCrops/FeatureServer/0?f=pjson",
+        "fingerprint": "sha256:9c1f7e5d3b2a19087f6e5d4c3b2a19087f6e5d4c3b2a19087f6e5d4c3b2a1908"
+    },
+    "provenance": {
+        "method": "authoritative-import",
+        "sourceType": "arcgis-layer-definition",
+        "reviewStatus": "unreviewed"
+    },
+    "entities": [
+        {
+            "id": "layer-0",
+            "name": "Tree crops",
+            "role": "feature",
+            "description": "One mapped tree-crop feature",
+            "propertyProvenance": {
+                "description": {
+                    "method": "manual",
+                    "reviewStatus": "custodian-approved"
+                }
+            },
+            "fields": [
+                {
+                    "path": "commodity",
+                    "name": "COMMODITY",
+                    "type": "string",
+                    "sourceType": "esriFieldTypeString",
+                    "description": "Commercial crop classification used by the survey",
+                    "semanticConcept": "https://example.org/concepts/crop-type",
+                    "propertyProvenance": {
+                        "description": {
+                            "method": "manual",
+                            "reviewStatus": "custodian-approved",
+                            "reviewedBy": "custodian@example.org",
+                            "sourceFingerprint": "sha256:9c1f7e5d3b2a19087f6e5d4c3b2a19087f6e5d4c3b2a19087f6e5d4c3b2a1908"
+                        },
+                        "semanticConcept": {
+                            "method": "manual",
+                            "reviewStatus": "custodian-approved"
+                        }
+                    }
+                },
+                {
+                    "path": "year",
+                    "name": "YEAR",
+                    "type": "integer",
+                    "sourceType": "esriFieldTypeSmallInteger",
+                    "description": "Feature-level mapping currency",
+                    "propertyProvenance": {
+                        "description": {
+                            "method": "agent-generated",
+                            "generator": "example-agent/0.1",
+                            "reviewStatus": "unreviewed"
+                        }
+                    },
+                    "conflicts": [
+                        {
+                            "property": "type",
+                            "reason": "type-changed",
+                            "candidateValue": "string",
+                            "detectedAt": "2026-09-30T00:00:00Z",
+                            "generator": "example-arcgis-import/1.1",
+                            "sourceFingerprint": "sha256:aa11"
+                        }
+                    ]
+                },
+                {
+                    "path": "notes",
+                    "name": "NOTES",
+                    "type": "string",
+                    "description": "Free-text notes added by the custodian",
+                    "provenance": {
+                        "method": "manual",
+                        "reviewStatus": "custodian-approved"
+                    }
+                }
+            ]
+        }
+    ]
+}

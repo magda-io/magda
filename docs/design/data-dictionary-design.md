@@ -1320,6 +1320,24 @@ At minimum, fixtures should cover:
 
 These fixtures are not intended to prove lossless support for every native schema feature. They define the minimum normalized v1 interoperability envelope and prevent later schema tightening from accidentally breaking one of the documented source families.
 
+## Implementation notes (v7 core)
+
+The core capability is implemented by:
+
+- the built-in schema `magda-registry-aspects/data-dictionary.schema.json` (JSON Schema draft-07, the dialect the registry validator supports) and the compatibility fixtures in `magda-registry-aspects/examples/data-dictionary/`;
+- shared TypeScript model and helpers in `@magda/typescript-common` (`dist/data-dictionary/`): typed model, field-path parse/format/escape, provenance resolution (`getEffectiveProvenance`, `isProtectedProvenance`, `isAdvisoryProvenance`), cross-reference validation (`validateDataDictionary`) and lenient display normalization;
+- the web-client `Structure` section (`DataDictionarySection.tsx`), rendered from `DistributionDetails.tsx` outside the preview gate.
+
+Additive details settled during implementation:
+
+- provenance inheritance is "nearest wins" without merging (property override → node → entity → dictionary);
+- `provenance.sourceFingerprint` records which source version a value was generated from / reviewed against;
+- entities, fields and relationships may carry `conflicts` entries recording producer changes that could not be applied safely (e.g. drift that would overwrite reviewed metadata), so they can be surfaced for review;
+- `geometry.spatialDimension`, field `unique`/`aliases`/`sourceIdentifier`, `dimensions[].fieldPath` (coordinate variable) and `source.documentationUrl`/`profile`/`identifier`/`version` are available as optional properties;
+- relationships require `id`, `source` and `target`; `type` defaults to `foreign-key`.
+
+User-facing authoring guidance: [Data Dictionary guide](../docs/data-dictionary.md).
+
 ## Compatibility and evolution
 
 The aspect is optional and additive.

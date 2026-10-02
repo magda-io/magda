@@ -1,0 +1,74 @@
+{
+    "schemaVersion": "1.0",
+    "source": {
+        "type": "file-inspection"
+    },
+    "provenance": {
+        "method": "manual",
+        "reviewStatus": "reviewed",
+        "reviewedBy": "data-custodian@example.org",
+        "reviewedAt": "2026-09-20T03:00:00Z"
+    },
+    "entities": [
+        {
+            "id": "observations",
+            "name": "Observations",
+            "sourceIdentifier": "Observations",
+            "role": "sheet",
+            "primaryKey": ["observation_id"],
+            "fields": [
+                {
+                    "path": "observation_id",
+                    "name": "observation_id",
+                    "type": "string",
+                    "roles": ["identifier"]
+                },
+                {
+                    "path": "site_id",
+                    "name": "site_id",
+                    "type": "string",
+                    "roles": ["reference"]
+                },
+                {
+                    "path": "value",
+                    "name": "value",
+                    "type": "number"
+                }
+            ]
+        },
+        {
+            "id": "sites",
+            "name": "Sites",
+            "sourceIdentifier": "Sites",
+            "role": "sheet",
+            "primaryKey": ["id"],
+            "fields": [
+                {
+                    "path": "id",
+                    "name": "id",
+                    "type": "string",
+                    "roles": ["identifier"]
+                },
+                {
+                    "path": "name",
+                    "name": "name",
+                    "type": "string"
+                }
+            ]
+        }
+    ],
+    "relationships": [
+        {
+            "id": "observations-site",
+            "type": "foreign-key",
+            "source": {
+                "entity": "observations",
+                "fields": ["site_id"]
+            },
+            "target": {
+                "entity": "sites",
+                "fields": ["id"]
+            }
+        }
+    ]
+}

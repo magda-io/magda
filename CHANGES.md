@@ -2,6 +2,7 @@
 
 ## v7.0.0
 
+- #3807: Add the built-in `data-dictionary` distribution aspect (Data Understanding Layer, #3806): a normalized, provenance-aware description of the entities and fields a distribution contains (CSV/Excel tables, nested API request/response bodies, ArcGIS/OGC features, relational keys and references, Arrow/Parquet and NetCDF/Zarr dimensions), with dictionary/entity/field and property-level provenance so manually curated values survive later re-harvesting. The distribution page shows a searchable read-only **Structure** section when the aspect exists, including for non-previewable distributions. Shared typed model, field-path, provenance and validation helpers live in `@magda/typescript-common` (`dist/data-dictionary/*`). Dictionaries can be authored manually today via the registry API / `mgd`; see the [Data Dictionary guide](./docs/docs/data-dictionary.md). Automatic producers are tracked in #3813.
 - #3637: Provider-agnostic PostgreSQL support — Magda now runs against in-cluster PostgreSQL, AWS RDS, Azure Database for PostgreSQL and GCP Cloud SQL through one connection contract (closes #3636, #3734, #3735, #3736):
   - Service-to-database traffic is encrypted by default, and the in-cluster PostgreSQL serves TLS by default.
   - Deployments can run under a non-default privileged database username (`global.postgresql.auth.username`).
