@@ -138,7 +138,7 @@ DSH, `mgd`, Python and other tools all execute inside the per-user Agent Sandbox
 
 Agent Sandbox owns lifecycle; RuntimeClass owns the container isolation choice.
 
-The application architecture must not assume gVisor-specific APIs. The same Agent Manager should work with runc, gVisor and a future Kata RuntimeClass.
+The application architecture must not assume gVisor-specific APIs. The same Agent Manager must work with runc for trusted development, gVisor for local/GKE profiles and Kata for the supported AKS production profile.
 
 ### 3. Production and trusted development are intentionally different profiles
 
