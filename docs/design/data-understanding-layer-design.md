@@ -2,13 +2,14 @@
 
 ## Status
 
-Proposed design for a Magda v7 capability. Implementation targets the `main` branch. The Magda v8 AI Agent Platform (#3810) is developed on `next` and is a downstream consumer of these v7 capabilities.
+Magda v7 core design. The core normalized distribution metadata is implemented by #3807 / #3820 (`data-dictionary`) and #3808 / #3828 (`distribution-contract`). The Magda v8 AI Agent Platform (#3810) is developed on `next` and is a downstream consumer of these v7 capabilities.
 
-This document defines the overall architecture and user experience for helping people and machine clients understand what a dataset can tell them, what it contains, how it can be accessed, and how it may participate in broader analysis. Detailed contracts are defined in the companion designs:
+This document defines the overall architecture and user experience for helping people and machine clients understand what a dataset contains, how its distributions can be accessed, and how existing dataset-level catalogue metadata contributes context. Detailed core contracts are defined in:
 
 - [`distribution-contract-design.md`](./distribution-contract-design.md)
 - [`data-dictionary-design.md`](./data-dictionary-design.md)
-- [`dataset-usage-design.md`](./dataset-usage-design.md)
+
+The former `dataset-usage` proposal is retained as a **deferred, use-case-driven extension** rather than a required part of the v7 core. See [`dataset-usage-design.md`](./dataset-usage-design.md).
 
 ## Problem
 
@@ -28,12 +29,13 @@ A universal visualisation layer is therefore neither necessary nor realistic. Ma
 
 Enable a researcher, analyst, developer or software agent to answer the following questions from Magda metadata:
 
-1. **Why is this dataset useful?**
-2. **What can it establish, and what can it not establish?**
-3. **What information or fields does it contain?**
-4. **How can this distribution be accessed or queried?**
-5. **What are the relevant constraints and caveats?**
-6. **How could it potentially combine with other datasets?**
+1. **What is this dataset about, and what dataset-level context already exists?**
+2. **What information or fields does each distribution contain?**
+3. **How can a distribution be accessed or queried?**
+4. **What relevant constraints, coverage and provenance information is available?**
+5. **How could it potentially combine with other datasets?**
+
+Dataset-level analytical fitness remains a domain judgement. General context belongs in existing dataset description/coverage/source metadata; a future structured fitness extension should be introduced only when a concrete authoritative use case requires machine-readable claims.
 
 The same machine-readable metadata should support both human-facing catalogue UX and future machine use such as agent tools, federated query adapters, validation and schema-drift detection.
 
@@ -58,15 +60,17 @@ A useful catalogue entry should remain understandable even if no map, table or c
 
 ### 2. Keep the layers separate
 
-The design uses three complementary metadata concepts:
+The v7 core uses two normalized distribution-level contracts, complemented by Magda's existing dataset-level metadata:
 
 | Layer | Scope | Primary question |
 | --- | --- | --- |
-| `dataset-usage` | Dataset | Why would I use this, and what are its limitations? |
+| existing dataset metadata | Dataset | What is this dataset about, and what spatial/temporal/source context is known? |
 | `distribution-contract` | Distribution | How can I access or query this representation? |
 | `data-dictionary` | Distribution | What information does this representation contain? |
 
-The concepts are separate because the same dataset can have multiple distributions with different interfaces and schemas, while fitness-for-use claims often apply to the dataset as a whole.
+The same dataset can have multiple distributions with different interfaces and schemas, so structure/access contracts belong at distribution level. Dataset description, spatial/temporal coverage, provenance/source metadata, themes and keywords remain the default home for dataset-level context.
+
+A future `dataset-usage` extension may add authoritative, purpose-specific fitness or non-inference claims, but it is not a required third core layer. See [Dataset Usage / Fitness-for-Use Extension Design](./dataset-usage-design.md).
 
 ### 3. Preserve native specifications as authorities
 
@@ -123,13 +127,15 @@ External source / native specification
         |
         | crawl, connector, minion, agent-assisted authoring or manual authoring
         v
-+---------------------------+
-| Normalised Magda metadata |
-|                           |
-| dataset-usage             |
-| distribution-contract     |
-| data-dictionary           |
-+---------------------------+
++----------------------------------+
+| Magda metadata                   |
+|                                  |
+| existing dataset metadata        |
+| distribution-contract            |
+| data-dictionary                  |
+|                                  |
+| optional future: dataset-usage   |
++----------------------------------+
         |
         +---------------------+----------------------+-------------------+
         |                     |                      |                   |
@@ -144,21 +150,24 @@ Optional specialised previews
 
 Harvesting is intentionally decoupled from rendering. A source adapter can populate normalised metadata even when the web client has no specialised preview implementation for that source type.
 
-The core aspect contracts, typed client access and read-only UI must also be useful **without automatic harvesting**. A deployment/project may initially populate the aspects manually through Registry APIs, `mgd`, project tooling or an agent, then add automatic producers incrementally.
+The two core aspect contracts, typed client access and read-only UI must also be useful **without automatic harvesting**. A deployment/project may initially populate them manually through Registry APIs, `mgd`, project tooling or an agent, then add automatic producers incrementally.
 
 ## Registry model
 
-The proposed aspect IDs are:
+The v7 core aspect IDs are:
 
-- `dataset-usage` on dataset records;
 - `distribution-contract` on distribution records;
 - `data-dictionary` on distribution records.
 
-The aspect JSON Schemas should be shipped as built-in schemas in `magda-registry-aspects` so they are available to connectors, minions, `mgd`, the web client and external consumers in the same way as other first-party Magda aspects.
+Dataset-level context continues to use existing catalogue aspects such as `dcat-dataset-strings`, `spatial-coverage`, `temporal-coverage`, provenance/source metadata, themes and keywords.
 
-The web client should add explicit typed access to these aspects rather than depending on ad-hoc reads from `rawData` in view components.
+The core aspect JSON Schemas are shipped as built-in schemas in `magda-registry-aspects` so they are available to connectors, minions, `mgd`, the web client and external consumers in the same way as other first-party Magda aspects.
 
-Each aspect payload should carry its own schema version and provenance/review metadata where appropriate. Consumers must ignore unknown additive fields so a v7.x deployment can extend the contracts without coordinated upgrades of every reader.
+The web client should use explicit typed access to the two normalized contracts rather than depending on ad-hoc reads from `rawData` in view components.
+
+Each core aspect payload carries its own schema version and provenance/review metadata where appropriate. Consumers must ignore unknown additive fields so a v7.x deployment can extend the contracts without coordinated upgrades of every reader.
+
+If a future `dataset-usage` aspect is introduced, it should follow the same built-in/typed/provenance conventions only after the revisit criteria in its design are met.
 
 ## User experience
 
@@ -166,7 +175,7 @@ The dataset/distribution pages should evolve from a preview-first presentation t
 
 A target distribution experience is:
 
-1. **About this data** — title, description and dataset-level usage/fitness guidance.
+1. **About this data** — title, description, spatial/temporal coverage, source/provenance and other existing dataset-level context.
 2. **Structure** — normalised data dictionary.
 3. **How to use** — distribution contract, operations, parameters and native documentation/specification links.
 4. **Example** — bounded sample rows, response example or safe query result when available.
@@ -225,7 +234,7 @@ The same additive principle applies to other pages, such as the dataset page's U
 
 ### Core aspect implementation convention established by Data Dictionary
 
-The completed v7 Data Dictionary core (#3807 / #3820) established a reusable implementation pattern for the remaining Data Understanding aspects:
+The completed v7 Data Dictionary core (#3807 / #3820) established a reusable implementation pattern that was then applied to Distribution Contract (#3808 / #3828) and should be reused by any future first-party Data Understanding aspect:
 
 - draft-07 built-in schema + published representative fixtures;
 - compatible `1.x` versioning with fail-closed handling for unsupported major versions;
@@ -237,7 +246,7 @@ The completed v7 Data Dictionary core (#3807 / #3820) established a reusable imp
 - Data Understanding UI sections below previews and outside preview gates;
 - whole-aspect `mgd ... aspect set|get` authoring, with RFC 6902 JSON Patch rather than merge-patch for targeted edits inside arrays.
 
-#3808 and #3809 should follow this pattern where applicable rather than independently rediscovering these conventions.
+#3808 / #3828 already follows this pattern. A future `dataset-usage` implementation should reuse it where applicable rather than independently rediscovering these conventions.
 
 ## Metadata production paths
 
@@ -293,15 +302,16 @@ The current preview block is gated by `distribution.downloadURL || distribution.
 
 ### Implementation map for the v7 core
 
-The following current code paths are important for implementation and should be treated as part of the core tickets rather than left for source-specific producer work:
+The following current code paths define the v7 core and should be treated as part of the core contracts rather than source-specific producer work:
 
-- **Built-in aspect definitions:** add the three `*.schema.json` files under `magda-registry-aspects/`. `magda-migrator-registry-aspects` discovers built-in definitions automatically from `*.schema.json`, so no separate hard-coded registration list is required. Keep `magda-registry-aspects/README.md` in sync.
-- **Web-client record fetches:** `magda-web-client/src/api-clients/RegistryApis.ts` uses explicit optional-aspect lists. Add `data-dictionary` and `distribution-contract` to `DEFAULT_OPTIONAL_DISTRIBUTION_FETCH_ASPECT_LIST`, and add `dataset-usage` to `DEFAULT_OPTIONAL_FETCH_ASPECT_LIST`. Otherwise the normal dataset/distribution page fetch path will not request these aspects.
-- **Typed record model:** extend the raw/parsed record model and parsing path in `magda-web-client/src/helpers/record.ts`. Prefer reusable Data Understanding types in a shared `@magda/typescript-common` module where practical so web-client, `mgd`, minions/connectors and future agents can share one contract. UI code should consume typed parsed properties rather than arbitrary `rawData` reads.
-- **Distribution UI:** render Structure/Data Dictionary and How to use from `magda-web-client/src/Components/Dataset/View/DistributionDetails.tsx` or dedicated child components, independently of preview availability, after the existing preview block (see [Placement relative to existing previews](#placement-relative-to-existing-previews)).
-- **Dataset Usage UI:** render Using this dataset from the dataset details path, currently `magda-web-client/src/Components/Dataset/View/DatasetPageDetails.js`, or a dedicated child component.
+- **Built-in aspect definitions:** `data-dictionary.schema.json` and `distribution-contract.schema.json` live under `magda-registry-aspects/`. `magda-migrator-registry-aspects` discovers built-in definitions automatically from `*.schema.json`, so no separate hard-coded registration list is required. Keep `magda-registry-aspects/README.md` in sync.
+- **Web-client record fetches:** `magda-web-client/src/api-clients/RegistryApis.ts` explicitly fetches `data-dictionary` and `distribution-contract` for distributions.
+- **Typed record model:** the raw/parsed record model and parsing path in `magda-web-client/src/helpers/record.ts` expose the normalized contracts through shared Data Understanding types. UI code consumes typed parsed properties rather than arbitrary `rawData` reads.
+- **Distribution UI:** Structure/Data Dictionary and How to use render from `magda-web-client/src/Components/Dataset/View/DistributionDetails.tsx` or dedicated child components, independently of preview availability, after the existing preview block (see [Placement relative to existing previews](#placement-relative-to-existing-previews)).
 - **Manual authoring:** existing `mgd dataset aspect get|set|patch` commands work with any record, including distribution records. The core v7 capability does not require new aspect-specific `mgd` commands.
-- **Tests:** cover absence of the new optional aspects, representative valid payloads, typed parsing and UI rendering. Existing datasets/distributions without the aspects must remain unchanged.
+- **Tests:** cover absence of the optional core aspects, representative valid payloads, typed parsing and UI rendering. Existing datasets/distributions without the aspects must remain unchanged.
+
+There is no v7-core requirement to add a `dataset-usage` schema, fetch path, typed model or dataset-page UI. Those become implementation work only if the deferred extension is reactivated from a concrete use case.
 
 ### Preview plugins
 
@@ -309,7 +319,9 @@ Existing preview systems remain useful. They consume the same distribution but a
 
 ### Search and semantic indexing
 
-A later phase may index selected human-readable portions of `dataset-usage`, `distribution-contract` and `data-dictionary` so users can search for concepts such as fields, supported operations and suitability. Large raw aspect payloads should not be indiscriminately copied into search documents.
+A later phase may index selected human-readable portions of existing dataset description/coverage metadata, `distribution-contract` and `data-dictionary` so users can search for concepts such as fields and supported operations. Large raw aspect payloads should not be indiscriminately copied into search documents.
+
+If a future `dataset-usage` extension is implemented, selected authoritative fitness/limitation claims may also be indexed, but ranking must take provenance/review state into account.
 
 ## Cross-dataset interoperability
 
@@ -338,18 +350,17 @@ Any such relationship should remain a proposal unless backed by explicit mapping
 
 ## Delivery sequence
 
-The recommended implementation sequence is:
+The recommended implementation sequence is now:
 
-1. add the three built-in aspect schemas and typed client/model support;
-2. render `data-dictionary` and support manual/project/agent population;
-3. render `distribution-contract` and support manual/project/agent population;
-4. render and author `dataset-usage`, including provenance/review state;
-5. add automatic source-specific producers incrementally through minions/connectors as needs arise; one producer may populate both dictionary and contract where appropriate;
-6. add bounded API/service examples and query exploration with explicit safety policy;
-7. add semantic indexing/search integration for selected fields;
-8. expand machine consumption for agents and future query adapters.
+1. **complete** `data-dictionary` core (#3807 / #3820);
+2. **complete** `distribution-contract` core (#3808 / #3828);
+3. add automatic source-specific producers incrementally through minions/connectors as needs arise; one producer may populate both dictionary and contract where appropriate;
+4. add bounded API/service examples and query exploration with explicit safety policy;
+5. add semantic indexing/search integration for selected existing dataset metadata and normalized contract fields;
+6. expand machine consumption for agents and future query adapters;
+7. revisit `dataset-usage` only when a concrete authoritative fitness/limitation use case meets the criteria in its deferred design.
 
-This sequence makes the normalized contracts useful early and avoids coupling the v7 core capability to complete automatic source coverage. Automatic producers remain v7 work, but individual source types can be added over time according to project demand. The v8 Agent Platform (#3810) can consume manually or automatically populated v7 metadata as it becomes available.
+This sequence keeps the v7 core useful without coupling it to complete automatic source coverage or to a speculative dataset-level fitness model. The v8 Agent Platform (#3810) can consume existing dataset metadata plus manually or automatically populated distribution contracts as they become available.
 
 ## Safety and trust boundaries
 
@@ -371,10 +382,10 @@ The web client should render each section only when the relevant aspect is avail
 ## Acceptance criteria for the overall capability
 
 - A distribution can be useful and understandable in the UI even when no specialised preview is available.
-- The three metadata concepts have clear, non-overlapping responsibilities.
+- Existing dataset metadata, `data-dictionary` and `distribution-contract` have clear, non-overlapping responsibilities.
 - Native specifications remain the source of truth when available.
 - Authoritative, inferred and agent-generated metadata are visibly distinguishable.
 - Existing Magda access-control semantics are not weakened or duplicated as authority.
 - At least CSV/Excel, REST/OpenAPI and ArcGIS sources can be represented through the common model.
-- The aspect payloads are directly consumable by non-UI clients such as `mgd`, agents and future query adapters.
+- The core aspect payloads are directly consumable by non-UI clients such as `mgd`, agents and future query adapters.
 - Existing catalogue records without the new aspects remain backward compatible.
