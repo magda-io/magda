@@ -93,7 +93,7 @@ Rules for anything that writes the aspect, including future automatic producers 
 - Record `source.fingerprint` (and optionally `provenance.sourceFingerprint` on reviewed values) so source drift can be detected.
 - Mark agent-written content `method: "agent-generated"`; it is shown as advisory until reviewed.
 - Only declare `relationships` / `reference` roles backed by authoritative metadata, explicit user input or reviewed evidence: similar field names are not evidence of a join.
-- Scalar API invocation parameters belong in `distribution-contract`, not here; request/response bodies are dictionary entities (`role: "request-body"`, `"response-record"`, ...).
+- Scalar API invocation parameters belong in [`distribution-contract`](./distribution-contract.md), not here; request/response bodies are dictionary entities (`role: "request-body"`, `"response-record"`, ...).
 
 ## Populating a dictionary with `mgd`
 
