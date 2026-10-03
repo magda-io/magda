@@ -1,0 +1,575 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "Distribution Contract",
+    "description": "A compact, normalized, provenance-aware description of how a distribution can be accessed or queried: resource role, access mode, protocol, endpoint, native specification, descriptive authentication, curated operations with scalar parameters, request/response metadata (with references to `data-dictionary` entities), pagination hints and source capabilities. It is descriptive metadata, not execution authority: describing an operation does not authorize anyone to execute it, and the contract never contains credentials, API keys, tokens, cookies or other secret material. Native specifications (OpenAPI, ArcGIS service definitions, OGC capabilities, STAC, ...) remain authoritative and are referenced rather than copied. Consumers must ignore unknown properties: within schema version 1 the contract only grows additively. See docs/design/distribution-contract-design.md.",
+    "type": "object",
+    "required": ["schemaVersion"],
+    "properties": {
+        "schemaVersion": {
+            "title": "Normalized distribution contract version",
+            "description": "Version of the normalized distribution contract. This schema accepts version 1.x payloads (initial value: `1.0`).",
+            "type": "string",
+            "pattern": "^1(\\.[0-9]+)*$",
+            "examples": ["1.0"]
+        },
+        "resourceRole": {
+            "title": "Resource role",
+            "description": "What the distribution represents. Descriptive only; does not replace DCAT distribution semantics. Open vocabulary.",
+            "type": "string",
+            "examples": [
+                "download",
+                "data-service",
+                "metadata-service",
+                "query-service",
+                "stream",
+                "other"
+            ]
+        },
+        "accessMode": {
+            "title": "Access mode",
+            "description": "Human/machine hint about the interaction model. Not an authorization decision: Magda access/access-control metadata remains authoritative for Magda-side access. Open vocabulary.",
+            "type": "string",
+            "examples": [
+                "public-download",
+                "public-query",
+                "authenticated-query",
+                "query-only",
+                "restricted",
+                "manual-request"
+            ]
+        },
+        "protocol": {
+            "title": "Protocol",
+            "description": "Short, stable protocol/interface name. Expected for interactive services. Open vocabulary.",
+            "type": "string",
+            "examples": [
+                "HTTP",
+                "REST",
+                "ArcGIS Feature Service",
+                "ArcGIS Map Service",
+                "OGC API Features",
+                "WFS",
+                "WMS",
+                "STAC",
+                "GraphQL",
+                "SQL",
+                "other"
+            ]
+        },
+        "endpointUrl": {
+            "title": "Endpoint URL",
+            "description": "Primary endpoint of this representation: an API/service root, a layer endpoint or a file URL. Existing DCAT `accessURL`/`downloadURL` remain valid; this keeps the contract self-contained for machine consumers. Generic clients must not build operation URLs by concatenating this with an operation `path`.",
+            "type": "string"
+        },
+        "documentationUrl": {
+            "title": "Documentation URL",
+            "description": "Human-readable external documentation.",
+            "type": "string"
+        },
+        "specification": {
+            "$ref": "#/definitions/specification"
+        },
+        "authentication": {
+            "description": "Default (contract-level) descriptive authentication metadata. Operations may override it.",
+            "$ref": "#/definitions/authentication"
+        },
+        "operations": {
+            "title": "Operations",
+            "description": "A curated subset of useful interactions (not a copy of a native specification's full operation list). Optional: a simple download may have none.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/operation"
+            }
+        },
+        "sourceCapabilities": {
+            "description": "What the remote source reports it supports/restricts for the whole distribution.",
+            "$ref": "#/definitions/sourceCapabilities"
+        },
+        "provenance": {
+            "$ref": "#/definitions/provenance"
+        },
+        "lastVerified": {
+            "title": "Last verified",
+            "description": "When the endpoint/interface was last checked successfully (ISO 8601 / RFC 3339 date-time). Not a guarantee of availability and not execution authorization.",
+            "type": "string"
+        }
+    },
+    "definitions": {
+        "nonEmptyString": {
+            "type": "string",
+            "minLength": 1
+        },
+        "stringList": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "jsonPointer": {
+            "title": "JSON Pointer",
+            "description": "An RFC 6901 JSON Pointer into a JSON response document, e.g. `/occurrences` or `/paging/nextCursor` (`~0` escapes `~`, `~1` escapes `/`). The empty string refers to the whole document.",
+            "type": "string",
+            "pattern": "^(/([^~/]|~[01])*)*$"
+        },
+        "dictionaryEntityRef": {
+            "title": "Data dictionary entity reference",
+            "description": "ID of an entity in the same distribution's `data-dictionary` aspect, describing the body's fields.",
+            "$ref": "#/definitions/nonEmptyString"
+        },
+        "specification": {
+            "title": "Native specification",
+            "description": "Pointer to the authoritative native specification. Its content is normally not embedded.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Kind of specification. Open vocabulary.",
+                    "type": "string",
+                    "examples": [
+                        "openapi",
+                        "json-schema",
+                        "arcgis-service-definition",
+                        "ogc-capabilities",
+                        "ogc-api",
+                        "stac",
+                        "other"
+                    ]
+                },
+                "url": {
+                    "description": "URL of the native specification document.",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "Native specification/format version where known, e.g. an OpenAPI version.",
+                    "type": "string"
+                },
+                "fingerprint": {
+                    "description": "Fingerprint (e.g. `sha256:<hex>`) of the retrieved specification. Used to detect interface drift.",
+                    "type": "string"
+                },
+                "retrievedAt": {
+                    "description": "When the specification was retrieved (ISO 8601 / RFC 3339 date-time).",
+                    "type": "string"
+                }
+            }
+        },
+        "authentication": {
+            "title": "Authentication (descriptive)",
+            "description": "Describes the authentication mechanism the remote source expects. It must never contain credentials, API keys, tokens, cookies or other secret material, and it does not grant or override access-control decisions. Credential-bearing inputs (API keys, Authorization headers, auth cookies) are described here, never as operation `parameters`; a separate execution/delegation system resolves the actual credentials.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Mechanism. Open vocabulary.",
+                    "type": "string",
+                    "examples": [
+                        "none",
+                        "api-key",
+                        "http-basic",
+                        "http-bearer",
+                        "oauth2",
+                        "openid-connect",
+                        "mutual-tls",
+                        "custodian-approval",
+                        "other"
+                    ]
+                },
+                "description": {
+                    "type": "string"
+                },
+                "documentationUrl": {
+                    "description": "Where to find out how to obtain access.",
+                    "type": "string"
+                },
+                "scheme": {
+                    "description": "Scheme name where applicable, e.g. the HTTP `Authorization` scheme `Bearer` or `Basic`.",
+                    "type": "string"
+                },
+                "location": {
+                    "description": "Where an `api-key` style credential is sent. Open vocabulary.",
+                    "type": "string",
+                    "examples": ["header", "query", "cookie"]
+                },
+                "name": {
+                    "description": "Name of the header/query parameter/cookie carrying the credential, e.g. `X-API-Key`. The name only, never the value.",
+                    "type": "string"
+                },
+                "scopes": {
+                    "description": "Non-secret scopes/permissions required, e.g. OAuth scopes.",
+                    "$ref": "#/definitions/stringList"
+                }
+            }
+        },
+        "provenance": {
+            "title": "Provenance",
+            "description": "How the metadata was produced or curated, and its review state. Contract-level provenance is inherited by operations and their parameters unless they carry their own `provenance` (nearest wins, no merging). `propertyProvenance` overrides apply to individual properties of a node. A provenance object must state `method` and/or `reviewStatus`.",
+            "type": "object",
+            "anyOf": [
+                { "required": ["method"] },
+                { "required": ["reviewStatus"] }
+            ],
+            "properties": {
+                "method": {
+                    "title": "Method",
+                    "description": "Origin of the metadata. Initial values: `authoritative-import`, `harvested`, `manual`, `agent-generated`, `inferred`. Open vocabulary: consumers should treat unknown values as unreviewed/advisory.",
+                    "type": "string",
+                    "minLength": 1,
+                    "examples": [
+                        "authoritative-import",
+                        "harvested",
+                        "manual",
+                        "agent-generated",
+                        "inferred"
+                    ]
+                },
+                "reviewStatus": {
+                    "title": "Review status",
+                    "description": "Review state. Initial values: `unreviewed`, `reviewed`, `custodian-approved`, `rejected`. Automatic producers must not silently overwrite manually authored or reviewed/custodian-approved values.",
+                    "type": "string",
+                    "minLength": 1,
+                    "examples": [
+                        "unreviewed",
+                        "reviewed",
+                        "custodian-approved",
+                        "rejected"
+                    ]
+                },
+                "generator": {
+                    "description": "Producer/tool (and version) that generated the metadata, e.g. `magda-distribution-contract-harvester/1.0`.",
+                    "type": "string"
+                },
+                "generatedAt": {
+                    "description": "When the metadata was generated (ISO 8601 / RFC 3339 date-time).",
+                    "type": "string"
+                },
+                "sourceType": {
+                    "description": "Kind of source the metadata was derived from, e.g. `openapi`, `arcgis-service-definition`, `manual`.",
+                    "type": "string"
+                },
+                "sourceFingerprint": {
+                    "description": "Fingerprint of the native source this metadata was generated from or reviewed against. Allows a producer to detect that reviewed metadata predates a source change.",
+                    "type": "string"
+                },
+                "reviewedBy": {
+                    "description": "Optional identifier/name of the reviewer.",
+                    "type": "string"
+                },
+                "reviewedAt": {
+                    "description": "When the review happened (ISO 8601 / RFC 3339 date-time).",
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                }
+            }
+        },
+        "propertyProvenance": {
+            "title": "Property-level provenance overrides",
+            "description": "Provenance overrides for individual direct properties of this node, keyed by property name (e.g. `purpose`, `description`). Used for mixed-origin metadata, e.g. a source-derived `method`/`path` with a custodian-approved `purpose`.",
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/provenance"
+            }
+        },
+        "sourceCapabilities": {
+            "title": "Source capabilities/constraints",
+            "description": "What the remote source reports it supports or restricts. These are facts about the source, not Magda execution policy: a future Magda gateway/explorer may apply stricter limits. Additional capability properties are allowed.",
+            "type": "object",
+            "properties": {
+                "allowedMethods": {
+                    "description": "Methods/verbs the source accepts, e.g. `GET`, `POST`.",
+                    "$ref": "#/definitions/stringList"
+                },
+                "maximumRecordsPerRequest": {
+                    "description": "Source-side maximum number of records returned by one request.",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "bulkExportAvailable": {
+                    "description": "Whether the source offers a bulk export/download of the whole dataset.",
+                    "type": "boolean"
+                },
+                "supportsPagination": {
+                    "type": "boolean"
+                },
+                "supportsSpatialFilter": {
+                    "type": "boolean"
+                },
+                "supportsTemporalFilter": {
+                    "type": "boolean"
+                },
+                "supportsAttributeFilter": {
+                    "type": "boolean"
+                },
+                "outputFormats": {
+                    "description": "Output formats/media types the source can return.",
+                    "$ref": "#/definitions/stringList"
+                },
+                "rateLimit": {
+                    "description": "Human-readable description of a source-side rate limit.",
+                    "type": "string"
+                }
+            }
+        },
+        "parameter": {
+            "title": "Parameter",
+            "description": "A scalar path/query/header/cookie invocation parameter. Complex structured bodies belong in a request-body `data-dictionary` entity. Parameters are identified by `sourceIdentifier` where available, otherwise by `location` + `name`. Credential-bearing inputs (API keys, `Authorization`/`Proxy-Authorization` headers, auth cookies) are not parameters: describe them in `authentication`.",
+            "type": "object",
+            "required": ["name", "location", "type"],
+            "not": {
+                "properties": {
+                    "location": { "const": "header" },
+                    "name": {
+                        "pattern": "^([Pp][Rr][Oo][Xx][Yy]-)?[Aa][Uu][Tt][Hh][Oo][Rr][Ii][Zz][Aa][Tt][Ii][Oo][Nn]$"
+                    }
+                },
+                "required": ["location", "name"]
+            },
+            "properties": {
+                "name": {
+                    "description": "Name of the parameter as sent to the source.",
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "sourceIdentifier": {
+                    "description": "Stable native parameter identifier where available. Used to match the parameter across re-harvesting.",
+                    "type": "string"
+                },
+                "location": {
+                    "description": "Where the parameter is sent. Initial values: `path`, `query`, `header`, `cookie`. Open vocabulary.",
+                    "$ref": "#/definitions/nonEmptyString",
+                    "examples": ["path", "query", "header", "cookie"]
+                },
+                "type": {
+                    "description": "Normalized logical type, aligned with `data-dictionary` field types. Suggested values: `string`, `integer`, `number`, `boolean`, `date`, `datetime`, `time`, `unknown`. Consumers should treat unrecognised values as `unknown`.",
+                    "$ref": "#/definitions/nonEmptyString",
+                    "examples": [
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean",
+                        "date",
+                        "datetime",
+                        "time",
+                        "unknown"
+                    ]
+                },
+                "format": {
+                    "description": "Optional refinement of the type or the expected value syntax, e.g. `uuid`, `date-time`, `minX,minY,maxX,maxY`.",
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "default": {},
+                "example": {},
+                "enum": {
+                    "description": "Allowed values.",
+                    "type": "array"
+                },
+                "minimum": {
+                    "type": ["number", "string"]
+                },
+                "maximum": {
+                    "type": ["number", "string"]
+                },
+                "minLength": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "maxLength": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "pattern": {
+                    "type": "string"
+                },
+                "unit": {
+                    "description": "Unit of measure of the value, where applicable.",
+                    "type": "string"
+                },
+                "provenance": {
+                    "$ref": "#/definitions/provenance"
+                },
+                "propertyProvenance": {
+                    "$ref": "#/definitions/propertyProvenance"
+                }
+            }
+        },
+        "pagination": {
+            "title": "Pagination hints",
+            "description": "Descriptive source pagination hints (not Magda execution limits). Request-parameter properties name a `query` parameter of the same operation; response-path properties are RFC 6901 JSON Pointers into the JSON response.",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Pagination style. Open vocabulary.",
+                    "type": "string",
+                    "examples": [
+                        "offset-limit",
+                        "page",
+                        "cursor",
+                        "next-link",
+                        "none"
+                    ]
+                },
+                "limitParameter": {
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "offsetParameter": {
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "pageParameter": {
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "cursorParameter": {
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "nextCursorPath": {
+                    "description": "Where the response carries the cursor of the next page.",
+                    "$ref": "#/definitions/jsonPointer"
+                },
+                "nextLinkPath": {
+                    "description": "Where the response carries the URL of the next page.",
+                    "$ref": "#/definitions/jsonPointer"
+                },
+                "nextLinkRelation": {
+                    "description": "Link relation type (e.g. `next`) of the next-page entry in a response `links` array (OGC API / STAC style), when the next link cannot be addressed by a fixed JSON Pointer.",
+                    "type": "string"
+                },
+                "totalPath": {
+                    "description": "Where the response carries the total number of matching records.",
+                    "$ref": "#/definitions/jsonPointer"
+                }
+            }
+        },
+        "request": {
+            "title": "Request body",
+            "description": "Interaction-level request body metadata. The field-level body structure belongs in the referenced `data-dictionary` entity.",
+            "type": "object",
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "mediaTypes": {
+                    "$ref": "#/definitions/stringList"
+                },
+                "dictionaryEntity": {
+                    "$ref": "#/definitions/dictionaryEntityRef"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "response": {
+            "title": "Response",
+            "description": "Interaction-level response metadata. The field-level response structure belongs in the referenced `data-dictionary` entity.",
+            "type": "object",
+            "properties": {
+                "mediaTypes": {
+                    "$ref": "#/definitions/stringList"
+                },
+                "statusCodes": {
+                    "description": "Success/status codes where useful, e.g. `200` or an OpenAPI range such as `2XX`.",
+                    "type": "array",
+                    "items": {
+                        "type": ["integer", "string"]
+                    }
+                },
+                "recordsPath": {
+                    "description": "RFC 6901 JSON Pointer to the array/object holding the logical records in a JSON response, e.g. `/occurrences` (empty string: the whole response).",
+                    "$ref": "#/definitions/jsonPointer"
+                },
+                "dictionaryEntity": {
+                    "$ref": "#/definitions/dictionaryEntityRef"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pagination"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "operation": {
+            "title": "Operation",
+            "description": "A useful interaction with the distribution. Describing an operation does not authorize executing it.",
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+                "id": {
+                    "description": "Identifier, unique and stable within the contract, and kept stable across re-harvesting while the source operation is logically the same.",
+                    "$ref": "#/definitions/nonEmptyString"
+                },
+                "sourceIdentifier": {
+                    "description": "Stable native operation identifier where available, e.g. an OpenAPI `operationId`.",
+                    "type": "string"
+                },
+                "label": {
+                    "description": "Short human-readable label.",
+                    "type": "string"
+                },
+                "purpose": {
+                    "description": "What the operation is useful for.",
+                    "type": "string"
+                },
+                "interactionType": {
+                    "description": "Descriptive interaction type. Advisory only: it does not authorize execution or remove the need for confirmation/policy checks. Open vocabulary.",
+                    "type": "string",
+                    "examples": [
+                        "query",
+                        "download",
+                        "read",
+                        "create",
+                        "update",
+                        "delete",
+                        "action",
+                        "unknown"
+                    ]
+                },
+                "method": {
+                    "description": "Method/verb, e.g. `GET`, `POST`.",
+                    "type": "string"
+                },
+                "path": {
+                    "description": "Protocol/native operation path, e.g. `/occurrences/search` or `/query`. Only a protocol-aware adapter may combine it with the contract `endpointUrl`; generic clients must not concatenate them.",
+                    "type": "string"
+                },
+                "endpointUrl": {
+                    "description": "Fully resolved absolute URL of this operation, when a producer/author can determine it deterministically.",
+                    "type": "string"
+                },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/parameter"
+                    }
+                },
+                "authentication": {
+                    "description": "Descriptive authentication override when this operation differs from the contract-level default.",
+                    "$ref": "#/definitions/authentication"
+                },
+                "request": {
+                    "$ref": "#/definitions/request"
+                },
+                "response": {
+                    "$ref": "#/definitions/response"
+                },
+                "sourceCapabilities": {
+                    "description": "Source capabilities/constraints specific to this operation.",
+                    "$ref": "#/definitions/sourceCapabilities"
+                },
+                "interactiveExampleCandidate": {
+                    "description": "Advisory hint that this operation is a good candidate for a bounded interactive example. Never execution authority: a runtime must still apply its own execution, authentication and network policy.",
+                    "type": "boolean"
+                },
+                "provenance": {
+                    "$ref": "#/definitions/provenance"
+                },
+                "propertyProvenance": {
+                    "$ref": "#/definitions/propertyProvenance"
+                }
+            }
+        }
+    }
+}

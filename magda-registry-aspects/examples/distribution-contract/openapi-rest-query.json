@@ -1,0 +1,156 @@
+{
+    "schemaVersion": "1.0",
+    "resourceRole": "data-service",
+    "accessMode": "public-query",
+    "protocol": "REST",
+    "endpointUrl": "https://example.org/api",
+    "documentationUrl": "https://example.org/docs",
+    "specification": {
+        "type": "openapi",
+        "url": "https://example.org/openapi.json",
+        "version": "3.1.0",
+        "fingerprint": "sha256:4f2b6c1d8e9a0b3c5d7e9f1a2b4c6d8e0f1a3b5c7d9e1f2a4b6c8d0e2f4a6b8c",
+        "retrievedAt": "2026-09-14T10:00:00Z"
+    },
+    "authentication": {
+        "type": "none",
+        "description": "Public endpoint; no credential required"
+    },
+    "operations": [
+        {
+            "id": "search-occurrences",
+            "sourceIdentifier": "searchOccurrences",
+            "label": "Search occurrence records",
+            "purpose": "Search records by taxon and optional spatial or temporal filters",
+            "interactionType": "query",
+            "method": "GET",
+            "path": "/occurrences/search",
+            "endpointUrl": "https://example.org/api/occurrences/search",
+            "parameters": [
+                {
+                    "name": "q",
+                    "sourceIdentifier": "q",
+                    "location": "query",
+                    "type": "string",
+                    "required": true,
+                    "description": "Taxon or query expression",
+                    "example": "Eucalyptus"
+                },
+                {
+                    "name": "bbox",
+                    "sourceIdentifier": "bbox",
+                    "location": "query",
+                    "type": "string",
+                    "required": false,
+                    "description": "Bounding box filter",
+                    "format": "minX,minY,maxX,maxY",
+                    "example": "150.0,-34.0,151.0,-33.0"
+                },
+                {
+                    "name": "eventDate",
+                    "location": "query",
+                    "type": "date",
+                    "required": false,
+                    "description": "Only records observed on or after this date"
+                },
+                {
+                    "name": "pageSize",
+                    "location": "query",
+                    "type": "integer",
+                    "required": false,
+                    "default": 10,
+                    "minimum": 1,
+                    "maximum": 50
+                },
+                {
+                    "name": "offset",
+                    "location": "query",
+                    "type": "integer",
+                    "required": false,
+                    "default": 0,
+                    "minimum": 0
+                },
+                {
+                    "name": "Accept-Language",
+                    "location": "header",
+                    "type": "string",
+                    "required": false,
+                    "description": "Preferred language of vernacular names",
+                    "enum": ["en", "fr"]
+                }
+            ],
+            "response": {
+                "mediaTypes": ["application/json"],
+                "statusCodes": [200],
+                "recordsPath": "/occurrences",
+                "dictionaryEntity": "occurrence-record",
+                "pagination": {
+                    "type": "offset-limit",
+                    "limitParameter": "pageSize",
+                    "offsetParameter": "offset",
+                    "totalPath": "/total"
+                }
+            },
+            "interactiveExampleCandidate": true
+        },
+        {
+            "id": "advanced-search",
+            "sourceIdentifier": "advancedSearch",
+            "label": "Advanced search",
+            "purpose": "Search occurrences with a structured filter document",
+            "interactionType": "query",
+            "method": "POST",
+            "path": "/occurrences/search",
+            "request": {
+                "required": true,
+                "mediaTypes": ["application/json"],
+                "dictionaryEntity": "search-request"
+            },
+            "response": {
+                "mediaTypes": ["application/json"],
+                "statusCodes": [200, "4XX"],
+                "recordsPath": "/occurrences",
+                "dictionaryEntity": "occurrence-record"
+            }
+        },
+        {
+            "id": "get-occurrence",
+            "sourceIdentifier": "getOccurrence",
+            "label": "Get one occurrence",
+            "interactionType": "read",
+            "method": "GET",
+            "path": "/occurrences/{id}",
+            "parameters": [
+                {
+                    "name": "id",
+                    "sourceIdentifier": "id",
+                    "location": "path",
+                    "type": "string",
+                    "required": true,
+                    "format": "uuid"
+                }
+            ],
+            "response": {
+                "mediaTypes": ["application/json"],
+                "recordsPath": "",
+                "dictionaryEntity": "occurrence-record"
+            }
+        }
+    ],
+    "sourceCapabilities": {
+        "allowedMethods": ["GET", "POST"],
+        "maximumRecordsPerRequest": 50,
+        "bulkExportAvailable": false,
+        "supportsPagination": true,
+        "supportsSpatialFilter": true
+    },
+    "provenance": {
+        "method": "harvested",
+        "sourceType": "openapi",
+        "sourceFingerprint": "sha256:4f2b6c1d8e9a0b3c5d7e9f1a2b4c6d8e0f1a3b5c7d9e1f2a4b6c8d0e2f4a6b8c",
+        "generator": "example-openapi-import/1.0",
+        "generatedAt": "2026-09-14T10:00:00Z",
+        "reviewStatus": "unreviewed"
+    },
+    "lastVerified": "2026-09-14T10:05:00Z"
+}

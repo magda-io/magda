@@ -1,0 +1,33 @@
+{
+    "schemaVersion": "1.0",
+    "resourceRole": "download",
+    "accessMode": "public-download",
+    "protocol": "HTTP",
+    "endpointUrl": "https://example.org/data/observations.csv",
+    "documentationUrl": "https://example.org/data/README.html",
+    "authentication": {
+        "type": "none"
+    },
+    "operations": [
+        {
+            "id": "download-file",
+            "label": "Download the CSV file",
+            "purpose": "Download the complete observations table as one CSV file",
+            "interactionType": "download",
+            "method": "GET",
+            "endpointUrl": "https://example.org/data/observations.csv",
+            "response": {
+                "mediaTypes": ["text/csv"],
+                "statusCodes": [200],
+                "dictionaryEntity": "observations"
+            }
+        }
+    ],
+    "sourceCapabilities": {
+        "bulkExportAvailable": true
+    },
+    "provenance": {
+        "method": "manual",
+        "reviewStatus": "reviewed"
+    }
+}
