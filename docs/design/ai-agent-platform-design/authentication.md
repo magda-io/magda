@@ -8,7 +8,7 @@
 
 > This document contains the current design baseline inherited from the original #3819 monolith. Unless a statement is already an explicit architecture-level decision in the overview, treat it as a hypothesis to review under the owner ticket rather than an implementation contract.
 
-#### `mgd`
+## `mgd`
 
 `mgd` remains the preferred agent-facing Magda interface.
 
