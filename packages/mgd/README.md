@@ -444,6 +444,7 @@ Records carry data in named **aspects**. The ones the CLI reads or writes most:
 | `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI. The value is an organisation **record id**, not a name; assign it by resolving/reusing an organisation and writing the aspect (see the skill's "Assigning a publisher" workflow). There is no `--publisher` flag by design |
 | `temporal-coverage` | dataset | *optional* — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range |
 | `spatial-coverage` | dataset | *optional* — bounding box / named region; set manually when the data has a spatial extent |
+| `data-dictionary` | distribution | *optional* — normalized structure of the file/API: `{ "schemaVersion": "1.0", "entities": [{ "id", "name", "fields": [{ "path", "name", "type", … }] }], "provenance": { "method", "reviewStatus" } }`. Write with `dataset aspect set <distId> data-dictionary @dict.json`; don't `aspect patch` inside `entities` (arrays are combined, not merged by id). See the [Data Dictionary guide](https://github.com/magda-io/magda/blob/main/docs/docs/data-dictionary.md) |
 
 ### Custom aspects
 

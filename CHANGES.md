@@ -2,6 +2,7 @@
 
 ## v7.0.0
 
+- #3807: Add the `data-dictionary` distribution aspect (part of #3806), so a distribution's fields, entities, keys, relationships and dimensions can be described in one normalized model, recording where each value came from and whether it was reviewed. The distribution page shows a searchable **Structure** section when a dictionary exists, including for distributions that can't be previewed. Dictionaries can be written by hand via the registry API or `mgd`, with no harvester required (see the [Data Dictionary guide](./docs/docs/data-dictionary.md)).
 - #3637: Provider-agnostic PostgreSQL support — Magda now runs against in-cluster PostgreSQL, AWS RDS, Azure Database for PostgreSQL and GCP Cloud SQL through one connection contract (closes #3636, #3734, #3735, #3736):
   - Service-to-database traffic is encrypted by default, and the in-cluster PostgreSQL serves TLS by default.
   - Deployments can run under a non-default privileged database username (`global.postgresql.auth.username`).

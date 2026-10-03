@@ -74,6 +74,30 @@ mgd dist remove dist-xyz --json
 | `preview-tabular-data-settings` | distribution | *optional* — `{ "enableChart": <bool>, "enableTable": <bool> }` to force chart/table previews on or off |
 | `temporal-coverage` | dataset | *optional* — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range |
 | `spatial-coverage` | dataset | *optional* — bounding box / named region; set manually when the data has a spatial extent |
+| `data-dictionary` | distribution | *optional* — what fields/entities the distribution contains (see below) |
+
+## Data dictionary (`data-dictionary` on a distribution)
+
+Describes a distribution's structure: `entities` (table/sheet/layer/API body), each with
+`fields` (`path`, `name`, `type` required; optional `description`, `unit`, `semanticConcept`,
+`required`/`nullable`, `valueDomain`, `roles`, …), plus optional `primaryKey`,
+`relationships`, `dimensions` and `provenance`.
+
+```sh
+mgd dataset aspect get dist-xyz data-dictionary --json        # read before answering "what fields are there?"
+mgd dataset aspect set dist-xyz data-dictionary @dict.json --json   # create/replace the whole dictionary
+```
+
+- Field `path` is a stable id: nested `a.b`, arrays `items[].x`; escape literal `\ . [ ]` in names with `\` (`"a\\.b"` in JSON for a column named `a.b`).
+- Mark what you write: `"provenance": {"method": "agent-generated", "reviewStatus": "unreviewed"}` (or `"manual"` for values the user dictated).
+  Every provenance object needs `method` and/or `reviewStatus`; `"method": "inferred"` also needs `"sample": {"rows": N}` (and/or `bytes`).
+  Never overwrite values whose provenance is `manual` or `reviewed`/`custodian-approved` (check `propertyProvenance` per property too).
+- Don't `aspect patch` anything inside `entities`/`fields`/`relationships`: arrays are combined, not merged by id, and duplicate entries result.
+  Read the aspect, edit the JSON, then `aspect set` it back (or use a JSON Patch via `mgd api request PATCH …`).
+- Only add `relationships`/`reference` roles the user or source metadata states explicitly — similar names are not evidence of a join.
+- Don't invent fields: if the structure is unknown, use `"type": "unknown"` or leave the aspect absent.
+
+Full reference: <https://github.com/magda-io/magda/blob/main/docs/docs/data-dictionary.md>
 
 ## Custom / domain metadata
 
