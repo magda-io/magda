@@ -175,6 +175,18 @@ A target distribution experience is:
 
 The exact visual layout can evolve, but the information architecture should not require a preview to make sections 1-5 useful.
 
+The numbered list describes the information architecture, not the on-page order for distributions that already have a preview. See [Placement relative to existing previews](#placement-relative-to-existing-previews).
+
+### Placement relative to existing previews
+
+New Data Understanding sections (Structure, How to use, and later sections) are **added below the existing preview** on the distribution page rather than inserted above it:
+
+- **Distributions with a preview keep the layout people already know.** The map/table/chart preview stays where users expect it, and the new sections appear underneath.
+- **Long metadata doesn't bury the preview.** A data dictionary with dozens of fields, or a contract with many operations, would otherwise push the preview far down the page.
+- **Distributions without a preview are unaffected.** The new sections are rendered outside the preview gate, so for a query-only, restricted or otherwise non-previewable distribution they appear straight after the source/access information. Those distributions still get the explanation-first experience.
+
+The same additive principle applies to other pages, such as the dataset page's Using this dataset section: new sections should extend the page without displacing content users already rely on, unless a later UX review deliberately changes the layout.
+
 ### Progressive enhancement examples
 
 #### CSV / Excel
@@ -254,7 +266,7 @@ Shared normalization, validation and merge helpers may live in the main Magda re
 
 `DistributionDetails.tsx` currently presents source/access information and then mounts `DataPreviewVis`, `DataPreviewMap` and plugin visualisation sections. The new renderer should sit alongside those components and work even when the distribution is not previewable.
 
-The current preview block is gated by `distribution.downloadURL || distribution.accessURL`. The new `data-dictionary` and `distribution-contract` sections must **not** be placed inside that gate: query-only/restricted/service distributions may have useful Data Understanding metadata even when the existing preview path cannot run.
+The current preview block is gated by `distribution.downloadURL || distribution.accessURL`. The new `data-dictionary` and `distribution-contract` sections must **not** be placed inside that gate: query-only/restricted/service distributions may have useful Data Understanding metadata even when the existing preview path cannot run. They are rendered after the preview block (including plugin visualisation sections), as described in [Placement relative to existing previews](#placement-relative-to-existing-previews).
 
 ### Implementation map for the v7 core
 
@@ -263,7 +275,7 @@ The following current code paths are important for implementation and should be 
 - **Built-in aspect definitions:** add the three `*.schema.json` files under `magda-registry-aspects/`. `magda-migrator-registry-aspects` discovers built-in definitions automatically from `*.schema.json`, so no separate hard-coded registration list is required. Keep `magda-registry-aspects/README.md` in sync.
 - **Web-client record fetches:** `magda-web-client/src/api-clients/RegistryApis.ts` uses explicit optional-aspect lists. Add `data-dictionary` and `distribution-contract` to `DEFAULT_OPTIONAL_DISTRIBUTION_FETCH_ASPECT_LIST`, and add `dataset-usage` to `DEFAULT_OPTIONAL_FETCH_ASPECT_LIST`. Otherwise the normal dataset/distribution page fetch path will not request these aspects.
 - **Typed record model:** extend the raw/parsed record model and parsing path in `magda-web-client/src/helpers/record.ts`. Prefer reusable Data Understanding types in a shared `@magda/typescript-common` module where practical so web-client, `mgd`, minions/connectors and future agents can share one contract. UI code should consume typed parsed properties rather than arbitrary `rawData` reads.
-- **Distribution UI:** render Structure/Data Dictionary and How to use from `magda-web-client/src/Components/Dataset/View/DistributionDetails.tsx` or dedicated child components, independently of preview availability.
+- **Distribution UI:** render Structure/Data Dictionary and How to use from `magda-web-client/src/Components/Dataset/View/DistributionDetails.tsx` or dedicated child components, independently of preview availability, after the existing preview block (see [Placement relative to existing previews](#placement-relative-to-existing-previews)).
 - **Dataset Usage UI:** render Using this dataset from the dataset details path, currently `magda-web-client/src/Components/Dataset/View/DatasetPageDetails.js`, or a dedicated child component.
 - **Manual authoring:** existing `mgd dataset aspect get|set|patch` commands work with any record, including distribution records. The core v7 capability does not require new aspect-specific `mgd` commands.
 - **Tests:** cover absence of the new optional aspects, representative valid payloads, typed parsing and UI rendering. Existing datasets/distributions without the aspects must remain unchanged.
