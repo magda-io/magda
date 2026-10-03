@@ -637,7 +637,7 @@ Source adapters should follow the same mapping rules so equivalent source concep
 3. Preserve source-specific precision through `sourceType`, `sourceIdentifier`, `sourcePath`, source/specification metadata and provenance rather than expanding the normalized vocabulary for every native type.
 4. Do not copy whole native specifications into the aspect. OpenAPI/JSON Schema combinators, Parquet physical encoding, NetCDF chunking/compression and similar source-specific details remain in the authoritative native schema.
 5. Do not infer relationships, identifiers or semantic equivalence from names alone. Record them only when supported by authoritative metadata, explicit manual input or reviewed evidence.
-6. Keep invocation/access concerns in `distribution-contract` and fitness/limitations in `dataset-usage`.
+6. Keep invocation/access concerns in `distribution-contract`. General dataset-level context belongs in existing dataset description/coverage/source metadata; only authoritative purpose-specific fitness/limitation claims should move to a future `dataset-usage` extension if that capability is reactivated.
 7. Prefer stable source/native identifiers for entity identity. Where none exist, use a deterministic producer-specific ID and preserve the original source name/identifier separately.
 8. When information is unknown, omit optional properties or use the documented `unknown` logical type rather than inventing certainty.
 
