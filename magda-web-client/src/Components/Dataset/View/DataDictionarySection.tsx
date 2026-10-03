@@ -1,4 +1,10 @@
-import React, { FunctionComponent, useMemo, useState } from "react";
+import React, {
+    FunctionComponent,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from "react";
 import {
     DataDictionaryAspect,
     DataDictionaryEntity,
@@ -86,11 +92,13 @@ export function describeSample(
     )}; may not be complete.`;
 }
 
-function isUrl(value: unknown): value is string {
+/** Whether a value is an `http(s)://` URL that is safe to render as a link. */
+export function isUrl(value: unknown): value is string {
     return typeof value === "string" && /^https?:\/\//i.test(value);
 }
 
-function displayValue(value: unknown): string {
+/** Display text of an arbitrary JSON value. */
+export function displayValue(value: unknown): string {
     if (typeof value === "string") {
         return value;
     }
@@ -136,7 +144,7 @@ function getDepth(path: string): number {
     return isValidFieldPath(path) ? getFieldPathDepth(path) : 0;
 }
 
-const ProvenanceBadge: FunctionComponent<{
+export const ProvenanceBadge: FunctionComponent<{
     provenance?: DataDictionaryProvenance;
     label?: string;
 }> = ({ provenance, label }) => {
@@ -636,19 +644,57 @@ const DictionarySource: FunctionComponent<{
     );
 };
 
+/** A request to show one entity of the dictionary (e.g. from a link elsewhere on the page). */
+export interface DataDictionaryEntityFocusRequest {
+    /** ID of the entity to select. */
+    entityId: string;
+    /** A new value for every request, so that repeating a request re-focuses the entity. */
+    requestId: number;
+}
+
 /**
  * Read-only "Structure" section rendering the `data-dictionary` aspect of a
  * distribution: entity selection, a searchable field table with stable paths,
  * types, descriptions, units, requiredness, semantic concepts and provenance.
+ *
+ * `focusEntity` optionally selects an entity (by id), clears the search and
+ * scrolls the section into view; e.g. when a request/response entity link in
+ * the How to use section is followed.
  */
 const DataDictionarySection: FunctionComponent<{
     dataDictionary: DataDictionaryAspect;
-}> = ({ dataDictionary }) => {
+    focusEntity?: DataDictionaryEntityFocusRequest;
+}> = ({ dataDictionary, focusEntity }) => {
     const entities = dataDictionary.entities;
     // selection/keys are index based: entity ids should be unique, but
     // unvalidated data may repeat them
     const [selectedIdx, setSelectedIdx] = useState<number>(0);
     const [query, setQuery] = useState<string>("");
+    const sectionRef = useRef<HTMLElement>(null);
+    const entitiesRef = useRef(entities);
+    entitiesRef.current = entities;
+
+    useEffect(() => {
+        if (!focusEntity) {
+            return;
+        }
+        // the first match when (unvalidated) ids are repeated
+        const idx = entitiesRef.current.findIndex(
+            (entity) => entity.id === focusEntity.entityId
+        );
+        if (idx === -1) {
+            return;
+        }
+        setSelectedIdx(idx);
+        setQuery("");
+        const section = sectionRef.current;
+        if (section) {
+            if (typeof section.scrollIntoView === "function") {
+                section.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+            section.focus({ preventScroll: true });
+        }
+    }, [focusEntity]);
 
     const matchedFields: DataDictionaryField[][] = useMemo(
         () =>
@@ -671,6 +717,8 @@ const DataDictionarySection: FunctionComponent<{
         <section
             className="data-dictionary"
             aria-labelledby="data-dictionary-heading"
+            ref={sectionRef}
+            tabIndex={-1}
         >
             <h3 className="section-heading" id="data-dictionary-heading">
                 Structure

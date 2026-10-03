@@ -2,6 +2,9 @@ import React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { act } from "react-dom/test-utils";
 import csvTable from "@magda/registry-aspects/examples/data-dictionary/csv-table.json";
+import openApiDictionary from "@magda/registry-aspects/examples/data-dictionary/openapi-request-response.json";
+import openApiContract from "@magda/registry-aspects/examples/distribution-contract/openapi-rest-query.json";
+import httpDownloadContract from "@magda/registry-aspects/examples/distribution-contract/http-download.json";
 import { parseDistribution } from "helpers/record";
 import DistributionDetails from "./DistributionDetails";
 
@@ -179,5 +182,130 @@ describe("DistributionDetails data dictionary section", () => {
             container.querySelectorAll("tr.data-dictionary__field")
         ).toHaveLength(1);
         expect(container.textContent).toContain("unknown");
+    });
+});
+
+describe("DistributionDetails How to use section", () => {
+    function isAfter(first: Element, second: Element) {
+        return !!(
+            first.compareDocumentPosition(second) &
+            Node.DOCUMENT_POSITION_FOLLOWING
+        );
+    }
+
+    it("renders existing distributions without the aspect unchanged", () => {
+        render(rawDistribution({ downloadURL: "https://example.com/a.csv" }));
+        expect(container.querySelector(".distribution-contract")).toBeNull();
+        expect(container.querySelector(".mock-preview-vis")).not.toBeNull();
+    });
+
+    it("renders How to use after the previews and after Structure", () => {
+        render(
+            rawDistribution(
+                { downloadURL: "https://example.com/a.csv" },
+                {
+                    "data-dictionary": csvTable,
+                    "distribution-contract": httpDownloadContract
+                }
+            )
+        );
+        const preview = container.querySelector(".distribution-preview")!;
+        const structure = container.querySelector(".data-dictionary")!;
+        const howToUse = container.querySelector(".distribution-contract")!;
+        expect(howToUse).not.toBeNull();
+        expect(howToUse.querySelector("h3")?.textContent).toBe("How to use");
+        expect(container.querySelector(".mock-preview-vis")).not.toBeNull();
+        expect(container.querySelector(".mock-preview-map")).not.toBeNull();
+        expect(isAfter(preview, structure)).toBe(true);
+        expect(isAfter(structure, howToUse)).toBe(true);
+    });
+
+    it("renders How to use for a non-previewable distribution", () => {
+        // no downloadURL / accessURL: the preview block is not rendered
+        render(
+            rawDistribution({}, { "distribution-contract": openApiContract })
+        );
+        expect(container.querySelector(".distribution-preview")).toBeNull();
+        expect(container.querySelector(".data-dictionary")).toBeNull();
+        expect(
+            container.querySelectorAll(".distribution-contract__operation")
+        ).toHaveLength(3);
+    });
+
+    it("does not render How to use for unusable or unsupported aspect data", () => {
+        render(
+            rawDistribution(
+                { downloadURL: "https://example.com/a.csv" },
+                {
+                    "distribution-contract": {
+                        ...openApiContract,
+                        schemaVersion: "2.0"
+                    }
+                }
+            )
+        );
+        expect(container.querySelector(".distribution-contract")).toBeNull();
+        // the rest of the page still renders
+        expect(container.querySelector(".mock-preview-vis")).not.toBeNull();
+        render(rawDistribution({}, { "distribution-contract": "oops" }));
+        expect(container.querySelector(".distribution-contract")).toBeNull();
+    });
+
+    it("shows a request/response entity in Structure when its link is followed", () => {
+        render(
+            rawDistribution(
+                {},
+                {
+                    "data-dictionary": openApiDictionary,
+                    "distribution-contract": openApiContract
+                }
+            )
+        );
+        const selectedEntity = () =>
+            container
+                .querySelector(".data-dictionary__entity")
+                ?.getAttribute("data-entity-id");
+        const searchInput = () =>
+            container.querySelector<HTMLInputElement>(
+                '.data-dictionary input[type="search"]'
+            )!;
+        const entityLink = (operationId: string, entityId: string) =>
+            container.querySelector<HTMLButtonElement>(
+                `[data-operation-id="${operationId}"] button[data-entity-id="${entityId}"]`
+            )!;
+
+        expect(selectedEntity()).toBe("search-request");
+        // a search that hides the target entity's fields is cleared
+        act(() => {
+            const setter = Object.getOwnPropertyDescriptor(
+                HTMLInputElement.prototype,
+                "value"
+            )!.set!;
+            setter.call(searchInput(), "boundingBox");
+            searchInput().dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        expect(searchInput().value).toBe("boundingBox");
+
+        act(() =>
+            entityLink("search-occurrences", "occurrence-record").click()
+        );
+        expect(selectedEntity()).toBe("occurrence-record");
+        expect(searchInput().value).toBe("");
+        expect(document.activeElement).toBe(
+            container.querySelector(".data-dictionary")
+        );
+
+        act(() => entityLink("advanced-search", "search-request").click());
+        expect(selectedEntity()).toBe("search-request");
+
+        // following the same link again re-selects the entity
+        act(() =>
+            Array.from(
+                container.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+            )[1].click()
+        );
+        expect(selectedEntity()).toBe("occurrence-record");
+        act(() => entityLink("advanced-search", "search-request").click());
+        expect(selectedEntity()).toBe("search-request");
     });
 });

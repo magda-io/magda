@@ -12,15 +12,43 @@ import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessU
 import "./DatasetDetails.scss";
 import { config } from "config";
 import DiscourseComments from "Components/Dataset/View/DiscourseComments";
-import DataDictionarySection from "Components/Dataset/View/DataDictionarySection";
+import DataDictionarySection, {
+    DataDictionaryEntityFocusRequest
+} from "Components/Dataset/View/DataDictionarySection";
+import DistributionContractSection from "Components/Dataset/View/DistributionContractSection";
 import { getPluginExtraVisualisationSections } from "../../../externalPluginComponents";
 
 const extraVisualisationSections = getPluginExtraVisualisationSections();
 
-class DistributionDetails extends Component<{
-    dataset: ParsedDataset;
-    distribution: ParsedDistribution;
-}> {
+type DistributionDetailsState = {
+    /**
+     * The Structure entity to show, requested from a How to use entity link.
+     * Only applies to the distribution it was requested for.
+     */
+    focusEntity?: DataDictionaryEntityFocusRequest & {
+        distributionId?: string;
+    };
+};
+
+class DistributionDetails extends Component<
+    {
+        dataset: ParsedDataset;
+        distribution: ParsedDistribution;
+    },
+    DistributionDetailsState
+> {
+    state: DistributionDetailsState = {};
+
+    focusDataDictionaryEntity = (entityId: string) => {
+        this.setState((state) => ({
+            focusEntity: {
+                entityId,
+                requestId: (state.focusEntity?.requestId ?? 0) + 1,
+                distributionId: this.props.distribution.identifier
+            }
+        }));
+    };
+
     renderLinkStatus(linkStatusAvailable, linkActive) {
         if (linkStatusAvailable && !linkActive) {
             return "(This link appears to be broken)";
@@ -123,6 +151,10 @@ class DistributionDetails extends Component<{
             dataset
         ) as ParsedDistribution;
         const sourceText = this.renderLinkText(distribution);
+        const focusEntity =
+            this.state.focusEntity?.distributionId === distribution.identifier
+                ? this.state.focusEntity
+                : undefined;
 
         return (
             <div className="distribution-details">
@@ -161,15 +193,33 @@ class DistributionDetails extends Component<{
                     </div>
                 )}
 
-                {/* Shown after the previews, but independently of the preview
-                    gate above: a non-previewable / query-only distribution can
-                    still be understood through its data dictionary. */}
+                {/* Data Understanding sections (Structure, then How to use)
+                    are shown after the previews, but independently of the
+                    preview gate above: a non-previewable / query-only
+                    distribution can still be understood through its data
+                    dictionary and contract. */}
                 {distribution?.dataDictionary ? (
                     <div className="row">
                         <div className="col-sm-12">
                             <DataDictionarySection
                                 key={distribution.identifier}
                                 dataDictionary={distribution.dataDictionary}
+                                focusEntity={focusEntity}
+                            />
+                        </div>
+                    </div>
+                ) : null}
+
+                {distribution?.distributionContract ? (
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <DistributionContractSection
+                                key={distribution.identifier}
+                                distributionContract={
+                                    distribution.distributionContract
+                                }
+                                dataDictionary={distribution.dataDictionary}
+                                onSelectEntity={this.focusDataDictionaryEntity}
                             />
                         </div>
                     </div>
