@@ -69,6 +69,22 @@ Built-in JSON Schema location:
 magda-registry-aspects/distribution-contract.schema.json
 ```
 
+## Core implementation conventions established by #3820
+
+The completed Data Dictionary core (#3807 / #3820) established conventions that the Distribution Contract should follow unless this design explicitly requires something different:
+
+- built-in aspect schemas use **JSON Schema draft-07**, matching the Registry validator;
+- `schemaVersion` accepts compatible `1.x` payloads and consumers fail closed on unsupported major versions;
+- representative compatibility fixtures live under `magda-registry-aspects/examples/<aspect>/`, are schema-tested and are published with the aspect package;
+- shared TypeScript consumers use a typed model plus a defensive normalizer and cross-reference validator rather than reading arbitrary `rawData`;
+- defensive normalization must not silently change values that are valid under the schema and must never invent stable semantic identities;
+- provenance uses nearest-wins inheritance without merging, plus property-level overrides for mixed-origin curation;
+- explicit provenance objects must state a non-empty `method` and/or `reviewStatus`; detail-only/empty objects must not mask inherited provenance;
+- Data Understanding sections render below the existing preview(s), outside the preview gate;
+- whole-aspect manual authoring uses `mgd dataset aspect set|get`; Registry merge-patch is not suitable for editing elements inside arrays such as operations because arrays are combined rather than matched by ID.
+
+TypeScript provenance helpers should reuse/refactor the semantics already implemented for `data-dictionary` where practical, while preserving the existing Data Dictionary exports.
+
 ## Conceptual model
 
 A contract has six concerns:
@@ -108,13 +124,17 @@ The following is illustrative of the target schema rather than a requirement tha
   "operations": [
     {
       "id": "search-occurrences",
+      "sourceIdentifier": "searchOccurrences",
       "label": "Search occurrence records",
       "purpose": "Search records by taxon and optional spatial or temporal filters",
+      "interactionType": "query",
       "method": "GET",
       "path": "/occurrences/search",
+      "endpointUrl": "https://example.org/api/occurrences/search",
       "parameters": [
         {
           "name": "q",
+          "sourceIdentifier": "q",
           "location": "query",
           "type": "string",
           "required": true,
@@ -131,10 +151,17 @@ The following is illustrative of the target schema rather than a requirement tha
       ],
       "response": {
         "mediaTypes": ["application/json"],
-        "recordsPath": "occurrences",
-        "dictionaryEntity": "occurrence-record"
+        "statusCodes": [200],
+        "recordsPath": "/occurrences",
+        "dictionaryEntity": "occurrence-record",
+        "pagination": {
+          "type": "offset-limit",
+          "limitParameter": "pageSize",
+          "offsetParameter": "offset",
+          "totalPath": "/total"
+        }
       },
-      "safeForInteractiveExample": true
+      "interactiveExampleCandidate": true
     }
   ],
   "sourceCapabilities": {
@@ -263,7 +290,9 @@ Examples:
 }
 ```
 
-This object must never contain actual credentials or tokens. A future execution component is responsible for resolving credentials through an appropriate secret/authentication system.
+This object must never contain actual credentials or tokens. It may describe a mechanism/scheme and non-secret requirements such as OAuth scopes or documentation, but a future execution component is responsible for resolving/binding credentials through an appropriate secret/authentication system.
+
+Credential-bearing values such as API keys, bearer/Authorization headers and authentication cookies are **not ordinary operation parameters**. They belong to this descriptive authentication metadata plus the separate execution/delegation system. An operation may provide a descriptive authentication override when it differs from the contract-level default.
 
 ## Operations
 
@@ -272,16 +301,21 @@ This object must never contain actual credentials or tokens. A future execution 
 Each operation may contain:
 
 - `id` — stable within the contract;
+- optional `sourceIdentifier` — stable native operation identifier where available (for example OpenAPI `operationId`);
 - `label`;
 - `purpose`;
+- optional `interactionType` — open descriptive vocabulary such as `query`, `download`, `read`, `create`, `update`, `delete`, `action` or `unknown`;
 - `method`;
-- `path` or operation-specific endpoint override;
+- `path` and/or an operation-specific absolute `endpointUrl`;
 - `parameters`;
+- optional descriptive authentication override;
 - request-body dictionary reference;
-- response metadata;
+- response metadata, including record path and pagination hints;
 - source constraints relevant to the operation;
-- `safeForInteractiveExample`;
-- optional operation-level `provenance` override.
+- optional `interactiveExampleCandidate` hint;
+- optional operation-level `provenance` / `propertyProvenance` overrides.
+
+`interactionType` and `interactiveExampleCandidate` are descriptive/advisory only. They do not authorize execution or remove the need for confirmation/policy checks. The contract deliberately avoids calling an operation intrinsically “safe”.
 
 ### Stable identity and provenance inheritance
 
@@ -291,9 +325,18 @@ Contract nodes inherit aspect-level `provenance`. An operation may provide its o
 
 Operations and parameters may additionally carry optional `propertyProvenance` maps when only selected properties differ in origin/review state. For example, `method`, `path` and parameter type may remain authoritative source metadata while a human-reviewed `purpose` or parameter `description` is preserved across automatic refresh.
 
-For refresh/merge purposes, parameters should use a stable native identifier when one exists; otherwise the initial matching identity is the pair `location + name`.
+For refresh/merge purposes, operations should preserve `sourceIdentifier` when available. Parameters should also use a stable native `sourceIdentifier` when one exists; otherwise the matching identity is the pair `location + name`.
 
-A reviewed/manual node or property should not be silently overwritten by an automatic producer. If source structure changes in a way that cannot be reconciled safely, preserve the reviewed value and surface the conflict for review.
+If a producer can deterministically resolve a full operation URL, it should populate operation-level `endpointUrl`. Otherwise `path` remains the protocol/native operation path and only a protocol-aware execution adapter may combine it with the contract-level endpoint. Generic clients must not guess URL composition by arbitrary string concatenation.
+
+Use the same protection semantics as the implemented Data Dictionary contract:
+
+- inheritance is nearest-wins without merging: property override → parameter/operation → contract;
+- each explicit provenance object must contain a **non-empty** `method` and/or `reviewStatus`;
+- `manual`, `reviewed` and `custodian-approved` effective provenance is protected from silent automatic replacement;
+- inferred/agent-generated/unreviewed/rejected content remains advisory unless subsequently reviewed.
+
+A reviewed/manual node or property should not be silently overwritten by an automatic producer. If source structure changes in a way that cannot be reconciled safely, preserve the reviewed value and surface the conflict for review. The storage representation for conflicts remains part of #3814's first producer/merge design rather than this core ticket.
 
 ### Parameters
 
@@ -304,6 +347,7 @@ A parameter may contain the invocation metadata below and may additionally carry
 ```json
 {
   "name": "bbox",
+  "sourceIdentifier": "bbox",
   "location": "query",
   "type": "string",
   "required": false,
@@ -320,7 +364,9 @@ Supported `location` values should initially include:
 - `header`;
 - `cookie`.
 
-The UI should not automatically render editable secret-bearing headers merely because they appear in the contract.
+The parameter `type` / `format` vocabulary should align with the normalized logical types used by `data-dictionary` where applicable. The core v1 parameter model is for scalar invocation values; complex structured bodies belong in the request-body Data Dictionary entity.
+
+Credential-bearing authentication inputs are excluded from ordinary parameters entirely. Non-secret header/cookie parameters may be described, but the UI must not infer that an arbitrary header/cookie is safe to edit or send.
 
 ### Structured request bodies
 
@@ -331,6 +377,7 @@ Example:
 ```json
 {
   "request": {
+    "required": true,
     "mediaTypes": ["application/json"],
     "dictionaryEntity": "search-request"
   }
@@ -342,12 +389,30 @@ Example:
 The response description should contain only interaction-level information:
 
 - media type(s);
-- HTTP/status information where useful;
+- success/status information where useful;
 - record/root path;
 - paging hints;
 - reference to the response entity in `data-dictionary`.
 
-The field-level response schema belongs in `data-dictionary`.
+For JSON responses, `recordsPath` should use an **RFC 6901 JSON Pointer** to the array/object containing the logical records (for example `/occurrences`). This gives agents/adapters deterministic extraction semantics without inventing a Magda-specific path language.
+
+An optional pagination object should use an open `type` vocabulary and may describe known request parameters / response pointers, for example:
+
+```json
+{
+  "pagination": {
+    "type": "cursor",
+    "limitParameter": "pageSize",
+    "cursorParameter": "cursor",
+    "nextCursorPath": "/paging/nextCursor",
+    "totalPath": "/paging/total"
+  }
+}
+```
+
+Initial useful properties include `limitParameter`, `offsetParameter`, `pageParameter`, `cursorParameter`, `nextCursorPath`, `nextLinkPath` and `totalPath`. JSON response-path fields use RFC 6901 JSON Pointer. These are descriptive source hints, not Magda execution limits.
+
+The field-level response schema belongs in `data-dictionary`. `dictionaryEntity` refers to an entity in the **same distribution's** `data-dictionary` aspect.
 
 ## Source capabilities versus Magda execution policy
 
@@ -405,7 +470,7 @@ Those execution policies should live in gateway/application configuration, not b
         "mediaTypes": ["application/json"],
         "dictionaryEntity": "tree-crop-feature"
       },
-      "safeForInteractiveExample": true
+      "interactiveExampleCandidate": true
     }
   ],
   "sourceCapabilities": {
@@ -443,7 +508,7 @@ Suggested fields:
   "provenance": {
     "method": "harvested",
     "sourceType": "openapi",
-    "sourceUrl": "https://example.org/openapi.json",
+    "sourceFingerprint": "sha256:...",
     "generatedAt": "2026-09-14T10:00:00Z",
     "generator": "magda-distribution-contract-harvester/1.0",
     "reviewStatus": "unreviewed"
@@ -466,7 +531,9 @@ Initial `reviewStatus` values:
 - `custodian-approved`;
 - `rejected`.
 
-`lastVerified` records when the endpoint/interface was last checked successfully. It should not be interpreted as a guarantee of availability.
+As with Data Dictionary, vocabularies remain open, but an explicit provenance object must contain a non-empty `method` and/or `reviewStatus` so it cannot accidentally mask inherited provenance while saying nothing.
+
+`lastVerified` records when the endpoint/interface was last checked successfully. It should not be interpreted as a guarantee of availability or as execution authorization.
 
 ## Delivery and metadata production model
 
@@ -497,8 +564,9 @@ The generic aspect commands are sufficient for the core/manual workflow, for exa
 ```text
 mgd dataset aspect set <distribution-id> distribution-contract @distribution-contract.json
 mgd dataset aspect get <distribution-id> distribution-contract --json
-mgd dataset aspect patch <distribution-id> distribution-contract @patch.json
 ```
+
+Do not use Registry merge-patch / `mgd dataset aspect patch` to edit elements inside `operations` or `parameters`: arrays are combined rather than matched by operation/parameter identity. For a targeted nested edit, read the aspect and send an RFC 6902 JSON Patch through `mgd api request`, following the same authoring rule documented for `data-dictionary`.
 
 No protocol-specific `mgd` execution command is implied by this metadata-authoring path.
 
@@ -555,7 +623,9 @@ The section should show, where available:
 
 The first implementation should be read-only.
 
-A later interactive explorer may render a bounded query form only for operations explicitly marked `safeForInteractiveExample` and only when local execution policy permits it.
+Following the page-placement convention implemented in #3820, **How to use** is rendered below the existing preview(s), outside the preview gate, alongside the existing Data Understanding sections. Do not move the preview or make this section depend on preview availability. Keep the already-implemented Structure section intact; the initial implementation may append How to use after it.
+
+A later interactive explorer may render a bounded query form only for operations explicitly marked `interactiveExampleCandidate` **and** when local execution/auth/network policy permits it. The candidate flag is never execution authority.
 
 ## Agent and query-gateway consumption
 
@@ -566,7 +636,42 @@ A machine client should be able to combine:
 - existing Magda access metadata to determine catalogue-side accessibility;
 - a separate credential/execution policy system to actually perform authorised queries.
 
-The contract may therefore become a source for tool definitions, but it must not itself contain secrets or claim execution authority.
+The contract may therefore become a source for tool definitions, but agents/adapters should consume the **validated/normalized** contract, not arbitrary raw aspect JSON. Stable distribution + operation identity should drive tool identity; `interactionType`, parameters, request/response entities, JSON-pointer record paths and pagination hints can drive deterministic tool descriptions.
+
+Credential values are resolved through #3810's delegated-auth mechanism, never copied from this aspect or represented as ordinary parameters. Runtime execution still validates target/egress, permissions, request values, response limits and confirmation policy.
+
+The contract must not itself contain secrets or claim execution authority.
+
+## Validation, normalization and compatibility fixtures
+
+The core implementation should mirror the consumer-safety pattern established by #3820.
+
+A shared `@magda/typescript-common/dist/distribution-contract/*` module should provide:
+
+- typed model definitions;
+- `normalizeDistributionContract` (or equivalent): fail closed on unsupported major versions, deeply sanitize unvalidated Registry data, preserve all schema-valid v1 values, and never invent stable operation/parameter identities;
+- `validateDistributionContract` (or equivalent): validate semantic/cross-reference rules that JSON Schema cannot express;
+- provenance resolution/protection helpers using the common Data Understanding semantics.
+
+Cross-reference validation should cover at least:
+
+- unique operation IDs;
+- unique parameter identity within an operation (prefer `sourceIdentifier`; otherwise `location + name`);
+- valid request/response `dictionaryEntity` references when the same distribution's Data Dictionary is provided;
+- pagination parameter references to actual operation parameters;
+- JSON-pointer syntax for JSON response record/pagination paths.
+
+Representative fixtures should live under `magda-registry-aspects/examples/distribution-contract/`, be validated against the draft-07 built-in schema, and be published with the npm package. At minimum cover:
+
+1. simple HTTP download;
+2. REST/OpenAPI query with scalar parameters, request/response dictionary references and pagination;
+3. ArcGIS Feature Service query;
+4. OGC API / STAC-style query service;
+5. authenticated/restricted service with **descriptive authentication only** and no credential values;
+6. mixed source-derived + manually reviewed operation/parameter metadata;
+7. absence of the aspect on existing distributions.
+
+The web client should use the normalized typed value and degrade safely when Registry schema validation is disabled.
 
 ## Drift detection
 
@@ -584,7 +689,8 @@ Within `schemaVersion` major version 1:
 
 - new optional fields may be added;
 - consumers should ignore unknown fields;
-- existing field meanings must not change incompatibly.
+- existing field meanings must not change incompatibly;
+- typed consumers may accept compatible `1.x` payloads, but must fail closed on an unsupported major version rather than interpreting it with v1 semantics.
 
 A future incompatible model should use a new major schema version and provide a migration path before the built-in aspect definition is tightened in a way that invalidates existing records.
 
@@ -600,5 +706,11 @@ A future incompatible model should use a new major schema version and provide a 
 - The web client can render useful read-only API/service documentation solely from the aspect.
 - The same aspect is suitable for later agent/query-adapter consumption.
 - Aspect-, operation- and parameter-level inherited provenance plus property-level overrides are sufficient to preserve mixed reviewed/manual curation across later automatic refresh.
+- Provenance inheritance/protection semantics are consistent with the implemented Data Dictionary contract and empty/detail-only provenance cannot mask inherited protection.
+- Operation/parameter identities are stable enough for later producer merge and deterministic agent-tool derivation; the normalizer never invents them.
+- JSON response record/pagination paths have deterministic semantics, and pagination parameter references can be validated.
+- Credential-bearing authentication inputs are never represented as ordinary operation parameters.
+- `interactiveExampleCandidate` is explicitly advisory and never grants execution authority.
+- Representative compatibility fixtures are schema-tested/published, and typed normalization does not silently lose schema-valid v1 values.
 - The core aspect/UI is useful with manually populated contracts; automatic harvesting is not required for the first usable v7 milestone.
 - Automatic refresh can preserve human-authored/reviewed annotations rather than requiring whole-aspect replacement.
