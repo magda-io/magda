@@ -1,7 +1,7 @@
 import {
-    DataDictionaryAspect,
-    DataDictionaryProvenance,
-    DataDictionaryProvenanceAware
+    DistributionContractAspect,
+    DistributionContractProvenance,
+    DistributionContractProvenanceAware
 } from "./model.js";
 import {
     getEffectiveProvenance as getEffectiveProvenanceGeneric,
@@ -10,9 +10,8 @@ import {
     isProtectedProvenance as isProtectedProvenanceGeneric
 } from "../data-understanding/provenance.js";
 
-// The rules are shared by all Data Understanding aspects and implemented in
-// `../data-understanding/provenance.ts`; these typed wrappers keep the
-// data-dictionary API unchanged.
+// Same rules as `data-dictionary` (shared implementation in
+// `../data-understanding/provenance.ts`), typed for the contract model.
 
 /**
  * Whether a provenance object states an origin (`method`) or review state
@@ -22,22 +21,23 @@ import {
  */
 export function hasProvenanceStatement(
     provenance: unknown
-): provenance is DataDictionaryProvenance {
+): provenance is DistributionContractProvenance {
     return hasProvenanceStatementGeneric(provenance);
 }
 
 /**
- * Resolve the effective provenance of a node (or of one of its properties).
+ * Resolve the effective provenance of a contract node (or of one of its
+ * properties).
  *
- * `nodes` is the ancestor chain below the dictionary, outermost first, e.g.
- * `[entity, field]`, `[entity, dimension]` or `[relationship]`.
+ * `nodes` is the ancestor chain below the contract, outermost first, e.g.
+ * `[operation]` or `[operation, parameter]`.
  *
  * Resolution is "nearest wins" without merging:
  *
  * 1. `node.propertyProvenance[property]` of the innermost node (when `property`
  *    is given);
- * 2. the nearest `provenance` on the node chain (innermost first);
- * 3. the dictionary-level `provenance`.
+ * 2. the nearest `provenance` on the node chain (parameter, then operation);
+ * 3. the contract-level `provenance`.
  *
  * At each step, only provenance that states a `method` or `reviewStatus`
  * counts (see `hasProvenanceStatement`); anything else is skipped.
@@ -45,11 +45,11 @@ export function hasProvenanceStatement(
  * Returns `undefined` when no provenance is recorded anywhere.
  */
 export function getEffectiveProvenance(
-    dictionary: Pick<DataDictionaryAspect, "provenance"> | undefined,
-    nodes: Array<DataDictionaryProvenanceAware | undefined> = [],
+    contract: Pick<DistributionContractAspect, "provenance"> | undefined,
+    nodes: Array<DistributionContractProvenanceAware | undefined> = [],
     property?: string
-): DataDictionaryProvenance | undefined {
-    return getEffectiveProvenanceGeneric(dictionary, nodes, property);
+): DistributionContractProvenance | undefined {
+    return getEffectiveProvenanceGeneric(contract, nodes, property);
 }
 
 /**
@@ -61,7 +61,7 @@ export function getEffectiveProvenance(
  * `custodian-approved`. A `rejected` review status is never protected.
  */
 export function isProtectedProvenance(
-    provenance: DataDictionaryProvenance | undefined
+    provenance: DistributionContractProvenance | undefined
 ): boolean {
     return isProtectedProvenanceGeneric(provenance);
 }
@@ -72,7 +72,7 @@ export function isProtectedProvenance(
  * unless it has since been reviewed/approved.
  */
 export function isAdvisoryProvenance(
-    provenance: DataDictionaryProvenance | undefined
+    provenance: DistributionContractProvenance | undefined
 ): boolean {
     return isAdvisoryProvenanceGeneric(provenance);
 }

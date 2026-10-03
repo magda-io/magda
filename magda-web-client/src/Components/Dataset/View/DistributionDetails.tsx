@@ -12,7 +12,7 @@ import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessU
 import "./DatasetDetails.scss";
 import { config } from "config";
 import DiscourseComments from "Components/Dataset/View/DiscourseComments";
-import DataDictionarySection from "Components/Dataset/View/DataDictionarySection";
+import DataUnderstandingTabs from "Components/Dataset/View/DataUnderstandingTabs";
 import { getPluginExtraVisualisationSections } from "../../../externalPluginComponents";
 
 const extraVisualisationSections = getPluginExtraVisualisationSections();
@@ -161,15 +161,18 @@ class DistributionDetails extends Component<{
                     </div>
                 )}
 
-                {/* Shown after the previews, but independently of the preview
-                    gate above: a non-previewable / query-only distribution can
-                    still be understood through its data dictionary. */}
-                {distribution?.dataDictionary ? (
+                {/* Data Understanding tabs (Structure, How to use) are shown
+                    after the previews, but independently of the preview gate
+                    above: a non-previewable / query-only distribution can
+                    still be understood through its data dictionary and
+                    contract. */}
+                {distribution?.dataDictionary ||
+                distribution?.distributionContract ? (
                     <div className="row">
                         <div className="col-sm-12">
-                            <DataDictionarySection
+                            <DataUnderstandingTabs
                                 key={distribution.identifier}
-                                dataDictionary={distribution.dataDictionary}
+                                distribution={distribution}
                             />
                         </div>
                     </div>

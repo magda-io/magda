@@ -238,7 +238,8 @@ export const DEFAULT_OPTIONAL_DISTRIBUTION_FETCH_ASPECT_LIST = [
     "publishing",
     "version",
     "preview-tabular-data-settings",
-    "data-dictionary"
+    "data-dictionary",
+    "distribution-contract"
 ];
 
 export const DEFAULT_COMPULSORY_FETCH_ASPECT_LIST = ["dcat-dataset-strings"];

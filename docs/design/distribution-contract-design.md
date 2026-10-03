@@ -638,7 +638,7 @@ The section should show, where available:
 
 The first implementation should be read-only.
 
-Following the page-placement convention implemented in #3820, **How to use** is rendered below the existing preview(s), outside the preview gate, alongside the existing Data Understanding sections. Do not move the preview or make this section depend on preview availability. Keep the already-implemented Structure section intact; the initial implementation may append How to use after it.
+Following the page-placement convention implemented in #3820, **How to use** is rendered below the existing preview(s), outside the preview gate, alongside the existing Data Understanding sections. Do not move the preview or make this section depend on preview availability. Keep the already-implemented Structure section intact. Structure and How to use are presented as tabs of one panel (see the layer design's [placement rule](./data-understanding-layer-design.md#placement-relative-to-existing-previews)).
 
 A later interactive explorer may render a bounded query form only for operations explicitly marked `interactiveExampleCandidate` **and** when local execution/auth/network policy permits it. The candidate flag is never execution authority.
 
@@ -687,6 +687,31 @@ Representative fixtures should live under `magda-registry-aspects/examples/distr
 7. absence of the aspect on existing distributions.
 
 The web client should use the normalized typed value and degrade safely when Registry schema validation is disabled.
+
+## Implementation notes (v7 core)
+
+The core capability is implemented by:
+
+- the built-in schema `magda-registry-aspects/distribution-contract.schema.json` (JSON Schema draft-07) and the compatibility fixtures in `magda-registry-aspects/examples/distribution-contract/`. Cases 1–6 above are fixtures; case 7 (no aspect) is covered by the web-client tests;
+- shared TypeScript model and helpers in `@magda/typescript-common` (`dist/distribution-contract/`): typed model, fail-closed normalization (`normalizeDistributionContract`, `1.x` only), cross-reference validation (`validateDistributionContract(contract, dataDictionary?)`), provenance resolution, and identity/authentication helpers (`getParameterIdentity`, `getEffectiveAuthentication`, `isValidJsonPointer`);
+- provenance semantics shared with `data-dictionary` through `dist/data-understanding/provenance.js`. The `data-dictionary` provenance exports keep their names and signatures as typed wrappers;
+- the web-client **How to use** section (`DistributionContractSection.tsx`). `DataUnderstandingTabs.tsx` presents it as a tab next to Structure (Structure selected by default, the tab bar shown even for a single tab, `#structure` / `#how-to-use` in the URL selecting a tab). `DistributionDetails.tsx` renders the tabs after the previews and outside the preview gate.
+
+Additive details settled during implementation:
+
+- only `schemaVersion` is required at the top level; `operations` is optional;
+- operations require `id`; parameters require `name`, `location` and `type`. `location` and `type` are open vocabularies; the normalizer shows a missing `type` as `unknown` but never derives a missing `id`, `name` or `location`;
+- identity checks: `sourceIdentifier`s (like `id`s and authentication `name`/`location`) must be non-empty, matching the runtime, which treats an empty value as absent. Operation `id`s and operation `sourceIdentifier`s are unique per contract; within an operation, `location` + `name` (header names case-insensitive) and parameter `sourceIdentifier`s are unique;
+- credentials: the schema rejects `Authorization` / `Proxy-Authorization` header parameters. The validator also rejects a parameter matching the `location` + `name` of the effective `api-key` style `authentication`, and warns about credential-like parameter names. The normalizer drops both kinds of credential parameter, so consumers of the normalized contract (UI, agents/tool derivation) never see one; this is the one schema-valid value it drops. It only carries the documented descriptive `authentication` properties: `type`, `description`, `documentationUrl`, `scheme`, `location`, `name` (the name of the header/parameter, never its value) and `scopes`;
+- authentication resolves nearest-wins without merging: operation override, then the contract default. As with provenance, an explicit authentication object must state a non-empty `type` (`none` / `other` where applicable), so an empty or detail-only operation override can't mask the contract-level authentication and the credential input it describes;
+- "source constraints relevant to the operation" use an operation-level `sourceCapabilities` object with the same definition as the contract-level one. `sourceCapabilities` is an open set: documented keys are typed, and additional keys holding plain JSON are kept;
+- pagination adds `nextLinkRelation` for OGC API / STAC style `links` arrays, where the next link can't be addressed by a fixed JSON Pointer. Response `statusCodes` accept integers or strings such as `2XX`;
+- unlike `data-dictionary`, `method: "inferred"` does not require a `sample`, because contracts aren't inferred from data samples. Verification is recorded by `lastVerified`, `specification.fingerprint` / `retrievedAt` and `provenance.sourceFingerprint`;
+- `dictionaryEntity` references are only resolved when the same distribution's `data-dictionary` is passed to the validator. In the UI, a resolvable reference links to the entity in Structure: it switches to the Structure tab, and `DataDictionarySection`'s optional `focusEntity` prop selects the entity and scrolls to it;
+- the UI shows the contract and operation endpoints and the operation `path` as text, never composes a URL from them, and only links `http(s)` documentation/specification URLs;
+- as with `data-dictionary`, no storage representation for drift conflicts is defined yet; it is left to the first automatic producer (#3814).
+
+User-facing authoring guidance: [Distribution Contract guide](../docs/distribution-contract.md).
 
 ## Drift detection
 

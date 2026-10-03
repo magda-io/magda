@@ -185,6 +185,13 @@ New Data Understanding sections (Structure, How to use, and later sections) are 
 - **Long metadata doesn't bury the preview.** A data dictionary with dozens of fields, or a contract with many operations, would otherwise push the preview far down the page.
 - **Distributions without a preview are unaffected.** The new sections are rendered outside the preview gate, so for a query-only, restricted or otherwise non-previewable distribution they appear straight after the source/access information. Those distributions still get the explanation-first experience.
 
+On the distribution page, the Data Understanding sections are presented as **tabs** in one panel (Structure, How to use, and later sections in information-architecture order), so users can switch between them without scrolling:
+
+- the tab bar is shown whenever at least one section is available, even for a single tab: the tab label names the section, replacing a visible section heading (headings are kept for screen readers and print);
+- the first available tab (Structure) is selected by default; the URL hash (`#structure`, `#how-to-use`) selects and links to a tab, without adding a browser-history entry;
+- panels keep their state while hidden (e.g. a field search), and a link from one section to another (e.g. a How to use response entity to its Structure entity) switches tabs;
+- the panel as a whole follows the placement rule above: below the previews, outside the preview gate.
+
 The same additive principle applies to other pages, such as the dataset page's Using this dataset section: new sections should extend the page without displacing content users already rely on, unless a later UX review deliberately changes the layout.
 
 ### Progressive enhancement examples

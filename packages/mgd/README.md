@@ -445,6 +445,7 @@ Records carry data in named **aspects**. The ones the CLI reads or writes most:
 | `temporal-coverage` | dataset | *optional* — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range |
 | `spatial-coverage` | dataset | *optional* — bounding box / named region; set manually when the data has a spatial extent |
 | `data-dictionary` | distribution | *optional* — normalized structure of the file/API: `{ "schemaVersion": "1.0", "entities": [{ "id", "name", "fields": [{ "path", "name", "type", … }] }], "provenance": { "method", "reviewStatus" } }`. Write with `dataset aspect set <distId> data-dictionary @dict.json`; don't `aspect patch` inside `entities` (arrays are combined, not merged by id). See the [Data Dictionary guide](https://github.com/magda-io/magda/blob/main/docs/docs/data-dictionary.md) |
+| `distribution-contract` | distribution | *optional* — how to access/query the file/API: `{ "schemaVersion": "1.0", "protocol", "endpointUrl", "authentication": { "type", … }, "operations": [{ "id", "method", "path", "parameters": [{ "name", "location", "type", … }], "response": { "dictionaryEntity", … } }], "provenance": { "method", "reviewStatus" } }`. Descriptive only: never put credentials in it. Write with `dataset aspect set <distId> distribution-contract @contract.json`; don't `aspect patch` inside `operations` (arrays are combined, not merged by id). See the [Distribution Contract guide](https://github.com/magda-io/magda/blob/main/docs/docs/distribution-contract.md) |
 
 ### Custom aspects
 
