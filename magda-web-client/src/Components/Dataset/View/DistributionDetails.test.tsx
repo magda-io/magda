@@ -97,16 +97,22 @@ describe("DistributionDetails data dictionary section", () => {
         expect(container.textContent).toContain("https://example.com/a.csv");
     });
 
-    it("renders the Structure section alongside the previews", () => {
+    it("renders the Structure section after the previews", () => {
         render(
             rawDistribution(
                 { downloadURL: "https://example.com/a.csv" },
                 { "data-dictionary": csvTable }
             )
         );
-        expect(container.querySelector(".data-dictionary")).not.toBeNull();
+        const section = container.querySelector(".data-dictionary");
+        const preview = container.querySelector(".distribution-preview");
+        expect(section).not.toBeNull();
         expect(container.querySelector(".mock-preview-vis")).not.toBeNull();
         expect(container.querySelector(".mock-preview-map")).not.toBeNull();
+        expect(
+            preview!.compareDocumentPosition(section!) &
+                Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
     });
 
     it("renders the Structure section for a non-previewable distribution", () => {

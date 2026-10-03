@@ -138,20 +138,6 @@ class DistributionDetails extends Component<{
                     </div>
                 </div>
 
-                {/* Rendered independently of the preview gate below: a
-                    non-previewable / query-only distribution can still be
-                    understood through its data dictionary. */}
-                {distribution?.dataDictionary ? (
-                    <div className="row">
-                        <div className="col-sm-12">
-                            <DataDictionarySection
-                                key={distribution.identifier}
-                                dataDictionary={distribution.dataDictionary}
-                            />
-                        </div>
-                    </div>
-                ) : null}
-
                 {(distribution?.downloadURL || distribution?.accessURL) && (
                     <div className="distribution-preview">
                         <DataPreviewVis
@@ -174,6 +160,20 @@ class DistributionDetails extends Component<{
                             : null}
                     </div>
                 )}
+
+                {/* Shown after the previews, but independently of the preview
+                    gate above: a non-previewable / query-only distribution can
+                    still be understood through its data dictionary. */}
+                {distribution?.dataDictionary ? (
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <DataDictionarySection
+                                key={distribution.identifier}
+                                dataDictionary={distribution.dataDictionary}
+                            />
+                        </div>
+                    </div>
+                ) : null}
 
                 {config.discourseSiteUrl &&
                 config.discourseIntegrationDistributionPage ? (
