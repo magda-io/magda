@@ -8,7 +8,7 @@
 
 > This document contains the current design baseline inherited from the original #3819 monolith. Unless a statement is already an explicit architecture-level decision in the overview, treat it as a hypothesis to review under the owner ticket rather than an implementation contract.
 
-#### Magda Gateway
+## Magda Gateway
 
 Gateway remains the external same-origin entry point.
 
@@ -16,7 +16,7 @@ Agent Manager's browser/control routes are configured as authenticated gateway r
 
 No Sandbox Service, Pod IP, DSH token or Agent Manager internal-agent endpoint is exposed externally.
 
-#### Agent Manager
+## Agent Manager
 
 Agent Manager is a new Magda service and the control plane for the platform.
 
@@ -38,7 +38,7 @@ Responsibilities:
 
 Agent Manager must run with narrowly scoped Kubernetes RBAC limited to the agent namespace and the Agent Sandbox resources it manages. It does not run model-generated code.
 
-#### Agent Manager database
+## Agent Manager database
 
 Agent Manager needs durable control-plane state independent of Pod/PVC lifetime.
 
