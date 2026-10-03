@@ -188,6 +188,14 @@ describe("data-dictionary aspect", () => {
             ],
             ["empty dictionary provenance", (d) => (d.provenance = {})],
             [
+                "provenance with an empty method",
+                (d) => (d.provenance = { method: "" })
+            ],
+            [
+                "provenance with an empty reviewStatus",
+                (d) => (d.provenance = { reviewStatus: "" })
+            ],
+            [
                 "provenance stating neither method nor reviewStatus",
                 (d) => (d.entities[0].fields[0].provenance = { generator: "x" })
             ],

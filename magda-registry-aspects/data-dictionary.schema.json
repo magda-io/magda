@@ -137,6 +137,7 @@
                     "title": "Method",
                     "description": "Origin of the metadata. Initial values: `authoritative-import` (normalized from an authoritative native schema), `harvested` (derived deterministically from source metadata), `inferred` (inferred from sampled data), `manual` (manually authored by a custodian/editor) and `agent-generated`. Open vocabulary: consumers should treat unknown values as unreviewed/advisory.",
                     "type": "string",
+                    "minLength": 1,
                     "examples": [
                         "authoritative-import",
                         "harvested",
@@ -149,6 +150,7 @@
                     "title": "Review status",
                     "description": "Review state. Initial values: `unreviewed`, `reviewed`, `custodian-approved`, `rejected`. Automatic producers must not silently overwrite manually authored or reviewed/custodian-approved values.",
                     "type": "string",
+                    "minLength": 1,
                     "examples": [
                         "unreviewed",
                         "reviewed",
