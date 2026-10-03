@@ -1,603 +1,243 @@
-# Dataset Usage and Fitness-for-Use Design
+# Dataset Usage / Fitness-for-Use Extension Design
 
 ## Status
 
-Proposed design for a Magda v7 capability. Implementation targets the `main` branch.
+**Deferred / use-case driven.**
 
-This document defines the dataset-level `dataset-usage` aspect introduced by the [data understanding layer](./data-understanding-layer-design.md).
+This design is retained as a possible future Magda capability, but `dataset-usage` is **not required for the Magda v7 Data Understanding Layer core** and should not be implemented merely to complete that layer.
 
-## Purpose
+The completed v7 core is:
 
-Knowing that a dataset contains certain fields or can be queried through an API does not answer the most important research question:
+- `data-dictionary` at distribution level: what information a representation contains;
+- `distribution-contract` at distribution level: how that representation can be accessed or queried;
+- existing dataset metadata such as `description`, `spatial-coverage`, `temporal-coverage`, provenance/source metadata, themes and keywords for dataset-level context.
 
-> Is this dataset appropriate evidence for the question I am trying to answer?
+A structured dataset-level usage/fitness aspect should be revisited only when a concrete project has authoritative fitness-for-use or non-inference claims that need to be consumed programmatically.
 
-A researcher needs to understand what a dataset is useful for, what it can reasonably establish, what it cannot establish, and which methodological or coverage limitations matter before combining it with other data.
+## Why implementation is deferred
 
-The `dataset-usage` aspect provides structured, provenance-aware guidance for that purpose.
+The original proposal bundled several kinds of dataset-level metadata into a new first-party aspect:
 
-It complements:
+- a usage summary;
+- intended uses;
+- purpose-specific fitness assessments;
+- limitations and interpretation guidance;
+- spatial/temporal/entity granularity;
+- methodology/evidence references;
+- provenance and review state.
 
-- `data-dictionary`, which explains what information a distribution contains;
-- `distribution-contract`, which explains how a distribution can be accessed or queried.
+After implementing the Data Dictionary (#3807) and Distribution Contract (#3808), much of that information is already represented adequately elsewhere:
 
-## Goals
+| Information | Existing / preferred home |
+| --- | --- |
+| What the dataset is and why it exists | dataset `description` |
+| Topic/discovery concepts | themes, keywords and semantic indexing |
+| Geographic extent | `spatial-coverage` |
+| Time period covered | `temporal-coverage` |
+| Fields/entities, types, units and structural semantics | `data-dictionary` |
+| Distribution access/query mechanics | `distribution-contract` |
+| Source/provenance context | existing source/provenance metadata and linked documentation |
+| General methodology narrative | dataset description or linked source documentation |
 
-The aspect should make it possible to communicate:
+Creating another structured aspect for these concepts would introduce overlapping sources of truth and additional authoring/review burden without enough demonstrated value.
 
-- intended and demonstrated uses;
-- fitness-for-use assessments for particular analytical purposes;
-- important limitations and non-inferences;
-- interpretation guidance;
-- methodology references;
-- spatial, temporal and entity-level granularity/currency considerations;
-- quality considerations that materially affect interpretation;
-- evidence and provenance behind those statements;
-- review/custodian approval state.
+In particular, human-readable `summary`, `intendedUses`, `granularity` and general `interpretationGuidance` can easily drift from the dataset description, coverage aspects and data dictionary.
 
-The aspect should be useful both to people and to software agents deciding whether a dataset is appropriate for a task.
+## The remaining gap
 
-## Non-goals
+There is still one information class that existing metadata does not represent particularly well:
 
-The aspect does not:
+> **authoritative, purpose-specific claims about what conclusions a dataset is or is not fit to support.**
 
-- certify scientific validity in general;
-- replace domain peer review;
-- guarantee that a dataset is suitable for every use not explicitly discussed;
-- replace generic dataset description, spatial coverage, temporal coverage or provenance aspects;
-- encode distribution-specific API parameters or schemas;
-- permit an agent-generated limitation statement to masquerade as custodian-approved guidance;
-- automatically determine causal or legal conclusions from data.
+Examples:
 
-## Why this is dataset-level
+- "Not suitable for determining whether an individual property is currently producing citrus."
+- "Suitable for regional exposure analysis only when the published mapping currency is acceptable."
+- "Absence from the map is not evidence of absence."
 
-Fitness-for-use usually concerns the meaning and production of the dataset rather than a particular transport format.
+These statements are different from structure or access metadata. They are domain claims about interpretation and evidentiary limits.
 
-For example, the same orchard-mapping dataset may be available as a Feature Service and a downloadable file. The limitations of the mapping method apply to both distributions even though access mechanisms differ.
+They can be valuable to both people and software agents **when they come from an authoritative source and need machine-readable treatment**.
 
-Distribution-specific caveats can still live in `distribution-contract` or ordinary access notes where appropriate.
+## Why ordinary description is the default
 
-## Aspect ID and placement
+For normal catalogue records, dataset-level context should remain in the existing `description` and related metadata.
 
-Aspect ID:
+A consumer or agent can combine:
 
-```text
-dataset-usage
-```
+1. dataset description;
+2. spatial and temporal coverage;
+3. source/provenance metadata;
+4. `data-dictionary`;
+5. `distribution-contract`;
+6. linked methodology/source documentation;
 
-Record type:
+to determine whether a dataset appears relevant to a task.
 
-```text
-dataset
-```
+This avoids creating a parallel structured representation for prose that does not need independent machine semantics.
 
-Built-in JSON Schema location:
+A future structured aspect is justified only when software needs to preserve and consume an explicit authoritative claim without reinterpreting general prose.
 
-```text
-magda-registry-aspects/dataset-usage.schema.json
-```
+## Revisit criteria
 
-## Design principles
+Revisit implementation of `dataset-usage` when at least one real project can answer **yes** to the following:
 
-### 1. Phrase claims in terms of evidence, not marketing
+- Does the project have concrete fitness-for-use, limitation or non-inference claims that are not adequately represented by dataset description/coverage/structure/access metadata?
+- Are those claims authored or reviewable by a custodian/domain authority?
+- Does a machine consumer need the claims in structured form rather than merely displaying/searching prose?
+- Is there a maintenance owner or source of truth for the claims?
+- Is the benefit large enough to justify provenance/review semantics and a dedicated UI/model?
 
-The aspect should prefer statements such as:
+A request to make an agent "smarter" by itself is not sufficient justification. If an agent can derive a tentative judgement from existing metadata and documentation, that judgement should remain part of the agent's reasoning rather than automatically becoming durable catalogue truth.
 
-> Suitable for regional estimates of mapped commercial citrus area for the stated mapping period.
+## Possible future narrow v1
 
-rather than:
+If the revisit criteria are met, prefer a deliberately small aspect whose responsibility is limited to **fitness assessments and important limitations**.
 
-> High-quality dataset for citrus research.
-
-The former is testable and scoped; the latter is not.
-
-### 2. Explicitly represent non-inferences
-
-A high-value part of the metadata is often what the data **cannot establish**.
-
-Example:
-
-> Mapped presence should not be interpreted as confirmation that a specific property is currently producing citrus.
-
-This prevents a map or field name from implying stronger evidence than the source supports.
-
-### 3. Preserve authorship and review state
-
-Custodian-authored guidance, peer-reviewed methodology and agent-generated suggestions must remain distinguishable.
-
-### 4. Avoid duplicating base catalogue metadata
-
-Spatial and temporal extents already have dedicated Magda aspects. `dataset-usage` should explain why their granularity/currency matters for interpretation rather than restating every bounding box/date.
-
-## Proposed v1 shape
+Possible shape:
 
 ```json
 {
   "schemaVersion": "1.0",
-  "summary": "Mapped tree-crop extent suitable for regional production-landscape analysis.",
-  "intendedUses": [
-    {
-      "purpose": "Estimate the regional distribution of mapped tree-crop commodities",
-      "description": "Useful for landscape-scale exposure and proximity analyses."
-    }
-  ],
   "fitnessAssessments": [
     {
-      "purpose": "Identify current citrus production at an individual property",
+      "purpose": "Identify current production at an individual property",
       "assessment": "not-suitable",
-      "rationale": "Mapping currency and classification methodology do not establish current production status at property level.",
+      "rationale": "The mapping method and currency do not establish current production status.",
       "evidence": [
         {
           "type": "methodology",
           "url": "https://example.org/methodology"
         }
       ]
-    },
-    {
-      "purpose": "Estimate regional citrus exposure around a detection location",
-      "assessment": "conditionally-suitable",
-      "rationale": "Suitable when the analysis tolerates the published mapping currency and spatial resolution.",
-      "conditions": [
-        "Report the source mapping year",
-        "Do not interpret unmapped parcels as proof of absence"
-      ]
     }
   ],
   "limitations": [
     {
-      "statement": "Unmapped locations are not evidence that the commodity is absent.",
-      "category": "interpretation"
-    },
-    {
-      "statement": "Feature-level mapping year may vary across the dataset.",
-      "category": "currency"
+      "statement": "Absence from the map is not evidence of absence.",
+      "category": "interpretation",
+      "evidence": [
+        {
+          "type": "custodian-statement",
+          "url": "https://example.org/guidance"
+        }
+      ]
     }
   ],
-  "interpretationGuidance": [
-    "Use feature-level year/currency fields where available.",
-    "Aggregate results to a scale compatible with the source mapping resolution."
-  ],
-  "granularity": {
-    "entity": "mapped crop feature",
-    "spatial": "feature/polygon",
-    "temporal": "mapping campaign / feature-level year"
-  },
-  "methodology": {
-    "description": "Tree-crop mapping produced using the custodian's published mapping workflow.",
-    "url": "https://example.org/methodology"
-  },
-  "provenance": {
-    "method": "manual",
-    "generatedAt": "2026-09-14T10:00:00Z",
-    "reviewStatus": "custodian-approved",
-    "reviewedAt": "2026-09-14T11:00:00Z"
-  }
-}
-```
-
-## `schemaVersion`
-
-Required string identifying the aspect contract version.
-
-Initial value:
-
-```text
-1.0
-```
-
-Consumers should tolerate additive fields within the same major version.
-
-## Summary
-
-`summary` is an optional concise statement answering:
-
-> What kind of analytical evidence is this dataset primarily useful for?
-
-It should not simply repeat the dataset's descriptive abstract.
-
-## Intended uses
-
-`intendedUses` records known or documented uses without asserting that all are scientifically validated.
-
-Each item may contain:
-
-- `purpose`;
-- `description`;
-- optional `audience`;
-- optional evidence references.
-
-Examples:
-
-- regional situational awareness;
-- surveillance planning;
-- trend analysis;
-- exposure analysis;
-- model input;
-- reporting/statistical aggregation.
-
-## Fitness assessments
-
-`fitnessAssessments` is the strongest structured part of the model.
-
-Each assessment binds a **specific purpose/question** to an assessment and rationale.
-
-Initial assessment values:
-
-- `suitable`;
-- `conditionally-suitable`;
-- `not-suitable`;
-- `unknown`.
-
-Example:
-
-```json
-{
-  "purpose": "Estimate current production volume by individual business",
-  "assessment": "not-suitable",
-  "rationale": "The source contains mapped area but no validated current production-volume measure."
-}
-```
-
-The purpose text must be specific enough that the assessment is not interpreted as a universal quality score.
-
-### Conditions
-
-A conditional assessment may include explicit conditions:
-
-```json
-{
-  "purpose": "Regional exposure modelling",
-  "assessment": "conditionally-suitable",
-  "conditions": [
-    "Use at regional rather than parcel-level resolution",
-    "Include mapping year in uncertainty reporting"
-  ]
-}
-```
-
-## Limitations
-
-`limitations` captures general caveats that affect interpretation across several use cases.
-
-Suggested categories include:
-
-- `coverage`;
-- `currency`;
-- `resolution`;
-- `sampling`;
-- `measurement`;
-- `classification`;
-- `bias`;
-- `completeness`;
-- `interpretation`;
-- `privacy`;
-- `governance`;
-- `other`.
-
-The category list should remain extensible.
-
-A limitation may contain:
-
-- `statement`;
-- `category`;
-- optional severity/importance label;
-- evidence;
-- provenance override where different from the aspect-level source.
-
-The first version should avoid a numerical confidence score unless a source supplies a meaningful documented measure. A generic model-generated confidence number can create false precision.
-
-## Interpretation guidance
-
-`interpretationGuidance` contains practical instructions that help a researcher avoid common misuse.
-
-Examples:
-
-- report the observation year with results;
-- aggregate only to a specified scale;
-- treat missing values as unknown rather than zero;
-- use a particular field rather than a display label;
-- do not infer absence from lack of a mapped feature.
-
-This section is explanatory, not executable query policy.
-
-## Granularity
-
-The optional `granularity` object explains the level at which evidence should be interpreted.
-
-Possible properties:
-
-- `entity` — e.g. property, business, survey, specimen, raster cell, feature;
-- `spatial` — human-readable analytical granularity;
-- `temporal` — snapshot, daily, annual, mapping campaign, etc.;
-- `population` — where useful.
-
-This should complement, not duplicate, existing spatial/temporal coverage extents.
-
-Example:
-
-```json
-{
-  "entity": "survey event",
-  "spatial": "site-level observation",
-  "temporal": "observation date"
-}
-```
-
-## Methodology
-
-The `methodology` object can point to the process by which the dataset was created.
-
-Suggested fields:
-
-- `description`;
-- `url`;
-- `citation`;
-- optional version/date.
-
-The design should prefer links/citations to substantial methodology documents rather than copying them into the aspect.
-
-## Evidence
-
-Fitness and limitation claims may include evidence references.
-
-Proposed generic form:
-
-```json
-{
-  "type": "methodology",
-  "title": "Tree Crop Mapping Method",
-  "url": "https://example.org/methodology",
-  "citation": "..."
-}
-```
-
-Other evidence types may include:
-
-- `custodian-statement`;
-- `methodology`;
-- `publication`;
-- `validation-study`;
-- `data-quality-report`;
-- `legal-policy`;
-- `other`.
-
-A claim can exist without a public URL, but its provenance/review status must remain clear.
-
-## Provenance and review
-
-Aspect-level provenance should record how the guidance was created.
-
-Suggested fields:
-
-```json
-{
-  "method": "agent-generated",
-  "generatedAt": "2026-09-14T10:00:00Z",
-  "generator": "...",
-  "sourceUrls": ["https://example.org/docs"],
-  "reviewStatus": "unreviewed"
-}
-```
-
-Initial `method` values:
-
-- `custodian-authored`;
-- `manual`;
-- `authoritative-import`;
-- `agent-generated`;
-- `inferred`.
-
-Initial `reviewStatus` values:
-
-- `unreviewed`;
-- `reviewed`;
-- `custodian-approved`;
-- `rejected`.
-
-Optional review metadata may include:
-
-- `reviewedAt`;
-- reviewer role/organisation label where appropriate;
-- review note.
-
-The design should avoid storing unnecessary personal information about reviewers when an organisational/role label is sufficient.
-
-## Claim-level provenance
-
-An individual fitness assessment or limitation may override the aspect-level provenance.
-
-This is useful when, for example:
-
-- most of the aspect was generated by an agent;
-- one limitation is copied from a custodian methodology document;
-- a domain expert has reviewed one assessment but not the rest.
-
-Example:
-
-```json
-{
-  "statement": "Absence from the map is not evidence of crop absence.",
-  "category": "interpretation",
   "provenance": {
     "method": "custodian-authored",
-    "reviewStatus": "custodian-approved",
-    "sourceUrl": "https://example.org/methodology"
+    "reviewStatus": "custodian-approved"
   }
 }
 ```
 
-## Authoring workflow
+### Candidate fields
 
-### Custodian/manual authoring
+A future narrow v1 may include:
 
-An editor may directly create the aspect from known documentation and domain expertise.
+- `schemaVersion`;
+- `fitnessAssessments[]`:
+  - `purpose`;
+  - `assessment`: `suitable`, `conditionally-suitable`, `not-suitable`, or `unknown`;
+  - `rationale`;
+  - optional `conditions`;
+  - optional evidence references;
+  - optional claim-level provenance override;
+- `limitations[]`:
+  - `statement`;
+  - optional category;
+  - optional evidence references;
+  - optional claim-level provenance override;
+- aspect-level provenance/review state.
 
-This is the preferred path for high-stakes claims such as explicit non-inferences.
+The exact schema should be designed from the concrete project claims rather than freezing it now.
 
-### Manual population with `mgd`
+## Deliberately excluded from a future narrow v1
 
-The initial implementation can use the existing generic aspect commands:
+Unless a concrete use case proves otherwise, do **not** add the following merely because they were in the original proposal:
 
-```text
-mgd dataset aspect set <dataset-id> dataset-usage @dataset-usage.json
-mgd dataset aspect get <dataset-id> dataset-usage --json
-mgd dataset aspect patch <dataset-id> dataset-usage @patch.json
-```
+### `summary`
 
-A bespoke review workflow is not required for the first release; provenance/review state remains part of the payload.
+Use the dataset description. A second "why useful" summary is likely to duplicate or drift from it.
 
-### Agent-assisted authoring
+### `intendedUses`
 
-An agent may read:
+Keep ordinary intended-use prose in the dataset description or linked documentation. Add a structured item only when it is part of an explicit fitness claim.
 
-- dataset description;
-- methodology/documentation;
-- data dictionary;
-- bounded samples;
-- cited publications;
+### `granularity`
 
-and propose usage/limitation statements.
-
-The generated result must begin as `unreviewed`. The UI and machine clients must not hide that status.
-
-### Review
-
-A reviewer should be able to:
-
-- accept generated content;
-- edit a claim;
-- reject a claim;
-- approve the overall aspect or selected claims.
-
-The initial storage model should support review state even if the first web-client release uses existing aspect editing/admin mechanisms rather than a bespoke review workflow.
-
-## Relationship to quality metadata
-
-`dataset-usage` is not a generic quality score.
-
-A dataset can be high quality for one purpose and unsuitable for another. Existing or future quality metrics may provide evidence, but fitness assessments should remain purpose-specific.
-
-Example:
-
-- complete regional coverage may make a dataset useful for broad exposure mapping;
-- the same dataset may still be unsuitable for property-level current-production claims due to temporal currency.
-
-## Relationship to access and governance
-
-Some usage limitations are governance-related, but this aspect does not grant or deny access.
+Do not duplicate spatial/temporal coverage or structural metadata.
 
 For example:
 
-```json
-{
-  "statement": "Results derived from this dataset must be reported only in aggregated form under the data-sharing agreement.",
-  "category": "governance"
-}
-```
+- geographic extent belongs in `spatial-coverage`;
+- covered dates belong in `temporal-coverage`;
+- entity/feature/row concepts belong in `data-dictionary`;
+- analytical restrictions such as "regional only, not property-level" belong in a fitness assessment or limitation when authoritative.
 
-may be useful explanatory metadata, but enforceable permissions still belong in the relevant policy/access systems.
+### general `interpretationGuidance`
 
-## Web-client design
+Ordinary explanatory guidance belongs in description/documentation. Preserve only guidance that forms a material fitness condition or non-inference claim.
 
-The dataset page should render a prominent **Using this dataset** section when `dataset-usage` exists.
+### methodology description
 
-The first version should show:
+Prefer a methodology/source link or evidence reference rather than copying another narrative description into the aspect.
 
-- usage summary;
-- intended uses;
-- fitness assessments grouped by suitable / conditional / not suitable where helpful;
-- limitations;
-- interpretation guidance;
-- methodology/evidence links;
-- granularity notes;
-- provenance and review badge.
+## Trust model
 
-Important trust cues should be visible rather than hidden in raw JSON.
+Fitness-for-use is a domain judgement, not an objective schema fact.
 
-Example:
+That makes this metadata fundamentally different from most information harvested into `data-dictionary` and `distribution-contract`.
 
-```text
-Using this dataset
+If a future aspect is implemented:
 
-Useful for
-  ✓ Regional distribution of mapped citrus production areas
-  ~ Regional exposure analysis when mapping currency is acceptable
+- provenance and review state are part of the meaning of every claim;
+- custodian-authored/imported claims and reviewed claims should be distinguishable from inferred or agent-generated claims;
+- missing claims must never be interpreted as proof of suitability;
+- a purpose-specific assessment must never become a generic dataset quality score;
+- the aspect must not grant or deny access;
+- native methodology and policy sources remain authoritative.
 
-Do not use to establish
-  ✕ Whether an individual property is currently producing citrus
+## Agent-generated content
 
-Important limitations
-  • Unmapped parcels are not proof of absence
-  • Mapping year varies by feature
+An agent may use existing catalogue metadata and source documentation to make a task-specific suitability judgement for the current interaction.
 
-Status
-  Custodian approved · reviewed 14 Sep 2026
-```
+That does **not** mean the judgement should automatically be persisted as `dataset-usage`.
 
-An unreviewed agent-generated version should say so explicitly.
+Persisting an agent-generated fitness claim creates a risk that a later agent treats an earlier model judgement as catalogue evidence. If agent-assisted authoring is eventually supported, generated claims should be clearly advisory/unreviewed and should require an explicit review path before being treated as authoritative guidance.
 
-## Search and semantic indexing
+## Relationship to the v8 Agent Platform
 
-Selected usage metadata can improve discovery.
+The v8 agent can already reason from:
 
-Examples of useful indexed content:
+- dataset description;
+- spatial/temporal coverage;
+- `data-dictionary`;
+- `distribution-contract`;
+- provenance/source metadata;
+- source documentation it is authorised to inspect.
 
-- intended uses;
-- purpose text from fitness assessments;
-- limitation statements;
-- methodology concepts.
+A future `dataset-usage` aspect would be an additional source of **authoritative domain guidance**, not a prerequisite for agent operation.
 
-This could enable queries such as:
+The agent should continue to make task-specific judgements itself and surface uncertainty/limitations. It must not treat absence of a structured fitness claim as evidence that a dataset is suitable.
 
-- "datasets useful for regional citrus exposure modelling";
-- "data that can identify individual properties";
-- "datasets with property-level limitations".
+## Relationship to the Data Understanding Layer
 
-Search ranking should not treat an unreviewed agent-generated suitability claim as equivalent to custodian-approved guidance without considering provenance.
+For v7, the core Data Understanding Layer consists of the two normalized distribution-level contracts plus existing dataset-level catalogue metadata.
 
-## Agent consumption
+`dataset-usage` is therefore an **optional future extension**, not the missing third leg required to complete the core.
 
-A future agent should use `dataset-usage` as evidence when deciding whether to select a dataset for a task.
+See [Data Understanding Layer Design](./data-understanding-layer-design.md).
 
-Example reasoning pattern:
+## Future acceptance criteria
 
-1. identify candidate datasets by topic/fields;
-2. inspect `dataset-usage` for purpose-specific fitness and limitations;
-3. inspect `data-dictionary` for required variables;
-4. inspect `distribution-contract` for usable access/query mechanisms;
-5. present limitations alongside any proposed analysis.
+If implementation is reactivated, acceptance criteria should be derived from a concrete project, but should at minimum require:
 
-The agent must not infer that absence of a `not-suitable` claim means the dataset is suitable.
-
-## Combining with other datasets
-
-Usage metadata can explain whether combination is conceptually defensible.
-
-For example, if Dataset A is property-level and current while Dataset B is a regional historical map, a future mediation layer can surface the mismatch before proposing a join.
-
-The first version does not automate this reasoning, but `granularity`, fitness assessments, limitations and evidence provide important inputs.
-
-## Compatibility and evolution
-
-The aspect is optional and additive. Existing dataset pages continue to work unchanged when it is absent.
-
-Within schema version 1:
-
-- optional fields may be added;
-- existing meanings must remain stable;
-- consumers should ignore unknown properties.
-
-The schema should not require every dataset to have fitness assessments. A minimal valid aspect may contain only a reviewed summary and limitations, while richer records can add purpose-specific assessments.
-
-## Acceptance criteria
-
-- The aspect can clearly state why a dataset is useful without duplicating its generic description.
-- It can represent purpose-specific suitable, conditional, not-suitable and unknown assessments.
-- It can explicitly represent important non-inferences.
-- Granularity/currency guidance can be expressed without duplicating existing spatial/temporal extent aspects.
-- Methodology/evidence references can support claims.
-- Aspect-level and claim-level provenance can distinguish custodian, manual, imported, inferred and agent-generated content.
-- Unreviewed agent-generated guidance is visibly distinguishable from reviewed/custodian-approved guidance.
-- The aspect does not grant access or replace quality/domain review.
-- The web client can present the most important suitability and limitation information without requiring users to inspect raw aspects.
-- Agents can consume the aspect without treating missing claims as proof of suitability.
+- a real authoritative fitness/limitation use case that cannot be adequately handled by existing description/coverage/structure/access metadata;
+- clear ownership/review of the claims;
+- purpose-specific assessments rather than generic quality scores;
+- explicit non-inference/limitation support;
+- evidence and provenance sufficient for consumers to understand authority;
+- safe handling of unreviewed/agent-generated claims;
+- no unnecessary duplication of description, spatial coverage, temporal coverage or data dictionary metadata;
+- a demonstrated machine consumer that benefits from the structured representation.
