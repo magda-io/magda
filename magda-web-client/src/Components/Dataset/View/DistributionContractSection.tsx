@@ -714,13 +714,20 @@ const Operation: FunctionComponent<{
  *
  * It only describes the interface: it never composes or executes requests.
  * `onSelectEntity` is called when a request/response entity link is followed;
- * links are only shown for entities of `dataDictionary`.
+ * links are only shown for entities of `dataDictionary`. `headingClassName`
+ * replaces the default `section-heading` class of the "How to use" heading.
  */
 const DistributionContractSection: FunctionComponent<{
     distributionContract: DistributionContractAspect;
     dataDictionary?: DataDictionaryAspect;
     onSelectEntity?: (entityId: string) => void;
-}> = ({ distributionContract: contract, dataDictionary, onSelectEntity }) => {
+    headingClassName?: string;
+}> = ({
+    distributionContract: contract,
+    dataDictionary,
+    onSelectEntity,
+    headingClassName = "section-heading"
+}) => {
     const operations = contract.operations ?? [];
     const specification = contract.specification;
     const specificationName = specification?.type
@@ -735,7 +742,7 @@ const DistributionContractSection: FunctionComponent<{
             className="distribution-contract"
             aria-labelledby="distribution-contract-heading"
         >
-            <h3 className="section-heading" id="distribution-contract-heading">
+            <h3 className={headingClassName} id="distribution-contract-heading">
                 How to use
             </h3>
             <dl className="distribution-contract__overview">

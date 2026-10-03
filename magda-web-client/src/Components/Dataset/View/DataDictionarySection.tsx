@@ -659,12 +659,19 @@ export interface DataDictionaryEntityFocusRequest {
  *
  * `focusEntity` optionally selects an entity (by id), clears the search and
  * scrolls the section into view; e.g. when a request/response entity link in
- * the How to use section is followed.
+ * the How to use section is followed. `headingClassName` replaces the default
+ * `section-heading` class of the "Structure" heading (e.g. to hide it visually
+ * where a tab label already names the section).
  */
 const DataDictionarySection: FunctionComponent<{
     dataDictionary: DataDictionaryAspect;
     focusEntity?: DataDictionaryEntityFocusRequest;
-}> = ({ dataDictionary, focusEntity }) => {
+    headingClassName?: string;
+}> = ({
+    dataDictionary,
+    focusEntity,
+    headingClassName = "section-heading"
+}) => {
     const entities = dataDictionary.entities;
     // selection/keys are index based: entity ids should be unique, but
     // unvalidated data may repeat them
@@ -720,7 +727,7 @@ const DataDictionarySection: FunctionComponent<{
             ref={sectionRef}
             tabIndex={-1}
         >
-            <h3 className="section-heading" id="data-dictionary-heading">
+            <h3 className={headingClassName} id="data-dictionary-heading">
                 Structure
             </h3>
             <p className="data-dictionary__summary">

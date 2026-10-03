@@ -7,7 +7,7 @@ The built-in `data-dictionary` aspect describes **what data a distribution actua
 - Example payloads for every documented v1 source family: [`magda-registry-aspects/examples/data-dictionary/`](../../magda-registry-aspects/examples/data-dictionary/).
 - Shared TypeScript model and helpers: `@magda/typescript-common/dist/data-dictionary/*.js`.
 
-The aspect is optional and additive: distributions without it render exactly as before. When it is present, the distribution page shows a read-only **Structure** section (entity selector, searchable field table, types/source types, descriptions, units, required/nullable, semantic concepts, provenance/review indicators and a link to the native schema/specification). The section is shown even when the distribution cannot be previewed (e.g. query-only or restricted services).
+The aspect is optional and additive: distributions without it render exactly as before. When it is present, the distribution page shows a read-only **Structure** tab (entity selector, searchable field table, types/source types, descriptions, units, required/nullable, semantic concepts, provenance/review indicators and a link to the native schema/specification). It sits below the existing previews (next to **How to use** when the distribution also has a [`distribution-contract`](./distribution-contract.md)) and is shown even when the distribution cannot be previewed (e.g. query-only or restricted services).
 
 Automatic producers (harvesting/inference, tracked in [#3813](https://github.com/magda-io/magda/issues/3813)) are **not** required: dictionaries can be authored manually today, and manual/custodian input remains a first-class source once producers exist.
 

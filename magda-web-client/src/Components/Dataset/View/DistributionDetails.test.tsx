@@ -81,6 +81,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+    window.history.replaceState(null, "", "/");
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
@@ -199,7 +200,7 @@ describe("DistributionDetails How to use section", () => {
         expect(container.querySelector(".mock-preview-vis")).not.toBeNull();
     });
 
-    it("renders How to use after the previews and after Structure", () => {
+    it("renders Structure and How to use as tabs after the previews", () => {
         render(
             rawDistribution(
                 { downloadURL: "https://example.com/a.csv" },
@@ -218,6 +219,21 @@ describe("DistributionDetails How to use section", () => {
         expect(container.querySelector(".mock-preview-map")).not.toBeNull();
         expect(isAfter(preview, structure)).toBe(true);
         expect(isAfter(structure, howToUse)).toBe(true);
+        const tabs = Array.from(
+            container.querySelectorAll(".data-understanding [role='tab']")
+        );
+        expect(tabs.map((tab) => tab.textContent)).toEqual([
+            "Structure",
+            "How to use"
+        ]);
+        expect(isAfter(preview, tabs[0])).toBe(true);
+        // Structure is selected by default
+        expect(
+            structure.closest("[role='tabpanel']")!.hasAttribute("hidden")
+        ).toBe(false);
+        expect(
+            howToUse.closest("[role='tabpanel']")!.hasAttribute("hidden")
+        ).toBe(true);
     });
 
     it("renders How to use for a non-previewable distribution", () => {
@@ -227,6 +243,11 @@ describe("DistributionDetails How to use section", () => {
         );
         expect(container.querySelector(".distribution-preview")).toBeNull();
         expect(container.querySelector(".data-dictionary")).toBeNull();
+        expect(
+            Array.from(
+                container.querySelectorAll(".data-understanding [role='tab']")
+            ).map((tab) => tab.textContent)
+        ).toEqual(["How to use"]);
         expect(
             container.querySelectorAll(".distribution-contract__operation")
         ).toHaveLength(3);
@@ -289,6 +310,11 @@ describe("DistributionDetails How to use section", () => {
         act(() =>
             entityLink("search-occurrences", "occurrence-record").click()
         );
+        expect(
+            container
+                .querySelector("#data-understanding-tab-structure")
+                ?.getAttribute("aria-selected")
+        ).toBe("true");
         expect(selectedEntity()).toBe("occurrence-record");
         expect(searchInput().value).toBe("");
         expect(document.activeElement).toBe(
@@ -301,7 +327,9 @@ describe("DistributionDetails How to use section", () => {
         // following the same link again re-selects the entity
         act(() =>
             Array.from(
-                container.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+                container.querySelectorAll<HTMLButtonElement>(
+                    '.data-dictionary [role="tab"]'
+                )
             )[1].click()
         );
         expect(selectedEntity()).toBe("occurrence-record");
