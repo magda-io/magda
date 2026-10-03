@@ -193,6 +193,21 @@ Initial value:
 
 Consumers should tolerate unknown additive properties within the same major version.
 
+## Minimum v1 structural requirements
+
+For schema version 1:
+
+- the top-level object requires a non-empty supported `schemaVersion`;
+- `operations` is optional (a simple downloadable/manual-access distribution may need no operation list);
+- every operation requires a non-empty stable `id`;
+- every scalar parameter requires non-empty `name`, `location` and normalized `type`;
+- operation/parameter `sourceIdentifier` values are optional but should be preserved when the native source supplies stable identifiers;
+- request/response `dictionaryEntity` references are non-empty entity IDs local to the same distribution's `data-dictionary`;
+- explicit provenance objects obey the common non-empty `method` / `reviewStatus` rule;
+- unknown additive properties are allowed within v1 and consumers ignore what they do not understand.
+
+An operation does not become executable merely because it is structurally valid. Tool/execution derivation additionally requires an approved adapter to resolve an endpoint, authentication, target/network policy and request/response limits.
+
 ### `resourceRole`
 
 Optional normalised role describing what the distribution represents.
@@ -394,7 +409,7 @@ The response description should contain only interaction-level information:
 - paging hints;
 - reference to the response entity in `data-dictionary`.
 
-For JSON responses, `recordsPath` should use an **RFC 6901 JSON Pointer** to the array/object containing the logical records (for example `/occurrences`). This gives agents/adapters deterministic extraction semantics without inventing a Magda-specific path language.
+For JSON responses, `recordsPath` should use an **[RFC 6901 JSON Pointer](https://www.rfc-editor.org/rfc/rfc6901)** to the array/object containing the logical records (for example `/occurrences`). This gives agents/adapters deterministic extraction semantics without inventing a Magda-specific path language.
 
 An optional pagination object should use an open `type` vocabulary and may describe known request parameters / response pointers, for example:
 
@@ -410,7 +425,7 @@ An optional pagination object should use an open `type` vocabulary and may descr
 }
 ```
 
-Initial useful properties include `limitParameter`, `offsetParameter`, `pageParameter`, `cursorParameter`, `nextCursorPath`, `nextLinkPath` and `totalPath`. JSON response-path fields use RFC 6901 JSON Pointer. These are descriptive source hints, not Magda execution limits.
+Initial useful properties include `limitParameter`, `offsetParameter`, `pageParameter`, `cursorParameter`, `nextCursorPath`, `nextLinkPath` and `totalPath`. Pagination request-parameter properties refer to the `name` of a query parameter in the same operation; the semantic validator should reject unresolved references. JSON response-path fields use RFC 6901 JSON Pointer. These are descriptive source hints, not Magda execution limits.
 
 The field-level response schema belongs in `data-dictionary`. `dictionaryEntity` refers to an entity in the **same distribution's** `data-dictionary` aspect.
 
