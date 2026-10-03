@@ -3,6 +3,16 @@ import {
     DataDictionaryProvenance,
     DataDictionaryProvenanceAware
 } from "./model.js";
+import {
+    getEffectiveProvenance as getEffectiveProvenanceGeneric,
+    hasProvenanceStatement as hasProvenanceStatementGeneric,
+    isAdvisoryProvenance as isAdvisoryProvenanceGeneric,
+    isProtectedProvenance as isProtectedProvenanceGeneric
+} from "../data-understanding/provenance.js";
+
+// The rules are shared by all Data Understanding aspects and implemented in
+// `../data-understanding/provenance.ts`; these typed wrappers keep the
+// data-dictionary API unchanged.
 
 /**
  * Whether a provenance object states an origin (`method`) or review state
@@ -13,18 +23,7 @@ import {
 export function hasProvenanceStatement(
     provenance: unknown
 ): provenance is DataDictionaryProvenance {
-    if (
-        typeof provenance !== "object" ||
-        provenance === null ||
-        Array.isArray(provenance)
-    ) {
-        return false;
-    }
-    const { method, reviewStatus } = provenance as DataDictionaryProvenance;
-    return (
-        (typeof method === "string" && method.length > 0) ||
-        (typeof reviewStatus === "string" && reviewStatus.length > 0)
-    );
+    return hasProvenanceStatementGeneric(provenance);
 }
 
 /**
@@ -50,22 +49,7 @@ export function getEffectiveProvenance(
     nodes: Array<DataDictionaryProvenanceAware | undefined> = [],
     property?: string
 ): DataDictionaryProvenance | undefined {
-    const chain = nodes.filter((node) => !!node);
-    const innermost = chain.length ? chain[chain.length - 1] : undefined;
-    if (property && innermost?.propertyProvenance) {
-        const propProvenance = innermost.propertyProvenance[property];
-        if (hasProvenanceStatement(propProvenance)) {
-            return propProvenance;
-        }
-    }
-    for (let i = chain.length - 1; i >= 0; i--) {
-        if (hasProvenanceStatement(chain[i].provenance)) {
-            return chain[i].provenance;
-        }
-    }
-    return hasProvenanceStatement(dictionary?.provenance)
-        ? dictionary.provenance
-        : undefined;
+    return getEffectiveProvenanceGeneric(dictionary, nodes, property);
 }
 
 /**
@@ -79,17 +63,7 @@ export function getEffectiveProvenance(
 export function isProtectedProvenance(
     provenance: DataDictionaryProvenance | undefined
 ): boolean {
-    if (!provenance) {
-        return false;
-    }
-    if (provenance.reviewStatus === "rejected") {
-        return false;
-    }
-    return (
-        provenance.method === "manual" ||
-        provenance.reviewStatus === "reviewed" ||
-        provenance.reviewStatus === "custodian-approved"
-    );
+    return isProtectedProvenanceGeneric(provenance);
 }
 
 /**
@@ -100,21 +74,5 @@ export function isProtectedProvenance(
 export function isAdvisoryProvenance(
     provenance: DataDictionaryProvenance | undefined
 ): boolean {
-    if (!provenance) {
-        return true;
-    }
-    if (provenance.reviewStatus === "rejected") {
-        return true;
-    }
-    if (
-        provenance.reviewStatus === "reviewed" ||
-        provenance.reviewStatus === "custodian-approved"
-    ) {
-        return false;
-    }
-    return !(
-        provenance.method === "authoritative-import" ||
-        provenance.method === "harvested" ||
-        provenance.method === "manual"
-    );
+    return isAdvisoryProvenanceGeneric(provenance);
 }

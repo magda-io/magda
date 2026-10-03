@@ -15,8 +15,21 @@ import {
 } from "./model.js";
 import { isValidFieldPath, parseFieldPath } from "./fieldPath.js";
 import { hasProvenanceStatement } from "./provenance.js";
-
-const SUPPORTED_SCHEMA_VERSION_REGEX = /^1(\.[0-9]+)*$/;
+import {
+    JsonObject,
+    SUPPORTED_SCHEMA_VERSION_REGEX,
+    bool,
+    compact,
+    isNonEmptyString,
+    isObject,
+    jsonArray,
+    jsonValue,
+    nonEmptyStr,
+    num,
+    numOrStr,
+    plainObject,
+    str
+} from "../data-understanding/json.js";
 
 /**
  * Whether `schemaVersion` is a data dictionary contract version this code
@@ -30,34 +43,6 @@ export function isSupportedSchemaVersion(
         typeof schemaVersion === "string" &&
         SUPPORTED_SCHEMA_VERSION_REGEX.test(schemaVersion)
     );
-}
-
-type JsonObject = { [key: string]: unknown };
-
-function isObject(value: unknown): value is JsonObject {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function str(value: unknown): string | undefined {
-    return typeof value === "string" ? value : undefined;
-}
-
-function nonEmptyStr(value: unknown): string | undefined {
-    return typeof value === "string" && value.length ? value : undefined;
-}
-
-function num(value: unknown): number | undefined {
-    return typeof value === "number" && Number.isFinite(value)
-        ? value
-        : undefined;
-}
-
-function bool(value: unknown): boolean | undefined {
-    return typeof value === "boolean" ? value : undefined;
-}
-
-function numOrStr(value: unknown): number | string | undefined {
-    return num(value) ?? str(value);
 }
 
 function isScalar(value: unknown): value is DataDictionaryScalar {
@@ -94,65 +79,6 @@ function orderedRefArray(
         return undefined;
     }
     return value as string[];
-}
-
-function isNonEmptyString(value: unknown): boolean {
-    return typeof value === "string" && value.length > 0;
-}
-
-const MAX_JSON_DEPTH = 64;
-
-/** Whether a value is plain JSON data (as parsed from a registry response). */
-function isJsonValue(value: unknown, depth = 0): boolean {
-    if (depth > MAX_JSON_DEPTH) {
-        return false;
-    }
-    if (
-        value === null ||
-        typeof value === "string" ||
-        typeof value === "boolean"
-    ) {
-        return true;
-    }
-    if (typeof value === "number") {
-        return Number.isFinite(value);
-    }
-    if (Array.isArray(value)) {
-        return value.every((item) => isJsonValue(item, depth + 1));
-    }
-    if (isObject(value)) {
-        return Object.keys(value).every((key) =>
-            isJsonValue(value[key], depth + 1)
-        );
-    }
-    return false;
-}
-
-/**
- * Arbitrary JSON values (`default`, `example`), including `null`, objects and
- * arrays: the schema allows any JSON value, so none may be lost.
- */
-function jsonValue(value: unknown): unknown {
-    return isJsonValue(value) ? value : undefined;
-}
-
-/** Arrays of arbitrary JSON values (`enum`, `missingValues`), kept whole. */
-function jsonArray(value: unknown): unknown[] | undefined {
-    return Array.isArray(value) && isJsonValue(value) ? value : undefined;
-}
-
-function plainObject(value: unknown): JsonObject | undefined {
-    return isObject(value) ? value : undefined;
-}
-
-/** Drop `undefined` values so the result only has meaningful keys. */
-function compact<T extends object>(value: T): T {
-    Object.keys(value).forEach((key) => {
-        if ((value as any)[key] === undefined) {
-            delete (value as any)[key];
-        }
-    });
-    return value;
 }
 
 function normalizeProvenance(
