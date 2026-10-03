@@ -472,9 +472,9 @@ describe("data-dictionary aspect", () => {
                 "missing-schema-version",
                 "missing-entities"
             ]);
-            expect(codes({ schemaVersion: "2.0", entities: [] })).to.deep.equal(
-                ["unsupported-schema-version"]
-            );
+            expect(
+                codes({ schemaVersion: "2.0", entities: [] })
+            ).to.deep.equal(["unsupported-schema-version"]);
         });
 
         it("should report duplicate identities", () => {

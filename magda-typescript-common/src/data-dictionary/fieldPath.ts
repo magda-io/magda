@@ -27,8 +27,7 @@ const RESERVED_CHARS = ["\\", ".", "[", "]"];
  * Same grammar as the `fieldPath` definition in
  * `magda-registry-aspects/data-dictionary.schema.json`.
  */
-export const FIELD_PATH_REGEX =
-    /^(?:[^\\.\[\]]|\\[\\.\[\]])+(?:\[\])*(?:\.(?:[^\\.\[\]]|\\[\\.\[\]])+(?:\[\])*)*$/;
+export const FIELD_PATH_REGEX = /^(?:[^\\.\[\]]|\\[\\.\[\]])+(?:\[\])*(?:\.(?:[^\\.\[\]]|\\[\\.\[\]])+(?:\[\])*)*$/;
 
 export interface FieldPathSegment {
     /** Unescaped property name. */
