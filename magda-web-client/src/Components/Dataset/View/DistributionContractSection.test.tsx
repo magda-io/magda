@@ -361,7 +361,13 @@ describe("DistributionContractSection", () => {
     });
 
     it("renders a contract with no optional metadata", () => {
-        render({ schemaVersion: "1.0", authentication: { scopes: [] } });
+        // authentication without a `type` is dropped by normalization
+        render(
+            normalizeDistributionContract({
+                schemaVersion: "1.0",
+                authentication: { scopes: [] }
+            })
+        );
         expect(container.querySelector("h3")?.textContent).toBe("How to use");
         expect(overview()).toEqual({ Provenance: "Unknown origin" });
         expect(operations()).toHaveLength(0);
@@ -371,6 +377,27 @@ describe("DistributionContractSection", () => {
                 ".distribution-contract__source-capabilities"
             )
         ).toBeNull();
+    });
+
+    it("never lists the credential input authentication describes as a parameter", () => {
+        const contract: any = JSON.parse(JSON.stringify(authenticated));
+        contract.operations[0].parameters.push({
+            name: "X-API-Key",
+            location: "header",
+            type: "string",
+            example: "s3cr3t"
+        });
+        // an empty override must not hide the contract-level API key
+        contract.operations[0].authentication = {};
+        render(normalizeDistributionContract(contract));
+        const list = operation("list-measurements");
+        expect(
+            Array.from(
+                list.querySelectorAll("tr.distribution-contract__parameter")
+            ).map((row) => row.getAttribute("data-parameter-name"))
+        ).toEqual(["siteId", "page", "per_page"]);
+        expect(list.textContent).not.toContain("Authentication:");
+        expect(container.textContent).not.toContain("s3cr3t");
     });
 
     it("only links http(s) URLs", () => {

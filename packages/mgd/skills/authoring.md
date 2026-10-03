@@ -115,7 +115,7 @@ mgd dataset aspect set dist-xyz distribution-contract @contract.json --json   # 
 
 - **Never write credentials** (API keys, tokens, passwords, cookies) anywhere in it. Describe the mechanism only
   (`"authentication": {"type": "api-key", "location": "header", "name": "X-API-Key"}`); credential inputs and
-  `Authorization` headers are never `parameters`.
+  `Authorization` headers are never `parameters`. Every `authentication` object needs a `type` (`"none"` / `"other"` if needed).
 - It is descriptive metadata, not permission to call the API: describing an operation (or `interactiveExampleCandidate`)
   doesn't mean you may execute it.
 - Keep operation `id`s stable (prefer the source's id, e.g. OpenAPI `operationId`, in `sourceIdentifier`); parameters are

@@ -1,9 +1,11 @@
 import {
-    DistributionContractAuthentication,
+    DistributionContractAspect,
+    DistributionContractOperation,
     PAGINATION_PARAMETER_PROPERTIES,
     PAGINATION_PATH_PROPERTIES
 } from "./model.js";
 import {
+    getEffectiveAuthentication,
     getParameterLocationKey,
     isAuthenticationParameter,
     isCredentialHeaderName,
@@ -59,8 +61,8 @@ function getDictionaryEntityIds(dataDictionary: unknown): Set<string> {
  *   operation (same `location` + `name`, header names compared
  *   case-insensitively, or same `sourceIdentifier`);
  * - credential-bearing parameters: `Authorization` / `Proxy-Authorization`
- *   headers, or the input an `api-key` style `authentication` describes
- *   (credentials belong in `authentication` only);
+ *   headers, or the input the operation's effective `api-key` style
+ *   `authentication` describes (credentials belong in `authentication` only);
  * - request/response `dictionaryEntity` references that are empty, or not an
  *   entity of the supplied data dictionary;
  * - pagination `*Parameter` references that do not name a `query` parameter
@@ -117,9 +119,6 @@ export function validateDistributionContract(
     const checkDictionaryEntities =
         dataDictionary !== undefined && dataDictionary !== null;
     const dictionaryEntityIds = getDictionaryEntityIds(dataDictionary);
-    const contractAuthentication = isObject(aspect.authentication)
-        ? (aspect.authentication as DistributionContractAuthentication)
-        : undefined;
 
     const operationIds = new Set<string>();
     const operationSourceIds = new Set<string>();
@@ -159,9 +158,10 @@ export function validateDistributionContract(
         const opName = isNonEmptyString(operation.id)
             ? `\`${operation.id}\``
             : `#${opIdx}`;
-        const authentication = isObject(operation.authentication)
-            ? (operation.authentication as DistributionContractAuthentication)
-            : contractAuthentication;
+        const authentication = getEffectiveAuthentication(
+            aspect as DistributionContractAspect,
+            operation as DistributionContractOperation
+        );
 
         // parameters
         const queryParameterNames = new Set<string>();

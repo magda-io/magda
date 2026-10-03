@@ -140,22 +140,6 @@ const ValueList: FunctionComponent<{ values: unknown[] }> = ({ values }) => {
     );
 };
 
-function hasAuthenticationDetails(
-    authentication?: DistributionContractAuthentication
-): authentication is DistributionContractAuthentication {
-    return (
-        !!authentication &&
-        !!(
-            authentication.type ||
-            authentication.scheme ||
-            authentication.name ||
-            authentication.scopes?.length ||
-            authentication.description ||
-            isUrl(authentication.documentationUrl)
-        )
-    );
-}
-
 const Authentication: FunctionComponent<{
     authentication: DistributionContractAuthentication;
 }> = ({ authentication }) => {
@@ -623,7 +607,7 @@ const Operation: FunctionComponent<{
                         Endpoint: <code>{operation.endpointUrl}</code>
                     </li>
                 ) : null}
-                {hasAuthenticationDetails(operation.authentication) ? (
+                {operation.authentication ? (
                     <li>
                         Authentication:{" "}
                         <Authentication
@@ -778,7 +762,7 @@ const DistributionContractSection: FunctionComponent<{
                         </dd>
                     </>
                 ) : null}
-                {hasAuthenticationDetails(contract.authentication) ? (
+                {contract.authentication ? (
                     <>
                         <dt>Authentication</dt>
                         <dd>

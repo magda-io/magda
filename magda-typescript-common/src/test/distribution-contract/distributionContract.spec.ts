@@ -260,6 +260,48 @@ describe("distribution-contract aspect", () => {
                 "non-string authentication scopes",
                 (d) => (d.authentication.scopes = [{}])
             ],
+            [
+                "authentication without type",
+                (d) => delete d.authentication.type
+            ],
+            ["empty authentication type", (d) => (d.authentication.type = "")],
+            [
+                "empty operation-level authentication",
+                (d) => (d.operations[0].authentication = {})
+            ],
+            [
+                "operation-level authentication stating only details",
+                (d) =>
+                    (d.operations[0].authentication = {
+                        description: "Needs a key"
+                    })
+            ],
+            [
+                "empty authentication credential name",
+                (d) =>
+                    Object.assign(d.authentication, {
+                        type: "api-key",
+                        location: "header",
+                        name: ""
+                    })
+            ],
+            [
+                "empty authentication credential location",
+                (d) =>
+                    Object.assign(d.authentication, {
+                        type: "api-key",
+                        location: "",
+                        name: "X-API-Key"
+                    })
+            ],
+            [
+                "empty operation sourceIdentifier",
+                (d) => (d.operations[0].sourceIdentifier = "")
+            ],
+            [
+                "empty parameter sourceIdentifier",
+                (d) => (d.operations[0].parameters[0].sourceIdentifier = "")
+            ],
             ["empty contract provenance", (d) => (d.provenance = {})],
             [
                 "provenance with an empty method",
@@ -485,6 +527,30 @@ describe("distribution-contract aspect", () => {
                 .undefined;
         });
 
+        it("should not let authentication without a type mask inherited authentication", () => {
+            const contract = loadFixture("authenticated-restricted.json");
+            [{}, { description: "x" }, { type: "" }, "api-key", null].forEach(
+                (authentication: any) =>
+                    expect(
+                        getEffectiveAuthentication(contract, {
+                            authentication
+                        }),
+                        JSON.stringify(authentication)
+                    ).to.equal(contract.authentication)
+            );
+            expect(
+                getEffectiveAuthentication(
+                    { authentication: {} as any },
+                    { authentication: undefined }
+                )
+            ).to.be.undefined;
+            expect(
+                getEffectiveAuthentication(contract, {
+                    authentication: { type: "none" }
+                })
+            ).to.deep.equal({ type: "none" });
+        });
+
         it("should recognise the credential input an authentication describes", () => {
             const auth = {
                 type: "api-key",
@@ -641,6 +707,34 @@ describe("distribution-contract aspect", () => {
                     "missing-parameter-location",
                     "/operations/0/parameters/2/location"
                 ]
+            ]);
+        });
+
+        it("should not let an empty operation authentication hide the credential input", () => {
+            expect(
+                validateDistributionContract({
+                    schemaVersion: "1.0",
+                    authentication: {
+                        type: "api-key",
+                        location: "header",
+                        name: "X-API-Key"
+                    },
+                    operations: [
+                        {
+                            id: "query",
+                            authentication: {},
+                            parameters: [
+                                {
+                                    name: "X-API-Key",
+                                    location: "header",
+                                    type: "string"
+                                }
+                            ]
+                        }
+                    ]
+                }).map((issue) => [issue.code, issue.location])
+            ).to.deep.equal([
+                ["credential-parameter", "/operations/0/parameters/0"]
             ]);
         });
 
@@ -826,7 +920,7 @@ describe("distribution-contract aspect", () => {
                     }
                 ],
                 sourceCapabilities: {},
-                authentication: { scopes: [] as any[] },
+                authentication: { type: "none", scopes: [] as any[] },
                 specification: {}
             };
             expect(normalizeDistributionContract(empty)).to.deep.equal(empty);
@@ -951,6 +1045,119 @@ describe("distribution-contract aspect", () => {
                     ]
                 }
             ]);
+        });
+
+        it("should drop the credential input authentication describes", () => {
+            const normalized = normalizeDistributionContract({
+                schemaVersion: "1.0",
+                authentication: {
+                    type: "api-key",
+                    location: "header",
+                    name: "X-API-Key"
+                },
+                operations: [
+                    {
+                        id: "inherits",
+                        parameters: [
+                            {
+                                name: "x-api-key",
+                                location: "header",
+                                type: "string",
+                                example: "s3cr3t"
+                            },
+                            // same name, other location: not the credential
+                            {
+                                name: "X-API-Key",
+                                location: "query",
+                                type: "string"
+                            }
+                        ]
+                    },
+                    {
+                        // an empty override is dropped and cannot mask the
+                        // contract-level API key
+                        id: "empty-override",
+                        authentication: {},
+                        parameters: [
+                            {
+                                name: "X-API-Key",
+                                location: "header",
+                                type: "string"
+                            }
+                        ]
+                    },
+                    {
+                        id: "own-api-key",
+                        authentication: {
+                            type: "api-key",
+                            location: "query",
+                            name: "key"
+                        },
+                        parameters: [
+                            { name: "key", location: "query", type: "string" },
+                            // not the credential of this operation
+                            {
+                                name: "X-API-Key",
+                                location: "header",
+                                type: "string"
+                            }
+                        ]
+                    }
+                ]
+            });
+            const parameters = (idx: number) =>
+                normalized.operations[idx].parameters.map(
+                    (p) => `${p.location}:${p.name}`
+                );
+            expect(parameters(0)).to.deep.equal(["query:X-API-Key"]);
+            expect(normalized.operations[1]).to.not.have.property(
+                "authentication"
+            );
+            expect(parameters(1)).to.deep.equal([]);
+            expect(parameters(2)).to.deep.equal(["header:X-API-Key"]);
+            // the consumer-facing (normalized) contract has no credential
+            // parameters left
+            expect(
+                validateDistributionContract(normalized).filter(
+                    (issue) => issue.code === "credential-parameter"
+                )
+            ).to.deep.equal([]);
+        });
+
+        it("should drop authentication without a type and empty identifiers", () => {
+            const normalized = normalizeDistributionContract({
+                schemaVersion: "1.0",
+                authentication: { description: "Ask the custodian" },
+                operations: [
+                    {
+                        id: "op",
+                        sourceIdentifier: "",
+                        authentication: {
+                            type: "api-key",
+                            location: "",
+                            name: ""
+                        },
+                        parameters: [
+                            {
+                                name: "q",
+                                location: "query",
+                                type: "string",
+                                sourceIdentifier: ""
+                            }
+                        ]
+                    }
+                ]
+            });
+            expect(normalized).to.not.have.property("authentication");
+            const operation = normalized.operations[0];
+            expect(operation).to.not.have.property("sourceIdentifier");
+            expect(operation.authentication).to.deep.equal({ type: "api-key" });
+            expect(operation.parameters[0]).to.not.have.property(
+                "sourceIdentifier"
+            );
+            expect(getParameterIdentity(operation.parameters[0])).to.equal(
+                "location:query:q"
+            );
         });
 
         it("should drop credential header parameters the schema rejects", () => {
@@ -1179,7 +1386,7 @@ describe("distribution-contract aspect", () => {
             expect(normalized).to.deep.equal({
                 schemaVersion: "1.0",
                 specification: { fingerprint: "f" },
-                authentication: { scopes: ["read"] },
+                // no valid `type`: dropped rather than masking anything
                 operations: [
                     {
                         id: "op",

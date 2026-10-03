@@ -81,21 +81,48 @@ export function getParameterIdentity(
 }
 
 /**
+ * Whether an authentication object states its mechanism (a non-empty `type`;
+ * `"none"` and `"other"` included). Only such objects apply: an empty or
+ * detail-only object (e.g. `{}` on an operation) must not mask the
+ * contract-level authentication and with it the credential input it
+ * describes. The schema requires `type` for the same reason.
+ */
+export function hasAuthenticationType(
+    authentication: unknown
+): authentication is DistributionContractAuthentication {
+    return (
+        typeof authentication === "object" &&
+        authentication !== null &&
+        !Array.isArray(authentication) &&
+        typeof (authentication as DistributionContractAuthentication).type ===
+            "string" &&
+        !!(authentication as DistributionContractAuthentication).type
+    );
+}
+
+/**
  * The authentication description that applies to an operation: its own
  * `authentication` override, otherwise the contract-level default (nearest
- * wins, no merging). Descriptive only: never credentials or authority.
+ * wins, no merging). Objects without a `type` are skipped (see
+ * `hasAuthenticationType`). Descriptive only: never credentials or authority.
  */
 export function getEffectiveAuthentication(
     contract: Pick<DistributionContractAspect, "authentication"> | undefined,
     operation?: Pick<DistributionContractOperation, "authentication">
 ): DistributionContractAuthentication | undefined {
-    return operation?.authentication ?? contract?.authentication;
+    if (hasAuthenticationType(operation?.authentication)) {
+        return operation!.authentication;
+    }
+    return hasAuthenticationType(contract?.authentication)
+        ? contract!.authentication
+        : undefined;
 }
 
 /**
  * Whether a parameter is the credential input described by an `api-key`
  * style authentication (same location and name), i.e. a credential that must
- * not be represented as an ordinary parameter.
+ * not be represented as an ordinary parameter. Pass the operation's effective
+ * authentication (`getEffectiveAuthentication`).
  */
 export function isAuthenticationParameter(
     parameter: Pick<DistributionContractParameter, "location" | "name">,
@@ -104,6 +131,7 @@ export function isAuthenticationParameter(
     if (
         !authentication ||
         typeof authentication.location !== "string" ||
+        !authentication.location ||
         typeof authentication.name !== "string" ||
         !authentication.name
     ) {

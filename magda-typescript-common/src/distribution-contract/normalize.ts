@@ -12,7 +12,11 @@ import {
     DistributionContractSpecification
 } from "./model.js";
 import { hasProvenanceStatement } from "./provenance.js";
-import { isCredentialHeaderName, isValidJsonPointer } from "./contract.js";
+import {
+    isAuthenticationParameter,
+    isCredentialHeaderName,
+    isValidJsonPointer
+} from "./contract.js";
 import {
     JsonObject,
     SUPPORTED_SCHEMA_VERSION_REGEX,
@@ -134,18 +138,20 @@ function normalizeSpecification(
 function normalizeAuthentication(
     value: unknown
 ): DistributionContractAuthentication | undefined {
-    if (!isObject(value)) {
+    // an object that doesn't state its mechanism (e.g. `{}`) must not mask
+    // the contract-level authentication (the schema requires `type`)
+    if (!isObject(value) || !nonEmptyStr(value.type)) {
         return undefined;
     }
     // only documented, descriptive properties are carried over: anything else
     // (which must never be a credential, but might be) is not exposed
     return compact({
-        type: str(value.type),
+        type: value.type as string,
         description: str(value.description),
         documentationUrl: str(value.documentationUrl),
         scheme: str(value.scheme),
-        location: str(value.location),
-        name: str(value.name),
+        location: nonEmptyStr(value.location),
+        name: nonEmptyStr(value.name),
         scopes: strList(value.scopes)
     });
 }
@@ -209,7 +215,7 @@ function normalizeParameter(
     }
     return compact({
         name,
-        sourceIdentifier: str(value.sourceIdentifier),
+        sourceIdentifier: nonEmptyStr(value.sourceIdentifier),
         location,
         type: nonEmptyStr(value.type) ?? "unknown",
         format: str(value.format),
@@ -288,7 +294,8 @@ function normalizeResponse(
 }
 
 function normalizeOperation(
-    value: unknown
+    value: unknown,
+    contractAuthentication: DistributionContractAuthentication | undefined
 ): DistributionContractOperation | undefined {
     if (!isObject(value)) {
         return undefined;
@@ -299,17 +306,26 @@ function normalizeOperation(
     if (!id) {
         return undefined;
     }
+    const authentication = normalizeAuthentication(value.authentication);
+    const effectiveAuthentication = authentication ?? contractAuthentication;
+    // the credential input `authentication` describes (e.g. an API key
+    // header) is never an ordinary parameter: tools/agents derived from the
+    // normalized contract must not see it as one
+    const parameters = nodeList(value.parameters, normalizeParameter)?.filter(
+        (parameter) =>
+            !isAuthenticationParameter(parameter, effectiveAuthentication)
+    );
     return compact({
         id,
-        sourceIdentifier: str(value.sourceIdentifier),
+        sourceIdentifier: nonEmptyStr(value.sourceIdentifier),
         label: str(value.label),
         purpose: str(value.purpose),
         interactionType: str(value.interactionType),
         method: str(value.method),
         path: str(value.path),
         endpointUrl: str(value.endpointUrl),
-        parameters: nodeList(value.parameters, normalizeParameter),
-        authentication: normalizeAuthentication(value.authentication),
+        parameters,
+        authentication,
         request: normalizeRequest(value.request),
         response: normalizeResponse(value.response),
         sourceCapabilities: normalizeSourceCapabilities(
@@ -338,9 +354,17 @@ function normalizeOperation(
  *   (parameter `default`, `example` and `enum`, additional
  *   `sourceCapabilities`) are kept as-is.
  * - Never invents identities: operations without a non-empty `id`, and
- *   parameters without a non-empty `name` and `location`, are skipped.
- * - Drops `Authorization` / `Proxy-Authorization` header parameters, which the
- *   schema rejects: credentials are described by `authentication` only.
+ *   parameters without a non-empty `name` and `location`, are skipped. Empty
+ *   `sourceIdentifier`s (which the schema rejects) are dropped, so identity
+ *   falls back to `location` + `name`.
+ * - Never exposes credential inputs as parameters: drops `Authorization` /
+ *   `Proxy-Authorization` header parameters (which the schema rejects) and
+ *   parameters that are the input the operation's effective `authentication`
+ *   describes (same `location` + `name`). The latter is the one schema-valid
+ *   value it drops; `validateDistributionContract()` reports it.
+ * - Authentication objects without a `type` are dropped, so they cannot mask
+ *   the contract-level authentication; only documented, descriptive
+ *   authentication properties are kept.
  * - Provenance objects stating neither `method` nor `reviewStatus` are
  *   dropped, so they cannot mask inherited provenance.
  * - Undocumented (extension) properties are not carried over, except in the
@@ -355,6 +379,7 @@ export function normalizeDistributionContract(
     if (!isObject(aspect) || !isSupportedSchemaVersion(aspect.schemaVersion)) {
         return undefined;
     }
+    const authentication = normalizeAuthentication(aspect.authentication);
     return compact({
         schemaVersion: aspect.schemaVersion,
         resourceRole: str(aspect.resourceRole),
@@ -363,8 +388,10 @@ export function normalizeDistributionContract(
         endpointUrl: str(aspect.endpointUrl),
         documentationUrl: str(aspect.documentationUrl),
         specification: normalizeSpecification(aspect.specification),
-        authentication: normalizeAuthentication(aspect.authentication),
-        operations: nodeList(aspect.operations, normalizeOperation),
+        authentication,
+        operations: nodeList(aspect.operations, (operation) =>
+            normalizeOperation(operation, authentication)
+        ),
         sourceCapabilities: normalizeSourceCapabilities(
             aspect.sourceCapabilities
         ),

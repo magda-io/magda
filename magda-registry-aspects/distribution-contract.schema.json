@@ -154,12 +154,14 @@
         },
         "authentication": {
             "title": "Authentication (descriptive)",
-            "description": "Describes the authentication mechanism the remote source expects. It must never contain credentials, API keys, tokens, cookies or other secret material, and it does not grant or override access-control decisions. Credential-bearing inputs (API keys, Authorization headers, auth cookies) are described here, never as operation `parameters`; a separate execution/delegation system resolves the actual credentials.",
+            "description": "Describes the authentication mechanism the remote source expects. It must never contain credentials, API keys, tokens, cookies or other secret material, and it does not grant or override access-control decisions. Credential-bearing inputs (API keys, Authorization headers, auth cookies) are described here, never as operation `parameters`; a separate execution/delegation system resolves the actual credentials. An operation-level object replaces the contract-level one (nearest wins, no merging), so every authentication object must state its mechanism (`type`; use `none` or `other` where applicable).",
             "type": "object",
+            "required": ["type"],
             "properties": {
                 "type": {
                     "description": "Mechanism. Open vocabulary.",
                     "type": "string",
+                    "minLength": 1,
                     "examples": [
                         "none",
                         "api-key",
@@ -186,11 +188,12 @@
                 "location": {
                     "description": "Where an `api-key` style credential is sent. Open vocabulary.",
                     "type": "string",
+                    "minLength": 1,
                     "examples": ["header", "query", "cookie"]
                 },
                 "name": {
                     "description": "Name of the header/query parameter/cookie carrying the credential, e.g. `X-API-Key`. The name only, never the value.",
-                    "type": "string"
+                    "$ref": "#/definitions/nonEmptyString"
                 },
                 "scopes": {
                     "description": "Non-secret scopes/permissions required, e.g. OAuth scopes.",
@@ -330,7 +333,7 @@
                 },
                 "sourceIdentifier": {
                     "description": "Stable native parameter identifier where available. Used to match the parameter across re-harvesting.",
-                    "type": "string"
+                    "$ref": "#/definitions/nonEmptyString"
                 },
                 "location": {
                     "description": "Where the parameter is sent. Initial values: `path`, `query`, `header`, `cookie`. Open vocabulary.",
@@ -503,7 +506,7 @@
                 },
                 "sourceIdentifier": {
                     "description": "Stable native operation identifier where available, e.g. an OpenAPI `operationId`.",
-                    "type": "string"
+                    "$ref": "#/definitions/nonEmptyString"
                 },
                 "label": {
                     "description": "Short human-readable label.",
