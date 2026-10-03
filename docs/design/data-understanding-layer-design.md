@@ -216,6 +216,22 @@ The same additive principle applies to other pages, such as the dataset page's U
 - Example: metadata summary; bounded extraction may be added later.
 - Preview: optional specialised visualiser.
 
+### Core aspect implementation convention established by Data Dictionary
+
+The completed v7 Data Dictionary core (#3807 / #3820) established a reusable implementation pattern for the remaining Data Understanding aspects:
+
+- draft-07 built-in schema + published representative fixtures;
+- compatible `1.x` versioning with fail-closed handling for unsupported major versions;
+- shared typed model, defensive normalizer and semantic/cross-reference validator;
+- no invented stable identities during defensive normalization;
+- provenance inheritance/protection with property-level overrides for mixed-origin metadata;
+- schema/runtime agreement for provenance semantics;
+- typed parsed-record access rather than view-layer `rawData` reads;
+- Data Understanding UI sections below previews and outside preview gates;
+- whole-aspect `mgd ... aspect set|get` authoring, with RFC 6902 JSON Patch rather than merge-patch for targeted edits inside arrays.
+
+#3808 and #3809 should follow this pattern where applicable rather than independently rediscovering these conventions.
+
 ## Metadata production paths
 
 The same aspects may be populated through multiple paths.
