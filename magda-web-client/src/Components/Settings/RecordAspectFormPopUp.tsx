@@ -22,7 +22,7 @@ import {
 } from "api-clients/RegistryApis";
 import Form from "rsuite/Form";
 import reportError from "../../helpers/reportError";
-import { ItemDataType } from "rsuite/esm/@types/common";
+import { ItemDataType } from "../../helpers/rsuiteTypes";
 import "jsoneditor-react/es/editor.min.css";
 
 interface AspectDefDropdownItemType extends ItemDataType<string> {

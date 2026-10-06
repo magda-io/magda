@@ -23,7 +23,7 @@ import Form from "rsuite/Form";
 import Notification from "rsuite/Notification";
 import { toaster } from "rsuite";
 import Toggle from "rsuite/Toggle";
-import { ItemDataType } from "rsuite/esm/@types/common";
+import { ItemDataType } from "../../helpers/rsuiteTypes";
 import {
     getPermissionById,
     createRolePermission,
@@ -486,27 +486,29 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                 </Form.Control>
                             </Form.Group>
                             <Form.Group controlId="ctrl-constraint-exemption">
-                                <span>
-                                    Allow Exemption?{" "}
-                                    <Whisper
-                                        placement="top"
-                                        controlId="ctrl-constraint-exemption-tooltip-hover"
-                                        trigger="hover"
-                                        speaker={constraintExemptionTooltip}
-                                    >
-                                        <span>
-                                            <MdInfoOutline />
-                                        </span>
-                                    </Whisper>
-                                </span>
-                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                <Toggle
-                                    size="lg"
-                                    checkedChildren="Yes"
-                                    unCheckedChildren="No"
-                                    checked={permission?.allow_exemption}
-                                    onChange={toggleAllowExemption}
-                                />
+                                <div>
+                                    <span>
+                                        Allow Exemption?{" "}
+                                        <Whisper
+                                            placement="top"
+                                            controlId="ctrl-constraint-exemption-tooltip-hover"
+                                            trigger="hover"
+                                            speaker={constraintExemptionTooltip}
+                                        >
+                                            <span>
+                                                <MdInfoOutline />
+                                            </span>
+                                        </Whisper>
+                                    </span>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <Toggle
+                                        size="lg"
+                                        checkedChildren="Yes"
+                                        unCheckedChildren="No"
+                                        checked={permission?.allow_exemption}
+                                        onChange={toggleAllowExemption}
+                                    />
+                                </div>
                             </Form.Group>
                             <Form.Group controlId="ctrl-description">
                                 <Form.ControlLabel>
