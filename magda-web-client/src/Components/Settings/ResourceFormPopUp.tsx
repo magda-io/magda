@@ -15,10 +15,10 @@ import React, {
 } from "react";
 import { useAsync, useAsyncCallback } from "react-async-hook";
 import Button from "rsuite/Button";
-import Loader from "rsuite/esm/Loader";
-import Message from "rsuite/esm/Message";
-import Modal from "rsuite/esm/Modal";
-import Placeholder from "rsuite/esm/Placeholder";
+import Loader from "rsuite/Loader";
+import Message from "rsuite/Message";
+import Modal from "rsuite/Modal";
+import Placeholder from "rsuite/Placeholder";
 import Form, { FormInstance } from "rsuite/Form";
 import Input, { InputProps } from "rsuite/Input";
 import Schema from "rsuite/Schema";

@@ -233,7 +233,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                                                         <MdSwitchAccount />
                                                                     }
                                                                     onClick={() => {
-                                                                        onClose();
+                                                                        onClose?.();
                                                                         history.push(
                                                                             getUrlWithPopUpQueryString(
                                                                                 `/settings/users/${rowData.id}/roles`
@@ -251,7 +251,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                                                         <MdAccountTree />
                                                                     }
                                                                     onClick={() => {
-                                                                        onClose();
+                                                                        onClose?.();
                                                                         assignUserOrgUnitFormRef?.current?.open(
                                                                             rowData.id,
                                                                             () =>
@@ -271,7 +271,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                                                         <BsBoxArrowInRight />
                                                                     }
                                                                     onClick={() => {
-                                                                        onClose();
+                                                                        onClose?.();
                                                                         accessGroupAddUserPopUpRef?.current?.open(
                                                                             rowData.id
                                                                         );
@@ -287,7 +287,7 @@ const UsersPage: FunctionComponent<PropsType> = (props) => {
                                                                         <MdBorderColor />
                                                                     }
                                                                     onClick={() => {
-                                                                        onClose();
+                                                                        onClose?.();
                                                                         userFormRef?.current?.open(
                                                                             rowData.id,
                                                                             () =>

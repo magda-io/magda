@@ -20,7 +20,7 @@ import Whisper from "rsuite/Whisper";
 import Popover from "rsuite/Popover";
 import { useAsync, useAsyncCallback } from "react-async-hook";
 import Form from "rsuite/Form";
-import { ItemDataType } from "rsuite/esm/@types/common";
+import { ItemDataType } from "../../helpers/rsuiteTypes";
 import { OperationRecord } from "@magda/typescript-common/dist/authorization-api/model";
 import {
     queryResOperations,

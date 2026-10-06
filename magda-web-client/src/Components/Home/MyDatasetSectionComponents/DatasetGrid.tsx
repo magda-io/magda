@@ -107,7 +107,7 @@ function createDatsetRow(
                                             aria-label="View Dataset"
                                             icon={<MdPreview />}
                                             onClick={() => {
-                                                onClose();
+                                                onClose?.();
                                                 const datasetUrl = `/dataset/${encodeURIComponent(
                                                     record.id
                                                 )}/details`;
@@ -139,7 +139,7 @@ function createDatsetRow(
                                                 aria-label="Mark as draft"
                                                 icon={<BsFolderSymlink />}
                                                 onClick={() => {
-                                                    onClose();
+                                                    onClose?.();
                                                     ConfirmDialog.open({
                                                         confirmMsg: `Are you sure you want to mark the dataset "${getTitle(
                                                             isDraft,
@@ -180,7 +180,7 @@ function createDatsetRow(
                                             aria-label="Edit Dataset"
                                             icon={<MdBorderColor />}
                                             onClick={() => {
-                                                onClose();
+                                                onClose?.();
                                                 // the following datasets will be edited using "editing" flow:
                                                 // - `hasEverPublished` = true
                                                 // - Or `isDraft` = false
@@ -217,7 +217,7 @@ function createDatsetRow(
                                                 addToAccessGroupPopupRef?.current?.open(
                                                     record.id
                                                 );
-                                                onClose();
+                                                onClose?.();
                                             }}
                                         >
                                             Add to access group
@@ -227,7 +227,7 @@ function createDatsetRow(
                                             aria-label="Delete Dataset"
                                             icon={<BsFillTrashFill />}
                                             onClick={() => {
-                                                onClose();
+                                                onClose?.();
                                                 ConfirmDialog.open({
                                                     confirmMsg: `Are you sure you want to delete the dataset "${getTitle(
                                                         isDraft,
