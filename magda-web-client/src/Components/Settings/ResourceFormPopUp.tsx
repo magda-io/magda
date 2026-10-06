@@ -77,6 +77,8 @@ const ResourceFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     useImperativeHandle(ref, () => ({
         open: (resourceId?: string, onComplete?: SubmitCompleteHandlerType) => {
             onCompleteRef.current = onComplete;
+            // reset form data so a reopened form never shows the values from its previous session
+            setResource(undefined);
             setResourceId(resourceId);
             setDataReloadToken(`${Math.random()}`);
             setIsOpen(true);
