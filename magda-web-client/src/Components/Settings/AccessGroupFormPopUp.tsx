@@ -88,6 +88,8 @@ const AccessGroupFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             onComplete?: SubmitCompleteHandlerType
         ) => {
             onCompleteRef.current = onComplete;
+            // reset form data so a reopened form never shows the values from its previous session
+            setGroupData(undefined);
             selectedGroupId = selectedGroupId?.trim();
             setGroupId(selectedGroupId);
             if (selectedGroupId === groupId) {

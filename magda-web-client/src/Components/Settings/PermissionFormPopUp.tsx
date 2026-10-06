@@ -158,6 +158,8 @@ const PermissionFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             onComplete?: SubmitCompleteHandlerType
         ) => {
             onCompleteRef.current = onComplete;
+            // reset form data so a reopened form never shows the values from its previous session
+            setPermission(undefined);
             selectPermissionId = selectPermissionId?.trim();
             setPermissionId(selectPermissionId);
             if (selectPermissionId === permissionId) {
