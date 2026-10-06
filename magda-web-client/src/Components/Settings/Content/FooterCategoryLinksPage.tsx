@@ -113,9 +113,21 @@ const FooterCategoryLinksGrid: FunctionComponent<{
                     <HeaderCell>URL</HeaderCell>
                     <Cell dataKey="content.href" />
                 </Column>
-                <Column width={100}>
-                    <HeaderCell>Target</HeaderCell>
-                    <Cell dataKey="content.target" />
+                <Column width={130}>
+                    <HeaderCell>Opens in</HeaderCell>
+                    <Cell>
+                        {(rowData) => {
+                            const target = (rowData as RowType)?.content
+                                ?.target;
+                            return !target
+                                ? "Default"
+                                : target === "_self"
+                                ? "Same window"
+                                : target === "_blank"
+                                ? "New window"
+                                : target;
+                        }}
+                    </Cell>
                 </Column>
                 <Column width={100} fixed="right">
                     <HeaderCell align="center">Action</HeaderCell>

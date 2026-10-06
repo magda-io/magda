@@ -3,20 +3,38 @@ import uniq from "lodash/uniq";
 import {
     ContentRecord,
     FooterCopyrightItem,
+    FooterLinkItem,
     HeaderNavigationItem,
     PageItem
 } from "api-clients/ContentApis";
 
 /**
- * Form values of a link (header navigation link / footer link).
+ * Form values shared by header navigation links & footer links.
  * `rel` is kept as a list in the form and saved as a space separated string.
  */
-export type LinkFormValue = {
+export type LinkBaseFormValue = {
     label: string;
     href: string;
-    openInNewWindow: boolean;
     target: string;
     rel: string[];
+};
+
+/** Header link form values: opens in the same window unless `openInNewWindow` is on */
+export type LinkFormValue = LinkBaseFormValue & {
+    openInNewWindow: boolean;
+};
+
+/**
+ * How a footer link opens:
+ * - `default`: decided by the site footer from the URL (no `target` is saved)
+ * - `_self` / `_blank`: same / new window
+ * - `custom`: the `target` entered
+ */
+export type LinkOpenInOption = "default" | "_self" | "_blank" | "custom";
+
+export type FooterLinkFormValue = LinkBaseFormValue & {
+    openIn: LinkOpenInOption;
+    order: number | string;
 };
 
 export type LinkData = {
@@ -85,6 +103,16 @@ export function linkToFormValue(link?: Partial<LinkData>): LinkFormValue {
     };
 }
 
+function relListToString(relList: string[] | undefined): string | undefined {
+    const rel = uniq(
+        (relList ? relList : [])
+            .flatMap((item) => parseRel(item))
+            .filter((item) => !!item)
+    ).join(" ");
+    // the schemas require `rel` to be at least 2 chars long when present
+    return rel.length >= 2 ? rel : undefined;
+}
+
 /**
  * Convert link form values to the content shape.
  * Empty `rel` / `target` are left out, as the schemas require them to be non-empty when present.
@@ -94,17 +122,56 @@ export function formValueToLink(value: LinkFormValue): LinkData {
         label: value.label.trim(),
         href: value.href.trim()
     };
-    const rel = uniq(
-        (value.rel ? value.rel : [])
-            .flatMap((item) => parseRel(item))
-            .filter((item) => !!item)
-    ).join(" ");
-    if (rel.length >= 2) {
+    const rel = relListToString(value.rel);
+    if (rel) {
         link.rel = rel;
     }
     const target = value.target ? value.target.trim() : "";
     if (value.openInNewWindow) {
         link.target = target ? target : DEFAULT_LINK_TARGET;
+    }
+    return link;
+}
+
+export function footerLinkToFormValue(
+    item?: Partial<FooterLinkItem>
+): FooterLinkFormValue {
+    const target = typeof item?.target === "string" ? item.target.trim() : "";
+    const openIn: LinkOpenInOption = !target
+        ? "default"
+        : target === "_self" || target === "_blank"
+        ? target
+        : "custom";
+    return {
+        label: item?.label ? item.label : "",
+        href: item?.href ? item.href : "",
+        openIn,
+        target: openIn === "custom" ? target : "",
+        rel: parseRel(item?.rel),
+        order: typeof item?.order === "number" ? item.order : 1
+    };
+}
+
+export function formValueToFooterLink(
+    value: FooterLinkFormValue
+): FooterLinkItem {
+    const link: FooterLinkItem = {
+        order: toOrderNumber(value.order),
+        label: value.label.trim(),
+        href: value.href.trim()
+    };
+    const target =
+        value.openIn === "custom"
+            ? (value.target ? value.target : "").trim()
+            : value.openIn === "default"
+            ? ""
+            : value.openIn;
+    if (target) {
+        link.target = target;
+    }
+    const rel = relListToString(value.rel);
+    if (rel) {
+        link.rel = rel;
     }
     return link;
 }

@@ -19,7 +19,7 @@ import Placeholder from "rsuite/Placeholder";
 import { HeaderNavigationItem, writeContent } from "api-clients/ContentApis";
 import reportError from "helpers/reportError";
 import useContentFormState from "./useContentFormState";
-import LinkFormFields from "./LinkFormFields";
+import LinkFormFields, { NewWindowFields } from "./LinkFormFields";
 import {
     emptyHeaderNavigationFormValue,
     formValueToHeaderNavigation,
@@ -207,7 +207,12 @@ const HeaderNavigationFormPopUp: ForwardRefRenderFunction<
                                     value={formValue}
                                     onChange={setFormValue}
                                     hrefHelpText="For a page of this site, enter the path only, e.g. /page/about. Otherwise, enter a full URL."
-                                />
+                                >
+                                    <NewWindowFields
+                                        value={formValue}
+                                        onChange={setFormValue}
+                                    />
+                                </LinkFormFields>
                             )}
                         </Form>
                     </>

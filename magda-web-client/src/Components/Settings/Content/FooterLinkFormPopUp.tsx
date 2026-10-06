@@ -2,6 +2,7 @@ import React, {
     forwardRef,
     ForwardRefRenderFunction,
     useImperativeHandle,
+    useMemo,
     useRef
 } from "react";
 import { useAsyncCallback } from "react-async-hook";
@@ -16,16 +17,13 @@ import Placeholder from "rsuite/Placeholder";
 import { FooterLinkItem, writeContent } from "api-clients/ContentApis";
 import reportError from "helpers/reportError";
 import useContentFormState from "./useContentFormState";
-import LinkFormFields from "./LinkFormFields";
+import LinkFormFields, { OpenLinkInFields } from "./LinkFormFields";
 import {
-    formValueToLink,
-    linkToFormValue,
-    LinkFormValue,
-    toOrderNumber
+    footerLinkToFormValue,
+    formValueToFooterLink,
+    FooterLinkFormValue
 } from "./contentUtils";
 import { FooterSize, footerCategoryLinksIdPrefix } from "./footerUtils";
-
-type FormValueType = LinkFormValue & { order: number | string };
 
 export type RefType = {
     open: (
@@ -39,7 +37,7 @@ type PropsType = {
     categoryKey: string;
 };
 
-const model = Schema.Model({
+const baseModelFields = {
     order: Schema.Types.NumberType("Please enter a number.").isRequired(
         "Order is required."
     ),
@@ -47,11 +45,13 @@ const model = Schema.Model({
     href: Schema.Types.StringType()
         .isRequired("URL is required.")
         .pattern(/^\S+$/, "URL can't contain spaces.")
-});
+};
 
-const toFormValue = (item: FooterLinkItem): FormValueType => ({
-    ...linkToFormValue(item),
-    order: typeof item?.order === "number" ? item.order : 1
+const defaultModel = Schema.Model(baseModelFields);
+
+const customTargetModel = Schema.Model({
+    ...baseModelFields,
+    target: Schema.Types.StringType().isRequired("Target is required.")
 });
 
 const FooterLinkFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
@@ -59,16 +59,21 @@ const FooterLinkFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     ref
 ) => {
     const formRef = useRef<FormInstance>(null);
-    const state = useContentFormState<FooterLinkItem, FormValueType>(
-        toFormValue,
-        { ...linkToFormValue(), order: 1 }
+    const state = useContentFormState<FooterLinkItem, FooterLinkFormValue>(
+        footerLinkToFormValue,
+        footerLinkToFormValue()
     );
     const { formValue, setFormValue, isCreateForm } = state;
+    const model = useMemo(
+        () =>
+            formValue.openIn === "custom" ? customTargetModel : defaultModel,
+        [formValue.openIn]
+    );
 
     useImperativeHandle(ref, () => ({
         open: (id, { nextOrder, onComplete }) =>
             state.open(id, {
-                initialValue: { ...linkToFormValue(), order: nextOrder },
+                initialValue: { ...footerLinkToFormValue(), order: nextOrder },
                 onComplete
             })
     }));
@@ -81,11 +86,7 @@ const FooterLinkFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             ? state.contentId
             : `${footerCategoryLinksIdPrefix(size, categoryKey)}${uuidv4()}`;
         try {
-            const data: FooterLinkItem = {
-                order: toOrderNumber(formValue.order),
-                ...formValueToLink(formValue)
-            };
-            await writeContent(id, data);
+            await writeContent(id, formValueToFooterLink(formValue));
             state.complete(id);
         } catch (e) {
             reportError(
@@ -136,7 +137,9 @@ const FooterLinkFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                             fluid
                             disabled={submitData.loading}
                             formValue={formValue}
-                            onChange={(v) => setFormValue(v as FormValueType)}
+                            onChange={(v) =>
+                                setFormValue(v as FooterLinkFormValue)
+                            }
                             onCheck={state.setFormError}
                         >
                             <Form.Group controlId="ctrl-order">
@@ -157,8 +160,12 @@ const FooterLinkFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                         full URL also works.
                                     </>
                                 }
-                                newWindowHelpText="Note: the site footer currently decides how a link opens from its URL (site paths starting with '/' and full URLs open in a new window), so the target & rel below are saved but not used by the footer."
-                            />
+                            >
+                                <OpenLinkInFields
+                                    value={formValue}
+                                    onChange={setFormValue}
+                                />
+                            </LinkFormFields>
                         </Form>
                     </>
                 )}

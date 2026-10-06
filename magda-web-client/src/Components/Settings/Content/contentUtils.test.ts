@@ -1,7 +1,9 @@
 import {
     computeMoveOrderUpdates,
     emptyHeaderNavigationFormValue,
+    footerLinkToFormValue,
     formValueToFooterCopyright,
+    formValueToFooterLink,
     formValueToHeaderNavigation,
     formValueToLink,
     formValueToPage,
@@ -207,6 +209,61 @@ describe("footer copyright", () => {
             logoAlt: "",
             logoClassName: "",
             htmlContent: "<b>hi</b>"
+        });
+    });
+});
+
+describe("footer links", () => {
+    it("maps the saved target to the open in option and back", () => {
+        const cases: [string | undefined, string, string][] = [
+            [undefined, "default", ""],
+            ["_self", "_self", ""],
+            ["_blank", "_blank", ""],
+            ["popup", "custom", "popup"]
+        ];
+        cases.forEach(([target, openIn, formTarget]) => {
+            const item = {
+                order: 2,
+                label: "Docs",
+                href: "/api/v0/apidocs/index.html",
+                ...(target ? { target } : {})
+            };
+            const formValue = footerLinkToFormValue(item);
+            expect(formValue.openIn).toBe(openIn);
+            expect(formValue.target).toBe(formTarget);
+            expect(formValueToFooterLink(formValue)).toEqual(item);
+        });
+    });
+
+    it("leaves out target for the default option & empty rel", () => {
+        expect(
+            formValueToFooterLink({
+                ...footerLinkToFormValue(),
+                order: "3",
+                label: " About ",
+                href: " /page/about ",
+                openIn: "default",
+                target: "ignored",
+                rel: []
+            })
+        ).toEqual({ order: 3, label: "About", href: "/page/about" });
+    });
+
+    it("saves rel values", () => {
+        expect(
+            formValueToFooterLink({
+                ...footerLinkToFormValue(),
+                label: "a",
+                href: "/a",
+                openIn: "_blank",
+                rel: ["nofollow", "noopener"]
+            })
+        ).toEqual({
+            order: 1,
+            label: "a",
+            href: "/a",
+            target: "_blank",
+            rel: "nofollow noopener"
         });
     });
 });
