@@ -40,27 +40,6 @@ const ConnectorsAdminPage = makeAsync(() =>
     )
 );
 
-const HeaderNavigationAdminPage = makeAsync(() =>
-    import("Components/Header/HeaderNavigationAdminPage").then(
-        (module) => module.default
-    )
-);
-const FooterNavigationAdminPage = makeAsync(() =>
-    import("Components/Footer/FooterNavigationAdminPage").then(
-        (module) => module.default
-    )
-);
-const FooterNavigationLinksAdminPage = makeAsync(() =>
-    import("Components/Footer/FooterNavigationLinksAdminPage").then(
-        (module) => module.default
-    )
-);
-const FooterCopyrightAdminPage = makeAsync(() =>
-    import("Components/Footer/FooterCopyrightAdminPage").then(
-        (module) => module.default
-    )
-);
-
 const HighlightsAdminPage = makeAsync(() =>
     import("Components/Home/HighlightsAdminPage").then(
         (module) => module.default
@@ -71,11 +50,6 @@ const HomeAdminPage = makeAsync(() =>
 );
 const StaticPage = makeAsync(() =>
     import("Components/Static/StaticPage").then((module) => module.default)
-);
-const AdminStaticPagesPage = makeAsync(() =>
-    import("Components/Static/StaticPagesAdminPage").then(
-        (module) => module.default
-    )
 );
 const StoriesAdminPage = makeAsync(() =>
     import("Components/Home/StoriesAdminPage").then((module) => module.default)
@@ -128,40 +102,6 @@ const Routes = () => {
             />
             <Route
                 exact
-                path="/admin/header-navigation"
-                component={RequireAdmin(
-                    withHeader(HeaderNavigationAdminPage, {
-                        includeSearchBox: true
-                    })
-                )}
-            />
-            <Route
-                path="/admin/footer-navigation/:size"
-                component={RequireAdmin(
-                    withHeader(FooterNavigationAdminPage, {
-                        includeSearchBox: true
-                    })
-                )}
-            />
-            <Route
-                path="/admin/footer-navigation-links/:size/:category"
-                component={RequireAdmin(
-                    withHeader(FooterNavigationLinksAdminPage, {
-                        includeSearchBox: true
-                    })
-                )}
-            />
-            <Route
-                exact
-                path="/admin/footer-copyright"
-                component={RequireAdmin(
-                    withHeader(FooterCopyrightAdminPage, {
-                        includeSearchBox: true
-                    })
-                )}
-            />
-            <Route
-                exact
                 path="/admin/connectors"
                 component={RequireAdmin(
                     withHeader(ConnectorsAdminPage, {
@@ -173,11 +113,6 @@ const Routes = () => {
                 exact
                 path="/admin/accounts"
                 component={RequireAdmin(withHeader(AccountsAdminPage))}
-            />
-            <Route
-                exact
-                path="/admin/pages"
-                component={RequireAdmin(withHeader(AdminStaticPagesPage))}
             />
             <Route
                 exact
