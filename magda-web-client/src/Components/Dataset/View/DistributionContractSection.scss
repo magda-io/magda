@@ -1,0 +1,154 @@
+@import "variables";
+
+.distribution-contract {
+    margin-top: 24px;
+    margin-bottom: 24px;
+
+    code {
+        font-size: 0.9em;
+        word-break: break-word;
+    }
+
+    &__muted {
+        color: #636363;
+        font-size: 0.9em;
+    }
+
+    &__overview {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        column-gap: 16px;
+        row-gap: 4px;
+        margin: 8px 0 12px;
+
+        dt {
+            font-weight: bold;
+        }
+
+        dd {
+            margin: 0;
+            min-width: 0;
+        }
+
+        @media (max-width: 575px) {
+            grid-template-columns: 1fr;
+
+            dd {
+                margin-bottom: 6px;
+            }
+        }
+    }
+
+    &__links {
+        a {
+            margin-right: 16px;
+        }
+    }
+
+    &__source-capabilities {
+        margin-bottom: 8px;
+    }
+
+    &__capabilities {
+        margin: 2px 0;
+    }
+
+    &__notice {
+        font-style: italic;
+    }
+
+    &__operations-heading {
+        margin-top: 16px;
+    }
+
+    &__operation {
+        border: 1px solid #e0e0e0;
+        border-radius: 3px;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+
+        p {
+            margin: 4px 0;
+        }
+    }
+
+    &__operation-name {
+        margin: 0 0 4px;
+    }
+
+    &__tag {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 0 6px;
+        border-radius: 3px;
+        background: #f0eef1;
+        font-size: 0.8em;
+        font-weight: normal;
+        vertical-align: middle;
+    }
+
+    &__signature {
+        margin-bottom: 4px;
+    }
+
+    &__method {
+        display: inline-block;
+        margin-right: 8px;
+        padding: 0 6px;
+        border-radius: 3px;
+        background: $AU-color-foreground-action;
+        color: #fff;
+        font-size: 0.85em;
+        font-weight: bold;
+    }
+
+    &__operation-meta {
+        list-style: none;
+        padding-left: 0;
+        margin: 4px 0 8px;
+
+        li {
+            margin: 2px 0;
+        }
+    }
+
+    &__entity-link {
+        border: none;
+        background: none;
+        padding: 0;
+        color: $AU-color-foreground-action;
+        text-decoration: underline;
+        cursor: pointer;
+        font: inherit;
+    }
+
+    &__table-wrapper {
+        overflow-x: auto;
+    }
+
+    &__table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95em;
+
+        th,
+        td {
+            text-align: left;
+            vertical-align: top;
+            padding: 6px 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            border-bottom-width: 2px;
+            white-space: nowrap;
+        }
+    }
+
+    &__constraints {
+        list-style: none;
+        padding-left: 0;
+        margin: 4px 0 0;
+        font-size: 0.9em;
+    }
+}

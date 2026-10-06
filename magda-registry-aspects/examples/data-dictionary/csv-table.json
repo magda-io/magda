@@ -1,0 +1,59 @@
+{
+    "schemaVersion": "1.0",
+    "source": {
+        "type": "frictionless-table-schema",
+        "url": "https://example.org/observations.schema.json",
+        "profile": "frictionless-table-schema",
+        "retrievedAt": "2026-09-14T10:00:00Z",
+        "fingerprint": "sha256:0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0"
+    },
+    "provenance": {
+        "method": "authoritative-import",
+        "generator": "example-table-schema-import/1.0",
+        "generatedAt": "2026-09-14T10:00:00Z",
+        "reviewStatus": "unreviewed"
+    },
+    "entities": [
+        {
+            "id": "observations",
+            "name": "Observations",
+            "role": "table",
+            "primaryKey": ["observation_id"],
+            "fields": [
+                {
+                    "path": "observation_id",
+                    "name": "observation_id",
+                    "type": "string",
+                    "roles": ["identifier"],
+                    "required": true,
+                    "unique": true
+                },
+                {
+                    "path": "observed_at",
+                    "name": "observed_at",
+                    "type": "datetime",
+                    "roles": ["primary-temporal"],
+                    "description": "Date and time of the observation (UTC)"
+                },
+                {
+                    "path": "temperature",
+                    "name": "temperature",
+                    "type": "number",
+                    "sourceType": "number",
+                    "unit": "Cel",
+                    "unitSystem": "UCUM",
+                    "nullable": true,
+                    "minimum": -60,
+                    "maximum": 60,
+                    "missingValues": ["", "NA"]
+                },
+                {
+                    "path": "quality_flag",
+                    "name": "quality_flag",
+                    "type": "string",
+                    "enum": ["good", "suspect", "bad"]
+                }
+            ]
+        }
+    ]
+}

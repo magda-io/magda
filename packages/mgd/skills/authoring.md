@@ -2,7 +2,7 @@
 
 Command mechanics for creating and maintaining dataset records. Follow the
 ground rules in `SKILL.md` — especially **rule 5 (confirm before mutating)** and
-the **`set` vs `patch`** rule there. For the metadata *conversation* (what to
+the **`set` vs `patch`** rule there. For the metadata _conversation_ (what to
 write, what to ask), follow `dataset-elicitation.md` first.
 
 Related tasks have their own files: assigning a publisher → `publisher.md`;
@@ -59,21 +59,75 @@ mgd dist remove dist-xyz --json
 
 ## Common aspects
 
-| Aspect | Record | Holds / notes |
-| --- | --- | --- |
-| `dcat-dataset-strings` | dataset | `title`, `description`, `keywords`, `themes`, `languages`, `issued`/`modified` |
-| `dcat-distribution-strings` | distribution | per-file `title`, `format`, `downloadURL`, `accessURL`, `byteSize` |
-| `publishing` | dataset & distribution | `{ "state": "draft" \| "published" }` — use publish/unpublish, don't hand-edit |
-| `dataset-distributions` | dataset | `{ "distributions": [<distId>, …] }` — CLI-managed by `add-file`/`dist remove`; don't hand-edit |
-| `version` | dataset & distribution | CLI-managed history — never hand-edit (ground rule 7) |
-| `access-control` | dataset | `ownerId`, `orgUnitId`, `constraintExemption` |
-| `source` | dataset | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`) |
-| `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — the web UI shows this org before the dates. The value is an organisation **record id**, not a name — see `publisher.md` |
-| `dataset-format` | distribution | `{ "format": "<str>", "confidenceLevel": <0–100> }` — the **effective** format. Written by `magda-minion-format`; **takes precedence over** `dcat-distribution-strings.format` for previews and search — see `preview.md` |
-| `visualization-info` | distribution | `{ "timeseries": <bool>, "fields": { "<CsvHeader>": { "time": <bool>, "numeric": <bool> } } }` — controls a CSV chart's default axes/series (see `preview.md`) |
-| `preview-tabular-data-settings` | distribution | *optional* — `{ "enableChart": <bool>, "enableTable": <bool> }` to force chart/table previews on or off |
-| `temporal-coverage` | dataset | *optional* — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range |
-| `spatial-coverage` | dataset | *optional* — bounding box / named region; set manually when the data has a spatial extent |
+| Aspect                          | Record                 | Holds / notes                                                                                                                                                                                                             |
+| ------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dcat-dataset-strings`          | dataset                | `title`, `description`, `keywords`, `themes`, `languages`, `issued`/`modified`                                                                                                                                            |
+| `dcat-distribution-strings`     | distribution           | per-file `title`, `format`, `downloadURL`, `accessURL`, `byteSize`                                                                                                                                                        |
+| `publishing`                    | dataset & distribution | `{ "state": "draft" \| "published" }` — use publish/unpublish, don't hand-edit                                                                                                                                            |
+| `dataset-distributions`         | dataset                | `{ "distributions": [<distId>, …] }` — CLI-managed by `add-file`/`dist remove`; don't hand-edit                                                                                                                           |
+| `version`                       | dataset & distribution | CLI-managed history — never hand-edit (ground rule 7)                                                                                                                                                                     |
+| `access-control`                | dataset                | `ownerId`, `orgUnitId`, `constraintExemption`                                                                                                                                                                             |
+| `source`                        | dataset                | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`)                                                                                                                                                      |
+| `dataset-publisher`             | dataset                | `{ "publisher": "<organisation record id>" }` — the web UI shows this org before the dates. The value is an organisation **record id**, not a name — see `publisher.md`                                                   |
+| `dataset-format`                | distribution           | `{ "format": "<str>", "confidenceLevel": <0–100> }` — the **effective** format. Written by `magda-minion-format`; **takes precedence over** `dcat-distribution-strings.format` for previews and search — see `preview.md` |
+| `visualization-info`            | distribution           | `{ "timeseries": <bool>, "fields": { "<CsvHeader>": { "time": <bool>, "numeric": <bool> } } }` — controls a CSV chart's default axes/series (see `preview.md`)                                                            |
+| `preview-tabular-data-settings` | distribution           | _optional_ — `{ "enableChart": <bool>, "enableTable": <bool> }` to force chart/table previews on or off                                                                                                                   |
+| `temporal-coverage`             | dataset                | _optional_ — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range                                                                                                                       |
+| `spatial-coverage`              | dataset                | _optional_ — bounding box / named region; set manually when the data has a spatial extent                                                                                                                                 |
+| `data-dictionary`               | distribution           | _optional_ — what fields/entities the distribution contains (see below)                                                                                                                                                   |
+| `distribution-contract`         | distribution           | _optional_ — how the file/API can be accessed or queried (see below)                                                                                                                                                      |
+
+## Data dictionary (`data-dictionary` on a distribution)
+
+Describes a distribution's structure: `entities` (table/sheet/layer/API body), each with
+`fields` (`path`, `name`, `type` required; optional `description`, `unit`, `semanticConcept`,
+`required`/`nullable`, `valueDomain`, `roles`, …), plus optional `primaryKey`,
+`relationships`, `dimensions` and `provenance`.
+
+```sh
+mgd dataset aspect get dist-xyz data-dictionary --json        # read before answering "what fields are there?"
+mgd dataset aspect set dist-xyz data-dictionary @dict.json --json   # create/replace the whole dictionary
+```
+
+- Field `path` is a stable id: nested `a.b`, arrays `items[].x`; escape literal `\ . [ ]` in names with `\` (`"a\\.b"` in JSON for a column named `a.b`).
+- Mark what you write: `"provenance": {"method": "agent-generated", "reviewStatus": "unreviewed"}` (or `"manual"` for values the user dictated).
+  Every provenance object needs `method` and/or `reviewStatus`; `"method": "inferred"` also needs `"sample": {"rows": N}` (and/or `bytes`).
+  Never overwrite values whose provenance is `manual` or `reviewed`/`custodian-approved` (check `propertyProvenance` per property too).
+- Don't `aspect patch` anything inside `entities`/`fields`/`relationships`: arrays are combined, not merged by id, and duplicate entries result.
+  Read the aspect, edit the JSON, then `aspect set` it back (or use a JSON Patch via `mgd api request PATCH …`).
+- Only add `relationships`/`reference` roles the user or source metadata states explicitly — similar names are not evidence of a join.
+- Don't invent fields: if the structure is unknown, use `"type": "unknown"` or leave the aspect absent.
+
+Full reference: <https://github.com/magda-io/magda/blob/main/docs/docs/data-dictionary.md>
+
+## Distribution contract (`distribution-contract` on a distribution)
+
+Describes how to access/query a distribution: `protocol`, `endpointUrl`, `documentationUrl`,
+`specification` (`type`, `url`, `version`, `fingerprint`), descriptive `authentication`, and curated
+`operations` (`id` required; `label`, `purpose`, `interactionType`, `method`, `path`, `endpointUrl`,
+`parameters` (`name`, `location`, `type` required), `request`/`response` with `dictionaryEntity`,
+`recordsPath`, `pagination`), plus `sourceCapabilities`, `provenance` and `lastVerified`.
+
+```sh
+mgd dataset aspect get dist-xyz distribution-contract --json            # read before answering "how do I query this?"
+mgd dataset aspect set dist-xyz distribution-contract @contract.json --json   # create/replace the whole contract
+```
+
+- **Never write credentials** (API keys, tokens, passwords, cookies) anywhere in it. Describe the mechanism only
+  (`"authentication": {"type": "api-key", "location": "header", "name": "X-API-Key"}`); credential inputs and
+  `Authorization` headers are never `parameters`. Every `authentication` object needs a `type` (`"none"` / `"other"` if needed).
+- It is descriptive metadata, not permission to call the API: describing an operation (or `interactiveExampleCandidate`)
+  doesn't mean you may execute it.
+- Keep operation `id`s stable (prefer the source's id, e.g. OpenAPI `operationId`, in `sourceIdentifier`); parameters are
+  identified by `sourceIdentifier`, else `location` + `name`. Don't invent ids for operations you can't name.
+- Don't concatenate `endpointUrl` + `path` into a URL; set an operation `endpointUrl` only when you know the full URL.
+- `recordsPath` and pagination `*Path` values are JSON Pointers (`/items`, not `$.items`); pagination `*Parameter`
+  values name a `query` parameter of the same operation. Put body fields in `data-dictionary` and reference the entity id.
+- Mark what you write (`"provenance": {"method": "agent-generated", "reviewStatus": "unreviewed"}`) and never overwrite
+  values whose provenance is `manual` or `reviewed`/`custodian-approved` (check `propertyProvenance` too).
+- Don't `aspect patch` anything inside `operations`/`parameters`: read, edit, `aspect set` (or JSON Patch via `mgd api request PATCH …`).
+
+Full reference: <https://github.com/magda-io/magda/blob/main/docs/docs/distribution-contract.md>
 
 ## Custom / domain metadata
 
