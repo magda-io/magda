@@ -134,7 +134,7 @@ const defaultMenuItems: MenuItem[] = [
         icon: <MdPageview />
     },
     {
-        title: "Content Management",
+        title: "Site Content",
         path: "/settings/content",
         icon: <MdOutlineWeb />,
         children: [
@@ -196,14 +196,20 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
         : defaultMenuItems;
     const isActive = (item: MenuItem) =>
         props.location.pathname.indexOf(item.path) === 0;
-    // groups are expanded unless the user collapses them
-    const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
-    const toggleGroup = (path: string) =>
-        setCollapsedGroups((paths) =>
-            paths.indexOf(path) === -1
-                ? [...paths, path]
-                : paths.filter((item) => item !== path)
-        );
+    // groups are collapsed by default, except the group of the current page.
+    // Clicking a group title expands / collapses it.
+    const [toggledGroups, setToggledGroups] = useState<{
+        [path: string]: boolean;
+    }>({});
+    const isGroupExpanded = (group: MenuItem, children: MenuItem[]) =>
+        typeof toggledGroups[group.path] === "boolean"
+            ? toggledGroups[group.path]
+            : children.some(isActive);
+    const toggleGroup = (group: MenuItem, children: MenuItem[]) =>
+        setToggledGroups((groups) => ({
+            ...groups,
+            [group.path]: !isGroupExpanded(group, children)
+        }));
 
     function accessFilter(item: MenuItem): boolean {
         if (
@@ -274,8 +280,7 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
                     if (!children.length) {
                         return null;
                     }
-                    const isExpanded =
-                        collapsedGroups.indexOf(item.path) === -1;
+                    const isExpanded = isGroupExpanded(item, children);
                     return (
                         <div key={idx} className="sidenav-group">
                             <a
@@ -288,11 +293,11 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
                                         ? " active"
                                         : ""
                                 }`}
-                                onClick={() => toggleGroup(item.path)}
+                                onClick={() => toggleGroup(item, children)}
                                 onKeyDown={(e) => {
                                     if (e.key === "Enter" || e.key === " ") {
                                         e.preventDefault();
-                                        toggleGroup(item.path);
+                                        toggleGroup(item, children);
                                     }
                                 }}
                             >

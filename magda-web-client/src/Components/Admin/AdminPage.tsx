@@ -25,7 +25,7 @@ export default class AdminPage extends Component {
                     <li>
                         <CommonLink href="/settings/content">
                             Header, Footer, Logos & Pages (moved to Settings
-                            &gt; Content Management)
+                            &gt; Site Content)
                         </CommonLink>
                     </li>
                     <li>

@@ -22,9 +22,7 @@ const ContentSettingsLayout: FunctionComponent<PropsType> = ({
     >
         <SideNavigation />
         <div className="main-content-container">
-            <Breadcrumb
-                items={[{ title: "Content Management" }, ...breadcrumbs]}
-            />
+            <Breadcrumb items={[{ title: "Site Content" }, ...breadcrumbs]} />
             {children}
         </div>
     </div>
