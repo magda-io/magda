@@ -164,6 +164,11 @@
             color: #8e8e93;
             font-size: 12px;
         }
+        // two lines: "Featured until:" & the date
+        .highlight-featured-tag span span {
+            display: block;
+            white-space: nowrap;
+        }
     }
 
     .highlight-image-size-list {

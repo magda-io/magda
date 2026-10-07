@@ -297,13 +297,15 @@ const HomeHighlightsTab: FunctionComponent = () => {
                                             size="sm"
                                             className="highlight-featured-tag"
                                         >
-                                            Featured until{" "}
-                                            {formatDate(
-                                                parseLocalDateString(
-                                                    record.content
-                                                        ?.featuredUntil as string
-                                                ) as Date
-                                            )}
+                                            <span>Featured until:</span>
+                                            <span>
+                                                {formatDate(
+                                                    parseLocalDateString(
+                                                        record.content
+                                                            ?.featuredUntil as string
+                                                    ) as Date
+                                                )}
+                                            </span>
                                         </Tag>
                                     ) : null}
                                 </div>
