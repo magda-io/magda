@@ -12,6 +12,21 @@ import org.scalatest.{FunSpec, Matchers}
 
 class IndexDefinitionSpec extends FunSpec with Matchers {
 
+  describe("index versions") {
+    it(
+      "should be the same in `common.conf` and the index definitions"
+    ) {
+      // the indexer & search api build index names from the config versions,
+      // while the index definitions' versions are used for snapshots & logging
+      val configVersions = DefaultIndices.indexVersions(AppConfig.conf())
+      IndexDefinition.indices.foreach { definition =>
+        withClue(s"index `${definition.name}`: ") {
+          configVersions.get(definition.name) shouldBe Some(definition.version)
+        }
+      }
+    }
+  }
+
   describe("datasets index mapping") {
     // index settings normally provided by the indexer / search api config
     val config = ConfigFactory

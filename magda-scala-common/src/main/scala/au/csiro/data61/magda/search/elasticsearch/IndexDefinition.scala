@@ -362,9 +362,9 @@ object IndexDefinition extends DefaultJsonProtocol {
               .analyzer("keyword")
               .searchAnalyzer("uppercase"),
             magdaTextField("jurisdiction"),
-            // --- the field used to merge org records by jurisdiction
-            // --- if jurisdiction is not null, its value is jurisdiction + org name
-            // --- if null, its value is org record identifier (thus, avoid merging)
+            // --- the field used to merge org records by jurisdiction (see `Registry.scala`), lowercased:
+            // --- if jurisdiction is not empty, its value is "<org name>:<jurisdiction>"
+            // --- otherwise, its value is the org name (or the org record id when the org has no name)
             // --- the organisations search collapses on `publisher.aggKeywords.keyword`, so it must be mapped
             // --- even when no dataset has a publisher (otherwise the search fails).
             textField("aggKeywords").fields(
