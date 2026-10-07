@@ -63,13 +63,15 @@ The following contracts are now the baseline for the initial v8 design:
 - sandbox ingress is default-deny except the Agent Manager/approved proxy path needed to reach DSH;
 - DSH should be customised by a Magda profile/plugin composition rather than a permanent fork where possible; generic model/provider controls are hidden/disabled and the deployment supplies the default model/reasoning effort.
 
-## Important unresolved security contract
+## Credential / confirmation trust model
 
-The current credential decision intentionally puts a real user-scoped Magda API key inside the untrusted sandbox so that `mgd` and the external LLM API work through normal Magda authentication.
+The current Sandbox intentionally contains a lifecycle-bound user-scoped Magda API key because the managed agent acts on behalf of the authenticated user.
 
-That creates a remaining design conflict with #3811's requirement for **server-enforced approval of consequential Magda mutations**: unless agent-managed credentials can be distinguished/constrained by Magda authentication/authorisation, the sandbox can call mutation APIs directly with the same authority as the user.
+Magda auth/OPA remains authoritative for what the user/agent may do. Consequential-action confirmation is an agent/DSH product-safety responsibility: the bundled `mgd` skill requires explicit confirmation before mutation/publishing operations, and a later DSH integration may use the generic approval seam for a structured one-shot approval experience.
 
-#3825 therefore remains open until this boundary is settled. A hard-coded API-key display name is useful operationally but is not by itself an enforcement boundary.
+DSH `workspace-write` itself is a filesystem-effect policy and does not infer or block outbound Magda API mutations.
+
+The initial v8 threat model explicitly accepts that a compromised/prompt-injected agent possessing the user's credential could technically exercise the user's existing Magda authority directly. Stronger constrained delegation/server-side mutation grants are future hardening, not an initial-v8 requirement.
 
 ## Design dependency graph
 
@@ -81,7 +83,7 @@ Sandbox runtime + lifecycle (#3822 Accepted)
           |               |
           v               v
 DSH integration       Credential boundary
-   (#3824)               (#3825)
+   (#3824)           (#3825 Accepted)
           |               |
           +-------+-------+
                   |
@@ -93,7 +95,7 @@ Magda LLM Services (#3838)
           v
         LiteLLM
 
-Credential boundary + mutation approval
+Agent / mgd confirmation UX
                   |
                   v
        Consequential operations
@@ -113,10 +115,10 @@ Runtime + credentials + network
 | Session lifecycle | [session-lifecycle.md](./session-lifecycle.md) | #3822 — **Accepted** |
 | Agent Manager | [agent-manager.md](./agent-manager.md) | #3823 — **Accepted** |
 | DSH integration / bootstrap / routing | [dsh-integration.md](./dsh-integration.md) | #3824 — **Proposed**, narrow browser-auth verification remains |
-| Authentication / sandbox credential boundary | [authentication.md](./authentication.md) | #3825 — **Investigating**, mutation-approval conflict remains |
+| Authentication / sandbox credential boundary | [authentication.md](./authentication.md) | #3825 — **Accepted** |
 | Shared LLM services | [llm-services.md](./llm-services.md) | #3838 — **Proposed** |
 | Network / security | [network-security.md](./network-security.md) | Draft |
-| Mutation approval | [mutation-approval.md](./mutation-approval.md) | Draft; now directly coupled to #3825 |
+| Mutation confirmation | [mutation-approval.md](./mutation-approval.md) | Proposed product/DSH UX contract |
 | Skills | [skills.md](./skills.md) | Draft |
 | Web/product integration | [web-ui.md](./web-ui.md) | Draft |
 | Deployment / Helm | [deployment.md](./deployment.md) | Draft |
@@ -146,10 +148,9 @@ Provider-specific release qualification is still required for GKE/gVisor and AKS
 The foundation is substantially clearer, but #3811 is **not complete**. Remaining implementation-critical design includes:
 
 - #3824 verification of the pinned DSH browser-auth/bridge contract;
-- #3825 resolution of agent-managed Magda credential vs server-enforced mutation approval;
 - #3838 exact LLM API/authz/Helm contract;
 - network/security enforcement per supported provider;
-- mutation approval;
+- polished/structured mutation-confirmation UX (optional DSH approval integration);
 - user/global skill persistence/trust model;
 - full web/product lifecycle UX;
 - deployment/Helm details and production qualification;
