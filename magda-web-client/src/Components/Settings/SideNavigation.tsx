@@ -15,7 +15,8 @@ import {
     MdOutlineVerticalAlignTop,
     MdOutlineVerticalAlignBottom,
     MdOutlineImage,
-    MdOutlineArticle
+    MdOutlineArticle,
+    MdSecurity
 } from "react-icons/md";
 import { BsPersonCircle, BsJournals } from "react-icons/bs";
 import "./SideNavigation.scss";
@@ -36,6 +37,7 @@ type PropsType = {
 };
 
 type MenuItem = {
+    // the page path; for a group, a unique key (a group isn't a link)
     path: string;
     icon: ReactElement;
     title: string;
@@ -77,46 +79,53 @@ const defaultMenuItems: MenuItem[] = [
         ]
     },
     {
-        title: "Users",
-        path: "/settings/users",
-        requireOperationUris: [
-            "authObject/user/read",
-            "authObject/user/update"
-        ],
-        icon: <MdSupervisorAccount />
-    },
-    {
-        title: "Roles",
-        path: "/settings/roles",
-        requireOperationUris: [
-            "authObject/role/read",
-            "authObject/role/update"
-        ],
-        icon: <MdSwitchAccount />
-    },
-    {
-        title: "Resources",
-        path: "/settings/resources",
-        requireOperationUris: [
-            "authObject/resource/read",
-            "authObject/resource/update"
-        ],
-        icon: <MdCollectionsBookmark />
-    },
-    {
-        title: "Org Units",
-        path: "/settings/orgUnits",
-        requireOperationUris: [
-            "authObject/orgUnit/read",
-            "authObject/orgUnit/update"
-        ],
-        icon: <MdAccountTree />
-    },
-    {
-        path: "/settings/accessGroups",
-        title: "Access Groups",
-        icon: <MdOutlineFolderSpecial />,
-        requireOperationUris: ["object/accessGroup/read"]
+        title: "Access Controls",
+        path: "/settings/accessControls",
+        icon: <MdSecurity />,
+        children: [
+            {
+                title: "Users",
+                path: "/settings/users",
+                requireOperationUris: [
+                    "authObject/user/read",
+                    "authObject/user/update"
+                ],
+                icon: <MdSupervisorAccount />
+            },
+            {
+                title: "Roles",
+                path: "/settings/roles",
+                requireOperationUris: [
+                    "authObject/role/read",
+                    "authObject/role/update"
+                ],
+                icon: <MdSwitchAccount />
+            },
+            {
+                title: "Org Units",
+                path: "/settings/orgUnits",
+                requireOperationUris: [
+                    "authObject/orgUnit/read",
+                    "authObject/orgUnit/update"
+                ],
+                icon: <MdAccountTree />
+            },
+            {
+                title: "Resources",
+                path: "/settings/resources",
+                requireOperationUris: [
+                    "authObject/resource/read",
+                    "authObject/resource/update"
+                ],
+                icon: <MdCollectionsBookmark />
+            },
+            {
+                path: "/settings/accessGroups",
+                title: "Access Groups",
+                icon: <MdOutlineFolderSpecial />,
+                requireOperationUris: ["object/accessGroup/read"]
+            }
+        ]
     },
     {
         title: "Registry Records",
@@ -274,7 +283,8 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
                                 tabIndex={0}
                                 aria-expanded={isExpanded}
                                 className={`sidenav-group-title${
-                                    !isExpanded && isActive(item)
+                                    // highlight a collapsed group when one of its pages is open
+                                    !isExpanded && children.some(isActive)
                                         ? " active"
                                         : ""
                                 }`}
