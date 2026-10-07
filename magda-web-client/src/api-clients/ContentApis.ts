@@ -51,6 +51,20 @@ export interface PageItem {
     content?: string;
 }
 
+/** `home/highlights/*`: the "lozenge" link shown over the home page background image */
+export interface HomeHighlightItem {
+    text?: string;
+    url?: string;
+}
+
+/** `home/stories/*` */
+export interface HomeStoryItem {
+    title: string;
+    titleUrl?: string;
+    order: number;
+    content: string;
+}
+
 export interface ContentRecord<T = any> {
     id: string;
     type: string;

@@ -113,6 +113,98 @@
     }
 }
 
+// Home Page & UI Text settings
+.flex-main-container.setting-page-main-container.content-settings-page {
+    .tab-intro {
+        margin: 0 0 15px 0;
+        color: #575757;
+    }
+
+    .home-taglines-tab {
+        max-width: 720px;
+        .form-label-icon {
+            vertical-align: -2px;
+            margin-right: 5px;
+        }
+    }
+
+    .home-tagline-preview {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 70px;
+        margin-top: 8px;
+        padding: 10px;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #5a6b7e 0%, #30384d 100%);
+        text-align: center;
+
+        .home-tagline-preview-inner {
+            display: inline-block;
+            padding: 8px;
+            border-radius: 10px;
+            background: rgba(79, 79, 79, 0.5);
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 300;
+        }
+
+        .home-tagline-preview-empty {
+            color: #d9d9d9;
+        }
+    }
+
+    .ui-text-cache-note {
+        margin-bottom: 15px;
+    }
+
+    .ui-text-search {
+        max-width: 360px;
+    }
+
+    .ui-text-not-set,
+    .ui-text-empty {
+        color: #8e8e93;
+    }
+
+    .ui-text-modified-tag {
+        margin-left: 8px;
+    }
+}
+
+// a thumbnail of an image content item in a grid row
+.content-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+
+    img {
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .no-image {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #8e8e93;
+        font-size: 12px;
+        svg {
+            width: 28px;
+            height: 28px;
+        }
+    }
+
+    &.content-grid-thumbnail {
+        border: 1px solid #e5e5ea;
+        border-radius: 4px;
+        background-color: #f7f7fa;
+        overflow: hidden;
+    }
+}
+
 // rendered within modals, outside of the page container
 .footer-copyright-preview {
     display: flex;
@@ -210,5 +302,163 @@
             border: 1px solid #e5e5ea;
             border-top: none;
         }
+    }
+
+    .image-error {
+        margin-top: 5px;
+        color: #f44336;
+        font-size: 12px;
+    }
+
+    .highlight-image-select,
+    .story-image-select {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .selected-file-name {
+        color: #575757;
+        overflow-wrap: anywhere;
+    }
+
+    .highlight-image-sizes {
+        margin-top: 5px;
+    }
+
+    .highlight-previews {
+        // rsuite wraps form items in a flex column that doesn't stretch them
+        align-self: stretch;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 24px;
+
+        .preview-label {
+            font-size: 12px;
+            color: #8e8e93;
+            margin-bottom: 5px;
+            svg {
+                vertical-align: -2px;
+            }
+        }
+
+        .highlight-preview-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid #e5e5ea;
+            border-radius: 6px;
+            background-color: #f7f7fa;
+
+            // show the stored image or the selected image as the home page crops it
+            img,
+            .content-image,
+            .content-image img {
+                width: 100%;
+                height: 100%;
+                max-width: none;
+                max-height: none;
+                object-fit: cover;
+                object-position: center;
+            }
+
+            .no-image {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                color: #8e8e93;
+                svg {
+                    width: 36px;
+                    height: 36px;
+                }
+            }
+        }
+
+        .highlight-preview-desktop {
+            flex: 1 1 360px;
+            max-width: 480px;
+            .highlight-preview-box {
+                aspect-ratio: 1440 / 902;
+            }
+        }
+
+        .highlight-preview-phone {
+            flex: 0 0 120px;
+            .highlight-preview-box {
+                aspect-ratio: 550 / 978;
+            }
+        }
+
+        // like the home page: at the bottom right, below the tagline
+        .highlight-preview-lozenge {
+            position: absolute;
+            left: 0;
+            right: 8%;
+            bottom: 10%;
+            text-align: right;
+            span {
+                display: inline-block;
+                max-width: 90%;
+                padding: 4px 10px;
+                border-radius: 12px;
+                background: rgba(49, 49, 49, 0.5);
+                color: #ffffff;
+                font-size: 12px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+
+    .story-image-thumbnail {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 160px;
+        height: 100px;
+        border: 1px solid #e5e5ea;
+        border-radius: 6px;
+        background-color: #f7f7fa;
+        overflow: hidden;
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .no-image {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8e8e93;
+            svg {
+                width: 32px;
+                height: 32px;
+            }
+        }
+    }
+
+    .ui-text-details {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 6px 15px;
+        margin: 0 0 20px 0;
+        dt {
+            font-weight: 600;
+        }
+        dd {
+            margin: 0;
+            overflow-wrap: anywhere;
+        }
+    }
+
+    .ui-text-use-default {
+        float: left;
     }
 }
