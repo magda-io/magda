@@ -16,6 +16,8 @@ import {
     MdOutlineVerticalAlignBottom,
     MdOutlineImage,
     MdOutlineArticle,
+    MdOutlineHome,
+    MdOutlineTextFields,
     MdSecurity
 } from "react-icons/md";
 import { BsPersonCircle, BsJournals } from "react-icons/bs";
@@ -157,9 +159,21 @@ const defaultMenuItems: MenuItem[] = [
                 requireOperationUris: contentManagementOperationUris
             },
             {
+                title: "Home Page",
+                path: "/settings/content/home",
+                icon: <MdOutlineHome />,
+                requireOperationUris: contentManagementOperationUris
+            },
+            {
                 title: "Pages",
                 path: "/settings/content/pages",
                 icon: <MdOutlineArticle />,
+                requireOperationUris: contentManagementOperationUris
+            },
+            {
+                title: "UI Text",
+                path: "/settings/content/ui-text",
+                icon: <MdOutlineTextFields />,
                 requireOperationUris: contentManagementOperationUris
             }
         ]

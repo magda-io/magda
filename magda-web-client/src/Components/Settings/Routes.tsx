@@ -21,6 +21,8 @@ import FooterSettingsPage from "./Content/FooterSettingsPage";
 import FooterCategoryLinksPage from "./Content/FooterCategoryLinksPage";
 import LogoSettingsPage from "./Content/LogoSettingsPage";
 import PagesSettingsPage from "./Content/PagesSettingsPage";
+import HomeSettingsPage from "./Content/HomeSettingsPage";
+import UiTextSettingsPage from "./Content/UiTextSettingsPage";
 
 function SettingsRedirect() {
     const location = useLocation();
@@ -38,6 +40,7 @@ function redirectTo(path: string) {
 
 const ContentSettingsRedirect = redirectTo("/settings/content/header");
 const FooterSettingsRedirect = redirectTo("/settings/content/footer/medium");
+const HomeSettingsRedirect = redirectTo("/settings/content/home/taglines");
 
 const Routes = () => {
     return (
@@ -204,6 +207,25 @@ const Routes = () => {
                         exact
                         path="/settings/content/pages"
                         component={withHeader(PagesSettingsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/home"
+                        component={HomeSettingsRedirect}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/home/:tab"
+                        component={withHeader(HomeSettingsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/ui-text"
+                        component={withHeader(UiTextSettingsPage, {
                             noContainerClass: true
                         })}
                     />

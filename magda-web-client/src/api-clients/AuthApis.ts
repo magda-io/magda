@@ -1,4 +1,4 @@
-import { config, ADMIN_ROLE_ID } from "../config";
+import { config } from "../config";
 import request from "../helpers/request";
 import getRequest from "../helpers/getRequest";
 import getAbsoluteUrl from "@magda/typescript-common/dist/getAbsoluteUrl.js";
@@ -169,30 +169,6 @@ export async function deleteUserRoles(
         ),
         roleIds
     );
-}
-
-/**
- * Set a user (specified by user id) to an admin or not (as indicated by isAdmin parameter).
- * when set user to Admin, this function will add an admin role to the user.
- * @param userId
- * @param isAdmin
- */
-export async function setAdmin(userId: string, isAdmin: boolean) {
-    const roles = await getUserRoles(userId);
-    const existingAdminRoleIdx: number | undefined = roles?.length
-        ? roles.findIndex((item) => item.id === ADMIN_ROLE_ID)
-        : -1;
-    const hasAdminRole = existingAdminRoleIdx !== -1;
-
-    if (isAdmin !== hasAdminRole) {
-        if (isAdmin) {
-            // add an admin role
-            await addUserRoles(userId, [ADMIN_ROLE_ID]);
-        } else if (!isAdmin) {
-            // remove the admin role
-            await deleteUserRoles(userId, [ADMIN_ROLE_ID]);
-        }
-    }
 }
 
 export type QueryUsersParams = {
