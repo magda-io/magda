@@ -1,33 +1,74 @@
-# Mutation approval design
+# Mutation confirmation design
 
-**Status:** Draft  
-**Owner ticket:** TBD — later design slice  
-**Depends on:** #3823 Agent Manager and #3825 delegated auth  
-**Blocks:** authorised create/edit/publish implementation and audit semantics  
-**Evidence:** Current Magda authorisation/mgd behaviour; focused experiments as required
+**Status:** Proposed  
+**Owner ticket:** TBD — later product/DSH integration slice  
+**Depends on:** #3824 DSH integration and the accepted #3825 credential model  
+**Blocks:** polished consequential-action UX, not basic authorised mutation capability
 
-> This document contains the current design baseline inherited from the original #3819 monolith. Unless a statement is already an explicit architecture-level decision in the overview, treat it as a hypothesis to review under the owner ticket rather than an implementation contract.
+## Initial v8 contract
 
-## Mutation approval model
+The Magda agent acts on behalf of the authenticated user and carries a normal user-scoped Magda API key.
 
-The final v8 system must not rely only on prompt text saying "ask before publishing".
+Consequential-action confirmation is therefore an **agent interaction / product-safety contract**, not a separate server-side delegated-authority protocol.
 
-Agent Manager's Magda proxy is the enforcement point because direct authenticated Magda access from the sandbox is blocked.
+Magda auth/OPA remains the hard permission boundary: if the user is not authorised to perform an operation, the agent is not authorised either.
 
-Proposed protocol:
+## Current `mgd` behavior
 
-1. the agent/`mgd` prepares a proposed mutation invocation;
-2. the UI shows a human-readable summary;
-3. the user approves;
-4. Agent Manager issues a short-lived, single-session mutation grant;
-5. `mgd` includes the grant on the mutating requests for that invocation;
-6. Agent Manager validates method/path/session/invocation and forwards;
-7. the grant expires or is consumed.
+The bundled `mgd` coding-agent skill already requires explicit user confirmation before mutations/publishing.
 
-`mgd` already emits an invocation identifier for mutating requests, which should be reused to bind a grant to one command/workflow.
+The core rule covers, among other operations:
 
-A later implementation ticket must define the exact grant scope for multi-request operations such as dataset creation/publish.
+- dataset create/publish;
+- dataset/distribution update;
+- file add/replace/upload;
+- aspect create/set/patch/delete;
+- raw POST/PUT/PATCH/DELETE via `mgd api request`.
 
-Until that ticket lands, production agent Magda access remains read-only.
+The agent should present a concise description of the proposed change, obtain explicit confirmation in the conversation, then execute it.
 
-This area intentionally remains separate from authentication. Authentication answers **who/what authority the sandbox has**; mutation approval answers **how a high-consequence operation receives explicit, server-enforced user approval**.
+This is the initial required behavior.
+
+## DSH permission model
+
+Do not rely on the name `workspace-write` to imply API-side-effect approval.
+
+DSH's workspace sandbox governs filesystem effects. Network access is outside that mode, so:
+
+```text
+mgd dataset update ...
+```
+
+can execute successfully while remaining inside the filesystem workspace boundary.
+
+DSH's `ask` policy is a generic approval mechanism used by tools that explicitly request approval (for example, sandbox permission escalation). It does not infer that an arbitrary outbound HTTP request is a consequential Magda mutation.
+
+## Recommended product enhancement
+
+A later Magda DSH integration may route mutating `mgd` operations through DSH's general approval seam so the Web UI can render a structured one-shot approval card, e.g.:
+
+```text
+Update dataset magda-ds-...
+- title: ...
+- keywords: ...
+
+[Cancel] [Allow once]
+```
+
+This improves consistency, auditability and resistance to accidental execution.
+
+However, it is **not** treated as a non-bypassable security boundary in the initial threat model: the sandbox has shell/network access plus the user's API key, so raw API calls are technically possible.
+
+## Security position
+
+The initial v8 guarantees are:
+
+- the agent has no more Magda authority than the authenticated user;
+- normal Magda auth/OPA enforces user permissions;
+- the supplied Magda agent guidance requires confirmation before consequential operations;
+- DSH/product integration should make such confirmations clear and hard to miss;
+- infrastructure/tenant boundaries are enforced independently by gVisor/Kata/NetworkPolicy.
+
+The initial v8 does **not** guarantee that a compromised or prompt-injected agent cannot bypass its own confirmation instructions while possessing the user's credential.
+
+A future deployment requiring that stronger guarantee would need constrained delegated credentials and/or a server mediation/grant boundary.

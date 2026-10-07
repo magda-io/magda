@@ -4,7 +4,7 @@
 
 ## Foundation now settled
 
-#3822 and #3823 have enough contract detail to be Accepted:
+#3822, #3823 and #3825 are Accepted:
 
 - one user -> one deterministic SandboxClaim -> one current Sandbox;
 - no Agent Manager database or separate session id;
@@ -14,7 +14,11 @@
 - post-claim Kubernetes-exec bootstrap;
 - 30m suspend / 8h hard-delete defaults;
 - logout/new-agent permanent cleanup;
-- DSH/workspace disk persistence but no process-memory persistence.
+- DSH/workspace disk persistence but no process-memory persistence;
+- one lifecycle-bound user-scoped Magda API key is placed in the Sandbox;
+- the agent acts on behalf of the user under normal Magda auth/OPA;
+- mutation confirmation is an agent/DSH UX contract rather than a separate server-side delegated-authority boundary;
+- provider credentials remain outside the Sandbox.
 
 ## Remaining dependency-critical questions
 
@@ -27,12 +31,6 @@ The general proxy/bootstrap model is settled, but the pinned DSH version still n
 - Host/Origin/CSRF/WebSocket proxy behavior;
 - restart/re-authentication;
 - whether a newer supported DSH hook can simplify/remove the bridge.
-
-### #3825 — consequential mutation boundary
-
-A real system-managed Magda API key now exists inside the sandbox. This simplifies `mgd` and LLM access but conflicts with server-enforced mutation approval unless Magda can distinguish/constrain agent-managed authority.
-
-This is the most important unresolved security contract.
 
 ### #3838 — Magda LLM Services
 
@@ -47,8 +45,8 @@ The architecture is settled around a separate reusable Magda LLM Services + inte
 
 ## Later design areas
 
+- optional structured DSH approval integration for mutating `mgd` operations;
 - provider-specific egress/network enforcement;
-- mutation approval protocol;
 - user/global skill storage and trust model;
 - full web/product UX;
 - deployment/Helm/provider qualification;
@@ -57,4 +55,4 @@ The architecture is settled around a separate reusable Magda LLM Services + inte
 - AKS/Kata production qualification;
 - future EKS/Fargate support (#3821).
 
-Do not reopen already settled foundation questions merely because implementation details differ. If implementation evidence invalidates a contract, update the owning design explicitly.
+Do not reopen accepted foundation questions merely because implementation details differ. If implementation evidence invalidates a contract, update the owning design explicitly.

@@ -2,7 +2,7 @@
 
 **Status:** Draft  
 **Owner ticket:** TBD  
-**Depends on:** #3822, #3825, #3838
+**Depends on:** #3822, accepted #3825, #3838
 
 ## Sandbox ingress
 
@@ -48,11 +48,11 @@ Provider credentials remain only in the LiteLLM deployment.
 
 ## Credential threat model
 
-Unlike the earlier opaque-capability proposal, the selected sandbox design contains a real user-scoped Magda API key.
+The selected sandbox design contains a real user-scoped Magda API key because the agent acts on behalf of the user.
 
-Therefore network security must not claim to make the Magda credential unexfiltratable. Public egress means arbitrary sandbox code could read/export it.
+Public egress means arbitrary sandbox code could read/export that key or directly exercise the user's Magda authority. This is an accepted initial-v8 trade-off, not something `workspace-write` or NetworkPolicy claims to prevent.
 
-Mitigations are lifecycle/revocation, normal user-scoped Magda authorisation, strong host/tenant isolation and the still-unresolved mutation-approval/constrained-agent-authority design in #3825.
+The confirmation-before-mutation contract lives in the Magda agent/`mgd` guidance and may later be strengthened with DSH's generic approval seam for product UX. It is not a separate non-bypassable server-side authorization boundary.
 
 ## Protected assets
 
