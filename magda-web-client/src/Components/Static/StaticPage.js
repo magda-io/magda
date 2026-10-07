@@ -81,7 +81,7 @@ class StaticPage extends Component {
                             />{" "}
                             {hasEditPermissions && (
                                 <p>
-                                    <CommonLink href="/admin/pages">
+                                    <CommonLink href="/settings/content/pages">
                                         Manage Pages
                                     </CommonLink>
                                 </p>

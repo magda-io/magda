@@ -23,18 +23,9 @@ export default class AdminPage extends Component {
                     </li>
 
                     <li>
-                        <CommonLink href="/admin/header-navigation">
-                            Header Navigation
-                        </CommonLink>
-                    </li>
-                    <li>
-                        <CommonLink href="/admin/footer-navigation/medium">
-                            Footer Navigation
-                        </CommonLink>
-                    </li>
-                    <li>
-                        <CommonLink href="/admin/footer-copyright">
-                            Footer Copyright
+                        <CommonLink href="/settings/content">
+                            Header, Footer, Logos & Pages (moved to Settings
+                            &gt; Site Content)
                         </CommonLink>
                     </li>
                     <li>
@@ -48,11 +39,6 @@ export default class AdminPage extends Component {
                     <li>
                         <CommonLink href="/admin/connectors">
                             Connectors
-                        </CommonLink>
-                    </li>
-                    <li>
-                        <CommonLink href="/admin/pages">
-                            Content Pages
                         </CommonLink>
                     </li>
                 </ul>

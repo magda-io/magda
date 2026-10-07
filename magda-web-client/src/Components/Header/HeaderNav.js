@@ -3,6 +3,11 @@ import { Link } from "react-router-dom";
 import AccountNavbar from "Components/Account/AccountNavbar";
 import { config } from "config";
 import isExternalURL from "is-url-external";
+import {
+    fullPageLoadOnClick,
+    isBackendPath,
+    opensInCurrentWindow
+} from "helpers/siteLinks";
 
 const headerNavigationPlugins = {
     default: function (nav, i) {
@@ -25,6 +30,13 @@ const headerNavigationPlugins = {
                         rel={opts.rel}
                         title={`Go to ${nav.label}`}
                         id={i === 0 ? "nav" : undefined}
+                        onClick={
+                            // backend paths (e.g. `/api/*`) are not UI routes: load the page instead
+                            isBackendPath(opts.href) &&
+                            opensInCurrentWindow(opts.target)
+                                ? fullPageLoadOnClick
+                                : undefined
+                        }
                     >
                         <span>{nav.label}</span>
                     </Link>

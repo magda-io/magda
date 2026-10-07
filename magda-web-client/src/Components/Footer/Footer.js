@@ -3,12 +3,11 @@ import React from "react";
 import { connect } from "react-redux";
 import { Small } from "Components/Common/Responsive";
 import CommonLink from "Components/Common/CommonLink";
+import { fullPageLoadOnClick, getFooterLinkProps } from "helpers/siteLinks";
 import ChatBoxRoutes from "../Chatbot/ChatBoxRoutes";
 import SQLConsoleRoutes from "../SQLConsole/SQLConsoleRoutes";
 
 import "./footer.scss";
-
-const externalLinkRegex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-/]))?/;
 
 function FooterLink({ link }) {
     if (link.href.indexOf("mailto") === 0) {
@@ -35,22 +34,15 @@ function FooterLink({ link }) {
                 {link.label}
             </a>
         );
-    } else if (
-        externalLinkRegex.test(link.href) ||
-        link.href.substring(0, 1) === "/"
-    ) {
+    } else {
+        const { href, target, rel, fullPageLoad } = getFooterLinkProps(link);
         return (
             <CommonLink
-                target="_blank"
-                rel="noopener noreferrer"
-                href={link.href}
+                href={href}
+                target={target}
+                rel={rel}
+                onClick={fullPageLoad ? fullPageLoadOnClick : undefined}
             >
-                {link.label}
-            </CommonLink>
-        );
-    } else {
-        return (
-            <CommonLink href={`/${encodeURI(link.href)}`}>
                 {link.label}
             </CommonLink>
         );
