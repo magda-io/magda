@@ -47,6 +47,8 @@
             z-index: 0;
         }
 
+        // `data61-logo` was the class of the previous default logo: kept for existing footers
+        .csiro-logo,
         .data61-logo {
             height: 36px;
             margin-left: 10px;
