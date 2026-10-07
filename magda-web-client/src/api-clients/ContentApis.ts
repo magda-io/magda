@@ -55,6 +55,10 @@ export interface PageItem {
 export interface HomeHighlightItem {
     text?: string;
     url?: string;
+    // the rotation order of the highlights
+    order?: number;
+    // `YYYY-MM-DD`: the highlight is shown every day until this date (local time)
+    featuredUntil?: string;
 }
 
 /** `home/stories/*` */

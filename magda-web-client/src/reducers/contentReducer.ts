@@ -1,6 +1,7 @@
 import { config, defaultConfiguration } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { FetchError } from "../types";
+import { pickHighlight } from "../helpers/homeHighlightRotation";
 
 const initialData: ContentState = Object.assign(
     {
@@ -180,11 +181,19 @@ function parseContent(content) {
             };
         });
 
-    const filteredHighlights: string[] = Object.keys(highlights).filter(
-        (index) => highlights[index].backgroundImageUrls
+    // only highlights with background images are shown
+    const pickedHighlight = pickHighlight(
+        Object.keys(highlights)
+            .filter((key) => highlights[key].backgroundImageUrls)
+            .map((key) => ({
+                key,
+                order: highlights[key].lozenge?.order,
+                featuredUntil: highlights[key].lozenge?.featuredUntil
+            }))
     );
+    const finalHighlight = pickedHighlight ? pickedHighlight.key : "default";
 
-    if (filteredHighlights.length === 0) {
+    if (!pickedHighlight) {
         highlights.default = {
             backgroundImageUrls: [
                 "assets/homepage/0w.jpg",
@@ -194,11 +203,7 @@ function parseContent(content) {
                 "assets/homepage/2160w.jpg"
             ]
         };
-        filteredHighlights.push("default");
     }
-
-    const finalHighlight =
-        filteredHighlights[new Date().getDate() % filteredHighlights.length];
 
     stories = Object.values(stories)
         .filter((story: any) => story.content)

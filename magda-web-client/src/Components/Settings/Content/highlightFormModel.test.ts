@@ -2,7 +2,12 @@ import createHighlightFormModel from "./highlightFormModel";
 
 describe("highlight form model", () => {
     const check = (text: string, url: string) => {
-        const result = createHighlightFormModel().check({ text, url });
+        const result = createHighlightFormModel().check({
+            text,
+            url,
+            order: 1,
+            featuredUntil: ""
+        });
         return {
             text: result.text.hasError ? result.text.errorMessage : undefined,
             url: result.url.hasError ? result.url.errorMessage : undefined
@@ -21,6 +26,20 @@ describe("highlight form model", () => {
             url: undefined
         });
         expect(check("Explore", "https://example.com").url).toBeUndefined();
+    });
+
+    it("requires a number order", () => {
+        const check = (order: any) =>
+            createHighlightFormModel().check({
+                text: "",
+                url: "",
+                order,
+                featuredUntil: ""
+            }).order.hasError;
+        expect(check(2)).toBe(false);
+        expect(check("2.5")).toBe(false);
+        expect(check("")).toBe(true);
+        expect(check("abc")).toBe(true);
     });
 
     it("validates the URL", () => {

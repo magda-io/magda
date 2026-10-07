@@ -1,5 +1,6 @@
 import {
     computeCoverCrop,
+    emptyHighlightFormValue,
     emptyStoryFormValue,
     formValueToHighlight,
     formValueToStory,
@@ -11,9 +12,11 @@ import {
     isHomeTab,
     parseHighlightImageId,
     pickHighlightImageSizeKey,
+    setHighlightFeaturedUntil,
     sizeKeyToWidth,
     storyImageId,
     storyToFormValue,
+    toHighlightCandidates,
     validateHighlightImageSize,
     HIGHLIGHT_IMAGE_SIZES
 } from "./homeUtils";
@@ -165,21 +168,83 @@ describe("groupHighlights", () => {
             { key: "3", content: {}, imageSizeKeys: [] }
         ]);
     });
+
+    it("sorts in the rotation order & lists the candidates with images", () => {
+        const records = groupHighlights([
+            {
+                id: "home/highlights/1",
+                type: "application/json",
+                content: { order: 2 }
+            },
+            {
+                id: "home/highlights/2",
+                type: "application/json",
+                content: { order: 1, featuredUntil: "2026-10-08" }
+            },
+            { id: "home/highlights/3", type: "application/json" },
+            { id: "home/highlight-images/1/720w", type: "image/jpeg" },
+            { id: "home/highlight-images/2/720w", type: "image/jpeg" },
+            { id: "home/highlight-images/4/720w", type: "image/jpeg" }
+        ]);
+        expect(records.map((item) => item.key)).toEqual(["2", "1", "3", "4"]);
+        expect(toHighlightCandidates(records)).toEqual([
+            { key: "2", order: 1, featuredUntil: "2026-10-08" },
+            { key: "1", order: 2, featuredUntil: undefined },
+            { key: "4", order: undefined, featuredUntil: undefined }
+        ]);
+    });
 });
 
-describe("highlight lozenge", () => {
+describe("highlight items", () => {
     it("converts to form values and back", () => {
-        expect(highlightToFormValue(undefined)).toEqual({ text: "", url: "" });
-        const value = highlightToFormValue({ text: "Hi", url: "/x" });
-        expect(value).toEqual({ text: "Hi", url: "/x" });
-        expect(formValueToHighlight(value)).toEqual({ text: "Hi", url: "/x" });
+        expect(highlightToFormValue(undefined)).toEqual(
+            emptyHighlightFormValue(1)
+        );
+        const item = {
+            text: "Hi",
+            url: "/x",
+            order: 3,
+            featuredUntil: "2026-10-08"
+        };
+        const value = highlightToFormValue(item);
+        expect(value).toEqual(item);
+        expect(formValueToHighlight(value)).toEqual(item);
     });
 
-    it("leaves out empty fields", () => {
-        expect(formValueToHighlight({ text: "  ", url: "" })).toEqual({});
-        expect(formValueToHighlight({ text: " Hi ", url: " /x " })).toEqual({
-            text: "Hi",
-            url: "/x"
+    it("leaves out empty fields & invalid dates", () => {
+        expect(
+            formValueToHighlight({
+                text: "  ",
+                url: "",
+                order: "2",
+                featuredUntil: ""
+            })
+        ).toEqual({ order: 2 });
+        expect(
+            formValueToHighlight({
+                text: " Hi ",
+                url: " /x ",
+                order: 1,
+                featuredUntil: "8/10/2026"
+            })
+        ).toEqual({ text: "Hi", url: "/x", order: 1 });
+    });
+
+    it("sets & removes featuredUntil, keeping the other fields", () => {
+        const item = { text: "Hi", url: "/x", order: 2 };
+        expect(setHighlightFeaturedUntil(item, "2026-10-08")).toEqual({
+            ...item,
+            featuredUntil: "2026-10-08"
+        });
+        expect(
+            setHighlightFeaturedUntil(
+                { ...item, featuredUntil: "2026-10-08" },
+                undefined
+            )
+        ).toEqual(item);
+        // an image-only highlight has no item yet
+        expect(setHighlightFeaturedUntil(undefined, "2026-10-08")).toEqual({
+            featuredUntil: "2026-10-08"
         });
     });
 });

@@ -154,6 +154,29 @@
         }
     }
 
+    .highlight-shown {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        line-height: 1.3;
+        .highlight-shown-later {
+            color: #8e8e93;
+            font-size: 12px;
+        }
+    }
+
+    .highlight-image-size-list {
+        font-size: 12px;
+        color: #575757;
+        white-space: normal;
+        line-height: 1.4;
+    }
+
+    .highlight-featured-button {
+        color: #e67700;
+    }
+
     .ui-text-cache-note {
         margin-bottom: 15px;
     }
@@ -458,7 +481,12 @@
         }
     }
 
-    .ui-text-use-default {
+    .ui-text-use-default,
+    .stop-featuring-button {
         float: left;
+    }
+
+    .feature-intro {
+        margin-bottom: 15px;
     }
 }

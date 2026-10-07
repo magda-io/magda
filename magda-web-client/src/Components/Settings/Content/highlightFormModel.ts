@@ -22,6 +22,9 @@ function createUrlType(isRequired: boolean) {
  */
 export default function createHighlightFormModel() {
     return Schema.Model<HighlightFormValue>({
+        order: Schema.Types.NumberType("Please enter a number.").isRequired(
+            "Order is required."
+        ),
         text: Schema.Types.StringType().when((schema) =>
             schema.url.value?.trim()
                 ? Schema.Types.StringType().isRequired(
@@ -31,6 +34,8 @@ export default function createHighlightFormModel() {
         ),
         url: Schema.Types.StringType().when((schema) =>
             createUrlType(!!schema.text.value?.trim())
-        )
+        ),
+        // set by the "Feature" action, not edited in the form
+        featuredUntil: Schema.Types.StringType()
     });
 }

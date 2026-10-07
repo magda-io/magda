@@ -30,6 +30,7 @@ import {
     generateHomeItemKey,
     getHighlightImageSizes,
     highlightImageId,
+    emptyHighlightFormValue,
     highlightToFormValue,
     HighlightFormValue,
     HighlightImageSize,
@@ -59,12 +60,12 @@ export type RefType = {
             hasContent?: boolean;
             imageSizeKeys?: string[];
             existingKeys: string[];
+            // the order of a new highlight, or of one saved with no order
+            nextOrder: number;
             onComplete?: (id: string) => void;
         }
     ) => void;
 };
-
-const emptyFormValue = (): HighlightFormValue => highlightToFormValue();
 
 const model = createHighlightFormModel();
 
@@ -89,10 +90,11 @@ const HighlightFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
     );
     const [imageError, setImageError] = useState<string>("");
     const [progress, setProgress] = useState<string>("");
+    const nextOrderRef = useRef<number>(1);
 
     const state = useContentFormState<HomeHighlightItem, HighlightFormValue>(
-        highlightToFormValue,
-        emptyFormValue()
+        (item) => highlightToFormValue(item, nextOrderRef.current),
+        emptyHighlightFormValue()
     );
     const { formValue, setFormValue } = state;
     const isCreateForm = !highlightKey;
@@ -109,6 +111,7 @@ const HighlightFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
         open: (key, options) => {
             setHighlightKey(key);
             setExistingKeys(options.existingKeys);
+            nextOrderRef.current = options.nextOrder;
             setImageSizeKeys(
                 options.imageSizeKeys?.length ? options.imageSizeKeys : []
             );
@@ -120,7 +123,7 @@ const HighlightFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                     ? `${HIGHLIGHT_ID_PREFIX}${key}`
                     : undefined,
                 {
-                    initialValue: emptyFormValue(),
+                    initialValue: emptyHighlightFormValue(options.nextOrder),
                     onComplete: options.onComplete
                 }
             );
@@ -404,6 +407,14 @@ const HighlightFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
                                     false
                                 )}
                             </div>
+                            <Form.Group controlId="ctrl-order">
+                                <Form.ControlLabel>Order</Form.ControlLabel>
+                                <Form.Control name="order" type="number" />
+                                <Form.HelpText>
+                                    The home page shows the highlights in turn,
+                                    one per day, in ascending order.
+                                </Form.HelpText>
+                            </Form.Group>
                             <Form.Group controlId="ctrl-text">
                                 <Form.ControlLabel>Link text</Form.ControlLabel>
                                 <Form.Control

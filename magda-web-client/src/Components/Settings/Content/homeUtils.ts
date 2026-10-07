@@ -5,6 +5,10 @@ import {
     HomeStoryItem
 } from "api-clients/ContentApis";
 import { toOrderNumber } from "./contentUtils";
+import {
+    HighlightCandidate,
+    LOCAL_DATE_PATTERN
+} from "helpers/homeHighlightRotation";
 
 export const HOME_SETTINGS_BASE_URL = "/settings/content/home";
 
@@ -218,12 +222,33 @@ export function groupHighlights(records: ContentRecord[]): HighlightRecord[] {
             }
         }
     }
-    return sortBy(Object.values(highlights), (item) => item.key).map(
-        (item) => ({
-            ...item,
-            imageSizeKeys: sortBy(item.imageSizeKeys, sizeKeyToWidth)
-        })
-    );
+    // in the rotation order: by `order`, then key
+    return sortBy(Object.values(highlights), [
+        (item) =>
+            typeof item.content?.order === "number" &&
+            isFinite(item.content.order)
+                ? item.content.order
+                : Number.MAX_SAFE_INTEGER,
+        (item) => item.key
+    ]).map((item) => ({
+        ...item,
+        imageSizeKeys: sortBy(item.imageSizeKeys, sizeKeyToWidth)
+    }));
+}
+
+/**
+ * The highlights the home page can show (those with images), for `pickHighlight` & co.
+ */
+export function toHighlightCandidates(
+    records: HighlightRecord[]
+): HighlightCandidate[] {
+    return records
+        .filter((item) => item.imageSizeKeys.length > 0)
+        .map((item) => ({
+            key: item.key,
+            order: item.content?.order,
+            featuredUntil: item.content?.featuredUntil
+        }));
 }
 
 /**
@@ -245,14 +270,28 @@ export function pickHighlightImageSizeKey(
 export type HighlightFormValue = {
     text: string;
     url: string;
+    order: number | string;
+    // not edited in the form (see the "Feature" action), but kept when the highlight is saved
+    featuredUntil: string;
 };
 
+export function emptyHighlightFormValue(order: number = 1): HighlightFormValue {
+    return { text: "", url: "", order, featuredUntil: "" };
+}
+
+/**
+ * @param defaultOrder the order of a highlight saved with no order (it's shown after the others)
+ */
 export function highlightToFormValue(
-    item?: HomeHighlightItem
+    item?: HomeHighlightItem,
+    defaultOrder: number = 1
 ): HighlightFormValue {
     return {
         text: typeof item?.text === "string" ? item.text : "",
-        url: typeof item?.url === "string" ? item.url : ""
+        url: typeof item?.url === "string" ? item.url : "",
+        order: typeof item?.order === "number" ? item.order : defaultOrder,
+        featuredUntil:
+            typeof item?.featuredUntil === "string" ? item.featuredUntil : ""
     };
 }
 
@@ -262,7 +301,7 @@ export function highlightToFormValue(
 export function formValueToHighlight(
     value: HighlightFormValue
 ): HomeHighlightItem {
-    const item: HomeHighlightItem = {};
+    const item: HomeHighlightItem = { order: toOrderNumber(value?.order) };
     const text = value?.text ? value.text.trim() : "";
     const url = value?.url ? value.url.trim() : "";
     if (text) {
@@ -271,7 +310,23 @@ export function formValueToHighlight(
     if (url) {
         item.url = url;
     }
+    if (value?.featuredUntil && LOCAL_DATE_PATTERN.test(value.featuredUntil)) {
+        item.featuredUntil = value.featuredUntil;
+    }
     return item;
+}
+
+/**
+ * The highlight item with `featuredUntil` set (a `YYYY-MM-DD` date) or removed (`undefined`).
+ * The other fields are kept.
+ */
+export function setHighlightFeaturedUntil(
+    item: HomeHighlightItem | undefined,
+    featuredUntil: string | undefined
+): HomeHighlightItem {
+    const rest: HomeHighlightItem = { ...item };
+    delete rest.featuredUntil;
+    return featuredUntil ? { ...rest, featuredUntil } : rest;
 }
 
 /* ------------------------------------------------------------------ */
