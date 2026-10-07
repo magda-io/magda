@@ -1,28 +1,24 @@
 # Deployment and Helm design
 
 **Status:** Draft  
-**Owner ticket:** TBD — later design slice  
-**Depends on:** #3822 runtime, network/security design, provider qualification  
-**Blocks:** Helm/operator implementation and production support docs  
-**Evidence:** #3812 plus GKE/AKS provider docs; #3821 future EKS evidence
+**Owner ticket:** TBD  
+**Depends on:** #3822, network/security design, #3838 and provider qualification
 
-> This document contains the current design baseline inherited from the original #3819 monolith. Unless a statement is already an explicit architecture-level decision in the overview, treat it as a hypothesis to review under the owner ticket rather than an implementation contract.
-
-## Helm/deployment configuration
-
-Illustrative values:
+## Illustrative values
 
 ```yaml
 agent:
   enabled: false
 
   manager:
-    replicas: 1
+    replicas: 2
+
+  lifecycle:
+    suspendAfter: 30m
+    deleteAfter: 8h
 
   sandbox:
-    # Recommended/reference production example: GKE + gVisor.
-    # AKS production uses runtimeClassName: kata-vm-isolation.
-    securityProfile: production       # production | trusted-dev
+    securityProfile: production
     runtimeClassName: gvisor
     image: ghcr.io/magda-io/magda-agent:<version>
 
@@ -39,51 +35,91 @@ agent:
       size: 2Gi
 
     warmPool:
-      replicas: 0
+      replicas: 2
 
-    externalNetworkAccess: public-https
+    externalNetworkAccess: public
 
-  model:
-    allowedModels: []
+llm:
+  enabled: true
+
+  services:
+    replicas: 2
+
+  litellm:
+    replicas: 2
+    database:
+      enabled: false
+    redis:
+      enabled: false
     # provider secrets come from Kubernetes Secrets, never chart values
-
-  skills:
-    # trusted global skill configuration/image options
-    enabled: true
 ```
 
-For local development:
+Lightweight/local development may override:
 
 ```yaml
 agent:
   enabled: true
+  manager:
+    replicas: 1
   sandbox:
     securityProfile: trusted-dev
     runtimeClassName: ""
+    warmPool:
+      replicas: 0
+
+llm:
+  services:
+    replicas: 1
+  litellm:
+    replicas: 1
 ```
 
-Chart validation:
+## Agent Sandbox prerequisites
 
-- production profile requires a non-empty RuntimeClass;
-- trusted-dev profile emits a warning that runc is not a strong untrusted-code boundary;
-- no profile enables privileged/host mounts.
+Helm/deployment owns:
 
-Initial production support/documentation maps the RuntimeClass as follows:
+- Agent Sandbox controller/CRD prerequisite documentation;
+- `SandboxTemplate`;
+- `SandboxWarmPool`;
+- runtime class/provider prerequisite;
+- workspace StorageClass;
+- NetworkPolicy.
 
-- GKE: `gvisor` (**recommended/reference production profile**);
-- AKS: `kata-vm-isolation`;
-- EKS: no initial production profile; #3821 evaluates Fargate.
+Initial support:
 
-Agent Sandbox CRDs/controller and the configured runtime/provider prerequisites are explicit installation prerequisites. On GKE, deployments may use GKE's managed Agent Sandbox integration; on AKS, use the upstream Agent Sandbox controller with AKS Pod Sandboxing.
+- GKE + `gvisor` — recommended/reference;
+- AKS + `kata-vm-isolation` — supported target;
+- EKS — future #3821.
 
-For local gVisor testing, gVisor must be pinned by release rather than relying on a moving "latest" installer URL; #3812 demonstrated that the Minikube addon download path can drift/break.
+Production workspace storage must support the delete-on-sandbox-delete contract.
 
-## Support policy
+## WarmPool policy
 
-The initial production support commitment is:
+WarmPool replica target is a Helm value.
 
-- GKE + gVisor — recommended/reference production profile;
-- AKS + Kata Pod Sandboxing — supported production target;
-- EKS — not initially supported for production Agent workloads; #3821 investigates Fargate.
+Recommended production starting point: 2.
 
-The final deployment design must distinguish portable Magda configuration from provider-specific prerequisites and tests.
+Local/resource-constrained deployments may use 0. User-specific configuration is post-claim bootstrap so warm adoption remains available.
+
+## LiteLLM minimal deployment
+
+The initial Magda deployment deliberately keeps LiteLLM minimal:
+
+- static model config in ConfigMap;
+- provider/master credentials in Kubernetes Secret;
+- internal ClusterIP only;
+- no PostgreSQL;
+- no Redis.
+
+Multiple replicas without Redis are allowed by Magda. Operators must understand that LiteLLM router cooldowns/rate limits/caches are process-local in that topology. Add Redis only when shared coordination is required.
+
+Adding Redis does not require adding PostgreSQL. PostgreSQL remains optional unless LiteLLM database-backed management/tracking features are intentionally adopted.
+
+## Security/network requirements
+
+- sandbox direct access to LiteLLM denied;
+- sandbox internal/private/link-local/cloud-metadata egress denied;
+- Magda external endpoint reachable;
+- Agent Manager is the only normal ingress path to sandbox DSH;
+- LiteLLM provider credentials never enter sandbox;
+- Agent Manager Kubernetes RBAC is namespace-scoped and includes only required Agent Sandbox lifecycle and Pod exec operations.

@@ -1,138 +1,106 @@
-# Delegated authentication and credential boundaries
+# Authentication and credential boundaries
 
-**Status:** Draft  
+**Status:** Investigating  
 **Owner ticket:** #3825  
-**Depends on:** #3822 and #3823; coordinates with #3824  
-**Blocks:** managed-agent mgd auth, Magda proxy, LLM proxy, mutation approval input  
-**Evidence:** #3812 plus current Magda auth/API-key implementation to be verified
+**Depends on:** #3822/#3823; coordinates with #3824, #3838 and mutation approval  
+**Blocks:** final sandbox credential/security and consequential-mutation contract
 
-> This document contains the current design baseline inherited from the original #3819 monolith. Unless a statement is already an explicit architecture-level decision in the overview, treat it as a hypothesis to review under the owner ticket rather than an implementation contract.
+The earlier "Manager-held short-lived key + opaque sandbox capability" design is no longer the selected baseline.
 
-## `mgd`
+## Browser identity
 
-`mgd` remains the preferred agent-facing Magda interface.
+Browser requests enter through Magda Gateway and use normal Magda authentication.
 
-In an agent sandbox, `mgd` uses an **agent-proxy auth mode** rather than a real Magda API key:
+Agent Manager and Magda LLM Services receive trusted Magda user context from the Gateway (normally `X-Magda-Session`) and do not accept a browser-supplied user UUID as authority.
 
-```text
-MGD_BASE_URL=http://agent-manager-internal/.../magda/api
-MGD_AGENT_TOKEN_FILE=/run/magda-agent/session-token
+## System-managed sandbox Magda API key
+
+Each current user Sandbox receives one real, user-scoped Magda API key.
+
+The key:
+
+- is created automatically by Agent Manager with a reserved system-managed name;
+- has no intrinsic expiry in the initial design;
+- is written into the PVC-backed `mgd` profile by post-claim bootstrap;
+- is also configured as DSH's credential for the external Magda LLM API;
+- survives suspend/resume with the same PVC;
+- is revoked/deleted when the sandbox is permanently deleted/logged out;
+- is rotated by deletion/recreation when a new sandbox is started.
+
+Before creation, Agent Manager removes stale keys with the reserved name so partial failures self-heal toward exactly one managed key for the current sandbox.
+
+## Magda API usage
+
+`mgd` uses the normal external Magda endpoint and normal API-key authentication; no Agent Manager Magda proxy is required.
+
+Magda supports bearer API-key form:
+
+```http
+Authorization: Bearer <apiKeyId>:<apiKey>
 ```
 
-Exact CLI/environment names may change in the implementation ticket, but the contract is:
+DSH uses that same bearer credential when calling Magda LLM Services.
 
-- the token is an opaque Agent Manager session capability;
-- `mgd` sends it only to Agent Manager;
-- Agent Manager injects the real Magda credential upstream;
-- no real Magda API secret is written to the agent workspace/profile.
+The key is stored on the sandbox PVC, not baked into the image and not placed in claim metadata/environment.
 
-Outside the managed agent environment, existing `mgd` API-key/profile behaviour remains unchanged.
+## Role/user changes
 
-## Agent-to-Magda delegated authentication
+Because calls go through normal Magda authentication/authorisation:
 
-### Why the real key must stay out of the sandbox
+- role/permission changes take effect according to normal Magda authorisation behavior;
+- a disabled/invalid user/key is rejected by normal Magda auth;
+- Agent Manager does not cache an independent delegated permission set.
 
-A raw user API key in the model-controlled environment could be read and exfiltrated to an arbitrary public endpoint.
+Sandbox lifecycle cleanup is still responsible for revoking the system-managed key when the sandbox is permanently removed.
 
-The runtime only needs the *ability to perform authorised Magda calls*, not possession of the reusable credential.
+## LLM provider credentials
 
-### Selected model
-
-Agent Manager creates and owns a short-lived API key for the user using Magda's existing API-key support, which already provides:
-
-- user ownership;
-- expiry time;
-- enable/disable/delete;
-- normal Gateway/OPA authorisation.
-
-The key is never passed to the sandbox.
-
-Instead, the sandbox receives a random opaque session capability. `mgd` and approved tools send that capability to Agent Manager's internal Magda proxy.
-
-```text
-mgd
-  |
-  | opaque session token
-  v
-Agent Manager internal Magda proxy
-  |
-  | X-Magda-API-Key-Id + X-Magda-API-Key
-  v
-Magda Gateway
-  |
-  v
-normal Magda auth/OPA
-```
-
-The session capability:
-
-- is at least 256 bits of cryptographic randomness;
-- is stored hashed by Agent Manager;
-- is accepted only on the internal agent-facing service/port;
-- is bound to one session;
-- is rejected after reset/delete;
-- may also be checked against the current Sandbox Service/source identity.
-
-### API-key lifetime/rotation
-
-Recommended default:
-
-- API-key TTL: 24 hours;
-- Agent Manager rotates well before expiry;
-- session reset/delete revokes the current key immediately.
-
-The current key can authenticate the user's normal permission to create the replacement key and then delete the previous key, so rotation does not require the browser to remain connected.
-
-If rotation fails until expiry, the session enters `AUTH_EXPIRED`: DSH/workspace remains available but Magda proxy calls fail until the user/session is reauthorised.
-
-### Proxy restrictions
-
-The Agent Manager Magda proxy is not a blind route to every platform administration endpoint.
-
-At minimum block:
-
-- API-key create/update/delete endpoints;
-- authentication-plugin credential flows;
-- Agent Manager's own control APIs;
-- other credential-minting endpoints.
-
-This prevents the sandbox from using its delegated authority to mint a persistent credential and bypass the session lifetime.
-
-For the first Agent Manager MVP, the proxy is **read-only**:
-
-- GET/HEAD allowed for supported Magda data APIs;
-- mutating methods return an explicit "approval required / not implemented" response.
-
-Mutation support is added only with the server-enforced approval-grant protocol described below.
-
-## LLM provider access
-
-Do not inject the deployment's OpenAI/DeepSeek/other provider key into every sandbox.
-
-DSH should point at an OpenAI-compatible Agent Manager LLM proxy:
+OpenAI/Anthropic/AWS/Azure/local-provider credentials never enter the sandbox.
 
 ```text
 DSH
-  -> Agent Manager internal LLM proxy
-     -> configured provider
+  -> Magda external /api/v0/llm/...
+  -> Magda Gateway authentication
+  -> Magda LLM Services model authorisation
+  -> internal LiteLLM credential
+  -> LiteLLM
+  -> provider credential
 ```
 
-DSH receives only the same opaque session capability (or a derived provider capability).
+See [llm-services.md](./llm-services.md) / #3838.
 
-Agent Manager:
+Any valid authenticated Magda API client may use the LLM API if the user is authorised for the requested model. The API is not restricted to the special Agent API key.
 
-- validates session;
-- enforces allowed provider/model;
-- injects the real provider credential;
-- streams responses without buffering the whole completion;
-- records usage/cost metadata;
-- applies per-user/session limits;
-- redacts provider credentials from logs.
+## Explicit security trade-off
 
-Trusted development may support a direct provider-key override, but production defaults to the proxy.
+The sandbox is arbitrary-code execution and has public egress. Therefore a Magda API key readable by DSH/model-controlled tools must be treated as potentially exfiltratable during the sandbox lifetime.
 
-## Design warning
+The chosen lifecycle reduces persistence of an abandoned credential (delete/revoke on logout/new session/hard idle deletion), but does not prevent an active malicious/prompt-injected workload from reading and exporting it.
 
-The inherited design selects a Manager-held short-lived Magda API key plus an opaque sandbox capability. #3825 must evaluate this rather than treating it as final.
+This is an intentional trade-off of the simpler direct-`mgd` model and must be represented in threat modelling.
 
-The accepted design must define identity, scope, lifetime, rotation, revocation, reset/logout/user-disable semantics and the exact boundary between authentication, network policy and future mutation approval.
+## Unresolved: mutation approval boundary
+
+The remaining blocking question is consequential mutation approval.
+
+#3811 requires server-enforced approval for destructive/publishing/consequential operations. A normal user-scoped Magda API key in the sandbox can currently authenticate direct mutation requests to the external Magda Gateway.
+
+A reserved human-readable API-key name is not sufficient enforcement. The design needs a mechanism such as:
+
+- an agent-managed credential type/context that Magda auth/OPA can distinguish and constrain;
+- propagation of authenticated API-key identity/attributes into authorisation context;
+- an approval-grant mechanism that temporarily authorises a specific consequential operation;
+- or another constrained-delegation design.
+
+Until that mechanism is settled, #3825 must remain open and mutation-capable implementation must not assume DSH prompt/UI confirmation is a security boundary.
+
+## Network assumptions
+
+The credential design assumes:
+
+- sandbox egress may reach public Internet;
+- cluster-internal/private/link-local/cloud-metadata addresses are denied except explicit infrastructure such as DNS;
+- Magda APIs and LLM APIs are called through the external Magda endpoint;
+- sandbox ingress is limited to the Agent Manager/approved DSH proxy path.
+
+Network restrictions reduce lateral/cluster risk but do not make the sandbox-held Magda API key non-exfiltratable.

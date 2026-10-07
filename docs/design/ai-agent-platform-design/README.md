@@ -5,11 +5,7 @@
 **Working PR:** #3819  
 **Parent implementation epic:** #3810
 
-This folder is the evolving design blueprint for the Magda v8 AI Agent Platform.
-
-The design is intentionally developed **before** broad implementation starts. The platform has several tightly coupled security, lifecycle, routing, authentication and persistence boundaries; implementation of one component must not depend on guessed behaviour from another component that has not yet been designed.
-
-See [design-process.md](./design-process.md) for how future agents should work on this design.
+This folder is the evolving implementation blueprint for the Magda v8 AI Agent Platform. See [design-process.md](./design-process.md) for the working model.
 
 ## Current architectural direction
 
@@ -19,211 +15,145 @@ Browser
   v
 Magda Gateway
   |
-  v
-Agent Manager
+  +------------------------------+
+  |                              |
+  v                              v
+Agent Manager                Magda LLM Services
+  |                              |
+  | SandboxClaim/lifecycle       | Magda authz + proxy
+  v                              v
+Kubernetes Agent Sandbox      LiteLLM
+  |                              |
+  | runc / gVisor / Kata         +--> OpenAI
+  v                              +--> Anthropic
+DSH + mgd + tools                +--> AWS Bedrock
+  |                              +--> Azure
+  |                              +--> local OpenAI-compatible models
   |
-  | SandboxClaim / lifecycle
-  v
-Kubernetes Agent Sandbox
-  |
-  | deployment-selected isolation
-  +-- local development: runc
-  +-- local security / PoC: gVisor
-  +-- GKE production: gVisor (recommended/reference)
-  +-- AKS production: Kata
-  |
-  v
-per-session DSH + mgd + analysis tools
-  |
-  v
-Agent Manager mediated Magda / LLM access
+  +--> Magda external endpoint (same system-managed Magda API key)
+  +--> /api/v0/llm/... through Magda external endpoint
+  +--> approved public Internet
 ```
 
-The high-level direction is:
+## Settled foundation decisions
 
-- one isolated Agent Sandbox per active Magda agent session;
-- DSH and `mgd` run inside the sandbox, not on a shared privileged host;
-- Agent Sandbox owns lifecycle while the low-level isolation runtime is deployment policy;
-- trusted local development may use runc;
-- local security testing uses gVisor;
-- GKE + gVisor is the recommended/reference production profile;
-- AKS + Kata Pod Sandboxing is an initial supported production target;
-- EKS production is not in the initial support commitment; #3821 investigates Fargate later;
-- ordinary runc is not the production fallback simply because a cloud lacks a supported strong-isolation profile;
-- the browser never talks directly to a Sandbox Pod;
-- reusable platform/provider credentials should remain outside the untrusted sandbox;
-- durable user knowledge must be separated from disposable execution state.
+The following contracts are now the baseline for the initial v8 design:
 
-These are architecture-level decisions. Detailed contracts live in the documents below and may still change while #3811 remains open.
+- **one current sandbox per Magda user**; a user UUID is the stable ownership key;
+- the deterministic `SandboxClaim` name is derived from the Magda user UUID and the claim also carries `agent.magda.io/user-id=<uuid>`;
+- there is no separate Magda Agent session-id/database row; `SandboxClaim.metadata.uid` is sufficient when an incarnation/generation identifier is needed;
+- Agent Manager is intentionally **stateless** for the initial scope: Kubernetes Agent Sandbox resources are the control-plane source of truth and the sandbox PVC is the source of truth for DSH/workspace state;
+- Helm owns `SandboxTemplate` and `SandboxWarmPool`; Agent Manager creates/patches/deletes `SandboxClaim`; Agent Sandbox owns `Sandbox`, Pod, Service and template-created PVC lifecycle;
+- Agent Manager always resolves the adopted sandbox from `SandboxClaim.status.sandbox.name`; warm-pool adoption does not rename the Sandbox;
+- each Sandbox has its own PVC; an adopted warm sandbox/PVC becomes that user's sandbox and is never returned to the pool;
+- production/default warm-pool target is configurable and initially **2**; lightweight/local deployments may set it to **0**;
+- DSH starts in the generic warm sandbox without user credentials;
+- after claim/adoption, Agent Manager bootstraps the sandbox with Kubernetes exec + stdin before exposing DSH to the browser;
+- the bootstrap writes the `mgd` profile and DSH managed-provider/default-model configuration to PVC-backed paths;
+- 30 minutes of configurable meaningful inactivity suspends the Sandbox; 8 hours of configurable inactivity deletes it; explicit logout deletes immediately;
+- suspension preserves the PVC but not arbitrary running process memory; DSH/workspace/session data is reconstructed from disk on resume;
+- starting a new agent destroys the old Sandbox/PVC and creates a fresh Sandbox; there is no attempt to sanitise/reuse an old user environment;
+- each current sandbox has one system-managed Magda API key with a reserved name; it has no intrinsic expiry but is lifecycle-bound: retained across suspend/resume, rotated for a new sandbox and revoked on permanent deletion/logout;
+- the same Magda API key is used by `mgd` and by DSH when calling the external Magda LLM API;
+- shared LLM access is owned by a separate **Magda LLM Services** component (#3838), not Agent Manager;
+- Magda LLM Services uses normal Magda authentication/authorisation and proxies authorised model calls to internal LiteLLM;
+- LiteLLM starts with static configuration, no PostgreSQL and no Redis; Redis remains optional even with multiple replicas, with explicitly accepted per-process routing/rate-limit/cooldown/cache semantics;
+- real provider credentials remain outside sandboxes in the LiteLLM deployment;
+- sandboxes may access the public Internet by default but must be denied cluster-internal/private/link-local/cloud-metadata destinations; Magda APIs are reached through the external Magda endpoint;
+- sandbox ingress is default-deny except the Agent Manager/approved proxy path needed to reach DSH;
+- DSH should be customised by a Magda profile/plugin composition rather than a permanent fork where possible; generic model/provider controls are hidden/disabled and the deployment supplies the default model/reasoning effort.
 
-## Why this is a folder rather than one design document
+## Important unresolved security contract
 
-The original #3819 draft placed runtime, session lifecycle, Agent Manager, routing, authentication, skills, persistence, networking, security, deployment and implementation ordering into one file.
+The current credential decision intentionally puts a real user-scoped Magda API key inside the untrusted sandbox so that `mgd` and the external LLM API work through normal Magda authentication.
 
-That was useful as an initial architecture sketch, but it creates a dangerous failure mode: an implementation ticket can read a provisional statement about another component as though it were already a settled interface.
+That creates a remaining design conflict with #3811's requirement for **server-enforced approval of consequential Magda mutations**: unless agent-managed credentials can be distinguished/constrained by Magda authentication/authorisation, the sandbox can call mutation APIs directly with the same authority as the user.
 
-The blueprint therefore separates:
-
-1. **overview architecture** — this file;
-2. **design process and design maturity** — [design-process.md](./design-process.md);
-3. **component/aspect contracts** — detailed files below;
-4. **evidence / experiments** — investigation docs and PoC tickets such as #3812;
-5. **implementation tickets** — created only when the design slice and its required input contracts are settled.
-
-The file decomposition is a starting point, not a permanent taxonomy. Split, merge or rename documents when the design reveals a better boundary.
+#3825 therefore remains open until this boundary is settled. A hard-coded API-key display name is useful operationally but is not by itself an enforcement boundary.
 
 ## Design dependency graph
 
-The design is a dependency graph, not a linear implementation plan.
-
 ```text
-                 Sandbox runtime
-                       |
-                       v
-                Session lifecycle
-                  /          \
-                 v            v
-          Agent Manager    Persistence
-              |  \
-              |   \
-              v    v
-       DSH integration   Delegated auth
-              \           /
-               \         /
-                v       v
-              Magda operations
-                    |
-                    v
-             Mutation approval
+Sandbox runtime + lifecycle (#3822 Accepted)
+                |
+                v
+       Agent Manager (#3823 Accepted)
+          |               |
+          v               v
+DSH integration       Credential boundary
+   (#3824)               (#3825)
+          |               |
+          +-------+-------+
+                  |
+                  v
+          Agent/browser experience
 
-Runtime + Auth + Network
+Magda LLM Services (#3838)
           |
           v
- Deployment / hardening
+        LiteLLM
 
-Skills -----------------> Web UI
-Observability ----------> all components
+Credential boundary + mutation approval
+                  |
+                  v
+       Consequential operations
+
+Runtime + credentials + network
+                  |
+                  v
+          Deployment/hardening
 ```
-
-The graph will evolve. When a detailed design changes an upstream contract, update this overview and the affected dependent design docs/tickets.
 
 ## Design documents
 
 | Area | File | Current design ticket / status |
 | --- | --- | --- |
-| Design working model | [design-process.md](./design-process.md) | Guidance for all #3811 work |
-| Sandbox runtime | [sandbox-runtime.md](./sandbox-runtime.md) | #3822 — foundation design |
-| Session lifecycle | [session-lifecycle.md](./session-lifecycle.md) | #3822 — foundation design |
-| Agent Manager | [agent-manager.md](./agent-manager.md) | #3823 — blocked on foundation inputs |
-| DSH integration / bridge / routing | [dsh-integration.md](./dsh-integration.md) | #3824 — depends on foundation; coordinates with #3823 |
-| Delegated authentication | [authentication.md](./authentication.md) | #3825 — depends on foundation + Agent Manager contract |
-| Network / security | [network-security.md](./network-security.md) | Draft; create a focused ticket when prerequisite contracts mature |
-| Mutation approval | [mutation-approval.md](./mutation-approval.md) | Draft; later design slice |
-| Skills | [skills.md](./skills.md) | Draft; later design slice |
-| Web/product integration | [web-ui.md](./web-ui.md) | Draft; later design slice |
-| Deployment / Helm | [deployment.md](./deployment.md) | Draft; depends on runtime/security contracts |
-| Observability / audit | [observability.md](./observability.md) | Draft; cross-cutting |
-| Open questions / future design queue | [open-questions.md](./open-questions.md) | Continuously maintained |
+| Design working model | [design-process.md](./design-process.md) | Guidance |
+| Sandbox runtime | [sandbox-runtime.md](./sandbox-runtime.md) | #3822 — **Accepted** |
+| Session lifecycle | [session-lifecycle.md](./session-lifecycle.md) | #3822 — **Accepted** |
+| Agent Manager | [agent-manager.md](./agent-manager.md) | #3823 — **Accepted** |
+| DSH integration / bootstrap / routing | [dsh-integration.md](./dsh-integration.md) | #3824 — **Proposed**, narrow browser-auth verification remains |
+| Authentication / sandbox credential boundary | [authentication.md](./authentication.md) | #3825 — **Investigating**, mutation-approval conflict remains |
+| Shared LLM services | [llm-services.md](./llm-services.md) | #3838 — **Proposed** |
+| Network / security | [network-security.md](./network-security.md) | Draft |
+| Mutation approval | [mutation-approval.md](./mutation-approval.md) | Draft; now directly coupled to #3825 |
+| Skills | [skills.md](./skills.md) | Draft |
+| Web/product integration | [web-ui.md](./web-ui.md) | Draft |
+| Deployment / Helm | [deployment.md](./deployment.md) | Draft |
+| Observability / audit | [observability.md](./observability.md) | Draft |
+| Open questions | [open-questions.md](./open-questions.md) | Continuously maintained |
 
-A separate `persistence.md` may be split out later. For now, session/workspace persistence is kept with lifecycle because #3822 needs to decide the fundamental disposable-vs-persistent session contract before a stable persistence boundary exists.
+## Supported runtime profiles
 
-## Active design sequence
+| Environment | Runtime | Position |
+| --- | --- | --- |
+| Local development | runc/default | trusted single-developer use |
+| Local security/PoC | gVisor | production-style isolation testing |
+| GKE production | gVisor | recommended/reference |
+| AKS production | Kata Pod Sandboxing | supported target |
+| EKS | Fargate candidate | future #3821; not initial support |
 
-Only the next dependency-critical design slices are ticketed now:
+Runtime choice remains deployment policy; Agent Manager does not contain gVisor/Kata-specific business logic.
 
-1. #3822 — sandbox runtime + session lifecycle foundation;
-2. #3823 — Agent Manager control-plane contract;
-3. #3824 — DSH integration, bridge/bootstrap and browser routing;
-4. #3825 — delegated authentication and credential boundaries.
+## Evidence
 
-Do **not** create every possible design ticket upfront. #3811 is the umbrella and should evolve as these designs reveal better component boundaries or new evidence requirements.
+#3812 / PR #3817 remains the baseline local Minikube + Agent Sandbox + gVisor evidence. Current upstream Agent Sandbox documentation additionally confirms that warm-pool claims retain the pool-generated Sandbox name, publish it through `status.sandbox.name`, the backing Pod shares the Sandbox name, warm-pool PVCs are dedicated to each Sandbox, and suspension removes the Pod while preserving lifecycle state/PVC.
 
-## Evidence already available
+Provider-specific release qualification is still required for GKE/gVisor and AKS/Kata.
 
-The completed #3812 / PR #3817 Minikube PoC provides measured evidence for:
+## Remaining #3811 work
 
-- Agent Sandbox + gVisor on Minikube;
-- DSH confinement behaviour under gVisor/runc;
-- browser/runtime connectivity constraints;
-- sandbox/PVC lifecycle observations;
-- resource footprint and performance;
-- isolation/security smoke tests.
+The foundation is substantially clearer, but #3811 is **not complete**. Remaining implementation-critical design includes:
 
-See:
-
-- `docs/investigations/v8-agent-sandbox-minikube.md`
-- #3812
-- PR #3817
-
-Use those results where they directly apply. Do not generalise a gVisor-specific result to AKS/Kata without evidence.
-
-Future EKS/Fargate portability is tracked separately by #3821 and is not an initial v8 release blocker.
-
-## Platform goals
-
-The initial v8 design should make it possible for a signed-in Magda user to:
-
-- open a capable DSH-based agent through the Magda web UI;
-- receive a private agent execution environment without installing a local coding agent;
-- use `mgd` and approved local analysis tools;
-- reconnect to the active session;
-- reset/start a clean session;
-- act only with the user's authorised Magda permissions;
-- perform consequential mutations only through an explicit, server-enforced approval model;
-- preserve durable user knowledge independently of disposable sandbox state.
-
-Operators should be able to:
-
-- select the supported runtime/deployment profile;
-- enforce strong production isolation and network policy;
-- set resource limits;
-- manage model/provider access;
-- provide trusted global skills;
-- observe/audit lifecycle and consequential operations.
-
-## Cross-component design principles
-
-1. **The sandbox contains the agent, not only its shell commands.**
-2. **Agent Sandbox lifecycle and runtime isolation are separate concerns.**
-3. **Production uses a provider-supported strong isolation profile; runc is trusted-development only.**
-4. **Reusable knowledge is separate from disposable execution state.**
-5. **Arbitrary agent-controlled code does not receive reusable platform/provider secrets.**
-6. **Existing Magda authorisation remains authoritative.**
-7. **High-risk boundaries are server/runtime enforced, not prompt enforced.**
-8. **Provider/runtime-specific behaviour must not leak into Agent Manager unless it is an explicit contract.**
-9. **Implementation depends on settled contracts, not inferred future designs.**
-
-## Candidate future implementation workstreams
-
-These are **not an implementation order** and should not be turned into tickets merely because they are listed here.
-
-Potential workstreams include:
-
-- agent runtime image and SandboxTemplate assets;
-- Agent Manager;
-- DSH bridge/bootstrap and browser proxy;
-- managed-agent `mgd` authentication;
-- LLM proxy;
-- web-client agent experience;
+- #3824 verification of the pinned DSH browser-auth/bridge contract;
+- #3825 resolution of agent-managed Magda credential vs server-enforced mutation approval;
+- #3838 exact LLM API/authz/Helm contract;
+- network/security enforcement per supported provider;
 - mutation approval;
-- user skills and trusted global skills;
-- production egress/resource controls;
-- observability/security integration tests;
-- Helm/operator support;
+- user/global skill persistence/trust model;
+- full web/product lifecycle UX;
+- deployment/Helm details and production qualification;
+- observability/audit;
 - migration/coexistence with the current WebGPU agent.
 
-Create implementation tickets only when the relevant design slice passes the gate in [design-process.md](./design-process.md).
-
-## Relationship to the Data Understanding Layer
-
-The v7 Data Understanding Layer remains complementary:
-
-- `data-dictionary`: what a distribution contains;
-- `distribution-contract`: how it can be accessed/queried;
-- `dataset-usage`: suitability and limitations.
-
-These aspects can make DSH + `mgd` planning more deterministic, but they do not replace Agent Manager execution policy, delegated auth, network controls or approval.
-
-## Migration from the current WebGPU agent
-
-The current browser/WebGPU agent should remain available during the early v8 transition. The new sandboxed platform should be introduced behind its own feature flag/entry point until production evidence is sufficient to make a later migration/deprecation decision.
+Implementation work may proceed for slices whose required contracts are Accepted; it must not invent answers for the remaining boundaries.

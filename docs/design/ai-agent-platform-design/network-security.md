@@ -1,122 +1,77 @@
 # Network and sandbox security design
 
 **Status:** Draft  
-**Owner ticket:** TBD — create when prerequisite contracts are mature  
-**Depends on:** #3822 runtime; #3825 credential boundary  
-**Blocks:** production network policy, egress controls, adversarial security tests  
-**Evidence:** #3812 isolation evidence plus provider-specific networking documentation
+**Owner ticket:** TBD  
+**Depends on:** #3822, #3825, #3838
 
-> This document contains the current design baseline inherited from the original #3819 monolith. Unless a statement is already an explicit architecture-level decision in the overview, treat it as a hypothesis to review under the owner ticket rather than an implementation contract.
+## Sandbox ingress
 
-## Network policy
+Default deny.
 
-### Ingress
+Permit only the approved Agent Manager/DSH proxy path to the bridge/DSH service port and explicitly required health/metrics paths.
 
-Sandbox ingress allows only:
+No direct external ingress and no sandbox-to-sandbox ingress.
 
-- Agent Manager -> bridge port;
-- required health/metrics paths if separately configured.
+## Sandbox egress
 
-No sandbox-to-sandbox ingress.
+Initial product policy intentionally permits public external hosts so DSH can fetch datasets, packages and public resources.
 
-### Egress
+Deny by default:
 
-Production default:
-
-- DNS;
-- Agent Manager internal service;
-- approved public data access according to deployment policy.
-
-Direct access from sandbox to internal Magda services/gateway is denied in production; authenticated Magda traffic must use Agent Manager's proxy.
-
-Block:
-
-- Kubernetes API;
-- RFC1918/internal cluster ranges except explicitly allowed services;
-- link-local/cloud metadata;
+- Kubernetes API/control-plane access;
+- Pod/Service CIDRs and unintended cluster-internal services;
+- RFC1918/private/VPC ranges except explicitly required endpoints;
+- link-local and cloud metadata endpoints such as `169.254.169.254`;
 - other Sandbox Pods.
 
-### External datasets
+Allow:
 
-Agents need to download distributions hosted outside Magda.
+- DNS required by the sandbox (normally cluster DNS);
+- public Internet according to deployment policy;
+- Magda APIs only through the deployment's **external Magda endpoint**.
 
-Support deployment policy levels such as:
+The external Magda endpoint is used for both normal `mgd` API traffic and `/api/v0/llm/...`.
 
-- `disabled`;
-- `public-https` (recommended default);
-- `custom`.
+Standard Kubernetes NetworkPolicy can express IP/CIDR boundaries but not every FQDN policy. Provider-specific implementations may need Cilium/FQDN policy or an egress proxy if stronger domain restrictions are later required.
 
-A later egress implementation may use Cilium FQDN policy or an explicit egress proxy. NetworkPolicy alone can enforce private/link-local denial but cannot express all domain-level policy.
+## LiteLLM network boundary
 
-The opaque Agent Manager capability has no value to arbitrary Internet hosts, reducing the impact of accidental token exfiltration.
+LiteLLM is internal-only:
 
-## Security model
+```text
+sandbox -> direct LiteLLM: denied
+external client -> direct LiteLLM: denied
+Magda LLM Services -> LiteLLM: allowed
+```
 
-### Protected assets
+Provider credentials remain only in the LiteLLM deployment.
 
-- host node/kernel;
-- other users' sandboxes/PVCs;
+## Credential threat model
+
+Unlike the earlier opaque-capability proposal, the selected sandbox design contains a real user-scoped Magda API key.
+
+Therefore network security must not claim to make the Magda credential unexfiltratable. Public egress means arbitrary sandbox code could read/export it.
+
+Mitigations are lifecycle/revocation, normal user-scoped Magda authorisation, strong host/tenant isolation and the still-unresolved mutation-approval/constrained-agent-authority design in #3825.
+
+## Protected assets
+
+- host/kernel and other tenants;
 - Kubernetes control plane;
-- Magda credentials;
-- LLM/provider credentials;
-- private Magda data the user is not authorised to access;
-- durable user skills.
+- other users' Sandboxes/PVCs;
+- internal Magda services not intended for direct sandbox access;
+- provider/LiteLLM credentials;
+- private resources outside the authenticated user's Magda authority;
+- trusted deployment/global skills.
 
-### Primary threats
+## Isolation baseline
 
-- model-generated malicious command;
-- prompt injection from dataset/document content;
-- sandbox escape;
-- cross-tenant network access;
-- credential exfiltration;
-- resource exhaustion;
-- abuse of user/admin Magda permissions;
-- malicious user skill text;
-- compromised external data source.
+- GKE production: gVisor;
+- AKS production: Kata Pod Sandboxing;
+- runc only for trusted local development;
+- non-root, no privilege escalation/capabilities/host namespaces/hostPath/runtime socket;
+- no sandbox service-account token;
+- finite resource/storage limits;
+- per-provider security/network qualification.
 
-### Controls
-
-**Sandbox escape**
-
-- GKE production: gVisor RuntimeClass;
-- AKS production: Kata Pod Sandboxing RuntimeClass;
-- common Pod hardening in every profile;
-- runc restricted to trusted development/test use.
-
-**Cross-tenant**
-
-- one PVC per sandbox;
-- managed NetworkPolicy;
-- no service-account token;
-- Service FQDN bound to one Sandbox.
-
-**Credentials**
-
-- real Magda/LLM keys outside sandbox;
-- opaque internal capability only;
-- short-lived rotating Magda key;
-- credential-management routes denied from agent proxy.
-
-**Consequential mutations**
-
-- read-only initial proxy;
-- later server-issued mutation grants.
-
-**Resource exhaustion**
-
-- Pod/PVC limits;
-- per-user one-session limit;
-- provider/model budgets;
-- future per-command resource limits.
-
-**Malicious user skill**
-
-- text-only;
-- user ownership;
-- normal DSH execution confinement still applies.
-
-## Provider-specific caution
-
-The network design must preserve a portable Magda security contract while allowing provider-specific enforcement.
-
-For example, EKS/Fargate (#3821) cannot simply inherit a Kubernetes NetworkPolicy assumption from GKE/AKS. Provider-specific enforcement belongs in deployment profiles, not in Agent Manager business logic.
+Provider-specific enforcement belongs in deployment profiles, not Agent Manager business logic.

@@ -2,39 +2,59 @@
 
 **Status:** Continuously maintained under #3811
 
-This file is a place to make uncertainty visible. It is not a substitute for an owning detailed design ticket.
+## Foundation now settled
 
-## Current dependency-critical work
+#3822 and #3823 have enough contract detail to be Accepted:
 
-- #3822 — sandbox runtime + session lifecycle;
-- #3823 — Agent Manager control-plane contract;
-- #3824 — DSH integration / bridge / browser routing;
-- #3825 — delegated authentication / credential boundaries.
+- one user -> one deterministic SandboxClaim -> one current Sandbox;
+- no Agent Manager database or separate session id;
+- claim status resolves warm-adopted Sandbox;
+- dedicated PVC per Sandbox;
+- configurable WarmPool (0 local/lightweight, 2 recommended production start);
+- post-claim Kubernetes-exec bootstrap;
+- 30m suspend / 8h hard-delete defaults;
+- logout/new-agent permanent cleanup;
+- DSH/workspace disk persistence but no process-memory persistence.
 
-## Known questions inherited from the initial architecture sketch
+## Remaining dependency-critical questions
 
-- Exact DSH hook/patch used to deliver launch/auth material to the bridge without logging it.
-- Whether the bridge-sidecar design is the smallest correct DSH connectivity boundary.
-- Exact external-data egress technology for each supported production provider.
-- Exact delegated Magda credential mechanism and revocation semantics.
-- Initial workspace durability requirement: persistent PVC vs disposable/ephemeral workspace by profile.
-- Exact server-enforced mutation-grant shape for multi-request `mgd` commands.
-- Model-provider adapters beyond the first OpenAI-compatible path.
-- Final skill storage/versioning/materialisation model.
-- Production qualification criteria for AKS/Kata.
-- Whether later EKS/Fargate support is viable (#3821).
+### #3824 — DSH browser-auth/bridge verification
 
-## Likely later design areas
+The general proxy/bootstrap model is settled, but the pinned DSH version still needs verification for:
 
-Create tickets only when prerequisites are mature enough for the question to be concrete:
+- launch-token capture without logs/browser exposure;
+- server-side token/cookie exchange;
+- Host/Origin/CSRF/WebSocket proxy behavior;
+- restart/re-authentication;
+- whether a newer supported DSH hook can simplify/remove the bridge.
 
-- network/security enforcement;
-- persistence/recovery, if #3822 shows it needs a distinct design;
-- mutation approval;
-- user/global skills;
-- web/product UX;
+### #3825 — consequential mutation boundary
+
+A real system-managed Magda API key now exists inside the sandbox. This simplifies `mgd` and LLM access but conflicts with server-enforced mutation approval unless Magda can distinguish/constrain agent-managed authority.
+
+This is the most important unresolved security contract.
+
+### #3838 — Magda LLM Services
+
+The architecture is settled around a separate reusable Magda LLM Services + internal LiteLLM component. Remaining detail includes:
+
+- exact external model APIs;
+- generic-authorisation resource/action shape;
+- model aliases/config;
+- internal LiteLLM credential lifecycle;
+- streaming/error/usage behavior;
+- HA documentation with Redis disabled.
+
+## Later design areas
+
+- provider-specific egress/network enforcement;
+- mutation approval protocol;
+- user/global skill storage and trust model;
+- full web/product UX;
 - deployment/Helm/provider qualification;
 - observability/audit;
-- WebGPU migration/deprecation.
+- WebGPU migration/deprecation;
+- AKS/Kata production qualification;
+- future EKS/Fargate support (#3821).
 
-This list can change. If a current design reveals a better decomposition, update this file, #3811 and the overview.
+Do not reopen already settled foundation questions merely because implementation details differ. If implementation evidence invalidates a contract, update the owning design explicitly.

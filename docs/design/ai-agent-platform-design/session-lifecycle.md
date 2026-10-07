@@ -1,184 +1,143 @@
 # Session lifecycle design
 
-**Status:** Draft  
+**Status:** Accepted  
 **Owner ticket:** #3822  
-**Depends on:** sandbox runtime contract  
-**Blocks:** Agent Manager state machine, persistence guarantees, reconnect/reset UX  
-**Evidence:** #3812 lifecycle evidence; additional focused experiments if required
+**Depends on:** [sandbox-runtime.md](./sandbox-runtime.md)  
+**Blocks:** Agent Manager implementation and web lifecycle UX
 
-> This document contains the current design baseline inherited from the original #3819 monolith. Unless a statement is already an explicit architecture-level decision in the overview, treat it as a hypothesis to review under the owner ticket rather than an implementation contract.
+## Identity model
 
-## Session model
-
-### Identity
-
-Each session gets a random immutable UUID.
-
-Kubernetes names must be unique per generation and must not reuse the previous claim/PVC name:
+The platform does not maintain a separate Agent session record/id.
 
 ```text
-magda-agent-<user-hash>-<session-short-id>
+Magda user UUID
+    -> deterministic SandboxClaim name
+    -> claim.status.sandbox.name
+    -> Sandbox
+    -> Pod + Service + PVC
 ```
 
-Do not put email/display name in Kubernetes resource names.
+The claim UUID (`metadata.uid`) identifies a particular incarnation when required.
 
-The PoC demonstrated a storage race when a deleted claim/PVC name was immediately reused on Minikube hostPath. Unique names also make audit/lifecycle reasoning clearer.
+The one-user/one-current-sandbox invariant is enforced by deterministic Kubernetes resource identity rather than a separate database uniqueness constraint.
 
-### One active session per user
+## Lifecycle states
 
-Agent Manager enforces one active session row per user using a database uniqueness constraint for active states.
-
-A user may start a new session only through an explicit reset flow.
-
-### State model
-
-Minimum externally visible states:
+The externally meaningful states are:
 
 ```text
-PROVISIONING
-STARTING
+ABSENT
+  |
+  v
+ALLOCATING
+  |
+  v
+BOOTSTRAPPING
+  |
+  v
 READY
-RECOVERING
-AUTH_EXPIRED
-DEGRADED
-FAILED
-RESETTING
-DELETING
+  |
+  +---- idle ----> SUSPENDING -> SUSPENDED
+  |                              |
+  |<---------- activity ----------+
+  |
+  +---- logout/new session/expiry ----> DELETING -> ABSENT
+
+Any stage may enter FAILED/DEGRADED with a user-visible reason.
 ```
 
-Internal reconciliation may use additional substates.
+Kubernetes `Ready=True` means the Sandbox infrastructure is ready. Magda `READY` additionally means post-claim bootstrap has completed and DSH may be exposed to the browser.
 
-### First-use provisioning sequence
+## First-use / new-agent sequence
+
+1. Resolve the authenticated Magda user UUID.
+2. If a current claim exists and the user explicitly requested a new agent, delete the old sandbox lifecycle first.
+3. Remove any stale system-managed agent API key(s) for the user.
+4. Create one fresh system-managed Magda API key.
+5. Create/adopt the deterministic `SandboxClaim` from the configured WarmPool.
+6. Watch the Claim `Ready` condition and read `status.sandbox.name`.
+7. Resolve the backing Pod (current Agent Sandbox contract: same name as Sandbox).
+8. Run the Magda bootstrap helper through Kubernetes exec with bootstrap data on stdin.
+9. Bootstrap writes the `mgd` profile and DSH provider/default-model config to PVC-backed paths and verifies required access.
+10. Mark the user-visible state READY and allow the DSH browser proxy.
+
+Failure cleanup is idempotent: remove a partially created claim and revoke a newly created managed API key.
+
+## Browser reconnect and resume
+
+A browser refresh/disconnect does not destroy the Sandbox.
+
+If the Sandbox is RUNNING, reconnect proxies to the existing DSH instance.
+
+If the Sandbox is SUSPENDED:
+
+1. set `Sandbox.spec.operatingMode=Running`;
+2. wait for Sandbox `Ready=True`;
+3. wait for DSH/bridge readiness;
+4. proxy the browser back to the same PVC-backed DSH environment.
+
+No new Magda API key is created on resume.
+
+## Inactivity
+
+Defaults are configurable:
 
 ```text
-Browser          Gateway       Agent Manager      Agent Sandbox      DSH/bridge
-  |                |                |                  |                |
-  | open agent     |                |                  |                |
-  |--------------->|                |                  |                |
-  |                | X-Magda-Session|                  |                |
-  |                |--------------->|                  |                |
-  |                |                | lookup session   |                |
-  |                |                | create DB row    |                |
-  |                |                | create user API  |                |
-  |                |                | key (short TTL)  |                |
-  |                |                | create claim ---->|                |
-  |                |                |                  | create sandbox |
-  |                |                |                  |--------------->|
-  |                |                | wait Ready       |                |
-  |                |                |<-----------------|                |
-  |                |                | bootstrap opaque session token    |
-  |                |                |---------------------------------->|
-  |                |                | acquire DSH upstream auth cookie  |
-  |                |                |<--------------------------------->|
-  |                |<---------------|                  |                |
-  |<---------------| Agent READY    |                  |                |
+suspend after: 30 minutes
+delete after:   8 hours
 ```
 
-The API call may return `202 PROVISIONING` and the UI may poll/subscribe until ready.
+"Meaningful activity" must not be equated with raw HTTP/WebSocket traffic. Static requests, keepalives and background pings do not keep a Sandbox alive.
 
-### Reconnect sequence
+Meaningful activity includes user interaction and an actively executing foreground agent turn/tool flow. Agent Manager/Gateway may throttle persistence of the last-activity timestamp rather than writing on every frame.
 
-Browser disconnect does not affect Sandbox lifetime.
+When idle reaches the suspend threshold, Agent Manager sets the Sandbox to `Suspended`.
 
-On return:
+The hard deletion deadline is maintained using Agent Sandbox lifecycle/shutdown semantics so abandoned sandboxes are eventually removed even if Agent Manager is restarted/unavailable.
 
-1. Gateway authenticates the user.
-2. Agent Manager finds the active session.
-3. Agent Manager reconciles the claim/sandbox.
-4. If DSH restarted, Agent Manager reacquires DSH upstream authentication through the bridge.
-5. The browser is proxied back to the same DSH workspace/session.
+## Logout
 
-### Start-new-session/reset sequence
+Explicit user logout triggers immediate best-effort permanent cleanup:
 
-The UI must warn that sandbox-local state will be discarded.
+- revoke/delete the system-managed agent API key;
+- delete the SandboxClaim;
+- allow Agent Sandbox/StorageClass GC to delete Sandbox/Pod/Service/PVC.
 
-The request includes the expected current session id to avoid resetting a newly replaced session from a stale browser tab.
+A later reconciliation pass must clean leftovers after partial failure.
 
-```text
-POST /api/v0/agent/session/reset
-{
-  "expectedSessionId": "..."
-}
-```
+## New agent / reset
 
-Agent Manager:
+Starting a new DSH agent means:
 
-1. marks the old session `RESETTING`;
-2. revokes/deletes the old Magda API key;
-3. deletes the SandboxClaim;
-4. allows Agent Sandbox/StorageClass GC to delete Sandbox/Pod/PVC/PV;
-5. records any cleanup failure;
-6. creates a new session with a new id/name/capability;
-7. provisions a fresh SandboxClaim.
+1. warn that current sandbox-local state will be lost;
+2. revoke the current managed Magda API key;
+3. delete the current claim/sandbox/PVC;
+4. create a fresh managed key;
+5. claim a fresh warm/cold Sandbox;
+6. bootstrap and expose it.
 
-With a `Retain` StorageClass, Agent Manager must explicitly clean up retained storage or report it as operator action required.
+The deterministic claim name may be reused only after the previous claim has been deleted; the new Kubernetes UID distinguishes the generation.
 
-User skills are not touched by reset.
+## Process restart semantics
 
-## Workspace and persistence
+Persistent filesystem state survives:
 
-### Session/PVC state
-
-PVC-mounted state includes:
-
-- `DSH_HOME`;
-- DSH conversation/session data;
-- workspace;
-- downloaded distributions;
-- generated files;
-- temporary scripts;
-- user-installed packages/caches if allowed;
-- `mgd` non-secret configuration.
-
-This state survives:
-
-| Event | Session PVC |
+| Event | PVC / DSH session files |
 | --- | --- |
-| browser refresh/disconnect | survives |
+| browser disconnect | survives |
 | Agent Manager restart | survives |
 | DSH process restart | survives |
-| Sandbox Pod recreation | survives |
-| Start new session/reset | deleted |
-| explicit operator storage loss | lost |
+| Pod replacement | survives |
+| Sandbox suspend/resume | survives |
+| start new agent | deleted |
+| logout / hard idle deletion | deleted |
 
-### Durable user state
+Running process memory is not preserved. Long-running user processes may be terminated by suspend/Pod replacement. After resume, DSH can inspect durable session/workspace state and continue/restart work.
 
-Agent Manager database stores:
+## Control-plane persistence
 
-- user skills;
-- skill version history;
-- session metadata;
-- audit/lifecycle metadata.
+Agent Manager does not need its own database for lifecycle state.
 
-It does not treat arbitrary workspace files as durable user data.
+Kubernetes resources are authoritative. Non-secret operational metadata such as last meaningful activity may be stored as claim annotations, while the server-side hard delete deadline uses Agent Sandbox lifecycle fields.
 
-Generated artifacts become durable only when explicitly uploaded/saved through an authorised Magda workflow.
-
-## Failure handling
-
-| Failure | Behaviour |
-| --- | --- |
-| Browser disconnect | sandbox remains running |
-| Agent Manager restart | reconcile DB/claims; sandbox remains |
-| DSH process restart | PVC survives; bridge reports new process; Manager reacquires upstream DSH auth |
-| Pod OOM/restart | state becomes RECOVERING; PVC survives; user sees runtime restart |
-| Magda API key expiry | state AUTH_EXPIRED for Magda operations; DSH/workspace remains |
-| LLM provider outage | DSH reports provider failure; session remains |
-| Sandbox claim failure | state FAILED with reset/retry action |
-| PVC/storage loss | session FAILED; user skills unaffected |
-| reset cleanup failure | new session may proceed with unique name; old resource is reported for cleanup |
-
-## Important provisional point: PVCs
-
-The inherited design above assumes one PVC per session. That is **not yet an accepted platform requirement**.
-
-#3822 must decide the initial session/workspace durability contract:
-
-- what must survive browser disconnect;
-- what must survive DSH restart;
-- what must survive Pod replacement;
-- what must survive Sandbox replacement;
-- whether a persistent volume is required for all supported production profiles;
-- whether disposable/ephemeral workspace is sufficient for some profiles.
-
-This decision affects Agent Manager recovery, EKS/Fargate feasibility, reset semantics and cost.
+User-created durable skills are a separate future design and are not stored in Agent Manager merely to support sandbox lifecycle.

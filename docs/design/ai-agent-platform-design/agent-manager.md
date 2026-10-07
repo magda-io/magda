@@ -1,89 +1,122 @@
 # Agent Manager design
 
-**Status:** Draft  
+**Status:** Accepted  
 **Owner ticket:** #3823  
-**Depends on:** #3822 sandbox/session contracts  
-**Blocks:** Agent Manager implementation, DSH routing, auth, UI state  
-**Evidence:** #3812 where relevant; current Magda gateway/auth/controller patterns
+**Depends on:** #3822  
+**Blocks:** Agent Manager implementation, DSH routing, browser lifecycle UX
 
-> This document contains the current design baseline inherited from the original #3819 monolith. Unless a statement is already an explicit architecture-level decision in the overview, treat it as a hypothesis to review under the owner ticket rather than an implementation contract.
+## Responsibility
 
-## Magda Gateway
+Agent Manager is a stateless Magda control-plane service for per-user Agent Sandboxes.
 
-Gateway remains the external same-origin entry point.
+It owns:
 
-Agent Manager's browser/control routes are configured as authenticated gateway routes so the service receives the normal signed `X-Magda-Session` identity used by other Magda services.
+- resolve authenticated Magda user identity received through Magda Gateway;
+- enforce one current sandbox per user;
+- create/get/watch/patch/delete `SandboxClaim` and the bound `Sandbox`;
+- suspend/resume and hard-delete lifecycle;
+- post-claim bootstrap using Kubernetes exec + stdin;
+- lifecycle-bound system-managed Magda API-key creation/rotation/revocation;
+- DSH browser HTTP/WebSocket proxying;
+- meaningful-activity tracking and idle policy;
+- lifecycle/readiness/error information for the Magda web client;
+- operational lifecycle metrics/audit.
 
-No Sandbox Service, Pod IP, DSH token or Agent Manager internal-agent endpoint is exposed externally.
+It does **not** own:
 
-## Agent Manager
+- LLM provider routing/credentials/model authorisation — see #3838 / [llm-services.md](./llm-services.md);
+- a dedicated Agent Manager database;
+- user skill persistence (later skills design);
+- model-generated command execution.
 
-Agent Manager is a new Magda service and the control plane for the platform.
+## Source of truth
 
-Responsibilities:
-
-- resolve the authenticated Magda user;
-- enforce one active session per user;
-- create/reconcile/delete SandboxClaims;
-- map session id -> claim -> sandbox -> Service FQDN;
-- manage session state in persistent storage;
-- reverse-proxy DSH browser HTTP/WebSocket traffic;
-- manage DSH bootstrap/re-authentication;
-- issue and validate opaque per-session sandbox capabilities;
-- own rotating Magda user credentials;
-- proxy agent-originated Magda API traffic;
-- proxy LLM traffic and enforce provider/model/budget policy;
-- store/version user-created text skills;
-- provide lifecycle/health/metrics/audit data.
-
-Agent Manager must run with narrowly scoped Kubernetes RBAC limited to the agent namespace and the Agent Sandbox resources it manages. It does not run model-generated code.
-
-## Agent Manager database
-
-Agent Manager needs durable control-plane state independent of Pod/PVC lifetime.
-
-Use a dedicated Postgres-backed store owned by Agent Manager rather than overloading Registry dataset metadata or the Gateway session database.
-
-Minimum logical tables:
+The initial design intentionally has no Agent Manager persistence database.
 
 ```text
-agent_session
-  id
-  user_id
-  generation
-  state
-  claim_name
-  sandbox_name
-  service_fqdn
-  runtime_profile
-  created_at / updated_at
-  last_seen_at
-  encrypted_magda_api_key_id
-  encrypted_magda_api_key_secret
-  magda_api_key_expiry
-  session_capability_hash
-
-agent_skill
-  id
-  user_id
-  name
-  description
-  current_version
-  created_at / updated_at / deleted_at
-
-agent_skill_version
-  skill_id
-  version
-  body
-  created_at
-  source_session_id
+user ownership/lifecycle -> SandboxClaim/Sandbox
+DSH/workspace/session     -> sandbox PVC
+Magda API credential      -> Magda auth/API-key store + PVC-backed mgd/DSH config
+LLM providers             -> Magda LLM Services / LiteLLM
 ```
 
-The raw sandbox capability is stored only in the sandbox and returned once at bootstrap; Agent Manager stores a strong hash.
+Claim metadata includes:
 
-Real Magda API-key secret material is encrypted at rest with an Agent Manager encryption key supplied through Kubernetes Secret management.
+```text
+metadata.name = magda-agent-<user-uuid>
+metadata.labels["agent.magda.io/user-id"] = <user-uuid>
+```
 
-## Agent Manager API
+A separate `session-id` is unnecessary. `SandboxClaim.metadata.uid` is the incarnation identifier.
+
+## Agent Sandbox control protocol
+
+Agent Manager talks to the Kubernetes API. It may use an Agent Sandbox SDK where suitable, but there is no requirement for a separate controller REST service.
+
+Provisioning:
+
+1. create/adopt `SandboxClaim` against configured WarmPool;
+2. watch the Claim `Ready` condition rather than polling;
+3. read `claim.status.sandbox.name`;
+4. resolve the bound Sandbox/Pod/Service;
+5. run bootstrap;
+6. expose DSH only after bootstrap succeeds.
+
+Warm adoption means claim name and Sandbox name can differ. Current Agent Sandbox guarantees the backing Pod name matches the Sandbox name.
+
+## Kubernetes RBAC
+
+RBAC is namespace-scoped to the dedicated agent namespace and limited to required resources.
+
+Expected permissions include:
+
+- `SandboxClaim`: get/list/watch/create/patch/delete;
+- `Sandbox`: get/list/watch/patch as needed for operating mode;
+- Pods: get and `pods/exec` for bootstrap;
+- read only the Services/status needed for DSH routing.
+
+Agent Manager must not receive cluster-wide exec privileges and sandboxes have no service-account token.
+
+## Bootstrap
+
+Warm sandboxes run DSH before assignment and contain no user-specific Magda/LLM credentials.
+
+After claim:
+
+```text
+Agent Manager
+  -> Kubernetes exec
+  -> /usr/local/bin/magda-agent-bootstrap
+  -> stdin bootstrap payload
+```
+
+Bootstrap data includes:
+
+- external Magda base URL;
+- system-managed Magda API-key id + secret;
+- reserved `mgd` profile name/config;
+- Magda LLM Services endpoint/provider alias;
+- default model and reasoning effort.
+
+Secrets are passed on the exec stream/stdin, not command-line arguments, claim labels/annotations or Pod environment.
+
+The helper writes required configuration under PVC-backed locations with restrictive permissions and performs a minimal verification before Agent Manager considers the environment READY.
+
+## System-managed Magda API key
+
+Agent Manager owns lifecycle orchestration for one reserved-name key per current sandbox.
+
+Rules:
+
+- before a new sandbox, remove stale keys with the reserved name and create exactly one fresh key;
+- suspend/resume retains the existing key/profile;
+- starting a new sandbox rotates the key by deleting/recreating it;
+- permanent sandbox deletion/logout revokes/deletes it;
+- reconciliation enforces "no current sandbox -> no system-managed agent key" best-effort.
+
+The key has no intrinsic TTL in the initial design; its lifetime is bounded by sandbox lifecycle.
+
+## API shape
 
 Representative browser/control API:
 
@@ -91,67 +124,24 @@ Representative browser/control API:
 GET    /api/v0/agent/session
 POST   /api/v0/agent/session
 POST   /api/v0/agent/session/reset
+DELETE /api/v0/agent/session
 GET    /api/v0/agent/session/status
-POST   /api/v0/agent/session/reauthorize
-
-GET    /api/v0/agent/skills
-POST   /api/v0/agent/skills
-GET    /api/v0/agent/skills/:id
-PUT    /api/v0/agent/skills/:id
-DELETE /api/v0/agent/skills/:id
-GET    /api/v0/agent/skills/:id/versions
 ```
 
-Representative internal sandbox-only endpoints on a separate ClusterIP port:
+The exact REST naming may change during implementation, but semantics are fixed:
 
-```text
-ANY  /internal/session/:id/magda/*
-POST /internal/session/:id/llm/*
-GET  /internal/session/:id/skills
-```
+- GET derives state from current Kubernetes resources;
+- POST creates when absent and is idempotent for the current user;
+- reset deletes/recreates;
+- DELETE permanently destroys current sandbox/key;
+- state/error responses distinguish ALLOCATING, BOOTSTRAPPING, READY, SUSPENDED, DELETING and FAILED/DEGRADED.
 
-These internal endpoints accept the opaque agent-session capability, not the browser session.
+DSH browser traffic uses a separate authenticated same-origin proxy route.
 
-DSH browser traffic uses a separate same-origin reverse-proxy route, for example:
+## Concurrency and restart
 
-```text
-/agent/runtime/*
-```
+Deterministic claim identity provides the primary race guard. Concurrent creates converge on the same claim or receive conflict/retry behavior rather than creating two user sandboxes.
 
-The precise mount path should be verified with the selected DSH frontend build so relative assets/WebSockets work without a fork.
+Agent Manager restart requires no DB recovery. It re-derives state from Kubernetes resources and the Magda API-key store.
 
-## Agent Manager reconciliation
-
-Agent Manager is a controller-like service, not only an HTTP request handler.
-
-A reconciliation loop compares:
-
-- DB session state;
-- SandboxClaim;
-- bound Sandbox;
-- Sandbox status/Service FQDN;
-- DSH/bridge readiness;
-- credential expiry.
-
-This allows recovery after Agent Manager restart and makes request handling idempotent.
-
-Important rules:
-
-- resolve the bound sandbox from `claim.status.sandbox.name`;
-- use `status.serviceFQDN` for the data path;
-- never assume claim name == sandbox name because warm adoption keeps pool-generated names;
-- never reuse a previous session's Kubernetes/PVC name.
-
-## Design boundary
-
-The API/schema above is a current proposal, not yet accepted. #3823 must verify it against the accepted session-lifecycle contract and avoid baking unresolved authentication or DSH-specific details into the control plane.
-
-In particular, Agent Manager should consume explicit interfaces for:
-
-- sandbox/session lifecycle;
-- DSH connectivity/readiness;
-- sandbox capability authentication;
-- Magda delegated authority;
-- persistence/recovery.
-
-Those interfaces should remain replaceable where downstream design is still open.
+Operations must be idempotent because any create/bootstrap/delete may be interrupted between steps.

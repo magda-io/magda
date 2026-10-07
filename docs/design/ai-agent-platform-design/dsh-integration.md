@@ -1,115 +1,116 @@
-# DSH integration, bridge and browser routing
+# DSH integration, bootstrap and browser routing
 
-**Status:** Draft  
+**Status:** Proposed  
 **Owner ticket:** #3824  
-**Depends on:** #3822; coordinates with #3823  
-**Blocks:** runtime image, bridge/bootstrap implementation, browser proxy implementation  
-**Evidence:** #3812 / PR #3817 DSH/gVisor observations
+**Depends on:** #3822; coordinates with #3823 and #3825  
+**Blocks:** final runtime image/browser proxy implementation
 
-> This document contains the current design baseline inherited from the original #3819 monolith. Unless a statement is already an explicit architecture-level decision in the overview, treat it as a hypothesis to review under the owner ticket rather than an implementation contract.
+Most of the integration contract is settled. The remaining design verification is the exact browser-auth/bridge behavior of the pinned DSH release.
 
-## Agent Sandbox
+## Runtime image and profile
 
-One Agent Sandbox corresponds to one agent session generation.
+Each Sandbox contains DSH, `mgd`, approved analysis tools and a Magda-specific DSH profile/plugin composition.
 
-Each Sandbox Pod contains at least:
+DSH is pinned by version in the runtime image.
 
-1. **agent container**
-   - DSH;
-   - `mgd`;
-   - Python and approved analysis tools;
-   - trusted global skills;
-   - DSH/Magda integration plugin;
-   - session workspace/PVC mount.
+Prefer profile/plugin composition over a permanent Magda fork. A fork is justified only if a required product/security behavior cannot be expressed through DSH's supported profile/plugin surfaces.
 
-2. **bridge sidecar**
-   - exposes the DSH loopback listener to Agent Manager on a Pod port;
-   - provides health/bootstrap coordination;
-   - does not execute user/model commands;
-   - holds any bridge bootstrap secret separately from the agent container.
+The Magda profile should disable user-facing generic provider controls that conflict with centrally managed configuration, including the model selector/model settings and plugin-management surfaces where supported. The deployment supplies the default provider/model/reasoning effort.
 
-Containers share the Pod network namespace, so the bridge can reach DSH at `127.0.0.1:3080` while Agent Manager reaches the bridge through the sandbox's headless Service.
+## Warm-start behavior
 
-The bridge is not a replacement security boundary for DSH. NetworkPolicy and DSH authentication remain required.
+DSH can and should start in every generic warm sandbox before a user is assigned.
 
-## Browser-to-DSH routing and authentication
+Warm state contains:
 
-### Addressing
+- DSH running;
+- `mgd` installed;
+- common trusted tools/skills;
+- clean PVC/workspace;
+- no user-specific Magda credential.
 
-Production path:
+DSH does not require the Magda API key to start.
+
+## Post-claim bootstrap
+
+After claim/adoption, Agent Manager runs a purpose-built bootstrap helper via Kubernetes exec and passes secret material on stdin.
+
+Bootstrap configures:
+
+- PVC-backed `mgd` profile, e.g. via `XDG_CONFIG_HOME=/workspace/.config`;
+- DSH provider/base URL pointing to the external Magda LLM Services endpoint;
+- the same Magda API-key bearer value for DSH's managed LLM provider;
+- default model;
+- default reasoning effort;
+- any non-secret user/sandbox config required by the Magda DSH profile.
+
+The browser is not routed to DSH until bootstrap succeeds.
+
+## LLM configuration
+
+DSH sees Magda as the provider facade rather than direct OpenAI/Anthropic/AWS/Azure credentials.
+
+Conceptually:
 
 ```text
-browser
-  -> Magda Gateway
-  -> Agent Manager
-  -> Sandbox headless Service :8080
-  -> bridge sidecar
-  -> DSH 127.0.0.1:3080
+provider: magda
+base URL: https://<magda-external>/api/v0/llm/v1
+credential: <magda-api-key-id>:<magda-api-key>
+model: deployment-selected Magda model alias
+reasoning effort: deployment-selected
 ```
 
-The bridge exists because DSH's shipped CLI intentionally binds loopback, and the PoC confirmed external Pod/port-forward traffic cannot directly reach the gVisor loopback netstack.
+Real provider credentials remain in Magda LLM Services/LiteLLM.
 
-### DSH browser credential handling
+## DSH persistence and restart
 
-DSH currently uses:
+PVC state contains DSH home/session state and workspace.
 
-- a per-process launch token;
-- a persistent DSH_HOME signing secret;
-- an authority-bound browser cookie.
+DSH process restart or Sandbox resume starts a new process against the same durable state. The platform does not promise preservation of arbitrary child-process memory.
 
-The launch token is sensitive and must not become a durable URL in Agent Manager logs or browser history.
+A user can ask the restarted DSH agent to inspect existing session/workspace state and continue/restart interrupted work.
 
-Production behaviour:
+## Browser routing
 
-1. a small DSH launcher wrapper captures the startup token without logging it;
-2. it writes readiness/token state to an in-Pod bootstrap channel consumed by the bridge;
-3. Agent Manager requests the token from the bridge over its trusted control connection;
-4. Agent Manager performs the DSH token-to-cookie exchange server-side;
-5. Agent Manager stores the resulting upstream DSH cookie in memory/cache;
-6. browser requests remain authenticated by the normal Magda session;
-7. Agent Manager injects the DSH cookie on upstream HTTP/WebSocket requests.
+The external path remains:
 
-The browser never receives the DSH launch token or DSH cookie.
+```text
+Browser
+  -> Magda Gateway
+  -> Agent Manager authenticated DSH proxy
+  -> Sandbox Service / bridge
+  -> DSH
+```
 
-If Agent Manager restarts, it can reacquire the current process token from the bridge and repeat the exchange.
+No Sandbox Service/Pod address is exposed to the browser.
 
-If DSH restarts, the launch token changes but its signing secret remains on the PVC, so existing DSH cookies may remain valid. Agent Manager nevertheless treats a 401 as a signal to reacquire upstream auth.
+### Bridge status
 
-The PoC's "read token from Pod logs and put it in the browser URL" flow is explicitly **PoC-only**.
+The current pinned/PoC DSH behavior binds its web listener to loopback. Under gVisor/Kata, host-side port-forward assumptions do not work reliably. The existing bridge-sidecar proposal remains the preferred portable boundary:
 
-### Host/Origin
+- bridge shares the Sandbox Pod network namespace;
+- bridge reaches DSH on loopback;
+- bridge exposes only the required DSH HTTP/WebSocket port to the Sandbox Service;
+- NetworkPolicy allows only Agent Manager/approved proxy ingress.
 
-Agent Manager presents one stable internal authority to DSH and rewrites upstream Host/Origin consistently.
+The bridge does not execute model/user commands and is not a substitute for sandbox isolation.
 
-DSH's Host/Origin/browser-auth fences remain active; the proxy does not disable them.
+## Remaining #3824 verification
 
-## DSH version and integration policy
+Before marking this document Accepted, verify the pinned DSH release's exact browser-auth contract:
 
-Pin DSH in the agent runtime image.
+- how the DSH launch/bootstrap token can be captured without logs/browser exposure;
+- whether Agent Manager should exchange it server-side for an upstream DSH cookie;
+- Host/Origin/CSRF/WebSocket behavior through the same-origin proxy;
+- behavior when DSH restarts while the Sandbox/PVC remains;
+- whether any newer DSH-supported listen/proxy/auth hook can remove or simplify the bridge.
 
-Upgrading DSH is treated like upgrading an execution runtime and requires the local runc + gVisor integration suite plus production qualification on the supported GKE/gVisor and AKS/Kata profiles before release.
+The earlier #3819 server-side token/cookie exchange remains a reasonable proposal, but it should be tested against the pinned DSH version rather than treated as settled only from the architecture discussion.
 
-Magda-specific integration should live in a small DSH plugin/profile plus the bridge/launcher rather than a large permanent fork.
+## Known runtime constraints
 
-Known PoC constraints to keep visible:
+Keep the #3812 findings visible in qualification:
 
-- gVisor + bubblewrap: confined bash has no PTY;
-- the human DSH web terminal is outside bubblewrap command confinement;
-- `read-only` bash is approval-heavy in DSH 0.2.0-rc.2;
-- DSH CLI binds loopback by design;
-- DSH browser launch token must be moved out of logs for production.
-
-Where possible, upstream generic hooks should be proposed to DSH rather than carrying Magda-only patches.
-
-## Design questions owned by #3824
-
-The current bridge-sidecar and proxy design is promising but must be treated as a proposal until #3824 settles:
-
-- how DSH launch/auth material is captured without logs;
-- bridge responsibilities and trust boundary;
-- HTTP/WebSocket routing;
-- Host/Origin/CSRF handling;
-- DSH restart/re-authentication;
-- readiness/degraded semantics;
-- inner confinement expectations across runc/gVisor/Kata;
-- which DSH UI features are disabled in production.
+- gVisor + DSH inner confinement behavior differs from runc;
+- human terminal/workspace-picker surfaces can bypass the intended agent command UX and should be hidden/disabled in normal production UI;
+- runtime qualification is required separately for GKE/gVisor and AKS/Kata.

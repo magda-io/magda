@@ -1,52 +1,55 @@
 # Web and product integration design
 
 **Status:** Draft  
-**Owner ticket:** TBD — later design slice  
-**Depends on:** #3823 Agent Manager, #3824 DSH routing, mutation approval/skills as relevant  
-**Blocks:** Magda web-client agent implementation  
-**Evidence:** Current Magda web client and DSH frontend behaviour
+**Owner ticket:** TBD  
+**Depends on:** #3823, #3824, #3825 and mutation approval
 
-> This document contains the current design baseline inherited from the original #3819 monolith. Unless a statement is already an explicit architecture-level decision in the overview, treat it as a hypothesis to review under the owner ticket rather than an implementation contract.
+## Product lifecycle
 
-#### Magda web client
+The web client exposes one current agent per authenticated Magda user.
 
-The web client owns:
+Expected lifecycle:
 
-- the Agent entry point;
-- provisioning/recovery/reset UX;
-- user-visible lifecycle state;
-- explicit mutation approval UI;
-- personal skill management;
-- the transition between the current WebGPU assistant and the v8 server agent.
+- no current Sandbox -> create/open agent;
+- ALLOCATING/BOOTSTRAPPING -> show provisioning state;
+- READY -> show proxied DSH UI;
+- SUSPENDED -> reconnect wakes the same Sandbox/PVC;
+- FAILED/DEGRADED -> show actionable status;
+- "new agent" warns that current workspace/session state will be deleted, then replaces it;
+- explicit logout triggers immediate sandbox/key cleanup.
 
-The first v8 release should reuse the DSH web application as much as practical rather than reimplementing its conversation/tool UI. Magda-specific chrome and controls can wrap the proxied DSH surface.
+The normal 30-minute idle suspend is not a user-visible destructive event; returning resumes the same PVC-backed session. The 8-hour hard idle deletion is destructive and starts fresh next time.
 
-The production UI should hide/disable DSH's generic human terminal and unrestricted workspace picker by default:
+## DSH presentation
 
-- the PoC showed the human web terminal is outside DSH's bubblewrap command confinement;
-- the workspace picker can browse DSH internal state such as `$DSH_HOME`.
+Reuse DSH's conversation/tool UI rather than rebuilding the coding-agent frontend.
 
-The agent itself still uses DSH's tool interface. Trusted developer deployments may opt into the terminal for debugging.
+Magda deployment controls provider/model selection. The production Magda DSH profile should hide/disable generic model selector, model settings and plugin-management surfaces where supported.
 
-#### Magda Gateway
+The human terminal and unrestricted workspace picker should remain hidden/disabled in normal production unless the later security design explicitly approves them.
 
-Gateway remains the external same-origin entry point.
+## Gateway/proxy
 
-Agent Manager's browser/control routes are configured as authenticated gateway routes so the service receives the normal signed `X-Magda-Session` identity used by other Magda services.
+Magda Gateway remains the external same-origin entry point.
 
-No Sandbox Service, Pod IP, DSH token or Agent Manager internal-agent endpoint is exposed externally.
+DSH traffic is proxied:
 
-## Migration from the current WebGPU agent
+```text
+Browser -> Magda Gateway -> Agent Manager -> Sandbox Service/bridge -> DSH
+```
 
-Do not remove the current browser/WebGPU agent at the beginning of v8.
+The browser never receives a Pod/Sandbox address.
 
-Recommended transition:
+Exact DSH browser-auth/cookie/Origin handling remains the narrow open item in #3824.
 
-1. keep current WebGPU agent available as a lightweight/local feature;
-2. add the v8 Agent Platform behind its own feature flag/entry point;
-3. gather production evidence on reliability/cost/security;
-4. decide later whether the WebGPU mode remains as a privacy/local option or is deprecated.
+## LLM controls
 
-This avoids making v8 adoption depend on immediate feature parity.
+Users do not directly enter OpenAI/Anthropic/AWS/Azure credentials into DSH.
 
-The web design should consume stable lifecycle/routing/auth contracts rather than inventing them. Provisioning, reconnect, reset and approval UX must reflect the server-side state machine.
+The sandbox is preconfigured to use Magda LLM Services. The default model/reasoning effort is deployment/product policy, and model availability is ultimately enforced by Magda authorisation.
+
+A future product design may expose a Magda-native authorised model selector, but DSH's generic provider-management UI is not the source of truth.
+
+## Migration
+
+Keep the existing WebGPU agent available during early v8 transition behind a separate feature/entry point. Decide later whether it remains a local/privacy mode or is deprecated.
