@@ -2,6 +2,7 @@
 
 ## v7.0.0
 
+- #3834: Fix the organisations search (and the Organisations page) failing with a 500 error when no dataset has a publisher, by mapping `publisher.aggKeywords` in the datasets index. Bump the datasets index version to `53` (the indexer rebuilds the index on upgrade).
 - #3831: Fix the settings UI's create forms (org unit, access group, permission and resource) showing values from the previously opened form, and the duplicate expand/collapse caret on registry record aspect panels.
 - #3830: Upgrade the UI component library `rsuite` from v5 to v6 (6.2.5), including its bundled theme stylesheet (previously still the 5.6 theme), and fix the layout differences v6 introduced in the admin / settings UI.
 - #3808: Add the `distribution-contract` distribution aspect (part of #3806), so how a file, API or service can be accessed or queried can be described in one normalized model: protocol, endpoint, specification and documentation links, the authentication it expects (never credentials), useful operations with their parameters, request/response structure links and pagination hints, recording where each value came from and whether it was reviewed. The distribution page shows a read-only **How to use** tab next to **Structure** when a contract exists, including for distributions that can't be previewed, so users can switch between how to access the data and what it contains. Contracts can be written by hand via the registry API or `mgd`, with no harvester required (see the [Distribution Contract guide](./docs/docs/distribution-contract.md)).
