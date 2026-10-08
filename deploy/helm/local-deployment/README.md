@@ -9,10 +9,10 @@ Kubernetes: `>= 1.14.0-0`
 | Repository | Name | Version |
 |------------|------|---------|
 | file://../magda | magda | 7.0.0 |
-| oci://ghcr.io/magda-io/charts | magda-auth-arcgis | 3.0.0-alpha.0 |
-| oci://ghcr.io/magda-io/charts | magda-auth-facebook | 3.0.0-alpha.0 |
-| oci://ghcr.io/magda-io/charts | magda-auth-google | 4.0.0-alpha.1 |
-| oci://ghcr.io/magda-io/charts | magda-auth-internal | 4.0.0-alpha.0 |
+| oci://ghcr.io/magda-io/charts | magda-auth-arcgis | 3.0.0 |
+| oci://ghcr.io/magda-io/charts | magda-auth-facebook | 3.0.0 |
+| oci://ghcr.io/magda-io/charts | magda-auth-google | 4.0.0 |
+| oci://ghcr.io/magda-io/charts | magda-auth-internal | 4.0.0 |
 | oci://ghcr.io/magda-io/charts | connector-nsw(magda-ckan-connector) | 2.1.0 |
 | oci://ghcr.io/magda-io/charts | connector-dga(magda-ckan-connector) | 2.1.0 |
 | oci://ghcr.io/magda-io/charts | connector-ditrdca(magda-ckan-connector) | 2.1.0 |

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v7.0.1
+
+- [#3840](https://github.com/magda-io/magda/pull/3840): Upgrade the auth plugins in the `local-deployment` chart to their official v7-compatible releases: `magda-auth-google` & `magda-auth-internal` v4.0.0, `magda-auth-arcgis` & `magda-auth-facebook` v3.0.0. The other v7-compatible plugins are also released: `magda-auth-oidc` v3.0.0, `magda-auth-okta` v2.0.0 & `magda-auth-aaf` v2.0.0. All require Magda v7.0.0 or above.
+
 ## v7.0.0
 
 - [#3836](https://github.com/magda-io/magda/pull/3836): Replace the retired Data61 logo in the default site footer with the CSIRO logo, linking to https://www.csiro.au/. Customised footers are not changed.
