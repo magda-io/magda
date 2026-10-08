@@ -15,7 +15,7 @@ Reproduction material: [`deploy/poc/dsh-direct-exposure/`](../../deploy/poc/dsh-
   - The #8528 `--no-browser-auth` port works fully through the same chain (all checks pass) and is the simpler end state.
   - It is fork-only. The upstream release has nothing equivalent.
   - **Contribute/wait for an upstream equivalent rather than carry the patch.** Switch Agent Manager to `AUTH_MODE=none` when upstream ships it. Carrying the 148-line port is a reasonable fallback if upstream never does (see [Comparison](#experiment-5--stock-auth-vs-discussion-8528)).
-- **magda-gateway needs a small reusable change** (this PoC implements it): opt-in `websocket: true` per proxy route.
+- **magda-gateway needs a small reusable change**: opt-in `websocket: true` per proxy route, implemented separately against `main` in [#3843](https://github.com/magda-io/magda/pull/3843).
 - **Two non-transport gateway/chart changes are also required:**
   - a per-path CSP for the agent mount: DSH's UI needs `script-src 'unsafe-inline' 'unsafe-eval'`;
   - Ingress annotation/BackendConfig support for long-lived WebSockets.
@@ -46,18 +46,18 @@ Reproduction material: [`deploy/poc/dsh-direct-exposure/`](../../deploy/poc/dsh-
 
 ## Environment
 
-| Item          | Value                                                                                                                                                                               |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Host          | macOS, Apple Silicon (arm64); Docker Desktop 5 CPUs / 14.6 GiB                                                                                                                      |
-| Minikube      | v1.38.1, profile `magda-agent-poc`, driver `docker`, runtime containerd 2.2.1, Kubernetes v1.35.1, CNI kindnet (enforces NetworkPolicy), 5 CPUs / 12 GiB                            |
-| Host access   | node ports 443/80 published as `127.0.0.1:18443/18080` (`minikube start --ports`), so the browser reaches the real ingress without `kubectl port-forward`                           |
-| Ingress       | minikube `ingress` addon, ingress-nginx controller v1.14.3; self-signed `magda.test` certificate as the default certificate; chart-rendered Ingress                                 |
-| gVisor        | `release-20260928.0` (pinned over the broken addon binary, as #3812 F1)                                                                                                             |
-| Agent Sandbox | v1.0.4 core + extensions                                                                                                                                                            |
-| Magda         | chart `magda` 7.0.0 + `magda-auth-internal` 4.0.0 (umbrella chart, minimal modules); gateway = 7.0.0 image + this branch's compiled WebSocket change (`local/magda-gateway:ws-poc`) |
-| DSH           | `@deepseek-ai/dsh@0.2.1-alpha.1` (npm, latest upstream release, == upstream `master` 5badb15009 on 2026-10-08); variant B adds the #8528 port                                       |
-| Model         | in-cluster deterministic OpenAI Chat Completions mock (`mock-llm/`), so streaming/cancellation tests need no provider credential                                                    |
-| Browser       | Google Chrome (Playwright `channel: chrome`, headless) on the host, `--host-resolver-rules=MAP magda.test 127.0.0.1`                                                                |
+| Item          | Value                                                                                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host          | macOS, Apple Silicon (arm64); Docker Desktop 5 CPUs / 14.6 GiB                                                                                                            |
+| Minikube      | v1.38.1, profile `magda-agent-poc`, driver `docker`, runtime containerd 2.2.1, Kubernetes v1.35.1, CNI kindnet (enforces NetworkPolicy), 5 CPUs / 12 GiB                  |
+| Host access   | node ports 443/80 published as `127.0.0.1:18443/18080` (`minikube start --ports`), so the browser reaches the real ingress without `kubectl port-forward`                 |
+| Ingress       | minikube `ingress` addon, ingress-nginx controller v1.14.3; self-signed `magda.test` certificate as the default certificate; chart-rendered Ingress                       |
+| gVisor        | `release-20260928.0` (pinned over the broken addon binary, as #3812 F1)                                                                                                   |
+| Agent Sandbox | v1.0.4 core + extensions                                                                                                                                                  |
+| Magda         | chart `magda` 7.0.0 + `magda-auth-internal` 4.0.0 (umbrella chart, minimal modules); gateway = 7.0.0 image + the compiled WebSocket change (`local/magda-gateway:ws-poc`) |
+| DSH           | `@deepseek-ai/dsh@0.2.1-alpha.1` (npm, latest upstream release, == upstream `master` 5badb15009 on 2026-10-08); variant B adds the #8528 port                             |
+| Model         | in-cluster deterministic OpenAI Chat Completions mock (`mock-llm/`), so streaming/cancellation tests need no provider credential                                          |
+| Browser       | Google Chrome (Playwright `channel: chrome`, headless) on the host, `--host-resolver-rules=MAP magda.test 127.0.0.1`                                                      |
 
 The default `minikube` profile (docker runtime, used for other Magda work) cannot run gVisor, so it was stopped, not deleted, while this profile ran.
 
@@ -165,7 +165,7 @@ The mechanism:
 2. `proxy.web` forwards it with its `Upgrade` headers.
 3. The upstream 101 arrives on a `ClientRequest` with no `upgrade` listener, and Node destroys the socket.
 
-**PoC change** (`magda-gateway/src`; the minimal reusable shape):
+**Gateway change** ([#3843](https://github.com/magda-io/magda/pull/3843) against `main`, `magda-gateway/src`; the minimal reusable shape):
 
 - `WebSocketUpgradeHandler.ts` — `server.on("upgrade")` runs the handshake through the same Express app.
   - The app gets a placeholder `ServerResponse` bound to the raw socket. So the normal middleware chain runs, and anything that answers before a route claims the socket (401/403/404/redirect/error) reaches the client as an HTTP response.
@@ -403,7 +403,7 @@ Security checks: 19/19 per runtime (`results/security-nba-*.json`). Full browser
 
 ## Follow-ups
 
-- **magda-gateway:** land the `websocket` route option (this branch) with chart docs.
+- **magda-gateway:** land the `websocket` route option ([#3843](https://github.com/magda-io/magda/pull/3843)).
 - **gateway chart:**
   - per-path CSP for the agent mount (`helmetPerPath`; DSH needs `'unsafe-inline' 'unsafe-eval'`);
   - consider asking DSH upstream for nonce/hash support.
