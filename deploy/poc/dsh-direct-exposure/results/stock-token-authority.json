@@ -1,0 +1,56 @@
+{
+  "sandbox": "alice-gvisor-stock-2",
+  "dsh": "0.2.1-alpha.1",
+  "results": [
+    {
+      "case": "declared authority, prefix stripped",
+      "exchange": 303,
+      "cookieAttrs": [
+        "Path=/",
+        "HttpOnly",
+        "SameSite=Strict"
+      ],
+      "index": 200,
+      "api": 200
+    },
+    {
+      "case": "prefix NOT stripped by the proxy",
+      "exchange": 401,
+      "index": 401,
+      "api": 401
+    },
+    {
+      "case": "exchange at Pod/LAN authority, use at external authority",
+      "exchange": 303,
+      "cookieAttrs": [
+        "Path=/",
+        "HttpOnly",
+        "SameSite=Strict"
+      ],
+      "index": 401,
+      "api": 401
+    },
+    {
+      "case": "exchange at undeclared authority, use there",
+      "exchange": 303,
+      "cookieAttrs": [
+        "Path=/",
+        "HttpOnly",
+        "SameSite=Strict"
+      ],
+      "index": 200,
+      "api": 403
+    },
+    {
+      "case": "Host rewritten to the upstream (changeOrigin) on every hop",
+      "exchange": 303,
+      "cookieAttrs": [
+        "Path=/",
+        "HttpOnly",
+        "SameSite=Strict"
+      ],
+      "index": 200,
+      "api": 403
+    }
+  ]
+}

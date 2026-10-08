@@ -1,0 +1,38 @@
+{
+  "user": "alice",
+  "checks": [
+    {
+      "name": "baseline prompt round trip",
+      "ok": true
+    },
+    {
+      "name": "DSH process restart (same Pod, same PVC): browser reconnects and the agent works again",
+      "ok": true,
+      "launchTokenChanged": false,
+      "socketDroppedAfterMs": 156,
+      "reconnectedAfterMs": 10807,
+      "transientSockets": 4,
+      "sessionFilesBefore": 2,
+      "sessionFilesAfter": 2,
+      "promptRetried": false,
+      "dshCookieReExchanges": 0
+    },
+    {
+      "name": "Sandbox suspend + resume (Pod deleted, PVC kept): browser reconnects and the agent works again",
+      "ok": true,
+      "podDeleted": true,
+      "suspendedSeconds": 16,
+      "newPodUid": true,
+      "pvcCreatedAt": "2026-10-08T06:03:49Z",
+      "socketDroppedAfterMs": 149,
+      "reconnectedAfterMs": 17937,
+      "transientSockets": 5,
+      "sessionFilesBefore": 3,
+      "sessionFilesAfter": 3,
+      "promptRetried": false,
+      "dshCookieReExchanges": 0
+    }
+  ],
+  "sandbox": "alice-gvisor-nba-1",
+  "agentManagerAuthMode": "none"
+}

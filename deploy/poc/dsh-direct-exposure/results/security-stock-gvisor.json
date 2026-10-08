@@ -1,0 +1,98 @@
+{
+  "variant": "stock",
+  "user": "alice",
+  "checks": [
+    {
+      "name": "anonymous HTTP to the agent route is rejected by Magda before DSH",
+      "ok": true,
+      "status": 401,
+      "body": "Magda authentication required"
+    },
+    {
+      "name": "anonymous WebSocket upgrade is rejected before upgrade",
+      "ok": true,
+      "status": 401,
+      "body": "Magda authentication required"
+    },
+    {
+      "name": "forged Magda session cookie is rejected",
+      "ok": true,
+      "status": 401
+    },
+    {
+      "name": "authenticated index loads",
+      "ok": true,
+      "status": 200
+    },
+    {
+      "name": "no DSH token or DSH cookie reaches the browser",
+      "ok": true,
+      "setCookieNames": [
+        "connect.sid"
+      ]
+    },
+    {
+      "name": "authenticated same-origin WebSocket upgrade succeeds",
+      "ok": true,
+      "status": 101
+    },
+    {
+      "name": "authenticated same-origin RPC succeeds",
+      "ok": true,
+      "status": 200
+    },
+    {
+      "name": "cross-site Origin WebSocket is rejected by DSH",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "cross-site Origin RPC is rejected by DSH",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "Sec-Fetch-Site: cross-site RPC is rejected by DSH",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "undeclared external Host does not reach Magda (ingress host rule)",
+      "ok": true,
+      "status": 404
+    },
+    {
+      "name": "Service: without the DSH cookie every route needs authentication",
+      "ok": true,
+      "indexDeclared": 401,
+      "indexUndeclared": 401,
+      "apiDeclared": 401,
+      "apiUndeclared": 403,
+      "apiLoopbackHost": 401,
+      "wsDeclared": 401,
+      "wsUndeclaredHost": 403,
+      "wsForeignOrigin": 403
+    },
+    {
+      "name": "Service: undeclared Host /api -> 403 (fence before auth)",
+      "ok": true
+    },
+    {
+      "name": "stock DSH keeps its cookie-signing secret on the PVC",
+      "ok": true
+    }
+  ],
+  "sandbox": "alice-gvisor-stock-3",
+  "template": "dsh-gvisor-stock",
+  "agentManagerAuthMode": "managed-cookie",
+  "serviceLevel": {
+    "indexDeclared": 401,
+    "indexUndeclared": 401,
+    "apiDeclared": 401,
+    "apiUndeclared": 403,
+    "apiLoopbackHost": 401,
+    "wsDeclared": 401,
+    "wsUndeclaredHost": 403,
+    "wsForeignOrigin": 403
+  }
+}

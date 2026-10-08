@@ -1,0 +1,9 @@
+{
+  "name": "magda-3841-dsh-transport-tests",
+  "private": true,
+  "type": "module",
+  "description": "Browser / WebSocket qualification for #3841 (run on the host against the minikube ingress).",
+  "dependencies": {
+    "playwright-core": "1.64.0"
+  }
+}
