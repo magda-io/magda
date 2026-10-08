@@ -44,6 +44,11 @@ A proxy target definition that defines `defaultRoutes` or `webRoutes` above supp
   - Once the system admin creates proper `resource` & `operation` records for the proxy target, he can grant access to those endpoints by creating permission & role records.
   - More information of the access control system, please refer to [this doc](https://github.com/magda-io/magda/blob/main/docs/docs/architecture/Guide%20to%20Magda%20Internals.md#new-authorisation-model--implementation)
 
+- `websocket`: whether WebSocket upgrade requests (`GET` with `Upgrade: websocket`) are forwarded to the target. Default: `false`.
+  - The handshake passes the same middleware as other requests on the route (session / API key authentication when `auth` or `accessControl` is `true`, access control, tenant header), and the target receives the `X-Magda-Session` header of the authenticated user. `Cookie` & `Authorization` headers are not forwarded.
+  - A handshake rejected before it reaches the target (e.g. `403` from access control) is answered with a plain HTTP response. Upgrades on routes without `websocket: true` are answered with `400`.
+  - Upgraded connections are closed when the gateway receives `SIGTERM`. Your ingress / load balancer must allow long-lived connections (e.g. ingress-nginx `proxy-read-timeout`, GKE `BackendConfig` `timeoutSec`).
+
 A proxy target be also specify in a simply string form, in which case, Gateway assumes a GET method, no auth proxy route is requested.
 
 #### Default Value for `defaultRoutes` field

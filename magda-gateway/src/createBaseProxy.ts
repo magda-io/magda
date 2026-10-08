@@ -1,6 +1,7 @@
 import httpProxy from "http-proxy";
 import express from "express";
-import { IncomingHttpHeaders } from "http";
+import { ClientRequest, IncomingHttpHeaders, IncomingMessage } from "http";
+import { Duplex } from "stream";
 import getNoCacheHeaders from "magda-typescript-common/src/express/getNoCacheHeaders.js";
 import groupBy from "lodash/groupBy.js";
 
@@ -72,6 +73,60 @@ function setHeaderValue(
     headers[headerName] = value;
 }
 
+/**
+ * As we set `ignorePath`=true, we need append req.path to proxyReq.path.
+ * We need to use req.url to include query string.
+ */
+function appendRequestPath(proxyReq: ClientRequest, req: IncomingMessage) {
+    if (req.url !== "/") {
+        if (
+            proxyReq.path[proxyReq.path.length - 1] === "/" &&
+            req.url[0] === "/"
+        ) {
+            proxyReq.path = proxyReq.path + req.url.substr(1);
+        } else {
+            proxyReq.path = proxyReq.path + req.url;
+        }
+    }
+}
+
+/**
+ * Presume that we've already got whatever auth details we need out of the request and so remove it now.
+ * If we keep it it causes scariness upstream - like anything that goes through the TerriaJS proxy will
+ * be leaking auth details to wherever it proxies to.
+ */
+function removeDoNotProxyHeaders(proxyReq: ClientRequest) {
+    const headerNames = proxyReq.getHeaderNames();
+    for (let i = 0; i < headerNames.length; i++) {
+        const headerName = headerNames[i];
+        if (!!doNotProxyHeaderLookup[headerName]) {
+            proxyReq.removeHeader(headerName);
+        }
+    }
+}
+
+function isSocket(res: any): res is Duplex {
+    return !!res && typeof res.writeHead !== "function";
+}
+
+/**
+ * Answer a WebSocket handshake that failed before / while connecting to upstream.
+ */
+function writeSocketError(socket: Duplex, statusCode: number, message: string) {
+    try {
+        if (socket.writable) {
+            socket.end(
+                `HTTP/1.1 ${statusCode} ${message}\r\n` +
+                    "Connection: close\r\nContent-Type: text/plain\r\n" +
+                    `Content-Length: ${Buffer.byteLength(message)}\r\n\r\n` +
+                    message
+            );
+        }
+    } finally {
+        socket.destroy();
+    }
+}
+
 export default function createBaseProxy(
     options: GenericProxyRouterOptions
 ): httpProxy {
@@ -103,6 +158,11 @@ export default function createBaseProxy(
 
     proxy.on("error", function (err, req, res) {
         console.error(err);
+        if (isSocket(res)) {
+            // WebSocket upgrade (`proxy.ws`) error: `res` is the client socket
+            writeSocketError(res, 502, "Bad Gateway");
+            return;
+        }
         try {
             res.writeHead(500, {
                 "Content-Type": "text/plain"
@@ -118,33 +178,20 @@ export default function createBaseProxy(
     });
 
     proxy.on("proxyReq", function (proxyReq, req, res) {
-        // as we set `ignorePath`=true, we need append req.path to proxyReq.path
-        // we need to use req.url to include query string
-        if (req.url !== "/") {
-            if (
-                proxyReq.path[proxyReq.path.length - 1] === "/" &&
-                req.url[0] === "/"
-            ) {
-                proxyReq.path = proxyReq.path + req.url.substr(1);
-            } else {
-                proxyReq.path = proxyReq.path + req.url;
-            }
-        }
+        appendRequestPath(proxyReq, req);
 
-        // Presume that we've already got whatever auth details we need out of the request and so remove it now.
-        // If we keep it it causes scariness upstream - like anything that goes through the TerriaJS proxy will
-        // be leaking auth details to wherever it proxies to.
         if ((req as any).__expectHeader) {
             proxyReq.setHeader("Expect", (req as any).__expectHeader);
         }
 
-        const headerNames = proxyReq.getHeaderNames();
-        for (let i = 0; i < headerNames.length; i++) {
-            const headerName = headerNames[i];
-            if (!!doNotProxyHeaderLookup[headerName]) {
-                proxyReq.removeHeader(headerName);
-            }
-        }
+        removeDoNotProxyHeaders(proxyReq);
+    });
+
+    // WebSocket upgrade requests (`proxy.ws`) emit `proxyReqWs` instead of `proxyReq`.
+    // Apply the same path & credential header handling as ordinary requests.
+    proxy.on("proxyReqWs", function (proxyReq, req) {
+        appendRequestPath(proxyReq, req);
+        removeDoNotProxyHeaders(proxyReq);
     });
 
     proxy.on("proxyRes", function (proxyRes, req, res) {
@@ -197,7 +244,14 @@ export default function createBaseProxy(
         });
     });
 
-    proxy.on("proxyReq", async function (proxyReq, req, res) {
+    /**
+     * Set the tenant id header.
+     * Returns the error message when the tenant can't be determined (the caller must reject the request).
+     */
+    function setTenantHeader(
+        proxyReq: ClientRequest,
+        req: IncomingMessage
+    ): string | undefined {
         if (options.tenantMode.multiTenantsMode === true) {
             const theRequest = <express.Request>req;
             const domainName = theRequest.hostname.toLowerCase();
@@ -220,15 +274,36 @@ export default function createBaseProxy(
                     // So we just let user try again.
                     // See https://github.com/nodejitsu/node-http-proxy/issues/1328
                     options.tenantMode.tenantsLoader.reloadTenants();
-                    res.writeHead(400, { "Content-Type": "text/plain" });
-                    res.end(
-                        `Unable to process ${domainName} right now. Please try again shortly.`
-                    );
+                    return `Unable to process ${domainName} right now. Please try again shortly.`;
                 }
             }
         } else {
             proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID);
         }
+        return undefined;
+    }
+
+    proxy.on("proxyReq", function (proxyReq, req, res) {
+        const errorMessage = setTenantHeader(proxyReq, req);
+        if (errorMessage) {
+            res.writeHead(400, { "Content-Type": "text/plain" });
+            res.end(errorMessage);
+        }
+    });
+
+    proxy.on("proxyReqWs", function (proxyReq, req, socket) {
+        const errorMessage = setTenantHeader(proxyReq, req);
+        if (errorMessage) {
+            proxyReq.destroy();
+            writeSocketError(socket, 400, errorMessage);
+            return;
+        }
+        // http-proxy does not close the upstream connection when the client socket is destroyed
+        // without an error (e.g. on gateway shutdown), so tie both sockets' lifetimes together.
+        proxyReq.on("upgrade", (_proxyRes, proxySocket) => {
+            socket.once("close", () => proxySocket.destroy());
+            proxySocket.once("close", () => socket.destroy());
+        });
     });
 
     return proxy;

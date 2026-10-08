@@ -8,6 +8,10 @@ import { TenantMode } from "./setupTenantMode.js";
 import buildJwtFromReq from "magda-typescript-common/src/session/buildJwtFromReq.js";
 import createApiAccessControlMiddleware from "./createApiAccessControlMiddleware.js";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import {
+    getWebSocketUpgradeContext,
+    claimWebSocketUpgrade
+} from "./WebSocketUpgradeHandler.js";
 
 export type ProxyTarget = DetailedProxyTarget | string;
 export type MethodWithProxyTaget = {
@@ -22,6 +26,8 @@ export interface DetailedProxyTarget {
     accessControl?: boolean;
     redirectTrailingSlash?: boolean;
     statusCheck?: boolean;
+    // whether WebSocket upgrade requests (GET only) are forwarded to the target. Default: `false`.
+    websocket?: boolean;
 }
 
 export interface GenericProxyRouterOptions {
@@ -59,7 +65,8 @@ export function getDefaultProxyTargetDefinition(
         methods: ["get"],
         auth: false,
         redirectTrailingSlash: false,
-        statusCheck: false
+        statusCheck: false,
+        websocket: false
     };
 }
 
@@ -83,13 +90,42 @@ export default function createGenericProxyRouter(
         }
     });
 
+    // the upstream of a WebSocket route receives the session of the handshake request
+    proxy.on("proxyReqWs", (proxyReq, req: any) => {
+        if (jwtSecret && req.user) {
+            proxyReq.setHeader(
+                "X-Magda-Session",
+                buildJwtFromReq(req, jwtSecret)
+            );
+        }
+    });
+
+    function forward(
+        req: express.Request,
+        res: express.Response,
+        target: string,
+        websocket: boolean
+    ) {
+        if (!getWebSocketUpgradeContext(req)) {
+            proxy.web(req, res, { target });
+        } else if (websocket && req.method === "GET") {
+            const { socket, head } = claimWebSocketUpgrade(req, res);
+            proxy.ws(req, socket, head, { target });
+        } else {
+            res.status(400).send(
+                "WebSocket upgrade is not supported by this route."
+            );
+        }
+    }
+
     function proxyRoute(
         baseRoute: string,
         target: string,
         verbs: ProxyMethodType[] = ["all"],
         auth = false,
         redirectTrailingSlash = false,
-        accessControl = false
+        accessControl = false,
+        websocket = false
     ) {
         console.log(
             "PROXY",
@@ -101,7 +137,9 @@ export default function createGenericProxyRouter(
             "accessControl: ",
             accessControl,
             "redirectTrailingSlash: ",
-            redirectTrailingSlash
+            redirectTrailingSlash,
+            "websocket: ",
+            websocket
         );
         const routeRouter: any = express.Router();
 
@@ -119,9 +157,8 @@ export default function createGenericProxyRouter(
                         jwtSecret,
                         accessControl
                     ),
-                    (req: express.Request, res: express.Response) => {
-                        proxy.web(req, res, { target });
-                    }
+                    (req: express.Request, res: express.Response) =>
+                        forward(req, res, target, websocket)
                 );
             } else {
                 const method: string = verb.method.toLowerCase();
@@ -140,9 +177,8 @@ export default function createGenericProxyRouter(
                         jwtSecret,
                         accessControl
                     ),
-                    (req: express.Request, res: express.Response) => {
-                        proxy.web(req, res, { target: runtimeTarget });
-                    }
+                    (req: express.Request, res: express.Response) =>
+                        forward(req, res, runtimeTarget, websocket)
                 );
             }
         });
@@ -192,7 +228,8 @@ export default function createGenericProxyRouter(
                 target.methods,
                 !!target?.auth,
                 target.redirectTrailingSlash,
-                !!target?.accessControl
+                !!target?.accessControl,
+                !!target?.websocket
             );
         });
 

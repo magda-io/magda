@@ -3,6 +3,7 @@ import yargs from "yargs";
 import _ from "lodash";
 import express from "express";
 import buildApp from "./buildApp.js";
+import WebSocketUpgradeHandler from "./WebSocketUpgradeHandler.js";
 import { createHttpTerminator } from "http-terminator";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
 
@@ -242,6 +243,9 @@ const argv = addJwtSecretFromEnvVar(
 const app = express();
 buildApp(app, argv as any);
 const server = app.listen(argv.listenPort);
+// WebSocket handshakes go through the same Express app; only routes with `websocket: true` forward them.
+const webSocketUpgradeHandler = new WebSocketUpgradeHandler(app);
+server.on("upgrade", webSocketUpgradeHandler.handleUpgrade);
 const httpTerminator = createHttpTerminator({
     server
 });
@@ -257,6 +261,8 @@ process.on(
 
 process.on("SIGTERM", () => {
     console.log("SIGTERM signal received: closing HTTP server");
+    // http-terminator doesn't track upgraded (WebSocket) connections
+    webSocketUpgradeHandler.closeAll();
     httpTerminator.terminate().then(() => {
         console.log("HTTP server closed");
         process.exit(0);
