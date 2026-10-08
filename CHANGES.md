@@ -2,6 +2,7 @@
 
 ## v7.0.1
 
+- [#3843](https://github.com/magda-io/magda/pull/3843): Add opt-in WebSocket proxying to magda-gateway routes (`websocket: true`). Handshakes go through the same authentication, access control and tenant handling as other requests, and the target receives `X-Magda-Session` for the logged-in user. Previously WebSocket handshakes through the gateway hung without a response.
 - [#3840](https://github.com/magda-io/magda/pull/3840): Upgrade the auth plugins in the `local-deployment` chart to their official v7-compatible releases: `magda-auth-google` & `magda-auth-internal` v4.0.0, `magda-auth-arcgis` & `magda-auth-facebook` v3.0.0. The other v7-compatible plugins are also released: `magda-auth-oidc` v3.0.0, `magda-auth-okta` v2.0.0 & `magda-auth-aaf` v2.0.0. All require Magda v7.0.0 or above.
 
 ## v7.0.0
