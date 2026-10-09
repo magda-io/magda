@@ -250,6 +250,12 @@ defaultCacheControl: "public, max-age=60"
 # @default -- nil (120 seconds default value will be used by upstream lib internally)
 proxyTimeout: 
 
+# websocketHandshakeTimeout -- (int) How long (in seconds) the target of a `websocket: true` route has to answer a WebSocket handshake.
+# The client receives a `504` when the target doesn't answer in time.
+# It doesn't limit the lifetime of an established WebSocket connection.
+# @default -- nil (60 seconds default value will be used)
+websocketHandshakeTimeout: 
+
 # -- when set to true, API will not query policy engine for auth decision but assume it's always permitted. 
 # It's for debugging only.
 skipAuth: false

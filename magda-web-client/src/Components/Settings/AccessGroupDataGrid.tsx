@@ -176,8 +176,9 @@ const AccessGroupDataGrid: FunctionComponent<PropsType> = (
                                         }
                                     )
                                 }
+                                startIcon={<MdAddCircle />}
                             >
-                                <MdAddCircle /> Create Access Group
+                                Create Access Group
                             </Button>
                         </div>
                         <AccessGroupFormPopUp ref={accessGroupFormRef} />

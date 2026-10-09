@@ -30,6 +30,10 @@ SyntaxHighlighter.registerLanguage("json", highlighterSyntaxJson);
 
 const Paragraph = Placeholder.Paragraph;
 
+// The panel header renders its own expand / collapse indicator (on the left).
+// Hide the caret rsuite adds to collapsible panels (e.g. in an accordion `PanelGroup`).
+const NoCaret = () => null;
+
 type PropsType = {
     recordId: string;
     aspectId: string;
@@ -84,6 +88,7 @@ const RegistryRecordAspectItem: FunctionComponent<PropsType> = (props) => {
             id={aspectId}
             onSelect={() => setIsOpen((v) => !v)}
             expanded={isOpen}
+            caretAs={NoCaret}
             header={
                 <div>
                     {isOpen ? (

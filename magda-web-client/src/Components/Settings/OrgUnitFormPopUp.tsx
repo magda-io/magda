@@ -68,6 +68,8 @@ const OrgUnitFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             parentOrgUnitId?: string
         ) => {
             onCompleteRef.current = onComplete;
+            // reset form data so a reopened form never shows the values from its previous session
+            setOrgUnit(undefined);
             selectOrgUnitId = selectOrgUnitId?.trim();
             setOrgUnitId(selectOrgUnitId);
             parentOrgUnitId = parentOrgUnitId?.trim();
