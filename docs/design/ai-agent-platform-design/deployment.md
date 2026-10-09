@@ -123,3 +123,16 @@ Adding Redis does not require adding PostgreSQL. PostgreSQL remains optional unl
 - Agent Manager is the only normal ingress path to sandbox DSH;
 - LiteLLM provider credentials never enter sandbox;
 - Agent Manager Kubernetes RBAC is namespace-scoped and includes only required Agent Sandbox lifecycle and Pod exec operations.
+
+
+## DSH browser-route deployment follow-ups
+
+#3824 is Accepted; the remaining browser-route work is implementation/provider qualification rather than an unresolved architecture boundary:
+
+- #3846 — path-scoped CSP for the DSH agent runtime;
+- #3847 — long-lived ingress-nginx WebSocket timeout configuration;
+- #3848 — real GKE/gVisor + Google load-balancer qualification and BackendConfig/GCPBackendPolicy support.
+
+The runtime image/profile exposes DSH directly on `0.0.0.0:3080` to the Sandbox Service. There is no bridge sidecar.
+
+Stock DSH auth is retained for MVP. The agent image places the launch token in a `0600` memory-backed `emptyDir` file with stdout/stderr redaction, and Agent Manager reads it through namespace-scoped `pods/exec`; `pods/log` is not required for this path.

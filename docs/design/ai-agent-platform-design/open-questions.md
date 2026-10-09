@@ -4,7 +4,7 @@
 
 ## Foundation now settled
 
-#3822, #3823 and #3825 are Accepted:
+#3822, #3823, #3824 and #3825 are Accepted:
 
 - one user -> one deterministic SandboxClaim -> one current Sandbox;
 - no Agent Manager database or separate session id;
@@ -22,15 +22,7 @@
 
 ## Remaining dependency-critical questions
 
-### #3824 — DSH browser-auth/bridge verification
-
-The general proxy/bootstrap model is settled, but the pinned DSH version still needs verification for:
-
-- launch-token capture without logs/browser exposure;
-- server-side token/cookie exchange;
-- Host/Origin/CSRF/WebSocket proxy behavior;
-- restart/re-authentication;
-- whether a newer supported DSH hook can simplify/remove the bridge.
+#3824 is now Accepted based on #3841. Its settled contract includes direct DSH `0.0.0.0:3080` exposure with no bridge, HTTP + WebSocket proxying, stock server-held DSH auth for MVP, `X-Magda-Session` termination at Agent Manager, and `workspace-write` + `ask` defaults with persistent Full Access hidden in the managed UI.
 
 ### #3838 — Magda LLM Services
 
@@ -49,7 +41,7 @@ The architecture is settled around a separate reusable Magda LLM Services + inte
 - provider-specific egress/network enforcement;
 - user/global skill storage and trust model;
 - full web/product UX;
-- deployment/Helm/provider qualification;
+- deployment/Helm/provider qualification, including #3846 (DSH CSP), #3847 (ingress WebSocket timeouts) and #3848 (GKE/gVisor);
 - observability/audit;
 - WebGPU migration/deprecation;
 - AKS/Kata production qualification;

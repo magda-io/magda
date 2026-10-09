@@ -72,8 +72,10 @@ Expected permissions include:
 
 - `SandboxClaim`: get/list/watch/create/patch/delete;
 - `Sandbox`: get/list/watch/patch as needed for operating mode;
-- Pods: get and `pods/exec` for bootstrap;
+- Pods: get and `pods/exec` for bootstrap and stock-DSH launch-token hand-off;
 - read only the Services/status needed for DSH routing.
+
+Agent Manager does **not** need `pods/log` for DSH authentication. The Magda agent image hands the stock DSH launch token to Agent Manager through a restrictive in-memory file read via `pods/exec`; see #3824 / [dsh-integration.md](./dsh-integration.md).
 
 Agent Manager must not receive cluster-wide exec privileges and sandboxes have no service-account token.
 
@@ -136,7 +138,13 @@ The exact REST naming may change during implementation, but semantics are fixed:
 - DELETE permanently destroys current sandbox/key;
 - state/error responses distinguish ALLOCATING, BOOTSTRAPPING, READY, SUSPENDED, DELETING and FAILED/DEGRADED.
 
-DSH browser traffic uses a separate authenticated same-origin proxy route.
+DSH browser traffic uses a separate authenticated same-origin HTTP/WebSocket proxy route.
+
+`X-Magda-Session` is verified by Agent Manager and stripped before forwarding. It never enters the Sandbox. Agent Manager pins the configured external Host, forwards the browser Origin/Fetch metadata required by DSH's trust fence, and strips browser/Magda credentials before DSH.
+
+For stock DSH browser authentication, Agent Manager holds the DSH cookie server-side in a per-Sandbox in-memory cache. Multiple Manager replicas may independently redeem the same process launch token; no shared cookie database/sticky session is required.
+
+When logout or another lifecycle transition permanently deletes a Sandbox, Agent Manager must promptly close active DSH proxy sockets associated with that Sandbox.
 
 ## Concurrency and restart
 

@@ -61,7 +61,12 @@ The following contracts are now the baseline for the initial v8 design:
 - real provider credentials remain outside sandboxes in the LiteLLM deployment;
 - sandboxes may access the public Internet by default but must be denied cluster-internal/private/link-local/cloud-metadata destinations; Magda APIs are reached through the external Magda endpoint;
 - sandbox ingress is default-deny except the Agent Manager/approved proxy path needed to reach DSH;
-- DSH should be customised by a Magda profile/plugin composition rather than a permanent fork where possible; generic model/provider controls are hidden/disabled and the deployment supplies the default model/reasoning effort.
+- DSH should be customised by a Magda profile/plugin composition rather than a permanent fork where possible; generic model/provider controls are hidden/disabled and the deployment supplies the default model/reasoning effort;
+- #3841 verified direct DSH exposure through the Sandbox Service under runc/gVisor: DSH binds `0.0.0.0:3080` through the Magda profile and the earlier bridge sidecar is removed;
+- DSH keeps its native HTTP + `/api/remote.mux` WebSocket transport; Magda Gateway's reusable WebSocket route support is #3843/#3845;
+- stock DSH launch-token/cookie auth is retained for MVP, with token hand-off through a redacted `0600` memory-backed file + Agent Manager `pods/exec`; DSH token/cookie never reaches the browser;
+- `X-Magda-Session` terminates at Agent Manager and never enters the Sandbox;
+- new DSH sessions default to `workspace-write` + `ask`, and the managed UI hides the persistent `danger-full-access` selection.
 
 ## Credential / confirmation trust model
 
@@ -83,7 +88,7 @@ Sandbox runtime + lifecycle (#3822 Accepted)
           |               |
           v               v
 DSH integration       Credential boundary
-   (#3824)           (#3825 Accepted)
+ (#3824 Accepted)    (#3825 Accepted)
           |               |
           +-------+-------+
                   |
@@ -114,7 +119,7 @@ Runtime + credentials + network
 | Sandbox runtime | [sandbox-runtime.md](./sandbox-runtime.md) | #3822 — **Accepted** |
 | Session lifecycle | [session-lifecycle.md](./session-lifecycle.md) | #3822 — **Accepted** |
 | Agent Manager | [agent-manager.md](./agent-manager.md) | #3823 — **Accepted** |
-| DSH integration / bootstrap / routing | [dsh-integration.md](./dsh-integration.md) | #3824 — **Proposed**, narrow browser-auth verification remains |
+| DSH integration / bootstrap / routing | [dsh-integration.md](./dsh-integration.md) | #3824 — **Accepted** |
 | Authentication / sandbox credential boundary | [authentication.md](./authentication.md) | #3825 — **Accepted** |
 | Shared LLM services | [llm-services.md](./llm-services.md) | #3838 — **Proposed** |
 | Network / security | [network-security.md](./network-security.md) | Draft |
@@ -141,13 +146,14 @@ Runtime choice remains deployment policy; Agent Manager does not contain gVisor/
 
 #3812 / PR #3817 remains the baseline local Minikube + Agent Sandbox + gVisor evidence. Current upstream Agent Sandbox documentation additionally confirms that warm-pool claims retain the pool-generated Sandbox name, publish it through `status.sandbox.name`, the backing Pod shares the Sandbox name, warm-pool PVCs are dedicated to each Sandbox, and suspension removes the Pod while preserving lifecycle state/PVC.
 
-Provider-specific release qualification is still required for GKE/gVisor and AKS/Kata.
+#3841 / draft PR #3844 is the local Minikube evidence base for direct DSH exposure, WebSocket proxying, stock/#8528 auth comparison, WarmPool adoption, launch-token hand-off and runc/gVisor lifecycle behavior.
+
+Provider-specific release qualification is still required for GKE/gVisor (#3848) and AKS/Kata. Long-lived ingress configuration is tracked by #3847 and the path-scoped DSH CSP exception by #3846.
 
 ## Remaining #3811 work
 
 The foundation is substantially clearer, but #3811 is **not complete**. Remaining implementation-critical design includes:
 
-- #3824 verification of the pinned DSH browser-auth/bridge contract;
 - #3838 exact LLM API/authz/Helm contract;
 - network/security enforcement per supported provider;
 - polished/structured mutation-confirmation UX (optional DSH approval integration);

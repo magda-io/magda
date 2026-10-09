@@ -26,6 +26,8 @@ Reuse DSH's conversation/tool UI rather than rebuilding the coding-agent fronten
 
 Magda deployment controls provider/model selection. The production Magda DSH profile should hide/disable generic model selector, model settings and plugin-management surfaces where supported.
 
+New DSH sessions default to `workspace-write` with approval policy `ask`. The managed Magda UI hides the persistent `danger-full-access` selection. Per-action approval remains available when DSH decides an operation needs confirmation/escalation.
+
 The human terminal and unrestricted workspace picker should remain hidden/disabled in normal production unless the later security design explicitly approves them.
 
 ## Gateway/proxy
@@ -35,12 +37,12 @@ Magda Gateway remains the external same-origin entry point.
 DSH traffic is proxied:
 
 ```text
-Browser -> Magda Gateway -> Agent Manager -> Sandbox Service/bridge -> DSH
+Browser -> Magda Gateway -> Agent Manager -> Sandbox Service -> DSH
 ```
 
 The browser never receives a Pod/Sandbox address.
 
-Exact DSH browser-auth/cookie/Origin handling remains the narrow open item in #3824.
+#3824 is Accepted based on #3841. DSH binds directly to the Sandbox Pod network; there is no bridge sidecar. Stock DSH launch-token/cookie authentication is retained for MVP but held entirely server-side by Agent Manager, and `X-Magda-Session` never enters the Sandbox.
 
 ## LLM controls
 
