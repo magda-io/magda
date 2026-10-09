@@ -2,7 +2,7 @@
 
 ## v7.1.0
 
-- [#3843](https://github.com/magda-io/magda/pull/3843): Add opt-in WebSocket proxying to magda-gateway routes (`websocket: true`). Handshakes go through the same authentication, access control and tenant handling as other requests, and the target receives `X-Magda-Session` for the logged-in user. The target has `websocketHandshakeTimeout` (default 60 seconds) to answer the handshake, and must validate the handshake's `Origin` itself. Previously WebSocket handshakes through the gateway hung without a response.
+- [#3843](https://github.com/magda-io/magda/pull/3843): Add opt-in WebSocket proxying to magda-gateway routes (`websocket: true`). Handshakes go through the same authentication, access control and tenant handling as other requests, and the target receives `X-Magda-Session` for the logged-in user. WebSocket handshakes are secure by default: the `Origin` header must match the origin of `global.externalUrl`, or the route's `websocketAllowedOrigins` list (`[]` disables the check), otherwise the handshake is rejected with 403. The target has `websocketHandshakeTimeout` (default 60 seconds) to answer the handshake. Previously WebSocket handshakes through the gateway hung without a response.
 
 ## v7.0.1
 

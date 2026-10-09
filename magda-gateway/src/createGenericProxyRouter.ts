@@ -12,6 +12,10 @@ import {
     getWebSocketUpgradeContext,
     claimWebSocketUpgrade
 } from "./WebSocketUpgradeHandler.js";
+import {
+    parseRequestOrigin,
+    resolveWebSocketAllowedOrigins
+} from "./webSocketOrigin.js";
 
 export type ProxyTarget = DetailedProxyTarget | string;
 export type MethodWithProxyTaget = {
@@ -28,6 +32,9 @@ export interface DetailedProxyTarget {
     statusCheck?: boolean;
     // whether WebSocket upgrade requests (GET only) are forwarded to the target. Default: `false`.
     websocket?: boolean;
+    // Origins allowed to open a WebSocket on this route (WebSocket upgrades only).
+    // Omitted: the origin of the gateway's `externalUrl`. `[]`: no Origin validation.
+    websocketAllowedOrigins?: string[];
 }
 
 export interface GenericProxyRouterOptions {
@@ -41,7 +48,36 @@ export interface GenericProxyRouterOptions {
     proxyTimeout?: number;
     // seconds the upstream of a `websocket: true` route has to answer a WebSocket handshake
     websocketHandshakeTimeout?: number;
+    // the gateway's external URL; its origin is the default WebSocket allowed origin
+    externalUrl?: string;
     authClient: AuthDecisionQueryClient;
+}
+
+/**
+ * Reject WebSocket upgrades whose `Origin` isn't in the route's allowlist (`undefined` = no
+ * validation). Browsers don't apply CORS to WebSocket handshakes, so a page on any site could
+ * otherwise open an authenticated WebSocket with the user's cookies. Ordinary HTTP requests
+ * are not affected.
+ */
+function createWebSocketOriginMiddleware(
+    baseRoute: string,
+    allowedOrigins: string[] | undefined
+): express.RequestHandler {
+    return (req, res, next) => {
+        if (!allowedOrigins || !getWebSocketUpgradeContext(req)) {
+            return next();
+        }
+        const origin = parseRequestOrigin(req.headers);
+        if (origin && allowedOrigins.includes(origin)) {
+            return next();
+        }
+        console.warn(
+            `Rejected WebSocket upgrade on route ${baseRoute}: Origin ${JSON.stringify(
+                String(req.headers.origin ?? "").slice(0, 200)
+            )} is not allowed.`
+        );
+        res.status(403).send("WebSocket Origin not allowed.");
+    };
 }
 
 /**
@@ -127,7 +163,8 @@ export default function createGenericProxyRouter(
         auth = false,
         redirectTrailingSlash = false,
         accessControl = false,
-        websocket = false
+        websocket = false,
+        websocketAllowedOrigins: string[] | undefined = undefined
     ) {
         console.log(
             "PROXY",
@@ -141,7 +178,13 @@ export default function createGenericProxyRouter(
             "redirectTrailingSlash: ",
             redirectTrailingSlash,
             "websocket: ",
-            websocket
+            websocket,
+            ...(websocket
+                ? [
+                      "websocketAllowedOrigins: ",
+                      websocketAllowedOrigins ?? "(no Origin validation)"
+                  ]
+                : [])
         );
         const routeRouter: any = express.Router();
 
@@ -149,10 +192,17 @@ export default function createGenericProxyRouter(
             authenticator.applyToRoute(routeRouter);
         }
 
+        // after the authentication middleware above, before access control & forwarding
+        const originMiddleware = createWebSocketOriginMiddleware(
+            baseRoute,
+            websocket ? websocketAllowedOrigins : undefined
+        );
+
         verbs.forEach((verb: ProxyMethodType) => {
             if (typeof verb === "string") {
                 routeRouter[verb.toLowerCase()](
                     "*",
+                    originMiddleware,
                     createApiAccessControlMiddleware(
                         authClient,
                         baseRoute,
@@ -173,6 +223,7 @@ export default function createGenericProxyRouter(
                     typeof verb?.target === "string" ? verb.target : target;
                 routeRouter[method](
                     "*",
+                    originMiddleware,
                     createApiAccessControlMiddleware(
                         authClient,
                         baseRoute,
@@ -224,6 +275,18 @@ export default function createGenericProxyRouter(
 
             const path = !key ? "/" : key[0] === "/" ? key : `/${key}`;
 
+            // Resolved once per route; malformed configuration fails here. The `externalUrl`
+            // default only applies to WebSocket routes, but an explicit list is always validated.
+            const websocketAllowedOrigins =
+                target?.websocket ||
+                target?.websocketAllowedOrigins !== undefined
+                    ? resolveWebSocketAllowedOrigins(
+                          target?.websocketAllowedOrigins,
+                          target?.websocket ? options.externalUrl : undefined,
+                          key
+                      )
+                    : undefined;
+
             proxyRoute(
                 path,
                 target.to,
@@ -231,7 +294,8 @@ export default function createGenericProxyRouter(
                 !!target?.auth,
                 target.redirectTrailingSlash,
                 !!target?.accessControl,
-                !!target?.websocket
+                !!target?.websocket,
+                websocketAllowedOrigins
             );
         });
 

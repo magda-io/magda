@@ -180,6 +180,7 @@ export default function buildApp(app: express.Application, config: Config) {
         routes,
         proxyTimeout,
         websocketHandshakeTimeout: config.websocketHandshakeTimeout,
+        externalUrl: config.externalUrl,
         authClient: authDecisionClient
     };
 

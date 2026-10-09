@@ -487,3 +487,326 @@ describe("closeSocketGracefully", () => {
         expect(socket.destroyed).to.equal(true);
     });
 });
+
+describe("WebSocket Origin validation", () => {
+    let upstream: ReturnType<typeof createUpstream>;
+    let upstreamPort: number;
+    const gateways: {
+        server: http.Server;
+        handler: WebSocketUpgradeHandler;
+    }[] = [];
+    let authDecisionCalls: number;
+    let allowAccess: boolean;
+
+    beforeEach(async () => {
+        upstream = createUpstream();
+        upstreamPort = await listen(upstream.server);
+        authDecisionCalls = 0;
+        allowAccess = true;
+    });
+
+    afterEach(async () => {
+        for (const { server, handler } of gateways.splice(0)) {
+            handler.closeAll();
+            await new Promise((r) => server.close(r));
+        }
+        upstream.sockets.forEach((s) => s.destroy());
+        await new Promise((r) => upstream.server.close(r));
+    });
+
+    /**
+     * A gateway with the real route / middleware / proxy stack and an `agent` route:
+     * `{ to: upstream, auth: true, accessControl: true, websocket: true, ...routeOptions }`.
+     */
+    async function startGateway(
+        externalUrl: string | undefined,
+        routeOptions: Record<string, any> = {}
+    ): Promise<number> {
+        const authenticator = sinon.createStubInstance(Authenticator);
+        authenticator.applyToRoute = (router: express.Router) => {
+            router.use((req: any, _res, next) => {
+                if (req.headers["x-test-user"]) {
+                    req.user = { id: USER_ID, session: "s1" };
+                }
+                next();
+            });
+        };
+        const authClient = sinon.createStubInstance(AuthDecisionQueryClient);
+        authClient.getAuthDecision = () => {
+            authDecisionCalls++;
+            return Promise.resolve(
+                allowAccess
+                    ? UnconditionalTrueDecision
+                    : UnconditionalFalseDecision
+            );
+        };
+        const app = express();
+        app.use(
+            "/api/v0",
+            createGenericProxyRouter({
+                authenticator,
+                jwtSecret: JWT_SECRET,
+                authClient,
+                externalUrl,
+                tenantMode: setupTenantMode({ enableMultiTenants: false }),
+                routes: {
+                    agent: {
+                        to: `http://127.0.0.1:${upstreamPort}/agent`,
+                        auth: true,
+                        accessControl: true,
+                        websocket: true,
+                        ...routeOptions
+                    },
+                    plain: {
+                        to: `http://127.0.0.1:${upstreamPort}/plain`,
+                        methods: ["all"]
+                    }
+                }
+            })
+        );
+        const server = http.createServer(app);
+        const handler = new WebSocketUpgradeHandler(app);
+        server.on("upgrade", handler.handleUpgrade);
+        gateways.push({ server, handler });
+        return listen(server);
+    }
+
+    async function handshake(
+        port: number,
+        origin: string | undefined,
+        extraHeaders: Record<string, string> = {}
+    ) {
+        const headers = { ...extraHeaders };
+        if (origin !== undefined) {
+            headers.Origin = origin;
+        }
+        const { status, socket } = await upgrade(
+            port,
+            "/api/v0/agent/ws",
+            headers
+        );
+        socket.destroy();
+        return status;
+    }
+
+    it("should allow the origin derived from `externalUrl` (ignoring its path)", async () => {
+        const port = await startGateway("https://magda.example.com/some/path");
+        expect(await handshake(port, "https://magda.example.com")).to.equal(
+            101
+        );
+        expect(upstream.requests).to.have.length(1);
+        expect(upstream.requests[0].headers.origin).to.equal(
+            "https://magda.example.com"
+        );
+    });
+
+    it("should reject a non-matching origin with 403 before reaching the upstream or OPA", async () => {
+        const port = await startGateway("https://magda.example.com/some/path");
+        expect(await handshake(port, "https://evil.example.com")).to.equal(403);
+        expect(upstream.requests).to.have.length(0);
+        expect(authDecisionCalls).to.equal(0);
+    });
+
+    it("should reject a handshake without Origin when validation is enabled", async () => {
+        const port = await startGateway("https://magda.example.com");
+        expect(await handshake(port, undefined)).to.equal(403);
+        expect(upstream.requests).to.have.length(0);
+    });
+
+    it("should not treat a different scheme, port or a suffix-matching host as the same origin", async () => {
+        const port = await startGateway("https://magda.example.com");
+        for (const origin of [
+            "http://magda.example.com",
+            "https://magda.example.com:8443",
+            "https://magda.example.com.evil.com",
+            "https://evilmagda.example.com",
+            "https://sub.magda.example.com"
+        ]) {
+            expect(await handshake(port, origin), origin).to.equal(403);
+        }
+        expect(upstream.requests).to.have.length(0);
+    });
+
+    it("should normalise default ports and hostname case", async () => {
+        const port = await startGateway("HTTPS://Magda.Example.com:443/");
+        expect(await handshake(port, "https://magda.example.com")).to.equal(
+            101
+        );
+        expect(await handshake(port, "https://MAGDA.example.com:443")).to.equal(
+            101
+        );
+    });
+
+    it("should reject malformed Origin headers", async () => {
+        const port = await startGateway("https://magda.example.com");
+        for (const origin of [
+            "null",
+            "magda.example.com",
+            "https://magda.example.com/",
+            "https://magda.example.com/path",
+            "https://magda.example.com?x=1",
+            "https://user@magda.example.com",
+            "https://magda.example.com, https://magda.example.com",
+            "https://magda.example.com https://evil.example.com",
+            "ftp://magda.example.com",
+            "*"
+        ]) {
+            expect(await handshake(port, origin), origin).to.equal(403);
+        }
+        expect(upstream.requests).to.have.length(0);
+    });
+
+    it("should only allow an explicit list, which replaces the `externalUrl` default", async () => {
+        const port = await startGateway("https://magda.example.com", {
+            websocketAllowedOrigins: [
+                "https://tenant-a.example.com",
+                "HTTP://LocalHost:8080/"
+            ]
+        });
+        expect(await handshake(port, "https://tenant-a.example.com")).to.equal(
+            101
+        );
+        expect(await handshake(port, "http://localhost:8080")).to.equal(101);
+        expect(await handshake(port, "http://localhost:8081")).to.equal(403);
+        expect(await handshake(port, "https://localhost:8080")).to.equal(403);
+        expect(await handshake(port, "https://magda.example.com")).to.equal(
+            403
+        );
+        expect(upstream.requests).to.have.length(2);
+    });
+
+    it("should disable Origin validation for an explicit empty list", async () => {
+        const port = await startGateway("https://magda.example.com", {
+            websocketAllowedOrigins: []
+        });
+        expect(await handshake(port, "https://evil.example.com")).to.equal(101);
+        expect(await handshake(port, undefined)).to.equal(101);
+    });
+
+    it("should skip Origin validation when neither an allowlist nor `externalUrl` is configured", async () => {
+        const port = await startGateway(undefined);
+        expect(await handshake(port, "https://evil.example.com")).to.equal(101);
+        expect(await handshake(port, undefined)).to.equal(101);
+    });
+
+    it("should still authenticate and apply access control to allowed origins", async () => {
+        const port = await startGateway("https://magda.example.com");
+        expect(
+            await handshake(port, "https://magda.example.com", {
+                "X-Test-User": "1"
+            })
+        ).to.equal(101);
+        const session = jwt.verify(
+            upstream.requests[0].headers["x-magda-session"] as string,
+            JWT_SECRET
+        ) as any;
+        expect(session.userId).to.equal(USER_ID);
+        expect(authDecisionCalls).to.equal(1);
+
+        allowAccess = false;
+        expect(await handshake(port, "https://magda.example.com")).to.equal(
+            403
+        );
+        expect(authDecisionCalls).to.equal(2);
+        expect(upstream.requests).to.have.length(1);
+    });
+
+    it("should not apply Origin validation to ordinary HTTP requests", async () => {
+        const port = await startGateway("https://magda.example.com");
+        const status = await new Promise<number>((resolve, reject) => {
+            http.get(
+                {
+                    host: "127.0.0.1",
+                    port,
+                    path: "/api/v0/agent/x",
+                    headers: { Origin: "https://evil.example.com" }
+                },
+                (res) => {
+                    res.resume();
+                    resolve(res.statusCode);
+                }
+            ).on("error", reject);
+        });
+        expect(status).to.equal(200);
+    });
+
+    it("should keep rejecting upgrades on non-WebSocket routes with 400", async () => {
+        const port = await startGateway("https://magda.example.com");
+        const { status, socket } = await upgrade(port, "/api/v0/plain/ws", {
+            Origin: "https://magda.example.com"
+        });
+        socket.destroy();
+        expect(status).to.equal(400);
+        expect(upstream.requests).to.have.length(0);
+    });
+
+    describe("invalid configuration", () => {
+        function createRouter(
+            externalUrl: string | undefined,
+            routeOptions: Record<string, any>
+        ) {
+            return createGenericProxyRouter({
+                authenticator: sinon.createStubInstance(Authenticator),
+                jwtSecret: JWT_SECRET,
+                authClient: sinon.createStubInstance(AuthDecisionQueryClient),
+                externalUrl,
+                tenantMode: setupTenantMode({ enableMultiTenants: false }),
+                routes: {
+                    agent: { to: "http://upstream", ...routeOptions }
+                }
+            });
+        }
+
+        for (const origin of [
+            "magda.example.com",
+            "ftp://magda.example.com",
+            "https://magda.example.com/path",
+            "https://magda.example.com?x=1",
+            "https://magda.example.com#f",
+            "https://user:pass@magda.example.com",
+            "https://*.example.com",
+            "*",
+            "null",
+            " https://magda.example.com",
+            "",
+            42
+        ]) {
+            it(`should reject allowed origin ${JSON.stringify(origin)}`, () => {
+                expect(() =>
+                    createRouter("https://magda.example.com", {
+                        websocket: true,
+                        websocketAllowedOrigins: [origin]
+                    })
+                ).to.throw(/websocketAllowedOrigins/);
+            });
+        }
+
+        it("should reject a non-array `websocketAllowedOrigins`", () => {
+            expect(() =>
+                createRouter("https://magda.example.com", {
+                    websocket: true,
+                    websocketAllowedOrigins: "https://magda.example.com"
+                })
+            ).to.throw(/must be an array/);
+        });
+
+        it("should validate an explicit list even when `websocket` is off", () => {
+            expect(() =>
+                createRouter("https://magda.example.com", {
+                    websocketAllowedOrigins: ["not-an-origin"]
+                })
+            ).to.throw(/websocketAllowedOrigins/);
+        });
+
+        it("should reject an invalid `externalUrl` that a WebSocket route relies on", () => {
+            expect(() =>
+                createRouter("not a url", { websocket: true })
+            ).to.throw(/externalUrl/);
+            expect(() =>
+                createRouter("ftp://magda.example.com", { websocket: true })
+            ).to.throw(/externalUrl/);
+            // routes without WebSocket support don't depend on it
+            expect(() => createRouter("not a url", {})).to.not.throw();
+        });
+    });
+});
