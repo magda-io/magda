@@ -1,36 +1,36 @@
 apiVersion: v2
 name: "magda-local-deployment"
 description: ""
-version: "6.2.1"
+version: "7.0.0"
 kubeVersion: ">= 1.14.0-0"
 dependencies:
   - name: magda
-    version: 6.2.1
+    version: 7.0.0
     repository: "file://../magda"
 
   - name: magda-auth-google
-    version: "4.0.0-alpha.1"
+    version: "4.0.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
       - magda-auth-google
 
   - name: magda-auth-internal
-    version: "4.0.0-alpha.0"
+    version: "4.0.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
       - magda-auth-internal
 
   - name: magda-auth-arcgis
-    version: "3.0.0-alpha.0"
+    version: "3.0.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
       - magda-auth-arcgis
 
   - name: magda-auth-facebook
-    version: "3.0.0-alpha.0"
+    version: "3.0.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all

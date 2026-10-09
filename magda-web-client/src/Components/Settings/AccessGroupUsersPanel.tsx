@@ -130,8 +130,9 @@ const AccessGroupUsersPanel: FunctionComponent<PropsType> = (props) => {
                         appearance="primary"
                         disabled={addUser.loading}
                         onClick={() => addUser.execute(userId)}
+                        startIcon={<MdAddCircle />}
                     >
-                        <MdAddCircle /> Add user to the group
+                        Add user to the group
                     </Button>
                     {addUser.loading ? <Loader /> : null}
                 </div>

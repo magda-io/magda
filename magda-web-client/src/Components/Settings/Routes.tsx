@@ -16,12 +16,31 @@ import DatasetManagementPage from "./DatasetManagementPage";
 import AccessGroupsPage from "./AccessGroupsPage";
 import AccessGroupDetailsPage from "./AccessGroupDetailsPage";
 import ValidateUser from "Components/ValidateUser";
+import HeaderSettingsPage from "./Content/HeaderSettingsPage";
+import FooterSettingsPage from "./Content/FooterSettingsPage";
+import FooterCategoryLinksPage from "./Content/FooterCategoryLinksPage";
+import LogoSettingsPage from "./Content/LogoSettingsPage";
+import PagesSettingsPage from "./Content/PagesSettingsPage";
+import HomeSettingsPage from "./Content/HomeSettingsPage";
+import UiTextSettingsPage from "./Content/UiTextSettingsPage";
 
 function SettingsRedirect() {
     const location = useLocation();
     // preserve the query string if it exists
     return <Redirect to={`/settings/account${location.search}`} />;
 }
+
+function redirectTo(path: string) {
+    return function RedirectWithQueryString() {
+        const location = useLocation();
+        // preserve the query string if it exists
+        return <Redirect to={`${path}${location.search}`} />;
+    };
+}
+
+const ContentSettingsRedirect = redirectTo("/settings/content/header");
+const FooterSettingsRedirect = redirectTo("/settings/content/footer/medium");
+const HomeSettingsRedirect = redirectTo("/settings/content/home/taglines");
 
 const Routes = () => {
     return (
@@ -143,6 +162,70 @@ const Routes = () => {
                         exact
                         path="/settings/accessGroups/:groupId/users"
                         component={withHeader(AccessGroupDetailsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content"
+                        component={ContentSettingsRedirect}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/header"
+                        component={withHeader(HeaderSettingsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/footer"
+                        component={FooterSettingsRedirect}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/footer/:tab"
+                        component={withHeader(FooterSettingsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/footer/:size/categories/:categoryKey"
+                        component={withHeader(FooterCategoryLinksPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/logos"
+                        component={withHeader(LogoSettingsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/pages"
+                        component={withHeader(PagesSettingsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/home"
+                        component={HomeSettingsRedirect}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/home/:tab"
+                        component={withHeader(HomeSettingsPage, {
+                            noContainerClass: true
+                        })}
+                    />
+                    <Route
+                        exact
+                        path="/settings/content/ui-text"
+                        component={withHeader(UiTextSettingsPage, {
                             noContainerClass: true
                         })}
                     />
