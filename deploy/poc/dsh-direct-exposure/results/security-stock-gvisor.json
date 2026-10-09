@@ -42,9 +42,11 @@
       "status": 200
     },
     {
-      "name": "cross-site Origin WebSocket is rejected by DSH",
+      "name": "cross-site Origin WebSocket is rejected by the gateway before Agent Manager / DSH",
       "ok": true,
-      "status": 403
+      "status": 403,
+      "body": "WebSocket Origin not allowed.",
+      "reachedAgentManager": false
     },
     {
       "name": "cross-site Origin RPC is rejected by DSH",
@@ -82,7 +84,7 @@
       "ok": true
     }
   ],
-  "sandbox": "alice-gvisor-stock-3",
+  "sandbox": "alice-gvisor-stock-4",
   "template": "dsh-gvisor-stock",
   "agentManagerAuthMode": "managed-cookie",
   "serviceLevel": {

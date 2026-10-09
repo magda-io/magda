@@ -15,7 +15,7 @@ Chrome (host) --https://magda.test:18443--> minikube ingress-nginx (TLS)
 | Path | Purpose |
 | --- | --- |
 | `scripts/01-cluster-up.sh` | Minikube profile `magda-agent-poc`: containerd, gVisor (pinned runsc), ingress addon, node 443/80 published as `127.0.0.1:18443/18080`, Agent Sandbox v1.0.4 |
-| `scripts/02-build-gateway.sh` | Compile `magda-gateway` from the checkout and overlay it on the 7.0.0 image (`gateway/Dockerfile`). Needs the gateway WebSocket support from [#3843](https://github.com/magda-io/magda/pull/3843): until it reaches your checkout, merge `feat/gateway-websocket-proxy` first |
+| `scripts/02-build-gateway.sh` | Compile `magda-gateway` from the checkout and overlay it on the 7.0.0 image (`gateway/Dockerfile`). Needs the gateway WebSocket support from [#3843](https://github.com/magda-io/magda/pull/3843) (on `main` and `next`) |
 | `scripts/03-build-images.sh` | Agent images `magda-agent-dsh:stock` / `:nba` (DSH 0.2.1-alpha.1 [+ #8528 port]) and the tools image (Agent Manager, mock LLM) |
 | `scripts/04-install-magda.sh` | Minimal Magda 7.0.0 + `magda-auth-internal` (`manifests/magda/chart`), self-signed `magda.test` TLS |
 | `scripts/05-create-test-users.sh` | Users `alice@magda.test` / `bob@magda.test` (password `poc-password-3841`) |

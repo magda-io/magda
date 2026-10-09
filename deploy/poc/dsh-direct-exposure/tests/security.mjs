@@ -57,9 +57,21 @@ r = await request("POST", `${MOUNT_PATH}api/session/list`, {
 });
 check("authenticated same-origin RPC succeeds", r.status === 200, { status: r.status });
 
-// --- DSH Origin fence still applies through the proxy ----------------------
+// --- Origin checks through the proxy ---------------------------------------
+// WebSocket: magda-gateway's default Origin validation (#3843, allowlist derived from
+// global.externalUrl) rejects the handshake before it reaches Agent Manager / DSH.
+// HTTP: the gateway doesn't check Origin; DSH's Host/Origin fence rejects it.
+const amHandshakesWithEvilOrigin = () =>
+    kubectl(`-n ${NS} logs deploy/agent-manager --since=10m`)
+        .split("\n")
+        .filter((l) => l.includes('"ws-handshake"') && l.includes("https://evil.test")).length;
+const evilBefore = amHandshakesWithEvilOrigin();
 r = await openMux({ cookie, origin: "https://evil.test" });
-check("cross-site Origin WebSocket is rejected by DSH", r.status === 403, { status: r.status });
+check("cross-site Origin WebSocket is rejected by the gateway before Agent Manager / DSH", r.status === 403 && amHandshakesWithEvilOrigin() === evilBefore, {
+    status: r.status,
+    body: (r.body || "").trim().slice(0, 40),
+    reachedAgentManager: amHandshakesWithEvilOrigin() !== evilBefore
+});
 r = await request("POST", `${MOUNT_PATH}api/session/list`, {
     headers: { cookie, origin: "https://evil.test", "content-type": "application/json" },
     body: "{}"

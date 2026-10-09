@@ -1,13 +1,13 @@
 {
   "user": "alice",
-  "startedAt": "2026-10-08T06:23:46.750Z",
+  "startedAt": "2026-10-09T01:49:16.157Z",
   "checks": [
     {
       "name": "index + assets load, UI boots",
       "ok": true,
       "status": 200,
       "pageErrors": [],
-      "bootMs": 1252
+      "bootMs": 1521
     },
     {
       "name": "one physical WebSocket carries several logical streams",
@@ -28,7 +28,7 @@
         "cancel": 0
       },
       "downlink": {
-        "item": 3,
+        "item": 10,
         "end": 0,
         "error": 0
       }
@@ -40,15 +40,15 @@
     {
       "name": "server->browser streaming over remote.mux (15 s turn)",
       "ok": true,
-      "downlinkFrames": 96,
+      "downlinkFrames": 90,
       "seconds": 16
     },
     {
       "name": "cancellation reaches the model stream",
       "ok": true,
-      "stopMs": 2451,
+      "stopMs": 2508,
       "mockLlm": [
-        "stream chatcmpl-mock-1791440647632 cancelled by client after 12 ticks"
+        "stream chatcmpl-mock-1791510576332 cancelled by client after 12 ticks"
       ]
     },
     {
@@ -69,16 +69,16 @@
     {
       "name": "reconnect after Agent Manager restart mid-stream",
       "ok": true,
-      "socketDroppedAfterMs": 1256,
-      "newSocketAfterMs": 2428,
+      "socketDroppedAfterMs": 922,
+      "newSocketAfterMs": 2152,
       "failedReconnectAttempts": 1,
       "turnCompletedAfterReconnect": true
     },
     {
       "name": "reconnect after magda-gateway restart mid-stream",
       "ok": true,
-      "socketDroppedAfterMs": 11829,
-      "newSocketAfterMs": 12257,
+      "socketDroppedAfterMs": 12895,
+      "newSocketAfterMs": 13370,
       "failedReconnectAttempts": 0,
       "turnCompletedAfterReconnect": true
     },
@@ -110,7 +110,7 @@
       "cancel": 1
     },
     "downlink": {
-      "item": 484,
+      "item": 485,
       "end": 0,
       "error": 0
     }
@@ -120,13 +120,13 @@
     "/api/credentials/describe": 2,
     "/api/dynamicCordisRunner/inventory": 6,
     "/api/session/modelCatalog": 6,
-    "/api/agentPresets/list": 14,
+    "/api/agentPresets/list": 15,
     "/api/session/list": 4,
     "/api/permissionPresets/catalog": 4,
     "/api/workspace/initializeDefault": 1,
+    "/api/session/create": 2,
     "/api/llm/listProviders": 3,
     "/api/llm/listConfigurableProviders": 3,
-    "/api/session/create": 1,
     "/api/commands/list": 4,
     "/api/skills/list": 2,
     "/api/schedule/list": 4,
@@ -140,5 +140,5 @@
     "/api/terminal/resize": 2,
     "/api/terminal/write": 21
   },
-  "finishedAt": "2026-10-08T06:25:41.534Z"
+  "finishedAt": "2026-10-09T01:51:10.225Z"
 }

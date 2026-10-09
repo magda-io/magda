@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Compile magda-gateway from this checkout and build the PoC gateway image
 # (gateway/Dockerfile) with the WebSocket upgrade support, then load it into
-# the Minikube node. The checkout must contain #3843 (feat/gateway-websocket-proxy). Needs the repo's node_modules (yarn install) for tsc.
+# the Minikube node. The checkout must contain #3843 (on main and next). Needs the repo's node_modules (yarn install) for tsc.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
 REPO_ROOT="$(git -C "$HERE" rev-parse --show-toplevel)"
