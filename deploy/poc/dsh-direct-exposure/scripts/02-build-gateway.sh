@@ -17,9 +17,8 @@ BIN="${BIN:-$(cd "$REPO_ROOT" && npm root)/.bin}"
 CTX="$(mktemp -d)"
 trap 'rm -rf "$CTX"' EXIT
 cp "$HERE/gateway/Dockerfile" "$CTX/"
-for f in WebSocketUpgradeHandler createBaseProxy createGenericProxyRouter index; do
-  cp "$REPO_ROOT/magda-gateway/dist/$f.js" "$CTX/"
-done
+# All compiled gateway modules (the change touches several of them).
+cp "$REPO_ROOT"/magda-gateway/dist/*.js "$CTX/"
 if grep -l "magda-typescript-common/src" "$CTX"/*.js; then
   echo "module aliases were not rewritten" >&2
   exit 1
